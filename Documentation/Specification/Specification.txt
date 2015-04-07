@@ -8,12 +8,12 @@ The project is initially intended for use by scientists taking part in the Marin
 # Project Features
 The aim of the QuinCe project is to provide an online, automated system that will process raw data from ship-board CO~2~ measuring equipment. The processing will consist of the following:
 
-1. Data reduction
-2. Automatic Level One quality control
-3. Data viewing
-4. Assignment of WOCE QC flags
-5. Data export
-6. Submission to the ICOS [Carbon Portal](https://www.icos-cp.eu/).
+* Data reduction
+* Automatic Level One quality control
+* Data viewing
+* Assignment of WOCE QC flags
+* Data export
+* Submission to the ICOS [Carbon Portal](https://www.icos-cp.eu/).
 
 ## Data Reduction
 Data reduction is the process of converting calculating the partial pressure and/or fugacity of carbon dioxide (pCO~2~ or fCO~2~) from the raw instrument data. These calculations must take into account the calibration of individual sensors and also adjust the results in relation to the instruments' measurements taken from known gas standards.
@@ -46,3 +46,41 @@ In addition, the system will allow users to export data in a variety of formats 
 
 ## Submission to the ICOS Carbon Portal
 All data collected under the umbrella of the ICOS project will need to be published through the [ICOS Carbon Portal](https://www.icos-cp.eu/). The QuinCe system will provide a method for users to submit data to this portal directly, reformatting the data as required.
+
+# Defining Instrument Details
+
+## Naming Instruments
+QuinCe will identify each instrument that it knows about by a single string that contains a name, which must be unique across all known instruments. Typically this will contain the name of the ship on which the instrument is installed. However, it is possible that more than one instrument may be installed on the same ship, or multiple ships have the same name. In this case, further identifying features (e.g. instrument name or ship call sign) will be required.
+
+## Instrument Parameters
+Each instrument must provide a minimum set of measured parameters. These are in three broad categories.
+
+### Location and Time
+Each measurement must be located in space and time, and these values must be part of the instrument's output. Positional data must be provided as latitude and longitude, usually as decimal degrees, although other formats (e.g. degrees and decimal minutes, or degrees, minutes and seconds) can be supported. The date and time of the measurement must be provided to an accuracy of one second. Again, multiple formats of dates will be supported.
+
+### Run metadata
+
+#### Standards
+It is standard practice to intersperse periods of surface CO~2~ measurements with measurements from a set of gas standards, to allow for calibration of the instrumentation [e.g. _Pierrot et al. 2009_]. QuinCe must be able to identify which records from data files correspond to sea water measurements, and which to gas standards of different concentrations. This will allow the system to automatically calibrate the sea water measurements against the gas standards, and also to process the gas standard measurements seperately from the sea water measurements during quality control.
+
+#### Measurements to be discarded
+There are periods when measurements from an instrument cannot be trusted. For example, when switching between sea water measurements and gas standard measurements, there is usually a period of flushing to ensure that the gas lines do not contain residual gases from a previous set of measurements [_Pierrot et al. 2009_]. During this time, it is likely that measurements are still being recorded by the instrument. If possible, these measurements should be marked as unusable: otherwise the variability in CO~2~ values during these periods may cause quality control issues to be raised unnecessarily.
+
+### Sensor Parameters
+QuinCe will require data from sensors measuring the following parameters in order to perform the data reduction calculations:
+
+* Sea surface temperature
+* Sea level pressure
+* Sea surface salinity
+* Equilibrator temperature
+* Equilibrator pressure
+
+QuinCe will require at least one sensor from each category to be defined, although any number of sensors can be present for each category. For example, in large equilibrators, two temperature sensors are sometimes installed to measure the top and bottom. Where more than one sensor of a given type is present, the mean of all measured values will be used. This will be described in detail later in the document.
+
+## Data file specification
+Each instrument will produce a data file whose format is likely to be unique. The user must therefore tell QuinCe which columns contain which data, and what units the values are in so they can be converted if required.
+
+Some sensors report values in electronic terms, e.g. millivolts or ohms, which must be converted to the units of the measured parameter using an equation. QuinCe will provide the mechanism for entering the details of the equation, which will be used in the data reduction process.
+
+# References
+Pierrot, D., C. Neill, K. Sullivan, R. Castle, R. Wanninkhof, H. Lüger, T. Johannessen, A. Olsen, R. A. Feely, and C. E. Cosca, 2009. Recommendations for autonomous underway pCO~2~ measuring systems and data-reduction routines, _Deep Sea Research II_, _56_, 512-522, doi:10.1016/j.dsr2.2008.12.005.
