@@ -1,0 +1,48 @@
+# _QuinCe Project Specification_
+
+# Introduction
+The QuinCe project is a software system to designed to streamline the processing and quality control of data from continuous CO~2~ measurement instruments on board ships. The system will be developed as part of the Marine portion of the EU Integrated Carbon Observing System ([ICOS](http://www.icos-infrastructure.eu/)).
+
+The project is initially intended for use by scientists taking part in the Marine portion of the ICOS project, and will focus primarily on their requirements and those of ICOS itself. However, the long term aim is to provide its services to the global surface ocean CO~2~ community in the future, and perhaps provide an example to develop similar systems for automated data collection efforts in other fields.
+
+# Project Features
+The aim of the QuinCe project is to provide an online, automated system that will process raw data from ship-board CO~2~ measuring equipment. The processing will consist of the following:
+
+1. Data reduction
+2. Automatic Level One quality control
+3. Data viewing
+4. Assignment of WOCE QC flags
+5. Data export
+6. Submission to the ICOS [Carbon Portal](https://www.icos-cp.eu/).
+
+## Data Reduction
+Data reduction is the process of converting calculating the partial pressure and/or fugacity of carbon dioxide (pCO~2~ or fCO~2~) from the raw instrument data. These calculations must take into account the calibration of individual sensors and also adjust the results in relation to the instruments' measurements taken from known gas standards.
+
+Data reduction is currently performed by the scientists running their own instruments. While all scientists will perform their calculations based on practices described in the scientific literature, there will inevitably be slight differences between them through the use of different methods and different interpretations of those methods. This document will specify the data reduction method to be used by the QuinCe system, as agreed in discussion with the scientific community.
+
+## Automatic Level One Quality Control
+Once the data reduction has been completed, a set of automatic quality control routines will examine the data, looking for anomalies that indicate likely problems. These will include, but not be limited to:
+
+* Missing data
+* Values outside a reasonable ranges
+* Detection of outliers
+* Excessive variability in the data
+
+The quality control routines will be written as individual modules, so more can be added as they are developed. This document will specify the framework for the modular system, but not the workings of any individual quality control modules. Those will be described in separate documentation.
+
+## Data Viewing
+The QuinCe system will allow users to view the contents of their data files on maps, plots, and in tabular form. Results from the data reduction and quality control stages will also be visible, allowing the user to examine them within the system.
+
+## Assignment of WOCE QC Flags
+The user will be able to assign WOCE QC flags and sub-flags (which indicate the item(s) that led to the assignment of the main flag) to the individual records in a data file. These flags can be used to remove bad records from the data or to indicate the quality of the data to future users after publication.
+
+## Data Export
+The QuinCe system will add extra information to the uploaded data files as it performs data reduction and quality control, along with the WOCE flags set by the user. The system will allow the user to export their data, along with these additions, in a variety of formats. The most basic export options will be:
+
+* The original data file, with extra columns added.
+* A cut-down version of the file, containing only the original data used in the data reduction steps and extra columns added.
+
+In addition, the system will allow users to export data in a variety of formats for submissions to other systems, e.g. [SOCAT](http://www.socat.info).
+
+## Submission to the ICOS Carbon Portal
+All data collected under the umbrella of the ICOS project will need to be published through the [ICOS Carbon Portal](https://www.icos-cp.eu/). The QuinCe system will provide a method for users to submit data to this portal directly, reformatting the data as required.
