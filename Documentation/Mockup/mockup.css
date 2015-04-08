@@ -1,0 +1,128 @@
+body {
+  font-family: 'Noto Sans', sans-serif;
+  background: #F3F3F3;
+}
+
+#loginbox {
+  max-width: 400px;
+  margin: 40px auto 28px;
+  border: 1px solid #DEDEDE;
+  padding: 15px;
+  background: #FFF;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+label {
+  font-weight: bold;
+}
+
+input {
+  border-radius: 3px;
+  border: 1px solid #666;
+  font-size: 18px;
+}
+
+
+input[type="submit"] {
+  display: block;
+  margin-top: 20px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+
+  border-radius: 7px;
+  border: 1px solid #8CD5ED;
+
+  color: #555;
+  background-color: #8CD5ED;
+
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+form ul {
+  list-style: outside none none;
+}
+
+form li {
+  margin-top: 10px;
+}
+form li:first-child {
+  margin-top: 0px;
+}
+
+ul label {
+  display: block;
+}
+
+ul input {
+  display: block;
+  width: 100%;
+}
+
+#header {
+  color: #555;
+  position: absolute;
+  background: #8CD5ED;
+  width: 100%;
+  margin: 0px;
+  top: 0px;
+  left: 0px;
+  padding: 5px 10px 5px 10px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+#userSettings {
+  float: right;
+  margin-right: 20px;
+}
+
+#content {
+  margin-top: 40px;
+  position: relative;
+  clear: both;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th {
+  background: #8CD5ED;
+  text-align: left;
+  padding: 2px 5px 2px 5px;
+}
+
+.numericCol {
+  text-align: right;
+}
+
+td {
+  border-bottom: 1px solid black;
+  padding: 3px 5px 3px 5px;
+}
+
+table.fullpage {
+  width: 95%;
+  margin: auto;
+}
+
+td.alert {
+  color: red;
+  font-weight: bold;
+}
+
+.statbarCol {
+  width: 100px;
+  text-align: center;
+}
+
+canvas.statBar {
+  height: 16px;
+  width: 100%;
+}

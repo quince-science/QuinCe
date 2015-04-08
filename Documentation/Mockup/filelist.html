@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<html>
+  <head>
+    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,700" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" type="text/css" href="mockup.css"/>
+    <title>QuinCe - Instrument List</title>
+  </head>
+  <body>
+    <div id="header">
+      QuinCe
+      <div id="userSettings">
+        Steve Jones
+      </div>
+    </div>
+    <div id="content">
+      <h1>Data Files</h1>
+      <table class="fullpage">
+        <tr>
+          <th>File Name</th>
+          <th>Instrument</th>
+          <th>Start Date</th>
+          <th>QC Status</th>
+          <th class="numericCol">Records</th>
+          <th class="statbarCol">QC Stats</th>
+          <th class="statbarCol">WOCE Stats</th>
+          <th>Export</th>
+          <th class="numericCol">Time Left</th>
+        </tr>
+        <tr>
+          <td>BS093.txt</td>
+          <td>Benguela Stream</td>
+          <td>2014-02-01</td>
+          <td>In queue</td>
+          <td class="numericCol">2013</td>
+          <td class="statbarCol">N/A</td>
+          <td class="statbarCol">N/A</td>
+          <td>Export</td>
+          <td class="numericCol">34 days</td>
+        </tr>
+        <tr>
+          <td>BS070.txt</td>
+          <td>Benguela Stream</td>
+          <td>2009-11-21</td>
+          <td>Complete</td>
+          <td class="numericCol">562</td>
+          <td class="statbarCol">
+            <canvas id="0001" class="statBar">
+              <span class="statError">35</span>/<span class="statWarning">50</span>/<span class="statGood">403</span>/<span class="statIgnore">59</span>
+            </canvas>
+            <script type="text/javascript">
+              var canvas = document.getElementById('0001');
+              var ctx = canvas.getContext('2d');
+
+              ctx.fillStyle = "rgb(255,0,0)";
+              ctx.fillRect(0, 0, 0.062 * canvas.width, canvas.height);
+
+              ctx.fillStyle = "rgb(255, 200, 0)";
+              ctx.fillRect(0.062 * canvas.width, 0, 0.089 * canvas.width, canvas.height);
+
+              ctx.fillStyle = "rgb(0,200,0)";
+              ctx.fillRect((0.062 + 0.089) * canvas.width, 0, 0.717 * canvas.width, canvas.height);
+
+              ctx.fillStyle = "rgb(50,50,50)";
+              ctx.fillRect((0.062 + 0.089 + 0.717) * canvas.width, 0, 0.132 * canvas.width, canvas.height);
+            </script>
+          </td>
+          <td class="statbarCol">
+            <canvas id="0001a" class="statBar">
+              <span class="statError">35</span>/<span class="statWarning">50</span>/<span class="statGood">403</span>/<span class="statIgnore">59</span>
+            </canvas>
+            <script type="text/javascript">
+              var canvas = document.getElementById('0001a');
+              var ctx = canvas.getContext('2d');
+
+              ctx.fillStyle = "rgb(255,0,0)";
+              ctx.fillRect(0, 0, 0.02 * canvas.width, canvas.height);
+
+              ctx.fillStyle = "rgb(255, 200, 0)";
+              ctx.fillRect(0.02 * canvas.width, 0, 0.089 * canvas.width, canvas.height);
+
+              ctx.fillStyle = "rgb(0,200,0)";
+              ctx.fillRect(0.109 * canvas.width, 0, 0.276 * canvas.width, canvas.height);
+
+              ctx.fillStyle = "rgb(150,220,150)";
+              ctx.fillRect(0.385 * canvas.width, 0, 0.258 * canvas.width, canvas.height);
+
+              ctx.fillStyle = "rgb(200,200,200)";
+              ctx.fillRect(0.643 * canvas.width, 0, 0.225 * canvas.width, canvas.height);
+
+              ctx.fillStyle = "rgb(50,50,50)";
+              ctx.fillRect(0.868 * canvas.width, 0, 0.132 * canvas.width, canvas.height);
+            </script>
+          </td>
+          <td>Export</td>
+          <td class="numericCol">15 days</td>
+        </tr>
+        <tr>
+          <td>BS094.txt</td>
+          <td>Benguela Stream - CRD Test</td>
+          <td>2009-11-21</td>
+          <td>Complete</td>
+          <td class="numericCol">719</td>
+          <td class="statbarCol">
+            <canvas id="0002" class="statBar">
+              <span class="statError">203</span>/<span class="statWarning">424</span>/<span class="statGood">65</span>/<span class="statIgnore">27</span>
+            </canvas>
+            <script type="text/javascript">
+              var canvas = document.getElementById('0002');
+              var ctx = canvas.getContext('2d');
+
+              ctx.fillStyle = "rgb(255,0,0)";
+              ctx.fillRect(0, 0, 0.282 * canvas.width, canvas.height);
+
+              ctx.fillStyle = "rgb(255, 200, 0)";
+              ctx.fillRect(0.282 * canvas.width, 0, 0.59 * canvas.width, canvas.height);
+
+              ctx.fillStyle = "rgb(0,200,0)";
+              ctx.fillRect((0.282 + 0.59) * canvas.width, 0, 0.09 * canvas.width, canvas.height);
+
+              ctx.fillStyle = "rgb(50,50,50)";
+              ctx.fillRect((0.282 + 0.59 + 0.09) * canvas.width, 0, 0.038 * canvas.width, canvas.height);
+            </script>
+          </td>
+          <td class="statbarCol">
+            <canvas id="0002a" class="statBar">
+              <span class="statError">203</span>/<span class="statWarning">424</span>/<span class="statGood">65</span>/<span class="statIgnore">27</span>
+            </canvas>
+            <script type="text/javascript">
+              var canvas = document.getElementById('0002a');
+              var ctx = canvas.getContext('2d');
+
+              ctx.fillStyle = "rgb(255,0,0)";
+              ctx.fillRect(0, 0, 0, 0 * canvas.width, canvas.height);
+
+              ctx.fillStyle = "rgb(255, 200, 0)";
+              ctx.fillRect(0 * canvas.width, 0, (0.59 + 0.282) * canvas.width, canvas.height);
+
+              ctx.fillStyle = "rgb(150,220,150)";
+              ctx.fillRect((0.282 + 0.59) * canvas.width, 0, 0.09 * canvas.width, canvas.height);
+
+              ctx.fillStyle = "rgb(50,50,50)";
+              ctx.fillRect((0.282 + 0.59 + 0.09) * canvas.width, 0, 0.038 * canvas.width, canvas.height);
+            </script>
+          </td>
+          <td>Export</td>
+          <td class="alert numericCol">2 days</td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>
