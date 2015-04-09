@@ -5,6 +5,37 @@
     <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,700" rel="stylesheet" type="text/css"/>
     <link rel="stylesheet" type="text/css" href="mockup.css"/>
     <title>QuinCe - Instrument List</title>
+
+    <script type="text/javascript">
+
+      var qcColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(50,50,50)"];
+      var woceColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(150,220,150)", "rgb(200,200,200)", "rgb(50,50,50)"];
+
+      // Data structures for file stats.
+      var recordCounts = new Array();
+      recordCounts['BS070.txt'] = 562;
+      recordCounts['BS094.txt'] = 719;
+
+      var qcStats = new Array();
+      qcStats['BS070.txt'] = [35, 50, 403, 74];
+      qcStats['BS094.txt'] = [203, 424, 65, 27];
+
+      var woceStats = new Array();
+      woceStats['BS070.txt'] = [11, 50, 155, 145, 127, 119];
+      woceStats['BS094.txt'] = [0, 627, 65, 0, 0, 27];
+
+      function drawStatBar(elementId, recordCount, stats, colors) {
+        var canvas = document.getElementById(elementId);
+        var ctx = canvas.getContext('2d');
+
+        var barFilled = 0;
+        for (var i = 0; i < stats.length; i++) {
+          ctx.fillStyle = colors[i];
+          ctx.fillRect(barFilled * canvas.width, 0, (stats[i] / recordCount) * canvas.width, canvas.height);
+          barFilled += (stats[i] / recordCount);
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="header">
@@ -45,51 +76,15 @@
           <td>Complete</td>
           <td class="numericCol">562</td>
           <td class="statbarCol">
-            <canvas id="0001" class="statBar">
-              <span class="statError">35</span>/<span class="statWarning">50</span>/<span class="statGood">403</span>/<span class="statIgnore">59</span>
-            </canvas>
+            <canvas id="0001" class="statBar"></canvas>
             <script type="text/javascript">
-              var canvas = document.getElementById('0001');
-              var ctx = canvas.getContext('2d');
-
-              ctx.fillStyle = "rgb(255,0,0)";
-              ctx.fillRect(0, 0, 0.062 * canvas.width, canvas.height);
-
-              ctx.fillStyle = "rgb(255, 200, 0)";
-              ctx.fillRect(0.062 * canvas.width, 0, 0.089 * canvas.width, canvas.height);
-
-              ctx.fillStyle = "rgb(0,200,0)";
-              ctx.fillRect((0.062 + 0.089) * canvas.width, 0, 0.717 * canvas.width, canvas.height);
-
-              ctx.fillStyle = "rgb(50,50,50)";
-              ctx.fillRect((0.062 + 0.089 + 0.717) * canvas.width, 0, 0.132 * canvas.width, canvas.height);
+              drawStatBar('0001', recordCounts['BS070.txt'], qcStats['BS070.txt'], qcColors);
             </script>
           </td>
           <td class="statbarCol">
-            <canvas id="0001a" class="statBar">
-              <span class="statError">35</span>/<span class="statWarning">50</span>/<span class="statGood">403</span>/<span class="statIgnore">59</span>
-            </canvas>
+            <canvas id="0001a" class="statBar"></canvas>
             <script type="text/javascript">
-              var canvas = document.getElementById('0001a');
-              var ctx = canvas.getContext('2d');
-
-              ctx.fillStyle = "rgb(255,0,0)";
-              ctx.fillRect(0, 0, 0.02 * canvas.width, canvas.height);
-
-              ctx.fillStyle = "rgb(255, 200, 0)";
-              ctx.fillRect(0.02 * canvas.width, 0, 0.089 * canvas.width, canvas.height);
-
-              ctx.fillStyle = "rgb(0,200,0)";
-              ctx.fillRect(0.109 * canvas.width, 0, 0.276 * canvas.width, canvas.height);
-
-              ctx.fillStyle = "rgb(150,220,150)";
-              ctx.fillRect(0.385 * canvas.width, 0, 0.258 * canvas.width, canvas.height);
-
-              ctx.fillStyle = "rgb(200,200,200)";
-              ctx.fillRect(0.643 * canvas.width, 0, 0.225 * canvas.width, canvas.height);
-
-              ctx.fillStyle = "rgb(50,50,50)";
-              ctx.fillRect(0.868 * canvas.width, 0, 0.132 * canvas.width, canvas.height);
+              drawStatBar('0001a', recordCounts['BS070.txt'], woceStats['BS070.txt'], woceColors);
             </script>
           </td>
           <td>Export</td>
@@ -102,45 +97,15 @@
           <td>Complete</td>
           <td class="numericCol">719</td>
           <td class="statbarCol">
-            <canvas id="0002" class="statBar">
-              <span class="statError">203</span>/<span class="statWarning">424</span>/<span class="statGood">65</span>/<span class="statIgnore">27</span>
-            </canvas>
+            <canvas id="0002" class="statBar"></canvas>
             <script type="text/javascript">
-              var canvas = document.getElementById('0002');
-              var ctx = canvas.getContext('2d');
-
-              ctx.fillStyle = "rgb(255,0,0)";
-              ctx.fillRect(0, 0, 0.282 * canvas.width, canvas.height);
-
-              ctx.fillStyle = "rgb(255, 200, 0)";
-              ctx.fillRect(0.282 * canvas.width, 0, 0.59 * canvas.width, canvas.height);
-
-              ctx.fillStyle = "rgb(0,200,0)";
-              ctx.fillRect((0.282 + 0.59) * canvas.width, 0, 0.09 * canvas.width, canvas.height);
-
-              ctx.fillStyle = "rgb(50,50,50)";
-              ctx.fillRect((0.282 + 0.59 + 0.09) * canvas.width, 0, 0.038 * canvas.width, canvas.height);
+              drawStatBar('0002', recordCounts['BS094.txt'], qcStats['BS094.txt'], qcColors);
             </script>
           </td>
           <td class="statbarCol">
-            <canvas id="0002a" class="statBar">
-              <span class="statError">203</span>/<span class="statWarning">424</span>/<span class="statGood">65</span>/<span class="statIgnore">27</span>
-            </canvas>
+            <canvas id="0002a" class="statBar"></canvas>
             <script type="text/javascript">
-              var canvas = document.getElementById('0002a');
-              var ctx = canvas.getContext('2d');
-
-              ctx.fillStyle = "rgb(255,0,0)";
-              ctx.fillRect(0, 0, 0, 0 * canvas.width, canvas.height);
-
-              ctx.fillStyle = "rgb(255, 200, 0)";
-              ctx.fillRect(0 * canvas.width, 0, (0.59 + 0.282) * canvas.width, canvas.height);
-
-              ctx.fillStyle = "rgb(150,220,150)";
-              ctx.fillRect((0.282 + 0.59) * canvas.width, 0, 0.09 * canvas.width, canvas.height);
-
-              ctx.fillStyle = "rgb(50,50,50)";
-              ctx.fillRect((0.282 + 0.59 + 0.09) * canvas.width, 0, 0.038 * canvas.width, canvas.height);
+              drawStatBar('0002a', recordCounts['BS094.txt'], woceStats['BS094.txt'], woceColors);
             </script>
           </td>
           <td>Export</td>
