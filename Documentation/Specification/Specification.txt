@@ -50,7 +50,7 @@ All data collected under the umbrella of the ICOS project will need to be publis
 # Defining Instrument Details
 
 ## Naming Instruments
-QuinCe will identify each instrument that it knows about by a single string that contains a name, which must be unique across all known instruments. Typically this will contain the name of the ship on which the instrument is installed. However, it is possible that more than one instrument may be installed on the same ship, or multiple ships have the same name. In this case, further identifying features (e.g. instrument name or ship call sign) will be required.
+QuinCe will identify each instrument that it knows about by a single string that contains a name, which must be unique across all known instruments. Typically this will contain the name of the ship on which the instrument is installed. However, it is possible that more than one instrument may be installed on the same ship, or multiple ships have the same name. In this case, further identifying features (e.g. instrument name or ship call sign) will be required. The choice of instrument name will be left to the individual user.
 
 ## Instrument Parameters
 Each instrument must provide a minimum set of measured parameters. These are in three broad categories.
@@ -58,12 +58,10 @@ Each instrument must provide a minimum set of measured parameters. These are in 
 ### Location and Time
 Each measurement must be located in space and time, and these values must be part of the instrument's output. Positional data must be provided as latitude and longitude, usually as decimal degrees, although other formats (e.g. degrees and decimal minutes, or degrees, minutes and seconds) can be supported. The date and time of the measurement must be provided to an accuracy of one second. Again, multiple formats of dates will be supported.
 
-### Run metadata
+### Measurement types
 
-#### Standards
-It is standard practice to intersperse periods of surface CO~2~ measurements with measurements from a set of gas standards, to allow for calibration of the instrumentation [e.g. _Pierrot et al. 2009_]. QuinCe must be able to identify which records from data files correspond to sea water measurements, and which to gas standards of different concentrations. This will allow the system to automatically calibrate the sea water measurements against the gas standards, and also to process the gas standard measurements seperately from the sea water measurements during quality control.
+In many cases, not all measurements reported in the data files are of sea water CO~2~. It is usual practice to intersperse periods of surface CO~2~ measurements with measurements from a set of gas standards, to allow for calibration of the instrumentation [e.g. _Pierrot et al. 2009_]. QuinCe must be able to identify which records from data files correspond to sea water measurements, and which to gas standards of different concentrations. This will allow the system to automatically calibrate the sea water measurements against the gas standards, and also to process the gas standard measurements separately from the sea water measurements during quality control.
 
-#### Measurements to be discarded
 There are periods when measurements from an instrument cannot be trusted. For example, when switching between sea water measurements and gas standard measurements, there is usually a period of flushing to ensure that the gas lines do not contain residual gases from a previous set of measurements [_Pierrot et al. 2009_]. During this time, it is likely that measurements are still being recorded by the instrument. If possible, these measurements should be marked as unusable: otherwise the variability in CO~2~ values during these periods may cause quality control issues to be raised unnecessarily.
 
 ### Sensor Parameters
@@ -75,12 +73,16 @@ QuinCe will require data from sensors measuring the following parameters in orde
 * Equilibrator temperature
 * Equilibrator pressure
 
-QuinCe will require at least one sensor from each category to be defined, although any number of sensors can be present for each category. For example, in large equilibrators, two temperature sensors are sometimes installed to measure the top and bottom. Where more than one sensor of a given type is present, the mean of all measured values will be used. This will be described in detail later in the document.
+QuinCe will require at least one sensor from each category to be defined, although any number of sensors can be present for each category. For example, in large equilibrators, two temperature sensors are sometimes installed to measure the top and bottom. Where more than one sensor of a given type is present, the mean of all measured values will be used in calculations performed by QuinCe. This will be described in detail later in the document.
+
+For each sensor, the user must specify the units in which its output is recorded in the data files. For example, some temperature sensors report degrees Celsius directly, while some resistive temperature sensors report their measurements in ohms. In the latter case there is a polynomial equation that is used to convert the reported resistance to Celsius. In these cases, the user must enter the parameters of that equation so that QuinCe can convert the data.
 
 ## Data file specification
-Each instrument will produce a data file whose format is likely to be unique. The user must therefore tell QuinCe which columns contain which data, and what units the values are in so they can be converted if required.
+Each instrument will produce a data file whose format is likely to be unique. The user must therefore tell QuinCe which columns contain which data. The user need only specify the columns required for data reduction (i.e. the required sensors), the ship's position, and the time of the measurement. Any other columns in the data files will be ignored.
 
-Some sensors report values in electronic terms, e.g. millivolts or ohms, which must be converted to the units of the measured parameter using an equation. QuinCe will provide the mechanism for entering the details of the equation, which will be used in the data reduction process.
+One of the columns in the data file must specify the type of each measurement: either sea water or a gas standard. The user must specify which column contains this information, and which values indicate sea water measurements or gas standard measurements of specific concentrations.
+
+If there is a column in the data file that indicates whether or not a given measurement should be ignored, then this must also be specified, along with which value(s) indicate measurements to be used and those to be discarded.
 
 # References
 Pierrot, D., C. Neill, K. Sullivan, R. Castle, R. Wanninkhof, H. Lüger, T. Johannessen, A. Olsen, R. A. Feely, and C. E. Cosca, 2009. Recommendations for autonomous underway pCO~2~ measuring systems and data-reduction routines, _Deep Sea Research II_, _56_, 512-522, doi:10.1016/j.dsr2.2008.12.005.
