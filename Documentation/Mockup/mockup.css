@@ -140,11 +140,22 @@ canvas.statBar {
   right: 0px;
   padding: 0px;
   width: 120px;
-  border: 2px solid #8CD5ED;
+  height: 94px;
+  border-style: solid;
+  border-color: #8CD5ED;
   background: #DDE9ED;
   z-index: 10;
+  overflow: hidden;
+  box-shadow: none;
+  border-width: 0px;
+  height: 0px;
+  transition: height 0.075s linear, box-shadow 0.075s linear, border-width 0.075s linear;
+}
+
+#userSettingsMenu.visible {
+  border-width: 2px;
   box-shadow: -4px 6px 8px #000000;
-  visibility: hidden;
+  height: 94px;
 }
 
 ul.menu {

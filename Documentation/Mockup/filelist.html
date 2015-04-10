@@ -10,17 +10,17 @@
 
       function toggleSettingsMenu() {
         var menu = document.getElementById('userSettingsMenu');
-        if (menu.style.visibility != 'visible') {
-          menu.style.visibility = 'visible';
+        if (menu.className != 'visible') {
+          menu.className = 'visible';
         } else {
-          menu.style.visibility = 'hidden';
+          menu.className = '';
         }
       }
 
       function hideMenu() {
         var menu = document.getElementById('userSettingsMenu');
-        if (menu.style.visibility == 'visible') {
-          menu.style.visibility = 'hidden';
+        if (menu.className == 'visible') {
+          menu.className = '';
         }
       }
 
@@ -54,7 +54,7 @@
     </script>
   </head>
   <body>
-    <div id="userSettingsMenu">
+    <div id="userSettingsMenu" class="hidden">
       <ul class="menu">
         <li class="menuitem">Instruments</li>
         <li class="menuitem">Account</li>
