@@ -84,5 +84,17 @@ One of the columns in the data file must specify the type of each measurement: e
 
 If there is a column in the data file that indicates whether or not a given measurement should be ignored, then this must also be specified, along with which value(s) indicate measurements to be used and those to be discarded.
 
+# Uploading data files
+Once an instrument and its corresponding data format have been defined, the user will be able to upload data files for analysis. Each file will be uniquely identified by its filename and the name of the instrument from which it was produced. If a file of the same name already exists, the user will be asked to choose what to do with it:
+
+* Replace the existing file of the same name and restart analysis from the beginning (all previous analysis will be lost).
+* Give the file a different name and treat it as a brand new file.
+* Abort the attempt to upload the file.
+
+Once the file has been uploaded, it will be put through the data reduction and quality control routines as described below.
+
+## Removal of data files
+QuinCe will not keep copies of uploaded data files indefinitely; they will only exist on the system for as long as they are being analysed. Users will be encouraged to delete their files once the analysis is complete and they have exported all the results they need. If a file is left untouched for 60 days, the file and any related analysis will be automatically deleted. The user will be given appropriate warnings before this happens.
+
 # References
 Pierrot, D., C. Neill, K. Sullivan, R. Castle, R. Wanninkhof, H. Lüger, T. Johannessen, A. Olsen, R. A. Feely, and C. E. Cosca, 2009. Recommendations for autonomous underway pCO~2~ measuring systems and data-reduction routines, _Deep Sea Research II_, _56_, 512-522, doi:10.1016/j.dsr2.2008.12.005.
