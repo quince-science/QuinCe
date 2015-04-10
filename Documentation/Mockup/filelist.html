@@ -17,8 +17,12 @@
         }
       }
 
-
-
+      function hideMenu() {
+        var menu = document.getElementById('userSettingsMenu');
+        if (menu.style.visibility == 'visible') {
+          menu.style.visibility = 'hidden';
+        }
+      }
 
       var qcColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(50,50,50)"];
       var woceColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(150,220,150)", "rgb(200,200,200)", "rgb(50,50,50)"];
@@ -63,7 +67,7 @@
         Steve Jones ▼
       </div>
     </div>
-    <div id="content">
+    <div id="content" onclick="hideMenu();">
       <h1>Data Files</h1>
       <table class="fullpage">
         <tr>

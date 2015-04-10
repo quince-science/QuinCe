@@ -81,6 +81,12 @@ ul input {
   float: right;
   margin-right: 20px;
   cursor: pointer;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 #content {
@@ -151,7 +157,14 @@ li.menuitem {
   font-size: 14px;
   color: #555;
   font-weight: bold;
+  cursor: pointer;
   padding: 5px 0px 5px 5px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 li.menuitem:hover {
