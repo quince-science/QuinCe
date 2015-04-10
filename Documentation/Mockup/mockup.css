@@ -155,7 +155,7 @@ canvas.statBar {
 #userSettingsMenu.visible {
   border-width: 2px;
   box-shadow: -4px 6px 8px #000000;
-  height: 94px;
+  height: 85px;
 }
 
 ul.menu {
@@ -176,6 +176,10 @@ li.menuitem {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+li.menuitem:last-child {
+  padding: 5px 0px 0px 5px;
 }
 
 li.menuitem:hover {
