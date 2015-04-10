@@ -178,10 +178,6 @@ li.menuitem {
   user-select: none;
 }
 
-li.menuitem:last-child {
-  padding: 5px 0px 0px 5px;
-}
-
 li.menuitem:hover {
   background: #8CD5ED;
 }
