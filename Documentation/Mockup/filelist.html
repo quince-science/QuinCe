@@ -8,6 +8,18 @@
 
     <script type="text/javascript">
 
+      function toggleSettingsMenu() {
+        var menu = document.getElementById('userSettingsMenu');
+        if (menu.style.visibility != 'visible') {
+          menu.style.visibility = 'visible';
+        } else {
+          menu.style.visibility = 'hidden';
+        }
+      }
+
+
+
+
       var qcColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(50,50,50)"];
       var woceColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(150,220,150)", "rgb(200,200,200)", "rgb(50,50,50)"];
 
@@ -38,10 +50,17 @@
     </script>
   </head>
   <body>
+    <div id="userSettingsMenu">
+      <ul class="menu">
+        <li class="menuitem">Instruments</li>
+        <li class="menuitem">Account</li>
+        <li class="menuitem">Log Out</li>
+      </ul>
+    </div>
     <div id="header">
       QuinCe
-      <div id="userSettings">
-        Steve Jones
+      <div id="userSettings" onclick="toggleSettingsMenu();">
+        Steve Jones ▼
       </div>
     </div>
     <div id="content">
