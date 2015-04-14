@@ -30,9 +30,19 @@ h2 {
 }
 
 h1.title {
-        font-size: 200%;
-        text-align: center;
-        padding-top: 10px;
-        border: none;
-        padding-bottom: 15px;
+  font-size: 200%;
+  text-align: center;
+  padding-top: 10px;
+  border: none;
+  padding-bottom: 15px;
+}
+
+a {
+  color: black;
+  text-decoration: none;
+}
+
+ul a {
+  color: blue;
+  text-decoration: underline;
 }
