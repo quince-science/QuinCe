@@ -96,5 +96,41 @@ Once the file has been uploaded, it will be put through the data reduction and q
 ## Removal of data files
 QuinCe will not keep copies of uploaded data files indefinitely; they will only exist on the system for as long as they are being analysed. Users will be encouraged to delete their files once the analysis is complete and they have exported all the results they need. If a file is left untouched for 60 days, the file and any related analysis will be automatically deleted. The user will be given appropriate warnings before this happens.
 
+# Data Reduction
+
+Once a data file has been uploaded, QuinCe will automatically perform data reduction routines to calculate pCO~2~. Where multiple sensors are specified for a given parameter in the calculations, the mean of those sensors will be used.
+
+## Calculation of fCO~2~
+
+The method used to calculate fCO~2~ will follow that of Pierrot et al. [_2009_].
+
+The gas taken from the equilibrator is dried before being measured $\left(\left(x\!C\!O_2\right)_{T_e}^d\right)$. The air in the equilibrator is assumed to be at 100% humidity. The CO~2~ must therefore be adjusted to account for the increase in CO~2~ concentration resulting from the drying process:
+
+$\left(p\!C\!O_2\right)_{T_e}^w = \left(x\!C\!O_2\right)_{T_e}^d \left(P_e - p\!H_2O\right)$
+
+where $T_e$ is the equilibrator temperature in degrees Kelvin, $P_e$ is the equilibrator pressure, and $p\!H_2O$ is the water vapour pressure over a sea water sample of a given salinity at equilibrator temperature. $w$ and $d$ indicate wet and dry gas respectively. $p\!H_2O$ is calculated as:
+
+$p\!H_2O = \exp\left[24.4543 - 67.4509\left(\frac{100}{T_{e}}\right) - 4.8489  \ln\left(\frac{T_{e}}{100}\right) - 0.000544S \right]$
+
+The fugacity of CO~2~ in the sea water is then calculated as:
+
+$\left(f\!C\!O_2\right)_{T_e}^w = \left(p\!C\!O_2\right)_{T_e}^w \exp\left(\frac{\left[B + 2\left(1 - \left(xC\!O_2\right)_{T_e}^w\right)^2 \delta\right]P_{a\!t\!m}}{RT_e}\right)$
+
+where:
+
+$B = -1636.75 + 12.0408T_e - 3.27957\times10^{-2}T_e^2 + 3.16528\times10^{-5}T_e^3$
+
+and:
+
+$\delta = 57.7 - 0.118T_e$
+
+and:
+
+$R = 82.0578$
+
+Finally, fCO~2~ at sea water temperature is calculated using the empirical formulation of Takahashi et al. [_1993_]:
+
+$\left(f\!C\!O_2\right)_{S\!S\!T}^w = \left(f\!C\!O_2\right)_{T_e}^w \exp\left[0.0423 \left( S\!S\!T - T_e\right)\right]$
+
 # References
 Pierrot, D., C. Neill, K. Sullivan, R. Castle, R. Wanninkhof, H. Lüger, T. Johannessen, A. Olsen, R. A. Feely, and C. E. Cosca, 2009. Recommendations for autonomous underway pCO~2~ measuring systems and data-reduction routines, _Deep Sea Research II_, _56_, 512-522, doi:10.1016/j.dsr2.2008.12.005.
