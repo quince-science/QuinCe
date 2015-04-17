@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<html>
+  <head>
+    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" type="text/css" href="mockup.css"/>
+    <title>QuinCe - Instrument List</title>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript">
+      function toggleSettingsMenu() {
+        var menu = document.getElementById('userSettingsMenu');
+        if (menu.className != 'visible') {
+          menu.className = 'visible';
+        } else {
+          menu.className = '';
+        }
+      }
+
+      function hideMenu() {
+        var menu = document.getElementById('userSettingsMenu');
+        if (menu.className == 'visible') {
+          menu.className = '';
+        }
+      }
+
+      function submitInstrument() {
+        alert("The instrument details will be checked and submitted.\nReturning to File List.")
+        window.location="filelist.html";
+        return false;
+      }
+
+      function addParameter() {
+        return false;
+      }
+    </script>
+  </head>
+  <body>
+    <div id="userSettingsMenu" class="hidden">
+      <ul class="menu">
+        <li class="menuitem" onclick="self.document.location='newinstrument.html';">Instruments</li>
+        <li class="menuitem">Account</li>
+        <li class="menuitem" onclick="self.document.location='login.html';">Log Out</li>
+      </ul>
+    </div>
+    <div id="header">
+      QuinCe
+      <div id="userSettings" onclick="toggleSettingsMenu();">
+        Steve Jones ▼
+      </div>
+    </div>
+    <div id="content" onclick="hideMenu();">
+      <h1>New Instrument</h1>
+
+      <div class="fullPage">
+        <form id="instrumentForm" method="post" onsubmit="return submitInstrument();" autocomplete="off" accept-charset="utf8">
+          <table>
+            <tr>
+              <td><label>Instrument Name:<label></td>
+              <td><input type="text" name="instrumentName" size="30"></td>
+            </tr>
+          </table>
+          <div class="instructions">
+            Please provide details of the sensors in your instrument.
+          </div>
+          <div class="sectionHeader">
+            Intake Temperature
+          </div>
+          <div class="sectionContent">
+            <table>
+              <tr>
+                <td>Sensor Name:</td>
+                <td colspan="6"><input type="text" name="intakeTempName_1" size="30"></input></td>
+              </tr>
+              <tr>
+                <td>Does the sensor report values in °C?</td>
+                <td colspan="6">
+                  <input type="radio" name="intakeTempUnit_1" value="1" checked> Yes
+                  <input type="radio" name="intakeTempUnit_1" value="0"> No
+                </td>
+              </tr>
+              <tr>
+                <td>Conversion Parameters:</td>
+                <td class="numericCol">Intercept</td>
+                <td class="numericCol">x</td>
+                <td class="numericCol">x<sup>2</sup></td>
+                <td class="numericCol">x<sup>3</sup></td>
+                <td class="numericCol">x<sup>4</sup></td>
+                <td class="numericCol">x<sup>5</sup></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><input type="text" name="intakeTempIntercept_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx2_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx3_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx4_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx5_1" class="numeric" size="5"></input></td>
+              </tr>
+            </table>
+            <button class="right" onclick="addParameter(); return false;">Add extra sensor</button>
+          </div>
+          <div class="sectionHeader">
+            Salinity
+          </div>
+          <div class="sectionContent">
+            <table>
+              <tr>
+                <td>Sensor Name:</td>
+                <td colspan="6"><input type="text" name="intakeTempName_1" size="30"></input></td>
+              </tr>
+              <tr>
+                <td>Does the sensor report values in PSU?</td>
+                <td colspan="6">
+                  <input type="radio" name="intakeTempUnit_1" value="1" checked> Yes
+                  <input type="radio" name="intakeTempUnit_1" value="0"> No
+                </td>
+              </tr>
+              <tr>
+                <td>Conversion Parameters:</td>
+                <td class="numericCol">Intercept</td>
+                <td class="numericCol">x</td>
+                <td class="numericCol">x<sup>2</sup></td>
+                <td class="numericCol">x<sup>3</sup></td>
+                <td class="numericCol">x<sup>4</sup></td>
+                <td class="numericCol">x<sup>5</sup></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><input type="text" name="intakeTempIntercept_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx2_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx3_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx4_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx5_1" class="numeric" size="5"></input></td>
+              </tr>
+            </table>
+            <button class="right" onclick="addParameter(); return false;">Add extra sensor</button>
+          </div>
+          <div class="sectionHeader">
+            Sea Level Pressure
+          </div>
+          <div class="sectionContent">
+            <table>
+              <tr>
+                <td>Sensor Name:</td>
+                <td colspan="6"><input type="text" name="intakeTempName_1" size="30"></input></td>
+              </tr>
+              <tr>
+                <td>Does the sensor report values in hPa?</td>
+                <td colspan="6">
+                  <input type="radio" name="intakeTempUnit_1" value="1" checked> Yes
+                  <input type="radio" name="intakeTempUnit_1" value="0"> No
+                </td>
+              </tr>
+              <tr>
+                <td>Conversion Parameters:</td>
+                <td class="numericCol">Intercept</td>
+                <td class="numericCol">x</td>
+                <td class="numericCol">x<sup>2</sup></td>
+                <td class="numericCol">x<sup>3</sup></td>
+                <td class="numericCol">x<sup>4</sup></td>
+                <td class="numericCol">x<sup>5</sup></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><input type="text" name="intakeTempIntercept_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx2_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx3_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx4_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx5_1" class="numeric" size="5"></input></td>
+              </tr>
+            </table>
+            <button class="right" onclick="addParameter(); return false;">Add extra sensor</button>
+          </div>
+          <div class="sectionHeader">
+            Equilibrator Temperature
+          </div>
+          <div class="sectionContent">
+            <table>
+              <tr>
+                <td>Sensor Name:</td>
+                <td colspan="6"><input type="text" name="intakeTempName_1" size="30"></input></td>
+              </tr>
+              <tr>
+                <td>Does the sensor report values in °C?</td>
+                <td colspan="6">
+                  <input type="radio" name="intakeTempUnit_1" value="1" checked> Yes
+                  <input type="radio" name="intakeTempUnit_1" value="0"> No
+                </td>
+              </tr>
+              <tr>
+                <td>Conversion Parameters:</td>
+                <td class="numericCol">Intercept</td>
+                <td class="numericCol">x</td>
+                <td class="numericCol">x<sup>2</sup></td>
+                <td class="numericCol">x<sup>3</sup></td>
+                <td class="numericCol">x<sup>4</sup></td>
+                <td class="numericCol">x<sup>5</sup></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><input type="text" name="intakeTempIntercept_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx2_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx3_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx4_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx5_1" class="numeric" size="5"></input></td>
+              </tr>
+            </table>
+            <button class="right" onclick="addParameter(); return false;">Add extra sensor</button>
+          </div>
+          <div class="sectionHeader">
+            Equilibrator Pressure
+          </div>
+          <div class="sectionContent">
+            <table>
+              <tr>
+                <td>Sensor Name:</td>
+                <td colspan="6"><input type="text" name="intakeTempName_1" size="30"></input></td>
+              </tr>
+              <tr>
+                <td>Does the sensor report values in hPa?</td>
+                <td colspan="6">
+                  <input type="radio" name="intakeTempUnit_1" value="1" checked> Yes
+                  <input type="radio" name="intakeTempUnit_1" value="0"> No
+                </td>
+              </tr>
+              <tr>
+                <td>Conversion Parameters:</td>
+                <td class="numericCol">Intercept</td>
+                <td class="numericCol">x</td>
+                <td class="numericCol">x<sup>2</sup></td>
+                <td class="numericCol">x<sup>3</sup></td>
+                <td class="numericCol">x<sup>4</sup></td>
+                <td class="numericCol">x<sup>5</sup></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><input type="text" name="intakeTempIntercept_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx2_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx3_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx4_1" class="numeric" size="5"></input></td>
+                <td><input type="text" name="intakeTempx5_1" class="numeric" size="5"></input></td>
+              </tr>
+            </table>
+            <button class="right" onclick="addParameter(); return false;">Add extra sensor</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
