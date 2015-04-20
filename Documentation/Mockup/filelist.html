@@ -2,11 +2,39 @@
 <meta charset=utf-8>
 <html>
   <head>
-    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,700" rel="stylesheet" type="text/css"/>
+    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700" rel="stylesheet" type="text/css"/>
     <link rel="stylesheet" type="text/css" href="mockup.css"/>
     <title>QuinCe - Instrument List</title>
-
+    <script type="text/javascript" src="jquery.js"></script>
     <script type="text/javascript">
+
+      function showPopup(id, fileName) {
+        if (id == '#qcPopup') {
+          var popupData = qcStats[fileName];
+          $('#qcBad').html(popupData[0]);
+          $('#qcQuestionable').html(popupData[1]);
+          $('#qcGood').html(popupData[2]);
+          $('#qcIgnored').html(popupData[3]);
+        } else if (id == '#wocePopup') {
+          var popupData = woceStats[fileName];
+          $('#woceBad').html(popupData[0]);
+          $('#woceQuestionable').html(popupData[1]);
+          $('#woceGood').html(popupData[2]);
+          $('#woceAssumedGood').html(popupData[3]);
+          $('#woceNeedsFlagging').html(popupData[4]);
+          $('#woceIgnored').html(popupData[5]);
+        }
+
+        $(id).css({visibility: 'visible'});
+      }
+
+      function hidePopup(id) {
+        $(id).css({visibility: 'hidden'});
+      }
+
+      function popupFollow(id, event) {
+        $(id).css({left: event.pageX + 16, top: event.pageY + 20});
+      }
 
       function toggleSettingsMenu() {
         var menu = document.getElementById('userSettingsMenu');
@@ -25,7 +53,7 @@
       }
 
       var qcColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(50,50,50)"];
-      var woceColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(150,220,150)", "rgb(200,200,200)", "rgb(50,50,50)"];
+      var woceColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(118,211,118)", "rgb(180,180,180)", "rgb(50,50,50)"];
 
       // Data structures for file stats.
       var recordCounts = new Array();
@@ -54,9 +82,60 @@
     </script>
   </head>
   <body>
+
+    <div id="qcPopup" class="popup">
+      <table>
+        <tr class="bad">
+          <td>Error</td>
+          <td id="qcBad" class="numericCol"></td>
+        </tr>
+        <tr class="questionable">
+          <td>Warning</td>
+          <td id="qcQuestionable" class="numericCol"></td>
+        </tr>
+        <tr class="good">
+          <td>Passed</td>
+          <td id="qcGood" class="numericCol"></td>
+        </tr>
+        <tr class="ignored">
+          <td>Ignored</td>
+          <td id="qcIgnored" class="numericCol"></td>
+        </tr>
+      </table>
+    </div>
+
+    <div id="wocePopup" class="popup">
+      <table>
+        <tr class="bad">
+          <td>Bad</td>
+          <td id="woceBad" class="numericCol"></td>
+        </tr>
+        <tr class="questionable">
+          <td>Questionable</td>
+          <td id="woceQuestionable" class="numericCol"></td>
+        </tr>
+        <tr class="good">
+          <td>Marked Good</td>
+          <td id="woceGood" class="numericCol"></td>
+        </tr>
+        <tr class="assumedGood">
+          <td>Assumed Good</td>
+          <td id="woceAssumedGood" class="numericCol"></td>
+        </tr>
+        <tr class="needsFlagging">
+          <td>Needs Flagging</td>
+          <td id="woceNeedsFlagging" class="numericCol"></td>
+        </tr>
+        <tr class="ignored">
+          <td>Ignored</td>
+          <td id="woceIgnored" class="numericCol"></td>
+        </tr>
+      </table>
+    </div>
+
     <div id="userSettingsMenu" class="hidden">
       <ul class="menu">
-        <li class="menuitem">Instruments</li>
+        <li class="menuitem" onclick="self.document.location='newinstrument.html';">Instruments</li>
         <li class="menuitem">Account</li>
         <li class="menuitem" onclick="self.document.location='login.html';">Log Out</li>
       </ul>
@@ -76,40 +155,40 @@
           <th>Start Date</th>
           <th>QC Status</th>
           <th class="numericCol">Records</th>
-          <th class="statbarCol">QC Stats</th>
-          <th class="statbarCol">WOCE Stats</th>
+          <th class="statBarCol">QC Stats</th>
+          <th class="statBarCol">WOCE Stats</th>
           <th>Export</th>
           <th class="numericCol">Time Left</th>
         </tr>
-        <tr>
+        <tr class="fileList">
           <td>BS093.txt</td>
           <td>Benguela Stream</td>
           <td>2014-02-01</td>
           <td>In queue</td>
           <td class="numericCol">2013</td>
           <td class="statBarCol">
-            <div class="emptyStatBar"></div>
+            —
           </td>
           <td class="statBarCol">
-            <div class="emptyStatBar"></div>
+            —
           </td>
           <td>Export</td>
           <td class="numericCol">34 days</td>
         </tr>
-        <tr>
+        <tr class="link fileList">
           <td>BS070.txt</td>
           <td>Benguela Stream</td>
           <td>2009-11-21</td>
           <td>Complete</td>
           <td class="numericCol">562</td>
           <td class="statBarCol">
-            <canvas id="0001" class="statBar"></canvas>
+            <canvas id="0001" class="statBar" onmouseover="showPopup('#qcPopup', 'BS070.txt')" onmouseout="hidePopup('#qcPopup')" onmousemove="popupFollow('#qcPopup', event)"></canvas>
             <script type="text/javascript">
               drawStatBar('0001', recordCounts['BS070.txt'], qcStats['BS070.txt'], qcColors);
             </script>
           </td>
           <td class="statBarCol">
-            <canvas id="0001a" class="statBar"></canvas>
+            <canvas id="0001a" class="statBar" onmouseover="showPopup('#wocePopup', 'BS070.txt')" onmouseout="hidePopup('#wocePopup')" onmousemove="popupFollow('#wocePopup', event)"></canvas>
             <script type="text/javascript">
               drawStatBar('0001a', recordCounts['BS070.txt'], woceStats['BS070.txt'], woceColors);
             </script>
@@ -117,20 +196,20 @@
           <td>Export</td>
           <td class="numericCol">15 days</td>
         </tr>
-        <tr>
+        <tr class="link fileList">
           <td>BS094.txt</td>
           <td>Benguela Stream - CRD Test</td>
           <td>2009-11-21</td>
           <td>Complete</td>
           <td class="numericCol">719</td>
           <td class="statBarCol">
-            <canvas id="0002" class="statBar"></canvas>
+            <canvas id="0002" class="statBar" onmouseover="showPopup('#qcPopup', 'BS094.txt')" onmouseout="hidePopup('#qcPopup')" onmousemove="popupFollow('#qcPopup', event)"></canvas>
             <script type="text/javascript">
               drawStatBar('0002', recordCounts['BS094.txt'], qcStats['BS094.txt'], qcColors);
             </script>
           </td>
           <td class="statBarCol">
-            <canvas id="0002a" class="statBar"></canvas>
+            <canvas id="0002a" class="statBar" onmouseover="showPopup('#wocePopup', 'BS094.txt')" onmouseout="hidePopup('#wocePopup')" onmousemove="popupFollow('#wocePopup', event)"></canvas>
             <script type="text/javascript">
               drawStatBar('0002a', recordCounts['BS094.txt'], woceStats['BS094.txt'], woceColors);
             </script>
