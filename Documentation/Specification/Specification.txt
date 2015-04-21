@@ -108,7 +108,7 @@ The gas taken from the equilibrator is dried before being measured $\left(\left(
 
 $\left(p\!C\!O_2\right)_{T_e}^w = \left(x\!C\!O_2\right)_{T_e}^d \left(P_e - p\!H_2O\right)$
 
-where $T_e$ is the equilibrator temperature in degrees Kelvin, $P_e$ is the equilibrator pressure, and $p\!H_2O$ is the water vapour pressure over a sea water sample of a given salinity at equilibrator temperature. $w$ and $d$ indicate wet and dry gas respectively. $p\!H_2O$ is calculated as:
+where $T_e$ is the equilibrator temperature in degrees Kelvin, $P_e$ is the equilibrator pressure, and $p\!H_2O$ is the water vapour pressure over a sea water sample of a given salinity at equilibrator temperature $T_e$ and salinity $S$. $w$ and $d$ indicate wet and dry gas respectively. $p\!H_2O$ is calculated as:
 
 $p\!H_2O = \exp\left[24.4543 - 67.4509\left(\frac{100}{T_{e}}\right) - 4.8489  \ln\left(\frac{T_{e}}{100}\right) - 0.000544S \right]$
 
@@ -134,3 +134,8 @@ $\left(f\!C\!O_2\right)_{S\!S\!T}^w = \left(f\!C\!O_2\right)_{T_e}^w \exp\left[0
 
 # References
 Pierrot, D., C. Neill, K. Sullivan, R. Castle, R. Wanninkhof, H. Lüger, T. Johannessen, A. Olsen, R. A. Feely, and C. E. Cosca, 2009. Recommendations for autonomous underway pCO~2~ measuring systems and data-reduction routines, _Deep Sea Research II_, _56_, 512-522, doi:10.1016/j.dsr2.2008.12.005.
+
+Takahashi, T., J. Olafsson, J. G. Goddard, D. W. Chipman, and S. C. Sutherland,
+1993. Seasonal variation of CO~2~ and nutrients in the high-latitude
+surface oceans - a comparative study. _Global Biogeochemical Cycles_, _7_,
+843–878, doi:10.1029/93GB02263.
