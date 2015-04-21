@@ -104,7 +104,13 @@ Once a data file has been uploaded, QuinCe will automatically perform data reduc
 
 The method used to calculate fCO~2~ will follow that of Pierrot et al. [_2009_].
 
-The gas taken from the equilibrator is dried before being measured $\left(\left(x\!C\!O_2\right)_{T_e}^d\right)$. The air in the equilibrator is assumed to be at 100% humidity. The CO~2~ must therefore be adjusted to account for the increase in CO~2~ concentration resulting from the drying process:
+The gas taken from the equilibrator is dried before being measured $\left(\left(x\!C\!O_2\right)_{T_e}^d\right)$. In many cases the mechanical drying does not completely remove the moisture, so the measured gas must be 'mathematically' dried:
+
+$\left(x\!C\!O_2\right)_{T_e}^d = \frac{\left(x\!C\!O_2\right)_{T_e}^{r\!a\!w}}{\frac{1 - M}{1000}}$
+
+where $M$ is the moisture measured in the gas in mmol mol^-1^.
+
+The air in the equilibrator is assumed to be at 100% humidity. The CO~2~ must therefore be adjusted to account for the increase in CO~2~ concentration resulting from the drying process:
 
 $\left(p\!C\!O_2\right)_{T_e}^w = \left(x\!C\!O_2\right)_{T_e}^d \left(P_e - p\!H_2O\right)$
 
