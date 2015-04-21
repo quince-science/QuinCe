@@ -138,6 +138,21 @@ Finally, fCO~2~ at sea water temperature is calculated using the empirical formu
 
 $\left(f\!C\!O_2\right)_{S\!S\!T}^w = \left(f\!C\!O_2\right)_{T_e}^w \exp\left[0.0423 \left( S\!S\!T - T_e\right)\right]$
 
+## Standards calibration
+
+# Quality Control
+
+## Automatic Quality Control Routines
+
+## Viewing Data and QC Results
+
+### Assigning WOCE Flags
+
+# Exporting Data
+
+
+
+
 # References
 Pierrot, D., C. Neill, K. Sullivan, R. Castle, R. Wanninkhof, H. Lüger, T. Johannessen, A. Olsen, R. A. Feely, and C. E. Cosca, 2009. Recommendations for autonomous underway pCO~2~ measuring systems and data-reduction routines, _Deep Sea Research II_, _56_, 512-522, doi:10.1016/j.dsr2.2008.12.005.
 
