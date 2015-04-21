@@ -75,10 +75,10 @@ QuinCe will require data from sensors measuring the following parameters in orde
 
 QuinCe will require at least one sensor from each category to be defined, although any number of sensors can be present for each category. For example, in large equilibrators, two temperature sensors are sometimes installed to measure the top and bottom. Where more than one sensor of a given type is present, the mean of all measured values will be used in calculations performed by QuinCe. This will be described in detail later in the document.
 
-For each sensor, the user must specify the units in which its output is recorded in the data files. For example, some temperature sensors report degrees Celsius directly, while some resistive temperature sensors report their measurements in ohms. In the latter case there is a polynomial equation that is used to convert the reported resistance to Celsius. In these cases, the user must enter the parameters of that equation so that QuinCe can convert the data.
+For each sensor, the user must specify the units in which its output is recorded in the data files. For example, some temperature sensors report degrees Celsius directly, while some report their measurements in millivolts (mV). The conversion between mV and °C is combined with the calibration coefficients for the sensor; QuinCe will ask for this information whenever a data file is uploaded.
 
 ## Data file specification
-Each instrument will produce a data file whose format is likely to be unique. The user must therefore tell QuinCe which columns contain which data. The user need only specify the columns required for data reduction (i.e. the required sensors), the ship's position, and the time of the measurement. Any other columns in the data files will be ignored.
+Each instrument will produce a data file whose format is likely to be unique. The user must therefore tell QuinCe which columns contain which data. The user need only specify the columns required for data reduction (i.e. the required sensors, measured CO~2~ and moisture), the ship's position, and the time of the measurement. Any other columns in the data files will be ignored.
 
 One of the columns in the data file must specify the type of each measurement: either sea water or a gas standard. The user must specify which column contains this information, and which values indicate sea water measurements or gas standard measurements of specific concentrations.
 
@@ -92,6 +92,10 @@ Once an instrument and its corresponding data format have been defined, the user
 * Abort the attempt to upload the file.
 
 Once the file has been uploaded, it will be put through the data reduction and quality control routines as described below.
+
+## Entry of calibration/conversion coefficients
+
+Each time a file is uploaded, the user will be asked to provide the necessary parameters to convert and correct the output of each sensor. Where the sensor records values in the units required by QuniCe (e.g. °C for temperature), the user must supply the calibration coefficients to adjust the value reported by the sensor to the true value. Where the sensor reports a 'raw' value (e.g. mV), the user will be asked for the conversion coefficients to allow QuinCe to calculate the required value. QuinCe will assume that the conversion coefficients implicitly include any calibration adjustments required.
 
 ## Removal of data files
 QuinCe will not keep copies of uploaded data files indefinitely; they will only exist on the system for as long as they are being analysed. Users will be encouraged to delete their files once the analysis is complete and they have exported all the results they need. If a file is left untouched for 60 days, the file and any related analysis will be automatically deleted. The user will be given appropriate warnings before this happens.
