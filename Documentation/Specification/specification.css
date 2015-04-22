@@ -3,6 +3,7 @@ body {
   padding: 10px 5px 0px 5px;
   max-width: 50em;
   margin: auto;
+  font-size: 14px;
 }
 
 h1 {
@@ -45,4 +46,17 @@ a {
 ul a {
   color: blue;
   text-decoration: underline;
+}
+
+figure {
+  margin: 50px 0px 50px 0px;
+}
+
+img {
+  width: 50em;
+}
+
+figcaption {
+  font-style: italic;
+  font-size: 12px;
 }

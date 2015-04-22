@@ -62,7 +62,7 @@ Each measurement must be located in space and time, and these values must be par
 
 In many cases, not all measurements reported in the data files are of sea water CO~2~. It is usual practice to intersperse periods of surface CO~2~ measurements with measurements from a set of gas standards, to allow for calibration of the instrumentation [e.g. _Pierrot et al. 2009_]. QuinCe must be able to identify which records from data files correspond to sea water measurements, and which to gas standards of different concentrations. This will allow the system to automatically calibrate the sea water measurements against the gas standards, and also to process the gas standard measurements separately from the sea water measurements during quality control.
 
-There are periods when measurements from an instrument cannot be trusted. For example, when switching between sea water measurements and gas standard measurements, there is usually a period of flushing to ensure that the gas lines do not contain residual gases from a previous set of measurements [_Pierrot et al. 2009_]. During this time, it is likely that measurements are still being recorded by the instrument. If possible, these measurements should be marked as unusable: otherwise the variability in CO~2~ values during these periods may cause quality control issues to be raised unnecessarily.
+There are periods when measurements from an instrument cannot be trusted. For example, when switching between sea water measurements and gas standard measurements, there is usually a period during which the gas lines contain residual gases from a previous set of measurements [_Pierrot et al. 2009_]. During this time, it is likely that measurements are still being recorded by the instrument, and these should be ignored as they will be unreliable. The user will be asked to specify the length of time for which such measurements should be ignored.
 
 ### Sensor Parameters
 QuinCe will require data from sensors measuring the following parameters in order to perform the data reduction calculations:
@@ -118,7 +118,7 @@ The air in the equilibrator is assumed to be at 100% humidity. The CO~2~ must th
 
 $\left(p\!C\!O_2\right)_{T_e}^w = \left(x\!C\!O_2\right)_{T_e}^d \left(P_e - p\!H_2O\right)$
 
-where $T_e$ is the equilibrator temperature in degrees Kelvin, $P_e$ is the equilibrator pressure, and $p\!H_2O$ is the water vapour pressure over a sea water sample of a given salinity at equilibrator temperature $T_e$ and salinity $S$. $w$ and $d$ indicate wet and dry gas respectively. $p\!H_2O$ is calculated as:
+where $T_e$ is the equilibrator temperature in degrees Kelvin, $P_e$ is the equilibrator pressure, and $p\!H_2O$ is the water vapour pressure over a sea water sample of a given salinity at equilibrator tin emperature $T_e$ and salinity $S$. $w$ and $d$ indicate wet and dry gas respectively. $p\!H_2O$ is calculated as:
 
 $p\!H_2O = \exp\left[24.4543 - 67.4509\left(\frac{100}{T_{e}}\right) - 4.8489  \ln\left(\frac{T_{e}}{100}\right) - 0.000544S \right]$
 
@@ -143,6 +143,18 @@ Finally, fCO~2~ at sea water temperature is calculated using the empirical formu
 $\left(f\!C\!O_2\right)_{S\!S\!T}^w = \left(f\!C\!O_2\right)_{T_e}^w \exp\left[0.0423 \left( S\!S\!T - T_e\right)\right]$
 
 ## Standards calibration
+
+Each instrument will periodically measure CO~2~ and moisture from a set of gas standards (three or above). QuinCe will read the measurements from these standards and use them to calibrate the values reported by the gas analyser. It will adjust the the CO~2~ measured from the sea water accordingly.
+
+### Switching between gas standards and sea water measurements
+
+As described previously, each time the instrument switches between gas standards and/or sea water measurements, there will be a period of time where the measurements should be ignored until all residual gas from the previous set of measurements has been removed. QuinCe will therefore ignore any measurements for the period of time specified when the instrument's details were entered by the user (see above).
+
+### Applying the standards calibrations
+
+The standards calibrations for both CO~2~ and moisture are applied using the same method. Here, the application of CO~2~ calibrations to the measured sea water CO~2~ is described.
+
+![**Fig. 1** Applying gas standard calibrations to sea water CO~2~ measurements. (Top) the measurements from the gas analyser (filled circles) are compared to the known standard gas concentrations (horizontal dotted lines at various times. The differences are interpolated linearly between standards measurements. A measurement is taken at 13:20 (black X and vertical line). (Bottom) The measurements and known standards are compared at 13:20 using the interpolated values between standard measurements (circles and diagonal line), and a linear fit applied. The measurement (red X; 428.41ppm) is placed on the fitted line to establish the true CO~2~ concentration (443.68ppm).](standard_series.png)
 
 # Quality Control
 

@@ -1,0 +1,25 @@
+#!/bin/bash
+
+GMT gmtset ANNOT_FONT_SIZE 9
+GMT gmtset LABEL_FONT_SIZE 12
+
+GMT psxy std_350.csv -JX7c/7c -R2010-05-15T00:00:00/2010-05-15T23:59:59/300/600 -Wthick,black,-- -Ba2h:"Time (hour)":/a50:"CO@-2@- (ppm)":/neSW -K > standard_series.ps
+GMT psxy std_450.csv -J -R -Wthick,black,-- -O -K >> standard_series.ps
+GMT psxy std_550.csv -J -R -Wthick,black,-- -O -K >> standard_series.ps
+GMT psxy standards_lines.csv -J -R -Wthin,black,.. -O -K >> standard_series.ps
+GMT psxy std_350.csv -J -R -Sc0.25c -Gred -O -K >> standard_series.ps
+GMT psxy std_450.csv -J -R -Sc0.25c -Gblue -O -K >> standard_series.ps
+GMT psxy std_550.csv -J -R -Sc0.25c -Gpurple -O -K >> standard_series.ps
+
+GMT psxy measurement.csv -J -R -Sx0.25c -Wthick,black -O -K >> standard_series.ps
+GMT psxy measurement_line.csv -J -Wblack,..- -R -O -K >> standard_series.ps
+
+
+GMT psxy measured_vs_standard.csv -J -R300/600/300/600 -Sc0.25c -Gblack -Ba50:"Measured CO@-2@- (ppm)":/a50:"Standard CO@-2@- (ppm)":/neSW -X10c -O -K >> standard_series.ps
+GMT psxy meas_standards_fit.csv -J -R -Wthin,black,-- -O -K >> standard_series.ps
+GMT psxy measurement_vs_standards.csv -J -R -S+0.25c -Wthickest,red -O -K >> standard_series.ps
+GMT psxy meas_vs_standards_lines.csv -J -R -Wthin,red,.. -O -K >> standard_series.ps
+
+
+ps2eps -f -l standard_series.ps
+rm standard_series.ps
