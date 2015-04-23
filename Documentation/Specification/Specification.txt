@@ -160,21 +160,49 @@ Each gas standard is measured periodically, and the measured CO~2~ recorded in t
 
 # Quality Control
 
+Once the data reduction has been completed, the data will be quality controlled. This will be a combination of automatic routines and the user examining their data themselves. The user will be able to assign WOCE flags to each record in the data file, along with comments detailing the reasons for falgs being set.
+
 ## Automatic Quality Control Routines
+
+QuinCe will provide a number of automatic quality control routines that will be run immediately after the data reduction calculations are complete. These will detect a variety of possible errors in the data. Measurements with potential errors will be flagged, and the user must review each one and assign a WOCE flag and comment according to their assessment. As quality control progresses, the user can re-run the automatic routine at any point. Any measurements already marked with a Bad WOCE flag will be ignored. This can be important for certain routines, such as outlier detection. Similarly, any records explicitly flagged as Good will not be flagged for checking, even if the automatic routines deem them to be suspect.
+
+The exact routines run during the automatic QC stage are not yet decided. Indeed, more routines are likely to be added over time. The types of checks that will be made will include:
+
+* No missing values
+* Values within reasonable ranges
+* No excessive noise in the data
+* No long periods with static values, and no sudden large jumps between values
+* Excessive ship speed (indicates problems with position and/or time)
+
+Further tests developed in future may compare the measurements from the data file with those from other data sources (e.g. satellite observations or the SOCAT database) to ensure that they are within the reasonable range of the expected measurements in the same geographical region. This will allow tighter constraints to be placed on the checks than the generic ones listed above.
+
+The routines will be jointly developed with the SOCAT project, which is developing its own automated quality control system with a slightly different focus; the two systems will have a compatible modular system of quality control routines, so they can be interchanged between the two projects.
+
+The exact QC routines used, and their operational parameters, will be published in a separate document as they are developed.
 
 ## Viewing Data and QC Results
 
-### Assigning WOCE Flags
+After the automatic QC routines are complete, the user will be able to view the data from their file. The view screen will show the data plotted as a graph, on a map, and in table form simultaneously to allow easy cross-referencing. The data displayed on the graph and map will be customisable, so the user can examine different aspects of their data at will. Suspect measurements detected by the automatic QC routines will be highlighted on this screen, so they can be easily located and reviewed by the user.
+
+## Assigning WOCE Flags
+
+QuinCe will not automatically assign any WOCE flags to the data itself. The automatic QC routines will highlight any records that it thinks may contain bad values, but the user must assign the flags manually. The data viewing screen will provide functions to locate these records and assign WOCE flags and comments, either on individual records or in groups (for periods where a sensor fails, for example). The user must assign WOCE flags to all highlighted records before the quality controlled data can be exported. For those records that the QC system does not highlight, the user need not flag them all as Good manually; they will default to this state unless they are specifically set to a different WOCE flag.
 
 # Exporting Data
 
+Once the quality control is complete and all highlighted records have been assigned WOCE flags, the user will be able to export their data for use elsewhere. QuinCe will allow the data to be exported in a variety of formats, including:
 
+* The original data format (as uploaded), with WOCE flag and comment fields added to the end
+* A cut down version of the data as used internally by QuinCe. Any columns not used from the original data file will be discarded, and the remaining columns will be presented in a fixed order that may not reflect that in the original uploaded file.
+* Standard formats used by other projects in the community, e.g. SOCAT
 
+# Submitting data to other projects
+
+QuinCe is being developed as part of the ICOS project, to which members will be submitting their data for publication in the [ICOS Carbon Portal](https://www.icos-cp.eu/). QuinCe will provide a function for quality controlled data files to be submitted directly to ICOS to help streamline this process. It will automatically convert the data to the required ICOS format.
+
+In future, other projects may be added to this list, e.g. SOCAT.
 
 # References
 Pierrot, D., C. Neill, K. Sullivan, R. Castle, R. Wanninkhof, H. Lüger, T. Johannessen, A. Olsen, R. A. Feely, and C. E. Cosca, 2009. Recommendations for autonomous underway pCO~2~ measuring systems and data-reduction routines, _Deep Sea Research II_, _56_, 512-522, doi:10.1016/j.dsr2.2008.12.005.
 
-Takahashi, T., J. Olafsson, J. G. Goddard, D. W. Chipman, and S. C. Sutherland,
-1993. Seasonal variation of CO~2~ and nutrients in the high-latitude
-surface oceans - a comparative study. _Global Biogeochemical Cycles_, _7_,
-843–878, doi:10.1029/93GB02263.
+Takahashi, T., J. Olafsson, J. G. Goddard, D. W. Chipman, and S. C. Sutherland, 1993. Seasonal variation of CO~2~ and nutrients in the high-latitude surface oceans - a comparative study. _Global Biogeochemical Cycles_, _7_, 843–878, doi:10.1029/93GB02263.
