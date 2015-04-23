@@ -108,23 +108,23 @@ Once a data file has been uploaded, QuinCe will automatically perform data reduc
 
 The method used to calculate fCO~2~ will follow that of Pierrot et al. [_2009_].
 
-The gas taken from the equilibrator is dried before being measured $\left(\left(x\!C\!O_2\right)_{T_e}^d\right)$. In many cases the mechanical drying does not completely remove the moisture, so the measured gas must be 'mathematically' dried:
+The gas taken from the equilibrator is dried before being measured $\left(\left(xCO_2\right)_{T_e}^d\right)$. In many cases the mechanical drying does not completely remove the moisture, so the measured gas must be 'mathematically' dried:
 
-$\left(x\!C\!O_2\right)_{T_e}^d = \frac{\left(x\!C\!O_2\right)_{T_e}^{r\!a\!w}}{\frac{1 - M}{1000}}$
+$\left(xCO_2\right)_{T_e}^d = \frac{\left(xCO_2\right)_{T_e}^{raw}}{\frac{1 - M}{1000}}$
 
-where $\left(x\!C\!O_2\right)_{T_e}^{r\!a\!w}$ and $M$ are the CO~2~ and moisture measured in the gas analyser respectively.
+where $\left(xCO_2\right)_{T_e}^{raw}$ and $M$ are the CO~2~ and moisture measured in the gas analyser respectively.
 
 The air in the equilibrator is assumed to be at 100% humidity. The CO~2~ must therefore be adjusted to account for the increase in CO~2~ concentration resulting from the drying process:
 
-$\left(p\!C\!O_2\right)_{T_e}^w = \left(x\!C\!O_2\right)_{T_e}^d \left(P_e - p\!H_2O\right)$
+$\left(pCO_2\right)_{T_e}^w = \left(xCO_2\right)_{T_e}^d \left(P_e - pH_2O\right)$
 
-where $T_e$ is the equilibrator temperature in degrees Kelvin, $P_e$ is the equilibrator pressure, and $p\!H_2O$ is the water vapour pressure over a sea water sample of a given salinity at equilibrator tin emperature $T_e$ and salinity $S$. $w$ and $d$ indicate wet and dry gas respectively. $p\!H_2O$ is calculated as:
+where $T_e$ is the equilibrator temperature in degrees Kelvin, $P_e$ is the equilibrator pressure, and $pH_2O$ is the water vapour pressure over a sea water sample of a given salinity at equilibrator tin emperature $T_e$ and salinity $S$. $w$ and $d$ indicate wet and dry gas respectively. $pH_2O$ is calculated as:
 
-$p\!H_2O = \exp\left[24.4543 - 67.4509\left(\frac{100}{T_{e}}\right) - 4.8489  \ln\left(\frac{T_{e}}{100}\right) - 0.000544S \right]$
+$pH_2O = \exp\left[24.4543 - 67.4509\left(\frac{100}{T_{e}}\right) - 4.8489  \ln\left(\frac{T_{e}}{100}\right) - 0.000544S \right]$
 
 The fugacity of CO~2~ in the sea water is then calculated as:
 
-$\left(f\!C\!O_2\right)_{T_e}^w = \left(p\!C\!O_2\right)_{T_e}^w \exp\left(\frac{\left[B + 2\left(1 - \left(xC\!O_2\right)_{T_e}^w\right)^2 \delta\right]P_{a\!t\!m}}{RT_e}\right)$
+$\left(fCO_2\right)_{T_e}^w = \left(pCO_2\right)_{T_e}^w \exp\left(\frac{\left[B + 2\left(1 - \left(xCO_2\right)_{T_e}^w\right)^2 \delta\right]P_{atm}}{RT_e}\right)$
 
 where:
 
@@ -140,7 +140,7 @@ $R = 82.0578$
 
 Finally, fCO~2~ at sea water temperature is calculated using the empirical formulation of Takahashi et al. [_1993_]:
 
-$\left(f\!C\!O_2\right)_{S\!S\!T}^w = \left(f\!C\!O_2\right)_{T_e}^w \exp\left[0.0423 \left( S\!S\!T - T_e\right)\right]$
+$\left(fCO_2\right)_{SST}^w = \left(fCO_2\right)_{T_e}^w \exp\left[0.0423 \left( SST - T_e\right)\right]$
 
 ## Standards calibration
 
