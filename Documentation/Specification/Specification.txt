@@ -1,5 +1,11 @@
 % QuinCe Project Specification
 
+# Version History
+
+Version      Date           Description
+---------    ------------   ------------------------------------------------------
+1.0          23 Apr 2015    First draft
+
 # Introduction
 The QuinCe project is a software system to designed to streamline the processing and quality control of data from continuous CO~2~ measurement instruments on board ships. The system will be developed as part of the Marine portion of the EU Integrated Carbon Observing System ([ICOS](http://www.icos-infrastructure.eu/)).
 

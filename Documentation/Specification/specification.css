@@ -60,3 +60,7 @@ figcaption {
   font-style: italic;
   font-size: 12px;
 }
+
+th,td {
+  padding: 0px 10px 0px 10px;
+}
