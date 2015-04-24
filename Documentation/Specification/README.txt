@@ -5,3 +5,7 @@ pandoc -s -S -t html5 --mathml --toc -c specification.css -o Specification.html 
 For a LaTeX-based PDF:
 
 pandoc -s Specification.txt -o Specification.pdf
+
+For a Word document:
+
+pandoc -s -S Specification.txt -o Specification.docx

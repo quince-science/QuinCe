@@ -34,21 +34,16 @@ Once the data reduction has been completed, a set of automatic quality control r
 * Detection of outliers
 * Excessive variability in the data
 
-The quality control routines will be written as individual modules, so more can be added as they are developed. This document will specify the framework for the modular system, but not the workings of any individual quality control modules. Those will be described in separate documentation.
+The quality control routines will be written as individual modules, so more can be added as they are developed.
 
 ## Data Viewing
 The QuinCe system will allow users to view the contents of their data files on maps, plots, and in tabular form. Results from the data reduction and quality control stages will also be visible, allowing the user to examine them within the system.
 
 ## Assignment of WOCE QC Flags
-The user will be able to assign WOCE QC flags and sub-flags (which indicate the item(s) that led to the assignment of the main flag) to the individual records in a data file. These flags can be used to remove bad records from the data or to indicate the quality of the data to future users after publication.
+The user will be able to assign WOCE QC flags and sub-flags (which indicate the item(s) that led to the assignment of the main flag) to the individual records in a data file.
 
 ## Data Export
-The QuinCe system will add extra information to the uploaded data files as it performs data reduction and quality control, along with the WOCE flags set by the user. The system will allow the user to export their data, along with these additions, in a variety of formats. The most basic export options will be:
-
-* The original data file, with extra columns added.
-* A cut-down version of the file, containing only the original data used in the data reduction steps and extra columns added.
-
-In addition, the system will allow users to export data in a variety of formats for submissions to other systems, e.g. [SOCAT](http://www.socat.info).
+The QuinCe system will add extra information to the uploaded data files as it performs data reduction and quality control, along with the WOCE flags set by the user. The system will allow the user to export their data, along with these additions, in a variety of formats. In addition, the system will allow users to export data in a variety of formats for submissions to other systems, e.g. [SOCAT](http://www.socat.info).
 
 ## Submission to the ICOS Carbon Portal
 All data collected under the umbrella of the ICOS project will need to be published through the [ICOS Carbon Portal](https://www.icos-cp.eu/). The QuinCe system will provide a method for users to submit data to this portal directly, reformatting the data as required.
@@ -107,9 +102,6 @@ Each time a file is uploaded, the user will be asked to provide the necessary pa
 QuinCe will not keep copies of uploaded data files indefinitely; they will only exist on the system for as long as they are being analysed. Users will be encouraged to delete their files once the analysis is complete and they have exported all the results they need. If a file is left untouched for 60 days, the file and any related analysis will be automatically deleted. The user will be given appropriate warnings before this happens.
 
 # Data Reduction
-
-Once a data file has been uploaded, QuinCe will automatically perform data reduction routines to calculate pCO~2~. Where multiple sensors are specified for a given parameter in the calculations, the mean of those sensors will be used.
-
 ## Calculation of fCO~2~
 
 The method used to calculate fCO~2~ will follow that of Pierrot et al. [_2009_].
@@ -188,11 +180,11 @@ The exact QC routines used, and their operational parameters, will be published 
 
 ## Viewing Data and QC Results
 
-After the automatic QC routines are complete, the user will be able to view the data from their file. The view screen will show the data plotted as a graph, on a map, and in table form simultaneously to allow easy cross-referencing. The data displayed on the graph and map will be customisable, so the user can examine different aspects of their data at will. Suspect measurements detected by the automatic QC routines will be highlighted on this screen, so they can be easily located and reviewed by the user.
+After the automatic QC routines are complete, the user will be able to view the data from their file. The view screen will show the data plotted as a graph, on a map, and in table form simultaneously to allow easy cross-referencing. The data displayed on the graph and map will be customisable, so the user can examine different aspects of their data at will, and zoom in to focus on specific portions of the data. Suspect measurements detected by the automatic QC routines will be highlighted in this view so they can be easily located and reviewed by the user.
 
 ## Assigning WOCE Flags
 
-QuinCe will not automatically assign any WOCE flags to the data itself. The automatic QC routines will highlight any records that it thinks may contain bad values, but the user must assign the flags manually. The data viewing screen will provide functions to locate these records and assign WOCE flags and comments, either on individual records or in groups (for periods where a sensor fails, for example). The user must assign WOCE flags to all highlighted records before the quality controlled data can be exported. For those records that the QC system does not highlight, the user need not flag them all as Good manually; they will default to this state unless they are specifically set to a different WOCE flag.
+QuinCe will not automatically assign any WOCE flags to the data itself. The automatic QC routines will highlight any records that it thinks may contain bad values, but the user must assign the flags manually. The data viewing screen will provide functions to locate these records and assign WOCE flags and comments, either on individual records or in groups (for periods where a sensor fails, for example). The user must assign WOCE flags to all highlighted records before the quality controlled data can be exported. (The user may, of course, determine that the flagged values are in fact good, and flag them as such.) For those records that the QC system does not highlight, the user need not flag them all as Good manually; they will default to this state unless they are specifically set to a different WOCE flag.
 
 # Exporting Data
 
