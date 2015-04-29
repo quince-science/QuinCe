@@ -83,33 +83,11 @@
                 <tr>
                   <td class="labels"><label>Does the sensor report values in °C?</label></td>
                   <td colspan="6">
-                    <input type="radio" name="intakeTempInUnit_1" value="1" id="intakeTempInUnit_1-1" onclick="setVisibility('#intakeTemp_conversionTable_1', false);" checked><label for="intakeTempInUnit_1-1">Yes</label>
-                    <input type="radio" name="intakeTempInUnit_1" value="0" id="intakeTempInUnit_1-0" onclick="setVisibility('#intakeTemp_conversionTable_1', true);"><label for="intakeTempInUnit_1-0">No</label>
+                    <input type="radio" name="intakeTempInUnit_1" value="1" id="intakeTempInUnit_1-1" checked><label for="intakeTempInUnit_1-1">Yes</label>
+                    <input type="radio" name="intakeTempInUnit_1" value="0" id="intakeTempInUnit_1-0"><label for="intakeTempInUnit_1-0">No</label>
                   </td>
                 </tr>
               </table>
-              <div id="intakeTemp_conversionTable_1" class="hidden">
-                <table class="sensorDetails conversionDetails">
-                  <tr class="forNextRow">
-                    <td class="labels"><label>Conversion Parameters:</label></td>
-                    <td class="numericCol"><label>Intercept</label></td>
-                    <td class="numericCol"><label>x</label></td>
-                    <td class="numericCol"><label>x<sup>2</sup></label></td>
-                    <td class="numericCol"><label>x<sup>3</sup></label></td>
-                    <td class="numericCol"><label>x<sup>4</sup></label></td>
-                    <td class="numericCol"><label>x<sup>5</sup></label></td>
-                  </tr>
-                  <tr>
-                    <td class="labels"></td>
-                    <td><input type="text" name="intakeTempIntercept_1" class="numeric expand" size="5"></input></td>
-                    <td><input type="text" name="intakeTempx_1" class="numeric expand" size="5"></input></td>
-                    <td><input type="text" name="intakeTempx2_1" class="numeric expand" size="5"></input></td>
-                    <td><input type="text" name="intakeTempx3_1" class="numeric expand" size="5"></input></td>
-                    <td><input type="text" name="intakeTempx4_1" class="numeric expand" size="5"></input></td>
-                    <td><input type="text" name="intakeTempx5_1" class="numeric expand" size="5"></input></td>
-                  </tr>
-                </table>
-              </div>
             <button class="right" onclick="addParameter(); return false;">Add extra sensor</button>
           </div>
           <div class="sectionHeader">
