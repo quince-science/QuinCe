@@ -8,19 +8,11 @@
     <script type="text/javascript" src="jquery.js"></script>
     <script type="text/javascript">
       function toggleSettingsMenu() {
-        var menu = document.getElementById('userSettingsMenu');
-        if (menu.className != 'visible') {
-          menu.className = 'visible';
-        } else {
-          menu.className = '';
-        }
+        $('#userSettingsMenu').toggleClass('visible');
       }
 
-      function hideMenu() {
-        var menu = document.getElementById('userSettingsMenu');
-        if (menu.className == 'visible') {
-          menu.className = '';
-        }
+      function hideSettingsMenu() {
+        $('#userSettingsMenu').removeClass('visible');
       }
 
       function submitInstrument() {
@@ -43,7 +35,7 @@
     </script>
   </head>
   <body>
-    <div id="userSettingsMenu" class="hidden">
+    <div id="userSettingsMenu">
       <ul class="menu">
         <li class="menuitem" onclick="self.document.location='newinstrument.html';">Instruments</li>
         <li class="menuitem">Account</li>
@@ -56,7 +48,7 @@
         Steve Jones ▼
       </div>
     </div>
-    <div id="content" onclick="hideMenu();">
+    <div id="content" onclick="hideSettingsMenu();">
       <h1>New Instrument</h1>
 
       <div class="fullPage">
