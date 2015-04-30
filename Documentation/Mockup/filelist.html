@@ -25,11 +25,13 @@
           $('#woceIgnored').html(popupData[5]);
         }
 
-        $(id).css({visibility: 'visible'});
+        //$(id).css({visibility: 'visible'});
+        $(id).fadeIn(100);
       }
 
       function hidePopup(id) {
-        $(id).css({visibility: 'hidden'});
+        //$(id).css({visibility: 'hidden'});
+        $(id).fadeOut(100);
       }
 
       function popupFollow(id, event) {
@@ -127,9 +129,9 @@
 
     <div id="userSettingsMenu">
       <ul class="menu">
-        <li class="menuitem" onclick="self.document.location='newinstrument.html';">Instruments</li>
+        <li class="menuitem" onclick="hideSettingsMenu();self.document.location='newinstrument.html';">Instruments</li>
         <li class="menuitem">Account</li>
-        <li class="menuitem" onclick="self.document.location='login.html';">Log Out</li>
+        <li class="menuitem" onclick="hideSettingsMenu();self.document.location='login.html';">Log Out</li>
       </ul>
     </div>
     <div id="header">

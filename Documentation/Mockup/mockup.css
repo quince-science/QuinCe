@@ -230,7 +230,7 @@ li.menuitem:hover {
   font-size: 13px;
   padding: 2px;
   border-radius: 4px;
-  visibility: hidden;
+  display: none;
   z-index: 10;
   box-shadow: 1px 2px 3px #000000;
   font-weight: bold;
