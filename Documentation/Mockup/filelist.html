@@ -8,29 +8,29 @@
     <script type="text/javascript" src="jquery.js"></script>
     <script type="text/javascript">
 
-      function showPopup(id, fileName) {
-        if (id == '#qcPopup') {
-          var popupData = qcStats[fileName];
+      function showQCPopup(fileIndex) {
+          var popupData = qcStats[fileIndex];
           $('#qcBad').html(popupData[0]);
           $('#qcQuestionable').html(popupData[1]);
           $('#qcGood').html(popupData[2]);
           $('#qcIgnored').html(popupData[3]);
-        } else if (id == '#wocePopup') {
-          var popupData = woceStats[fileName];
+
+          $('#qcPopup').fadeIn(100);
+        }
+
+      function showWOCEPopup(fileIndex) {
+          var popupData = woceStats[fileIndex];
           $('#woceBad').html(popupData[0]);
           $('#woceQuestionable').html(popupData[1]);
           $('#woceGood').html(popupData[2]);
           $('#woceAssumedGood').html(popupData[3]);
           $('#woceNeedsFlagging').html(popupData[4]);
           $('#woceIgnored').html(popupData[5]);
-        }
 
-        //$(id).css({visibility: 'visible'});
-        $(id).fadeIn(100);
+          $('#wocePopup').fadeIn(100);
       }
 
       function hidePopup(id) {
-        //$(id).css({visibility: 'hidden'});
         $(id).fadeOut(100);
       }
 
@@ -50,20 +50,22 @@
       var woceColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(118,211,118)", "rgb(180,180,180)", "rgb(50,50,50)"];
 
       // Data structures for file stats.
+      var fileNames = ['BS070.txt', 'BS094.txt'];
+
       var recordCounts = new Array();
-      recordCounts['BS070.txt'] = 562;
-      recordCounts['BS094.txt'] = 719;
+      recordCounts[0] = 562;
+      recordCounts[1] = 719;
 
       var qcStats = new Array();
-      qcStats['BS070.txt'] = [35, 50, 403, 74];
-      qcStats['BS094.txt'] = [203, 424, 65, 27];
+      qcStats[0] = [35, 50, 403, 74];
+      qcStats[1] = [203, 424, 65, 27];
 
       var woceStats = new Array();
-      woceStats['BS070.txt'] = [11, 50, 155, 145, 127, 119];
-      woceStats['BS094.txt'] = [0, 627, 65, 0, 0, 27];
+      woceStats[0] = [11, 50, 155, 145, 127, 119];
+      woceStats[1] = [0, 627, 65, 0, 0, 27];
 
       function drawStatBar(elementId, recordCount, stats, colors) {
-        var canvas = document.getElementById(elementId);
+        var canvas = $(elementId).get(0);
         var ctx = canvas.getContext('2d');
 
         var barFilled = 0;
@@ -73,6 +75,31 @@
           barFilled += (stats[i] / recordCount);
         }
       }
+
+      // Set the mouse over/out/move events on the stat bars
+      $(function() {
+        $('[id^=qcBar_]')
+          .mouseenter(function(event) {
+            showQCPopup(event.target.id.slice(6));
+          })
+          .mouseleave(function() {
+            hidePopup('#qcPopup');
+          })
+          .mousemove(function(event) {
+            popupFollow('#qcPopup', event);
+          });
+
+        $('[id^=woceBar_]')
+          .mouseenter(function(event) {
+            showWOCEPopup(event.target.id.slice(8));
+          })
+          .mouseleave(function() {
+            hidePopup('#wocePopup');
+          })
+          .mousemove(function(event) {
+            popupFollow('#wocePopup', event);
+          });
+      });
     </script>
   </head>
   <body>
@@ -176,15 +203,15 @@
           <td>Complete</td>
           <td class="numericCol">562</td>
           <td class="statBarCol">
-            <canvas id="0001" class="statBar" onmouseover="showPopup('#qcPopup', 'BS070.txt')" onmouseout="hidePopup('#qcPopup')" onmousemove="popupFollow('#qcPopup', event)"></canvas>
+            <canvas id="qcBar_0" class="statBar"></canvas>
             <script type="text/javascript">
-              drawStatBar('0001', recordCounts['BS070.txt'], qcStats['BS070.txt'], qcColors);
+              drawStatBar('#qcBar_0', recordCounts[0], qcStats[0], qcColors);
             </script>
           </td>
           <td class="statBarCol">
-            <canvas id="0001a" class="statBar" onmouseover="showPopup('#wocePopup', 'BS070.txt')" onmouseout="hidePopup('#wocePopup')" onmousemove="popupFollow('#wocePopup', event)"></canvas>
+            <canvas id="woceBar_0" class="statBar"></canvas>
             <script type="text/javascript">
-              drawStatBar('0001a', recordCounts['BS070.txt'], woceStats['BS070.txt'], woceColors);
+              drawStatBar('#woceBar_0', recordCounts[0], woceStats[0], woceColors);
             </script>
           </td>
           <td>Export</td>
@@ -197,15 +224,15 @@
           <td>Complete</td>
           <td class="numericCol">719</td>
           <td class="statBarCol">
-            <canvas id="0002" class="statBar" onmouseover="showPopup('#qcPopup', 'BS094.txt')" onmouseout="hidePopup('#qcPopup')" onmousemove="popupFollow('#qcPopup', event)"></canvas>
+            <canvas id="qcBar_1" class="statBar"></canvas>
             <script type="text/javascript">
-              drawStatBar('0002', recordCounts['BS094.txt'], qcStats['BS094.txt'], qcColors);
+              drawStatBar('#qcBar_1', recordCounts[1], qcStats[1], qcColors);
             </script>
           </td>
           <td class="statBarCol">
-            <canvas id="0002a" class="statBar" onmouseover="showPopup('#wocePopup', 'BS094.txt')" onmouseout="hidePopup('#wocePopup')" onmousemove="popupFollow('#wocePopup', event)"></canvas>
+            <canvas id="woceBar_1" class="statBar"></canvas>
             <script type="text/javascript">
-              drawStatBar('0002a', recordCounts['BS094.txt'], woceStats['BS094.txt'], woceColors);
+              drawStatBar('#woceBar_1', recordCounts[1], woceStats[1], woceColors);
             </script>
           </td>
           <td>Export</td>
