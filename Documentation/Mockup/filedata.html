@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<html>
+  <head>
+    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700,700italic" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" type="text/css" href="mockup.css"/>
+    <link rel="stylesheet" type="text/css" href="jquery-ui/jquery-ui.css"/>
+    <title>BS070.txt - QuinCe</title>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="jquery-ui/jquery-ui.js"></script>
+    <script type="text/javascript">
+      $(function() {
+        $('.verticalresize').resizable({
+          handles: "s",
+          minHeight: 200,
+          maxHeight: (window.innerHeight - 200)
+        });
+
+        $('.horizontalresize').resizable({
+          handles: "e",
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="header">
+      BS070.txt
+    </div>
+    <div id="plots" class="verticalresize">
+      <div id="plotleft" class="horizontalresize">
+        left plot
+      </div>
+      <div id="plotright">
+        right plot
+      </div>
+    </div>
+    <div id="data">
+      data
+    </div>
+  </body>
+</html>

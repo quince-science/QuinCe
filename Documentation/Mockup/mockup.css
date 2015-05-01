@@ -2,6 +2,8 @@ body {
   font-family: 'Noto Sans', sans-serif;
   font-size: 14px;
   background: #F3F3F3;
+  margin: 0px;
+  overflow-x: hidden;
 }
 
 #loginbox {
@@ -313,4 +315,31 @@ table.conversionDetails {
 
 .hidden {
   display: none;
+}
+
+#plots {
+  margin-top: 30px;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+}
+
+#data {
+  width: 100%;
+  overflow: hidden;
+  clear: both;
+}
+
+#plotleft {
+  float: left;
+  background: #f00;
+  height: 100%;
+  width: 50%;
+}
+
+#plotright {
+  background: #ff0;
+  width: 100%;
+  height: 100%;
+  padding-left: 7px;
 }
