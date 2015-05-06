@@ -146,8 +146,12 @@ tr.fileList {
   border-bottom: 1px solid black;
 }
 
-.numericCol {
+table .numericCol {
   text-align: right;
+}
+
+table .noWrap {
+  white-space: nowrap;
 }
 
 td {
@@ -328,6 +332,7 @@ table.conversionDetails {
   width: 100%;
   overflow: hidden;
   clear: both;
+  height: 500px;
 }
 
 #plotleft {
