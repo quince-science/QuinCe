@@ -11,7 +11,7 @@ table.dataTable tfoot th {
 }
 table.dataTable thead th,
 table.dataTable thead td {
-  padding: 10px 18px;
+  padding: 10px 2px 10px 2px;
   border-bottom: 1px solid #111;
 }
 table.dataTable thead th:active,
@@ -60,7 +60,7 @@ table.dataTable tbody tr.selected {
 }
 table.dataTable tbody th,
 table.dataTable tbody td {
-  padding: 8px 10px;
+  padding: 4px 2px 4px 2px;
 }
 table.dataTable.row-border tbody th, table.dataTable.row-border tbody td, table.dataTable.display tbody th, table.dataTable.display tbody td {
   border-top: 1px solid #ddd;

@@ -10,19 +10,10 @@
     <script type="text/javascript" src="jquery.js"></script>
     <script type="text/javascript" src="jquery-ui/jquery-ui.js"></script>
     <script type="text/javascript" src="jquery.dataTables.js"></script>
+    <script type="text/javascript" src="dygraph-combined.js"></script>
     <script type="text/javascript">
-      $(function() {
-        /*
-        $('.verticalresize').resizable({
-          handles: "s",
-          minHeight: 200,
-          maxHeight: (window.innerHeight - 200)
-        });
 
-        $('.horizontalresize').resizable({
-          handles: "e",
-        });
-        */
+      $(function() {
         $('#fileData').DataTable({
           scrollY: 400,
           paging: false,
@@ -33,19 +24,85 @@
             { className: "noWrap", "targets": [ 0 ]}
           ]
         });
+
+        $('#leftPlot').width($('#leftPlotContainer').width() - $('#rightPlotContainer').width());
+        $('#leftPlot').height($('#leftPlotContainer').height() - $('#leftPlotControls').height());
+
+        new Dygraph (
+          document.getElementById('leftPlot'),
+          "data/sst.csv"
+        );
+
+        $('#rightPlot').width($('#rightPlotContainer').width());
+        $('#rightPlot').height($('#rightPlotContainer').height() - $('#rightPlotControls').height());
+
+        new Dygraph (
+          document.getElementById('rightPlot'),
+          "data/sss.csv"
+        );
+
       });
+
     </script>
   </head>
   <body>
     <div id="header">
       BS070.txt
     </div>
-    <div id="plots" class="verticalresize">
-      <div id="plotleft" class="horizontalresize">
-        left plot
+    <div id="plots">
+      <div id="rightPlotContainer">
+        <div id="rightPlot" class="plot"></div>
+        <div id="rightPlotControls" class="plotControls">
+          <form>
+            X Axis:
+            <select id="rightPlotSelect">
+              <option value="time" selected>Time</option>
+              <option value="longitude">Longitude</option>
+              <option value="latitude">Latitude</option>
+              <option value="sst">Intake Temperature</option>
+              <option value="sss">Salinity</option>
+              <option value="eqt">Equilibrator Temperature</option>
+              <option value="eqp">Equilibrator Pressure</option>
+              <option value="pco2">pCO2</option>
+            </select>
+            Y Axis:
+            <select id="rightPlotSelect">
+              <option value="sst">Intake Temperature</option>
+              <option value="sss" selected>Salinity</option>
+              <option value="eqt">Equilibrator Temperature</option>
+              <option value="eqp">Equilibrator Pressure</option>
+              <option value="pco2">pCO2</option>
+            </select>
+            <input type="button" value="Update" onclick="alert('Demo mode');"></input>
+          </form>
+        </div>
       </div>
-      <div id="plotright">
-        right plot
+      <div id="leftPlotContainer">
+        <div id="leftPlot" class="plot"></div>
+        <div id="leftPlotControls" class="plotControls">
+          <form>
+            X Axis:
+            <select id="rightPlotSelect">
+              <option value="time" selected>Time</option>
+              <option value="longitude">Longitude</option>
+              <option value="latitude">Latitude</option>
+              <option value="sst">Intake Temperature</option>
+              <option value="sss">Salinity</option>
+              <option value="eqt">Equilibrator Temperature</option>
+              <option value="eqp">Equilibrator Pressure</option>
+              <option value="pco2">pCO2</option>
+            </select>
+            Y Axis:
+            <select id="rightPlotSelect">
+              <option value="sst">Intake Temperature</option>
+              <option value="sss" selected>Salinity</option>
+              <option value="eqt">Equilibrator Temperature</option>
+              <option value="eqp">Equilibrator Pressure</option>
+              <option value="pco2">pCO2</option>
+            </select>
+            <input type="button" value="Update" onclick="alert('Demo mode');"></input>
+          </form>
+        </div>
       </div>
     </div>
     <div id="data">
