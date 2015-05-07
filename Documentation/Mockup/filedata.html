@@ -21,7 +21,8 @@
           searching: false,
           columnDefs: [
             { className: "numericCol", "targets": [ 1,2,3,4,5,6,7 ] },
-            { className: "noWrap", "targets": [ 0 ]}
+            { className: "noWrap", "targets": [ 0 ]},
+            { className: "centreCol", "targets": [ 8, 9, 10, 11 ] }
           ]
         });
 
@@ -30,7 +31,11 @@
 
         new Dygraph (
           document.getElementById('leftPlot'),
-          "data/sst.csv"
+          "data/sst.csv",
+          {
+            drawPoints: true,
+            strokeWidth: 0.0
+          }
         );
 
         $('#rightPlot').width($('#rightPlotContainer').width());
@@ -38,7 +43,11 @@
 
         new Dygraph (
           document.getElementById('rightPlot'),
-          "data/sss.csv"
+          "data/sss.csv",
+          {
+            drawPoints: true,
+            strokeWidth: 0.0
+          }
         );
 
       });
