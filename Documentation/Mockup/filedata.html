@@ -84,6 +84,24 @@
                 return output;
               },
               "targets": 11
+            },
+            {
+              "render": function(data, type, row) {
+                 var output = '<div onmouseover="showQCInfoPopup(\'' + data + '\')" onmouseout="hideQCInfoPopup()">';
+
+                 if (data.length > 0) {
+                     var lines = data.split('%').length;
+                     output += lines + ' message';
+                     if (lines > 1) {
+                         output += 's';
+                     }
+                 }
+
+                 output += '</div>';
+
+                 return output;
+               },
+               "targets": 10
             }
           ]
 
@@ -112,6 +130,9 @@
             strokeWidth: 0.0
           }
         );
+
+        // Position the QC Info popup
+        $('#qcInfoPopup').css({"left": ($(window).width() / 2 - $('#qcInfoPopup').width() / 2)});
       });
 
 
@@ -159,7 +180,19 @@
         e.stopImmediatePropagation();
       }
 
+      function showQCInfoPopup(messages) {
 
+         $('#qcInfoMessages').empty();
+         messages.split('%').forEach(function(element, index, array) {
+           $('#qcInfoMessages').append('<li>' + element + '</li>');
+         });
+
+         $('#qcInfoPopup').fadeIn(100);
+      }
+
+      function hideQCInfoPopup() {
+          $('#qcInfoPopup').fadeOut(100);
+      }
     </script>
   </head>
   <body style="overflow: hidden" onclick="hideWoceMenu()">
@@ -231,6 +264,10 @@
           <li class="ignored" onclick="woceSelection('Ignore')">Ignore</li>
         </ul>
       </div>
+      <div id="qcInfoPopup" class="popup">
+        QC Messages
+        <ul id="qcInfoMessages"><li>message</li></ul>
+      </div>
       <table id="fileData">
         <thead>
           <td>Row</th>
@@ -260,7 +297,7 @@
 <tr><td>10</td><td>2010/11/24 18:25:15</td><td>359.63409</td><td>49.609</td><td>12.251</td><td>12.451</td><td>1008.796</td><td>34.871</td><td>414.378</td><td>2</td><td></td><td>2</td><td></td></tr>
 <tr><td>11</td><td>2010/11/24 18:26:21</td><td>359.62601</td><td>49.612</td><td>12.262</td><td>12.462</td><td>1008.892</td><td>34.871</td><td>417.66</td><td>2</td><td></td><td>2</td><td></td></tr>
 <tr><td>12</td><td>2010/11/24 18:27:23</td><td>359.61841</td><td>49.615</td><td>12.276</td><td>12.476</td><td>1008.67</td><td>34.871</td><td>420.537</td><td>2</td><td></td><td>2</td><td></td></tr>
-<tr><td>13</td><td>2010/11/24 18:28:30</td><td>359.61029</td><td>49.618</td><td>12.295</td><td>12.495</td><td>1008.805</td><td>34.871</td><td>421.549</td><td>4</td><td></td><td>4</td><td></td></tr>
+<tr><td>13</td><td>2010/11/24 18:28:30</td><td>359.61029</td><td>49.618</td><td>12.295</td><td>12.495</td><td>1008.805</td><td>34.871</td><td>421.549</td><td>4</td><td>SST out of range%Ship speed too fast</td><td>4</td><td></td></tr>
 <tr><td>14</td><td>2010/11/24 18:29:35</td><td>359.6023</td><td>49.621</td><td>12.312</td><td>12.512</td><td>1008.525</td><td>34.871</td><td>419.902</td><td>4</td><td></td><td>-999</td><td></td></tr>
 <tr><td>15</td><td>2010/11/24 18:30:45</td><td>359.59369</td><td>49.624</td><td>12.33</td><td>12.53</td><td>1009.231</td><td>34.871</td><td>417.54</td><td>4</td><td></td><td>-999</td><td></td></tr>
 <tr><td>16</td><td>2010/11/24 18:31:51</td><td>359.5856</td><td>49.627</td><td>12.34</td><td>12.54</td><td>1008.351</td><td>34.871</td><td>414.478</td><td>4</td><td></td><td>-999</td><td></td></tr>

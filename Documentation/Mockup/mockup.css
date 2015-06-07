@@ -406,3 +406,19 @@ table.conversionDetails {
   border-top: 1px solid black;
   padding-left: 5px;
 }
+
+#qcInfoPopup {
+  position: absolute;
+  width: 500px;
+  height: 300px;
+  text-align: center;
+  top: 100px;
+}
+
+#qcInfoMessages {
+    text-align: left;
+    font-weight: normal;
+    height: 250px;
+    overflow-x: none;
+    overflow-y: auto;
+}
