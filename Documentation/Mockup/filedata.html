@@ -87,7 +87,7 @@
             },
             {
               "render": function(data, type, row) {
-                 var output = '<div onmouseover="showQCInfoPopup(\'' + data + '\')" onmouseout="hideQCInfoPopup()">';
+                 var output = '<div>';
 
                  if (data.length > 0) {
                      var lines = data.split('%').length;
@@ -263,10 +263,6 @@
           <li class="bad" onclick="woceSelection('Bad')">Bad</li>
           <li class="ignored" onclick="woceSelection('Ignore')">Ignore</li>
         </ul>
-      </div>
-      <div id="qcInfoPopup" class="popup">
-        QC Messages
-        <ul id="qcInfoMessages"><li>message</li></ul>
       </div>
       <table id="fileData">
         <thead>
