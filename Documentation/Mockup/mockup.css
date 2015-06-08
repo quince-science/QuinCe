@@ -408,17 +408,12 @@ table.conversionDetails {
 }
 
 #qcInfoPopup {
+  height: 20px;
+  display: block;
   position: absolute;
-  width: 500px;
-  height: 300px;
-  text-align: center;
-  top: 100px;
+  visibility: visible;
 }
 
-#qcInfoMessages {
-    text-align: left;
-    font-weight: normal;
-    height: 250px;
-    overflow-x: none;
-    overflow-y: auto;
+.qcInfoMessage {
+    display: inline;
 }

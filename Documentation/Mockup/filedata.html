@@ -87,7 +87,7 @@
             },
             {
               "render": function(data, type, row) {
-                 var output = '<div>';
+                 var output = '<div id="qcInfoCol_' + row[0] + '" onmouseover="showQCInfoPopup(\'' + data + '\', \'#qcInfoCol_' + row[0] + '\')" onmouseout="hideQCInfoPopup()">';
 
                  if (data.length > 0) {
                      var lines = data.split('%').length;
@@ -130,9 +130,6 @@
             strokeWidth: 0.0
           }
         );
-
-        // Position the QC Info popup
-        $('#qcInfoPopup').css({"left": ($(window).width() / 2 - $('#qcInfoPopup').width() / 2)});
       });
 
 
@@ -180,18 +177,34 @@
         e.stopImmediatePropagation();
       }
 
-      function showQCInfoPopup(messages) {
-
-         $('#qcInfoMessages').empty();
+      function showQCInfoPopup(messages, target) {
+         var content = '';
          messages.split('%').forEach(function(element, index, array) {
-           $('#qcInfoMessages').append('<li>' + element + '</li>');
+             var messageSplit = element.split(':');
+             content += '<div class="qcInfoMessage ';
+
+             if (messageSplit[0] == '3') {
+                 content += 'questionable';
+             } else if (messageSplit[0] == '4') {
+                 content += 'bad';
+             }
+
+             content += '">' + messageSplit[1];
+
+             if (index < (array.length - 1)) {
+                 content += '; ';
+             }
+
+             content += '</div>';
          });
 
-         $('#qcInfoPopup').fadeIn(100);
+         $('#qcInfoPopup')
+           .html(content)
+           .css({"left": 0, "top": 0})
+           .offset({"left": $(target).position().left - $('#qcInfoPopup').width(), "top": $('#data').position().top + $(target).position().top});
       }
 
       function hideQCInfoPopup() {
-          $('#qcInfoPopup').fadeOut(100);
       }
     </script>
   </head>
@@ -256,6 +269,9 @@
       </div>
     </div>
     <div id="data">
+      <div id="qcInfoPopup" class="popup">
+          QC Info
+      </div>
       <div id="woceSelectMenu">
         <ul>
           <li class="good" onclick="woceSelection('Good')">Good</li>
@@ -293,15 +309,15 @@
 <tr><td>10</td><td>2010/11/24 18:25:15</td><td>359.63409</td><td>49.609</td><td>12.251</td><td>12.451</td><td>1008.796</td><td>34.871</td><td>414.378</td><td>2</td><td></td><td>2</td><td></td></tr>
 <tr><td>11</td><td>2010/11/24 18:26:21</td><td>359.62601</td><td>49.612</td><td>12.262</td><td>12.462</td><td>1008.892</td><td>34.871</td><td>417.66</td><td>2</td><td></td><td>2</td><td></td></tr>
 <tr><td>12</td><td>2010/11/24 18:27:23</td><td>359.61841</td><td>49.615</td><td>12.276</td><td>12.476</td><td>1008.67</td><td>34.871</td><td>420.537</td><td>2</td><td></td><td>2</td><td></td></tr>
-<tr><td>13</td><td>2010/11/24 18:28:30</td><td>359.61029</td><td>49.618</td><td>12.295</td><td>12.495</td><td>1008.805</td><td>34.871</td><td>421.549</td><td>4</td><td>SST out of range%Ship speed too fast</td><td>4</td><td></td></tr>
-<tr><td>14</td><td>2010/11/24 18:29:35</td><td>359.6023</td><td>49.621</td><td>12.312</td><td>12.512</td><td>1008.525</td><td>34.871</td><td>419.902</td><td>4</td><td>SST out of range</td><td>-999</td><td></td></tr>
-<tr><td>15</td><td>2010/11/24 18:30:45</td><td>359.59369</td><td>49.624</td><td>12.33</td><td>12.53</td><td>1009.231</td><td>34.871</td><td>417.54</td><td>4</td><td>SST out of range</td><td>-999</td><td></td></tr>
-<tr><td>16</td><td>2010/11/24 18:31:51</td><td>359.5856</td><td>49.627</td><td>12.34</td><td>12.54</td><td>1008.351</td><td>34.871</td><td>414.478</td><td>4</td><td>SST out of range</td><td>-999</td><td></td></tr>
-<tr><td>17</td><td>2010/11/24 18:32:51</td><td>359.57819</td><td>49.629</td><td>12.349</td><td>12.549</td><td>1008.023</td><td>34.871</td><td>411.648</td><td>4</td><td>SST out of range</td><td>-999</td><td></td></tr>
-<tr><td>18</td><td>2010/11/24 18:34:00</td><td>359.56961</td><td>49.632</td><td>12.365</td><td>12.565</td><td>1008.612</td><td>34.871</td><td>409.025</td><td>3</td><td>Salinity out of range</td><td>-999</td><td></td></tr>
-<tr><td>19</td><td>2010/11/24 18:35:08</td><td>359.56119</td><td>49.635</td><td>12.382</td><td>12.582</td><td>1008.863</td><td>34.871</td><td>406.486</td><td>3</td><td>Salinity out of range</td><td>-999</td><td></td></tr>
-<tr><td>20</td><td>2010/11/24 19:12:32</td><td>359.2898</td><td>49.743</td><td>12.818</td><td>13.018</td><td>1008.332</td><td>34.871</td><td>405.95</td><td>3</td><td>Salinity out of range</td><td>4</td><td></td></tr>
-<tr><td>21</td><td>2010/11/24 19:13:36</td><td>359.28189</td><td>49.745</td><td>12.837</td><td>13.037</td><td>1008.747</td><td>34.871</td><td>405.081</td><td>3</td><td>Salinity out of range</td><td>3</td><td></td></tr>
+<tr><td>13</td><td>2010/11/24 18:28:30</td><td>359.61029</td><td>49.618</td><td>12.295</td><td>12.495</td><td>1008.805</td><td>34.871</td><td>421.549</td><td>4</td><td>4:SST out of range%3:Ship speed too fast</td><td>4</td><td></td></tr>
+<tr><td>14</td><td>2010/11/24 18:29:35</td><td>359.6023</td><td>49.621</td><td>12.312</td><td>12.512</td><td>1008.525</td><td>34.871</td><td>419.902</td><td>4</td><td>4:SST out of range</td><td>-999</td><td></td></tr>
+<tr><td>15</td><td>2010/11/24 18:30:45</td><td>359.59369</td><td>49.624</td><td>12.33</td><td>12.53</td><td>1009.231</td><td>34.871</td><td>417.54</td><td>4</td><td>4:SST out of range</td><td>-999</td><td></td></tr>
+<tr><td>16</td><td>2010/11/24 18:31:51</td><td>359.5856</td><td>49.627</td><td>12.34</td><td>12.54</td><td>1008.351</td><td>34.871</td><td>414.478</td><td>4</td><td>4:SST out of range</td><td>-999</td><td></td></tr>
+<tr><td>17</td><td>2010/11/24 18:32:51</td><td>359.57819</td><td>49.629</td><td>12.349</td><td>12.549</td><td>1008.023</td><td>34.871</td><td>411.648</td><td>4</td><td>4:SST out of range</td><td>-999</td><td></td></tr>
+<tr><td>18</td><td>2010/11/24 18:34:00</td><td>359.56961</td><td>49.632</td><td>12.365</td><td>12.565</td><td>1008.612</td><td>34.871</td><td>409.025</td><td>3</td><td>3:Salinity out of range</td><td>-999</td><td></td></tr>
+<tr><td>19</td><td>2010/11/24 18:35:08</td><td>359.56119</td><td>49.635</td><td>12.382</td><td>12.582</td><td>1008.863</td><td>34.871</td><td>406.486</td><td>3</td><td>3:Salinity out of range</td><td>-999</td><td></td></tr>
+<tr><td>20</td><td>2010/11/24 19:12:32</td><td>359.2898</td><td>49.743</td><td>12.818</td><td>13.018</td><td>1008.332</td><td>34.871</td><td>405.95</td><td>3</td><td>3:Salinity out of range</td><td>4</td><td></td></tr>
+<tr><td>21</td><td>2010/11/24 19:13:36</td><td>359.28189</td><td>49.745</td><td>12.837</td><td>13.037</td><td>1008.747</td><td>34.871</td><td>405.081</td><td>3</td><td>3:Salinity out of range</td><td>3</td><td></td></tr>
 <tr><td>22</td><td>2010/11/24 19:14:42</td><td>359.27359</td><td>49.748</td><td>12.869</td><td>13.069</td><td>1008.747</td><td>34.871</td><td>406.031</td><td>2</td><td></td><td>2</td><td></td></tr>
 <tr><td>23</td><td>2010/11/24 19:15:42</td><td>359.2659</td><td>49.75</td><td>12.884</td><td>13.084</td><td>1008.458</td><td>34.871</td><td>406.699</td><td>2</td><td></td><td>2</td><td></td></tr>
 <tr><td>24</td><td>2010/11/24 19:16:42</td><td>359.25821</td><td>49.752</td><td>12.897</td><td>13.097</td><td>1008.487</td><td>34.871</td><td>407.495</td><td>2</td><td></td><td>2</td><td></td></tr>
