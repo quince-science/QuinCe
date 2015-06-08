@@ -411,14 +411,42 @@ table.conversionDetails {
   position: absolute;
   width: 500px;
   height: 300px;
-  text-align: center;
   top: 100px;
 }
 
 #qcInfoMessages {
-    text-align: left;
     font-weight: normal;
     height: 250px;
     overflow-x: none;
     overflow-y: auto;
+}
+
+#woceCommentDialog {
+    display: block;
+    position: absolute;
+    width: 500px;
+    height: 300px;
+    padding: 5px;
+}
+
+.dialogTitle {
+  text-align: center;
+  font-size: 16px;
+  left: 10px;
+}
+
+.fieldLabel {
+    float: left;
+    padding-right: 10px;
+    padding-bottom: 10px;
+}
+
+#woceCommentDialogComment {
+    width: 480px;
+    height: 150px;
+}
+
+.woceCommentDialogButton {
+    display: inline;
+    width: 20%;
 }

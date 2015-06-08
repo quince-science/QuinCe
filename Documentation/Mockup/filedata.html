@@ -265,8 +265,20 @@
         </ul>
       </div>
       <div id="qcInfoPopup" class="popup">
-        QC Messages
+        <div class="dialogTitle">QC Messages</div>
         <ul id="qcInfoMessages"><li>message</li></ul>
+      </div>
+      <div id="woceCommentDialog" class="popup">
+        <div class="dialogTitle">Edit WOCE Comment</div>
+        <div class="fieldLabel">WOCE Flag:</div>
+        <div id="woceCommentDialogFlag">FLAG_VALUE</div>
+        <div style="clear: both">Comment:</div>
+        <form onsubmit="return false;">
+            <input type="hidden" name="woceCommentDialogPreviousFlag">
+            <textarea id="woceCommentDialogComment" name="woceCommentDialogComment"></textarea>
+            <button name="woceCommentDialogSave" class="woceCommentDialogButton" onclick="saveWoceComment()">Save</button>
+            <button name="woceCommentDialogCancel" class="woceCommentDialogButton" onclick="cancelWoceComment()">Cancel</button>
+        </form>
       </div>
       <table id="fileData">
         <thead>
