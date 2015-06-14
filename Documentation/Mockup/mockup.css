@@ -408,17 +408,15 @@ table.conversionDetails {
 }
 
 #qcInfoPopup {
+  height: 20px;
+  display: block;
   position: absolute;
-  width: 500px;
-  height: 300px;
-  top: 100px;
+  /* display: none; */
+  transition: width 0.5s
 }
 
-#qcInfoMessages {
-    font-weight: normal;
-    height: 250px;
-    overflow-x: none;
-    overflow-y: auto;
+.qcInfoMessage {
+    display: inline;
 }
 
 #woceCommentDialog {
