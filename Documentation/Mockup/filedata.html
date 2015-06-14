@@ -178,6 +178,8 @@
       }
 
       function showQCInfoPopup(messages, target) {
+         $('#qcInfoPopup').stop(true, true);
+
          var content = '';
          messages.split('%').forEach(function(element, index, array) {
              var messageSplit = element.split(':');
@@ -201,10 +203,14 @@
          $('#qcInfoPopup')
            .html(content)
            .css({"left": 0, "top": 0})
-           .offset({"left": $(target).position().left - $('#qcInfoPopup').width(), "top": $('#data').position().top + $(target).position().top});
+           .offset({"left": $(target).position().left - $('#qcInfoPopup').width(), "top": $('#data').position().top + $(target).position().top})
+           .show('slide', {direction: 'right'}, 100);
       }
 
       function hideQCInfoPopup() {
+          $('#qcInfoPopup').stop(true, true);
+
+          $('#qcInfoPopup').hide('slide', {direction: 'right'}, 100);
       }
     </script>
   </head>
