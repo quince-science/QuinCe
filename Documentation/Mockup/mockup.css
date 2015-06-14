@@ -411,8 +411,7 @@ table.conversionDetails {
   height: 20px;
   display: block;
   position: absolute;
-  /* display: none; */
-  transition: width 0.5s
+  display: none;
 }
 
 .qcInfoMessage {
