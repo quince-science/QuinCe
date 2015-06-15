@@ -13,8 +13,10 @@
     <script type="text/javascript" src="dygraph-combined.js"></script>
     <script type="text/javascript">
 
+      var dataApi = null;
+
       $(function() {
-        $('#fileData').DataTable({
+        dataApi = $('#fileData').DataTable({
           scrollY: 400,
           paging: false,
           ordering: false,
@@ -52,7 +54,7 @@
             {
               "render": function(data, type, row) {
 
-                var output = '<div id="woce_select_' + row[0] + '" class="woceSelectButton ';
+                var output = '<div id="woce_select_' + (row[0] - 1) + '" class="woceSelectButton ';
 
                 if (data == '-2') {
                   output += 'assumedGood';
@@ -137,11 +139,12 @@
 
 
       // Stuff for the WOCE menus
-      var currentMenuId = '';
+      var currentRow = '';
+
 
       function hideWoceMenu() {
         $('#woceSelectMenu').hide();
-        currentMenuId = '';
+        currentRow = -1;
       }
 
       function showWoceMenu(target) {
@@ -158,21 +161,61 @@
           .show();
       }
 
-      function woceSelection(value) {
-        $('#' + currentMenuId)
-          .removeClass()
-          .addClass("woceSelectButton " + value.toLowerCase())
-          .text(value);
+      function showWoceCommentDialog(row, newFlag) {
+          $('#woceCommentDialogFlag')
+            .removeClass()
+            .addClass(newFlag.toLowerCase())
+            .text(newFlag);
 
-        hideWoceMenu();
+
+          // If there's no existing comment
+          var inComment = dataApi.cell(currentRow, 12).data();
+          if (inComment == "") {
+              qcInfo = dataApi.cell(currentRow, 10).data().split('%');
+              if (qcInfo != "") {
+                for (i = 0; i < qcInfo.length; i++) {
+                  var messageSplit = qcInfo[i].split(':');
+                  inComment += messageSplit[1];
+                  if (i < (qcInfo.length - 1)) {
+                      inComment += '; ';
+                  }
+                }
+              }
+          }
+
+          $('#woceCommentDialogComment').val(inComment);
+          $('#woceCommentDialog').show();
+      }
+
+      function cancelWoceComment() {
+          $('#woceCommentDialog').hide();
+      }
+
+      function saveWoceComment() {
+          $('#woceCommentDialog').hide();
+      }
+
+      function woceSelection(value) {
+        var prevValue = $('#woce_select_' + currentRow).text();
+        if (prevValue != value) {
+            $('#woce_select_' + currentRow)
+              .removeClass()
+              .addClass("woceSelectButton " + value.toLowerCase())
+              .text(value);
+
+            showWoceCommentDialog(1, value);
+            hideWoceMenu();
+        }
       }
 
       function woceClick(e) {
-        if (currentMenuId == e.target.id) {
+
+        var targetRow = e.target.id.substring(12);
+        if (currentRow == targetRow) {
           hideWoceMenu();
         } else {
           showWoceMenu('#' + e.target.id);
-          currentMenuId = e.target.id;
+          currentRow = targetRow;
         }
 
         e.preventDefault();
@@ -212,7 +255,6 @@
 
       function hideQCInfoPopup() {
           $('#qcInfoPopup').stop(true, true);
-
           $('#qcInfoPopup').hide('slide', {direction: 'right'}, 100);
       }
     </script>
@@ -321,7 +363,7 @@
 <tr><td>1</td><td>2010/11/24 18:15:33</td><td>359.7034</td><td>49.585</td><td>12.11</td><td>12.31</td><td>1008.883</td><td>34.871</td><td>416.85</td><td>2</td><td></td><td>-2</td><td></td></tr>
 <tr><td>2</td><td>2010/11/24 18:16:36</td><td>359.69601</td><td>49.587</td><td>12.134</td><td>12.334</td><td>1009.395</td><td>34.871</td><td>417.027</td><td>2</td><td></td><td>-2</td><td></td></tr>
 <tr><td>3</td><td>2010/11/24 18:17:45</td><td>359.68781</td><td>49.59</td><td>12.146</td><td>12.346</td><td>1008.776</td><td>34.871</td><td>419.044</td><td>2</td><td></td><td>-2</td><td></td></tr>
-<tr><td>4</td><td>2010/11/24 18:18:51</td><td>359.67999</td><td>49.593</td><td>12.161</td><td>12.361</td><td>1008.747</td><td>34.871</td><td>419.331</td><td>2</td><td></td><td>-2</td><td></td></tr>
+<tr><td>4</td><td>2010/11/24 18:18:51</td><td>359.67999</td><td>49.593</td><td>12.161</td><td>12.361</https://duckduckgo.com/?q=githun&t=canonicaltd><td>1008.747</td><td>34.871</td><td>419.331</td><td>2</td><td></td><td>-2</td><td></td></tr>
 <tr><td>5</td><td>2010/11/24 18:19:56</td><td>359.6723</td><td>49.596</td><td>12.183</td><td>12.383</td><td>1008.805</td><td>34.871</td><td>418.033</td><td>2</td><td></td><td>-2</td><td></td></tr>
 <tr><td>6</td><td>2010/11/24 18:20:58</td><td>359.66489</td><td>49.598</td><td>12.194</td><td>12.394</td><td>1008.883</td><td>34.871</td><td>415.695</td><td>2</td><td></td><td>2</td><td></td></tr>
 <tr><td>7</td><td>2010/11/24 18:22:01</td><td>359.65729</td><td>49.601</td><td>12.218</td><td>12.418</td><td>1008.805</td><td>34.871</td><td>413.929</td><td>2</td><td></td><td>2</td><td></td></tr>

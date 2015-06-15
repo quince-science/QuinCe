@@ -419,7 +419,7 @@ table.conversionDetails {
 }
 
 #woceCommentDialog {
-    display: block;
+    display: none;
     position: absolute;
     width: 500px;
     height: 300px;
