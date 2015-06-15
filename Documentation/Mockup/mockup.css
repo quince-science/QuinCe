@@ -63,7 +63,7 @@ button {
   border-radius: 7px;
   border: 1px solid #8CD5ED;
 
-  color: #555;
+  color: #222;
   background: #8CD5ED;
 
   font-family: 'Noto Sans', sans-serif;
@@ -439,8 +439,9 @@ table.conversionDetails {
 }
 
 #woceCommentDialogComment {
-    width: 480px;
+    width: 490px;
     height: 150px;
+    resize: none;
 }
 
 .woceCommentDialogButton {

@@ -130,6 +130,9 @@
             strokeWidth: 0.0
           }
         );
+
+        $('#woceCommentDialog')
+          .css({"left": $(window).width() / 2 - $('#woceCommentDialog').width() / 2, "top": 200});
       });
 
 
@@ -293,7 +296,7 @@
         <div style="clear: both">Comment:</div>
         <form onsubmit="return false;">
             <input type="hidden" name="woceCommentDialogPreviousFlag">
-            <textarea style="resize: none" id="woceCommentDialogComment" name="woceCommentDialogComment"></textarea>
+            <textarea id="woceCommentDialogComment" name="woceCommentDialogComment"></textarea>
             <button name="woceCommentDialogSave" class="woceCommentDialogButton" onclick="saveWoceComment()">Save</button>
             <button name="woceCommentDialogCancel" class="woceCommentDialogButton" onclick="cancelWoceComment()">Cancel</button>
         </form>
