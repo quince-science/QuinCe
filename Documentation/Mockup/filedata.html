@@ -14,6 +14,8 @@
     <script type="text/javascript">
 
       var dataApi = null;
+      var selectedRow = '';
+
 
       $(function() {
         dataApi = $('#fileData').DataTable({
@@ -25,28 +27,14 @@
             { "className": "numericCol", "targets": [ 2,3,4,5,6,7,8 ] },
             { "className": "noWrap", "targets": [ 1 ]},
             { "className": "centreCol", "targets": [ 8, 9, 10, 11, 12 ] },
-            { "visible": false, "targets": [ 0 ] },
+            { "visible": false, "targets": [ 0, 10, 12 ] },
             {
               "render": function (data, type, row) {
-                var output = '<span class="';
-                switch (data) {
-                case "2":
-                {
-                  output += 'good">Good';
-                  break;
-                }
-                case "3":
-                {
-                  output += 'questionable">Questionable';
-                  break;
-                }
-                case "4":
-                {
-                  output += 'bad">Bad';
-                }
-                }
-
-                output += '</span>';
+                var output = '<div onmouseover="showQCInfoPopup(' + (row[0] - 1) + ', this)" onmouseout="hideQCInfoPopup()" class="';
+                output += getFlagClass(data);
+                output += '">';
+                output += getFlagText(data);
+                output += '</div>';
                 return output;
               },
               "targets": 9
@@ -54,56 +42,14 @@
             {
               "render": function(data, type, row) {
 
-                var output = '<div id="woce_select_' + (row[0] - 1) + '" class="woceSelectButton ';
-
-                if (data == '-2') {
-                  output += 'assumedGood';
-                } else if (data == '2') {
-                  output += 'good';
-                } else if (data == '3') {
-                  output += 'questionable';
-                } else if (data == '4') {
-                  output += 'bad';
-                } else {
-                  output += 'needsFlagging';
-                }
-
-                output += '" onclick="woceClick(event)">';
-
-                if (data == '-2') {
-                  output += 'Assumed Good';
-                } else if (data == '2') {
-                  output += 'Good';
-                } else if (data == '3') {
-                  output += 'Questionable';
-                } else if (data == '4') {
-                  output += 'Bad';
-                } else {
-                  output += 'Needs Flag';
-                }
-
+                var output = '<div class="selectButton ';
+                output += getFlagClass(data);
+                output += '" onclick="showWoceCommentDialog(' + (row[0] - 1) + ')">';
+                output += getFlagText(data);
                 output += '</div>';
                 return output;
               },
               "targets": 11
-            },
-            {
-              "render": function(data, type, row) {
-                 var output = '<div id="qcInfoCol_' + row[0] + '" onmouseover="showQCInfoPopup(\'' + data + '\', \'#qcInfoCol_' + row[0] + '\')" onmouseout="hideQCInfoPopup()">';
-
-                 if (data.length > 0) {
-                     var lines = data.split('%').length;
-                     output += lines + ' message';
-                     if (lines > 1) {
-                         output += 's';
-                     }
-                 }
-
-                 output += '</div>';
-
-                 return output;
-               },
-               "targets": 10
             }
           ]
 
@@ -137,41 +83,15 @@
           .css({"left": $(window).width() / 2 - $('#woceCommentDialog').width() / 2, "top": 200});
       });
 
+      function showWoceCommentDialog(row) {
+          selectedRow = row;
 
-      // Stuff for the WOCE menus
-      var currentRow = '';
-
-
-      function hideWoceMenu() {
-        $('#woceSelectMenu').hide();
-        currentRow = -1;
-      }
-
-      function showWoceMenu(target) {
-        var left = $(target).position().left;
-        var top = $('#data').position().top + $(target).position().top + $(target).outerHeight(true);
-
-        if (top + $('#woceSelectMenu').outerHeight(true) > $(window).height()) {
-          top = $('#data').position().top + $(target).position().top - $('#woceSelectMenu').outerHeight(true);
-        }
-
-        $('#woceSelectMenu')
-          .css({"left": 0, "top": 0})
-          .offset({"left": left, "top": top})
-          .show();
-      }
-
-      function showWoceCommentDialog(row, newFlag) {
-          $('#woceCommentDialogFlag')
-            .removeClass()
-            .addClass(newFlag.toLowerCase())
-            .text(newFlag);
-
+          setWoceFlag(dataApi.cell(row, 11).data());
 
           // If there's no existing comment
-          var inComment = dataApi.cell(currentRow, 12).data();
+          var inComment = dataApi.cell(selectedRow, 12).data();
           if (inComment == "") {
-              qcInfo = dataApi.cell(currentRow, 10).data().split('%');
+              qcInfo = dataApi.cell(selectedRow, 10).data().split('%');
               if (qcInfo != "") {
                 for (i = 0; i < qcInfo.length; i++) {
                   var messageSplit = qcInfo[i].split(':');
@@ -187,6 +107,18 @@
           $('#woceCommentDialog').show();
       }
 
+      function setWoceFlag(flag) {
+          $('#woceCommentDialogFlag')
+            .removeClass()
+            .addClass('selectButton woceCommentDialogFlagButton ' + getFlagClass(flag))
+            .text(getFlagText(flag));
+      }
+
+      function woceSelection(flag) {
+          setWoceFlag(flag);
+          $('#woceSelectMenu').fadeOut(100);
+      }
+
       function cancelWoceComment() {
           $('#woceCommentDialog').hide();
       }
@@ -195,67 +127,93 @@
           $('#woceCommentDialog').hide();
       }
 
-      function woceSelection(value) {
-        var prevValue = $('#woce_select_' + currentRow).text();
-        if (prevValue != value) {
-            $('#woce_select_' + currentRow)
-              .removeClass()
-              .addClass("woceSelectButton " + value.toLowerCase())
-              .text(value);
-
-            showWoceCommentDialog(1, value);
-            hideWoceMenu();
-        }
+      function showWoceMenu(e) {
+          $('#woceSelectMenu').fadeIn(100);
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
       }
 
-      function woceClick(e) {
-
-        var targetRow = e.target.id.substring(12);
-        if (currentRow == targetRow) {
-          hideWoceMenu();
-        } else {
-          showWoceMenu('#' + e.target.id);
-          currentRow = targetRow;
-        }
-
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
+      function hideWoceMenu() {
+          $('#woceSelectMenu').fadeOut(100);
       }
 
-      function showQCInfoPopup(messages, target) {
+      function showQCInfoPopup(row, target) {
          $('#qcInfoPopup').stop(true, true);
 
          var content = '';
-         messages.split('%').forEach(function(element, index, array) {
-             var messageSplit = element.split(':');
-             content += '<div class="qcInfoMessage ';
+         var messages = dataApi.cell(row, 10).data();
+         if (messages != "") {
+             messages.split('%').forEach(function(element, index, array) {
+                 var messageSplit = element.split(':');
+                 content += '<div class="qcInfoMessage ';
 
-             if (messageSplit[0] == '3') {
-                 content += 'questionable';
-             } else if (messageSplit[0] == '4') {
-                 content += 'bad';
-             }
+                 if (messageSplit[0] == '3') {
+                     content += 'questionable';
+                 } else if (messageSplit[0] == '4') {
+                     content += 'bad';
+                 }
 
-             content += '">' + messageSplit[1];
+                 content += '">' + messageSplit[1];
 
-             if (index < (array.length - 1)) {
-                 content += '; ';
-             }
+                 if (index < (array.length - 1)) {
+                     content += '; ';
+                 }
 
-             content += '</div>';
-         });
+                 content += '</div>';
+             });
 
-         $('#qcInfoPopup')
-           .html(content)
-           .css({"left": 0, "top": 0})
-           .offset({"left": $(target).position().left - $('#qcInfoPopup').width(), "top": $('#data').position().top + $(target).position().top - 3})
-           .show('slide', {direction: 'right'}, 100);
+             $('#qcInfoPopup')
+               .html(content)
+               .css({"left": 0, "top": 0})
+               .offset({"left": $(target).position().left - $('#qcInfoPopup').width() - 10, "top": $('#data').position().top + $(target).position().top - 3})
+               .show('slide', {direction: 'right'}, 100);
+        }
       }
 
       function hideQCInfoPopup() {
           $('#qcInfoPopup').stop(true, true);
           $('#qcInfoPopup').hide('slide', {direction: 'right'}, 100);
+      }
+
+      function getFlagText(flag) {
+          var flagText = "";
+
+          if (flag == '-999') {
+              flagText = 'Ignore';
+          } else if (flag == '-2') {
+              flagText = 'Assumed Good';
+          } else if (flag == '2') {
+              flagText = 'Good';
+          } else if (flag == '3') {
+              flagText = 'Questionable';
+          } else if (flag == '4') {
+              flagText = 'Bad';
+          } else {
+              flagText = 'Needs Flag';
+          }
+
+          return flagText;
+      }
+
+      function getFlagClass(flag) {
+          var flagClass = "";
+
+          if (flag == '-999') {
+              flagClass = 'ignore';
+          } else if (flag == '-2') {
+              flagClass = 'assumedGood';
+          } else if (flag == '2') {
+              flagClass = 'good';
+          } else if (flag == '3') {
+              flagClass = 'questionable';
+          } else if (flag == '4') {
+              flagClass = 'bad';
+          } else {
+              flagClass = 'needsFlagging';
+          }
+
+          return flagClass;
       }
     </script>
   </head>
@@ -323,18 +281,18 @@
       <div id="qcInfoPopup" class="popup">
           QC Info
       </div>
-      <div id="woceSelectMenu">
-        <ul>
-          <li class="good" onclick="woceSelection('Good')">Good</li>
-          <li class="questionable" onclick="woceSelection('Questionable')">Questionable</li>
-          <li class="bad" onclick="woceSelection('Bad')">Bad</li>
-          <li class="ignored" onclick="woceSelection('Ignore')">Ignore</li>
-        </ul>
-      </div>
       <div id="woceCommentDialog" class="popup">
-        <div class="dialogTitle">Edit WOCE Comment</div>
-        <div class="fieldLabel">WOCE Flag:</div>
-        <div id="woceCommentDialogFlag">FLAG_VALUE</div>
+        <div class="dialogTitle">Edit WOCE Details</div>
+        <div>WOCE Flag:</div>
+        <div id="woceCommentDialogFlag" onclick="showWoceMenu(event)">FLAG_VALUE</div>
+        <div id="woceSelectMenu">
+          <ul>
+            <li class="good" onclick="woceSelection('2')">Good</li>
+            <li class="questionable" onclick="woceSelection('3')">Questionable</li>
+            <li class="bad" onclick="woceSelection('4')">Bad</li>
+            <li class="ignored" onclick="woceSelection('-999')">Ignore</li>
+          </ul>
+        </div>
         <div style="clear: both">Comment:</div>
         <form onsubmit="return false;">
             <input type="hidden" name="woceCommentDialogPreviousFlag">
