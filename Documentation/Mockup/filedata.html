@@ -206,7 +206,7 @@
          $('#qcInfoPopup')
            .html(content)
            .css({"left": 0, "top": 0})
-           .offset({"left": $(target).position().left - $('#qcInfoPopup').width(), "top": $('#data').position().top + $(target).position().top})
+           .offset({"left": $(target).position().left - $('#qcInfoPopup').width(), "top": $('#data').position().top + $(target).position().top - 3})
            .show('slide', {direction: 'right'}, 100);
       }
 
