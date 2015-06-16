@@ -50,6 +50,25 @@
                 return output;
               },
               "targets": 11
+            },
+            {
+              "render": function(data, type, row) {
+                var output = data;
+
+                var flagSearch = data.match(/%[\-0-9]+%/);
+                if (null != flagSearch) {
+                    var flagValue = flagSearch[0].match(/[\-0-9]/)[0];
+
+                    output = '<div class="';
+                    output += getFlagClass(flagValue);
+                    output += '">';
+                    output += data.substring(flagSearch[0].length);
+                    output += '</div>';
+                }
+
+                return output;
+              },
+              "targets": [ 2, 3, 4, 5, 6, 7, 8 ]
             }
           ]
 
@@ -86,7 +105,8 @@
       function showWoceCommentDialog(row) {
           selectedRow = row;
 
-          setWoceFlag(dataApi.cell(row, 11).data());
+          var inFlag = dataApi.cell(row, 11).data();
+          setWoceFlag(inFlag);
 
           // If there's no existing comment
           var inComment = dataApi.cell(selectedRow, 12).data();
@@ -103,8 +123,9 @@
               }
           }
 
+          $('#woceCommentDialogComment').attr('disabled', (inFlag == -888));
           $('#woceCommentDialogComment').val(inComment);
-          $('#woceCommentDialog').show();
+          $('#woceCommentDialog').fadeIn(100);
       }
 
       function setWoceFlag(flag) {
@@ -116,15 +137,29 @@
 
       function woceSelection(flag) {
           setWoceFlag(flag);
+
+          $('#woceCommentDialogComment').attr('disabled', (flag == -888));
           $('#woceSelectMenu').fadeOut(100);
       }
 
       function cancelWoceComment() {
-          $('#woceCommentDialog').hide();
+          $('#woceCommentDialog').fadeOut(100);
       }
 
       function saveWoceComment() {
-          $('#woceCommentDialog').hide();
+
+          var chosenFlag = getFlagFromText($('#woceCommentDialogFlag').text());
+          var comment = $('#woceCommentDialogComment').val();
+
+          if (chosenFlag == '-999') {
+              alert('Please choose a valid WOCE flag');
+          } else if (comment == "" && (chosenFlag == '3' || chosenFlag == '4')) {
+              alert('Please enter a comment');
+          } else {
+              dataApi.cell(selectedRow, 11).data(chosenFlag);
+              dataApi.cell(selectedRow, 12).data(comment);
+              $('#woceCommentDialog').fadeOut(100);
+          }
       }
 
       function showWoceMenu(e) {
@@ -180,6 +215,8 @@
           var flagText = "";
 
           if (flag == '-999') {
+              flagText = 'Needs Flag';
+          } else if (flag == '-888') {
               flagText = 'Ignore';
           } else if (flag == '-2') {
               flagText = 'Assumed Good';
@@ -200,7 +237,9 @@
           var flagClass = "";
 
           if (flag == '-999') {
-              flagClass = 'ignore';
+              flagClass = 'needsFlagging';
+          } else if (flag == '-888') {
+              flagClass = 'ignore'
           } else if (flag == '-2') {
               flagClass = 'assumedGood';
           } else if (flag == '2') {
@@ -214,6 +253,25 @@
           }
 
           return flagClass;
+      }
+
+      function getFlagFromText(text) {
+          var flag = '-999';
+          var testText = text.toLowerCase();
+
+          if (testText == 'assumed good') {
+              flag = '-2';
+          } else if (testText == 'good') {
+              flag = '2';
+          } else if (testText == 'questionable') {
+              flag = '3';
+          } else if (testText == 'bad') {
+              flag = '4';
+          } else if (testText == 'ignore') {
+              flag = '-888';
+          }
+
+          return flag;
       }
     </script>
   </head>
@@ -290,12 +348,11 @@
             <li class="good" onclick="woceSelection('2')">Good</li>
             <li class="questionable" onclick="woceSelection('3')">Questionable</li>
             <li class="bad" onclick="woceSelection('4')">Bad</li>
-            <li class="ignored" onclick="woceSelection('-999')">Ignore</li>
+            <li class="ignored" onclick="woceSelection('-888')">Ignore</li>
           </ul>
         </div>
         <div style="clear: both">Comment:</div>
         <form onsubmit="return false;">
-            <input type="hidden" name="woceCommentDialogPreviousFlag">
             <textarea id="woceCommentDialogComment" name="woceCommentDialogComment"></textarea>
             <button name="woceCommentDialogSave" class="woceCommentDialogButton" onclick="saveWoceComment()">Save</button>
             <button name="woceCommentDialogCancel" class="woceCommentDialogButton" onclick="cancelWoceComment()">Cancel</button>
@@ -321,7 +378,7 @@
 <tr><td>1</td><td>2010/11/24 18:15:33</td><td>359.7034</td><td>49.585</td><td>12.11</td><td>12.31</td><td>1008.883</td><td>34.871</td><td>416.85</td><td>2</td><td></td><td>-2</td><td></td></tr>
 <tr><td>2</td><td>2010/11/24 18:16:36</td><td>359.69601</td><td>49.587</td><td>12.134</td><td>12.334</td><td>1009.395</td><td>34.871</td><td>417.027</td><td>2</td><td></td><td>-2</td><td></td></tr>
 <tr><td>3</td><td>2010/11/24 18:17:45</td><td>359.68781</td><td>49.59</td><td>12.146</td><td>12.346</td><td>1008.776</td><td>34.871</td><td>419.044</td><td>2</td><td></td><td>-2</td><td></td></tr>
-<tr><td>4</td><td>2010/11/24 18:18:51</td><td>359.67999</td><td>49.593</td><td>12.161</td><td>12.361</https://duckduckgo.com/?q=githun&t=canonicaltd><td>1008.747</td><td>34.871</td><td>419.331</td><td>2</td><td></td><td>-2</td><td></td></tr>
+<tr><td>4</td><td>2010/11/24 18:18:51</td><td>359.67999</td><td>49.593</td><td>12.161</td><td>12.361</td><td>1008.747</td><td>34.871</td><td>419.331</td><td>2</td><td></td><td>-2</td><td></td></tr>
 <tr><td>5</td><td>2010/11/24 18:19:56</td><td>359.6723</td><td>49.596</td><td>12.183</td><td>12.383</td><td>1008.805</td><td>34.871</td><td>418.033</td><td>2</td><td></td><td>-2</td><td></td></tr>
 <tr><td>6</td><td>2010/11/24 18:20:58</td><td>359.66489</td><td>49.598</td><td>12.194</td><td>12.394</td><td>1008.883</td><td>34.871</td><td>415.695</td><td>2</td><td></td><td>2</td><td></td></tr>
 <tr><td>7</td><td>2010/11/24 18:22:01</td><td>359.65729</td><td>49.601</td><td>12.218</td><td>12.418</td><td>1008.805</td><td>34.871</td><td>413.929</td><td>2</td><td></td><td>2</td><td></td></tr>
@@ -330,15 +387,15 @@
 <tr><td>10</td><td>2010/11/24 18:25:15</td><td>359.63409</td><td>49.609</td><td>12.251</td><td>12.451</td><td>1008.796</td><td>34.871</td><td>414.378</td><td>2</td><td></td><td>2</td><td></td></tr>
 <tr><td>11</td><td>2010/11/24 18:26:21</td><td>359.62601</td><td>49.612</td><td>12.262</td><td>12.462</td><td>1008.892</td><td>34.871</td><td>417.66</td><td>2</td><td></td><td>2</td><td></td></tr>
 <tr><td>12</td><td>2010/11/24 18:27:23</td><td>359.61841</td><td>49.615</td><td>12.276</td><td>12.476</td><td>1008.67</td><td>34.871</td><td>420.537</td><td>2</td><td></td><td>2</td><td></td></tr>
-<tr><td>13</td><td>2010/11/24 18:28:30</td><td>359.61029</td><td>49.618</td><td>12.295</td><td>12.495</td><td>1008.805</td><td>34.871</td><td>421.549</td><td>4</td><td>4:SST out of range%3:Ship speed too fast</td><td>4</td><td></td></tr>
-<tr><td>14</td><td>2010/11/24 18:29:35</td><td>359.6023</td><td>49.621</td><td>12.312</td><td>12.512</td><td>1008.525</td><td>34.871</td><td>419.902</td><td>4</td><td>4:SST out of range</td><td>-999</td><td></td></tr>
-<tr><td>15</td><td>2010/11/24 18:30:45</td><td>359.59369</td><td>49.624</td><td>12.33</td><td>12.53</td><td>1009.231</td><td>34.871</td><td>417.54</td><td>4</td><td>4:SST out of range</td><td>-999</td><td></td></tr>
-<tr><td>16</td><td>2010/11/24 18:31:51</td><td>359.5856</td><td>49.627</td><td>12.34</td><td>12.54</td><td>1008.351</td><td>34.871</td><td>414.478</td><td>4</td><td>4:SST out of range</td><td>-999</td><td></td></tr>
-<tr><td>17</td><td>2010/11/24 18:32:51</td><td>359.57819</td><td>49.629</td><td>12.349</td><td>12.549</td><td>1008.023</td><td>34.871</td><td>411.648</td><td>4</td><td>4:SST out of range</td><td>-999</td><td></td></tr>
-<tr><td>18</td><td>2010/11/24 18:34:00</td><td>359.56961</td><td>49.632</td><td>12.365</td><td>12.565</td><td>1008.612</td><td>34.871</td><td>409.025</td><td>3</td><td>3:Salinity out of range</td><td>-999</td><td></td></tr>
-<tr><td>19</td><td>2010/11/24 18:35:08</td><td>359.56119</td><td>49.635</td><td>12.382</td><td>12.582</td><td>1008.863</td><td>34.871</td><td>406.486</td><td>3</td><td>3:Salinity out of range</td><td>-999</td><td></td></tr>
-<tr><td>20</td><td>2010/11/24 19:12:32</td><td>359.2898</td><td>49.743</td><td>12.818</td><td>13.018</td><td>1008.332</td><td>34.871</td><td>405.95</td><td>3</td><td>3:Salinity out of range</td><td>4</td><td></td></tr>
-<tr><td>21</td><td>2010/11/24 19:13:36</td><td>359.28189</td><td>49.745</td><td>12.837</td><td>13.037</td><td>1008.747</td><td>34.871</td><td>405.081</td><td>3</td><td>3:Salinity out of range</td><td>3</td><td></td></tr>
+<tr><td>13</td><td>2010/11/24 18:28:30</td><td>%3%359.61029</td><td>%3%49.618</td><td>%4%12.295</td><td>12.495</td><td>1008.805</td><td>34.871</td><td>421.549</td><td>4</td><td>4:SST out of range%3:Ship speed too fast</td><td>-999</td><td></td></tr>
+<tr><td>14</td><td>2010/11/24 18:29:35</td><td>359.6023</td><td>49.621</td><td>%4%12.312</td><td>12.512</td><td>1008.525</td><td>34.871</td><td>419.902</td><td>4</td><td>4:SST out of range</td><td>-999</td><td></td></tr>
+<tr><td>15</td><td>2010/11/24 18:30:45</td><td>359.59369</td><td>49.624</td><td>%4%12.33</td><td>12.53</td><td>1009.231</td><td>34.871</td><td>417.54</td><td>4</td><td>4:SST out of range</td><td>-999</td><td></td></tr>
+<tr><td>16</td><td>2010/11/24 18:31:51</td><td>359.5856</td><td>49.627</td><td>%4%12.34</td><td>12.54</td><td>1008.351</td><td>34.871</td><td>414.478</td><td>4</td><td>4:SST out of range</td><td>-999</td><td></td></tr>
+<tr><td>17</td><td>2010/11/24 18:32:51</td><td>359.57819</td><td>49.629</td><td>%4%12.349</td><td>12.549</td><td>1008.023</td><td>34.871</td><td>411.648</td><td>4</td><td>4:SST out of range</td><td>-999</td><td></td></tr>
+<tr><td>18</td><td>2010/11/24 18:34:00</td><td>359.56961</td><td>49.632</td><td>12.365</td><td>12.565</td><td>1008.612</td><td>%3%34.871</td><td>409.025</td><td>3</td><td>3:Salinity out of range</td><td>-999</td><td></td></tr>
+<tr><td>19</td><td>2010/11/24 18:35:08</td><td>359.56119</td><td>49.635</td><td>12.382</td><td>12.582</td><td>1008.863</td><td>%3%34.871</td><td>406.486</td><td>3</td><td>3:Salinity out of range</td><td>-999</td><td></td></tr>
+<tr><td>20</td><td>2010/11/24 19:12:32</td><td>359.2898</td><td>49.743</td><td>12.818</td><td>13.018</td><td>1008.332</td><td>%3%34.871</td><td>405.95</td><td>3</td><td>3:Salinity out of range</td><td>-999</td><td></td></tr>
+<tr><td>21</td><td>2010/11/24 19:13:36</td><td>359.28189</td><td>49.745</td><td>12.837</td><td>13.037</td><td>1008.747</td><td>%3%34.871</td><td>405.081</td><td>3</td><td>3:Salinity out of range</td><td>-999</td><td></td></tr>
 <tr><td>22</td><td>2010/11/24 19:14:42</td><td>359.27359</td><td>49.748</td><td>12.869</td><td>13.069</td><td>1008.747</td><td>34.871</td><td>406.031</td><td>2</td><td></td><td>2</td><td></td></tr>
 <tr><td>23</td><td>2010/11/24 19:15:42</td><td>359.2659</td><td>49.75</td><td>12.884</td><td>13.084</td><td>1008.458</td><td>34.871</td><td>406.699</td><td>2</td><td></td><td>2</td><td></td></tr>
 <tr><td>24</td><td>2010/11/24 19:16:42</td><td>359.25821</td><td>49.752</td><td>12.897</td><td>13.097</td><td>1008.487</td><td>34.871</td><td>407.495</td><td>2</td><td></td><td>2</td><td></td></tr>
