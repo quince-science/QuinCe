@@ -37,45 +37,6 @@ input.expand {
   width: 100%;
 }
 
-input[type="submit"] {
-  display: inline;
-  margin-top: 20px;
-  padding-top: 3px;
-  padding-bottom: 3px;
-
-  border-radius: 7px;
-  border: 1px solid #8CD5ED;
-
-  color: #222;
-  background: #8CD5ED;
-
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-right: 20px;
-  width: 150px;
-}
-
-input[type="button"] {
-  display: inline;
-  margin-top: 20px;
-  padding-top: 3px;
-  padding-bottom: 3px;
-
-  border-radius: 7px;
-  border: 1px solid #8CD5ED;
-
-  color: #222;
-  background: #8CD5ED;
-
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-right: 20px;
-  width: 150px;
-
-}
-
 button {
   display: inline;
   margin-top: 20px;
@@ -92,10 +53,19 @@ button {
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
+  width: 100px;
+  margin-right: 20px;
 }
 
 button:last-of-type {
     margin-right: 0px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    font-size: 12px;
+}
+
+.smallButton {
+    margin-top: 0px;
 }
 
 .buttonWrapper {
