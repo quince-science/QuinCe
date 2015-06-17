@@ -21,6 +21,11 @@
         return false;
       }
 
+      function cancelInstrument() {
+        window.location="filelist.html";
+        return false;
+      }
+
       function addParameter() {
         return false;
       }
@@ -44,7 +49,7 @@
       <h1>New Instrument</h1>
 
       <div class="fullPage">
-        <form id="instrumentForm" method="post" onsubmit="return submitInstrument();" autocomplete="off" accept-charset="utf8">
+        <form id="instrumentForm" method="post" autocomplete="off" accept-charset="utf8">
           <table>
             <tr>
               <td><label for="instrumentName">Instrument Name:<label></td>
@@ -52,49 +57,108 @@
             </tr>
           </table>
           <div class="instructions">
-            Please provide details of the sensors in your instrument.
+            Please provide details of the sensors in your instrument. Up to three sensors of each type can be specified.
           </div>
           <div class="sectionHeader">
             Intake Temperature
           </div>
           <div class="sectionContent">
-            <div class="sensorDetailsWrapper">
               <table class="sensorDetails">
-                <tr>
-                  <td class="labels"><label for="intakeTempName_1">Sensor Name:</label></td>
-                  <td colspan="6"><input type="text" name="intakeTempName_1" size="30" value="Seabird"></input></td>
-                </tr>
-                <tr>
-                  <td class="labels"><label>Does the sensor report values in °C?</label></td>
-                  <td colspan="6">
-                    <input type="radio" name="intakeTempInUnit_1" value="1" id="intakeTempInUnit_1-1" checked><label for="intakeTempInUnit_1-1">Yes</label>
-                    <input type="radio" name="intakeTempInUnit_1" value="0" id="intakeTempInUnit_1-0"><label for="intakeTempInUnit_1-0">No</label>
-                  </td>
-                </tr>
+                  <tr>
+                    <td class="labels"><label for="intakeTempName_1">Sensor 1 Name:</label></td>
+                    <td><input type="text" name="intakeTempName_1" size="30" value="Seabird"></input></td>
+                  </tr>
+                  <tr>
+                    <td class="labels"><label for="intakeTempName_2">Sensor 2 Name:</label></td>
+                    <td><input type="text" name="intakeTempName_2" size="30" value=""></input></td>
+                  </tr>
+                  <tr>
+                    <td class="labels"><label for="intakeTempName_3">Sensor 3 Name:</label></td>
+                    <td><input type="text" name="intakeTempName_3" size="30" value=""></input></td>
+                  </tr>
               </table>
-            <button class="right" onclick="addParameter(); return false;">Add extra sensor</button>
           </div>
           <div class="sectionHeader">
             Salinity
           </div>
           <div class="sectionContent">
+              <table class="sensorDetails">
+                  <tr>
+                    <td class="labels"><label for="salinityName_1">Sensor 1 Name:</label></td>
+                    <td><input type="text" name="salinityName_1" size="30" value="Seabird"></input></td>
+                  </tr>
+                  <tr>
+                    <td class="labels"><label for="salinityName_2">Sensor 2 Name:</label></td>
+                    <td><input type="text" name="salinityName_2" size="30" value=""></input></td>
+                  </tr>
+                  <tr>
+                    <td class="labels"><label for="salinityName_3">Sensor 3 Name:</label></td>
+                    <td><input type="text" name="salinityName_3" size="30" value=""></input></td>
+                  </tr>
+              </table>
           </div>
           <div class="sectionHeader">
             Sea Level Pressure
           </div>
           <div class="sectionContent">
+              <table class="sensorDetails">
+                  <tr>
+                    <td class="labels"><label for="slpName_1">Sensor 1 Name:</label></td>
+                    <td><input type="text" name="slpName_1" size="30" value="Licor"></input></td>
+                  </tr>
+                  <tr>
+                    <td class="labels"><label for="slpName_2">Sensor 2 Name:</label></td>
+                    <td><input type="text" name="slpName_2" size="30" value=""></input></td>
+                  </tr>
+                  <tr>
+                    <td class="labels"><label for="slpName_3">Sensor 3 Name:</label></td>
+                    <td><input type="text" name="slpName_3" size="30" value=""></input></td>
+                  </tr>
+              </table>
           </div>
           <div class="sectionHeader">
             Equilibrator Temperature
           </div>
           <div class="sectionContent">
+              <table class="sensorDetails">
+                  <tr>
+                    <td class="labels"><label for="eqtName_1">Sensor 1 Name:</label></td>
+                    <td><input type="text" name="eqtName_1" size="30" value="Top"></input></td>
+                  </tr>
+                  <tr>
+                    <td class="labels"><label for="eqtName_2">Sensor 2 Name:</label></td>
+                    <td><input type="text" name="eqtName_2" size="30" value="Bottom"></input></td>
+                  </tr>
+                  <tr>
+                    <td class="labels"><label for="eqtName_3">Sensor 3 Name:</label></td>
+                    <td><input type="text" name="eqtName_3" size="30" value=""></input></td>
+                  </tr>
+              </table>
           </div>
           <div class="sectionHeader">
             Equilibrator Pressure
           </div>
           <div class="sectionContent">
+              <table class="sensorDetails">
+                  <tr>
+                    <td class="labels"><label for="eqpName_1">Sensor 1 Name:</label></td>
+                    <td><input type="text" name="eqpName_1" size="30" value="Licor"></input></td>
+                  </tr>
+                  <tr>
+                    <td class="labels"><label for="eqpName_2">Sensor 2 Name:</label></td>
+                    <td><input type="text" name="eqpName_2" size="30" value=""></input></td>
+                  </tr>
+                  <tr>
+                    <td class="labels"><label for="eqpName_3">Sensor 3 Name:</label></td>
+                    <td><input type="text" name="eqpName_3" size="30" value=""></input></td>
+                  </tr>
+              </table>
           </div>
-        </form>
+          <div class="buttonWrapper">
+              <input type="button" class="buttonSet" name="Save" value="Save" onclick="submitInstrument()"></input>
+              <input type="button" class="buttonSet" name="Save" value="Cancel" onclick="cancelInstrument()"></input>
+          </div>
+      </form>
       </div>
     </div>
   </body>

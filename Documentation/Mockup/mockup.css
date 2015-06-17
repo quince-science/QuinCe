@@ -38,7 +38,7 @@ input.expand {
 }
 
 input[type="submit"] {
-  display: block;
+  display: inline;
   margin-top: 20px;
   padding-top: 3px;
   padding-bottom: 3px;
@@ -46,16 +46,38 @@ input[type="submit"] {
   border-radius: 7px;
   border: 1px solid #8CD5ED;
 
-  color: #555;
+  color: #222;
   background: #8CD5ED;
 
   font-size: 18px;
   font-weight: bold;
   cursor: pointer;
+  margin-right: 20px;
+  width: 150px;
+}
+
+input[type="button"] {
+  display: inline;
+  margin-top: 20px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+
+  border-radius: 7px;
+  border: 1px solid #8CD5ED;
+
+  color: #222;
+  background: #8CD5ED;
+
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 20px;
+  width: 150px;
+
 }
 
 button {
-  display: block;
+  display: inline;
   margin-top: 20px;
   padding-top: 3px;
   padding-bottom: 3px;
@@ -72,9 +94,14 @@ button {
   cursor: pointer;
 }
 
-button.right {
-  float: right;
-  margin-bottom: 10px;
+button:last-of-type {
+    margin-right: 0px;
+}
+
+.buttonWrapper {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 form ul {
@@ -357,11 +384,6 @@ table.conversionDetails {
 
 .conversionDetails tr:last-child td {
   padding-bottom: 10px;
-}
-
-.sensorDetailsWrapper {
-  width: 100%;
-  border-bottom: 1px solid black;
 }
 
 .shown {
