@@ -59,9 +59,6 @@ button {
 
 button:last-of-type {
     margin-right: 0px;
-    padding-top: 1px;
-    padding-bottom: 1px;
-    font-size: 12px;
 }
 
 .smallButton {
@@ -300,7 +297,7 @@ li.menuitem:hover {
   cursor: pointer;
   z-index: 10;
   left: 95px;
-  top: 65px;
+  top: 62px;
   display: none;
 }
 
