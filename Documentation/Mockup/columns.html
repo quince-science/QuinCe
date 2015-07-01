@@ -16,12 +16,12 @@
         }
 
         function prev() {
-          window.location="newinstrument.html";
+          window.location="samplefile.html";
           return false;
         }
 
         function next() {
-          window.location="columns.html";
+          window.location="runtype.html";
           return false;
         }
 
@@ -59,41 +59,6 @@
         <h2>Benguela Stream</h2>
 
         <div class="fullPage">
-
-            <form id="fileForm" method="post" autocomplete="off" accept-charset="utf8">
-                <!-- Insturment labels from previous page will be hidden in this form -->
-                <div class="sectionHeader">
-                  File separator
-                </div>
-                <div class="instructions">
-                  Please specify the character used to separate columns in your data file
-                </div>
-                <div class="sectionContent">
-                    <table class="form">
-                        <tr>
-                            <td width="33%">
-                                <input type="radio" name="separator" value="comma" id="separator_comma"><label id="separator_comma_label" for="separator_comma"> Comma</label>
-                            </td>
-                            <td width="33%">
-                                <input type="radio" name="separator" value="tab" id="separator_tab"><label id="separator_tab_label" for="separator_tab"> Tab</label>
-                            </td>
-                            <td width="33%">
-                                <input type="radio" name="separator" value="other" id="separator_other"><label id="separator_other_label" for="separator_other"> Other </label>
-                                <input type="text" name="separator_other_char" id="other_char" maxlength="1" size="3" disabled>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="sectionHeader">
-                  Upload sample file
-                </div>
-                <div class="instructions">
-                  Please select a sample data file to upload
-                </div>
-                <div class="sectionContent">
-                    <input type="text">
-                </div>
-            </form>
             <div class="buttonWrapper">
                 <button onclick="prev()">Previous</button>
                 <button onclick="next()">Next</button>

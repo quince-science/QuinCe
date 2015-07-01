@@ -67,6 +67,7 @@ button:last-of-type {
 
 .buttonWrapper {
     text-align: center;
+    clear: both;
     margin-top: 20px;
     margin-bottom: 20px;
 }
@@ -323,6 +324,7 @@ div.fullPage {
 .instructions {
   padding: 15px 5px 5px 5px;
   font-style: italic;
+  margin-bottom: 15px;
 }
 
 .sectionHeader {
@@ -337,20 +339,15 @@ div.fullPage {
   padding: 5px;
 }
 
-table.sensorDetails {
+table.form {
   width: 100%;
 }
 
 td.labels {
-  width: 45%;
-}
-
-table.conversionDetails {
-  transition: display 1s linear;
-}
-
-.conversionDetails tr:last-child td {
-  padding-bottom: 10px;
+  width: 50%;
+  text-align: right;
+  padding-right: 10px;
+  font-weight: bold;
 }
 
 .shown {

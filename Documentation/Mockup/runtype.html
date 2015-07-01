@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<html>
+  <head>
+    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700,700italic" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" type="text/css" href="mockup.css"/>
+    <title>QuinCe - New Instrument</title>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script typr="text/javascript">
+        function toggleSettingsMenu() {
+          $('#userSettingsMenu').toggleClass('visible');
+        }
+
+        function hideSettingsMenu() {
+          $('#userSettingsMenu').removeClass('visible');
+        }
+
+        function prev() {
+          window.location="columns.html";
+          return false;
+        }
+
+        function save() {
+          alert("New Instrument Complete!")
+          window.location="filelist.html";
+          return false;
+        }
+
+        function cancelInstrument() {
+          window.location="filelist.html";
+          return false;
+        }
+
+
+
+        $(function() {
+          $('[id^=separator_]').click(function() {
+              $('#other_char').attr('disabled', fileForm.separator.value != 'other');
+          });
+        });
+
+    </script>
+  </head>
+  <body>
+      <div id="userSettingsMenu">
+        <ul class="menu">
+          <li class="menuitem" onclick="self.document.location='newinstrument.html';">Instruments</li>
+          <li class="menuitem">Account</li>
+          <li class="menuitem" onclick="self.document.location='login.html';">Log Out</li>
+        </ul>
+      </div>
+      <div id="header">
+        QuinCe
+        <div id="userSettings" onclick="toggleSettingsMenu();">
+          Steve Jones ▼
+        </div>
+      </div>
+      <div id="content" onclick="hideSettingsMenu();">
+        <h1>New Instrument</h1>
+        <h2>Benguela Stream</h2>
+
+        <div class="fullPage">
+            <form id="runtype_form" method="post" autocomplete="off" accept-charset="utf8">
+                <div class="sectionHeader">
+                    Define Run Types
+                </div>
+                <div class="instructions">
+                    The following run types have been detected in your sample file.
+                    Please indicate their purpose.
+                </div>
+                <table class="form">
+                    <tr>
+                        <td class="labels">000</td>
+                        <td>
+                            <select name="runtype_1">
+                                <option value="none">None (ignored)</option>
+                                <option value="pco2">Sea Water pCO2</option>
+                                <option value="standard" selected>Gas Standard</option>
+                          </select>
+                      </td>
+                  </tr>
+                  <tr>
+                      <td class="labels">250</td>
+                      <td>
+                          <select name="runtype_1">
+                              <option value="none">None (ignored)</option>
+                              <option value="pco2">Sea Water pCO2</option>
+                              <option value="standard" selected>Gas Standard</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="labels">350</td>
+                    <td>
+                        <select name="runtype_1">
+                            <option value="none">None (ignored)</option>
+                            <option value="pco2">Sea Water pCO2</option>
+                            <option value="standard" selected>Gas Standard</option>
+                      </select>
+                  </td>
+              </tr>
+              <tr>
+                  <td class="labels">450</td>
+                  <td>
+                      <select name="runtype_1">
+                          <option value="none">None (ignored)</option>
+                          <option value="pco2">Sea Water pCO2</option>
+                          <option value="standard" selected>Gas Standard</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="labels">AIR</td>
+                <td>
+                    <select name="runtype_1">
+                        <option value="none">None (ignored)</option>
+                        <option value="pco2">Sea Water pCO2</option>
+                        <option value="standard">Gas Standard</option>
+                  </select>
+              </td>
+          </tr>
+          <tr>
+              <td class="labels">EQU</td>
+              <td>
+                  <select name="runtype_1">
+                      <option value="none">None (ignored)</option>
+                      <option value="pco2" selected>Sea Water pCO2</option>
+                      <option value="standard">Gas Standard</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="labels">PresCalib</td>
+            <td>
+                <select name="runtype_1">
+                    <option value="none">None (ignored)</option>
+                    <option value="pco2">Sea Water pCO2</option>
+                    <option value="standard">Gas Standard</option>
+              </select>
+          </td>
+      </tr>
+      <tr>
+          <td class="labels">PresLeak</td>
+          <td>
+              <select name="runtype_1">
+                  <option value="none">None (ignored)</option>
+                  <option value="pco2">Sea Water pCO2</option>
+                  <option value="standard">Gas Standard</option>
+            </select>
+        </td>
+    </tr>
+              </table>
+            </form>
+            <div class="buttonWrapper">
+                <button onclick="prev()">Previous</button>
+                <button onclick="save()">Save</button>
+                <button onclick="cancelInstrument()">Cancel</input>
+            </div>
+        </div>
+    </div>
+  </body>
+</html>
