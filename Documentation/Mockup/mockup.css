@@ -317,7 +317,7 @@ li.menuitem:hover {
 }
 
 div.fullPage {
-  width: 800px;
+  width: 900px;
   margin: auto;
 }
 
@@ -437,4 +437,20 @@ td.labels {
     position: relative;
     left: 90px;
     top: -22px;
+}
+
+.scrollable {
+    width: 100%;
+    height: 400px;
+    overflow: scroll;
+}
+
+table.rawdata {
+    white-space: nowrap;
+    background: white;
+}
+
+td.disabled {
+    font-style: italic;
+    color: #888888;
 }
