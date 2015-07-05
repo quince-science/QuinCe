@@ -71,13 +71,13 @@
                 <div class="sectionContent">
                     <table class="form">
                         <tr>
-                            <td width="33%" class="centreCol">
+                            <td width="33%">
                                 <input type="radio" name="separator" value="comma" id="separator_comma"><label id="separator_comma_label" for="separator_comma"> Comma</label>
                             </td>
-                            <td width="33%" class="centreCol">
+                            <td width="33%">
                                 <input type="radio" name="separator" value="tab" id="separator_tab"><label id="separator_tab_label" for="separator_tab"> Tab</label>
                             </td>
-                            <td width="33%" class="centreCol">
+                            <td width="33%">
                                 <input type="radio" name="separator" value="other" id="separator_other" checked><label id="separator_other_label" for="separator_other"> Other </label>
                                 <input type="text" name="separator_other_char" id="other_char" maxlength="1" size="3" value=" " disabled>
                             </td>
@@ -137,8 +137,37 @@
                 </div>
                 <div class="sectionContent">
                     <div class="instructions">
-                        Please select the format of the position data
+                        Please select the format of the latitude data
                     </div>
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="latFormat" value="minus90plus90" id="minus90plus90"><label for="minus90plus90">-90 to 90</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="latFormat" value="noughtto90" id="noughtto90"><label for="noughtto90">0 to 90 (N/S in separate column)</label>
+                            </td>
+                            <td width="33%">
+                                &nbsp;
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="instructions">
+                        Please select the format of the longitude data
+                    </div>
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="lonFormat" value="nought360" id="nought360"><label for="nought360">0 to 360</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="lonFormat" value="minustoplus" id="minustoplus"><label for="minustoplus">-180 to 180</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="lonFormat" value="nougth180" id="nougth180"><label for="nougth180">0 to 180 (E/W in separate column)</label>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
                 <div class="sectionHeader">
                   Upload sample file
