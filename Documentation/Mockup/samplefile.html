@@ -71,18 +71,74 @@
                 <div class="sectionContent">
                     <table class="form">
                         <tr>
-                            <td width="33%">
+                            <td width="33%" class="centreCol">
                                 <input type="radio" name="separator" value="comma" id="separator_comma"><label id="separator_comma_label" for="separator_comma"> Comma</label>
                             </td>
-                            <td width="33%">
+                            <td width="33%" class="centreCol">
                                 <input type="radio" name="separator" value="tab" id="separator_tab"><label id="separator_tab_label" for="separator_tab"> Tab</label>
                             </td>
-                            <td width="33%">
-                                <input type="radio" name="separator" value="other" id="separator_other"><label id="separator_other_label" for="separator_other"> Other </label>
-                                <input type="text" name="separator_other_char" id="other_char" maxlength="1" size="3" disabled>
+                            <td width="33%" class="centreCol">
+                                <input type="radio" name="separator" value="other" id="separator_other" checked><label id="separator_other_label" for="separator_other"> Other </label>
+                                <input type="text" name="separator_other_char" id="other_char" maxlength="1" size="3" value=" " disabled>
                             </td>
                         </tr>
                     </table>
+                </div>
+                <div class="sectionHeader">
+                    Date/Time Format
+                </div>
+                <div class="sectionContent">
+                    <div class="instructions">
+                        Please select the date format used in your data file.
+                    </div>
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="separateFields" id="date_separate"><label for="date_separate"> Separate Fields</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="ddmmyy" id="date_ddmmyy" checked><label for="date_ddmmyy"> DD/MM/YY</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="mmddyy" id="date_mmddyy"><label for="date_mmddyy"> MM/DD/YY</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="yyyymmdd" id="date_yyyymmdd"><label for="date_yyyymmdd"> YYYYMMDD</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="ddmmyyyy" id="date_ddmmyyyy"><label for="date_ddmmyyyy"> DD/MM/YYYY</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="mmddyyyy" id="date_mmddyyyy"><label for="date_mmddyyyy"> MM/DD/YYYY</label>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="instructions">
+                        Please select the time format used in your data file.
+                    </div>
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="timeFormat" value="separateFields" id="time_separate"><label for="time_separate"> Separate Fields</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="timeFormat" value="hhmmss" id="time_hhmmss"><label for="time_hhmmss"> HHMMSS</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="timeFormat" value="hh:mm:ss" id="time_colons" checked><label for="time_colons"> HH:MM:SS</label>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="sectionHeader">
+                    Latitude/Longitude Format
+                </div>
+                <div class="sectionContent">
+                    <div class="instructions">
+                        Please select the format of the position data
+                    </div>
                 </div>
                 <div class="sectionHeader">
                   Upload sample file
