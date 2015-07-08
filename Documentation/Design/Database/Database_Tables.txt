@@ -8,3 +8,14 @@ Version      Date           Description
 
 # Introduction
 This document specifies the database tables that are used in the QuinCe project.
+
+# User
+System users are defined in this table.
+
+Field                    Type           Description
+--------------------     ------------   ---------------------------------------------------
+email                    String         The user's email address - used as the username
+password                 String         Password field (salted and hashed)
+first_name               String         The user's first/given name
+surname                  String         The user's surname
+verification_code        String         Code for verifying email address
