@@ -1,0 +1,66 @@
+body {
+  font-family: verdana, sans-serif;
+  padding: 10px 5px 0px 5px;
+  max-width: 50em;
+  margin: auto;
+  font-size: 14px;
+}
+
+h1 {
+  padding-top: 40px;
+  border-bottom: 1px solid black;
+}
+
+h2, h3, h4, h5, h6 {
+  padding-top: 20px;
+  border-bottom: 1px dotted black;
+}
+
+h1.title {
+  font-size: 200%;
+  text-align: center;
+  border: none;
+}
+
+h1 {
+  font-size: 130%;
+}
+
+h2 {
+  font-size: 110%;
+}
+
+h1.title {
+  font-size: 200%;
+  text-align: center;
+  padding-top: 10px;
+  border: none;
+  padding-bottom: 15px;
+}
+
+a {
+  color: black;
+  text-decoration: none;
+}
+
+ul a {
+  color: blue;
+  text-decoration: underline;
+}
+
+figure {
+  margin: 50px 0px 50px 0px;
+}
+
+img {
+  width: 50em;
+}
+
+figcaption {
+  font-style: italic;
+  font-size: 12px;
+}
+
+th,td {
+  padding: 0px 10px 0px 10px;
+}

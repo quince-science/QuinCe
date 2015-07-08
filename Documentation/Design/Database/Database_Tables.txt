@@ -1,0 +1,10 @@
+% QuinCe Database Tables
+
+# Version History
+
+Version      Date           Description
+---------    ------------   ------------------------------------------------------
+1.0          xx             xx
+
+# Introduction
+This document specifies the database tables that are used in the QuinCe project.
