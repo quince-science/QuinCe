@@ -9,13 +9,266 @@ Version      Date           Description
 # Introduction
 This document specifies the database tables that are used in the QuinCe project.
 
-# User
-System users are defined in this table.
+# Users
+This section defines tables related to users and the different parts
+of the system they are linked to.
+
+## `user`
+Defines a user account
 
 Field                    Type           Description
 --------------------     ------------   ---------------------------------------------------
+id                       Integer        ID
 email                    String         The user's email address - used as the username
 password                 String         Password field (salted and hashed)
 first_name               String         The user's first/given name
 surname                  String         The user's surname
 verification_code        String         Code for verifying email address
+permissions              Integer        A field for defining user permissions. Defined as a bitmask.
+
+### Permissions
+The permissions that can be applied to a user are as follows:
+
+# Instruments
+The definition of an instrument is quite complex and requires multiple tables
+
+## `instrument`
+This table defines the basic details of an instrument.
+
+We allow up to three sensors of each type to be defined. They are treated as
+separate fields in violation of third normal form, but the amount of processing
+required to handle dynamically defined sensors would be prohibitive.
+
+Field                    Type           Description
+--------------------     ------------   -----------------------------------------------------------------
+id                       Integer        ID
+name                     String         The name of the instrument
+intake_temp_1_name       String         The name of the first intake temperature sensor
+intake_temp_2_name       String         The name of the second intake temperature sensor
+intake_temp_3_name       String         The name of the third intake temperature sensor
+salinity_1_name          String         The name of the first salinity sensor
+salinity_2_name          String         The name of the second salinity sensor
+salinity_3_name          String         The name of the third salinity sensor
+slp_1_name               String         The name of the first sea level pressure sensor
+slp_2_name               String         The name of the second sea level pressure sensor
+slp_3_name               String         The name of the third sea level pressure sensor
+eqt_1_name               String         The name of the first equilibrator temperature sensor
+eqt_2_name               String         The name of the second equilibrator temperature sensor
+eqt_3_name               String         The name of the third equilibrator temperature sensor
+eqp_1_name               String         The name of the first equilibrator pressure sensor
+eqp_2_name               String         The name of the second equilibrator pressure sensor
+eqp_3_name               String         The name of the third equilibrator pressure sensor
+separator_char           String         The character that separates fields in the instrument's data files
+date_format              Integer        The date format used in the instrument's data files
+time_format              Integer        The time format used in the instrument's data files
+lat_format               Integer        The latitude format used in the instrument's data files
+lon_format               Integer        The longitude format used in the instrument's data files
+header_lines             Integer        The number of header lines in the instrument's data files
+
+### `date_format`
+The `date_format` field will have one of the following values:
+
+Value    Format
+-----    --------------------------
+0        Separate columns for year, month and day
+1        YYYYMMDD
+2        DD/MM/YY
+3        DD/MM/YYYY
+4        MM/DD/YY
+5        MM/DD/YYYY
+
+### `time_format`
+The `time_format` field will have one of the following values:
+
+Value    Format
+-----    --------------------------
+0        Separate fields for hour, minute and second
+1        HHMMSS
+2        HH:MM:SS
+
+### `lat_format`
+The `lat_format` field will have one of the following values:
+
+Value    Format
+-----    --------------------------
+0        -90 to 90
+1        0 to 90, with N/S in a separate column
+
+### `lon_format`
+The `lon_format` field will have one of the following values:
+
+Value    Format
+-----    --------------------------
+0        0 to 360
+1        -180 to 180
+2        0 to 180, with E/W in a separate column
+
+## `columns`
+This table defines which columns contain which data in an instrument's data files.
+
+The table contains entries for all the possible formatting options. Those that
+aren't needed will be left empty.
+
+Field                    Type           Description
+--------------------     ------------   -----------------------------------------------------------------
+instrument_id            Integer        The instrument ID
+run_type                 Integer        Run type
+date                     Integer        Date (all parts in one column)
+year                     Integer        Year
+month                    Integer        Month
+day                      Integer        Day
+time                     Integer        Time (all parts in one column)
+hour                     Integer        Hour
+minute                   Integer        Minute
+second                   Integer        Second
+latitude                 Integer        Latitude
+north_south              Integer        Latitude direction (N/S)
+longitude                Integer        Longitude
+east_west                Integer        Longitude direction (E/W)
+intake_temp_1            Integer        Intake temperature 1
+intake_temp_2            Integer        Intake temperature 2
+intake_temp_3            Integer        Intake temperature 3
+salinity_1               Integer        Salinity 1
+salinity_2               Integer        Salinity 2
+salinity_3               Integer        Salinity 3
+slp_1                    Integer        Sea level pressure 1
+slp_2                    Integer        Sea level pressure 2
+slp_3                    Integer        Sea level pressure 3
+eqt_1                    Integer        Equilibrator temperature 1
+eqt_2                    Integer        Equilibrator temperature 2
+eqt_3                    Integer        Equilibrator temperature 3
+eqp_1                    Integer        Equilibrator pressure 1
+eqp_2                    Integer        Equilibrator pressure 2
+eqp_3                    Integer        Equilibrator pressure 3
+seawater_pco2            Integer        Sea water pCO~2~
+
+## `run_types`
+Each instrument will have a number of run types. QuinCe has only two types: sea
+water pCO~2~ and gas standards. This table will hold details of which values in the
+`run_type` column (as defined in the `columns` table) correspond to which run types.
+
+Field                    Type           Description
+--------------------     ------------   -----------------------------------------------------------------
+file_id                  Integer        File ID
+instrument_id            Integer        Instrument ID
+run_id                   String         The value from the `run_type` column in the Columns table
+type                     Integer        The run type
+
+### `type`
+The `type` column will contain one of the following values:
+
+Value    Run type
+-----    --------------------------
+0        Sea water pCO~2~
+1        Gas standard
+
+## `gas_standard_concentrations`
+Each gas standard is supplied at a specific concentration, which may vary between
+cylinders. This table will store those concentrations.
+
+Field                    Type           Description
+--------------------     ------------   -------------------------------------------------------------------------
+instrument_id            Integer        Instrument ID
+standard_name            String         The name of the standard (from the `run_types` table)
+concentration            Float          The concentration of the standard
+date                     Date           The date on which the standard was deployed
+
+# Data Files
+For each data file that's uploaded, there are a number of pieces of information
+that are required alongside it. This section describes all the tables required
+to hold these details.
+
+## `data_files`
+This table is a simple list of all the data files held in the system.
+
+Field                    Type           Description
+--------------------     ------------   -------------------------------------------------------------------------
+instrument_id            Integer        The instrument ID
+filename                 String         The filename of the uploaded file. Must be unique for a given instrument
+last_touched             Date           The date when the file was last touched. Files held beyond a given length of time will be automatically deleted.
+
+## `pco2_data`
+This table will contain the records from the data file corresponding to the sea
+water pCO~2~ run. This is what will be displayed in the QC view. Gas standards
+data will be stored in a separate table.
+
+The table will be populated by the data reduction process. All calibrations
+will have been applied.
+
+Field                    Type           Description
+--------------------     ------------   -------------------------------------------------------------------------
+file_id                  Integer        File ID
+row                      Integer        Row number (from the original data file)
+date_time                DateTime       Date and time
+longitude                Float          Longitude
+latitude                 Float          Latitude
+intake_temp_1            Float          Intake temperature 1
+intake_temp_2            Float          Intake temperature 2
+intake_temp_3            Float          Intake temperature 3
+salinity_1               Float          Salinity 1
+salinity_2               Float          Salinity 2
+salinity_3               Float          Salinity 3
+slp_1                    Float          Sea level pressure 1
+slp_2                    Float          Sea level pressure 2
+slp_3                    Float          Sea level pressure 3
+eqt_1                    Float          Equilibrator temperature 1
+eqt_2                    Float          Equilibrator temperature 2
+eqt_3                    Float          Equilibrator temperature 3
+eqp_1                    Float          Equilibrator pressure 1
+eqp_2                    Float          Equilibrator pressure 2
+eqp_3                    Float          Equilibrator pressure 3
+seawater_pco2            Float          Sea water pCO~2~
+qc_flag                  Integer        The QC flag assigned by the automatic QC routines
+qc_message               String         The message(s) from the automatic QC routines
+woce_flag                Integer        The WOCE flag assigned by the user
+woce_comment             String         The WOCE comment
+
+## `gas_standards_data`
+This file stores details of the gas standard measurements from the data files.
+These will primarily be used in the data reduction routines to calibrate the actual
+sea water measurements, but they will be recorded here so they can be examined by
+the user.
+
+Field                    Type           Description
+--------------------     ------------   -------------------------------------------------------------------------
+file_id                  Integer        File ID
+row                      Integer        Row number (from the original data file)
+date_time                DateTime       Date and time
+run_type                 String         The gas standard name, as defined in the `run_types` table
+concentration            Float          The concentration measured
+
+
+## `sensor_calibration`
+Whenever a new data file is uploaded, the user will be asked to provide
+calibration data for each of the sensors. This table will store the calibration data.
+Each calibration will be defined as a polynomial curve with up to five harmonics.
+
+Field                    Type           Description
+--------------------     ------------   -------------------------------------------------------------------------
+instrument_id            Integer        Instrument ID
+date                     Date           Date of calibration
+sensor                   Integer        The sensor identifier
+intercept                Float          The intercept of the calibration curve
+x                        Float          First harmonic
+x2                       Float          Second harmonic
+x3                       Float          Third harmonic
+x4                       Float          Fourth harmonic
+x5                       Float          Fifth harmonic
+
+### `sensor`
+The `sensor` field will identify the sensor that the calibration is for.
+It will be a two-digit number: the first digit will be the sensor type, and
+the second will be the sensor number (there can be up to three sensors of each type).
+
+The first digit will be one of:
+
+Digit      Value
+-----      -----
+0          Intake temperature
+1          Salinity
+2          Sea level pressure
+3          Equilibrator temperature
+4          Equilibrator pressure
+
+The second digit will be in the range 1-3. Therefore a `sensor` field value of
+`32` indicates the second equilibrator temperature sensor.          
