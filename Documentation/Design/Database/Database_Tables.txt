@@ -247,7 +247,7 @@ Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
 instrument_id            Integer        Instrument ID
 date                     Date           Date of calibration
-sensor                   Integer        The sensor identifier
+sensor                   String         The sensor identifier
 intercept                Float          The intercept of the calibration curve
 x                        Float          First harmonic
 x2                       Float          Second harmonic
@@ -257,10 +257,9 @@ x5                       Float          Fifth harmonic
 
 ### `sensor`
 The `sensor` field will identify the sensor that the calibration is for.
-It will be a two-digit number: the first digit will be the sensor type, and
-the second will be the sensor number (there can be up to three sensors of each type).
+It will be of the form `<sensortype>_<sensornumber>` (there can be up to three sensors of each type).
 
-The first digit will be one of:
+`sensor_type` will be one of:
 
 Digit      Value
 -----      -----
@@ -271,4 +270,4 @@ Digit      Value
 4          Equilibrator pressure
 
 The second digit will be in the range 1-3. Therefore a `sensor` field value of
-`32` indicates the second equilibrator temperature sensor.          
+`3_2` indicates the second equilibrator temperature sensor.
