@@ -114,13 +114,16 @@ ul input {
 #userSettings {
   float: right;
   margin-right: 20px;
-  cursor: pointer;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+}
+
+.dropDown {
+    cursor: pointer;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 #content {
@@ -228,6 +231,17 @@ li.menuitem {
   user-select: none;
 }
 
+li.smallMenuitem {
+    font-weight: bold;
+    cursor: pointer;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 li.menuitem:hover {
   background: #8CD5ED;
 }
@@ -245,6 +259,22 @@ li.menuitem:hover {
   z-index: 10;
   box-shadow: 1px 2px 3px #000000;
   font-weight: bold;
+}
+
+.popupMenu {
+  border: 1px solid black;
+  background: white;
+  color: black;
+  position: absolute;
+  margin: auto;
+  font-size: 13px;
+  padding: 2px;
+  border-radius: 4px;
+  display: none;
+  z-index: 10;
+  box-shadow: 1px 2px 3px #000000;
+  width: 230px;
+  height: 260px;
 }
 
 .bad {

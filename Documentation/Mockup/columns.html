@@ -45,6 +45,16 @@
                   }
               }
           });
+
+          $('[id^=colselect_]').click(function(event) {
+              $('#columnMenu').hide(100);
+
+              var col = $('#' + event.target.id);
+              $('#columnMenu')
+              .css({"left": 0, "top": 0})
+              .offset({"left": col.position().left, "top": col.position().top + 100})
+              .show(100);
+          });
         });
     </script>
   </head>
@@ -56,9 +66,26 @@
           <li class="menuitem" onclick="self.document.location='login.html';">Log Out</li>
         </ul>
       </div>
+      <div id="columnMenu" class="popupMenu">
+          <ul class="menu">
+              <li class="smallMenuitem">Run Type</li>
+              <li class="smallMenuitem">Date</li>
+              <li class="smallMenuitem">Time</li>
+              <li class="smallMenuitem">Longitude</li>
+              <li class="smallMenuitem">East/West</li>
+              <li class="smallMenuitem">Latitude</li>
+              <li class="smallMenuitem">North/South</li>
+              <li class="smallMenuitem">Intake Temperature: Seabird</li>
+              <li class="smallMenuitem">Salinity: Seabird</li>
+              <li class="smallMenuitem">Sea Level Pressure: Licor</li>
+              <li class="smallMenuitem">Equilibrator Temperature: Top</li>
+              <li class="smallMenuitem">Equilibrator Temperature: Bottom</li>
+              <li class="smallMenuitem">Equilibrator Pressure: Licor</li>
+          </ul>
+      </div>
       <div id="header">
         QuinCe
-        <div id="userSettings" onclick="toggleSettingsMenu();">
+        <div id="userSettings" class="dropDown" onclick="toggleSettingsMenu();">
           Steve Jones ▼
         </div>
       </div>
@@ -82,72 +109,72 @@
                     <table class="rawdata">
                         <tr>
                             <td class="centreCol"><label>Header?</label></td>
-                            <td id="col_0" class="centreCol disabled">Not selected</td>
-                            <td id="col_1" class="centreCol disabled">Not selected</td>
-                            <td id="col_2" class="centreCol disabled">Not selected</td>
-                            <td id="col_3" class="centreCol disabled">Not selected</td>
-                            <td id="col_4" class="centreCol disabled">Not selected</td>
-                            <td id="col_5" class="centreCol disabled">Not selected</td>
-                            <td id="col_6" class="centreCol disabled">Not selected</td>
-                            <td id="col_7" class="centreCol disabled">Not selected</td>
-                            <td id="col_8" class="centreCol disabled">Not selected</td>
-                            <td id="col_9" class="centreCol disabled">Not selected</td>
-                            <td id="col_10" class="centreCol disabled">Not selected</td>
-                            <td id="col_11" class="centreCol disabled">Not selected</td>
-                            <td id="col_12" class="centreCol disabled">Not selected</td>
-                            <td id="col_13" class="centreCol disabled">Not selected</td>
-                            <td id="col_14" class="centreCol disabled">Not selected</td>
-                            <td id="col_15" class="centreCol disabled">Not selected</td>
-                            <td id="col_16" class="centreCol disabled">Not selected</td>
-                            <td id="col_17" class="centreCol disabled">Not selected</td>
-                            <td id="col_18" class="centreCol disabled">Not selected</td>
-                            <td id="col_19" class="centreCol disabled">Not selected</td>
-                            <td id="col_20" class="centreCol disabled">Not selected</td>
-                            <td id="col_21" class="centreCol disabled">Not selected</td>
-                            <td id="col_22" class="centreCol disabled">Not selected</td>
-                            <td id="col_23" class="centreCol disabled">Not selected</td>
-                            <td id="col_24" class="centreCol disabled">Not selected</td>
-                            <td id="col_25" class="centreCol disabled">Not selected</td>
-                            <td id="col_26" class="centreCol disabled">Not selected</td>
-                            <td id="col_27" class="centreCol disabled">Not selected</td>
-                            <td id="col_28" class="centreCol disabled">Not selected</td>
-                            <td id="col_29" class="centreCol disabled">Not selected</td>
-                            <td id="col_30" class="centreCol disabled">Not selected</td>
-                            <td id="col_31" class="centreCol disabled">Not selected</td>
-                            <td id="col_32" class="centreCol disabled">Not selected</td>
-                            <td id="col_33" class="centreCol disabled">Not selected</td>
-                            <td id="col_34" class="centreCol disabled">Not selected</td>
-                            <td id="col_35" class="centreCol disabled">Not selected</td>
-                            <td id="col_36" class="centreCol disabled">Not selected</td>
-                            <td id="col_37" class="centreCol disabled">Not selected</td>
-                            <td id="col_38" class="centreCol disabled">Not selected</td>
-                            <td id="col_39" class="centreCol disabled">Not selected</td>
-                            <td id="col_40" class="centreCol disabled">Not selected</td>
-                            <td id="col_41" class="centreCol disabled">Not selected</td>
-                            <td id="col_42" class="centreCol disabled">Not selected</td>
-                            <td id="col_43" class="centreCol disabled">Not selected</td>
-                            <td id="col_44" class="centreCol disabled">Not selected</td>
-                            <td id="col_45" class="centreCol disabled">Not selected</td>
-                            <td id="col_46" class="centreCol disabled">Not selected</td>
-                            <td id="col_47" class="centreCol disabled">Not selected</td>
-                            <td id="col_48" class="centreCol disabled">Not selected</td>
-                            <td id="col_49" class="centreCol disabled">Not selected</td>
-                            <td id="col_50" class="centreCol disabled">Not selected</td>
-                            <td id="col_51" class="centreCol disabled">Not selected</td>
-                            <td id="col_52" class="centreCol disabled">Not selected</td>
-                            <td id="col_53" class="centreCol disabled">Not selected</td>
-                            <td id="col_54" class="centreCol disabled">Not selected</td>
-                            <td id="col_55" class="centreCol disabled">Not selected</td>
-                            <td id="col_56" class="centreCol disabled">Not selected</td>
-                            <td id="col_57" class="centreCol disabled">Not selected</td>
-                            <td id="col_58" class="centreCol disabled">Not selected</td>
-                            <td id="col_59" class="centreCol disabled">Not selected</td>
-                            <td id="col_60" class="centreCol disabled">Not selected</td>
-                            <td id="col_61" class="centreCol disabled">Not selected</td>
-                            <td id="col_62" class="centreCol disabled">Not selected</td>
-                            <td id="col_63" class="centreCol disabled">Not selected</td>
-                            <td id="col_64" class="centreCol disabled">Not selected</td>
-                            <td id="col_65" class="centreCol disabled">Not selected</td>
+                            <td id="colselect_0" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_1" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_2" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_3" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_4" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_5" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_6" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_7" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_8" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_9" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_10" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_11" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_12" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_13" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_14" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_15" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_16" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_17" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_18" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_19" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_20" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_21" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_22" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_23" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_24" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_25" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_26" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_27" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_28" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_29" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_30" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_31" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_32" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_33" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_34" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_35" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_36" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_37" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_38" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_39" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_40" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_41" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_42" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_43" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_44" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_45" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_46" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_47" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_48" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_49" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_50" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_51" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_52" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_53" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_54" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_55" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_56" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_57" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_58" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_59" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_60" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_61" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_62" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_63" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_64" class="centreCol dropDown">Not selected ▼</td>
+                            <td id="colselect_65" class="centreCol dropDown">Not selected ▼</td>
                         </tr>
                         <tr id="row_1">
                             <td class="centreCol"><input type="checkbox" id="rowhead_1" name="rowhead_1"></td>
