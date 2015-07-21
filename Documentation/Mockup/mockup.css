@@ -26,11 +26,14 @@ label {
 input {
   border-radius: 3px;
   border: 1px solid #666;
-  font-size: 18px;
 }
 
 input[type="text"].numeric {
   text-align: right;
+}
+
+input[type="text"].large {
+  font-size: 18px;
 }
 
 input.expand {
@@ -55,6 +58,13 @@ button {
   cursor: pointer;
   width: 100px;
   margin-right: 20px;
+  white-space: nowrap;
+}
+
+button.inline {
+    margin-top: 0px;
+    padding-top: 1px;
+    padding-bottom: 1px;
 }
 
 button[disabled="disabled"] {
@@ -498,4 +508,13 @@ td.disabled {
 
 tr.header {
     font-weight: bold;
+}
+
+.smallHeader {
+    font-weight: bold;
+    font-size: 15px;
+}
+
+hr {
+    margin-bottom: 25px;
 }
