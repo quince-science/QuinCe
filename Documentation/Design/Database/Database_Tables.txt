@@ -249,7 +249,7 @@ instrument_id            Integer        Instrument ID
 date                     Date           Date of calibration
 sensor                   String         The sensor identifier
 intercept                Float          The intercept of the calibration curve
-x                        Float          First harmonic
+x                        Float          Slope
 x2                       Float          Second harmonic
 x3                       Float          Third harmonic
 x4                       Float          Fourth harmonic
