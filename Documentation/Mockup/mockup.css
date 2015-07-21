@@ -166,6 +166,14 @@ td {
   padding: 3px 5px 3px 5px;
 }
 
+td.columnBorder {
+    border-left: 1px solid #aaa;
+}
+
+td.columnBorder:first-of-type {
+    border-left: none;
+}
+
 .fullpage {
   width: 95%;
   margin: auto;
