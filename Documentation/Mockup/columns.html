@@ -7,12 +7,18 @@
     <title>QuinCe - New Instrument</title>
     <script type="text/javascript" src="jquery.js"></script>
     <script typr="text/javascript">
+
+        var currentCol = "";
+
+
         function toggleSettingsMenu() {
           $('#userSettingsMenu').toggleClass('visible');
         }
 
-        function hideSettingsMenu() {
-          $('#userSettingsMenu').removeClass('visible');
+        function hideMenus() {
+            $('#userSettingsMenu').removeClass('visible');
+            $('#columnMenu').hide(100);
+            currentCol = "";
         }
 
         function prev() {
@@ -47,13 +53,31 @@
           });
 
           $('[id^=colselect_]').click(function(event) {
-              $('#columnMenu').hide(100);
 
-              var col = $('#' + event.target.id);
-              $('#columnMenu')
-              .css({"left": 0, "top": 0})
-              .offset({"left": col.position().left, "top": col.position().top + 100})
-              .show(100);
+              var col = '#' + event.target.id;
+
+              if (currentCol == col) {
+                  $('#columnMenu').hide(100);
+                  currentCol = "";
+              } else {
+                  $('#columnMenu')
+                  .css({"left": 0, "top": 0})
+                  .offset({
+                      "left": $(col).position().left,
+                      "top": $(col).position().top + 60,
+                      "width": $('#colMenuList').width(),
+                      "height": $('#colMenuList').height()
+                  });
+
+                  if (currentCol == "") {
+                      $('#columnMenu').show(100);
+                  }
+
+                  currentCol = col;
+              }
+              event.preventDefault();
+              event.stopPropagation();
+              event.stopImmediatePropagation();
           });
         });
     </script>
@@ -67,7 +91,7 @@
         </ul>
       </div>
       <div id="columnMenu" class="popupMenu">
-          <ul class="menu">
+          <ul id="colMenuList"class="menu">
               <li class="smallMenuitem">Run Type</li>
               <li class="smallMenuitem">Date</li>
               <li class="smallMenuitem">Time</li>
@@ -89,7 +113,7 @@
           Steve Jones ▼
         </div>
       </div>
-      <div id="content" onclick="hideSettingsMenu();">
+      <div id="content" onclick="hideMenus();">
         <h1>New Instrument</h1>
         <h2>Benguela Stream</h2>
 
