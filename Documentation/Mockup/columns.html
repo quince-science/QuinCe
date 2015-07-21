@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="mockup.css"/>
     <title>QuinCe - New Instrument</title>
     <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="jquery-ui/jquery-ui.min.js"></script>
     <script typr="text/javascript">
 
         var currentCol = "";
@@ -113,19 +114,18 @@
           Steve Jones ▼
         </div>
       </div>
-      <div id="content" onclick="hideMenus();">
-        <h1>New Instrument</h1>
-        <h2>Benguela Stream</h2>
+      <div id="content" onclick="hideSettingsMenu();">
+        <h1>Benguela Stream</h1>
 
         <div class="fullPage">
             <form id="columnForm" method="post" autocomplete="off" accept-charset="utf8">
                 <div class="sectionHeader">
                     Specify columns and headers
                 </div>
-                <div class="instructions">
-                    Identify header rows using the checkboxes. Drag and drop the items below
-                    to identify columns.
-                </div>
+                <div class="sectionContent">
+                    <div class="instructions">
+                        Identify header rows using the checkboxes. Assign columns using the drop-down menus.
+                    </div>
                 <div class="sectionHeader">
                     File Contents
                 </div>
