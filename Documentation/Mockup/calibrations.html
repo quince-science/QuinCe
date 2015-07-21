@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<html>
+  <head>
+    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" type="text/css" href="mockup.css"/>
+    <title>QuinCe - Instrument List</title>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript">
+    </script>
+  </head>
+  <body>
+    <div id="userSettingsMenu">
+      <ul class="menu">
+        <li class="menuitem" onclick="hideSettingsMenu();self.document.location='newinstrument.html';">Instruments</li>
+        <li class="menuitem">Account</li>
+        <li class="menuitem" onclick="hideSettingsMenu();self.document.location='login.html';">Log Out</li>
+      </ul>
+    </div>
+    <div id="header">
+      QuinCe
+      <div id="userSettings" onclick="toggleSettingsMenu();">
+        Steve Jones ▼
+      </div>
+    </div>
+    <div id="content" onclick="hideSettingsMenu();">
+      <h1>Upload Data File</h1>
+      <div class="fullPage">
+          <div class="sectionHeader">
+              Choose Instrument
+          </div>
+          <div class="sectionContent">
+              <div class="instructions">
+                  Select the instrument for the data file
+              </div>
+              <select id="instrument" name="instrument">
+                  <option>Select...</option>
+                  <option>Benguela Stream</option>
+                  <option>Benguela Stream - CRD Test</option>
+              </select>
+          </div>
+          <div id="selectFile">
+              <div class="sectionHeader">
+                  Select file
+              </div>
+              <div class="sectionContent">
+                  <div class="instructions">
+                      Select the data file to upload
+                  </div>
+                  <input type="text" value="File20150707.txt">
+                  <button onclick="uploadFile" class="inline">Upload</button>
+                  <div id="uploading">
+                      File uploading... 10%
+                  </div>
+              </div>
+          </div>
+          <div id="calibrations">
+              <div class="sectionHeader">
+                  Sensor Calibrations
+              </div>
+              <div class="sectionContent">
+                  <div class="instructions">
+                      While your file is uploading, update your sensor calibration details
+                  </div>
+                  <div class="smallHeader">
+                      Intake Temperature: Seabird
+                  </div>
+                  <table width="100%">
+                      <tr>
+                          <td>Intercept</td>
+                          <td>x</td>
+                          <td>x<sup>2</sup></td>
+                          <td>x<sup>3</sup></td>
+                          <td>x<sup>4</sup></td>
+                          <td>x<sup>5</sup></td>
+                      </tr>
+                      <tr>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                      </tr>
+                  </table>
+                  <hr/>
+                  <div class="smallHeader">
+                      Salinity: Seabird
+                  </div>
+                  <table width="100%">
+                      <tr>
+                          <td>Intercept</td>
+                          <td>x</td>
+                          <td>x<sup>2</sup></td>
+                          <td>x<sup>3</sup></td>
+                          <td>x<sup>4</sup></td>
+                          <td>x<sup>5</sup></td>
+                      </tr>
+                      <tr>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                      </tr>
+                  </table>
+                  <hr/>
+                  <div class="smallHeader">
+                      Intake Temperature: Seabird
+                  </div>
+                  <table width="100%">
+                      <tr>
+                          <td>Intercept</td>
+                          <td>x</td>
+                          <td>x<sup>2</sup></td>
+                          <td>x<sup>3</sup></td>
+                          <td>x<sup>4</sup></td>
+                          <td>x<sup>5</sup></td>
+                      </tr>
+                      <tr>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                      </tr>
+                  </table>
+                  <hr/>
+                  <div class="smallHeader">
+                      Intake Temperature: Seabird
+                  </div>
+                  <table width="100%">
+                      <tr>
+                          <td>Intercept</td>
+                          <td>x</td>
+                          <td>x<sup>2</sup></td>
+                          <td>x<sup>3</sup></td>
+                          <td>x<sup>4</sup></td>
+                          <td>x<sup>5</sup></td>
+                      </tr>
+                      <tr>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                      </tr>
+                  </table>
+                  <hr/>
+                  <div class="smallHeader">
+                      Intake Temperature: Seabird
+                  </div>
+                  <table width="100%">
+                      <tr>
+                          <td>Intercept</td>
+                          <td>x</td>
+                          <td>x<sup>2</sup></td>
+                          <td>x<sup>3</sup></td>
+                          <td>x<sup>4</sup></td>
+                          <td>x<sup>5</sup></td>
+                      </tr>
+                      <tr>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                          <td><input type="text" size="8"></td>
+                      </tr>
+                  </table>
+              </div>
+          </div>
+        </div>
+        <div class="buttonWrapper">
+            <button onclick="alert('File has been queued for processing');window.location='filelist.html';return false;">Process File</button>
+            <button>Cancel</button>
+        </div>
+    </div>
+  </body>
+</html>

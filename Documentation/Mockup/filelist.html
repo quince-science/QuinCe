@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<html>
+  <head>
+    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" type="text/css" href="mockup.css"/>
+    <title>QuinCe - Instrument List</title>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript">
+
+      function showQCPopup(fileIndex) {
+          var popupData = qcStats[fileIndex];
+          $('#qcBad').html(popupData[0]);
+          $('#qcQuestionable').html(popupData[1]);
+          $('#qcGood').html(popupData[2]);
+          $('#qcIgnored').html(popupData[3]);
+
+          $('#qcPopup').fadeIn(100);
+        }
+
+      function showWOCEPopup(fileIndex) {
+          var popupData = woceStats[fileIndex];
+          $('#woceBad').html(popupData[0]);
+          $('#woceQuestionable').html(popupData[1]);
+          $('#woceGood').html(popupData[2]);
+          $('#woceAssumedGood').html(popupData[3]);
+          $('#woceNeedsFlagging').html(popupData[4]);
+          $('#woceIgnored').html(popupData[5]);
+
+          $('#wocePopup').fadeIn(100);
+      }
+
+      function hidePopup(id) {
+        $(id).fadeOut(100);
+      }
+
+      function popupFollow(id, event) {
+        $(id).css({left: event.pageX + 16, top: event.pageY + 20});
+      }
+
+      function toggleSettingsMenu() {
+        $('#userSettingsMenu').toggleClass('visible');
+      }
+
+      function hideSettingsMenu() {
+        $('#userSettingsMenu').removeClass('visible');
+      }
+
+      var qcColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(50,50,50)"];
+      var woceColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(118,211,118)", "rgb(180,180,180)", "rgb(50,50,50)"];
+
+      // Data structures for file stats.
+      var recordCounts = new Array();
+      recordCounts[0] = 562;
+      recordCounts[1] = 719;
+
+      var qcStats = new Array();
+      qcStats[0] = [35, 50, 403, 74];
+      qcStats[1] = [203, 424, 65, 27];
+
+      var woceStats = new Array();
+      woceStats[0] = [11, 50, 155, 145, 127, 119];
+      woceStats[1] = [0, 627, 65, 0, 0, 27];
+
+      function drawStatBar(elementId, recordCount, stats, colors) {
+        var canvas = $(elementId).get(0);
+        var ctx = canvas.getContext('2d');
+
+        var barFilled = 0;
+        for (var i = 0; i < stats.length; i++) {
+          ctx.fillStyle = colors[i];
+          ctx.fillRect(barFilled * canvas.width, 0, (stats[i] / recordCount) * canvas.width, canvas.height);
+          barFilled += (stats[i] / recordCount);
+        }
+      }
+
+      // Set the mouse over/out/move events on the stat bars
+      $(function() {
+        $('[id^=qcBar_]')
+          .mouseenter(function(event) {
+            showQCPopup(event.target.id.slice(6));
+          })
+          .mouseleave(function() {
+            hidePopup('#qcPopup');
+          })
+          .mousemove(function(event) {
+            popupFollow('#qcPopup', event);
+          });
+
+        $('[id^=woceBar_]')
+          .mouseenter(function(event) {
+            showWOCEPopup(event.target.id.slice(8));
+          })
+          .mouseleave(function() {
+            hidePopup('#wocePopup');
+          })
+          .mousemove(function(event) {
+            popupFollow('#wocePopup', event);
+          });
+      });
+    </script>
+  </head>
+  <body>
+
+    <div id="qcPopup" class="popup">
+      <table>
+        <tr class="bad">
+          <td>Error</td>
+          <td id="qcBad" class="numericCol"></td>
+        </tr>
+        <tr class="questionable">
+          <td>Warning</td>
+          <td id="qcQuestionable" class="numericCol"></td>
+        </tr>
+        <tr class="good">
+          <td>Passed</td>
+          <td id="qcGood" class="numericCol"></td>
+        </tr>
+        <tr class="ignore">
+          <td>Ignored</td>
+          <td id="qcIgnored" class="numericCol"></td>
+        </tr>
+      </table>
+    </div>
+
+    <div id="wocePopup" class="popup">
+      <table>
+        <tr class="bad">
+          <td>Bad</td>
+          <td id="woceBad" class="numericCol"></td>
+        </tr>
+        <tr class="questionable">
+          <td>Questionable</td>
+          <td id="woceQuestionable" class="numericCol"></td>
+        </tr>
+        <tr class="good">
+          <td>Marked Good</td>
+          <td id="woceGood" class="numericCol"></td>
+        </tr>
+        <tr class="assumedGood">
+          <td>Assumed Good</td>
+          <td id="woceAssumedGood" class="numericCol"></td>
+        </tr>
+        <tr class="needsFlagging">
+          <td>Needs Flagging</td>
+          <td id="woceNeedsFlagging" class="numericCol"></td>
+        </tr>
+        <tr class="ignored">
+          <td>Ignored</td>
+          <td id="woceIgnored" class="numericCol"></td>
+        </tr>
+      </table>
+    </div>
+
+    <div id="userSettingsMenu">
+      <ul class="menu">
+        <li class="menuitem" onclick="hideSettingsMenu();self.document.location='newinstrument.html';">Instruments</li>
+        <li class="menuitem">Account</li>
+        <li class="menuitem" onclick="hideSettingsMenu();self.document.location='login.html';">Log Out</li>
+      </ul>
+    </div>
+    <div id="header">
+      QuinCe
+      <div id="userSettings" onclick="toggleSettingsMenu();">
+        Steve Jones ▼
+      </div>
+    </div>
+    <div id="content" onclick="hideSettingsMenu();">
+      <h1>Data Files</h1>
+      <table class="fullpage">
+        <tr>
+          <th>File Name</th>
+          <th>Instrument</th>
+          <th>Start Date</th>
+          <th>QC Status</th>
+          <th class="numericCol">Records</th>
+          <th class="statBarCol">QC Stats</th>
+          <th class="statBarCol">WOCE Stats</th>
+          <th>Export</th>
+          <th class="numericCol">Time Left</th>
+        </tr>
+        <tr class="fileList">
+          <td>BS093.txt</td>
+          <td>Benguela Stream</td>
+          <td>2014-02-01</td>
+          <td>In queue</td>
+          <td class="numericCol">2013</td>
+          <td class="statBarCol">
+            —
+          </td>
+          <td class="statBarCol">
+            —
+          </td>
+          <td>Export</td>
+          <td class="numericCol">34 days</td>
+        </tr>
+        <tr class="link fileList" onclick="self.document.location='filedata.html';">
+          <td>BS070.txt</td>
+          <td>Benguela Stream</td>
+          <td>2009-11-21</td>
+          <td>Complete</td>
+          <td class="numericCol">562</td>
+          <td class="statBarCol">
+            <canvas id="qcBar_0" class="statBar"></canvas>
+            <script type="text/javascript">
+              drawStatBar('#qcBar_0', recordCounts[0], qcStats[0], qcColors);
+            </script>
+          </td>
+          <td class="statBarCol">
+            <canvas id="woceBar_0" class="statBar"></canvas>
+            <script type="text/javascript">
+              drawStatBar('#woceBar_0', recordCounts[0], woceStats[0], woceColors);
+            </script>
+          </td>
+          <td>Export</td>
+          <td class="numericCol">15 days</td>
+        </tr>
+        <tr class="link fileList" onclick="self.document.location='filedata.html';">
+          <td>BS094.txt</td>
+          <td>Benguela Stream - CRD Test</td>
+          <td>2009-11-21</td>
+          <td>Complete</td>
+          <td class="numericCol">719</td>
+          <td class="statBarCol">
+            <canvas id="qcBar_1" class="statBar"></canvas>
+            <script type="text/javascript">
+              drawStatBar('#qcBar_1', recordCounts[1], qcStats[1], qcColors);
+            </script>
+          </td>
+          <td class="statBarCol">
+            <canvas id="woceBar_1" class="statBar"></canvas>
+            <script type="text/javascript">
+              drawStatBar('#woceBar_1', recordCounts[1], woceStats[1], woceColors);
+            </script>
+          </td>
+          <td>Export</td>
+          <td class="alert numericCol">2 days</td>
+        </tr>
+      </table>
+      <div class="buttonWrapper">
+          <button onclick="window.location='calibrations.html';return false;">Upload file</button>
+      </div>
+    </div>
+  </body>
+</html>

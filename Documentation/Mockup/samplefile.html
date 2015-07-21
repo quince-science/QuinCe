@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<html>
+  <head>
+    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700,700italic" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" type="text/css" href="mockup.css"/>
+    <title>QuinCe - New Instrument</title>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script typr="text/javascript">
+        function toggleSettingsMenu() {
+          $('#userSettingsMenu').toggleClass('visible');
+        }
+
+        function hideSettingsMenu() {
+          $('#userSettingsMenu').removeClass('visible');
+        }
+
+        function prev() {
+          window.location="newinstrument.html";
+          return false;
+        }
+
+        function next() {
+          window.location="columns.html";
+          return false;
+        }
+
+        function cancelInstrument() {
+          window.location="filelist.html";
+          return false;
+        }
+
+
+
+        $(function() {
+          $('[id^=separator_]').click(function() {
+              $('#other_char').attr('disabled', fileForm.separator.value != 'other');
+          });
+        });
+
+    </script>
+  </head>
+  <body>
+      <div id="userSettingsMenu">
+        <ul class="menu">
+          <li class="menuitem" onclick="self.document.location='newinstrument.html';">Instruments</li>
+          <li class="menuitem">Account</li>
+          <li class="menuitem" onclick="self.document.location='login.html';">Log Out</li>
+        </ul>
+      </div>
+      <div id="header">
+        QuinCe
+        <div id="userSettings" onclick="toggleSettingsMenu();">
+          Steve Jones ▼
+        </div>
+      </div>
+      <div id="content" onclick="hideSettingsMenu();">
+        <h1>Benguela Stream</h1>
+
+        <div class="fullPage">
+
+            <form id="fileForm" method="post" autocomplete="off" accept-charset="utf8">
+                <!-- Insturment labels from previous page will be hidden in this form -->
+                <div class="sectionHeader">
+                  File separator
+                </div>
+                <div class="instructions">
+                  Please specify the character used to separate columns in your data file
+                </div>
+                <div class="sectionContent">
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="separator" value="comma" id="separator_comma"><label id="separator_comma_label" for="separator_comma"> Comma</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="separator" value="tab" id="separator_tab"><label id="separator_tab_label" for="separator_tab"> Tab</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="separator" value="other" id="separator_other" checked><label id="separator_other_label" for="separator_other"> Other </label>
+                                <input type="text" name="separator_other_char" id="other_char" maxlength="1" size="3" value=" " disabled>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="sectionHeader">
+                    Date/Time Format
+                </div>
+                <div class="sectionContent">
+                    <div class="instructions">
+                        Please select the date format used in your data file.
+                    </div>
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="separateFields" id="date_separate"><label for="date_separate"> Separate Fields</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="ddmmyy" id="date_ddmmyy" checked><label for="date_ddmmyy"> DD/MM/YY</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="mmddyy" id="date_mmddyy"><label for="date_mmddyy"> MM/DD/YY</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="yyyymmdd" id="date_yyyymmdd"><label for="date_yyyymmdd"> YYYYMMDD</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="ddmmyyyy" id="date_ddmmyyyy"><label for="date_ddmmyyyy"> DD/MM/YYYY</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="mmddyyyy" id="date_mmddyyyy"><label for="date_mmddyyyy"> MM/DD/YYYY</label>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="instructions">
+                        Please select the time format used in your data file.
+                    </div>
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="timeFormat" value="separateFields" id="time_separate"><label for="time_separate"> Separate Fields</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="timeFormat" value="hhmmss" id="time_hhmmss"><label for="time_hhmmss"> HHMMSS</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="timeFormat" value="hh:mm:ss" id="time_colons" checked><label for="time_colons"> HH:MM:SS</label>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="sectionHeader">
+                    Latitude/Longitude Format
+                </div>
+                <div class="sectionContent">
+                    <div class="instructions">
+                        Please select the format of the latitude data
+                    </div>
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="latFormat" value="minus90plus90" id="minus90plus90"><label for="minus90plus90">-90 to 90</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="latFormat" value="noughtto90" id="noughtto90" checked><label for="noughtto90">0 to 90 (N/S in separate column)</label>
+                            </td>
+                            <td width="33%">
+                                &nbsp;
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="instructions">
+                        Please select the format of the longitude data
+                    </div>
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="lonFormat" value="nought360" id="nought360"><label for="nought360">0 to 360</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="lonFormat" value="minustoplus" id="minustoplus"><label for="minustoplus">-180 to 180</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="lonFormat" value="nougth180" id="nougth180" checked><label for="nougth180">0 to 180 (E/W in separate column)</label>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="sectionHeader">
+                  Upload sample file
+                </div>
+                <div class="instructions">
+                  Please select a sample data file to upload
+                </div>
+                <div class="sectionContent">
+                    <input type="text">
+                </div>
+            </form>
+            <div class="buttonWrapper">
+                <button onclick="prev()">Previous</button>
+                <button onclick="next()">Next</button>
+                <button onclick="cancelInstrument()">Cancel</input>
+            </div>
+        </div>
+    </div>
+  </body>
+</html>

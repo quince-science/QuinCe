@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<html>
+  <head>
+    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" type="text/css" href="mockup.css"/>
+
+    <script type="text/javascript">
+      function doLogin() {
+        window.location="filelist.html";
+        return false;
+      }
+    </script>
+
+    <title>QuinCe - Login</title>
+  </head>
+  <body>
+    <div id="loginbox">
+      <h1>QuinCe</h1>
+
+      <form id="loginform" method="post" onsubmit="return doLogin();" autocomplete="off" accept-charset="utf8">
+        <ul>
+          <li>
+            <label for="username" class="separateline">User name</label>
+            <input type="text" class="separateline" name="username"></input>
+          </li>
+          <li>
+            <label for="password" class="separateline">Password</label>
+            <input type="password" class="separateline" name="password"></input>
+          </li>
+          <li class="buttonWrapper">
+            <button onclick="doLogin()">Log In</input>
+          </li>
+        </ul>
+      </form>
+    </div>
+  </body>
+</html>
