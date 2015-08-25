@@ -39,6 +39,10 @@ We allow up to three sensors of each type to be defined. They are treated as
 separate fields in violation of third normal form, but the amount of processing
 required to handle dynamically defined sensors would be prohibitive.
 
+The table alsp defines which columns contain which data in an instrument's data
+files. Entries are supplied for all the possible formatting options. Those that
+aren't needed will be left empty.
+
 Field                    Type           Description
 --------------------     ------------   -----------------------------------------------------------------
 id                       Integer        ID
@@ -64,6 +68,35 @@ time_format              Integer        The time format used in the instrument's
 lat_format               Integer        The latitude format used in the instrument's data files
 lon_format               Integer        The longitude format used in the instrument's data files
 header_lines             Integer        The number of header lines in the instrument's data files
+run_type_col             Integer        Run type
+date_col                 Integer        Date (all parts in one column)
+year_col                 Integer        Year
+month_col                Integer        Month
+day_col                  Integer        Day
+time_col                 Integer        Time (all parts in one column)
+hour_col                 Integer        Hour
+minute_col               Integer        Minute
+second_col               Integer        Second
+latitude_col             Integer        Latitude
+north_south_col          Integer        Latitude direction (N/S)
+longitude_col            Integer        Longitude
+east_west_col            Integer        Longitude direction (E/W)
+intake_temp_1_col        Integer        Intake temperature 1
+intake_temp_2_col        Integer        Intake temperature 2
+intake_temp_3_col        Integer        Intake temperature 3
+salinity_1_col           Integer        Salinity 1
+salinity_2_col           Integer        Salinity 2
+salinity_3_col           Integer        Salinity 3
+slp_1_col                Integer        Sea level pressure 1
+slp_2_col                Integer        Sea level pressure 2
+slp_3_col                Integer        Sea level pressure 3
+eqt_1_col                Integer        Equilibrator temperature 1
+eqt_2_col                Integer        Equilibrator temperature 2
+eqt_3_col                Integer        Equilibrator temperature 3
+eqp_1_col                Integer        Equilibrator pressure 1
+eqp_2_col                Integer        Equilibrator pressure 2
+eqp_3_col                Integer        Equilibrator pressure 3
+seawater_pco2_col        Integer        Sea water pCO~2~
 
 ### `date_format`
 The `date_format` field will have one of the following values:
@@ -103,46 +136,7 @@ Value    Format
 1        -180 to 180
 2        0 to 180, with E/W in a separate column
 
-## `columns`
-This table defines which columns contain which data in an instrument's data files.
-
-The table contains entries for all the possible formatting options. Those that
-aren't needed will be left empty.
-
-Field                    Type           Description
---------------------     ------------   -----------------------------------------------------------------
-instrument_id            Integer        The instrument ID
-run_type                 Integer        Run type
-date                     Integer        Date (all parts in one column)
-year                     Integer        Year
-month                    Integer        Month
-day                      Integer        Day
-time                     Integer        Time (all parts in one column)
-hour                     Integer        Hour
-minute                   Integer        Minute
-second                   Integer        Second
-latitude                 Integer        Latitude
-north_south              Integer        Latitude direction (N/S)
-longitude                Integer        Longitude
-east_west                Integer        Longitude direction (E/W)
-intake_temp_1            Integer        Intake temperature 1
-intake_temp_2            Integer        Intake temperature 2
-intake_temp_3            Integer        Intake temperature 3
-salinity_1               Integer        Salinity 1
-salinity_2               Integer        Salinity 2
-salinity_3               Integer        Salinity 3
-slp_1                    Integer        Sea level pressure 1
-slp_2                    Integer        Sea level pressure 2
-slp_3                    Integer        Sea level pressure 3
-eqt_1                    Integer        Equilibrator temperature 1
-eqt_2                    Integer        Equilibrator temperature 2
-eqt_3                    Integer        Equilibrator temperature 3
-eqp_1                    Integer        Equilibrator pressure 1
-eqp_2                    Integer        Equilibrator pressure 2
-eqp_3                    Integer        Equilibrator pressure 3
-seawater_pco2            Integer        Sea water pCO~2~
-
-## `run_types`
+### `run_types`
 Each instrument will have a number of run types. QuinCe has only two types: sea
 water pCO~2~ and gas standards. This table will hold details of which values in the
 `run_type` column (as defined in the `columns` table) correspond to which run types.
