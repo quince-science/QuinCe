@@ -46,6 +46,7 @@ aren't needed will be left empty.
 Field                    Type           Description
 --------------------     ------------   -----------------------------------------------------------------
 id                       Integer        ID
+owner                    Integer        The ID of the user who owns this instrument
 name                     String         The name of the instrument
 intake_temp_1_name       String         The name of the first intake temperature sensor
 intake_temp_2_name       String         The name of the second intake temperature sensor
