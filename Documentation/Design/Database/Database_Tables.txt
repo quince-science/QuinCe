@@ -26,7 +26,7 @@ surname                  String         The user's surname
 verification_code        String         Code for verifying email address
 permissions              Integer        A field for defining user permissions. Defined as a bitmask.
 
-### Permissions
+#### Permissions
 The permissions that can be applied to a user are as follows:
 
 # Instruments
@@ -98,7 +98,7 @@ eqp_2_col                Integer        Equilibrator pressure 2
 eqp_3_col                Integer        Equilibrator pressure 3
 seawater_pco2_col        Integer        Sea water pCO~2~
 
-### `date_format`
+#### `date_format`
 The `date_format` field will have one of the following values:
 
 Value    Format
@@ -110,7 +110,7 @@ Value    Format
 4        MM/DD/YY
 5        MM/DD/YYYY
 
-### `time_format`
+#### `time_format`
 The `time_format` field will have one of the following values:
 
 Value    Format
@@ -119,7 +119,7 @@ Value    Format
 1        HHMMSS
 2        HH:MM:SS
 
-### `lat_format`
+#### `lat_format`
 The `lat_format` field will have one of the following values:
 
 Value    Format
@@ -127,7 +127,7 @@ Value    Format
 0        -90 to 90
 1        0 to 90, with N/S in a separate column
 
-### `lon_format`
+#### `lon_format`
 The `lon_format` field will have one of the following values:
 
 Value    Format
@@ -136,7 +136,7 @@ Value    Format
 1        -180 to 180
 2        0 to 180, with E/W in a separate column
 
-### `run_types`
+#### `run_types`
 Each instrument will have a number of run types. QuinCe has only two types: sea
 water pCO~2~ and gas standards. This table will hold details of which values in the
 `run_type` column (as defined in the `columns` table) correspond to which run types.
@@ -148,7 +148,7 @@ instrument_id            Integer        Instrument ID
 run_id                   String         The value from the `run_type` column in the Columns table
 type                     Integer        The run type
 
-### `type`
+##### `type`
 The `type` column will contain one of the following values:
 
 Value    Run type
@@ -249,7 +249,7 @@ x3                       Float          Third harmonic
 x4                       Float          Fourth harmonic
 x5                       Float          Fifth harmonic
 
-### `sensor`
+#### `sensor`
 The `sensor` field will identify the sensor that the calibration is for.
 It will be of the form `<sensortype>_<sensornumber>` (there can be up to three sensors of each type).
 
