@@ -46,7 +46,7 @@ aren't needed will be left empty.
 Field                    Type           Description
 --------------------     ------------   -----------------------------------------------------------------
 id                       Integer        ID
-owner                    Integer        The ID of the user who owns this instrument
+owner                    F_KEY          The ID of the user who owns this instrument
 name                     String         The name of the instrument
 intake_temp_1_name       String         The name of the first intake temperature sensor
 intake_temp_2_name       String         The name of the second intake temperature sensor
@@ -145,7 +145,7 @@ water pCO~2~ and gas standards. This table will hold details of which values in 
 Field                    Type           Description
 --------------------     ------------   -----------------------------------------------------------------
 file_id                  Integer        File ID
-instrument_id            Integer        Instrument ID
+instrument_id            F_KEY          Instrument ID
 run_id                   String         The value from the `run_type` column in the Columns table
 type                     Integer        The run type
 
@@ -163,7 +163,7 @@ cylinders. This table will store those concentrations.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-instrument_id            Integer        Instrument ID
+instrument_id            F_KEY          Instrument ID
 standard_name            String         The name of the standard (from the `run_types` table)
 concentration            Float          The concentration of the standard
 date                     Date           The date on which the standard was deployed
@@ -178,7 +178,7 @@ This table is a simple list of all the data files held in the system.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-instrument_id            Integer        The instrument ID
+instrument_id            F_KEY          The instrument ID
 filename                 String         The filename of the uploaded file. Must be unique for a given instrument
 last_touched             Date           The date when the file was last touched. Files held beyond a given length of time will be automatically deleted.
 
@@ -192,7 +192,7 @@ will have been applied.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-file_id                  Integer        File ID
+data_file_id             F_KEY          File ID
 row                      Integer        Row number (from the original data file)
 date_time                DateTime       Date and time
 longitude                Float          Longitude
@@ -226,7 +226,7 @@ the user.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-file_id                  Integer        File ID
+file_id                  F_KEY          File ID
 row                      Integer        Row number (from the original data file)
 date_time                DateTime       Date and time
 run_type                 String         The gas standard name, as defined in the `run_types` table
@@ -240,7 +240,7 @@ Each calibration will be defined as a polynomial curve with up to five harmonics
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-instrument_id            Integer        Instrument ID
+instrument_id            F_KEY          Instrument ID
 date                     Date           Date of calibration
 sensor                   String         The sensor identifier
 intercept                Float          The intercept of the calibration curve
