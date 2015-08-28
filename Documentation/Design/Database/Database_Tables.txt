@@ -18,8 +18,8 @@ Defines a user account
 
 Field                    Type           Description
 --------------------     ------------   ---------------------------------------------------
-id                       Integer        ID
 email                    String         The user's email address - used as the username
+salt                     String         The salt used for the password
 password                 String         Password field (salted and hashed)
 first_name               String         The user's first/given name
 surname                  String         The user's surname

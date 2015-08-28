@@ -8,23 +8,49 @@ package uk.ac.exeter.QuinCe.data;
  *
  */
 public class User {
-
+	
+	/**
+	 * The user's database record ID
+	 */
+	private int itsDatabaseID;
+	
 	/**
 	 * The user's email address
 	 */
-	private String itsEmailAddress = null;
+	private String itsEmailAddress;
 	
 	/**
 	 * The user's first/given name
 	 */
-	private String itsGivenName = null;
+	private String itsGivenName;
 	
 	/**
 	 * The user's surname/family name
 	 */
-	private String itsSurname = null;
+	private String itsSurname;
 	
-	public User (String email, String givenName, String surname) {
+	/**
+	 * The email verification code. If this is set, the
+	 * user should not be able to log in until the verification is complete.
+	 */
+	private String itsEmailVerificationCode = null;
+	
+	/**
+	 * The password reset code.
+	 * If this is set, the user should not be able to log in
+	 * until the password has been changed. 
+	 */
+	private String itsPasswordResetCode = null;
+	
+	/**
+	 * Construct a User object
+	 * @param id The database record ID for the user
+	 * @param email The user's email address
+	 * @param givenName The user's given name
+	 * @param surname The user's surname
+	 */
+	public User(int id, String email, String givenName, String surname) {
+		itsDatabaseID = id;
 		itsEmailAddress = email;
 		itsGivenName = givenName;
 		itsSurname = surname;
@@ -61,5 +87,55 @@ public class User {
 	 */
 	public String getSurname() {
 		return itsSurname;
+	}
+	
+	/**
+	 * Set the email verification code
+	 * @param code The email verification code
+	 */
+	public void setEmailVerificationCode(String code) {
+		itsEmailVerificationCode = code;
+	}
+	
+	/**
+	 * Set the password reset code
+	 * @param code The password reset code
+	 */
+	public void setPasswordResetCode(String code) {
+		itsPasswordResetCode = code;
+	}
+	
+	/**
+	 * Retrieve the email verification code
+	 * @return The email verification code
+	 */
+	public String getEmailVerificationCode() {
+		return itsEmailVerificationCode;
+	}
+	
+	/**
+	 * Retrieve the password reset code
+	 * @return code The password reset code
+	 */
+	public String getPasswordResetCode() {
+		return itsPasswordResetCode;
+	}
+	
+	/**
+	 * Return the database ID for this user. Note that this should
+	 * not be used for any user-facing activities.
+	 * 
+	 * @return
+	 */
+	public int getDatabaseID() {
+		return itsDatabaseID;
+	}
+	
+	/**
+	 * Sets the database ID for this user object
+	 * @param id The user's ID
+	 */
+	public void setDatabaseID(int id) {
+		itsDatabaseID = id;
 	}
 }

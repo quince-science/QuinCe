@@ -1,22 +1,16 @@
 package unit.uk.ac.exeter.QuinCe.database;
 
-import java.io.FileInputStream;
+import java.sql.Connection;
 
-import org.dbunit.database.IDatabaseConnection;
-import org.dbunit.dataset.IDataSet;
-import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
-public class DatabaseConnectionTest extends BaseDbTestCase {
+public class DatabaseConnectionTest extends BaseDbTest {
 
-	@Override
-	protected IDataSet getDataSet() throws Exception {
-		return new FlatXmlDataSetBuilder().build(new FileInputStream("empty_dataset.xml"));
-	}
-	
 	@Test
 	public void testConnection() throws Exception {
-		IDatabaseConnection connection = getConnection();
-		assertNotNull(connection);
+		Connection connection = getConnection();
+		boolean isNull = (null == connection);
+		assertFalse(isNull);
 	}
 }
