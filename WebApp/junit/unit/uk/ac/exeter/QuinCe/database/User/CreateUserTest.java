@@ -8,8 +8,6 @@ import uk.ac.exeter.QuinCe.database.User.UserExistsException;
 import unit.uk.ac.exeter.QuinCe.database.BaseDbTest;
 import static org.junit.Assert.*;
 
-import java.sql.PreparedStatement;
-
 import org.junit.After;
 import org.junit.Before;
 
