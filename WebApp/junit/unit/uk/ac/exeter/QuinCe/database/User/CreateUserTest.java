@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.User.UserDB;
+import uk.ac.exeter.QuinCe.database.User.UserExistsException;
 import unit.uk.ac.exeter.QuinCe.database.BaseDbTest;
 import static org.junit.Assert.*;
 
@@ -33,6 +34,21 @@ public class CreateUserTest extends BaseDbTest {
 		assertEquals("Jones", createdUser.getSurname());
 		assertNull(createdUser.getEmailVerificationCode());
 		assertNull(createdUser.getPasswordResetCode());
+	}
+	
+	@Test
+	public void testCreateDuplicateUser() throws Exception {
+
+		boolean userExistsThrown = false;
+		
+		try {
+			createTestUser();
+			UserDB.createUser(getConnection(), TEST_USER_EMAIL, "mypassword".toCharArray(), "Keith", "Imposter");
+		} catch (UserExistsException e) {
+			userExistsThrown = true;
+		} finally {
+			assertTrue(userExistsThrown);
+		}
 	}
 	
 	@After
