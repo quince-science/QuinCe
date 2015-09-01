@@ -263,16 +263,16 @@ public class PasswordHash
     public static byte[] generateRandomString(int size) {
     	SecureRandom srand = new SecureRandom();
         Random rand = new Random();
-        byte[] salt = new byte[size];
+        byte[] randomString = new byte[size];
 
         for (int i = 0; i < size; ++i) {
           if ((i % 10) == 0) {
               rand.setSeed(srand.nextLong()); // 64 bits of random!
           }
-          salt[i] = VALID_CHARACTERS[rand.nextInt(VALID_CHARACTERS.length)];
+          randomString[i] = VALID_CHARACTERS[rand.nextInt(VALID_CHARACTERS.length)];
         }
         
-        return salt;
+        return randomString;
     }
     
     /**
@@ -280,6 +280,10 @@ public class PasswordHash
      * @return The salt
      */
     public static byte[] generateSalt() {
-    	return generateRandomString(SALT_BYTE_SIZE);
+    	// Copied from createHash above
+    	SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[SALT_BYTE_SIZE];
+        random.nextBytes(salt);
+        return salt;
     }
 }

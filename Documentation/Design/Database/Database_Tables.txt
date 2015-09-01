@@ -19,8 +19,8 @@ Defines a user account
 Field                    Type           Description
 --------------------     ------------   ---------------------------------------------------
 email                    String         The user's email address - used as the username
-salt                     String         The salt used for the password
-password                 String         Password field (salted and hashed)
+salt                     Binary         The salt used for the password
+password                 Binary         Password field (salted and hashed)
 first_name               String         The user's first/given name
 surname                  String         The user's surname
 email_code               String         Code for verifying email address
