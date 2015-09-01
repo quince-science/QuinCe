@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data;
 
+import java.sql.Timestamp;
+
 /**
  * Object to represent a user and perform various
  * user-related tasks.
@@ -35,12 +37,23 @@ public class User {
 	 */
 	private String itsEmailVerificationCode = null;
 	
+	
+	/**
+	 * The time at which the email verification code was set
+	 */
+	private Timestamp itsEmailVerificationCodeTime = null;
+	
 	/**
 	 * The password reset code.
 	 * If this is set, the user should not be able to log in
 	 * until the password has been changed. 
 	 */
 	private String itsPasswordResetCode = null;
+	
+	/**
+	 * The time at which the password reset code was set
+	 */
+	private Timestamp itsPasswordResetCodeTime = null;
 	
 	/**
 	 * Construct a User object
@@ -93,16 +106,18 @@ public class User {
 	 * Set the email verification code
 	 * @param code The email verification code
 	 */
-	public void setEmailVerificationCode(String code) {
+	public void setEmailVerificationCode(String code, Timestamp time) {
 		itsEmailVerificationCode = code;
+		itsEmailVerificationCodeTime = time;
 	}
 	
 	/**
 	 * Set the password reset code
 	 * @param code The password reset code
 	 */
-	public void setPasswordResetCode(String code) {
+	public void setPasswordResetCode(String code, Timestamp time) {
 		itsPasswordResetCode = code;
+		itsPasswordResetCodeTime = time;
 	}
 	
 	/**
@@ -114,11 +129,27 @@ public class User {
 	}
 	
 	/**
+	 * Return the time at which the email verification code was set
+	 * @return The time at which the email verification code was set
+	 */
+	public Timestamp getEmailVerificationCodeTime() {
+		return itsEmailVerificationCodeTime;
+	}
+
+	/**
 	 * Retrieve the password reset code
 	 * @return code The password reset code
 	 */
 	public String getPasswordResetCode() {
 		return itsPasswordResetCode;
+	}
+	
+	/**
+	 * Return the time at which the password reset code was set
+	 * @return The time at which the password reset code was set
+	 */
+	public Timestamp getPasswordResetCodeTime() {
+		return itsPasswordResetCodeTime;
 	}
 	
 	/**

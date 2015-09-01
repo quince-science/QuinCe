@@ -24,7 +24,9 @@ password                 Binary         Password field (salted and hashed)
 first_name               String         The user's first/given name
 surname                  String         The user's surname
 email_code               String         Code for verifying email address
+email_code_time          DateTime       The time that the email verification code was generated
 password_code            String         Code for resetting password
+password_code_time       DateTime       The time that the password reset code was generated
 permissions              Integer        A field for defining user permissions. Defined as a bitmask.
 
 ### Permissions

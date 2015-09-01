@@ -6,10 +6,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Arrays;
 
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
  * Database access class for users.
@@ -22,10 +24,10 @@ import uk.ac.exeter.QuinCe.database.DatabaseException;
  */
 public class UserDB {
 
-	private static final String USER_SEARCH_BY_EMAIL_STATEMENT = "SELECT id,email,firstname,surname,email_code,password_code FROM user WHERE email = ?";
+	private static final String USER_SEARCH_BY_EMAIL_STATEMENT = "SELECT id,email,firstname,surname,email_code,email_code_time,password_code,password_code_time FROM user WHERE email = ?";
 	private static final String CREATE_USER_STATEMENT = "INSERT INTO user (email, salt, password, firstname, surname) VALUES (?, ?, ?, ?, ?)";
-	private static final String CREATE_EMAIL_VERIFICATION_CODE_STATEMENT = "UPDATE user SET email_code = ? WHERE id = ?";
-	private static final String CREATE_PASSWORD_RESET_CODE_STATEMENT = "UPDATE user SET password_code = ? WHERE id = ?";
+	private static final String CREATE_EMAIL_VERIFICATION_CODE_STATEMENT = "UPDATE user SET email_code = ?, email_code_time = ? WHERE id = ?";
+	private static final String CREATE_PASSWORD_RESET_CODE_STATEMENT = "UPDATE user SET password_code = ?, password_code_time = ? WHERE id = ?";
 	private static final String GET_AUTHENTICATION_DETAILS_STATEMENT = "SELECT salt,password,email_code FROM user WHERE email = ?";
 	private static final String CHANGE_PASSWORD_STATEMENT = "UPDATE user SET salt = ?, password = ? WHERE id = ?";
 	
@@ -34,6 +36,12 @@ public class UserDB {
 	public static final int AUTHENTICATE_OK = 0;
 	public static final int AUTHENTICATE_FAILED = 1;
 	public static final int AUTHENTICATE_EMAIL_CODE_SET = 2;
+	
+	public static final int CODE_OK = 0;
+	public static final int CODE_FAILED = 1;
+	public static final int CODE_EXPIRED = 2;
+	
+	public static final int CODE_EXPIRY_HOURS = 24;
 	
 	/**
 	 * Locate a user in the database using their email address.
@@ -58,8 +66,8 @@ public class UserDB {
 			
 			if (result.first()) {
 				foundUser = new User(result.getInt(1), result.getString(2), result.getString(3), result.getString(4));
-				foundUser.setEmailVerificationCode(result.getString(5));
-				foundUser.setPasswordResetCode(result.getString(6));
+				foundUser.setEmailVerificationCode(result.getString(5), result.getTimestamp(6));
+				foundUser.setPasswordResetCode(result.getString(7), result.getTimestamp(8));
 			}
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while searching for the user", e);
@@ -129,7 +137,8 @@ public class UserDB {
 	}
 	
 	/**
-	 * Generate an email verification code and store it in the user's details
+	 * Generate an email verification code and store it in the database.
+	 * The code will be added to the passed in User object.
 	 * @param conn A database connection
 	 * @param user The user who requires the code
 	 * @throws NoSuchUserException If the user doesn't exist
@@ -140,14 +149,16 @@ public class UserDB {
 		PreparedStatement stmt = null;
 
 		String verificationCode = new String(PasswordHash.generateRandomString(VERIFICATION_CODE_LENGTH));
+		Timestamp time = new Timestamp(System.currentTimeMillis());
 		
 		try {
 			stmt = conn.prepareStatement(CREATE_EMAIL_VERIFICATION_CODE_STATEMENT);
 			stmt.setString(1, verificationCode);
-			stmt.setInt(2, user.getDatabaseID());
+			stmt.setTimestamp(2, time);
+			stmt.setInt(3, user.getDatabaseID());
 			stmt.execute();
 			
-			user.setEmailVerificationCode(verificationCode);
+			user.setEmailVerificationCode(verificationCode, time);
 		} catch(SQLException e) {
 			throw new DatabaseException("An error occurred while storing the verification code", e);
 		} finally {
@@ -162,7 +173,8 @@ public class UserDB {
 	}
 
 	/**
-	 * Generate a password reset code code and 
+	 * Generate a password reset code code and store it in the database.
+	 * The code will be added to the passed in User object.
 	 * @param conn
 	 * @param user
 	 * @throws NoSuchUserException
@@ -173,14 +185,16 @@ public class UserDB {
 		PreparedStatement stmt = null;
 
 		String resetCode = new String(PasswordHash.generateRandomString(VERIFICATION_CODE_LENGTH));
+		Timestamp time = new Timestamp(System.currentTimeMillis());
 		
 		try {
 			stmt = conn.prepareStatement(CREATE_PASSWORD_RESET_CODE_STATEMENT);
 			stmt.setString(1, resetCode);
-			stmt.setInt(2, user.getDatabaseID());
+			stmt.setTimestamp(2, time);
+			stmt.setInt(3, user.getDatabaseID());
 			stmt.execute();
 			
-			user.setPasswordResetCode(resetCode);
+			user.setPasswordResetCode(resetCode, time);
 		} catch(SQLException e) {
 			throw new DatabaseException("An error occurred while storing the password reset code", e);
 		} finally {
@@ -252,6 +266,16 @@ public class UserDB {
 		return authenticationResult;
 	}
 	
+	/**
+	 * Changes a user's password. The user's old password must be
+	 * authenticated before the new one is stored.
+	 * @param conn A database connection
+	 * @param user The user whose password is to be changed
+	 * @param oldPassword The user's old password
+	 * @param newPassword The user's new password
+	 * @return {@code true} if the password was changed successfully; {@code false} otherwise.
+	 * @throws DatabaseException If an error occurred
+	 */
 	public static boolean changePassword(Connection conn, User user, char[] oldPassword, char[] newPassword) throws DatabaseException {
 		
 		// First we authenticate the user with their current password. If that works, we can set
@@ -289,6 +313,84 @@ public class UserDB {
 		
 		return result;
 	}
+	
+	/**
+	 * Check a user's email verification code against the supplied code
+	 * @param conn A database connection
+	 * @param email The user's email address
+	 * @param code The code to be checked
+	 * @return An integer value indicating whether the code matched, didn't match, or the timestamp has expired.
+	 * @throws DatabaseException
+	 */
+	public static int checkEmailVerificationCode(Connection conn, String email, String code) throws DatabaseException {
+
+		int result = CODE_FAILED;
+		
+		User user = getUser(conn, email);
+		if (null != user) {
+			String storedCode = user.getEmailVerificationCode();
+			Timestamp codeTime = user.getEmailVerificationCodeTime();
+			
+			result = checkCode(storedCode, codeTime, code);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Check a user's password reset code against the supplied code
+	 * @param conn A database connection
+	 * @param email The user's email address
+	 * @param code The code to be checked
+	 * @return An integer value indicating whether the code matched, didn't match, or the timestamp has expired.
+	 * @throws DatabaseException
+	 */
+	public static int checkPasswordResetCode(Connection conn, String email, String code) throws DatabaseException {
+
+		int result = CODE_FAILED;
+		
+		User user = getUser(conn, email);
+		if (null != user) {
+			String storedCode = user.getPasswordResetCode();
+			Timestamp codeTime = user.getPasswordResetCodeTime();
+			
+			result = checkCode(storedCode, codeTime, code);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Checks wheter or not two codes match, and that we are within
+	 * the time limit (defined by {@code CODE_EXPIRY_HOURS} of the code's timestamp
+	 * @param userCode The code that we are checking against (i.e. the one stored in the database)
+	 * @param codeTime The code's timestamp
+	 * @param codeToCheck The code to be checked
+	 * @return An integer value indicating whether the code matched, didn't match, or the timestamp has expired.
+	 */
+	private static int checkCode(String userCode, Timestamp codeTime, String codeToCheck) {
+		int result = CODE_FAILED;
+		
+		// If the code is null, the check will fail
+		if (null != userCode && null != codeToCheck) {
+
+			// If the code isn't timestamped (this shouldn't happen),
+			// we assume the code has expired.
+			if (null == codeTime) {
+				result = CODE_EXPIRED;
+			// Check the code's timestamp
+			} else if (!DateTimeUtils.timeWithinLastHours(codeTime.getTime(), CODE_EXPIRY_HOURS)) {
+				result = CODE_EXPIRED;
+			// See if the code actually matches
+			} else if (codeToCheck.equals(userCode)) {
+				result = CODE_OK;
+			}
+		}
+		
+		return result;
+	}
+	
+	
 	
 	private static SaltAndHashedPassword generateHashedPassword(char[] password) throws NoSuchAlgorithmException, InvalidKeySpecException {
 		SaltAndHashedPassword result = new SaltAndHashedPassword();

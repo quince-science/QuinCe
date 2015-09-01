@@ -2,6 +2,8 @@ package unit.uk.ac.exeter.QuinCe.data;
 
 import static org.junit.Assert.*;
 
+import java.sql.Timestamp;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -66,13 +68,17 @@ public class UserTest {
 	
 	@Test
 	public void testSetEmailCode() {
-		testUser.setEmailVerificationCode("abcd");
+		Timestamp time = new Timestamp(System.currentTimeMillis());		
+		testUser.setEmailVerificationCode("abcd", time);
 		assertEquals("abcd", testUser.getEmailVerificationCode());
+		assertEquals(time, testUser.getEmailVerificationCodeTime());
 	}
 	
 	@Test
 	public void testSetPasswordCode() {
-		testUser.setPasswordResetCode("abcd");
+		Timestamp time = new Timestamp(System.currentTimeMillis());		
+		testUser.setPasswordResetCode("abcd", time);
 		assertEquals("abcd", testUser.getPasswordResetCode());
+		assertEquals(time, testUser.getPasswordResetCodeTime());
 	}
 }
