@@ -24,9 +24,10 @@ public class UserDB {
 
 	private static final String USER_SEARCH_BY_EMAIL_STATEMENT = "SELECT id,email,firstname,surname,email_code,password_code FROM user WHERE email = ?";
 	private static final String CREATE_USER_STATEMENT = "INSERT INTO user (email, salt, password, firstname, surname) VALUES (?, ?, ?, ?, ?)";
-	private static final String CREATE_EMAIL_VERIFICATION_CODE_STATEMENT = "UPDATE user SET email_code = ? where ID = ?";
-	private static final String CREATE_PASSWORD_RESET_CODE_STATEMENT = "UPDATE user SET password_code = ? where ID = ?";
+	private static final String CREATE_EMAIL_VERIFICATION_CODE_STATEMENT = "UPDATE user SET email_code = ? WHERE id = ?";
+	private static final String CREATE_PASSWORD_RESET_CODE_STATEMENT = "UPDATE user SET password_code = ? WHERE id = ?";
 	private static final String GET_AUTHENTICATION_DETAILS_STATEMENT = "SELECT salt,password FROM user WHERE email = ?";
+	private static final String CHANGE_PASSWORD_STATEMENT = "UPDATE user SET salt = ?, password = ? WHERE id = ?";
 	
 	private static final int VERIFICATION_CODE_LENGTH = 50;
 	
@@ -94,14 +95,12 @@ public class UserDB {
 			if (null != getUser(conn, email)) {
 				throw new UserExistsException();
 			} else {
-				// Create the salted, hashed password
-				byte[] salt = PasswordHash.generateSalt();
-				byte[] hashedPassword = PasswordHash.pbkdf2(password, salt, PasswordHash.PBKDF2_ITERATIONS, PasswordHash.HASH_BYTE_SIZE);
+				SaltAndHashedPassword generatedPassword = generateHashedPassword(password);
 				
 				stmt = conn.prepareStatement(CREATE_USER_STATEMENT);
 				stmt.setString(1,  email);
-				stmt.setBytes(2, salt);
-				stmt.setBytes(3, hashedPassword);
+				stmt.setBytes(2, generatedPassword.salt);
+				stmt.setBytes(3, generatedPassword.hashedPassword);
 				stmt.setString(4, givenName);
 				stmt.setString(5, surname);
 				
@@ -242,7 +241,56 @@ public class UserDB {
 			}
 		}
 		
-		
 		return authenticated;
 	}
+	
+	public static boolean changePassword(Connection conn, User user, char[] oldPassword, char[] newPassword) throws DatabaseException {
+		
+		// First we authenticate the user with their current password. If that works, we can set
+		// the new password
+		boolean result = authenticate(conn, user.getEmailAddress(), oldPassword);
+		
+		if (result) {
+			PreparedStatement stmt = null;
+
+			try {
+				SaltAndHashedPassword generatedPassword = generateHashedPassword(newPassword);
+				stmt = conn.prepareStatement(CHANGE_PASSWORD_STATEMENT);
+				stmt.setBytes(1, generatedPassword.salt);
+				stmt.setBytes(2, generatedPassword.hashedPassword);
+				stmt.setInt(3, user.getDatabaseID());
+				stmt.execute();
+				
+			} catch (SQLException|InvalidKeySpecException|NoSuchAlgorithmException e) {
+				result = false;
+				
+				throw new DatabaseException("An error occurred while updating the password", e);
+			} finally {
+				if (null != stmt) {
+					try {
+						stmt.close();
+					} catch (SQLException e) {
+						// Do nothing
+					}
+				}
+			}
+			
+		}
+		
+		return result;
+	}
+	
+	private static SaltAndHashedPassword generateHashedPassword(char[] password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+		SaltAndHashedPassword result = new SaltAndHashedPassword();
+		// Create the salted, hashed password
+		result.salt = PasswordHash.generateSalt();
+		result.hashedPassword = PasswordHash.pbkdf2(password, result.salt, PasswordHash.PBKDF2_ITERATIONS, PasswordHash.HASH_BYTE_SIZE);
+		
+		return result;
+	}
+}
+
+class SaltAndHashedPassword {
+	protected byte[] salt;
+	protected byte[] hashedPassword;
 }

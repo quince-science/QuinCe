@@ -31,6 +31,14 @@ public class AuthenticationTest extends BaseDbTest {
 	public void testBadPasswordAuthenticationFailure() throws Exception {
 		assertFalse(UserDB.authenticate(getConnection(), TEST_USER_EMAIL, "lksjglkdfjg".toCharArray()));
 	}
+	
+	@Test
+	public void changePasswordTest() throws Exception {
+		UserDB.changePassword(getConnection(), testUser, TEST_USER_PASSWORD.toCharArray(), "New Password".toCharArray());
+		assertFalse(UserDB.authenticate(getConnection(), TEST_USER_EMAIL, TEST_USER_PASSWORD.toCharArray()));
+		assertTrue(UserDB.authenticate(getConnection(), TEST_USER_EMAIL, "New Password".toCharArray()));
+		
+	}
 
 	@After
 	public void tearDown() throws Exception {
