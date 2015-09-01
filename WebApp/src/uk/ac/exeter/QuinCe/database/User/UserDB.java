@@ -26,10 +26,14 @@ public class UserDB {
 	private static final String CREATE_USER_STATEMENT = "INSERT INTO user (email, salt, password, firstname, surname) VALUES (?, ?, ?, ?, ?)";
 	private static final String CREATE_EMAIL_VERIFICATION_CODE_STATEMENT = "UPDATE user SET email_code = ? WHERE id = ?";
 	private static final String CREATE_PASSWORD_RESET_CODE_STATEMENT = "UPDATE user SET password_code = ? WHERE id = ?";
-	private static final String GET_AUTHENTICATION_DETAILS_STATEMENT = "SELECT salt,password FROM user WHERE email = ?";
+	private static final String GET_AUTHENTICATION_DETAILS_STATEMENT = "SELECT salt,password,email_code FROM user WHERE email = ?";
 	private static final String CHANGE_PASSWORD_STATEMENT = "UPDATE user SET salt = ?, password = ? WHERE id = ?";
 	
 	private static final int VERIFICATION_CODE_LENGTH = 50;
+	
+	public static final int AUTHENTICATE_OK = 0;
+	public static final int AUTHENTICATE_FAILED = 1;
+	public static final int AUTHENTICATE_EMAIL_CODE_SET = 2;
 	
 	/**
 	 * Locate a user in the database using their email address.
@@ -193,17 +197,18 @@ public class UserDB {
 	/**
 	 * Authenticates a user. If either the email address doesn't exist,
 	 * or the passwords don't match, authentication will fail. No indication
-	 * of which test caused the failure is given.
+	 * of which test caused the failure is given. If the email verification
+	 * code is set, authentication will also fail. This will be indicated.
 	 * 
 	 * @param conn A database connection
 	 * @param email The user's email address
 	 * @param password The password supplied by the user
-	 * @return {@code true} if the authentication succeeds; {@code false} if it does not
+	 * @return One of AUTHENTICATE_OK, AUTHENTICATE_FAILED, or AUTHENTICATE_EMAIL_CODE_SET
 	 * @throws DatabaseException If an error occurs while retrieving the user's details
 	 */
-	public static boolean authenticate(Connection conn, String email, char[] password) throws DatabaseException {
+	public static int authenticate(Connection conn, String email, char[] password) throws DatabaseException {
 		
-		boolean authenticated = false;
+		int authenticationResult = AUTHENTICATE_FAILED;
 		
 		PreparedStatement stmt = null;
 		
@@ -214,20 +219,23 @@ public class UserDB {
 			if (result.first()) {
 				byte[] salt = result.getBytes(1);
 				byte[] storedPassword = result.getBytes(2);
+				String emailVerificationCode = result.getString(3);
 				
-				// Recreate the salted hashed password
-				byte[] hashedPassword = PasswordHash.pbkdf2(password, salt, PasswordHash.PBKDF2_ITERATIONS, PasswordHash.HASH_BYTE_SIZE);
-				
-				if (Arrays.equals(storedPassword, hashedPassword)) {
-					authenticated = true;
+				if (null != emailVerificationCode) {
+					authenticationResult = AUTHENTICATE_EMAIL_CODE_SET;
+				} else {
+					// Recreate the salted hashed password
+					byte[] hashedPassword = PasswordHash.pbkdf2(password, salt, PasswordHash.PBKDF2_ITERATIONS, PasswordHash.HASH_BYTE_SIZE);
+					
+					if (Arrays.equals(storedPassword, hashedPassword)) {
+						authenticationResult = AUTHENTICATE_OK;
+					}
 				}
-
 			}
-			
 		} catch (SQLException|InvalidKeySpecException|NoSuchAlgorithmException e) {
 			// Any failure results in an authentication failure
 			// Although nothing should get returned, best to be safe
-			authenticated = false;
+			authenticationResult = AUTHENTICATE_FAILED;
 
 			throw new DatabaseException("An error occurred while authenticating the user", e);
 		} finally {
@@ -241,16 +249,18 @@ public class UserDB {
 			}
 		}
 		
-		return authenticated;
+		return authenticationResult;
 	}
 	
 	public static boolean changePassword(Connection conn, User user, char[] oldPassword, char[] newPassword) throws DatabaseException {
 		
 		// First we authenticate the user with their current password. If that works, we can set
 		// the new password
-		boolean result = authenticate(conn, user.getEmailAddress(), oldPassword);
+		boolean result = false;
 		
-		if (result) {
+		int authenticationResult = authenticate(conn, user.getEmailAddress(), oldPassword);
+		
+		if (AUTHENTICATE_OK == authenticationResult) {
 			PreparedStatement stmt = null;
 
 			try {
