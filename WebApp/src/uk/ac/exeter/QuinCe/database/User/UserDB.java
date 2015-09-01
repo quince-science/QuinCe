@@ -24,23 +24,76 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  */
 public class UserDB {
 
+	/**
+	 * SQL statement to search for a user by email address
+	 */
 	private static final String USER_SEARCH_BY_EMAIL_STATEMENT = "SELECT id,email,firstname,surname,email_code,email_code_time,password_code,password_code_time FROM user WHERE email = ?";
+	
+	/**
+	 * SQL statement to create a new user record
+	 */
 	private static final String CREATE_USER_STATEMENT = "INSERT INTO user (email, salt, password, firstname, surname) VALUES (?, ?, ?, ?, ?)";
+	
+	/**
+	 * SQL statement to store an email verification code with a timestamp
+	 */
 	private static final String CREATE_EMAIL_VERIFICATION_CODE_STATEMENT = "UPDATE user SET email_code = ?, email_code_time = ? WHERE id = ?";
+
+	/**
+	 * SQL statement to store an password reset code with a timestamp
+	 */
 	private static final String CREATE_PASSWORD_RESET_CODE_STATEMENT = "UPDATE user SET password_code = ?, password_code_time = ? WHERE id = ?";
+	
+	/**
+	 * SQL statement to retrieve the details required to authenticate a user
+	 */
 	private static final String GET_AUTHENTICATION_DETAILS_STATEMENT = "SELECT salt,password,email_code FROM user WHERE email = ?";
+	
+	/**
+	 * SQL statement to change a user's password
+	 */
 	private static final String CHANGE_PASSWORD_STATEMENT = "UPDATE user SET salt = ?, password = ? WHERE id = ?";
 	
-	private static final int VERIFICATION_CODE_LENGTH = 50;
+	/**
+	 * The length of the string to be used for email verification and password reset codes
+	 */
+	private static final int CODE_LENGTH = 50;
 	
+	/**
+	 * Indicates a successful authentication
+	 */
 	public static final int AUTHENTICATE_OK = 0;
+	
+	/**
+	 * Indicates a failed authentication
+	 */
 	public static final int AUTHENTICATE_FAILED = 1;
+	
+	/**
+	 * Indicates that authentication could not be completed because the 
+	 * email verification flag is set.
+	 */
 	public static final int AUTHENTICATE_EMAIL_CODE_SET = 2;
 	
+	/**
+	 * Indicates that a code check succeeded
+	 */
 	public static final int CODE_OK = 0;
+	
+	/**
+	 * Indicates that a code check failed because the supplied code was
+	 * different from the one stored
+	 */
 	public static final int CODE_FAILED = 1;
+	
+	/**
+	 * Indicates that a code check failed because the code has expired
+	 */
 	public static final int CODE_EXPIRED = 2;
 	
+	/**
+	 * The number of hours for which generated codes are valid.
+	 */
 	public static final int CODE_EXPIRY_HOURS = 24;
 	
 	/**
@@ -148,7 +201,7 @@ public class UserDB {
 
 		PreparedStatement stmt = null;
 
-		String verificationCode = new String(PasswordHash.generateRandomString(VERIFICATION_CODE_LENGTH));
+		String verificationCode = new String(PasswordHash.generateRandomString(CODE_LENGTH));
 		Timestamp time = new Timestamp(System.currentTimeMillis());
 		
 		try {
@@ -184,7 +237,7 @@ public class UserDB {
 
 		PreparedStatement stmt = null;
 
-		String resetCode = new String(PasswordHash.generateRandomString(VERIFICATION_CODE_LENGTH));
+		String resetCode = new String(PasswordHash.generateRandomString(CODE_LENGTH));
 		Timestamp time = new Timestamp(System.currentTimeMillis());
 		
 		try {
@@ -390,8 +443,14 @@ public class UserDB {
 		return result;
 	}
 	
-	
-	
+	/**
+	 * Generated a salted+hashed version of a password.
+	 * The salt is randomly generated and appended to the password before hashing.
+	 * @param password The password
+	 * @return An object containing the salt and hashed password+salt.
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeySpecException
+	 */
 	private static SaltAndHashedPassword generateHashedPassword(char[] password) throws NoSuchAlgorithmException, InvalidKeySpecException {
 		SaltAndHashedPassword result = new SaltAndHashedPassword();
 		// Create the salted, hashed password
@@ -400,9 +459,14 @@ public class UserDB {
 		
 		return result;
 	}
+
+	/**
+	 * Mini utility class for handling generated salts and hashed passwords.
+	 * They are always generated together, so they belong together.
+	 */
+	private static class SaltAndHashedPassword {
+		protected byte[] salt;
+		protected byte[] hashedPassword;
+	}
 }
 
-class SaltAndHashedPassword {
-	protected byte[] salt;
-	protected byte[] hashedPassword;
-}
