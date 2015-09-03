@@ -14,8 +14,14 @@ public abstract class BaseDbTest {
 	protected static final String TEST_USER_EMAIL = "s.d.jones@exeter.ac.uk";
 	protected static final String TEST_USER_PASSWORD = "mypassword";
 	
+	private static Connection connection = null;
+	
 	public Connection getConnection() throws Exception {
-		return DriverManager.getConnection("jdbc:mysql://127.0.0.1/quince_test", "quince_dev", "quince_dev");
+		if (null == connection) {
+			connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1/quince_test", "quince_dev", "quince_dev");
+		}
+		
+		return connection;
 	}
 	
 	protected void createTestUser() throws Exception {
@@ -25,5 +31,6 @@ public abstract class BaseDbTest {
 	protected void destroyTestUser() throws Exception {
 		PreparedStatement stmt = getConnection().prepareStatement("DELETE FROM user WHERE email = '" + TEST_USER_EMAIL + "'");
 		stmt.execute();
+		stmt.close();
 	}
 }

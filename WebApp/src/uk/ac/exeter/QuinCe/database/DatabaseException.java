@@ -12,7 +12,16 @@ public class DatabaseException extends Exception {
 	private static final long serialVersionUID = 7975765490556805208L;
 
 	/**
-	 * Simple constructor
+	 * Basic constructor
+	 * 
+	 * @param message The error message
+	 */
+	public DatabaseException(String message) {
+		super(message);
+	}
+	
+	/**
+	 * Basic constructor
 	 * 
 	 * @param message The error message
 	 * @param cause The root cause of the error

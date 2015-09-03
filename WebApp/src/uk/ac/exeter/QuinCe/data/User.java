@@ -2,6 +2,9 @@ package uk.ac.exeter.QuinCe.data;
 
 import java.sql.Timestamp;
 
+import uk.ac.exeter.QuinCe.utils.MissingData;
+import uk.ac.exeter.QuinCe.utils.MissingDataException;
+
 /**
  * Object to represent a user and perform various
  * user-related tasks.
@@ -62,7 +65,12 @@ public class User {
 	 * @param givenName The user's given name
 	 * @param surname The user's surname
 	 */
-	public User(int id, String email, String givenName, String surname) {
+	public User(int id, String email, String givenName, String surname) throws MissingDataException {
+		
+		MissingData.checkMissing(email, "email");
+		MissingData.checkMissing(givenName, "givenName");
+		MissingData.checkMissing(surname, "surname");
+		
 		itsDatabaseID = id;
 		itsEmailAddress = email;
 		itsGivenName = givenName;
@@ -106,7 +114,8 @@ public class User {
 	 * Set the email verification code
 	 * @param code The email verification code
 	 */
-	public void setEmailVerificationCode(String code, Timestamp time) {
+	public void setEmailVerificationCode(String code, Timestamp time) throws MissingDataException {
+
 		itsEmailVerificationCode = code;
 		itsEmailVerificationCodeTime = time;
 	}
@@ -115,7 +124,7 @@ public class User {
 	 * Set the password reset code
 	 * @param code The password reset code
 	 */
-	public void setPasswordResetCode(String code, Timestamp time) {
+	public void setPasswordResetCode(String code, Timestamp time) throws MissingDataException {
 		itsPasswordResetCode = code;
 		itsPasswordResetCodeTime = time;
 	}

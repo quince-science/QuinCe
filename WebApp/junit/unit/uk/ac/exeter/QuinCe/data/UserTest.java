@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.exeter.QuinCe.data.User;
+import uk.ac.exeter.QuinCe.utils.MissingDataException;
 
 public class UserTest {
 
@@ -19,18 +20,18 @@ public class UserTest {
 	 * 
 	 * @return A User object
 	 */
-	private User makeUser() {
+	private User makeUser() throws Exception {
 		return new User(1, "s.d.jones@exeter.ac.uk", "Steve", "Jones");
 	}
 
 	
 	@Before
-	public void setUp() {
+	public void setUp() throws Exception {
 		testUser = makeUser();
 	}
 	
 	@Test
-	public void testConstruction() {
+	public void testConstruction() throws Exception {
 		// Tests the User object returned by makeUser
 		assertNotNull(makeUser());
 	}
@@ -60,6 +61,24 @@ public class UserTest {
 		assertEquals("Steve Jones", testUser.getFullName());
 	}
 	
+	@Test(expected=MissingDataException.class)
+	public void testConstructionNullEmail() throws Exception {
+		String nullEmail = null;
+		new User(1, nullEmail, "Steve", "Jones");
+	}
+	
+	@Test(expected=MissingDataException.class)
+	public void testConstructionNullGivenName() throws Exception {
+		String nullGivenName = null;
+		new User(1, "s.d.jones@exeter.ac.uk", nullGivenName, "Jones");
+	}
+	
+	@Test(expected=MissingDataException.class)
+	public void testConstructionNullSurname() throws Exception {
+		String nullSurname = null;
+		new User(1, "s.d.jones@exeter.ac.uk", "Steve", nullSurname);
+	}
+	
 	@Test
 	public void testSetID() {
 		testUser.setDatabaseID(2);
@@ -67,7 +86,7 @@ public class UserTest {
 	}
 	
 	@Test
-	public void testSetEmailCode() {
+	public void testSetEmailVerificationCode() throws Exception {
 		Timestamp time = new Timestamp(System.currentTimeMillis());		
 		testUser.setEmailVerificationCode("abcd", time);
 		assertEquals("abcd", testUser.getEmailVerificationCode());
@@ -75,7 +94,7 @@ public class UserTest {
 	}
 	
 	@Test
-	public void testSetPasswordCode() {
+	public void testSetPasswordResetCode() throws Exception {
 		Timestamp time = new Timestamp(System.currentTimeMillis());		
 		testUser.setPasswordResetCode("abcd", time);
 		assertEquals("abcd", testUser.getPasswordResetCode());

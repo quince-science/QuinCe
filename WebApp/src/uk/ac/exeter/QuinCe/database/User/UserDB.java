@@ -12,6 +12,8 @@ import java.util.Arrays;
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.MissingData;
+import uk.ac.exeter.QuinCe.utils.MissingDataException;
 
 /**
  * Database access class for users.
@@ -104,18 +106,25 @@ public class UserDB {
 	 * @param conn The database connection to be used
 	 * @param email The user's email address.
 	 * @return A User object representing the user, or {@code null} if the user's record could not be found.
+	 * @throws MissingDataException If the supplied email is null
 	 * @throws SQLException
 	 * @see uk.ac.exeter.QuinCe.data.User
 	 */
-	public static User getUser(Connection conn, String email) throws DatabaseException {
+	public static User getUser(Connection conn, String email) throws DatabaseException, MissingDataException {
 		
-		PreparedStatement query = null;
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+		
+		MissingData.checkMissing(email, "email");
+		
+		PreparedStatement stmt = null;
 		User foundUser = null;
 		
 		try {
-			query = conn.prepareStatement(USER_SEARCH_BY_EMAIL_STATEMENT);
-			query.setString(1, email);
-			ResultSet result = query.executeQuery();
+			stmt = conn.prepareStatement(USER_SEARCH_BY_EMAIL_STATEMENT);
+			stmt.setString(1, email);
+			ResultSet result = stmt.executeQuery();
 			
 			if (result.first()) {
 				foundUser = new User(result.getInt(1), result.getString(2), result.getString(3), result.getString(4));
@@ -126,7 +135,7 @@ public class UserDB {
 			throw new DatabaseException("An error occurred while searching for the user", e);
 		} finally {
 			try {
-				query.close();
+				stmt.close();
 			} catch (SQLException e) {
 				// There's not much we can do here...
 			}
@@ -147,12 +156,22 @@ public class UserDB {
 	 * @param surname The user's surname
 	 * @return A new User object representing the user
 	 * @throws UserExistsException If a user with the specified email address already exists in the database
+	 * @throws MissingDataException If any of the parameters are null
 	 * @throws SQLException If there's an error storing the details in the database
 	 * @throws HashException If an error occurs while hashing the user's password 
 	 * @see uk.ac.exeter.QuinCe.data.User
 	 */
-	public static User createUser(Connection conn, String email, char[] password, String givenName, String surname) throws UserExistsException, DatabaseException {
+	public static User createUser(Connection conn, String email, char[] password, String givenName, String surname) throws UserExistsException, DatabaseException, MissingDataException {
 		
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+		
+		MissingData.checkMissing(email, "email");
+		MissingData.checkMissing(password, "password");
+		MissingData.checkMissing(givenName, "givenName");
+		MissingData.checkMissing(surname, "surname");
+
 		User newUser = null;
 		PreparedStatement stmt = null;
 		
@@ -196,9 +215,20 @@ public class UserDB {
 	 * @param user The user who requires the code
 	 * @throws NoSuchUserException If the user doesn't exist
 	 * @throws DatabaseException If an error occurs while updating the database
+	 * @throws MissingDataException If the supplied user object is null
 	 */
-	public static void generateEmailVerificationCode(Connection conn, User user) throws NoSuchUserException, DatabaseException {
+	public static void generateEmailVerificationCode(Connection conn, User user) throws NoSuchUserException, DatabaseException, MissingDataException {
 
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+		
+		MissingData.checkMissing(user, "user");
+
+		if (null == getUser(conn, user.getEmailAddress())) {
+			throw new NoSuchUserException();
+		}
+		
 		PreparedStatement stmt = null;
 
 		String verificationCode = new String(PasswordHash.generateRandomString(CODE_LENGTH));
@@ -230,11 +260,22 @@ public class UserDB {
 	 * The code will be added to the passed in User object.
 	 * @param conn
 	 * @param user
-	 * @throws NoSuchUserException
-	 * @throws DatabaseException
+	 * @throws NoSuchUserException If the user doesn't exist
+	 * @throws DatabaseException If an error occurs while updating the database
+	 * @throws MissingDataException If the supplied user object is null
 	 */
-	public static void generatePasswordResetCode(Connection conn, User user) throws NoSuchUserException, DatabaseException {
+	public static void generatePasswordResetCode(Connection conn, User user) throws NoSuchUserException, DatabaseException, MissingDataException {
 
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+		
+		MissingData.checkMissing(user, "user");
+
+		if (null == getUser(conn, user.getEmailAddress())) {
+			throw new NoSuchUserException();
+		}
+		
 		PreparedStatement stmt = null;
 
 		String resetCode = new String(PasswordHash.generateRandomString(CODE_LENGTH));
@@ -272,8 +313,16 @@ public class UserDB {
 	 * @param password The password supplied by the user
 	 * @return One of AUTHENTICATE_OK, AUTHENTICATE_FAILED, or AUTHENTICATE_EMAIL_CODE_SET
 	 * @throws DatabaseException If an error occurs while retrieving the user's details
+	 * @throws MissingDataException If any of the parameters are null
 	 */
-	public static int authenticate(Connection conn, String email, char[] password) throws DatabaseException {
+	public static int authenticate(Connection conn, String email, char[] password) throws DatabaseException, MissingDataException {
+		
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+		
+		MissingData.checkMissing(email, "email");
+		MissingData.checkMissing(password, "password", true);
 		
 		int authenticationResult = AUTHENTICATE_FAILED;
 		
@@ -328,9 +377,18 @@ public class UserDB {
 	 * @param newPassword The user's new password
 	 * @return {@code true} if the password was changed successfully; {@code false} otherwise.
 	 * @throws DatabaseException If an error occurred
+	 * @throws MissingDataException If any of the parameters are null
 	 */
-	public static boolean changePassword(Connection conn, User user, char[] oldPassword, char[] newPassword) throws DatabaseException {
+	public static boolean changePassword(Connection conn, User user, char[] oldPassword, char[] newPassword) throws DatabaseException, MissingDataException {
 		
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+		
+		MissingData.checkMissing(user, "user");
+		MissingData.checkMissing(oldPassword, "oldPassword", true);
+		MissingData.checkMissing(newPassword, "newPassword");
+
 		// First we authenticate the user with their current password. If that works, we can set
 		// the new password
 		boolean result = false;
@@ -375,7 +433,14 @@ public class UserDB {
 	 * @return An integer value indicating whether the code matched, didn't match, or the timestamp has expired.
 	 * @throws DatabaseException
 	 */
-	public static int checkEmailVerificationCode(Connection conn, String email, String code) throws DatabaseException {
+	public static int checkEmailVerificationCode(Connection conn, String email, String code) throws DatabaseException, MissingDataException {
+
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+		
+		MissingData.checkMissing(email, "email");
+		MissingData.checkMissing(code, "code");
 
 		int result = CODE_FAILED;
 		
@@ -398,7 +463,14 @@ public class UserDB {
 	 * @return An integer value indicating whether the code matched, didn't match, or the timestamp has expired.
 	 * @throws DatabaseException
 	 */
-	public static int checkPasswordResetCode(Connection conn, String email, String code) throws DatabaseException {
+	public static int checkPasswordResetCode(Connection conn, String email, String code) throws DatabaseException, MissingDataException {
+
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+		
+		MissingData.checkMissing(email, "email");
+		MissingData.checkMissing(code, "code");
 
 		int result = CODE_FAILED;
 		

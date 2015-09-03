@@ -12,6 +12,6 @@ public class NoSuchUserException extends Exception {
 	private static final long serialVersionUID = 5900018443079901207L;
 
 	public NoSuchUserException() {
-		super("The specified user database ID does not exist");
+		super("The specified user does not exist in the database");
 	}
 }
