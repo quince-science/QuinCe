@@ -1,2 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<pageflow:Pageflow xmlns:pageflow="http://www.sybase.com/suade/pageflow" id="pf14405035039940" configfile="/QuinCe/WebContent/WEB-INF/faces-config.xml"/>
+<pageflow:Pageflow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pageflow="http://www.sybase.com/suade/pageflow" id="pf14405035039940" configfile="/QuinCe/WebContent/WEB-INF/faces-config.xml">
+  <nodes xsi:type="pageflow:PFPage" name="index.xhtml" x="84" y="60" id="pf14412946996316" outlinks="pf14412946996327" path="/index.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="user/signup.xhtml" x="384" y="156" id="pf14412946996328" inlinks="pf14412946996327" path="/user/signup.xhtml"/>
+  <links id="pf14412946996327" target="pf14412946996328" source="pf14412946996316" outcome="SignUp"/>
+</pageflow:Pageflow>

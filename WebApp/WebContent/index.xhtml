@@ -1,16 +1,27 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://xmlns.jcp.org/jsf/html">
-<h:head>
-<title>Your Title Here</title>
-<link href="./css/styles.css" rel="stylesheet" type="text/css"/>
-</h:head>
-<h:body>
-<h1 class="title">Your Heading Here</h1>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	template="/templates/basic_page.xhtml">
 
-<h:form>
-  <!-- Your form elements here -->
-</h:form>
-
-</h:body></html>
+	<ui:define name="content">
+	    <div id="loginbox">
+		      <h1>QuinCe</h1>
+		      <h:form id="loginform" method="post" accept-charset="utf8">
+		        <ul>
+		          <li>
+		            <label for="email" class="separateline">Email Address</label>
+		            <h:inputText value="#{loginBean.emailAddress}"/>
+		          </li>
+		          <li>
+		            <label for="password" class="separateline">Password</label>
+		            <h:inputSecret value="#{loginBean.password}"/>
+		          </li>
+		          <li class="buttonWrapper">
+		            <h:commandButton value="Log In" disabled="true" action="#{loginBean.authenticate}"/>
+		            <h:commandButton value="Sign Up" action="#{loginBean.signUp}"/>
+		          </li>
+		        </ul>
+		      </h:form>
+		    </div>
+	</ui:define>
+</ui:composition>

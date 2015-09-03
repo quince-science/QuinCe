@@ -1,0 +1,520 @@
+body {
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 14px;
+  background: #F3F3F3;
+  margin: 0px;
+  overflow-x: hidden;
+}
+
+#loginbox {
+  max-width: 400px;
+  margin: 40px auto 28px;
+  border: 1px solid #DEDEDE;
+  padding: 15px;
+  background: #FFF;
+}
+
+h1,h2 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+label {
+  font-weight: bold;
+}
+
+input {
+  border-radius: 3px;
+  border: 1px solid #666;
+}
+
+input[type="text"].numeric {
+  text-align: right;
+}
+
+input[type="text"].large {
+  font-size: 18px;
+}
+
+input.expand {
+  width: 100%;
+}
+
+input[type="submit"] {
+  display: inline;
+  margin-top: 20px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+
+  border-radius: 7px;
+  border: 1px solid #8CD5ED;
+
+  color: #222;
+  background: #8CD5ED;
+
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100px;
+  margin-right: 20px;
+  white-space: nowrap;
+}
+
+input[type="submit"].inline {
+    margin-top: 0px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
+input[type="submit"][disabled="disabled"] {
+    background: #aaa;
+    border: 1px solid #aaa;
+    cursor: default;
+}
+
+input[type="submit"]:last-of-type {
+    margin-right: 0px;
+}
+
+.smallButton {
+    margin-top: 0px;
+}
+
+.buttonWrapper {
+    text-align: center;
+    clear: both;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+form ul {
+  list-style: outside none none;
+}
+
+form li {
+  margin-top: 10px;
+}
+form li:first-child {
+  margin-top: 0px;
+}
+
+ul label {
+  display: block;
+}
+
+ul input {
+  display: block;
+  width: 100%;
+}
+
+#header {
+  color: #555;
+  position: absolute;
+  background: #8CD5ED;
+  width: 100%;
+  margin: 0px;
+  top: 0px;
+  left: 0px;
+  padding: 5px 10px 5px 10px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+#userSettings {
+  float: right;
+  margin-right: 20px;
+}
+
+.dropDown {
+    cursor: pointer;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#content {
+  margin-top: 40px;
+  position: relative;
+  clear: both;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th {
+  background: #8CD5ED;
+  text-align: left;
+  padding: 2px 5px 2px 5px;
+}
+
+tr.link {
+  cursor: pointer;
+}
+
+tr.fileList {
+  border-bottom: 1px solid black;
+}
+
+table .numericCol {
+  text-align: right;
+}
+
+table .centreCol {
+  text-align: center;
+}
+
+table .noWrap {
+  white-space: nowrap;
+}
+
+td {
+  padding: 3px 5px 3px 5px;
+}
+
+td.columnBorder {
+    border-left: 1px solid #aaa;
+}
+
+td.columnBorder:first-of-type {
+    border-left: none;
+}
+
+.fullpage {
+  width: 95%;
+  margin: auto;
+}
+
+td.alert {
+  color: red;
+  font-weight: bold;
+}
+
+.statBarCol {
+  width: 100px;
+  text-align: center;
+}
+
+canvas.statBar {
+  height: 16px;
+  width: 100%;
+  cursor: pointer;
+}
+
+#userSettingsMenu {
+  position: absolute;
+  top: 29px;
+  right: 0px;
+  padding: 0px;
+  width: 120px;
+  height: 94px;
+  border-style: solid;
+  border-color: #8CD5ED;
+  background: #DDE9ED;
+  z-index: 10;
+  overflow: hidden;
+  box-shadow: none;
+  border-width: 0px;
+  height: 0px;
+  transition: height 0.075s linear, box-shadow 0.075s linear, border-width 0.075s linear;
+}
+
+#userSettingsMenu.visible {
+  border-width: 2px;
+  box-shadow: -4px 6px 8px #000000;
+  height: 85px;
+}
+
+ul.menu {
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+}
+
+li.menuitem {
+  font-size: 14px;
+  color: #555;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 5px 0px 5px 5px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+li.smallMenuitem {
+    font-weight: bold;
+    cursor: pointer;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+li.menuitem:hover, li.smallMenuitem:hover {
+  background: #8CD5ED;
+}
+
+.popup {
+  border: 1px solid black;
+  background: #DDE9ED;
+  color: black;
+  position: absolute;
+  margin: auto;
+  font-size: 13px;
+  padding: 2px;
+  border-radius: 4px;
+  display: none;
+  z-index: 10;
+  box-shadow: 1px 2px 3px #000000;
+  font-weight: bold;
+}
+
+.popupMenu {
+  border: 1px solid black;
+  background: white;
+  color: black;
+  position: absolute;
+  margin: auto;
+  font-size: 13px;
+  padding: 2px;
+  border-radius: 4px;
+  display: none;
+  z-index: 10;
+  box-shadow: 1px 2px 3px #000000;
+  padding: 5px;
+  background: #ddd;
+}
+
+.bad {
+  color: #FF0000;
+}
+
+.questionable {
+  color: #D8B100;
+}
+
+.good {
+  color: #00C800;
+}
+
+.ignore {
+  color: #323232;
+}
+
+.assumedGood {
+  color: #76D376;
+}
+
+.needsFlagging {
+  color: #B4B4B4;
+}
+
+.selectButton {
+  border: 1px solid #CECBC9;
+  border-radius: 3px;
+  padding: 3px;
+  background-image: linear-gradient(0deg, rgb(240,239,238), rgb(255, 255, 255));
+  cursor: pointer;
+  text-align: left;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  height: 20px;
+  text-align: center;
+}
+
+#woceSelectMenu {
+  position: absolute;
+  background: white;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  width: 150px;
+  border: 1px solid #CECBC9;
+  border-radius: 3px;
+  padding: 3px;
+  cursor: pointer;
+  z-index: 10;
+  left: 95px;
+  top: 62px;
+  display: none;
+}
+
+#woceSelectMenu ul {
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+}
+
+#woceSelectMenu li:hover {
+  background: #eeeeee;
+}
+
+div.fullPage {
+  width: 900px;
+  margin: auto;
+}
+
+.instructions {
+  padding: 15px 5px 5px 5px;
+  font-style: italic;
+  margin-bottom: 15px;
+}
+
+.sectionHeader {
+  clear: both;
+  background: #8CD5ED;
+  margin-top: 5px;
+  padding: 5px;
+  font-weight: bold;
+  font-style: italic;
+}
+
+.sectionContent {
+  padding: 5px;
+}
+
+table.form {
+  width: 100%;
+}
+
+td.labels {
+  width: 50%;
+  text-align: right;
+  padding-right: 10px;
+  font-weight: bold;
+}
+
+.shown {
+  display: block;
+}
+
+.hidden {
+  display: none;
+}
+
+#plots {
+  margin-top: 30px;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  border-bottom: 2px solid black;
+}
+
+#data {
+  width: 100%;
+  overflow: hidden;
+  clear: both;
+  height: 500px;
+}
+
+#leftPlotContainer {
+  height: 100%;
+  width: 100%;
+}
+
+#rightPlotContainer {
+  float: right;
+  width: 50%;
+  height: 100%;
+  border-left: 2px solid black;
+}
+
+.plot {
+}
+
+.plotControls {
+  height: 30px;
+  background: #AAA;
+  border-top: 1px solid black;
+  padding-left: 5px;
+}
+
+#qcInfoPopup {
+  height: 20px;
+  display: block;
+  position: absolute;
+  display: none;
+}
+
+.qcInfoMessage {
+    display: inline;
+}
+
+#woceCommentDialog {
+    display: none;
+    position: absolute;
+    width: 500px;
+    height: 320px;
+    padding: 5px;
+}
+
+.dialogTitle {
+  text-align: center;
+  font-size: 16px;
+  left: 10px;
+  padding-bottom: 15px;
+}
+
+#woceCommentDialogComment {
+    width: 490px;
+    height: 150px;
+    resize: none;
+}
+
+.woceCommentDialogButton {
+    display: inline;
+    width: 20%;
+}
+
+.woceCommentDialogFlagButton {
+    width: 150px;
+    position: relative;
+    left: 90px;
+    top: -22px;
+}
+
+.scrollable {
+    width: 100%;
+    height: 400px;
+    overflow: scroll;
+}
+
+table.rawdata {
+    white-space: nowrap;
+    background: white;
+}
+
+td.disabled {
+    font-style: italic;
+    color: #888888;
+}
+
+tr.header {
+    font-weight: bold;
+}
+
+.smallHeader {
+    font-weight: bold;
+    font-size: 15px;
+}
+
+hr {
+    margin-bottom: 25px;
+}
