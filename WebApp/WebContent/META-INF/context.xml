@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<Context reloadable="true">
+  <!-- 
+    maxActive: Maximum number of dB connections in pool. Set to -1 for no limit.
+    maxIdle: Maximum number of idle dB connections to retain in pool. Set to -1 for no limit.
+    maxWait: Maximum milliseconds to wait for a dB connection to become available
+             Set to -1 to wait indefinitely.
+  -->
+  <Resource name="jdbc/QuinCeDB" auth="Container" type="javax.sql.DataSource"
+     maxActive="100" maxIdle="30" maxWait="10000" removeAbandoned="true"
+     username="quince_dev" password="quince_dev" driverClassName="com.mysql.jdbc.Driver"
+     url="jdbc:mysql://localhost:3306/quince_dev" />
+</Context>
