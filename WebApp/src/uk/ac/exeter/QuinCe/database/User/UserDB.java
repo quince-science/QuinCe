@@ -465,8 +465,8 @@ public class UserDB {
 	 * They are always generated together, so they belong together.
 	 */
 	private static class SaltAndHashedPassword {
-		protected byte[] salt;
-		protected byte[] hashedPassword;
+		private byte[] salt;
+		private byte[] hashedPassword;
 	}
 }
 
