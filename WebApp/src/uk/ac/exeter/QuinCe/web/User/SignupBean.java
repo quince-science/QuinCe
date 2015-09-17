@@ -1,11 +1,23 @@
 package uk.ac.exeter.QuinCe.web.User;
 
+import java.sql.Connection;
+
+import org.apache.commons.validator.routines.EmailValidator;
+
+import uk.ac.exeter.QuinCe.data.User;
+import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.User.NoSuchUserException;
+import uk.ac.exeter.QuinCe.database.User.UserDB;
+import uk.ac.exeter.QuinCe.database.User.UserExistsException;
+import uk.ac.exeter.QuinCe.utils.MissingDataException;
+import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+
 /**
  * JSF Managed Bean for handling new user sign-up
  * @author Steve Jones
  *
  */
-public class SignupBean {
+public class SignupBean extends BaseManagedBean {
 
 	private String emailAddress = null;
 	
@@ -26,7 +38,7 @@ public class SignupBean {
 	}
 
 	public void setEmailAddress(String emailAddress) {
-		this.emailAddress = emailAddress;
+		this.emailAddress = emailAddress.trim();
 	}
 
 	public String getGivenName() {
@@ -34,7 +46,7 @@ public class SignupBean {
 	}
 
 	public void setGivenName(String givenName) {
-		this.givenName = givenName;
+		this.givenName = givenName.trim();
 	}
 
 	public String getSurname() {
@@ -42,7 +54,7 @@ public class SignupBean {
 	}
 
 	public void setSurname(String surname) {
-		this.surname = surname;
+		this.surname = surname.trim();
 	}
 
 	public String getPassword1() {
@@ -50,6 +62,7 @@ public class SignupBean {
 	}
 
 	public void setPassword1(String password1) {
+		// Note that passwords aren't trimmed
 		this.password1 = password1;
 	}
 
@@ -58,11 +71,60 @@ public class SignupBean {
 	}
 
 	public void setPassword2(String password2) {
+		// Note that passwords aren't trimmed
 		this.password2 = password2;
 	}
-	
-	public String signUp() {
-		return "OK";
-	}
 
+	/**
+	 * The main signup action method
+	 * @return Result string
+	 */
+	public String signUp() {
+		
+		String result = "OK";
+		
+		if (!validate()) {
+			result = "ValidationFailed";
+		} else {
+			
+			try {
+				Connection db = getDBConnection();
+				
+				// Add the user to the database
+				User newUser = UserDB.createUser(db, emailAddress, password1.toCharArray(), givenName, surname);
+				UserDB.generateEmailVerificationCode(db, newUser);
+				
+			} catch (DatabaseException|MissingDataException|NoSuchUserException e) {
+				result = "InternalError";
+			} catch (UserExistsException e) {
+				setMessage("signupForm:emailAddress", "A user already exists with that email address");
+				result = "UserExists";
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Validate the bean's contents
+	 * @return {@code true} if the contents are valid; {@code false} otherwise.
+	 */
+	private boolean validate() {
+		boolean ok = true;
+		
+		// Email
+		if (!EmailValidator.getInstance().isValid(emailAddress)) {
+			ok = false;
+			setMessage("signupForm:emailAddress", "Email is not valid");
+		}
+		
+		// Passwords must match
+		if (!password1.equals(password2)) {
+			ok = false;
+			setMessage("signupForm:password1", "Passwords must match");
+			setMessage("signupForm:password2", "Passwords must match");
+		}
+		
+		return ok;
+	}
 }

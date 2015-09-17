@@ -5,34 +5,39 @@
 
 	<ui:define name="content">
 	    <div id="loginbox">
-		      <h1>Sign Up</h1>
-		      <h:form id="signupForm" method="post" accept-charset="utf8">
-		        <ul>
-		          <li>
-		            <h:outputLabel id="emailAddressLabel" for="emailAddress" class="separateline" value="Email Address"/>
-		            <h:inputText id="emailAddress" value="#{signupBean.emailAddress}" required="true"/>
-		          </li>
-		          <li>
-		          	<h:outputLabel id="givenNameLabel" for="givenName" class="separateline" value="First/Given Name"/>
-		          	<h:inputText id="givenName" value="#{signupBean.givenName}" required="true"/>
-		          </li>
-		          <li>
-		          	<h:outputLabel id="surnameLabel" for="surname" class="separateline" value="Surname/Family Name"/>
-		          	<h:inputText id="surname" value="#{signupBean.surname}" required="true"/>
-		          </li>
-		          <li>
-		            <h:outputLabel id="password1Label" for="password1" class="separateline" value="Password"/>
-		            <h:inputSecret id="password1" value="#{signupBean.password1}" required="true"/>
-		          </li>
-		          <li>
-		            <h:outputLabel id="password2Label" for="password2" class="separateline" value="Confirm Password"/>
-		            <h:inputSecret id="password2" value="#{signupBean.password2}" required="true"/>
-		          </li>
-		          <li class="buttonWrapper">
-		            <h:commandButton id="signupButton" value="Sign Up" action="#{signupBean.signUp}"/>
-		          </li>
-		        </ul>
-		      </h:form>
-		    </div>
+	      <h1>Sign Up</h1>
+	      <h:form id="signupForm" method="post" accept-charset="utf8">
+	        <ul>
+	          <li>
+	            <h:outputLabel id="emailAddressLabel" for="emailAddress" class="separateline" value="Email Address*"/>
+	            <h:inputText id="emailAddress" value="#{signupBean.emailAddress}" required="true" requiredMessage="Email address is required"/>
+	            <h:message id="emailAddressMessage" for="emailAddress" errorClass="error"/>
+	          </li>
+	          <li>
+	          	<h:outputLabel id="givenNameLabel" for="givenName" class="separateline" value="First/Given Name*"/>
+	          	<h:inputText id="givenName" value="#{signupBean.givenName}" required="true" requiredMessage="First/Given name is required"/>
+	            <h:message id="givenNameMessage" for="givenName" errorClass="error"/>
+	          </li>
+	          <li>
+	          	<h:outputLabel id="surnameLabel" for="surname" class="separateline" value="Surname/Family Name*"/>
+	          	<h:inputText id="surname" value="#{signupBean.surname}" required="true" requiredMessage="Surname/Family name is required"/>
+	            <h:message id="surnameMessage" for="surname" errorClass="error"/>
+	          </li>
+	          <li>
+	            <h:outputLabel id="password1Label" for="password1" class="separateline" value="Password*"/>
+	            <h:inputSecret id="password1" value="#{signupBean.password1}" required="true" requiredMessage="Password is required"/>
+	            <h:message id="password1Message" for="password1" errorClass="error"/>
+	          </li>
+	          <li>
+	            <h:outputLabel id="password2Label" for="password2" class="separateline" value="Confirm Password*"/>
+	            <h:inputSecret id="password2" value="#{signupBean.password2}" required="true" requiredMessage="Password is required"/>
+	            <h:message id="password2Message" for="password2" errorClass="error"/>
+	          </li>
+	          <li class="buttonWrapper">
+	            <h:commandButton id="signupButton" value="Sign Up" action="#{signupBean.signUp}"/>
+	          </li>
+	        </ul>
+	      </h:form>
+	    </div>
 	</ui:define>
 </ui:composition>

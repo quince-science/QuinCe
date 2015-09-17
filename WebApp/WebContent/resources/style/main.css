@@ -518,3 +518,8 @@ tr.header {
 hr {
     margin-bottom: 25px;
 }
+
+.error {
+	color: #ff0000;
+	font-weight: bold;
+}

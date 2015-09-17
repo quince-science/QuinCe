@@ -24,4 +24,16 @@
 			<to-view-id>/user/signup.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
+	<navigation-rule>
+		<display-name>/user/signup.xhtml</display-name>
+		<from-view-id>/user/signup.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>ValidationFailed</from-outcome>
+			<to-view-id>/user/signup.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>UserExists</from-outcome>
+			<to-view-id>/user/signup.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
 </faces-config>
