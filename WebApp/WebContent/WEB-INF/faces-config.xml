@@ -17,6 +17,14 @@
 		<managed-bean-scope>request</managed-bean-scope>
 	</managed-bean>
 	<navigation-rule>
+		<display-name>all_pages</display-name>
+		<from-view-id>*</from-view-id>
+		<navigation-case>
+			<from-outcome>InternalError</from-outcome>
+			<to-view-id>internalerror.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
 		<display-name>index.xhtml</display-name>
 		<from-view-id>/index.xhtml</from-view-id>
 		<navigation-case>

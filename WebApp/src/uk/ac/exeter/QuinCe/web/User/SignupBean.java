@@ -98,10 +98,9 @@ public class SignupBean extends BaseManagedBean {
 				
 				// Add the user to the database
 				User newUser = UserDB.createUser(db, emailAddress, password1.toCharArray(), givenName, surname);
-				UserDB.generateEmailVerificationCode(db, newUser);
-				
+				UserDB.generateEmailVerificationCode(db, newUser);				
 			} catch (DatabaseException|MissingDataException|NoSuchUserException e) {
-				result = INTERNAL_ERROR_RESULT;
+				result = internalError(e);
 			} catch (UserExistsException e) {
 				setMessage(getComponentID("emailAddress"), "A user already exists with that email address");
 				result = USER_EXISTS_RESULT;

@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pageflow:Pageflow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pageflow="http://www.sybase.com/suade/pageflow" id="pf14405035039940" configfile="/QuinCe/WebContent/WEB-INF/faces-config.xml">
   <nodes xsi:type="pageflow:PFPage" name="index.xhtml" id="pf14424006975480" referenceLink="//@navigationRule.0/@fromViewId|" outlinks="pf14424006975481" path="/index.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="/user/signup.xhtml" id="pf14424006975482" referenceLink="//@navigationRule.1/@navigationCase.1/@toViewId|" outlinks="pf14424912320580 pf14425036291860" inlinks="pf14424006975481 pf14424912320580 pf14425036291860" path="/user/signup.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="/user/signup.xhtml" id="pf14424006975482" referenceLink="//@navigationRule.0/@navigationCase.0/@toViewId|" outlinks="pf14424912320580 pf14425036291860" inlinks="pf14424006975481 pf14424912320580 pf14425036291860" path="/user/signup.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="all_pages" id="pf14425140996400" referenceLink="//@navigationRule.0/@fromViewId|" outlinks="pf14425140996401" path="*"/>
+  <nodes xsi:type="pageflow:PFPage" name="internalerror.xhtml" id="pf14425140996402" referenceLink="//@navigationRule.0/@navigationCase.0/@toViewId|" inlinks="pf14425140996401" path="internalerror.xhtml"/>
   <links id="pf14424006975481" target="pf14424006975482" source="pf14424006975480" outcome="SignUp"/>
   <links id="pf14424912320580" target="pf14424006975482" source="pf14424006975482" outcome="ValidationFailed"/>
   <links id="pf14425036291860" target="pf14424006975482" source="pf14424006975482" outcome="UserExists"/>
+  <links id="pf14425140996401" target="pf14425140996402" source="pf14425140996400" outcome="InternalError"/>
 </pageflow:Pageflow>

@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 
 import javax.faces.application.FacesMessage;
@@ -23,7 +25,7 @@ public abstract class BaseManagedBean {
 	public static final String VALIDATION_FAILED_RESULT = "ValidationFailed";
 	
 	protected static String FORM_NAME = "DEFAULT_FORM";
-	
+		
 	/**
 	 * Set a message that can be displayed to the user on a form
 	 * @param componentID The component ID (e.g. {@code form:inputName})
@@ -56,5 +58,23 @@ public abstract class BaseManagedBean {
 	protected String getComponentID(String componentName) {
 		return FORM_NAME + ":" + componentName;
 	}
-
+	
+	/**
+	 * Register an internal error. This places the error
+	 * stack trace in the messages, and sends back a result
+	 * that will redirect the application to the internal error page.
+	 * 
+	 * This should only be used for errors that can't be handled properly,
+	 * e.g. database failures and the like.
+	 * 
+	 * @param error The error
+	 * @return A result string that will direct to the internal error page.
+	 */
+	public String internalError(Throwable error) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		error.printStackTrace(pw);
+		setMessage("STACK_TRACE", sw.toString());
+		return INTERNAL_ERROR_RESULT;
+	}
 }
