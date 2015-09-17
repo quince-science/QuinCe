@@ -22,6 +22,8 @@ public abstract class BaseManagedBean {
 	
 	public static final String VALIDATION_FAILED_RESULT = "ValidationFailed";
 	
+	protected static String FORM_NAME = "DEFAULT_FORM";
+	
 	/**
 	 * Set a message that can be displayed to the user on a form
 	 * @param componentID The component ID (e.g. {@code form:inputName})
@@ -49,6 +51,10 @@ public abstract class BaseManagedBean {
 		} catch (Exception e) {
 			throw new DatabaseException("Error while retrieving database connection from pool", e);
 		}
+	}
+	
+	protected String getComponentID(String componentName) {
+		return FORM_NAME + ":" + componentName;
 	}
 
 }

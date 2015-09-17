@@ -18,6 +18,10 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
  *
  */
 public class SignupBean extends BaseManagedBean {
+	
+	static {
+		FORM_NAME = "signupForm";
+	}
 
 	public static final String USER_EXISTS_RESULT = "UserExists";
 	
@@ -99,7 +103,7 @@ public class SignupBean extends BaseManagedBean {
 			} catch (DatabaseException|MissingDataException|NoSuchUserException e) {
 				result = INTERNAL_ERROR_RESULT;
 			} catch (UserExistsException e) {
-				setMessage("signupForm:emailAddress", "A user already exists with that email address");
+				setMessage(getComponentID("emailAddress"), "A user already exists with that email address");
 				result = USER_EXISTS_RESULT;
 			}
 		}
@@ -117,14 +121,14 @@ public class SignupBean extends BaseManagedBean {
 		// Email
 		if (!EmailValidator.getInstance().isValid(emailAddress)) {
 			ok = false;
-			setMessage("signupForm:emailAddress", "Email is not valid");
+			setMessage(getComponentID("emailAddress"), "Email is not valid");
 		}
 		
 		// Passwords must match
 		if (!password1.equals(password2)) {
 			ok = false;
-			setMessage("signupForm:password1", "Passwords must match");
-			setMessage("signupForm:password2", "Passwords must match");
+			setMessage(getComponentID("password1"), "Passwords must match");
+			setMessage(getComponentID("password2"), "Passwords must match");
 		}
 		
 		return ok;
