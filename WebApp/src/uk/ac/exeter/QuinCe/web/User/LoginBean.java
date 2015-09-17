@@ -1,11 +1,13 @@
 package uk.ac.exeter.QuinCe.web.User;
 
+import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+
 /**
  * JSF Managed Bean for handling user logins
  * @author Steve Jones
  *
  */
-public class LoginBean {
+public class LoginBean extends BaseManagedBean {
 	
 	public static final String SIGNUP_RESULT = "SignUp";
 	
@@ -34,7 +36,7 @@ public class LoginBean {
 	}
 
 	public String authenticate() {
-		return "OK";
+		return SUCCESS_RESULT;
 	}
 	
 	public String signUp() {

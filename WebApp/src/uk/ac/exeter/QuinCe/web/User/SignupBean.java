@@ -19,6 +19,8 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
  */
 public class SignupBean extends BaseManagedBean {
 
+	public static final String USER_EXISTS_RESULT = "UserExists";
+	
 	private String emailAddress = null;
 	
 	private String givenName = null;
@@ -81,10 +83,10 @@ public class SignupBean extends BaseManagedBean {
 	 */
 	public String signUp() {
 		
-		String result = "OK";
+		String result = SUCCESS_RESULT;
 		
 		if (!validate()) {
-			result = "ValidationFailed";
+			result = VALIDATION_FAILED_RESULT;
 		} else {
 			
 			try {
@@ -95,10 +97,10 @@ public class SignupBean extends BaseManagedBean {
 				UserDB.generateEmailVerificationCode(db, newUser);
 				
 			} catch (DatabaseException|MissingDataException|NoSuchUserException e) {
-				result = "InternalError";
+				result = INTERNAL_ERROR_RESULT;
 			} catch (UserExistsException e) {
 				setMessage("signupForm:emailAddress", "A user already exists with that email address");
-				result = "UserExists";
+				result = USER_EXISTS_RESULT;
 			}
 		}
 		

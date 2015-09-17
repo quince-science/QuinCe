@@ -16,6 +16,12 @@ import uk.ac.exeter.QuinCe.database.DatabaseException;
  */
 public abstract class BaseManagedBean {
 
+	public static final String SUCCESS_RESULT = "Success";
+	
+	public static final String INTERNAL_ERROR_RESULT = "InternalError";
+	
+	public static final String VALIDATION_FAILED_RESULT = "ValidationFailed";
+	
 	/**
 	 * Set a message that can be displayed to the user on a form
 	 * @param componentID The component ID (e.g. {@code form:inputName})
