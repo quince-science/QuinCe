@@ -6,10 +6,11 @@ import java.sql.Connection;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
-import javax.naming.InitialContext;
+import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.web.system.Pools;
 
 /**
  * Base class for managed beans that provides a few useful methods
@@ -47,14 +48,18 @@ public abstract class BaseManagedBean {
 	 */
 	protected Connection getDBConnection() throws DatabaseException {
 		try {
-			InitialContext context = new InitialContext();
-	        DataSource ds = (DataSource) context.lookup("java:/comp/env/jdbc/QuinCeDB");
-	        return ds.getConnection();
+			DataSource dataSource = Pools.getInstance((ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext()).getDBDataSource();
+			return dataSource.getConnection();
 		} catch (Exception e) {
 			throw new DatabaseException("Error while retrieving database connection from pool", e);
 		}
 	}
 	
+	/**
+	 * Generates a JSF component ID for a given form input name
+	 * @param componentName The form input name
+	 * @return
+	 */
 	protected String getComponentID(String componentName) {
 		return FORM_NAME + ":" + componentName;
 	}

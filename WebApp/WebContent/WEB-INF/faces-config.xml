@@ -31,6 +31,14 @@
 			<from-outcome>SignUp</from-outcome>
 			<to-view-id>/user/signup.xhtml</to-view-id>
 		</navigation-case>
+		<navigation-case>
+			<from-outcome>AuthenticationFailed</from-outcome>
+			<to-view-id>/index.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>AuthenticationSuccess</from-outcome>
+			<to-view-id>/data/file_list.xhtml</to-view-id>
+		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
 		<display-name>SignupForm</display-name>

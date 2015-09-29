@@ -45,5 +45,14 @@
 		<res-auth>Container</res-auth>
 		<res-sharing-scope>Shareable</res-sharing-scope>
 	</resource-ref>
+	
+	<context-param>
+	    <param-name>database.name</param-name>
+	    <param-value>java:/comp/env/jdbc/QuinCeDB</param-value>
+	</context-param>
+
+	<listener>
+	    <listener-class>uk.ac.exeter.QuinCe.web.system.Pools</listener-class>
+	</listener>
 
 </web-app>

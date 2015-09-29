@@ -523,3 +523,9 @@ hr {
 	color: #ff0000;
 	font-weight: bold;
 }
+
+.errors {
+	color: #ff0000;
+	font-weight: bold;
+	text-align: center;	
+}
