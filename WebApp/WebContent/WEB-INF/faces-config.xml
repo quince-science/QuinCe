@@ -33,7 +33,7 @@
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
-		<display-name>/user/signup.xhtml</display-name>
+		<display-name>SignupForm</display-name>
 		<from-view-id>/user/signup.xhtml</from-view-id>
 		<navigation-case>
 			<from-outcome>ValidationFailed</from-outcome>
@@ -42,6 +42,18 @@
 		<navigation-case>
 			<from-outcome>UserExists</from-outcome>
 			<to-view-id>/user/signup.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>Success</from-outcome>
+			<to-view-id>/user/signup_complete.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<display-name>SignupComplete</display-name>
+		<from-view-id>/user/signup_complete.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>Done</from-outcome>
+			<to-view-id>/index.html</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 </faces-config>
