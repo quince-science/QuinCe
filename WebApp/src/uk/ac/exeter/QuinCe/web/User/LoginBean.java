@@ -52,6 +52,7 @@ public class LoginBean extends BaseManagedBean {
 			switch (authenticateResult) {
 			case UserDB.AUTHENTICATE_OK: {
 				result = AUTHENTICATION_OK_RESULT;
+				break;
 			}
 			case UserDB.AUTHENTICATE_FAILED: {
 				setMessage(null, "The email address and/or password were not recognised");
