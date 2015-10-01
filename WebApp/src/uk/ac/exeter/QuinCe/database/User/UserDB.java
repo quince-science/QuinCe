@@ -324,9 +324,8 @@ public class UserDB {
 	 * @param password The password supplied by the user
 	 * @return One of AUTHENTICATE_OK, AUTHENTICATE_FAILED, or AUTHENTICATE_EMAIL_CODE_SET
 	 * @throws DatabaseException If an error occurs while retrieving the user's details
-	 * @throws MissingDataException If any of the parameters are null
 	 */
-	public static int authenticate(Connection conn, String email, char[] password) throws DatabaseException, MissingDataException {
+	public static int authenticate(Connection conn, String email, char[] password) throws DatabaseException {
 		
 		if (null == conn) {
 			throw new DatabaseException("Supplied database connection is null");
