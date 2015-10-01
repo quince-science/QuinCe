@@ -34,7 +34,7 @@ public class UserDB {
 	/**
 	 * SQL statement to create a new user record
 	 */
-	private static final String CREATE_USER_STATEMENT = "INSERT INTO user (email, salt, password, firstname, surname) VALUES (?, ?, ?, ?, ?)";
+	private static final String CREATE_USER_STATEMENT = "INSERT INTO user (email, salt, password, firstname, surname, email_code, email_code_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
 	
 	/**
 	 * SQL statement to store an email verification code with a timestamp
@@ -161,7 +161,7 @@ public class UserDB {
 	 * @throws HashException If an error occurs while hashing the user's password 
 	 * @see uk.ac.exeter.QuinCe.data.User
 	 */
-	public static User createUser(Connection conn, String email, char[] password, String givenName, String surname) throws UserExistsException, DatabaseException, MissingDataException {
+	public static User createUser(Connection conn, String email, char[] password, String givenName, String surname, boolean generateEmailVerificationCode) throws UserExistsException, DatabaseException, MissingDataException {
 		
 		if (null == conn) {
 			throw new DatabaseException("Supplied database connection is null");
@@ -181,13 +181,23 @@ public class UserDB {
 			} else {
 				SaltAndHashedPassword generatedPassword = generateHashedPassword(password);
 				
+				String emailVerificationCode = null;
+				Timestamp time = null;
+				
+				if (generateEmailVerificationCode) {
+					emailVerificationCode = new String(PasswordHash.generateRandomString(CODE_LENGTH));
+					time = new Timestamp(System.currentTimeMillis());
+				}
+				
 				stmt = conn.prepareStatement(CREATE_USER_STATEMENT);
-				stmt.setString(1,  email);
+				stmt.setString(1, email);
 				stmt.setBytes(2, generatedPassword.salt);
 				stmt.setBytes(3, generatedPassword.hashedPassword);
 				stmt.setString(4, givenName);
 				stmt.setString(5, surname);
-				
+				stmt.setString(6, emailVerificationCode);
+				stmt.setTimestamp(7, time);
+
 				stmt.execute();
 				
 				newUser = getUser(conn, email);

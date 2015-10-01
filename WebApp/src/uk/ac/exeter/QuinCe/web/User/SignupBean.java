@@ -4,9 +4,7 @@ import java.sql.Connection;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
-import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.User.NoSuchUserException;
 import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.database.User.UserExistsException;
 import uk.ac.exeter.QuinCe.utils.MissingDataException;
@@ -97,9 +95,8 @@ public class SignupBean extends BaseManagedBean {
 				Connection db = getDBConnection();
 				
 				// Add the user to the database
-				User newUser = UserDB.createUser(db, emailAddress, password1.toCharArray(), givenName, surname);
-				UserDB.generateEmailVerificationCode(db, newUser);				
-			} catch (DatabaseException|MissingDataException|NoSuchUserException e) {
+				UserDB.createUser(db, emailAddress, password1.toCharArray(), givenName, surname, true);
+			} catch (DatabaseException|MissingDataException e) {
 				result = internalError(e);
 			} catch (UserExistsException e) {
 				setMessage(getComponentID("emailAddress"), "A user already exists with that email address");
