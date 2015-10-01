@@ -56,16 +56,16 @@ public class AuthenticationTest extends BaseDbTest {
 		UserDB.authenticate(nullConn, TEST_USER_EMAIL, TEST_USER_PASSWORD.toCharArray());
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test
 	public void testNullEmail() throws Exception {
 		String nullEmail = null;
-		UserDB.authenticate(getConnection(), nullEmail, TEST_USER_PASSWORD.toCharArray());
+		assertEquals(UserDB.AUTHENTICATE_FAILED, UserDB.authenticate(getConnection(), nullEmail, TEST_USER_PASSWORD.toCharArray()));
 	}
 
-	@Test(expected=MissingDataException.class)
+	@Test
 	public void testNullPassword() throws Exception {
 		char[] nullPassword = null;
-		UserDB.authenticate(getConnection(), TEST_USER_EMAIL, nullPassword);
+		assertEquals(UserDB.AUTHENTICATE_FAILED, UserDB.authenticate(getConnection(), TEST_USER_EMAIL, nullPassword));
 	}
 
 	@Test(expected=DatabaseException.class)

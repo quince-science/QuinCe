@@ -332,9 +332,6 @@ public class UserDB {
 			throw new DatabaseException("Supplied database connection is null");
 		}
 		
-		MissingData.checkMissing(email, "email");
-		MissingData.checkMissing(password, "password", true);
-		
 		int authenticationResult = AUTHENTICATE_FAILED;
 		
 		PreparedStatement stmt = null;
