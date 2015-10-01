@@ -269,3 +269,44 @@ Digit      Value
 
 The second digit will be in the range 1-3. Therefore a `sensor` field value of
 `3_2` indicates the second equilibrator temperature sensor.
+
+# Jobs
+The majority of the data processing performed by QuinCe will be done by background tasks,
+which will be managed within the database.
+
+## `job`
+
+Each background task will have a row in this table.
+
+Field                    Type           Description
+--------------------     ------------   -------------------------------------------------------------------------
+job_id                   Integer        Job ID
+submitted                DateTime       The date and time on which the job was submitted
+class                    String         The class name of the job to be run
+parameters               String         The parameters to be passed to the job when it is run
+status                   Integer        The current status of the job
+thread_id                String         The ID of the thread which is running the job
+progress                 Float          The progress of the job, expressed as a percentage
+stack_trace              String         Used to store a stack trace in the event of an error
+
+#### `class`
+Each job will be executed by a specific Java class. Its name will be stored here.
+
+#### `parameters`
+The job's parameters will be stored as a simple string. If a job requires multiple
+parameters, they will be separated by a semi-colon.
+
+#### `status`
+The status will have one of the following values:
+
+Value    Status
+-----    --------------------------
+0        Queued (waiting to run)
+1        Running
+2        Finished
+3        Error
+
+#### `thread_id`
+Jobs will be run as new threads within the system. The thread ID will be stored
+so the system can monitor whether the thread as died and left the job in a bad
+state. In such situations the job will be returned to the queue to be re-run.
