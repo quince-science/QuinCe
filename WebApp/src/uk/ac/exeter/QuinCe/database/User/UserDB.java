@@ -154,6 +154,7 @@ public class UserDB {
 	 * @param password The password entered by the user
 	 * @param givenName The user's given name
 	 * @param surname The user's surname
+	 * @param generateEmailVerificationCode Indicates whether or not an email verification code should be generated for the user
 	 * @return A new User object representing the user
 	 * @throws UserExistsException If a user with the specified email address already exists in the database
 	 * @throws MissingDataException If any of the parameters are null
