@@ -25,7 +25,7 @@ public abstract class BaseDbTest {
 	}
 	
 	protected void createTestUser() throws Exception {
-		testUser = UserDB.createUser(getConnection(), TEST_USER_EMAIL, TEST_USER_PASSWORD.toCharArray(), "Steve", "Jones");
+		testUser = UserDB.createUser(getConnection(), TEST_USER_EMAIL, TEST_USER_PASSWORD.toCharArray(), "Steve", "Jones", false);
 	}
 	
 	protected void destroyTestUser() throws Exception {
