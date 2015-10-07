@@ -285,7 +285,7 @@ submitted                DateTime       The date and time on which the job was s
 class                    String         The class name of the job to be run
 parameters               String         The parameters to be passed to the job when it is run
 status                   Integer        The current status of the job
-thread_id                Integer         The ID of the thread which is running the job
+thread_name              String         The name of the thread which is running the job
 progress                 Float          The progress of the job, expressed as a percentage
 stack_trace              String         Used to store a stack trace in the event of an error
 
@@ -306,7 +306,8 @@ Value    Status
 2        Finished
 3        Error
 
-#### `thread_id`
-Jobs will be run as new threads within the system. The thread ID will be stored
+#### `thread_name`
+Jobs will be run as new threads within the system. Each thread will be named
+according to the job it is running, and its name will be stored in the database
 so the system can monitor whether the thread as died and left the job in a bad
 state. In such situations the job will be returned to the queue to be re-run.
