@@ -8,7 +8,7 @@ import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
 /**
- * Utility class for handling connection pools
+ * Utility class for handling pools
  * @author Steve Jones
  *
  */
