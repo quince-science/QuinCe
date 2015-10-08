@@ -7,6 +7,9 @@ import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.utils.MissingData;
+import uk.ac.exeter.QuinCe.utils.MissingDataException;
+
 /**
  * A thread object that is used to run a job.
  * @author Steve Jones
@@ -49,8 +52,12 @@ public class JobThread extends Thread {
 	 * @throws InvalidJobClassException If the specified job class is not of the correct type
 	 * @throws JobException If a problem is encountered while building the job object
 	 * @throws InvalidJobParametersException If the parameters supplied to the job are invalid
+	 * @throws MissingDataException If any of the required parameters are null
 	 */
-	protected void setupJob(String jobClass, List<String> parameters, Connection dbConnection) throws JobClassNotFoundException, InvalidJobClassException, JobException, InvalidJobParametersException {
+	protected void setupJob(String jobClass, List<String> parameters, Connection dbConnection) throws MissingDataException, JobClassNotFoundException, InvalidJobClassException, JobException, InvalidJobParametersException {
+		
+		MissingData.checkMissing(jobClass, "jobClass");
+		MissingData.checkMissing(dbConnection, "dbConnection");
 		
 		// Make sure the specified job class is of the correct type
 		try {

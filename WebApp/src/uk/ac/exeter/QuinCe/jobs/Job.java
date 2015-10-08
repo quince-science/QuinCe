@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.utils.MissingData;
+import uk.ac.exeter.QuinCe.utils.MissingDataException;
+
 /**
  * Abstract class containing all the required parts for a backgorund job.
  * All jobs created for QuinCe must extend this class.
@@ -30,7 +33,10 @@ public abstract class Job {
 	 * @param parameters The parameters for the job
 	 * @throws InvalidJobParametersException If the parameters are not valid for the job
 	 */
-	public Job(Connection connection, List<String> parameters) throws InvalidJobParametersException {
+	public Job(Connection connection, List<String> parameters) throws MissingDataException, InvalidJobParametersException {
+		
+		MissingData.checkMissing(connection, "connection");
+		
 		this.connection = connection;
 		this.parameters = parameters;
 		validateParameters();
