@@ -121,9 +121,25 @@ public class JobThread extends Thread {
 	}
 	
 	/**
-	 * Start the thread and run the job
+	 * Start the thread and run the job.
+	 * When finished the thread will return itself to the thread pool
 	 */
 	public void run() {
-		job.run();
+		try {
+			// Run the job
+			job.run();
+		} catch (Exception e) {
+			// run should not throw any exceptions, but just in case...
+		} finally {
+			job.destroy();
+			try {
+				// Return ourselves to the thread pool
+				JobThreadPool.getInstance().returnThread(this);
+			} catch (JobThreadPoolNotInitialisedException e) {
+				// If the thread pool is gone, what happens to this thread
+				// is irrelevant.
+			}
+		}
+		
 	}
 }
