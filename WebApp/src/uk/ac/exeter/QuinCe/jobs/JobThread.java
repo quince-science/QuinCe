@@ -129,7 +129,7 @@ public class JobThread extends Thread {
 			// Run the job
 			job.run();
 		} catch (Exception e) {
-			// run should not throw any exceptions, but just in case...
+			// The job should not throw any exceptions, but just in case...
 		} finally {
 			job.destroy();
 			try {
