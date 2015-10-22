@@ -285,7 +285,7 @@ owner                    F_KEY          The user id of the owner of the job
 submitted                DateTime       The date and time on which the job was submitted
 class                    String         The class name of the job to be run
 parameters               String         The parameters to be passed to the job when it is run
-status                   Integer        The current status of the job
+status                   ENUM           The current status of the job (WAITING, RUNNING, FINISHED, ERROR)
 thread_name              String         The name of the thread which is running the job
 progress                 Float          The progress of the job, expressed as a percentage
 stack_trace              String         Used to store a stack trace in the event of an error
