@@ -14,6 +14,7 @@ import org.junit.Test;
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.User.NoSuchUserException;
+import uk.ac.exeter.QuinCe.jobs.BadProgressException;
 import uk.ac.exeter.QuinCe.jobs.BadStatusException;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobClassTypeException;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobConstructorException;
@@ -43,6 +44,8 @@ public class JobManagerTest extends BaseDbTest {
 	private static final String GET_JOBS_QUERY = "SELECT id, owner, submitted, class, parameters, status, started, thread_name, progress FROM job";
 	
 	private static final String GET_STATUS_QUERY = "SELECT status FROM job WHERE id = ?";
+	
+	private static final String GET_PROGRESS_QUERY = "SELECT progress FROM job WHERE id = ?";
 	
 	private List<String> tenSecondJobParams;
 	
@@ -159,6 +162,41 @@ public class JobManagerTest extends BaseDbTest {
 	@Test
 	public void setStatusError() throws Exception {
 		assertTrue(runSetStatusTest(Job.ERROR_STATUS));
+	}
+	
+	@Test(expected=NoSuchJobException.class)
+	public void setProgressInvalidJob() throws Exception {
+		JobManager.setProgress(getConnection(), 0, 0);
+	}
+	
+	@Test(expected=BadProgressException.class)
+	public void setProgressNegative() throws Exception {
+		long jobID = createTestJob();
+		JobManager.setProgress(getConnection(), jobID, -1);
+	}
+	
+	@Test(expected=BadProgressException.class)
+	public void setProgressOver9000() throws Exception {
+		long jobID = createTestJob();
+		JobManager.setProgress(getConnection(), jobID, 9001);
+	}
+	
+	@Test
+	public void setProgressGood() throws Exception {
+		long jobID = createTestJob();
+		JobManager.setProgress(getConnection(), jobID, 50.7);
+		
+		double progress = -1;
+		
+		PreparedStatement stmt = getConnection().prepareStatement(GET_PROGRESS_QUERY);
+		stmt.setLong(1, jobID);
+		
+		ResultSet result = stmt.executeQuery();
+		if (result.next()) {
+			progress = result.getDouble(1);
+		}
+		
+		assertEquals(50.7, progress, 0);
 	}
 	
 	@After

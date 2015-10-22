@@ -66,7 +66,15 @@ public class JobManager {
 	 */
 	private static final String FIND_JOB_QUERY = "SELECT COUNT(*) FROM job WHERE id = ?";
 	
+	/**
+	 * SQL statement for setting a job's status
+	 */
 	private static final String SET_STATUS_STATEMENT = "UPDATE job SET status = ? WHERE id = ?";
+	
+	/**
+	 * SQL statement for setting a job's progress
+	 */
+	private static final String SET_PROGRESS_STATEMENT = "UPDATE job SET progress = ? WHERE id = ?";
 	
 	/**
 	 * Adds a job to the database
@@ -193,6 +201,49 @@ public class JobManager {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Set the progress for a job. The progress must be a percentage (between 0 and 100 inclusive)
+	 * @param conn A database connection
+	 * @param jobID The ID of the job
+	 * @param progress The progress
+	 * @throws BadProgressException If the progress value is invalid
+	 * @throws NoSuchJobException If the specified job does not exist
+	 * @throws DatabaseException If an error occurs while storing the progress in the database
+	 */
+	public static void setProgress(Connection conn, long jobID, double progress) throws BadProgressException, NoSuchJobException, DatabaseException {
+		
+		if (progress < 0 || progress > 100) {
+			throw new BadProgressException();
+		}
+		
+		if (!jobExists(conn, jobID)) {
+			throw new NoSuchJobException(jobID);
+		}
+		
+		PreparedStatement stmt = null;
+		
+		try {
+			stmt = conn.prepareStatement(SET_PROGRESS_STATEMENT);
+			stmt.setDouble(1, progress);
+			stmt.setLong(2, jobID);
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while setting the status", e);
+		} finally {
+			if (null != stmt) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					// Do nothing.
+				}
+			}
+		}
+
+		
+		
+		
 	}
 	
 	/**
