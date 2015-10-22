@@ -62,6 +62,13 @@ public class JobManager {
 	private static final String CREATE_JOB_STATEMENT = "INSERT INTO job (owner, submitted, class, parameters) VALUES (?, ?, ?, ?)";
 	
 	/**
+	 * SQL statement to see if a job with a given ID exists
+	 */
+	private static final String FIND_JOB_QUERY = "SELECT COUNT(*) FROM job WHERE id = ?";
+	
+	private static final String SET_STATUS_STATEMENT = "UPDATE job SET status = ? WHERE id = ?";
+	
+	/**
 	 * Adds a job to the database
 	 * @param conn A database connection
 	 * @param owner The job's owner (can be {@code null}
@@ -149,6 +156,74 @@ public class JobManager {
 		
 		return addedID;
 	}
+
+	/**
+	 * Sets the status of a job
+	 * @param conn A database connection
+	 * @param jobID The ID of the job whose status is to be set
+	 * @param status The status to be set
+	 * @throws BadStatusException If the supplied status is invalid
+	 * @throws NoSuchJobException If the specified job does not exist
+	 * @throws DatabaseException If an error occurs while updating the database
+	 */
+	public static void setStatus(Connection conn, long jobID, String status) throws BadStatusException, NoSuchJobException, DatabaseException {
+		if (!checkJobStatus(status)) {
+			throw new BadStatusException(status);
+		}
+		
+		if (!jobExists(conn, jobID)) {
+			throw new NoSuchJobException(jobID);
+		}
+		
+		PreparedStatement stmt = null;
+		
+		try {
+			stmt = conn.prepareStatement(SET_STATUS_STATEMENT);
+			stmt.setString(1, status);
+			stmt.setLong(2, jobID);
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while setting the status", e);
+		} finally {
+			if (null != stmt) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					// Do nothing.
+				}
+			}
+		}
+	}
+	
+	private static boolean jobExists(Connection conn, long jobID) throws DatabaseException {
+		boolean jobExists = false;
+		
+		PreparedStatement stmt = null;
+		
+		try {
+			stmt = conn.prepareStatement(FIND_JOB_QUERY);
+			stmt.setLong(1, jobID);
+			
+			ResultSet result = stmt.executeQuery();
+			if (result.next()) {
+				if (result.getInt(1) > 0) {
+					jobExists = true;
+				}
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while checking for a job's existence", e);
+		} finally {
+			if (null != stmt) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
+		}
+		
+		return jobExists;
+	}
 	
 	/**
 	 * Checks a class name to see if it a valid {@link Job} class
@@ -195,5 +270,25 @@ public class JobManager {
 		}
 		
 		return checkResult;
+	}
+	
+	/**
+	 * Checks a job status string to make sure it's valid
+	 * @param status The status string to be checked
+	 * @return {@code true} if the status string is valid; {@code false} otherwise
+	 */
+	private static boolean checkJobStatus(String status) {
+		
+		boolean statusOK = false;
+		
+		if (status.equals(Job.WAITING_STATUS) ||
+				status.equals(Job.RUNNING_STATUS) ||
+				status.equals(Job.FINISHED_STATUS) ||
+				status.equals(Job.ERROR_STATUS)) {
+
+			statusOK = true;
+		}
+		
+		return statusOK;
 	}
 }

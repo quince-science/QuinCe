@@ -12,12 +12,17 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.exeter.QuinCe.data.User;
+import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.User.NoSuchUserException;
+import uk.ac.exeter.QuinCe.jobs.BadStatusException;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobClassTypeException;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobConstructorException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobClassNotFoundException;
+import uk.ac.exeter.QuinCe.jobs.JobException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.NoSuchJobException;
+import uk.ac.exeter.QuinCe.utils.MissingDataException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import unit.uk.ac.exeter.QuinCe.database.BaseDbTest;
 
@@ -35,7 +40,9 @@ public class JobManagerTest extends BaseDbTest {
 
 	private static final String WRONG_LIST_TYPE_CONSTRUCTOR_JOB_CLASS = "unit.uk.ac.exeter.QuinCe.jobs.TestJobs.WrongListTypeConstructorJob";
 
-	private static final String GET_JOBS_STATEMENT = "SELECT id, owner, submitted, class, parameters, status, started, thread_name, progress FROM job";
+	private static final String GET_JOBS_QUERY = "SELECT id, owner, submitted, class, parameters, status, started, thread_name, progress FROM job";
+	
+	private static final String GET_STATUS_QUERY = "SELECT status FROM job WHERE id = ?";
 	
 	private List<String> tenSecondJobParams;
 	
@@ -84,7 +91,7 @@ public class JobManagerTest extends BaseDbTest {
 		long jobID = JobManager.addJob(getConnection(), null, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
 		assertNotEquals(JobManager.NOT_ADDED, jobID);
 		
-		PreparedStatement stmt = getConnection().prepareStatement(GET_JOBS_STATEMENT);
+		PreparedStatement stmt = getConnection().prepareStatement(GET_JOBS_QUERY);
 		ResultSet storedJobs = stmt.executeQuery();
 		
 		assertTrue(storedJobs.next());
@@ -103,10 +110,10 @@ public class JobManagerTest extends BaseDbTest {
 	
 	@Test
 	public void createJobGoodWithOwner() throws Exception {
-		long jobID = JobManager.addJob(getConnection(), testUser, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
+		long jobID = createTestJob();
 		assertNotEquals(JobManager.NOT_ADDED, jobID);
 
-		PreparedStatement stmt = getConnection().prepareStatement(GET_JOBS_STATEMENT);
+		PreparedStatement stmt = getConnection().prepareStatement(GET_JOBS_QUERY);
 		ResultSet storedJobs = stmt.executeQuery();
 		
 		assertTrue(storedJobs.next());
@@ -123,14 +130,69 @@ public class JobManagerTest extends BaseDbTest {
 		assertEquals(0.0, storedJobs.getFloat(8), 0);
 	}
 	
+	@Test(expected=BadStatusException.class)
+	public void setStatusInvalidStatus() throws Exception {
+		long jobID = createTestJob();
+		JobManager.setStatus(getConnection(), jobID, "INVALID_STATUS");
+	}
+	
+	@Test(expected=NoSuchJobException.class)
+	public void setStatusInvalidJob() throws Exception {
+		JobManager.setStatus(getConnection(), 0, Job.WAITING_STATUS);
+	}
+	
+	@Test
+	public void setStatusWaiting() throws Exception {
+		assertTrue(runSetStatusTest(Job.WAITING_STATUS));
+	}
+	
+	@Test
+	public void setStatusRunning() throws Exception {
+		assertTrue(runSetStatusTest(Job.RUNNING_STATUS));
+	}
+	
+	@Test
+	public void setStatusFinished() throws Exception {
+		assertTrue(runSetStatusTest(Job.FINISHED_STATUS));
+	}
+	
+	@Test
+	public void setStatusError() throws Exception {
+		assertTrue(runSetStatusTest(Job.ERROR_STATUS));
+	}
+	
 	@After
 	public void tearDown() throws Exception {
 		deleteAllJobs();
 		destroyTestUser();
 	}
 	
+	private boolean runSetStatusTest(String status) throws Exception {
+		
+		long jobID = createTestJob();
+		JobManager.setStatus(getConnection(), jobID, status);
+		
+		boolean statusOK = false;
+		
+		PreparedStatement stmt = getConnection().prepareStatement(GET_STATUS_QUERY);
+		stmt.setLong(1, jobID);
+		
+		ResultSet result = stmt.executeQuery();
+		if (result.next()) {
+			if (result.getString(1).equalsIgnoreCase(status)) {
+				statusOK = true;
+			}
+		}
+		
+		return statusOK;
+	}
+	
 	private void deleteAllJobs() throws Exception {
 		PreparedStatement stmt = getConnection().prepareStatement("DELETE FROM job");
 		stmt.execute();
+	}
+	
+	private long createTestJob() throws DatabaseException, MissingDataException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, Exception {
+		return JobManager.addJob(getConnection(), testUser, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
 	}
 }
