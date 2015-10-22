@@ -195,6 +195,13 @@ public class JobManager {
 		}
 	}
 	
+	/**
+	 * Determines whether or not a job with the given ID exists in the database
+	 * @param conn A database connection
+	 * @param jobID The job ID
+	 * @return {@code true} if the job exists; {@code false} otherwise
+	 * @throws DatabaseException If an error occurs while searching the database
+	 */
 	private static boolean jobExists(Connection conn, long jobID) throws DatabaseException {
 		boolean jobExists = false;
 		
