@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.database.User;
 
+import uk.ac.exeter.QuinCe.data.User;
+
 /**
  * An exception to indicate that an attempt to
  * locate a user's database record has failed.
@@ -13,5 +15,13 @@ public class NoSuchUserException extends Exception {
 
 	public NoSuchUserException() {
 		super("The specified user does not exist in the database");
+	}
+	
+	public NoSuchUserException(User user) {
+		super("The user '" + user.getEmailAddress() + "' does not exist in the database");
+	}
+	
+	public NoSuchUserException(String email) {
+		super("The user '" + email + "' does not exist in the database");
 	}
 }

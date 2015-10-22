@@ -22,15 +22,20 @@ public class StringUtils {
 	public static String listToDelimited(List<String> list) {
 		String delimiter = ";";
 		
-		StringBuffer result = new StringBuffer();
-		for (int i = 0; i < list.size(); i++) {
-			result.append(list.get(i));
-			if (i < (list.size() - 1)) {
-				result.append(delimiter);
+		String result = null;
+		
+		if (null != list) {
+			StringBuffer buildResult = new StringBuffer();
+			for (int i = 0; i < list.size(); i++) {
+				buildResult.append(list.get(i));
+				if (i < (list.size() - 1)) {
+					buildResult.append(delimiter);
+				}
 			}
+			result = buildResult.toString();
 		}
 		
-		return result.toString();
+		return result;
 	}
 	
 	/**
@@ -43,7 +48,14 @@ public class StringUtils {
 	 * @return A list of String values
 	 */
 	public static List<String> delimitedToList(String values) {
-		String delimiter = ";";
-		return Arrays.asList(values.split(delimiter, 0));
+		
+		List<String> result = null;
+		
+		if (null != values) {
+			String delimiter = ";";
+			result = Arrays.asList(values.split(delimiter, 0));
+		}
+		
+		return result;
 	}
 }

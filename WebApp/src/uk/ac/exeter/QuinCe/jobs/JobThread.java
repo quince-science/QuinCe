@@ -2,8 +2,6 @@ package uk.ac.exeter.QuinCe.jobs;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.util.List;
 
@@ -49,63 +47,40 @@ public class JobThread extends Thread {
 	 * @param parameters The parameters to be passed to the job
 	 * @param dbConnection A database connection for the job to use
 	 * @throws JobClassNotFoundException If the specified job class does not exist
-	 * @throws InvalidJobClassException If the specified job class is not of the correct type
+	 * @throws InvalidJobClassTypeException If the specified job class is not of the correct type
 	 * @throws JobException If a problem is encountered while building the job object
 	 * @throws InvalidJobParametersException If the parameters supplied to the job are invalid
 	 * @throws MissingDataException If any of the required parameters are null
 	 */
-	protected void setupJob(String jobClass, List<String> parameters, Connection dbConnection) throws MissingDataException, JobClassNotFoundException, InvalidJobClassException, JobException, InvalidJobParametersException {
+	protected void setupJob(String jobClass, List<String> parameters, Connection dbConnection) throws MissingDataException, JobClassNotFoundException, InvalidJobClassTypeException, JobException, InvalidJobParametersException {
 		
 		MissingData.checkMissing(jobClass, "jobClass");
 		MissingData.checkMissing(dbConnection, "dbConnection");
 		
 		// Make sure the specified job class is of the correct type
-		try {
-			Class<?> jobClazz = Class.forName(jobClass);
-			Constructor<?> jobConstructor = null;
-			
-			boolean jobClassOK = true;
-			
-			// Does it inherit from the job class?
-			if (!(jobClazz.getSuperclass().equals(Job.class))) {
-				jobClassOK = false;
-			} else {
-				// Is there a constructor that takes the right parameters?
-				// We also check that the List is designated to contain String objects
-				jobConstructor = jobClazz.getConstructor(Connection.class, List.class);
-				Type[] constructorGenericTypes = jobConstructor.getGenericParameterTypes();
-				if (constructorGenericTypes.length != 1) {
-					jobClassOK = false;
-				} else {
-					if (!(constructorGenericTypes[0] instanceof ParameterizedType)) {
-						jobClassOK = false;
-					} else {
-						Type[] actualTypeArguments = ((ParameterizedType) constructorGenericTypes[0]).getActualTypeArguments();
-						if (actualTypeArguments.length != 1) {
-							jobClassOK = false;
-						} else {
-							Class<?> typeArgumentClass = (Class<?>) actualTypeArguments[0];
-							if (!typeArgumentClass.equals(String.class)) {
-								jobClassOK = false;
-							}
-						}
-					}
-				}
-			}
-			
-			if (!jobClassOK) {
-				throw new InvalidJobClassException();
-			} else {
-				
+		
+		int classCheck = JobManager.checkJobClass(jobClass);
+		switch (classCheck) {
+		case JobManager.CLASS_CHECK_OK: {
+			try {
+				Class<?> jobClazz = Class.forName(jobClass);
+				Constructor<?> jobConstructor = jobClazz.getConstructor(Connection.class, List.class);
+	
 				// Instantiate the Job object, which will automatically validate the parameters
 				job = (Job) jobConstructor.newInstance(dbConnection, parameters);
+			} catch (ClassNotFoundException e) {
+				throw new JobClassNotFoundException(jobClass);
+			} catch (NoSuchMethodException|InvocationTargetException|IllegalAccessException|InstantiationException e) {
+				throw new InvalidJobClassTypeException(jobClass);
 			}
-		} catch (ClassNotFoundException e) {
+			break;
+		}
+		case JobManager.CLASS_CHECK_NO_SUCH_CLASS: {
 			throw new JobClassNotFoundException(jobClass);
-		} catch (NoSuchMethodException e) {
-			throw new InvalidJobClassException();
-		} catch (InvocationTargetException|IllegalAccessException|InstantiationException e) {
-			throw new JobException("Unable to initialise job object", e);
+		}
+		default: {
+			throw new InvalidJobClassTypeException(jobClass);
+		}
 		}
 	}
 	

@@ -8,12 +8,11 @@ package uk.ac.exeter.QuinCe.jobs;
  * @author Steve Jones
  *
  */
-public class InvalidJobClassException extends Exception {
+public class InvalidJobConstructorException extends Exception {
 
 	private static final long serialVersionUID = 8855435038251108392L;
 
-	public InvalidJobClassException() {
-		super("The specified job class is not an instance of the Job class");
-	}
-	
+	public InvalidJobConstructorException(String className) {
+		super("The specified job class '" + className + "' does not have a valid constructor");
+	}	
 }

@@ -58,12 +58,12 @@ public class JobThreadPool {
 	 * @param threadName The name to give to the thread
 	 * @return A configured job thread, or {@code null} if the thread stack is empty
 	 * @throws JobClassNotFoundException If the specified job class cannot be found
-	 * @throws InvalidJobClassException If the specified job class is not of the correct type or does not contain the correct methods
+	 * @throws InvalidJobClassTypeException If the specified job class is not of the correct type or does not contain the correct methods
 	 * @throws JobException If a problem is encountered while building the job object
 	 * @throws InvalidJobParametersException If the parameters supplied to the job are invalid
 	 * @throws MissingDataException If any of the required parameters are null
 	*/
-	public JobThread getJobThread(String jobClass, List<String> parameters, String threadName, Connection dbConnection) throws MissingDataException, JobClassNotFoundException, InvalidJobClassException, JobException, InvalidJobParametersException {
+	public JobThread getJobThread(String jobClass, List<String> parameters, String threadName, Connection dbConnection) throws MissingDataException, JobClassNotFoundException, InvalidJobClassTypeException, JobException, InvalidJobParametersException {
 		
 		MissingData.checkMissing(jobClass, "jobClass");
 		MissingData.checkMissing(threadName, "threadName");
@@ -98,12 +98,12 @@ public class JobThreadPool {
 	 * @param dbConnection A database connection for the job to use 
 	 * @return A configured job thread
 	 * @throws JobClassNotFoundException If the specified job class cannot be found
-	 * @throws InvalidJobClassException If the specified job class is not of the correct type or does not contain the correct methods
+	 * @throws InvalidJobClassTypeException If the specified job class is not of the correct type or does not contain the correct methods
 	 * @throws JobException If a problem is encountered while building the job object
 	 * @throws InvalidJobParametersException If the parameters supplied to the job are invalid
 	 * @throws MissingDataException If any of the required parameters are null
 	 */
-	public JobThread getInstantJobThread(String jobClass, List<String> parameters, String threadName, Connection dbConnection) throws MissingDataException, JobClassNotFoundException, InvalidJobClassException, JobException, InvalidJobParametersException {
+	public JobThread getInstantJobThread(String jobClass, List<String> parameters, String threadName, Connection dbConnection) throws MissingDataException, JobClassNotFoundException, InvalidJobClassTypeException, JobException, InvalidJobParametersException {
 
 		JobThread thread = null;
 		
@@ -118,7 +118,7 @@ public class JobThreadPool {
 			
 			thread.setName(threadName);
 			thread.setupJob(jobClass, parameters, dbConnection);
-		} catch (JobClassNotFoundException|InvalidJobClassException e) {
+		} catch (JobClassNotFoundException|InvalidJobClassTypeException e) {
 			
 			// Return the thread to the pool
 			thread.reset();

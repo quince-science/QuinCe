@@ -13,8 +13,12 @@ package uk.ac.exeter.QuinCe.jobs;
  */
 public class JobException extends Exception {
 
-	private static final long serialVersionUID = -3978444072900292582L;
+	private static final long serialVersionUID = 8771569630286515893L;
 
+	public JobException(String message) {
+		super(message);
+	}
+	
 	public JobException(String message, Throwable e) {
 		super(message, e);
 	}
