@@ -81,7 +81,8 @@ public class JobManagerTest extends BaseDbTest {
 	
 	@Test
 	public void createJobGoodNoOwner() throws Exception {
-		JobManager.addJob(getConnection(), null, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
+		long jobID = JobManager.addJob(getConnection(), null, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
+		assertNotEquals(JobManager.NOT_ADDED, jobID);
 		
 		PreparedStatement stmt = getConnection().prepareStatement(GET_JOBS_STATEMENT);
 		ResultSet storedJobs = stmt.executeQuery();
@@ -102,7 +103,8 @@ public class JobManagerTest extends BaseDbTest {
 	
 	@Test
 	public void createJobGoodWithOwner() throws Exception {
-		JobManager.addJob(getConnection(), testUser, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
+		long jobID = JobManager.addJob(getConnection(), testUser, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
+		assertNotEquals(JobManager.NOT_ADDED, jobID);
 
 		PreparedStatement stmt = getConnection().prepareStatement(GET_JOBS_STATEMENT);
 		ResultSet storedJobs = stmt.executeQuery();

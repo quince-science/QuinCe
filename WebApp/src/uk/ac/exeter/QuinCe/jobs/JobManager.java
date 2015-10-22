@@ -5,7 +5,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -50,6 +52,11 @@ public class JobManager {
 	private static final int NO_OWNER = -999;
 	
 	/**
+	 * Indicates that a job record was not created in the database
+	 */
+	public static final int NOT_ADDED = -999;
+	
+	/**
 	 * SQL statement to create a job record
 	 */
 	private static final String CREATE_JOB_STATEMENT = "INSERT INTO job (owner, submitted, class, parameters) VALUES (?, ?, ?, ?)";
@@ -68,7 +75,9 @@ public class JobManager {
 	 * @throws InvalidJobConstructorException If the specified job class does not have the correct constructor
 	 * @throws JobException If an unknown problem is found with the specified job class
 	 */
-	public static void addJob(Connection conn, User owner, String jobClass, List<String> parameters) throws DatabaseException, MissingDataException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException {
+	public static long addJob(Connection conn, User owner, String jobClass, List<String> parameters) throws DatabaseException, MissingDataException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException {
+		
+		long addedID = NOT_ADDED;
 		
 		// Get the user's ID
 		int ownerID = NO_OWNER;
@@ -93,7 +102,7 @@ public class JobManager {
 			PreparedStatement stmt = null;
 
 			try {
-				stmt = conn.prepareStatement(CREATE_JOB_STATEMENT);
+				stmt = conn.prepareStatement(CREATE_JOB_STATEMENT, Statement.RETURN_GENERATED_KEYS);
 				if (NO_OWNER == ownerID) {
 					stmt.setNull(1, java.sql.Types.INTEGER);
 				} else {
@@ -105,6 +114,11 @@ public class JobManager {
 				stmt.setString(4, paramsString);
 				
 				stmt.execute();
+				
+				ResultSet generatedKeys = stmt.getGeneratedKeys();
+				if (generatedKeys.next()) {
+					addedID = generatedKeys.getLong(1);
+				}
 			} catch(SQLException e) {
 				throw new DatabaseException("An error occurred while storing the job", e);
 			} finally {
@@ -132,7 +146,8 @@ public class JobManager {
 			throw new JobException("Unknown fault with job class '" + jobClass);
 		}
 		}
-
+		
+		return addedID;
 	}
 	
 	/**
