@@ -281,6 +281,7 @@ Each background task will have a row in this table.
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
 job_id                   Integer        Job ID
+owner                    F_KEY          The user id of the owner of the job
 submitted                DateTime       The date and time on which the job was submitted
 class                    String         The class name of the job to be run
 parameters               String         The parameters to be passed to the job when it is run
