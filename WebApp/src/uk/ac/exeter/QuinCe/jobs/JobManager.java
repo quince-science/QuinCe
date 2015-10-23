@@ -130,9 +130,6 @@ public class JobManager {
 		switch (classCheck) {
 		case CLASS_CHECK_OK: {
 			
-			String paramsString = StringUtils.listToDelimited(parameters);
-			Timestamp time = new Timestamp(System.currentTimeMillis());
-
 			PreparedStatement stmt = null;
 
 			try {
@@ -143,9 +140,9 @@ public class JobManager {
 					stmt.setInt(1, ownerID);
 				}
 				
-				stmt.setTimestamp(2, time);
+				stmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
 				stmt.setString(3, jobClass);
-				stmt.setString(4, paramsString);
+				stmt.setString(4, StringUtils.listToDelimited(parameters));
 				
 				stmt.execute();
 				
@@ -244,11 +241,10 @@ public class JobManager {
 		}
 
 		PreparedStatement stmt = null;
-		Timestamp time = new Timestamp(System.currentTimeMillis());
 		
 		try {
 			stmt = conn.prepareStatement(START_JOB_STATEMENT);
-			stmt.setTimestamp(1, time);
+			stmt.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
 			stmt.setLong(2, jobID);
 			stmt.execute();
 		} catch (SQLException e) {
@@ -282,11 +278,10 @@ public class JobManager {
 		}
 
 		PreparedStatement stmt = null;
-		Timestamp time = new Timestamp(System.currentTimeMillis());
 		
 		try {
 			stmt = conn.prepareStatement(END_JOB_STATEMENT);
-			stmt.setTimestamp(1, time);
+			stmt.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
 			stmt.setLong(2, jobID);
 			stmt.execute();
 		} catch (SQLException e) {
@@ -320,13 +315,11 @@ public class JobManager {
 		}
 
 		PreparedStatement stmt = null;
-		Timestamp time = new Timestamp(System.currentTimeMillis());
-		String stackTrace = StringUtils.stackTraceToString(error);
 		
 		try {
 			stmt = conn.prepareStatement(ERROR_JOB_STATEMENT);
-			stmt.setTimestamp(1, time);
-			stmt.setString(2, stackTrace);
+			stmt.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
+			stmt.setString(2, StringUtils.stackTraceToString(error));
 			stmt.setLong(3, jobID);
 			stmt.execute();
 		} catch (SQLException e) {
