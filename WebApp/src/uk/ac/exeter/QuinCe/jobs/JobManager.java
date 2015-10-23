@@ -90,7 +90,7 @@ public class JobManager {
 	 * SQL statement for recording that a job has failed with an error
 	 */
 	private static final String ERROR_JOB_STATEMENT = "UPDATE job SET status = '" + Job.ERROR_STATUS + "', ended = ?, stack_trace = ? WHERE id = ?";
-	
+		
 	/**
 	 * Adds a job to the database
 	 * @param conn A database connection
@@ -436,15 +436,15 @@ public class JobManager {
 			} else {
 				// Is there a constructor that takes the right parameters?
 				// We also check that the List is designated to contain String objects
-				Constructor<?> jobConstructor = jobClazz.getConstructor(Connection.class, List.class);
+				Constructor<?> jobConstructor = jobClazz.getConstructor(Connection.class, long.class, List.class);
 				Type[] constructorGenericTypes = jobConstructor.getGenericParameterTypes();
-				if (constructorGenericTypes.length != 2) {
+				if (constructorGenericTypes.length != 3) {
 					checkResult = CLASS_CHECK_INVALID_CONSTRUCTOR;
 				} else {
-					if (!(constructorGenericTypes[1] instanceof ParameterizedType)) {
+					if (!(constructorGenericTypes[2] instanceof ParameterizedType)) {
 						checkResult = CLASS_CHECK_INVALID_CONSTRUCTOR;
 					} else {
-						Type[] actualTypeArguments = ((ParameterizedType) constructorGenericTypes[1]).getActualTypeArguments();
+						Type[] actualTypeArguments = ((ParameterizedType) constructorGenericTypes[2]).getActualTypeArguments();
 						if (actualTypeArguments.length != 1) {
 							checkResult = CLASS_CHECK_INVALID_CONSTRUCTOR;
 						} else {

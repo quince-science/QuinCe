@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingData;
 import uk.ac.exeter.QuinCe.utils.MissingDataException;
 
@@ -38,9 +39,9 @@ public abstract class Job {
 	public static final String FINISHED_STATUS = "FINISHED";
 	
 	/**
-	 * The status of this job
+	 * The job's ID 
 	 */
-	private String status = WAITING_STATUS;
+	private long id = 0;
 	
 	/**
 	 * Flag to indicate whether or not the job has been destroyed.
@@ -63,11 +64,12 @@ public abstract class Job {
 	 * @param parameters The parameters for the job
 	 * @throws InvalidJobParametersException If the parameters are not valid for the job
 	 */
-	public Job(Connection connection, List<String> parameters) throws MissingDataException, InvalidJobParametersException {
+	public Job(Connection connection, long id, List<String> parameters) throws MissingDataException, InvalidJobParametersException {
 		
 		MissingData.checkMissing(connection, "connection");
 		
 		this.connection = connection;
+		this.id = id;
 		this.parameters = parameters;
 		validateParameters();
 	}
@@ -91,6 +93,17 @@ public abstract class Job {
 	 * @throws InvalidJobParametersException If the parameters are invalid
 	 */
 	protected abstract void validateParameters() throws InvalidJobParametersException; 
+	
+	/**
+	 * Set the progress for the job, as a percentage
+	 * @param progress The progress
+	 * @throws BadProgressException If the progress is not between 0 and 100
+	 * @throws NoSuchJobException If the job is not in the database
+	 * @throws DatabaseException If an error occurs while updating the database
+	 */
+	protected void setProgress(double progress) throws BadProgressException, NoSuchJobException, DatabaseException {
+		JobManager.setProgress(connection, id, progress);
+	}
 	
 	/**
 	 * Destroys the job object, releasing the database connection.

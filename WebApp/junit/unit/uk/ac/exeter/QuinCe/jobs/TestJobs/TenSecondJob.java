@@ -17,8 +17,8 @@ public class TenSecondJob extends Job {
 
 	private int chunkCount = 1;
 	
-	public TenSecondJob(Connection connection, List<String> parameters) throws MissingDataException, InvalidJobParametersException {
-		super(connection, parameters);
+	public TenSecondJob(Connection connection, long id, List<String> parameters) throws MissingDataException, InvalidJobParametersException {
+		super(connection, id, parameters);
 	}
 
 	@Override

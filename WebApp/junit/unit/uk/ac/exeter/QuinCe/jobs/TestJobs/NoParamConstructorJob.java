@@ -6,7 +6,7 @@ import uk.ac.exeter.QuinCe.jobs.Job;
 public class NoParamConstructorJob extends Job {
 
 	public NoParamConstructorJob() throws Exception {
-		super(null, null);
+		super(null, 0, null);
 	}
 
 	@Override

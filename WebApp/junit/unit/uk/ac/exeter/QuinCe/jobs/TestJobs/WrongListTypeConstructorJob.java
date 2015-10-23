@@ -8,8 +8,8 @@ import uk.ac.exeter.QuinCe.jobs.Job;
 
 public class WrongListTypeConstructorJob extends Job {
 
-	public WrongListTypeConstructorJob(Connection conn, List<Integer> params) throws Exception {
-		super(conn, null);
+	public WrongListTypeConstructorJob(Connection conn, long id, List<Integer> params) throws Exception {
+		super(conn, 0, null);
 	}
 
 	@Override

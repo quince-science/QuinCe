@@ -8,7 +8,7 @@ import uk.ac.exeter.QuinCe.jobs.Job;
 public class ConnOnlyConstructorJob extends Job {
 
 	public ConnOnlyConstructorJob(Connection conn) throws Exception {
-		super(conn, null);
+		super(conn, 0, null);
 	}
 
 	@Override

@@ -5,11 +5,8 @@ import static org.junit.Assert.*;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.exeter.QuinCe.data.User;
@@ -21,16 +18,11 @@ import uk.ac.exeter.QuinCe.jobs.InvalidJobClassTypeException;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobConstructorException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobClassNotFoundException;
-import uk.ac.exeter.QuinCe.jobs.JobException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.NoSuchJobException;
-import uk.ac.exeter.QuinCe.utils.MissingDataException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
-import unit.uk.ac.exeter.QuinCe.database.BaseDbTest;
 
-public class JobManagerTest extends BaseDbTest {
-
-	private static final String TEN_SECOND_JOB_CLASS = "unit.uk.ac.exeter.QuinCe.jobs.TestJobs.TenSecondJob";
+public class JobManagerTest extends BaseJobTest {
 	
 	private static final String NOT_EXISTING_JOB_CLASS = "unit.uk.ac.exeter.QuinCe.jobs.TestJobs.ThisIsNotAnExistingClass";
 	
@@ -53,17 +45,6 @@ public class JobManagerTest extends BaseDbTest {
 	private static final String GET_FINISHED_JOB_QUERY = "SELECT status, ended FROM job WHERE id = ?";
 
 	private static final String GET_ERROR_JOB_QUERY = "SELECT status, ended, stack_trace FROM job WHERE id = ?";
-
-	private List<String> tenSecondJobParams;
-	
-	@Before
-	public void setUp() throws Exception {
-		deleteAllJobs();
-		destroyTestUser();
-		createTestUser();
-		tenSecondJobParams = new ArrayList<String>();
-		tenSecondJobParams.add("1");
-	}
 	
 	@Test(expected=DatabaseException.class)
 	public void createJobNullDB() throws Exception {
@@ -333,13 +314,6 @@ public class JobManagerTest extends BaseDbTest {
 		assertNotNull(stackTrace);
 	}
 	
-
-	@After
-	public void tearDown() throws Exception {
-		deleteAllJobs();
-		destroyTestUser();
-	}
-	
 	private boolean runSetStatusTest(String status) throws Exception {
 		
 		long jobID = createTestJob();
@@ -358,14 +332,5 @@ public class JobManagerTest extends BaseDbTest {
 		}
 		
 		return statusOK;
-	}
-	
-	private void deleteAllJobs() throws Exception {
-		PreparedStatement stmt = getConnection().prepareStatement("DELETE FROM job");
-		stmt.execute();
-	}
-	
-	private long createTestJob() throws DatabaseException, MissingDataException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, Exception {
-		return JobManager.addJob(getConnection(), testUser, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
 	}
 }
