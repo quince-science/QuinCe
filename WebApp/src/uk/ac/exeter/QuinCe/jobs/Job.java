@@ -41,7 +41,7 @@ public abstract class Job {
 	/**
 	 * The job's ID 
 	 */
-	private long id = 0;
+	protected long id = 0;
 	
 	/**
 	 * Flag to indicate whether or not the job has been destroyed.
@@ -86,7 +86,7 @@ public abstract class Job {
 	/**
 	 * Performs the job tasks
 	 */
-	protected abstract void run();
+	protected abstract void run() throws JobFailedException;
 	
 	/**
 	 * Validate the parameters passed in to this job
@@ -103,6 +103,14 @@ public abstract class Job {
 	 */
 	protected void setProgress(double progress) throws BadProgressException, NoSuchJobException, DatabaseException {
 		JobManager.setProgress(connection, id, progress);
+	}
+	
+	/**
+	 * Get the job's ID
+	 * @return The job ID
+	 */
+	public long getID() {
+		return id;
 	}
 	
 	/**
