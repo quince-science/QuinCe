@@ -1,10 +1,7 @@
 package uk.ac.exeter.QuinCe.jobs;
 
-import java.sql.Connection;
-import java.util.List;
 import java.util.Stack;
 
-import uk.ac.exeter.QuinCe.utils.MissingData;
 import uk.ac.exeter.QuinCe.utils.MissingDataException;
 
 /**
@@ -53,21 +50,11 @@ public class JobThreadPool {
 	 * Retrieves a job thread from the pool and configures it ready to execute a job.
 	 * If there are no available threads in the stack, {@code null} is returned.
 	 * 
-	 * @param jobClass The job class to be executed
-	 * @param parameters The parameters to be passed to the job
-	 * @param threadName The name to give to the thread
+	 * @param job The job to be executed
 	 * @return A configured job thread, or {@code null} if the thread stack is empty
-	 * @throws JobClassNotFoundException If the specified job class cannot be found
-	 * @throws InvalidJobClassTypeException If the specified job class is not of the correct type or does not contain the correct methods
-	 * @throws JobException If a problem is encountered while building the job object
-	 * @throws InvalidJobParametersException If the parameters supplied to the job are invalid
 	 * @throws MissingDataException If any of the required parameters are null
 	*/
-	public JobThread getJobThread(String jobClass, List<String> parameters, String threadName, Connection dbConnection) throws MissingDataException, JobClassNotFoundException, InvalidJobClassTypeException, JobException, InvalidJobParametersException {
-		
-		MissingData.checkMissing(jobClass, "jobClass");
-		MissingData.checkMissing(threadName, "threadName");
-		MissingData.checkMissing(dbConnection, "dbConnection");
+	public JobThread getJobThread(Job job) throws MissingDataException {
 		
 		JobThread thread = null;
 		
@@ -78,8 +65,7 @@ public class JobThreadPool {
 		}
 		
 		if (null != thread) {
-			thread.setName(threadName);
-			thread.setupJob(jobClass, parameters, dbConnection);
+			thread.setupJob(job);
 		}
 		
 		return thread;
@@ -92,40 +78,23 @@ public class JobThreadPool {
 	 * This method should only be used for high priority jobs that cannot wait for a
 	 * normal thread to become available.
 	 *
-	 * @param jobClass The job class to be executed
-	 * @param parameters The parameters to be passed to the job
-	 * @param threadName The name to give to the thread
-	 * @param dbConnection A database connection for the job to use 
+	 * @param job The job to be executed
 	 * @return A configured job thread
-	 * @throws JobClassNotFoundException If the specified job class cannot be found
-	 * @throws InvalidJobClassTypeException If the specified job class is not of the correct type or does not contain the correct methods
-	 * @throws JobException If a problem is encountered while building the job object
-	 * @throws InvalidJobParametersException If the parameters supplied to the job are invalid
 	 * @throws MissingDataException If any of the required parameters are null
 	 */
-	public JobThread getInstantJobThread(String jobClass, List<String> parameters, String threadName, Connection dbConnection) throws MissingDataException, JobClassNotFoundException, InvalidJobClassTypeException, JobException, InvalidJobParametersException {
+	public JobThread getInstantJobThread(Job job) throws MissingDataException {
 
 		JobThread thread = null;
 		
-		try {
-			synchronized(threads) {
-				if (!threads.isEmpty()) {
-					thread = threads.pop();
-				} else {
-					thread = new JobThread(true);
-				}
+		synchronized(threads) {
+			if (!threads.isEmpty()) {
+				thread = threads.pop();
+			} else {
+				thread = new JobThread(true);
 			}
-			
-			thread.setName(threadName);
-			thread.setupJob(jobClass, parameters, dbConnection);
-		} catch (JobClassNotFoundException|InvalidJobClassTypeException e) {
-			
-			// Return the thread to the pool
-			thread.reset();
-			returnThread(thread);
-			
-			throw e;
 		}
+		
+		thread.setupJob(job);
 		
 		return thread;
 		

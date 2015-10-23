@@ -1,10 +1,5 @@
 package uk.ac.exeter.QuinCe.jobs;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
-import java.util.List;
-
 import uk.ac.exeter.QuinCe.utils.MissingData;
 import uk.ac.exeter.QuinCe.utils.MissingDataException;
 
@@ -52,36 +47,10 @@ public class JobThread extends Thread {
 	 * @throws InvalidJobParametersException If the parameters supplied to the job are invalid
 	 * @throws MissingDataException If any of the required parameters are null
 	 */
-	protected void setupJob(String jobClass, List<String> parameters, Connection dbConnection) throws MissingDataException, JobClassNotFoundException, InvalidJobClassTypeException, JobException, InvalidJobParametersException {
-		
-		MissingData.checkMissing(jobClass, "jobClass");
-		MissingData.checkMissing(dbConnection, "dbConnection");
-		
-		// Make sure the specified job class is of the correct type
-		
-		int classCheck = JobManager.checkJobClass(jobClass);
-		switch (classCheck) {
-		case JobManager.CLASS_CHECK_OK: {
-			try {
-				Class<?> jobClazz = Class.forName(jobClass);
-				Constructor<?> jobConstructor = jobClazz.getConstructor(Connection.class, List.class);
-	
-				// Instantiate the Job object, which will automatically validate the parameters
-				job = (Job) jobConstructor.newInstance(dbConnection, parameters);
-			} catch (ClassNotFoundException e) {
-				throw new JobClassNotFoundException(jobClass);
-			} catch (NoSuchMethodException|InvocationTargetException|IllegalAccessException|InstantiationException e) {
-				throw new InvalidJobClassTypeException(jobClass);
-			}
-			break;
-		}
-		case JobManager.CLASS_CHECK_NO_SUCH_CLASS: {
-			throw new JobClassNotFoundException(jobClass);
-		}
-		default: {
-			throw new InvalidJobClassTypeException(jobClass);
-		}
-		}
+	public void setupJob(Job job) throws MissingDataException {
+		MissingData.checkMissing(job, "job");
+		this.job = job;
+		setName("JOB_" + job.getID());
 	}
 	
 	/**
