@@ -107,6 +107,10 @@ public class JobManager {
 	 */
 	public static long addJob(Connection conn, User owner, String jobClass, List<String> parameters) throws DatabaseException, MissingDataException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException {
 		
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+
 		long addedID = NOT_ADDED;
 		
 		// Get the user's ID
@@ -190,6 +194,10 @@ public class JobManager {
 	 * @throws DatabaseException If an error occurs while updating the database
 	 */
 	public static void setStatus(Connection conn, long jobID, String status) throws UnrecognisedStatusException, NoSuchJobException, DatabaseException {
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+		
 		if (!checkJobStatus(status)) {
 			throw new UnrecognisedStatusException(status);
 		}
@@ -227,6 +235,10 @@ public class JobManager {
 	 * @throws NoSuchJobException If the specified job doesn't exist
 	 */
 	public static void startJob(Connection conn, long jobID) throws DatabaseException, NoSuchJobException {
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+		
 		if (!jobExists(conn, jobID)) {
 			throw new NoSuchJobException(jobID);
 		}
@@ -261,6 +273,10 @@ public class JobManager {
 	 * @throws NoSuchJobException If the specified job doesn't exist
 	 */
 	public static void finishJob(Connection conn, long jobID) throws DatabaseException, NoSuchJobException {
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+		
 		if (!jobExists(conn, jobID)) {
 			throw new NoSuchJobException(jobID);
 		}
@@ -295,6 +311,10 @@ public class JobManager {
 	 * @throws NoSuchJobException If the specified job does not exist
 	 */
 	public static void errorJob(Connection conn, long jobID, Throwable error) throws DatabaseException, NoSuchJobException {
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+		
 		if (!jobExists(conn, jobID)) {
 			throw new NoSuchJobException(jobID);
 		}
@@ -332,6 +352,9 @@ public class JobManager {
 	 * @throws DatabaseException If an error occurs while storing the progress in the database
 	 */
 	public static void setProgress(Connection conn, long jobID, double progress) throws BadProgressException, NoSuchJobException, DatabaseException {
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
 		
 		if (progress < 0 || progress > 100) {
 			throw new BadProgressException();
@@ -359,10 +382,6 @@ public class JobManager {
 				}
 			}
 		}
-
-		
-		
-		
 	}
 	
 	/**
@@ -373,6 +392,10 @@ public class JobManager {
 	 * @throws DatabaseException If an error occurs while searching the database
 	 */
 	private static boolean jobExists(Connection conn, long jobID) throws DatabaseException {
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+		
 		boolean jobExists = false;
 		
 		PreparedStatement stmt = null;

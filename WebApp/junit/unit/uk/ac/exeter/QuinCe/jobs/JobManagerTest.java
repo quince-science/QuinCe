@@ -65,6 +65,11 @@ public class JobManagerTest extends BaseDbTest {
 		tenSecondJobParams.add("1");
 	}
 	
+	@Test(expected=DatabaseException.class)
+	public void createJobNullDB() throws Exception {
+		JobManager.addJob(null, testUser, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
+	}
+	
 	@Test(expected=NoSuchUserException.class)
 	public void createJobMissingUser() throws Exception {
 		User badUser = new User(-1, "nosuchuser@exeter.ac.uk", "Steve", "Jones");
@@ -151,6 +156,12 @@ public class JobManagerTest extends BaseDbTest {
 		assertNull(storedJobs.getString(11));
 	}
 	
+	@Test(expected=DatabaseException.class)
+	public void setStatusNullDB() throws Exception {
+		long jobID = createTestJob();
+		JobManager.setStatus(null, jobID, Job.WAITING_STATUS);
+	}
+	
 	@Test(expected=UnrecognisedStatusException.class)
 	public void setStatusInvalidStatus() throws Exception {
 		long jobID = createTestJob();
@@ -180,6 +191,12 @@ public class JobManagerTest extends BaseDbTest {
 	@Test
 	public void setStatusError() throws Exception {
 		assertTrue(runSetStatusTest(Job.ERROR_STATUS));
+	}
+	
+	@Test(expected=DatabaseException.class)
+	public void setProgressNullDB() throws Exception {
+		long jobID = createTestJob();
+		JobManager.setProgress(null, jobID, 12.4);
 	}
 	
 	@Test(expected=NoSuchJobException.class)
@@ -217,6 +234,12 @@ public class JobManagerTest extends BaseDbTest {
 		assertEquals(50.7, progress, 0);
 	}
 	
+	@Test(expected=DatabaseException.class)
+	public void startJobNullDB() throws Exception {
+		long jobID = createTestJob();
+		JobManager.startJob(null, jobID);
+	}
+	
 	@Test(expected=NoSuchJobException.class)
 	public void startJobNoSuchJob() throws Exception {
 		JobManager.startJob(getConnection(), 0);
@@ -243,6 +266,12 @@ public class JobManagerTest extends BaseDbTest {
 		assertNotNull(time);
 	}
 	
+	@Test(expected=DatabaseException.class)
+	public void finishJobNullDB() throws Exception {
+		long jobID = createTestJob();
+		JobManager.finishJob(null, jobID);
+	}
+	
 	@Test(expected=NoSuchJobException.class)
 	public void finishJobNoSuchJob() throws Exception {
 		JobManager.finishJob(getConnection(), 0);
@@ -267,6 +296,12 @@ public class JobManagerTest extends BaseDbTest {
 		
 		assertEquals(Job.FINISHED_STATUS, status);
 		assertNotNull(time);
+	}
+	
+	@Test(expected=DatabaseException.class)
+	public void errorJobNullDB() throws Exception {
+		long jobID = createTestJob();
+		JobManager.errorJob(null, jobID, new Exception("Test exception"));
 	}
 	
 	@Test(expected=NoSuchJobException.class)
