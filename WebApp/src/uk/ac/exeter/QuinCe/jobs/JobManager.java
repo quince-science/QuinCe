@@ -77,6 +77,21 @@ public class JobManager {
 	private static final String SET_PROGRESS_STATEMENT = "UPDATE job SET progress = ? WHERE id = ?";
 	
 	/**
+	 * SQL statement for recording that a job has started
+	 */
+	private static final String START_JOB_STATEMENT = "UPDATE job SET status = '" + Job.RUNNING_STATUS + "', started = ? WHERE id = ?";
+	
+	/**
+	 * SQL statement for recording that a job has completed
+	 */
+	private static final String END_JOB_STATEMENT = "UPDATE job SET status = '" + Job.FINISHED_STATUS + "', ended = ? WHERE id = ?";
+	
+	/**
+	 * SQL statement for recording that a job has failed with an error
+	 */
+	private static final String ERROR_JOB_STATEMENT = "UPDATE job SET status = '" + Job.ERROR_STATUS + "', ended = ?, stack_trace = ? WHERE id = ?";
+	
+	/**
 	 * Adds a job to the database
 	 * @param conn A database connection
 	 * @param owner The job's owner (can be {@code null}
@@ -170,13 +185,13 @@ public class JobManager {
 	 * @param conn A database connection
 	 * @param jobID The ID of the job whose status is to be set
 	 * @param status The status to be set
-	 * @throws BadStatusException If the supplied status is invalid
+	 * @throws UnrecognisedStatusException If the supplied status is invalid
 	 * @throws NoSuchJobException If the specified job does not exist
 	 * @throws DatabaseException If an error occurs while updating the database
 	 */
-	public static void setStatus(Connection conn, long jobID, String status) throws BadStatusException, NoSuchJobException, DatabaseException {
+	public static void setStatus(Connection conn, long jobID, String status) throws UnrecognisedStatusException, NoSuchJobException, DatabaseException {
 		if (!checkJobStatus(status)) {
-			throw new BadStatusException(status);
+			throw new UnrecognisedStatusException(status);
 		}
 		
 		if (!jobExists(conn, jobID)) {
@@ -203,6 +218,110 @@ public class JobManager {
 		}
 	}
 	
+	/**
+	 * Update a job record with the necessary details when it's started. The {@code status} is set to
+	 * {@link Job.RUNNING_STATE}, and the {@code started} field is given the current time.
+	 * @param conn A database connection
+	 * @param jobID The job that has been started
+	 * @throws DatabaseException If an error occurs while updating the record
+	 * @throws NoSuchJobException If the specified job doesn't exist
+	 */
+	public static void startJob(Connection conn, long jobID) throws DatabaseException, NoSuchJobException {
+		if (!jobExists(conn, jobID)) {
+			throw new NoSuchJobException(jobID);
+		}
+
+		PreparedStatement stmt = null;
+		Timestamp time = new Timestamp(System.currentTimeMillis());
+		
+		try {
+			stmt = conn.prepareStatement(START_JOB_STATEMENT);
+			stmt.setTimestamp(1, time);
+			stmt.setLong(2, jobID);
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while setting the job to 'started' state", e);
+		} finally {
+			if (null != stmt) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					// Do nothing.
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Update a job record with the necessary details when it's successfully finshed running. The {@code status} is set to
+	 * {@link Job.FINISHED_STATE}, and the {@code ended} field is given the current time.
+	 * @param conn A database connection
+	 * @param jobID The job that has been started
+	 * @throws DatabaseException If an error occurs while updating the record
+	 * @throws NoSuchJobException If the specified job doesn't exist
+	 */
+	public static void finishJob(Connection conn, long jobID) throws DatabaseException, NoSuchJobException {
+		if (!jobExists(conn, jobID)) {
+			throw new NoSuchJobException(jobID);
+		}
+
+		PreparedStatement stmt = null;
+		Timestamp time = new Timestamp(System.currentTimeMillis());
+		
+		try {
+			stmt = conn.prepareStatement(END_JOB_STATEMENT);
+			stmt.setTimestamp(1, time);
+			stmt.setLong(2, jobID);
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while setting the job to 'finished' state", e);
+		} finally {
+			if (null != stmt) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					// Do nothing.
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Update a job record indicating that the job failed due to an error
+	 * @param conn A database connection
+	 * @param jobID The ID of the job
+	 * @param error The error that caused the job to fail
+	 * @throws DatabaseException If an error occurs while updating the database
+	 * @throws NoSuchJobException If the specified job does not exist
+	 */
+	public static void errorJob(Connection conn, long jobID, Throwable error) throws DatabaseException, NoSuchJobException {
+		if (!jobExists(conn, jobID)) {
+			throw new NoSuchJobException(jobID);
+		}
+
+		PreparedStatement stmt = null;
+		Timestamp time = new Timestamp(System.currentTimeMillis());
+		String stackTrace = StringUtils.stackTraceToString(error);
+		
+		try {
+			stmt = conn.prepareStatement(ERROR_JOB_STATEMENT);
+			stmt.setTimestamp(1, time);
+			stmt.setString(2, stackTrace);
+			stmt.setLong(3, jobID);
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while setting the error state of the job", e);
+		} finally {
+			if (null != stmt) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					// Do nothing.
+				}
+			}
+		}
+	}
+
 	/**
 	 * Set the progress for a job. The progress must be a percentage (between 0 and 100 inclusive)
 	 * @param conn A database connection

@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.utils;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -57,5 +59,18 @@ public class StringUtils {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * Extract the stack trace from an Exception (or other
+	 * Throwable) as a String.
+	 * @param e The error
+	 * @return The stack trace
+	 */
+	public static String stackTraceToString(Throwable e) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		e.printStackTrace(pw);
+		return sw.toString();
 	}
 }

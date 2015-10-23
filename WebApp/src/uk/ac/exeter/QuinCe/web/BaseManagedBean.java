@@ -1,7 +1,5 @@
 package uk.ac.exeter.QuinCe.web;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.sql.Connection;
 
 import javax.faces.application.FacesMessage;
@@ -10,6 +8,7 @@ import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.system.Pools;
 
 /**
@@ -76,10 +75,7 @@ public abstract class BaseManagedBean {
 	 * @return A result string that will direct to the internal error page.
 	 */
 	public String internalError(Throwable error) {
-		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw);
-		error.printStackTrace(pw);
-		setMessage("STACK_TRACE", sw.toString());
+		setMessage("STACK_TRACE", StringUtils.stackTraceToString(error));
 		return INTERNAL_ERROR_RESULT;
 	}
 }

@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.User.NoSuchUserException;
 import uk.ac.exeter.QuinCe.jobs.BadProgressException;
-import uk.ac.exeter.QuinCe.jobs.BadStatusException;
+import uk.ac.exeter.QuinCe.jobs.UnrecognisedStatusException;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobClassTypeException;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobConstructorException;
 import uk.ac.exeter.QuinCe.jobs.Job;
@@ -41,12 +42,18 @@ public class JobManagerTest extends BaseDbTest {
 
 	private static final String WRONG_LIST_TYPE_CONSTRUCTOR_JOB_CLASS = "unit.uk.ac.exeter.QuinCe.jobs.TestJobs.WrongListTypeConstructorJob";
 
-	private static final String GET_JOBS_QUERY = "SELECT id, owner, submitted, class, parameters, status, started, thread_name, progress FROM job";
+	private static final String GET_JOBS_QUERY = "SELECT id, owner, submitted, class, parameters, status, started, ended, thread_name, progress, stack_trace FROM job";
 	
 	private static final String GET_STATUS_QUERY = "SELECT status FROM job WHERE id = ?";
 	
 	private static final String GET_PROGRESS_QUERY = "SELECT progress FROM job WHERE id = ?";
 	
+	private static final String GET_STARTED_JOB_QUERY = "SELECT status, started FROM job WHERE id = ?";
+	
+	private static final String GET_FINISHED_JOB_QUERY = "SELECT status, ended FROM job WHERE id = ?";
+
+	private static final String GET_ERROR_JOB_QUERY = "SELECT status, ended, stack_trace FROM job WHERE id = ?";
+
 	private List<String> tenSecondJobParams;
 	
 	@Before
@@ -93,11 +100,14 @@ public class JobManagerTest extends BaseDbTest {
 	public void createJobGoodNoOwner() throws Exception {
 		long jobID = JobManager.addJob(getConnection(), null, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
 		assertNotEquals(JobManager.NOT_ADDED, jobID);
+		assertNotEquals(0, jobID);
 		
 		PreparedStatement stmt = getConnection().prepareStatement(GET_JOBS_QUERY);
 		ResultSet storedJobs = stmt.executeQuery();
 		
 		assertTrue(storedJobs.next());
+		assertNotEquals(JobManager.NOT_ADDED, storedJobs.getLong(1));
+		assertNotEquals(0, storedJobs.getLong(1));
 		assertEquals(0, storedJobs.getInt(2));
 		assertNotNull(storedJobs.getTimestamp(3));
 		assertEquals(TEN_SECOND_JOB_CLASS, storedJobs.getString(4));
@@ -107,19 +117,24 @@ public class JobManagerTest extends BaseDbTest {
 		assertEquals(tenSecondJobParams, paramsList);
 		
 		assertEquals(Job.WAITING_STATUS, storedJobs.getString(6));
-		assertNull(storedJobs.getString(7));
-		assertEquals(0.0, storedJobs.getFloat(8), 0);
+		assertNull(storedJobs.getTimestamp(7));
+		assertNull(storedJobs.getTimestamp(8));
+		assertNull(storedJobs.getString(9));
+		assertEquals(0.0, storedJobs.getFloat(10), 0);
+		assertNull(storedJobs.getString(11));
 	}
 	
 	@Test
 	public void createJobGoodWithOwner() throws Exception {
 		long jobID = createTestJob();
 		assertNotEquals(JobManager.NOT_ADDED, jobID);
+		assertNotEquals(0, jobID);
 
 		PreparedStatement stmt = getConnection().prepareStatement(GET_JOBS_QUERY);
 		ResultSet storedJobs = stmt.executeQuery();
 		
 		assertTrue(storedJobs.next());
+		assertNotEquals(JobManager.NOT_ADDED, storedJobs.getLong(1));
 		assertEquals(testUser.getDatabaseID(), storedJobs.getInt(2));
 		assertNotNull(storedJobs.getTimestamp(3));
 		assertEquals(TEN_SECOND_JOB_CLASS, storedJobs.getString(4));
@@ -129,11 +144,14 @@ public class JobManagerTest extends BaseDbTest {
 		assertEquals(tenSecondJobParams, paramsList);
 		
 		assertEquals(Job.WAITING_STATUS, storedJobs.getString(6));
-		assertNull(storedJobs.getString(7));
-		assertEquals(0.0, storedJobs.getFloat(8), 0);
+		assertNull(storedJobs.getTimestamp(7));
+		assertNull(storedJobs.getTimestamp(8));
+		assertNull(storedJobs.getString(9));
+		assertEquals(0.0, storedJobs.getFloat(10), 0);
+		assertNull(storedJobs.getString(11));
 	}
 	
-	@Test(expected=BadStatusException.class)
+	@Test(expected=UnrecognisedStatusException.class)
 	public void setStatusInvalidStatus() throws Exception {
 		long jobID = createTestJob();
 		JobManager.setStatus(getConnection(), jobID, "INVALID_STATUS");
@@ -199,6 +217,88 @@ public class JobManagerTest extends BaseDbTest {
 		assertEquals(50.7, progress, 0);
 	}
 	
+	@Test(expected=NoSuchJobException.class)
+	public void startJobNoSuchJob() throws Exception {
+		JobManager.startJob(getConnection(), 0);
+	}
+	
+	@Test
+	public void startJobGood() throws Exception {
+		long jobID = createTestJob();
+		JobManager.startJob(getConnection(), jobID);
+		
+		PreparedStatement stmt = getConnection().prepareStatement(GET_STARTED_JOB_QUERY);
+		stmt.setLong(1, jobID);
+		
+		String status = null;
+		Timestamp time = null;
+		
+		ResultSet result = stmt.executeQuery();
+		if (result.next()) {
+			status = result.getString(1);
+			time = result.getTimestamp(2);
+		}
+		
+		assertEquals(Job.RUNNING_STATUS, status);
+		assertNotNull(time);
+	}
+	
+	@Test(expected=NoSuchJobException.class)
+	public void finishJobNoSuchJob() throws Exception {
+		JobManager.finishJob(getConnection(), 0);
+	}
+	
+	@Test
+	public void finishJobGood() throws Exception {
+		long jobID = createTestJob();
+		JobManager.finishJob(getConnection(), jobID);
+		
+		PreparedStatement stmt = getConnection().prepareStatement(GET_FINISHED_JOB_QUERY);
+		stmt.setLong(1, jobID);
+		
+		String status = null;
+		Timestamp time = null;
+		
+		ResultSet result = stmt.executeQuery();
+		if (result.next()) {
+			status = result.getString(1);
+			time = result.getTimestamp(2);
+		}
+		
+		assertEquals(Job.FINISHED_STATUS, status);
+		assertNotNull(time);
+	}
+	
+	@Test(expected=NoSuchJobException.class)
+	public void errorJobNoSuchJob() throws Exception {
+		JobManager.errorJob(getConnection(), 0, new Exception("Test exception"));
+	}
+	
+	@Test
+	public void errorJobGood() throws Exception {
+		long jobID = createTestJob();
+		JobManager.errorJob(getConnection(), jobID, new Exception("Test exception"));
+		
+		PreparedStatement stmt = getConnection().prepareStatement(GET_ERROR_JOB_QUERY);
+		stmt.setLong(1, jobID);
+		
+		String status = null;
+		Timestamp time = null;
+		String stackTrace = null;
+		
+		ResultSet result = stmt.executeQuery();
+		if (result.next()) {
+			status = result.getString(1);
+			time = result.getTimestamp(2);
+			stackTrace = result.getString(3);
+		}
+		
+		assertEquals(Job.ERROR_STATUS, status);
+		assertNotNull(time);
+		assertNotNull(stackTrace);
+	}
+	
+
 	@After
 	public void tearDown() throws Exception {
 		deleteAllJobs();
