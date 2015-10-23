@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.jobs.JobClassNotFoundException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.NoSuchJobException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import unit.uk.ac.exeter.QuinCe.jobs.TestJobs.TenSecondJob;
 
 public class JobManagerTest extends BaseJobTest {
 	
@@ -312,6 +313,23 @@ public class JobManagerTest extends BaseJobTest {
 		assertEquals(Job.ERROR_STATUS, status);
 		assertNotNull(time);
 		assertNotNull(stackTrace);
+	}
+	
+	@Test(expected=DatabaseException.class)
+	public void getJobNoDB() throws Exception {
+		JobManager.getJob(null, 0);
+	}
+	
+	@Test(expected=NoSuchJobException.class)
+	public void getJobNoSuchJob() throws Exception {
+		JobManager.getJob(getConnection(), 0);
+	}
+	
+	@Test
+	public void getJobGood() throws Exception {
+		long jobID = createTestJob();
+		Job storedJob = JobManager.getJob(getConnection(), jobID);
+		assertTrue(storedJob instanceof TenSecondJob);
 	}
 	
 	private boolean runSetStatusTest(String status) throws Exception {

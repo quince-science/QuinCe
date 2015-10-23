@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.jobs;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.sql.Connection;
@@ -91,6 +92,11 @@ public class JobManager {
 	 */
 	private static final String ERROR_JOB_STATEMENT = "UPDATE job SET status = '" + Job.ERROR_STATUS + "', ended = ?, stack_trace = ? WHERE id = ?";
 		
+	/**
+	 * SQL statement to retrieve a job's class and paremeters
+	 */
+	private static final String GET_JOB_QUERY = "SELECT class, parameters FROM job WHERE id = ?";
+	
 	/**
 	 * Adds a job to the database
 	 * @param conn A database connection
@@ -258,6 +264,53 @@ public class JobManager {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Retrieve a Job object from the database
+	 * @param conn A database connection
+	 * @param jobID The job ID
+	 * @return A Job object that can be used to run the job
+	 * @throws DatabaseException If any errors occurred retrieving the Job object
+	 * @throws NoSuchJobException If the specified job does not exist
+	 */
+	public static Job getJob(Connection conn, long jobID) throws DatabaseException, NoSuchJobException {
+		if (null == conn) {
+			throw new DatabaseException("Supplied database connection is null");
+		}
+
+		Job job = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			stmt = conn.prepareStatement(GET_JOB_QUERY);
+			stmt.setLong(1, jobID);
+			
+			ResultSet result = stmt.executeQuery();
+			if (!result.next()) {
+				throw new NoSuchJobException(jobID);
+			} else {
+				
+				// Instantiate the job class
+				Class<?> jobClazz = Class.forName(result.getString(1));
+				Constructor<?> jobConstructor = jobClazz.getConstructor(Connection.class, long.class, List.class);
+				job = (Job) jobConstructor.newInstance(conn, jobID, StringUtils.delimitedToList(result.getString(2)));
+			}
+		} catch (SQLException|ClassNotFoundException|NoSuchMethodException|InstantiationException|IllegalAccessException|IllegalArgumentException|InvocationTargetException e) {
+			// We handle all exceptions as DatabaseExceptions.
+			// The fact is that invalid jobs should never get into the database in the first place.
+			throw new DatabaseException("Error while retrieving details for job " + jobID, e);
+		} finally {
+			if (null != stmt) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					// Do nothing.
+				}
+			}
+		}
+		
+		return job;
 	}
 	
 	/**
