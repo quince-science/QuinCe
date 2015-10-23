@@ -36,10 +36,17 @@ public abstract class BaseJobTest extends BaseDbTest {
 	public void tearDown() throws Exception {
 		deleteAllJobs();
 		destroyTestUser();
+		closeConnection();
 	}
 
 	protected long createTestJob() throws DatabaseException, MissingDataException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, Exception {
 		return JobManager.addJob(getConnection(), testUser, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
+	}
+	
+	protected long createTestJob(int chunks) throws DatabaseException, MissingDataException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, Exception {
+		List<String> params = new ArrayList<String>();
+		params.add(String.valueOf(chunks));
+		return JobManager.addJob(getConnection(), testUser, TEN_SECOND_JOB_CLASS, params);
 	}
 
 	private void deleteAllJobs() throws Exception {

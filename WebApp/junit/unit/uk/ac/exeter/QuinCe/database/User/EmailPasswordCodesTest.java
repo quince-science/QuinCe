@@ -212,6 +212,7 @@ public class EmailPasswordCodesTest extends BaseDbTest {
 	@After
 	public void tearDown() throws Exception {
 		destroyTestUser();
+		closeConnection();
 	}
 	
 	private Timestamp getOldTimestamp() {

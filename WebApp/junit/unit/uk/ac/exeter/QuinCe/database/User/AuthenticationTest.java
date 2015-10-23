@@ -95,5 +95,6 @@ public class AuthenticationTest extends BaseDbTest {
 	@After
 	public void tearDown() throws Exception {
 		destroyTestUser();
+		closeConnection();
 	}
 }

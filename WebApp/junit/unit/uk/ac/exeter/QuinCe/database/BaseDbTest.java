@@ -3,6 +3,7 @@ package unit.uk.ac.exeter.QuinCe.database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.User.UserDB;
@@ -32,5 +33,17 @@ public abstract class BaseDbTest {
 		PreparedStatement stmt = getConnection().prepareStatement("DELETE FROM user WHERE email = '" + TEST_USER_EMAIL + "'");
 		stmt.execute();
 		stmt.close();
+	}
+	
+	public void closeConnection() {
+		if (null != connection) {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// Don't care
+			} finally {
+				connection = null;
+			}
+		}
 	}
 }

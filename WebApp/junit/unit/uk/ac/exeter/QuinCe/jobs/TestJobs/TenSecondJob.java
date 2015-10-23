@@ -5,6 +5,7 @@ import java.util.List;
 
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
+import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.utils.MissingDataException;
 
 /**
@@ -22,12 +23,15 @@ public class TenSecondJob extends Job {
 	}
 
 	@Override
-	protected void run() {
+	protected void run() throws JobFailedException {
 		for (int i = 0; i < chunkCount; i++) {
 			try {
 				Thread.sleep(10000);
+				setProgress((long)i / (long)chunkCount);
 			} catch(InterruptedException e) {
 				// Don't care
+			} catch(Exception e) {
+				throw new JobFailedException(id, e);
 			}
 		}
 	}
@@ -35,7 +39,6 @@ public class TenSecondJob extends Job {
 	@Override
 	protected void validateParameters() throws InvalidJobParametersException {
 		// For the test, we expect exactly one string, which is an integer
-		
 		if (null == parameters) {
 			throw new InvalidJobParametersException("parameters are null");
 		} else if (parameters.size() != 1) {

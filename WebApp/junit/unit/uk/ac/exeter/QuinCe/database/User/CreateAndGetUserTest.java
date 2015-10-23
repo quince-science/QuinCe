@@ -111,6 +111,7 @@ public class CreateAndGetUserTest extends BaseDbTest {
 	@After
 	public void tearDown() throws Exception {
 		destroyTestUser();
+		closeConnection();
 	}
 
 }
