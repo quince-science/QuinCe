@@ -204,11 +204,28 @@ public class JobManagerTest extends BaseJobTest {
 	}
 	
 	@Test
+	public void setProgressZero() throws Exception {
+		double testedProgress = setProgressWorker(0.0);
+		assertEquals(0.0, testedProgress, 0);
+	}
+	
+	@Test
+	public void setProgressOneHundred() throws Exception {
+		double testedProgress = setProgressWorker(100.0);
+		assertEquals(100.0, testedProgress, 0);
+	}
+	
+	@Test
 	public void setProgressGood() throws Exception {
+		double testedProgress = setProgressWorker(50.7);
+		assertEquals(50.7, testedProgress, 0);
+	}
+	
+	private double setProgressWorker(double progress) throws Exception {
 		long jobID = createTestJob();
-		JobManager.setProgress(getDataSource(), jobID, 50.7);
+		JobManager.setProgress(getDataSource(), jobID, progress);
 		
-		double progress = -1;
+		double progressResult = -1;
 		
 		Connection connection = getDataSource().getConnection();
 		PreparedStatement stmt = connection.prepareStatement(GET_PROGRESS_QUERY);
@@ -216,12 +233,14 @@ public class JobManagerTest extends BaseJobTest {
 		
 		ResultSet result = stmt.executeQuery();
 		if (result.next()) {
-			progress = result.getDouble(1);
+			progressResult = result.getDouble(1);
 		}
-		
-		assertEquals(50.7, progress, 0);
 		connection.close();
+		
+		return progressResult;
 	}
+	
+
 	
 	@Test(expected=MissingParamException.class)
 	public void startJobNullDB() throws Exception {
