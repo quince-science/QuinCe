@@ -5,7 +5,7 @@ import org.junit.Test;
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.database.User.UserExistsException;
-import uk.ac.exeter.QuinCe.utils.MissingDataException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import unit.uk.ac.exeter.QuinCe.database.BaseDbTest;
 import static org.junit.Assert.*;
 
@@ -52,31 +52,31 @@ public class CreateAndGetUserTest extends BaseDbTest {
 	}
 
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testNullConnection() throws Exception {
 		DataSource nullConnection = null;
 		UserDB.createUser(nullConnection, TEST_USER_EMAIL, "mypassword".toCharArray(), "Steve", "Jones", false);
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testNullEmail() throws Exception {
 		String nullEmail = null;
 		UserDB.createUser(getDataSource(), nullEmail, "mypassword".toCharArray(), "Steve", "Jones", false);
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testNullPassword() throws Exception {
 		char[] nullPassword = null;
 		UserDB.createUser(getDataSource(), TEST_USER_EMAIL, nullPassword, "Steve", "Jones", false);
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testNullGivenName() throws Exception {
 		String nullGivenName = null;
 		UserDB.createUser(getDataSource(), TEST_USER_EMAIL, "mypassword".toCharArray(), nullGivenName, "Jones", false);
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testNullSurname() throws Exception {
 		String nullSurname = null;
 		UserDB.createUser(getDataSource(), TEST_USER_EMAIL, "mypassword".toCharArray(), "Steve", nullSurname, false);
@@ -88,14 +88,14 @@ public class CreateAndGetUserTest extends BaseDbTest {
 		UserDB.createUser(getDataSource(), TEST_USER_EMAIL, "mypassword".toCharArray(), "Keith", "Imposter", false);
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testGetUserNullConnection() throws Exception {
 		createTestUser();
 		DataSource nullConn = null;
 		UserDB.getUser(nullConn, TEST_USER_EMAIL);
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testGetUserNullEmail() throws Exception {
 		String nullEmail = null;
 		UserDB.getUser(getDataSource(), nullEmail);

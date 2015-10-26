@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.jobs;
 
-import uk.ac.exeter.QuinCe.utils.MissingData;
-import uk.ac.exeter.QuinCe.utils.MissingDataException;
+import uk.ac.exeter.QuinCe.utils.MissingParam;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * A thread object that is used to run a job.
@@ -45,10 +45,10 @@ public class JobThread extends Thread {
 	 * @throws InvalidJobClassTypeException If the specified job class is not of the correct type
 	 * @throws JobException If a problem is encountered while building the job object
 	 * @throws InvalidJobParametersException If the parameters supplied to the job are invalid
-	 * @throws MissingDataException If any of the required parameters are null
+	 * @throws MissingParamException If any of the required parameters are null
 	 */
-	public void setupJob(Job job) throws MissingDataException {
-		MissingData.checkMissing(job, "job");
+	public void setupJob(Job job) throws MissingParamException {
+		MissingParam.checkMissing(job, "job");
 		this.job = job;
 		setName("JOB_" + job.getID());
 	}

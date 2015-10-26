@@ -5,8 +5,8 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.MissingData;
-import uk.ac.exeter.QuinCe.utils.MissingDataException;
+import uk.ac.exeter.QuinCe.utils.MissingParam;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * Abstract class containing all the required parts for a backgorund job.
@@ -64,9 +64,9 @@ public abstract class Job {
 	 * @param parameters The parameters for the job
 	 * @throws InvalidJobParametersException If the parameters are not valid for the job
 	 */
-	public Job(DataSource dataSource, long id, List<String> parameters) throws MissingDataException, InvalidJobParametersException {
+	public Job(DataSource dataSource, long id, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
 		
-		MissingData.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(dataSource, "dataSource");
 		
 		this.dataSource = dataSource;
 		this.id = id;
@@ -101,7 +101,7 @@ public abstract class Job {
 	 * @throws NoSuchJobException If the job is not in the database
 	 * @throws DatabaseException If an error occurs while updating the database
 	 */
-	protected void setProgress(double progress) throws MissingDataException, BadProgressException, NoSuchJobException, DatabaseException {
+	protected void setProgress(double progress) throws MissingParamException, BadProgressException, NoSuchJobException, DatabaseException {
 		JobManager.setProgress(dataSource, id, progress);
 	}
 	

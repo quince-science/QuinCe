@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.User.UserDB;
-import uk.ac.exeter.QuinCe.utils.MissingDataException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import unit.uk.ac.exeter.QuinCe.database.BaseDbTest;
 
 public class AuthenticationTest extends BaseDbTest {
@@ -49,7 +49,7 @@ public class AuthenticationTest extends BaseDbTest {
 		assertEquals(UserDB.AUTHENTICATE_EMAIL_CODE_SET, UserDB.authenticate(getDataSource(), TEST_USER_EMAIL, TEST_USER_PASSWORD.toCharArray()));
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testNullConnecton() throws Exception {
 		DataSource nullConn = null;
 		UserDB.authenticate(nullConn, TEST_USER_EMAIL, TEST_USER_PASSWORD.toCharArray());
@@ -67,25 +67,25 @@ public class AuthenticationTest extends BaseDbTest {
 		assertEquals(UserDB.AUTHENTICATE_FAILED, UserDB.authenticate(getDataSource(), TEST_USER_EMAIL, nullPassword));
 	}
 
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testChangePasswordNullConneciton() throws Exception {
 		DataSource nullConn = null;
 		UserDB.changePassword(nullConn, testUser, TEST_USER_PASSWORD.toCharArray(), "lkdfjglkfdj".toCharArray());
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testChangePasswordNullUser() throws Exception {
 		User nullUser = null;
 		UserDB.changePassword(getDataSource(), nullUser, TEST_USER_PASSWORD.toCharArray(), "lkdfjglkfdj".toCharArray());
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testChangePasswordNullOld() throws Exception {
 		char[] nullPassword = null;
 		UserDB.changePassword(getDataSource(), testUser, nullPassword, "lkdfjglkfdj".toCharArray());
 	}
 
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testChangePasswordNullNew() throws Exception {
 		char[] nullPassword = null;
 		UserDB.changePassword(getDataSource(), testUser, TEST_USER_PASSWORD.toCharArray(), nullPassword);

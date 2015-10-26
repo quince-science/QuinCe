@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.exeter.QuinCe.data.User;
-import uk.ac.exeter.QuinCe.utils.MissingDataException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public class UserTest {
 
@@ -61,19 +61,19 @@ public class UserTest {
 		assertEquals("Steve Jones", testUser.getFullName());
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testConstructionNullEmail() throws Exception {
 		String nullEmail = null;
 		new User(1, nullEmail, "Steve", "Jones");
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testConstructionNullGivenName() throws Exception {
 		String nullGivenName = null;
 		new User(1, "s.d.jones@exeter.ac.uk", nullGivenName, "Jones");
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testConstructionNullSurname() throws Exception {
 		String nullSurname = null;
 		new User(1, "s.d.jones@exeter.ac.uk", "Steve", nullSurname);

@@ -15,7 +15,7 @@ import uk.ac.exeter.QuinCe.jobs.InvalidJobConstructorException;
 import uk.ac.exeter.QuinCe.jobs.JobClassNotFoundException;
 import uk.ac.exeter.QuinCe.jobs.JobException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
-import uk.ac.exeter.QuinCe.utils.MissingDataException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import unit.uk.ac.exeter.QuinCe.database.BaseDbTest;
 
 public abstract class BaseJobTest extends BaseDbTest {
@@ -39,11 +39,11 @@ public abstract class BaseJobTest extends BaseDbTest {
 		destroyTestUser();
 	}
 
-	protected long createTestJob() throws DatabaseException, MissingDataException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, Exception {
+	protected long createTestJob() throws DatabaseException, MissingParamException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, Exception {
 		return JobManager.addJob(getDataSource(), testUser, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
 	}
 	
-	protected long createTestJob(int chunks) throws DatabaseException, MissingDataException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, Exception {
+	protected long createTestJob(int chunks) throws DatabaseException, MissingParamException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, Exception {
 		List<String> params = new ArrayList<String>();
 		params.add(String.valueOf(chunks));
 		return JobManager.addJob(getDataSource(), testUser, TEN_SECOND_JOB_CLASS, params);

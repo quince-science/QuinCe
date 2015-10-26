@@ -7,7 +7,7 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
-import uk.ac.exeter.QuinCe.utils.MissingDataException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * A test job that takes five minutes to run.
@@ -19,7 +19,7 @@ public class TenSecondJob extends Job {
 
 	private int chunkCount = 1;
 	
-	public TenSecondJob(DataSource dataSource, long id, List<String> parameters) throws MissingDataException, InvalidJobParametersException {
+	public TenSecondJob(DataSource dataSource, long id, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
 		super(dataSource, id, parameters);
 	}
 

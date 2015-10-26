@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.jobs;
 
 import java.util.Stack;
 
-import uk.ac.exeter.QuinCe.utils.MissingDataException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * Thread pool for background jobs.
@@ -52,9 +52,9 @@ public class JobThreadPool {
 	 * 
 	 * @param job The job to be executed
 	 * @return A configured job thread, or {@code null} if the thread stack is empty
-	 * @throws MissingDataException If any of the required parameters are null
+	 * @throws MissingParamException If any of the required parameters are null
 	*/
-	public JobThread getJobThread(Job job) throws MissingDataException {
+	public JobThread getJobThread(Job job) throws MissingParamException {
 		
 		JobThread thread = null;
 		
@@ -80,9 +80,9 @@ public class JobThreadPool {
 	 *
 	 * @param job The job to be executed
 	 * @return A configured job thread
-	 * @throws MissingDataException If any of the required parameters are null
+	 * @throws MissingParamException If any of the required parameters are null
 	 */
-	public JobThread getInstantJobThread(Job job) throws MissingDataException {
+	public JobThread getInstantJobThread(Job job) throws MissingParamException {
 
 		JobThread thread = null;
 		

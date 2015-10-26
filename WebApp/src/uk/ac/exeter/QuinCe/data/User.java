@@ -2,8 +2,8 @@ package uk.ac.exeter.QuinCe.data;
 
 import java.sql.Timestamp;
 
-import uk.ac.exeter.QuinCe.utils.MissingData;
-import uk.ac.exeter.QuinCe.utils.MissingDataException;
+import uk.ac.exeter.QuinCe.utils.MissingParam;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * Object to represent a user and perform various
@@ -65,11 +65,11 @@ public class User {
 	 * @param givenName The user's given name
 	 * @param surname The user's surname
 	 */
-	public User(int id, String email, String givenName, String surname) throws MissingDataException {
+	public User(int id, String email, String givenName, String surname) throws MissingParamException {
 		
-		MissingData.checkMissing(email, "email");
-		MissingData.checkMissing(givenName, "givenName");
-		MissingData.checkMissing(surname, "surname");
+		MissingParam.checkMissing(email, "email");
+		MissingParam.checkMissing(givenName, "givenName");
+		MissingParam.checkMissing(surname, "surname");
 		
 		itsDatabaseID = id;
 		itsEmailAddress = email;
@@ -114,7 +114,7 @@ public class User {
 	 * Set the email verification code
 	 * @param code The email verification code
 	 */
-	public void setEmailVerificationCode(String code, Timestamp time) throws MissingDataException {
+	public void setEmailVerificationCode(String code, Timestamp time) throws MissingParamException {
 
 		itsEmailVerificationCode = code;
 		itsEmailVerificationCodeTime = time;
@@ -124,7 +124,7 @@ public class User {
 	 * Set the password reset code
 	 * @param code The password reset code
 	 */
-	public void setPasswordResetCode(String code, Timestamp time) throws MissingDataException {
+	public void setPasswordResetCode(String code, Timestamp time) throws MissingParamException {
 		itsPasswordResetCode = code;
 		itsPasswordResetCodeTime = time;
 	}

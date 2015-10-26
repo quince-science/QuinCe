@@ -1,16 +1,16 @@
 package uk.ac.exeter.QuinCe.utils;
 
-public class MissingData {
+public class MissingParam {
 
-	public static void checkMissing(Object parameter, String parameterName) throws MissingDataException {
+	public static void checkMissing(Object parameter, String parameterName) throws MissingParamException {
 		checkMissing(parameter, parameterName, false);
 	}
 
-	public static void checkMissing(char[] parameter, String parameterName) throws MissingDataException {
+	public static void checkMissing(char[] parameter, String parameterName) throws MissingParamException {
 		checkMissing(parameter, parameterName, false);
 	}
 
-	public static void checkMissing(Object parameter, String parameterName, boolean canBeEmpty) throws MissingDataException {
+	public static void checkMissing(Object parameter, String parameterName, boolean canBeEmpty) throws MissingParamException {
 		boolean isMissing = false;
 		
 		if (null == parameter) {
@@ -26,11 +26,11 @@ public class MissingData {
 		}
 
 		if (isMissing) {
-			throw new MissingDataException(parameterName);
+			throw new MissingParamException(parameterName);
 		}
 	}
 
-	public static void checkMissing(char[] parameter, String parameterName, boolean canBeEmpty) throws MissingDataException {
+	public static void checkMissing(char[] parameter, String parameterName, boolean canBeEmpty) throws MissingParamException {
 		boolean isMissing = false;
 		
 		if (null == parameter) {
@@ -42,7 +42,7 @@ public class MissingData {
 		}
 		
 		if (isMissing) {
-			throw new MissingDataException(parameterName);
+			throw new MissingParamException(parameterName);
 		}
 	}
 }

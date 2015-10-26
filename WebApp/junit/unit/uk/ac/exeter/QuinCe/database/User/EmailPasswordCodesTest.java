@@ -18,7 +18,7 @@ import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.User.NoSuchUserException;
 import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
-import uk.ac.exeter.QuinCe.utils.MissingDataException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public class EmailPasswordCodesTest extends BaseDbTest {
 
@@ -146,25 +146,25 @@ public class EmailPasswordCodesTest extends BaseDbTest {
 		assertEquals(UserDB.CODE_EXPIRED, UserDB.checkPasswordResetCode(getDataSource(), TEST_USER_EMAIL, storedCode));
 	}
 
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testGenerateEmailVerificationCodeNullConnection() throws Exception {
 		DataSource nullConn = null;
 		UserDB.generateEmailVerificationCode(nullConn, testUser);
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testGenerateEmailVerificationCodeNullUser() throws Exception {
 		User nullUser = null;
 		UserDB.generateEmailVerificationCode(getDataSource(), nullUser);
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testGeneratePasswordResetCodeNullConnection() throws Exception {
 		DataSource nullConn = null;
 		UserDB.generatePasswordResetCode(nullConn, testUser);
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testGeneratePasswordResetCodeNullUser() throws Exception {
 		User nullUser = null;
 		UserDB.generatePasswordResetCode(getDataSource(), nullUser);
@@ -182,37 +182,37 @@ public class EmailPasswordCodesTest extends BaseDbTest {
 		UserDB.generatePasswordResetCode(getDataSource(), unregisteredUser);
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testCheckEmailVerificationCodeNullConnection() throws Exception {
 		DataSource nullConn = null;
 		UserDB.checkEmailVerificationCode(nullConn, TEST_USER_EMAIL, "jhfdsglkjfdlkg");
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testCheckEmailVerificationCodeNullEmail() throws Exception {
 		String nullEmail = null;
 		UserDB.checkEmailVerificationCode(getDataSource(), nullEmail, ";ljdflkgjfd");
 	}
 
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testCheckEmailVerificationCodeNullCode() throws Exception {
 		String nullCode = null;
 		UserDB.checkEmailVerificationCode(getDataSource(), TEST_USER_EMAIL, nullCode);
 	}
 
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testCheckPasswordResetCodeNullConnection() throws Exception {
 		DataSource nullConn = null;
 		UserDB.checkPasswordResetCode(nullConn, TEST_USER_EMAIL, "jhfdsglkjfdlkg");
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testCheckPasswordResetCodeNullEmail() throws Exception {
 		String nullEmail = null;
 		UserDB.checkPasswordResetCode(getDataSource(), nullEmail, ";ljdflkgjfd");
 	}
 
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testCheckPasswordResetCodeNullCode() throws Exception {
 		String nullCode = null;
 		UserDB.checkPasswordResetCode(getDataSource(), TEST_USER_EMAIL, nullCode);

@@ -14,8 +14,8 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
-import uk.ac.exeter.QuinCe.utils.MissingData;
-import uk.ac.exeter.QuinCe.utils.MissingDataException;
+import uk.ac.exeter.QuinCe.utils.MissingParam;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * Database access class for users.
@@ -108,14 +108,14 @@ public class UserDB {
 	 * @param conn The database connection to be used
 	 * @param email The user's email address.
 	 * @return A User object representing the user, or {@code null} if the user's record could not be found.
-	 * @throws MissingDataException If the supplied email is null
+	 * @throws MissingParamException If the supplied email is null
 	 * @throws SQLException
 	 * @see uk.ac.exeter.QuinCe.data.User
 	 */
-	public static User getUser(DataSource dataSource, String email) throws DatabaseException, MissingDataException {
+	public static User getUser(DataSource dataSource, String email) throws DatabaseException, MissingParamException {
 		
-		MissingData.checkMissing(dataSource, "dataSource");
-		MissingData.checkMissing(email, "email");
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(email, "email");
 		
 		Connection connection = null;
 		PreparedStatement stmt = null;
@@ -164,18 +164,18 @@ public class UserDB {
 	 * @param generateEmailVerificationCode Indicates whether or not an email verification code should be generated for the user
 	 * @return A new User object representing the user
 	 * @throws UserExistsException If a user with the specified email address already exists in the database
-	 * @throws MissingDataException If any of the parameters are null
+	 * @throws MissingParamException If any of the parameters are null
 	 * @throws SQLException If there's an error storing the details in the database
 	 * @throws HashException If an error occurs while hashing the user's password 
 	 * @see uk.ac.exeter.QuinCe.data.User
 	 */
-	public static User createUser(DataSource dataSource, String email, char[] password, String givenName, String surname, boolean generateEmailVerificationCode) throws UserExistsException, DatabaseException, MissingDataException {
+	public static User createUser(DataSource dataSource, String email, char[] password, String givenName, String surname, boolean generateEmailVerificationCode) throws UserExistsException, DatabaseException, MissingParamException {
 		
-		MissingData.checkMissing(dataSource, "dataSource");
-		MissingData.checkMissing(email, "email");
-		MissingData.checkMissing(password, "password");
-		MissingData.checkMissing(givenName, "givenName");
-		MissingData.checkMissing(surname, "surname");
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(email, "email");
+		MissingParam.checkMissing(password, "password");
+		MissingParam.checkMissing(givenName, "givenName");
+		MissingParam.checkMissing(surname, "surname");
 
 		User newUser = null;
 		Connection connection = null;
@@ -235,12 +235,12 @@ public class UserDB {
 	 * @param user The user who requires the code
 	 * @throws NoSuchUserException If the user doesn't exist
 	 * @throws DatabaseException If an error occurs while updating the database
-	 * @throws MissingDataException If the supplied user object is null
+	 * @throws MissingParamException If the supplied user object is null
 	 */
-	public static void generateEmailVerificationCode(DataSource dataSource, User user) throws NoSuchUserException, DatabaseException, MissingDataException {
+	public static void generateEmailVerificationCode(DataSource dataSource, User user) throws NoSuchUserException, DatabaseException, MissingParamException {
 
-		MissingData.checkMissing(dataSource, "dataSource");
-		MissingData.checkMissing(user, "user");
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(user, "user");
 
 		if (null == getUser(dataSource, user.getEmailAddress())) {
 			throw new NoSuchUserException();
@@ -285,12 +285,12 @@ public class UserDB {
 	 * @param user
 	 * @throws NoSuchUserException If the user doesn't exist
 	 * @throws DatabaseException If an error occurs while updating the database
-	 * @throws MissingDataException If the supplied user object is null
+	 * @throws MissingParamException If the supplied user object is null
 	 */
-	public static void generatePasswordResetCode(DataSource dataSource, User user) throws NoSuchUserException, DatabaseException, MissingDataException {
+	public static void generatePasswordResetCode(DataSource dataSource, User user) throws NoSuchUserException, DatabaseException, MissingParamException {
 
-		MissingData.checkMissing(dataSource, "dataSource");
-		MissingData.checkMissing(user, "user");
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(user, "user");
 
 		if (null == getUser(dataSource, user.getEmailAddress())) {
 			throw new NoSuchUserException();
@@ -339,9 +339,9 @@ public class UserDB {
 	 * @return One of AUTHENTICATE_OK, AUTHENTICATE_FAILED, or AUTHENTICATE_EMAIL_CODE_SET
 	 * @throws DatabaseException If an error occurs while retrieving the user's details
 	 */
-	public static int authenticate(DataSource dataSource, String email, char[] password) throws MissingDataException, DatabaseException {
+	public static int authenticate(DataSource dataSource, String email, char[] password) throws MissingParamException, DatabaseException {
 		
-		MissingData.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(dataSource, "dataSource");
 		
 		int authenticationResult = AUTHENTICATE_FAILED;
 		
@@ -400,14 +400,14 @@ public class UserDB {
 	 * @param newPassword The user's new password
 	 * @return {@code true} if the password was changed successfully; {@code false} otherwise.
 	 * @throws DatabaseException If an error occurred
-	 * @throws MissingDataException If any of the parameters are null
+	 * @throws MissingParamException If any of the parameters are null
 	 */
-	public static boolean changePassword(DataSource dataSource, User user, char[] oldPassword, char[] newPassword) throws DatabaseException, MissingDataException {
+	public static boolean changePassword(DataSource dataSource, User user, char[] oldPassword, char[] newPassword) throws DatabaseException, MissingParamException {
 		
-		MissingData.checkMissing(dataSource, "dataSource");
-		MissingData.checkMissing(user, "user");
-		MissingData.checkMissing(oldPassword, "oldPassword", true);
-		MissingData.checkMissing(newPassword, "newPassword");
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(user, "user");
+		MissingParam.checkMissing(oldPassword, "oldPassword", true);
+		MissingParam.checkMissing(newPassword, "newPassword");
 
 		// First we authenticate the user with their current password. If that works, we can set
 		// the new password
@@ -459,11 +459,11 @@ public class UserDB {
 	 * @return An integer value indicating whether the code matched, didn't match, or the timestamp has expired.
 	 * @throws DatabaseException
 	 */
-	public static int checkEmailVerificationCode(DataSource dataSource, String email, String code) throws DatabaseException, MissingDataException {
+	public static int checkEmailVerificationCode(DataSource dataSource, String email, String code) throws DatabaseException, MissingParamException {
 
-		MissingData.checkMissing(dataSource, "dataSource");
-		MissingData.checkMissing(email, "email");
-		MissingData.checkMissing(code, "code");
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(email, "email");
+		MissingParam.checkMissing(code, "code");
 
 		int result = CODE_FAILED;
 		
@@ -486,11 +486,11 @@ public class UserDB {
 	 * @return An integer value indicating whether the code matched, didn't match, or the timestamp has expired.
 	 * @throws DatabaseException
 	 */
-	public static int checkPasswordResetCode(DataSource dataSource, String email, String code) throws DatabaseException, MissingDataException {
+	public static int checkPasswordResetCode(DataSource dataSource, String email, String code) throws DatabaseException, MissingParamException {
 
-		MissingData.checkMissing(dataSource, "dataSource");
-		MissingData.checkMissing(email, "email");
-		MissingData.checkMissing(code, "code");
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(email, "email");
+		MissingParam.checkMissing(code, "code");
 
 		int result = CODE_FAILED;
 		

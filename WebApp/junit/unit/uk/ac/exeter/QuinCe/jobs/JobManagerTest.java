@@ -20,7 +20,7 @@ import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobClassNotFoundException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.NoSuchJobException;
-import uk.ac.exeter.QuinCe.utils.MissingDataException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import unit.uk.ac.exeter.QuinCe.jobs.TestJobs.TenSecondJob;
 
@@ -48,7 +48,7 @@ public class JobManagerTest extends BaseJobTest {
 
 	private static final String GET_ERROR_JOB_QUERY = "SELECT status, ended, stack_trace FROM job WHERE id = ?";
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void createJobNullDB() throws Exception {
 		JobManager.addJob(null, testUser, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
 	}
@@ -143,7 +143,7 @@ public class JobManagerTest extends BaseJobTest {
 		connection.close();
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void setStatusNullDB() throws Exception {
 		long jobID = createTestJob();
 		JobManager.setStatus(null, jobID, Job.WAITING_STATUS);
@@ -180,7 +180,7 @@ public class JobManagerTest extends BaseJobTest {
 		assertTrue(runSetStatusTest(Job.ERROR_STATUS));
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void setProgressNullDB() throws Exception {
 		long jobID = createTestJob();
 		JobManager.setProgress(null, jobID, 12.4);
@@ -223,7 +223,7 @@ public class JobManagerTest extends BaseJobTest {
 		connection.close();
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void startJobNullDB() throws Exception {
 		long jobID = createTestJob();
 		JobManager.startJob(null, jobID);
@@ -257,7 +257,7 @@ public class JobManagerTest extends BaseJobTest {
 		connection.close();
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void finishJobNullDB() throws Exception {
 		long jobID = createTestJob();
 		JobManager.finishJob(null, jobID);
@@ -291,7 +291,7 @@ public class JobManagerTest extends BaseJobTest {
 		connection.close();
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void errorJobNullDB() throws Exception {
 		long jobID = createTestJob();
 		JobManager.errorJob(null, jobID, new Exception("Test exception"));
@@ -328,7 +328,7 @@ public class JobManagerTest extends BaseJobTest {
 		connection.close();
 	}
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void getJobNoDB() throws Exception {
 		JobManager.getJob(null, 0);
 	}

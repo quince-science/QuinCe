@@ -11,7 +11,7 @@ import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
-import uk.ac.exeter.QuinCe.utils.MissingDataException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import unit.uk.ac.exeter.QuinCe.jobs.TestJobs.TenSecondJob;
 
 /**
@@ -21,7 +21,7 @@ import unit.uk.ac.exeter.QuinCe.jobs.TestJobs.TenSecondJob;
  */
 public class JobTest extends BaseJobTest {
 	
-	@Test(expected=MissingDataException.class)
+	@Test(expected=MissingParamException.class)
 	public void testConstructorMissingConnection() throws Exception {
 		new TenSecondJob(null, 1, new ArrayList<String>());
 	}
