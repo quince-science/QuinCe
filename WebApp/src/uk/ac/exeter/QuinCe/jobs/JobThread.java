@@ -75,7 +75,7 @@ public class JobThread extends Thread {
 	 * Start the thread and run the job.
 	 * When finished the thread will return itself to the thread pool
 	 */
-	public void run() {
+	public void start() {
 		try {
 			// Run the job
 			job.run();

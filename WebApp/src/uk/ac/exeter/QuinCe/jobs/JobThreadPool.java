@@ -72,6 +72,14 @@ public class JobThreadPool {
 	}
 	
 	/**
+	 * Returns the number of threads available in the pool
+	 * @return The number of threads available in the pool
+	 */
+	public int getAvailableThreads() {
+		return threads.size();
+	}
+	
+	/**
 	 * Retrieves a job thread from the pool and configures it ready to execute a job.
 	 * If there are no available threads in the stack, an overflow thread is created instead.
 	 * The overflow thread will not be returned to the stack when the job is finished.
@@ -109,7 +117,7 @@ public class JobThreadPool {
 		thread.reset();
 		
 		synchronized(threads) {
-			if (!thread.isOverflowThread() && threads.size() <= maxThreads) {
+			if (!thread.isOverflowThread() && threads.size() < maxThreads) {
 				threads.push(thread);
 			}
 		}
@@ -132,7 +140,12 @@ public class JobThreadPool {
 	 * 
 	 * @param maxThreads The maximum number of threads in the pool
 	 */
-	public static void initialise(int maxThreads) {
+	public static void initialise(int maxThreads) throws InvalidThreadCountException {
+		
+		if (maxThreads <= 0) {
+			throw new InvalidThreadCountException();
+		}
+		
 		if (null == itsInstance) {
 			itsInstance = new JobThreadPool(maxThreads);
 		}
@@ -147,4 +160,7 @@ public class JobThreadPool {
 		return itsInstance;
 	}
 	
+	public static void destroy() {
+		itsInstance = null;
+	}
 }
