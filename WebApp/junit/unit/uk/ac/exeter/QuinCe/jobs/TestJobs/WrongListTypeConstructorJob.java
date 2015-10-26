@@ -1,15 +1,16 @@
 package unit.uk.ac.exeter.QuinCe.jobs.TestJobs;
 
-import java.sql.Connection;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 
 public class WrongListTypeConstructorJob extends Job {
 
-	public WrongListTypeConstructorJob(Connection conn, long id, List<Integer> params) throws Exception {
-		super(conn, 0, null);
+	public WrongListTypeConstructorJob(DataSource dataSource, long id, List<Integer> params) throws Exception {
+		super(dataSource, 0, null);
 	}
 
 	@Override

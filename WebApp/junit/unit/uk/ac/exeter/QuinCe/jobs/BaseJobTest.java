@@ -1,5 +1,6 @@
 package unit.uk.ac.exeter.QuinCe.jobs;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,21 +37,22 @@ public abstract class BaseJobTest extends BaseDbTest {
 	public void tearDown() throws Exception {
 		deleteAllJobs();
 		destroyTestUser();
-		closeConnection();
 	}
 
 	protected long createTestJob() throws DatabaseException, MissingDataException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, Exception {
-		return JobManager.addJob(getConnection(), testUser, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
+		return JobManager.addJob(getDataSource(), testUser, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
 	}
 	
 	protected long createTestJob(int chunks) throws DatabaseException, MissingDataException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, Exception {
 		List<String> params = new ArrayList<String>();
 		params.add(String.valueOf(chunks));
-		return JobManager.addJob(getConnection(), testUser, TEN_SECOND_JOB_CLASS, params);
+		return JobManager.addJob(getDataSource(), testUser, TEN_SECOND_JOB_CLASS, params);
 	}
 
 	private void deleteAllJobs() throws Exception {
-		PreparedStatement stmt = getConnection().prepareStatement("DELETE FROM job");
+		Connection connection = getDataSource().getConnection();
+		PreparedStatement stmt = connection.prepareStatement("DELETE FROM job");
 		stmt.execute();
+		connection.close();
 	}
 }

@@ -1,7 +1,5 @@
 package uk.ac.exeter.QuinCe.web;
 
-import java.sql.Connection;
-
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
@@ -45,12 +43,11 @@ public abstract class BaseManagedBean {
 	 * @return A database connection
 	 * @throws DatabaseException If there is an error connecting to the database
 	 */
-	protected Connection getDBConnection() throws DatabaseException {
+	protected DataSource getDBDataSource() throws DatabaseException {
 		try {
-			DataSource dataSource = Pools.getInstance((ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext()).getDBDataSource();
-			return dataSource.getConnection();
+			return Pools.getInstance((ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext()).getDBDataSource();
 		} catch (Exception e) {
-			throw new DatabaseException("Error while retrieving database connection from pool", e);
+			throw new DatabaseException("Error while retrieving data source connection from pool", e);
 		}
 	}
 	

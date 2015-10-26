@@ -1,8 +1,8 @@
 package uk.ac.exeter.QuinCe.jobs;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingData;
@@ -51,7 +51,7 @@ public abstract class Job {
 	/**
 	 * The database connection to be used by the job
 	 */
-	protected Connection connection;
+	protected DataSource dataSource;
 	
 	/**
 	 * The set of parameters passed to the job
@@ -60,15 +60,15 @@ public abstract class Job {
 	
 	/**
 	 * Constructs a job object, and validates the parameters passed to it
-	 * @param connection A database connection
+	 * @param dataSource A database connection
 	 * @param parameters The parameters for the job
 	 * @throws InvalidJobParametersException If the parameters are not valid for the job
 	 */
-	public Job(Connection connection, long id, List<String> parameters) throws MissingDataException, InvalidJobParametersException {
+	public Job(DataSource dataSource, long id, List<String> parameters) throws MissingDataException, InvalidJobParametersException {
 		
-		MissingData.checkMissing(connection, "connection");
+		MissingData.checkMissing(dataSource, "dataSource");
 		
-		this.connection = connection;
+		this.dataSource = dataSource;
 		this.id = id;
 		this.parameters = parameters;
 		validateParameters();
@@ -101,8 +101,8 @@ public abstract class Job {
 	 * @throws NoSuchJobException If the job is not in the database
 	 * @throws DatabaseException If an error occurs while updating the database
 	 */
-	protected void setProgress(double progress) throws BadProgressException, NoSuchJobException, DatabaseException {
-		JobManager.setProgress(connection, id, progress);
+	protected void setProgress(double progress) throws MissingDataException, BadProgressException, NoSuchJobException, DatabaseException {
+		JobManager.setProgress(dataSource, id, progress);
 	}
 	
 	/**
@@ -117,13 +117,8 @@ public abstract class Job {
 	 * Destroys the job object, releasing the database connection.
 	 */
 	protected void destroy() {
-		
 		parameters = null;
 		destroyed = true;
-		try {
-			connection.close();
-		} catch (SQLException e) {
-			// Not much we can do...
-		}
+		dataSource = null;
 	}
 }

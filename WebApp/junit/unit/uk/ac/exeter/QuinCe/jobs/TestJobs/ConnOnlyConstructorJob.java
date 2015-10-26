@@ -1,14 +1,14 @@
 package unit.uk.ac.exeter.QuinCe.jobs.TestJobs;
 
-import java.sql.Connection;
+import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 
 public class ConnOnlyConstructorJob extends Job {
 
-	public ConnOnlyConstructorJob(Connection conn) throws Exception {
-		super(conn, 0, null);
+	public ConnOnlyConstructorJob(DataSource dataSource) throws Exception {
+		super(dataSource, 0, null);
 	}
 
 	@Override

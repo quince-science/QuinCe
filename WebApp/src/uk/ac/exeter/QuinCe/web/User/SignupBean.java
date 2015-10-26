@@ -1,7 +1,5 @@
 package uk.ac.exeter.QuinCe.web.User;
 
-import java.sql.Connection;
-
 import org.apache.commons.validator.routines.EmailValidator;
 
 import uk.ac.exeter.QuinCe.database.DatabaseException;
@@ -92,10 +90,8 @@ public class SignupBean extends BaseManagedBean {
 		} else {
 			
 			try {
-				Connection db = getDBConnection();
-				
 				// Add the user to the database
-				UserDB.createUser(db, emailAddress, password1.toCharArray(), givenName, surname, true);
+				UserDB.createUser(getDBDataSource(), emailAddress, password1.toCharArray(), givenName, surname, true);
 			} catch (DatabaseException|MissingDataException e) {
 				result = internalError(e);
 			} catch (UserExistsException e) {

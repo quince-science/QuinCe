@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Arrays;
 
+import javax.sql.DataSource;
+
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -110,19 +112,18 @@ public class UserDB {
 	 * @throws SQLException
 	 * @see uk.ac.exeter.QuinCe.data.User
 	 */
-	public static User getUser(Connection conn, String email) throws DatabaseException, MissingDataException {
+	public static User getUser(DataSource dataSource, String email) throws DatabaseException, MissingDataException {
 		
-		if (null == conn) {
-			throw new DatabaseException("Supplied database connection is null");
-		}
-		
+		MissingData.checkMissing(dataSource, "dataSource");
 		MissingData.checkMissing(email, "email");
 		
+		Connection connection = null;
 		PreparedStatement stmt = null;
 		User foundUser = null;
 		
 		try {
-			stmt = conn.prepareStatement(USER_SEARCH_BY_EMAIL_STATEMENT);
+			connection = dataSource.getConnection();
+			stmt = connection.prepareStatement(USER_SEARCH_BY_EMAIL_STATEMENT);
 			stmt.setString(1, email);
 			ResultSet result = stmt.executeQuery();
 			
@@ -135,7 +136,13 @@ public class UserDB {
 			throw new DatabaseException("An error occurred while searching for the user", e);
 		} finally {
 			try {
-				stmt.close();
+				if (null != stmt) {
+					stmt.close();
+				}
+				
+				if (null != connection) {
+					connection.close();
+				}
 			} catch (SQLException e) {
 				// There's not much we can do here...
 			}
@@ -162,22 +169,20 @@ public class UserDB {
 	 * @throws HashException If an error occurs while hashing the user's password 
 	 * @see uk.ac.exeter.QuinCe.data.User
 	 */
-	public static User createUser(Connection conn, String email, char[] password, String givenName, String surname, boolean generateEmailVerificationCode) throws UserExistsException, DatabaseException, MissingDataException {
+	public static User createUser(DataSource dataSource, String email, char[] password, String givenName, String surname, boolean generateEmailVerificationCode) throws UserExistsException, DatabaseException, MissingDataException {
 		
-		if (null == conn) {
-			throw new DatabaseException("Supplied database connection is null");
-		}
-		
+		MissingData.checkMissing(dataSource, "dataSource");
 		MissingData.checkMissing(email, "email");
 		MissingData.checkMissing(password, "password");
 		MissingData.checkMissing(givenName, "givenName");
 		MissingData.checkMissing(surname, "surname");
 
 		User newUser = null;
+		Connection connection = null;
 		PreparedStatement stmt = null;
 		
 		try {
-			if (null != getUser(conn, email)) {
+			if (null != getUser(dataSource, email)) {
 				throw new UserExistsException();
 			} else {
 				SaltAndHashedPassword generatedPassword = generateHashedPassword(password);
@@ -190,7 +195,8 @@ public class UserDB {
 					time = new Timestamp(System.currentTimeMillis());
 				}
 				
-				stmt = conn.prepareStatement(CREATE_USER_STATEMENT);
+				connection = dataSource.getConnection();
+				stmt = connection.prepareStatement(CREATE_USER_STATEMENT);
 				stmt.setString(1, email);
 				stmt.setBytes(2, generatedPassword.salt);
 				stmt.setBytes(3, generatedPassword.hashedPassword);
@@ -201,18 +207,21 @@ public class UserDB {
 
 				stmt.execute();
 				
-				newUser = getUser(conn, email);
+				newUser = getUser(dataSource, email);
 			}
 			
 		} catch (SQLException|InvalidKeySpecException|NoSuchAlgorithmException e) {
 			throw new DatabaseException("An error occurred while creating the user's database record", e);
 		} finally {
-			if (null != stmt) {
-				try {
+			try {
+				if (null != stmt) {
 					stmt.close();
-				} catch (SQLException e) {
-					// Do nothing
 				}
+				if (null != connection) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				// Do nothing
 			}
 		}
 		
@@ -228,25 +237,24 @@ public class UserDB {
 	 * @throws DatabaseException If an error occurs while updating the database
 	 * @throws MissingDataException If the supplied user object is null
 	 */
-	public static void generateEmailVerificationCode(Connection conn, User user) throws NoSuchUserException, DatabaseException, MissingDataException {
+	public static void generateEmailVerificationCode(DataSource dataSource, User user) throws NoSuchUserException, DatabaseException, MissingDataException {
 
-		if (null == conn) {
-			throw new DatabaseException("Supplied database connection is null");
-		}
-		
+		MissingData.checkMissing(dataSource, "dataSource");
 		MissingData.checkMissing(user, "user");
 
-		if (null == getUser(conn, user.getEmailAddress())) {
+		if (null == getUser(dataSource, user.getEmailAddress())) {
 			throw new NoSuchUserException();
 		}
 		
+		Connection connection = null;
 		PreparedStatement stmt = null;
 
 		String verificationCode = new String(PasswordHash.generateRandomString(CODE_LENGTH));
 		Timestamp time = new Timestamp(System.currentTimeMillis());
 		
 		try {
-			stmt = conn.prepareStatement(CREATE_EMAIL_VERIFICATION_CODE_STATEMENT);
+			connection = dataSource.getConnection();
+			stmt = connection.prepareStatement(CREATE_EMAIL_VERIFICATION_CODE_STATEMENT);
 			stmt.setString(1, verificationCode);
 			stmt.setTimestamp(2, time);
 			stmt.setInt(3, user.getDatabaseID());
@@ -256,12 +264,16 @@ public class UserDB {
 		} catch(SQLException e) {
 			throw new DatabaseException("An error occurred while storing the verification code", e);
 		} finally {
-			if (null != stmt) {
-				try {
+			try {
+				if (null != stmt) {
 					stmt.close();
-				} catch (SQLException e) {
-					// Do nothing
 				}
+				
+				if (null != connection) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				// Do nothing
 			}
 		}
 	}
@@ -275,25 +287,24 @@ public class UserDB {
 	 * @throws DatabaseException If an error occurs while updating the database
 	 * @throws MissingDataException If the supplied user object is null
 	 */
-	public static void generatePasswordResetCode(Connection conn, User user) throws NoSuchUserException, DatabaseException, MissingDataException {
+	public static void generatePasswordResetCode(DataSource dataSource, User user) throws NoSuchUserException, DatabaseException, MissingDataException {
 
-		if (null == conn) {
-			throw new DatabaseException("Supplied database connection is null");
-		}
-		
+		MissingData.checkMissing(dataSource, "dataSource");
 		MissingData.checkMissing(user, "user");
 
-		if (null == getUser(conn, user.getEmailAddress())) {
+		if (null == getUser(dataSource, user.getEmailAddress())) {
 			throw new NoSuchUserException();
 		}
 		
+		Connection connection = null;
 		PreparedStatement stmt = null;
 
 		String resetCode = new String(PasswordHash.generateRandomString(CODE_LENGTH));
 		Timestamp time = new Timestamp(System.currentTimeMillis());
 		
 		try {
-			stmt = conn.prepareStatement(CREATE_PASSWORD_RESET_CODE_STATEMENT);
+			connection = dataSource.getConnection();
+			stmt = connection.prepareStatement(CREATE_PASSWORD_RESET_CODE_STATEMENT);
 			stmt.setString(1, resetCode);
 			stmt.setTimestamp(2, time);
 			stmt.setInt(3, user.getDatabaseID());
@@ -303,12 +314,15 @@ public class UserDB {
 		} catch(SQLException e) {
 			throw new DatabaseException("An error occurred while storing the password reset code", e);
 		} finally {
-			if (null != stmt) {
-				try {
+			try {
+				if (null != stmt) {
 					stmt.close();
-				} catch (SQLException e) {
-					// Do nothing
 				}
+				if (null != connection) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				// Do nothing
 			}
 		}
 	}
@@ -325,18 +339,18 @@ public class UserDB {
 	 * @return One of AUTHENTICATE_OK, AUTHENTICATE_FAILED, or AUTHENTICATE_EMAIL_CODE_SET
 	 * @throws DatabaseException If an error occurs while retrieving the user's details
 	 */
-	public static int authenticate(Connection conn, String email, char[] password) throws DatabaseException {
+	public static int authenticate(DataSource dataSource, String email, char[] password) throws MissingDataException, DatabaseException {
 		
-		if (null == conn) {
-			throw new DatabaseException("Supplied database connection is null");
-		}
+		MissingData.checkMissing(dataSource, "dataSource");
 		
 		int authenticationResult = AUTHENTICATE_FAILED;
 		
+		Connection connection = null;
 		PreparedStatement stmt = null;
 		
 		try {
-			stmt = conn.prepareStatement(GET_AUTHENTICATION_DETAILS_STATEMENT);
+			connection = dataSource.getConnection();
+			stmt = connection.prepareStatement(GET_AUTHENTICATION_DETAILS_STATEMENT);
 			stmt.setString(1,  email);
 			ResultSet result = stmt.executeQuery();
 			if (result.first()) {
@@ -362,13 +376,15 @@ public class UserDB {
 
 			throw new DatabaseException("An error occurred while authenticating the user", e);
 		} finally {
-
-			if (null != stmt) {
-				try {
+			try {
+				if (null != stmt) {
 					stmt.close();
-				} catch (SQLException e) {
-					// Do nothing
 				}
+				if (null != connection) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				// Do nothing
 			}
 		}
 		
@@ -386,12 +402,9 @@ public class UserDB {
 	 * @throws DatabaseException If an error occurred
 	 * @throws MissingDataException If any of the parameters are null
 	 */
-	public static boolean changePassword(Connection conn, User user, char[] oldPassword, char[] newPassword) throws DatabaseException, MissingDataException {
+	public static boolean changePassword(DataSource dataSource, User user, char[] oldPassword, char[] newPassword) throws DatabaseException, MissingDataException {
 		
-		if (null == conn) {
-			throw new DatabaseException("Supplied database connection is null");
-		}
-		
+		MissingData.checkMissing(dataSource, "dataSource");
 		MissingData.checkMissing(user, "user");
 		MissingData.checkMissing(oldPassword, "oldPassword", true);
 		MissingData.checkMissing(newPassword, "newPassword");
@@ -400,14 +413,17 @@ public class UserDB {
 		// the new password
 		boolean result = false;
 		
-		int authenticationResult = authenticate(conn, user.getEmailAddress(), oldPassword);
+		int authenticationResult = authenticate(dataSource, user.getEmailAddress(), oldPassword);
 		
 		if (AUTHENTICATE_OK == authenticationResult) {
+			Connection connection = null;
 			PreparedStatement stmt = null;
 
 			try {
 				SaltAndHashedPassword generatedPassword = generateHashedPassword(newPassword);
-				stmt = conn.prepareStatement(CHANGE_PASSWORD_STATEMENT);
+				
+				connection = dataSource.getConnection();
+				stmt = connection.prepareStatement(CHANGE_PASSWORD_STATEMENT);
 				stmt.setBytes(1, generatedPassword.salt);
 				stmt.setBytes(2, generatedPassword.hashedPassword);
 				stmt.setInt(3, user.getDatabaseID());
@@ -418,15 +434,18 @@ public class UserDB {
 				
 				throw new DatabaseException("An error occurred while updating the password", e);
 			} finally {
-				if (null != stmt) {
-					try {
+				try {
+					if (null != stmt) {
 						stmt.close();
-					} catch (SQLException e) {
-						// Do nothing
 					}
+					
+					if (null != connection) {
+						connection.close();
+					}
+				} catch (SQLException e) {
+					// Do nothing
 				}
 			}
-			
 		}
 		
 		return result;
@@ -440,18 +459,15 @@ public class UserDB {
 	 * @return An integer value indicating whether the code matched, didn't match, or the timestamp has expired.
 	 * @throws DatabaseException
 	 */
-	public static int checkEmailVerificationCode(Connection conn, String email, String code) throws DatabaseException, MissingDataException {
+	public static int checkEmailVerificationCode(DataSource dataSource, String email, String code) throws DatabaseException, MissingDataException {
 
-		if (null == conn) {
-			throw new DatabaseException("Supplied database connection is null");
-		}
-		
+		MissingData.checkMissing(dataSource, "dataSource");
 		MissingData.checkMissing(email, "email");
 		MissingData.checkMissing(code, "code");
 
 		int result = CODE_FAILED;
 		
-		User user = getUser(conn, email);
+		User user = getUser(dataSource, email);
 		if (null != user) {
 			String storedCode = user.getEmailVerificationCode();
 			Timestamp codeTime = user.getEmailVerificationCodeTime();
@@ -470,18 +486,15 @@ public class UserDB {
 	 * @return An integer value indicating whether the code matched, didn't match, or the timestamp has expired.
 	 * @throws DatabaseException
 	 */
-	public static int checkPasswordResetCode(Connection conn, String email, String code) throws DatabaseException, MissingDataException {
+	public static int checkPasswordResetCode(DataSource dataSource, String email, String code) throws DatabaseException, MissingDataException {
 
-		if (null == conn) {
-			throw new DatabaseException("Supplied database connection is null");
-		}
-		
+		MissingData.checkMissing(dataSource, "dataSource");
 		MissingData.checkMissing(email, "email");
 		MissingData.checkMissing(code, "code");
 
 		int result = CODE_FAILED;
 		
-		User user = getUser(conn, email);
+		User user = getUser(dataSource, email);
 		if (null != user) {
 			String storedCode = user.getPasswordResetCode();
 			Timestamp codeTime = user.getPasswordResetCodeTime();

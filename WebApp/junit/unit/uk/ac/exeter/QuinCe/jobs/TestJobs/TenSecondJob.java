@@ -1,7 +1,8 @@
 package unit.uk.ac.exeter.QuinCe.jobs.TestJobs;
 
-import java.sql.Connection;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
@@ -18,8 +19,8 @@ public class TenSecondJob extends Job {
 
 	private int chunkCount = 1;
 	
-	public TenSecondJob(Connection connection, long id, List<String> parameters) throws MissingDataException, InvalidJobParametersException {
-		super(connection, id, parameters);
+	public TenSecondJob(DataSource dataSource, long id, List<String> parameters) throws MissingDataException, InvalidJobParametersException {
+		super(dataSource, id, parameters);
 	}
 
 	@Override

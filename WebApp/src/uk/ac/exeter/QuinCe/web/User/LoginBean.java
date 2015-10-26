@@ -47,7 +47,7 @@ public class LoginBean extends BaseManagedBean {
 		String result = AUTHENTICATION_FAILED_RESULT;
 		
 		try {
-			int authenticateResult = UserDB.authenticate(getDBConnection(), emailAddress, password.toCharArray());
+			int authenticateResult = UserDB.authenticate(getDBDataSource(), emailAddress, password.toCharArray());
 			
 			switch (authenticateResult) {
 			case UserDB.AUTHENTICATE_OK: {
