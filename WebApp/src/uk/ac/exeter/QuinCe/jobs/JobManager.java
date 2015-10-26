@@ -98,7 +98,12 @@ public class JobManager {
 	/**
 	 * SQL statement to retrieve a job's class and paremeters
 	 */
-	private static final String GET_JOB_QUERY = "SELECT class, parameters FROM job WHERE id = ?";
+	private static final String GET_JOB_QUERY = "SELECT id, class, parameters FROM job WHERE id = ?";
+	
+	/**
+	 * SQL statement to retrieve the next queued job
+	 */
+	private static final String GET_NEXT_JOB_QUERY = "SELECT id, class, parameters FROM job ORDER BY submitted ASC LIMIT 1";
 	
 	/**
 	 * Adds a job to the database
@@ -305,11 +310,7 @@ public class JobManager {
 			if (!result.next()) {
 				throw new NoSuchJobException(jobID);
 			} else {
-				
-				// Instantiate the job class
-				Class<?> jobClazz = Class.forName(result.getString(1));
-				Constructor<?> jobConstructor = jobClazz.getConstructor(DataSource.class, long.class, List.class);
-				job = (Job) jobConstructor.newInstance(dataSource, jobID, StringUtils.delimitedToList(result.getString(2)));
+				job = getJobFromResultSet(result, dataSource);
 			}
 		} catch (SQLException|ClassNotFoundException|NoSuchMethodException|InstantiationException|IllegalAccessException|IllegalArgumentException|InvocationTargetException e) {
 			// We handle all exceptions as DatabaseExceptions.
@@ -329,6 +330,12 @@ public class JobManager {
 		}
 		
 		return job;
+	}
+	
+	private static Job getJobFromResultSet(ResultSet result, DataSource dataSource) throws ClassNotFoundException, SQLException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		Class<?> jobClazz = Class.forName(result.getString(2));
+		Constructor<?> jobConstructor = jobClazz.getConstructor(DataSource.class, long.class, List.class);
+		return (Job) jobConstructor.newInstance(dataSource, result.getLong(1), StringUtils.delimitedToList(result.getString(3)));
 	}
 	
 	/**
@@ -503,6 +510,50 @@ public class JobManager {
 		}
 		
 		return jobExists;
+	}
+	
+	/**
+	 * Retrieve the next queued job (i.e. the job with the oldest submission date)
+	 * from the database 
+	 * @param dataSource A data source
+	 * @return The next queued job, or {@code null} if there are no jobs.
+	 * @throws MissingParamException If the data source is not supplied
+	 * @throws DatabaseException If an error occurs while retrieving details from the database.
+	 */
+	public static Job getNextJob(DataSource dataSource) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+
+		Job job = null;
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			connection = dataSource.getConnection();
+			stmt = connection.prepareStatement(GET_NEXT_JOB_QUERY);
+			
+			ResultSet result = stmt.executeQuery();
+			if (result.next()) {
+				job = getJobFromResultSet(result, dataSource);
+			}
+		} catch (SQLException|ClassNotFoundException|NoSuchMethodException|InstantiationException|IllegalAccessException|IllegalArgumentException|InvocationTargetException e) {
+			// We handle all exceptions as DatabaseExceptions.
+			// The fact is that invalid jobs should never get into the database in the first place.
+			throw new DatabaseException("Error while retrieving details for next queued job", e);
+		} finally {
+			try {
+				if (null != stmt) {
+					stmt.close();
+				}
+				if (null != connection) {
+					connection.close();
+				}
+			} catch (SQLException e) {
+				// Do nothing.
+			}
+		}
+		
+		return job;
 	}
 	
 	/**

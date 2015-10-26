@@ -364,6 +364,30 @@ public class JobManagerTest extends BaseJobTest {
 		assertTrue(storedJob instanceof TenSecondJob);
 	}
 	
+	@Test(expected=MissingParamException.class)
+	public void getNextJobNullDataSource() throws Exception {
+		JobManager.getNextJob(null);
+	}
+	
+	@Test
+	public void getNextJobEmpty() throws Exception {
+		Job nextJob = JobManager.getNextJob(getDataSource());
+		assertNull(nextJob);
+	}
+	
+	@Test
+	public void getNextJobOne() throws Exception {
+		long jobID = createTestJob();
+		assertEquals(jobID, JobManager.getNextJob(getDataSource()).getID());
+	}
+	
+	@Test
+	public void getNextJobMultiple() throws Exception {
+		long job1 = createTestJob();
+		
+		assertEquals(job1, JobManager.getNextJob(getDataSource()).getID());
+	}
+	
 	private boolean runSetStatusTest(String status) throws Exception {
 		
 		long jobID = createTestJob();
