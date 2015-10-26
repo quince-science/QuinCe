@@ -384,6 +384,8 @@ public class JobManagerTest extends BaseJobTest {
 	@Test
 	public void getNextJobMultiple() throws Exception {
 		long job1 = createTestJob();
+		createTestJob();
+		createTestJob();
 		
 		assertEquals(job1, JobManager.getNextJob(getDataSource()).getID());
 	}
