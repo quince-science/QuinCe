@@ -46,7 +46,7 @@ public class JobThreadPoolTest extends BaseJobTest {
 	public void getThreadOneOfOne() throws Exception {
 		initThreadPool(1);
 		long jobID = createTestJob(1);
-		Job job = JobManager.getNextJob(getDataSource());
+		Job job = JobManager.getNextJob(getDataSource(), null);
 		JobThread thread = JobThreadPool.getInstance().getJobThread(job);
 		assertEquals("JOB_" + jobID, thread.getName());
 		assertEquals(0, JobThreadPool.getInstance().getAvailableThreads());
@@ -57,7 +57,7 @@ public class JobThreadPoolTest extends BaseJobTest {
 		initThreadPool(1);
 		createTestJob(1);
 		createTestJob(1);
-		Job job = JobManager.getNextJob(getDataSource());
+		Job job = JobManager.getNextJob(getDataSource(), null);
 		JobThread thread1 = JobThreadPool.getInstance().getJobThread(job);
 		JobThread thread2 = JobThreadPool.getInstance().getJobThread(job);
 		
@@ -70,8 +70,8 @@ public class JobThreadPoolTest extends BaseJobTest {
 		initThreadPool(2);
 		createTestJob(1);
 		createTestJob(1);
-		Job job1 = JobManager.getNextJob(getDataSource());
-		Job job2 = JobManager.getNextJob(getDataSource());
+		Job job1 = JobManager.getNextJob(getDataSource(), null);
+		Job job2 = JobManager.getNextJob(getDataSource(), null);
 		JobThread thread1 = JobThreadPool.getInstance().getJobThread(job1);
 		JobThread thread2 = JobThreadPool.getInstance().getJobThread(job2);
 		
@@ -85,8 +85,8 @@ public class JobThreadPoolTest extends BaseJobTest {
 		createTestJob(1);
 		createTestJob(1);
 		
-		Job job1 = JobManager.getNextJob(getDataSource());
-		Job job2 = JobManager.getNextJob(getDataSource());
+		Job job1 = JobManager.getNextJob(getDataSource(), null);
+		Job job2 = JobManager.getNextJob(getDataSource(), null);
 
 		JobThread thread1 = JobThreadPool.getInstance().getJobThread(job1);
 		assertNull(JobThreadPool.getInstance().getJobThread(job2));
@@ -103,9 +103,9 @@ public class JobThreadPoolTest extends BaseJobTest {
 		long job2ID = createTestJob(1);
 		long job3ID = createTestJob(1);
 		
-		Job job1 = JobManager.getJob(getDataSource(), job1ID);
-		Job job2 = JobManager.getJob(getDataSource(), job2ID);
-		Job job3 = JobManager.getJob(getDataSource(), job3ID);
+		Job job1 = JobManager.getJob(getDataSource(), null, job1ID);
+		Job job2 = JobManager.getJob(getDataSource(), null, job2ID);
+		Job job3 = JobManager.getJob(getDataSource(), null, job3ID);
 
 		JobThread thread1 = JobThreadPool.getInstance().getJobThread(job1);
 		assertNotNull(thread1);
@@ -124,9 +124,9 @@ public class JobThreadPoolTest extends BaseJobTest {
 		long job2ID = createTestJob(1);
 		long job3ID = createTestJob(1);
 
-		Job job1 = JobManager.getJob(getDataSource(), job1ID);
-		Job job2 = JobManager.getJob(getDataSource(), job2ID);
-		Job job3 = JobManager.getJob(getDataSource(), job3ID);
+		Job job1 = JobManager.getJob(getDataSource(), null, job1ID);
+		Job job2 = JobManager.getJob(getDataSource(), null, job2ID);
+		Job job3 = JobManager.getJob(getDataSource(), null, job3ID);
 
 		JobThread thread1 = JobThreadPool.getInstance().getJobThread(job1);
 		assertNotNull(thread1);
@@ -145,9 +145,9 @@ public class JobThreadPoolTest extends BaseJobTest {
 		long job2ID = createTestJob(1);
 		long job3ID = createTestJob(1);
 		
-		Job job1 = JobManager.getJob(getDataSource(), job1ID);
-		Job job2 = JobManager.getJob(getDataSource(), job2ID);
-		Job job3 = JobManager.getJob(getDataSource(), job3ID);
+		Job job1 = JobManager.getJob(getDataSource(), null, job1ID);
+		Job job2 = JobManager.getJob(getDataSource(), null, job2ID);
+		Job job3 = JobManager.getJob(getDataSource(), null, job3ID);
 
 		JobThread thread1 = JobThreadPool.getInstance().getJobThread(job1);
 		assertNotNull(thread1);
@@ -166,9 +166,9 @@ public class JobThreadPoolTest extends BaseJobTest {
 		long job2ID = createTestJob(1);
 		long job3ID = createTestJob(1);
 		
-		Job job1 = JobManager.getJob(getDataSource(), job1ID);
-		Job job2 = JobManager.getJob(getDataSource(), job2ID);
-		Job job3 = JobManager.getJob(getDataSource(), job3ID);
+		Job job1 = JobManager.getJob(getDataSource(), null, job1ID);
+		Job job2 = JobManager.getJob(getDataSource(), null, job2ID);
+		Job job3 = JobManager.getJob(getDataSource(), null, job3ID);
 
 		JobThreadPool.getInstance().getJobThread(job1);
 		JobThread instantThread = JobThreadPool.getInstance().getInstantJobThread(job2);
@@ -185,9 +185,9 @@ public class JobThreadPoolTest extends BaseJobTest {
 		long job2ID = createTestJob(1);
 		long job3ID = createTestJob(1);
 		
-		Job job1 = JobManager.getJob(getDataSource(), job1ID);
-		Job job2 = JobManager.getJob(getDataSource(), job2ID);
-		Job job3 = JobManager.getJob(getDataSource(), job3ID);
+		Job job1 = JobManager.getJob(getDataSource(), null, job1ID);
+		Job job2 = JobManager.getJob(getDataSource(), null, job2ID);
+		Job job3 = JobManager.getJob(getDataSource(), null, job3ID);
 
 		JobThreadPool.getInstance().getJobThread(job1);
 		JobThread instantThread = JobThreadPool.getInstance().getInstantJobThread(job2);

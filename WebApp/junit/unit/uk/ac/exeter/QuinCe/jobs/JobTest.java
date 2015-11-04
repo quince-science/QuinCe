@@ -23,17 +23,17 @@ public class JobTest extends BaseJobTest {
 	
 	@Test(expected=MissingParamException.class)
 	public void testConstructorMissingConnection() throws Exception {
-		new TenSecondJob(null, 1, new ArrayList<String>());
+		new TenSecondJob(null, null, 1, new ArrayList<String>());
 	}
 	
 	@Test(expected=InvalidJobParametersException.class)
 	public void testConstructorNullParameters() throws Exception {
-		new TenSecondJob(getDataSource(), 1, null);
+		new TenSecondJob(getDataSource(), null, 1, null);
 	}
 	
 	@Test(expected=InvalidJobParametersException.class)
 	public void testConstructorTooFewParameters() throws Exception {
-		new TenSecondJob(getDataSource(), 1, new ArrayList<String>());
+		new TenSecondJob(getDataSource(), null, 1, new ArrayList<String>());
 	}
 	
 	@Test(expected=InvalidJobParametersException.class)
@@ -42,7 +42,7 @@ public class JobTest extends BaseJobTest {
 		params.add("1");
 		params.add("2");
 		
-		new TenSecondJob(getDataSource(), 1, params);
+		new TenSecondJob(getDataSource(), null, 1, params);
 	}
 
 	@Test(expected=InvalidJobParametersException.class)
@@ -50,7 +50,7 @@ public class JobTest extends BaseJobTest {
 		List<String> params = new ArrayList<String>();
 		params.add("M");
 
-		new TenSecondJob(getDataSource(), 1, params);
+		new TenSecondJob(getDataSource(), null, 1, params);
 	}
 	
 	@Test
@@ -58,7 +58,7 @@ public class JobTest extends BaseJobTest {
 		List<String> params = new ArrayList<String>();
 		params.add("1");
 		
-		Job newJob = new TenSecondJob(getDataSource(), 1, params);
+		Job newJob = new TenSecondJob(getDataSource(), null, 1, params);
 		assertNotNull(newJob);
 	}
 	
@@ -66,7 +66,7 @@ public class JobTest extends BaseJobTest {
 	public void testSetProgress() throws Exception {
 		long jobID = createTestJob(2);
 		JobThread thread = new JobThread(false);
-		thread.setupJob(JobManager.getJob(getDataSource(), jobID));
+		thread.setupJob(JobManager.getJob(getDataSource(), null, jobID));
 		thread.run();
 		
 		// Sleep for 14 seconds, then get the progress. It should be 50%

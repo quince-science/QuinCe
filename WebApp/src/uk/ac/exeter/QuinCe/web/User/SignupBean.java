@@ -1,12 +1,25 @@
 package uk.ac.exeter.QuinCe.web.User;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.validator.routines.EmailValidator;
 
+import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.User.NoSuchUserException;
 import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.database.User.UserExistsException;
+import uk.ac.exeter.QuinCe.jobs.InvalidJobClassTypeException;
+import uk.ac.exeter.QuinCe.jobs.InvalidJobConstructorException;
+import uk.ac.exeter.QuinCe.jobs.JobClassNotFoundException;
+import uk.ac.exeter.QuinCe.jobs.JobException;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.JobThreadPoolNotInitialisedException;
+import uk.ac.exeter.QuinCe.jobs.NoSuchJobException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.system.ResourceException;
 
 /**
  * JSF Managed Bean for handling new user sign-up
@@ -91,12 +104,23 @@ public class SignupBean extends BaseManagedBean {
 			
 			try {
 				// Add the user to the database
-				UserDB.createUser(getDBDataSource(), emailAddress, password1.toCharArray(), givenName, surname, true);
-			} catch (DatabaseException|MissingParamException e) {
+				User newUser = UserDB.createUser(getDBDataSource(), emailAddress, password1.toCharArray(), givenName, surname, true);
+
+				// Build and start the job to send out the verification email
+				List<String> emailJobParams = new ArrayList<String>();
+				emailJobParams.add("http://localhost:8080/QuinCe/verifyEmail");
+				emailJobParams.add(emailAddress);
+				
+				JobManager.addInstantJob(getDBDataSource(), getAppConfig(), newUser, "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob", emailJobParams);
+			} catch (DatabaseException|MissingParamException|ResourceException e) {
 				result = internalError(e);
 			} catch (UserExistsException e) {
 				setMessage(getComponentID("emailAddress"), "A user already exists with that email address");
 				result = USER_EXISTS_RESULT;
+			} catch (JobException|InvalidJobConstructorException|InvalidJobClassTypeException|JobClassNotFoundException|NoSuchUserException e) {
+				result = internalError(e);
+			} catch (JobThreadPoolNotInitialisedException|NoSuchJobException e) {
+				result = internalError(e);
 			}
 		}
 		

@@ -8,11 +8,11 @@ import uk.ac.exeter.QuinCe.jobs.Job;
 public class ConnOnlyConstructorJob extends Job {
 
 	public ConnOnlyConstructorJob(DataSource dataSource) throws Exception {
-		super(dataSource, 0, null);
+		super(dataSource, null, 0, null);
 	}
 
 	@Override
-	protected void run() {
+	protected void execute() {
 		// TODO Auto-generated method stub
 		
 	}

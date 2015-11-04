@@ -349,36 +349,36 @@ public class JobManagerTest extends BaseJobTest {
 	
 	@Test(expected=MissingParamException.class)
 	public void getJobNoDB() throws Exception {
-		JobManager.getJob(null, 0);
+		JobManager.getJob(null, null, 0);
 	}
 	
 	@Test(expected=NoSuchJobException.class)
 	public void getJobNoSuchJob() throws Exception {
-		JobManager.getJob(getDataSource(), 0);
+		JobManager.getJob(getDataSource(), null, 0);
 	}
 	
 	@Test
 	public void getJobGood() throws Exception {
 		long jobID = createTestJob();
-		Job storedJob = JobManager.getJob(getDataSource(), jobID);
+		Job storedJob = JobManager.getJob(getDataSource(), null, jobID);
 		assertTrue(storedJob instanceof TenSecondJob);
 	}
 	
 	@Test(expected=MissingParamException.class)
 	public void getNextJobNullDataSource() throws Exception {
-		JobManager.getNextJob(null);
+		JobManager.getNextJob(null, null);
 	}
 	
 	@Test
 	public void getNextJobEmpty() throws Exception {
-		Job nextJob = JobManager.getNextJob(getDataSource());
+		Job nextJob = JobManager.getNextJob(getDataSource(), null);
 		assertNull(nextJob);
 	}
 	
 	@Test
 	public void getNextJobOne() throws Exception {
 		long jobID = createTestJob();
-		assertEquals(jobID, JobManager.getNextJob(getDataSource()).getID());
+		assertEquals(jobID, JobManager.getNextJob(getDataSource(), null).getID());
 	}
 	
 	@Test
@@ -387,7 +387,7 @@ public class JobManagerTest extends BaseJobTest {
 		createTestJob();
 		createTestJob();
 		
-		assertEquals(job1, JobManager.getNextJob(getDataSource()).getID());
+		assertEquals(job1, JobManager.getNextJob(getDataSource(), null).getID());
 	}
 	
 	private boolean runSetStatusTest(String status) throws Exception {

@@ -1,6 +1,7 @@
 package unit.uk.ac.exeter.QuinCe.jobs.TestJobs;
 
 import java.util.List;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -19,12 +20,12 @@ public class TenSecondJob extends Job {
 
 	private int chunkCount = 1;
 	
-	public TenSecondJob(DataSource dataSource, long id, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
-		super(dataSource, id, parameters);
+	public TenSecondJob(DataSource dataSource, Properties config, long id, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
+		super(dataSource, config, id, parameters);
 	}
 
 	@Override
-	protected void run() throws JobFailedException {
+	protected void execute() throws JobFailedException {
 		for (int i = 0; i < chunkCount; i++) {
 			try {
 				Thread.sleep(10000);

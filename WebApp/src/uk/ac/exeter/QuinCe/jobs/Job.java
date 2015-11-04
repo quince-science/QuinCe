@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.jobs;
 
 import java.util.List;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -54,6 +55,11 @@ public abstract class Job {
 	protected DataSource dataSource;
 	
 	/**
+	 * The application configuration
+	 */
+	protected Properties config;
+	
+	/**
 	 * The set of parameters passed to the job
 	 */
 	protected List<String> parameters;
@@ -61,15 +67,17 @@ public abstract class Job {
 	/**
 	 * Constructs a job object, and validates the parameters passed to it
 	 * @param dataSource A database connection
+	 * @param config The application properties
 	 * @param id The id of the job in the database
 	 * @param parameters The parameters for the job
 	 * @throws InvalidJobParametersException If the parameters are not valid for the job
 	 */
-	public Job(DataSource dataSource, long id, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
+	public Job(DataSource dataSource, Properties config, long id, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		
 		this.dataSource = dataSource;
+		this.config = config;
 		this.id = id;
 		this.parameters = parameters;
 		validateParameters();
@@ -87,7 +95,7 @@ public abstract class Job {
 	/**
 	 * Performs the job tasks
 	 */
-	protected abstract void run() throws JobFailedException;
+	protected abstract void execute() throws JobFailedException;
 	
 	/**
 	 * Validate the parameters passed in to this job

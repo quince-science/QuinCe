@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs;
 
+import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -75,12 +76,17 @@ public class JobThread extends Thread {
 	 * Start the thread and run the job.
 	 * When finished the thread will return itself to the thread pool
 	 */
-	public void start() {
+	public void run() {
 		try {
 			// Run the job
-			job.run();
+			job.execute();
+			JobManager.finishJob(job.dataSource, job.id);
 		} catch (Exception e) {
-			// The job should not throw any exceptions, but just in case...
+			try {
+				JobManager.errorJob(job.dataSource, job.id, e);
+			} catch (NoSuchJobException|DatabaseException|MissingParamException e1) {
+				e1.printStackTrace();
+			}
 		} finally {
 			job.destroy();
 			try {

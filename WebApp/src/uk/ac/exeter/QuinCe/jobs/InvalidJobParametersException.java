@@ -9,10 +9,14 @@ package uk.ac.exeter.QuinCe.jobs;
  */
 public class InvalidJobParametersException extends Exception {
 
-	private static final long serialVersionUID = 1495749648163507805L;
+	private static final long serialVersionUID = 3595337728820380558L;
 
 	public InvalidJobParametersException(String message) {
 		super(message);
+	}
+	
+	public InvalidJobParametersException(String message, Throwable cause) {
+		super(message, cause);
 	}
 	
 }

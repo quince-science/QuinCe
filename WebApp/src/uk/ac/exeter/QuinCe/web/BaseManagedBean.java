@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web;
 
+import java.util.Properties;
+
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
@@ -7,7 +9,8 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
-import uk.ac.exeter.QuinCe.web.system.Pools;
+import uk.ac.exeter.QuinCe.web.system.ResourceException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Base class for managed beans that provides a few useful methods
@@ -43,11 +46,19 @@ public abstract class BaseManagedBean {
 	 * @return A database connection
 	 * @throws DatabaseException If there is an error connecting to the database
 	 */
-	protected DataSource getDBDataSource() throws DatabaseException {
+	protected DataSource getDBDataSource() throws ResourceException {
 		try {
-			return Pools.getInstance((ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext()).getDBDataSource();
+			return ResourceManager.getInstance((ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext()).getDBDataSource();
 		} catch (Exception e) {
-			throw new DatabaseException("Error while retrieving data source connection from pool", e);
+			throw new ResourceException("Error while retrieving database data source", e);
+		}
+	}
+	
+	protected Properties getAppConfig() throws ResourceException {
+		try {
+			return ResourceManager.getInstance((ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext()).getConfig();
+		} catch (Exception e) {
+			throw new ResourceException("Error while retrieving application configuration", e);
 		}
 	}
 	

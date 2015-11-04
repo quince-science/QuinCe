@@ -118,7 +118,7 @@ public class JobThreadPool {
 		
 		synchronized(threads) {
 			if (!thread.isOverflowThread() && threads.size() < maxThreads) {
-				threads.push(thread);
+				threads.push(new JobThread(false));
 			}
 		}
 	}

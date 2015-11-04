@@ -6,11 +6,11 @@ import uk.ac.exeter.QuinCe.jobs.Job;
 public class NoParamConstructorJob extends Job {
 
 	public NoParamConstructorJob() throws Exception {
-		super(null, 0, null);
+		super(null, null, 0, null);
 	}
 
 	@Override
-	protected void run() {
+	protected void execute() {
 		// TODO Auto-generated method stub
 		
 	}

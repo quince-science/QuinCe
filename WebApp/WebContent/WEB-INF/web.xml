@@ -51,8 +51,13 @@
 	    <param-value>java:/comp/env/jdbc/QuinCeDB</param-value>
 	</context-param>
 
+	<context-param>
+	    <param-name>configuration.path</param-name>
+	    <param-value>/home/sdj206/work/projects/QuinCe/quince.properties</param-value>
+	</context-param>
+
 	<listener>
-	    <listener-class>uk.ac.exeter.QuinCe.web.system.Pools</listener-class>
+	    <listener-class>uk.ac.exeter.QuinCe.web.system.ResourceManager</listener-class>
 	</listener>
 
 </web-app>
