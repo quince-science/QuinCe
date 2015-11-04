@@ -61,6 +61,7 @@ public abstract class Job {
 	/**
 	 * Constructs a job object, and validates the parameters passed to it
 	 * @param dataSource A database connection
+	 * @param id The id of the job in the database
 	 * @param parameters The parameters for the job
 	 * @throws InvalidJobParametersException If the parameters are not valid for the job
 	 */
