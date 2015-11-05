@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web.User;
 
 import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * JSF Managed Bean for handling user logins
@@ -47,7 +48,7 @@ public class LoginBean extends BaseManagedBean {
 		String result = AUTHENTICATION_FAILED_RESULT;
 		
 		try {
-			int authenticateResult = UserDB.authenticate(getDBDataSource(), emailAddress, password.toCharArray());
+			int authenticateResult = UserDB.authenticate(ServletUtils.getDBDataSource(), emailAddress, password.toCharArray());
 			
 			switch (authenticateResult) {
 			case UserDB.AUTHENTICATE_OK: {

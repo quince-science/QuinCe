@@ -20,6 +20,7 @@ import uk.ac.exeter.QuinCe.jobs.NoSuchJobException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
+import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * JSF Managed Bean for handling new user sign-up
@@ -104,13 +105,13 @@ public class SignupBean extends BaseManagedBean {
 			
 			try {
 				// Add the user to the database
-				User newUser = UserDB.createUser(getDBDataSource(), emailAddress, password1.toCharArray(), givenName, surname, true);
+				User newUser = UserDB.createUser(ServletUtils.getDBDataSource(), emailAddress, password1.toCharArray(), givenName, surname, true);
 
 				// Build and start the job to send out the verification email
 				List<String> emailJobParams = new ArrayList<String>();
 				emailJobParams.add(emailAddress);
 				
-				JobManager.addInstantJob(getDBDataSource(), getAppConfig(), newUser, "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob", emailJobParams);
+				JobManager.addInstantJob(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), newUser, "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob", emailJobParams);
 			} catch (DatabaseException|MissingParamException|ResourceException e) {
 				result = internalError(e);
 			} catch (UserExistsException e) {

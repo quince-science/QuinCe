@@ -1,16 +1,9 @@
 package uk.ac.exeter.QuinCe.web;
 
-import java.util.Properties;
-
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
-import javax.servlet.ServletContext;
-import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
-import uk.ac.exeter.QuinCe.web.system.ResourceException;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Base class for managed beans that provides a few useful methods
@@ -42,27 +35,6 @@ public abstract class BaseManagedBean {
 	}
 	
 	/**
-	 * Retrieve a database connection from the pool
-	 * @return A database connection
-	 * @throws DatabaseException If there is an error connecting to the database
-	 */
-	protected DataSource getDBDataSource() throws ResourceException {
-		try {
-			return ResourceManager.getInstance((ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext()).getDBDataSource();
-		} catch (Exception e) {
-			throw new ResourceException("Error while retrieving database data source", e);
-		}
-	}
-	
-	protected Properties getAppConfig() throws ResourceException {
-		try {
-			return ResourceManager.getInstance((ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext()).getConfig();
-		} catch (Exception e) {
-			throw new ResourceException("Error while retrieving application configuration", e);
-		}
-	}
-	
-	/**
 	 * Generates a JSF component ID for a given form input name
 	 * @param componentName The form input name
 	 * @return
@@ -85,5 +57,15 @@ public abstract class BaseManagedBean {
 	public String internalError(Throwable error) {
 		setMessage("STACK_TRACE", StringUtils.stackTraceToString(error));
 		return INTERNAL_ERROR_RESULT;
+	}
+	
+	/**
+	 * Retrieve a parameter from the request
+	 * @param paramName The name of the parameter to retrieve
+	 * @return The parameter value
+	 */
+	public String getRequestParameter(String paramName) {
+		FacesContext facesContext = FacesContext.getCurrentInstance();
+		return (String) facesContext.getExternalContext().getRequestParameterMap().get(paramName);
 	}
 }
