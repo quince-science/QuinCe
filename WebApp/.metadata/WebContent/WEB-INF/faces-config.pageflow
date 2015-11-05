@@ -1,15 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pageflow:Pageflow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pageflow="http://www.sybase.com/suade/pageflow" id="pf14405035039940" configfile="/QuinCe/WebContent/WEB-INF/faces-config.xml">
-  <nodes xsi:type="pageflow:PFPage" name="index.xhtml" x="60" y="48" id="pf14424006975480" referenceLink="//@navigationRule.1/@fromViewId|" outlinks="pf14424006975481" path="/index.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="SignupForm" x="420" y="72" id="pf14424006975482" referenceLink="//@navigationRule.2/@fromViewId|" outlinks="pf14424912320580 pf14425036291860 pf14434598949380" inlinks="pf14424006975481 pf14424912320580 pf14425036291860" path="/user/signup.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="all_pages" x="564" y="144" id="pf14425140996400" referenceLink="//@navigationRule.0/@fromViewId|" outlinks="pf14435207295440" path="*"/>
-  <nodes xsi:type="pageflow:PFPage" name="internalerror.xhtml" x="695" y="312" id="pf14425140996402" referenceLink="//@navigationRule.0/@navigationCase.0/@toViewId|" inlinks="pf14435207295440" path="internalerror.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="SignupComplete" x="288" y="360" id="pf14434598949381" referenceLink="//@navigationRule.3/@fromViewId|" outlinks="pf14434665091430" inlinks="pf14434598949380" path="/user/signup_complete.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="index.html" x="64" y="348" id="pf14434665091431" referenceLink="//@navigationRule.3/@navigationCase.0/@toViewId|" inlinks="pf14434665091430" path="/index.html"/>
+  <nodes xsi:type="pageflow:PFPage" name="index.xhtml" x="122" y="370" id="pf14424006975480" referenceLink="//@navigationRule.1/@fromViewId|" outlinks="pf14424006975481 pf14467333348710 pf14467333348711" inlinks="pf14467333348710" path="/index.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="SignupForm" x="324" y="240" id="pf14424006975482" referenceLink="//@navigationRule.2/@fromViewId|" outlinks="pf14424912320580 pf14425036291860 pf14434598949380" inlinks="pf14424006975481 pf14424912320580 pf14425036291860" path="/user/signup.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="all_pages" x="122" y="946" id="pf14425140996400" referenceLink="//@navigationRule.0/@fromViewId|" outlinks="pf14435207295440" path="*"/>
+  <nodes xsi:type="pageflow:PFPage" name="internalerror.xhtml" x="338" y="946" id="pf14425140996402" referenceLink="//@navigationRule.0/@navigationCase.0/@toViewId|" inlinks="pf14435207295440" path="internalerror.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="SignupComplete" x="554" y="178" id="pf14434598949381" referenceLink="//@navigationRule.4/@fromViewId|" outlinks="pf14467405815114" inlinks="pf14434598949380" path="/user/signup_complete.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="data/file_list.xhtml" x="338" y="562" id="pf14467333348752" referenceLink="//@navigationRule.1/@navigationCase.2/@toViewId|" inlinks="pf14467333348711" path="/data/file_list.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="index.html" x="684" y="53" id="pf14467405815115" referenceLink="//@navigationRule.4/@navigationCase.1/@toViewId|" inlinks="pf14467405815114 pf14467406203676" path="/index.html"/>
+  <nodes xsi:type="pageflow:PFPage" name="SendEmailCode" x="816" y="370" id="pf14467406203677" referenceLink="//@navigationRule.4/@fromViewId|" outlinks="pf14467406203678 pf14467406203676" path="/user/verify_email.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="user/code_sent.html" x="804" y="120" id="pf14467406203679" referenceLink="//@navigationRule.4/@navigationCase.1/@toViewId|" inlinks="pf14467406203678" path="/user/code_sent.html"/>
   <links id="pf14424006975481" target="pf14424006975482" source="pf14424006975480" outcome="SignUp"/>
-  <links id="pf14424912320580" target="pf14424006975482" source="pf14424006975482" outcome="ValidationFailed"/>
-  <links id="pf14425036291860" target="pf14424006975482" source="pf14424006975482" outcome="UserExists"/>
   <links id="pf14434598949380" target="pf14434598949381" source="pf14424006975482" outcome="Success"/>
-  <links id="pf14434665091430" target="pf14434665091431" source="pf14434598949381" outcome="Done"/>
   <links id="pf14435207295440" target="pf14425140996402" source="pf14425140996400" outcome="InternalError"/>
+  <links id="pf14467333348711" target="pf14467333348752" source="pf14424006975480" outcome="AuthenticationSuccess"/>
+  <links id="pf14424912320580" target="pf14424006975482" source="pf14424006975482" outcome="ValidationFailed">
+    <bendPoints d1Height="-36" d2Height="-36"/>
+    <bendPoints d1Width="-64" d1Height="-36" d2Width="-64" d2Height="-36"/>
+    <bendPoints d1Width="-64" d2Width="-64"/>
+  </links>
+  <links id="pf14425036291860" target="pf14424006975482" source="pf14424006975482" outcome="UserExists">
+    <bendPoints d1Height="-66" d2Height="-66"/>
+    <bendPoints d1Width="-94" d1Height="-66" d2Width="-94" d2Height="-66"/>
+    <bendPoints d1Width="-94" d2Width="-94"/>
+  </links>
+  <links id="pf14467333348710" target="pf14424006975480" source="pf14424006975480" outcome="AuthenticationFailed">
+    <bendPoints d1Height="-36" d2Height="-36"/>
+    <bendPoints d1Width="-64" d1Height="-36" d2Width="-64" d2Height="-36"/>
+    <bendPoints d1Width="-64" d2Width="-64"/>
+  </links>
+  <links id="pf14467405815114" target="pf14467405815115" source="pf14434598949381" outcome="Done"/>
+  <links id="pf14467406203678" target="pf14467406203679" source="pf14467406203677" outcome="Success"/>
+  <links id="pf14467406203676" target="pf14467405815115" source="pf14467406203677" outcome="ValidationFailed"/>
 </pageflow:Pageflow>

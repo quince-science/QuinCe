@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web;
 
+import javax.faces.application.ConfigurableNavigationHandler;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 
@@ -65,7 +66,15 @@ public abstract class BaseManagedBean {
 	 * @return The parameter value
 	 */
 	public String getRequestParameter(String paramName) {
-		FacesContext facesContext = FacesContext.getCurrentInstance();
-		return (String) facesContext.getExternalContext().getRequestParameterMap().get(paramName);
+		return (String) FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(paramName);
+	}
+	
+	/**
+	 * Directly navigate to a given result
+	 * @param navigation The navigation result
+	 */
+	public void directNavigate(String navigation) {
+		ConfigurableNavigationHandler nav = (ConfigurableNavigationHandler) FacesContext.getCurrentInstance().getApplication().getNavigationHandler();
+		nav.performNavigation(navigation);
 	}
 }

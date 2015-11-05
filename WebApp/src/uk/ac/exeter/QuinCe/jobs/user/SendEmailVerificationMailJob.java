@@ -14,6 +14,7 @@ import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.utils.EmailSender;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.web.User.VerifyEmailBean;
 
 public class SendEmailVerificationMailJob extends Job {
 
@@ -67,9 +68,7 @@ public class SendEmailVerificationMailJob extends Job {
 		String emailAddress = parameters.get(EMAIL_PARAM);
 		
 		StringBuffer link = new StringBuffer();
-		link.append(config.getProperty("app.urlstub"));
-		link.append("/user/verifyEmail?");
-		
+
 		User dbUser;
 		try {
 			dbUser = UserDB.getUser(dataSource, emailAddress);
@@ -80,9 +79,15 @@ public class SendEmailVerificationMailJob extends Job {
 				if (null == emailCode) {
 					throw new JobFailedException(id, "The user doesn't have an email verification code");
 				} else {
-					link.append("user=");
+					link.append(config.getProperty("app.urlstub"));
+					link.append(VerifyEmailBean.PATH);
+					link.append('?');
+					link.append(VerifyEmailBean.USER_PARAM);
+					link.append('=');
 					link.append(emailAddress);
-					link.append("&code=");
+					link.append('&');
+					link.append(VerifyEmailBean.CODE_PARAM);
+					link.append('=');
 					link.append(emailCode);
 				}
 			}

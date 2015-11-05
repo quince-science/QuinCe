@@ -16,6 +16,18 @@
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.User.SignupBean</managed-bean-class>
 		<managed-bean-scope>request</managed-bean-scope>
 	</managed-bean>
+	<managed-bean>
+		<description>Email verification code checker</description>
+		<managed-bean-name>verifyEmailBean</managed-bean-name>
+		<managed-bean-class>uk.ac.exeter.QuinCe.web.User.VerifyEmailBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
+	<managed-bean>
+		<description>Email verification code sender</description>
+		<managed-bean-name>sendEmailCodeBean</managed-bean-name>
+		<managed-bean-class>uk.ac.exeter.QuinCe.web.User.SendEmailCodeBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
 	<navigation-rule>
 		<display-name>all_pages</display-name>
 		<from-view-id>*</from-view-id>
@@ -61,6 +73,18 @@
 		<from-view-id>/user/signup_complete.xhtml</from-view-id>
 		<navigation-case>
 			<from-outcome>Done</from-outcome>
+			<to-view-id>/index.html</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<display-name>SendEmailCode</display-name>
+		<from-view-id>/user/verify_email.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>Success</from-outcome>
+			<to-view-id>/user/code_sent.html</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>ValidationFailed</from-outcome>
 			<to-view-id>/index.html</to-view-id>
 		</navigation-case>
 	</navigation-rule>

@@ -58,6 +58,8 @@ public class UserDB {
 	 */
 	private static final String CHANGE_PASSWORD_STATEMENT = "UPDATE user SET salt = ?, password = ? WHERE id = ?";
 	
+	private static final String CLEAR_EMAIL_CODE_STATEMENT = "UPDATE user SET email_code = NULL, email_code_time = NULL WHERE email = ?";
+	
 	/**
 	 * The length of the string to be used for email verification and password reset codes
 	 */
@@ -476,6 +478,31 @@ public class UserDB {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * Remove the email verification code for a user. Note that we do not check whether
+	 * the specified user exists.
+	 * @param dataSource A data source
+	 * @param email The user's email address
+	 * @throws MissingDataException If any parameters are missing
+	 * @throws DatabaseException If an error occurs while updating the database
+	 */
+	public static void clearEmailVerificationCode(DataSource dataSource, String email) throws MissingParamException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(email, "email");
+
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			connection = dataSource.getConnection();
+			stmt = connection.prepareStatement(CLEAR_EMAIL_CODE_STATEMENT);
+			stmt.setString(1, email);
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while clearing the code", e);
+		}
 	}
 	
 	/**
