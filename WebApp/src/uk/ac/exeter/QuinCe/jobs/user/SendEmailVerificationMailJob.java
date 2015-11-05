@@ -17,6 +17,8 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public class SendEmailVerificationMailJob extends Job {
 
+	private static final int EMAIL_PARAM = 0;
+	
 	public SendEmailVerificationMailJob(DataSource dataSource, Properties config, long id, List<String> params) throws MissingParamException, InvalidJobParametersException {
 		super(dataSource, config, id, params);
 	}
@@ -26,11 +28,11 @@ public class SendEmailVerificationMailJob extends Job {
 		
 		StringBuffer emailText = new StringBuffer();
 		emailText.append("Click the link\n\n");
-		emailText.append(buildLink());
+		emailText.append(buildLink(config));
 		emailText.append("\n");
 		
 		try {
-			EmailSender.sendEmail(config, parameters.get(1), "Activate your QuinCe account", emailText.toString());
+			EmailSender.sendEmail(config, parameters.get(EMAIL_PARAM), "Activate your QuinCe account", emailText.toString());
 		} catch (EmailException e) {
 			throw new JobFailedException(id, e);
 		}
@@ -43,17 +45,13 @@ public class SendEmailVerificationMailJob extends Job {
 	 * For the moment, we don't verify the URL stub - we just make sure we've got a string.
 	 */
 	protected void validateParameters() throws InvalidJobParametersException {
-		if (parameters.size() != 2) {
+		if (parameters.size() != 1) {
 			throw new InvalidJobParametersException("Incorrect number of parameters");
-		}
-		
-		if (parameters.get(0).length() == 0) {
-			throw new InvalidJobParametersException("URL stub is empty");
 		}
 		
 		User dbUser;
 		try {
-			dbUser = UserDB.getUser(dataSource, parameters.get(1));
+			dbUser = UserDB.getUser(dataSource, parameters.get(EMAIL_PARAM));
 			if (null == dbUser) {
 				throw new InvalidJobParametersException("The specified user doesn't exist in the database");
 			} else if (null == dbUser.getEmailVerificationCode()) {
@@ -64,13 +62,17 @@ public class SendEmailVerificationMailJob extends Job {
 		}
 	}
 	
-	private String buildLink() throws JobFailedException {
+	private String buildLink(Properties config) throws JobFailedException {
+		
+		String emailAddress = parameters.get(EMAIL_PARAM);
+		
 		StringBuffer link = new StringBuffer();
-		link.append(parameters.get(0));
+		link.append(config.getProperty("app.urlstub"));
+		link.append("/user/verifyEmail?");
 		
 		User dbUser;
 		try {
-			dbUser = UserDB.getUser(dataSource, parameters.get(1));
+			dbUser = UserDB.getUser(dataSource, emailAddress);
 			if (null == dbUser) {
 				throw new JobFailedException(id, "User doesn't exist");
 			} else {
@@ -78,6 +80,9 @@ public class SendEmailVerificationMailJob extends Job {
 				if (null == emailCode) {
 					throw new JobFailedException(id, "The user doesn't have an email verification code");
 				} else {
+					link.append("user=");
+					link.append(emailAddress);
+					link.append("&code=");
 					link.append(emailCode);
 				}
 			}

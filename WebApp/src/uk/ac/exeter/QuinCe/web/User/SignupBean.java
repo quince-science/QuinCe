@@ -108,7 +108,6 @@ public class SignupBean extends BaseManagedBean {
 
 				// Build and start the job to send out the verification email
 				List<String> emailJobParams = new ArrayList<String>();
-				emailJobParams.add("http://localhost:8080/QuinCe/verifyEmail");
 				emailJobParams.add(emailAddress);
 				
 				JobManager.addInstantJob(getDBDataSource(), getAppConfig(), newUser, "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob", emailJobParams);
