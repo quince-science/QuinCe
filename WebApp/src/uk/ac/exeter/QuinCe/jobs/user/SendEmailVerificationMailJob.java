@@ -5,15 +5,14 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.mail.Email;
 import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.SimpleEmail;
 
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
+import uk.ac.exeter.QuinCe.utils.EmailSender;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public class SendEmailVerificationMailJob extends Job {
@@ -31,24 +30,7 @@ public class SendEmailVerificationMailJob extends Job {
 		emailText.append("\n");
 		
 		try {
-			Email email = new SimpleEmail();
-
-			if (Boolean.valueOf(config.getProperty("email.starttls"))) {
-				email.setStartTLSEnabled(true);
-			}
-			
-			if (Boolean.valueOf(config.getProperty("email.ssl"))) {
-				email.setSSLOnConnect(true);
-			}
-			
-			email.setHostName(config.getProperty("email.hostname"));
-			email.setSmtpPort(Integer.parseInt(config.getProperty("email.port")));
-			email.setAuthentication(config.getProperty("email.username"), config.getProperty("email.password"));
-			email.setFrom(config.getProperty("email.fromaddress"), config.getProperty("email.fromname"));
-			email.setSubject("QuinCe Verify Email");
-			email.setMsg(emailText.toString());
-			email.addTo(parameters.get(1));
-			email.send();
+			EmailSender.sendEmail(config, parameters.get(1), "Activate your QuinCe account", emailText.toString());
 		} catch (EmailException e) {
 			throw new JobFailedException(id, e);
 		}
