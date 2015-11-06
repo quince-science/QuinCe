@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pageflow:Pageflow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pageflow="http://www.sybase.com/suade/pageflow" id="pf14405035039940" configfile="/QuinCe/WebContent/WEB-INF/faces-config.xml">
-  <nodes xsi:type="pageflow:PFPage" name="index.xhtml" x="122" y="370" id="pf14424006975480" referenceLink="//@navigationRule.1/@fromViewId|" outlinks="pf14424006975481 pf14467333348710 pf14467333348711" inlinks="pf14467333348710" path="/index.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="SignupForm" x="324" y="240" id="pf14424006975482" referenceLink="//@navigationRule.2/@fromViewId|" outlinks="pf14424912320580 pf14425036291860 pf14434598949380" inlinks="pf14424006975481 pf14424912320580 pf14425036291860" path="/user/signup.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="index.xhtml" x="43" y="324" id="pf14424006975480" referenceLink="//@navigationRule.1/@fromViewId|" outlinks="pf14424006975481 pf14467333348710 pf14467333348711" inlinks="pf14467333348710" path="/index.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="SignupForm" x="180" y="120" id="pf14424006975482" referenceLink="//@navigationRule.2/@fromViewId|" outlinks="pf14424912320580 pf14425036291860 pf14434598949380" inlinks="pf14424006975481 pf14424912320580 pf14425036291860" path="/user/signup.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="all_pages" x="122" y="946" id="pf14425140996400" referenceLink="//@navigationRule.0/@fromViewId|" outlinks="pf14435207295440" path="*"/>
   <nodes xsi:type="pageflow:PFPage" name="internalerror.xhtml" x="338" y="946" id="pf14425140996402" referenceLink="//@navigationRule.0/@navigationCase.0/@toViewId|" inlinks="pf14435207295440" path="internalerror.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="SignupComplete" x="554" y="178" id="pf14434598949381" referenceLink="//@navigationRule.4/@fromViewId|" outlinks="pf14467405815114" inlinks="pf14434598949380" path="/user/signup_complete.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="SignupComplete" x="420" y="84" id="pf14434598949381" referenceLink="//@navigationRule.3/@fromViewId|" outlinks="pf14467405815114" inlinks="pf14434598949380" path="/user/signup_complete.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="data/file_list.xhtml" x="338" y="562" id="pf14467333348752" referenceLink="//@navigationRule.1/@navigationCase.2/@toViewId|" inlinks="pf14467333348711" path="/data/file_list.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="index.html" x="684" y="53" id="pf14467405815115" referenceLink="//@navigationRule.4/@navigationCase.1/@toViewId|" inlinks="pf14467405815114 pf14467406203676" path="/index.html"/>
-  <nodes xsi:type="pageflow:PFPage" name="SendEmailCode" x="816" y="370" id="pf14467406203677" referenceLink="//@navigationRule.4/@fromViewId|" outlinks="pf14467406203678 pf14467406203676" path="/user/verify_email.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="user/code_sent.html" x="804" y="120" id="pf14467406203679" referenceLink="//@navigationRule.4/@navigationCase.1/@toViewId|" inlinks="pf14467406203678" path="/user/code_sent.html"/>
+  <nodes xsi:type="pageflow:PFPage" name="index.html" x="636" y="60" id="pf14467405815115" referenceLink="//@navigationRule.4/@navigationCase.1/@toViewId|" inlinks="pf14467405815114 pf14467406203676" path="/index.html"/>
+  <nodes xsi:type="pageflow:PFPage" name="SendEmailCode" x="724" y="216" id="pf14467406203677" referenceLink="//@navigationRule.4/@fromViewId|" outlinks="pf14467406203676 pf14468227110490" path="/user/verify_email.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="user/code_sent.xhtml" id="pf14468227110491" referenceLink="//@navigationRule.4/@navigationCase.0/@toViewId|" inlinks="pf14468227110490" path="/user/code_sent.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="NewInstrument" id="pf14468227650522" referenceLink="//@navigationRule.5/@fromViewId|" outlinks="pf14468227650523" path="/instrument/instrument_list.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="instrument/new/names.xhtml" id="pf14468227650524" referenceLink="//@navigationRule.5/@navigationCase.0/@toViewId|" inlinks="pf14468227650523" path="/instrument/new/names.xhtml"/>
   <links id="pf14424006975481" target="pf14424006975482" source="pf14424006975480" outcome="SignUp"/>
   <links id="pf14434598949380" target="pf14434598949381" source="pf14424006975482" outcome="Success"/>
   <links id="pf14435207295440" target="pf14425140996402" source="pf14425140996400" outcome="InternalError"/>
@@ -29,6 +31,7 @@
     <bendPoints d1Width="-64" d2Width="-64"/>
   </links>
   <links id="pf14467405815114" target="pf14467405815115" source="pf14434598949381" outcome="Done"/>
-  <links id="pf14467406203678" target="pf14467406203679" source="pf14467406203677" outcome="Success"/>
   <links id="pf14467406203676" target="pf14467405815115" source="pf14467406203677" outcome="ValidationFailed"/>
+  <links id="pf14468227110490" target="pf14468227110491" source="pf14467406203677" outcome="Success"/>
+  <links id="pf14468227650523" target="pf14468227650524" source="pf14468227650522" outcome="names"/>
 </pageflow:Pageflow>

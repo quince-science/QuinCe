@@ -28,6 +28,12 @@
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.User.SendEmailCodeBean</managed-bean-class>
 		<managed-bean-scope>request</managed-bean-scope>
 	</managed-bean>
+	<managed-bean>
+		<description>New Instrument</description>
+		<managed-bean-name>newInstrumentBean</managed-bean-name>
+		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.NewInstrumentBean</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+	</managed-bean>
 	<navigation-rule>
 		<display-name>all_pages</display-name>
 		<from-view-id>*</from-view-id>
@@ -81,11 +87,19 @@
 		<from-view-id>/user/verify_email.xhtml</from-view-id>
 		<navigation-case>
 			<from-outcome>Success</from-outcome>
-			<to-view-id>/user/code_sent.html</to-view-id>
+			<to-view-id>/user/code_sent.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
 			<from-outcome>ValidationFailed</from-outcome>
 			<to-view-id>/index.html</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<display-name>NewInstrument</display-name>
+		<from-view-id>/instrument/instrument_list.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>names</from-outcome>
+			<to-view-id>/instrument/new/names.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 </faces-config>

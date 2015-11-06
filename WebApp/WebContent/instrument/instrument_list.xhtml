@@ -1,0 +1,17 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	template="/templates/app_page.xhtml">
+	
+	<ui:define name="title">Instruments</ui:define>
+
+	<ui:define name="content">
+		<h1>Instruments</h1>
+		
+		<h:form id="instrumentform" method="post" accept-charset="utf8">
+			<div class="buttonWrapper">
+				<h:commandButton value="New Instrument" action="#{newInstrumentBean.start}"/>
+			</div>
+		</h:form>
+	</ui:define>
+</ui:composition>
