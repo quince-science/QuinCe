@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServletResponse;
 
 public class LogoutServlet extends HttpServlet {
 
+	private static final long serialVersionUID = 8157120031497347680L;
+
 	/**
 	 * Destroy the current session and go to the login page
 	 */
