@@ -8,6 +8,8 @@
 		<f:event listener="#{verifyEmailBean.verifyCode}" type="preRenderView" />
 	</f:metadata>
 
+	<ui:define name="title">Email Verification</ui:define>
+
 	<ui:define name="content">
 		<div id="contentbox">
 			<h:form id="sendCodeForm" method="post" accept-charset="utf8">
