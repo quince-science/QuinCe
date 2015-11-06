@@ -95,11 +95,27 @@
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
-		<display-name>NewInstrument</display-name>
+		<display-name>NewInstrumentStart</display-name>
 		<from-view-id>/instrument/instrument_list.xhtml</from-view-id>
 		<navigation-case>
 			<from-outcome>names</from-outcome>
 			<to-view-id>/instrument/new/names.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<display-name>NewInstrumentNavigation</display-name>
+		<from-view-id>/instrument/new/*</from-view-id>
+		<navigation-case>
+			<from-outcome>cancel</from-outcome>
+			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>names</from-outcome>
+			<to-view-id>/instrument/new/names.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>filespec</from-outcome>
+			<to-view-id>/instrument/new/file_spec.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 </faces-config>

@@ -2,17 +2,25 @@
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 	template="/templates/app_page.xhtml">
-
+	
+	<ui:define name="title">
+		New Instrument
+	</ui:define>
+	
 	<ui:define name="content">
 		<h1>New Instrument</h1>
 
     	<div class="fullPage">
-        	<form id="instrumentForm" method="post" autocomplete="off" accept-charset="utf8">
+        	<h:form id="instrumentForm" method="post" accept-charset="utf8">
           		<table>
             		<tr>
-              			<td><label for="instrumentName">Instrument Name:</label></td>
-              			<td><input type="text" name="instrumentName" class="large" size="20" value="Benguela Stream"></input></td>
+              			<td><h:outputLabel id="instrumentNameLabel" for="instrumentName" value="Instrument Name:"/></td>
+              			<td><h:inputText id="instrumentName" value="#{newInstrumentBean.name}" class="large" size="20" required="true" requiredMessage="The instrument must have a name"/></td>
             		</tr>
+           			<tr>
+           				<td></td>
+           				<td><h:message id="instrumentNameMessage" for="instrumentName" errorClass="error"/></td>
+           			</tr>
           		</table>
 	          	<div class="instructions">
 	            	Please provide names of the sensors in your instrument. Up to three sensors of each type can be specified.
@@ -23,16 +31,20 @@
 	          	<div class="sectionContent">
 	            	<table class="form">
 	                	<tr>
-	                    	<td class="labels"><label for="intakeTempName_1">Sensor 1 Name:</label></td>
-	                    	<td><input type="text" class="large" name="intakeTempName_1" size="20" value="Seabird"></input></td>
+	                    	<td class="labels"><h:outputLabel id="intakeTempName1Label" for="intakeTempName1" value="Sensor 1 Name:"/></td>
+	                    	<td><h:inputText id="intakeTempName1" value="#{newInstrumentBean.intakeTempName1}" class="large" size="20" required="true" requiredMessage="There must be at least one intake temperature sensor"/></td>
 	                	</tr>
+	           			<tr>
+	           				<td></td>
+	           				<td><h:message id="intakeTempName1Message" for="intakeTempName1" errorClass="error"/></td>
+	           			</tr>
 	                	<tr>
-	                    	<td class="labels"><label for="intakeTempName_2">Sensor 2 Name:</label></td>
-	                    	<td><input type="text" class="large" name="intakeTempName_2" size="20" value=""></input></td>
+	                    	<td class="labels"><h:outputLabel id="intakeTempName2Label" for="intakeTempName2" value="Sensor 2 Name:"/></td>
+	                    	<td><h:inputText id="intakeTempName2" value="#{newInstrumentBean.intakeTempName2}" class="large" size="20"/></td>
 	                  	</tr>
 	                  	<tr>
-	                    	<td class="labels"><label for="intakeTempName_3">Sensor 3 Name:</label></td>
-	                    	<td><input type="text" class="large" name="intakeTempName_3" size="20" value=""></input></td>
+	                    	<td class="labels"><h:outputLabel id="intakeTempName3Label" for="intakeTempName3" value="Sensor 3 Name:"/></td>
+	                    	<td><h:inputText id="intakeTempName3" value="#{newInstrumentBean.intakeTempName3}" class="large" size="20"/></td>
 	                  	</tr>
 	              	</table>
 	          	</div>
@@ -41,17 +53,21 @@
 	          	</div>
 	          	<div class="sectionContent">
 	             	<table class="form">
-	                  	<tr>
-	                    	<td class="labels"><label for="salinityName_1">Sensor 1 Name:</label></td>
-	                    	<td><input type="text" class="large" name="salinityName_1" size="20" value="Seabird"></input></td>
+	                	<tr>
+	                    	<td class="labels"><h:outputLabel id="salinityName1Label" for="salinityTempName1" value="Sensor 1 Name:"/></td>
+	                    	<td><h:inputText id="salinityTempName1" value="#{newInstrumentBean.salinityName1}" class="large" size="20" required="true" requiredMessage="There must be at least one salinity sensor"/></td>
+	                	</tr>
+	           			<tr>
+	           				<td></td>
+	           				<td><h:message id="salinityTempName1Message" for="salinityTempName1" errorClass="error"/></td>
+	           			</tr>
+	                	<tr>
+	                    	<td class="labels"><h:outputLabel id="salinityName2Label" for="salinityName2" value="Sensor 2 Name:"/></td>
+	                    	<td><h:inputText id="salinityName2" value="#{newInstrumentBean.salinityName2}" class="large" size="20"/></td>
 	                  	</tr>
 	                  	<tr>
-	                    	<td class="labels"><label for="salinityName_2">Sensor 2 Name:</label></td>
-	                    	<td><input type="text" class="large" name="salinityName_2" size="20" value=""></input></td>
-	                  	</tr>
-	                  	<tr>
-	                    	<td class="labels"><label for="salinityName_3">Sensor 3 Name:</label></td>
-	                    	<td><input type="text" class="large" name="salinityName_3" size="20" value=""></input></td>
+	                    	<td class="labels"><h:outputLabel id="salinityName3Label" for="salinityName3" value="Sensor 3 Name:"/></td>
+	                    	<td><h:inputText id="salinityName3" value="#{newInstrumentBean.salinityName3}" class="large" size="20"/></td>
 	                  	</tr>
 	              	</table>
 	          	</div>
@@ -60,17 +76,21 @@
 	          	</div>
 	          	<div class="sectionContent">
 	              	<table class="form">
-	                  	<tr>
-	                    	<td class="labels"><label for="slpName_1">Sensor 1 Name:</label></td>
-	                    	<td><input type="text" class="large" name="slpName_1" size="20" value="Licor"></input></td>
+	                	<tr>
+	                    	<td class="labels"><h:outputLabel id="slpName1Label" for="slpTempName1" value="Sensor 1 Name:"/></td>
+	                    	<td><h:inputText id="slpTempName1" value="#{newInstrumentBean.slpName1}" class="large" size="20" required="true" requiredMessage="There must be at least one sea level pressure sensor"/></td>
+	                	</tr>
+	           			<tr>
+	           				<td></td>
+	           				<td><h:message id="slpTempName1Message" for="slpTempName1" errorClass="error"/></td>
+	           			</tr>
+	                	<tr>
+	                    	<td class="labels"><h:outputLabel id="slpName2Label" for="slpName2" value="Sensor 2 Name:"/></td>
+	                    	<td><h:inputText id="slpName2" value="#{newInstrumentBean.slpName2}" class="large" size="20"/></td>
 	                  	</tr>
 	                  	<tr>
-	                    	<td class="labels"><label for="slpName_2">Sensor 2 Name:</label></td>
-	                    	<td><input type="text" class="large" name="slpName_2" size="20" value=""></input></td>
-	                  	</tr>
-	                  	<tr>
-	                    	<td class="labels"><label for="slpName_3">Sensor 3 Name:</label></td>
-	                    	<td><input type="text" class="large" name="slpName_3" size="20" value=""></input></td>
+	                    	<td class="labels"><h:outputLabel id="slpName3Label" for="slpName3" value="Sensor 3 Name:"/></td>
+	                    	<td><h:inputText id="slpName3" value="#{newInstrumentBean.slpName3}" class="large" size="20"/></td>
 	                  	</tr>
 	              	</table>
 	          	</div>
@@ -79,17 +99,21 @@
 	          	</div>
 	          	<div class="sectionContent">
 	              	<table class="form">
-	                  	<tr>
-	                    	<td class="labels"><label for="eqtName_1">Sensor 1 Name:</label></td>
-	                    	<td><input type="text" class="large" name="eqtName_1" size="20" value="Top"></input></td>
+	                	<tr>
+	                    	<td class="labels"><h:outputLabel id="eqtName1Label" for="eqtTempName1" value="Sensor 1 Name:"/></td>
+	                    	<td><h:inputText id="eqtTempName1" value="#{newInstrumentBean.eqtName1}" class="large" size="20" required="true" requiredMessage="There must be at least one equilibrator temperature sensor"/></td>
+	                	</tr>
+  	           			<tr>
+	           				<td></td>
+	           				<td><h:message id="eqtTempName1Message" for="eqtTempName1" errorClass="error"/></td>
+	           			</tr>
+	                	<tr>
+	                    	<td class="labels"><h:outputLabel id="eqtName2Label" for="eqtName2" value="Sensor 2 Name:"/></td>
+	                    	<td><h:inputText id="eqtName2" value="#{newInstrumentBean.eqtName2}" class="large" size="20"/></td>
 	                  	</tr>
 	                  	<tr>
-	                    	<td class="labels"><label for="eqtName_2">Sensor 2 Name:</label></td>
-	                    	<td><input type="text" class="large" name="eqtName_2" size="20" value="Bottom"></input></td>
-	                  	</tr>
-	                  	<tr>
-	                    	<td class="labels"><label for="eqtName_3">Sensor 3 Name:</label></td>
-	                    	<td><input type="text" class="large" name="eqtName_3" size="20" value=""></input></td>
+	                    	<td class="labels"><h:outputLabel id="eqtName3Label" for="eqtName3" value="Sensor 3 Name:"/></td>
+	                    	<td><h:inputText id="eqtName3" value="#{newInstrumentBean.eqtName3}" class="large" size="20"/></td>
 	                  	</tr>
 	              	</table>
 	          	</div>
@@ -98,25 +122,29 @@
 	          	</div>
 	          	<div class="sectionContent">
 	              	<table class="form">
-	                  	<tr>
-	                    	<td class="labels"><label for="eqpName_1">Sensor 1 Name:</label></td>
-	                    	<td><input type="text" class="large" name="eqpName_1" size="20" value="Licor"></input></td>
+	                	<tr>
+	                    	<td class="labels"><h:outputLabel id="eqpName1Label" for="eqpTempName1" value="Sensor 1 Name:"/></td>
+	                    	<td><h:inputText id="eqpTempName1" value="#{newInstrumentBean.eqpName1}" class="large" size="20" required="true" requiredMessage="There must be at least one equilibrator pressure sensor"/></td>
+	                	</tr>
+  	           			<tr>
+	           				<td></td>
+	           				<td><h:message id="eqpTempName1Message" for="eqpTempName1" errorClass="error"/></td>
+	           			</tr>
+	                	<tr>
+	                    	<td class="labels"><h:outputLabel id="eqpName2Label" for="eqpName2" value="Sensor 2 Name:"/></td>
+	                    	<td><h:inputText id="eqpName2" value="#{newInstrumentBean.eqpName2}" class="large" size="20"/></td>
 	                  	</tr>
 	                  	<tr>
-	                    	<td class="labels"><label for="eqpName_2">Sensor 2 Name:</label></td>
-	                    	<td><input type="text" class="large" name="eqpName_2" size="20" value=""></input></td>
-	                  	</tr>
-	                  	<tr>
-	                    	<td class="labels"><label for="eqpName_3">Sensor 3 Name:</label></td>
-	                    	<td><input type="text" class="large" name="eqpName_3" size="20" value=""></input></td>
+	                    	<td class="labels"><h:outputLabel id="eqpName3Label" for="eqpName3" value="Sensor 3 Name:"/></td>
+	                    	<td><h:inputText id="eqpName3" value="#{newInstrumentBean.eqpName3}" class="large" size="20"/></td>
 	                  	</tr>
 	              	</table>
 	          	</div>
-	      	</form>
-	      	<div class="buttonWrapper">
-	          	<button onclick="submitInstrument()">Next</button>
-	          	<button onclick="cancelInstrument()">Cancel</button>
-	      	</div>
+		      	<div class="buttonWrapper">
+		          	<h:commandButton id="nextButton" value="Next" action="#{newInstrumentBean.goToFileSpec}"/>
+		          	<h:commandButton id="cancelButton" value="Cancel" action="#{newInstrumentBean.cancelInstrument}" immediate="true"/>
+		      	</div>
+	      	</h:form>
 		</div>
 	</ui:define>
 </ui:composition>
