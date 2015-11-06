@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+	<h:head>
+		<title><ui:insert name="title">Welcome</ui:insert> - QuinCe</title>
+	    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700" rel="stylesheet" type="text/css"/>
+	    <h:outputStylesheet name="style/main.css"/>
+	    <h:outputScript name="scripts/jquery.js"></h:outputScript>
+	    <script type="text/javascript">
+	    	function toggleSettingsMenu() {
+        		$('#userSettingsMenu').toggleClass('visible');
+      		}
+
+      		function hideSettingsMenu() {
+        		$('#userSettingsMenu').removeClass('visible');
+      		}
+      </script>
+	    
+	  <ui:insert name="localJavascript"></ui:insert>
+	</h:head>
+	<h:body>
+	    <div id="userSettingsMenu">
+      		<ul class="menu">
+        		<li class="menuitem">Instruments</li>
+        		<li class="menuitem">Account</li>
+        		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='login.html';">Log Out</li>
+      		</ul>
+    	</div>
+    	<div id="header">
+      		QuinCe
+      		<div id="userSettings" onclick="toggleSettingsMenu();">
+        		#{user_name} ▼
+      		</div>
+    	</div>
+    	<div id="content" onclick="hideSettingsMenu();">
+    		<ui:insert name="content">No content supplied to template!</ui:insert>
+    	</div>
+	</h:body>
+</html>
