@@ -65,8 +65,6 @@ public class AuthenticatedFilter implements Filter {
 		if (request.getRequestURI().equals(request.getContextPath() + "/")) {
 			allowed = true;
 		} else {
-			System.out.println(request.getRequestURI());
-			
 			for (String allowedPath: allowedPaths) {
 				String pathURIBase = request.getContextPath() + allowedPath;
 				
