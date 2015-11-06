@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.User;
 
+import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
@@ -16,6 +17,10 @@ public class LoginBean extends BaseManagedBean {
 	public static final String AUTHENTICATION_FAILED_RESULT = "AuthenticationFailed";
 	
 	public static final String AUTHENTICATION_OK_RESULT = "AuthenticationSuccess";
+	
+	public static final String USER_EMAIL_SESSION_ATTR = "user";
+	
+	public static final String USER_NAME_SESSION_ATTR = "user_name";
 	
 	protected static String FORM_NAME = "loginform";
 	
@@ -52,6 +57,13 @@ public class LoginBean extends BaseManagedBean {
 			
 			switch (authenticateResult) {
 			case UserDB.AUTHENTICATE_OK: {
+				// Store the user's email address in the session
+				getSession().setAttribute(USER_EMAIL_SESSION_ATTR, emailAddress);
+				
+				// Get the user's name and store it in the session
+				User user = UserDB.getUser(ServletUtils.getDBDataSource(), emailAddress);
+				getSession().setAttribute(USER_NAME_SESSION_ATTR, user.getFullName());
+				
 				result = AUTHENTICATION_OK_RESULT;
 				break;
 			}

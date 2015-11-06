@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.web;
 import javax.faces.application.ConfigurableNavigationHandler;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpSession;
 
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
@@ -67,6 +68,10 @@ public abstract class BaseManagedBean {
 	 */
 	public String getRequestParameter(String paramName) {
 		return (String) FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(paramName);
+	}
+	
+	public HttpSession getSession() {
+		return (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(true);
 	}
 	
 	/**
