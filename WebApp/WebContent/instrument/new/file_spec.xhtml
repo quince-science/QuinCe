@@ -47,21 +47,21 @@
                             		<c:if test="#{newInstrumentBean.separator.equals('comma')}">
                             			<f:passThroughAttribute name="checked" value="checked"/>
                             		</c:if>
-                            	</input><label id="separatorCommaLabel" for="separatorComma"> Comma</label>
+                            	</input><label id="separatorCommaLabel" for="separator_comma"> Comma</label>
                             </td>
                             <td width="33%">
                             	<input type="radio" name="separator" id="separator_tab" jsf:id="separatorTab" a:name="separator" value="tab">
                             		<c:if test="#{newInstrumentBean.separator.equals('tab')}">
     	                        		<f:passThroughAttribute name="checked" value="checked"/>
     	                        	</c:if>
-                            	</input><label id="separatorTabLabel" for="separatorTab"> Tab</label>
+                            	</input><label id="separatorTabLabel" for="separator_tab"> Tab</label>
                             </td>
                             <td width="33%">
                             	<input type="radio" name="separator" id="separator_other" jsf:id="separatorOther" a:name="separator" value="other">
                             		<c:if test="#{newInstrumentBean.separator.equals('other')}">
 	                            		<f:passThroughAttribute name="checked" value="checked"/>
 	                            	</c:if>
-                            	</input><label id="separatorOtherLabel" for="separatorOther"> Other </label>
+                            	</input><label id="separatorOtherLabel" for="separator_other"> Other </label>
                             	<h:inputText id="otherSeparatorChar" value="#{newInstrumentBean.otherSeparatorChar}" maxlength="1" size="3" disabled="#{!(newInstrumentBean.separator.equals('other'))}"/>
                             </td>
                         </tr>
