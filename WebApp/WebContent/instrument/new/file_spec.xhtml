@@ -10,6 +10,7 @@
 	<f:metadata>
 		<f:viewParam name="separator" value="#{newInstrumentBean.separator}"/>
 		<f:viewParam name="dateFormat" value="#{newInstrumentBean.dateFormat}"/>
+		<f:viewParam name="timeFormat" value="#{newInstrumentBean.timeFormat}"/>
 	</f:metadata>
 	
 	<ui:define name="title">
@@ -133,13 +134,25 @@
                     <table class="form">
                         <tr>
                             <td width="33%">
-                                <input type="radio" name="timeFormat" value="separateFields" id="time_separate"></input><label for="time_separate"> Separate Fields</label>
+                                <input type="radio" name="timeFormat" id="time_separate" jsf:id="timeFormatSeparate" a:name="timeFormat" value="separate">
+                            		<c:if test="#{newInstrumentBean.timeFormat.equals('separate')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="time_separateLabel" for="time_separate"> Separate Fields</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="timeFormat" value="hhmmss" id="time_hhmmss"></input><label for="time_hhmmss"> HHMMSS</label>
+                                <input type="radio" name="timeFormat" id="time_no_colon" jsf:id="timeFormatNoColon" a:name="timeFormat" value="no_colon_time">
+                            		<c:if test="#{newInstrumentBean.timeFormat.equals('no_colon_time')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="time_no_colonLabel" for="time_no_colon"> HHMMSS</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="timeFormat" value="hh:mm:ss" id="time_colons"></input><label for="time_colons"> HH:MM:SS</label>
+                                <input type="radio" name="timeFormat" id="time_colon" jsf:id="timeFormatColon" a:name="timeFormat" value="colon_time">
+                            		<c:if test="#{newInstrumentBean.timeFormat.equals('colon_time')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="time_colonLabel" for="time_colon"> HHMMSS</label>
                             </td>
                         </tr>
                     </table>

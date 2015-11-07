@@ -79,6 +79,16 @@ public class NewInstrumentBean extends BaseManagedBean {
 	public static final String MMDDYYYY_DATE_FORMAT = "MMDDYYYY";
 	
 	/**
+	 * Indicates HHMMSS time format
+	 */
+	public static final String NO_COLON_TIME_FORMAT = "no_colon_time";
+	
+	/**
+	 * Indicates HH:MM:SS time format
+	 */
+	public static final String COLON_TIME_FORMAT = "colon_time";
+	
+	/**
 	 * The name of the instrument
 	 */
 	private String name = null;
@@ -168,7 +178,15 @@ public class NewInstrumentBean extends BaseManagedBean {
 	 */
 	private String otherSeparatorChar = null;
 	
+	/**
+	 * The date format
+	 */
 	private String dateFormat = SEPARATE_FIELDS;
+	
+	/**
+	 * The time format
+	 */
+	private String timeFormat = SEPARATE_FIELDS;
 	
 	/**
 	 * Begin the process of adding a new instrument.
@@ -252,6 +270,7 @@ public class NewInstrumentBean extends BaseManagedBean {
 		separator = COMMA_SEPARATOR;
 		otherSeparatorChar = null;
 		dateFormat = SEPARATE_FIELDS;
+		timeFormat = SEPARATE_FIELDS;
 	}
 	
 	/**
@@ -561,5 +580,21 @@ public class NewInstrumentBean extends BaseManagedBean {
 	 */
 	public void setDateFormat(String dateFormat) {
 		this.dateFormat = dateFormat;
+	}
+	
+	/**
+	 * Get the time columns format
+	 * @return The time columns format
+	 */
+	public String getTimeFormat() {
+		return timeFormat;
+	}
+	
+	/**
+	 * Set the time columns format
+	 * @param dateFormat The time columns format
+	 */
+	public void setTimeFormat(String timeFormat) {
+		this.timeFormat = timeFormat;
 	}
 }
