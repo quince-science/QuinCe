@@ -16,32 +16,32 @@ public class NewInstrumentBean extends BaseManagedBean {
 	/**
 	 * Navigation result when the new instrument process is cancelled
 	 */
-	private static final String CANCEL_PAGE = "cancel";
+	private static final String PAGE_CANCEL = "cancel";
 
 	/**
 	 * The navigation to the sensor names page
 	 */
-	private static final String NAMES_PAGE = "names";
+	private static final String PAGE_NAMES = "names";
 	
 	/**
 	 * The navigation to the file specification page
 	 */
-	private static final String FILE_SPEC_PAGE = "filespec";
+	private static final String PAGE_FILE_SPEC = "filespec";
 	
 	/**
 	 * Indicates a comma separator
 	 */
-	public static final String COMMA_SEPARATOR = "comma";
+	public static final String SEPARATOR_COMMA = "comma";
 	
 	/**
 	 * Indicates a tab separator
 	 */
-	public static final String TAB_SEPARATOR = "tab";
+	public static final String SEPARATOR_TAB = "tab";
 	
 	/**
 	 * Indicates a separator other than comma or tab
 	 */
-	public static final String OTHER_SEPARATOR = "other";
+	public static final String SEPARATOR_OTHER = "other";
 	
 	/**
 	 * The Component ID of the form input for the alternative separator character
@@ -56,37 +56,37 @@ public class NewInstrumentBean extends BaseManagedBean {
 	/**
 	 * Indicates YYYYMMDD date format
 	 */
-	public static final String YYYYMMDD_DATE_FORMAT = "YYYYMMDD";
+	public static final String DATE_FORMAT_YYYYMMDD = "YYYYMMDD";
 	
 	/**
 	 * Indicates DD/MM/YY date format
 	 */
-	public static final String DDMMYY_DATE_FORMAT = "DDMMYY";
+	public static final String DATE_FORMAT_DDMMYY = "DDMMYY";
 	
 	/**
 	 * Indicates DD/MM/YYYY date format
 	 */
-	public static final String DDMMYYYY_DATE_FORMAT = "DDMMYYYY";
+	public static final String DATE_FORMAT_DDMMYYYY = "DDMMYYYY";
 	
 	/**
 	 * Indicates MM/DD/YY date format
 	 */
-	public static final String MMDDYY_DATE_FORMAT = "MMDDYY";
+	public static final String DATE_FORMAT_MMDDYY = "MMDDYY";
 	
 	/**
 	 * Indicates MM/DD/YYYY date format
 	 */
-	public static final String MMDDYYYY_DATE_FORMAT = "MMDDYYYY";
+	public static final String DATE_FORMAT_MMDDYYYY = "MMDDYYYY";
 	
 	/**
 	 * Indicates HHMMSS time format
 	 */
-	public static final String NO_COLON_TIME_FORMAT = "no_colon_time";
+	public static final String TIME_FORMAT_NO_COLON = "no_colon_time";
 	
 	/**
 	 * Indicates HH:MM:SS time format
 	 */
-	public static final String COLON_TIME_FORMAT = "colon_time";
+	public static final String TIME_FORMAT_COLON = "colon_time";
 	
 	/**
 	 * The name of the instrument
@@ -171,7 +171,7 @@ public class NewInstrumentBean extends BaseManagedBean {
 	/**
 	 * The type of separator used in the data file
 	 */
-	private String separator = COMMA_SEPARATOR;
+	private String separator = SEPARATOR_COMMA;
 	
 	/**
 	 * The character used as a separator if it is not comma or tab
@@ -195,7 +195,7 @@ public class NewInstrumentBean extends BaseManagedBean {
 	 */
 	public String start() {
 		clearData();
-		return NAMES_PAGE;
+		return PAGE_NAMES;
 	}
 	
 	/**
@@ -205,7 +205,7 @@ public class NewInstrumentBean extends BaseManagedBean {
 	 */
 	public String cancelInstrument() {
 		clearData();
-		return CANCEL_PAGE;
+		return PAGE_CANCEL;
 	}
 	
 	/**
@@ -213,7 +213,7 @@ public class NewInstrumentBean extends BaseManagedBean {
 	 * @return The navigation result
 	 */
 	public String goToFileSpec() {
-		return FILE_SPEC_PAGE;
+		return PAGE_FILE_SPEC;
 	}
 	
 	/**
@@ -221,10 +221,10 @@ public class NewInstrumentBean extends BaseManagedBean {
 	 * @return The navigation result
 	 */
 	public String goToNamesFromFileSpec() {
-		String result = NAMES_PAGE;
+		String result = PAGE_NAMES;
 		
 		if (!validateFileSpec()) {
-			result = FILE_SPEC_PAGE;
+			result = PAGE_FILE_SPEC;
 		}
 		
 		return result;
@@ -237,7 +237,7 @@ public class NewInstrumentBean extends BaseManagedBean {
 	private boolean validateFileSpec() {
 		boolean ok = true;
 		
-		if (separator.equals(OTHER_SEPARATOR)) {
+		if (separator.equals(SEPARATOR_OTHER)) {
 			if (null == otherSeparatorChar || otherSeparatorChar.length() == 0) {
 				setMessage(getComponentID(OTHER_SEPARATOR_CHAR_COMPONENT), "You must specify the separator character");
 				ok = false;
@@ -267,7 +267,7 @@ public class NewInstrumentBean extends BaseManagedBean {
 		eqpName1 = null;
 		eqpName2 = null;
 		eqpName3 = null;
-		separator = COMMA_SEPARATOR;
+		separator = SEPARATOR_COMMA;
 		otherSeparatorChar = null;
 		dateFormat = SEPARATE_FIELDS;
 		timeFormat = SEPARATE_FIELDS;
