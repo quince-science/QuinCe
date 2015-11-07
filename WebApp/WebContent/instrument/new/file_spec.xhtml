@@ -11,6 +11,7 @@
 		<f:viewParam name="separator" value="#{newInstrumentBean.separator}"/>
 		<f:viewParam name="dateFormat" value="#{newInstrumentBean.dateFormat}"/>
 		<f:viewParam name="timeFormat" value="#{newInstrumentBean.timeFormat}"/>
+		<f:viewParam name="lonFormat" value="#{newInstrumentBean.lonFormat}"/>
 	</f:metadata>
 	
 	<ui:define name="title">
@@ -158,9 +159,37 @@
                     </table>
                 </div>
                 <div class="sectionHeader">
-                    Latitude/Longitude Format
+                    Longitude/Latitude Format
                 </div>
                 <div class="sectionContent">
+                    <div class="instructions">
+                        Please select the format of the longitude data
+                    </div>
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="lonFormat" id="lon_0_360" jsf:id="lonFormat0-360" a:name="lonFormat" value="0_360_lon">
+                            		<c:if test="#{newInstrumentBean.lonFormat.equals('0_360_lon')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="lon_0_360Label" for="lon_0_360"> 0 to 360</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="lonFormat" id="lon_minus180_180" jsf:id="lonFormatminus180-180" a:name="lonFormat" value="minus180_180_lon">
+                            		<c:if test="#{newInstrumentBean.lonFormat.equals('minus180_180_lon')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="lon_minus180_180Label" for="lon_minus180_180"> -180 to 180</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="lonFormat" id="lon_0_180" jsf:id="lonFormat0-180" a:name="lonFormat" value="0_180_lon">
+                            		<c:if test="#{newInstrumentBean.lonFormat.equals('0_180_lon')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="lon_0_180Label" for="lon_0_180"> -180 to 180</label>
+                            </td>
+                        </tr>
+                    </table>
                     <div class="instructions">
                         Please select the format of the latitude data
                     </div>
@@ -177,31 +206,6 @@
                             </td>
                         </tr>
                     </table>
-                    <div class="instructions">
-                        Please select the format of the longitude data
-                    </div>
-                    <table class="form">
-                        <tr>
-                            <td width="33%">
-                                <input type="radio" name="lonFormat" value="nought360" id="nought360"></input><label for="nought360">0 to 360</label>
-                            </td>
-                            <td width="33%">
-                                <input type="radio" name="lonFormat" value="minustoplus" id="minustoplus"></input><label for="minustoplus">-180 to 180</label>
-                            </td>
-                            <td width="33%">
-                                <input type="radio" name="lonFormat" value="nougth180" id="nought180"></input><label for="nougth180">0 to 180 (E/W in separate column)</label>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="sectionHeader">
-                  Upload sample file
-                </div>
-                <div class="instructions">
-                  Please select a sample data file to upload
-                </div>
-                <div class="sectionContent">
-                    <input type="text"></input>
                 </div>
 	            <div class="buttonWrapper">
 	            	<h:commandButton id="prevButton" value="Previous" action="#{newInstrumentBean.goToNamesFromFileSpec}"/>

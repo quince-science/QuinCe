@@ -89,6 +89,21 @@ public class NewInstrumentBean extends BaseManagedBean {
 	public static final String TIME_FORMAT_COLON = "colon_time";
 	
 	/**
+	 * Indicates 0:360 longitude format
+	 */
+	public static final String LON_FORMAT_0_360 = "0_360_lon";
+	
+	/**
+	 * Indicates -180:180 longitude format
+	 */
+	public static final String LON_FORMAT_MINUS180_180 = "minus180_180_lon";
+	
+	/**
+	 * Indicates 0:180 longitude format (N/S marker will be in a separate column)
+	 */
+	public static final String LON_FORMAT_0_180 = "0_180_lon";
+	
+	/**
 	 * The name of the instrument
 	 */
 	private String name = null;
@@ -189,6 +204,11 @@ public class NewInstrumentBean extends BaseManagedBean {
 	private String timeFormat = SEPARATE_FIELDS;
 	
 	/**
+	 * The longitude format
+	 */
+	private String lonFormat = LON_FORMAT_0_360;
+	
+	/**
 	 * Begin the process of adding a new instrument.
 	 * Clear any existing data and go to the sensor names page
 	 * @return The navigation result
@@ -271,6 +291,7 @@ public class NewInstrumentBean extends BaseManagedBean {
 		otherSeparatorChar = null;
 		dateFormat = SEPARATE_FIELDS;
 		timeFormat = SEPARATE_FIELDS;
+		lonFormat = LON_FORMAT_0_360;
 	}
 	
 	/**
@@ -592,9 +613,25 @@ public class NewInstrumentBean extends BaseManagedBean {
 	
 	/**
 	 * Set the time columns format
-	 * @param dateFormat The time columns format
+	 * @param timeFormat The time columns format
 	 */
 	public void setTimeFormat(String timeFormat) {
 		this.timeFormat = timeFormat;
+	}
+	
+	/**
+	 * Get the longitude format
+	 * @return The longitude format
+	 */
+	public String getLonFormat() {
+		return lonFormat;
+	}
+	
+	/**
+	 * Set the longitude format
+	 * @param lonFormat The longitude format
+	 */
+	public void setLonFormat(String lonFormat) {
+		this.lonFormat = lonFormat;
 	}
 }
