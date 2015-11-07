@@ -14,6 +14,16 @@
 	<ui:define name="title">
 		New Instrument
 	</ui:define>
+
+	<ui:define name="localHead">
+		<script type="text/javascript">
+        $(function() {
+            $('[id^=separator_]').click(function() {
+                $('#fileForm\\:otherSeparatorChar').attr('disabled', fileForm.separator.value != 'other');
+            });
+          });
+		</script>
+	</ui:define>
 	
 	<ui:define name="content">
 		<h1>#{newInstrumentBean.name}</h1>
@@ -32,26 +42,26 @@
                     <table class="form">
                         <tr>
                             <td width="33%">
-                            	<input type="radio" id="separatorComma" jsf:id="separatorComma" a:name="separator" value="comma">
+                            	<input type="radio" name="separator" id="separator_comma" jsf:id="separatorComma" a:name="separator" value="comma">
                             		<c:if test="#{newInstrumentBean.separator.equals('comma')}">
                             			<f:passThroughAttribute name="checked" value="checked"/>
                             		</c:if>
                             	</input><label id="separatorCommaLabel" for="separatorComma"> Comma</label>
                             </td>
                             <td width="33%">
-                            	<input type="radio" id="separatorTab" jsf:id="separatorTab" a:name="separator" value="tab">
+                            	<input type="radio" name="separator" id="separator_tab" jsf:id="separatorTab" a:name="separator" value="tab">
                             		<c:if test="#{newInstrumentBean.separator.equals('tab')}">
     	                        		<f:passThroughAttribute name="checked" value="checked"/>
     	                        	</c:if>
                             	</input><label id="separatorTabLabel" for="separatorTab"> Tab</label>
                             </td>
                             <td width="33%">
-                            	<input type="radio" id="separatorOther" jsf:id="separatorOther" a:name="separator" value="other">
+                            	<input type="radio" name="separator" id="separator_other" jsf:id="separatorOther" a:name="separator" value="other">
                             		<c:if test="#{newInstrumentBean.separator.equals('other')}">
 	                            		<f:passThroughAttribute name="checked" value="checked"/>
 	                            	</c:if>
                             	</input><label id="separatorOtherLabel" for="separatorOther"> Other </label>
-                            	<h:inputText id="otherSeparatorChar" value="#{newInstrumentBean.otherSeparatorChar}" maxlength="1" size="3" disabled="true"/>
+                            	<h:inputText id="otherSeparatorChar" value="#{newInstrumentBean.otherSeparatorChar}" maxlength="1" size="3" disabled="#{!(newInstrumentBean.separator.equals('other'))}"/>
                             </td>
                         </tr>
                     </table>
