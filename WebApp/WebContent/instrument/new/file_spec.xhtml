@@ -9,6 +9,7 @@
 	
 	<f:metadata>
 		<f:viewParam name="separator" value="#{newInstrumentBean.separator}"/>
+		<f:viewParam name="dateFormat" value="#{newInstrumentBean.dateFormat}"/>
 	</f:metadata>
 	
 	<ui:define name="title">
@@ -81,24 +82,48 @@
                     <table class="form">
                         <tr>
                             <td width="33%">
-                                <input type="radio" name="dateFormat" value="separateFields" id="date_separate"></input><label for="date_separate"> Separate Fields</label>
+                                <input type="radio" name="dateFormat" id="date_separate" jsf:id="dateFormatSeparate" a:name="dateFormat" value="separate">
+                            		<c:if test="#{newInstrumentBean.dateFormat.equals('separate')}">
+                                		<f:passThroughAttribute name="checked" value="checked"/>
+                                	</c:if>
+                                </input><label id="date_separateLabel" for="date_separate"> Separate Fields</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="dateFormat" value="ddmmyy" id="date_ddmmyy"></input><label for="date_ddmmyy"> DD/MM/YY</label>
+                                <input type="radio" name="dateFormat" id="date_ddmmyy" jsf:id="dateFormatDDMMYY" a:name="dateFormat" value="DDMMYY">
+                            		<c:if test="#{newInstrumentBean.dateFormat.equals('DDMMYY')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="date_ddmmyyLabel" for="date_ddmmyy"> DD/MM/YY</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="dateFormat" value="mmddyy" id="date_mmddyy"></input><label for="date_mmddyy"> MM/DD/YY</label>
+                                <input type="radio" name="dateFormat" id="date_mmddyy" jsf:id="dateFormatMMDDYY" a:name="dateFormat" value="MMDDYY">
+                            		<c:if test="#{newInstrumentBean.dateFormat.equals('MMDDYY')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="date_mmddyyLabel" for="date_mmddyy"> MM/DD/YY</label>
                             </td>
                         </tr>
                         <tr>
                             <td width="33%">
-                                <input type="radio" name="dateFormat" value="yyyymmdd" id="date_yyyymmdd"></input><label for="date_yyyymmdd"> YYYYMMDD</label>
+                                <input type="radio" name="dateFormat" id="date_yyyymmdd" jsf:id="dateFormatYYYYMMDD" a:name="dateFormat" value="YYYYMMDD">
+                            		<c:if test="#{newInstrumentBean.dateFormat.equals('YYYYMMDD')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="date_yyyymmddLabel" for="date_yyyymmdd"> YYYYMMDD</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="dateFormat" value="ddmmyyyy" id="date_ddmmyyyy"></input><label for="date_ddmmyyyy"> DD/MM/YYYY</label>
+                                <input type="radio" name="dateFormat" id="date_ddmmyyyy" jsf:id="dateFormatDDMMYYYY" a:name="dateFormat" value="DDMMYYYY">
+                            		<c:if test="#{newInstrumentBean.dateFormat.equals('DDMMYYYY')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="date_ddmmyyyyLabel" for="date_ddmmyyyy"> DD/MM/YYYY</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="dateFormat" value="mmddyyyy" id="date_mmddyyyy"></input><label for="date_mmddyyyy"> MM/DD/YYYY</label>
+                                <input type="radio" name="dateFormat" id="date_mmddyyyy" jsf:id="dateFormatMMDDYYYY" a:name="dateFormat" value="MMDDYYYY">
+                            		<c:if test="#{newInstrumentBean.dateFormat.equals('MMDDYYYY')}">
+    	                            	<f:passThroughAttribute name="checked" value="checked"/>
+    	                            </c:if>
+                                </input><label id="date_mmddyyyyLabel" for="date_mmddyyyy"> MM/DD/YYYY</label>
                             </td>
                         </tr>
                     </table>

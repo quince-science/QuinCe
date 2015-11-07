@@ -49,6 +49,36 @@ public class NewInstrumentBean extends BaseManagedBean {
 	private static final String OTHER_SEPARATOR_CHAR_COMPONENT = "otherSeparatorChar";
 	
 	/**
+	 * Indicates that date or time components are stored in separate fields
+	 */
+	private static final String SEPARATE_FIELDS = "separate";
+	
+	/**
+	 * Indicates YYYYMMDD date format
+	 */
+	public static final String YYYYMMDD_DATE_FORMAT = "YYYYMMDD";
+	
+	/**
+	 * Indicates DD/MM/YY date format
+	 */
+	public static final String DDMMYY_DATE_FORMAT = "DDMMYY";
+	
+	/**
+	 * Indicates DD/MM/YYYY date format
+	 */
+	public static final String DDMMYYYY_DATE_FORMAT = "DDMMYYYY";
+	
+	/**
+	 * Indicates MM/DD/YY date format
+	 */
+	public static final String MMDDYY_DATE_FORMAT = "MMDDYY";
+	
+	/**
+	 * Indicates MM/DD/YYYY date format
+	 */
+	public static final String MMDDYYYY_DATE_FORMAT = "MMDDYYYY";
+	
+	/**
 	 * The name of the instrument
 	 */
 	private String name = null;
@@ -138,6 +168,8 @@ public class NewInstrumentBean extends BaseManagedBean {
 	 */
 	private String otherSeparatorChar = null;
 	
+	private String dateFormat = SEPARATE_FIELDS;
+	
 	/**
 	 * Begin the process of adding a new instrument.
 	 * Clear any existing data and go to the sensor names page
@@ -219,6 +251,7 @@ public class NewInstrumentBean extends BaseManagedBean {
 		eqpName3 = null;
 		separator = COMMA_SEPARATOR;
 		otherSeparatorChar = null;
+		dateFormat = SEPARATE_FIELDS;
 	}
 	
 	/**
@@ -487,6 +520,7 @@ public class NewInstrumentBean extends BaseManagedBean {
 	}
 	
 	/**
+	 * 
 	 * Set the separator for the file. Must be one of 
 	 * {@link COMMA_SEPARATOR}, {@link TAB_SEPARATOR}, or {@link OTHER_SEPARATOR}.
 	 * @param separator The separator
@@ -511,5 +545,21 @@ public class NewInstrumentBean extends BaseManagedBean {
 	 */
 	public void setOtherSeparatorChar(String otherSeparatorChar) {
 		this.otherSeparatorChar = otherSeparatorChar;
+	}
+	
+	/**
+	 * Get the date columns format
+	 * @return The date columns format
+	 */
+	public String getDateFormat() {
+		return dateFormat;
+	}
+	
+	/**
+	 * Set the date columns format
+	 * @param dateFormat The date columns format
+	 */
+	public void setDateFormat(String dateFormat) {
+		this.dateFormat = dateFormat;
 	}
 }
