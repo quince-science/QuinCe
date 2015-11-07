@@ -104,6 +104,16 @@ public class NewInstrumentBean extends BaseManagedBean {
 	public static final String LON_FORMAT_0_180 = "0_180_lon";
 	
 	/**
+	 * Indicates -90:90 latitude format
+	 */
+	public static final String LAT_FORMAT_MINUS90_90 = "minus90_90_lat";
+	
+	/**
+	 * Indicates 0:90 latitude format (E/W marker will be in a separate column)
+	 */
+	public static final String LAT_FORMAT_0_90 = "0_90_lat";
+	
+	/**
 	 * The name of the instrument
 	 */
 	private String name = null;
@@ -209,6 +219,11 @@ public class NewInstrumentBean extends BaseManagedBean {
 	private String lonFormat = LON_FORMAT_0_360;
 	
 	/**
+	 * The latitude format
+	 */
+	private String latFormat = LAT_FORMAT_MINUS90_90;
+	
+	/**
 	 * Begin the process of adding a new instrument.
 	 * Clear any existing data and go to the sensor names page
 	 * @return The navigation result
@@ -292,6 +307,7 @@ public class NewInstrumentBean extends BaseManagedBean {
 		dateFormat = SEPARATE_FIELDS;
 		timeFormat = SEPARATE_FIELDS;
 		lonFormat = LON_FORMAT_0_360;
+		latFormat = LAT_FORMAT_MINUS90_90;
 	}
 	
 	/**
@@ -633,5 +649,21 @@ public class NewInstrumentBean extends BaseManagedBean {
 	 */
 	public void setLonFormat(String lonFormat) {
 		this.lonFormat = lonFormat;
+	}
+	
+	/**
+	 * Get the latitue format
+	 * @return The latitue format
+	 */
+	public String getLatFormat() {
+		return latFormat;
+	}
+	
+	/**
+	 * Set the latitue format
+	 * @param latFormat The latitue format
+	 */
+	public void setLatFormat(String latFormat) {
+		this.latFormat = latFormat;
 	}
 }

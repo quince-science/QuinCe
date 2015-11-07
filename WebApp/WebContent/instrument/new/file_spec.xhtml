@@ -12,6 +12,7 @@
 		<f:viewParam name="dateFormat" value="#{newInstrumentBean.dateFormat}"/>
 		<f:viewParam name="timeFormat" value="#{newInstrumentBean.timeFormat}"/>
 		<f:viewParam name="lonFormat" value="#{newInstrumentBean.lonFormat}"/>
+		<f:viewParam name="latFormat" value="#{newInstrumentBean.latFormat}"/>
 	</f:metadata>
 	
 	<ui:define name="title">
@@ -196,14 +197,20 @@
                     <table class="form">
                         <tr>
                             <td width="33%">
-                                <input type="radio" name="latFormat" value="minus90plus90" id="minus90plus90"></input><label for="minus90plus90">-90 to 90</label>
+                                <input type="radio" name="latFormat" id="lat_minus90_90" jsf:id="lonFormatMinus90-90" a:name="latFormat" value="minus90_90_lat">
+                            		<c:if test="#{newInstrumentBean.latFormat.equals('minus90_90_lat')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="lat_minus90_90Label" for="lat_minus90_90"> -90 to 90</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="latFormat" value="noughtto90" id="noughtto90"></input><label for="noughtto90">0 to 90 (N/S in separate column)</label>
+                                <input type="radio" name="latFormat" id="lat_0_90" jsf:id="lonFormat0-90" a:name="latFormat" value="0_90_lat">
+                            		<c:if test="#{newInstrumentBean.latFormat.equals('0_90_lat')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="lat_0_90Label" for="lat_0_90"> 0 to 90 (E/W in a separate column)</label>
                             </td>
-                            <td width="33%">
-                                
-                            </td>
+                            <td width="33%"></td>
                         </tr>
                     </table>
                 </div>
