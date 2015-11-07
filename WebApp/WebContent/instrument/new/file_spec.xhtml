@@ -1,7 +1,15 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
 	template="/templates/app_page.xhtml">
+	
+	<f:metadata>
+		<f:viewParam name="separator" value="#{newInstrumentBean.separator}"/>
+	</f:metadata>
 	
 	<ui:define name="title">
 		New Instrument
@@ -9,5 +17,145 @@
 	
 	<ui:define name="content">
 		<h1>#{newInstrumentBean.name}</h1>
+		
+        <div class="fullPage">
+            <h:form id="fileForm" method="post" accept-charset="utf8">
+                <div class="sectionHeader">
+                	File separator
+                </div>
+                <div class="instructions">
+                	Please specify the character used to separate columns in your data file
+                	<br/>
+                	
+                </div>
+                <div class="sectionContent">
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                            	<input type="radio" id="separatorComma" jsf:id="separatorComma" a:name="separator" value="comma">
+                            		<c:if test="#{newInstrumentBean.separator.equals('comma')}">
+                            			<f:passThroughAttribute name="checked" value="checked"/>
+                            		</c:if>
+                            	</input><label id="separatorCommaLabel" for="separatorComma"> Comma</label>
+                            </td>
+                            <td width="33%">
+                            	<input type="radio" id="separatorTab" jsf:id="separatorTab" a:name="separator" value="tab">
+                            		<c:if test="#{newInstrumentBean.separator.equals('tab')}">
+    	                        		<f:passThroughAttribute name="checked" value="checked"/>
+    	                        	</c:if>
+                            	</input><label id="separatorTabLabel" for="separatorTab"> Tab</label>
+                            </td>
+                            <td width="33%">
+                            	<input type="radio" id="separatorOther" jsf:id="separatorOther" a:name="separator" value="other">
+                            		<c:if test="#{newInstrumentBean.separator.equals('other')}">
+	                            		<f:passThroughAttribute name="checked" value="checked"/>
+	                            	</c:if>
+                            	</input><label id="separatorOtherLabel" for="separatorOther"> Other </label>
+                            	<h:inputText id="otherSeparatorChar" value="#{newInstrumentBean.otherSeparatorChar}" maxlength="1" size="3" disabled="true"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="sectionHeader">
+                    Date/Time Format
+                </div>
+                <div class="sectionContent">
+                    <div class="instructions">
+                        Please select the date format used in your data file.
+                    </div>
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="separateFields" id="date_separate"></input><label for="date_separate"> Separate Fields</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="ddmmyy" id="date_ddmmyy"></input><label for="date_ddmmyy"> DD/MM/YY</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="mmddyy" id="date_mmddyy"></input><label for="date_mmddyy"> MM/DD/YY</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="yyyymmdd" id="date_yyyymmdd"></input><label for="date_yyyymmdd"> YYYYMMDD</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="ddmmyyyy" id="date_ddmmyyyy"></input><label for="date_ddmmyyyy"> DD/MM/YYYY</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="dateFormat" value="mmddyyyy" id="date_mmddyyyy"></input><label for="date_mmddyyyy"> MM/DD/YYYY</label>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="instructions">
+                        Please select the time format used in your data file.
+                    </div>
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="timeFormat" value="separateFields" id="time_separate"></input><label for="time_separate"> Separate Fields</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="timeFormat" value="hhmmss" id="time_hhmmss"></input><label for="time_hhmmss"> HHMMSS</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="timeFormat" value="hh:mm:ss" id="time_colons"></input><label for="time_colons"> HH:MM:SS</label>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="sectionHeader">
+                    Latitude/Longitude Format
+                </div>
+                <div class="sectionContent">
+                    <div class="instructions">
+                        Please select the format of the latitude data
+                    </div>
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="latFormat" value="minus90plus90" id="minus90plus90"></input><label for="minus90plus90">-90 to 90</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="latFormat" value="noughtto90" id="noughtto90"></input><label for="noughtto90">0 to 90 (N/S in separate column)</label>
+                            </td>
+                            <td width="33%">
+                                
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="instructions">
+                        Please select the format of the longitude data
+                    </div>
+                    <table class="form">
+                        <tr>
+                            <td width="33%">
+                                <input type="radio" name="lonFormat" value="nought360" id="nought360"></input><label for="nought360">0 to 360</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="lonFormat" value="minustoplus" id="minustoplus"></input><label for="minustoplus">-180 to 180</label>
+                            </td>
+                            <td width="33%">
+                                <input type="radio" name="lonFormat" value="nougth180" id="nought180"></input><label for="nougth180">0 to 180 (E/W in separate column)</label>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="sectionHeader">
+                  Upload sample file
+                </div>
+                <div class="instructions">
+                  Please select a sample data file to upload
+                </div>
+                <div class="sectionContent">
+                    <input type="text"></input>
+                </div>
+	            <div class="buttonWrapper">
+	            	<h:commandButton id="prevButton" value="Previous" action="#{newInstrumentBean.goToNames}"/>
+	                <button onclick="next()">Next</button>
+	                <button onclick="cancelInstrument()">Cancel</button>
+	            </div>
+	        </h:form>
+    	</div>
 	</ui:define>
 </ui:composition>

@@ -25,6 +25,11 @@ public class NewInstrumentBean extends BaseManagedBean {
 	private static final String FILE_SPEC_PAGE = "filespec";
 	
 	/**
+	 * Indicates a comma separator
+	 */
+	public static final String COMMA_SEPARATOR = "comma";
+	
+	/**
 	 * The name of the instrument
 	 */
 	private String name = null;
@@ -105,13 +110,23 @@ public class NewInstrumentBean extends BaseManagedBean {
 	private String eqpName3 = null;
 	
 	/**
+	 * The type of separator used in the data file
+	 */
+	private String separator = COMMA_SEPARATOR;
+	
+	/**
+	 * The character used as a separator if it is not comma or tab
+	 */
+	private String otherSeparatorChar = null;
+	
+	/**
 	 * Begin the process of adding a new instrument.
 	 * Clear any existing data and go to the sensor names page
 	 * @return The navigation result
 	 */
 	public String start() {
 		clearData();
-		return NAMES_PAGE;
+		return goToNames();
 	}
 	
 	/**
@@ -124,8 +139,20 @@ public class NewInstrumentBean extends BaseManagedBean {
 		return CANCEL_PAGE;
 	}
 	
+	/**
+	 * Navigate to the file specification page
+	 * @return The navigation result
+	 */
 	public String goToFileSpec() {
 		return FILE_SPEC_PAGE;
+	}
+	
+	/**
+	 * Navigate to the file specification page
+	 * @return The navigation result
+	 */
+	public String goToNames() {
+		return NAMES_PAGE;
 	}
 	
 	/**
@@ -148,6 +175,8 @@ public class NewInstrumentBean extends BaseManagedBean {
 		eqpName1 = null;
 		eqpName2 = null;
 		eqpName3 = null;
+		separator = COMMA_SEPARATOR;
+		otherSeparatorChar = null;
 	}
 	
 	/**
@@ -404,5 +433,41 @@ public class NewInstrumentBean extends BaseManagedBean {
 	 */
 	public void setEqpName3(String eqpName3) {
 		this.eqpName3 = eqpName3;
+	}
+	
+	/**
+	 * Get the separator for the file. One of {@link COMMA_SEPARATOR},
+	 * {@link TAB_SEPARATOR}, or {@link OTHER_SEPARATOR}.
+	 * @return The separator for the file
+	 */
+	public String getSeparator() {
+		return separator;
+	}
+	
+	/**
+	 * Set the separator for the file. Must be one of 
+	 * {@link COMMA_SEPARATOR}, {@link TAB_SEPARATOR}, or {@link OTHER_SEPARATOR}.
+	 * @param separator The separator
+	 */
+	public void setSeparator(String separator) {
+		this.separator = separator;
+	}
+	
+	/**
+	 * Get the character to be used as a separator, when it isn't a
+	 * comma or tab.
+	 * @return The character to be used as a separator
+	 */
+	public String getOtherSeparatorChar() {
+		return otherSeparatorChar;
+	}
+	
+	/**
+	 * Set the character to be used as a separator, when it isn't a
+	 * comma or tab.
+	 * @param otherSeparatorChar The separator character
+	 */
+	public void setOtherSeparatorChar(String otherSeparatorChar) {
+		this.otherSeparatorChar = otherSeparatorChar;
 	}
 }
