@@ -19,7 +19,7 @@
 		<script type="text/javascript">
         $(function() {
             $('[id^=separator_]').click(function() {
-                $('#fileForm\\:otherSeparatorChar').attr('disabled', fileForm.separator.value != 'other');
+                $('#instrumentForm\\:otherSeparatorChar').attr('disabled', instrumentForm.separator.value != 'other');
             });
           });
 		</script>
@@ -29,7 +29,7 @@
 		<h1>#{newInstrumentBean.name}</h1>
 		
         <div class="fullPage">
-            <h:form id="fileForm" method="post" accept-charset="utf8">
+            <h:form id="instrumentForm" method="post" accept-charset="utf8">
                 <div class="sectionHeader">
                 	File separator
                 </div>
@@ -63,6 +63,11 @@
                             	</input><label id="separatorOtherLabel" for="separatorOther"> Other </label>
                             	<h:inputText id="otherSeparatorChar" value="#{newInstrumentBean.otherSeparatorChar}" maxlength="1" size="3" disabled="#{!(newInstrumentBean.separator.equals('other'))}"/>
                             </td>
+                        </tr>
+                        <tr>
+                        	<td colspan="3">
+								<h:message id="otherSeparatorCharMessage" for="otherSeparatorChar" errorClass="error"/> 
+                        	</td>
                         </tr>
                     </table>
                 </div>
@@ -161,7 +166,7 @@
                     <input type="text"></input>
                 </div>
 	            <div class="buttonWrapper">
-	            	<h:commandButton id="prevButton" value="Previous" action="#{newInstrumentBean.goToNames}"/>
+	            	<h:commandButton id="prevButton" value="Previous" action="#{newInstrumentBean.goToNamesFromFileSpec}"/>
 	                <button onclick="next()">Next</button>
 	                <button onclick="cancelInstrument()">Cancel</button>
 	            </div>

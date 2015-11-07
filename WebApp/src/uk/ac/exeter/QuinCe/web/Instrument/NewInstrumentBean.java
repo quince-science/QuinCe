@@ -9,6 +9,10 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
  */
 public class NewInstrumentBean extends BaseManagedBean {
 
+	static {
+		FORM_NAME = "instrumentForm";
+	}
+
 	/**
 	 * Navigation result when the new instrument process is cancelled
 	 */
@@ -28,6 +32,21 @@ public class NewInstrumentBean extends BaseManagedBean {
 	 * Indicates a comma separator
 	 */
 	public static final String COMMA_SEPARATOR = "comma";
+	
+	/**
+	 * Indicates a tab separator
+	 */
+	public static final String TAB_SEPARATOR = "tab";
+	
+	/**
+	 * Indicates a separator other than comma or tab
+	 */
+	public static final String OTHER_SEPARATOR = "other";
+	
+	/**
+	 * The Component ID of the form input for the alternative separator character
+	 */
+	private static final String OTHER_SEPARATOR_CHAR_COMPONENT = "otherSeparatorChar";
 	
 	/**
 	 * The name of the instrument
@@ -126,7 +145,7 @@ public class NewInstrumentBean extends BaseManagedBean {
 	 */
 	public String start() {
 		clearData();
-		return goToNames();
+		return NAMES_PAGE;
 	}
 	
 	/**
@@ -151,10 +170,33 @@ public class NewInstrumentBean extends BaseManagedBean {
 	 * Navigate to the file specification page
 	 * @return The navigation result
 	 */
-	public String goToNames() {
-		return NAMES_PAGE;
+	public String goToNamesFromFileSpec() {
+		String result = NAMES_PAGE;
+		
+		if (!validateFileSpec()) {
+			result = FILE_SPEC_PAGE;
+		}
+		
+		return result;
 	}
 	
+	/**
+	 * Custom validation of entries on the file_spec page
+	 * @return {@code true} if the validation passes; {@code false} if it doesn't.
+	 */
+	private boolean validateFileSpec() {
+		boolean ok = true;
+		
+		if (separator.equals(OTHER_SEPARATOR)) {
+			if (null == otherSeparatorChar || otherSeparatorChar.length() == 0) {
+				setMessage(getComponentID(OTHER_SEPARATOR_CHAR_COMPONENT), "You must specify the separator character");
+				ok = false;
+			}
+		}
+		
+		return ok;
+	}
+		
 	/**
 	 * Clear all the data from the bean
 	 */
