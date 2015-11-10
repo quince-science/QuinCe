@@ -1,0 +1,26 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	template="/templates/app_page.xhtml">
+	
+	<f:metadata>
+		<f:viewParam name="separator" value="#{newInstrumentBean.separator}"/>
+		<f:viewParam name="dateFormat" value="#{newInstrumentBean.dateFormat}"/>
+		<f:viewParam name="timeFormat" value="#{newInstrumentBean.timeFormat}"/>
+		<f:viewParam name="lonFormat" value="#{newInstrumentBean.lonFormat}"/>
+		<f:viewParam name="latFormat" value="#{newInstrumentBean.latFormat}"/>
+	</f:metadata>
+	
+	<ui:define name="title">
+		New Instrument
+	</ui:define>
+
+	<ui:define name="content">
+		<h1>#{newInstrumentBean.name}</h1>
+		<h2>Select Columns!</h2>
+	</ui:define>
+</ui:composition>

@@ -1,13 +1,18 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
-import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.primefaces.event.FileUploadEvent;
+
+import uk.ac.exeter.QuinCe.web.FileUploadBean;
 
 /**
  * Bean for collecting data about a new instrument
  * @author Steve Jones
  *
  */
-public class NewInstrumentBean extends BaseManagedBean {
+public class NewInstrumentBean extends FileUploadBean {
 
 	static {
 		FORM_NAME = "instrumentForm";
@@ -27,6 +32,16 @@ public class NewInstrumentBean extends BaseManagedBean {
 	 * The navigation to the file specification page
 	 */
 	private static final String PAGE_FILE_SPEC = "filespec";
+	
+	/**
+	 * The navigation to the sample file upload page
+	 */
+	private static final String PAGE_SAMPLE_FILE = "sample_file";
+	
+	/**
+	 * The navigation to the column selection page
+	 */
+	private static final String PAGE_COLUMN_SELECTION = "column_selection";
 	
 	/**
 	 * Indicates a comma separator
@@ -224,6 +239,17 @@ public class NewInstrumentBean extends BaseManagedBean {
 	private String latFormat = LAT_FORMAT_MINUS90_90;
 	
 	/**
+	 * The contents of the uploaded sample file, as a list of String arrays.
+	 * Each list entry is a line, and each line is an array of Strings.
+	 */
+	private List<String[]> sampleFileContents = null;
+	
+	/**
+	 * The utility for extracting the contents of the sample file.
+	 */
+	private SampleFileExtractor sampleFileExtractor = null;
+	
+	/**
 	 * Begin the process of adding a new instrument.
 	 * Clear any existing data and go to the sensor names page
 	 * @return The navigation result
@@ -252,7 +278,7 @@ public class NewInstrumentBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Navigate to the file specification page
+	 * Navigate to the sensor names page
 	 * @return The navigation result
 	 */
 	public String goToNamesFromFileSpec() {
@@ -261,6 +287,26 @@ public class NewInstrumentBean extends BaseManagedBean {
 		if (!validateFileSpec()) {
 			result = PAGE_FILE_SPEC;
 		}
+		
+		return result;
+	}
+	
+	/**
+	 * Navigate to the sample file upload page
+	 * @return The navigation result
+	 */
+	public String goToSampleUploadFromFileSpec() {
+		String result = PAGE_SAMPLE_FILE;
+		
+		if (!validateFileSpec()) {
+			result = PAGE_FILE_SPEC;
+		}
+		
+		return result;
+	}
+	
+	public String goToColumnSelection() {
+		String result = PAGE_COLUMN_SELECTION;
 		
 		return result;
 	}
@@ -308,6 +354,65 @@ public class NewInstrumentBean extends BaseManagedBean {
 		timeFormat = SEPARATE_FIELDS;
 		lonFormat = LON_FORMAT_0_360;
 		latFormat = LAT_FORMAT_MINUS90_90;
+		file = null;
+		sampleFileContents = null;
+		
+		if (null != sampleFileExtractor) {
+			sampleFileExtractor.terminate();
+			sampleFileExtractor = null;
+		}
+	}
+	
+	/**
+	 * Kick off the background thread that will extract the
+	 * contents of the uploaded sample file.
+	 */
+	@Override
+	public void handleFileUpload(FileUploadEvent event) {
+		
+		sampleFileContents = new ArrayList<String[]>();
+		
+		if (null != sampleFileExtractor) {
+			sampleFileExtractor.terminate();
+		}
+		
+		sampleFileExtractor = new SampleFileExtractor(this);
+		Thread extractorThread = new Thread(sampleFileExtractor);
+		extractorThread.start();
+	}
+	
+	/**
+	 * Add a line of fields to the extracted sample file contents
+	 * @param line The line to be added
+	 */
+	protected void addSampleFileLine(String[] line) {
+		synchronized(sampleFileContents) {
+			sampleFileContents.add(line);
+		}
+	}
+	
+	/**
+	 * Retrieve the progress of the sample file extractor.
+	 * If it is not active, the progress will be zero.
+	 * @return The progress of the sample file extractor.
+	 */
+	public int getExtractionProgress() {
+		int progress = 0;
+		
+		if (null != sampleFileExtractor) {
+			progress = sampleFileExtractor.getProgress();
+		}
+		
+		return progress;
+	}
+	
+	/**
+	 * Signalled from the front end to state that it has
+	 * noticed sample file extraction progress reaching 100%.
+	 */
+	public void finishExtraction() {
+		// Do nothing for now. We may find a use for this in future though.
+		
 	}
 	
 	/**

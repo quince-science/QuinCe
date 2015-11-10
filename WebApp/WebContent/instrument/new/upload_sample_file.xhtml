@@ -1,0 +1,61 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/templates/app_page.xhtml">
+	
+	<ui:define name="title">
+		New Instrument
+	</ui:define>
+	
+	<ui:define name="localHead">
+		<script type="text/javascript">
+			function monitorExtractionProgress() {
+				PF('extractionDialog').show();
+				PF('extractionProgress').start();
+			}
+			
+			function goToNext() {
+				$("#instrumentForm\\:columnSelectionLink").trigger("click");
+			}			
+		</script>
+	</ui:define>
+
+	<ui:define name="content">
+	
+		<p:dialog widgetVar="extractionDialog" header="Processing File" modal="true" draggable="false" resizable="false" closable="false" closeOnEscape="false">
+			Please wait while the sample file is processed.
+			<br/>
+			<br/>
+			<p:progressBar widgetVar="extractionProgress" ajax="true" value="#{newInstrumentBean.extractionProgress}" labelTemplate="{value}%">
+				<p:ajax event="complete" listener="#{newInstrumentBean.finishExtraction}" oncomplete="goToNext()"/>
+			</p:progressBar>
+		</p:dialog>
+	
+		<h1>#{newInstrumentBean.name}</h1>
+		
+        <div class="fullPage">
+            <h:form id="instrumentForm" method="post" accept-charset="utf8">
+                <div class="sectionHeader">
+                	Upload sample file
+                </div>
+                <div class="instructions">
+                	Please select a data file from your instrument and upload it using the buttons below:
+                	<br/>
+                	<br/>
+                	<p:fileUpload fileUploadListener="#{newInstrumentBean.handleFileUpload}" widgetVar="upload" mode="advanced" auto="true" label="Select File..." allowTypes="/(\.|\/)(csv|tsv|txt|dat)$/" oncomplete="monitorExtractionProgress()"/>
+                </div>
+                <div class="sectionContent">
+                </div>
+	            <div class="buttonWrapper">
+	            	<h:commandButton id="prevButton" value="Previous" action="#{newInstrumentBean.goToFileSpec}"/>
+	                <button onclick="cancelInstrument()">Cancel</button>
+	            </div>
+		        <h:commandLink id="columnSelectionLink" forceId="true" style="invisible" action="#{newInstrumentBean.goToColumnSelection}"/>
+	        </h:form>
+	        
+    	</div>
+	</ui:define>
+</ui:composition>

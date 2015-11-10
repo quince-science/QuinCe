@@ -117,5 +117,13 @@
 			<from-outcome>filespec</from-outcome>
 			<to-view-id>/instrument/new/file_spec.xhtml</to-view-id>
 		</navigation-case>
+		<navigation-case>
+			<from-outcome>sample_file</from-outcome>
+			<to-view-id>/instrument/new/upload_sample_file.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>column_selection</from-outcome>
+			<to-view-id>/instrument/new/select_columns.xhtml</to-view-id>
+		</navigation-case>
 	</navigation-rule>
 </faces-config>
