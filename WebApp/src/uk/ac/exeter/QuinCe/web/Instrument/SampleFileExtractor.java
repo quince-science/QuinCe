@@ -1,5 +1,10 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+
 import uk.ac.exeter.QuinCe.jobs.Job;
 
 public class SampleFileExtractor implements Runnable {
@@ -21,11 +26,6 @@ public class SampleFileExtractor implements Runnable {
 	private String status = Job.WAITING_STATUS;
 	
 	/**
-	 * The number of columns in the input file
-	 */
-	private int columnCount = 0;
-	
-	/**
 	 * A flag to indicate if the thread should be stopped early.
 	 */
 	private boolean terminate = false;
@@ -43,22 +43,43 @@ public class SampleFileExtractor implements Runnable {
 	 */
 	@Override
 	public void run() {
-		
+
 		status = Job.RUNNING_STATUS;
 		
-		for (int i = 0; i <= 5; i++) {
-			if (terminate) {
-				break;
+		long fileSize = sourceBean.getFile().getSize();
+		long bytesProcessed = 0;
+		try {
+			BufferedReader in = new BufferedReader(new InputStreamReader(sourceBean.getFile().getInputstream()));		
+			String line;
+			int lineCount = 0;
+			while ((line = in.readLine()) != null) {
+				if (terminate) {
+					// TODO DO SOMETHING
+					break;
+				}
+				
+				String[] splitLine = line.split(sourceBean.getSeparator());
+				lineCount++;
+				if (lineCount == 1) {
+					//TODO Check if count is one. If it is, the split char is wrong
+					
+					sourceBean.setSampleFileColumnCount(splitLine.length);
+				} else {
+					if (sourceBean.getSampleFileColumnCount() != splitLine.length) {
+						// TODO ERROR
+						break;
+					}
+				}
+				
+				sourceBean.addSampleFileLine(splitLine);
+				bytesProcessed += line.getBytes(StandardCharsets.UTF_8).length;
+				progress = (int) (((double) bytesProcessed / (double) fileSize) * 100);
 			}
-			progress = i * 20;
-			System.out.println("Ex " + progress);
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// Don't care
-			}
+		} catch (Exception e) {
+			// TODO Don't know yet.
 		}
 		
+		progress = 100;
 		status = Job.FINISHED_STATUS;
 		
 	}

@@ -3,8 +3,6 @@ package uk.ac.exeter.QuinCe.web.Instrument;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.primefaces.event.FileUploadEvent;
-
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 
 /**
@@ -245,6 +243,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	private List<String[]> sampleFileContents = null;
 	
 	/**
+	 * The number of files in the sample file
+	 */
+	private int sampleFileColumnCount = -1;
+	
+	/**
 	 * The utility for extracting the contents of the sample file.
 	 */
 	private SampleFileExtractor sampleFileExtractor = null;
@@ -368,7 +371,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * contents of the uploaded sample file.
 	 */
 	@Override
-	public void handleFileUpload(FileUploadEvent event) {
+	public void processUploadedFile() {
 		
 		sampleFileContents = new ArrayList<String[]>();
 		
@@ -770,5 +773,21 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	public void setLatFormat(String latFormat) {
 		this.latFormat = latFormat;
+	}
+	
+	/**
+	 * Retrieve the number of columns in the sample file
+	 * @return The number of columns in the sample file
+	 */
+	public int getSampleFileColumnCount() {
+		return sampleFileColumnCount;
+	}
+	
+	/**
+	 * Set the number of columns in the sample file
+	 * @param sampleFileColumnCount The number of columns in the sample file
+	 */
+	public void setSampleFileColumnCount(int sampleFileColumnCount) {
+		this.sampleFileColumnCount = sampleFileColumnCount;
 	}
 }

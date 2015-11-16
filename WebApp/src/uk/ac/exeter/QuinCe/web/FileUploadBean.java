@@ -21,7 +21,15 @@ public abstract class FileUploadBean extends BaseManagedBean {
 	 * Handle the file upload and subsequent processing.
 	 * @param event The file upload event
 	 */
-	public abstract void handleFileUpload(FileUploadEvent event);
+	public final void handleFileUpload(FileUploadEvent event) {
+		setFile(event.getFile());
+		processUploadedFile();
+	}
+	
+	/**
+	 * Process the uploaded file
+	 */
+	public abstract void processUploadedFile();
 	
 	/**
 	 * Retrieve the uploaded file
