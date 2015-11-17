@@ -127,6 +127,16 @@ public class NewInstrumentBean extends FileUploadBean {
 	public static final String LAT_FORMAT_0_90 = "0_90_lat";
 	
 	/**
+	 * Indicates that the sample file extraction completed successfully
+	 */
+	public static final int EXTRACTION_OK = 0;
+	
+	/**
+	 * Indicates that the sample file extraction failed
+	 */
+	public static final int EXTRACTION_ERROR = 1;
+	
+	/**
 	 * The name of the instrument
 	 */
 	private String name = null;
@@ -253,6 +263,16 @@ public class NewInstrumentBean extends FileUploadBean {
 	private SampleFileExtractor sampleFileExtractor = null;
 	
 	/**
+	 * The result of the sample file extraction
+	 */
+	private int sampleFileExtractionResult = EXTRACTION_ERROR;
+	
+	/**
+	 * The message from the sample file extraction
+	 */
+	private String sampleFileExtractionMessage = "The extraction has not been run";
+	
+	/**
 	 * Begin the process of adding a new instrument.
 	 * Clear any existing data and go to the sensor names page
 	 * @return The navigation result
@@ -308,8 +328,13 @@ public class NewInstrumentBean extends FileUploadBean {
 		return result;
 	}
 	
-	public String goToColumnSelection() {
+	public String postSampleFileNavigation() {
 		String result = PAGE_COLUMN_SELECTION;
+		
+		if (sampleFileExtractionResult == EXTRACTION_ERROR) {
+			result = PAGE_SAMPLE_FILE;
+			setMessage(null, sampleFileExtractionMessage);
+		}
 		
 		return result;
 	}
@@ -712,6 +737,34 @@ public class NewInstrumentBean extends FileUploadBean {
 	}
 	
 	/**
+	 * Get the separator character as a String literal
+	 * @return The separator character
+	 */
+	public String getSeparatorCharacter() {
+		String result;
+		
+		switch(separator) {
+		case SEPARATOR_COMMA: {
+			result = ",";
+			break;
+		}
+		case SEPARATOR_TAB: {
+			result = "\t";
+			break;
+		}
+		case SEPARATOR_OTHER: {
+			result = otherSeparatorChar;
+			break;
+		}
+		default: {
+			result = ",";
+		}
+		}
+		
+		return result;
+	}
+	
+	/**
 	 * Get the date columns format
 	 * @return The date columns format
 	 */
@@ -790,4 +843,40 @@ public class NewInstrumentBean extends FileUploadBean {
 	public void setSampleFileColumnCount(int sampleFileColumnCount) {
 		this.sampleFileColumnCount = sampleFileColumnCount;
 	}
+	
+	/**
+	 * Returns the result of the sample file extraction. One of
+	 * {@link EXTRACTION_OK} or {@link EXTRACTION_FAILED}.
+	 * @return The result of the sample file extraction
+	 */
+	public int getSampleFileExtractionResult() {
+		return sampleFileExtractionResult;
+	}
+	
+	/**
+	 * Set the result of the sample file extraction
+	 * @param sampleFileExtractionResult The result of the sample file extraction
+	 */
+	public void setSampleFileExtractionResult(int sampleFileExtractionResult) {
+		this.sampleFileExtractionResult = sampleFileExtractionResult;
+	}
+	
+	/**
+	 * Get the message generated during the sample file extraction
+	 * @return The message generated during the sample file extraction
+	 */
+	public String getSampleFileExtractionMessage() {
+		return sampleFileExtractionMessage;
+	}
+	
+	/**
+	 * Shortcut method for recording a failure of the sample file extraction
+	 * @param errorMessage The error message
+	 */
+	public void setSampleFileExtractionError(String errorMessage) {
+		sampleFileExtractionResult = EXTRACTION_ERROR;
+		sampleFileExtractionMessage = errorMessage;
+	}
+	
+	
 }

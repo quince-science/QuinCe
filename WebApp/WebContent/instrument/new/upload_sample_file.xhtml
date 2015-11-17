@@ -41,6 +41,7 @@
                 <div class="sectionHeader">
                 	Upload sample file
                 </div>
+                <h:messages id="uploadErrors" errorClass="error"/>
                 <div class="instructions">
                 	Please select a data file from your instrument and upload it using the buttons below:
                 	<br/>
@@ -53,7 +54,7 @@
 	            	<h:commandButton id="prevButton" value="Previous" action="#{newInstrumentBean.goToFileSpec}"/>
 	                <button onclick="cancelInstrument()">Cancel</button>
 	            </div>
-		        <h:commandLink id="columnSelectionLink" forceId="true" style="invisible" action="#{newInstrumentBean.goToColumnSelection}"/>
+		        <h:commandLink id="columnSelectionLink" forceId="true" style="invisible" action="#{newInstrumentBean.postSampleFileNavigation}"/>
 	        </h:form>
 	        
     	</div>

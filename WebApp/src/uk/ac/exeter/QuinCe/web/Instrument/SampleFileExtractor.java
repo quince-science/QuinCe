@@ -45,6 +45,7 @@ public class SampleFileExtractor implements Runnable {
 	public void run() {
 
 		status = Job.RUNNING_STATUS;
+		sourceBean.setSampleFileExtractionResult(NewInstrumentBean.EXTRACTION_OK);
 		
 		long fileSize = sourceBean.getFile().getSize();
 		long bytesProcessed = 0;
@@ -54,19 +55,22 @@ public class SampleFileExtractor implements Runnable {
 			int lineCount = 0;
 			while ((line = in.readLine()) != null) {
 				if (terminate) {
-					// TODO DO SOMETHING
+					sourceBean.setSampleFileExtractionError("Sample file extraction was interrupted.");
 					break;
 				}
 				
-				String[] splitLine = line.split(sourceBean.getSeparator());
+				String[] splitLine = line.split(sourceBean.getSeparatorCharacter());
 				lineCount++;
 				if (lineCount == 1) {
-					//TODO Check if count is one. If it is, the split char is wrong
-					
-					sourceBean.setSampleFileColumnCount(splitLine.length);
+					if (splitLine.length == 1) {
+						sourceBean.setSampleFileExtractionError("The source file has only one column. Please check that you have specified the correct column separator.");
+						break;
+					} else {
+						sourceBean.setSampleFileColumnCount(splitLine.length);
+					}
 				} else {
 					if (sourceBean.getSampleFileColumnCount() != splitLine.length) {
-						// TODO ERROR
+						sourceBean.setSampleFileExtractionError("The file does not contain a consistent number of columns (line " + lineCount + ").");
 						break;
 					}
 				}
@@ -75,12 +79,17 @@ public class SampleFileExtractor implements Runnable {
 				bytesProcessed += line.getBytes(StandardCharsets.UTF_8).length;
 				progress = (int) (((double) bytesProcessed / (double) fileSize) * 100);
 			}
-		} catch (Exception e) {
-			// TODO Don't know yet.
+		} catch (IOException e) {
+			e.printStackTrace();
+			sourceBean.setSampleFileExtractionError("An unexpected error occurred. Please try again.");
 		}
 		
 		progress = 100;
-		status = Job.FINISHED_STATUS;
+		if (sourceBean.getSampleFileExtractionResult() == NewInstrumentBean.EXTRACTION_OK) {
+			status = Job.FINISHED_STATUS;
+		} else {
+			status = Job.ERROR_STATUS;
+		}
 		
 	}
 
