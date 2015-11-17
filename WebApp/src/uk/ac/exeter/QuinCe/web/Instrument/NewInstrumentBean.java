@@ -52,6 +52,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	public static final String SEPARATOR_TAB = "tab";
 	
 	/**
+	 * Indicates a space separator
+	 */
+	public static final String SEPARATOR_SPACE = "space";
+	
+	/**
 	 * Indicates a separator other than comma or tab
 	 */
 	public static final String SEPARATOR_OTHER = "other";
@@ -750,6 +755,10 @@ public class NewInstrumentBean extends FileUploadBean {
 		}
 		case SEPARATOR_TAB: {
 			result = "\t";
+			break;
+		}
+		case SEPARATOR_SPACE: {
+			result = "  *";
 			break;
 		}
 		case SEPARATOR_OTHER: {

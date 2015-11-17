@@ -45,21 +45,28 @@
                 <div class="sectionContent">
                     <table class="form">
                         <tr>
-                            <td width="33%">
+                            <td width="25%">
                             	<input type="radio" name="separator" id="separator_comma" jsf:id="separatorComma" a:name="separator" value="comma">
                             		<c:if test="#{newInstrumentBean.separator.equals('comma')}">
                             			<f:passThroughAttribute name="checked" value="checked"/>
                             		</c:if>
                             	</input><label id="separatorCommaLabel" for="separator_comma"> Comma</label>
                             </td>
-                            <td width="33%">
+                            <td width="25%">
                             	<input type="radio" name="separator" id="separator_tab" jsf:id="separatorTab" a:name="separator" value="tab">
                             		<c:if test="#{newInstrumentBean.separator.equals('tab')}">
     	                        		<f:passThroughAttribute name="checked" value="checked"/>
     	                        	</c:if>
                             	</input><label id="separatorTabLabel" for="separator_tab"> Tab</label>
                             </td>
-                            <td width="33%">
+                            <td width="25%">
+                            	<input type="radio" name="separator" id="separator_space" jsf:id="separatorSpace" a:name="separator" value="space">
+                            		<c:if test="#{newInstrumentBean.separator.equals('space')}">
+    	                        		<f:passThroughAttribute name="checked" value="checked"/>
+    	                        	</c:if>
+                            	</input><label id="separatorSpaceLabel" for="separator_space"> Space</label>
+                            </td>
+                            <td width="25%">
                             	<input type="radio" name="separator" id="separator_other" jsf:id="separatorOther" a:name="separator" value="other">
                             		<c:if test="#{newInstrumentBean.separator.equals('other')}">
 	                            		<f:passThroughAttribute name="checked" value="checked"/>
