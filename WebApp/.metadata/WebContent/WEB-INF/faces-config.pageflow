@@ -13,7 +13,7 @@
   <nodes xsi:type="pageflow:PFPage" name="instrument/new/names.xhtml" x="400" y="149" id="pf14468227650524" referenceLink="//@navigationRule.6/@navigationCase.1/@toViewId|" inlinks="pf14468227650523 pf14468275621856" path="/instrument/new/names.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="NewInstrumentNavigation" x="336" y="336" id="pf14468275621857" referenceLink="//@navigationRule.6/@fromViewId|" outlinks="pf14468275621856 pf14468275621855 pf14468277262048 pf14470810703220 pf14471700131520" path="/instrument/new/*"/>
   <nodes xsi:type="pageflow:PFPage" name="instrument/new/file_spec.xhtml" x="640" y="384" id="pf14468277262049" referenceLink="//@navigationRule.6/@navigationCase.2/@toViewId|" inlinks="pf14468277262048" path="/instrument/new/file_spec.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="instrument/new/upload_sample_file.xhtml" id="pf14470810703221" referenceLink="//@navigationRule.6/@navigationCase.4/@toViewId|" inlinks="pf14470810703220" path="/instrument/new/upload_sample_file.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="instrument/new/upload_sample_file.xhtml" id="pf14470810703221" referenceLink="//@navigationRule.6/@navigationCase.3/@toViewId|" inlinks="pf14470810703220" path="/instrument/new/upload_sample_file.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="instrument/new/select_columns.xhtml" id="pf14471700131521" referenceLink="//@navigationRule.6/@navigationCase.4/@toViewId|" inlinks="pf14471700131520" path="/instrument/new/select_columns.xhtml"/>
   <links id="pf14424006975481" target="pf14424006975482" source="pf14424006975480" outcome="SignUp"/>
   <links id="pf14434598949380" target="pf14434598949381" source="pf14424006975482" outcome="Success"/>
