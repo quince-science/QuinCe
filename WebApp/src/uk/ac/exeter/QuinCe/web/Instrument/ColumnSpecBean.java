@@ -174,8 +174,9 @@ public class ColumnSpecBean extends BaseManagedBean {
 	 */
 	private String latFormat = LAT_FORMAT_MINUS90_90;
 	
-
-	
+	/**
+	 * Reset all data in the bean
+	 */
 	protected void clearData() {
 		intakeTempName1 = null;
 		intakeTempName2 = null;
