@@ -177,6 +177,11 @@ public class ColumnSpecBean extends BaseManagedBean {
 	 */
 	private String latFormat = LAT_FORMAT_MINUS90_90;
 	
+	/**
+	 * Indicates whether or not the instrument records barometric pressure
+	 */
+	private boolean hasBarometricPressure = false;
+	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	/**
@@ -601,5 +606,23 @@ public class ColumnSpecBean extends BaseManagedBean {
 	 */
 	public void setLatFormat(String latFormat) {
 		this.latFormat = latFormat;
+	}
+	
+	/**
+	 * Returns the flag that indicates whether the instrument
+	 * records barometric pressure
+	 * @return The flag value
+	 */
+	public boolean getHasBarometricPressure() {
+		return hasBarometricPressure;
+	}
+	
+	/**
+	 * Sets the flag that indicates whether the instrument
+	 * records barometric pressure
+	 * @param hasBarometricPressure The flag value
+	 */
+	public void setHasBarometricPressure(boolean hasBarometricPressure) {
+		this.hasBarometricPressure = hasBarometricPressure;
 	}
 }

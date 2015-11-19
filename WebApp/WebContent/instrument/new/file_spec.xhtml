@@ -221,6 +221,19 @@
                         </tr>
                     </table>
                 </div>
+                <div class="sectionHeader">
+                    Other Data
+                </div>
+                <div class="sectionContent">
+                    <table class="form">
+                        <tr>
+                            <td width="100%">
+                                <h:selectBooleanCheckbox id="hasBarometricPressure" value="#{columnSpecBean.hasBarometricPressure}"/>
+                                <h:outputLabel id="hasBarometricPressureLabel" for="hasBarometricPressure" value=" Does your instrument record barometric pressure?"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
 	            <div class="buttonWrapper">
 	            	<h:commandButton id="prevButton" value="Previous" action="#{newInstrumentBean.goToNamesFromFileSpec}"/>
 	            	<h:commandButton id="nextButton" value="Next" action="#{newInstrumentBean.goToSampleUploadFromFileSpec}"/>
