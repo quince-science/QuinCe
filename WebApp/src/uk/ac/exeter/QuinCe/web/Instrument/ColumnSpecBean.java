@@ -1,5 +1,8 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 /**
@@ -174,6 +177,8 @@ public class ColumnSpecBean extends BaseManagedBean {
 	 */
 	private String latFormat = LAT_FORMAT_MINUS90_90;
 	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	/**
 	 * Reset all data in the bean
 	 */
@@ -198,6 +203,101 @@ public class ColumnSpecBean extends BaseManagedBean {
 		lonFormat = LON_FORMAT_0_360;
 		latFormat = LAT_FORMAT_MINUS90_90;
 	}
+	
+	/**
+	 * Retrieve a list of all the columns expected from the
+	 * data file for the instrument.
+	 * @return A list of expected columns
+	 */
+	public List<String> getColumnList() {
+		
+		List<String> columnList = new ArrayList<String>();
+		
+		columnList.add("Run type");
+		
+		if (dateFormat.equals(SEPARATE_FIELDS)) {
+			columnList.add("Year");
+			columnList.add("Month");
+			columnList.add("Day");
+		} else {
+			columnList.add("Date");
+		}
+		
+		if (timeFormat.equals(SEPARATE_FIELDS)) {
+			columnList.add("Hour");
+			columnList.add("Minute");
+			columnList.add("Second");
+		} else {
+			columnList.add("Time");
+		}
+		
+		columnList.add("Longitude");
+		if (lonFormat == LON_FORMAT_0_180) {
+			columnList.add("East/West");
+		}
+		
+		columnList.add("Latitude");
+		if (latFormat == LAT_FORMAT_0_90) {
+			columnList.add("North/South");
+		}
+		
+		columnList.add("Intake Temperature: " + intakeTempName1);
+		
+		if (null != intakeTempName2) {
+			columnList.add("Intake Temperature: " + intakeTempName2);
+		}
+		
+		if (null != intakeTempName3) {
+			columnList.add("Intake Temperature: " + intakeTempName3);
+		}
+		
+		columnList.add("Salinity: " + salinityName1);
+		
+		if (null != salinityName2) {
+			columnList.add("Salinity: " + salinityName2);
+		}
+		
+		if (null != salinityName3) {
+			columnList.add("Salinity: " + salinityName3);
+		}
+		
+		columnList.add("Sea Level Pressure: " + slpName1);
+		
+		if (null != slpName2) {
+			columnList.add("Sea Level Pressure: " + slpName2);
+		}
+		
+		if (null != slpName3) {
+			columnList.add("Sea Level Pressure: " + slpName3);
+		}
+		
+		columnList.add("Equilibrator Temperature: " + eqtName1);
+		
+		if (null != eqtName2) {
+			columnList.add("Equilibrator Temperature: " + eqtName2);
+		}
+		
+		if (null != eqtName3) {
+			columnList.add("Equilibrator Temperature: " + eqtName3);
+		}
+		
+		columnList.add("Equilibrator Pressure: " + eqpName1);
+		
+		if (null != eqpName2) {
+			columnList.add("Equilibrator Pressure: " + eqpName2);
+		}
+		
+		if (null != eqpName3) {
+			columnList.add("Equilibrator Pressure: " + eqpName3);
+		}
+		
+		columnList.add("CO2");
+		
+		return columnList;
+		
+	}
+	
+	/////////////////// GETTERS AND SETTERS //////////////////////////////////
 	
 	/**
 	 * Get the name of the first intake temperature sensor
