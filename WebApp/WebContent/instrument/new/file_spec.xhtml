@@ -250,16 +250,16 @@
                             	<b>Are samples *completely* dried before being analysed?</b>
                             </td>
                             <td width="50%">
-                            	<input type="radio" class="inlineRadio" name="samplesDried" id="samplesDried" jsf:id="samplesDried_true" a:name="samplesDried" value="true">
+                            	<input type="radio" class="inlineRadio" name="samplesDried" id="samplesDried_true" jsf:id="samplesDried_true" a:name="samplesDried" value="true">
                             		<c:if test="#{newInstrumentBean.samplesDried.equals('true')}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="samplesDried_trueLabel" for="samplesDried_true"> Yes </label>
-                            	<input type="radio" class="inlineRadio" name="samplesDried" id="samplesDried" jsf:id="samplesDried_false" a:name="samplesDried" value="false">
+                            	<input type="radio" class="inlineRadio" name="samplesDried" id="samplesDried_false" jsf:id="samplesDried_false" a:name="samplesDried" value="false">
                             		<c:if test="#{newInstrumentBean.samplesDried.equals('false')}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
-                                </input><label id="samplesDried_trueLabel" for="samplesDried_true"> No</label>
+                                </input><label id="samplesDried_falseLabel" for="samplesDried_false"> No</label>
                             </td>
                         </tr>
                     </table>
