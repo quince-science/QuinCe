@@ -7,14 +7,6 @@
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
 	template="/templates/app_page.xhtml">
 	
-	<f:metadata>
-		<f:viewParam name="separator" value="#{newInstrumentBean.separator}"/>
-		<f:viewParam name="dateFormat" value="#{newInstrumentBean.dateFormat}"/>
-		<f:viewParam name="timeFormat" value="#{newInstrumentBean.timeFormat}"/>
-		<f:viewParam name="lonFormat" value="#{newInstrumentBean.lonFormat}"/>
-		<f:viewParam name="latFormat" value="#{newInstrumentBean.latFormat}"/>
-	</f:metadata>
-	
 	<ui:define name="title">
 		New Instrument
 	</ui:define>
@@ -22,5 +14,9 @@
 	<ui:define name="content">
 		<h1>#{newInstrumentBean.name}</h1>
 		<h2>Select Columns!</h2>
+		<ui:repeat value="#{columnSpecBean.columnList}" var="t">
+			<h:outputText value="#{t}"/>
+			<br/>
+		</ui:repeat>
 	</ui:define>
 </ui:composition>

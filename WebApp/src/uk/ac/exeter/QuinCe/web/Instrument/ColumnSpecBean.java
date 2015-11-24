@@ -207,6 +207,7 @@ public class ColumnSpecBean extends BaseManagedBean {
 		timeFormat = SEPARATE_FIELDS;
 		lonFormat = LON_FORMAT_0_360;
 		latFormat = LAT_FORMAT_MINUS90_90;
+		hasAtmosphericPressure = false;
 	}
 	
 	/**
@@ -248,51 +249,51 @@ public class ColumnSpecBean extends BaseManagedBean {
 		
 		columnList.add("Intake Temperature: " + intakeTempName1);
 		
-		if (null != intakeTempName2) {
+		if (null != intakeTempName2 && intakeTempName2.length() > 0) {
 			columnList.add("Intake Temperature: " + intakeTempName2);
 		}
 		
-		if (null != intakeTempName3) {
+		if (null != intakeTempName3 && intakeTempName3.length() > 0) {
 			columnList.add("Intake Temperature: " + intakeTempName3);
 		}
 		
 		columnList.add("Salinity: " + salinityName1);
 		
-		if (null != salinityName2) {
+		if (null != salinityName2 && salinityName2.length() > 0) {
 			columnList.add("Salinity: " + salinityName2);
 		}
 		
-		if (null != salinityName3) {
+		if (null != salinityName3 && salinityName3.length() > 0) {
 			columnList.add("Salinity: " + salinityName3);
 		}
 		
 		columnList.add("Sea Level Pressure: " + slpName1);
 		
-		if (null != slpName2) {
+		if (null != slpName2 && slpName2.length() > 0) {
 			columnList.add("Sea Level Pressure: " + slpName2);
 		}
 		
-		if (null != slpName3) {
+		if (null != slpName3 && slpName3.length() > 0) {
 			columnList.add("Sea Level Pressure: " + slpName3);
 		}
 		
 		columnList.add("Equilibrator Temperature: " + eqtName1);
 		
-		if (null != eqtName2) {
+		if (null != eqtName2 && eqtName2.length() > 0) {
 			columnList.add("Equilibrator Temperature: " + eqtName2);
 		}
 		
-		if (null != eqtName3) {
+		if (null != eqtName3 && eqtName3.length() > 0) {
 			columnList.add("Equilibrator Temperature: " + eqtName3);
 		}
 		
 		columnList.add("Equilibrator Pressure: " + eqpName1);
 		
-		if (null != eqpName2) {
+		if (null != eqpName2 && eqpName2.length() > 0) {
 			columnList.add("Equilibrator Pressure: " + eqpName2);
 		}
 		
-		if (null != eqpName3) {
+		if (null != eqpName3 && eqpName3.length() > 0) {
 			columnList.add("Equilibrator Pressure: " + eqpName3);
 		}
 		
@@ -300,10 +301,23 @@ public class ColumnSpecBean extends BaseManagedBean {
 			columnList.add("Atmospheric Pressure");
 		}
 		
+		if (getSamplesDried()) {
+			columnList.add("Moisture");
+		}
+		
 		columnList.add("CO2");
 		
 		return columnList;
 		
+	}
+	
+	/**
+	 * Interrogates the New Instrument bean to determine whether or
+	 * not samples are dried before being analysed
+	 * @return A flag indicating whether or not samples are dried before being analysed
+	 */
+	private boolean getSamplesDried() {
+		return Boolean.parseBoolean(getELValue("#{newInstrumentBean.samplesDried}"));
 	}
 	
 	/////////////////// GETTERS AND SETTERS //////////////////////////////////
