@@ -534,3 +534,7 @@ hr {
 	display: none;
 	visibility: hidden;'
 }
+
+.inlineRadio {
+	margin-left: 20px;
+}

@@ -94,6 +94,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	private String otherSeparatorChar = null;
 	
 	/**
+	 * Indicates whether or not samples are dried before being measured
+	 */
+	private boolean samplesDried = false;
+	
+	/**
 	 * The contents of the uploaded sample file, as a list of String arrays.
 	 * Each list entry is a line, and each line is an array of Strings.
 	 */
@@ -420,5 +425,19 @@ public class NewInstrumentBean extends FileUploadBean {
 		sampleFileExtractionMessage = errorMessage;
 	}
 	
+	/**
+	 * Returns the flag indicating whether or not samples are dried before being analysed
+	 * @return The flag indicating whether or not samples are dried before being analysed
+	 */
+	public String getSamplesDried() {
+		return String.valueOf(samplesDried);
+	}
 	
+	/**
+	 * Sets the flag indicating whether or not samples are dried before being analysed
+	 * @param samplesDried The flag value
+	 */
+	public void setSamplesDried(String samplesDried) {
+		this.samplesDried = Boolean.parseBoolean(samplesDried);
+	}
 }

@@ -13,6 +13,7 @@
 		<f:viewParam name="timeFormat" value="#{columnSpecBean.timeFormat}"/>
 		<f:viewParam name="lonFormat" value="#{columnSpecBean.lonFormat}"/>
 		<f:viewParam name="latFormat" value="#{columnSpecBean.latFormat}"/>
+		<f:viewParam name="samplesDried" value="#{newInstrumentBean.samplesDried}"/>
 	</f:metadata>
 	
 	<ui:define name="title">
@@ -227,9 +228,26 @@
                 <div class="sectionContent">
                     <table class="form">
                         <tr>
-                            <td width="100%">
+                            <td colspan="2" width="100%">
                                 <h:selectBooleanCheckbox id="hasAtmosphericPressure" value="#{columnSpecBean.hasAtmosphericPressure}"/>
                                 <h:outputLabel id="hasAtmosphericPressureLabel" for="hasAtmosphericPressure" value=" Does your instrument record atmospheric pressure?"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="50%">
+                            	<b>Are samples *completely* dried before being analysed?</b>
+                            </td>
+                            <td width="50%">
+                            	<input type="radio" class="inlineRadio" name="samplesDried" id="samplesDried" jsf:id="samplesDried_true" a:name="samplesDried" value="true">
+                            		<c:if test="#{newInstrumentBean.samplesDried.equals('true')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="samplesDried_trueLabel" for="samplesDried_true"> Yes </label>
+                            	<input type="radio" class="inlineRadio" name="samplesDried" id="samplesDried" jsf:id="samplesDried_false" a:name="samplesDried" value="false">
+                            		<c:if test="#{newInstrumentBean.samplesDried.equals('false')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="samplesDried_trueLabel" for="samplesDried_true"> No</label>
                             </td>
                         </tr>
                     </table>
