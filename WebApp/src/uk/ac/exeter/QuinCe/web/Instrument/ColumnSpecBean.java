@@ -180,7 +180,7 @@ public class ColumnSpecBean extends BaseManagedBean {
 	/**
 	 * Indicates whether or not the instrument records barometric pressure
 	 */
-	private boolean hasBarometricPressure = false;
+	private boolean hasAtmosphericPressure = false;
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -294,6 +294,10 @@ public class ColumnSpecBean extends BaseManagedBean {
 		
 		if (null != eqpName3) {
 			columnList.add("Equilibrator Pressure: " + eqpName3);
+		}
+		
+		if (hasAtmosphericPressure) {
+			columnList.add("Atmospheric Pressure");
 		}
 		
 		columnList.add("CO2");
@@ -613,16 +617,16 @@ public class ColumnSpecBean extends BaseManagedBean {
 	 * records barometric pressure
 	 * @return The flag value
 	 */
-	public boolean getHasBarometricPressure() {
-		return hasBarometricPressure;
+	public boolean getHasAtmosphericPressure() {
+		return hasAtmosphericPressure;
 	}
 	
 	/**
 	 * Sets the flag that indicates whether the instrument
 	 * records barometric pressure
-	 * @param hasBarometricPressure The flag value
+	 * @param hasAtmosphericPressure The flag value
 	 */
-	public void setHasBarometricPressure(boolean hasBarometricPressure) {
-		this.hasBarometricPressure = hasBarometricPressure;
+	public void setHasAtmosphericPressure(boolean hasAtmosphericPressure) {
+		this.hasAtmosphericPressure = hasAtmosphericPressure;
 	}
 }
