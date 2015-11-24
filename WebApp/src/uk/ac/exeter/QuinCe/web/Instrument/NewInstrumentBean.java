@@ -272,7 +272,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @return The progress of the sample file extractor.
 	 */
 	public int getExtractionProgress() {
-		int progress = 0;
+		int progress = 1;
 		
 		if (null != sampleFileExtractor) {
 			progress = sampleFileExtractor.getProgress();
@@ -286,8 +286,8 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * noticed sample file extraction progress reaching 100%.
 	 */
 	public void finishExtraction() {
-		// Do nothing for now. We may find a use for this in future though.
-		
+		// Reset the progress to zero ready for the next extraction
+		sampleFileExtractor.resetProgress();
 	}
 	
 	/**

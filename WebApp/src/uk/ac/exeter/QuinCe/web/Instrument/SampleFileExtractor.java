@@ -94,11 +94,18 @@ public class SampleFileExtractor implements Runnable {
 	}
 
 	/**
-	 * Retrieve the current progress of the extraction
+	 * Retrieve the current progress of the extraction.
+	 * Note that this will always return at least 1%,
+	 * to help the user see that something has happened.
 	 * @return The current progress of the extraction
 	 */
 	protected int getProgress() {
-		return progress;
+		int result = progress;
+		if (result < 1) {
+			result = 1;
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -115,5 +122,12 @@ public class SampleFileExtractor implements Runnable {
 	 */
 	protected void terminate() {
 		terminate = true;
+	}
+	
+	/**
+	 * Reset the progress of the extraction.
+	 */
+	protected void resetProgress() {
+		progress = 0;
 	}
 }
