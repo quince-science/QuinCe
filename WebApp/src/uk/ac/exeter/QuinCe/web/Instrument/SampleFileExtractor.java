@@ -109,7 +109,11 @@ public class SampleFileExtractor implements Runnable {
 		return status;
 	}
 	
+	/**
+	 * Sets a flag that will cause the extraction process to
+	 * terminate at the earliest opportunity.
+	 */
 	protected void terminate() {
-			terminate = true;
+		terminate = true;
 	}
 }
