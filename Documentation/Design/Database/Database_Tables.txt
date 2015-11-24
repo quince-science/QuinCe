@@ -72,6 +72,8 @@ time_format              Integer        The time format used in the instrument's
 lat_format               Integer        The latitude format used in the instrument's data files
 lon_format               Integer        The longitude format used in the instrument's data files
 header_lines             Integer        The number of header lines in the instrument's data files
+has_atmospheric_pressure Boolean        Indicates whether or not the instrument records atmospheric pressure
+samples_dried            Boolean        Indicates whether or not samples are dried before being analysed
 run_type_col             Integer        Run type
 date_col                 Integer        Date (all parts in one column)
 year_col                 Integer        Year
@@ -100,6 +102,8 @@ eqt_3_col                Integer        Equilibrator temperature 3
 eqp_1_col                Integer        Equilibrator pressure 1
 eqp_2_col                Integer        Equilibrator pressure 2
 eqp_3_col                Integer        Equilibrator pressure 3
+atmospheric_pressure_col Integer        Atmospheric pressure
+moisture_col             Integer        Moisture
 seawater_pco2_col        Integer        Sea water pCO~2~
 
 #### `date_format`
