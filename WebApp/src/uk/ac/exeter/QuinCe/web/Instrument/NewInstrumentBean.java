@@ -268,7 +268,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	
 	/**
 	 * Retrieve the progress of the sample file extractor.
-	 * If it is not active, the progress will be zero.
+	 * If it is not active, the progress will be 1.
 	 * @return The progress of the sample file extractor.
 	 */
 	public int getExtractionProgress() {
