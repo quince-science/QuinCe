@@ -617,8 +617,8 @@ public class ColumnSpecBean extends BaseManagedBean {
 	 * records barometric pressure
 	 * @return The flag value
 	 */
-	public boolean getHasAtmosphericPressure() {
-		return hasAtmosphericPressure;
+	public String getHasAtmosphericPressure() {
+		return String.valueOf(hasAtmosphericPressure);
 	}
 	
 	/**
@@ -626,7 +626,7 @@ public class ColumnSpecBean extends BaseManagedBean {
 	 * records barometric pressure
 	 * @param hasAtmosphericPressure The flag value
 	 */
-	public void setHasAtmosphericPressure(boolean hasAtmosphericPressure) {
-		this.hasAtmosphericPressure = hasAtmosphericPressure;
+	public void setHasAtmosphericPressure(String hasAtmosphericPressure) {
+		this.hasAtmosphericPressure = Boolean.parseBoolean(hasAtmosphericPressure);
 	}
 }

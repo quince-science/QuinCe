@@ -13,6 +13,7 @@
 		<f:viewParam name="timeFormat" value="#{columnSpecBean.timeFormat}"/>
 		<f:viewParam name="lonFormat" value="#{columnSpecBean.lonFormat}"/>
 		<f:viewParam name="latFormat" value="#{columnSpecBean.latFormat}"/>
+		<f:viewParam name="hasAtmosphericPressure" value="#{columnSpecBean.hasAtmosphericPressure}"/>
 		<f:viewParam name="samplesDried" value="#{newInstrumentBean.samplesDried}"/>
 	</f:metadata>
 	
@@ -228,9 +229,20 @@
                 <div class="sectionContent">
                     <table class="form">
                         <tr>
-                            <td colspan="2" width="100%">
-                                <h:selectBooleanCheckbox id="hasAtmosphericPressure" value="#{columnSpecBean.hasAtmosphericPressure}"/>
-                                <h:outputLabel id="hasAtmosphericPressureLabel" for="hasAtmosphericPressure" value=" Does your instrument record atmospheric pressure?"/>
+                            <td width="50%">
+                            	<b>Does the instrument record atmospheric pressure?</b>
+                            </td>
+                            <td width="50%">
+                            	<input type="radio" class="inlineRadio" name="hasAtmosphericPressure" id="hasAtmosphericPressure_true" jsf:id="hasAtmosphericPressure_true" a:name="hasAtmosphericPressure" value="true">
+                            		<c:if test="#{columnSpecBean.hasAtmosphericPressure.equals('true')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="hasAtmosphericPressure_trueLabel" for="hasAtmosphericPressure_true"> Yes </label>
+                            	<input type="radio" class="inlineRadio" name="hasAtmosphericPressure" id="hasAtmosphericPressure_false" jsf:id="hasAtmosphericPressure_false" a:name="hasAtmosphericPressure" value="false">
+                            		<c:if test="#{columnSpecBean.hasAtmosphericPressure.equals('false')}">
+	                                	<f:passThroughAttribute name="checked" value="checked"/>
+	                                </c:if>
+                                </input><label id="hasAtmosphericPressure_falseLabel" for="hasAtmosphericPressure_false"> No</label>
                             </td>
                         </tr>
                         <tr>
