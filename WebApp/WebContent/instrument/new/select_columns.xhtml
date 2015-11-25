@@ -5,18 +5,74 @@
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
 	template="/templates/app_page.xhtml">
 	
 	<ui:define name="title">
 		New Instrument
 	</ui:define>
 
+	<ui:define name="localHead">
+		<script type="text/javascript">
+			var headerLines = 0;
+			
+		
+	        $(function() {
+	            $('[id^=rowhead_]').change(function(event) {
+	                var rowNumber = event.target.id.substr(8);
+	                var selected = event.target.checked;
+	
+	                // If we're not messing with the last checkbox, undo the action
+	                if (!selected &amp;&amp; $('#rowhead_' + (parseInt(rowNumber) + 1)).is(':checked')) {
+	                    event.target.checked = true;
+	                } else {
+	                    row = $('#rowhead_' + parseInt(rowNumber)).parents("tr").toggleClass('header', selected);
+	                    if (selected) {
+	                    	headerLines++;
+	                    	$('#rowhead_' + (parseInt(rowNumber) + 1)).removeClass('hidden');
+	                    } else {
+	                    	headerLines--;
+	                    	$('#rowhead_' + (parseInt(rowNumber) + 1)).addClass('hidden');
+	                    }
+	                }
+	            });
+	        });
+		</script>
+	</ui:define>
+	
 	<ui:define name="content">
 		<h1>#{newInstrumentBean.name}</h1>
-		<h2>Select Columns!</h2>
-		<ui:repeat value="#{columnSpecBean.columnList}" var="t">
-			<h:outputText value="#{t}"/>
-			<br/>
-		</ui:repeat>
+		
+		<div class="fullPage">
+			<form id="columnForm" method="post" autocomplete="off" accept-charset="utf8">
+				<div class="sectionHeader">
+	                Specify columns and headers
+	            </div>
+	            <div class="sectionContent">
+	                <div class="instructions">
+	                    Identify header rows using the checkboxes. Assign columns using the drop-down menus.
+	                </div>
+	            </div>
+	            <div class="sectionHeader">
+	                File Contents
+	            </div>
+	            <p:dataTable id="sampleFile" var="sampleData" widgetVar="sampleDataTable" rowIndexVar="rowIndex" value="#{newInstrumentBean.truncatedSample}" scrollable="true" scrollWidth="98%" scrollHeight="250">
+	            	<p:column width="100px;" styleClass="centreCol">
+		           		<f:facet name="header">
+		           			Header?
+		           		</f:facet>
+		           		<input type="checkbox" id="rowhead_#{rowIndex}" name="rowhead_#{rowIndex}" class="#{rowIndex == 0 ? null : 'hidden'}"/>	
+	            	</p:column>
+	            	<p:columns value="#{newInstrumentBean.columns}" var="column" width="100px;">
+	            		<f:facet name="header">
+	            			#{column.header}
+	            		</f:facet>
+	            		#{sampleData[column.columnIndex]}
+	            	</p:columns>
+	            	
+	            	
+	            </p:dataTable>
+	        </form>
+		</div>
 	</ui:define>
 </ui:composition>

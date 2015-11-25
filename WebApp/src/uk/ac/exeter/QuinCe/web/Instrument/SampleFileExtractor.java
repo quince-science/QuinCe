@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 import uk.ac.exeter.QuinCe.jobs.Job;
 
@@ -75,7 +77,12 @@ public class SampleFileExtractor implements Runnable {
 					}
 				}
 				
-				sourceBean.addSampleFileLine(splitLine);
+				Map<Integer, String> lineMap = new HashMap<Integer, String>();
+				for (int i = 0; i < splitLine.length; i++) {
+					lineMap.put(i, splitLine[i]);
+				}
+				
+				sourceBean.addSampleFileLine(lineMap);
 				bytesProcessed += line.getBytes(StandardCharsets.UTF_8).length;
 				progress = (int) (((double) bytesProcessed / (double) fileSize) * 100);
 			}

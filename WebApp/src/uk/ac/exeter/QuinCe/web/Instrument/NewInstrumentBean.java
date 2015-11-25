@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web.Instrument;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.bean.ManagedProperty;
 
@@ -102,7 +103,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * The contents of the uploaded sample file, as a list of String arrays.
 	 * Each list entry is a line, and each line is an array of Strings.
 	 */
-	private List<String[]> sampleFileContents = null;
+	private List<Map<Integer, String>> sampleFileContents = null;
 	
 	/**
 	 * The number of files in the sample file
@@ -241,7 +242,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	@Override
 	public void processUploadedFile() {
 		
-		sampleFileContents = new ArrayList<String[]>();
+		sampleFileContents = new ArrayList<Map<Integer, String>>();
 		
 		if (null != sampleFileExtractor) {
 			sampleFileExtractor.terminate();
@@ -260,7 +261,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Add a line of fields to the extracted sample file contents
 	 * @param line The line to be added
 	 */
-	protected void addSampleFileLine(String[] line) {
+	protected void addSampleFileLine(Map<Integer, String> line) {
 		synchronized(sampleFileContents) {
 			sampleFileContents.add(line);
 		}
@@ -439,5 +440,37 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	public void setSamplesDried(String samplesDried) {
 		this.samplesDried = Boolean.parseBoolean(samplesDried);
+	}
+	
+	public List<Map<Integer, String>> getTruncatedSample() {
+		return sampleFileContents.subList(0, 49);
+	}
+	
+	public List<SampleFileColumn> getColumns() {
+		
+		List<SampleFileColumn> columns = new ArrayList<SampleFileColumn>();
+		
+		for (int i = 0; i < sampleFileContents.get(0).size(); i++) {
+			columns.add(new SampleFileColumn(i));
+		}
+		
+		return columns;
+	}
+	
+	public class SampleFileColumn {
+		
+		int colIndex;
+		
+		public SampleFileColumn(int colIndex) {
+			this.colIndex = colIndex;
+		}
+		
+		public String getHeader() {
+			return "col" + colIndex;
+		}
+		
+		public Integer getColumnIndex() {
+			return colIndex;
+		}
 	}
 }
