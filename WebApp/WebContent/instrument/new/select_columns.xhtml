@@ -14,8 +14,39 @@
 
 	<ui:define name="localHead">
 		<script type="text/javascript">
+	        var currentCol = "";
+	        var selectedCols = [];
 			var headerLines = 0;
-			
+
+	        function hideColumnMenu() {
+	            $('#columnMenu').hide(100);
+	            currentCol = "";
+	        }
+
+	        function selectCol(selectedID) {
+
+	            var colNumber = selectedID.substring(8);
+
+	            selectedCols.forEach(function(element, index, array) {
+	                if (selectedCols[index] == currentCol) {
+	                    $('#colname_' + index).css({
+	                        'text-decoration' : 'none'
+	                    });
+	                }
+	            });
+
+	            if (selectedCols[colNumber] != null) {
+	                $(selectedCols[colNumber]).html('Not selected ▼');
+	            }
+
+	            selectedCols[colNumber] = currentCol;
+	            $('#' + selectedID).css({
+	                'text-decoration': 'line-through'
+	            });
+	            $(currentCol).html($('#' + selectedID).html() + " ▼");
+	            hideColumnMenu();
+			}
+
 		
 	        $(function() {
 	            $('[id^=rowhead_]').change(function(event) {
@@ -36,11 +67,57 @@
 	                    }
 	                }
 	            });
+
+	            $('[id^=colselect_]').click(function(event) {
+
+	                var col = '#' + event.target.id;
+
+	                if (currentCol == col) {
+	                	$('#columnMenu').hide(100);
+		                currentCol = "";
+	                } else {
+	                	leftOffset = $(col).position().left + $('#fileContentHeader').position().left;
+	                	topOffset = $(col).position().top + $(col).parents("tr").height() + $('#fileContentHeader').position().top + $('#fileContentHeader').height();
+	                	
+	                	if (currentCol != "") {
+	                		topOffset = topOffset + 40;
+	                	}
+	                	
+	                    $('#columnMenu')
+	                    .css({"left": 0, "top": 0})
+	                    .offset({
+	                        "left": leftOffset,
+	                        "top": topOffset,
+	                        "width": $('#colMenuList').width(),
+	                        "height": $('#colMenuList').height()
+	                    });
+
+	                    if (currentCol == "") {
+	                        $('#columnMenu').show(100);
+	                    }
+
+	                    currentCol = col;
+	                }
+	                event.preventDefault();
+	                event.stopPropagation();
+	                event.stopImmediatePropagation();
+	            });
+
+	            $('[id^=colname_]').click(function(event) {
+	                selectCol(event.target.id);
+	            });
 	        });
 		</script>
 	</ui:define>
 	
 	<ui:define name="content">
+		<div id="columnMenu" class="popupMenu">
+		    <ul id="colMenuList" class="menu">
+				<ui:repeat value="#{columnSpecBean.columnList}" var="column" varStatus="status">
+					<li class="smallMenuitem" id="colname_#{status.index}">#{column}</li>
+				</ui:repeat>
+		    </ul>
+		</div>
 		<h1>#{newInstrumentBean.name}</h1>
 		
 		<div class="fullPage">
@@ -50,27 +127,27 @@
 	            </div>
 	            <div class="sectionContent">
 	                <div class="instructions">
+	                	Part of the sample file is shown below.
+	                	<br/>
 	                    Identify header rows using the checkboxes. Assign columns using the drop-down menus.
 	                </div>
 	            </div>
-	            <div class="sectionHeader">
+	            <div id="fileContentHeader" class="sectionHeader">
 	                File Contents
 	            </div>
-	            <p:dataTable id="sampleFile" var="sampleData" widgetVar="sampleDataTable" rowIndexVar="rowIndex" value="#{newInstrumentBean.truncatedSample}" scrollable="true" scrollWidth="98%" scrollHeight="250">
-	            	<p:column width="100px;" styleClass="centreCol">
+	            <p:dataTable id="sampleFile" var="sampleData" widgetVar="sampleDataTable" rowIndexVar="rowIndex" value="#{newInstrumentBean.truncatedSample}" scrollable="true" scrollWidth="100%" scrollHeight="350">
+	            	<p:column width="70px;" styleClass="centreCol">
 		           		<f:facet name="header">
 		           			Header?
 		           		</f:facet>
 		           		<input type="checkbox" id="rowhead_#{rowIndex}" name="rowhead_#{rowIndex}" class="#{rowIndex == 0 ? null : 'hidden'}"/>	
 	            	</p:column>
-	            	<p:columns value="#{newInstrumentBean.columns}" var="column" width="100px;">
+	            	<p:columns value="#{newInstrumentBean.columns}" var="column" width="120px;">
 	            		<f:facet name="header">
-	            			#{column.header}
+	            			<div id="colselect_#{column.columnIndex}" class="dropDown">Not selected ▼</div>
 	            		</f:facet>
 	            		#{sampleData[column.columnIndex]}
 	            	</p:columns>
-	            	
-	            	
 	            </p:dataTable>
 	        </form>
 		</div>

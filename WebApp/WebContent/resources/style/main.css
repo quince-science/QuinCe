@@ -247,6 +247,7 @@ li.menuitem {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  white-space: nowrap;
 }
 
 li.smallMenuitem {
@@ -258,6 +259,7 @@ li.smallMenuitem {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    white-space: nowrap;
 }
 
 li.menuitem:hover, li.smallMenuitem:hover {
@@ -532,7 +534,7 @@ hr {
 
 .invisible {
 	display: none;
-	visibility: hidden;'
+	visibility: hidden;
 }
 
 .inlineRadio {
