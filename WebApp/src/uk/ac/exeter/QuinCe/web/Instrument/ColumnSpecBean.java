@@ -113,21 +113,6 @@ public class ColumnSpecBean extends BaseManagedBean {
 	private String salinityName3 = null;
 	
 	/**
-	 * The name of the first sea level pressure sensor
-	 */
-	private String slpName1 = null;
-	
-	/**
-	 * The name of the second sea level pressure sensor
-	 */
-	private String slpName2 = null;
-	
-	/**
-	 * The name of the third sea level pressure sensor
-	 */
-	private String slpName3 = null;
-	
-	/**
 	 * The name of the first equilibrator temperature sensor
 	 */
 	private String eqtName1 = null;
@@ -194,9 +179,6 @@ public class ColumnSpecBean extends BaseManagedBean {
 		salinityName1 = null;
 		salinityName2 = null;
 		salinityName3 = null;
-		slpName1 = null;
-		slpName2 = null;
-		slpName3 = null;
 		eqtName1 = null;
 		eqtName2 = null;
 		eqtName3 = null;
@@ -265,16 +247,6 @@ public class ColumnSpecBean extends BaseManagedBean {
 		
 		if (null != salinityName3 && salinityName3.length() > 0) {
 			columnList.add("Salinity: " + salinityName3);
-		}
-		
-		columnList.add("Sea Level Pressure: " + slpName1);
-		
-		if (null != slpName2 && slpName2.length() > 0) {
-			columnList.add("Sea Level Pressure: " + slpName2);
-		}
-		
-		if (null != slpName3 && slpName3.length() > 0) {
-			columnList.add("Sea Level Pressure: " + slpName3);
 		}
 		
 		columnList.add("Equilibrator Temperature: " + eqtName1);
@@ -416,54 +388,6 @@ public class ColumnSpecBean extends BaseManagedBean {
 	 */
 	public void setSalinityName3(String salinityName3) {
 		this.salinityName3 = salinityName3;
-	}
-
-	/**
-	 * Get the name of the first sea level pressure sensor
-	 * @return The name of the first sea level pressure sensor
-	 */
-	public String getSlpName1() {
-		return slpName1;
-	}
-	
-	/**
-	 * Set the name of the first sea level pressure sensor
-	 * @param name The name of the first sea level pressure sensor
-	 */
-	public void setSlpName1(String slpName1) {
-		this.slpName1 = slpName1;
-	}
-
-	/**
-	 * Get the name of the second sea level pressure sensor
-	 * @return The name of the second sea level pressure sensor
-	 */
-	public String getSlpName2() {
-		return slpName2;
-	}
-	
-	/**
-	 * Set the name of the second sea level pressure sensor
-	 * @param name The name of the second sea level pressure sensor
-	 */
-	public void setSlpName2(String slpName2) {
-		this.slpName2 = slpName2;
-	}
-
-	/**
-	 * Get the name of the third sea level pressure sensor
-	 * @return The name of the third sea level pressure sensor
-	 */
-	public String getSlpName3() {
-		return slpName3;
-	}
-	
-	/**
-	 * Set the name of the third sea level pressure sensor
-	 * @param name The name of the third sea level pressure sensor
-	 */
-	public void setSlpName3(String slpName3) {
-		this.slpName3 = slpName3;
 	}
 
 	/**
