@@ -211,6 +211,8 @@ eqp_1                    Float          Equilibrator pressure 1
 eqp_2                    Float          Equilibrator pressure 2
 eqp_3                    Float          Equilibrator pressure 3
 seawater_pco2            Float          Sea water pCO~2~
+moisture                 Float          Moisture
+atmospheric_pressure     Float          Atmospheric pressure
 qc_flag                  Integer        The QC flag assigned by the automatic QC routines
 qc_message               String         The message(s) from the automatic QC routines
 woce_flag                Integer        The WOCE flag assigned by the user
