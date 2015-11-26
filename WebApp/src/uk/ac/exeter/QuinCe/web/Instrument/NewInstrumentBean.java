@@ -16,7 +16,7 @@ import uk.ac.exeter.QuinCe.web.FileUploadBean;
  */
 public class NewInstrumentBean extends FileUploadBean implements Serializable {
 
-	private static final long serialVersionUID = 832727423469773457L;
+	private static final long serialVersionUID = 6578490211991423884L;
 
 	static {
 		FORM_NAME = "instrumentForm";

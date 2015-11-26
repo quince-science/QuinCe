@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import uk.ac.exeter.QuinCe.web.BaseManagedBean;
-
 /**
  * Bean to hold details of a data file's column specification.
  * Used as an injected bean to {@link NewInstrumentBean}.
@@ -14,7 +12,7 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
  */
 public class ColumnSpec implements Serializable {
 
-	private static final long serialVersionUID = -5321527307605374821L;
+	private static final long serialVersionUID = 1342485744472103029L;
 
 	/**
 	 * Indicates that date or time components are stored in separate fields
@@ -212,7 +210,7 @@ public class ColumnSpec implements Serializable {
 		List<String> columnList = new ArrayList<String>();
 		
 		columnList.add("Run type");
-/*
+
 		if (dateFormat.equals(SEPARATE_FIELDS)) {
 			columnList.add("Year");
 			columnList.add("Month");
@@ -286,7 +284,7 @@ public class ColumnSpec implements Serializable {
 		if (!getSamplesDried()) {
 			columnList.add("Moisture");
 		}
-*/	
+	
 		columnList.add("CO2");
 		
 		return columnList;
