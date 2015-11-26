@@ -23,10 +23,13 @@
 	            currentCol = "";
 	        }
 
+	        // Process selecting a column
 	        function selectCol(selectedID) {
 
 	            var colNumber = selectedID.substring(8);
 
+	            // If this column was previously assigned to a different
+	            // field, remove the strikethrough in the popup menu
 	            selectedCols.forEach(function(element, index, array) {
 	                if (selectedCols[index] == currentCol) {
 	                    $('#colname_' + index).css({
@@ -35,10 +38,12 @@
 	                }
 	            });
 
+	            // If the column has become unassigned, reset its text
 	            if (selectedCols[colNumber] != null) {
 	                $(selectedCols[colNumber]).html('Not selected ▼');
 	            }
 
+	            // Strike through the selected field name
 	            selectedCols[colNumber] = currentCol;
 	            $('#' + selectedID).css({
 	                'text-decoration': 'line-through'
@@ -49,6 +54,7 @@
 
 		
 	        $(function() {
+	        	// Handler for header checkboxes
 	            $('[id^=rowhead_]').change(function(event) {
 	                var rowNumber = event.target.id.substr(8);
 	                var selected = event.target.checked;
@@ -68,6 +74,7 @@
 	                }
 	            });
 
+	        	// Show the field selection menu when clicking a column header
 	            $('[id^=colselect_]').click(function(event) {
 
 	                var col = '#' + event.target.id;
@@ -103,10 +110,12 @@
 	                event.stopImmediatePropagation();
 	            });
 
+	        	// Process clicking a field name in the popup menu
 	            $('[id^=colname_]').click(function(event) {
 	                selectCol(event.target.id);
 	            });
 	            
+	        	// Hide the column menu when clicking outside it
 	            $('#content').click(function() {
 	            	hideColumnMenu();
 	            });
