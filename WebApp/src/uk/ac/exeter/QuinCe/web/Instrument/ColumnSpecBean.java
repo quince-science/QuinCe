@@ -238,12 +238,12 @@ public class ColumnSpecBean extends BaseManagedBean {
 		}
 		
 		columnList.add("Longitude");
-		if (lonFormat == LON_FORMAT_0_180) {
+		if (lonFormat.equals(LON_FORMAT_0_180)) {
 			columnList.add("East/West");
 		}
 		
 		columnList.add("Latitude");
-		if (latFormat == LAT_FORMAT_0_90) {
+		if (latFormat.equals(LAT_FORMAT_0_90)) {
 			columnList.add("North/South");
 		}
 		
@@ -301,7 +301,7 @@ public class ColumnSpecBean extends BaseManagedBean {
 			columnList.add("Atmospheric Pressure");
 		}
 		
-		if (getSamplesDried()) {
+		if (!getSamplesDried()) {
 			columnList.add("Moisture");
 		}
 		
