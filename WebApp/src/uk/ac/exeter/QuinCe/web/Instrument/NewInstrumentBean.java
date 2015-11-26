@@ -1,10 +1,11 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.faces.bean.ManagedProperty;
+import javax.annotation.PostConstruct;
 
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 
@@ -13,7 +14,9 @@ import uk.ac.exeter.QuinCe.web.FileUploadBean;
  * @author Steve Jones
  *
  */
-public class NewInstrumentBean extends FileUploadBean {
+public class NewInstrumentBean extends FileUploadBean implements Serializable {
+
+	private static final long serialVersionUID = 832727423469773457L;
 
 	static {
 		FORM_NAME = "instrumentForm";
@@ -43,6 +46,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * The navigation to the column selection page
 	 */
 	private static final String PAGE_COLUMN_SELECTION = "column_selection";
+
+	/**
+	 * THe navigation to the run type selection page
+	 */
+	private static final String PAGE_RUN_TYPES = "run_types";
 	
 	/**
 	 * Indicates a comma separator
@@ -111,6 +119,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	private int sampleFileColumnCount = -1;
 	
 	/**
+	 * The number of header lines in the data file
+	 */
+	private int headerLines = 0;
+	
+	/**
 	 * The utility for extracting the contents of the sample file.
 	 */
 	private SampleFileExtractor sampleFileExtractor = null;
@@ -128,8 +141,16 @@ public class NewInstrumentBean extends FileUploadBean {
 	/**
 	 * The column specification for the instrument's data file
 	 */
-	@ManagedProperty("#{columnSpecBean}")
-	private ColumnSpecBean columnSpecBean;
+	private ColumnSpec columnSpec;
+	
+	public NewInstrumentBean() {
+		// Do nothing
+	}
+	
+	@PostConstruct
+	public void init() {
+		columnSpec = new ColumnSpec(this);
+	}
 	
 	/**
 	 * Begin the process of adding a new instrument.
@@ -157,6 +178,17 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	public String goToFileSpec() {
 		return PAGE_FILE_SPEC;
+	}
+	
+	/**
+	 * Process the column selection
+	 * @return The navigation result
+	 */
+	public String processColumnSelection() {
+		System.out.println("Processing Column Selection");
+		System.out.println(String.valueOf(getHeaderLines()));
+		System.out.println(columnSpec.getColumnSelection());
+		return PAGE_RUN_TYPES;
 	}
 	
 	/**
@@ -230,8 +262,8 @@ public class NewInstrumentBean extends FileUploadBean {
 			sampleFileExtractor = null;
 		}
 		
-		if (null != columnSpecBean) {
-			columnSpecBean.clearData();
+		if (null != columnSpec) {
+			columnSpec.clearData();
 		}
 	}
 	
@@ -253,8 +285,12 @@ public class NewInstrumentBean extends FileUploadBean {
 		extractorThread.start();
 	}
 	
-	public void setColumnSpecBean(ColumnSpecBean columnSpecBean) {
-		this.columnSpecBean = columnSpecBean;
+	public ColumnSpec getColumnSpec() {
+		return columnSpec;
+	}
+	
+	public void setColumnSpec(ColumnSpec columnSpec) {
+		this.columnSpec = columnSpec;
 	}
 	
 	/**
@@ -442,6 +478,18 @@ public class NewInstrumentBean extends FileUploadBean {
 		this.samplesDried = Boolean.parseBoolean(samplesDried);
 	}
 	
+	public int getHeaderLines() {
+		return headerLines;
+	}
+	
+	public void setHeaderLines(int headerLines) {
+		this.headerLines = headerLines;
+	}
+	
+	/**
+	 * Returns the first 50 lines of the sample file
+	 * @return The first 50 lines of the sample file
+	 */
 	public List<Map<Integer, String>> getTruncatedSample() {
 		return sampleFileContents.subList(0, 49);
 	}

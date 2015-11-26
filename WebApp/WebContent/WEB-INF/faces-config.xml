@@ -34,12 +34,6 @@
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.NewInstrumentBean</managed-bean-class>
 		<managed-bean-scope>session</managed-bean-scope>
 	</managed-bean>
-	<managed-bean>
-		<description>Instrument Column Spec</description>
-		<managed-bean-name>columnSpecBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.ColumnSpecBean</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
-	</managed-bean>
 	<navigation-rule>
 		<display-name>all_pages</display-name>
 		<from-view-id>*</from-view-id>
@@ -130,6 +124,10 @@
 		<navigation-case>
 			<from-outcome>column_selection</from-outcome>
 			<to-view-id>/instrument/new/select_columns.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>run_types</from-outcome>
+			<to-view-id>/instrument/new/run_types.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 </faces-config>

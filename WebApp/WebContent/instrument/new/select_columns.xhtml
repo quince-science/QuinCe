@@ -16,11 +16,30 @@
 		<script type="text/javascript">
 	        var currentCol = "";
 	        var selectedCols = [];
+	        var totalCols = 0;
 			var headerLines = 0;
 
 	        function hideColumnMenu() {
 	            $('#columnMenu').hide(100);
 	            currentCol = "";
+	        }
+	        
+	        // Determines whether or not all the columns
+	        // have been assigned
+	        function allColumnsSelected() {
+	        	var result = true;
+	        	
+	        	if (selectedCols.length &lt; totalCols) {
+	        		result = false;
+	        	} else {
+	        		for (i = 0; i &lt; selectedCols.length; i++) {
+	        			if (null == selectedCols[i]) {
+	        				result = false;
+	        			}
+	        		}
+	        	}
+	        		
+	        	return result;
 	        }
 
 	        // Process selecting a column
@@ -50,10 +69,36 @@
 	            });
 	            $(currentCol).html($('#' + selectedID).html() + " ▼");
 	            hideColumnMenu();
+	            
+	            if (allColumnsSelected()) {
+	            	$('#columnForm\\:nextButton').attr('disabled', false);
+	            }
 			}
-
+	        
+	        // Fill in the form ready to be submitted
+	        function fillForm() {
+	        	$('#columnForm\\:headerLines').val(headerLines);
+	        	
+	        	var colSelection = "";
+	        	
+	        	for (i = 0; i &lt; selectedCols.length; i++) {
+	        		colSelection = colSelection + selectedCols[i].substring(11);
+	        		if (i &lt; (selectedCols.length - 1)) {
+		        		colSelection = colSelection + ",";
+	        		}
+	        	}
+	        	
+	        	$('#columnForm\\:colSelection').val(colSelection);
+	        }
 		
 	        $(function() {
+	        	// Disabling the Next button in the JSF tag kills it.
+	        	// So we disable it manually.
+	        	$('#columnForm\\:nextButton').attr('disabled', true);
+	        	
+	        	// Log the total number of columns
+	        	totalCols = $('#columnMenu').find("li").length;
+	        	
 	        	// Handler for header checkboxes
 	            $('[id^=rowhead_]').change(function(event) {
 	                var rowNumber = event.target.id.substr(8);
@@ -126,7 +171,7 @@
 	<ui:define name="content">
 		<div id="columnMenu" class="popupMenu">
 		    <ul id="colMenuList" class="menu">
-				<ui:repeat value="#{columnSpecBean.columnList}" var="column" varStatus="status">
+				<ui:repeat value="#{newInstrumentBean.columnSpec.columnList}" var="column" varStatus="status">
 					<li class="smallMenuitem" id="colname_#{status.index}">#{column}</li>
 				</ui:repeat>
 		    </ul>
@@ -134,7 +179,9 @@
 		<h1>#{newInstrumentBean.name}</h1>
 		
 		<div class="fullPage">
-			<form id="columnForm" method="post" autocomplete="off" accept-charset="utf8">
+			<h:form id="columnForm" method="post" accept-charset="utf8">
+				<h:inputHidden id="headerLines" value="#{newInstrumentBean.headerLines}"/>
+				<h:inputHidden id="colSelection" value="#{newInstrumentBean.columnSpec.columnSelection}"/>
 				<div class="sectionHeader">
 	                Specify columns and headers
 	            </div>
@@ -162,7 +209,10 @@
 	            		#{sampleData[column.columnIndex]}
 	            	</p:columns>
 	            </p:dataTable>
-	        </form>
+	            <div class="buttonWrapper">
+	            	<h:commandButton id="nextButton" value="Next" onclick="fillForm();" action="#{newInstrumentBean.processColumnSelection}"/>
+	            </div>
+	        </h:form>
 		</div>
 	</ui:define>
 </ui:composition>

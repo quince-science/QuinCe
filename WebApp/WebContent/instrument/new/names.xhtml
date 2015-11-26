@@ -32,7 +32,7 @@
 	            	<table class="form">
 	                	<tr>
 	                    	<td class="labels"><h:outputLabel id="intakeTempName1Label" for="intakeTempName1" value="Sensor 1 Name:"/></td>
-	                    	<td><h:inputText id="intakeTempName1" value="#{columnSpecBean.intakeTempName1}" class="large" size="20" required="true" requiredMessage="There must be at least one intake temperature sensor"/></td>
+	                    	<td><h:inputText id="intakeTempName1" value="#{newInstrumentBean.columnSpec.intakeTempName1}" class="large" size="20" required="true" requiredMessage="There must be at least one intake temperature sensor"/></td>
 	                	</tr>
 	           			<tr>
 	           				<td></td>
@@ -40,11 +40,11 @@
 	           			</tr>
 	                	<tr>
 	                    	<td class="labels"><h:outputLabel id="intakeTempName2Label" for="intakeTempName2" value="Sensor 2 Name:"/></td>
-	                    	<td><h:inputText id="intakeTempName2" value="#{columnSpecBean.intakeTempName2}" class="large" size="20"/></td>
+	                    	<td><h:inputText id="intakeTempName2" value="#{newInstrumentBean.columnSpec.intakeTempName2}" class="large" size="20"/></td>
 	                  	</tr>
 	                  	<tr>
 	                    	<td class="labels"><h:outputLabel id="intakeTempName3Label" for="intakeTempName3" value="Sensor 3 Name:"/></td>
-	                    	<td><h:inputText id="intakeTempName3" value="#{columnSpecBean.intakeTempName3}" class="large" size="20"/></td>
+	                    	<td><h:inputText id="intakeTempName3" value="#{newInstrumentBean.columnSpec.intakeTempName3}" class="large" size="20"/></td>
 	                  	</tr>
 	              	</table>
 	          	</div>
@@ -55,7 +55,7 @@
 	             	<table class="form">
 	                	<tr>
 	                    	<td class="labels"><h:outputLabel id="salinityName1Label" for="salinityTempName1" value="Sensor 1 Name:"/></td>
-	                    	<td><h:inputText id="salinityTempName1" value="#{columnSpecBean.salinityName1}" class="large" size="20" required="true" requiredMessage="There must be at least one salinity sensor"/></td>
+	                    	<td><h:inputText id="salinityTempName1" value="#{newInstrumentBean.columnSpec.salinityName1}" class="large" size="20" required="true" requiredMessage="There must be at least one salinity sensor"/></td>
 	                	</tr>
 	           			<tr>
 	           				<td></td>
@@ -63,11 +63,11 @@
 	           			</tr>
 	                	<tr>
 	                    	<td class="labels"><h:outputLabel id="salinityName2Label" for="salinityName2" value="Sensor 2 Name:"/></td>
-	                    	<td><h:inputText id="salinityName2" value="#{columnSpecBean.salinityName2}" class="large" size="20"/></td>
+	                    	<td><h:inputText id="salinityName2" value="#{newInstrumentBean.columnSpec.salinityName2}" class="large" size="20"/></td>
 	                  	</tr>
 	                  	<tr>
 	                    	<td class="labels"><h:outputLabel id="salinityName3Label" for="salinityName3" value="Sensor 3 Name:"/></td>
-	                    	<td><h:inputText id="salinityName3" value="#{columnSpecBean.salinityName3}" class="large" size="20"/></td>
+	                    	<td><h:inputText id="salinityName3" value="#{newInstrumentBean.columnSpec.salinityName3}" class="large" size="20"/></td>
 	                  	</tr>
 	              	</table>
 	          	</div>
@@ -78,7 +78,7 @@
 	              	<table class="form">
 	                	<tr>
 	                    	<td class="labels"><h:outputLabel id="eqtName1Label" for="eqtTempName1" value="Sensor 1 Name:"/></td>
-	                    	<td><h:inputText id="eqtTempName1" value="#{columnSpecBean.eqtName1}" class="large" size="20" required="true" requiredMessage="There must be at least one equilibrator temperature sensor"/></td>
+	                    	<td><h:inputText id="eqtTempName1" value="#{newInstrumentBean.columnSpec.eqtName1}" class="large" size="20" required="true" requiredMessage="There must be at least one equilibrator temperature sensor"/></td>
 	                	</tr>
   	           			<tr>
 	           				<td></td>
@@ -86,11 +86,11 @@
 	           			</tr>
 	                	<tr>
 	                    	<td class="labels"><h:outputLabel id="eqtName2Label" for="eqtName2" value="Sensor 2 Name:"/></td>
-	                    	<td><h:inputText id="eqtName2" value="#{columnSpecBean.eqtName2}" class="large" size="20"/></td>
+	                    	<td><h:inputText id="eqtName2" value="#{newInstrumentBean.columnSpec.eqtName2}" class="large" size="20"/></td>
 	                  	</tr>
 	                  	<tr>
 	                    	<td class="labels"><h:outputLabel id="eqtName3Label" for="eqtName3" value="Sensor 3 Name:"/></td>
-	                    	<td><h:inputText id="eqtName3" value="#{columnSpecBean.eqtName3}" class="large" size="20"/></td>
+	                    	<td><h:inputText id="eqtName3" value="#{newInstrumentBean.columnSpec.eqtName3}" class="large" size="20"/></td>
 	                  	</tr>
 	              	</table>
 	          	</div>
@@ -101,7 +101,7 @@
 	              	<table class="form">
 	                	<tr>
 	                    	<td class="labels"><h:outputLabel id="eqpName1Label" for="eqpTempName1" value="Sensor 1 Name:"/></td>
-	                    	<td><h:inputText id="eqpTempName1" value="#{columnSpecBean.eqpName1}" class="large" size="20" required="true" requiredMessage="There must be at least one equilibrator pressure sensor"/></td>
+	                    	<td><h:inputText id="eqpTempName1" value="#{newInstrumentBean.columnSpec.eqpName1}" class="large" size="20" required="true" requiredMessage="There must be at least one equilibrator pressure sensor"/></td>
 	                	</tr>
   	           			<tr>
 	           				<td></td>
@@ -109,11 +109,11 @@
 	           			</tr>
 	                	<tr>
 	                    	<td class="labels"><h:outputLabel id="eqpName2Label" for="eqpName2" value="Sensor 2 Name:"/></td>
-	                    	<td><h:inputText id="eqpName2" value="#{columnSpecBean.eqpName2}" class="large" size="20"/></td>
+	                    	<td><h:inputText id="eqpName2" value="#{newInstrumentBean.columnSpec.eqpName2}" class="large" size="20"/></td>
 	                  	</tr>
 	                  	<tr>
 	                    	<td class="labels"><h:outputLabel id="eqpName3Label" for="eqpName3" value="Sensor 3 Name:"/></td>
-	                    	<td><h:inputText id="eqpName3" value="#{columnSpecBean.eqpName3}" class="large" size="20"/></td>
+	                    	<td><h:inputText id="eqpName3" value="#{newInstrumentBean.columnSpec.eqpName3}" class="large" size="20"/></td>
 	                  	</tr>
 	              	</table>
 	          	</div>

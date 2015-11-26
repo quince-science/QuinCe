@@ -1,0 +1,18 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	template="/templates/app_page.xhtml">
+	
+	<ui:define name="title">
+		New Instrument
+	</ui:define>
+
+	<ui:define name="content">
+		<h1>#{newInstrumentBean.name}</h1>
+		<h2>Run types!</h2>
+	</ui:define>
+</ui:composition>

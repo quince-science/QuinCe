@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,11 +12,9 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
  * @author Steve Jones
  *
  */
-public class ColumnSpecBean extends BaseManagedBean {
+public class ColumnSpec implements Serializable {
 
-	static {
-		FORM_NAME = "instrumentForm";
-	}
+	private static final long serialVersionUID = -5321527307605374821L;
 
 	/**
 	 * Indicates that date or time components are stored in separate fields
@@ -167,7 +166,18 @@ public class ColumnSpecBean extends BaseManagedBean {
 	 */
 	private boolean hasAtmosphericPressure = false;
 	
+	/**
+	 * The list of columns selected on the column selection page
+	 */
+	private String columnSelection = null;
+	
+	private NewInstrumentBean parent = null;
+	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	public ColumnSpec(NewInstrumentBean parent) {
+		this.parent = parent;
+	}
 	
 	/**
 	 * Reset all data in the bean
@@ -202,7 +212,7 @@ public class ColumnSpecBean extends BaseManagedBean {
 		List<String> columnList = new ArrayList<String>();
 		
 		columnList.add("Run type");
-		
+/*
 		if (dateFormat.equals(SEPARATE_FIELDS)) {
 			columnList.add("Year");
 			columnList.add("Month");
@@ -276,7 +286,7 @@ public class ColumnSpecBean extends BaseManagedBean {
 		if (!getSamplesDried()) {
 			columnList.add("Moisture");
 		}
-		
+*/	
 		columnList.add("CO2");
 		
 		return columnList;
@@ -289,7 +299,7 @@ public class ColumnSpecBean extends BaseManagedBean {
 	 * @return A flag indicating whether or not samples are dried before being analysed
 	 */
 	private boolean getSamplesDried() {
-		return Boolean.parseBoolean(getELValue("#{newInstrumentBean.samplesDried}"));
+		return Boolean.parseBoolean(parent.getSamplesDried());
 	}
 	
 	/////////////////// GETTERS AND SETTERS //////////////////////////////////
@@ -566,5 +576,21 @@ public class ColumnSpecBean extends BaseManagedBean {
 	 */
 	public void setHasAtmosphericPressure(String hasAtmosphericPressure) {
 		this.hasAtmosphericPressure = Boolean.parseBoolean(hasAtmosphericPressure);
+	}
+	
+	/**
+	 * Returns the list of columns selected on the column selection page
+	 * @return The list of columns selected on the column selection page
+	 */
+	public String getColumnSelection() {
+		return columnSelection;
+	}
+	
+	/**
+	 * Set the list of columns selected on the column selection page
+	 * @param columnSelection The list of columns selected on the column selection page
+	 */
+	public void setColumnSelection(String columnSelection) {
+		this.columnSelection = columnSelection;
 	}
 }
