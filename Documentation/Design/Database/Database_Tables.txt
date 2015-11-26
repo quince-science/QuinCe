@@ -57,9 +57,6 @@ intake_temp_3_name       String         The name of the third intake temperature
 salinity_1_name          String         The name of the first salinity sensor
 salinity_2_name          String         The name of the second salinity sensor
 salinity_3_name          String         The name of the third salinity sensor
-slp_1_name               String         The name of the first sea level pressure sensor
-slp_2_name               String         The name of the second sea level pressure sensor
-slp_3_name               String         The name of the third sea level pressure sensor
 eqt_1_name               String         The name of the first equilibrator temperature sensor
 eqt_2_name               String         The name of the second equilibrator temperature sensor
 eqt_3_name               String         The name of the third equilibrator temperature sensor
@@ -93,9 +90,6 @@ intake_temp_3_col        Integer        Intake temperature 3
 salinity_1_col           Integer        Salinity 1
 salinity_2_col           Integer        Salinity 2
 salinity_3_col           Integer        Salinity 3
-slp_1_col                Integer        Sea level pressure 1
-slp_2_col                Integer        Sea level pressure 2
-slp_3_col                Integer        Sea level pressure 3
 eqt_1_col                Integer        Equilibrator temperature 1
 eqt_2_col                Integer        Equilibrator temperature 2
 eqt_3_col                Integer        Equilibrator temperature 3
@@ -210,9 +204,6 @@ intake_temp_3            Float          Intake temperature 3
 salinity_1               Float          Salinity 1
 salinity_2               Float          Salinity 2
 salinity_3               Float          Salinity 3
-slp_1                    Float          Sea level pressure 1
-slp_2                    Float          Sea level pressure 2
-slp_3                    Float          Sea level pressure 3
 eqt_1                    Float          Equilibrator temperature 1
 eqt_2                    Float          Equilibrator temperature 2
 eqt_3                    Float          Equilibrator temperature 3
