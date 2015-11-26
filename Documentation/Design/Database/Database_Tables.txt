@@ -98,7 +98,7 @@ eqp_2_col                Integer        Equilibrator pressure 2
 eqp_3_col                Integer        Equilibrator pressure 3
 atmospheric_pressure_col Integer        Atmospheric pressure
 moisture_col             Integer        Moisture
-seawater_pco2_col        Integer        Sea water pCO~2~
+seawater_co2_col         Integer        Sea water CO~2~
 
 #### `date_format`
 The `date_format` field will have one of the following values:
@@ -140,7 +140,7 @@ Value    Format
 
 ### `run_types`
 Each instrument will have a number of run types. QuinCe has only two types: sea
-water pCO~2~ and gas standards. This table will hold details of which values in the
+water CO~2~ and gas standards. This table will hold details of which values in the
 `run_type` column (as defined in the `columns` table) correspond to which run types.
 
 Field                    Type           Description
@@ -155,7 +155,7 @@ The `type` column will contain one of the following values:
 
 Value    Run type
 -----    --------------------------
-0        Sea water pCO~2~
+0        Sea water CO~2~
 1        Gas standard
 
 ## `gas_standard_concentrations`
@@ -183,9 +183,9 @@ instrument_id            F_KEY          The instrument ID
 filename                 String         The filename of the uploaded file. Must be unique for a given instrument
 last_touched             Date           The date when the file was last touched. Files held beyond a given length of time will be automatically deleted.
 
-## `pco2_data`
+## `co2_data`
 This table will contain the records from the data file corresponding to the sea
-water pCO~2~ run. This is what will be displayed in the QC view. Gas standards
+water CO~2~ run. This is what will be displayed in the QC view. Gas standards
 data will be stored in a separate table.
 
 The table will be populated by the data reduction process. All calibrations
@@ -210,7 +210,7 @@ eqt_3                    Float          Equilibrator temperature 3
 eqp_1                    Float          Equilibrator pressure 1
 eqp_2                    Float          Equilibrator pressure 2
 eqp_3                    Float          Equilibrator pressure 3
-seawater_pco2            Float          Sea water pCO~2~
+seawater_co2             Float          Sea water CO~2~
 moisture                 Float          Moisture
 atmospheric_pressure     Float          Atmospheric pressure
 qc_flag                  Integer        The QC flag assigned by the automatic QC routines
