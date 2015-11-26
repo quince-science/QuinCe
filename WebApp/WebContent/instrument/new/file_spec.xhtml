@@ -265,7 +265,9 @@
                     </table>
                 </div>
 	            <div class="buttonWrapper">
-	            	<h:commandButton id="prevButton" value="Previous" action="#{newInstrumentBean.goToNamesFromFileSpec}"/>
+	            	<ui:remove>
+	            		<h:commandButton id="prevButton" value="Previous" action="#{newInstrumentBean.goToNamesFromFileSpec}"/>
+	            	</ui:remove>
 	            	<h:commandButton id="nextButton" value="Next" action="#{newInstrumentBean.goToSampleUploadFromFileSpec}"/>
 	                <button onclick="cancelInstrument()">Cancel</button>
 	            </div>

@@ -51,7 +51,9 @@
                 <div class="sectionContent">
                 </div>
 	            <div class="buttonWrapper">
-	            	<h:commandButton id="prevButton" value="Previous" action="#{newInstrumentBean.goToFileSpec}"/>
+	            	<ui:remove>
+	            		<h:commandButton id="prevButton" value="Previous" action="#{newInstrumentBean.goToFileSpec}"/>
+	            	</ui:remove>
 	                <button onclick="cancelInstrument()">Cancel</button>
 	            </div>
 		        <h:commandLink id="columnSelectionLink" forceId="true" style="invisible" action="#{newInstrumentBean.postSampleFileNavigation}"/>
