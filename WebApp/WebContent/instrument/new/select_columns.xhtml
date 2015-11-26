@@ -106,6 +106,10 @@
 	            $('[id^=colname_]').click(function(event) {
 	                selectCol(event.target.id);
 	            });
+	            
+	            $('#content').click(function() {
+	            	hideColumnMenu();
+	            });
 	        });
 		</script>
 	</ui:define>
