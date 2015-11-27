@@ -1,8 +1,11 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Bean to hold details of a data file's column specification.
@@ -220,6 +223,11 @@ public class ColumnSpec implements Serializable {
 	private static final int COL_CO2 = 27;
 	
 	/**
+	 * Indicates that a column is not used
+	 */
+	private static final int COL_NOT_USED = -1;
+	
+	/**
 	 * The name of the first intake temperature sensor
 	 */
 	private String intakeTempName1 = null;
@@ -313,6 +321,146 @@ public class ColumnSpec implements Serializable {
 	 * The parent object that spawned this specification
 	 */
 	private NewInstrumentBean parent = null;
+	
+	/**
+	 * Column containing the run type
+	 */
+	private int runTypeCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the year
+	 */
+	private int yearCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the month
+	 */
+	private int monthCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the day
+	 */
+	private int dayCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the date
+	 */
+	private int dateCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the hour
+	 */
+	private int hourCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the minute
+	 */
+	private int minuteCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the second
+	 */
+	private int secondCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the time
+	 */
+	private int timeCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the longitude
+	 */
+	private int longitudeCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the east/west identifier
+	 */
+	private int eastWestCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the latitude
+	 */
+	private int latitudeCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the north/south identifier
+	 */
+	private int northSouthCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the first intake temperature
+	 */
+	private int intakeTemp1Col = COL_NOT_USED;
+	
+	/**
+	 * Column containing the second intake temperature
+	 */
+	private int intakeTemp2Col = COL_NOT_USED;
+	
+	/**
+	 * Column containing the third intake temperature
+	 */
+	private int intakeTemp3Col = COL_NOT_USED;
+	
+	/**
+	 * Column containing the first salinity
+	 */
+	private int salinity1Col = COL_NOT_USED;
+	
+	/**
+	 * Column containing the second salinity
+	 */
+	private int salinity2Col = COL_NOT_USED;
+	
+	/**
+	 * Column containing the third salinity
+	 */
+	private int salinity3Col = COL_NOT_USED;
+	
+	/**
+	 * Column containing the first equilibrator temperature
+	 */
+	private int eqt1Col = COL_NOT_USED;
+	
+	/**
+	 * Column containing the second equilibrator temperature
+	 */
+	private int eqt2Col = COL_NOT_USED;
+	
+	/**
+	 * Column containing the third equilibrator temperature
+	 */
+	private int eqt3Col = COL_NOT_USED;
+	
+	/**
+	 * Column containing the first equilibrator pressure
+	 */
+	private int eqp1Col = COL_NOT_USED;
+	
+	/**
+	 * Column containing the second equilibrator pressure
+	 */
+	private int eqp2Col = COL_NOT_USED;
+	
+	/**
+	 * Column containing the third equilibrator pressure
+	 */
+	private int eqp3Col = COL_NOT_USED;
+	
+	/**
+	 * Column containing the atmospheric pressure
+	 */
+	private int atmosphericPressureCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the moisture
+	 */
+	private int moistureCol = COL_NOT_USED;
+	
+	/**
+	 * Column containing the CO2
+	 */
+	private int co2Col = COL_NOT_USED;
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -569,6 +717,156 @@ public class ColumnSpec implements Serializable {
 	 */
 	private boolean getSamplesDried() {
 		return Boolean.parseBoolean(parent.getSamplesDried());
+	}
+	
+	/**
+	 * Take the list of selected columns and set the column variables
+	 * @throws SecurityException 
+	 * @throws NoSuchFieldException 
+	 * @throws IllegalAccessException 
+	 * @throws IllegalArgumentException 
+	 */
+	protected void processColumnSelection() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		List<Integer> selectedColumns = StringUtils.delimitedToIntegerList(columnSelection);
+		List<Integer> requiredColumns = getColumnList();
+		
+		for (int i = 0; i < requiredColumns.size(); i++) {
+			Field columnVar = getColumnVarField(requiredColumns.get(i));
+			columnVar.setInt(this, selectedColumns.get(i));
+		}
+	}
+	
+	/**
+	 * Get the name of the column variable for a given column code
+	 * @param column The column code
+	 * @return The name of the column variable
+	 * @throws NoSuchFieldException
+	 * @throws SecurityException
+	 */
+	private Field getColumnVarField(int column) throws NoSuchFieldException, SecurityException {
+		String varName = null;
+		
+		switch(column) {
+		case COL_RUN_TYPE: {
+			varName = "runTypeCol";
+			break;
+		}
+		case COL_YEAR: {
+			varName = "yearCol";
+			break;
+		}
+		case COL_MONTH: {
+			varName = "monthCol";
+			break;
+		}
+		case COL_DAY: {
+			varName = "dayCol";
+			break;
+		}
+		case COL_DATE: {
+			varName = "dateCol";
+			break;
+		}
+		case COL_HOUR: {
+			varName = "hourCol";
+			break;
+		}
+		case COL_MINUTE: {
+			varName = "minuteCol";
+			break;
+		}
+		case COL_SECOND: {
+			varName = "secondCol";
+			break;
+		}
+		case COL_TIME: {
+			varName = "timeCol";
+			break;
+		}
+		case COL_LONGITUDE: {
+			varName = "longitudeCol";
+			break;
+		}
+		case COL_EAST_WEST: {
+			varName = "eastWestCol";
+			break;
+		}
+		case COL_LATITUDE: {
+			varName = "latitudeCol";
+			break;
+		}
+		case COL_NORTH_SOUTH: {
+			varName = "northSouthCol";
+			break;
+		}
+		case COL_INTAKE_TEMP_1: {
+			varName = "intakeTemp1Col";
+			break;
+		}
+		case COL_INTAKE_TEMP_2: {
+			varName = "intakeTemp2Col";
+			break;
+		}
+		case COL_INTAKE_TEMP_3: {
+			varName = "intakeTemp3Col";
+			break;
+		}
+		case COL_SALINITY_1: {
+			varName = "salinity1Col";
+			break;
+		}
+		case COL_SALINITY_2: {
+			varName = "salinity2Col";
+			break;
+		}
+		case COL_SALINITY_3: {
+			varName = "salinity3Col";
+			break;
+		}
+		case COL_EQT_1: {
+			varName = "eqt1Col";
+			break;
+		}
+		case COL_EQT_2: {
+			varName = "eqt2Col";
+			break;
+		}
+		case COL_EQT_3: {
+			varName = "eqt3Col";
+			break;
+		}
+		case COL_EQP_1: {
+			varName = "eqp1Col";
+			break;
+		}
+		case COL_EQP_2: {
+			varName = "eqp2Col";
+			break;
+		}
+		case COL_EQP_3: {
+			varName = "eqp3Col";
+			break;
+		}
+		case COL_ATMOSPHERIC_PRESSURE: {
+			varName = "atmosphericPressureCol";
+			break;
+		}
+		case COL_MOISTURE: {
+			varName = "moistureCol";
+			break;
+		}
+		case COL_CO2: {
+			varName = "co2Col";
+			break;
+		}
+		}
+		
+		Field result = null;
+		if (null != varName) {
+			result = getClass().getDeclaredField(varName);
+		}
+		
+		return result; 
 	}
 	
 	/////////////////// GETTERS AND SETTERS //////////////////////////////////

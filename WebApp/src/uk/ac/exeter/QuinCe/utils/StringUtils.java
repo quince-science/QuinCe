@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.utils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -56,6 +57,27 @@ public class StringUtils {
 		if (null != values) {
 			String delimiter = ";";
 			result = Arrays.asList(values.split(delimiter, 0));
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Convert a delimited list of integers into a list of integers
+	 * @param values The list
+	 * @return The list as integers
+	 */
+	public static List<Integer> delimitedToIntegerList(String values) {
+		
+		List<Integer> result = null;
+		
+		if (values != null) {
+			List<String> stringList = delimitedToList(values);
+			result = new ArrayList<Integer>(stringList.size());
+
+			for (String item: stringList) {
+				result.add(Integer.parseInt(item));
+			}
 		}
 		
 		return result;

@@ -189,11 +189,13 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	/**
 	 * Process the column selection
 	 * @return The navigation result
+	 * @throws IllegalAccessException 
+	 * @throws IllegalArgumentException 
+	 * @throws SecurityException 
+	 * @throws NoSuchFieldException 
 	 */
-	public String processColumnSelection() {
-		System.out.println("Processing Column Selection");
-		System.out.println(String.valueOf(getHeaderLines()));
-		System.out.println(columnSpec.getColumnSelection());
+	public String processColumnSelection() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		columnSpec.processColumnSelection();
 		return PAGE_RUN_TYPES;
 	}
 	
