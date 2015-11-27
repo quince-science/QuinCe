@@ -48,7 +48,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	private static final String PAGE_COLUMN_SELECTION = "column_selection";
 
 	/**
-	 * THe navigation to the run type selection page
+	 * The navigation to the run type selection page
 	 */
 	private static final String PAGE_RUN_TYPES = "run_types";
 	
