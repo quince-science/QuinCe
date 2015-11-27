@@ -1160,4 +1160,12 @@ public class ColumnSpec implements Serializable {
 	public void setColumnSelection(String columnSelection) {
 		this.columnSelection = columnSelection;
 	}
+	
+	/**
+	 * Returns the column that contains run types 
+	 * @return The column that contains run types
+	 */
+	protected int getRunTypeCol() {
+		return runTypeCol;
+	}
 }

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 
@@ -51,6 +52,11 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 * The navigation to the run type selection page
 	 */
 	private static final String PAGE_RUN_TYPES = "run_types";
+	
+	/**
+	 * The navigation to the instrment list
+	 */
+	private static final String PAGE_INSTRUMENT_LIST = "instrument_list";
 	
 	/**
 	 * Indicates a comma separator
@@ -142,6 +148,11 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 * The column specification for the instrument's data file
 	 */
 	private ColumnSpec columnSpec = null;
+	
+	/**
+	 * The set of run type classifications, as reported from the HTML form
+	 */
+	private String runTypeClassifications = null;
 	
 	/**
 	 * Required basic constructor
@@ -538,5 +549,65 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		}
 		
 		return columns;
+	}
+	
+	/**
+	 * Returns an ordered set of unique values from the Run Types column
+	 * in the sample data file
+	 * @return The run type values
+	 */
+	public TreeSet<String> getRunTypesList() {
+		TreeSet<String> result = new TreeSet<String>();
+		
+		int runTypesCol = columnSpec.getRunTypeCol();
+		
+		for (int i = headerLines; i < sampleFileContents.size(); i++) {
+			result.add(sampleFileContents.get(i).get(runTypesCol));
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Get the list of run type classifications as returned from the HTML form
+	 * @return The list of run type classifications
+	 */
+	public String getRunTypeClassifications() {
+		return runTypeClassifications;
+	}
+	
+	/**
+	 * Get the list of run type classifications as returned from the HTML form
+	 * @param runTypeClassifications The list of run type classifications
+	 */
+	public void setRunTypeClassifications(String runTypeClassifications) {
+		this.runTypeClassifications = runTypeClassifications;
+	}
+	
+	/**
+	 * Process the output of the Run Types page.
+	 * Extracts the run types, and saves all the instrument
+	 * details to the database
+	 * @return The navigation result.
+	 */
+	public String processRunTypes() {
+		extractRunTypes();
+		saveInstrument();
+		return PAGE_INSTRUMENT_LIST;
+	}
+	
+	/**
+	 * Extract the run types as provided by the form
+	 * into a format that can be used to save values into the database
+	 */
+	private void extractRunTypes() {
+		
+	}
+	
+	/**
+	 * Saves all the details of the instrument to the database
+	 */
+	private void saveInstrument() {
+		// TODO This should all be done in a single transaction
 	}
 }
