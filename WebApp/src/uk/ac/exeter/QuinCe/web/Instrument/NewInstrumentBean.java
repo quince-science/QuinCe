@@ -141,7 +141,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	/**
 	 * The column specification for the instrument's data file
 	 */
-	private ColumnSpec columnSpec;
+	private ColumnSpec columnSpec = null;
 	
 	/**
 	 * Required basic constructor
@@ -264,17 +264,21 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		name = null;
 		separator = SEPARATOR_COMMA;
 		otherSeparatorChar = null;
+		samplesDried = false;
 		file = null;
 		sampleFileContents = null;
+		sampleFileColumnCount = -1;
+		headerLines = 0;
+		sampleFileExtractionResult = EXTRACTION_ERROR;
+		sampleFileExtractionMessage = "The extraction has not been run";
+		
 		
 		if (null != sampleFileExtractor) {
 			sampleFileExtractor.terminate();
 			sampleFileExtractor = null;
 		}
 		
-		if (null != columnSpec) {
-			columnSpec.clearData();
-		}
+		columnSpec = new ColumnSpec(this);
 	}
 	
 	/**

@@ -325,29 +325,6 @@ public class ColumnSpec implements Serializable {
 	}
 	
 	/**
-	 * Reset all data in the bean
-	 */
-	protected void clearData() {
-		intakeTempName1 = null;
-		intakeTempName2 = null;
-		intakeTempName3 = null;
-		salinityName1 = null;
-		salinityName2 = null;
-		salinityName3 = null;
-		eqtName1 = null;
-		eqtName2 = null;
-		eqtName3 = null;
-		eqpName1 = null;
-		eqpName2 = null;
-		eqpName3 = null;
-		dateFormat = SEPARATE_FIELDS;
-		timeFormat = SEPARATE_FIELDS;
-		lonFormat = LON_FORMAT_0_360;
-		latFormat = LAT_FORMAT_MINUS90_90;
-		hasAtmosphericPressure = false;
-	}
-	
-	/**
 	 * Retrieve a list of all the columns expected from the
 	 * data file for the instrument.
 	 * 
