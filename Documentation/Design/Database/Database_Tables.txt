@@ -98,7 +98,7 @@ eqp_2_col                Integer        Equilibrator pressure 2
 eqp_3_col                Integer        Equilibrator pressure 3
 atmospheric_pressure_col Integer        Atmospheric pressure
 moisture_col             Integer        Moisture
-seawater_co2_col         Integer        Sea water CO~2~
+co2_col                  Integer        CO~2~
 
 #### `date_format`
 The `date_format` field will have one of the following values:
