@@ -171,7 +171,7 @@
 	<ui:define name="content">
 		<div id="columnMenu" class="popupMenu">
 		    <ul id="colMenuList" class="menu">
-				<ui:repeat value="#{newInstrumentBean.columnSpec.columnList}" var="column" varStatus="status">
+				<ui:repeat value="#{newInstrumentBean.columnSpec.columnNames}" var="column" varStatus="status">
 					<li class="smallMenuitem" id="colname_#{status.index}">#{column}</li>
 				</ui:repeat>
 		    </ul>

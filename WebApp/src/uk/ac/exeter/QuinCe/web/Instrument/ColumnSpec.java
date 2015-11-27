@@ -80,6 +80,146 @@ public class ColumnSpec implements Serializable {
 	public static final String LAT_FORMAT_0_90 = "0_90_lat";
 	
 	/**
+	 * Run type column code
+	 */
+	private static final int COL_RUN_TYPE = 0;
+	
+	/**
+	 * Year column code
+	 */
+	private static final int COL_YEAR = 1;
+	
+	/**
+	 * Month column code
+	 */
+	private static final int COL_MONTH = 2;
+	
+	/**
+	 * Day column code
+	 */
+	private static final int COL_DAY = 3;
+	
+	/**
+	 * Date column code
+	 */
+	private static final int COL_DATE = 4;
+	
+	/**
+	 * Hour column code
+	 */
+	private static final int COL_HOUR = 5;
+	
+	/**
+	 * Minute column code
+	 */
+	private static final int COL_MINUTE = 6;
+	
+	/**
+	 * Second column code
+	 */
+	private static final int COL_SECOND = 7;
+	
+	/**
+	 * Time column code
+	 */
+	private static final int COL_TIME = 8;
+	
+	/**
+	 * Longitude column code
+	 */
+	private static final int COL_LONGITUDE = 9;
+	
+	/**
+	 * East/West column code
+	 */
+	private static final int COL_EAST_WEST = 10;
+	
+	/**
+	 * Latitude column code
+	 */
+	private static final int COL_LATITUDE = 11;
+	
+	/**
+	 * North/South column code
+	 */
+	private static final int COL_NORTH_SOUTH = 12;
+	
+	/**
+	 * Intake temperature 1 column code
+	 */
+	private static final int COL_INTAKE_TEMP_1 = 13;
+	
+	/**
+	 * Intake temperature 2 column code
+	 */
+	private static final int COL_INTAKE_TEMP_2 = 14;
+	
+	/**
+	 * Intake temperature 3 column code
+	 */
+	private static final int COL_INTAKE_TEMP_3 = 15;
+	
+	/**
+	 * Salinity 1 column code
+	 */
+	private static final int COL_SALINITY_1 = 16;
+	
+	/**
+	 * Salinity 2 column code
+	 */
+	private static final int COL_SALINITY_2 = 17;
+	
+	/**
+	 * Salinity 3 column code
+	 */
+	private static final int COL_SALINITY_3 = 18;
+	
+	/**
+	 * Equilibrator temperature 1 column code
+	 */
+	private static final int COL_EQT_1 = 19;
+	
+	/**
+	 * Equilibrator temperature 2 column code
+	 */
+	private static final int COL_EQT_2 = 20;
+	
+	/**
+	 * Equilibrator temperature 3 column code
+	 */
+	private static final int COL_EQT_3 = 21;
+	
+	/**
+	 * Equilibrator pressure 1 column code
+	 */
+	private static final int COL_EQP_1 = 22;
+	
+	/**
+	 * Equilibrator pressure 2 column code
+	 */
+	private static final int COL_EQP_2 = 23;
+	
+	/**
+	 * Equilibrator pressure 3 column code
+	 */
+	private static final int COL_EQP_3 = 24;
+	
+	/**
+	 * Atmospheric pressure column code
+	 */
+	private static final int COL_ATMOSPHERIC_PRESSURE = 25;
+	
+	/**
+	 * Moisture column code
+	 */
+	private static final int COL_MOISTURE = 26;
+	
+	/**
+	 * CO2 column code
+	 */
+	private static final int COL_CO2 = 27;
+	
+	/**
 	 * The name of the first intake temperature sensor
 	 */
 	private String intakeTempName1 = null;
@@ -169,10 +309,17 @@ public class ColumnSpec implements Serializable {
 	 */
 	private String columnSelection = null;
 	
+	/**
+	 * The parent object that spawned this specification
+	 */
 	private NewInstrumentBean parent = null;
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	/**
+	 * Basic constructor
+	 * @param parent
+	 */
 	public ColumnSpec(NewInstrumentBean parent) {
 		this.parent = parent;
 	}
@@ -203,92 +350,239 @@ public class ColumnSpec implements Serializable {
 	/**
 	 * Retrieve a list of all the columns expected from the
 	 * data file for the instrument.
+	 * 
+	 * The list contains identifier codes. Use getShortColumnName
+	 * or getFullColumnName to get the text column name.
+	 * 
 	 * @return A list of expected columns
 	 */
-	public List<String> getColumnList() {
+	public List<Integer> getColumnList() {
 		
-		List<String> columnList = new ArrayList<String>();
+		List<Integer> columnList = new ArrayList<Integer>();
 		
-		columnList.add("Run type");
+		columnList.add(COL_RUN_TYPE);
 
 		if (dateFormat.equals(SEPARATE_FIELDS)) {
-			columnList.add("Year");
-			columnList.add("Month");
-			columnList.add("Day");
+			columnList.add(COL_YEAR);
+			columnList.add(COL_MONTH);
+			columnList.add(COL_DAY);
 		} else {
-			columnList.add("Date");
+			columnList.add(COL_DATE);
 		}
 		
 		if (timeFormat.equals(SEPARATE_FIELDS)) {
-			columnList.add("Hour");
-			columnList.add("Minute");
-			columnList.add("Second");
+			columnList.add(COL_HOUR);
+			columnList.add(COL_MINUTE);
+			columnList.add(COL_SECOND);
 		} else {
-			columnList.add("Time");
+			columnList.add(COL_TIME);
 		}
 		
-		columnList.add("Longitude");
+		columnList.add(COL_LONGITUDE);
 		if (lonFormat.equals(LON_FORMAT_0_180)) {
-			columnList.add("East/West");
+			columnList.add(COL_EAST_WEST);
 		}
 		
-		columnList.add("Latitude");
+		columnList.add(COL_LATITUDE);
 		if (latFormat.equals(LAT_FORMAT_0_90)) {
-			columnList.add("North/South");
+			columnList.add(COL_NORTH_SOUTH);
 		}
 		
-		columnList.add("Intake Temperature: " + intakeTempName1);
+		columnList.add(COL_INTAKE_TEMP_1);
 		
 		if (null != intakeTempName2 && intakeTempName2.length() > 0) {
-			columnList.add("Intake Temperature: " + intakeTempName2);
+			columnList.add(COL_INTAKE_TEMP_2);
 		}
 		
 		if (null != intakeTempName3 && intakeTempName3.length() > 0) {
-			columnList.add("Intake Temperature: " + intakeTempName3);
+			columnList.add(COL_INTAKE_TEMP_3);
 		}
 		
-		columnList.add("Salinity: " + salinityName1);
+		columnList.add(COL_SALINITY_1);
 		
 		if (null != salinityName2 && salinityName2.length() > 0) {
-			columnList.add("Salinity: " + salinityName2);
+			columnList.add(COL_SALINITY_2);
 		}
 		
 		if (null != salinityName3 && salinityName3.length() > 0) {
-			columnList.add("Salinity: " + salinityName3);
+			columnList.add(COL_SALINITY_3);
 		}
 		
-		columnList.add("Equilibrator Temperature: " + eqtName1);
+		columnList.add(COL_EQT_1);
 		
 		if (null != eqtName2 && eqtName2.length() > 0) {
-			columnList.add("Equilibrator Temperature: " + eqtName2);
+			columnList.add(COL_EQT_2);
 		}
 		
 		if (null != eqtName3 && eqtName3.length() > 0) {
-			columnList.add("Equilibrator Temperature: " + eqtName3);
+			columnList.add(COL_EQT_3);
 		}
 		
-		columnList.add("Equilibrator Pressure: " + eqpName1);
+		columnList.add(COL_EQP_1);
 		
 		if (null != eqpName2 && eqpName2.length() > 0) {
-			columnList.add("Equilibrator Pressure: " + eqpName2);
+			columnList.add(COL_EQP_2);
 		}
 		
 		if (null != eqpName3 && eqpName3.length() > 0) {
-			columnList.add("Equilibrator Pressure: " + eqpName3);
+			columnList.add(COL_EQP_3);
 		}
 		
 		if (hasAtmosphericPressure) {
-			columnList.add("Atmospheric Pressure");
+			columnList.add(COL_ATMOSPHERIC_PRESSURE);
 		}
 		
 		if (!getSamplesDried()) {
-			columnList.add("Moisture");
+			columnList.add(COL_MOISTURE);
 		}
 	
-		columnList.add("CO2");
+		columnList.add(COL_CO2);
 		
 		return columnList;
+	}
+	
+	/**
+	 * Returns the column name for the specified column
+	 * @param column The column
+	 * @return The column name
+	 */
+	private String getColumnName(int column) {
+		String result;
 		
+		switch (column) {
+		case COL_RUN_TYPE: {
+			result = "Run type";
+			break;
+		}
+		case COL_YEAR: {
+			result = "Year";
+			break;
+		}
+		case COL_MONTH: {
+			result = "Month";
+			break;
+		}
+		case COL_DAY: {
+			result = "Day";
+			break;
+		}
+		case COL_DATE: {
+			result = "Date";
+			break;
+		}
+		case COL_HOUR: {
+			result = "Hour";
+			break;
+		}
+		case COL_MINUTE: {
+			result = "Minute";
+			break;
+		}
+		case COL_SECOND: {
+			result = "Second";
+			break;
+		}
+		case COL_TIME: {
+			result = "Time";
+			break;
+		}
+		case COL_LONGITUDE: {
+			result = "Longitude";
+			break;
+		}
+		case COL_EAST_WEST: {
+			result = "East/West";
+			break;
+		}
+		case COL_LATITUDE: {
+			result = "Latitude";
+			break;
+		}
+		case COL_NORTH_SOUTH: {
+			result = "North/South";
+			break;
+		}
+		case COL_INTAKE_TEMP_1: {
+			result = "Intake Temperature: " + intakeTempName1;
+			break;
+		}
+		case COL_INTAKE_TEMP_2: {
+			result = "Intake Temperature: " + intakeTempName2;
+			break;
+		}
+		case COL_INTAKE_TEMP_3: {
+			result = "Intake Temperature: " + intakeTempName3;
+			break;
+		}
+		case COL_SALINITY_1: {
+			result = "Salinity: " + salinityName1;
+			break;
+		}
+		case COL_SALINITY_2: {
+			result = "Salinity: " + salinityName2;
+			break;
+		}
+		case COL_SALINITY_3: {
+			result = "Salinity: " + salinityName3;
+			break;
+		}
+		case COL_EQT_1: {
+			result = "Equilibrator Temperature: " + eqtName1;
+			break;
+		}
+		case COL_EQT_2: {
+			result = "Equilibrator Temperature: " + eqtName2;
+			break;
+		}
+		case COL_EQT_3: {
+			result = "Equilibrator Temperature: " + eqtName3;
+			break;
+		}
+		case COL_EQP_1: {
+			result = "Equilibrator Pressure: " + eqpName1;
+			break;
+		}
+		case COL_EQP_2: {
+			result = "Equilibrator Pressure: " + eqpName2;
+			break;
+		}
+		case COL_EQP_3: {
+			result = "Equilibrator Pressure: " + eqpName3;
+			break;
+		}
+		case COL_ATMOSPHERIC_PRESSURE: {
+			result = "Atmospheric Pressure";
+			break;
+		}
+		case COL_MOISTURE: {
+			result = "Moisture";
+			break;
+		}
+		case COL_CO2: {
+			result = "CO2";
+			break;
+		}
+		default: {
+			result = "***UNRECOGNISED COLUMN " + column + "***";
+		}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Returns the list of column names that need
+	 * to be extracted from an instrument's data files for processing
+	 * @return The list of column names.
+	 */
+	public List<String> getColumnNames() {
+		List<String> result = new ArrayList<String>();
+		
+		for (int colIndex: getColumnList()) {
+			result.add(getColumnName(colIndex));
+		}
+		
+		return result;
 	}
 	
 	/**
