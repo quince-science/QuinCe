@@ -139,8 +139,8 @@ Value    Format
 2        0 to 180, with E/W in a separate column
 
 ### `run_types`
-Each instrument will have a number of run types. QuinCe has only three types: sea
-water CO~2~, atmospheric CO~2~, and gas standards. This table will hold details of which values in the
+Each instrument will have a number of run types. QuinCe has only two types: CO~2~ and gas standards.
+This table will hold details of which values in the
 `run_type` column (as defined in the `columns` table) correspond to which run types.
 
 Field                    Type           Description
@@ -155,9 +155,8 @@ The `type` column will contain one of the following values:
 
 Value    Run type
 -----    --------------------------
-0        Sea water CO~2~
-1        Atmospheric CO~2~
-2        Gas standard
+0        CO~2~
+1        Gas standard
 
 ## `gas_standard_concentrations`
 Each gas standard is supplied at a specific concentration, which may vary between
@@ -185,9 +184,8 @@ filename                 String         The filename of the uploaded file. Must 
 last_touched             Date           The date when the file was last touched. Files held beyond a given length of time will be automatically deleted.
 
 ## `co2_data`
-This table will contain the records from the data file corresponding to the sea water CO~2~ runs.
-This is what will be displayed in the QC view. Gas standards and atmospheric CO~2~
-data will be stored in a separate table.
+This table will contain the records from the data file corresponding to the CO~2~ runs (both sea water and
+atmospheric). This is what will be displayed in the QC view. Gas standards data will be stored in a separate table.
 
 The table will be populated by the data reduction process. All calibrations
 will have been applied.
@@ -196,6 +194,7 @@ Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
 data_file_id             F_KEY          File ID
 row                      Integer        Row number (from the original data file)
+co2_type                 Integer        The type of CO~2~ measurement
 date_time                DateTime       Date and time
 longitude                Float          Longitude
 latitude                 Float          Latitude
@@ -218,6 +217,14 @@ qc_flag                  Integer        The QC flag assigned by the automatic QC
 qc_message               String         The message(s) from the automatic QC routines
 woce_flag                Integer        The WOCE flag assigned by the user
 woce_comment             String         The WOCE comment
+
+##### `type`
+The `co2_type` column will contain one of the following values:
+
+Value    Run type
+-----    --------------------------
+0        Sea water CO~2~
+1        Atmospheric CO~2~
 
 ## `gas_standards_data`
 This file stores details of the gas standard measurements from the data files.
