@@ -3,13 +3,16 @@ package uk.ac.exeter.QuinCe.web.Instrument;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.jobs.Job;
 
-public class SampleFileExtractor implements Runnable {
+public class SampleFileExtractor implements Runnable, Serializable {
+
+	private static final long serialVersionUID = 4634956054866443051L;
 
 	/**
 	 * The bean that contains the uploaded file,

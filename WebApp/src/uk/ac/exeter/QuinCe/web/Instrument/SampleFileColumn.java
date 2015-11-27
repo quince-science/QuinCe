@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.io.Serializable;
+
 /**
  * Simple class to represent a column in the sample data file.
  * Used by the PrimeFaces DataTable when building the table to
@@ -11,8 +13,10 @@ package uk.ac.exeter.QuinCe.web.Instrument;
  * @author Steve Jones
  *
  */
-public class SampleFileColumn {
+public class SampleFileColumn implements Serializable {
 	
+	private static final long serialVersionUID = 4039255956335368940L;
+
 	/**
 	 * The column index
 	 */
