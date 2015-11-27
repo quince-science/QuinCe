@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class ColumnSpec implements Serializable {
 
-	private static final long serialVersionUID = 1342485744472103029L;
+	private static final long serialVersionUID = 7883906827413013732L;
 
 	/**
 	 * Indicates that date or time components are stored in separate fields
