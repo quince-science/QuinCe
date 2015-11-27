@@ -143,10 +143,16 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 */
 	private ColumnSpec columnSpec;
 	
+	/**
+	 * Required basic constructor
+	 */
 	public NewInstrumentBean() {
 		// Do nothing
 	}
 	
+	/**
+	 * Initialise the sub-components of the bean
+	 */
 	@PostConstruct
 	public void init() {
 		columnSpec = new ColumnSpec(this);
@@ -219,6 +225,10 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		return result;
 	}
 	
+	/**
+	 * Check the result of the sample file extraction and navigate to the appropriate page 
+	 * @return The navigation result
+	 */
 	public String postSampleFileNavigation() {
 		String result = PAGE_COLUMN_SELECTION;
 		
@@ -283,14 +293,6 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		sampleFileExtractor = new SampleFileExtractor(this);
 		Thread extractorThread = new Thread(sampleFileExtractor);
 		extractorThread.start();
-	}
-	
-	public ColumnSpec getColumnSpec() {
-		return columnSpec;
-	}
-	
-	public void setColumnSpec(ColumnSpec columnSpec) {
-		this.columnSpec = columnSpec;
 	}
 	
 	/**
@@ -478,12 +480,28 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		this.samplesDried = Boolean.parseBoolean(samplesDried);
 	}
 	
+	/**
+	 * Returns the number of header lines in the sample file
+	 * @return The number of header lines in the sample file
+	 */
 	public int getHeaderLines() {
 		return headerLines;
 	}
 	
+	/**
+	 * Sets the number of header lines in the sample file
+	 * @param headerLines The number of header lines in the sample file
+	 */
 	public void setHeaderLines(int headerLines) {
 		this.headerLines = headerLines;
+	}
+
+	/**
+	 * Returns the ColumnSpec object for the current instrement
+	 * @return The ColumnSpec object
+	 */
+	public ColumnSpec getColumnSpec() {
+		return columnSpec;
 	}
 	
 	/**
@@ -494,6 +512,17 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		return sampleFileContents.subList(0, 49);
 	}
 	
+	/**
+	 * Returns a basic list of columns to be used
+	 * when building the view of the sample file.
+	 * 
+	 * Each column is named col_&lt;index&gt;.
+	 * 
+	 * These column names are never actually displayed,
+	 * but they are required as placeholders for the view.
+	 * 
+	 * @return A list of columns
+	 */
 	public List<SampleFileColumn> getColumns() {
 		
 		List<SampleFileColumn> columns = new ArrayList<SampleFileColumn>();
@@ -503,22 +532,5 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		}
 		
 		return columns;
-	}
-	
-	public class SampleFileColumn {
-		
-		int colIndex;
-		
-		public SampleFileColumn(int colIndex) {
-			this.colIndex = colIndex;
-		}
-		
-		public String getHeader() {
-			return "col" + colIndex;
-		}
-		
-		public Integer getColumnIndex() {
-			return colIndex;
-		}
 	}
 }
