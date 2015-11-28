@@ -33,6 +33,20 @@
 				}
 			}
 			
+			function fillForm() {
+				var formValue = "";
+				
+				var entries = $("select[name^='classification_']");
+				entries.each(function(i) {
+					formValue = formValue + $('#classification_' + i).val();
+					if (i &lt; (entries.length - 1)) {
+						formValue = formValue + ';';
+					}
+				});
+				
+				$('#runTypesForm\\:runTypeClassifications').val(formValue);
+			}
+			
 	        $(function() {
 	        	// Disabling the Next button in the JSF tag kills it.
 	        	// So we disable it manually.
@@ -72,9 +86,8 @@
 	            	</ui:repeat>
 	            </table>
 	            <div class="buttonWrapper">
-	            	<h:commandButton id="nextButton" value="Finish" onclick="fillForm();" action="#{newInstrumentBean.processRunTypes}"/>
+	            	<h:commandButton id="nextButton" value="FinishheaderLines" onclick="fillForm();" action="#{newInstrumentBean.processRunTypes}"/>
 	            </div>
-	            
             </h:form>
         </div>
 	</ui:define>

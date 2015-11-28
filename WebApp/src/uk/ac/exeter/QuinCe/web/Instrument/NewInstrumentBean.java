@@ -12,6 +12,7 @@ import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 
 /**
@@ -97,6 +98,14 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 */
 	public static final int EXTRACTION_ERROR = 1;
 	
+	public static final int RUN_TYPE_NONE = -1;
+	
+	public static final int RUN_TYPE_SEA = 0;
+	
+	public static final int RUN_TYPE_ATMOSPHERIC = 1;
+	
+	public static final int RUN_TYPE_STANDARD = 2;
+	
 	/**
 	 * The name of the instrument
 	 */
@@ -152,6 +161,11 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 * The set of run type classifications, as reported from the HTML form
 	 */
 	private String runTypeClassifications = null;
+	
+	/**
+	 * The run types in recorded by the instrument and their classification
+	 */
+	private Map<String, Integer> runTypes = null;
 	
 	/**
 	 * Required basic constructor
@@ -283,6 +297,8 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		headerLines = 0;
 		sampleFileExtractionResult = EXTRACTION_OK;
 		sampleFileExtractionMessage = "The extraction has not been run";
+		runTypeClassifications = null;
+		runTypes = null;
 		
 		columnSpec = new ColumnSpec(this);
 	}
@@ -586,7 +602,16 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 * into a format that can be used to save values into the database
 	 */
 	private void extractRunTypes() {
+		List<Integer> classifications = StringUtils.delimitedToIntegerList(runTypeClassifications);
+		TreeSet<String> runTypeNames = getRunTypesList();
 		
+		runTypes = new HashMap<String, Integer>(runTypeNames.size());
+		
+		int count = 0;
+		for (String name : runTypeNames) {
+			runTypes.put(name, classifications.get(count));
+			count++;
+		}
 	}
 	
 	/**
