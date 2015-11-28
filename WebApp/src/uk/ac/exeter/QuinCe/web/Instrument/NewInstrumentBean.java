@@ -1,7 +1,11 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -130,14 +134,9 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	private int headerLines = 0;
 	
 	/**
-	 * The utility for extracting the contents of the sample file.
-	 */
-	private SampleFileExtractor sampleFileExtractor = null;
-	
-	/**
 	 * The result of the sample file extraction
 	 */
-	private int sampleFileExtractionResult = EXTRACTION_ERROR;
+	private int sampleFileExtractionResult = EXTRACTION_OK;
 	
 	/**
 	 * The message from the sample file extraction
@@ -242,7 +241,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 * Check the result of the sample file extraction and navigate to the appropriate page 
 	 * @return The navigation result
 	 */
-	public String postSampleFileNavigation() {
+	public String postSampleFileUploadNavigation() {
 		String result = PAGE_COLUMN_SELECTION;
 		
 		if (sampleFileExtractionResult == EXTRACTION_ERROR) {
@@ -282,68 +281,54 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		sampleFileContents = null;
 		sampleFileColumnCount = -1;
 		headerLines = 0;
-		sampleFileExtractionResult = EXTRACTION_ERROR;
+		sampleFileExtractionResult = EXTRACTION_OK;
 		sampleFileExtractionMessage = "The extraction has not been run";
-		
-		
-		if (null != sampleFileExtractor) {
-			sampleFileExtractor.terminate();
-			sampleFileExtractor = null;
-		}
 		
 		columnSpec = new ColumnSpec(this);
 	}
 	
 	/**
-	 * Kick off the background thread that will extract the
-	 * contents of the uploaded sample file.
+	 * Extract the contents of the uploaded sample file.
 	 */
 	@Override
 	public void processUploadedFile() {
 		
 		sampleFileContents = new ArrayList<Map<Integer, String>>();
-		
-		if (null != sampleFileExtractor) {
-			sampleFileExtractor.terminate();
+
+		try {
+			BufferedReader in = new BufferedReader(new InputStreamReader(getFile().getInputstream()));		
+			String line;
+			int lineCount = 0;
+			while ((line = in.readLine()) != null) {
+				String[] splitLine = line.split(getSeparatorCharacter());
+				lineCount++;
+				if (lineCount == 1) {
+					if (splitLine.length == 1) {
+						setSampleFileExtractionError("The source file has only one column. Please check that you have specified the correct column separator.");
+						break;
+					} else {
+						setSampleFileColumnCount(splitLine.length);
+					}
+				} else {
+					if (getSampleFileColumnCount() != splitLine.length) {
+						setSampleFileExtractionError("The file does not contain a consistent number of columns (line " + lineCount + ").");
+						break;
+					}
+				}
+				
+				Map<Integer, String> lineMap = new HashMap<Integer, String>();
+				for (int i = 0; i < splitLine.length; i++) {
+					lineMap.put(i, splitLine[i]);
+				}
+				
+				synchronized(sampleFileContents) {
+					sampleFileContents.add(lineMap);
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			setSampleFileExtractionError("An unexpected error occurred. Please try again.");
 		}
-		
-		sampleFileExtractor = new SampleFileExtractor(this);
-		Thread extractorThread = new Thread(sampleFileExtractor);
-		extractorThread.start();
-	}
-	
-	/**
-	 * Add a line of fields to the extracted sample file contents
-	 * @param line The line to be added
-	 */
-	protected void addSampleFileLine(Map<Integer, String> line) {
-		synchronized(sampleFileContents) {
-			sampleFileContents.add(line);
-		}
-	}
-	
-	/**
-	 * Retrieve the progress of the sample file extractor.
-	 * If it is not active, the progress will be 1.
-	 * @return The progress of the sample file extractor.
-	 */
-	public int getExtractionProgress() {
-		int progress = 1;
-		
-		if (null != sampleFileExtractor) {
-			progress = sampleFileExtractor.getProgress();
-		}
-		
-		return progress;
-	}
-	
-	/**
-	 * Signalled from the front end to state that it has
-	 * noticed sample file extraction progress reaching 100%.
-	 */
-	public void finishExtraction() {
-		// Reset the progress to zero ready for the next extraction
-		sampleFileExtractor.resetProgress();
 	}
 	
 	/**

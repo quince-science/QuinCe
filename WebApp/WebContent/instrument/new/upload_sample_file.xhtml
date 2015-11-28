@@ -12,11 +12,6 @@
 	
 	<ui:define name="localHead">
 		<script type="text/javascript">
-			function monitorExtractionProgress() {
-				PF('extractionDialog').show();
-				PF('extractionProgress').start();
-			}
-			
 			function goToNext() {
 				$("#instrumentForm\\:columnSelectionLink").trigger("click");
 			}			
@@ -24,15 +19,6 @@
 	</ui:define>
 
 	<ui:define name="content">
-	
-		<p:dialog widgetVar="extractionDialog" header="Processing File" modal="true" draggable="false" resizable="false" closable="false" closeOnEscape="false">
-			Please wait while the sample file is processed.
-			<br/>
-			<br/>
-			<p:progressBar widgetVar="extractionProgress" ajax="true" value="#{newInstrumentBean.extractionProgress}" labelTemplate="{value}%">
-				<p:ajax event="complete" listener="#{newInstrumentBean.finishExtraction}" oncomplete="goToNext()"/>
-			</p:progressBar>
-		</p:dialog>
 	
 		<h1>#{newInstrumentBean.name}</h1>
 		
@@ -46,7 +32,7 @@
                 	Please select a data file from your instrument and upload it using the buttons below:
                 	<br/>
                 	<br/>
-                	<p:fileUpload fileUploadListener="#{newInstrumentBean.handleFileUpload}" widgetVar="upload" mode="advanced" auto="true" label="Select File..." allowTypes="/(\.|\/)(csv|tsv|txt|dat)$/" oncomplete="monitorExtractionProgress()"/>
+                	<p:fileUpload fileUploadListener="#{newInstrumentBean.handleFileUpload}" widgetVar="upload" mode="advanced" auto="true" label="Select File..." allowTypes="/(\.|\/)(csv|tsv|txt|dat)$/" oncomplete="goToNext()"/>
                 </div>
                 <div class="sectionContent">
                 </div>
@@ -56,7 +42,7 @@
 	            	</ui:remove>
 	                <button onclick="cancelInstrument()">Cancel</button>
 	            </div>
-		        <h:commandLink id="columnSelectionLink" forceId="true" style="invisible" action="#{newInstrumentBean.postSampleFileNavigation}"/>
+		        <h:commandLink id="columnSelectionLink" forceId="true" style="invisible" action="#{newInstrumentBean.postSampleFileUploadNavigation}"/>
 	        </h:form>
 	        
     	</div>
