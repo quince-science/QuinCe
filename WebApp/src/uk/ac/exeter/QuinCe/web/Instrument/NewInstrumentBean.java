@@ -98,14 +98,6 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 */
 	public static final int EXTRACTION_ERROR = 1;
 	
-	public static final int RUN_TYPE_NONE = -1;
-	
-	public static final int RUN_TYPE_SEA = 0;
-	
-	public static final int RUN_TYPE_ATMOSPHERIC = 1;
-	
-	public static final int RUN_TYPE_STANDARD = 2;
-	
 	/**
 	 * The name of the instrument
 	 */
