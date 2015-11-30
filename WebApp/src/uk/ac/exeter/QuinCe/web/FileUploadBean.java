@@ -46,4 +46,11 @@ public abstract class FileUploadBean extends BaseManagedBean {
     public void setFile(UploadedFile file) {
         this.file = file;
     }
+    
+    /**
+     * Remove any existing uploaded file
+     */
+    public void clearFile() {
+    	this.file = null;
+    }
 }

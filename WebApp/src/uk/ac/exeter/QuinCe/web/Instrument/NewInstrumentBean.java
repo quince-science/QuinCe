@@ -13,8 +13,13 @@ import java.util.TreeSet;
 import javax.annotation.PostConstruct;
 
 import uk.ac.exeter.QuinCe.data.Instrument;
+import uk.ac.exeter.QuinCe.data.User;
+import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
+import uk.ac.exeter.QuinCe.web.User.LoginBean;
+import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Bean for collecting data about a new instrument
@@ -284,6 +289,8 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	@Override
 	public void processUploadedFile() {
 		
+		clearSampleFileExtractionError();
+		
 		sampleFileContents = new ArrayList<Map<Integer, String>>();
 
 		try {
@@ -362,8 +369,17 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 */
 	public String processRunTypes() {
 		extractRunTypes();
-		saveInstrument();
-		return PAGE_INSTRUMENT_LIST;
+		
+		String result = PAGE_INSTRUMENT_LIST;
+		
+		try {
+			User owner = UserDB.getUser(ServletUtils.getDBDataSource(), (String) getSession().getAttribute(LoginBean.USER_EMAIL_SESSION_ATTR));
+			InstrumentDB.addInstrument(ServletUtils.getDBDataSource(), owner, instrumentDetails);
+		} catch (Exception e) {
+			result = internalError(e);
+		}
+			
+		return result;
 	}
 	
 	/**
@@ -635,6 +651,15 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	public void setSampleFileExtractionError(String errorMessage) {
 		sampleFileExtractionResult = EXTRACTION_ERROR;
 		sampleFileExtractionMessage = errorMessage;
+		clearFile();
+	}
+	
+	/**
+	 * Reset the sample file extraction result and message
+	 */
+	public void clearSampleFileExtractionError() {
+		sampleFileExtractionResult = EXTRACTION_OK;
+		sampleFileExtractionMessage = "The extraction has not been run";
 	}
 	
 	/**
@@ -689,16 +714,6 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		}
 		
 		instrumentDetails.setRunTypes(runTypes);
-	}
-	
-	/**
-	 * Saves all the details of the instrument to the database
-	 */
-	private void saveInstrument() {
-		
-
-		
-		// TODO This should all be done in a single transaction
 	}
 	
 	/**

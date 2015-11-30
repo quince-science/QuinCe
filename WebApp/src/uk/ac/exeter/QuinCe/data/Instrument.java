@@ -3,6 +3,8 @@ package uk.ac.exeter.QuinCe.data;
 import java.io.Serializable;
 import java.util.Map;
 
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
+
 /**
  * Object to hold all the details of an instrument
  * @author Steve Jones
@@ -78,6 +80,26 @@ public class Instrument implements Serializable {
 	 * Indicates 0:90 latitude format (E/W marker will be in a separate column)
 	 */
 	public static final int LAT_FORMAT_0_90 = 1;
+	
+	/**
+	 * Indicates that the run type should be ignored
+	 */
+	public static final int RUN_TYPE_NONE = -1;
+	
+	/**
+	 * Indicates that the run type is for sea water CO2
+	 */
+	public static final int RUN_TYPE_WATER = 0;
+	
+	/**
+	 * Indicates that teh run type is for atmospheric CO2
+	 */
+	public static final int RUN_TYPE_ATMOSPHERIC = 1;
+	
+	/**
+	 * Indicates that the run type is for a gas standard
+	 */
+	public static final int RUN_TYPE_STANDARD = 2;
 	
 	/**
 	 * Indicates that a column is not used
@@ -377,6 +399,10 @@ public class Instrument implements Serializable {
 		}
 		
 		return result;
+	}
+	
+	public void validate() throws MissingParamException {
+		// TODO Write it!
 	}
 
 	///////// *** GETTERS AND SETTERS *** ///////////////
@@ -747,5 +773,13 @@ public class Instrument implements Serializable {
 	 */
 	public void setColumnAssignment(int dataTypeIdentifier, int column) {
 		columnAssignments[dataTypeIdentifier] = column;
+	}
+	
+	/**
+	 * Returns the list of run type names and their allocated run type
+	 * @return The list of run types
+	 */
+	public Map<String, Integer> getRunTypes() {
+		return runTypes;
 	}
 }
