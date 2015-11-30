@@ -171,17 +171,17 @@
 	<ui:define name="content">
 		<div id="columnMenu" class="popupMenu">
 		    <ul id="colMenuList" class="menu">
-				<ui:repeat value="#{newInstrumentBean.columnSpec.columnNames}" var="column" varStatus="status">
+				<ui:repeat value="#{newInstrumentBean.columnNames}" var="column" varStatus="status">
 					<li class="smallMenuitem" id="colname_#{status.index}">#{column}</li>
 				</ui:repeat>
 		    </ul>
 		</div>
-		<h1>#{newInstrumentBean.name}</h1>
+		<h1>#{newInstrumentBean.instrumentDetails.name}</h1>
 		
 		<div class="fullPage">
 			<h:form id="columnForm" method="post" accept-charset="utf8">
-				<h:inputHidden id="headerLines" value="#{newInstrumentBean.headerLines}"/>
-				<h:inputHidden id="colSelection" value="#{newInstrumentBean.columnSpec.columnSelection}"/>
+				<h:inputHidden id="headerLines" value="#{newInstrumentBean.instrumentDetails.headerLines}"/>
+				<h:inputHidden id="colSelection" value="#{newInstrumentBean.columnSelection}"/>
 				<div class="sectionHeader">
 	                Specify columns and headers
 	            </div>

@@ -12,6 +12,7 @@ import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 
+import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 
@@ -28,6 +29,8 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		FORM_NAME = "instrumentForm";
 	}
 
+	//////////////// *** CONSTANTS *** ///////////////////////
+	
 	/**
 	 * Navigation result when the new instrument process is cancelled
 	 */
@@ -98,10 +101,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 */
 	public static final int EXTRACTION_ERROR = 1;
 	
-	/**
-	 * The name of the instrument
-	 */
-	private String name = null;
+	/////////////////// *** FIELDS *** ///////////////////
 	
 	/**
 	 * The type of separator used in the data file
@@ -112,11 +112,6 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 * The character used as a separator if it is not comma or tab
 	 */
 	private String otherSeparatorChar = null;
-	
-	/**
-	 * Indicates whether or not samples are dried before being measured
-	 */
-	private boolean samplesDried = false;
 	
 	/**
 	 * The contents of the uploaded sample file, as a list of String arrays.
@@ -130,11 +125,6 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	private int sampleFileColumnCount = -1;
 	
 	/**
-	 * The number of header lines in the data file
-	 */
-	private int headerLines = 0;
-	
-	/**
 	 * The result of the sample file extraction
 	 */
 	private int sampleFileExtractionResult = EXTRACTION_OK;
@@ -145,9 +135,9 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	private String sampleFileExtractionMessage = "The extraction has not been run";
 	
 	/**
-	 * The column specification for the instrument's data file
+	 * The instrument details for storage in the database
 	 */
-	private ColumnSpec columnSpec = null;
+	private Instrument instrumentDetails = null;
 	
 	/**
 	 * The set of run type classifications, as reported from the HTML form
@@ -155,12 +145,14 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	private String runTypeClassifications = null;
 	
 	/**
-	 * The run types in recorded by the instrument and their classification
+	 * The list of columns selected on the column selection page
 	 */
-	private Map<String, Integer> runTypes = null;
+	private String columnSelection = null;
 	
+	////////// *** MAIN METHODS *** ///////////////
 	/**
-	 * Required basic constructor
+	 * Required basic constructor. All the actual construction
+	 * is done in init().
 	 */
 	public NewInstrumentBean() {
 		// Do nothing
@@ -171,7 +163,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 */
 	@PostConstruct
 	public void init() {
-		columnSpec = new ColumnSpec(this);
+		instrumentDetails = new Instrument();
 	}
 	
 	/**
@@ -211,22 +203,13 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 * @throws NoSuchFieldException 
 	 */
 	public String processColumnSelection() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		columnSpec.processColumnSelection();
-		return PAGE_RUN_TYPES;
-	}
-	
-	/**
-	 * Navigate to the sensor names page
-	 * @return The navigation result
-	 */
-	public String goToNamesFromFileSpec() {
-		String result = PAGE_NAMES;
+		List<Integer> selectedColumns = StringUtils.delimitedToIntegerList(columnSelection);
+		List<Integer> requiredColumns = getColumnList();
 		
-		if (!validateFileSpec()) {
-			result = PAGE_FILE_SPEC;
+		for (int i = 0; i < requiredColumns.size(); i++) {
+			instrumentDetails.setColumnAssignment(requiredColumns.get(i), selectedColumns.get(i));
 		}
-		
-		return result;
+		return PAGE_RUN_TYPES;
 	}
 	
 	/**
@@ -234,6 +217,11 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 * @return The navigation result
 	 */
 	public String goToSampleUploadFromFileSpec() {
+		
+		// Record the separator character in the instrument details
+		instrumentDetails.setSeparatorChar(getSeparatorCharacter());
+
+		
 		String result = PAGE_SAMPLE_FILE;
 		
 		if (!validateFileSpec()) {
@@ -279,20 +267,15 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 * Clear all the data from the bean
 	 */
 	private void clearData() {
-		name = null;
 		separator = SEPARATOR_COMMA;
 		otherSeparatorChar = null;
-		samplesDried = false;
 		file = null;
 		sampleFileContents = null;
 		sampleFileColumnCount = -1;
-		headerLines = 0;
 		sampleFileExtractionResult = EXTRACTION_OK;
 		sampleFileExtractionMessage = "The extraction has not been run";
 		runTypeClassifications = null;
-		runTypes = null;
-		
-		columnSpec = new ColumnSpec(this);
+		instrumentDetails = new Instrument();
 	}
 	
 	/**
@@ -308,7 +291,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 			String line;
 			int lineCount = 0;
 			while ((line = in.readLine()) != null) {
-				String[] splitLine = line.split(getSeparatorCharacter());
+				String[] splitLine = line.split(instrumentDetails.getColumnSplitString());
 				lineCount++;
 				if (lineCount == 1) {
 					if (splitLine.length == 1) {
@@ -340,21 +323,233 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	}
 	
 	/**
-	 * Get the instrument name
-	 * @return The instrument name
+	 * Get the separator character as a String literal
+	 * @return The separator character
 	 */
-	public String getName() {
-		return name;
+	public char getSeparatorCharacter() {
+		char result;
+		
+		switch(separator) {
+		case SEPARATOR_COMMA: {
+			result = ',';
+			break;
+		}
+		case SEPARATOR_TAB: {
+			result = '\t';
+			break;
+		}
+		case SEPARATOR_SPACE: {
+			result = ' ';
+			break;
+		}
+		case SEPARATOR_OTHER: {
+			result = otherSeparatorChar.toCharArray()[0];
+			break;
+		}
+		default: {
+			result = ',';
+		}
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Process the output of the Run Types page.
+	 * Extracts the run types, and saves all the instrument
+	 * details to the database
+	 * @return The navigation result.
+	 */
+	public String processRunTypes() {
+		extractRunTypes();
+		saveInstrument();
+		return PAGE_INSTRUMENT_LIST;
 	}
 	
 	/**
-	 * Set the instrument name
-	 * @param name The instrument name
+	 * Returns the column name for the specified column
+	 * @param column The column
+	 * @return The column name
 	 */
-	public void setName(String name) {
-		this.name = name;
+	private String getColumnName(int column) {
+		String result;
+		
+		switch (column) {
+		case Instrument.COL_RUN_TYPE: {
+			result = "Run type";
+			break;
+		}
+		case Instrument.COL_YEAR: {
+			result = "Year";
+			break;
+		}
+		case Instrument.COL_MONTH: {
+			result = "Month";
+			break;
+		}
+		case Instrument.COL_DAY: {
+			result = "Day";
+			break;
+		}
+		case Instrument.COL_DATE: {
+			result = "Date";
+			break;
+		}
+		case Instrument.COL_HOUR: {
+			result = "Hour";
+			break;
+		}
+		case Instrument.COL_MINUTE: {
+			result = "Minute";
+			break;
+		}
+		case Instrument.COL_SECOND: {
+			result = "Second";
+			break;
+		}
+		case Instrument.COL_TIME: {
+			result = "Time";
+			break;
+		}
+		case Instrument.COL_LONGITUDE: {
+			result = "Longitude";
+			break;
+		}
+		case Instrument.COL_EAST_WEST: {
+			result = "East/West";
+			break;
+		}
+		case Instrument.COL_LATITUDE: {
+			result = "Latitude";
+			break;
+		}
+		case Instrument.COL_NORTH_SOUTH: {
+			result = "North/South";
+			break;
+		}
+		case Instrument.COL_INTAKE_TEMP_1: {
+			result = "Intake Temperature: " + instrumentDetails.getIntakeTempName1();
+			break;
+		}
+		case Instrument.COL_INTAKE_TEMP_2: {
+			result = "Intake Temperature: " + instrumentDetails.getIntakeTempName2();
+			break;
+		}
+		case Instrument.COL_INTAKE_TEMP_3: {
+			result = "Intake Temperature: " + instrumentDetails.getIntakeTempName3();
+			break;
+		}
+		case Instrument.COL_SALINITY_1: {
+			result = "Salinity: " + instrumentDetails.getSalinityName1();
+			break;
+		}
+		case Instrument.COL_SALINITY_2: {
+			result = "Salinity: " + instrumentDetails.getSalinityName2();
+			break;
+		}
+		case Instrument.COL_SALINITY_3: {
+			result = "Salinity: " + instrumentDetails.getSalinityName3();
+			break;
+		}
+		case Instrument.COL_EQT_1: {
+			result = "Equilibrator Temperature: " + instrumentDetails.getEqtName1();
+			break;
+		}
+		case Instrument.COL_EQT_2: {
+			result = "Equilibrator Temperature: " + instrumentDetails.getEqtName2();
+			break;
+		}
+		case Instrument.COL_EQT_3: {
+			result = "Equilibrator Temperature: " + instrumentDetails.getEqtName3();
+			break;
+		}
+		case Instrument.COL_EQP_1: {
+			result = "Equilibrator Pressure: " + instrumentDetails.getEqpName1();
+			break;
+		}
+		case Instrument.COL_EQP_2: {
+			result = "Equilibrator Pressure: " + instrumentDetails.getEqtName2();
+			break;
+		}
+		case Instrument.COL_EQP_3: {
+			result = "Equilibrator Pressure: " + instrumentDetails.getEqtName2();
+			break;
+		}
+		case Instrument.COL_ATMOSPHERIC_PRESSURE: {
+			result = "Atmospheric Pressure";
+			break;
+		}
+		case Instrument.COL_MOISTURE: {
+			result = "Moisture";
+			break;
+		}
+		case Instrument.COL_CO2: {
+			result = "CO2";
+			break;
+		}
+		default: {
+			result = "***UNRECOGNISED COLUMN " + column + "***";
+		}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Returns the list of column names that need
+	 * to be extracted from an instrument's data files for processing
+	 * @return The list of column names.
+	 */
+	public List<String> getColumnNames() {
+		List<String> result = new ArrayList<String>();
+		
+		for (int colIndex: getColumnList()) {
+			result.add(getColumnName(colIndex));
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Returns a basic list of columns to be used
+	 * when building the view of the sample file.
+	 * 
+	 * Each column is named col_&lt;index&gt;.
+	 * 
+	 * These column names are never actually displayed,
+	 * but they are required as placeholders for the view.
+	 * 
+	 * @return A list of columns
+	 */
+	public List<SampleFileColumn> getColumns() {
+		
+		List<SampleFileColumn> columns = new ArrayList<SampleFileColumn>();
+		
+		for (int i = 0; i < sampleFileContents.get(0).size(); i++) {
+			columns.add(new SampleFileColumn(i));
+		}
+		
+		return columns;
+	}
+	
+	/**
+	 * Returns an ordered set of unique values from the Run Types column
+	 * in the sample data file
+	 * @return The run type values
+	 */
+	public TreeSet<String> getRunTypesList() {
+		TreeSet<String> result = new TreeSet<String>();
+		
+		int runTypesCol = instrumentDetails.getColumnAssignment(Instrument.COL_RUN_TYPE);
+		
+		for (int i = instrumentDetails.getHeaderLines(); i < sampleFileContents.size(); i++) {
+			result.add(sampleFileContents.get(i).get(runTypesCol));
+		}
+		
+		return result;
 	}
 
+	////////////// *** GETTERS AND SETTERS *** /////////////////
 	/**
 	 * Get the separator for the file. One of {@link COMMA_SEPARATOR},
 	 * {@link TAB_SEPARATOR}, or {@link OTHER_SEPARATOR}.
@@ -390,38 +585,6 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 */
 	public void setOtherSeparatorChar(String otherSeparatorChar) {
 		this.otherSeparatorChar = otherSeparatorChar;
-	}
-	
-	/**
-	 * Get the separator character as a String literal
-	 * @return The separator character
-	 */
-	public String getSeparatorCharacter() {
-		String result;
-		
-		switch(separator) {
-		case SEPARATOR_COMMA: {
-			result = ",";
-			break;
-		}
-		case SEPARATOR_TAB: {
-			result = "\t";
-			break;
-		}
-		case SEPARATOR_SPACE: {
-			result = "  *";
-			break;
-		}
-		case SEPARATOR_OTHER: {
-			result = otherSeparatorChar;
-			break;
-		}
-		default: {
-			result = ",";
-		}
-		}
-		
-		return result;
 	}
 	
 	/**
@@ -475,43 +638,11 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	}
 	
 	/**
-	 * Returns the flag indicating whether or not samples are dried before being analysed
-	 * @return The flag indicating whether or not samples are dried before being analysed
+	 * Returns the InstrumentDetails object for the current instrument
+	 * @return The InstrumentDetails object
 	 */
-	public String getSamplesDried() {
-		return String.valueOf(samplesDried);
-	}
-	
-	/**
-	 * Sets the flag indicating whether or not samples are dried before being analysed
-	 * @param samplesDried The flag value
-	 */
-	public void setSamplesDried(String samplesDried) {
-		this.samplesDried = Boolean.parseBoolean(samplesDried);
-	}
-	
-	/**
-	 * Returns the number of header lines in the sample file
-	 * @return The number of header lines in the sample file
-	 */
-	public int getHeaderLines() {
-		return headerLines;
-	}
-	
-	/**
-	 * Sets the number of header lines in the sample file
-	 * @param headerLines The number of header lines in the sample file
-	 */
-	public void setHeaderLines(int headerLines) {
-		this.headerLines = headerLines;
-	}
-
-	/**
-	 * Returns the ColumnSpec object for the current instrement
-	 * @return The ColumnSpec object
-	 */
-	public ColumnSpec getColumnSpec() {
-		return columnSpec;
+	public Instrument getInstrumentDetails() {
+		return instrumentDetails;
 	}
 	
 	/**
@@ -522,44 +653,6 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		return sampleFileContents.subList(0, 49);
 	}
 	
-	/**
-	 * Returns a basic list of columns to be used
-	 * when building the view of the sample file.
-	 * 
-	 * Each column is named col_&lt;index&gt;.
-	 * 
-	 * These column names are never actually displayed,
-	 * but they are required as placeholders for the view.
-	 * 
-	 * @return A list of columns
-	 */
-	public List<SampleFileColumn> getColumns() {
-		
-		List<SampleFileColumn> columns = new ArrayList<SampleFileColumn>();
-		
-		for (int i = 0; i < sampleFileContents.get(0).size(); i++) {
-			columns.add(new SampleFileColumn(i));
-		}
-		
-		return columns;
-	}
-	
-	/**
-	 * Returns an ordered set of unique values from the Run Types column
-	 * in the sample data file
-	 * @return The run type values
-	 */
-	public TreeSet<String> getRunTypesList() {
-		TreeSet<String> result = new TreeSet<String>();
-		
-		int runTypesCol = columnSpec.getRunTypeCol();
-		
-		for (int i = headerLines; i < sampleFileContents.size(); i++) {
-			result.add(sampleFileContents.get(i).get(runTypesCol));
-		}
-		
-		return result;
-	}
 	
 	/**
 	 * Get the list of run type classifications as returned from the HTML form
@@ -578,24 +671,14 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	}
 	
 	/**
-	 * Process the output of the Run Types page.
-	 * Extracts the run types, and saves all the instrument
-	 * details to the database
-	 * @return The navigation result.
-	 */
-	public String processRunTypes() {
-		extractRunTypes();
-		saveInstrument();
-		return PAGE_INSTRUMENT_LIST;
-	}
-	
-	/**
 	 * Extract the run types as provided by the form
 	 * into a format that can be used to save values into the database
 	 */
 	private void extractRunTypes() {
 		List<Integer> classifications = StringUtils.delimitedToIntegerList(runTypeClassifications);
 		TreeSet<String> runTypeNames = getRunTypesList();
+		
+		Map<String, Integer> runTypes = new HashMap<String, Integer>(classifications.size());
 		
 		runTypes = new HashMap<String, Integer>(runTypeNames.size());
 		
@@ -604,12 +687,135 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 			runTypes.put(name, classifications.get(count));
 			count++;
 		}
+		
+		instrumentDetails.setRunTypes(runTypes);
 	}
 	
 	/**
 	 * Saves all the details of the instrument to the database
 	 */
 	private void saveInstrument() {
+		
+
+		
 		// TODO This should all be done in a single transaction
+	}
+	
+	/**
+	 * Retrieve a list of all the columns expected from the
+	 * data file for the instrument.
+	 * 
+	 * The list contains identifier codes. Use getShortColumnName
+	 * or getFullColumnName to get the text column name.
+	 * 
+	 * @return A list of expected columns
+	 */
+	public List<Integer> getColumnList() {
+		
+		List<Integer> columnList = new ArrayList<Integer>();
+		
+		columnList.add(Instrument.COL_RUN_TYPE);
+
+		if (instrumentDetails.getDateFormat() == Instrument.SEPARATE_FIELDS) {
+			columnList.add(Instrument.COL_YEAR);
+			columnList.add(Instrument.COL_MONTH);
+			columnList.add(Instrument.COL_DAY);
+		} else {
+			columnList.add(Instrument.COL_DATE);
+		}
+		
+		if (instrumentDetails.getTimeFormat() == Instrument.SEPARATE_FIELDS) {
+			columnList.add(Instrument.COL_HOUR);
+			columnList.add(Instrument.COL_MINUTE);
+			columnList.add(Instrument.COL_SECOND);
+		} else {
+			columnList.add(Instrument.COL_TIME);
+		}
+		
+		columnList.add(Instrument.COL_LONGITUDE);
+		if (instrumentDetails.getLonFormat() == Instrument.LON_FORMAT_0_180) {
+			columnList.add(Instrument.COL_EAST_WEST);
+		}
+		
+		columnList.add(Instrument.COL_LATITUDE);
+		if (instrumentDetails.getLatFormat() == Instrument.LAT_FORMAT_0_90) {
+			columnList.add(Instrument.COL_NORTH_SOUTH);
+		}
+		
+		columnList.add(Instrument.COL_INTAKE_TEMP_1);
+		
+		String intakeTempName2 = instrumentDetails.getIntakeTempName2();
+		if (null != intakeTempName2 && intakeTempName2.length() > 0) {
+			columnList.add(Instrument.COL_INTAKE_TEMP_2);
+		}
+		
+		String intakeTempName3 = instrumentDetails.getIntakeTempName3();
+		if (null != intakeTempName3 && intakeTempName3.length() > 0) {
+			columnList.add(Instrument.COL_INTAKE_TEMP_3);
+		}
+		
+		columnList.add(Instrument.COL_SALINITY_1);
+		
+		String salinityName2 = instrumentDetails.getSalinityName2();
+		if (null != salinityName2 && salinityName2.length() > 0) {
+			columnList.add(Instrument.COL_SALINITY_2);
+		}
+		
+		String salinityName3 = instrumentDetails.getSalinityName3();
+		if (null != salinityName3 && salinityName3.length() > 0) {
+			columnList.add(Instrument.COL_SALINITY_3);
+		}
+		
+		columnList.add(Instrument.COL_EQT_1);
+		
+		String eqtName2 = instrumentDetails.getEqtName2();
+		if (null != eqtName2 && eqtName2.length() > 0) {
+			columnList.add(Instrument.COL_EQT_2);
+		}
+		
+		String eqtName3 = instrumentDetails.getEqtName3();
+		if (null != eqtName3 && eqtName3.length() > 0) {
+			columnList.add(Instrument.COL_EQT_3);
+		}
+		
+		columnList.add(Instrument.COL_EQP_1);
+		
+		String eqpName2 = instrumentDetails.getEqpName2();
+		if (null != eqpName2 && eqpName2.length() > 0) {
+			columnList.add(Instrument.COL_EQP_2);
+		}
+		
+		String eqpName3 = instrumentDetails.getEqpName3();
+		if (null != eqpName3 && eqpName3.length() > 0) {
+			columnList.add(Instrument.COL_EQP_3);
+		}
+		
+		if (instrumentDetails.getHasAtmosphericPressure()) {
+			columnList.add(Instrument.COL_ATMOSPHERIC_PRESSURE);
+		}
+		
+		if (!instrumentDetails.getSamplesDried()) {
+			columnList.add(Instrument.COL_MOISTURE);
+		}
+	
+		columnList.add(Instrument.COL_CO2);
+		
+		return columnList;
+	}
+	
+	/**
+	 * Returns the list of columns selected on the column selection page
+	 * @return The list of columns selected on the column selection page
+	 */
+	public String getColumnSelection() {
+		return columnSelection;
+	}
+	
+	/**
+	 * Sets the list of columns selected on the column selection page
+	 * @param columnSelection The list of columns
+	 */
+	public void setColumnSelection(String columnSelection) {
+		this.columnSelection = columnSelection;
 	}
 }

@@ -57,7 +57,7 @@
 
 	<ui:define name="content">
 		<div class="fullPage">
-			<h1>#{newInstrumentBean.name}</h1>
+			<h1>#{newInstrumentBean.instrumentDetails.name}</h1>
 		
 			<div class="sectionHeader">
             	Define Run Types
@@ -86,7 +86,7 @@
 	            	</ui:repeat>
 	            </table>
 	            <div class="buttonWrapper">
-	            	<h:commandButton id="nextButton" value="FinishheaderLines" onclick="fillForm();" action="#{newInstrumentBean.processRunTypes}"/>
+	            	<h:commandButton id="nextButton" value="Finish" onclick="fillForm();" action="#{newInstrumentBean.processRunTypes}"/>
 	            </div>
             </h:form>
         </div>

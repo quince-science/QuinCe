@@ -9,12 +9,12 @@
 	
 	<f:metadata>
 		<f:viewParam name="separator" value="#{newInstrumentBean.separator}"/>
-		<f:viewParam name="dateFormat" value="#{newInstrumentBean.columnSpec.dateFormat}"/>
-		<f:viewParam name="timeFormat" value="#{newInstrumentBean.columnSpec.timeFormat}"/>
-		<f:viewParam name="lonFormat" value="#{newInstrumentBean.columnSpec.lonFormat}"/>
-		<f:viewParam name="latFormat" value="#{newInstrumentBean.columnSpec.latFormat}"/>
-		<f:viewParam name="hasAtmosphericPressure" value="#{newInstrumentBean.columnSpec.hasAtmosphericPressure}"/>
-		<f:viewParam name="samplesDried" value="#{newInstrumentBean.samplesDried}"/>
+		<f:viewParam name="dateFormat" value="#{newInstrumentBean.instrumentDetails.dateFormat}"/>
+		<f:viewParam name="timeFormat" value="#{newInstrumentBean.instrumentDetails.timeFormat}"/>
+		<f:viewParam name="lonFormat" value="#{newInstrumentBean.instrumentDetails.lonFormat}"/>
+		<f:viewParam name="latFormat" value="#{newInstrumentBean.instrumentDetails.latFormat}"/>
+		<f:viewParam name="hasAtmosphericPressure" value="#{newInstrumentBean.instrumentDetails.hasAtmosphericPressure}"/>
+		<f:viewParam name="samplesDried" value="#{newInstrumentBean.instrumentDetails.samplesDried}"/>
 	</f:metadata>
 	
 	<ui:define name="title">
@@ -32,7 +32,7 @@
 	</ui:define>
 	
 	<ui:define name="content">
-		<h1>#{newInstrumentBean.name}</h1>
+		<h1>#{newInstrumentBean.instrumentDetails.name}</h1>
 		
         <div class="fullPage">
             <h:form id="instrumentForm" method="post" accept-charset="utf8">
@@ -94,22 +94,22 @@
                     <table class="form">
                         <tr>
                             <td width="33%">
-                                <input type="radio" name="dateFormat" id="date_separate" jsf:id="dateFormatSeparate" a:name="dateFormat" value="separate">
-                            		<c:if test="#{newInstrumentBean.columnSpec.dateFormat.equals('separate')}">
+                                <input type="radio" name="dateFormat" id="date_separate" jsf:id="dateFormatSeparate" a:name="dateFormat" value="0">
+                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 0}">
                                 		<f:passThroughAttribute name="checked" value="checked"/>
                                 	</c:if>
                                 </input><label id="date_separateLabel" for="date_separate"> Separate Fields</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="dateFormat" id="date_ddmmyy" jsf:id="dateFormatDDMMYY" a:name="dateFormat" value="DDMMYY">
-                            		<c:if test="#{newInstrumentBean.columnSpec.dateFormat.equals('DDMMYY')}">
+                                <input type="radio" name="dateFormat" id="date_ddmmyy" jsf:id="dateFormatDDMMYY" a:name="dateFormat" value="2">
+                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 2}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="date_ddmmyyLabel" for="date_ddmmyy"> DD/MM/YY</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="dateFormat" id="date_mmddyy" jsf:id="dateFormatMMDDYY" a:name="dateFormat" value="MMDDYY">
-                            		<c:if test="#{newInstrumentBean.columnSpec.dateFormat.equals('MMDDYY')}">
+                                <input type="radio" name="dateFormat" id="date_mmddyy" jsf:id="dateFormatMMDDYY" a:name="dateFormat" value="4">
+                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 4}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="date_mmddyyLabel" for="date_mmddyy"> MM/DD/YY</label>
@@ -117,22 +117,22 @@
                         </tr>
                         <tr>
                             <td width="33%">
-                                <input type="radio" name="dateFormat" id="date_yyyymmdd" jsf:id="dateFormatYYYYMMDD" a:name="dateFormat" value="YYYYMMDD">
-                            		<c:if test="#{newInstrumentBean.columnSpec.dateFormat.equals('YYYYMMDD')}">
+                                <input type="radio" name="dateFormat" id="date_yyyymmdd" jsf:id="dateFormatYYYYMMDD" a:name="dateFormat" value="1">
+                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 1}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="date_yyyymmddLabel" for="date_yyyymmdd"> YYYYMMDD</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="dateFormat" id="date_ddmmyyyy" jsf:id="dateFormatDDMMYYYY" a:name="dateFormat" value="DDMMYYYY">
-                            		<c:if test="#{newInstrumentBean.columnSpec.dateFormat.equals('DDMMYYYY')}">
+                                <input type="radio" name="dateFormat" id="date_ddmmyyyy" jsf:id="dateFormatDDMMYYYY" a:name="dateFormat" value="3">
+                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 3}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="date_ddmmyyyyLabel" for="date_ddmmyyyy"> DD/MM/YYYY</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="dateFormat" id="date_mmddyyyy" jsf:id="dateFormatMMDDYYYY" a:name="dateFormat" value="MMDDYYYY">
-                            		<c:if test="#{newInstrumentBean.columnSpec.dateFormat.equals('MMDDYYYY')}">
+                                <input type="radio" name="dateFormat" id="date_mmddyyyy" jsf:id="dateFormatMMDDYYYY" a:name="dateFormat" value="5">
+                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 5}">
     	                            	<f:passThroughAttribute name="checked" value="checked"/>
     	                            </c:if>
                                 </input><label id="date_mmddyyyyLabel" for="date_mmddyyyy"> MM/DD/YYYY</label>
@@ -145,22 +145,22 @@
                     <table class="form">
                         <tr>
                             <td width="33%">
-                                <input type="radio" name="timeFormat" id="time_separate" jsf:id="timeFormatSeparate" a:name="timeFormat" value="separate">
-                            		<c:if test="#{newInstrumentBean.columnSpec.timeFormat.equals('separate')}">
+                                <input type="radio" name="timeFormat" id="time_separate" jsf:id="timeFormatSeparate" a:name="timeFormat" value="0">
+                            		<c:if test="#{newInstrumentBean.instrumentDetails.timeFormat == 0}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="time_separateLabel" for="time_separate"> Separate Fields</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="timeFormat" id="time_no_colon" jsf:id="timeFormatNoColon" a:name="timeFormat" value="no_colon_time">
-                            		<c:if test="#{newInstrumentBean.columnSpec.timeFormat.equals('no_colon_time')}">
+                                <input type="radio" name="timeFormat" id="time_no_colon" jsf:id="timeFormatNoColon" a:name="timeFormat" value="1">
+                            		<c:if test="#{newInstrumentBean.instrumentDetails.timeFormat == 1}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="time_no_colonLabel" for="time_no_colon"> HHMMSS</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="timeFormat" id="time_colon" jsf:id="timeFormatColon" a:name="timeFormat" value="colon_time">
-                            		<c:if test="#{newInstrumentBean.columnSpec.timeFormat.equals('colon_time')}">
+                                <input type="radio" name="timeFormat" id="time_colon" jsf:id="timeFormatColon" a:name="timeFormat" value="2">
+                            		<c:if test="#{newInstrumentBean.instrumentDetails.timeFormat == 2}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="time_colonLabel" for="time_colon"> HH:MM:SS</label>
@@ -178,22 +178,22 @@
                     <table class="form">
                         <tr>
                             <td width="33%">
-                                <input type="radio" name="lonFormat" id="lon_0_360" jsf:id="lonFormat0-360" a:name="lonFormat" value="0_360_lon">
-                            		<c:if test="#{newInstrumentBean.columnSpec.lonFormat.equals('0_360_lon')}">
+                                <input type="radio" name="lonFormat" id="lon_0_360" jsf:id="lonFormat0-360" a:name="lonFormat" value="0">
+                            		<c:if test="#{newInstrumentBean.instrumentDetails.lonFormat == 0}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="lon_0_360Label" for="lon_0_360"> 0 to 360</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="lonFormat" id="lon_minus180_180" jsf:id="lonFormatminus180-180" a:name="lonFormat" value="minus180_180_lon">
-                            		<c:if test="#{newInstrumentBean.columnSpec.lonFormat.equals('minus180_180_lon')}">
+                                <input type="radio" name="lonFormat" id="lon_minus180_180" jsf:id="lonFormatminus180-180" a:name="lonFormat" value="1">
+                            		<c:if test="#{newInstrumentBean.instrumentDetails.lonFormat == 1}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="lon_minus180_180Label" for="lon_minus180_180"> -180 to 180</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="lonFormat" id="lon_0_180" jsf:id="lonFormat0-180" a:name="lonFormat" value="0_180_lon">
-                            		<c:if test="#{newInstrumentBean.columnSpec.lonFormat.equals('0_180_lon')}">
+                                <input type="radio" name="lonFormat" id="lon_0_180" jsf:id="lonFormat0-180" a:name="lonFormat" value="2">
+                            		<c:if test="#{newInstrumentBean.instrumentDetails.lonFormat == 2}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="lon_0_180Label" for="lon_0_180"> 0 to 180 (N/S in a separate column)</label>
@@ -206,15 +206,15 @@
                     <table class="form">
                         <tr>
                             <td width="33%">
-                                <input type="radio" name="latFormat" id="lat_minus90_90" jsf:id="lonFormatMinus90-90" a:name="latFormat" value="minus90_90_lat">
-                            		<c:if test="#{newInstrumentBean.columnSpec.latFormat.equals('minus90_90_lat')}">
+                                <input type="radio" name="latFormat" id="lat_minus90_90" jsf:id="lonFormatMinus90-90" a:name="latFormat" value="0">
+                            		<c:if test="#{newInstrumentBean.instrumentDetails.latFormat == 0}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="lat_minus90_90Label" for="lat_minus90_90"> -90 to 90</label>
                             </td>
                             <td width="33%">
-                                <input type="radio" name="latFormat" id="lat_0_90" jsf:id="lonFormat0-90" a:name="latFormat" value="0_90_lat">
-                            		<c:if test="#{newInstrumentBean.columnSpec.latFormat.equals('0_90_lat')}">
+                                <input type="radio" name="latFormat" id="lat_0_90" jsf:id="lonFormat0-90" a:name="latFormat" value="1">
+                            		<c:if test="#{newInstrumentBean.instrumentDetails.latFormat == 1}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="lat_0_90Label" for="lat_0_90"> 0 to 90 (E/W in a separate column)</label>
@@ -234,12 +234,12 @@
                             </td>
                             <td width="50%">
                             	<input type="radio" class="inlineRadio" name="hasAtmosphericPressure" id="hasAtmosphericPressure_true" jsf:id="hasAtmosphericPressure_true" a:name="hasAtmosphericPressure" value="true">
-                            		<c:if test="#{newInstrumentBean.columnSpec.hasAtmosphericPressure.equals('true')}">
+                            		<c:if test="${newInstrumentBean.instrumentDetails.hasAtmosphericPressure}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="hasAtmosphericPressure_trueLabel" for="hasAtmosphericPressure_true"> Yes </label>
                             	<input type="radio" class="inlineRadio" name="hasAtmosphericPressure" id="hasAtmosphericPressure_false" jsf:id="hasAtmosphericPressure_false" a:name="hasAtmosphericPressure" value="false">
-                            		<c:if test="#{newInstrumentBean.columnSpec.hasAtmosphericPressure.equals('false')}">
+                            		<c:if test="${!newInstrumentBean.instrumentDetails.hasAtmosphericPressure}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="hasAtmosphericPressure_falseLabel" for="hasAtmosphericPressure_false"> No</label>
@@ -251,12 +251,12 @@
                             </td>
                             <td width="50%">
                             	<input type="radio" class="inlineRadio" name="samplesDried" id="samplesDried_true" jsf:id="samplesDried_true" a:name="samplesDried" value="true">
-                            		<c:if test="#{newInstrumentBean.samplesDried.equals('true')}">
+                            		<c:if test="${newInstrumentBean.instrumentDetails.samplesDried}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="samplesDried_trueLabel" for="samplesDried_true"> Yes </label>
                             	<input type="radio" class="inlineRadio" name="samplesDried" id="samplesDried_false" jsf:id="samplesDried_false" a:name="samplesDried" value="false">
-                            		<c:if test="#{newInstrumentBean.samplesDried.equals('false')}">
+                            		<c:if test="${!newInstrumentBean.instrumentDetails.samplesDried}">
 	                                	<f:passThroughAttribute name="checked" value="checked"/>
 	                                </c:if>
                                 </input><label id="samplesDried_falseLabel" for="samplesDried_false"> No</label>
@@ -265,9 +265,6 @@
                     </table>
                 </div>
 	            <div class="buttonWrapper">
-	            	<ui:remove>
-	            		<h:commandButton id="prevButton" value="Previous" action="#{newInstrumentBean.goToNamesFromFileSpec}"/>
-	            	</ui:remove>
 	            	<h:commandButton id="nextButton" value="Next" action="#{newInstrumentBean.goToSampleUploadFromFileSpec}"/>
 	                <button onclick="cancelInstrument()">Cancel</button>
 	            </div>
