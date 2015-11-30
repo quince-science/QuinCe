@@ -17,6 +17,7 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.User.NoSuchUserException;
 import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -55,11 +56,6 @@ public class JobManager {
 	 * Indicates that a job has no owner
 	 */
 	private static final int NO_OWNER = -999;
-	
-	/**
-	 * Indicates that a job record was not created in the database
-	 */
-	public static final int NOT_ADDED = -999;
 	
 	/**
 	 * SQL statement to create a job record
@@ -124,7 +120,7 @@ public class JobManager {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
 
-		long addedID = NOT_ADDED;
+		long addedID = DatabaseUtils.NO_DATABASE_RECORD;
 		
 		// Get the user's ID
 		int ownerID = NO_OWNER;
