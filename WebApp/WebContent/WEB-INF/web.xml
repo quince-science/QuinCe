@@ -19,6 +19,10 @@
 		<servlet-name>Faces Servlet</servlet-name>
 		<url-pattern>*.jsf</url-pattern>
 	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>Faces Servlet</servlet-name>
+		<url-pattern>*.xhtml</url-pattern>
+	</servlet-mapping>
 	<servlet>
 		<servlet-name>Logout</servlet-name>
 		<servlet-class>uk.ac.exeter.QuinCe.web.User.LogoutServlet</servlet-class>
@@ -36,6 +40,8 @@
 		<param-name>javax.faces.STATE_SAVING_METHOD</param-name>
 		<param-value>client</param-value>
 	</context-param>
+
+	<!--  PrimeFaces stuff -->	
 	<!-- If you go to http://host/project/ (with no file name), it will try 
 		index.jsf first, welcome.jsf next, and so forth. -->
 	<welcome-file-list>
@@ -64,8 +70,19 @@
 	    <param-value>/home/sdj206/work/projects/QuinCe/quince.properties</param-value>
 	</context-param>
 
+ 	<filter>
+	    <filter-name>PrimeFaces FileUpload Filter</filter-name>
+	    <filter-class>org.primefaces.webapp.filter.FileUploadFilter</filter-class>
+	</filter>
+	<filter-mapping>
+	    <filter-name>PrimeFaces FileUpload Filter</filter-name>
+	    <servlet-name>Faces Servlet</servlet-name>
+	    <dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+
 	<listener>
 	    <listener-class>uk.ac.exeter.QuinCe.web.system.ResourceManager</listener-class>
 	</listener>
+ 
 
 </web-app>

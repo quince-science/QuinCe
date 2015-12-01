@@ -58,6 +58,9 @@ public abstract class BaseManagedBean {
 	 */
 	public String internalError(Throwable error) {
 		setMessage("STACK_TRACE", StringUtils.stackTraceToString(error));
+		if (null != error.getCause()) {
+			setMessage("CAUSE_STACK_TRACE", StringUtils.stackTraceToString(error.getCause()));
+		}
 		return INTERNAL_ERROR_RESULT;
 	}
 	
@@ -81,5 +84,15 @@ public abstract class BaseManagedBean {
 	public void directNavigate(String navigation) {
 		ConfigurableNavigationHandler nav = (ConfigurableNavigationHandler) FacesContext.getCurrentInstance().getApplication().getNavigationHandler();
 		nav.performNavigation(navigation);
+	}
+	
+	/**
+	 * Evaluate and EL expression and return its value
+	 * @param expression The EL expression
+	 * @return The result of evaluating the expression
+	 */
+	public String getELValue(String expression) {
+		FacesContext context = FacesContext.getCurrentInstance();
+		return context.getApplication().evaluateExpressionGet(context, expression, String.class);
 	}
 }

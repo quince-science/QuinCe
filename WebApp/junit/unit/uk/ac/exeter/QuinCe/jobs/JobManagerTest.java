@@ -11,6 +11,7 @@ import java.util.List;
 import org.junit.Test;
 
 import uk.ac.exeter.QuinCe.data.User;
+import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.User.NoSuchUserException;
 import uk.ac.exeter.QuinCe.jobs.BadProgressException;
 import uk.ac.exeter.QuinCe.jobs.UnrecognisedStatusException;
@@ -87,7 +88,7 @@ public class JobManagerTest extends BaseJobTest {
 	@Test
 	public void createJobGoodNoOwner() throws Exception {
 		long jobID = JobManager.addJob(getDataSource(), null, TEN_SECOND_JOB_CLASS, tenSecondJobParams);
-		assertNotEquals(JobManager.NOT_ADDED, jobID);
+		assertNotEquals(DatabaseUtils.NO_DATABASE_RECORD, jobID);
 		assertNotEquals(0, jobID);
 		
 		Connection connection = getDataSource().getConnection();
@@ -95,7 +96,7 @@ public class JobManagerTest extends BaseJobTest {
 		ResultSet storedJobs = stmt.executeQuery();
 		
 		assertTrue(storedJobs.next());
-		assertNotEquals(JobManager.NOT_ADDED, storedJobs.getLong(1));
+		assertNotEquals(DatabaseUtils.NO_DATABASE_RECORD, storedJobs.getLong(1));
 		assertNotEquals(0, storedJobs.getLong(1));
 		assertEquals(0, storedJobs.getInt(2));
 		assertNotNull(storedJobs.getTimestamp(3));
@@ -117,7 +118,7 @@ public class JobManagerTest extends BaseJobTest {
 	@Test
 	public void createJobGoodWithOwner() throws Exception {
 		long jobID = createTestJob();
-		assertNotEquals(JobManager.NOT_ADDED, jobID);
+		assertNotEquals(DatabaseUtils.NO_DATABASE_RECORD, jobID);
 		assertNotEquals(0, jobID);
 
 		Connection connection = getDataSource().getConnection();
@@ -125,7 +126,7 @@ public class JobManagerTest extends BaseJobTest {
 		ResultSet storedJobs = stmt.executeQuery();
 		
 		assertTrue(storedJobs.next());
-		assertNotEquals(JobManager.NOT_ADDED, storedJobs.getLong(1));
+		assertNotEquals(DatabaseUtils.NO_DATABASE_RECORD, storedJobs.getLong(1));
 		assertEquals(testUser.getDatabaseID(), storedJobs.getInt(2));
 		assertNotNull(storedJobs.getTimestamp(3));
 		assertEquals(TEN_SECOND_JOB_CLASS, storedJobs.getString(4));

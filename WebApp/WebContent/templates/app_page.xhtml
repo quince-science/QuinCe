@@ -5,9 +5,9 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 	<h:head>
 		<title><ui:insert name="title">Welcome</ui:insert> - QuinCe</title>
-	    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700" rel="stylesheet" type="text/css"/>
-	    <h:outputStylesheet name="style/main.css"/>
-	    <h:outputScript name="scripts/jquery.js"></h:outputScript>
+	    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700,700italic" rel="stylesheet" type="text/css"/>
+		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
+		<h:outputStylesheet name="style/main.css"/>
 	    <script type="text/javascript">
 	    	function toggleSettingsMenu() {
         		$('#userSettingsMenu').toggleClass('visible');
@@ -18,12 +18,12 @@
       		}
       </script>
 	    
-	  <ui:insert name="localJavascript"></ui:insert>
+	  <ui:insert name="localHead"></ui:insert>
 	</h:head>
 	<h:body>
 	    <div id="userSettingsMenu">
       		<ul class="menu">
-        		<li class="menuitem">Instruments</li>
+        		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/instrument/instrument_list.jsf';">Instruments</li>
         		<li class="menuitem">Account</li>
         		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/logout';">Log Out</li>
       		</ul>

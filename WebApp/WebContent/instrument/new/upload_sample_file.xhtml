@@ -1,0 +1,50 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:jsf="http://xmlns.jcp.org/jsf"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/templates/app_page.xhtml">
+	
+	<ui:define name="title">
+		New Instrument
+	</ui:define>
+	
+	<ui:define name="localHead">
+		<script type="text/javascript">
+			function goToNext() {
+				$("#instrumentForm\\:columnSelectionLink").trigger("click");
+			}			
+		</script>
+	</ui:define>
+
+	<ui:define name="content">
+	
+		<h1>#{newInstrumentBean.instrumentDetails.name}</h1>
+		
+        <div class="fullPage">
+            <h:form id="instrumentForm" method="post" accept-charset="utf8">
+                <div class="sectionHeader">
+                	Upload sample file
+                </div>
+                <h:messages id="uploadErrors" errorClass="error"/>
+                <div class="instructions">
+                	Please select a data file from your instrument and upload it using the buttons below:
+                	<br/>
+                	<br/>
+                	<p:fileUpload fileUploadListener="#{newInstrumentBean.handleFileUpload}" widgetVar="upload" mode="advanced" auto="true" label="Select File..." allowTypes="/(\.|\/)(csv|tsv|txt|dat)$/" oncomplete="goToNext()"/>
+                </div>
+                <div class="sectionContent">
+                </div>
+	            <div class="buttonWrapper">
+	            	<ui:remove>
+	            		<h:commandButton id="prevButton" value="Previous" action="#{newInstrumentBean.goToFileSpec}"/>
+	            	</ui:remove>
+	                <button onclick="cancelInstrument()">Cancel</button>
+	            </div>
+		        <h:commandLink id="columnSelectionLink" forceId="true" style="invisible" action="#{newInstrumentBean.postSampleFileUploadNavigation}"/>
+	        </h:form>
+	        
+    	</div>
+	</ui:define>
+</ui:composition>
