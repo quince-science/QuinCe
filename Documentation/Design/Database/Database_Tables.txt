@@ -155,8 +155,10 @@ The `type` column will contain one of the following values:
 
 Value    Run type
 -----    --------------------------
-0        CO~2~
-1        Gas standard
+-1       Not used
+0        Sea water CO~2~
+1        Atmospheric CO~2~
+2        Gas standard
 
 ## `gas_standard_concentrations`
 Each gas standard is supplied at a specific concentration, which may vary between
