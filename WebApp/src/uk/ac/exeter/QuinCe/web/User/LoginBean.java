@@ -18,9 +18,7 @@ public class LoginBean extends BaseManagedBean {
 	
 	public static final String AUTHENTICATION_OK_RESULT = "AuthenticationSuccess";
 	
-	public static final String USER_EMAIL_SESSION_ATTR = "user";
-	
-	public static final String USER_NAME_SESSION_ATTR = "user_name";
+	public static final String USER_SESSION_ATTR = "User";
 	
 	protected static String FORM_NAME = "loginform";
 	
@@ -53,17 +51,13 @@ public class LoginBean extends BaseManagedBean {
 		String result = AUTHENTICATION_FAILED_RESULT;
 		
 		try {
+			// Clear any existing user bean
 			int authenticateResult = UserDB.authenticate(ServletUtils.getDBDataSource(), emailAddress, password.toCharArray());
 			
 			switch (authenticateResult) {
 			case UserDB.AUTHENTICATE_OK: {
-				// Store the user's email address in the session
-				getSession().setAttribute(USER_EMAIL_SESSION_ATTR, emailAddress);
-				
-				// Get the user's name and store it in the session
 				User user = UserDB.getUser(ServletUtils.getDBDataSource(), emailAddress);
-				getSession().setAttribute(USER_NAME_SESSION_ATTR, user.getFullName());
-				
+				getSession().setAttribute(USER_SESSION_ATTR, user);
 				result = AUTHENTICATION_OK_RESULT;
 				break;
 			}

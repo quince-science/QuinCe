@@ -13,12 +13,9 @@ import java.util.TreeSet;
 import javax.annotation.PostConstruct;
 
 import uk.ac.exeter.QuinCe.data.Instrument;
-import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
-import uk.ac.exeter.QuinCe.web.User.LoginBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
@@ -153,7 +150,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 * The list of columns selected on the column selection page
 	 */
 	private String columnSelection = null;
-	
+		
 	////////// *** MAIN METHODS *** ///////////////
 	/**
 	 * Required basic constructor. All the actual construction
@@ -373,8 +370,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		String result = PAGE_INSTRUMENT_LIST;
 		
 		try {
-			User owner = UserDB.getUser(ServletUtils.getDBDataSource(), (String) getSession().getAttribute(LoginBean.USER_EMAIL_SESSION_ATTR));
-			InstrumentDB.addInstrument(ServletUtils.getDBDataSource(), owner, instrumentDetails);
+			InstrumentDB.addInstrument(ServletUtils.getDBDataSource(), getUser(), instrumentDetails);
 		} catch (Exception e) {
 			result = internalError(e);
 		}

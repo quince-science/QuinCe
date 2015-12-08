@@ -15,7 +15,7 @@
   <nodes xsi:type="pageflow:PFPage" name="instrument/new/file_spec.xhtml" x="640" y="384" id="pf14468277262049" referenceLink="//@navigationRule.6/@navigationCase.2/@toViewId|" inlinks="pf14468277262048" path="/instrument/new/file_spec.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="instrument/new/upload_sample_file.xhtml" id="pf14470810703221" referenceLink="//@navigationRule.6/@navigationCase.3/@toViewId|" inlinks="pf14470810703220" path="/instrument/new/upload_sample_file.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="instrument/new/select_columns.xhtml" x="152" y="540" id="pf14471700131521" referenceLink="//@navigationRule.6/@navigationCase.4/@toViewId|" inlinks="pf14471700131520" path="/instrument/new/select_columns.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="instrument/new/run_types.xhtml" x="432" y="552" id="pf14485479829831" referenceLink="//@navigationRule.6/@navigationCase.6/@toViewId|" inlinks="pf14485479829820" path="/instrument/new/run_types.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="instrument/new/run_types.xhtml" x="432" y="552" id="pf14485479829831" referenceLink="//@navigationRule.6/@navigationCase.5/@toViewId|" inlinks="pf14485479829820" path="/instrument/new/run_types.xhtml"/>
   <links id="pf14424006975481" target="pf14424006975482" source="pf14424006975480" outcome="SignUp"/>
   <links id="pf14434598949380" target="pf14434598949381" source="pf14424006975482" outcome="Success"/>
   <links id="pf14435207295440" target="pf14425140996402" source="pf14425140996400" outcome="InternalError"/>

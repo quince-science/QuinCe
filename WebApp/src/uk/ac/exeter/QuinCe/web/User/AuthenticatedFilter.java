@@ -16,6 +16,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import uk.ac.exeter.QuinCe.data.User;
+
 /**
  * Filter for all URLs, to determine whether or not the user is logged in.
  * Exceptions are:
@@ -43,11 +45,11 @@ public class AuthenticatedFilter implements Filter {
         HttpSession session = request.getSession(false);
 
         // Get the user's email address from the session (if possible)
-        String userEmail = (session != null) ? (String) session.getAttribute(LoginBean.USER_EMAIL_SESSION_ATTR) : null;
+        User user = (session != null) ? (User) session.getAttribute(LoginBean.USER_SESSION_ATTR) : null;
 
         boolean resourceRequest = request.getRequestURI().startsWith(request.getContextPath() + ResourceHandler.RESOURCE_IDENTIFIER);
 
-        if (userEmail != null || resourceRequest || isAllowedPath(request)) {
+        if (user != null || resourceRequest || isAllowedPath(request)) {
         	filterChain.doFilter(request, response);
         } else {
             response.sendRedirect(request.getContextPath());

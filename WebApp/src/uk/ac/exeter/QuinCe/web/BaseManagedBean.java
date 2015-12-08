@@ -5,7 +5,9 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpSession;
 
+import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.User.LoginBean;
 
 /**
  * Base class for managed beans that provides a few useful methods
@@ -21,7 +23,7 @@ public abstract class BaseManagedBean {
 	public static final String VALIDATION_FAILED_RESULT = "ValidationFailed";
 	
 	protected static String FORM_NAME = "DEFAULT_FORM";
-		
+	
 	/**
 	 * Set a message that can be displayed to the user on a form
 	 * @param componentID The component ID (e.g. {@code form:inputName})
@@ -94,5 +96,13 @@ public abstract class BaseManagedBean {
 	public String getELValue(String expression) {
 		FacesContext context = FacesContext.getCurrentInstance();
 		return context.getApplication().evaluateExpressionGet(context, expression, String.class);
+	}
+	
+	/**
+	 * Returns the User object for the current session
+	 * @return The User object
+	 */
+	public User getUser() {
+		return (User) getSession().getAttribute(LoginBean.USER_SESSION_ATTR);
 	}
 }
