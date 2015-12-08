@@ -169,7 +169,7 @@ Field                    Type           Description
 instrument_id            F_KEY          Instrument ID
 standard_name            String         The name of the standard (from the `run_types` table)
 concentration            Float          The concentration of the standard
-date                     Date           The date on which the standard was deployed
+deployed_time            DateTime       The date on which the standard was deployed
 
 # Data Files
 For each data file that's uploaded, there are a number of pieces of information
