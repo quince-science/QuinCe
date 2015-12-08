@@ -251,7 +251,7 @@ Each calibration will be defined as a polynomial curve with up to five harmonics
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
 instrument_id            F_KEY          Instrument ID
-date                     Date           Date of calibration
+date_time                DateTime       Date and time of calibration
 sensor                   String         The sensor identifier
 intercept                Float          The intercept of the calibration curve
 x                        Float          Slope
