@@ -12,6 +12,7 @@ import java.util.TreeSet;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Instrument;
+import uk.ac.exeter.QuinCe.data.InstrumentStub;
 import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
@@ -52,7 +53,9 @@ public class InstrumentDB {
 	/**
 	 * Statement for inserting run types
 	 */
-	public static final String CREATE_RUN_TYPE_STATEMENT = "INSERT INTO run_types (instrument_id, run_name, run_type) VALUES (?, ?, ?)";
+	private static final String CREATE_RUN_TYPE_STATEMENT = "INSERT INTO run_types (instrument_id, run_name, run_type) VALUES (?, ?, ?)";
+	
+	private static final String GET_INSTRUMENT_LIST_QUERY = "SELECT id, name FROM instrument WHERE owner = ? ORDER BY name ASC";
 	
 	/**
 	 * Add an instrument to the database
@@ -184,10 +187,75 @@ public class InstrumentDB {
 			if (null != conn) {
 				try {
 					conn.setAutoCommit(true);
+					conn.close();
 				} catch (SQLException e) {
 					// Do nothing
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Returns a list of instruments owned by a given user.
+	 * The list contains InstrumentStub objects, which just contain
+	 * each instrument's ID and name.
+	 * 
+	 * The list is ordered by the instrument with the most recently
+	 * touched data file first, then by name.
+	 * 
+	 * @param owner The owner whose instruments are to be listed
+	 * @return The list of instruments
+	 * @throws MissingParamException 
+	 * @throws DatabaseException 
+	 */
+	public static List<InstrumentStub> getInstrumentList(DataSource dataSource, User owner) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(owner, "owner");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet instruments = null;
+		List<InstrumentStub> instrumentList = new ArrayList<InstrumentStub>();
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_INSTRUMENT_LIST_QUERY);
+			stmt.setLong(1, owner.getDatabaseID());
+			
+			instruments = stmt.executeQuery();
+			while (instruments.next()) {
+				InstrumentStub record = new InstrumentStub(instruments.getLong(1), instruments.getString(2));
+				instrumentList.add(record);
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving instrument list", e);
+		} finally {
+			if (null != instruments) {
+				try {
+					instruments.close();
+				} catch (SQLException e) {
+					// DO nothing
+				}
+			}
+
+			if (null != stmt) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					// DO nothing
+				}
+			}
+
+			if (null != conn) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					// DO nothing
+				}
+			}
+		}
+		
+		return instrumentList;
 	}
 }
