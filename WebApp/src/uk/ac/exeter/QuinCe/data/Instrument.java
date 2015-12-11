@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data;
 import java.io.Serializable;
 import java.util.Map;
 
+import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
@@ -252,6 +253,11 @@ public class Instrument implements Serializable {
 	private static final int COL_COUNT = 28;
 	
 	////////////// *** FIELDS *** ///////////////
+	
+	/**
+	 * The instrument's ID in the database
+	 */
+	private long databaseID = DatabaseUtils.NO_DATABASE_RECORD;
 	
 	/**
 	 * The name of the instrument
@@ -781,5 +787,21 @@ public class Instrument implements Serializable {
 	 */
 	public Map<String, Integer> getRunTypes() {
 		return runTypes;
+	}
+	
+	/**
+	 * Returns the ID of the instrument in the database
+	 * @return The ID of the instrument in the database
+	 */
+	public long getDatabaseID() {
+		return databaseID;
+	}
+	
+	/**
+	 * Sets the ID of the instrument in the database
+	 * @param databaseID The database ID
+	 */
+	public void setDatabaseID(long databaseID) {
+		this.databaseID = databaseID;
 	}
 }

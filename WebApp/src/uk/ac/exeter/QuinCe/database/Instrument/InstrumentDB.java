@@ -14,7 +14,6 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -70,8 +69,7 @@ public class InstrumentDB {
 		Connection conn = null;
 		PreparedStatement instrStmt = null;
 		List<PreparedStatement> runTypeStmts = new ArrayList<PreparedStatement>(runTypes.size());
-		long addedID = DatabaseUtils.NO_DATABASE_RECORD;
-		
+
 		try {
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
@@ -133,12 +131,12 @@ public class InstrumentDB {
 			
 			ResultSet generatedKeys = instrStmt.getGeneratedKeys();
 			if (generatedKeys.next()) {
-				addedID = generatedKeys.getLong(1);
+				instrument.setDatabaseID(generatedKeys.getLong(1));
 			}
 
 			for (Map.Entry<String, Integer> entry : runTypes.entrySet()) {
 				PreparedStatement stmt = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
-				stmt.setLong(1, addedID);
+				stmt.setLong(1, instrument.getDatabaseID());
 				stmt.setString(2, entry.getKey());
 				stmt.setInt(3, entry.getValue());
 				
@@ -187,8 +185,5 @@ public class InstrumentDB {
 				}
 			}
 		}
-		
-		
 	}
-	
 }
