@@ -13,6 +13,7 @@ import java.util.TreeSet;
 import javax.annotation.PostConstruct;
 
 import uk.ac.exeter.QuinCe.data.Instrument;
+import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
@@ -699,13 +700,11 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		List<Integer> classifications = StringUtils.delimitedToIntegerList(runTypeClassifications);
 		TreeSet<String> runTypeNames = getRunTypesList();
 		
-		Map<String, Integer> runTypes = new HashMap<String, Integer>(classifications.size());
-		
-		runTypes = new HashMap<String, Integer>(runTypeNames.size());
+		TreeSet<RunType> runTypes = new TreeSet<RunType>();
 		
 		int count = 0;
 		for (String name : runTypeNames) {
-			runTypes.put(name, classifications.get(count));
+			runTypes.add(new RunType(name, classifications.get(count)));
 			count++;
 		}
 		

@@ -7,11 +7,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Instrument;
+import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -64,7 +65,7 @@ public class InstrumentDB {
 		MissingParam.checkMissing(owner, "owner");
 		instrument.validate();
 		
-		Map<String, Integer> runTypes = instrument.getRunTypes();
+		TreeSet<RunType> runTypes = instrument.getRunTypes();
 		
 		Connection conn = null;
 		PreparedStatement instrStmt = null;
@@ -134,15 +135,18 @@ public class InstrumentDB {
 				instrument.setDatabaseID(generatedKeys.getLong(1));
 			}
 
-			for (Map.Entry<String, Integer> entry : runTypes.entrySet()) {
+			for (RunType runType : runTypes) {
 				PreparedStatement stmt = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
 				stmt.setLong(1, instrument.getDatabaseID());
-				stmt.setString(2, entry.getKey());
-				stmt.setInt(3, entry.getValue());
+				stmt.setString(2, runType.getName());
+				stmt.setInt(3, runType.getRunType());
 				
 				stmt.execute();
 				
 				runTypeStmts.add(stmt);
+				
+				// Add the instrument id to the run type  object
+				runType.setInstrumentID(instrument.getDatabaseID());
 			}
 			
 			conn.commit();

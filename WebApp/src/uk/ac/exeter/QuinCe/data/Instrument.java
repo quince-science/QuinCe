@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.data;
 
 import java.io.Serializable;
-import java.util.Map;
+import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -81,26 +81,6 @@ public class Instrument implements Serializable {
 	 * Indicates 0:90 latitude format (E/W marker will be in a separate column)
 	 */
 	public static final int LAT_FORMAT_0_90 = 1;
-	
-	/**
-	 * Indicates that the run type should be ignored
-	 */
-	public static final int RUN_TYPE_NONE = -1;
-	
-	/**
-	 * Indicates that the run type is for sea water CO2
-	 */
-	public static final int RUN_TYPE_WATER = 0;
-	
-	/**
-	 * Indicates that teh run type is for atmospheric CO2
-	 */
-	public static final int RUN_TYPE_ATMOSPHERIC = 1;
-	
-	/**
-	 * Indicates that the run type is for a gas standard
-	 */
-	public static final int RUN_TYPE_STANDARD = 2;
 	
 	/**
 	 * Indicates that a column is not used
@@ -369,7 +349,7 @@ public class Instrument implements Serializable {
 	/**
 	 * The run types in recorded by the instrument and their classification
 	 */
-	private Map<String, Integer> runTypes = null;
+	private TreeSet<RunType> runTypes = null;
 	
 	/**
 	 * The set of column assignments
@@ -757,7 +737,7 @@ public class Instrument implements Serializable {
 	 * Store the run type classifications
 	 * @param runTypes The run type classifications
 	 */
-	public void setRunTypes(Map<String, Integer> runTypes) {
+	public void setRunTypes(TreeSet<RunType> runTypes) {
 		this.runTypes = runTypes;
 	}
 	
@@ -785,7 +765,7 @@ public class Instrument implements Serializable {
 	 * Returns the list of run type names and their allocated run type
 	 * @return The list of run types
 	 */
-	public Map<String, Integer> getRunTypes() {
+	public TreeSet<RunType> getRunTypes() {
 		return runTypes;
 	}
 	
