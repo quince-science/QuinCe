@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data;
 
+import java.io.Serializable;
+
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 
 /**
@@ -7,7 +9,9 @@ import uk.ac.exeter.QuinCe.database.DatabaseUtils;
  * @author Steve Jones
  *
  */
-public class RunType implements Comparable<RunType> {
+public class RunType implements Comparable<RunType>, Serializable {
+
+	private static final long serialVersionUID = -3429047807578653646L;
 
 	/**
 	 * Indicates that the run type should be ignored
