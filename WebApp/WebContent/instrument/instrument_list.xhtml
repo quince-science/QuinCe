@@ -6,25 +6,43 @@
 	
 	<ui:define name="title">Instruments</ui:define>
 
+	<ui:define name="localHead">
+		<script type="text/javascript">
+		
+			function goToCalibrations(id) {
+				$('#instrumentForm\\:chosenInstrument').val(id);
+				$('#instrumentForm\\:calibrationLink').trigger("click");
+			}
+			
+			function goToStandards(id) {
+				$('#instrumentForm\\:chosenInstrument').val(id);
+				$('#instrumentForm\\:standardsLink').trigger("click");
+			}
+
+		</script>
+	</ui:define>
+	
 	<ui:define name="content">
 		<h1>Instruments</h1>
 		<div class="fullPage">
-			<h:form id="instrumentform" method="post" accept-charset="utf8">
-				
+			<h:form id="instrumentForm" method="post" accept-charset="utf8">
+				<h:inputHidden id="chosenInstrument" value="#{instrumentListBean.chosenInstrument}"/>
 				<p:dataTable id="instruments" var="instrument" value="#{instrumentListBean.instrumentList}">
 					<p:column width="65%">
 						<b><h:outputText value="#{instrument.name}"/></b>
 					</p:column>
 					<p:column width="70px" styleClass="centreCol">
-						<a href="#" onclick="alert('#{instrument.id}')">Calibration</a>
+						<a href="#" onclick="goToCalibrations(#{instrument.id})">Calibration</a>
 					</p:column>
 					<p:column width="70px" styleClass="centreCol">
-						<a href="#" onclick="alert('#{instrument.id}')">Standards</a>
+						<a href="#" onclick="goToStandards(#{instrument.id})">Standards</a>
 					</p:column>
 				</p:dataTable>
 
 				<div class="buttonWrapper">
 					<h:commandButton value="New Instrument" action="#{newInstrumentBean.start}"/>
+					<h:commandLink id="calibrationLink" forceId="true" style="invisible" action="#{instrumentListBean.viewCalibrations}"/>
+					<h:commandLink id="standardsLink" forceId="true" style="invisible" action="#{instrumentListBean.viewStandards}"/>
 				</div>
 			</h:form>
 		</div>

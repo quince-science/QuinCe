@@ -101,11 +101,19 @@
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
-		<display-name>NewInstrumentStart</display-name>
+		<display-name>InstrumentList</display-name>
 		<from-view-id>/instrument/instrument_list.xhtml</from-view-id>
 		<navigation-case>
 			<from-outcome>names</from-outcome>
 			<to-view-id>/instrument/new/names.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>calibrations</from-outcome>
+			<to-view-id>/instrument/calibrations.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>standards</from-outcome>
+			<to-view-id>/instrument/standards.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>

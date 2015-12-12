@@ -1,0 +1,33 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	template="/templates/app_page.xhtml">
+	
+	<ui:define name="title">Instruments</ui:define>
+
+	<ui:define name="localHead">
+		<script type="text/javascript">
+		
+			function goToCalibrations(id) {
+				$('instrumentForm\\:chosenInstrument').val(id);
+				$('instrumentForm\\:calibrationLink').trigger("click");
+			}
+			
+			function goToStandards(id) {
+				$('instrumentForm\\:chosenInstrument').val(id);
+				$('instrumentForm\\:standardsLink').trigger("click");
+			}
+
+		</script>
+	</ui:define>
+	
+	<ui:define name="content">
+		<h1>Instruments</h1>
+		<div class="fullPage">
+			<h:form id="instrumentForm" method="post" accept-charset="utf8">
+				HELLO!
+			</h:form>
+		</div>
+	</ui:define>
+</ui:composition>
