@@ -17,9 +17,14 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 public class InstrumentListBean extends BaseManagedBean {
 
 	/**
-	 * The name of the session attribute that holds the currently selected instrument
+	 * The name of the session attribute that holds the ID of the currently selected instrument
 	 */
 	public static final String ATTR_CURRENT_INSTRUMENT = "currentInstrument";
+	
+	/**
+	 * The name of the session attribute that holds the name of the currently selected instrument
+	 */
+	public static final String ATTR_CURRENT_INSTRUMENT_NAME = "currentInstrumentName";
 	
 	/**
 	 * The navigation for the calibrations page
@@ -35,6 +40,11 @@ public class InstrumentListBean extends BaseManagedBean {
 	 * The ID of the instrument chosen from the instrument list
 	 */
 	private long chosenInstrument;
+	
+	/**
+	 * The name of the chosen instrument
+	 */
+	private String chosenInstrumentName;
 	
 	/**
 	 * Returns a list of the instruments owned by the current user
@@ -53,6 +63,7 @@ public class InstrumentListBean extends BaseManagedBean {
 	
 	private void storeChosenInstrument() {
 		getSession().setAttribute(ATTR_CURRENT_INSTRUMENT, chosenInstrument);
+		getSession().setAttribute(ATTR_CURRENT_INSTRUMENT_NAME, chosenInstrumentName);
 	}
 	
 	public String viewCalibrations() {
@@ -81,5 +92,21 @@ public class InstrumentListBean extends BaseManagedBean {
 	 */
 	public void setChosenInstrument(long chosenInstrument) {
 		this.chosenInstrument = chosenInstrument;
+	}
+
+	/**
+	 * Returns the name of the instrument chosen from the instrument list
+	 * @return The instrument name
+	 */
+	public String getChosenInstrumentName() {
+		return chosenInstrumentName;
+	}
+	
+	/**
+	 * Sets the name of the instrument chosen from the instrument list
+	 * @param chosenInstrument The instrument name
+	 */
+	public void setChosenInstrumentName(String chosenInstrumentName) {
+		this.chosenInstrumentName = chosenInstrumentName;
 	}
 }

@@ -9,13 +9,15 @@
 	<ui:define name="localHead">
 		<script type="text/javascript">
 		
-			function goToCalibrations(id) {
+			function goToCalibrations(id, name) {
 				$('#instrumentForm\\:chosenInstrument').val(id);
+				$('#instrumentForm\\:chosenInstrumentName').val(name);
 				$('#instrumentForm\\:calibrationLink').trigger("click");
 			}
 			
-			function goToStandards(id) {
+			function goToStandards(id, name) {
 				$('#instrumentForm\\:chosenInstrument').val(id);
+				$('#instrumentForm\\:chosenInstrumentName').val(name);
 				$('#instrumentForm\\:standardsLink').trigger("click");
 			}
 
@@ -27,15 +29,16 @@
 		<div class="fullPage">
 			<h:form id="instrumentForm" method="post" accept-charset="utf8">
 				<h:inputHidden id="chosenInstrument" value="#{instrumentListBean.chosenInstrument}"/>
+				<h:inputHidden id="chosenInstrumentName" value="#{instrumentListBean.chosenInstrumentName}"/>
 				<p:dataTable id="instruments" var="instrument" value="#{instrumentListBean.instrumentList}">
 					<p:column width="65%">
 						<b><h:outputText value="#{instrument.name}"/></b>
 					</p:column>
 					<p:column width="70px" styleClass="centreCol">
-						<a href="#" onclick="goToCalibrations(#{instrument.id})">Calibration</a>
+						<a href="#" onclick="goToCalibrations(#{instrument.id}, '#{instrument.name}')">Calibration</a>
 					</p:column>
 					<p:column width="70px" styleClass="centreCol">
-						<a href="#" onclick="goToStandards(#{instrument.id})">Standards</a>
+						<a href="#" onclick="goToStandards(#{instrument.id}, '#{instrument.name}')">Standards</a>
 					</p:column>
 				</p:dataTable>
 
