@@ -160,16 +160,72 @@ Value    Run type
 1        Atmospheric CO~2~
 2        Gas standard
 
-## `gas_standard_concentrations`
+## `gas_standard_deployment`
 Each gas standard is supplied at a specific concentration, which may vary between
-cylinders. This table will store those concentrations.
+cylinders. This table will store records of when gas standards were deployed,
+and the concentrations for each standard are stored in the child `gas_standard_concentration`
+table.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
+concentration_id         Integer        ID
 instrument_id            F_KEY          Instrument ID
+deployed_date            Date           The date on which the standard was deployed
+
+## `gas_standard_concentration`
+
+
+Field                    Type           Description
+--------------------     ------------   -------------------------------------------------------------------------
+concentration_id         F_KEY          The parent gas standard deployment record
 standard_name            String         The name of the standard (from the `run_types` table)
 concentration            Float          The concentration of the standard
-deployed_time            DateTime       The date on which the standard was deployed
+
+
+## `sensor_calibration`
+This table will store the sensor calibrations for the instrument. It holds the
+name overall details of the calibration session, and the `calibration_coefficients`
+table below stores the actual calibration values
+Each calibration will be defined as a polynomial curve with up to five harmonics.
+
+Field                    Type           Description
+--------------------     ------------   -------------------------------------------------------------------------
+id                       Integer        ID
+instrument_id            F_KEY          Instrument ID
+caibration_date          Date           The date of the calibration
+
+## `calibration_coefficients`
+This table stores the individual calibration coefficients for a single sensor.
+It will contain one record for each sensor on the instrument for each record in
+the parent `sensor_calibration` table.
+
+Field                    Type           Description
+--------------------     ------------   -------------------------------------------------------------------------
+calibration_id           F_KEY          Instrument ID
+sensor                   String         The sensor identifier
+intercept                Float          The intercept of the calibration curve
+x                        Float          Slope
+x2                       Float          Second harmonic
+x3                       Float          Third harmonic
+x4                       Float          Fourth harmonic
+x5                       Float          Fifth harmonic
+
+#### `sensor`
+The `sensor` field will identify the sensor that the calibration is for.
+It will be of the form `<sensortype>_<sensornumber>` (there can be up to three sensors of each type).
+
+`sensor_type` will be one of:
+
+Digit      Value
+-----      -----
+0          Intake temperature
+1          Salinity
+2          Sea level pressure
+3          Equilibrator temperature
+4          Equilibrator pressure
+
+The second digit will be in the range 1-3. Therefore a `sensor` field value of
+`3_2` indicates the second equilibrator temperature sensor.
 
 # Data Files
 For each data file that's uploaded, there are a number of pieces of information
@@ -241,41 +297,6 @@ row                      Integer        Row number (from the original data file)
 date_time                DateTime       Date and time
 run_type                 String         The gas standard name, as defined in the `run_types` table
 concentration            Float          The concentration measured
-
-
-## `sensor_calibration`
-Whenever a new data file is uploaded, the user will be asked to provide
-calibration data for each of the sensors. This table will store the calibration data.
-Each calibration will be defined as a polynomial curve with up to five harmonics.
-
-Field                    Type           Description
---------------------     ------------   -------------------------------------------------------------------------
-instrument_id            F_KEY          Instrument ID
-date_time                DateTime       Date and time of calibration
-sensor                   String         The sensor identifier
-intercept                Float          The intercept of the calibration curve
-x                        Float          Slope
-x2                       Float          Second harmonic
-x3                       Float          Third harmonic
-x4                       Float          Fourth harmonic
-x5                       Float          Fifth harmonic
-
-#### `sensor`
-The `sensor` field will identify the sensor that the calibration is for.
-It will be of the form `<sensortype>_<sensornumber>` (there can be up to three sensors of each type).
-
-`sensor_type` will be one of:
-
-Digit      Value
------      -----
-0          Intake temperature
-1          Salinity
-2          Sea level pressure
-3          Equilibrator temperature
-4          Equilibrator pressure
-
-The second digit will be in the range 1-3. Therefore a `sensor` field value of
-`3_2` indicates the second equilibrator temperature sensor.
 
 # Jobs
 The majority of the data processing performed by QuinCe will be done by background tasks,
