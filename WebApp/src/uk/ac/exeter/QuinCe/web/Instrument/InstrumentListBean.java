@@ -37,6 +37,11 @@ public class InstrumentListBean extends BaseManagedBean {
 	public static final String PAGE_STANDARDS = "standards";
 	
 	/**
+	 * The navigation to the instrument list
+	 */
+	protected static final String PAGE_INSTRUMENT_LIST = "instrument_list";
+	
+	/**
 	 * The ID of the instrument chosen from the instrument list
 	 */
 	private long chosenInstrument;
@@ -61,19 +66,38 @@ public class InstrumentListBean extends BaseManagedBean {
 		return instruments;
 	}
 	
+	/**
+	 * Store the chosen instrument name and ID in the session
+	 */
 	private void storeChosenInstrument() {
 		getSession().setAttribute(ATTR_CURRENT_INSTRUMENT, chosenInstrument);
 		getSession().setAttribute(ATTR_CURRENT_INSTRUMENT_NAME, chosenInstrumentName);
 	}
-	
+
+	/**
+	 * View the calibrations list page for the chosen instrument
+	 * @return The calibrations list page navigation
+	 */
 	public String viewCalibrations() {
 		storeChosenInstrument();
 		return PAGE_CALIBRATIONS;
 	}
 	
+	/**
+	 * View the gas standards list page for the chosen instrument
+	 * @return The gas standards list page navigation
+	 */
 	public String viewStandards() {
 		storeChosenInstrument();
 		return PAGE_STANDARDS;
+	}
+	
+	/**
+	 * Returns to the instrument list
+	 * @return
+	 */
+	public String viewInstrumentList() {
+		return InstrumentListBean.PAGE_INSTRUMENT_LIST;
 	}
 	
 	///////////////// *** GETTERS AND SETTERS *** ///////////////

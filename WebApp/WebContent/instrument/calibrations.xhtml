@@ -23,10 +23,16 @@
 	</ui:define>
 	
 	<ui:define name="content">
-		<h1>Instruments</h1>
+		<h1>#{currentInstrumentName} - Sensor Calibrations</h1>
 		<div class="fullPage">
 			<h:form id="instrumentForm" method="post" accept-charset="utf8">
-				HELLO!
+				...
+				
+				<div class="buttonWrapper">
+					<h:commandButton value="Add Calibration" action="#{calibrationsBean.newCalibration}"/>
+					<h:commandButton value="Back to Instruments" action="#{instrumentListBean.viewInstrumentList}"/>
+				</div>
+				
 			</h:form>
 		</div>
 	</ui:define>

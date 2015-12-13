@@ -9,15 +9,15 @@
   <nodes xsi:type="pageflow:PFPage" name="index.html" x="828" y="24" id="pf14467405815115" referenceLink="//@navigationRule.4/@navigationCase.1/@toViewId|" inlinks="pf14467405815114 pf14467406203676" path="/index.html"/>
   <nodes xsi:type="pageflow:PFPage" name="SendEmailCode" x="1080" y="24" id="pf14467406203677" referenceLink="//@navigationRule.4/@fromViewId|" outlinks="pf14467406203676 pf14468227110490" path="/user/verify_email.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="user/code_sent.xhtml" x="1260" y="24" id="pf14468227110491" referenceLink="//@navigationRule.4/@navigationCase.0/@toViewId|" inlinks="pf14468227110490" path="/user/code_sent.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="InstrumentList" x="555" y="317" id="pf14468227650522" referenceLink="//@navigationRule.5/@fromViewId|" outlinks="pf14468227650523 pf14499086716800 pf14499086716801" inlinks="pf14468275621855 pf14486459687820" path="/instrument/instrument_list.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="instrument/new/names.xhtml" x="267" y="192" id="pf14468227650524" referenceLink="//@navigationRule.5/@navigationCase.1/@toViewId|" inlinks="pf14468227650523 pf14468275621856" path="/instrument/new/names.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="InstrumentList" x="555" y="317" id="pf14468227650522" referenceLink="//@navigationRule.7/@navigationCase.0/@toViewId|" outlinks="pf14468227650523 pf14499086716800 pf14499086716801" inlinks="pf14468275621855 pf14486459687820 pf14499851918970" path="/instrument/instrument_list.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="instrument/new/names.xhtml" x="267" y="192" id="pf14468227650524" referenceLink="//@navigationRule.7/@navigationCase.0/@toViewId|" inlinks="pf14468227650523 pf14468275621856" path="/instrument/new/names.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="NewInstrumentNavigation" x="65" y="324" id="pf14468275621857" referenceLink="//@navigationRule.6/@fromViewId|" outlinks="pf14468275621856 pf14468275621855 pf14468277262048 pf14470810703220 pf14471700131520 pf14485479829820 pf14486459687820" path="/instrument/new/*"/>
   <nodes xsi:type="pageflow:PFPage" name="instrument/new/file_spec.xhtml" x="480" y="391" id="pf14468277262049" referenceLink="//@navigationRule.6/@navigationCase.2/@toViewId|" inlinks="pf14468277262048" path="/instrument/new/file_spec.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="instrument/new/upload_sample_file.xhtml" x="542" y="552" id="pf14470810703221" referenceLink="//@navigationRule.6/@navigationCase.3/@toViewId|" inlinks="pf14470810703220" path="/instrument/new/upload_sample_file.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="instrument/new/select_columns.xhtml" x="9" y="485" id="pf14471700131521" referenceLink="//@navigationRule.6/@navigationCase.4/@toViewId|" inlinks="pf14471700131520" path="/instrument/new/select_columns.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="instrument/new/run_types.xhtml" x="312" y="509" id="pf14485479829831" referenceLink="//@navigationRule.6/@navigationCase.5/@toViewId|" inlinks="pf14485479829820" path="/instrument/new/run_types.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="instrument/calibrations.xhtml" x="924" y="360" id="pf14499086716802" referenceLink="//@navigationRule.5/@navigationCase.2/@toViewId|" inlinks="pf14499086716800" path="/instrument/calibrations.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="instrument/standards.xhtml" x="936" y="149" id="pf14499086716803" referenceLink="//@navigationRule.5/@navigationCase.2/@toViewId|" inlinks="pf14499086716801" path="/instrument/standards.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="CalibrationsList" x="912" y="312" id="pf14499086716802" referenceLink="//@navigationRule.7/@fromViewId|" outlinks="pf14499851918971 pf14499851918970" inlinks="pf14499086716800 pf14499851918971" path="/instrument/calibrations.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="instrument/standards.xhtml" x="936" y="149" id="pf14499086716803" referenceLink="//@navigationRule.7/@navigationCase.2/@toViewId|" inlinks="pf14499086716801" path="/instrument/standards.xhtml"/>
   <links id="pf14424006975481" target="pf14424006975482" source="pf14424006975480" outcome="SignUp"/>
   <links id="pf14434598949380" target="pf14434598949381" source="pf14424006975482" outcome="Success"/>
   <links id="pf14435207295440" target="pf14425140996402" source="pf14425140996400" outcome="InternalError"/>
@@ -50,4 +50,6 @@
   <links id="pf14486459687820" target="pf14468227650522" source="pf14468275621857" outcome="instrument_list"/>
   <links id="pf14499086716800" target="pf14499086716802" source="pf14468227650522" outcome="calibrations"/>
   <links id="pf14499086716801" target="pf14499086716803" source="pf14468227650522" outcome="standards"/>
+  <links id="pf14499851918971" target="pf14499086716802" source="pf14499086716802" outcome="calibrations"/>
+  <links id="pf14499851918970" target="pf14468227650522" source="pf14499086716802" outcome="instrument_list"/>
 </pageflow:Pageflow>
