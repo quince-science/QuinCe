@@ -65,7 +65,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	private static final String PAGE_RUN_TYPES = "run_types";
 	
 	/**
-	 * The navigation to the instrment list
+	 * The navigation to the instrument list
 	 */
 	private static final String PAGE_INSTRUMENT_LIST = "instrument_list";
 	
