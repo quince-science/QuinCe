@@ -220,12 +220,11 @@ Digit      Value
 -----      -----
 0          Intake temperature
 1          Salinity
-2          Sea level pressure
-3          Equilibrator temperature
-4          Equilibrator pressure
+2          Equilibrator temperature
+3          Equilibrator pressure
 
 The second digit will be in the range 1-3. Therefore a `sensor` field value of
-`3_2` indicates the second equilibrator temperature sensor.
+`3_2` indicates the second equilibrator pressure sensor.
 
 # Data Files
 For each data file that's uploaded, there are a number of pieces of information
