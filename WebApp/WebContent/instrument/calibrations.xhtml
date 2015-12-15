@@ -9,21 +9,11 @@
 	<ui:define name="localHead">
 		<script type="text/javascript">
 		
-			function goToCalibrations(id) {
-				$('instrumentForm\\:chosenInstrument').val(id);
-				$('instrumentForm\\:calibrationLink').trigger("click");
-			}
-			
-			function goToStandards(id) {
-				$('instrumentForm\\:chosenInstrument').val(id);
-				$('instrumentForm\\:standardsLink').trigger("click");
-			}
-
 		</script>
 	</ui:define>
 	
 	<ui:define name="content">
-		<h1>#{currentInstrumentName} - Sensor Calibrations</h1>
+		<h1>#{currentInstrument.name} - Sensor Calibrations</h1>
 		<div class="fullPage">
 			<h:form id="instrumentForm" method="post" accept-charset="utf8">
 				...

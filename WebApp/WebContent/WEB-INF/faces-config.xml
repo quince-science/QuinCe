@@ -44,7 +44,7 @@
 		<description>Handles viewing and editing of sensor calibrations</description>
 		<managed-bean-name>calibrationsBean</managed-bean-name>
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.CalibrationsBean</managed-bean-class>
-		<managed-bean-scope>request</managed-bean-scope>
+		<managed-bean-scope>view</managed-bean-scope>
 	</managed-bean>
 	<navigation-rule>
 		<display-name>all_pages</display-name>

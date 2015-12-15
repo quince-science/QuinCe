@@ -245,6 +245,11 @@ public class Instrument implements Serializable {
 	private String name = null;
 	
 	/**
+	 * The ID of the owner of the instrument
+	 */
+	private long ownerID;
+	
+	/**
 	 * The character used as a separator in data files from
 	 * the instrument
 	 */
@@ -773,7 +778,7 @@ public class Instrument implements Serializable {
 	 * Returns the ID of the instrument in the database
 	 * @return The ID of the instrument in the database
 	 */
-	public long getDatabaseID() {
+	public long getDatabaseId() {
 		return databaseID;
 	}
 	
@@ -781,7 +786,228 @@ public class Instrument implements Serializable {
 	 * Sets the ID of the instrument in the database
 	 * @param databaseID The database ID
 	 */
-	public void setDatabaseID(long databaseID) {
+	public void setDatabaseId(long databaseID) {
 		this.databaseID = databaseID;
 	}
+	
+	/**
+	 * Returns the ID of the owner of the instrument
+	 * @return The ID of the owner of the instrument
+	 */
+	public long getOwnerId() {
+		return ownerID;
+	}
+	
+	/**
+	 * Sets the ID of the owner of the instrument
+	 * @param databaseID The owner ID
+	 */
+	public void setOwnerId(long ownerID) {
+		this.ownerID = ownerID;
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Intake Temperature 1 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasIntakeTemp1() {
+		return (null != intakeTempName1);
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Intake Temperature 2 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasIntakeTemp2() {
+		return (null != intakeTempName2);
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Intake Temperature 3 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasIntakeTemp3() {
+		return (null != intakeTempName3);
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Salinity 1 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasSalinity1() {
+		return (null != salinityName1);
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Salinity 2 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasSalinity2() {
+		return (null != salinityName2);
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Salinity 3 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasSalinity3() {
+		return (null != salinityName3);
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Equilibrator Temperature 1 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasEqt1() {
+		return (null != eqtName1);
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Equilibrator Temperature 2 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasEqt2() {
+		return (null != eqtName2);
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Equilibrator Temperature 3 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasEqt3() {
+		return (null != eqtName3);
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Equilibrator Pressure 1 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasEqp1() {
+		return (null != eqpName1);
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Equilibrator Pressure 2 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasEqp2() {
+		return (null != eqpName2);
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Equilibrator Pressure 3 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasEqp3() {
+		return (null != eqpName3);
+	}
+
+	/**
+	 * Get the long version of intake temperature 1's name. This includes the sensor type,
+	 * e.g. 'Intake temperature: Aanderaa'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongIntakeTempName1() {
+		return "Intake Temperature: " + intakeTempName1;
+	}
+
+	/**
+	 * Get the long version of intake temperature 2's name. This includes the sensor type,
+	 * e.g. 'Intake temperature: Aanderaa'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongIntakeTempName2() {
+		return "Intake Temperature: " + intakeTempName2;
+	}
+
+	/**
+	 * Get the long version of intake temperature 3's name. This includes the sensor type,
+	 * e.g. 'Intake temperature: Aanderaa'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongIntakeTempName3() {
+		return "Intake Temperature: " + intakeTempName3;
+	}
+
+	/**
+	 * Get the long version of salinity 1's name. This includes the sensor type,
+	 * e.g. 'Salinity: Seabird'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongSalinityName1() {
+		return "Salinity: " + salinityName1;
+	}
+
+	/**
+	 * Get the long version of salinity 2's name. This includes the sensor type,
+	 * e.g. 'Salinity: Seabird'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongSalinityName2() {
+		return "Salinity: " + salinityName2;
+	}
+
+	/**
+	 * Get the long version of salinity 3's name. This includes the sensor type,
+	 * e.g. 'Salinity: Seabird'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongSalinityName3() {
+		return "Salinity: " + salinityName3;
+	}
+
+	/**
+	 * Get the long version of equilibrator temperature 1's name. This includes the sensor type,
+	 * e.g. 'Equilibrator Temperature: PT100'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongEqtName1() {
+		return "Equilibrator Temperature: " + eqtName1;
+	}
+
+	/**
+	 * Get the long version of equilibrator temperature 2's name. This includes the sensor type,
+	 * e.g. 'Equilibrator Temperature: PT100'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongEqtName2() {
+		return "Equilibrator Temperature: " + eqtName2;
+	}
+
+	/**
+	 * Get the long version of equilibrator temperature 3's name. This includes the sensor type,
+	 * e.g. 'Equilibrator Temperature: PT100'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongEqtName3() {
+		return "Equilibrator Temperature: " + eqtName3;
+	}
+
+	/**
+	 * Get the long version of equilibrator pressure 1's name. This includes the sensor type,
+	 * e.g. 'Equilibrator Pressure: Omega'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongEqpName1() {
+		return "Equilibrator Pressure: " + eqpName1;
+	}
+
+	/**
+	 * Get the long version of equilibrator pressure 2's name. This includes the sensor type,
+	 * e.g. 'Equilibrator Pressure: Omega'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongEqpName2() {
+		return "Equilibrator Pressure: " + eqpName2;
+	}
+
+	/**
+	 * Get the long version of equilibrator pressure 3's name. This includes the sensor type,
+	 * e.g. 'Equilibrator Pressure: Omega'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongEqpName3() {
+		return "Equilibrator Pressure: " + eqpName3;
+	}
+
 }

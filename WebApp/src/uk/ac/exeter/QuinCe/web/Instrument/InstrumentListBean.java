@@ -22,11 +22,6 @@ public class InstrumentListBean extends BaseManagedBean {
 	public static final String ATTR_CURRENT_INSTRUMENT = "currentInstrument";
 	
 	/**
-	 * The name of the session attribute that holds the name of the currently selected instrument
-	 */
-	public static final String ATTR_CURRENT_INSTRUMENT_NAME = "currentInstrumentName";
-	
-	/**
 	 * The navigation for the calibrations page
 	 */
 	public static final String PAGE_CALIBRATIONS = "calibrations";
@@ -70,8 +65,7 @@ public class InstrumentListBean extends BaseManagedBean {
 	 * Store the chosen instrument name and ID in the session
 	 */
 	private void storeChosenInstrument() {
-		getSession().setAttribute(ATTR_CURRENT_INSTRUMENT, chosenInstrument);
-		getSession().setAttribute(ATTR_CURRENT_INSTRUMENT_NAME, chosenInstrumentName);
+		getSession().setAttribute(ATTR_CURRENT_INSTRUMENT, new InstrumentStub(chosenInstrument, chosenInstrumentName));
 	}
 
 	/**

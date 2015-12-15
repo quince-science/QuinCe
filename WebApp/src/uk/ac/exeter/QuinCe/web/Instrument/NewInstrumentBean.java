@@ -167,6 +167,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	@PostConstruct
 	public void init() {
 		instrumentDetails = new Instrument();
+		instrumentDetails.setOwnerId(getUser().getDatabaseID());
 	}
 	
 	/**
@@ -371,7 +372,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		String result = PAGE_INSTRUMENT_LIST;
 		
 		try {
-			InstrumentDB.addInstrument(ServletUtils.getDBDataSource(), getUser(), instrumentDetails);
+			InstrumentDB.addInstrument(ServletUtils.getDBDataSource(), instrumentDetails);
 		} catch (Exception e) {
 			result = internalError(e);
 		}
@@ -441,51 +442,51 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 			break;
 		}
 		case Instrument.COL_INTAKE_TEMP_1: {
-			result = "Intake Temperature: " + instrumentDetails.getIntakeTempName1();
+			result = instrumentDetails.getLongIntakeTempName1();
 			break;
 		}
 		case Instrument.COL_INTAKE_TEMP_2: {
-			result = "Intake Temperature: " + instrumentDetails.getIntakeTempName2();
+			result = instrumentDetails.getLongIntakeTempName2();
 			break;
 		}
 		case Instrument.COL_INTAKE_TEMP_3: {
-			result = "Intake Temperature: " + instrumentDetails.getIntakeTempName3();
+			result = instrumentDetails.getLongIntakeTempName3();
 			break;
 		}
 		case Instrument.COL_SALINITY_1: {
-			result = "Salinity: " + instrumentDetails.getSalinityName1();
+			result = instrumentDetails.getLongSalinityName1();
 			break;
 		}
 		case Instrument.COL_SALINITY_2: {
-			result = "Salinity: " + instrumentDetails.getSalinityName2();
+			result = instrumentDetails.getLongSalinityName2();
 			break;
 		}
 		case Instrument.COL_SALINITY_3: {
-			result = "Salinity: " + instrumentDetails.getSalinityName3();
+			result = instrumentDetails.getLongSalinityName3();
 			break;
 		}
 		case Instrument.COL_EQT_1: {
-			result = "Equilibrator Temperature: " + instrumentDetails.getEqtName1();
+			result = instrumentDetails.getLongEqtName1();
 			break;
 		}
 		case Instrument.COL_EQT_2: {
-			result = "Equilibrator Temperature: " + instrumentDetails.getEqtName2();
+			result = instrumentDetails.getLongEqtName2();
 			break;
 		}
 		case Instrument.COL_EQT_3: {
-			result = "Equilibrator Temperature: " + instrumentDetails.getEqtName3();
+			result = instrumentDetails.getLongEqtName3();
 			break;
 		}
 		case Instrument.COL_EQP_1: {
-			result = "Equilibrator Pressure: " + instrumentDetails.getEqpName1();
+			result = instrumentDetails.getLongEqpName1();
 			break;
 		}
 		case Instrument.COL_EQP_2: {
-			result = "Equilibrator Pressure: " + instrumentDetails.getEqtName2();
+			result = instrumentDetails.getLongEqpName2();
 			break;
 		}
 		case Instrument.COL_EQP_3: {
-			result = "Equilibrator Pressure: " + instrumentDetails.getEqtName2();
+			result = instrumentDetails.getLongEqpName3();
 			break;
 		}
 		case Instrument.COL_ATMOSPHERIC_PRESSURE: {

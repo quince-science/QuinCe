@@ -16,6 +16,7 @@ import uk.ac.exeter.QuinCe.data.InstrumentStub;
 import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -51,10 +52,34 @@ public class InstrumentDB {
 			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	/**
+	 * Statement for retrieving all the details of a specific instrument
+	 */
+	private static final String GET_INSTRUMENT_QUERY = "SELECT owner, name, "
+			+ "intake_temp_1_name, intake_temp_2_name, intake_temp_3_name, "
+			+ "salinity_1_name, salinity_2_name, salinity_3_name, "
+			+ "eqt_1_name, eqt_2_name, eqt_3_name, "
+			+ "eqp_1_name, eqp_2_name, eqp_3_name, "
+			+ "separator_char, date_format, time_format, lat_format, " 
+			+ "lon_format, header_lines, has_atmospheric_pressure, samples_dried, "
+			+ "run_type_col, date_col, year_col, month_col, day_col, "
+			+ "time_col, hour_col, minute_col, second_col, "
+			+ "latitude_col, north_south_col, longitude_col, east_west_col, "
+			+ "intake_temp_1_col, intake_temp_2_col, intake_temp_3_col, "
+			+ "salinity_1_col, salinity_2_col, salinity_3_col, "
+			+ "eqt_1_col, eqt_2_col, eqt_3_col, "
+			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
+			+ "atmospheric_pressure_col, moisture_col, co2_col "
+			+ "FROM instrument WHERE id = ?";
+			
+	
+	/**
 	 * Statement for inserting run types
 	 */
 	private static final String CREATE_RUN_TYPE_STATEMENT = "INSERT INTO run_types (instrument_id, run_name, run_type) VALUES (?, ?, ?)";
 	
+	/**
+	 * Query for retrieving the list of instruments owned by a particular user
+	 */
 	private static final String GET_INSTRUMENT_LIST_QUERY = "SELECT id, name FROM instrument WHERE owner = ? ORDER BY name ASC";
 	
 	/**
@@ -62,10 +87,10 @@ public class InstrumentDB {
 	 * @throws MissingParamException If any of the required data are missing
 	 * @throws DatabaseException If an error occurs while storing the instrument details
 	 */
-	public static void addInstrument(DataSource dataSource, User owner, Instrument instrument) throws MissingParamException, DatabaseException {
+	public static void addInstrument(DataSource dataSource, Instrument instrument) throws MissingParamException, DatabaseException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
-		MissingParam.checkMissing(owner, "owner");
+		MissingParam.checkMissing(instrument, "instrument");
 		instrument.validate();
 		
 		TreeSet<RunType> runTypes = instrument.getRunTypes();
@@ -79,7 +104,7 @@ public class InstrumentDB {
 			conn.setAutoCommit(false);
 			
 			instrStmt = conn.prepareStatement(CREATE_INSTRUMENT_STATEMENT, Statement.RETURN_GENERATED_KEYS);
-			instrStmt.setInt(1, owner.getDatabaseID());
+			instrStmt.setLong(1, instrument.getOwnerId());
 			instrStmt.setString(2, instrument.getName());
 			instrStmt.setString(3, instrument.getIntakeTempName1());
 			instrStmt.setString(4, instrument.getIntakeTempName2());
@@ -135,12 +160,12 @@ public class InstrumentDB {
 			
 			ResultSet generatedKeys = instrStmt.getGeneratedKeys();
 			if (generatedKeys.next()) {
-				instrument.setDatabaseID(generatedKeys.getLong(1));
+				instrument.setDatabaseId(generatedKeys.getLong(1));
 			}
 
 			for (RunType runType : runTypes) {
 				PreparedStatement stmt = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
-				stmt.setLong(1, instrument.getDatabaseID());
+				stmt.setLong(1, instrument.getDatabaseId());
 				stmt.setString(2, runType.getName());
 				stmt.setInt(3, runType.getRunType());
 				
@@ -149,7 +174,7 @@ public class InstrumentDB {
 				runTypeStmts.add(stmt);
 				
 				// Add the instrument id to the run type  object
-				runType.setInstrumentID(instrument.getDatabaseID());
+				runType.setInstrumentID(instrument.getDatabaseId());
 			}
 			
 			conn.commit();
@@ -257,5 +282,117 @@ public class InstrumentDB {
 		}
 		
 		return instrumentList;
+	}
+
+	/**
+	 * Returns a complete instrument object for the specified instrument ID
+	 * @param dataSource A data source
+	 * @param instrumentID The instrument ID
+	 * @return The complete Instrument object
+	 * @throws MissingParamException If the data source is not supplied
+	 * @throws DatabaseException If an error occurs while retrieving the instrument details
+	 * @throws RecordNotFoundException If the specified instrument cannot be found
+	 */
+	public static Instrument getInstrument(DataSource dataSource, long instrumentID) throws MissingParamException, DatabaseException, RecordNotFoundException {
+
+		MissingParam.checkMissing(dataSource, "dataSource");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet record = null;
+		Instrument instrument = new Instrument();
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_INSTRUMENT_QUERY);
+			stmt.setLong(1, instrumentID);
+			
+			record = stmt.executeQuery();
+			if (!record.next()) {
+				throw new RecordNotFoundException("Instrument with id " + instrumentID + "does not exist");
+			} else {
+				instrument.setDatabaseId(instrumentID);
+				instrument.setOwnerId(record.getLong(1));
+				instrument.setName(record.getString(2));
+				instrument.setIntakeTempName1(record.getString(3));
+				instrument.setIntakeTempName2(record.getString(4));
+				instrument.setIntakeTempName3(record.getString(5));
+				instrument.setSalinityName1(record.getString(6));
+				instrument.setSalinityName2(record.getString(7));
+				instrument.setSalinityName3(record.getString(8));
+				instrument.setEqtName1(record.getString(9));
+				instrument.setEqtName2(record.getString(10));
+				instrument.setEqtName3(record.getString(11));
+				instrument.setEqpName1(record.getString(12));
+				instrument.setEqpName2(record.getString(13));
+				instrument.setEqpName3(record.getString(14));
+				instrument.setSeparatorChar(record.getString(15).toCharArray()[0]);
+				instrument.setDateFormat(record.getInt(16));
+				instrument.setTimeFormat(record.getInt(17));
+				instrument.setLatFormat(record.getInt(18));
+				instrument.setLonFormat(record.getInt(19));
+				instrument.setHeaderLines(record.getInt(20));
+				instrument.setHasAtmosphericPressure(record.getBoolean(21));
+				instrument.setSamplesDried(record.getBoolean(22));
+				instrument.setColumnAssignment(Instrument.COL_RUN_TYPE, record.getInt(23));
+				instrument.setColumnAssignment(Instrument.COL_DATE, record.getInt(24));
+				instrument.setColumnAssignment(Instrument.COL_YEAR, record.getInt(25));
+				instrument.setColumnAssignment(Instrument.COL_MONTH, record.getInt(26));
+				instrument.setColumnAssignment(Instrument.COL_DAY, record.getInt(27));
+				instrument.setColumnAssignment(Instrument.COL_TIME, record.getInt(28));
+				instrument.setColumnAssignment(Instrument.COL_HOUR, record.getInt(29));
+				instrument.setColumnAssignment(Instrument.COL_MINUTE, record.getInt(30));
+				instrument.setColumnAssignment(Instrument.COL_SECOND, record.getInt(31));
+				instrument.setColumnAssignment(Instrument.COL_LATITUDE, record.getInt(32));
+				instrument.setColumnAssignment(Instrument.COL_NORTH_SOUTH, record.getInt(33));
+				instrument.setColumnAssignment(Instrument.COL_LONGITUDE, record.getInt(34));
+				instrument.setColumnAssignment(Instrument.COL_EAST_WEST, record.getInt(35));
+				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_1, record.getInt(36));
+				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_2, record.getInt(37));
+				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_3, record.getInt(38));
+				instrument.setColumnAssignment(Instrument.COL_SALINITY_1, record.getInt(39));
+				instrument.setColumnAssignment(Instrument.COL_SALINITY_2, record.getInt(40));
+				instrument.setColumnAssignment(Instrument.COL_SALINITY_3, record.getInt(41));
+				instrument.setColumnAssignment(Instrument.COL_EQT_1, record.getInt(42));
+				instrument.setColumnAssignment(Instrument.COL_EQT_2, record.getInt(43));
+				instrument.setColumnAssignment(Instrument.COL_EQT_3, record.getInt(44));
+				instrument.setColumnAssignment(Instrument.COL_EQP_1, record.getInt(45));
+				instrument.setColumnAssignment(Instrument.COL_EQP_2, record.getInt(46));
+				instrument.setColumnAssignment(Instrument.COL_EQP_3, record.getInt(47));
+				instrument.setColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE, record.getInt(48));
+				instrument.setColumnAssignment(Instrument.COL_MOISTURE, record.getInt(49));
+				instrument.setColumnAssignment(Instrument.COL_CO2, record.getInt(50));
+				
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving instrument details", e);
+		} finally {
+			if (null != record) {
+				try {
+					record.close();
+				} catch (SQLException e) {
+					// DO nothing
+				}
+			}
+
+			if (null != stmt) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					// DO nothing
+				}
+			}
+
+			if (null != conn) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					// DO nothing
+				}
+			}
+		}
+		
+		return instrument;
 	}
 }
