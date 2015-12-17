@@ -811,7 +811,7 @@ public class Instrument implements Serializable {
 	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
 	 */
 	public boolean hasIntakeTemp1() {
-		return (null != intakeTempName1);
+		return (null == intakeTempName1 || !intakeTempName1.isEmpty());
 	}
 	
 	/**
@@ -819,7 +819,7 @@ public class Instrument implements Serializable {
 	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
 	 */
 	public boolean hasIntakeTemp2() {
-		return (null != intakeTempName2);
+		return (null == intakeTempName2 || !intakeTempName2.isEmpty());
 	}
 	
 	/**
@@ -827,7 +827,7 @@ public class Instrument implements Serializable {
 	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
 	 */
 	public boolean hasIntakeTemp3() {
-		return (null != intakeTempName3);
+		return (null == intakeTempName3 || !intakeTempName3.isEmpty());
 	}
 	
 	/**
@@ -835,7 +835,7 @@ public class Instrument implements Serializable {
 	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
 	 */
 	public boolean hasSalinity1() {
-		return (null != salinityName1);
+		return (null == salinityName1 || !salinityName1.isEmpty());
 	}
 	
 	/**
@@ -843,7 +843,7 @@ public class Instrument implements Serializable {
 	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
 	 */
 	public boolean hasSalinity2() {
-		return (null != salinityName2);
+		return (null == salinityName2 || !salinityName2.isEmpty());
 	}
 	
 	/**
@@ -851,7 +851,7 @@ public class Instrument implements Serializable {
 	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
 	 */
 	public boolean hasSalinity3() {
-		return (null != salinityName3);
+		return (null == salinityName3 || !salinityName3.isEmpty());
 	}
 	
 	/**
@@ -859,7 +859,7 @@ public class Instrument implements Serializable {
 	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
 	 */
 	public boolean hasEqt1() {
-		return (null != eqtName1);
+		return (null == eqtName1 || !eqtName1.isEmpty());
 	}
 	
 	/**
@@ -867,7 +867,7 @@ public class Instrument implements Serializable {
 	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
 	 */
 	public boolean hasEqt2() {
-		return (null != eqtName2);
+		return (null == eqtName2 || !eqtName2.isEmpty());
 	}
 	
 	/**
@@ -875,7 +875,7 @@ public class Instrument implements Serializable {
 	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
 	 */
 	public boolean hasEqt3() {
-		return (null != eqtName3);
+		return (null == eqtName3 || !eqtName3.isEmpty());
 	}
 	
 	/**
@@ -883,7 +883,7 @@ public class Instrument implements Serializable {
 	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
 	 */
 	public boolean hasEqp1() {
-		return (null != eqpName1);
+		return (null == eqpName1 || !eqpName1.isEmpty());
 	}
 	
 	/**
@@ -891,7 +891,7 @@ public class Instrument implements Serializable {
 	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
 	 */
 	public boolean hasEqp2() {
-		return (null != eqpName2);
+		return (null == eqpName2 || !eqpName2.isEmpty());
 	}
 	
 	/**
@@ -899,7 +899,7 @@ public class Instrument implements Serializable {
 	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
 	 */
 	public boolean hasEqp3() {
-		return (null != eqpName3);
+		return (null == eqpName3 || !eqpName3.isEmpty());
 	}
 
 	/**
