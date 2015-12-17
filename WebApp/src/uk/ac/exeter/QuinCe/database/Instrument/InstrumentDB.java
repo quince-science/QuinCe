@@ -161,20 +161,22 @@ public class InstrumentDB {
 			ResultSet generatedKeys = instrStmt.getGeneratedKeys();
 			if (generatedKeys.next()) {
 				instrument.setDatabaseId(generatedKeys.getLong(1));
-			}
 
-			for (RunType runType : runTypes) {
-				PreparedStatement stmt = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
-				stmt.setLong(1, instrument.getDatabaseId());
-				stmt.setString(2, runType.getName());
-				stmt.setInt(3, runType.getRunType());
-				
-				stmt.execute();
-				
-				runTypeStmts.add(stmt);
-				
-				// Add the instrument id to the run type  object
-				runType.setInstrumentID(instrument.getDatabaseId());
+				for (RunType runType : runTypes) {
+					PreparedStatement stmt = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
+					stmt.setLong(1, instrument.getDatabaseId());
+					stmt.setString(2, runType.getName());
+					stmt.setInt(3, runType.getRunType());
+					
+					stmt.execute();
+					
+					runTypeStmts.add(stmt);
+					
+					// Add the instrument id to the run type  object
+					runType.setInstrumentID(instrument.getDatabaseId());
+				}
+			} else {
+				throw new DatabaseException("Parent instrument record not created");
 			}
 			
 			conn.commit();
