@@ -75,6 +75,10 @@ public class CalibrationsBean extends BaseManagedBean {
 		return PAGE_CALIBRATION_EDITOR;
 	}
 	
+	/**
+	 * Store a calibration in the database
+	 * @return The navigation back to the calibrations list
+	 */
 	public String saveCalibration() {
 		String result = InstrumentListBean.PAGE_CALIBRATIONS;
 		
