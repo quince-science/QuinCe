@@ -86,6 +86,8 @@ public class CalibrationDB {
 					
 					coefficientStmts.add(coeffStmt);
 				}
+			} else {
+				throw new DatabaseException("Parent calibration record not created");
 			}
 
 			conn.commit();
