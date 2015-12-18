@@ -46,6 +46,12 @@
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.CalibrationsBean</managed-bean-class>
 		<managed-bean-scope>session</managed-bean-scope>
 	</managed-bean>
+	<validator>
+		<description>Ensures that sensor calibration dates are unique</description>
+		<display-name>Calibration Date Validator</display-name>
+		<validator-id>calibrationDateValidator</validator-id>
+		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.CalibrationDateValidator</validator-class>
+	</validator>
 	<navigation-rule>
 		<display-name>all_pages</display-name>
 		<from-view-id>*</from-view-id>
