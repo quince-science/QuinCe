@@ -16,7 +16,12 @@
 		<h1>#{currentInstrument.name} - Sensor Calibrations</h1>
 		<div class="fullPage">
 			<h:form id="instrumentForm" method="post" accept-charset="utf8">
-				...
+				
+				<p:dataTable var="calibration" value="#{calibrationsBean.calibrationsList}" scrollable="true" scrollHeight="450px">
+					<p:column>
+						#{calibration.date}
+					</p:column>
+				</p:dataTable>
 				
 				<div class="buttonWrapper">
 					<h:commandButton value="Add Calibration" action="#{calibrationsBean.newCalibration}"/>

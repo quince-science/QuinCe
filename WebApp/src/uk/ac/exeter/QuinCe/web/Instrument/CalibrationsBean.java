@@ -4,11 +4,15 @@ import java.util.Date;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.CalibrationCoefficients;
+import uk.ac.exeter.QuinCe.data.CalibrationStub;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.InstrumentStub;
+import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.Instrument.CalibrationDB;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
@@ -49,8 +53,11 @@ public class CalibrationsBean extends BaseManagedBean {
 	
 	/**
 	 * Clear the bean's data
+	 * @throws ResourceException 
+	 * @throws DatabaseException 
+	 * @throws MissingParamException 
 	 */
-	private void clearData() {
+	private void clearData() throws MissingParamException, DatabaseException, ResourceException {
 		calibrationDate = null;
 		calibrationId = DatabaseUtils.NO_DATABASE_RECORD;
 		coefficients = null;
@@ -83,12 +90,15 @@ public class CalibrationsBean extends BaseManagedBean {
 		String result = InstrumentListBean.PAGE_CALIBRATIONS;
 		
 		try {
-			InstrumentStub instrStub = (InstrumentStub) getSession().getAttribute(InstrumentListBean.ATTR_CURRENT_INSTRUMENT);
-			CalibrationDB.addCalibration(ServletUtils.getDBDataSource(), instrStub.getId(), calibrationDate, coefficients);
+			CalibrationDB.addCalibration(ServletUtils.getDBDataSource(), getCurrentInstrumentID(), calibrationDate, coefficients);
 		} catch (Exception e) {
 			result = internalError(e);
 		} finally {
-			clearData();
+			try {
+				clearData();
+			} catch (Exception e) {
+				return internalError(e);
+			}
 		}
 
 		return result;
@@ -135,5 +145,34 @@ public class CalibrationsBean extends BaseManagedBean {
 	 */
 	public Date getToday() {
 		return new Date();
+	}
+	
+	/**
+	 * Get the list of the current instrument's calibrations from the database
+	 * @throws ResourceException 
+	 * @throws DatabaseException 
+	 * @throws MissingParamException 
+	 */
+	public void retrieveCalibrationList() throws MissingParamException, DatabaseException, ResourceException {
+	}
+	
+	/**
+	 * Returns the list of calibrations
+	 * @return The list of calibrations
+	 * @throws ResourceException 
+	 * @throws DatabaseException 
+	 * @throws MissingParamException 
+	 */
+	public List<CalibrationStub> getCalibrationsList() throws MissingParamException, DatabaseException, ResourceException {
+		return CalibrationDB.getCalibrationList(ServletUtils.getDBDataSource(), getCurrentInstrumentID());
+	}
+
+	/**
+	 * Retrieve the ID of the current instrument from the session
+	 * @return The current instrument ID
+	 */
+	private long getCurrentInstrumentID() {
+		InstrumentStub instrStub = (InstrumentStub) getSession().getAttribute(InstrumentListBean.ATTR_CURRENT_INSTRUMENT);
+		return instrStub.getId();
 	}
 }

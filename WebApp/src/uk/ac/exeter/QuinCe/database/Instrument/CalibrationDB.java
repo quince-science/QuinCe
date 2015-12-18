@@ -12,6 +12,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.CalibrationCoefficients;
+import uk.ac.exeter.QuinCe.data.CalibrationStub;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -31,6 +32,9 @@ public class CalibrationDB {
 	private static final String CREATE_COEFFICIENTS_STATEMENT = "INSERT INTO calibration_coefficients ("
 			+ "calibration_id, sensor, intercept, x, x2, x3, x4, x5) "
 			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+	
+	private static final String GET_CALIBRATION_LIST_QUERY = "SELECT id, calibration_date FROM "
+			+ "sensor_calibration WHERE instrument_id = ? ORDER BY calibration_date DESC";
 	
 	/**
 	 * Add a calibration to the database
@@ -128,5 +132,56 @@ public class CalibrationDB {
 				}
 			}
 		}		
+	}
+	
+	/**
+	 * Retrieve the list of calibrations for a specific instrument from the database
+	 * @param dataSource A data source
+	 * @param instrumentID The instrument ID
+	 * @return The list of calibrations.
+	 * @throws MissingParamException If any of the parameters are missing
+	 * @throws DatabaseException If an error occurs while retrieving the list
+	 */
+	public static List<CalibrationStub> getCalibrationList(DataSource dataSource, long instrumentID) throws MissingParamException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(instrumentID, "instrumentID");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		List<CalibrationStub> result = new ArrayList<CalibrationStub>();
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_CALIBRATION_LIST_QUERY);
+			stmt.setLong(1, instrumentID);
+			
+			ResultSet records = stmt.executeQuery();
+			while (records.next()) {
+				result.add(new CalibrationStub(records.getLong(1), records.getDate(2)));
+			}
+			
+			return result;
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving calibrations list", e);
+		} finally {
+			if (null != stmt) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
+			
+			if (null != conn) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
+		}
+		
+		
 	}
 }
