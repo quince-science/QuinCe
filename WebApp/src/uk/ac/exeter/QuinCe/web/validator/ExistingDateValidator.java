@@ -12,6 +12,8 @@ import javax.faces.context.FacesContext;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 import javax.sql.DataSource;
+import javax.servlet.http.HttpSession;
+
 
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
@@ -37,63 +39,74 @@ public abstract class ExistingDateValidator implements Validator {
 	 */
 	private static final String DB_ERROR_MESSAGE = "Database error while checking for existing dates"; 
 	
+	/**
+	 * Session attribute to store a date that is allowed to be duplicated. This is so
+	 * that when a date is being edited and remains unchanged it doesn't get flagged.
+	 */
+	public static final String ATTR_ALLOWED_DATE = "ExistingDateValidator.AllowedDate";
+	
 	@Override
 	public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
 		
 		Date dateValue = (Date) value;
+		Date allowedDate = (Date) ((HttpSession) context.getExternalContext().getSession(false)).getAttribute(ATTR_ALLOWED_DATE);
 		
-		// Build the search query string
-		StringBuffer existingDateQuery = new StringBuffer();
-		existingDateQuery.append("SELECT COUNT(*) FROM ");
-		existingDateQuery.append(getTable());
-		existingDateQuery.append(" WHERE ");
-		existingDateQuery.append(getField());
-		existingDateQuery.append(" = ?");
+		if (null == allowedDate || !allowedDate.equals(dateValue)) { 
 		
-		if (null != getRestrictionField()) {
-			existingDateQuery.append(" AND ");
-			existingDateQuery.append(getRestrictionField());
+			// Build the search query string
+			StringBuffer existingDateQuery = new StringBuffer();
+			existingDateQuery.append("SELECT COUNT(*) FROM ");
+			existingDateQuery.append(getTable());
+			existingDateQuery.append(" WHERE ");
+			existingDateQuery.append(getField());
 			existingDateQuery.append(" = ?");
-		}
-		
-		DataSource dataSource;
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		
-		try {
-			dataSource = ServletUtils.getDBDataSource();
-			conn = dataSource.getConnection();
-			stmt = conn.prepareStatement(existingDateQuery.toString());
-			stmt.setDate(1, new java.sql.Date(dateValue.getTime()));
+			
 			
 			if (null != getRestrictionField()) {
-				stmt.setLong(2, getRestrictionValue());
+				existingDateQuery.append(" AND ");
+				existingDateQuery.append(getRestrictionField());
+				existingDateQuery.append(" = ?");
 			}
 			
-			ResultSet records = stmt.executeQuery();
-			if (records.next()) {
-				int recordCount = records.getInt(1);
-				if (recordCount > 0) {
-					throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, getErrorMessage(), getErrorMessage()));
-				}
-			}
-		} catch (SQLException|ResourceException e) {
-			e.printStackTrace();
-			throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, DB_ERROR_MESSAGE, DB_ERROR_MESSAGE));
-		} finally {
-			if (null != stmt) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
+			DataSource dataSource;
+			Connection conn = null;
+			PreparedStatement stmt = null;
 			
-			if (null != conn) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					// Do nothing
+			try {
+				dataSource = ServletUtils.getDBDataSource();
+				conn = dataSource.getConnection();
+				stmt = conn.prepareStatement(existingDateQuery.toString());
+				stmt.setDate(1, new java.sql.Date(dateValue.getTime()));
+				
+				if (null != getRestrictionField()) {
+					stmt.setLong(2, getRestrictionValue());
+				}
+				
+				ResultSet records = stmt.executeQuery();
+				if (records.next()) {
+					int recordCount = records.getInt(1);
+					if (recordCount > 0) {
+						throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, getErrorMessage(), getErrorMessage()));
+					}
+				}
+			} catch (SQLException|ResourceException e) {
+				e.printStackTrace();
+				throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, DB_ERROR_MESSAGE, DB_ERROR_MESSAGE));
+			} finally {
+				if (null != stmt) {
+					try {
+						stmt.close();
+					} catch (SQLException e) {
+						// Do nothing
+					}
+				}
+				
+				if (null != conn) {
+					try {
+						conn.close();
+					} catch (SQLException e) {
+						// Do nothing
+					}
 				}
 			}
 		}

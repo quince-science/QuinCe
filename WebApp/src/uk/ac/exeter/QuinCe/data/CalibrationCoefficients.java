@@ -17,11 +17,6 @@ public class CalibrationCoefficients {
 	private SensorCode sensorCode;
 	
 	/**
-	 * The human-readable name of the sensor
-	 */
-	private String sensorName;
-	
-	/**
 	 * The intercept of the fitted calibration curve
 	 */
 	private double intercept = 0.0;
@@ -59,9 +54,8 @@ public class CalibrationCoefficients {
 	 * @param sensorCode The sensor code
 	 * @param sensorName The sensor name
 	 */
-	public CalibrationCoefficients(SensorCode sensorCode, String sensorName) {
+	public CalibrationCoefficients(SensorCode sensorCode) {
 		this.sensorCode = sensorCode;
-		this.sensorName = sensorName;
 	}
 	
 	/**
@@ -73,51 +67,51 @@ public class CalibrationCoefficients {
 		List<CalibrationCoefficients> result = new ArrayList<CalibrationCoefficients>();
 		
 		if (instrument.hasIntakeTemp1()) {
-			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_INTAKE_TEMP, 1), instrument.getLongIntakeTempName1()));
+			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_INTAKE_TEMP, 1, instrument)));
 		}
 		
 		if (instrument.hasIntakeTemp2()) {
-			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_INTAKE_TEMP, 2), instrument.getLongIntakeTempName2()));
+			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_INTAKE_TEMP, 2, instrument)));
 		}
 		
 		if (instrument.hasIntakeTemp3()) {
-			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_INTAKE_TEMP, 3), instrument.getLongIntakeTempName3()));
+			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_INTAKE_TEMP, 3, instrument)));
 		}
 		
 		if (instrument.hasSalinity1()) {
-			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_SALINITY, 1), instrument.getLongSalinityName1()));
+			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_SALINITY, 1, instrument)));
 		}
 		
 		if (instrument.hasSalinity2()) {
-			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_SALINITY, 2), instrument.getLongSalinityName2()));
+			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_SALINITY, 2, instrument)));
 		}
 		
 		if (instrument.hasSalinity3()) {
-			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_SALINITY, 3), instrument.getLongSalinityName3()));
+			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_SALINITY, 3, instrument)));
 		}
 		
 		if (instrument.hasEqt1()) {
-			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_EQT, 1), instrument.getLongEqtName1()));
+			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_EQT, 1, instrument)));
 		}
 		
 		if (instrument.hasEqt2()) {
-			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_EQT, 2), instrument.getLongEqtName2()));
+			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_EQT, 2, instrument)));
 		}
 		
 		if (instrument.hasEqt3()) {
-			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_EQT, 3), instrument.getLongEqtName3()));
+			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_EQT, 3, instrument)));
 		}
 		
 		if (instrument.hasEqp1()) {
-			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_EQP, 1), instrument.getLongEqpName1()));
+			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_EQP, 1, instrument)));
 		}
 		
 		if (instrument.hasEqp2()) {
-			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_EQP, 2), instrument.getLongEqpName2()));
+			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_EQP, 2, instrument)));
 		}
 		
 		if (instrument.hasEqp3()) {
-			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_EQP, 3), instrument.getLongEqpName3()));
+			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_EQP, 3, instrument)));
 		}
 		
 		return result;
@@ -130,32 +124,8 @@ public class CalibrationCoefficients {
 	 * Returns the sensor code
 	 * @return The sensor code
 	 */
-	public String getSensorCode() {
-		return sensorCode.toString();
-	}
-
-	/**
-	 * Sets the sensor code
-	 * @param sensorCode The sensor code
-	 */
-	public void setSensorCode(String sensorCode) {
-		this.sensorCode = new SensorCode(sensorCode);
-	}
-
-	/**
-	 * Returns the sensor name
-	 * @return The sensor name
-	 */
-	public String getSensorName() {
-		return sensorName;
-	}
-
-	/**
-	 * Sets the sensor code
-	 * @param sensorCode The sensor code
-	 */
-	public void setSensorName(String sensorName) {
-		this.sensorName = sensorName;
+	public SensorCode getSensorCode() {
+		return sensorCode;
 	}
 
 	/**

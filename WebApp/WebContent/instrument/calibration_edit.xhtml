@@ -42,7 +42,7 @@
 							<f:facet name="header">
 								Sensor
 							</f:facet>
-							<h:outputText value="#{coefficients.sensorName}"/>
+							<h:outputText value="#{coefficients.sensorCode.longSensorName}"/>
 						</p:column>
 						<p:column>
 							<f:facet name="header">
@@ -84,7 +84,7 @@
 				</div>				
 				<div class="buttonWrapper">
 					<h:commandButton value="Save" action="#{calibrationsBean.saveCalibration}"/>
-					<h:commandButton value="Cancel" action="#{calibrationsBean.cancelEdit}"/>
+					<h:commandButton value="Cancel" immediate="true" action="#{calibrationsBean.cancelEdit}"/>
 				</div>
 				
 			</h:form>

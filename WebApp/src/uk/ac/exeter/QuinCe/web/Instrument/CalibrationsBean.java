@@ -14,6 +14,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
+import uk.ac.exeter.QuinCe.web.validator.ExistingDateValidator;
 
 /**
  * Bean for handling viewing and entry of sensor calibrations
@@ -42,7 +43,7 @@ public class CalibrationsBean extends BaseManagedBean {
 	 * The ID of the calibration record being edited. If this is a new
 	 * calibration, this will be NO_DATABASE_RECORD.
 	 */
-	private long calibrationId = DatabaseUtils.NO_DATABASE_RECORD;
+	private long chosenCalibration = DatabaseUtils.NO_DATABASE_RECORD;
 	
 	/**
 	 * Empty constructor
@@ -59,8 +60,9 @@ public class CalibrationsBean extends BaseManagedBean {
 	 */
 	private void clearData() throws MissingParamException, DatabaseException, ResourceException {
 		calibrationDate = null;
-		calibrationId = DatabaseUtils.NO_DATABASE_RECORD;
+		chosenCalibration = DatabaseUtils.NO_DATABASE_RECORD;
 		coefficients = null;
+		getSession().removeAttribute(ExistingDateValidator.ATTR_ALLOWED_DATE);
 	}
 	
 	/**
@@ -70,7 +72,8 @@ public class CalibrationsBean extends BaseManagedBean {
 	 */
 	public String newCalibration() {
 		try {
-			calibrationId = DatabaseUtils.NO_DATABASE_RECORD;
+			clearData();
+			chosenCalibration = DatabaseUtils.NO_DATABASE_RECORD;
 			calibrationDate = new Date();
 			InstrumentStub instrStub = (InstrumentStub) getSession().getAttribute(InstrumentListBean.ATTR_CURRENT_INSTRUMENT);
 			Instrument instrument = instrStub.getFullInstrument();
@@ -109,7 +112,29 @@ public class CalibrationsBean extends BaseManagedBean {
 	 * @return The navigation result
 	 */
 	public String cancelEdit() {
+		try {
+			clearData();
+		} catch (Exception e) {
+			return internalError(e);
+		}
 		return InstrumentListBean.PAGE_CALIBRATIONS;
+	}
+	
+	public String editCalibration() {
+		try {
+			CalibrationStub stub = CalibrationDB.getCalibrationStub(ServletUtils.getDBDataSource(), chosenCalibration);
+			calibrationDate = stub.getDate();
+			
+			// Store the date in the session so the date validator knows to skip it
+			getSession().setAttribute(ExistingDateValidator.ATTR_ALLOWED_DATE, calibrationDate);
+			
+			coefficients = CalibrationDB.getCalibrationCoefficients(ServletUtils.getDBDataSource(), stub);
+			
+		} catch (Exception e) {
+			return internalError(e);
+		}
+
+		return PAGE_CALIBRATION_EDITOR;
 	}
 	
 	//////// *** GETTERS AND SETTERS *** ////////
@@ -148,15 +173,6 @@ public class CalibrationsBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Get the list of the current instrument's calibrations from the database
-	 * @throws ResourceException 
-	 * @throws DatabaseException 
-	 * @throws MissingParamException 
-	 */
-	public void retrieveCalibrationList() throws MissingParamException, DatabaseException, ResourceException {
-	}
-	
-	/**
 	 * Returns the list of calibrations
 	 * @return The list of calibrations
 	 * @throws ResourceException 
@@ -174,5 +190,21 @@ public class CalibrationsBean extends BaseManagedBean {
 	private long getCurrentInstrumentID() {
 		InstrumentStub instrStub = (InstrumentStub) getSession().getAttribute(InstrumentListBean.ATTR_CURRENT_INSTRUMENT);
 		return instrStub.getId();
+	}
+	
+	/**
+	 * Returns the database ID of the chosen calibration
+	 * @return The calibration ID
+	 */
+	public long getChosenCalibration() {
+		return chosenCalibration;
+	}
+	
+	/**
+	 * Sets the database ID of the chosen calibration
+	 * @param chosenCalibration The calibration ID
+	 */
+	public void setChosenCalibration(long chosenCalibration) {
+		this.chosenCalibration = chosenCalibration;
 	}
 }

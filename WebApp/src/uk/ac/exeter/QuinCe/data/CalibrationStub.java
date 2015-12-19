@@ -15,6 +15,11 @@ public class CalibrationStub {
 	private long id;
 	
 	/**
+	 * The ID of the instrument that this calibration belongs to
+	 */
+	private long instrumentId;
+	
+	/**
 	 * The date of the calibration
 	 */
 	private Date date;
@@ -24,8 +29,9 @@ public class CalibrationStub {
 	 * @param id The database ID
 	 * @param date The calibration date
 	 */
-	public CalibrationStub (long id, Date date) {
+	public CalibrationStub (long id, long instrumentId, Date date) {
 		this.id = id;
+		this.instrumentId = instrumentId;
 		this.date = date;
 	}
 
@@ -37,6 +43,14 @@ public class CalibrationStub {
 		return id;
 	}
 
+	/**
+	 * Returns the database ID of the instrument that this calibration belongs to
+	 * @return The instrument ID
+	 */
+	public long getInstrumentId() {
+		return instrumentId;
+	}
+	
 	/**
 	 * Returns the calibration date
 	 * @return The calibration date
