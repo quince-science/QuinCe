@@ -97,6 +97,7 @@ public class InstrumentDB {
 		
 		Connection conn = null;
 		PreparedStatement instrStmt = null;
+		ResultSet generatedKeys = null;
 		List<PreparedStatement> runTypeStmts = new ArrayList<PreparedStatement>(runTypes.size());
 
 		try {
@@ -158,7 +159,7 @@ public class InstrumentDB {
 			
 			instrStmt.execute();
 			
-			ResultSet generatedKeys = instrStmt.getGeneratedKeys();
+			generatedKeys = instrStmt.getGeneratedKeys();
 			if (generatedKeys.next()) {
 				instrument.setDatabaseId(generatedKeys.getLong(1));
 
@@ -198,6 +199,14 @@ public class InstrumentDB {
 			for (PreparedStatement stmt : runTypeStmts) {
 				try {
 					stmt.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
+			
+			if (null != generatedKeys) {
+				try {
+					generatedKeys.close();
 				} catch (SQLException e) {
 					// Do nothing
 				}

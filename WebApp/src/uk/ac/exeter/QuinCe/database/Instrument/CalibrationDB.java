@@ -54,6 +54,7 @@ public class CalibrationDB {
 		
 		Connection conn = null;
 		PreparedStatement calibStmt = null;
+		ResultSet generatedKeys = null;
 		long calibID;
 		List<PreparedStatement> coefficientStmts = new ArrayList<PreparedStatement>(coefficients.size());
 
@@ -69,7 +70,7 @@ public class CalibrationDB {
 			
 			calibStmt.execute();
 			
-			ResultSet generatedKeys = calibStmt.getGeneratedKeys();
+			generatedKeys = calibStmt.getGeneratedKeys();
 			if (generatedKeys.next()) {
 				calibID = generatedKeys.getLong(1);
 			
@@ -114,6 +115,14 @@ public class CalibrationDB {
 					// Do nothing
 				}
 			}
+
+			if (null != generatedKeys) {
+				try {
+					generatedKeys.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
 			
 			if (null != calibStmt) {
 				try {
@@ -148,6 +157,7 @@ public class CalibrationDB {
 		
 		Connection conn = null;
 		PreparedStatement stmt = null;
+		ResultSet records = null;
 		List<CalibrationStub> result = new ArrayList<CalibrationStub>();
 		
 		try {
@@ -155,7 +165,7 @@ public class CalibrationDB {
 			stmt = conn.prepareStatement(GET_CALIBRATION_LIST_QUERY);
 			stmt.setLong(1, instrumentID);
 			
-			ResultSet records = stmt.executeQuery();
+			records = stmt.executeQuery();
 			while (records.next()) {
 				result.add(new CalibrationStub(records.getLong(1), records.getDate(2)));
 			}
@@ -165,6 +175,14 @@ public class CalibrationDB {
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while retrieving calibrations list", e);
 		} finally {
+			if (null != records) {
+				try {
+					records.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
+			
 			if (null != stmt) {
 				try {
 					stmt.close();
@@ -180,8 +198,6 @@ public class CalibrationDB {
 					// Do nothing
 				}
 			}
-		}
-		
-		
+		}	
 	}
 }
