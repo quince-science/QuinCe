@@ -93,7 +93,11 @@ public class CalibrationsBean extends BaseManagedBean {
 		String result = InstrumentListBean.PAGE_CALIBRATIONS;
 		
 		try {
-			CalibrationDB.addCalibration(ServletUtils.getDBDataSource(), getCurrentInstrumentID(), calibrationDate, coefficients);
+			if (chosenCalibration == DatabaseUtils.NO_DATABASE_RECORD) {
+				CalibrationDB.addCalibration(ServletUtils.getDBDataSource(), getCurrentInstrumentID(), calibrationDate, coefficients);
+			} else {
+				CalibrationDB.updateCalibration(ServletUtils.getDBDataSource(), chosenCalibration, calibrationDate, coefficients);
+			}
 		} catch (Exception e) {
 			result = internalError(e);
 		} finally {
@@ -120,6 +124,10 @@ public class CalibrationsBean extends BaseManagedBean {
 		return InstrumentListBean.PAGE_CALIBRATIONS;
 	}
 	
+	/**
+	 * Begin editing an existing calibration
+	 * @return The navigation to the calibration editor page
+	 */
 	public String editCalibration() {
 		try {
 			CalibrationStub stub = CalibrationDB.getCalibrationStub(ServletUtils.getDBDataSource(), chosenCalibration);

@@ -12,6 +12,10 @@
 				$('#calibrationsForm\\:chosenCalibration').val(id);
 				$('#calibrationsForm\\:editCalibrationLink').trigger("click");
 			}
+			
+			function deleteCalibration(id, date) {
+				confirm('Are you sure you want to delete the calibration for ' + date + '?');
+			}
 		</script>
 	</ui:define>
 	
@@ -28,12 +32,16 @@
 					<p:column>
 						<a href="#" onclick="editCalibration(#{calibration.id})">Edit</a>
 					</p:column>
+					<p:column>
+						<a href="#" onclick="deleteCalibration(#{calibration.id}, '#{calibration.date}')">Delete</a>
+					</p:column>
 				</p:dataTable>
 				
 				<div class="buttonWrapper">
 					<h:commandButton value="Add Calibration" action="#{calibrationsBean.newCalibration}"/>
 					<h:commandButton value="Back to Instruments" action="#{instrumentListBean.viewInstrumentList}"/>
 					<h:commandLink id="editCalibrationLink" forceId="true" style="invisible" action="#{calibrationsBean.editCalibration}"/>
+					<h:commandLink id="deleteCalibrationLink" forceId="true" style="invisible" action="#{calibrationsBean.deleteCalibration}"/>
 					
 				</div>
 				

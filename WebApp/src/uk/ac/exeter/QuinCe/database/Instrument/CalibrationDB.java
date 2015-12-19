@@ -56,6 +56,22 @@ public class CalibrationDB {
 			+ "calibration_coefficients WHERE calibration_id = ? ORDER BY sensor ASC";
 	
 	/**
+	 * Statememnt to update the date for a given calibration
+	 */
+	private static final String UPDATE_CALIBRATION_STATEMENT = "UPDATE sensor_calibration SET calibration_date = ? WHERE id = ?";
+	
+	/**
+	 * Statement to remove all calibration coefficients for a given calibration.
+	 * This is used prior to adding the revised coefficients.
+	 */
+	private static final String REMOVE_COEFFICIENTS_STATEMENT = "DELETE FROM calibration_coefficients WHERE calibration_id = ?";
+	
+	/**
+	 * Statement for finding a calibration record with a given ID
+	 */
+	private static final String FIND_CALIBRATION_QUERY = "SELECT id FROM sensor_calibration WHERE id = ?";
+	
+	/**
 	 * Add a calibration to the database
 	 * @param dataSource A data source
 	 * @param instrumentID The ID of the instrument being calibrated
@@ -85,6 +101,7 @@ public class CalibrationDB {
 			calibStmt = conn.prepareStatement(CREATE_CALIBRATION_STATEMENT, Statement.RETURN_GENERATED_KEYS);
 
 			calibStmt.setLong(1, instrumentID);
+
 			calibStmt.setDate(2, new java.sql.Date(calibrationDate.getTime()));
 			
 			calibStmt.execute();
@@ -348,5 +365,149 @@ public class CalibrationDB {
 		
 		return coefficients;
 	}
+
+	public static void updateCalibration(DataSource dataSource, long calibrationID, Date calibrationDate, List<CalibrationCoefficients> coefficients) throws MissingParamException, DatabaseException, RecordNotFoundException {
+
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(calibrationID, "calibrationID");
+		MissingParam.checkMissing(calibrationDate, "calibrationDate");
+		MissingParam.checkMissing(coefficients, "coefficients");
+		
+		Connection conn = null;
+		PreparedStatement updateCalibStmt = null;
+		PreparedStatement removeCoeffsStmt = null;
+		List<PreparedStatement> coefficientStmts = new ArrayList<PreparedStatement>(coefficients.size());
+		
+		try {
+			
+			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
+			
+			if (!calibrationExists(conn, calibrationID)) {
+				throw new RecordNotFoundException("Could not find calibration " + calibrationID);
+			}
+
+			// Update the calibration date 
+			updateCalibStmt = conn.prepareStatement(UPDATE_CALIBRATION_STATEMENT);
+			updateCalibStmt.setDate(1, new java.sql.Date(calibrationDate.getTime()));
+			updateCalibStmt.setLong(2, calibrationID);
+			
+			updateCalibStmt.execute();
+			
+			// Remove the existing coefficients
+			removeCoeffsStmt = conn.prepareStatement(REMOVE_COEFFICIENTS_STATEMENT);
+			removeCoeffsStmt.setLong(1, calibrationID);
+			removeCoeffsStmt.execute();
+			
+			// Add the updated coefficients
+			for (CalibrationCoefficients coeffs : coefficients) {
+				PreparedStatement coeffStmt = conn.prepareStatement(CREATE_COEFFICIENTS_STATEMENT);
+				
+				coeffStmt.setLong(1, calibrationID);
+				coeffStmt.setString(2, coeffs.getSensorCode().toString());
+				coeffStmt.setDouble(3, coeffs.getIntercept());
+				coeffStmt.setDouble(4, coeffs.getX());
+				coeffStmt.setDouble(5, coeffs.getX2());
+				coeffStmt.setDouble(6, coeffs.getX3());
+				coeffStmt.setDouble(7, coeffs.getX4());
+				coeffStmt.setDouble(8, coeffs.getX5());
+				
+				coeffStmt.execute();
+				
+				coefficientStmts.add(coeffStmt);
+			}
+
+			conn.commit();
+			
+		} catch (SQLException e) {
+			try {
+				conn.rollback();
+			} catch (SQLException e2) {
+				// DO nothing
+			}
+			
+			throw new DatabaseException("Error while updating calibration " + calibrationID, e);
+		} finally {
+			if (null != updateCalibStmt) {
+				try {
+					updateCalibStmt.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
+			
+			if (null != removeCoeffsStmt) {
+				try {
+					removeCoeffsStmt.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
+			
+			for (PreparedStatement stmt : coefficientStmts) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
+
+			if (null != conn) {
+				try {
+					conn.setAutoCommit(true);
+					conn.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
+		}
+	}
 	
+	/**
+	 * Search for an existing calibration record with a given ID
+	 * @param conn A database connection
+	 * @param calibrationID The calibration ID
+	 * @return {@code true} if the calibration exists; {@code false} if it does not.
+	 * @throws MissingParamException If any of the parameters are missing
+	 * @throws DatabaseException If an error occurs while searching the database
+	 */
+	private static boolean calibrationExists(Connection conn, long calibrationID) throws MissingParamException, DatabaseException {
+		
+		boolean result = false;
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkPositive(calibrationID, "calibrationID");
+		
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			stmt = conn.prepareStatement(FIND_CALIBRATION_QUERY);
+			stmt.setLong(1, calibrationID);
+			
+			records = stmt.executeQuery();
+			result = records.next();
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while searching for calibration");
+		} finally {
+			if (null != records) {
+				try {
+					records.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
+			
+			if (null != stmt) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
+		}
+		
+		return result;
+	}
 }
