@@ -14,7 +14,10 @@
 			}
 			
 			function deleteCalibration(id, date) {
-				confirm('Are you sure you want to delete the calibration for ' + date + '?');
+				if (confirm('Are you sure you want to delete the calibration for ' + date + '?')) {
+					$('#calibrationsForm\\:chosenCalibration').val(id);
+					$('#calibrationsForm\\:deleteCalibrationLink').trigger("click");
+				}
 			}
 		</script>
 	</ui:define>
@@ -42,9 +45,7 @@
 					<h:commandButton value="Back to Instruments" action="#{instrumentListBean.viewInstrumentList}"/>
 					<h:commandLink id="editCalibrationLink" forceId="true" style="invisible" action="#{calibrationsBean.editCalibration}"/>
 					<h:commandLink id="deleteCalibrationLink" forceId="true" style="invisible" action="#{calibrationsBean.deleteCalibration}"/>
-					
 				</div>
-				
 			</h:form>
 		</div>
 	</ui:define>

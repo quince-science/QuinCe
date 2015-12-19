@@ -72,6 +72,11 @@ public class CalibrationDB {
 	private static final String FIND_CALIBRATION_QUERY = "SELECT id FROM sensor_calibration WHERE id = ?";
 	
 	/**
+	 * Statement for removing a calibration record.
+	 */
+	private static final String REMOVE_CALIBRATION_STATEMENT = "DELETE FROM sensor_calibration WHERE id = ?";
+	
+	/**
 	 * Add a calibration to the database
 	 * @param dataSource A data source
 	 * @param instrumentID The ID of the instrument being calibrated
@@ -509,5 +514,68 @@ public class CalibrationDB {
 		}
 		
 		return result;
+	}
+	
+	public static void deleteCalibration(DataSource dataSource, long calibrationID) throws MissingParamException, DatabaseException {
+
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(calibrationID, "calibrationID");
+		
+		Connection conn = null;
+		PreparedStatement removeCoeffsStmt = null;
+		PreparedStatement removeCalibStmt = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
+			
+			removeCoeffsStmt = conn.prepareStatement(REMOVE_COEFFICIENTS_STATEMENT);
+			removeCoeffsStmt.setLong(1, calibrationID);
+			removeCoeffsStmt.execute();
+			
+			removeCalibStmt = conn.prepareStatement(REMOVE_CALIBRATION_STATEMENT);
+			removeCalibStmt.setLong(1, calibrationID);
+			removeCalibStmt.execute();
+			
+			conn.commit();
+			
+		} catch (SQLException e) {
+			if (null != conn) {
+				try {
+					conn.rollback();
+				} catch (SQLException e2) {
+					// Do nothing
+				}
+			}
+			
+			throw new DatabaseException("Error while deleting calibraion " + calibrationID, e);
+		} finally {
+			
+			if (null != removeCoeffsStmt) {
+				try {
+					removeCoeffsStmt.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
+			
+			if (null != removeCalibStmt) {
+				try {
+					removeCoeffsStmt.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
+			
+			if (null != conn) {
+				try {
+					conn.setAutoCommit(true);
+					conn.close();
+				} catch (SQLException e) {
+					// Do nothing
+				}
+			}
+		}
+		
 	}
 }

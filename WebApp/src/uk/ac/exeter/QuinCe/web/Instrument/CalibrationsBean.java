@@ -109,7 +109,7 @@ public class CalibrationsBean extends BaseManagedBean {
 		}
 
 		return result;
-}
+	}
 	
 	/**
 	 * Cancels an edit action and returns to the calibrations list
@@ -143,6 +143,17 @@ public class CalibrationsBean extends BaseManagedBean {
 		}
 
 		return PAGE_CALIBRATION_EDITOR;
+	}
+	
+	public String deleteCalibration() {
+		try {
+			CalibrationDB.deleteCalibration(ServletUtils.getDBDataSource(), chosenCalibration);
+			clearData();
+		} catch (Exception e) {
+			return internalError(e);
+		}
+		
+		return InstrumentListBean.PAGE_CALIBRATIONS;
 	}
 	
 	//////// *** GETTERS AND SETTERS *** ////////
