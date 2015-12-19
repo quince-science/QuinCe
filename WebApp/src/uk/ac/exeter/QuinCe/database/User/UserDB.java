@@ -13,6 +13,7 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -119,13 +120,13 @@ public class UserDB {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(email, "email");
 		
-		Connection connection = null;
+		Connection conn = null;
 		PreparedStatement stmt = null;
 		User foundUser = null;
 		
 		try {
-			connection = dataSource.getConnection();
-			stmt = connection.prepareStatement(USER_SEARCH_BY_EMAIL_STATEMENT);
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(USER_SEARCH_BY_EMAIL_STATEMENT);
 			stmt.setString(1, email);
 			ResultSet result = stmt.executeQuery();
 			
@@ -137,17 +138,8 @@ public class UserDB {
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while searching for the user", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// There's not much we can do here...
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return foundUser;
@@ -180,7 +172,7 @@ public class UserDB {
 		MissingParam.checkMissing(surname, "surname");
 
 		User newUser = null;
-		Connection connection = null;
+		Connection conn = null;
 		PreparedStatement stmt = null;
 		
 		try {
@@ -197,8 +189,8 @@ public class UserDB {
 					time = new Timestamp(System.currentTimeMillis());
 				}
 				
-				connection = dataSource.getConnection();
-				stmt = connection.prepareStatement(CREATE_USER_STATEMENT);
+				conn = dataSource.getConnection();
+				stmt = conn.prepareStatement(CREATE_USER_STATEMENT);
 				stmt.setString(1, email);
 				stmt.setBytes(2, generatedPassword.salt);
 				stmt.setBytes(3, generatedPassword.hashedPassword);
@@ -215,16 +207,8 @@ public class UserDB {
 		} catch (SQLException|InvalidKeySpecException|NoSuchAlgorithmException e) {
 			throw new DatabaseException("An error occurred while creating the user's database record", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return newUser;
@@ -248,15 +232,15 @@ public class UserDB {
 			throw new NoSuchUserException();
 		}
 		
-		Connection connection = null;
+		Connection conn = null;
 		PreparedStatement stmt = null;
 
 		String verificationCode = new String(PasswordHash.generateRandomString(CODE_LENGTH));
 		Timestamp time = new Timestamp(System.currentTimeMillis());
 		
 		try {
-			connection = dataSource.getConnection();
-			stmt = connection.prepareStatement(CREATE_EMAIL_VERIFICATION_CODE_STATEMENT);
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(CREATE_EMAIL_VERIFICATION_CODE_STATEMENT);
 			stmt.setString(1, verificationCode);
 			stmt.setTimestamp(2, time);
 			stmt.setInt(3, user.getDatabaseID());
@@ -266,17 +250,8 @@ public class UserDB {
 		} catch(SQLException e) {
 			throw new DatabaseException("An error occurred while storing the verification code", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 
@@ -298,15 +273,15 @@ public class UserDB {
 			throw new NoSuchUserException();
 		}
 		
-		Connection connection = null;
+		Connection conn = null;
 		PreparedStatement stmt = null;
 
 		String resetCode = new String(PasswordHash.generateRandomString(CODE_LENGTH));
 		Timestamp time = new Timestamp(System.currentTimeMillis());
 		
 		try {
-			connection = dataSource.getConnection();
-			stmt = connection.prepareStatement(CREATE_PASSWORD_RESET_CODE_STATEMENT);
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(CREATE_PASSWORD_RESET_CODE_STATEMENT);
 			stmt.setString(1, resetCode);
 			stmt.setTimestamp(2, time);
 			stmt.setInt(3, user.getDatabaseID());
@@ -316,16 +291,8 @@ public class UserDB {
 		} catch(SQLException e) {
 			throw new DatabaseException("An error occurred while storing the password reset code", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 	
@@ -347,12 +314,12 @@ public class UserDB {
 		
 		int authenticationResult = AUTHENTICATE_FAILED;
 		
-		Connection connection = null;
+		Connection conn = null;
 		PreparedStatement stmt = null;
 		
 		try {
-			connection = dataSource.getConnection();
-			stmt = connection.prepareStatement(GET_AUTHENTICATION_DETAILS_STATEMENT);
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_AUTHENTICATION_DETAILS_STATEMENT);
 			stmt.setString(1,  email);
 			ResultSet result = stmt.executeQuery();
 			if (result.first()) {
@@ -378,16 +345,8 @@ public class UserDB {
 
 			throw new DatabaseException("An error occurred while authenticating the user", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return authenticationResult;
@@ -418,14 +377,14 @@ public class UserDB {
 		int authenticationResult = authenticate(dataSource, user.getEmailAddress(), oldPassword);
 		
 		if (AUTHENTICATE_OK == authenticationResult) {
-			Connection connection = null;
+			Connection conn = null;
 			PreparedStatement stmt = null;
 
 			try {
 				SaltAndHashedPassword generatedPassword = generateHashedPassword(newPassword);
 				
-				connection = dataSource.getConnection();
-				stmt = connection.prepareStatement(CHANGE_PASSWORD_STATEMENT);
+				conn = dataSource.getConnection();
+				stmt = conn.prepareStatement(CHANGE_PASSWORD_STATEMENT);
 				stmt.setBytes(1, generatedPassword.salt);
 				stmt.setBytes(2, generatedPassword.hashedPassword);
 				stmt.setInt(3, user.getDatabaseID());
@@ -436,17 +395,8 @@ public class UserDB {
 				
 				throw new DatabaseException("An error occurred while updating the password", e);
 			} finally {
-				try {
-					if (null != stmt) {
-						stmt.close();
-					}
-					
-					if (null != connection) {
-						connection.close();
-					}
-				} catch (SQLException e) {
-					// Do nothing
-				}
+				DatabaseUtils.closeStatements(stmt);
+				DatabaseUtils.closeConnection(conn);
 			}
 		}
 		
@@ -492,16 +442,19 @@ public class UserDB {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(email, "email");
 
-		Connection connection = null;
+		Connection conn = null;
 		PreparedStatement stmt = null;
 		
 		try {
-			connection = dataSource.getConnection();
-			stmt = connection.prepareStatement(CLEAR_EMAIL_CODE_STATEMENT);
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(CLEAR_EMAIL_CODE_STATEMENT);
 			stmt.setString(1, email);
 			stmt.execute();
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while clearing the code", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 	

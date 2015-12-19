@@ -16,6 +16,7 @@ import uk.ac.exeter.QuinCe.data.CalibrationStub;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.SensorCode;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -104,11 +105,8 @@ public class CalibrationDB {
 
 			// Store the main calibration record
 			calibStmt = conn.prepareStatement(CREATE_CALIBRATION_STATEMENT, Statement.RETURN_GENERATED_KEYS);
-
 			calibStmt.setLong(1, instrumentID);
-
 			calibStmt.setDate(2, new java.sql.Date(calibrationDate.getTime()));
-			
 			calibStmt.execute();
 			
 			generatedKeys = calibStmt.getGeneratedKeys();
@@ -149,38 +147,10 @@ public class CalibrationDB {
 			
 			throw new DatabaseException("Error while storing new calibration records", e);
 		} finally {
-			for (PreparedStatement stmt : coefficientStmts) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-
-			if (null != generatedKeys) {
-				try {
-					generatedKeys.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != calibStmt) {
-				try {
-					calibStmt.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != conn) {
-				try {
-					conn.setAutoCommit(true);
-					conn.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
+			DatabaseUtils.closeStatements(coefficientStmts);
+			DatabaseUtils.closeResultSets(generatedKeys);
+			DatabaseUtils.closeStatements(calibStmt);
+			DatabaseUtils.closeConnection(conn);
 		}		
 	}
 	
@@ -216,29 +186,9 @@ public class CalibrationDB {
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while retrieving calibrations list", e);
 		} finally {
-			if (null != records) {
-				try {
-					records.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != stmt) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != conn) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}	
 	}
 	
@@ -278,29 +228,9 @@ public class CalibrationDB {
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while retrieving calibration stub", e);
 		} finally {
-			if (null != records) {
-				try {
-					records.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != stmt) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != conn) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 
@@ -343,29 +273,9 @@ public class CalibrationDB {
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while retrieving calibration coefficients", e);
 		} finally {
-			if (null != records) {
-				try {
-					records.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != stmt) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != conn) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return coefficients;
@@ -384,7 +294,6 @@ public class CalibrationDB {
 		List<PreparedStatement> coefficientStmts = new ArrayList<PreparedStatement>(coefficients.size());
 		
 		try {
-			
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
 			
@@ -433,38 +342,9 @@ public class CalibrationDB {
 			
 			throw new DatabaseException("Error while updating calibration " + calibrationID, e);
 		} finally {
-			if (null != updateCalibStmt) {
-				try {
-					updateCalibStmt.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != removeCoeffsStmt) {
-				try {
-					removeCoeffsStmt.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			for (PreparedStatement stmt : coefficientStmts) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-
-			if (null != conn) {
-				try {
-					conn.setAutoCommit(true);
-					conn.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
+			DatabaseUtils.closeStatements(removeCoeffsStmt, updateCalibStmt);
+			DatabaseUtils.closeStatements(coefficientStmts);
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 	
@@ -496,26 +376,20 @@ public class CalibrationDB {
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while searching for calibration");
 		} finally {
-			if (null != records) {
-				try {
-					records.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != stmt) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
 		}
 		
 		return result;
 	}
-	
+
+	/**
+	 * Remove a calibration from the database
+	 * @param dataSource A data source
+	 * @param calibrationID The calibration ID
+	 * @throws MissingParamException
+	 * @throws DatabaseException
+	 */
 	public static void deleteCalibration(DataSource dataSource, long calibrationID) throws MissingParamException, DatabaseException {
 
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -550,32 +424,8 @@ public class CalibrationDB {
 			
 			throw new DatabaseException("Error while deleting calibraion " + calibrationID, e);
 		} finally {
-			
-			if (null != removeCoeffsStmt) {
-				try {
-					removeCoeffsStmt.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != removeCalibStmt) {
-				try {
-					removeCoeffsStmt.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != conn) {
-				try {
-					conn.setAutoCommit(true);
-					conn.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
+			DatabaseUtils.closeStatements(removeCoeffsStmt, removeCalibStmt);
+			DatabaseUtils.closeConnection(conn);
 		}
-		
 	}
 }

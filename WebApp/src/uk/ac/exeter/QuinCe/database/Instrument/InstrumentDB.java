@@ -16,6 +16,7 @@ import uk.ac.exeter.QuinCe.data.InstrumentStub;
 import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -195,39 +196,10 @@ public class InstrumentDB {
 			
 			throw new DatabaseException("Error while storing new instrument records", e);
 		} finally {
-			
-			for (PreparedStatement stmt : runTypeStmts) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != generatedKeys) {
-				try {
-					generatedKeys.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != instrStmt) {
-				try {
-					instrStmt.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
-			
-			if (null != conn) {
-				try {
-					conn.setAutoCommit(true);
-					conn.close();
-				} catch (SQLException e) {
-					// Do nothing
-				}
-			}
+			DatabaseUtils.closeResultSets(generatedKeys);
+			DatabaseUtils.closeStatements(runTypeStmts);
+			DatabaseUtils.closeStatements(instrStmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 	
@@ -267,29 +239,9 @@ public class InstrumentDB {
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while retrieving instrument list", e);
 		} finally {
-			if (null != instruments) {
-				try {
-					instruments.close();
-				} catch (SQLException e) {
-					// DO nothing
-				}
-			}
-
-			if (null != stmt) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					// DO nothing
-				}
-			}
-
-			if (null != conn) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					// DO nothing
-				}
-			}
+			DatabaseUtils.closeResultSets(instruments);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return instrumentList;
@@ -379,29 +331,9 @@ public class InstrumentDB {
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while retrieving instrument details", e);
 		} finally {
-			if (null != record) {
-				try {
-					record.close();
-				} catch (SQLException e) {
-					// DO nothing
-				}
-			}
-
-			if (null != stmt) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					// DO nothing
-				}
-			}
-
-			if (null != conn) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					// DO nothing
-				}
-			}
+			DatabaseUtils.closeResultSets(record);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return instrument;
