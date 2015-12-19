@@ -26,8 +26,8 @@ public abstract class InstrumentDateValidator extends ExistingDateValidator {
 	}
 	
 	@Override
-	public long getRestrictionValue(FacesContext context) {
-		InstrumentStub instrStub = (InstrumentStub) ((HttpSession) context.getExternalContext().getSession(false)).getAttribute(InstrumentListBean.ATTR_CURRENT_INSTRUMENT);
+	public long getRestrictionValue() {
+		InstrumentStub instrStub = (InstrumentStub) ((HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false)).getAttribute(InstrumentListBean.ATTR_CURRENT_INSTRUMENT);
 		return instrStub.getId();
 	}
 }

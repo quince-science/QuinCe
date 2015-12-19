@@ -67,7 +67,7 @@ public abstract class ExistingDateValidator implements Validator {
 			stmt.setDate(1, new java.sql.Date(dateValue.getTime()));
 			
 			if (null != getRestrictionField()) {
-				stmt.setLong(2, getRestrictionValue(context));
+				stmt.setLong(2, getRestrictionValue());
 			}
 			
 			ResultSet records = stmt.executeQuery();
@@ -130,7 +130,7 @@ public abstract class ExistingDateValidator implements Validator {
 	 * Returns the value to be used for the additional restriction
 	 * @return The value to be used for the additional restriction
 	 */
-	public long getRestrictionValue(FacesContext context) {
+	public long getRestrictionValue() {
 		return 0;
 	}
 }
