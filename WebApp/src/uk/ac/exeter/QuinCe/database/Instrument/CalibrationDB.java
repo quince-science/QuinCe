@@ -53,7 +53,7 @@ public class CalibrationDB {
 	/**
 	 * Statement for retrieving the calibration coefficients for a given calibration
 	 */
-	private static final String GET_COEFFICIENTS_QUERY = "SELECT sensor, intercept, x, x2, x3, x4, x4 FROM "
+	private static final String GET_COEFFICIENTS_QUERY = "SELECT sensor, intercept, x, x2, x3, x4, x5 FROM "
 			+ "calibration_coefficients WHERE calibration_id = ? ORDER BY sensor ASC";
 	
 	/**
