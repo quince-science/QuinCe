@@ -13,6 +13,7 @@ import java.util.TreeSet;
 import javax.annotation.PostConstruct;
 
 import uk.ac.exeter.QuinCe.data.Instrument;
+import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
@@ -64,7 +65,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	private static final String PAGE_RUN_TYPES = "run_types";
 	
 	/**
-	 * The navigation to the instrment list
+	 * The navigation to the instrument list
 	 */
 	private static final String PAGE_INSTRUMENT_LIST = "instrument_list";
 	
@@ -166,6 +167,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	@PostConstruct
 	public void init() {
 		instrumentDetails = new Instrument();
+		instrumentDetails.setOwnerId(getUser().getDatabaseID());
 	}
 	
 	/**
@@ -370,7 +372,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		String result = PAGE_INSTRUMENT_LIST;
 		
 		try {
-			InstrumentDB.addInstrument(ServletUtils.getDBDataSource(), getUser(), instrumentDetails);
+			InstrumentDB.addInstrument(ServletUtils.getDBDataSource(), instrumentDetails);
 		} catch (Exception e) {
 			result = internalError(e);
 		}
@@ -440,51 +442,51 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 			break;
 		}
 		case Instrument.COL_INTAKE_TEMP_1: {
-			result = "Intake Temperature: " + instrumentDetails.getIntakeTempName1();
+			result = instrumentDetails.getLongIntakeTempName1();
 			break;
 		}
 		case Instrument.COL_INTAKE_TEMP_2: {
-			result = "Intake Temperature: " + instrumentDetails.getIntakeTempName2();
+			result = instrumentDetails.getLongIntakeTempName2();
 			break;
 		}
 		case Instrument.COL_INTAKE_TEMP_3: {
-			result = "Intake Temperature: " + instrumentDetails.getIntakeTempName3();
+			result = instrumentDetails.getLongIntakeTempName3();
 			break;
 		}
 		case Instrument.COL_SALINITY_1: {
-			result = "Salinity: " + instrumentDetails.getSalinityName1();
+			result = instrumentDetails.getLongSalinityName1();
 			break;
 		}
 		case Instrument.COL_SALINITY_2: {
-			result = "Salinity: " + instrumentDetails.getSalinityName2();
+			result = instrumentDetails.getLongSalinityName2();
 			break;
 		}
 		case Instrument.COL_SALINITY_3: {
-			result = "Salinity: " + instrumentDetails.getSalinityName3();
+			result = instrumentDetails.getLongSalinityName3();
 			break;
 		}
 		case Instrument.COL_EQT_1: {
-			result = "Equilibrator Temperature: " + instrumentDetails.getEqtName1();
+			result = instrumentDetails.getLongEqtName1();
 			break;
 		}
 		case Instrument.COL_EQT_2: {
-			result = "Equilibrator Temperature: " + instrumentDetails.getEqtName2();
+			result = instrumentDetails.getLongEqtName2();
 			break;
 		}
 		case Instrument.COL_EQT_3: {
-			result = "Equilibrator Temperature: " + instrumentDetails.getEqtName3();
+			result = instrumentDetails.getLongEqtName3();
 			break;
 		}
 		case Instrument.COL_EQP_1: {
-			result = "Equilibrator Pressure: " + instrumentDetails.getEqpName1();
+			result = instrumentDetails.getLongEqpName1();
 			break;
 		}
 		case Instrument.COL_EQP_2: {
-			result = "Equilibrator Pressure: " + instrumentDetails.getEqtName2();
+			result = instrumentDetails.getLongEqpName2();
 			break;
 		}
 		case Instrument.COL_EQP_3: {
-			result = "Equilibrator Pressure: " + instrumentDetails.getEqtName2();
+			result = instrumentDetails.getLongEqpName3();
 			break;
 		}
 		case Instrument.COL_ATMOSPHERIC_PRESSURE: {
@@ -699,13 +701,11 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		List<Integer> classifications = StringUtils.delimitedToIntegerList(runTypeClassifications);
 		TreeSet<String> runTypeNames = getRunTypesList();
 		
-		Map<String, Integer> runTypes = new HashMap<String, Integer>(classifications.size());
-		
-		runTypes = new HashMap<String, Integer>(runTypeNames.size());
+		TreeSet<RunType> runTypes = new TreeSet<RunType>();
 		
 		int count = 0;
 		for (String name : runTypeNames) {
-			runTypes.put(name, classifications.get(count));
+			runTypes.add(new RunType(name, classifications.get(count)));
 			count++;
 		}
 		

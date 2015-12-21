@@ -1,17 +1,53 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
 	template="/templates/app_page.xhtml">
 	
 	<ui:define name="title">Instruments</ui:define>
 
+	<ui:define name="localHead">
+		<script type="text/javascript">
+		
+			function goToCalibrations(id, name) {
+				$('#instrumentForm\\:chosenInstrument').val(id);
+				$('#instrumentForm\\:chosenInstrumentName').val(name);
+				$('#instrumentForm\\:calibrationLink').trigger("click");
+			}
+			
+			function goToStandards(id, name) {
+				$('#instrumentForm\\:chosenInstrument').val(id);
+				$('#instrumentForm\\:chosenInstrumentName').val(name);
+				$('#instrumentForm\\:standardsLink').trigger("click");
+			}
+
+		</script>
+	</ui:define>
+	
 	<ui:define name="content">
 		<h1>Instruments</h1>
-		
-		<h:form id="instrumentform" method="post" accept-charset="utf8">
-			<div class="buttonWrapper">
-				<h:commandButton value="New Instrument" action="#{newInstrumentBean.start}"/>
-			</div>
-		</h:form>
+		<div class="fullPage">
+			<h:form id="instrumentForm" method="post" accept-charset="utf8">
+				<h:inputHidden id="chosenInstrument" value="#{instrumentListBean.chosenInstrument}"/>
+				<h:inputHidden id="chosenInstrumentName" value="#{instrumentListBean.chosenInstrumentName}"/>
+				<p:dataTable id="instruments" var="instrument" value="#{instrumentListBean.instrumentList}">
+					<p:column width="65%">
+						<b><h:outputText value="#{instrument.name}"/></b>
+					</p:column>
+					<p:column width="70px" styleClass="centreCol">
+						<a href="#" onclick="goToCalibrations(#{instrument.id}, '#{instrument.name}')">Calibration</a>
+					</p:column>
+					<p:column width="70px" styleClass="centreCol">
+						<a href="#" onclick="goToStandards(#{instrument.id}, '#{instrument.name}')">Standards</a>
+					</p:column>
+				</p:dataTable>
+
+				<div class="buttonWrapper">
+					<h:commandButton value="New Instrument" action="#{newInstrumentBean.start}"/>
+					<h:commandLink id="calibrationLink" forceId="true" style="invisible" action="#{instrumentListBean.viewCalibrations}"/>
+					<h:commandLink id="standardsLink" forceId="true" style="invisible" action="#{instrumentListBean.viewStandards}"/>
+				</div>
+			</h:form>
+		</div>
 	</ui:define>
 </ui:composition>

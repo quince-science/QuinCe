@@ -1,8 +1,9 @@
 package uk.ac.exeter.QuinCe.data;
 
 import java.io.Serializable;
-import java.util.Map;
+import java.util.TreeSet;
 
+import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
@@ -80,26 +81,6 @@ public class Instrument implements Serializable {
 	 * Indicates 0:90 latitude format (E/W marker will be in a separate column)
 	 */
 	public static final int LAT_FORMAT_0_90 = 1;
-	
-	/**
-	 * Indicates that the run type should be ignored
-	 */
-	public static final int RUN_TYPE_NONE = -1;
-	
-	/**
-	 * Indicates that the run type is for sea water CO2
-	 */
-	public static final int RUN_TYPE_WATER = 0;
-	
-	/**
-	 * Indicates that teh run type is for atmospheric CO2
-	 */
-	public static final int RUN_TYPE_ATMOSPHERIC = 1;
-	
-	/**
-	 * Indicates that the run type is for a gas standard
-	 */
-	public static final int RUN_TYPE_STANDARD = 2;
 	
 	/**
 	 * Indicates that a column is not used
@@ -254,9 +235,19 @@ public class Instrument implements Serializable {
 	////////////// *** FIELDS *** ///////////////
 	
 	/**
+	 * The instrument's ID in the database
+	 */
+	private long databaseID = DatabaseUtils.NO_DATABASE_RECORD;
+	
+	/**
 	 * The name of the instrument
 	 */
 	private String name = null;
+	
+	/**
+	 * The ID of the owner of the instrument
+	 */
+	private long ownerID;
 	
 	/**
 	 * The character used as a separator in data files from
@@ -363,7 +354,7 @@ public class Instrument implements Serializable {
 	/**
 	 * The run types in recorded by the instrument and their classification
 	 */
-	private Map<String, Integer> runTypes = null;
+	private TreeSet<RunType> runTypes = null;
 	
 	/**
 	 * The set of column assignments
@@ -751,7 +742,7 @@ public class Instrument implements Serializable {
 	 * Store the run type classifications
 	 * @param runTypes The run type classifications
 	 */
-	public void setRunTypes(Map<String, Integer> runTypes) {
+	public void setRunTypes(TreeSet<RunType> runTypes) {
 		this.runTypes = runTypes;
 	}
 	
@@ -779,7 +770,244 @@ public class Instrument implements Serializable {
 	 * Returns the list of run type names and their allocated run type
 	 * @return The list of run types
 	 */
-	public Map<String, Integer> getRunTypes() {
+	public TreeSet<RunType> getRunTypes() {
 		return runTypes;
 	}
+	
+	/**
+	 * Returns the ID of the instrument in the database
+	 * @return The ID of the instrument in the database
+	 */
+	public long getDatabaseId() {
+		return databaseID;
+	}
+	
+	/**
+	 * Sets the ID of the instrument in the database
+	 * @param databaseID The database ID
+	 */
+	public void setDatabaseId(long databaseID) {
+		this.databaseID = databaseID;
+	}
+	
+	/**
+	 * Returns the ID of the owner of the instrument
+	 * @return The ID of the owner of the instrument
+	 */
+	public long getOwnerId() {
+		return ownerID;
+	}
+	
+	/**
+	 * Sets the ID of the owner of the instrument
+	 * @param databaseID The owner ID
+	 */
+	public void setOwnerId(long ownerID) {
+		this.ownerID = ownerID;
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Intake Temperature 1 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasIntakeTemp1() {
+		return (null == intakeTempName1 || !intakeTempName1.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Intake Temperature 2 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasIntakeTemp2() {
+		return (null == intakeTempName2 || !intakeTempName2.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Intake Temperature 3 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasIntakeTemp3() {
+		return (null == intakeTempName3 || !intakeTempName3.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Salinity 1 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasSalinity1() {
+		return (null == salinityName1 || !salinityName1.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Salinity 2 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasSalinity2() {
+		return (null == salinityName2 || !salinityName2.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Salinity 3 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasSalinity3() {
+		return (null == salinityName3 || !salinityName3.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Equilibrator Temperature 1 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasEqt1() {
+		return (null == eqtName1 || !eqtName1.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Equilibrator Temperature 2 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasEqt2() {
+		return (null == eqtName2 || !eqtName2.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Equilibrator Temperature 3 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasEqt3() {
+		return (null == eqtName3 || !eqtName3.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Equilibrator Pressure 1 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasEqp1() {
+		return (null == eqpName1 || !eqpName1.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Equilibrator Pressure 2 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasEqp2() {
+		return (null == eqpName2 || !eqpName2.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Equilibrator Pressure 3 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasEqp3() {
+		return (null == eqpName3 || !eqpName3.isEmpty());
+	}
+
+	/**
+	 * Get the long version of intake temperature 1's name. This includes the sensor type,
+	 * e.g. 'Intake temperature: Aanderaa'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongIntakeTempName1() {
+		return "Intake Temperature: " + intakeTempName1;
+	}
+
+	/**
+	 * Get the long version of intake temperature 2's name. This includes the sensor type,
+	 * e.g. 'Intake temperature: Aanderaa'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongIntakeTempName2() {
+		return "Intake Temperature: " + intakeTempName2;
+	}
+
+	/**
+	 * Get the long version of intake temperature 3's name. This includes the sensor type,
+	 * e.g. 'Intake temperature: Aanderaa'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongIntakeTempName3() {
+		return "Intake Temperature: " + intakeTempName3;
+	}
+
+	/**
+	 * Get the long version of salinity 1's name. This includes the sensor type,
+	 * e.g. 'Salinity: Seabird'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongSalinityName1() {
+		return "Salinity: " + salinityName1;
+	}
+
+	/**
+	 * Get the long version of salinity 2's name. This includes the sensor type,
+	 * e.g. 'Salinity: Seabird'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongSalinityName2() {
+		return "Salinity: " + salinityName2;
+	}
+
+	/**
+	 * Get the long version of salinity 3's name. This includes the sensor type,
+	 * e.g. 'Salinity: Seabird'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongSalinityName3() {
+		return "Salinity: " + salinityName3;
+	}
+
+	/**
+	 * Get the long version of equilibrator temperature 1's name. This includes the sensor type,
+	 * e.g. 'Equilibrator Temperature: PT100'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongEqtName1() {
+		return "Equilibrator Temperature: " + eqtName1;
+	}
+
+	/**
+	 * Get the long version of equilibrator temperature 2's name. This includes the sensor type,
+	 * e.g. 'Equilibrator Temperature: PT100'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongEqtName2() {
+		return "Equilibrator Temperature: " + eqtName2;
+	}
+
+	/**
+	 * Get the long version of equilibrator temperature 3's name. This includes the sensor type,
+	 * e.g. 'Equilibrator Temperature: PT100'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongEqtName3() {
+		return "Equilibrator Temperature: " + eqtName3;
+	}
+
+	/**
+	 * Get the long version of equilibrator pressure 1's name. This includes the sensor type,
+	 * e.g. 'Equilibrator Pressure: Omega'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongEqpName1() {
+		return "Equilibrator Pressure: " + eqpName1;
+	}
+
+	/**
+	 * Get the long version of equilibrator pressure 2's name. This includes the sensor type,
+	 * e.g. 'Equilibrator Pressure: Omega'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongEqpName2() {
+		return "Equilibrator Pressure: " + eqpName2;
+	}
+
+	/**
+	 * Get the long version of equilibrator pressure 3's name. This includes the sensor type,
+	 * e.g. 'Equilibrator Pressure: Omega'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongEqpName3() {
+		return "Equilibrator Pressure: " + eqpName3;
+	}
+
 }

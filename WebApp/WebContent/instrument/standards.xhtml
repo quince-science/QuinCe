@@ -1,0 +1,52 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	template="/templates/app_page.xhtml">
+	
+	<ui:define name="title">Gas Standards</ui:define>
+
+	<ui:define name="localHead">
+		<script type="text/javascript">
+			function editStandard(id) {
+				$('#standardsForm\\:chosenStandard').val(id);
+				$('#standardsForm\\:editStandardLink').trigger("click");
+			}
+			
+			function deleteStandard(id, date) {
+				if (confirm('Are you sure you want to delete the standard for ' + date + '?')) {
+					$('#standardsForm\\:chosenStandard').val(id);
+					$('#standardsForm\\:deleteStandardLink').trigger("click");
+				}
+			}
+		</script>
+	</ui:define>
+	
+	<ui:define name="content">
+		<h1>#{currentInstrument.name} - Gas Standards</h1>
+		<div class="fullPage">
+			<h:form id="standardsForm" method="post" accept-charset="utf8">
+				<h:inputHidden id="chosenStandard" value="#{standardsBean.chosenStandard}"/>
+				
+				<p:dataTable var="standard" value="#{standardsBean.standardsList}" scrollable="true" scrollHeight="450px">
+					<p:column>
+						#{standard.deployedDate}
+					</p:column>
+					<p:column>
+						<a href="#" onclick="editStandard(#{standard.id})">Edit</a>
+					</p:column>
+					<p:column>
+						<a href="#" onclick="deleteStandard(#{standard.id}, '#{standard.deployedDate}')">Delete</a>
+					</p:column>
+				</p:dataTable>
+				
+				<div class="buttonWrapper">
+					<h:commandButton value="Add Standard" action="#{standardsBean.newStandard}"/>
+					<h:commandButton value="Back to Instruments" action="#{instrumentListBean.viewInstrumentList}"/>
+					<h:commandLink id="editStandardLink" forceId="true" style="invisible" action="#{standardsBean.editStandard}"/>
+					<h:commandLink id="deleteStandardLink" forceId="true" style="invisible" action="#{standardsBean.deleteStandard}"/>
+				</div>
+			</h:form>
+		</div>
+	</ui:define>
+</ui:composition>

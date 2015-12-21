@@ -1,0 +1,93 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	template="/templates/app_page.xhtml">
+	<ui:define name="title">Calibration Details</ui:define>
+
+	<ui:define name="localHead">
+		<script type="text/javascript">
+		
+		</script>
+	</ui:define>
+	
+	<ui:define name="content">
+		<h1>#{currentInstrument.name} - Calibration Details</h1>
+		<div class="fullPage">
+			<h:form id="calibrationForm" method="post" accept-charset="utf8">
+
+				<div class="sectionHeader">
+	            	Calibration Date
+	          	</div>
+	          	<div class="sectionContent">
+					<div class="instructions">
+						Select the date on which the calibration was performed
+					</div>
+					<p:calendar id="calibrationDate" value="#{calibrationsBean.calibrationDate}" showOn="both" readonlyInput="true" navigator="true" maxdate="#{calibrationsBean.today}" pattern="yyyy-MM-dd" required="true" requiredMessage="Calibration date is required">
+						<f:validator validatorId="calibrationDateValidator"/>
+					</p:calendar>
+					<h:message id="calibrationDateMessage" for="calibrationDate" errorClass="error"/>
+				</div>
+				
+				<div class="sectionHeader">
+					Calibration coefficients
+				</div>
+				<div class="sectionContent">
+					<div class="instructions">
+						Enter the calibration coefficients for each sensor
+					</div>
+					<p:dataTable value="#{calibrationsBean.coefficients}" var="coefficients">
+						<p:column width="300px">
+							<f:facet name="header">
+								Sensor
+							</f:facet>
+							<h:outputText value="#{coefficients.sensorCode.longSensorName}"/>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								Intercept
+							</f:facet>
+							<h:inputText value="#{coefficients.intercept}"/>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								x
+							</f:facet>
+							<h:inputText value="#{coefficients.x}"/>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								x<sup>2</sup>
+							</f:facet>
+							<h:inputText value="#{coefficients.x2}"/>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								x<sup>3</sup>
+							</f:facet>
+							<h:inputText value="#{coefficients.x3}"/>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								x<sup>4</sup>
+							</f:facet>
+							<h:inputText value="#{coefficients.x4}"/>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								x<sup>5</sup>
+							</f:facet>
+							<h:inputText value="#{coefficients.x5}"/>
+						</p:column>
+					</p:dataTable>
+				</div>				
+				<div class="buttonWrapper">
+					<h:commandButton value="Save" action="#{calibrationsBean.saveCalibration}"/>
+					<h:commandButton value="Cancel" immediate="true" action="#{calibrationsBean.cancelEdit}"/>
+				</div>
+				
+			</h:form>
+		</div>
+	</ui:define>
+</ui:composition>

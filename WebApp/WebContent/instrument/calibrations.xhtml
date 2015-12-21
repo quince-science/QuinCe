@@ -1,0 +1,52 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	template="/templates/app_page.xhtml">
+	
+	<ui:define name="title">Sensor Calibrations</ui:define>
+
+	<ui:define name="localHead">
+		<script type="text/javascript">
+			function editCalibration(id) {
+				$('#calibrationsForm\\:chosenCalibration').val(id);
+				$('#calibrationsForm\\:editCalibrationLink').trigger("click");
+			}
+			
+			function deleteCalibration(id, date) {
+				if (confirm('Are you sure you want to delete the calibration for ' + date + '?')) {
+					$('#calibrationsForm\\:chosenCalibration').val(id);
+					$('#calibrationsForm\\:deleteCalibrationLink').trigger("click");
+				}
+			}
+		</script>
+	</ui:define>
+	
+	<ui:define name="content">
+		<h1>#{currentInstrument.name} - Sensor Calibrations</h1>
+		<div class="fullPage">
+			<h:form id="calibrationsForm" method="post" accept-charset="utf8">
+				<h:inputHidden id="chosenCalibration" value="#{calibrationsBean.chosenCalibration}"/>
+				
+				<p:dataTable var="calibration" value="#{calibrationsBean.calibrationsList}" scrollable="true" scrollHeight="450px">
+					<p:column>
+						#{calibration.date}
+					</p:column>
+					<p:column>
+						<a href="#" onclick="editCalibration(#{calibration.id})">Edit</a>
+					</p:column>
+					<p:column>
+						<a href="#" onclick="deleteCalibration(#{calibration.id}, '#{calibration.date}')">Delete</a>
+					</p:column>
+				</p:dataTable>
+				
+				<div class="buttonWrapper">
+					<h:commandButton value="Add Calibration" action="#{calibrationsBean.newCalibration}"/>
+					<h:commandButton value="Back to Instruments" action="#{instrumentListBean.viewInstrumentList}"/>
+					<h:commandLink id="editCalibrationLink" forceId="true" style="invisible" action="#{calibrationsBean.editCalibration}"/>
+					<h:commandLink id="deleteCalibrationLink" forceId="true" style="invisible" action="#{calibrationsBean.deleteCalibration}"/>
+				</div>
+			</h:form>
+		</div>
+	</ui:define>
+</ui:composition>
