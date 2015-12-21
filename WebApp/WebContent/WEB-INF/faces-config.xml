@@ -46,11 +46,23 @@
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.CalibrationsBean</managed-bean-class>
 		<managed-bean-scope>session</managed-bean-scope>
 	</managed-bean>
+	<managed-bean>
+		<description>Handles viewing and editing of gas standards</description>
+		<managed-bean-name>standardsBean</managed-bean-name>
+		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.StandardsBean</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+	</managed-bean>
 	<validator>
 		<description>Ensures that sensor calibration dates are unique</description>
 		<display-name>Calibration Date Validator</display-name>
 		<validator-id>calibrationDateValidator</validator-id>
 		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.CalibrationDateValidator</validator-class>
+	</validator>
+	<validator>
+		<description>Ensures that gas standard dates are unique</description>
+		<display-name>Gas Standard Date Validator</display-name>
+		<validator-id>standardDateValidator</validator-id>
+		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.StandardDateValidator</validator-class>
 	</validator>
 	<navigation-rule>
 		<display-name>all_pages</display-name>
@@ -177,11 +189,19 @@
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
-		<display-name>CalibrationEdit</display-name>
-		<from-view-id>/instrument/calibration_edit.xhtml</from-view-id>
+		<display-name>StandardsList</display-name>
+		<from-view-id>/instrument/standards.xhtml</from-view-id>
 		<navigation-case>
-			<from-outcome>calibrations</from-outcome>
-			<to-view-id>/instrument/calibrations.xhtml</to-view-id>
+			<from-outcome>instrument_list</from-outcome>
+			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>standards</from-outcome>
+			<to-view-id>/instrument/standards.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>standardEditor</from-outcome>
+			<to-view-id>/instrument/standard_edit.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 </faces-config>
