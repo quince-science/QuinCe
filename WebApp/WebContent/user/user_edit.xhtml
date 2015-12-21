@@ -1,0 +1,21 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	template="/templates/app_page.xhtml">
+	<ui:define name="title">Calibration Details</ui:define>
+
+	<ui:define name="content">
+		<h1>My Account</h1>
+		<div class="fullPage">
+			<h:form id="calibrationForm" method="post" accept-charset="utf8">
+			
+				<div class="buttonWrapper">
+					<h:commandButton value="Save" action="#{userProfileBean.saveProfile}"/>
+					<h:commandButton value="Cancel" immediate="true" action="#{userProfileBean.cancelEdit}"/>
+				</div>
+			</h:form>
+		</div>
+	</ui:define>
+</ui:composition>

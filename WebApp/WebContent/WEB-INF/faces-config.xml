@@ -52,6 +52,12 @@
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.StandardsBean</managed-bean-class>
 		<managed-bean-scope>session</managed-bean-scope>
 	</managed-bean>
+	<managed-bean>
+		<description>Handles editing of the user profile</description>
+		<managed-bean-name>userProfileBean</managed-bean-name>
+		<managed-bean-class>uk.ac.exeter.QuinCe.web.User.UserProfileBean</managed-bean-class>
+		<managed-bean-scope>view</managed-bean-scope>
+	</managed-bean>
 	<validator>
 		<description>Ensures that sensor calibration dates are unique</description>
 		<display-name>Calibration Date Validator</display-name>
@@ -202,6 +208,14 @@
 		<navigation-case>
 			<from-outcome>standardEditor</from-outcome>
 			<to-view-id>/instrument/standard_edit.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<display-name>UserProfileEdit</display-name>
+		<from-view-id>/user/user_edit.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>file_list</from-outcome>
+			<to-view-id>/data/file_list.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 </faces-config>
