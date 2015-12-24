@@ -17,64 +17,64 @@ public class User {
 	/**
 	 * The user's database record ID
 	 */
-	private int itsDatabaseID;
+	private int databaseID;
 	
 	/**
 	 * The user's email address
 	 */
-	private String itsEmailAddress;
+	private String emailAddress;
 	
 	/**
 	 * The user's first/given name
 	 */
-	private String itsGivenName;
+	private String givenName;
 	
 	/**
 	 * The user's surname/family name
 	 */
-	private String itsSurname;
+	private String surname;
 	
 	/**
 	 * The email verification code. If this is set, the
 	 * user should not be able to log in until the verification is complete.
 	 */
-	private String itsEmailVerificationCode = null;
+	private String emailVerificationCode = null;
 	
 	
 	/**
 	 * The time at which the email verification code was set
 	 */
-	private Timestamp itsEmailVerificationCodeTime = null;
+	private Timestamp emailVerificationCodeTime = null;
 	
 	/**
 	 * The password reset code.
 	 * If this is set, the user should not be able to log in
 	 * until the password has been changed. 
 	 */
-	private String itsPasswordResetCode = null;
+	private String passwordResetCode = null;
 	
 	/**
 	 * The time at which the password reset code was set
 	 */
-	private Timestamp itsPasswordResetCodeTime = null;
+	private Timestamp passwordResetCodeTime = null;
 	
 	/**
 	 * Construct a User object
-	 * @param id The database record ID for the user
-	 * @param email The user's email address
+	 * @param databaseID The database record ID for the user
+	 * @param emailAddress The user's email address
 	 * @param givenName The user's given name
 	 * @param surname The user's surname
 	 */
-	public User(int id, String email, String givenName, String surname) throws MissingParamException {
+	public User(int databaseID, String emailAddress, String givenName, String surname) throws MissingParamException {
 		
-		MissingParam.checkMissing(email, "email");
+		MissingParam.checkMissing(emailAddress, "email");
 		MissingParam.checkMissing(givenName, "givenName");
 		MissingParam.checkMissing(surname, "surname");
 		
-		itsDatabaseID = id;
-		itsEmailAddress = email;
-		itsGivenName = givenName;
-		itsSurname = surname;
+		this.databaseID = databaseID;
+		this.emailAddress = emailAddress;
+		this.givenName = givenName;
+		this.surname = surname;
 	}
 	
 	/**
@@ -82,7 +82,7 @@ public class User {
 	 * @return The user's email address
 	 */
 	public String getEmailAddress() {
-		return itsEmailAddress;
+		return emailAddress;
 	}
 	
 	/**
@@ -91,7 +91,7 @@ public class User {
 	 * @return The user's full name
 	 */
 	public String getFullName() {
-		return itsGivenName + " " + itsSurname;
+		return givenName + " " + surname;
 	}
 	
 	/**
@@ -99,7 +99,7 @@ public class User {
 	 * @return The user's given name
 	 */
 	public String getGivenName() {
-		return itsGivenName;
+		return givenName;
 	}
 	
 	/**
@@ -107,7 +107,7 @@ public class User {
 	 * @return The user's surname
 	 */
 	public String getSurname() {
-		return itsSurname;
+		return surname;
 	}
 	
 	/**
@@ -116,8 +116,8 @@ public class User {
 	 */
 	public void setEmailVerificationCode(String code, Timestamp time) throws MissingParamException {
 
-		itsEmailVerificationCode = code;
-		itsEmailVerificationCodeTime = time;
+		emailVerificationCode = code;
+		emailVerificationCodeTime = time;
 	}
 	
 	/**
@@ -125,8 +125,8 @@ public class User {
 	 * @param code The password reset code
 	 */
 	public void setPasswordResetCode(String code, Timestamp time) throws MissingParamException {
-		itsPasswordResetCode = code;
-		itsPasswordResetCodeTime = time;
+		passwordResetCode = code;
+		passwordResetCodeTime = time;
 	}
 	
 	/**
@@ -134,7 +134,7 @@ public class User {
 	 * @return The email verification code
 	 */
 	public String getEmailVerificationCode() {
-		return itsEmailVerificationCode;
+		return emailVerificationCode;
 	}
 	
 	/**
@@ -142,7 +142,7 @@ public class User {
 	 * @return The time at which the email verification code was set
 	 */
 	public Timestamp getEmailVerificationCodeTime() {
-		return itsEmailVerificationCodeTime;
+		return emailVerificationCodeTime;
 	}
 
 	/**
@@ -150,7 +150,7 @@ public class User {
 	 * @return code The password reset code
 	 */
 	public String getPasswordResetCode() {
-		return itsPasswordResetCode;
+		return passwordResetCode;
 	}
 	
 	/**
@@ -158,7 +158,7 @@ public class User {
 	 * @return The time at which the password reset code was set
 	 */
 	public Timestamp getPasswordResetCodeTime() {
-		return itsPasswordResetCodeTime;
+		return passwordResetCodeTime;
 	}
 	
 	/**
@@ -168,7 +168,7 @@ public class User {
 	 * @return
 	 */
 	public int getDatabaseID() {
-		return itsDatabaseID;
+		return databaseID;
 	}
 	
 	/**
@@ -176,6 +176,6 @@ public class User {
 	 * @param id The user's ID
 	 */
 	public void setDatabaseID(int id) {
-		itsDatabaseID = id;
+		databaseID = id;
 	}
 }
