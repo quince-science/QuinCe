@@ -13,6 +13,8 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  *
  */
 public class User {
+
+	public static final int BIT_JOB_MANAGER = 1;
 	
 	/**
 	 * The user's database record ID
@@ -59,22 +61,29 @@ public class User {
 	private Timestamp passwordResetCodeTime = null;
 	
 	/**
+	 * The user's permissions
+	 */
+	private int permissions = 0;
+	
+	/**
 	 * Construct a User object
 	 * @param databaseID The database record ID for the user
 	 * @param emailAddress The user's email address
 	 * @param givenName The user's given name
 	 * @param surname The user's surname
 	 */
-	public User(int databaseID, String emailAddress, String givenName, String surname) throws MissingParamException {
+	public User(int databaseID, String emailAddress, String givenName, String surname, int permissions) throws MissingParamException {
 		
 		MissingParam.checkMissing(emailAddress, "email");
 		MissingParam.checkMissing(givenName, "givenName");
 		MissingParam.checkMissing(surname, "surname");
+		MissingParam.checkZeroPositive(permissions, "permissions");
 		
 		this.databaseID = databaseID;
 		this.emailAddress = emailAddress;
 		this.givenName = givenName;
 		this.surname = surname;
+		this.permissions = permissions;
 	}
 	
 	/**
@@ -177,5 +186,13 @@ public class User {
 	 */
 	public void setDatabaseID(int id) {
 		databaseID = id;
+	}
+	
+	/**
+	 * Determines whether or not this user is a job manager
+	 * @return {@code} true if this user is a job manager; {@code false} if not
+	 */
+	public boolean getJobManager() {
+		return (permissions & BIT_JOB_MANAGER) > 0;
 	}
 }

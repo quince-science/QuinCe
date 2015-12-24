@@ -32,7 +32,7 @@ public class UserDB {
 	/**
 	 * SQL statement to search for a user by email address
 	 */
-	private static final String USER_SEARCH_BY_EMAIL_STATEMENT = "SELECT id,email,firstname,surname,email_code,email_code_time,password_code,password_code_time FROM user WHERE email = ?";
+	private static final String USER_SEARCH_BY_EMAIL_STATEMENT = "SELECT id,email,firstname,surname,email_code,email_code_time,password_code,password_code_time,permissions FROM user WHERE email = ?";
 	
 	/**
 	 * SQL statement to create a new user record
@@ -131,7 +131,7 @@ public class UserDB {
 			ResultSet result = stmt.executeQuery();
 			
 			if (result.first()) {
-				foundUser = new User(result.getInt(1), result.getString(2), result.getString(3), result.getString(4));
+				foundUser = new User(result.getInt(1), result.getString(2), result.getString(3), result.getString(4), result.getInt(9));
 				foundUser.setEmailVerificationCode(result.getString(5), result.getTimestamp(6));
 				foundUser.setPasswordResetCode(result.getString(7), result.getTimestamp(8));
 			}

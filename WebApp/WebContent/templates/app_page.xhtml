@@ -25,6 +25,9 @@
       		<ul class="menu">
         		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/instrument/instrument_list.jsf';">Instruments</li>
         		<li class="menuitem">Account</li>
+        		<ui:fragment rendered="#{User.jobManager}">
+        			<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/jobs/job_list.jsf';">Jobs</li>
+        		</ui:fragment>
         		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/logout';">Log Out</li>
       		</ul>
     	</div>
