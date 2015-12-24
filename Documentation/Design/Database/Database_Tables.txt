@@ -32,6 +32,10 @@ permissions              Integer        A field for defining user permissions. D
 #### Permissions
 The permissions that can be applied to a user are as follows:
 
+Bit     Meaning
+---     -----------
+1       Job manager
+
 # Instruments
 The definition of an instrument is quite complex and requires multiple tables
 
