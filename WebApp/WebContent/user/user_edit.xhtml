@@ -9,7 +9,7 @@
 	<ui:define name="content">
 		<h1>My Account</h1>
 		<div class="fullPage">
-			<h:form id="calibrationForm" method="post" accept-charset="utf8">
+			<h:form id="userProfileForm" method="post" accept-charset="utf8">
 				<div class="sectionHeader">
 					Re-enter password
 				</div>
@@ -50,7 +50,7 @@
 								<h:outputLabel id="newPassword1Label" for="newPassword1" class="separateline" value="New Password:"/>
 							</td>
 							<td>
-								<h:inputSecret id="newPassword1" value="#{userProfileBean.newPassword1}"/>
+								<h:inputSecret id="newPassword1" value="#{userProfileBean.newPassword1}" promptLabel="Strength..." feedback="true"/>
 							</td>
 						</tr>
 						<tr>
@@ -59,11 +59,11 @@
 							</td>
 							<td>
 								<h:inputSecret id="newPassword2" value="#{userProfileBean.newPassword2}"/>
+				            	<h:message id="newPassword2Message" for="newPassword2" errorClass="error"/>
 							</td>
 						</tr>
 					</table>
 	            	<br/>
-	            	<h:message id="newPassword2Message" for="newPassword2" errorClass="error"/>
 					
 				</div>
 				<div class="buttonWrapper">
