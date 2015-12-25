@@ -79,6 +79,7 @@ public class JobThread extends Thread {
 	public void run() {
 		try {
 			// Run the job
+			JobManager.startJob(job.dataSource, job.id);
 			job.execute();
 			JobManager.finishJob(job.dataSource, job.id);
 		} catch (Exception e) {
@@ -89,6 +90,7 @@ public class JobThread extends Thread {
 			}
 		} finally {
 			job.destroy();
+			setName(WAITING_THREAD_NAME);
 			try {
 				// Return ourselves to the thread pool
 				JobThreadPool.getInstance().returnThread(this);

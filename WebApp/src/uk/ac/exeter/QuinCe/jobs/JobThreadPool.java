@@ -1,6 +1,8 @@
 package uk.ac.exeter.QuinCe.jobs;
 
+import java.util.Collection;
 import java.util.Stack;
+import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -32,6 +34,8 @@ public class JobThreadPool {
 	 */
 	private Stack<JobThread> threads = new Stack<JobThread>();
 	
+	private Collection<JobThread> allocatedThreads = new TreeSet<JobThread>();
+	
 	/**
 	 * Creates the thread pool and fills it with waiting job threads
 	 * @param maxThreads The maximum number of threads in the pool
@@ -61,12 +65,14 @@ public class JobThreadPool {
 		synchronized(threads) {
 			if (!threads.isEmpty()) {
 				thread = threads.pop();
+				allocatedThreads.add(thread);
 			}
 		}
 		
 		if (null != thread) {
 			thread.setupJob(job);
 		}
+		
 		
 		return thread;
 	}
@@ -100,6 +106,8 @@ public class JobThreadPool {
 			} else {
 				thread = new JobThread(true);
 			}
+			
+			allocatedThreads.add(thread);
 		}
 		
 		thread.setupJob(job);
@@ -117,6 +125,7 @@ public class JobThreadPool {
 		thread.reset();
 		
 		synchronized(threads) {
+			allocatedThreads.remove(thread);
 			if (!thread.isOverflowThread() && threads.size() < maxThreads) {
 				threads.push(new JobThread(false));
 			}
@@ -162,5 +171,29 @@ public class JobThreadPool {
 	
 	public static void destroy() {
 		itsInstance = null;
+	}
+	
+	public int getPoolThreadCount() {
+		return threads.size();
+	}
+	
+	public int getMaxThreads() {
+		return maxThreads;
+	}
+	
+	public int getRunningThreads() {
+		return allocatedThreads.size();
+	}
+	
+	public int getOverflowThreads() {
+		int overflowThreads = 0;
+		
+		for (JobThread thread : allocatedThreads) {
+			if (thread.isOverflowThread()) {
+				overflowThreads++;
+			}
+		}
+		
+		return overflowThreads;
 	}
 }

@@ -10,7 +10,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -101,6 +103,11 @@ public class JobManager {
 	 * SQL statement to retrieve the next queued job
 	 */
 	private static final String GET_NEXT_JOB_QUERY = "SELECT id, class, parameters FROM job ORDER BY submitted ASC LIMIT 1";
+	
+	/**
+	 * Statement to get the number of jobs of each status
+	 */
+	private static final String GET_JOB_COUNTS_QUERY = "SELECT status, COUNT(status) FROM job GROUP BY status";
 	
 	/**
 	 * Adds a job to the database
@@ -578,4 +585,44 @@ public class JobManager {
 		
 		return statusOK;
 	}
+	
+	/**
+	 * Returns a list of all the job statuses in the database, and the number
+	 * of jobs with each of those statuses
+	 * @param dataSource A data source
+	 * @return The list of job statuses and counts
+	 * @throws MissingParamException If the dataSource is null
+	 * @throws DatabaseException If an error occurs while retrieving the counts
+	 */
+	public static Map<String,Integer> getJobCounts(DataSource dataSource) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		
+		Map<String,Integer> result = new HashMap<String,Integer>();
+		
+		Connection conn = null;
+		PreparedStatement stmt = null; 
+		ResultSet records = null;
+		
+		try {
+			
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_JOB_COUNTS_QUERY);
+
+			records = stmt.executeQuery();
+			while (records.next()) {
+				result.put(records.getString(1), records.getInt(2));
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Exception while retrieving job statistics", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;	
+	}
+
 }

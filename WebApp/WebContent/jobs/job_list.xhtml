@@ -2,6 +2,7 @@
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
 	template="/templates/app_page.xhtml">
 	
 	<ui:define name="title">Jobs</ui:define>
@@ -14,6 +15,47 @@
 	<ui:define name="content">
 		<h1>Jobs</h1>
 		<div class="fullPage">
+			<div class="sectionHeader">
+				Summary
+			</div>
+			<div class="sectionContent">
+				<h:form id="threadsForm">
+					<b>Idle Threads:</b>
+					<h:outputText id="idleThreads" value="#{jobsBean.idleThreads}"/>
+					<br/>
+					<b>Max threads:</b>
+					<h:outputText id="maxThread" value="#{jobsBean.maxThreads}"/>
+					<br/>
+					<b>Running threads (Total/Overflow):</b>
+					<h:outputText id="runningThreads" value="#{jobsBean.runningThreads}"/>/<h:outputText id="overflowThreads" value="#{jobsBean.overflowThreads}"/>
+					<br/>
+					<b>Jobs waiting:</b>
+					<h:outputText id="waitingJobs" value="#{jobsBean.waitingJobs}"/>
+					<br/>
+					<b>Jobs running:</b>
+					<h:outputText id="runningJobs" value="#{jobsBean.runningJobs}"/>
+					<br/>
+					<b>Jobs finished:</b>
+					<h:outputText id="finishedJobs" value="#{jobsBean.finishedJobs}"/>
+					<br/>
+					<b>Jobs errored:</b>
+					<h:outputText id="errorJobs" value="#{jobsBean.errorJobs}"/>
+					<br/>
+					<h:commandButton id="updateThreads" value="Update" action="#{jobsBean.updateSummary()}">
+						<f:ajax render="@form"/>
+					</h:commandButton>
+				</h:form>
+			</div>
+			<div class="sectionHeader">
+				Test Job
+			</div>
+			<div class="sectionContent">
+			</div>
+			<div class="sectionHeader">
+				Job Queue
+			</div>
+			<div class="sectionContent">
+			</div>
 		</div>
 	</ui:define>
 </ui:composition>
