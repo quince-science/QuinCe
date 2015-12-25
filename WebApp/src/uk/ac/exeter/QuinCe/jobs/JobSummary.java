@@ -48,7 +48,9 @@ public class JobSummary {
 	}
 
 	public String getClassName() {
-		return className;
+		String[] classSplit = className.split("\\.");
+		
+		return classSplit[classSplit.length - 1];
 	}
 	
 	public Date getSubmitted() {

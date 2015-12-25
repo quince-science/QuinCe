@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.jobs;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +42,11 @@ public class JobsBean extends BaseManagedBean {
 	 * The complete list of jobs
 	 */
 	private List<JobSummary> jobList = null;
+	
+	/**
+	 * The number of chunks in the test job
+	 */
+	private int chunkCount = 1;
 	
 	////////////// *** METHODS *** ///////////////////////
 	
@@ -87,6 +93,20 @@ public class JobsBean extends BaseManagedBean {
 			e.printStackTrace();
 			jobList = null;
 		}
+	}
+	
+	public void submitJob() {
+		List<String> parameters = new ArrayList<String>(1);
+		parameters.add(String.valueOf(chunkCount));
+		
+		try {
+			JobManager.addJob(ServletUtils.getDBDataSource(), getUser(), "uk.ac.exeter.QuinCe.jobs.test.TenSecondJob", parameters);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// Finally, update everything
+		update();
 	}
 
 	//////////////// *** GETTERS AND SETTERS *** /////////////////////////
@@ -155,5 +175,13 @@ public class JobsBean extends BaseManagedBean {
 		}
 			
 		return result;
+	}
+	
+	public int getChunkCount() {
+		return chunkCount;
+	}
+	
+	public void setChunkCount(int chunkCount) {
+		this.chunkCount = chunkCount;
 	}
 }

@@ -111,7 +111,7 @@ public class JobManager {
 	 */
 	private static final String GET_JOB_COUNTS_QUERY = "SELECT status, COUNT(status) FROM job GROUP BY status";
 	
-	private static final String JOB_LIST_QUERY = "SELECT id, owner, submitted, status, started, ended, progress FROM job ORDER BY submitted DESC";
+	private static final String JOB_LIST_QUERY = "SELECT id, owner, class, submitted, status, started, ended, progress FROM job ORDER BY submitted DESC";
 	
 	/**
 	 * Adds a job to the database
@@ -652,8 +652,18 @@ public class JobManager {
 				String className = records.getString(3);
 				Date submitted = new Date(records.getTimestamp(4).getTime());
 				String status = records.getString(5);
-				Date started = new Date(records.getTimestamp(6).getTime());
-				Date ended = new Date(records.getTimestamp(7).getTime());
+				Date started = null;
+				
+				if (null != records.getTimestamp(6)) {
+					started = new Date(records.getTimestamp(6).getTime());
+				}
+				
+				Date ended = null;
+				
+				if (null != records.getTimestamp(7)) {
+					ended = new Date(records.getTimestamp(7).getTime());
+				}
+				
 				double progress = records.getDouble(8);
 				
 				result.add(new JobSummary(id, owner, className, submitted, status, started, ended, progress));

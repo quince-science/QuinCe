@@ -50,6 +50,16 @@
 				Test Job
 			</div>
 			<div class="sectionContent">
+			
+				<h:form id="testJobForm">
+					<b>Chunk count (10 seconds each):</b>
+					<h:inputText id="chunkCount" value="#{jobsBean.chunkCount}"/>
+					<br/>
+					<h:commandButton id="submitJob" value="Submit" action="#{jobsBean.submitJob}">
+						<f:ajax render="@all"/>
+					</h:commandButton>
+				</h:form>
+			
 			</div>
 			<div class="sectionHeader">
 				Job List
@@ -61,7 +71,7 @@
 							<f:facet name="header">
 								Owner
 							</f:facet>
-							#{job.user.fullName}
+							#{job.owner.fullName}
 						</p:column>
 						<p:column>
 							<f:facet name="header">
