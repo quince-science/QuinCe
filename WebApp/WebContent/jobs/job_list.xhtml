@@ -41,8 +41,8 @@
 					<b>Jobs errored:</b>
 					<h:outputText id="errorJobs" value="#{jobsBean.errorJobs}"/>
 					<br/>
-					<h:commandButton id="updateThreads" value="Update" action="#{jobsBean.updateSummary()}">
-						<f:ajax render="@form"/>
+					<h:commandButton id="updateThreads" value="Update" action="#{jobsBean.update}">
+						<f:ajax render="@form :jobListForm:jobList"/>
 					</h:commandButton>
 				</h:form>
 			</div>
@@ -52,9 +52,55 @@
 			<div class="sectionContent">
 			</div>
 			<div class="sectionHeader">
-				Job Queue
+				Job List
 			</div>
 			<div class="sectionContent">
+				<h:form id="jobListForm">
+					<p:dataTable id="jobList" var="job" value="#{jobsBean.jobList}" scrollable="true" scrollHeight="450px">
+						<p:column>
+							<f:facet name="header">
+								Owner
+							</f:facet>
+							#{job.user.fullName}
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								Job class
+							</f:facet>
+							#{job.className}
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								Submitted
+							</f:facet>
+							#{job.submitted}
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								Status
+							</f:facet>
+							#{job.status}
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								Started
+							</f:facet>
+							#{job.started}
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								Ended
+							</f:facet>
+							#{job.ended}
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								Progress
+							</f:facet>
+							#{job.progress}%
+						</p:column>
+					</p:dataTable>
+				</h:form>
 			</div>
 		</div>
 	</ui:define>

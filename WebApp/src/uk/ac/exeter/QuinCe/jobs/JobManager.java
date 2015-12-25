@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,6 +110,8 @@ public class JobManager {
 	 * Statement to get the number of jobs of each status
 	 */
 	private static final String GET_JOB_COUNTS_QUERY = "SELECT status, COUNT(status) FROM job GROUP BY status";
+	
+	private static final String JOB_LIST_QUERY = "SELECT id, owner, submitted, status, started, ended, progress FROM job ORDER BY submitted DESC";
 	
 	/**
 	 * Adds a job to the database
@@ -623,6 +627,47 @@ public class JobManager {
 		}
 		
 		return result;	
+	}
+	
+	public static List<JobSummary> getJobList(DataSource dataSource) throws DatabaseException, MissingParamException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		
+		List<JobSummary> result = new ArrayList<JobSummary>();
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(JOB_LIST_QUERY);
+			
+			records = stmt.executeQuery();
+			while (records.next()) {
+				long id = records.getLong(1);
+				long userID = records.getLong(2);
+				User owner = UserDB.getUser(dataSource, userID);
+				String className = records.getString(3);
+				Date submitted = new Date(records.getTimestamp(4).getTime());
+				String status = records.getString(5);
+				Date started = new Date(records.getTimestamp(6).getTime());
+				Date ended = new Date(records.getTimestamp(7).getTime());
+				double progress = records.getDouble(8);
+				
+				result.add(new JobSummary(id, owner, className, submitted, status, started, ended, progress));
+			}
+		
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving job list", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
 	}
 
 }

@@ -1,9 +1,11 @@
 package uk.ac.exeter.QuinCe.web.jobs;
 
+import java.util.List;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.JobSummary;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
@@ -35,9 +37,14 @@ public class JobsBean extends BaseManagedBean {
 	 */
 	private Map<String,Integer> jobCounts = null;
 	
+	/**
+	 * The complete list of jobs
+	 */
+	private List<JobSummary> jobList = null;
+	
 	////////////// *** METHODS *** ///////////////////////
 	
-	public void updateSummary() {
+	public void update() {
 		
 		try {
 			idleThreads = JobThreadPool.getInstance().getPoolThreadCount();
@@ -66,12 +73,19 @@ public class JobsBean extends BaseManagedBean {
 			e.printStackTrace();
 			maxThreads = -1;
 		}
-		
+			
 		try {
 			jobCounts = JobManager.getJobCounts(ServletUtils.getDBDataSource());
 		} catch (Exception e) {
 			e.printStackTrace();
 			jobCounts = null;
+		}
+		
+		try {
+			jobList = JobManager.getJobList(ServletUtils.getDBDataSource());
+		} catch (Exception e) {
+			e.printStackTrace();
+			jobList = null;
 		}
 	}
 
@@ -123,6 +137,10 @@ public class JobsBean extends BaseManagedBean {
 	
 	public int getFinishedJobs() {
 		return getJobCount(Job.FINISHED_STATUS);
+	}
+	
+	public List<JobSummary> getJobList() {
+		return jobList;
 	}
 	
 	private int getJobCount(String status) {
