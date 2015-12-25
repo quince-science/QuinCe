@@ -141,6 +141,7 @@ public class JobManager {
 			
 			Connection connection = null;
 			PreparedStatement stmt = null;
+			ResultSet generatedKeys = null;
 
 			try {
 				connection = dataSource.getConnection();
@@ -157,13 +158,14 @@ public class JobManager {
 				
 				stmt.execute();
 				
-				ResultSet generatedKeys = stmt.getGeneratedKeys();
+				generatedKeys = stmt.getGeneratedKeys();
 				if (generatedKeys.next()) {
 					addedID = generatedKeys.getLong(1);
 				}
 			} catch(SQLException e) {
 				throw new DatabaseException("An error occurred while storing the job", e);
 			} finally {
+				DatabaseUtils.closeResultSets(generatedKeys);
 				DatabaseUtils.closeStatements(stmt);
 				DatabaseUtils.closeConnection(connection);
 			}
@@ -296,13 +298,14 @@ public class JobManager {
 		Job job = null;
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		ResultSet result = null;
 		
 		try {
 			connection = dataSource.getConnection();
 			stmt = connection.prepareStatement(GET_JOB_QUERY);
 			stmt.setLong(1, jobID);
 			
-			ResultSet result = stmt.executeQuery();
+			result = stmt.executeQuery();
 			if (!result.next()) {
 				throw new NoSuchJobException(jobID);
 			} else {
@@ -313,6 +316,7 @@ public class JobManager {
 			// The fact is that invalid jobs should never get into the database in the first place.
 			throw new DatabaseException("Error while retrieving details for job " + jobID, e);
 		} finally {
+			DatabaseUtils.closeResultSets(result);
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(connection);
 		}
@@ -446,13 +450,14 @@ public class JobManager {
 		
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		ResultSet result = null;
 		
 		try {
 			connection = dataSource.getConnection();
 			stmt = connection.prepareStatement(FIND_JOB_QUERY);
 			stmt.setLong(1, jobID);
 			
-			ResultSet result = stmt.executeQuery();
+			result = stmt.executeQuery();
 			if (result.next()) {
 				if (result.getInt(1) > 0) {
 					jobExists = true;
@@ -461,6 +466,7 @@ public class JobManager {
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while checking for a job's existence", e);
 		} finally {
+			DatabaseUtils.closeResultSets(result);
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(connection);
 		}
@@ -483,12 +489,13 @@ public class JobManager {
 		Job job = null;
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		ResultSet result = null;
 		
 		try {
 			connection = dataSource.getConnection();
 			stmt = connection.prepareStatement(GET_NEXT_JOB_QUERY);
 			
-			ResultSet result = stmt.executeQuery();
+			result = stmt.executeQuery();
 			if (result.next()) {
 				job = getJobFromResultSet(result, dataSource, config);
 			}
@@ -497,6 +504,7 @@ public class JobManager {
 			// The fact is that invalid jobs should never get into the database in the first place.
 			throw new DatabaseException("Error while retrieving details for next queued job", e);
 		} finally {
+			DatabaseUtils.closeResultSets(result);
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(connection);
 		}
