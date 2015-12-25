@@ -164,16 +164,8 @@ public class JobManager {
 			} catch(SQLException e) {
 				throw new DatabaseException("An error occurred while storing the job", e);
 			} finally {
-				try {
-					if (null != stmt) {
-						stmt.close();
-					}
-					if (null != connection) {
-						connection.close();
-					}
-				} catch (SQLException e) {
-					// Do nothing
-				}
+				DatabaseUtils.closeStatements(stmt);
+				DatabaseUtils.closeConnection(connection);
 			}
 			
 			break;
@@ -251,16 +243,8 @@ public class JobManager {
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while setting the status", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
 	}
 	
@@ -292,16 +276,8 @@ public class JobManager {
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while setting the job to 'started' state", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
 	}
 	
@@ -337,16 +313,8 @@ public class JobManager {
 			// The fact is that invalid jobs should never get into the database in the first place.
 			throw new DatabaseException("Error while retrieving details for job " + jobID, e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
 		
 		return job;
@@ -386,16 +354,8 @@ public class JobManager {
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while setting the job to 'finished' state", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
 	}
 	
@@ -428,16 +388,8 @@ public class JobManager {
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while setting the error state of the job", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
 	}
 
@@ -474,16 +426,8 @@ public class JobManager {
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while setting the status", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
 	}
 	
@@ -517,16 +461,8 @@ public class JobManager {
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while checking for a job's existence", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
 		
 		return jobExists;
@@ -561,16 +497,8 @@ public class JobManager {
 			// The fact is that invalid jobs should never get into the database in the first place.
 			throw new DatabaseException("Error while retrieving details for next queued job", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
 		
 		return job;
