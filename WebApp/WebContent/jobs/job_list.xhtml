@@ -44,6 +44,9 @@
 					<h:commandButton id="updateThreads" value="Update" action="#{jobsBean.update}">
 						<f:ajax render="@form :jobListForm:jobList"/>
 					</h:commandButton>
+					<h:commandButton id="runNext" value="Run next job" action="#{jobsBean.runNext}">
+						<f:ajax render="@all"/>
+					</h:commandButton>
 				</h:form>
 			</div>
 			<div class="sectionHeader">

@@ -27,6 +27,7 @@ public class TenSecondJob extends Job {
 	@Override
 	protected void execute() throws JobFailedException {
 		for (int i = 0; i < chunkCount; i++) {
+			System.out.println("Job " + id + ": Chunk " + i + " of " + chunkCount);
 			try {
 				Thread.sleep(10000);
 				setProgress((long)i / (long)chunkCount);

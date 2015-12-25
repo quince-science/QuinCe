@@ -104,7 +104,7 @@ public class JobManager {
 	/**
 	 * SQL statement to retrieve the next queued job
 	 */
-	private static final String GET_NEXT_JOB_QUERY = "SELECT id, class, parameters FROM job ORDER BY submitted ASC LIMIT 1";
+	private static final String GET_NEXT_JOB_QUERY = "SELECT id, class, parameters FROM job WHERE status='WAITING' ORDER BY submitted ASC LIMIT 1";
 	
 	/**
 	 * Statement to get the number of jobs of each status
@@ -292,6 +292,8 @@ public class JobManager {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(connection);
 		}
+		
+		System.out.println("Marked job " + jobID + " as started");
 	}
 	
 	/**
@@ -372,6 +374,8 @@ public class JobManager {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(connection);
 		}
+		
+		System.out.println("Marked job " + jobID + " as finished");
 	}
 	
 	/**
@@ -680,4 +684,12 @@ public class JobManager {
 		return result;
 	}
 
+	public static void startNextJob(DataSource dataSource, Properties config) throws MissingParamException, DatabaseException, NoSuchJobException, JobThreadPoolNotInitialisedException {
+		Job nextJob = getNextJob(dataSource, config);
+		JobThread thread = JobThreadPool.getInstance().getJobThread(nextJob);
+		if (null != thread) {
+ 			thread.run();
+		}
+		
+	}
 }

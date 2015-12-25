@@ -108,6 +108,16 @@ public class JobsBean extends BaseManagedBean {
 		// Finally, update everything
 		update();
 	}
+	
+	public void runNext() {
+		try {
+			JobManager.startNextJob(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		update();
+	}
 
 	//////////////// *** GETTERS AND SETTERS *** /////////////////////////
 	
