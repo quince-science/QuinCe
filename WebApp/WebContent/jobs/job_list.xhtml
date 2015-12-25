@@ -56,7 +56,7 @@
 					<h:inputText id="chunkCount" value="#{jobsBean.chunkCount}"/>
 					<br/>
 					<h:commandButton id="submitJob" value="Submit" action="#{jobsBean.submitJob}">
-						<f:ajax render="@all"/>
+						<f:ajax execute="chunkCount" render="@all"/>
 					</h:commandButton>
 				</h:form>
 			
