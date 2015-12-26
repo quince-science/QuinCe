@@ -424,6 +424,7 @@ public class JobManager {
 	public static void setProgress(DataSource dataSource, long jobID, double progress) throws MissingParamException, BadProgressException, NoSuchJobException, DatabaseException {
 
 		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(dataSource, "dataSource");
 		
 		if (progress < 0 || progress > 100) {
 			throw new BadProgressException();
@@ -688,7 +689,7 @@ public class JobManager {
 		Job nextJob = getNextJob(dataSource, config);
 		JobThread thread = JobThreadPool.getInstance().getJobThread(nextJob);
 		if (null != thread) {
- 			thread.run();
+ 			thread.start();
 		}
 		
 	}

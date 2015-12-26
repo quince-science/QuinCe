@@ -22,6 +22,7 @@ public class TenSecondJob extends Job {
 	
 	public TenSecondJob(DataSource dataSource, Properties config, long id, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
 		super(dataSource, config, id, parameters);
+		chunkCount = Integer.parseInt(parameters.get(0));
 	}
 
 	@Override
@@ -30,7 +31,7 @@ public class TenSecondJob extends Job {
 			System.out.println("Job " + id + ": Chunk " + i + " of " + chunkCount);
 			try {
 				Thread.sleep(10000);
-				setProgress((long)i / (long)chunkCount);
+				setProgress(((double)i / (double)chunkCount) * 100);
 			} catch(InterruptedException e) {
 				// Don't care
 			} catch(Exception e) {
