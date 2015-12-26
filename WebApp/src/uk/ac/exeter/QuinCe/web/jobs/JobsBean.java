@@ -109,6 +109,20 @@ public class JobsBean extends BaseManagedBean {
 		update();
 	}
 	
+	public void submitImmediateJob() {
+		List<String> parameters = new ArrayList<String>(1);
+		parameters.add(String.valueOf(chunkCount));
+		
+		try {
+			JobManager.addInstantJob(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), getUser(), "uk.ac.exeter.QuinCe.jobs.test.TenSecondJob", parameters);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// Finally, update everything
+		update();
+	}
+	
 	public void runNext() {
 		try {
 			JobManager.startNextJob(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig());

@@ -68,6 +68,9 @@
 					<h:commandButton id="submitJob" value="Submit" action="#{jobsBean.submitJob}">
 						<f:ajax execute="chunkCount" render="@all"/>
 					</h:commandButton>
+					<h:commandButton id="submitImmediateJob" value="Submit Immediate" action="#{jobsBean.submitImmediateJob}">
+						<f:ajax execute="chunkCount" render="@all"/>
+					</h:commandButton>
 				</h:form>
 			
 			</div>
