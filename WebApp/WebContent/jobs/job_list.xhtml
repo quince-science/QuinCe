@@ -12,6 +12,10 @@
 			$(function() {
 				$('#threadsForm\\:updateThreads').trigger("click");
 			});
+			
+			setInterval(function() {
+				$('#threadsForm\\:updateThreads').trigger("click");
+			}, 10000);
 		</script>
 	</ui:define>
 	
@@ -113,7 +117,7 @@
 							<f:facet name="header">
 								Progress
 							</f:facet>
-							<p:progressBar value="#{job.progress}"/>
+							<p:progressBar value="#{job.progress}" labelTemplate="{value}%"/>
 						</p:column>
 					</p:dataTable>
 				</h:form>

@@ -89,7 +89,7 @@ public class JobManager {
 	/**
 	 * SQL statement for recording that a job has completed
 	 */
-	private static final String END_JOB_STATEMENT = "UPDATE job SET status = '" + Job.FINISHED_STATUS + "', ended = ? WHERE id = ?";
+	private static final String END_JOB_STATEMENT = "UPDATE job SET status = '" + Job.FINISHED_STATUS + "', ended = ?, progress = 100 WHERE id = ?";
 	
 	/**
 	 * SQL statement for recording that a job has failed with an error
