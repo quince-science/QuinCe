@@ -242,7 +242,22 @@ Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
 instrument_id            F_KEY          The instrument ID
 filename                 String         The filename of the uploaded file. Must be unique for a given instrument
+status                   Integer         The status of this file in the system workflow
 last_touched             Date           The date when the file was last touched. Files held beyond a given length of time will be automatically deleted.
+
+#### `status`
+The status field will contain a code indicating the stage that the file is at in
+the workflow. This will be one of:
+
+Value   Meaning
+-----   ---------------------------------------------------
+0       File uploaded. Waiting for extraction into database
+1       File extracted. Waiting for data reduction
+2       Data reduction complete. Waiting for automatic QC routines
+3       Automatic QC complete. User QC available
+
+Each of the statuses 0 to 2 need processing by the system, which will be
+done as background jobs.
 
 ## `co2_data`
 This table will contain the records from the data file corresponding to the CO~2~ runs (both sea water and
