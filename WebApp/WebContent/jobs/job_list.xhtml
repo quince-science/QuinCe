@@ -9,6 +9,9 @@
 
 	<ui:define name="localHead">
 		<script type="text/javascript">
+			$(function() {
+				$('#threadsForm\\:updateThreads').trigger("click");
+			});
 		</script>
 	</ui:define>
 	
@@ -110,7 +113,7 @@
 							<f:facet name="header">
 								Progress
 							</f:facet>
-							#{job.progress}%
+							<p:progressBar value="#{job.progress}"/>
 						</p:column>
 					</p:dataTable>
 				</h:form>
