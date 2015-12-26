@@ -9,7 +9,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  * @author Steve Jones
  *
  */
-public class JobThread extends Thread {
+public class JobThread extends Thread implements Comparable<JobThread> {
 
 	/**
 	 * The name set on any thread that is in the stack waiting to run
@@ -79,7 +79,10 @@ public class JobThread extends Thread {
 	public void run() {
 		try {
 			// Run the job
+			System.out.println("Running job " + job.id);
+			JobManager.startJob(job.dataSource, job.id);
 			job.execute();
+			System.out.println("Finishing job " + job.id);
 			JobManager.finishJob(job.dataSource, job.id);
 		} catch (Exception e) {
 			try {
@@ -89,6 +92,7 @@ public class JobThread extends Thread {
 			}
 		} finally {
 			job.destroy();
+			setName(WAITING_THREAD_NAME);
 			try {
 				// Return ourselves to the thread pool
 				JobThreadPool.getInstance().returnThread(this);
@@ -98,5 +102,10 @@ public class JobThread extends Thread {
 			}
 		}
 		
+	}
+
+	@Override
+	public int compareTo(JobThread o) {
+		return Long.signum(getId() - o.getId());
 	}
 }

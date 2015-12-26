@@ -10,7 +10,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -85,7 +89,7 @@ public class JobManager {
 	/**
 	 * SQL statement for recording that a job has completed
 	 */
-	private static final String END_JOB_STATEMENT = "UPDATE job SET status = '" + Job.FINISHED_STATUS + "', ended = ? WHERE id = ?";
+	private static final String END_JOB_STATEMENT = "UPDATE job SET status = '" + Job.FINISHED_STATUS + "', ended = ?, progress = 100 WHERE id = ?";
 	
 	/**
 	 * SQL statement for recording that a job has failed with an error
@@ -100,7 +104,14 @@ public class JobManager {
 	/**
 	 * SQL statement to retrieve the next queued job
 	 */
-	private static final String GET_NEXT_JOB_QUERY = "SELECT id, class, parameters FROM job ORDER BY submitted ASC LIMIT 1";
+	private static final String GET_NEXT_JOB_QUERY = "SELECT id, class, parameters FROM job WHERE status='WAITING' ORDER BY submitted ASC LIMIT 1";
+	
+	/**
+	 * Statement to get the number of jobs of each status
+	 */
+	private static final String GET_JOB_COUNTS_QUERY = "SELECT status, COUNT(status) FROM job GROUP BY status";
+	
+	private static final String JOB_LIST_QUERY = "SELECT id, owner, class, submitted, status, started, ended, progress FROM job ORDER BY submitted DESC";
 	
 	/**
 	 * Adds a job to the database
@@ -141,6 +152,7 @@ public class JobManager {
 			
 			Connection connection = null;
 			PreparedStatement stmt = null;
+			ResultSet generatedKeys = null;
 
 			try {
 				connection = dataSource.getConnection();
@@ -157,23 +169,16 @@ public class JobManager {
 				
 				stmt.execute();
 				
-				ResultSet generatedKeys = stmt.getGeneratedKeys();
+				generatedKeys = stmt.getGeneratedKeys();
 				if (generatedKeys.next()) {
 					addedID = generatedKeys.getLong(1);
 				}
 			} catch(SQLException e) {
 				throw new DatabaseException("An error occurred while storing the job", e);
 			} finally {
-				try {
-					if (null != stmt) {
-						stmt.close();
-					}
-					if (null != connection) {
-						connection.close();
-					}
-				} catch (SQLException e) {
-					// Do nothing
-				}
+				DatabaseUtils.closeResultSets(generatedKeys);
+				DatabaseUtils.closeStatements(stmt);
+				DatabaseUtils.closeConnection(connection);
 			}
 			
 			break;
@@ -251,16 +256,8 @@ public class JobManager {
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while setting the status", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
 	}
 	
@@ -292,17 +289,11 @@ public class JobManager {
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while setting the job to 'started' state", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
+		
+		System.out.println("Marked job " + jobID + " as started");
 	}
 	
 	/**
@@ -320,13 +311,14 @@ public class JobManager {
 		Job job = null;
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		ResultSet result = null;
 		
 		try {
 			connection = dataSource.getConnection();
 			stmt = connection.prepareStatement(GET_JOB_QUERY);
 			stmt.setLong(1, jobID);
 			
-			ResultSet result = stmt.executeQuery();
+			result = stmt.executeQuery();
 			if (!result.next()) {
 				throw new NoSuchJobException(jobID);
 			} else {
@@ -337,16 +329,9 @@ public class JobManager {
 			// The fact is that invalid jobs should never get into the database in the first place.
 			throw new DatabaseException("Error while retrieving details for job " + jobID, e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeResultSets(result);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
 		
 		return job;
@@ -386,17 +371,11 @@ public class JobManager {
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while setting the job to 'finished' state", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
+		
+		System.out.println("Marked job " + jobID + " as finished");
 	}
 	
 	/**
@@ -428,16 +407,8 @@ public class JobManager {
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while setting the error state of the job", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
 	}
 
@@ -452,6 +423,7 @@ public class JobManager {
 	 */
 	public static void setProgress(DataSource dataSource, long jobID, double progress) throws MissingParamException, BadProgressException, NoSuchJobException, DatabaseException {
 
+		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(dataSource, "dataSource");
 		
 		if (progress < 0 || progress > 100) {
@@ -474,16 +446,8 @@ public class JobManager {
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while setting the status", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
 	}
 	
@@ -502,13 +466,14 @@ public class JobManager {
 		
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		ResultSet result = null;
 		
 		try {
 			connection = dataSource.getConnection();
 			stmt = connection.prepareStatement(FIND_JOB_QUERY);
 			stmt.setLong(1, jobID);
 			
-			ResultSet result = stmt.executeQuery();
+			result = stmt.executeQuery();
 			if (result.next()) {
 				if (result.getInt(1) > 0) {
 					jobExists = true;
@@ -517,16 +482,9 @@ public class JobManager {
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while checking for a job's existence", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeResultSets(result);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
 		
 		return jobExists;
@@ -547,12 +505,13 @@ public class JobManager {
 		Job job = null;
 		Connection connection = null;
 		PreparedStatement stmt = null;
+		ResultSet result = null;
 		
 		try {
 			connection = dataSource.getConnection();
 			stmt = connection.prepareStatement(GET_NEXT_JOB_QUERY);
 			
-			ResultSet result = stmt.executeQuery();
+			result = stmt.executeQuery();
 			if (result.next()) {
 				job = getJobFromResultSet(result, dataSource, config);
 			}
@@ -561,16 +520,9 @@ public class JobManager {
 			// The fact is that invalid jobs should never get into the database in the first place.
 			throw new DatabaseException("Error while retrieving details for next queued job", e);
 		} finally {
-			try {
-				if (null != stmt) {
-					stmt.close();
-				}
-				if (null != connection) {
-					connection.close();
-				}
-			} catch (SQLException e) {
-				// Do nothing.
-			}
+			DatabaseUtils.closeResultSets(result);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(connection);
 		}
 		
 		return job;
@@ -641,5 +593,104 @@ public class JobManager {
 		}
 		
 		return statusOK;
+	}
+	
+	/**
+	 * Returns a list of all the job statuses in the database, and the number
+	 * of jobs with each of those statuses
+	 * @param dataSource A data source
+	 * @return The list of job statuses and counts
+	 * @throws MissingParamException If the dataSource is null
+	 * @throws DatabaseException If an error occurs while retrieving the counts
+	 */
+	public static Map<String,Integer> getJobCounts(DataSource dataSource) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		
+		Map<String,Integer> result = new HashMap<String,Integer>();
+		
+		Connection conn = null;
+		PreparedStatement stmt = null; 
+		ResultSet records = null;
+		
+		try {
+			
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_JOB_COUNTS_QUERY);
+
+			records = stmt.executeQuery();
+			while (records.next()) {
+				result.put(records.getString(1), records.getInt(2));
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Exception while retrieving job statistics", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;	
+	}
+	
+	public static List<JobSummary> getJobList(DataSource dataSource) throws DatabaseException, MissingParamException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		
+		List<JobSummary> result = new ArrayList<JobSummary>();
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(JOB_LIST_QUERY);
+			
+			records = stmt.executeQuery();
+			while (records.next()) {
+				long id = records.getLong(1);
+				long userID = records.getLong(2);
+				User owner = UserDB.getUser(dataSource, userID);
+				String className = records.getString(3);
+				Date submitted = new Date(records.getTimestamp(4).getTime());
+				String status = records.getString(5);
+				Date started = null;
+				
+				if (null != records.getTimestamp(6)) {
+					started = new Date(records.getTimestamp(6).getTime());
+				}
+				
+				Date ended = null;
+				
+				if (null != records.getTimestamp(7)) {
+					ended = new Date(records.getTimestamp(7).getTime());
+				}
+				
+				double progress = records.getDouble(8);
+				
+				result.add(new JobSummary(id, owner, className, submitted, status, started, ended, progress));
+			}
+		
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving job list", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
+	}
+
+	public static void startNextJob(DataSource dataSource, Properties config) throws MissingParamException, DatabaseException, NoSuchJobException, JobThreadPoolNotInitialisedException {
+		Job nextJob = getNextJob(dataSource, config);
+		JobThread thread = JobThreadPool.getInstance().getJobThread(nextJob);
+		if (null != thread) {
+ 			thread.start();
+		}
+		
 	}
 }

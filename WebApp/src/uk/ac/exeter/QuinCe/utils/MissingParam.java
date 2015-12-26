@@ -63,4 +63,10 @@ public class MissingParam {
 			throw new MissingParamException(parameterName);
 		}
 	}
+	
+	public static void checkZeroPositive(int parameter, String parameterName) throws MissingParamException {
+		if (parameter < 0) {
+			throw new MissingParamException(parameterName);
+		}
+	}
 }

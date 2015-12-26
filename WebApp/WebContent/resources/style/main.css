@@ -226,7 +226,7 @@ canvas.statBar {
 #userSettingsMenu.visible {
   border-width: 2px;
   box-shadow: -4px 6px 8px #000000;
-  height: 85px;
+  height: 115px;
 }
 
 ul.menu {

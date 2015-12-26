@@ -52,6 +52,12 @@
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.StandardsBean</managed-bean-class>
 		<managed-bean-scope>session</managed-bean-scope>
 	</managed-bean>
+	<managed-bean>
+		<description>Handles everything to do with the Jobs list page</description>
+		<managed-bean-name>jobsBean</managed-bean-name>
+		<managed-bean-class>uk.ac.exeter.QuinCe.web.jobs.JobsBean</managed-bean-class>
+		<managed-bean-scope>view</managed-bean-scope>
+	</managed-bean>
 	<validator>
 		<description>Ensures that sensor calibration dates are unique</description>
 		<display-name>Calibration Date Validator</display-name>
