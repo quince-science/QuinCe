@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -293,7 +294,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		sampleFileContents = new ArrayList<Map<Integer, String>>();
 
 		try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(getFile().getInputstream()));		
+			BufferedReader in = new BufferedReader(new InputStreamReader(getFile().getInputstream(), StandardCharsets.UTF_8));		
 			String line;
 			int lineCount = 0;
 			while ((line = in.readLine()) != null) {
