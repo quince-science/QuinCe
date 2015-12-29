@@ -1,0 +1,56 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	template="/templates/app_page.xhtml">
+
+	<ui:define name="title">
+		Upload Data File
+	</ui:define>
+	
+	<ui:define name="localHead">
+		<script type="text/javascript">
+			function initCheckFiles() {
+				$('#checkFilesWait').show();
+				$('#uploadFileForm\\:checkFileLink').trigger("click");
+			}
+			
+			function handleCheckResult(xhr, status, args) {
+				$('#checkFilesOutput').text(args.CHECK_OUTPUT);
+				$('#checkFilesWait').hide();
+				$('#checkFilesOutput').show();
+			}
+		</script>
+	</ui:define>
+	
+
+	<ui:define name="content">
+		<h1>Upload File</h1>
+		<div class="fullPage">
+			<h:form id="uploadFileForm" method="post" accept-charset="utf8" enctype="multipart/form-data">
+				<p:outputLabel id="instrumentLabel" for="instrument">Instrument: </p:outputLabel>
+				<p:selectOneMenu id="instrument" name="instrument" value="#{uploadDataFileBean.instrument}">
+					<f:selectItems value="#{uploadDataFileBean.instrumentList}" var="instr" itemLabel="#{instr.name}" itemValue="#{instr.id}"/>
+					<p:column>
+						#{instr.name}
+					</p:column>
+				</p:selectOneMenu>
+				<br/>
+				<br/>				
+				<p:fileUpload fileUploadListener="#{uploadDataFileBean.handleFileUpload}" widgetVar="upload" mode="advanced" auto="true" label="Select File..." allowTypes="/(\.|\/)(csv|tsv|txt|dat)$/" oncomplete="initCheckFiles()"/>
+				<br/>
+				<br/>
+				<div id="checkFilesWait" style="display: none">
+					Checking file. Please wait...
+				</div>
+				<div id="checkFilesOutput" style="display: none">
+					The result!
+				</div>
+				<div class="buttonWrapper">
+					<p:commandLink id="checkFileLink" forceId="true" style="invisible" actionListener="#{uploadDataFileBean.checkFile}" oncomplete="handleCheckResult(xhr, status, args)"/>
+				</div>
+			</h:form>
+		</div>
+	</ui:define>
+</ui:composition>

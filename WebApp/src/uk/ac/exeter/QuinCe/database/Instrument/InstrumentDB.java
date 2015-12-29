@@ -70,7 +70,7 @@ public class InstrumentDB {
 			+ "eqt_1_col, eqt_2_col, eqt_3_col, "
 			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
 			+ "atmospheric_pressure_col, moisture_col, co2_col "
-			+ "FROM instrument WHERE id = ?";
+			+ "FROM instrument WHERE id = ? ORDER BY name";
 			
 	
 	/**
@@ -208,8 +208,7 @@ public class InstrumentDB {
 	 * The list contains InstrumentStub objects, which just contain
 	 * each instrument's ID and name.
 	 * 
-	 * The list is ordered by the instrument with the most recently
-	 * touched data file first, then by name.
+	 * The list is ordered by the name of the instrument.
 	 * 
 	 * @param owner The owner whose instruments are to be listed
 	 * @return The list of instruments

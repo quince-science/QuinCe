@@ -58,6 +58,18 @@
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.jobs.JobsBean</managed-bean-class>
 		<managed-bean-scope>view</managed-bean-scope>
 	</managed-bean>
+	<managed-bean>
+		<description>Handles the File List page</description>
+		<managed-bean-name>fileListBean</managed-bean-name>
+		<managed-bean-class>uk.ac.exeter.QuinCe.web.files.FileListBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
+	<managed-bean>
+		<description>Handles upload of data files</description>
+		<managed-bean-name>uploadDataFileBean</managed-bean-name>
+		<managed-bean-class>uk.ac.exeter.QuinCe.web.files.UploadDataFileBean</managed-bean-class>
+		<managed-bean-scope>view</managed-bean-scope>
+	</managed-bean>
 	<validator>
 		<description>Ensures that sensor calibration dates are unique</description>
 		<display-name>Calibration Date Validator</display-name>
@@ -208,6 +220,14 @@
 		<navigation-case>
 			<from-outcome>standardEditor</from-outcome>
 			<to-view-id>/instrument/standard_edit.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<display-name>FileList</display-name>
+		<from-view-id>/data/file_list.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>upload_file</from-outcome>
+			<to-view-id>/data/upload_file.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 </faces-config>
