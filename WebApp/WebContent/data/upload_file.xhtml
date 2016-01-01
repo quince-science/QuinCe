@@ -24,7 +24,9 @@
 				
 				if (args.CHECK_RESULT == 0 || args.CHECK_RESULT == 2) {
 					// Make dates table
-					resultHtml = args.DATES_TABLE;					
+					resultHtml += '<div class="instructions">The table below lists the dates of sensor'
+		                + ' calibrations and gas standards that will apply to the uploaded file.</div>'
+					resultHtml += args.DATES_TABLE;					
 				} else {
 					resultHtml = '<span class="error">The data file could not be processed because of the following errors:</span>';
 				}
