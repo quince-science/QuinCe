@@ -48,9 +48,9 @@ public class InstrumentDB {
 			+ "salinity_1_col, salinity_2_col, salinity_3_col, "
 			+ "eqt_1_col, eqt_2_col, eqt_3_col, "
 			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
-			+ "atmospheric_pressure_col, moisture_col, co2_col) "
+			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count) "
 			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	/**
 	 * Statement for retrieving all the details of a specific instrument
@@ -69,7 +69,7 @@ public class InstrumentDB {
 			+ "salinity_1_col, salinity_2_col, salinity_3_col, "
 			+ "eqt_1_col, eqt_2_col, eqt_3_col, "
 			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
-			+ "atmospheric_pressure_col, moisture_col, co2_col "
+			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count "
 			+ "FROM instrument WHERE id = ? ORDER BY name";
 			
 	
@@ -156,6 +156,7 @@ public class InstrumentDB {
 			instrStmt.setInt(48, instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE));
 			instrStmt.setInt(49, instrument.getColumnAssignment(Instrument.COL_MOISTURE));
 			instrStmt.setInt(50, instrument.getColumnAssignment(Instrument.COL_CO2));
+			instrStmt.setInt(51, instrument.getRawFileColumnCount());
 			
 			
 			instrStmt.execute();
@@ -262,7 +263,7 @@ public class InstrumentDB {
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet record = null;
-		Instrument instrument = new Instrument();
+		Instrument instrument = null;
 		
 		try {
 			conn = dataSource.getConnection();
@@ -271,10 +272,10 @@ public class InstrumentDB {
 			
 			record = stmt.executeQuery();
 			if (!record.next()) {
-				throw new RecordNotFoundException("Instrument with id " + instrumentID + "does not exist");
+				throw new RecordNotFoundException("Instrument with id " + instrumentID + " does not exist");
 			} else {
+				instrument = new Instrument(record.getLong(1));
 				instrument.setDatabaseId(instrumentID);
-				instrument.setOwnerId(record.getLong(1));
 				instrument.setName(record.getString(2));
 				instrument.setIntakeTempName1(record.getString(3));
 				instrument.setIntakeTempName2(record.getString(4));
@@ -324,6 +325,7 @@ public class InstrumentDB {
 				instrument.setColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE, record.getInt(48));
 				instrument.setColumnAssignment(Instrument.COL_MOISTURE, record.getInt(49));
 				instrument.setColumnAssignment(Instrument.COL_CO2, record.getInt(50));
+				instrument.setRawFileColumnCount(record.getInt(51));
 				
 			}
 			

@@ -23,6 +23,7 @@
 	<h:body>
 	    <div id="userSettingsMenu">
       		<ul class="menu">
+        		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/data/file_list.jsf';">Files</li>
         		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/instrument/instrument_list.jsf';">Instruments</li>
         		<li class="menuitem">Account</li>
         		<ui:fragment rendered="#{User.jobManager}">

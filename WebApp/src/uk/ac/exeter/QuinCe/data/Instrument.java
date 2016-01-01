@@ -13,7 +13,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  */
 public class Instrument implements Serializable {
 	
-	private static final long serialVersionUID = -8470431717231132753L;
+	private static final long serialVersionUID = 7282491666003300432L;
 
 	////////////// *** CONSTANTS *** ///////////////
 	
@@ -357,6 +357,11 @@ public class Instrument implements Serializable {
 	private TreeSet<RunType> runTypes = null;
 	
 	/**
+	 * The number of columns in the raw data file
+	 */
+	private int rawFileColumnCount = -1;
+	
+	/**
 	 * The set of column assignments
 	 */
 	private int[] columnAssignments;
@@ -367,7 +372,10 @@ public class Instrument implements Serializable {
 	 * Basic constructor - does not take any parameters.
 	 * All fields must be populated by the setter methods.
 	 */
-	public Instrument() {
+	public Instrument(long ownerID) {
+		
+		this.ownerID = ownerID;
+		
 		// Initialise the columnAssignments array
 		columnAssignments = new int[COL_COUNT];
 		for (int i = 0; i < columnAssignments.length; i++) {
@@ -1008,6 +1016,22 @@ public class Instrument implements Serializable {
 	 */
 	public String getLongEqpName3() {
 		return "Equilibrator Pressure: " + eqpName3;
+	}
+	
+	/**
+	 * Returns the number of columns in the instrument's raw data files
+	 * @return The number of columns in the instrument's raw data files
+	 */
+	public int getRawFileColumnCount() {
+		return rawFileColumnCount;
+	}
+	
+	/**
+	 * Sets the number of columns in the instrument's raw data files
+	 * @param rawFileColumnCount The number of columns
+	 */
+	public void setRawFileColumnCount(int rawFileColumnCount) {
+		this.rawFileColumnCount = rawFileColumnCount;
 	}
 
 }

@@ -56,7 +56,7 @@ input[type="submit"], input[type="button"] {
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
-  width: 100px;
+  min-width: 100px;
   margin-right: 20px;
   white-space: nowrap;
 }
@@ -150,6 +150,10 @@ th {
   background: #8CD5ED;
   text-align: left;
   padding: 2px 5px 2px 5px;
+}
+
+th.right {
+	text-align: right;
 }
 
 tr.link {
@@ -526,6 +530,10 @@ hr {
 	font-weight: bold;
 }
 
+.info {
+	font-style: italic;
+}
+
 .errors {
 	color: #ff0000;
 	font-weight: bold;
@@ -539,4 +547,24 @@ hr {
 
 .inlineRadio {
 	margin-left: 20px;
+}
+
+.listBox {
+	margin-top: 5px;
+	background: white;
+	max-height: 250px;
+	overflow: auto;
+	border-left: 2px solid #555555;
+	border-top: 2px solid #555555;
+	border-right: 2px solid #cccccc;
+	border-bottom: 2px solid #cccccc;
+	width: 80%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+table.fileDates {
+	text-align: right;
+	width: 80%;
+	margin: auto;
 }

@@ -103,6 +103,7 @@ eqp_3_col                Integer        Equilibrator pressure 3
 atmospheric_pressure_col Integer        Atmospheric pressure
 moisture_col             Integer        Moisture
 co2_col                  Integer        CO~2~
+raw_col_count            Integer        The total number of columns in the instrument's data files
 
 #### `date_format`
 The `date_format` field will have one of the following values:
