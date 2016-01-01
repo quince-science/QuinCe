@@ -31,10 +31,21 @@ public class UploadDataFileBean extends FileUploadBean {
 		FORM_NAME = "uploadFileForm";
 	}
 	
+	/**
+	 * Indicates that the file was processed with no errors
+	 */
 	public static final int FILE_NO_ERROR = 0;
 	
+	/**
+	 * Indicates that the file could not be parsed
+	 */
 	public static final int FILE_PARSE_ERROR = 1;
 	
+	/**
+	 * Indicates that the file could be parsed, but required
+	 * calibration and/or gas standards are not present so the
+	 * file cannot be processed further.
+	 */
 	public static final int FILE_BAD_DATES = 2;
 	
 	/**
@@ -47,6 +58,10 @@ public class UploadDataFileBean extends FileUploadBean {
 	 */
 	private RawDataFile rawDataFile;
 	
+	/**
+	 * Simply constructs the base RawDataFile object.
+	 * No extraction or processing is performed.
+	 */
 	@Override
 	public void processUploadedFile() {
 		try {
@@ -60,9 +75,9 @@ public class UploadDataFileBean extends FileUploadBean {
 	/**
 	 * Get the list of instruments owned by the current user
 	 * @return The list of instruments
-	 * @throws MissingParamException
-	 * @throws DatabaseException
-	 * @throws ResourceException
+	 * @throws MissingParamException If any parameters to the database call are missing
+	 * @throws DatabaseException If an error occurs while searching the database
+	 * @throws ResourceException If the data source cannot be located
 	 */
 	public List<InstrumentStub> getInstrumentList() throws MissingParamException, DatabaseException, ResourceException {
 		return InstrumentDB.getInstrumentList(ServletUtils.getDBDataSource(), getUser());
@@ -102,6 +117,21 @@ public class UploadDataFileBean extends FileUploadBean {
 		}
 	}
 	
+	/**
+	 * Build the table of calibration and standard dates for the uploaded file.
+	 * This also checks that all necessary calibrations and standard are present
+	 * for the file to be processed successfully.
+	 * 
+	 * @param firstDate The first date in the data file
+	 * @param lastDate The last date in the data file
+	 * @param table The table to which the content should be added
+	 * @param messages The set of error messages for the file upload
+	 * @return {@code true} if all required calibrations and standards are preset; {@code false} if any are not available.
+	 * @throws MissingParamException If any of the parameters on the database calls are missing
+	 * @throws DatabaseException If an error occurs while searching the database
+	 * @throws ResourceException If an error occurs while retrieving the data source
+	 * @throws TableException If an error occurs while building the table
+	 */
 	private boolean buildDatesTable(Calendar firstDate, Calendar lastDate, TableData table, List<String> messages) throws MissingParamException, DatabaseException, ResourceException, TableException {
 
 		boolean result = true;
