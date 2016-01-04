@@ -230,4 +230,12 @@
 			<to-view-id>/data/upload_file.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
+	<navigation-rule>
+		<display-name>UploadDataFile</display-name>
+		<from-view-id>/data/upload_file.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>file_list</from-outcome>
+			<to-view-id>/data/file_list.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
 </faces-config>

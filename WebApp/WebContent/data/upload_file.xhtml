@@ -11,7 +11,17 @@
 	
 	<ui:define name="localHead">
 		<script type="text/javascript">
+			function restart() {
+				$('#checkFilesOutput').hide();
+				$('#checkFileMessages').hide();
+				$('#restartButton').hide();
+				$('#uploadFileForm\\:submitButton').hide();
+				return false;
+			}
+		
 			function initCheckFiles() {
+				$('#uploadFileForm\\:file').hide();
+				$('#uploadFileForm\\:cancelButton').hide();
 				$('#checkFilesWait').show();
 				$('#uploadFileForm\\:checkFileLink').trigger("click");
 			}
@@ -45,6 +55,13 @@
 					$('#checkFileMessages').html(errorHtml);
 					$('#checkFileMessages').show();
 				}
+				
+				if (args.CHECK_RESULT == 0) {
+					$('#uploadFileForm\\:submitButton').show();
+				}
+				
+				$('#restartButton').show();
+				$('#uploadFileForm\\:cancelButton').show();
 			}
 			
 			function sendInstrument() {
@@ -59,7 +76,7 @@
 			function handleStoreInstrument(xhr, status, args) {
 				$('#checkInstrumentWait').hide();
 				$('#uploadFileForm\\:file').show();
-			}			
+			}
 		</script>
 	</ui:define>
 	
@@ -96,6 +113,9 @@
 				<div class="buttonWrapper">
 					<p:commandLink id="checkFileLink" forceId="true" value="Check File" style="display: none" actionListener="#{uploadDataFileBean.checkFile}" oncomplete="handleCheckResult(xhr, status, args)"/>
 					<p:commandLink id="sendInstrumentLink" forceId="true" value="SI" style="display: none" actionListener="#{uploadDataFileBean.storeInstrument}" oncomplete="handleStoreInstrument(xhr, status, args)"/>
+					<h:commandButton id="cancelButton" forceId="true" value="Cancel" action="#{uploadDataFileBean.cancelUpload}" immediate="true"/>
+					<input type="button" id="restartButton" style="display: none" value="Select New File" onclick="restart()"/>
+					<h:commandButton id="submitButton" forceId="true" value="Submit File" action="#{uploadDataFileBean.submitFile}" style="display: none"/>
 				</div>
 			</h:form>
 		</div>

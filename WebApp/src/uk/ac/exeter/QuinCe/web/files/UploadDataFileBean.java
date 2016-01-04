@@ -48,6 +48,8 @@ public class UploadDataFileBean extends FileUploadBean {
 	 */
 	public static final int FILE_BAD_DATES = 2;
 	
+	public static final String PAGE_FILE_LIST = "file_list";
+	
 	/**
 	 * The ID of the instrument to which the uploaded file belongs
 	 */
@@ -264,8 +266,14 @@ public class UploadDataFileBean extends FileUploadBean {
 	}
 	
 	public void storeInstrument() {
-		// Do nothing
+		// Do nothing - dummy method to
+		// allow the instrument to be submitted early in the form
 	}
+	
+	public String cancelUpload() {
+		return PAGE_FILE_LIST;
+	}
+	
 	
 	/////////////// *** GETTERS AND SETTERS *** ////////////////////////
 	
