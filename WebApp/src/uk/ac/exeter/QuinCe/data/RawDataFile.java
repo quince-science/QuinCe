@@ -166,6 +166,29 @@ public class RawDataFile {
 		return dates;
 	}
 	
+	public String getContentsAsString() throws RawDataFileException, IOException {
+		
+		if (null == contents) {
+			List<String> messages = new ArrayList<String>();
+			extractString(messages);
+		}
+		
+		StringBuffer result = new StringBuffer();
+		
+		
+		for (List<String> line : contents) {
+			for (int i = 0; i < line.size(); i++) {
+				result.append(line.get(i));
+				if (i < line.size() - 1) {
+					result.append(',');
+				}
+			}
+			result.append('\n');
+		}
+		
+		return result.toString();
+	}
+	
 	/**
 	 * Retrieve the date and time from the specified line in the file
 	 * @param lineNumber The line number (excluding header lines)
@@ -313,6 +336,14 @@ public class RawDataFile {
 			throw new RawDataFileException(-1, "Unrecognised time format code '" + instrument.getTimeFormat() + "'");
 		}
 		}
+	}
+	
+	/**
+	 * Returns the filename for this file
+	 * @return The filename
+	 */
+	public String getFileName() {
+		return fileName;
 	}
 }
 

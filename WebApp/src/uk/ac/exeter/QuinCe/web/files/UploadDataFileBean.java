@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.Instrument.CalibrationDB;
 import uk.ac.exeter.QuinCe.database.Instrument.GasStandardDB;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -279,6 +280,21 @@ public class UploadDataFileBean extends FileUploadBean {
 	 * @return Navigation back to the file list
 	 */
 	public String cancelUpload() {
+		return PAGE_FILE_LIST;
+	}
+
+	/**
+	 * Stores the uploaded file
+	 * @return
+	 */
+	public String submitFile() {
+		
+		try {
+			DataFileDB.storeFile(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), instrument, rawDataFile);
+		} catch (Exception e) {
+			return internalError(e);
+		}
+		
 		return PAGE_FILE_LIST;
 	}
 	
