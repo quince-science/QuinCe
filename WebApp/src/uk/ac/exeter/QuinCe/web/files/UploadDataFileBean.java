@@ -89,6 +89,7 @@ public class UploadDataFileBean extends FileUploadBean {
 	 * Check the file for basic validity.
 	 * At present, we are simply checking that there are
 	 * calibrations and standards that can be used.
+	 * Other short checks will be added later.
 	 */
 	public void checkFile(ActionEvent event) {
 
@@ -265,11 +266,18 @@ public class UploadDataFileBean extends FileUploadBean {
 		return result;
 	}
 	
+	/**
+	 * A dummy method allowing the front end to
+	 * send the chosen instrument back to this bean
+	 */
 	public void storeInstrument() {
-		// Do nothing - dummy method to
-		// allow the instrument to be submitted early in the form
+		// Do nothing
 	}
 	
+	/**
+	 * Navigation for the cancel button
+	 * @return Navigation back to the file list
+	 */
 	public String cancelUpload() {
 		return PAGE_FILE_LIST;
 	}
