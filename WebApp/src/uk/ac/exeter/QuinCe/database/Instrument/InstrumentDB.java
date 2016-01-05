@@ -186,15 +186,7 @@ public class InstrumentDB {
 			
 		} catch (SQLException e) {
 			
-			if (null != conn) {
-	            try {
-	                System.err.print("Transaction is being rolled back");
-	                conn.rollback();
-	            } catch(SQLException excep) {
-	                
-	            }
-			}
-			
+			DatabaseUtils.rollBack(conn);
 			throw new DatabaseException("Error while storing new instrument records", e);
 		} finally {
 			DatabaseUtils.closeResultSets(generatedKeys);

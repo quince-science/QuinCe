@@ -148,15 +148,8 @@ public class CalibrationDB {
 
 			conn.commit();
 		} catch (SQLException e) {
-			if (null != conn) {
-	            try {
-	                System.err.print("Transaction is being rolled back");
-	                conn.rollback();
-	            } catch(SQLException excep) {
-	                
-	            }
-			}
-			
+
+			DatabaseUtils.rollBack(conn);
 			throw new DatabaseException("Error while storing new calibration records", e);
 		} finally {
 			DatabaseUtils.closeStatements(coefficientStmts);
@@ -346,12 +339,8 @@ public class CalibrationDB {
 			conn.commit();
 			
 		} catch (SQLException e) {
-			try {
-				conn.rollback();
-			} catch (SQLException e2) {
-				// DO nothing
-			}
-			
+
+			DatabaseUtils.rollBack(conn);
 			throw new DatabaseException("Error while updating calibration " + calibrationID, e);
 		} finally {
 			DatabaseUtils.closeStatements(removeCoeffsStmt, updateCalibStmt);
@@ -426,14 +415,8 @@ public class CalibrationDB {
 			conn.commit();
 			
 		} catch (SQLException e) {
-			if (null != conn) {
-				try {
-					conn.rollback();
-				} catch (SQLException e2) {
-					// Do nothing
-				}
-			}
-			
+
+			DatabaseUtils.rollBack(conn);
 			throw new DatabaseException("Error while deleting calibraion " + calibrationID, e);
 		} finally {
 			DatabaseUtils.closeStatements(removeCoeffsStmt, removeCalibStmt);

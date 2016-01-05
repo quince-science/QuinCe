@@ -75,4 +75,18 @@ public class DatabaseUtils {
 			}
 		}
 	}
+	
+	/**
+	 * Roll back an open transaction
+	 * @param conn The database connection
+	 */
+	public static void rollBack(Connection conn) {
+		if (null != conn) {
+			try {
+				conn.rollback();
+			} catch (SQLException e) {
+				// DO nothing
+			}
+		}
+	}
 }
