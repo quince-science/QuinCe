@@ -236,7 +236,7 @@ For each data file that's uploaded, there are a number of pieces of information
 that are required alongside it. This section describes all the tables required
 to hold these details.
 
-## `data_files`
+## `data_file`
 This table is a simple list of all the data files held in the system.
 
 Field                    Type           Description
