@@ -28,8 +28,21 @@ public class DataFileDB {
 	 */
 	private static final String FIND_FILE_QUERY = "SELECT id FROM data_file WHERE instrument_id = ? AND filename = ?";
 	
+	/**
+	 * Statement to add a data file to the database
+	 */
 	private static final String ADD_FILE_STATEMENT = "INSERT INTO data_file (instrument_id, filename, last_touched) VALUES (?, ?, ?)";
 	
+	/**
+	 * Store a file in the database and in the file store
+	 * @param dataSource A data source
+	 * @param appConfig The application configuration
+	 * @param instrumentID The instrument ID
+	 * @param dataFile The data file
+	 * @throws MissingParamException If any of the parameters are missing
+	 * @throws FileExistsException If the file already exists in the system
+	 * @throws DatabaseException If an error occurs while storing the file
+	 */
 	public static void storeFile(DataSource dataSource, Properties appConfig, long instrumentID, RawDataFile dataFile) throws MissingParamException, FileExistsException, DatabaseException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -72,7 +85,16 @@ public class DataFileDB {
 		
 	}
 
-	
+	/**
+	 * Checks to see if a file with a given name and for a given instrument
+	 * already exists in the system
+	 * @param dataSource A data source
+	 * @param instrumentID The instrument ID
+	 * @param fileName The name of the file
+	 * @return {@code true} if the file exists; {@code false} if it does not
+	 * @throws MissingParamException If any of the parameters are missing
+	 * @throws DatabaseException If an error occurs during the search
+	 */
 	public static boolean fileExists(DataSource dataSource, long instrumentID, String fileName) throws MissingParamException, DatabaseException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
