@@ -46,7 +46,7 @@ We allow up to three sensors of each type to be defined. They are treated as
 separate fields in violation of third normal form, but the amount of processing
 required to handle dynamically defined sensors would be prohibitive.
 
-The table alsp defines which columns contain which data in an instrument's data
+The table also defines which columns contain which data in an instrument's data
 files. Entries are supplied for all the possible formatting options. Those that
 aren't needed will be left empty.
 
@@ -243,7 +243,28 @@ Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
 instrument_id            F_KEY          The instrument ID
 filename                 String         The filename of the uploaded file. Must be unique for a given instrument
+current_job              Integer        The current activity being performed on the file. See below.
+job_status               Integer        The current status of the current job.
+error_messages           String         Error messages generated during processing.
 last_touched             Date           The date when the file was last touched. Files held beyond a given length of time will be automatically deleted.
+
+#### `current_job` and `job_status`
+When a file is uploaded, it is processed in a number of stages, which are indicated by an integer value.
+These stages are:
+
+Value                Meaning
+-----------------    -----------------------------------------------------------------------------------------
+0                    The contents of the file are extracted into the database ready for processing.
+1                    The system will load any additional data required for calculations from its own archives.
+2                    The data reduction calculations are performed
+3                    The automatic QC checks are performed
+4                    The user will perform manual QC
+
+As these processes are run, the `job_status` field will be updated. When the automatic jobs
+are waiting to run, the status will be set to `-1`. If an error has occurred during automatic processing,
+it will be set to `-2` (and the `error_messages` field will be populated). Otherwise this will contain the percentage
+of the job completed. For the user QC, the percentage will be calculated from the number of
+'needs flag' values in the file as a fraction of the total number of lines.
 
 ## `co2_data`
 This table will contain the records from the data file corresponding to the CO~2~ runs (both sea water and
