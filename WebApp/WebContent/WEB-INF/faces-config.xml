@@ -229,6 +229,10 @@
 			<from-outcome>upload_file</from-outcome>
 			<to-view-id>/data/upload_file.xhtml</to-view-id>
 		</navigation-case>
+		<navigation-case>
+			<from-outcome>file_list</from-outcome>
+			<to-view-id>/data/file_list.xhtml</to-view-id>
+		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
 		<display-name>UploadDataFile</display-name>

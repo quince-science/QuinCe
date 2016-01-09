@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.utils;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
@@ -19,6 +20,8 @@ public class DateTimeUtils {
 	 * The number of milliseconds in a day
 	 */
 	public static final long MILLIS_PER_DAY = 86400000;
+	
+	private static SimpleDateFormat dateFormatter = null;
 
 	/**
 	 * Determines whether or not the current time is within a
@@ -57,5 +60,18 @@ public class DateTimeUtils {
 	public static int getDaysBetween(Calendar firstDate, Calendar lastDate) {
 		long diffMillis = lastDate.getTimeInMillis() - firstDate.getTimeInMillis();
 		return (int) Math.floorDiv(diffMillis, MILLIS_PER_DAY);
+	}
+	
+	/**
+	 * Format a date to YYYY-MM-dd format
+	 * @param date The date
+	 * @return The formatted date
+	 */
+	public static String formatDate(Calendar date) {
+		if (null == dateFormatter) {
+			dateFormatter = new SimpleDateFormat("YYYY-MM-dd");
+		}
+		
+		return dateFormatter.format(date.getTime());
 	}
 }

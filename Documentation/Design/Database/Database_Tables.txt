@@ -244,6 +244,8 @@ Field                    Type           Description
 instrument_id            F_KEY          The instrument ID
 filename                 String         The filename of the uploaded file. Must be unique for a given instrument
 current_job              Integer        The current activity being performed on the file. See below.
+start_date               Date           The date of the first record in the file
+record_count             Integer        The number of records in the file
 job_status               Integer        The current status of the current job.
 error_messages           String         Error messages generated during processing.
 last_touched             Date           The date when the file was last touched. Files held beyond a given length of time will be automatically deleted.

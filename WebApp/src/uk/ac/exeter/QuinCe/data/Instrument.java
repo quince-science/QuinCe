@@ -403,6 +403,26 @@ public class Instrument implements Serializable {
 	public void validate() throws MissingParamException {
 		// TODO Write it!
 	}
+	
+	/**
+	 * Determines whether or not a given run type is for a measurement.
+	 * If the run type does not exist, this will return {@code false}.
+	 * 
+	 * @param runType The run type
+	 * @return {@code true} if the run type is for a measurement; {@code false} if it is not.
+	 */
+	public boolean isMeasurementRunType(String runType) {
+		boolean result = false;
+		
+		for (RunType type : runTypes) {
+			if (type.getName().equals(runType)) {
+				result = type.isMeasurementRunType();
+				break;
+			}
+		}
+		
+		return result;
+	}
 
 	///////// *** GETTERS AND SETTERS *** ///////////////
 	

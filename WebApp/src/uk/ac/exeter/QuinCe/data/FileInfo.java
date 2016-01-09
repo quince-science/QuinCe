@@ -42,7 +42,12 @@ public class FileInfo {
 /**
 	 * The file's database ID
 	 */
-	private long fileID;
+	private long fileId;
+	
+	/**
+	 * The ID of the instrument to which this file belongs
+	 */
+	private long instrumentId;
 	
 	/**
 	 * The name of the instrument to which this file belongs
@@ -68,20 +73,36 @@ public class FileInfo {
 	 * The date on which the file was last touched
 	 */
 	private Calendar lastTouched;
+	
+	/**
+	 * The date of the first measurment in the file
+	 */
+	private Calendar startDate;
+	
+	/**
+	 * The number of record measurements in the file
+	 */
+	private int recordCount;
 
 	/**
 	 * Constructor for all values
-	 * @param fileID The file ID
+	 * @param fileId The file ID
+	 * @param instrumentId The ID of the instrument to which this file belongs
 	 * @param instrument The instrument name
 	 * @param fileName The filename
+	 * @param startDate The date of the first measurement in the file
+	 * @param recordCount The number of measurement records in the file
 	 * @param currentJob The current job
 	 * @param jobStatus The current job status
 	 * @param lastTouched The date that the file was last touched
 	 */
-	public FileInfo(long fileID, String instrument, String fileName, int currentJob, int jobStatus, Calendar lastTouched) {
-		this.fileID = fileID;
+	public FileInfo(long fileId, long instrumentId, String instrument, String fileName, Calendar startDate, int recordCount, int currentJob, int jobStatus, Calendar lastTouched) {
+		this.fileId = fileId;
+		this.instrumentId = instrumentId;
 		this.instrument = instrument;
 		this.fileName = fileName;
+		this.startDate = startDate;
+		this.recordCount = recordCount;
 		this.currentJob = currentJob;
 		this.jobStatus = jobStatus;
 		this.lastTouched = lastTouched;
@@ -90,8 +111,8 @@ public class FileInfo {
 	/**
 	 * @return the fileID
 	 */
-	public long getFileID() {
-		return fileID;
+	public long getFileId() {
+		return fileId;
 	}
 
 	/**
@@ -106,6 +127,30 @@ public class FileInfo {
 	 */
 	public String getFileName() {
 		return fileName;
+	}
+	
+	/**
+	 * Get the date of the first measurement record in the file
+	 * @return The first measurement date
+	 */
+	public Calendar getStartDate() {
+		return startDate;
+	}
+	
+	/**
+	 * Get the date of the first measurement record formatted as a YYYY-MM-dd string
+	 * @return The formatted first measurement date
+	 */
+	public String getStartDateString() {
+		return DateTimeUtils.formatDate(startDate);
+	}
+	
+	/**
+	 * Return the number of measurement records in the file
+	 * @return The number of records
+	 */
+	public int getRecordCount() {
+		return recordCount;
 	}
 
 	/**
@@ -211,5 +256,11 @@ public class FileInfo {
 		return lastTouched;
 	}
 	
-	
+	/**
+	 * Returns the ID of the instrument to which this file belongs
+	 * @return The instrument ID
+	 */
+	public long getInstrumentId() {
+		return instrumentId;
+	}
 }

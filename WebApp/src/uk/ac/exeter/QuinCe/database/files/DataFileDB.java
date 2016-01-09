@@ -36,13 +36,18 @@ public class DataFileDB {
 	/**
 	 * Statement to add a data file to the database
 	 */
-	private static final String ADD_FILE_STATEMENT = "INSERT INTO data_file (instrument_id, filename, last_touched) VALUES (?, ?, ?)";
+	private static final String ADD_FILE_STATEMENT = "INSERT INTO data_file (instrument_id, filename, start_date, record_count, last_touched) VALUES (?, ?, ?, ? , ?)";
 
 	/**
 	 * Query to find all the data files for a given user
 	 */
-	private static final String GET_USER_FILES_QUERY = "SELECT f.id, i.name, f.filename, f.current_job, f.job_status, f.last_touched FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
+	private static final String GET_USER_FILES_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.job_status, f.last_touched FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
 			+ " WHERE i.owner = ? ORDER BY f.last_touched ASC";
+	
+	/**
+	 * Statement to delete a file
+	 */
+	private static final String DELETE_FILE_STATEMENT = "DELETE from data_file WHERE id = ?";
 	
 	/**
 	 * Store a file in the database and in the file store
@@ -76,7 +81,9 @@ public class DataFileDB {
 			stmt = conn.prepareStatement(ADD_FILE_STATEMENT);
 			stmt.setLong(1, instrumentID);
 			stmt.setString(2, dataFile.getFileName());
-			stmt.setDate(3, new java.sql.Date(System.currentTimeMillis()));
+			stmt.setDate(3, new java.sql.Date(dataFile.getStartDate().getTimeInMillis()));
+			stmt.setInt(4, dataFile.getRecordCount());
+			stmt.setDate(5, new java.sql.Date(System.currentTimeMillis()));
 			
 			stmt.execute();
 			
@@ -158,14 +165,18 @@ public class DataFileDB {
 			records = stmt.executeQuery();
 			while (records.next()) {
 				long fileID = records.getLong(1);
-				String instrumentName = records.getString(2);
-				String fileName = records.getString(3);
-				int currentJob = records.getInt(4);
-				int jobStatus = records.getInt(5);
+				long instrumentId = records.getLong(2);
+				String instrumentName = records.getString(3);
+				String fileName = records.getString(4);
+				Calendar startDate = Calendar.getInstance();
+				startDate.setTime(records.getDate(5));
+				int recordCount = records.getInt(6);
+				int currentJob = records.getInt(7);
+				int jobStatus = records.getInt(8);
 				Calendar lastTouched = Calendar.getInstance();
-				lastTouched.setTime(records.getDate(6));
+				lastTouched.setTime(records.getDate(9));
 				
-				fileInfo.add(new FileInfo(fileID, instrumentName, fileName, currentJob, jobStatus, lastTouched));
+				fileInfo.add(new FileInfo(fileID, instrumentId, instrumentName, fileName, startDate, recordCount, currentJob, jobStatus, lastTouched));
 			}
 			
 		} catch (Exception e) {
@@ -178,5 +189,37 @@ public class DataFileDB {
 		}
 		
 		return fileInfo;
+	}
+	
+	public static void deleteFile(DataSource dataSource, Properties appConfig, FileInfo fileDetails) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(appConfig, "appConfig");
+		MissingParam.checkMissing(fileDetails, "fileDetails");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
+			
+			// Send out sub-record delete requests
+			
+			stmt = conn.prepareStatement(DELETE_FILE_STATEMENT);
+			stmt.setLong(1, fileDetails.getFileId());
+			stmt.execute();
+			
+			// Delete the file from the file store
+			FileStore.deleteFile(appConfig, fileDetails);
+			
+			conn.commit();
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while deleting the data file", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
 	}
 }

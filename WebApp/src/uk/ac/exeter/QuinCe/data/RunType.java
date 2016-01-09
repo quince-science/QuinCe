@@ -110,6 +110,10 @@ public class RunType implements Comparable<RunType>, Serializable {
 	public int getRunType() {
 		return runType;
 	}
+	
+	public boolean isMeasurementRunType() {
+		return (runType == RUN_TYPE_ATMOSPHERIC || runType == RUN_TYPE_WATER);
+	}
 
 	/**
 	 * Run types are compared by name

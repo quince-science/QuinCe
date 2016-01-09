@@ -49,6 +49,16 @@ public class RawDataFile {
 	private List<List<String>> contents = null;
 	
 	/**
+	 * The date of the first CO2 line in the file
+	 */
+	private Calendar startDate = null;
+	
+	/**
+	 * The number of CO2 lines in the file
+	 */
+	private int recordCount = 0;
+	
+	/**
 	 * Formatter for dates
 	 */
 	private SimpleDateFormat dateFormatter = null;
@@ -90,6 +100,7 @@ public class RawDataFile {
 	 * @param data The raw file data
 	 * @param charSet The character set of the file
 	 * @return The contents of the data file as a String
+	 * @throws DateParseException If the first date in the file cannot be parsed
 	 */
 	private void extractString(List<String> messages) throws RawDataFileException, IOException {
 		
@@ -102,6 +113,7 @@ public class RawDataFile {
 		BufferedReader in = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(rawData), charSet));		
 		String line;
 		int lineCount = 0;
+		recordCount = 0;
 		while ((line = in.readLine()) != null) {
 			lineCount++;
 
@@ -116,7 +128,23 @@ public class RawDataFile {
 					}
 					messages.add("Line " + lineCount + ": Incorrect number of columns");
 				} else {
-					contents.add((List<String>) Arrays.asList(splitLine));
+					
+					List<String> lineList = Arrays.asList(splitLine);
+					contents.add((List<String>) lineList);
+					
+					String runType = lineList.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+					
+					
+					if (instrument.isMeasurementRunType(runType)) {
+						recordCount++;
+						if (null == startDate) {
+							try {
+								startDate = getDateFromLine(contents.size() - 1);
+							} catch (DateParseException e) {
+								// Do nothing - the next parseable date will be used instead.
+							}
+						}
+					}
 				}
 			}
 		}
@@ -344,6 +372,22 @@ public class RawDataFile {
 	 */
 	public String getFileName() {
 		return fileName;
+	}
+	
+	/**
+	 * Returns the first measurement date in the file
+	 * @return The start date
+	 */
+	public Calendar getStartDate() {
+		return startDate;
+	}
+	
+	/**
+	 * Returns the number of measurement records in the file
+	 * @return The number of measurements
+	 */
+	public int getRecordCount() {
+		return recordCount;
 	}
 }
 

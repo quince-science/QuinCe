@@ -83,6 +83,8 @@ public class InstrumentDB {
 	 */
 	private static final String GET_INSTRUMENT_LIST_QUERY = "SELECT id, name FROM instrument WHERE owner = ? ORDER BY name ASC";
 	
+	private static final String GET_RUN_TYPES_QUERY = "SELECT run_name, run_type FROM run_types WHERE instrument_id = ?";
+	
 	/**
 	 * Add an instrument to the database
 	 * @throws MissingParamException If any of the required data are missing
@@ -253,16 +255,19 @@ public class InstrumentDB {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		
 		Connection conn = null;
-		PreparedStatement stmt = null;
+		PreparedStatement instrStmt = null;
 		ResultSet record = null;
+		PreparedStatement runTypeStmt = null;
+		ResultSet runTypeRecords = null;
 		Instrument instrument = null;
+		TreeSet<RunType> runTypes = new TreeSet<RunType>();
 		
 		try {
 			conn = dataSource.getConnection();
-			stmt = conn.prepareStatement(GET_INSTRUMENT_QUERY);
-			stmt.setLong(1, instrumentID);
+			instrStmt = conn.prepareStatement(GET_INSTRUMENT_QUERY);
+			instrStmt.setLong(1, instrumentID);
 			
-			record = stmt.executeQuery();
+			record = instrStmt.executeQuery();
 			if (!record.next()) {
 				throw new RecordNotFoundException("Instrument with id " + instrumentID + " does not exist");
 			} else {
@@ -319,13 +324,21 @@ public class InstrumentDB {
 				instrument.setColumnAssignment(Instrument.COL_CO2, record.getInt(50));
 				instrument.setRawFileColumnCount(record.getInt(51));
 				
+				runTypeStmt = conn.prepareStatement(GET_RUN_TYPES_QUERY);
+				runTypeStmt.setLong(1, instrumentID);
+				runTypeRecords = runTypeStmt.executeQuery();
+				while (runTypeRecords.next()) {
+					runTypes.add(new RunType(instrumentID, runTypeRecords.getString(1), runTypeRecords.getInt(2)));
+				}
+				
+				instrument.setRunTypes(runTypes);
 			}
 			
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while retrieving instrument details", e);
 		} finally {
-			DatabaseUtils.closeResultSets(record);
-			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeResultSets(record, runTypeRecords);
+			DatabaseUtils.closeStatements(instrStmt, runTypeStmt);
 			DatabaseUtils.closeConnection(conn);
 		}
 		

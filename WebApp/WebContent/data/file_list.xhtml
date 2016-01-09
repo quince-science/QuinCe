@@ -35,6 +35,16 @@
 	          barFilled += (stats[i] / recordCount);
 	        }
 	      }
+	      
+	      function deleteFile(id, fileName) {
+	    	  if (confirm('Are you sure you want to delete file ' + fileName + '?')) {
+	    		  $('#fileListForm\\:chosenFile').val(id);
+	    		  return true;
+	    	  } else {
+	    		  return false;
+	    	  }
+	      }
+	      
 	    </script>
 	</ui:define>
 
@@ -42,6 +52,7 @@
 		<h1>Your files</h1>
 		<div class="fullPage">
 			<h:form id="fileListForm">
+				<h:inputHidden id="chosenFile" value="#{fileListBean.chosenFile}"/>
 				
 				<p:dataTable var="file" value="#{fileListBean.fileList}" scrollable="true" scrollHeight="450">
 					<p:column>
@@ -54,11 +65,11 @@
 					</p:column>
 					<p:column>
 						<f:facet name="header">Start Date</f:facet>
-						xxx
+						#{file.startDateString}
 					</p:column>
 					<p:column>
 						<f:facet name="header">Records</f:facet>
-						xxx
+						#{file.recordCount}
 					</p:column>
 					<p:column>
 						<f:facet name="header">Status</f:facet>
@@ -80,7 +91,7 @@
 					</p:column>
 					<p:column>
 						<f:facet name="header">Actions</f:facet>
-						Q|E|D
+						Q|E|<h:commandLink id="Delete_#{file.fileId}" value="D" onclick="deleteFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.deleteFile}"/>
 					</p:column>
 					<p:column>
 						<f:facet name="header">Time remaining</f:facet>

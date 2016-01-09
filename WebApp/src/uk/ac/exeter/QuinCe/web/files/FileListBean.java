@@ -20,6 +20,22 @@ public class FileListBean extends BaseManagedBean {
 	public static final String PAGE_UPLOAD_FILE = "upload_file";
 	
 	/**
+	 * The navigation to the file list
+	 */
+	public static final String PAGE_FILE_LIST = "file_list";
+	
+	/**
+	 * The ID of the chosen file
+	 */
+	private long chosenFile;
+	
+	/**
+	 * The list of the user's files. Updated whenever
+	 * getFileList is called
+	 */
+	private List<FileInfo> fileList;
+	
+	/**
 	 * Navigates to the file upload page
 	 * @return The navigation string
 	 */
@@ -27,16 +43,61 @@ public class FileListBean extends BaseManagedBean {
 		return PAGE_UPLOAD_FILE;
 	}
 	
+	/**
+	 * Get the list of files for the user
+	 * @return The user's files
+	 */
 	public List<FileInfo> getFileList() {
-		List<FileInfo> files = null;
 		
 		try {
-			files = DataFileDB.getUserFiles(ServletUtils.getDBDataSource(), getUser());
+			fileList = DataFileDB.getUserFiles(ServletUtils.getDBDataSource(), getUser());
 		} catch (Exception e) {
 			// Do nothing
 		}
 		
-		return files;
+		return fileList;
 	}
 	
+	/**
+	 * Delete a file
+	 * @return The navigation to the file list page
+	 */
+	public String deleteFile() {
+		try {
+			DataFileDB.deleteFile(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), getChosenFileDetails());
+		} catch (Exception e) {
+			return internalError(e);
+		}
+
+		return PAGE_FILE_LIST;
+	}
+
+	private FileInfo getChosenFileDetails() {
+		FileInfo result = null;
+		
+		for (FileInfo info : fileList) {
+			if (info.getFileId() == chosenFile) {
+				result = info;
+				break;
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Get the ID of the chosen file
+	 * @return The file ID
+	 */
+	public long getChosenFile() {
+		return chosenFile;
+	}
+	
+	/**
+	 * Set the ID of the chosen file
+	 * @param chosenFile The file ID
+	 */
+	public void setChosenFile(long chosenFile) {
+		this.chosenFile = chosenFile;
+	}
 }

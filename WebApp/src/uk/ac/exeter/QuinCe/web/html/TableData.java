@@ -1,9 +1,10 @@
 package uk.ac.exeter.QuinCe.web.html;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
  * Class to build the information required to construct a table
@@ -36,25 +37,24 @@ public class TableData {
 	 * Stores the number of columns in the table
 	 */
 	private int columnCount = 0;
-	
+
 	/**
-	 * Formatter for dates
+	 * The CSS class for the table
 	 */
-	private SimpleDateFormat dateFormatter;
-	
 	private String tableClass = null;
 	
+	/**
+	 * The CSS class for the table header
+	 */
 	private String headerClass = null;
 	
 	
 	public TableData(String tableClass, String headerClass) {
-		dateFormatter = new SimpleDateFormat("YYYY-MM-dd");
 		this.tableClass = tableClass;
 		this.headerClass = headerClass;
 	}
 	
 	public TableData() {
-		dateFormatter = new SimpleDateFormat("YYYY-MM-dd");
 	}
 	
 	/**
@@ -109,7 +109,7 @@ public class TableData {
 		if (null == date) {
 			addEmptyColumn();
 		} else {
-			tableData.add(new TableCell(getDateString(date), className));
+			tableData.add(new TableCell(DateTimeUtils.formatDate(date), className));
 		}
 	}
 	
@@ -121,7 +121,7 @@ public class TableData {
 		if (null == date) {
 			addEmptyColumn();
 		} else {
-			tableData.add(new TableCell(getDateString(date)));
+			tableData.add(new TableCell(DateTimeUtils.formatDate(date)));
 		}
 	}
 
@@ -181,15 +181,6 @@ public class TableData {
 		html.append("</table>");
 		
 		return html.toString();
-	}
-	
-	/**
-	 * Convert a date to a String
-	 * @param date The date
-	 * @return The string
-	 */
-	private String getDateString(Calendar date) {
-		return dateFormatter.format(date.getTime());
 	}
 }
 

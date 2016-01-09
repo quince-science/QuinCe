@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Properties;
 
+import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.RawDataFile;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -40,7 +41,7 @@ public class FileStore {
 
 			checkInstrumentDirectory(config.getProperty("filestore"), instrumentID);
 			
-			file = new File(getInstrumentDirectory(config.getProperty("filestore"), instrumentID) + File.separator + dataFile.getFileName());
+			file = getFileObject(config.getProperty("filestore"), instrumentID, dataFile.getFileName());
 			
 			if (file.exists()) {
 				file.delete();
@@ -57,6 +58,21 @@ public class FileStore {
 			
 			throw new FileStoreException("An error occurred while storing the file", e);
 		}
+	}
+	
+	/**
+	 * Deletes a file from the file store
+	 * @param config The application configuration
+	 * @param fileDetails The file details
+	 * @throws MissingParamException If any of the parameters are missing
+	 */
+	public static void deleteFile(Properties config, FileInfo fileDetails) throws MissingParamException {
+		
+		MissingParam.checkMissing(config, "config");
+		MissingParam.checkMissing(fileDetails, "fileDetails");
+		
+		File fileToDelete = getFileObject(config.getProperty("filestore"), fileDetails.getInstrumentId(), fileDetails.getFileName());
+		deleteFile(fileToDelete);
 	}
 	
 	/**
@@ -88,6 +104,9 @@ public class FileStore {
 		return fileStorePath + File.separator + instrumentID;
 	}
 	
+	private static File getFileObject(String fileStorePath, long instrumentId, String fileName) {
+		return new File(getInstrumentDirectory(fileStorePath, instrumentId) + File.separator + fileName);
+	}
 	
 	/**
 	 * Close a writer. Not strictly a database thing,
