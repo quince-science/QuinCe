@@ -30,7 +30,7 @@ input {
 
 input[type="text"].numeric {
   text-align: right;
-}
+}/index.jsf
 
 input[type="text"].large {
   font-size: 18px;
@@ -373,8 +373,8 @@ li.menuitem:hover, li.smallMenuitem:hover {
 }
 
 div.fullPage {
-  width: 900px;
-  margin: auto;
+	margin-left: 30px;
+	margin-right: 30px;
 }
 
 .instructions {

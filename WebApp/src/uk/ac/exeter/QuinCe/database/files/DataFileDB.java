@@ -4,11 +4,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.RawDataFile;
+import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -32,6 +37,12 @@ public class DataFileDB {
 	 * Statement to add a data file to the database
 	 */
 	private static final String ADD_FILE_STATEMENT = "INSERT INTO data_file (instrument_id, filename, last_touched) VALUES (?, ?, ?)";
+
+	/**
+	 * Query to find all the data files for a given user
+	 */
+	private static final String GET_USER_FILES_QUERY = "SELECT f.id, i.name, f.filename, f.current_job, f.job_status, f.last_touched FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
+			+ " WHERE i.owner = ? ORDER BY f.last_touched ASC";
 	
 	/**
 	 * Store a file in the database and in the file store
@@ -75,7 +86,12 @@ public class DataFileDB {
 			conn.commit();
 			
 		} catch (Exception e) {
-			DatabaseUtils.rollBack(conn);
+			try {
+				DatabaseUtils.rollBack(conn);
+			} catch (Exception e2) {
+				//Do nothing
+			}
+			
 			throw new DatabaseException("An error occurred while storing the file", e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
@@ -125,5 +141,42 @@ public class DataFileDB {
 		}
 		
 		return result;
+	}
+	
+	public static List<FileInfo> getUserFiles(DataSource dataSource, User user) throws DatabaseException {
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		List<FileInfo> fileInfo = new ArrayList<FileInfo>();
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_USER_FILES_QUERY);
+			stmt.setLong(1, user.getDatabaseID());
+			
+			records = stmt.executeQuery();
+			while (records.next()) {
+				long fileID = records.getLong(1);
+				String instrumentName = records.getString(2);
+				String fileName = records.getString(3);
+				int currentJob = records.getInt(4);
+				int jobStatus = records.getInt(5);
+				Calendar lastTouched = Calendar.getInstance();
+				lastTouched.setTime(records.getDate(6));
+				
+				fileInfo.add(new FileInfo(fileID, instrumentName, fileName, currentJob, jobStatus, lastTouched));
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new DatabaseException("An error occurred while searching for files", e); 
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return fileInfo;
 	}
 }
