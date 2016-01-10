@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.jobs;
 
-import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -79,17 +78,11 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 	public void run() {
 		try {
 			// Run the job
-			System.out.println("Running job " + job.id);
-			JobManager.startJob(job.dataSource, job.id);
+			job.logStarted();
 			job.execute();
-			System.out.println("Finishing job " + job.id);
-			JobManager.finishJob(job.dataSource, job.id);
+			job.logFinished();
 		} catch (Exception e) {
-			try {
-				JobManager.errorJob(job.dataSource, job.id, e);
-			} catch (NoSuchJobException|DatabaseException|MissingParamException e1) {
-				e1.printStackTrace();
-			}
+			job.logError(e);
 		} finally {
 			job.destroy();
 			setName(WAITING_THREAD_NAME);

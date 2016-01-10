@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
@@ -111,7 +112,55 @@ public abstract class Job {
 	 * @throws DatabaseException If an error occurs while updating the database
 	 */
 	protected void setProgress(double progress) throws MissingParamException, BadProgressException, NoSuchJobException, DatabaseException {
-		JobManager.setProgress(dataSource, id, progress);
+		try {
+			JobManager.setProgress(dataSource.getConnection(), id, progress);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving a database connection", e);
+		}
+	}
+	
+	/**
+	 * Log the fact that the job has been started in the appropriate locations.
+	 * Initially this is just in the job manager, but it can be extended by other classes
+	 * @throws MissingParamException If any of the parameters to the underlying commands are missing
+	 * @throws DatabaseException If an error occurs while updating the database
+	 * @throws NoSuchJobException If the job has disappeared.
+	 */
+	protected void logStarted() throws MissingParamException, DatabaseException, NoSuchJobException {
+		System.out.println("Running job " + id);
+		try {
+			JobManager.startJob(dataSource.getConnection(), id);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving a database connection", e);
+		}
+	}
+	
+	/**
+	 * Log the fact that the job has been finished in the appropriate locations.
+	 * Initially this is just in the job manager, but it can be extended by other classes
+	 * @throws MissingParamException If any of the parameters to the underlying commands are missing
+	 * @throws DatabaseException If an error occurs while updating the database
+	 * @throws NoSuchJobException If the job has disappeared.
+	 */
+	protected void logFinished() throws MissingParamException, DatabaseException, NoSuchJobException {
+		System.out.println("Finishing job " + id);
+		try {
+			JobManager.finishJob(dataSource.getConnection(), id);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving a database connection", e);
+		}
+	}
+	
+	/**
+	 * Logs a job error to the appropriate locations
+	 * @param error The error
+	 */
+	protected void logError(Throwable error) {
+		try {
+			JobManager.errorJob(dataSource.getConnection(), id, error);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**

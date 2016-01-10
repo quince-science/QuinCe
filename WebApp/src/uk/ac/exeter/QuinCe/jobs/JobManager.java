@@ -219,8 +219,33 @@ public class JobManager {
 	public static void addInstantJob(DataSource dataSource, Properties config, User owner, String jobClass, List<String> parameters) throws DatabaseException, MissingParamException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, JobThreadPoolNotInitialisedException, NoSuchJobException {
 		long jobID = addJob(dataSource, owner, jobClass, parameters);
 		JobThread emailThread = JobThreadPool.getInstance().getInstantJobThread(JobManager.getJob(dataSource, config, jobID));
-		startJob(dataSource, jobID);
+		try {
+			startJob(dataSource.getConnection(), jobID);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while updating the job status", e);
+		}
 		emailThread.start();
+	}
+
+	/**
+	 * Sets the status of a job
+	 * @param dataSource A data source
+	 * @param jobID The ID of the job whose status is to be set
+	 * @param status The status to be set
+	 * @throws UnrecognisedStatusException If the supplied status is invalid
+	 * @throws NoSuchJobException If the specified job does not exist
+	 * @throws DatabaseException If an error occurs while updating the database
+	 */
+	public static void setStatus(DataSource dataSource, long jobID, String status) throws MissingParamException, UnrecognisedStatusException, NoSuchJobException, DatabaseException {
+
+		MissingParam.checkMissing(dataSource, "dataSource");
+		
+		try {
+			Connection conn = dataSource.getConnection();
+			setStatus(conn, jobID, status);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while obtaining a database connection", e);
+		}
 	}
 
 	/**
@@ -232,24 +257,21 @@ public class JobManager {
 	 * @throws NoSuchJobException If the specified job does not exist
 	 * @throws DatabaseException If an error occurs while updating the database
 	 */
-	public static void setStatus(DataSource dataSource, long jobID, String status) throws MissingParamException, UnrecognisedStatusException, NoSuchJobException, DatabaseException {
-
-		MissingParam.checkMissing(dataSource, "dataSource");
+	private static void setStatus(Connection conn, long jobID, String status) throws MissingParamException, UnrecognisedStatusException, DatabaseException, NoSuchJobException {
+		MissingParam.checkMissing(conn, "conn");
 		
 		if (!checkJobStatus(status)) {
 			throw new UnrecognisedStatusException(status);
 		}
 		
-		if (!jobExists(dataSource, jobID)) {
+		if (!jobExists(conn, jobID)) {
 			throw new NoSuchJobException(jobID);
 		}
 		
-		Connection connection = null;
 		PreparedStatement stmt = null;
 		
 		try {
-			connection = dataSource.getConnection();
-			stmt = connection.prepareStatement(SET_STATUS_STATEMENT);
+			stmt = conn.prepareStatement(SET_STATUS_STATEMENT);
 			stmt.setString(1, status);
 			stmt.setLong(2, jobID);
 			stmt.execute();
@@ -257,7 +279,6 @@ public class JobManager {
 			throw new DatabaseException("An error occurred while setting the status", e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(connection);
 		}
 	}
 	
@@ -269,20 +290,18 @@ public class JobManager {
 	 * @throws DatabaseException If an error occurs while updating the record
 	 * @throws NoSuchJobException If the specified job doesn't exist
 	 */
-	public static void startJob(DataSource dataSource, long jobID) throws MissingParamException, DatabaseException, NoSuchJobException {
+	public static void startJob(Connection conn, long jobID) throws MissingParamException, DatabaseException, NoSuchJobException {
 		
-		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(conn, "conn");
 		
-		if (!jobExists(dataSource, jobID)) {
+		if (!jobExists(conn, jobID)) {
 			throw new NoSuchJobException(jobID);
 		}
 
-		Connection connection = null;
 		PreparedStatement stmt = null;
 		
 		try {
-			connection = dataSource.getConnection();
-			stmt = connection.prepareStatement(START_JOB_STATEMENT);
+			stmt = conn.prepareStatement(START_JOB_STATEMENT);
 			stmt.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
 			stmt.setLong(2, jobID);
 			stmt.execute();
@@ -290,7 +309,6 @@ public class JobManager {
 			throw new DatabaseException("An error occurred while setting the job to 'started' state", e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(connection);
 		}
 		
 		System.out.println("Marked job " + jobID + " as started");
@@ -351,20 +369,18 @@ public class JobManager {
 	 * @throws DatabaseException If an error occurs while updating the record
 	 * @throws NoSuchJobException If the specified job doesn't exist
 	 */
-	public static void finishJob(DataSource dataSource, long jobID) throws MissingParamException, DatabaseException, NoSuchJobException {
+	public static void finishJob(Connection conn, long jobID) throws MissingParamException, DatabaseException, NoSuchJobException {
 		
-		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(conn, "conn");
 		
-		if (!jobExists(dataSource, jobID)) {
+		if (!jobExists(conn, jobID)) {
 			throw new NoSuchJobException(jobID);
 		}
 
-		Connection connection = null;
 		PreparedStatement stmt = null;
 		
 		try {
-			connection = dataSource.getConnection();
-			stmt = connection.prepareStatement(END_JOB_STATEMENT);
+			stmt = conn.prepareStatement(END_JOB_STATEMENT);
 			stmt.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
 			stmt.setLong(2, jobID);
 			stmt.execute();
@@ -372,7 +388,6 @@ public class JobManager {
 			throw new DatabaseException("An error occurred while setting the job to 'finished' state", e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(connection);
 		}
 		
 		System.out.println("Marked job " + jobID + " as finished");
@@ -386,20 +401,18 @@ public class JobManager {
 	 * @throws DatabaseException If an error occurs while updating the database
 	 * @throws NoSuchJobException If the specified job does not exist
 	 */
-	public static void errorJob(DataSource dataSource, long jobID, Throwable error) throws MissingParamException, DatabaseException, NoSuchJobException {
+	public static void errorJob(Connection conn, long jobID, Throwable error) throws MissingParamException, DatabaseException, NoSuchJobException {
 		
-		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(conn, "conn");
 		
-		if (!jobExists(dataSource, jobID)) {
+		if (!jobExists(conn, jobID)) {
 			throw new NoSuchJobException(jobID);
 		}
 
-		Connection connection = null;
 		PreparedStatement stmt = null;
 		
 		try {
-			connection = dataSource.getConnection();
-			stmt = connection.prepareStatement(ERROR_JOB_STATEMENT);
+			stmt = conn.prepareStatement(ERROR_JOB_STATEMENT);
 			stmt.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
 			stmt.setString(2, StringUtils.stackTraceToString(error));
 			stmt.setLong(3, jobID);
@@ -408,7 +421,6 @@ public class JobManager {
 			throw new DatabaseException("An error occurred while setting the error state of the job", e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(connection);
 		}
 	}
 
@@ -421,25 +433,24 @@ public class JobManager {
 	 * @throws NoSuchJobException If the specified job does not exist
 	 * @throws DatabaseException If an error occurs while storing the progress in the database
 	 */
-	public static void setProgress(DataSource dataSource, long jobID, double progress) throws MissingParamException, BadProgressException, NoSuchJobException, DatabaseException {
+	public static void setProgress(Connection conn, long jobID, double progress) throws MissingParamException, BadProgressException, NoSuchJobException, DatabaseException {
 
-		MissingParam.checkMissing(dataSource, "dataSource");
-		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkPositive(jobID, "jobID");
+		MissingParam.checkZeroPositive(progress, "progress");
 		
 		if (progress < 0 || progress > 100) {
 			throw new BadProgressException();
 		}
 		
-		if (!jobExists(dataSource, jobID)) {
+		if (!jobExists(conn, jobID)) {
 			throw new NoSuchJobException(jobID);
 		}
 		
-		Connection connection = null;
 		PreparedStatement stmt = null;
 		
 		try {
-			connection = dataSource.getConnection();
-			stmt = connection.prepareStatement(SET_PROGRESS_STATEMENT);
+			stmt = conn.prepareStatement(SET_PROGRESS_STATEMENT);
 			stmt.setDouble(1, progress);
 			stmt.setLong(2, jobID);
 			stmt.execute();
@@ -447,7 +458,6 @@ public class JobManager {
 			throw new DatabaseException("An error occurred while setting the status", e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(connection);
 		}
 	}
 	
@@ -458,19 +468,17 @@ public class JobManager {
 	 * @return {@code true} if the job exists; {@code false} otherwise
 	 * @throws DatabaseException If an error occurs while searching the database
 	 */
-	private static boolean jobExists(DataSource dataSource, long jobID) throws MissingParamException, DatabaseException {
+	private static boolean jobExists(Connection conn, long jobID) throws MissingParamException, DatabaseException {
 
-		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(conn, "conn");
 		
 		boolean jobExists = false;
 		
-		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet result = null;
 		
 		try {
-			connection = dataSource.getConnection();
-			stmt = connection.prepareStatement(FIND_JOB_QUERY);
+			stmt = conn.prepareStatement(FIND_JOB_QUERY);
 			stmt.setLong(1, jobID);
 			
 			result = stmt.executeQuery();
@@ -484,7 +492,6 @@ public class JobManager {
 		} finally {
 			DatabaseUtils.closeResultSets(result);
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(connection);
 		}
 		
 		return jobExists;
