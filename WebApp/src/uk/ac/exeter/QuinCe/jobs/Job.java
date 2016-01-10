@@ -114,10 +114,14 @@ public abstract class Job {
 	 * @throws DatabaseException If an error occurs while updating the database
 	 */
 	protected void setProgress(double progress) throws MissingParamException, BadProgressException, NoSuchJobException, DatabaseException {
+		Connection conn = null;
 		try {
-			JobManager.setProgress(dataSource.getConnection(), id, progress);
+			conn = dataSource.getConnection();
+			JobManager.setProgress(conn, id, progress);
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while retrieving a database connection", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 	
