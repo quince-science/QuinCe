@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
@@ -7,6 +8,7 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -128,10 +130,14 @@ public abstract class Job {
 	 */
 	protected void logStarted() throws MissingParamException, DatabaseException, NoSuchJobException {
 		System.out.println("Running job " + id);
+		Connection conn = null;
 		try {
-			JobManager.startJob(dataSource.getConnection(), id);
+			conn = dataSource.getConnection();
+			JobManager.startJob(conn, id);
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while retrieving a database connection", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 	
@@ -144,10 +150,14 @@ public abstract class Job {
 	 */
 	protected void logFinished() throws MissingParamException, DatabaseException, NoSuchJobException {
 		System.out.println("Finishing job " + id);
+		Connection conn = null;
 		try {
-			JobManager.finishJob(dataSource.getConnection(), id);
+			conn = dataSource.getConnection();
+			JobManager.finishJob(conn, id);
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while retrieving a database connection", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 	
@@ -156,10 +166,14 @@ public abstract class Job {
 	 * @param error The error
 	 */
 	protected void logError(Throwable error) {
+		Connection conn = null;
 		try {
-			JobManager.errorJob(dataSource.getConnection(), id, error);
+			conn = dataSource.getConnection();
+			JobManager.errorJob(conn, id, error);
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 	
