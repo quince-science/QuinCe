@@ -66,7 +66,7 @@ public class FileStore {
 	 * @param fileDetails The file details
 	 * @throws MissingParamException If any of the parameters are missing
 	 */
-	public static void deleteFile(Properties config, FileInfo fileDetails) throws MissingParamException {
+	protected static void deleteFile(Properties config, FileInfo fileDetails) throws MissingParamException {
 		
 		MissingParam.checkMissing(config, "config");
 		MissingParam.checkMissing(fileDetails, "fileDetails");
