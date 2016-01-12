@@ -270,7 +270,8 @@ of the job completed. For the user QC, the percentage will be calculated from th
 
 ## `raw_data`
 This table will contain the records from the data file corresponding to the CO~2~ runs (both sea water and
-atmospheric). It will contain only the raw data directly from the uploaded file, ready to be processed.
+atmospheric). It will contain the raw data directly from the uploaded file, ready to be processed. Sensor values
+will be adjusted according to their calibrations, but CO~2~ values will remain in their raw state.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
