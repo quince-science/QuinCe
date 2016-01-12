@@ -268,12 +268,9 @@ it will be set to `-2` (and the `error_messages` field will be populated). Other
 of the job completed. For the user QC, the percentage will be calculated from the number of
 'needs flag' values in the file as a fraction of the total number of lines.
 
-## `co2_data`
+## `raw_data`
 This table will contain the records from the data file corresponding to the CO~2~ runs (both sea water and
-atmospheric). This is what will be displayed in the QC view. Gas standards data will be stored in a separate table.
-
-The table will be populated by the data reduction process. All calibrations
-will have been applied.
+atmospheric). It will contain only the raw data directly from the uploaded file, ready to be processed.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
@@ -297,16 +294,12 @@ eqp_2                    Float          Equilibrator pressure 2
 eqp_3                    Float          Equilibrator pressure 3
 moisture                 Float          Moisture
 atmospheric_pressure     Float          Atmospheric pressure
-seawater_co2             Float          Sea water CO~2~
-qc_flag                  Integer        The QC flag assigned by the automatic QC routines
-qc_message               String         The message(s) from the automatic QC routines
-woce_flag                Integer        The WOCE flag assigned by the user
-woce_comment             String         The WOCE comment
+co2                      Float          The CO~2~ measurement
 
 ##### `type`
 The `co2_type` column will contain one of the following values:
 
-Value    Run type
+Value    Type
 -----    --------------------------
 0        Sea water CO~2~
 1        Atmospheric CO~2~
@@ -324,6 +317,58 @@ row                      Integer        Row number (from the original data file)
 date_time                DateTime       Date and time
 run_type                 String         The gas standard name, as defined in the `run_types` table
 concentration            Float          The concentration measured
+
+## `data_reduction`
+This table will contain the results of the data reduction, along with all the values used
+during calculation. It will include the mean sensor values, any other input values, and
+any data imported from external sources (such as atmospheric pressure). Values stored in this
+table will have had calibrations applied from both sensors and gas standards.
+
+The table will also include intermediate values calculated
+during the data reduction, so the user can trace the calculation to help locate the source of
+certain issues.
+
+Field                    Type           Description
+--------------------     ------------   -------------------------------------------------------------------------
+data_file_id             F_KEY          File ID
+row                      Integer        Row number (from the original data file)
+co2_type                 Integer        The type of CO~2~ measurement
+mean_intake_temp         Float          The intake temperature, as a mean of all the sensor measurements.
+mean_salinity            Float          The salinity, as a mean of all the sensor measurements.
+mean_eqt                 Float          The equilibrator temperature, as a mean of all the sensor measurements.
+mean_eqp                 Float          The equilibrator pressure, as a mean of all the sensor measurements.
+moisture                 Float          The moisture
+atmospheric_pressure     Float          The atmospheric pressure, either from the instrument or imported
+ph2o                     Float          The
+fco2                     Float          The calculated fCO~2~ value
+
+
+## `qc`
+This table will contain details of the Quality Control carried out by both the automated routines
+and the scientist. It will allow individual sensors to be disabled for individual measurements
+(if one of a set is poor), and record flags and comments for all measurements.
+
+Field                    Type           Description
+--------------------     ------------   -------------------------------------------------------------------------
+data_file_id             F_KEY          File ID
+row                      Integer        Row number (from the original data file)
+salinity_1_used          Boolean        Indicates whether the first salinity sensor is used
+intake_temp_1_used       Boolean        Indicates whether the first intake temperature sensor is used
+intake_temp_2_used       Boolean        Indicates whether the second intake temperature sensor is used
+intake_temp_3_used       Boolean        Indicates whether the third intake temperature sensor is used
+salinity_2_used          Boolean        Indicates whether the second salinity sensor is used
+salinity_3_used          Boolean        Indicates whether the third salinity sensor is used
+eqt_1_used               Boolean        Indicates whether the first equilibrator pressure sensor is used
+eqt_2_used               Boolean        Indicates whether the second equilibrator pressure sensor is used
+eqt_3_used               Boolean        Indicates whether the third equilibrator pressure sensor is used
+eqp_1_used               Boolean        Indicates whether the first equilibrator pressure sensor is used
+eqp_2_used               Boolean        Indicates whether the second equilibrator pressure sensor is used
+eqp_3_used               Boolean        Indicates whether the third equilibrator pressure sensor is used
+qc_flag                  Integer        The QC flag assigned by the automatic QC routines
+qc_message               String         The message(s) from the automatic QC routines
+woce_flag                Integer        The WOCE flag assigned by the user
+woce_comment             String         The WOCE comment
+
 
 # Jobs
 The majority of the data processing performed by QuinCe will be done by background tasks,
