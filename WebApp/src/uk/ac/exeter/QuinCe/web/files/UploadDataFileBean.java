@@ -290,7 +290,7 @@ public class UploadDataFileBean extends FileUploadBean {
 	public String submitFile() {
 		
 		try {
-			DataFileDB.storeFile(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), instrument, rawDataFile);
+			DataFileDB.storeFile(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), getUser(), instrument, rawDataFile);
 		} catch (Exception e) {
 			return internalError(e);
 		}

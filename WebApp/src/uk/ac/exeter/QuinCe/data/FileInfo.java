@@ -15,6 +15,8 @@ public class FileInfo {
 	
 	public static final String JOB_NAME_EXTRACT = "Extracting data";
 	
+	public static final String JOB_CLASS_EXTRACT = "uk.ac.exeter.QuinCe.jobs.files.ExtractRawDataJob";
+	
 	public static final int JOB_CODE_LOADING = 1;
 	
 	public static final String JOB_NAME_LOADING = "Loading additional data";

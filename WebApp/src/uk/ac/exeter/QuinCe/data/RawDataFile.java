@@ -74,7 +74,7 @@ public class RawDataFile {
 	 * @param fileName The file's name
 	 * @param contents The file data
 	 */
-	public RawDataFile(Instrument instrument, String fileName, byte[] data) throws RawDataFileException, IOException {
+	public RawDataFile(Instrument instrument, String fileName, byte[] data) {
 		this.instrument = instrument;
 		this.fileName = fileName;
 		this.charSet = StandardCharsets.UTF_8;
@@ -88,7 +88,7 @@ public class RawDataFile {
 	 * @param contents The file data
 	 * @param charSet The character set of the data file
 	 */
-	public RawDataFile(Instrument instrument, String fileName, byte[] data, Charset charSet) throws RawDataFileException, IOException {
+	public RawDataFile(Instrument instrument, String fileName, byte[] data, Charset charSet) {
 		this.instrument = instrument;
 		this.fileName = fileName;
 		this.rawData = data;

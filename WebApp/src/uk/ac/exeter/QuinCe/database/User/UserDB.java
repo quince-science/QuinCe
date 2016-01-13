@@ -108,6 +108,25 @@ public class UserDB {
 	 */
 	public static final int CODE_EXPIRY_HOURS = 24;
 	
+	public static User getUser(DataSource dataSource, String email) throws DatabaseException, MissingParamException {
+		
+		Connection conn = null;
+		User user = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			user = getUser(conn, email);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving the user", e);
+		} catch (DatabaseException|MissingParamException e) {
+			throw e;
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return user;
+	}
+	
 	/**
 	 * Locate a user in the database using their email address.
 	 * 
@@ -120,17 +139,15 @@ public class UserDB {
 	 * @throws SQLException
 	 * @see uk.ac.exeter.QuinCe.data.User
 	 */
-	public static User getUser(DataSource dataSource, String email) throws DatabaseException, MissingParamException {
+	public static User getUser(Connection conn, String email) throws DatabaseException, MissingParamException {
 		
-		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkMissing(email, "email");
 		
-		Connection conn = null;
 		PreparedStatement stmt = null;
 		User foundUser = null;
 		
 		try {
-			conn = dataSource.getConnection();
 			stmt = conn.prepareStatement(USER_SEARCH_BY_EMAIL_STATEMENT);
 			stmt.setString(1, email);
 			ResultSet result = stmt.executeQuery();
@@ -144,7 +161,6 @@ public class UserDB {
 			throw new DatabaseException("An error occurred while searching for the user", e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return foundUser;
