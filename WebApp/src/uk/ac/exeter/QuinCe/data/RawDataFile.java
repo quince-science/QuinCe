@@ -96,13 +96,21 @@ public class RawDataFile {
 	}
 	
 	/**
-	 * Extract the raw bytes of the data file into a String
-	 * @param data The raw file data
-	 * @param charSet The character set of the file
-	 * @return The contents of the data file as a String
-	 * @throws DateParseException If the first date in the file cannot be parsed
+	 * Shortcut method to extract the file contents without storing any messages
+	 * @throws RawDataFileException If the file cannot be extracted
+	 * @throws IOException If there is an error reading the data
 	 */
-	private void extractString(List<String> messages) throws RawDataFileException, IOException {
+	private void readData() throws RawDataFileException, IOException {
+		readData(null);
+	}
+	
+	/**
+	 * Extract the contents of the file ready to be processed
+	 * @param messages A list to contain any error messages. Can be null.
+	 * @throws RawDataFileException If the file cannot be extracted
+	 * @throws IOException If there is an error reading the data
+	 */
+	private void readData(List<String> messages) throws RawDataFileException, IOException {
 		
 		boolean fileOK = true;
 		int firstBadLine = -1;
@@ -126,7 +134,10 @@ public class RawDataFile {
 						firstBadLine = lineCount;
 						firstBadMessage = "Incorrect number of columns";
 					}
-					messages.add("Line " + lineCount + ": Incorrect number of columns");
+					
+					if (null != messages) {
+						messages.add("Line " + lineCount + ": Incorrect number of columns");
+					}
 				} else {
 					
 					List<String> lineList = Arrays.asList(splitLine);
@@ -169,7 +180,7 @@ public class RawDataFile {
 		String firstBadMessage = null;
 		
 		if (null == contents) {
-			extractString(messages);
+			readData(messages);
 		}
 		
 		List<Calendar> dates = new ArrayList<Calendar>(contents.size());
@@ -194,15 +205,19 @@ public class RawDataFile {
 		return dates;
 	}
 	
+	/**
+	 * Get the contents of the file as a CSV string - one record per line
+	 * @return The contents of the file as a CSV string
+	 * @throws RawDataFileException If the contents cannot be extracted
+	 * @throws IOException If an error occurs while processing the file content
+	 */
 	public String getContentsAsString() throws RawDataFileException, IOException {
 		
 		if (null == contents) {
-			List<String> messages = new ArrayList<String>();
-			extractString(messages);
+			readData();
 		}
 		
 		StringBuffer result = new StringBuffer();
-		
 		
 		for (List<String> line : contents) {
 			for (int i = 0; i < line.size(); i++) {
@@ -398,9 +413,6 @@ public class RawDataFile {
  */
 class DateParseException extends Exception {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 7461251721860217369L;
 
 	public DateParseException(String message) {
