@@ -6,14 +6,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
-import java.util.SimpleTimeZone;
 
 /**
  * Handles data files in their raw text form.
@@ -57,16 +53,6 @@ public class RawDataFile {
 	 * The number of CO2 lines in the file
 	 */
 	private int recordCount = 0;
-	
-	/**
-	 * Formatter for dates
-	 */
-	private SimpleDateFormat dateFormatter = null;
-	
-	/**
-	 * Formatter for times
-	 */
-	private SimpleDateFormat timeFormatter = null;
 	
 	/**
 	 * Initialises a new object, assuming the character set is UTF-8.
@@ -180,7 +166,7 @@ public class RawDataFile {
 					if (null == startDate) {
 						try {
 							startDate = getDateFromLine(contents.size() - 1);
-						} catch (DateParseException e) {
+						} catch (DateTimeParseException|InstrumentException e) {
 							// Do nothing - the next parseable date will be used instead.
 						}
 					}
@@ -243,7 +229,7 @@ public class RawDataFile {
 						if (null == startDate) {
 							try {
 								startDate = getDateFromLine(contents.size() - 1);
-							} catch (DateParseException e) {
+							} catch (DateTimeParseException|InstrumentException e) {
 								// Do nothing - the next parseable date will be used instead.
 							}
 						}
@@ -280,7 +266,7 @@ public class RawDataFile {
 		for (int i = 0; i < contents.size(); i++) {
 			try {
 				dates.add(getDateFromLine(i));
-			} catch (DateParseException e) {
+			} catch (DateTimeParseException|InstrumentException e) {
 				datesOK = false;
 				if (firstBadDate < 0) {
 					firstBadDate = i + instrument.getHeaderLines();
@@ -348,149 +334,12 @@ public class RawDataFile {
 	 * Retrieve the date and time from the specified line in the file
 	 * @param lineNumber The line number (excluding header lines)
 	 * @return A Calendar object representing the date and time
-	 * @throws RawDataFileException If the date and/or time cannot be parsed from the line
+	 * @throws InstrumentException If the date/time format is not recognised
+	 * @throws DateTimeParseException  If the date or time cannot be parsed from the line
 	 */
-	private Calendar getDateFromLine(int lineNumber) throws DateParseException, RawDataFileException {
-		
-		Calendar result = Calendar.getInstance(new SimpleTimeZone(0, "UTC"), Locale.ENGLISH);
-
+	private Calendar getDateFromLine(int lineNumber) throws DateTimeParseException, InstrumentException {
 		List<String> line = contents.get(lineNumber);
-
-		// Need to do date and time separately.
-		
-		switch (instrument.getDateFormat()) {
-		case Instrument.SEPARATE_FIELDS: {
-			
-			try {
-				result.set(Calendar.YEAR, Integer.parseInt(line.get(instrument.getColumnAssignment(Instrument.COL_YEAR))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateParseException("Invalid year value " + line.get(instrument.getColumnAssignment(Instrument.COL_YEAR)));
-			}
-			
-			try {
-				result.set(Calendar.MONTH, Integer.parseInt(line.get(instrument.getColumnAssignment(Instrument.COL_MONTH))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateParseException("Invalid month value " + line.get(instrument.getColumnAssignment(Instrument.COL_MONTH)));
-			}
-			
-			try {
-				result.set(Calendar.DAY_OF_MONTH, Integer.parseInt(line.get(instrument.getColumnAssignment(Instrument.COL_DAY))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateParseException("Invalid day value " + line.get(instrument.getColumnAssignment(Instrument.COL_DAY)));
-			}
-			break;
-		}
-		default: {
-			try {
-				if (null == dateFormatter) {
-					makeDateFormatter();
-				}
-				
-				Calendar parsedDate = Calendar.getInstance();
-				parsedDate.setTime(dateFormatter.parse(line.get(instrument.getColumnAssignment(Instrument.COL_DATE))));
-				result.set(Calendar.YEAR, parsedDate.get(Calendar.YEAR));
-				result.set(Calendar.MONTH, parsedDate.get(Calendar.MONTH));
-				result.set(Calendar.DAY_OF_MONTH, parsedDate.get(Calendar.DAY_OF_MONTH));
-				
-			} catch (ParseException e) {
-				throw new DateParseException("Invalid date value " + line.get(instrument.getColumnAssignment(Instrument.COL_DATE)));
-			}
-		}
-		}
-			
-
-		// Now the time
-		switch(instrument.getTimeFormat()) {
-		case Instrument.SEPARATE_FIELDS: {
-			try {
-				result.set(Calendar.HOUR, Integer.parseInt(line.get(instrument.getColumnAssignment(Instrument.COL_HOUR))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateParseException("Invalid hour value " + line.get(instrument.getColumnAssignment(Instrument.COL_HOUR)));
-			}
-			
-			try {
-				result.set(Calendar.MINUTE, Integer.parseInt(line.get(instrument.getColumnAssignment(Instrument.COL_MINUTE))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateParseException("Invalid minute value " + line.get(instrument.getColumnAssignment(Instrument.COL_MINUTE)));
-			}
-			
-			try {
-				result.set(Calendar.SECOND, Integer.parseInt(line.get(instrument.getColumnAssignment(Instrument.COL_SECOND))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateParseException("Invalid second value " + line.get(instrument.getColumnAssignment(Instrument.COL_SECOND)));
-			}
-			break;
-		}
-		default: {
-			try {
-				if (null == timeFormatter) {
-					makeTimeFormatter();
-				}
-	
-				Calendar parsedTime = Calendar.getInstance();
-				parsedTime.setTime(timeFormatter.parse(line.get(instrument.getColumnAssignment(Instrument.COL_TIME))));
-				result.set(Calendar.HOUR, parsedTime.get(Calendar.HOUR));
-				result.set(Calendar.MINUTE, parsedTime.get(Calendar.MINUTE));
-				result.set(Calendar.SECOND, parsedTime.get(Calendar.SECOND));
-			} catch (ParseException e) {
-				throw new DateParseException("Invalid time value " + line.get(instrument.getColumnAssignment(Instrument.COL_TIME)));
-			}
-		}
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * Create a date formatter for parsing dates from the file.
-	 * @throws RawDataFileException If the date format is not recognised
-	 */
-	private void makeDateFormatter() throws RawDataFileException {
-		
-		switch (instrument.getDateFormat()) {
-		case Instrument.DATE_FORMAT_DDMMYY: {
-			dateFormatter = new SimpleDateFormat("dd/MM/yy");
-			break;
-		}
-		case Instrument.DATE_FORMAT_DDMMYYYY: {
-			dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
-			break;
-		}
-		case Instrument.DATE_FORMAT_MMDDYY: {
-			dateFormatter = new SimpleDateFormat("MM/dd/yy");
-			break;
-		}
-		case Instrument.DATE_FORMAT_MMDDYYYY: {
-			dateFormatter = new SimpleDateFormat("MM/dd/yyyy");
-			break;
-		}
-		case Instrument.DATE_FORMAT_YYYYMMDD: {
-			dateFormatter = new SimpleDateFormat("YYYYMMdd");
-		}
-		default: {
-			throw new RawDataFileException(-1, "Unrecognised date format code '" + instrument.getDateFormat() + "'");
-		}
-		}
-	}
-	
-	/**
-	 * Create a date formatter for parsing times from the file
-	 * @throws RawDataFileException If the time format is not recognised
-	 */
-	private void makeTimeFormatter() throws RawDataFileException {
-	
-		switch(instrument.getTimeFormat()) {
-		case Instrument.TIME_FORMAT_COLON: {
-			timeFormatter = new SimpleDateFormat("H:m:s");
-			break;
-		}
-		case Instrument.TIME_FORMAT_NO_COLON: {
-			timeFormatter = new SimpleDateFormat("Hms");
-		}
-		default: {
-			throw new RawDataFileException(-1, "Unrecognised time format code '" + instrument.getTimeFormat() + "'");
-		}
-		}
+		return instrument.getDateFromLine(line);
 	}
 	
 	/**
@@ -515,19 +364,5 @@ public class RawDataFile {
 	 */
 	public int getRecordCount() {
 		return recordCount;
-	}
-}
-
-/**
- * Basic exception for date parsing errors. Only used in this class.
- * @author Steve Jones
- *
- */
-class DateParseException extends Exception {
-	
-	private static final long serialVersionUID = 7461251721860217369L;
-
-	public DateParseException(String message) {
-		super(message);
 	}
 }

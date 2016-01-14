@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -83,7 +84,7 @@ public class InstrumentDB {
 	 */
 	private static final String GET_INSTRUMENT_LIST_QUERY = "SELECT id, name FROM instrument WHERE owner = ? ORDER BY name ASC";
 	
-	private static final String GET_RUN_TYPES_QUERY = "SELECT run_name, run_type FROM run_types WHERE instrument_id = ?";
+	private static final String GET_RUN_TYPES_QUERY = "SELECT id, run_name, run_type FROM run_types WHERE instrument_id = ?";
 	
 	/**
 	 * Add an instrument to the database
@@ -328,7 +329,7 @@ public class InstrumentDB {
 				runTypeStmt.setLong(1, instrumentID);
 				runTypeRecords = runTypeStmt.executeQuery();
 				while (runTypeRecords.next()) {
-					runTypes.add(new RunType(instrumentID, runTypeRecords.getString(1), runTypeRecords.getInt(2)));
+					runTypes.add(new RunType(runTypeRecords.getLong(1), instrumentID, runTypeRecords.getString(2), runTypeRecords.getInt(3)));
 				}
 				
 				instrument.setRunTypes(runTypes);
@@ -343,5 +344,24 @@ public class InstrumentDB {
 		}
 		
 		return instrument;
+	}
+	
+	/**
+	 * Get the Instrument object associated with a give data file,
+	 * identified by its database ID
+	 * @param dataSource A data source
+	 * @param fileId The data file ID
+	 * @return The instrument object
+	 * @throws MissingParamException If any parameters are missing
+	 * @throws DatabaseException If an unexpected database error occurs
+	 * @throws RecordNotFoundException If the file ID is not in the database
+	 */
+	public static Instrument getInstrumentByFileId(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(fileId, "fileId");
+		
+		long instrumentId = DataFileDB.getInstrumentId(dataSource, fileId);
+		return getInstrument(dataSource, instrumentId);
 	}
 }

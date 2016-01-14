@@ -66,6 +66,8 @@ public class DataFileDB {
 	 */
 	private static final String SET_JOB_STATUS_STATEMENT = "UPDATE data_file SET job_status = ? WHERE id = ?";
 	
+	private static final String GET_INSTRUMENT_ID_QUERY = "SELECT instrument_id FROM data_file WHERE id = ?";
+	
 	/**
 	 * Store a file in the database and in the file store
 	 * @param dataSource A data source
@@ -296,6 +298,40 @@ public class DataFileDB {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(conn);
 		}
+	}
+	
+	public static long getInstrumentId(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(fileId, "fileId");
+		
+		long result = -1;
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet record = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_INSTRUMENT_ID_QUERY);
+			stmt.setLong(1, fileId);
+			
+			record = stmt.executeQuery();
+			if (!record.next()) {
+				throw new RecordNotFoundException("Could not find file with id " + fileId);
+			} else {
+				result = record.getLong(1);
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occured while retrieving the file's instrument ID", e);
+		} finally {
+			DatabaseUtils.closeResultSets(record);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
 	}
 	
 	/**
