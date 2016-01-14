@@ -95,6 +95,16 @@ public class RawDataFile {
 		this.charSet = charSet;
 	}
 	
+	public RawDataFile(Instrument instrument, String fileName, byte[] data, boolean fromStore) throws IOException, RawDataFileException {
+		this.instrument = instrument;
+		this.fileName = fileName;
+		this.charSet = StandardCharsets.UTF_8;
+		this.rawData = data;
+		if (fromStore) {
+			readDataFromStore();
+		}
+	}
+	
 	/**
 	 * Shortcut method to extract the file contents without storing any messages
 	 * @throws RawDataFileException If the file cannot be extracted
@@ -103,6 +113,88 @@ public class RawDataFile {
 	private void readData() throws RawDataFileException, IOException {
 		readData(null);
 	}
+
+	/**
+	 * Extract the file contents when retrieved from the file store
+	 * @throws IOException
+	 * @throws RawDataFileException
+	 */
+	private void readDataFromStore() throws IOException, RawDataFileException {
+		
+		boolean fileOK = true;
+		int badLine = -1;
+		String errorMessage = null;
+		
+		contents = new ArrayList<List<String>>();
+		
+		BufferedReader in = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(rawData), charSet));		
+		String line;
+		int lineCount = 0;
+		recordCount = 0;
+		while ((line = in.readLine()) != null) {
+			lineCount++;
+		
+			List<String> lineList = new ArrayList<String>(instrument.getRawFileColumnCount());
+			
+			int linePos = 0;
+			
+			while (linePos > -1) {
+				
+				boolean fieldComplete = false;
+				StringBuffer field = new StringBuffer();
+				
+				while(!fieldComplete) {
+					int commaPos = line.indexOf(',', linePos);
+					if (commaPos == -1) {
+						field.append(line.substring(linePos));
+						linePos = -1;
+						fieldComplete = true;
+					} else if (line.charAt(commaPos - 1) == '\\') {
+						field.append(line.substring(linePos, commaPos - 1));
+						field.append(',');
+						linePos = commaPos + 1;
+					} else {
+						field.append(line.substring(linePos, commaPos));
+						linePos = commaPos + 1;
+						fieldComplete = true;
+					}
+				}
+				
+				lineList.add(field.toString());
+			}
+			if (lineList.size() != instrument.getRawFileColumnCount()) {
+
+				fileOK = false;
+				if (badLine < 0) {
+					badLine = lineCount;
+					errorMessage = "Incorrect number of columns";
+				}
+			} else {
+				
+				contents.add((List<String>) lineList);
+				
+				String runType = lineList.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+				
+				if (instrument.isMeasurementRunType(runType)) {
+					recordCount++;
+					if (null == startDate) {
+						try {
+							startDate = getDateFromLine(contents.size() - 1);
+						} catch (DateParseException e) {
+							// Do nothing - the next parseable date will be used instead.
+						}
+					}
+				}
+			}
+		}
+		in.close();
+		
+		if (!fileOK) {
+			contents = null;
+			throw new RawDataFileException(badLine, errorMessage);
+		}
+	}
+	
 	
 	/**
 	 * Extract the contents of the file ready to be processed
@@ -206,7 +298,25 @@ public class RawDataFile {
 	}
 	
 	/**
-	 * Get the contents of the file as a CSV string - one record per line
+	 * Retrieve the contents of the file as a list of fields.
+	 * This is a nested list. The outer list has one entry per line.
+	 * Each entry is a list of Strings, with one entry per column.
+	 * 
+	 * @return The file contents
+	 * @throws RawDataFileException If the contents cannot be processed
+	 * @throws IOException If an I/O exception occurs while retrieving the data
+	 */
+	public List<List<String>> getContents() throws RawDataFileException, IOException {
+		if (null == contents) {
+			readData();
+		}
+		
+		return contents;
+	}
+	
+	/**
+	 * Get the contents of the file as a CSV string - one record per line.
+	 * Commas within fields are escaped.
 	 * @return The contents of the file as a CSV string
 	 * @throws RawDataFileException If the contents cannot be extracted
 	 * @throws IOException If an error occurs while processing the file content
@@ -221,7 +331,9 @@ public class RawDataFile {
 		
 		for (List<String> line : contents) {
 			for (int i = 0; i < line.size(); i++) {
-				result.append(line.get(i));
+				
+				result.append(line.get(i).replace(",", "\\,"));
+				
 				if (i < line.size() - 1) {
 					result.append(',');
 				}

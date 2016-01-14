@@ -12,6 +12,7 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RawDataFile;
+import uk.ac.exeter.QuinCe.data.RawDataFileException;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
@@ -82,7 +83,7 @@ public class FileStore {
 		deleteFile(fileToDelete);
 	}
 	
-	protected static RawDataFile getFile(DataSource dataSource, Properties config, FileInfo fileInfo) throws IOException, MissingParamException, DatabaseException, RecordNotFoundException {
+	protected static RawDataFile getFile(DataSource dataSource, Properties config, FileInfo fileInfo) throws IOException, MissingParamException, DatabaseException, RawDataFileException, RecordNotFoundException {
 		
 		Instrument instrument = InstrumentDB.getInstrument(dataSource, fileInfo.getInstrumentId());
 		File readFile = getFileObject(config.getProperty("filestore"), fileInfo.getInstrumentId(), fileInfo.getFileName());
@@ -96,8 +97,8 @@ public class FileStore {
 			if (bytesRead < fileLength) {
 				throw new IOException("Too few bytes read from file " + readFile.getAbsolutePath() + ": got " + bytesRead + ", expected " + fileLength);
 			}
-			return new RawDataFile(instrument, fileInfo.getFileName(), fileData);
-		} catch (IOException e) {
+			return new RawDataFile(instrument, fileInfo.getFileName(), fileData, true);
+		} catch (IOException|RawDataFileException e) {
 			throw e;
 		} finally {
 			if (null != inputStream) {

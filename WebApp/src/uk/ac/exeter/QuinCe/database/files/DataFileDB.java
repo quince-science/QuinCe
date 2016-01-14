@@ -340,7 +340,7 @@ public class DataFileDB {
 	 * @throws IOException 
 	 * @throws RawDataFileException 
 	 */
-	public static RawDataFile getRawDataFile(DataSource dataSource, Properties appConfig, long fileId) throws MissingParamException, DatabaseException {
+	public static RawDataFile getRawDataFile(DataSource dataSource, Properties appConfig, long fileId) throws MissingParamException, DatabaseException, RawDataFileException {
 		
 		try {
 			FileInfo fileInfo = getFileDetails(dataSource, fileId);

@@ -30,6 +30,7 @@ public class ExtractRawDataJob extends FileJob {
 	protected void execute() throws JobFailedException {
 		try {
 			RawDataFile inData = DataFileDB.getRawDataFile(dataSource, config, fileId);
+			List<List<String>> data = inData.getContents();
 			
 		} catch (Exception e) {
 			throw new JobFailedException(id, e);
