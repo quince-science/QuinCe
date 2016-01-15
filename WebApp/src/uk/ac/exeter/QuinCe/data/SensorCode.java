@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
  * @author Steve Jones
  *
  */
-public class SensorCode {
+public class SensorCode implements Comparable<SensorCode> {
 
 	/**
 	 * Indicates an intake temperature sensor
@@ -144,6 +144,20 @@ public class SensorCode {
 		result.append(number);
 		
 		return result.toString();
+	}
+
+	@Override
+	public int compareTo(SensorCode o) {
+		int result = 0;
+		
+		result = this.sensorType - o.sensorType;
+		
+		if (result == 0) {
+			result = this.sensorNumber - o.sensorNumber;
+		}
+		
+		
+		return result;
 	}
 }
 

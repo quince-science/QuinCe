@@ -272,7 +272,9 @@ public class RawDataFile {
 					firstBadDate = i + instrument.getHeaderLines();
 					firstBadMessage = e.getMessage();
 				}
-				messages.add("Line " + (i + instrument.getHeaderLines()) + ": " + e.getMessage());
+				if (null != messages) {
+					messages.add("Line " + (i + instrument.getHeaderLines()) + ": " + e.getMessage());
+				}
 			}
 		}
 		
