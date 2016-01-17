@@ -2,9 +2,11 @@ package uk.ac.exeter.QuinCe.database.Calculation;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -12,8 +14,11 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.DateTimeParseException;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.InstrumentException;
+import uk.ac.exeter.QuinCe.data.RawDataValues;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.MissingParam;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public class RawDataDB {
 
@@ -31,6 +36,12 @@ public class RawDataDB {
 	private static final String CLEAR_RAW_DATA_STATEMENT = "DELETE FROM raw_data WHERE data_file_id = ?";
 
 	private static final String CLEAR_GAS_STANDARDS_STATEMENT = "DELETE FROM gas_standards_data WHERE data_file_id = ?";
+
+	private static final String GET_RAW_DATA_QUERY = "SELECT "
+			+ "row, co2_type, intake_temp_1, intake_temp_2, intake_temp_3,"
+			+ "salinity_1, salinity_2, salinity_3, eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3,"
+			+ "moisture, atmospheric_pressure FROM raw_data WHERE data_file_id = ? ORDER BY row ASC";
+	
 
 	public static void clearRawData(DataSource dataSource, long fileId) throws DatabaseException {
 		
@@ -178,9 +189,13 @@ public class RawDataDB {
 				stmt.setNull(18, Types.DOUBLE);
 			}
 			
-			stmt.setDouble(19, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
+			if (!instrument.getSamplesDried()) {
+				stmt.setDouble(19, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
+			} else {
+				stmt.setNull(19, Types.DOUBLE);
+			}
 			
-			if (instrument.getHasAtmosphericPressure()) {
+			if (instrument.hasAtmosphericPressure()) {
 				stmt.setDouble(20, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE))));
 			} else {
 				stmt.setNull(20, Types.DOUBLE);
@@ -194,5 +209,58 @@ public class RawDataDB {
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
 		}
+	}
+	
+	public static List<RawDataValues> getRawData(DataSource dataSource, long fileId, Instrument instrument) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		
+		List<RawDataValues> rawData = new ArrayList<RawDataValues>();
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_RAW_DATA_QUERY);
+			stmt.setLong(1, fileId);
+			
+			records = stmt.executeQuery();
+			while (records.next()) {
+				RawDataValues values = new RawDataValues(fileId, records.getInt(1));
+				
+				values.setCo2Type(records.getInt(2));
+				values.setIntakeTemp1(records.getDouble(3));
+				values.setIntakeTemp2(records.getDouble(4));
+				values.setIntakeTemp3(records.getDouble(5));
+				values.setSalinity1(records.getDouble(6));
+				values.setSalinity2(records.getDouble(7));
+				values.setSalinity3(records.getDouble(8));
+				values.setEqt1(records.getDouble(9));
+				values.setEqt2(records.getDouble(10));
+				values.setEqt3(records.getDouble(11));
+				values.setEqp1(records.getDouble(12));
+				values.setEqp2(records.getDouble(13));
+				values.setEqp3(records.getDouble(14));
+				values.setMoisture(records.getDouble(15));
+				
+				if (instrument.hasAtmosphericPressure()) {
+					values.setAtmospheric_pressure(records.getDouble(16));
+				}
+				
+				rawData.add(values);
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving raw data", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return rawData;
 	}
 }
