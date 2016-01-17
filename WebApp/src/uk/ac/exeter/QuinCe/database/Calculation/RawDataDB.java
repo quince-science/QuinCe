@@ -21,8 +21,8 @@ public class RawDataDB {
 			+ "(data_file_id, row, co2_type, date_time, longitude, latitude,"
 			+ "intake_temp_1, intake_temp_2, intake_temp_3,"
 			+ "salinity_1, salinity_2, salinity_3,"
-			+ "eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3, co2)"
-			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3, moisture, atmospheric_pressure, co2)"
+			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String ADD_STANDARD_STATEMENT = "INSERT INTO gas_standards_data "
 			+ "(data_file_id, row, date_time, run_id, concentration)"
@@ -178,7 +178,14 @@ public class RawDataDB {
 				stmt.setNull(18, Types.DOUBLE);
 			}
 			
-			stmt.setDouble(19, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));;
+			stmt.setDouble(19, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
+			
+			if (instrument.getHasAtmosphericPressure()) {
+				stmt.setDouble(20, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE))));
+			} else {
+				stmt.setNull(20, Types.DOUBLE);
+			}
+			stmt.setDouble(21, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));;
 
 			stmt.execute();
 			
