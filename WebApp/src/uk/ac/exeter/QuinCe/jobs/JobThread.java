@@ -78,6 +78,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 	public void run() {
 		try {
 			// Run the job
+			job.setProgress(0);
 			job.logStarted();
 			job.execute();
 			job.logFinished();

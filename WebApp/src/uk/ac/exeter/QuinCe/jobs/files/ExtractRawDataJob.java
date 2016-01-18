@@ -10,9 +10,11 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.CalibrationCoefficients;
 import uk.ac.exeter.QuinCe.data.CalibrationStub;
+import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RawDataFile;
 import uk.ac.exeter.QuinCe.data.SensorCode;
+import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
@@ -21,6 +23,7 @@ import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public class ExtractRawDataJob extends FileJob {
@@ -76,10 +79,15 @@ public class ExtractRawDataJob extends FileJob {
 				applyCalibrations(line, instrument, currentCoefficients);
 				RawDataDB.storeRawData(conn, instrument, fileId, lineNumber, line);
 				if (lineNumber % 100 == 0) {
-					//setProgress((double) lineNumber / (double) data.size() * 100.0);
+					setProgress((double) lineNumber / (double) data.size() * 100.0);
 				}
 			}
 			
+			// Queue up the data reduction job
+			User owner = JobManager.getJobOwner(dataSource, id);
+			JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_REDUCTION, parameters);
+			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
+
 			conn.commit();
 		} catch (Exception e) {
 			DatabaseUtils.rollBack(conn);

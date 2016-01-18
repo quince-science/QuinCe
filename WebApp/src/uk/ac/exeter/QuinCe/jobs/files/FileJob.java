@@ -1,21 +1,13 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.data.FileInfo;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
-import uk.ac.exeter.QuinCe.jobs.BadProgressException;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
-import uk.ac.exeter.QuinCe.jobs.JobManager;
-import uk.ac.exeter.QuinCe.jobs.NoSuchJobException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
@@ -66,78 +58,4 @@ public abstract class FileJob extends Job {
 			throw new InvalidJobParametersException("An unexpected error occurred: " + e.getMessage());
 		}
 	}
-	
-	/**
-	 * Log the fact that the job has been started in the appropriate locations.
-	 * Initially this is just in the job manager, but it can be extended by other classes
-	 * @throws MissingParamException If any of the parameters to the underlying commands are missing
-	 * @throws DatabaseException If an error occurs while updating the database
-	 * @throws NoSuchJobException If the job has disappeared.
-	 */
-	protected void logStarted() throws MissingParamException, DatabaseException, NoSuchJobException {
-		System.out.println("Running job " + id);
-		Connection conn = null;
-		try {
-			conn = dataSource.getConnection();
-			conn.setAutoCommit(false);
-
-			JobManager.startJob(conn, id);
-			DataFileDB.setJobStatus(conn, fileId, 0);
-			
-			conn.commit();
-		} catch (SQLException e) {
-			DatabaseUtils.rollBack(conn);
-			throw new DatabaseException("An error occurred while retrieving a database connection", e);
-		} finally {
-			DatabaseUtils.closeConnection(conn);
-		}
-	}
-	
-	/**
-	 * Logs a job error to the appropriate locations
-	 * @param error The error
-	 */
-	protected void logError(Throwable error) {
-		Connection conn = null;
-		try {
-			conn = dataSource.getConnection();
-			conn.setAutoCommit(false);
-			
-			JobManager.errorJob(conn, id, error);
-			DataFileDB.setJobStatus(conn, fileId, FileInfo.STATUS_CODE_ERROR);
-			
-			conn.commit();
-		} catch (Exception e) {
-			DatabaseUtils.rollBack(conn);
-			e.printStackTrace();
-		} finally {
-			DatabaseUtils.closeConnection(conn);
-		}
-	}
-
-	/**
-	 * Set the progress for the job, as a percentage
-	 * @param progress The progress
-	 * @throws BadProgressException If the progress is not between 0 and 100
-	 * @throws NoSuchJobException If the job is not in the database
-	 * @throws DatabaseException If an error occurs while updating the database
-	 */
-	protected void setProgress(double progress) throws MissingParamException, BadProgressException, NoSuchJobException, DatabaseException {
-		Connection conn = null;
-		try {
-			conn = dataSource.getConnection();
-			conn.setAutoCommit(false);
-			
-			JobManager.setProgress(conn, id, progress);
-			DataFileDB.setJobStatus(conn, fileId, (int) Math.floor(progress));
-			
-			conn.commit();
-		} catch (SQLException e) {
-			DatabaseUtils.rollBack(conn);
-			throw new DatabaseException("An error occurred while retrieving a database connection", e);
-		} finally {
-			DatabaseUtils.closeConnection(conn);
-		}
-	}
-	
 }

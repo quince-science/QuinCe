@@ -981,7 +981,7 @@ public class Instrument implements Serializable {
 	 * records barometric pressure
 	 * @return The flag value
 	 */
-	public boolean hasAtmosphericPressure() {
+	public boolean getHasAtmosphericPressure() {
 		return hasAtmosphericPressure;
 	}
 	

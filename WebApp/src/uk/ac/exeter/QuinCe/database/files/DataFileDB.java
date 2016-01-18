@@ -41,13 +41,13 @@ public class DataFileDB {
 	/**
 	 * Statement to add a data file to the database
 	 */
-	private static final String ADD_FILE_STATEMENT = "INSERT INTO data_file (instrument_id, filename, start_date, record_count, current_job, job_status, last_touched) "
+	private static final String ADD_FILE_STATEMENT = "INSERT INTO data_file (instrument_id, filename, start_date, record_count, current_job, last_touched) "
 		+ "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
 	/**
 	 * Query to find all the data files for a given user
 	 */
-	private static final String GET_USER_FILES_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.job_status, f.last_touched FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
+	private static final String GET_USER_FILES_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
 			+ " WHERE i.owner = ? ORDER BY f.last_touched ASC";
 	
 	/**
@@ -58,15 +58,12 @@ public class DataFileDB {
 	/**
 	 * Query to find a file using its ID
 	 */
-	private static final String FIND_FILE_BY_ID_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.job_status, f.last_touched FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
+	private static final String FIND_FILE_BY_ID_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
 			+ " WHERE f.id = ?";
 	
-	/**
-	 * Statement to update a file's job status
-	 */
-	private static final String SET_JOB_STATUS_STATEMENT = "UPDATE data_file SET job_status = ? WHERE id = ?";
-	
 	private static final String GET_INSTRUMENT_ID_QUERY = "SELECT instrument_id FROM data_file WHERE id = ?";
+	
+	private static final String SET_JOB_STATEMENT = "UPDATE data_file SET current_job = ? WHERE id = ?";
 	
 	/**
 	 * Store a file in the database and in the file store
@@ -104,8 +101,7 @@ public class DataFileDB {
 			stmt.setDate(3, new java.sql.Date(dataFile.getStartDate().getTimeInMillis()));
 			stmt.setInt(4, dataFile.getRecordCount());
 			stmt.setInt(5, FileInfo.JOB_CODE_EXTRACT);
-			stmt.setInt(6, FileInfo.STATUS_CODE_WAITING);
-			stmt.setDate(7, new java.sql.Date(System.currentTimeMillis()));
+			stmt.setDate(6, new java.sql.Date(System.currentTimeMillis()));
 			
 			stmt.execute();
 			
@@ -335,36 +331,6 @@ public class DataFileDB {
 	}
 	
 	/**
-	 * Sets the status of the current job. This can be 0 to 100 to represent
-	 * the progress of a running job, or -1 or -2 to represent waiting or errored
-	 * jobs respectively.
-	 * 
-	 * @param conn A database connection
-	 * @param fileId The database ID of the file to be updated
-	 * @param status The status
-	 * @throws MissingParamException If any parameters are missing
-	 * @throws DatabaseException If an error occurs
-	 */
-	public static void setJobStatus(Connection conn, long fileId, int status) throws MissingParamException, DatabaseException {
-		
-		MissingParam.checkMissing(conn, "conn");
-		MissingParam.checkPositive(fileId, "fileId");
-		
-		PreparedStatement stmt = null;
-		
-		try {
-			stmt = conn.prepareStatement(SET_JOB_STATUS_STATEMENT);
-			stmt.setInt(1, status);
-			stmt.setLong(2, fileId);
-			stmt.execute();
-		} catch (SQLException e) {
-			throw new DatabaseException("An error occurred while updating the file's job progress", e);
-		} finally {
-			DatabaseUtils.closeStatements(stmt);
-		}
-	}
-	
-	/**
 	 * Retrieve the contents of a data file from the file store
 	 * @param dataSource A data source
 	 * @param appConfig The application configuration
@@ -378,11 +344,35 @@ public class DataFileDB {
 	 */
 	public static RawDataFile getRawDataFile(DataSource dataSource, Properties appConfig, long fileId) throws MissingParamException, DatabaseException, RawDataFileException {
 		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(appConfig, "appConfig");
+		MissingParam.checkPositive(fileId, "fileId");
+		
 		try {
 			FileInfo fileInfo = getFileDetails(dataSource, fileId);
 			return FileStore.getFile(dataSource, appConfig, fileInfo);
 		} catch (RecordNotFoundException|IOException e) {
 			throw new DatabaseException("An error occurred while retrieving the file from the file store", e);
+		}
+	}
+	
+	public static void setCurrentJob(Connection conn, long fileId, int jobCode) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkPositive(fileId, "fileId");
+		
+		PreparedStatement stmt = null;
+		
+		try {
+			stmt = conn.prepareStatement(SET_JOB_STATEMENT);
+			stmt.setLong(1, fileId);
+			stmt.setInt(2, jobCode);
+			
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while setting the current job", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
 		}
 	}
 	
@@ -402,10 +392,9 @@ public class DataFileDB {
 		startDate.setTime(record.getDate(5));
 		int recordCount = record.getInt(6);
 		int currentJob = record.getInt(7);
-		int jobStatus = record.getInt(8);
 		Calendar lastTouched = Calendar.getInstance();
-		lastTouched.setTime(record.getDate(9));
+		lastTouched.setTime(record.getDate(8));
 		
-		return new FileInfo(fileID, instrumentId, instrumentName, fileName, startDate, recordCount, currentJob, jobStatus, lastTouched);
+		return new FileInfo(fileID, instrumentId, instrumentName, fileName, startDate, recordCount, currentJob, lastTouched);
 	}
 }

@@ -30,8 +30,8 @@ public class RawDataDB {
 			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String ADD_STANDARD_STATEMENT = "INSERT INTO gas_standards_data "
-			+ "(data_file_id, row, date_time, run_id, concentration)"
-			+ " VALUES(?, ?, ?, ?, ?)";
+			+ "(data_file_id, row, date_time, run_id, moisture, concentration)"
+			+ " VALUES(?, ?, ?, ?, ?, ?)";
 	
 	private static final String CLEAR_RAW_DATA_STATEMENT = "DELETE FROM raw_data WHERE data_file_id = ?";
 
@@ -90,7 +90,14 @@ public class RawDataDB {
 			stmt.setInt(2, lineNumber);
 			stmt.setTimestamp(3, new Timestamp(instrument.getDateFromLine(line).getTimeInMillis()));
 			stmt.setLong(4, instrument.getRunTypeId(line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE))));
-			stmt.setDouble(5, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));
+			
+			if (!instrument.getSamplesDried()) {
+				stmt.setDouble(5, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
+			} else {
+				stmt.setNull(5, Types.DOUBLE);
+			}
+			
+			stmt.setDouble(6, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));
 
 			stmt.execute();
 			
@@ -195,7 +202,7 @@ public class RawDataDB {
 				stmt.setNull(19, Types.DOUBLE);
 			}
 			
-			if (instrument.hasAtmosphericPressure()) {
+			if (instrument.getHasAtmosphericPressure()) {
 				stmt.setDouble(20, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE))));
 			} else {
 				stmt.setNull(20, Types.DOUBLE);
@@ -246,7 +253,7 @@ public class RawDataDB {
 				values.setEqp3(records.getDouble(14));
 				values.setMoisture(records.getDouble(15));
 				
-				if (instrument.hasAtmosphericPressure()) {
+				if (instrument.getHasAtmosphericPressure()) {
 					values.setAtmospheric_pressure(records.getDouble(16));
 				}
 				

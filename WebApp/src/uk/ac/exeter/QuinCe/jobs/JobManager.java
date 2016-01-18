@@ -22,6 +22,7 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
+import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.User.NoSuchUserException;
 import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -112,6 +113,8 @@ public class JobManager {
 	private static final String GET_JOB_COUNTS_QUERY = "SELECT status, COUNT(status) FROM job GROUP BY status";
 	
 	private static final String JOB_LIST_QUERY = "SELECT id, owner, class, submitted, status, started, ended, progress FROM job ORDER BY submitted DESC";
+	
+	private static final String GET_JOB_OWNER_QUERY = "SELECT owner FROM job WHERE id = ?";
 	
 	/**
 	 * Adds a job to the database
@@ -733,5 +736,41 @@ public class JobManager {
  			thread.start();
 		}
 		
+	}
+	
+	public static User getJobOwner(DataSource dataSource, long jobId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(jobId, "jobId");
+		
+		User owner = null;
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet record = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_JOB_OWNER_QUERY);
+			stmt.setLong(1, jobId);
+			
+			record = stmt.executeQuery();
+			
+			if (!record.next()) {
+				throw new RecordNotFoundException("Job with id " + jobId + " does not exist");
+			} else {
+				long ownerId = record.getLong(1);
+				if (ownerId != NO_OWNER) {
+					owner = UserDB.getUser(dataSource, ownerId);
+				}
+			}	
+		} catch (SQLException|DatabaseException e) {
+			throw new DatabaseException("An error occured while finding the job owner", e);
+		} finally {
+			DatabaseUtils.closeResultSets(record);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return owner;
 	}
 }
