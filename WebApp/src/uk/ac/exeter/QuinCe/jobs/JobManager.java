@@ -347,8 +347,6 @@ public class JobManager {
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
 		}
-		
-		System.out.println("Marked job " + jobID + " as started");
 	}
 	
 	/**
@@ -426,8 +424,6 @@ public class JobManager {
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
 		}
-		
-		System.out.println("Marked job " + jobID + " as finished");
 	}
 	
 	/**

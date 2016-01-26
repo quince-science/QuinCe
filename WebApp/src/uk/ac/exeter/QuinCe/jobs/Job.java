@@ -133,7 +133,6 @@ public abstract class Job {
 	 * @throws NoSuchJobException If the job has disappeared.
 	 */
 	protected void logStarted() throws MissingParamException, DatabaseException, NoSuchJobException {
-		System.out.println("Running job " + id);
 		Connection conn = null;
 		try {
 			conn = dataSource.getConnection();
@@ -153,7 +152,6 @@ public abstract class Job {
 	 * @throws NoSuchJobException If the job has disappeared.
 	 */
 	protected void logFinished() throws MissingParamException, DatabaseException, NoSuchJobException {
-		System.out.println("Finishing job " + id);
 		Connection conn = null;
 		try {
 			conn = dataSource.getConnection();
