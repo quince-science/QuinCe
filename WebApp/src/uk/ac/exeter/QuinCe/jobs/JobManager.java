@@ -772,6 +772,7 @@ public class JobManager {
 		}
 		
 		return owner;
+	}
 
 	public static void requeueJob(DataSource dataSource, long jobId) throws MissingParamException, DatabaseException {
 
