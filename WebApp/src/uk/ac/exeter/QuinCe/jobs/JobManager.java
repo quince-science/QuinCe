@@ -115,6 +115,10 @@ public class JobManager {
 	private static final String JOB_LIST_QUERY = "SELECT id, owner, class, submitted, status, started, ended, progress FROM job ORDER BY submitted DESC";
 	
 	private static final String GET_JOB_OWNER_QUERY = "SELECT owner FROM job WHERE id = ?";
+
+	private static final String REQUEUE_JOB_STATEMENT = "UPDATE job SET "
+			+ "status = 'WAITING', started = NULL, ended = NULL, thread_name = NULL, progress = 0, "
+			+ "stack_trace = NULL WHERE id = ?";
 	
 	/**
 	 * Adds a job to the database
@@ -733,7 +737,7 @@ public class JobManager {
 		}
 		
 	}
-	
+
 	public static User getJobOwner(DataSource dataSource, long jobId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(jobId, "jobId");
@@ -768,5 +772,26 @@ public class JobManager {
 		}
 		
 		return owner;
+
+	public static void requeueJob(DataSource dataSource, long jobId) throws MissingParamException, DatabaseException {
+
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(jobId, "jobId");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(REQUEUE_JOB_STATEMENT);
+			stmt.setLong(1, jobId);
+			stmt.execute();
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while requeuing job " + jobId, e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
 	}
 }

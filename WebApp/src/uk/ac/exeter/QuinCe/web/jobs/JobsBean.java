@@ -48,6 +48,8 @@ public class JobsBean extends BaseManagedBean {
 	 */
 	private int chunkCount = 1;
 	
+	private long chosenJob = 0;
+	
 	////////////// *** METHODS *** ///////////////////////
 	
 	public void update() {
@@ -132,6 +134,16 @@ public class JobsBean extends BaseManagedBean {
 		
 		update();
 	}
+	
+	public void requeue() {
+		try {
+			JobManager.requeueJob(ServletUtils.getDBDataSource(), chosenJob);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		update();
+	}
 
 	//////////////// *** GETTERS AND SETTERS *** /////////////////////////
 	
@@ -207,5 +219,13 @@ public class JobsBean extends BaseManagedBean {
 	
 	public void setChunkCount(int chunkCount) {
 		this.chunkCount = chunkCount;
+	}
+	
+	public void setChosenJob(long chosenJob) {
+		this.chosenJob = chosenJob;
+	}
+	
+	public long getChosenJob() {
+		return chosenJob;
 	}
 }
