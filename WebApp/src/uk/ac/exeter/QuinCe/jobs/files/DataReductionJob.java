@@ -7,8 +7,8 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RawDataValues;
+import uk.ac.exeter.QuinCe.data.Calculation.GasStandardRuns;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
 import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
@@ -28,13 +28,22 @@ public class DataReductionJob extends FileJob {
 		
 		try {
 			Instrument instrument = InstrumentDB.getInstrumentByFileId(dataSource, fileId);
-			List<RawDataValues> rawData = RawDataDB.getRawData(dataSource, fileId, instrument);
 			
+			// Load the gas standard runs
+			GasStandardRuns standardRuns = RawDataDB.getGasStandardRuns(dataSource, fileId, instrument);
+			
+			List<RawDataValues> rawData = RawDataDB.getRawData(dataSource, fileId, instrument);
+			int lineNumber = 0;
 			for (RawDataValues record : rawData) {
+				lineNumber++;
 				double meanIntakeTemp = calcMeanIntakeTemp(record, instrument);
 				double meanSalinity = calcMeanSalinity(record, instrument);
 				double meanEqt = calcMeanEqt(record, instrument);
 				double meanEqp = calcMeanEqp(record, instrument);
+				
+				if (Math.floorMod(lineNumber, 100) == 0) {
+					setProgress((double) lineNumber / (double) rawData.size() * 100.0);
+				}
 			}
 			
 		} catch (Exception e) {

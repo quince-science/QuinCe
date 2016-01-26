@@ -1046,6 +1046,18 @@ public class Instrument implements Serializable {
 		return runTypes;
 	}
 	
+	public String getRunTypeName(long runTypeId) {
+		
+		String name = null;
+		for (RunType type : runTypes) {
+			if (type.getDatabaseId() == runTypeId) {
+				name = type.getName();
+				break;
+			}
+		}
+		return name;
+	}
+	
 	/**
 	 * Returns the ID of the instrument in the database
 	 * @return The ID of the instrument in the database

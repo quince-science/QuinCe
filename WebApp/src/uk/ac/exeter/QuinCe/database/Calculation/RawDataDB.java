@@ -7,7 +7,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -15,8 +17,14 @@ import uk.ac.exeter.QuinCe.data.DateTimeParseException;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.InstrumentException;
 import uk.ac.exeter.QuinCe.data.RawDataValues;
+import uk.ac.exeter.QuinCe.data.StandardConcentration;
+import uk.ac.exeter.QuinCe.data.StandardStub;
+import uk.ac.exeter.QuinCe.data.Calculation.GasStandardMean;
+import uk.ac.exeter.QuinCe.data.Calculation.GasStandardRuns;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
+import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.database.Instrument.GasStandardDB;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -41,6 +49,9 @@ public class RawDataDB {
 			+ "row, co2_type, intake_temp_1, intake_temp_2, intake_temp_3,"
 			+ "salinity_1, salinity_2, salinity_3, eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3,"
 			+ "moisture, atmospheric_pressure FROM raw_data WHERE data_file_id = ? ORDER BY row ASC";
+	
+	private static final String GET_STANDARDS_DATA_QUERY = "SELECT row, run_id, date_time, moisture, concentration "
+			+ "FROM gas_standards_data WHERE data_file_id = ? ORDER BY row ASC";
 	
 
 	public static void clearRawData(DataSource dataSource, long fileId) throws DatabaseException {
@@ -218,10 +229,11 @@ public class RawDataDB {
 		}
 	}
 	
-	public static List<RawDataValues> getRawData(DataSource dataSource, long fileId, Instrument instrument) throws MissingParamException, DatabaseException {
+	public static List<RawDataValues> getRawData(DataSource dataSource, long fileId, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
+		MissingParam.checkMissing(instrument, "instrument");
 		
 		List<RawDataValues> rawData = new ArrayList<RawDataValues>();
 		
@@ -235,6 +247,12 @@ public class RawDataDB {
 			stmt.setLong(1, fileId);
 			
 			records = stmt.executeQuery();
+
+			if (!records.first()) {
+				throw new RecordNotFoundException("No measurement data found for file " + fileId);
+			}
+
+			records.beforeFirst();
 			while (records.next()) {
 				RawDataValues values = new RawDataValues(fileId, records.getInt(1));
 				
@@ -269,5 +287,104 @@ public class RawDataDB {
 		}
 		
 		return rawData;
+	}
+	
+	public static GasStandardRuns getGasStandardRuns(DataSource dataSource, long fileId, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		MissingParam.checkMissing(instrument, "instrument");
+
+		GasStandardRuns result = new GasStandardRuns(fileId, instrument);
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_STANDARDS_DATA_QUERY);
+			stmt.setLong(1, fileId);
+			records = stmt.executeQuery();
+
+			Map<String, StandardConcentration> priorConcentrations = null;
+			Calendar nextStandardsDate = null;
+			long currentRun = -1;
+			int startRow = 0;
+			int endRow = 0;
+			double moistureTotal = 0;
+			double concentrationTotal = 0;
+			int recordCount = 0;
+			
+			if (!records.first()) {
+				throw new RecordNotFoundException("No standards data found for file " + fileId);
+			} else {
+				// Load the gas standard concentrations for the first record
+				startRow = records.getInt(1);
+				currentRun = records.getLong(2);
+				Calendar firstTime = Calendar.getInstance();
+				firstTime.setTime(records.getDate(3));
+				
+				StandardStub priorDeployment = GasStandardDB.getStandardBefore(dataSource, instrument.getDatabaseId(), firstTime);
+				priorConcentrations = GasStandardDB.getConcentrationsMap(dataSource, priorDeployment);
+				nextStandardsDate = GasStandardDB.getStandardDateAfter(dataSource, instrument.getDatabaseId(), firstTime);
+				
+			}
+			
+			records.beforeFirst();
+			
+			
+			while (records.next()) {
+				int row = records.getInt(1);
+				long runTypeId = records.getLong(2);
+				Calendar time = Calendar.getInstance(); 
+				time.setTime(records.getDate(3));
+				double moisture = records.getDouble(4);
+				double concentration = records.getDouble(5);
+				
+				
+				
+				if (runTypeId != currentRun) {
+					double meanMoisture = moistureTotal / (double) recordCount;
+					double meanConcentration = concentrationTotal / (double) recordCount;
+					String runTypeName = instrument.getRunTypeName(currentRun);
+					
+					GasStandardMean standardMean = new GasStandardMean(priorConcentrations.get(runTypeName), startRow, endRow, meanMoisture, meanConcentration);
+					result.addStandardMean(standardMean);
+					
+					moistureTotal = 0;
+					concentrationTotal = 0;
+					recordCount = 0;
+					currentRun = runTypeId;
+					startRow = row;
+					endRow = row;
+					
+					if (null != nextStandardsDate && time.after(nextStandardsDate)) {
+						StandardStub priorDeployment = GasStandardDB.getStandardBefore(dataSource, instrument.getDatabaseId(), time);
+						priorConcentrations = GasStandardDB.getConcentrationsMap(dataSource, priorDeployment);
+						nextStandardsDate = GasStandardDB.getStandardDateAfter(dataSource, instrument.getDatabaseId(), time);
+					}
+				}
+				
+				endRow = row;
+				moistureTotal += moisture;
+				concentrationTotal += concentration;
+				recordCount++;
+			}
+			
+			double meanMoisture = moistureTotal / (double) recordCount;
+			double meanConcentration = concentrationTotal / (double) recordCount;
+			String runTypeName = instrument.getRunTypeName(currentRun);
+			GasStandardMean standardMean = new GasStandardMean(priorConcentrations.get(runTypeName), startRow, endRow, meanMoisture, meanConcentration);
+			result.addStandardMean(standardMean);
+
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving gas standard data for file " + fileId, e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
 	}
 }
