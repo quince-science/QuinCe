@@ -16,6 +16,11 @@
 			setInterval(function() {
 				$('#threadsForm\\:updateThreads').trigger("click");
 			}, 10000);
+			
+			function requeue(id) {
+				$('#jobListForm\\:chosenJob').val(id);
+				$('#jobListForm\\:requeueLink').trigger("click");
+			}
 		</script>
 	</ui:define>
 	
@@ -26,7 +31,7 @@
 				Summary
 			</div>
 			<div class="sectionContent">
-				<h:form id="threadsForm">
+				<h:form id="jobsForm">
 					<b>Idle Threads:</b>
 					<h:outputText id="idleThreads" value="#{jobsBean.idleThreads}"/>
 					<br/>
@@ -122,7 +127,17 @@
 							</f:facet>
 							<p:progressBar value="#{job.progress}" labelTemplate="{value}%"/>
 						</p:column>
+						<p:column>
+							<f:facet name="header">
+								Actions
+							</f:facet>
+							<a href="#" onclick="requeue(#{job.id})">Requeue</a>
+						</p:column>
 					</p:dataTable>
+					<h:inputHidden id="chosenJob" value="#{jobsBean.chosenJob}"/>
+					<h:commandLink id="requeueLink" forceId="true" style="invisible" action="#{jobsBean.requeue}">
+						<f:ajax execute="chosenJob" render="@all"/>
+					</h:commandLink>
 				</h:form>
 			</div>
 		</div>
