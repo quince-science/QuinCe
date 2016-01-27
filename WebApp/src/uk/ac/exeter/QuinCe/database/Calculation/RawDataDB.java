@@ -48,7 +48,7 @@ public class RawDataDB {
 	private static final String GET_RAW_DATA_QUERY = "SELECT "
 			+ "row, co2_type, intake_temp_1, intake_temp_2, intake_temp_3,"
 			+ "salinity_1, salinity_2, salinity_3, eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3,"
-			+ "moisture, atmospheric_pressure FROM raw_data WHERE data_file_id = ? ORDER BY row ASC";
+			+ "moisture, atmospheric_pressure, co2 FROM raw_data WHERE data_file_id = ? ORDER BY row ASC";
 	
 	private static final String GET_STANDARDS_DATA_QUERY = "SELECT row, run_id, date_time, moisture, concentration "
 			+ "FROM gas_standards_data WHERE data_file_id = ? ORDER BY row ASC";
@@ -272,8 +272,10 @@ public class RawDataDB {
 				values.setMoisture(records.getDouble(15));
 				
 				if (instrument.getHasAtmosphericPressure()) {
-					values.setAtmospheric_pressure(records.getDouble(16));
+					values.setAtmosphericPressure(records.getDouble(16));
 				}
+				
+				values.setCo2(records.getDouble(17));
 				
 				rawData.add(values);
 			}
@@ -348,7 +350,7 @@ public class RawDataDB {
 					double meanConcentration = concentrationTotal / (double) recordCount;
 					String runTypeName = instrument.getRunTypeName(currentRun);
 					
-					GasStandardMean standardMean = new GasStandardMean(priorConcentrations.get(runTypeName), startRow, endRow, meanMoisture, meanConcentration);
+					GasStandardMean standardMean = new GasStandardMean(priorConcentrations.get(runTypeName), startRow, endRow, meanConcentration, meanMoisture);
 					result.addStandardMean(standardMean);
 					
 					moistureTotal = 0;

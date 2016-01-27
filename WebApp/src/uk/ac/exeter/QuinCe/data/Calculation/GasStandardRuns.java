@@ -52,4 +52,22 @@ public class GasStandardRuns {
 		TreeSet<GasStandardMean> runMeans = standardMeans.get(standardMean.getRunName());		
 		runMeans.add(standardMean);
 	}
+	
+	public GasStandardMean getStandardMean(int row) {
+		GasStandardMean result = null;
+		
+		for (String runType : standardMeans.keySet()) {
+			for (GasStandardMean standard : standardMeans.get(runType)) {
+				if (null == result) {
+					result = standard;
+				} else if (row - standard.getEndRow() < 0) {
+					break;
+				} else if (row - standard.getEndRow() < row - result.getEndRow()) {
+					result = standard;
+				}
+			}
+		}
+		
+		return result;
+	}
 }

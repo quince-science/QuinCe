@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Properties;
 
@@ -7,8 +8,10 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RawDataValues;
+import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.data.Calculation.GasStandardRuns;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
 import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
@@ -26,34 +29,55 @@ public class DataReductionJob extends FileJob {
 	protected void execute() throws JobFailedException {
 		reset();
 		
+		Connection conn = null;
+		
 		try {
 			Instrument instrument = InstrumentDB.getInstrumentByFileId(dataSource, fileId);
 			
 			// Load the gas standard runs
 			GasStandardRuns standardRuns = RawDataDB.getGasStandardRuns(dataSource, fileId, instrument);
 			
+			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
+			
 			List<RawDataValues> rawData = RawDataDB.getRawData(dataSource, fileId, instrument);
 			int lineNumber = 0;
 			for (RawDataValues record : rawData) {
 				lineNumber++;
-				double meanIntakeTemp = calcMeanIntakeTemp(record, instrument);
-				double meanSalinity = calcMeanSalinity(record, instrument);
-				double meanEqt = calcMeanEqt(record, instrument);
-				double meanEqp = calcMeanEqp(record, instrument);
+				
+				if (record.getCo2Type() == RunType.RUN_TYPE_WATER) {
+				
+					double meanIntakeTemp = calcMeanIntakeTemp(record, instrument);
+					double meanSalinity = calcMeanSalinity(record, instrument);
+					double meanEqt = calcMeanEqt(record, instrument);
+					double meanEqp = calcMeanEqp(record, instrument);
+					
+					double trueMoisture = 0;
+					if (!instrument.getSamplesDried()) {
+						trueMoisture = record.getMoisture() - standardRuns.getStandardMean(record.getRow()).getMeanMoisture();
+					}
+										
+					DataReductionDB.storeRow(conn, fileId, record.getRow(), record.getCo2Type(), meanIntakeTemp,
+							meanSalinity, meanEqt, meanEqp, trueMoisture);
+				}
 				
 				if (Math.floorMod(lineNumber, 100) == 0) {
 					setProgress((double) lineNumber / (double) rawData.size() * 100.0);
 				}
 			}
 			
+			conn.commit();
+			
 		} catch (Exception e) {
 			throw new JobFailedException(id, e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 	
 	protected void reset() throws JobFailedException {
 		try {
-			DataReductionDB.clearRawData(dataSource, fileId);
+			DataReductionDB.clearDataReductionData(dataSource, fileId);
 		} catch(DatabaseException e) {
 			throw new JobFailedException(id, e);
 		}

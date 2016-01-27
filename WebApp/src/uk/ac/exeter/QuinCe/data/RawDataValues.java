@@ -34,7 +34,9 @@ public class RawDataValues {
 	
 	private double moisture;
 	
-	private double atmospheric_pressure;
+	private double atmosphericPressure;
+	
+	private double co2;
 	
 	public RawDataValues(long dataFileId, int row) {
 		this.dataFileId = dataFileId;
@@ -153,12 +155,20 @@ public class RawDataValues {
 		this.moisture = moisture;
 	}
 
-	public double getAtmospheric_pressure() {
-		return atmospheric_pressure;
+	public double getAtmosphericPressure() {
+		return atmosphericPressure;
 	}
 
-	public void setAtmospheric_pressure(double atmospheric_pressure) {
-		this.atmospheric_pressure = atmospheric_pressure;
+	public void setAtmosphericPressure(double atmosphericPressure) {
+		this.atmosphericPressure = atmosphericPressure;
+	}
+	
+	public double getCo2() {
+		return co2;
+	}
+	
+	public void setCo2(double co2) {
+		this.co2 = co2;
 	}
 
 	public long getDataFileId() {
