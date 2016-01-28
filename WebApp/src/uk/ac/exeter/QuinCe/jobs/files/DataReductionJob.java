@@ -53,12 +53,15 @@ public class DataReductionJob extends FileJob {
 					double meanEqp = calcMeanEqp(record, instrument);
 					
 					double trueMoisture = 0;
+					double driedCo2 = record.getCo2();
+					
 					if (!instrument.getSamplesDried()) {
 						trueMoisture = record.getMoisture() - standardRuns.getStandardMean(record.getRow()).getMeanMoisture();
+						driedCo2 = record.getCo2() / (1.0 - (trueMoisture / 1000));
 					}
 										
 					DataReductionDB.storeRow(conn, fileId, record.getRow(), record.getCo2Type(), meanIntakeTemp,
-							meanSalinity, meanEqt, meanEqp, trueMoisture);
+							meanSalinity, meanEqt, meanEqp, trueMoisture, driedCo2);
 				}
 				
 				if (Math.floorMod(lineNumber, 100) == 0) {
