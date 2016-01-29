@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Calculation;
 
+import java.util.Calendar;
+
 import uk.ac.exeter.QuinCe.data.StandardConcentration;
 
 /**
@@ -9,6 +11,11 @@ import uk.ac.exeter.QuinCe.data.StandardConcentration;
  */
 public class GasStandardMean implements Comparable<GasStandardMean> {
 
+	protected static final int TYPE_MOISTURE = 0;
+	
+	protected static final int TYPE_CO2 = 1;
+	
+
 	/**
 	 * The actual concentration of the standard
 	 */
@@ -17,12 +24,12 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	/**
 	 * The start time of the gas standard run
 	 */
-	private int startRow;
+	private Calendar startTime;
 	
 	/**
 	 * The end time of the gas standard run
 	 */
-	private int endRow;
+	private Calendar endTime;
 	
 	/**
 	 * The mean concentration measured during the run
@@ -42,10 +49,10 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	 * @param meanConcentration The mean concentration measured during the run
 	 * @param meanMoisture The mean moisture measured during the run
 	 */
-	public GasStandardMean(StandardConcentration standardConcentration, int startRow, int endRow, double meanConcentration, double meanMoisture) {
+	public GasStandardMean(StandardConcentration standardConcentration, Calendar startTime, Calendar endTime, double meanConcentration, double meanMoisture) {
 		this.standardConcentration = standardConcentration;
-		this.startRow = startRow;
-		this.endRow = endRow;
+		this.startTime = startTime;
+		this.endTime = endTime;
 		this.meanConcentration = meanConcentration;
 		this.meanMoisture = meanMoisture;
 	}
@@ -54,12 +61,12 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 		return standardConcentration;
 	}
 
-	public int getStartRow() {
-		return startRow;
+	public Calendar getStartTime() {
+		return startTime;
 	}
 
-	public int getEndRow() {
-		return endRow;
+	public Calendar getEndTime() {
+		return endTime;
 	}
 
 	public double getMeanConcentration() {
@@ -69,13 +76,32 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	public double getMeanMoisture() {
 		return meanMoisture;
 	}
+	
+	public Calendar getMidTime() {
+		int midLength = (int) (endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 2;
+		Calendar result = (Calendar) startTime.clone();
+		result.add(Calendar.MILLISECOND, midLength);
+		return result;
+	}
 
 	@Override
 	public int compareTo(GasStandardMean o) {
-		return startRow - o.startRow;
+		return startTime.compareTo(o.startTime);
 	}
 	
 	public String getRunName() {
 		return standardConcentration.getStandardName();
+	}
+	
+	public double getMeanValue(int valueType) {
+		double result;
+		
+		if (valueType == TYPE_MOISTURE) {
+			result = meanMoisture;
+		} else {
+			result = meanConcentration;
+		}
+		
+		return result;
 	}
 }

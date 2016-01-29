@@ -62,6 +62,11 @@ public class DateTimeUtils {
 		return (int) Math.floorDiv(diffMillis, MILLIS_PER_DAY);
 	}
 	
+	public static int getSecondsBetween(Calendar firstDate, Calendar lastDate) {
+		long diffMillis = lastDate.getTimeInMillis() - firstDate.getTimeInMillis();
+		return (int) Math.floorDiv(diffMillis, 1000);
+	}
+	
 	/**
 	 * Format a date to YYYY-MM-dd format
 	 * @param date The date

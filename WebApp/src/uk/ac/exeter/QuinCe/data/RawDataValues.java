@@ -1,10 +1,14 @@
 package uk.ac.exeter.QuinCe.data;
 
+import java.util.Calendar;
+
 public class RawDataValues {
 
 	private long dataFileId;
 	
 	private int row;
+	
+	private Calendar time;
 	
 	private int co2Type;
 	
@@ -179,4 +183,11 @@ public class RawDataValues {
 		return row;
 	}
 	
+	public void setTime(Calendar time) {
+		this.time = time;
+	}
+	
+	public Calendar getTime() {
+		return time;
+	}
 }

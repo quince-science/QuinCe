@@ -1,10 +1,13 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 
 import javax.sql.DataSource;
+
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RawDataValues;
@@ -12,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.data.Calculation.GasStandardRuns;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
+import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
 import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
@@ -46,22 +50,26 @@ public class DataReductionJob extends FileJob {
 				lineNumber++;
 				
 				if (record.getCo2Type() == RunType.RUN_TYPE_WATER) {
-				
+					
+					// Sensor means
 					double meanIntakeTemp = calcMeanIntakeTemp(record, instrument);
 					double meanSalinity = calcMeanSalinity(record, instrument);
 					double meanEqt = calcMeanEqt(record, instrument);
 					double meanEqp = calcMeanEqp(record, instrument);
 					
+					// Get the moisture and mathematically dry the CO2 if required
 					double trueMoisture = 0;
 					double driedCo2 = record.getCo2();
 					
 					if (!instrument.getSamplesDried()) {
-						trueMoisture = record.getMoisture() - standardRuns.getStandardMean(record.getRow()).getMeanMoisture();
+						trueMoisture = record.getMoisture() - standardRuns.getInterpolatedMoisture(null, record.getTime());
 						driedCo2 = record.getCo2() / (1.0 - (trueMoisture / 1000));
 					}
+					
+					double calibratedCo2 = calcCalibratedCo2(driedCo2, record.getTime(), standardRuns, instrument);
 										
 					DataReductionDB.storeRow(conn, fileId, record.getRow(), record.getCo2Type(), meanIntakeTemp,
-							meanSalinity, meanEqt, meanEqp, trueMoisture, driedCo2);
+							meanSalinity, meanEqt, meanEqp, trueMoisture, driedCo2, calibratedCo2);
 				}
 				
 				if (Math.floorMod(lineNumber, 100) == 0) {
@@ -176,6 +184,11 @@ public class DataReductionJob extends FileJob {
 		}
 		
 		return total / (double) count;
+	}
+	
+	private double calcCalibratedCo2(double driedCo2, Calendar time, GasStandardRuns standardRuns, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		SimpleRegression regression = standardRuns.getStandardsRegression(dataSource, instrument.getDatabaseId(), time);
+		return regression.predict(driedCo2);
 	}
 }
 
