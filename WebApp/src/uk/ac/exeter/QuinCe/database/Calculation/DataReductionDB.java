@@ -17,8 +17,8 @@ public class DataReductionDB {
 	
 	private static final String STORE_ROW_STATEMENT = "INSERT INTO data_reduction ("
 			+ "data_file_id, row, co2_type, mean_intake_temp, mean_salinity, mean_eqt, mean_eqp, "
-			+ "true_moisture, dried_co2, calibrated_co2, pco2_te_dry) "
-			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "true_moisture, dried_co2, calibrated_co2, pco2_te_dry, ph2o, pco2_te_wet, fco2_te, fco2) "
+			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	public static void clearDataReductionData(DataSource dataSource, long fileId) throws DatabaseException {
 		
@@ -42,7 +42,8 @@ public class DataReductionDB {
 	
 	public static void storeRow(Connection conn, long fileId, int row, int co2Type, double meanIntakeTemp,
 			double meanSalinity, double meanEqt, double meanEqp, double trueMoisture, double driedCo2,
-			double calibratedCo2, double pCo2TEDry) throws DatabaseException, MissingParamException {
+			double calibratedCo2, double pCo2TEDry, double pH2O, double pCo2TEWet,
+			double fco2TE, double fco2) throws DatabaseException, MissingParamException {
 		
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkPositive(fileId, "fileId");
@@ -63,6 +64,10 @@ public class DataReductionDB {
 			stmt.setDouble(9, driedCo2);
 			stmt.setDouble(10, calibratedCo2);
 			stmt.setDouble(11, pCo2TEDry);
+			stmt.setDouble(12, pH2O);
+			stmt.setDouble(13, pCo2TEWet);
+			stmt.setDouble(14, fco2TE);
+			stmt.setDouble(15, fco2);
 			
 			stmt.execute();
 		} catch (SQLException e) {

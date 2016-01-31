@@ -70,12 +70,15 @@ public class DataReductionJob extends FileJob {
 					
 					double calibratedCo2 = calcCalibratedCo2(driedCo2, record.getTime(), standardRuns, instrument);
 					double pCo2TEDry = calcPco2TEDry(calibratedCo2, meanEqp);
-					
+					double pH2O = calcPH2O(meanSalinity, meanEqt);
+					double pCo2TEWet = calcPco2TEWet(pCo2TEDry, meanEqp, pH2O);
+					double fco2TE = calcFco2TE(pCo2TEWet, meanEqp, meanEqt);
+					double fco2 = calcFco2(fco2TE, meanEqt, meanIntakeTemp);
 					
 										
 					DataReductionDB.storeRow(conn, fileId, record.getRow(), record.getCo2Type(), meanIntakeTemp,
 							meanSalinity, meanEqt, meanEqp, trueMoisture, driedCo2, calibratedCo2,
-							pCo2TEDry);
+							pCo2TEDry, pH2O, pCo2TEWet, fco2TE, fco2);
 				}
 				
 				if (Math.floorMod(lineNumber, 100) == 0) {
@@ -204,6 +207,36 @@ public class DataReductionJob extends FileJob {
 		
 		// Convert back to microatmospheres
 		return pressureAdjusted * PASCALS_TO_ATMOSPHERES * 1.0e6;
+	}
+	
+	/**
+	 * Calculate pH2O. From Weiss and Price (1980)
+	 * @param salinity Salinity
+	 * @param eqt Equilibrator temperature (in celcius)
+	 * @return
+	 */
+	private double calcPH2O(double salinity, double eqt) {
+		double kelvin = eqt + 273.15;
+		return Math.exp(24.4543 - 67.4509 * (100 / kelvin) - 4.8489 * Math.log(kelvin / 100) - 0.000544 * salinity);
+	}
+	
+	private double calcPco2TEWet(double co2TEDry, double eqp, double pH2O) {
+		double eqp_atm = eqp * PASCALS_TO_ATMOSPHERES * 100;
+		return co2TEDry * (eqp_atm - pH2O);
+	}
+	
+	private double calcFco2TE(double pco2TEWet, double eqp, double eqt) {
+		double kelvin = eqt + 273.15;
+		double B = -1636.75 + 12.0408 * kelvin -0.0327957 * Math.pow(kelvin, 2) + (3.16528 * 1e-5) * Math.pow(kelvin, 3);
+		double delta = 57.7 - 0.118 * kelvin;
+				
+		return pco2TEWet * Math.exp(((B + 2 * (delta * 1e-6)) * (eqp * 1e-6)) / (8.314472 * kelvin));		
+	}
+	
+	private double calcFco2(double fco2TE, double eqt, double sst) {
+		double sst_kelvin = sst + 273.15;
+		double eqt_kelvin = eqt + 273.15;
+		return fco2TE * Math.exp(0.0423 * (sst_kelvin - eqt_kelvin));
 	}
 }
 

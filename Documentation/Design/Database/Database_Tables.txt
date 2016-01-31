@@ -343,9 +343,10 @@ true_moisture            Float          The true moisture, calculated as the dif
 dried_co2                Float          The mathematically dried CO~2~ value
 calibrated_co2           Float          The CO~2~ value calibrated to the gas standards
 pco2_te_dry              Float          Dry pCO~2~ at equilibrator temperature
-moisture                 Float          The moisture
-ph2o                     Float          The
-fco2                     Float          The calculated fCO~2~ value
+ph2o                     Float          The correction factor to 100% humidity
+pco2_te_wet              Float          Wet pCO~2~ at equilibrator temperature
+fco2_te                  Float          fCO~2~ at equilibrator temperature
+fco2                     Float          The final fCO~2~ value
 
 
 ## `qc`
