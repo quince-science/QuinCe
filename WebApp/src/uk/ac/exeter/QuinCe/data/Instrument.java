@@ -1,6 +1,12 @@
 package uk.ac.exeter.QuinCe.data;
 
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.SimpleTimeZone;
 import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
@@ -13,7 +19,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  */
 public class Instrument implements Serializable {
 	
-	private static final long serialVersionUID = -8470431717231132753L;
+	private static final long serialVersionUID = 7282491666003300432L;
 
 	////////////// *** CONSTANTS *** ///////////////
 	
@@ -357,9 +363,24 @@ public class Instrument implements Serializable {
 	private TreeSet<RunType> runTypes = null;
 	
 	/**
+	 * The number of columns in the raw data file
+	 */
+	private int rawFileColumnCount = -1;
+	
+	/**
 	 * The set of column assignments
 	 */
 	private int[] columnAssignments;
+	
+	/**
+	 * Formatter for dates
+	 */
+	private SimpleDateFormat dateFormatter = null;
+	
+	/**
+	 * Formatter for times
+	 */
+	private SimpleDateFormat timeFormatter = null;
 	
 	////////// *** MAIN METHODS *** /////////////
 
@@ -367,7 +388,10 @@ public class Instrument implements Serializable {
 	 * Basic constructor - does not take any parameters.
 	 * All fields must be populated by the setter methods.
 	 */
-	public Instrument() {
+	public Instrument(long ownerID) {
+		
+		this.ownerID = ownerID;
+		
 		// Initialise the columnAssignments array
 		columnAssignments = new int[COL_COUNT];
 		for (int i = 0; i < columnAssignments.length; i++) {
@@ -394,6 +418,254 @@ public class Instrument implements Serializable {
 	
 	public void validate() throws MissingParamException {
 		// TODO Write it!
+	}
+	
+	/**
+	 * Determines whether or not a given run type is for a measurement.
+	 * If the run type does not exist, this will return {@code false}.
+	 * 
+	 * @param runType The run type
+	 * @return {@code true} if the run type is for a measurement; {@code false} if it is not.
+	 */
+	public boolean isMeasurementRunType(String runType) {
+		boolean result = false;
+		
+		for (RunType type : runTypes) {
+			if (type.getName().equals(runType)) {
+				result = type.isMeasurementRunType();
+				break;
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Determines whether or not a given run type is for a gas standard.
+	 * If the run type does not exist, this will return {@code false}.
+	 * 
+	 * @param runType The run type
+	 * @return {@code true} if the run type is for a measurement; {@code false} if it is not.
+	 */
+	public boolean isStandardRunType(String runType) {
+		boolean result = false;
+		
+		for (RunType type : runTypes) {
+			if (type.getName().equals(runType)) {
+				result = type.isStandardRunType();
+				break;
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Determines whether or not a run type should be ignored. If the run type
+	 * is unrecognised it will count as being ignored.
+	 * 
+	 * @param runType The run type to be checked
+	 * @return {@code true} if the run type should be ignored; {@code false} if it should be used.
+	 */
+	public boolean isIgnoredRunType(String runType) {
+		boolean result = true;
+		
+		for (RunType type : runTypes) {
+			if (type.getName().equals(runType)) {
+				result = type.isIgnoredRunType();
+				break;
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Returns the integer code for the run type matching the supplied
+	 * run type name. If the run type is not found, it will default to
+	 * the ignored/none run type.
+	 * @param runType The run type
+	 * @return The code
+	 */
+	public int getRunTypeCode(String runType) {
+		int result = RunType.RUN_TYPE_NONE;
+		
+		for (RunType type : runTypes) {
+			if (type.getName().equals(runType)) {
+				result = type.getCode();
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Returns the integer code for the run type matching the supplied
+	 * run type name. If the run type is not found, it will default to
+	 * the ignored/none run type.
+	 * @param runType The run type
+	 * @return The code
+	 */
+	public long getRunTypeId(String runType) {
+		long result = -1;
+		
+		for (RunType type : runTypes) {
+			if (type.getName().equals(runType)) {
+				result = type.getDatabaseId();
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Extracts the date and time from a line in a raw data file
+	 * @param line The line
+	 * @return The date and time
+	 * @throws DateTimeParseException If the date or time cannot be parsed
+	 * @throws InstrumentException If the date/time format is unrecognised
+	 */
+	public Calendar getDateFromLine(List<String> line) throws DateTimeParseException, InstrumentException {
+		
+		Calendar result = Calendar.getInstance(new SimpleTimeZone(0, "UTC"), Locale.ENGLISH);
+
+		// Need to do date and time separately.
+		
+		switch (getDateFormat()) {
+		case Instrument.SEPARATE_FIELDS: {
+			
+			try {
+				result.set(Calendar.YEAR, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_YEAR))));
+			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+				throw new DateTimeParseException("Invalid year value " + line.get(getColumnAssignment(Instrument.COL_YEAR)));
+			}
+			
+			try {
+				result.set(Calendar.MONTH, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_MONTH))));
+			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+				throw new DateTimeParseException("Invalid month value " + line.get(getColumnAssignment(Instrument.COL_MONTH)));
+			}
+			
+			try {
+				result.set(Calendar.DAY_OF_MONTH, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_DAY))));
+			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+				throw new DateTimeParseException("Invalid day value " + line.get(getColumnAssignment(Instrument.COL_DAY)));
+			}
+			break;
+		}
+		default: {
+			try {
+				if (null == dateFormatter) {
+					makeDateFormatter();
+				}
+				
+				Calendar parsedDate = Calendar.getInstance();
+				parsedDate.setTime(dateFormatter.parse(line.get(getColumnAssignment(Instrument.COL_DATE))));
+				result.set(Calendar.YEAR, parsedDate.get(Calendar.YEAR));
+				result.set(Calendar.MONTH, parsedDate.get(Calendar.MONTH));
+				result.set(Calendar.DAY_OF_MONTH, parsedDate.get(Calendar.DAY_OF_MONTH));
+				
+			} catch (ParseException e) {
+				throw new DateTimeParseException("Invalid date value " + line.get(getColumnAssignment(Instrument.COL_DATE)));
+			}
+		}
+		}
+			
+
+		// Now the time
+		switch(getTimeFormat()) {
+		case Instrument.SEPARATE_FIELDS: {
+			try {
+				result.set(Calendar.HOUR, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_HOUR))));
+			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+				throw new DateTimeParseException("Invalid hour value " + line.get(getColumnAssignment(Instrument.COL_HOUR)));
+			}
+			
+			try {
+				result.set(Calendar.MINUTE, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_MINUTE))));
+			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+				throw new DateTimeParseException("Invalid minute value " + line.get(getColumnAssignment(Instrument.COL_MINUTE)));
+			}
+			
+			try {
+				result.set(Calendar.SECOND, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_SECOND))));
+			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+				throw new DateTimeParseException("Invalid second value " + line.get(getColumnAssignment(Instrument.COL_SECOND)));
+			}
+			break;
+		}
+		default: {
+			try {
+				if (null == timeFormatter) {
+					makeTimeFormatter();
+				}
+	
+				Calendar parsedTime = Calendar.getInstance();
+				parsedTime.setTime(timeFormatter.parse(line.get(getColumnAssignment(Instrument.COL_TIME))));
+				result.set(Calendar.HOUR, parsedTime.get(Calendar.HOUR));
+				result.set(Calendar.MINUTE, parsedTime.get(Calendar.MINUTE));
+				result.set(Calendar.SECOND, parsedTime.get(Calendar.SECOND));
+			} catch (ParseException e) {
+				throw new DateTimeParseException("Invalid time value " + line.get(getColumnAssignment(Instrument.COL_TIME)));
+			}
+		}
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Create a date formatter for parsing dates from the file.
+	 * @throws RawDataFileException If the date format is not recognised
+	 * @throws InstrumentException 
+	 */
+	private void makeDateFormatter() throws InstrumentException {
+		
+		switch (getDateFormat()) {
+		case Instrument.DATE_FORMAT_DDMMYY: {
+			dateFormatter = new SimpleDateFormat("dd/MM/yy");
+			break;
+		}
+		case Instrument.DATE_FORMAT_DDMMYYYY: {
+			dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+			break;
+		}
+		case Instrument.DATE_FORMAT_MMDDYY: {
+			dateFormatter = new SimpleDateFormat("MM/dd/yy");
+			break;
+		}
+		case Instrument.DATE_FORMAT_MMDDYYYY: {
+			dateFormatter = new SimpleDateFormat("MM/dd/yyyy");
+			break;
+		}
+		case Instrument.DATE_FORMAT_YYYYMMDD: {
+			dateFormatter = new SimpleDateFormat("YYYYMMdd");
+		}
+		default: {
+			throw new InstrumentException("Unrecognised date format code '" + getDateFormat() + "'");
+		}
+		}
+	}
+	
+	/**
+	 * Create a date formatter for parsing times from the file
+	 * @throws RawDataFileException If the time format is not recognised
+	 * @throws InstrumentException 
+	 */
+	private void makeTimeFormatter() throws InstrumentException {
+	
+		switch(getTimeFormat()) {
+		case Instrument.TIME_FORMAT_COLON: {
+			timeFormatter = new SimpleDateFormat("H:m:s");
+			break;
+		}
+		case Instrument.TIME_FORMAT_NO_COLON: {
+			timeFormatter = new SimpleDateFormat("Hms");
+		}
+		default: {
+			throw new InstrumentException("Unrecognised time format code '" + getTimeFormat() + "'");
+		}
+		}
 	}
 
 	///////// *** GETTERS AND SETTERS *** ///////////////
@@ -774,6 +1046,18 @@ public class Instrument implements Serializable {
 		return runTypes;
 	}
 	
+	public String getRunTypeName(long runTypeId) {
+		
+		String name = null;
+		for (RunType type : runTypes) {
+			if (type.getDatabaseId() == runTypeId) {
+				name = type.getName();
+				break;
+			}
+		}
+		return name;
+	}
+	
 	/**
 	 * Returns the ID of the instrument in the database
 	 * @return The ID of the instrument in the database
@@ -1008,6 +1292,22 @@ public class Instrument implements Serializable {
 	 */
 	public String getLongEqpName3() {
 		return "Equilibrator Pressure: " + eqpName3;
+	}
+	
+	/**
+	 * Returns the number of columns in the instrument's raw data files
+	 * @return The number of columns in the instrument's raw data files
+	 */
+	public int getRawFileColumnCount() {
+		return rawFileColumnCount;
+	}
+	
+	/**
+	 * Sets the number of columns in the instrument's raw data files
+	 * @param rawFileColumnCount The number of columns
+	 */
+	public void setRawFileColumnCount(int rawFileColumnCount) {
+		this.rawFileColumnCount = rawFileColumnCount;
 	}
 
 }

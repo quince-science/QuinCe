@@ -25,9 +25,8 @@ public class DatabaseUtils {
 	 * @param results The ResultSets
 	 */
 	public static void closeResultSets(ResultSet... results) {
-		
-		if (null != results) {
-			for (ResultSet result : results) {
+		for (ResultSet result : results) {
+			if (null != result) {
 				try {
 					result.close();
 				} catch(SQLException e) {
@@ -42,8 +41,8 @@ public class DatabaseUtils {
 	 * @param statements The statements
 	 */
 	public static void closeStatements(List<PreparedStatement> statements) {
-		if (null != statements) {
-			for (PreparedStatement stmt : statements) {
+		for (PreparedStatement stmt : statements) {
+			if (null != statements) {
 				try {
 					stmt.close();
 				} catch (SQLException e) {
@@ -73,6 +72,20 @@ public class DatabaseUtils {
 				conn.close();
 			} catch (SQLException e) {
 				// Do nothing
+			}
+		}
+	}
+	
+	/**
+	 * Roll back an open transaction
+	 * @param conn The database connection
+	 */
+	public static void rollBack(Connection conn) {
+		if (null != conn) {
+			try {
+				conn.rollback();
+			} catch (SQLException e) {
+				// DO nothing
 			}
 		}
 	}

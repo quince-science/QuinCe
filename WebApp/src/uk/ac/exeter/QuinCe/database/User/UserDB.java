@@ -32,7 +32,12 @@ public class UserDB {
 	/**
 	 * SQL statement to search for a user by email address
 	 */
-	private static final String USER_SEARCH_BY_EMAIL_STATEMENT = "SELECT id,email,firstname,surname,email_code,email_code_time,password_code,password_code_time FROM user WHERE email = ?";
+	private static final String USER_SEARCH_BY_EMAIL_STATEMENT = "SELECT id,email,firstname,surname,email_code,email_code_time,password_code,password_code_time,permissions FROM user WHERE email = ?";
+	
+	/**
+	 * SQL statement to search for a user by email address
+	 */
+	private static final String USER_SEARCH_BY_ID_STATEMENT = "SELECT id,email,firstname,surname,email_code,email_code_time,password_code,password_code_time,permissions FROM user WHERE id = ?";
 	
 	/**
 	 * SQL statement to create a new user record
@@ -103,6 +108,25 @@ public class UserDB {
 	 */
 	public static final int CODE_EXPIRY_HOURS = 24;
 	
+	public static User getUser(DataSource dataSource, String email) throws DatabaseException, MissingParamException {
+		
+		Connection conn = null;
+		User user = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			user = getUser(conn, email);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving the user", e);
+		} catch (DatabaseException|MissingParamException e) {
+			throw e;
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return user;
+	}
+	
 	/**
 	 * Locate a user in the database using their email address.
 	 * 
@@ -115,10 +139,49 @@ public class UserDB {
 	 * @throws SQLException
 	 * @see uk.ac.exeter.QuinCe.data.User
 	 */
-	public static User getUser(DataSource dataSource, String email) throws DatabaseException, MissingParamException {
+	public static User getUser(Connection conn, String email) throws DatabaseException, MissingParamException {
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkMissing(email, "email");
+		
+		PreparedStatement stmt = null;
+		User foundUser = null;
+		
+		try {
+			stmt = conn.prepareStatement(USER_SEARCH_BY_EMAIL_STATEMENT);
+			stmt.setString(1, email);
+			ResultSet result = stmt.executeQuery();
+			
+			if (result.first()) {
+				foundUser = new User(result.getInt(1), result.getString(2), result.getString(3), result.getString(4), result.getInt(9));
+				foundUser.setEmailVerificationCode(result.getString(5), result.getTimestamp(6));
+				foundUser.setPasswordResetCode(result.getString(7), result.getTimestamp(8));
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while searching for the user", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+		}
+		
+		return foundUser;
+	}
+	
+	/**
+	 * Locate a user in the database using their database ID.
+	 * 
+	 * If the user can't be found, this method returns {@code null}.
+	 * 
+	 * @param conn The database connection to be used
+	 * @param email The user's database ID
+	 * @return A User object representing the user, or {@code null} if the user's record could not be found.
+	 * @throws MissingParamException If the supplied email is null
+	 * @throws SQLException
+	 * @see uk.ac.exeter.QuinCe.data.User
+	 */
+	public static User getUser(DataSource dataSource, long id) throws DatabaseException, MissingParamException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
-		MissingParam.checkMissing(email, "email");
+		MissingParam.checkPositive(id, "id");
 		
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -126,12 +189,12 @@ public class UserDB {
 		
 		try {
 			conn = dataSource.getConnection();
-			stmt = conn.prepareStatement(USER_SEARCH_BY_EMAIL_STATEMENT);
-			stmt.setString(1, email);
+			stmt = conn.prepareStatement(USER_SEARCH_BY_ID_STATEMENT);
+			stmt.setLong(1, id);
 			ResultSet result = stmt.executeQuery();
 			
 			if (result.first()) {
-				foundUser = new User(result.getInt(1), result.getString(2), result.getString(3), result.getString(4));
+				foundUser = new User(result.getInt(1), result.getString(2), result.getString(3), result.getString(4), result.getInt(9));
 				foundUser.setEmailVerificationCode(result.getString(5), result.getTimestamp(6));
 				foundUser.setPasswordResetCode(result.getString(7), result.getTimestamp(8));
 			}
@@ -144,7 +207,7 @@ public class UserDB {
 		
 		return foundUser;
 	}
-	
+
 	/**
 	 * Creates a new user and stores it in the database.
 	 * 

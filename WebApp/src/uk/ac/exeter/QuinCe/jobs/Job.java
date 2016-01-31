@@ -1,11 +1,14 @@
 package uk.ac.exeter.QuinCe.jobs;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -111,7 +114,69 @@ public abstract class Job {
 	 * @throws DatabaseException If an error occurs while updating the database
 	 */
 	protected void setProgress(double progress) throws MissingParamException, BadProgressException, NoSuchJobException, DatabaseException {
-		JobManager.setProgress(dataSource, id, progress);
+		Connection conn = null;
+		try {
+			conn = dataSource.getConnection();
+			JobManager.setProgress(conn, id, progress);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving a database connection", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	/**
+	 * Log the fact that the job has been started in the appropriate locations.
+	 * Initially this is just in the job manager, but it can be extended by other classes
+	 * @throws MissingParamException If any of the parameters to the underlying commands are missing
+	 * @throws DatabaseException If an error occurs while updating the database
+	 * @throws NoSuchJobException If the job has disappeared.
+	 */
+	protected void logStarted() throws MissingParamException, DatabaseException, NoSuchJobException {
+		Connection conn = null;
+		try {
+			conn = dataSource.getConnection();
+			JobManager.startJob(conn, id);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving a database connection", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	/**
+	 * Log the fact that the job has been finished in the appropriate locations.
+	 * Initially this is just in the job manager, but it can be extended by other classes
+	 * @throws MissingParamException If any of the parameters to the underlying commands are missing
+	 * @throws DatabaseException If an error occurs while updating the database
+	 * @throws NoSuchJobException If the job has disappeared.
+	 */
+	protected void logFinished() throws MissingParamException, DatabaseException, NoSuchJobException {
+		Connection conn = null;
+		try {
+			conn = dataSource.getConnection();
+			JobManager.finishJob(conn, id);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving a database connection", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	/**
+	 * Logs a job error to the appropriate locations
+	 * @param error The error
+	 */
+	protected void logError(Throwable error) {
+		Connection conn = null;
+		try {
+			conn = dataSource.getConnection();
+			JobManager.errorJob(conn, id, error);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
 	}
 	
 	/**

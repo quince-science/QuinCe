@@ -1,10 +1,109 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	template="/templates/app_page.xhtml">
 
+	<ui:define name="localHead">
+		<script type="text/javascript">
+	      var qcColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(50,50,50)"];
+	      var woceColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(118,211,118)", "rgb(180,180,180)", "rgb(50,50,50)"];
+	
+	      // Data structures for file stats.
+	      var recordCounts = new Array();
+	      recordCounts[0] = 562;
+	      recordCounts[1] = 719;
+	
+	      var qcStats = new Array();
+	      qcStats[0] = [35, 50, 403, 74];
+	      qcStats[1] = [203, 424, 65, 27];
+	
+	      var woceStats = new Array();
+	      woceStats[0] = [11, 50, 155, 145, 127, 119];
+	      woceStats[1] = [0, 627, 65, 0, 0, 27];
+	
+	      function drawStatBar(elementId, recordCount, stats, colors) {
+	        var canvas = $(elementId).get(0);
+	        var ctx = canvas.getContext('2d');
+	
+	        var barFilled = 0;
+	        for (var i = 0; i &lt; stats.length; i++) {
+	          ctx.fillStyle = colors[i];
+	          ctx.fillRect(barFilled * canvas.width, 0, (stats[i] / recordCount) * canvas.width, canvas.height);
+	          barFilled += (stats[i] / recordCount);
+	        }
+	      }
+	      
+	      function deleteFile(id, fileName) {
+	    	  if (confirm('Are you sure you want to delete file ' + fileName + '?')) {
+	    		  $('#fileListForm\\:chosenFile').val(id);
+	    		  return true;
+	    	  } else {
+	    		  return false;
+	    	  }
+	      }
+	      
+	    </script>
+	</ui:define>
+
 	<ui:define name="content">
-		<h1>Logged In!</h1>
+		<h1>Your files</h1>
+		<div class="fullPage">
+			<h:form id="fileListForm">
+				<h:inputHidden id="chosenFile" value="#{fileListBean.chosenFile}"/>
+				
+				<p:dataTable var="file" value="#{fileListBean.fileList}" scrollable="true" scrollHeight="450">
+					<p:column>
+						<f:facet name="header">File</f:facet>
+						#{file.fileName}
+					</p:column>
+					<p:column>
+						<f:facet name="header">Instrument</f:facet>
+						#{file.instrument}
+					</p:column>
+					<p:column>
+						<f:facet name="header">Start Date</f:facet>
+						#{file.startDateString}
+					</p:column>
+					<p:column>
+						<f:facet name="header">Records</f:facet>
+						#{file.recordCount}
+					</p:column>
+					<p:column>
+						<f:facet name="header">Status</f:facet>
+						#{file.jobName}
+					</p:column>
+					<p:column>
+						<f:facet name="header">QC Stats</f:facet>
+						<canvas id="qcBar_1" class="statBar"></canvas>
+			            <script type="text/javascript">
+			              drawStatBar('#qcBar_1', recordCounts[0], qcStats[0], qcColors);
+			            </script>
+					</p:column>
+					<p:column>
+						<f:facet name="header">WOCE Stats</f:facet>
+						<canvas id="woceBar_1" class="statBar"></canvas>
+			            <script type="text/javascript">
+			              drawStatBar('#woceBar_1', recordCounts[0], woceStats[0], woceColors);
+			            </script>
+					</p:column>
+					<p:column>
+						<f:facet name="header">Actions</f:facet>
+						Q|E|<h:commandLink id="Delete_#{file.fileId}" value="D" onclick="deleteFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.deleteFile}"/>
+					</p:column>
+					<p:column>
+						<f:facet name="header">Time remaining</f:facet>
+						#{file.timeRemaining} days
+					</p:column>
+				</p:dataTable>
+				
+				<div class="buttonWrapper">
+					<h:commandButton value="Upload" action="#{fileListBean.uploadFile}"/>
+				</div>
+				
+			</h:form>
+		</div>
 	</ui:define>
 </ui:composition>
-	

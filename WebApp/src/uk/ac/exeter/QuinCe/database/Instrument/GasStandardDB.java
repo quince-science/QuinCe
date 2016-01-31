@@ -6,8 +6,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -17,6 +20,7 @@ import uk.ac.exeter.QuinCe.data.StandardStub;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -84,6 +88,26 @@ public class GasStandardDB {
 			+ "instrument_id = ? AND run_type = " + RunType.RUN_TYPE_STANDARD;
 	
 	/**
+	 * Statement to find standard dates between two given dates
+	 */
+	private static final String GET_DATES_BETWEEN_QUERY = "SELECT deployed_date FROM gas_standard_deployment WHERE instrument_id = ? AND deployed_date >= ? AND deployed_date <= ? ORDER BY deployed_date ASC";
+	
+	/**
+	 * Statement to find the latest standard date before a given date
+	 */
+	private static final String GET_DATE_BEFORE_QUERY = "SELECT deployed_date FROM gas_standard_deployment WHERE instrument_id = ? AND deployed_date <= ? ORDER BY deployed_date DESC LIMIT 1";
+	
+	/**
+	 * Statement to find the latest standard date before a given date
+	 */
+	private static final String GET_DATE_AFTER_QUERY = "SELECT deployed_date FROM gas_standard_deployment WHERE instrument_id = ? AND deployed_date >= ? ORDER BY deployed_date DESC LIMIT 1";
+	
+	/**
+	 * Statement to find the latest standard date before a given date
+	 */
+	private static final String GET_STANDARD_BEFORE_QUERY = "SELECT id, deployed_date FROM gas_standard_deployment WHERE instrument_id = ? AND deployed_date <= ? ORDER BY deployed_date DESC LIMIT 1";
+	
+	/**
 	 * Add a standard to the database
 	 * @param dataSource A data source
 	 * @param instrumentID The ID of the instrument
@@ -137,15 +161,7 @@ public class GasStandardDB {
 
 			conn.commit();
 		} catch (SQLException e) {
-			if (null != conn) {
-	            try {
-	                System.err.print("Transaction is being rolled back");
-	                conn.rollback();
-	            } catch(SQLException excep) {
-	                
-	            }
-			}
-			
+			DatabaseUtils.rollBack(conn);
 			throw new DatabaseException("Error while storing new standard records", e);
 		} finally {
 			DatabaseUtils.closeStatements(concentrationStmts);
@@ -253,9 +269,45 @@ public class GasStandardDB {
 			
 			while (records.next()) {
 				StandardConcentration concentration = new StandardConcentration(records.getString(1));
-				concentration.setConcentration(records.getDouble(2));
-				
+				concentration.setConcentration(records.getDouble(2));	
 				concentrations.add(concentration);
+			}
+			
+			if (concentrations.size() == 0) {
+				throw new RecordNotFoundException("Could not find any concentrations for standard " + standard.getId());
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving concentrations", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return concentrations;
+	}
+
+	public static Map<String, StandardConcentration> getConcentrationsMap(DataSource dataSource, StandardStub standard) throws MissingParamException, RecordNotFoundException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(standard, "standard");
+				
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		Map<String, StandardConcentration> concentrations = new HashMap<String, StandardConcentration>();
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_CONCENTRATIONS_QUERY);
+			stmt.setLong(1, standard.getId());
+			records = stmt.executeQuery();
+			
+			while (records.next()) {
+				StandardConcentration concentration = new StandardConcentration(records.getString(1));
+				concentration.setConcentration(records.getDouble(2));	
+				concentrations.put(records.getString(1), concentration);
 			}
 			
 			if (concentrations.size() == 0) {
@@ -321,12 +373,7 @@ public class GasStandardDB {
 			conn.commit();
 			
 		} catch (SQLException e) {
-			try {
-				conn.rollback();
-			} catch (SQLException e2) {
-				// DO nothing
-			}
-			
+			DatabaseUtils.rollBack(conn);
 			throw new DatabaseException("Error while updating standard " + standardID, e);
 		} finally {
 			DatabaseUtils.closeStatements(removeConcentrationsStmt, updateStandardStmt);
@@ -401,14 +448,7 @@ public class GasStandardDB {
 			conn.commit();
 			
 		} catch (SQLException e) {
-			if (null != conn) {
-				try {
-					conn.rollback();
-				} catch (SQLException e2) {
-					// Do nothing
-				}
-			}
-			
+			DatabaseUtils.rollBack(conn);
 			throw new DatabaseException("Error while deleting calibraion " + standardID, e);
 		} finally {
 			DatabaseUtils.closeStatements(removeCoeffsStmt, removeCalibStmt);
@@ -460,4 +500,151 @@ public class GasStandardDB {
 			DatabaseUtils.closeConnection(conn);
 		}
 	}
+
+	/**
+	 * Return a list of gas standard dates for a given instrument that
+	 * fall between two specified dates
+	 * @param dataSource A data source
+	 * @param instrumentID The database ID of the instrument
+	 * @param firstDate The first date
+	 * @param lastDate The last date
+	 * @return A list of standard dates
+	 * @throws MissingParamException If any of the parameters are missing
+	 * @throws DatabaseException If an error occurs while retrieving the dates
+	 */
+	public static List<Calendar> getStandardDatesBetween(DataSource dataSource, long instrumentID, Calendar firstDate, Calendar lastDate) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(instrumentID, "instrumentID");
+		MissingParam.checkMissing(firstDate, "firstDate");
+		MissingParam.checkMissing(lastDate, "lastDate");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		List<Calendar> result = new ArrayList<Calendar>();
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_DATES_BETWEEN_QUERY);
+			stmt.setLong(1, instrumentID);
+			stmt.setDate(2, new java.sql.Date(DateTimeUtils.setMidnight(firstDate).getTime().getTime()));
+			stmt.setDate(3, new java.sql.Date(DateTimeUtils.setMidnight(lastDate).getTime().getTime()));
+			
+			records = stmt.executeQuery();
+			while (records.next()) {
+				Calendar standardDate = Calendar.getInstance();
+				standardDate.setTime(records.getDate(1));
+				result.add(standardDate);
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while searching for gas standard dates", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Find the last gas standard date for a specified instrument before a given date
+	 * @param dataSource A data source
+	 * @param instrumentID The instrument ID
+	 * @param date The date
+	 * @return The last standard date before the given date. If there is no date, returns null.
+	 * @throws MissingParamException If any of the parameters are missing
+	 * @throws DatabaseException If an error occurs while retrieving the date.
+	 */
+	public static Calendar getStandardDateBefore(DataSource dataSource, long instrumentId, Calendar date) throws MissingParamException, DatabaseException {
+		return getStandardDateFromQuery(dataSource, instrumentId, date, GET_DATE_BEFORE_QUERY);
+	}
+	
+	/**
+	 * Find the last gas standard date for a specified instrument before a given date
+	 * @param dataSource A data source
+	 * @param instrumentID The instrument ID
+	 * @param date The date
+	 * @return The last standard date before the given date. If there is no date, returns null.
+	 * @throws MissingParamException If any of the parameters are missing
+	 * @throws DatabaseException If an error occurs while retrieving the date.
+	 */
+	public static Calendar getStandardDateAfter(DataSource dataSource, long instrumentId, Calendar date) throws MissingParamException, DatabaseException {
+		return getStandardDateFromQuery(dataSource, instrumentId, date, GET_DATE_AFTER_QUERY);
+	}
+	
+	private static Calendar getStandardDateFromQuery(DataSource dataSource, long instrumentId, Calendar date, String query) throws MissingParamException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(instrumentId, "instrumentId");
+		MissingParam.checkMissing(date, "date");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		Calendar result = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(query);
+			stmt.setLong(1, instrumentId);
+			stmt.setDate(2, new java.sql.Date(DateTimeUtils.setMidnight(date).getTime().getTime()));
+			
+			records = stmt.executeQuery();
+			if (records.next()) {
+				result = Calendar.getInstance();
+				result.setTime(records.getDate(1));
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while searching for gas standard dates", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+
+		return result;
+	}
+	
+	/**
+	 * Find the last gas standard for a specified instrument before a given date
+	 * @param dataSource A data source
+	 * @param instrumentID The instrument ID
+	 * @param date The date
+	 * @return The last standard date before the given date. If there is no date, returns null.
+	 * @throws MissingParamException If any of the parameters are missing
+	 * @throws DatabaseException If an error occurs while retrieving the date.
+	 */
+	public static StandardStub getStandardBefore(DataSource dataSource, long instrumentID, Calendar date) throws MissingParamException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(instrumentID, "instrumentID");
+		MissingParam.checkMissing(date, "date");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		StandardStub result = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_STANDARD_BEFORE_QUERY);
+			stmt.setLong(1, instrumentID);
+			stmt.setDate(2, new java.sql.Date(DateTimeUtils.setMidnight(date).getTime().getTime()));
+			
+			records = stmt.executeQuery();
+			if (records.next()) {
+				result = new StandardStub(records.getLong(1), instrumentID, records.getDate(2));
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while searching for gas standard dates", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+
+		return result;
+	}
+
 }

@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -48,9 +49,9 @@ public class InstrumentDB {
 			+ "salinity_1_col, salinity_2_col, salinity_3_col, "
 			+ "eqt_1_col, eqt_2_col, eqt_3_col, "
 			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
-			+ "atmospheric_pressure_col, moisture_col, co2_col) "
+			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count) "
 			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	/**
 	 * Statement for retrieving all the details of a specific instrument
@@ -69,8 +70,8 @@ public class InstrumentDB {
 			+ "salinity_1_col, salinity_2_col, salinity_3_col, "
 			+ "eqt_1_col, eqt_2_col, eqt_3_col, "
 			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
-			+ "atmospheric_pressure_col, moisture_col, co2_col "
-			+ "FROM instrument WHERE id = ?";
+			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count "
+			+ "FROM instrument WHERE id = ? ORDER BY name";
 			
 	
 	/**
@@ -82,6 +83,8 @@ public class InstrumentDB {
 	 * Query for retrieving the list of instruments owned by a particular user
 	 */
 	private static final String GET_INSTRUMENT_LIST_QUERY = "SELECT id, name FROM instrument WHERE owner = ? ORDER BY name ASC";
+	
+	private static final String GET_RUN_TYPES_QUERY = "SELECT id, run_name, run_type FROM run_types WHERE instrument_id = ?";
 	
 	/**
 	 * Add an instrument to the database
@@ -156,6 +159,7 @@ public class InstrumentDB {
 			instrStmt.setInt(48, instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE));
 			instrStmt.setInt(49, instrument.getColumnAssignment(Instrument.COL_MOISTURE));
 			instrStmt.setInt(50, instrument.getColumnAssignment(Instrument.COL_CO2));
+			instrStmt.setInt(51, instrument.getRawFileColumnCount());
 			
 			
 			instrStmt.execute();
@@ -185,15 +189,7 @@ public class InstrumentDB {
 			
 		} catch (SQLException e) {
 			
-			if (null != conn) {
-	            try {
-	                System.err.print("Transaction is being rolled back");
-	                conn.rollback();
-	            } catch(SQLException excep) {
-	                
-	            }
-			}
-			
+			DatabaseUtils.rollBack(conn);
 			throw new DatabaseException("Error while storing new instrument records", e);
 		} finally {
 			DatabaseUtils.closeResultSets(generatedKeys);
@@ -208,8 +204,7 @@ public class InstrumentDB {
 	 * The list contains InstrumentStub objects, which just contain
 	 * each instrument's ID and name.
 	 * 
-	 * The list is ordered by the instrument with the most recently
-	 * touched data file first, then by name.
+	 * The list is ordered by the name of the instrument.
 	 * 
 	 * @param owner The owner whose instruments are to be listed
 	 * @return The list of instruments
@@ -261,21 +256,24 @@ public class InstrumentDB {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		
 		Connection conn = null;
-		PreparedStatement stmt = null;
+		PreparedStatement instrStmt = null;
 		ResultSet record = null;
-		Instrument instrument = new Instrument();
+		PreparedStatement runTypeStmt = null;
+		ResultSet runTypeRecords = null;
+		Instrument instrument = null;
+		TreeSet<RunType> runTypes = new TreeSet<RunType>();
 		
 		try {
 			conn = dataSource.getConnection();
-			stmt = conn.prepareStatement(GET_INSTRUMENT_QUERY);
-			stmt.setLong(1, instrumentID);
+			instrStmt = conn.prepareStatement(GET_INSTRUMENT_QUERY);
+			instrStmt.setLong(1, instrumentID);
 			
-			record = stmt.executeQuery();
+			record = instrStmt.executeQuery();
 			if (!record.next()) {
-				throw new RecordNotFoundException("Instrument with id " + instrumentID + "does not exist");
+				throw new RecordNotFoundException("Instrument with id " + instrumentID + " does not exist");
 			} else {
+				instrument = new Instrument(record.getLong(1));
 				instrument.setDatabaseId(instrumentID);
-				instrument.setOwnerId(record.getLong(1));
 				instrument.setName(record.getString(2));
 				instrument.setIntakeTempName1(record.getString(3));
 				instrument.setIntakeTempName2(record.getString(4));
@@ -325,17 +323,45 @@ public class InstrumentDB {
 				instrument.setColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE, record.getInt(48));
 				instrument.setColumnAssignment(Instrument.COL_MOISTURE, record.getInt(49));
 				instrument.setColumnAssignment(Instrument.COL_CO2, record.getInt(50));
+				instrument.setRawFileColumnCount(record.getInt(51));
 				
+				runTypeStmt = conn.prepareStatement(GET_RUN_TYPES_QUERY);
+				runTypeStmt.setLong(1, instrumentID);
+				runTypeRecords = runTypeStmt.executeQuery();
+				while (runTypeRecords.next()) {
+					runTypes.add(new RunType(runTypeRecords.getLong(1), instrumentID, runTypeRecords.getString(2), runTypeRecords.getInt(3)));
+				}
+				
+				instrument.setRunTypes(runTypes);
 			}
 			
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while retrieving instrument details", e);
 		} finally {
-			DatabaseUtils.closeResultSets(record);
-			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeResultSets(record, runTypeRecords);
+			DatabaseUtils.closeStatements(instrStmt, runTypeStmt);
 			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return instrument;
+	}
+	
+	/**
+	 * Get the Instrument object associated with a give data file,
+	 * identified by its database ID
+	 * @param dataSource A data source
+	 * @param fileId The data file ID
+	 * @return The instrument object
+	 * @throws MissingParamException If any parameters are missing
+	 * @throws DatabaseException If an unexpected database error occurs
+	 * @throws RecordNotFoundException If the file ID is not in the database
+	 */
+	public static Instrument getInstrumentByFileId(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(fileId, "fileId");
+		
+		long instrumentId = DataFileDB.getInstrumentId(dataSource, fileId);
+		return getInstrument(dataSource, instrumentId);
 	}
 }

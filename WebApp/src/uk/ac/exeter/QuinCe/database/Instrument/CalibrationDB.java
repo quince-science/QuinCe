@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -14,10 +15,12 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.CalibrationCoefficients;
 import uk.ac.exeter.QuinCe.data.CalibrationStub;
 import uk.ac.exeter.QuinCe.data.Instrument;
+import uk.ac.exeter.QuinCe.data.InstrumentException;
 import uk.ac.exeter.QuinCe.data.SensorCode;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -78,6 +81,16 @@ public class CalibrationDB {
 	private static final String REMOVE_CALIBRATION_STATEMENT = "DELETE FROM sensor_calibration WHERE id = ?";
 	
 	/**
+	 * Statement to find calibration dates between two given dates
+	 */
+	private static final String GET_CALIBRATIONS_BETWEEN_QUERY = "SELECT id, calibration_date FROM sensor_calibration WHERE instrument_id = ? AND calibration_date > ? AND calibration_date <= ? ORDER BY calibration_date ASC";
+	
+	/**
+	 * Statement to find the latest calibration date before a given date
+	 */
+	private static final String GET_CALIBRATION_BEFORE_QUERY = "SELECT id, calibration_date FROM sensor_calibration WHERE instrument_id = ? AND calibration_date <= ? ORDER BY calibration_date DESC LIMIT 1";
+	
+	/**
 	 * Add a calibration to the database
 	 * @param dataSource A data source
 	 * @param instrumentID The ID of the instrument being calibrated
@@ -136,15 +149,8 @@ public class CalibrationDB {
 
 			conn.commit();
 		} catch (SQLException e) {
-			if (null != conn) {
-	            try {
-	                System.err.print("Transaction is being rolled back");
-	                conn.rollback();
-	            } catch(SQLException excep) {
-	                
-	            }
-			}
-			
+
+			DatabaseUtils.rollBack(conn);
 			throw new DatabaseException("Error while storing new calibration records", e);
 		} finally {
 			DatabaseUtils.closeStatements(coefficientStmts);
@@ -334,12 +340,8 @@ public class CalibrationDB {
 			conn.commit();
 			
 		} catch (SQLException e) {
-			try {
-				conn.rollback();
-			} catch (SQLException e2) {
-				// DO nothing
-			}
-			
+
+			DatabaseUtils.rollBack(conn);
 			throw new DatabaseException("Error while updating calibration " + calibrationID, e);
 		} finally {
 			DatabaseUtils.closeStatements(removeCoeffsStmt, updateCalibStmt);
@@ -414,18 +416,148 @@ public class CalibrationDB {
 			conn.commit();
 			
 		} catch (SQLException e) {
-			if (null != conn) {
-				try {
-					conn.rollback();
-				} catch (SQLException e2) {
-					// Do nothing
-				}
-			}
-			
+
+			DatabaseUtils.rollBack(conn);
 			throw new DatabaseException("Error while deleting calibraion " + calibrationID, e);
 		} finally {
 			DatabaseUtils.closeStatements(removeCoeffsStmt, removeCalibStmt);
 			DatabaseUtils.closeConnection(conn);
 		}
+	}
+	
+	/**
+	 * Return a list of calibration dates for a given instrument that
+	 * fall between two specified dates
+	 * @param dataSource A data source
+	 * @param instrumentID The database ID of the instrument
+	 * @param firstDate The first date
+	 * @param lastDate The last date
+	 * @return A list of calibration dates
+	 * @throws MissingParamException If any of the parameters are missing
+	 * @throws DatabaseException If an error occurs while retrieving the dates
+	 */
+	public static List<Calendar> getCalibrationDatesBetween(DataSource dataSource, long instrumentID, Calendar firstDate, Calendar lastDate) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(instrumentID, "instrumentID");
+		MissingParam.checkMissing(firstDate, "firstDate");
+		MissingParam.checkMissing(lastDate, "lastDate");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		List<Calendar> result = new ArrayList<Calendar>();
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_CALIBRATIONS_BETWEEN_QUERY);
+			stmt.setLong(1, instrumentID);
+			stmt.setDate(2, new java.sql.Date(DateTimeUtils.setMidnight(firstDate).getTime().getTime()));
+			stmt.setDate(3, new java.sql.Date(DateTimeUtils.setMidnight(lastDate).getTime().getTime()));
+			
+			records = stmt.executeQuery();
+			while (records.next()) {
+				Calendar calibrationDate = Calendar.getInstance();
+				calibrationDate.setTime(records.getDate(2));
+				result.add(calibrationDate);
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while searching for calibration dates", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Find the last calibration date for a specified instrument before a given date
+	 * @param dataSource A data source
+	 * @param instrumentID The instrument ID
+	 * @param date The date
+	 * @return The last calibration date before the given date. If there is no date, returns null.
+	 * @throws MissingParamException If any of the parameters are missing
+	 * @throws DatabaseException If an error occurs while retrieving the date.
+	 */
+	public static Calendar getCalibrationDateBefore(DataSource dataSource, long instrumentID, Calendar date) throws MissingParamException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(instrumentID, "instrumentID");
+		MissingParam.checkMissing(date, "date");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		Calendar result = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_CALIBRATION_BEFORE_QUERY);
+			stmt.setLong(1, instrumentID);
+			stmt.setDate(2, new java.sql.Date(DateTimeUtils.setMidnight(date).getTime().getTime()));
+			
+			records = stmt.executeQuery();
+			if (records.next()) {
+				result = Calendar.getInstance();
+				result.setTime(records.getDate(2));
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while searching for calibration dates", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+
+		return result;
+	}
+	
+	public static List<CalibrationStub> getCalibrationsForFile(DataSource dataSource, long instrumentId, Calendar startDate, Calendar endDate) throws MissingParamException, DatabaseException, InstrumentException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(instrumentId, "instrumentId");
+		MissingParam.checkMissing(startDate, "startDate");
+		MissingParam.checkMissing(endDate, "endDate");
+		
+		List<CalibrationStub> calibrations = new ArrayList<CalibrationStub>();
+		
+		Connection conn = null;
+		PreparedStatement beforeStmt = null;
+		PreparedStatement duringStmt = null;
+		ResultSet beforeRecord = null;
+		ResultSet duringRecords = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			
+			beforeStmt = conn.prepareStatement(GET_CALIBRATION_BEFORE_QUERY);
+			beforeStmt.setLong(1, instrumentId);
+			beforeStmt.setDate(2, new java.sql.Date(DateTimeUtils.setMidnight(startDate).getTime().getTime()));
+			beforeRecord = beforeStmt.executeQuery();
+			if (!beforeRecord.next()) {
+				throw new InstrumentException("There is no calibration available prior to this file");
+			} else {
+				calibrations.add(new CalibrationStub(beforeRecord.getLong(1), instrumentId, beforeRecord.getDate(2)));
+			}
+			
+			duringStmt = conn.prepareStatement(GET_CALIBRATIONS_BETWEEN_QUERY);
+			duringStmt.setLong(1, instrumentId);
+			duringStmt.setDate(2, new java.sql.Date(DateTimeUtils.setMidnight(startDate).getTime().getTime()));
+			duringStmt.setDate(3, new java.sql.Date(DateTimeUtils.setMidnight(endDate).getTime().getTime()));
+			duringRecords = duringStmt.executeQuery();
+			while (duringRecords.next()) {
+				calibrations.add(new CalibrationStub(duringRecords.getLong(1), instrumentId, duringRecords.getDate(2)));
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while searching for calibrations", e);
+		} finally {
+			DatabaseUtils.closeResultSets(beforeRecord, duringRecords);
+			DatabaseUtils.closeStatements(beforeStmt, duringStmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return calibrations;
 	}
 }

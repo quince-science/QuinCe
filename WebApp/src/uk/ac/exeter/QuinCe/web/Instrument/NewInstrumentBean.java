@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +27,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  */
 public class NewInstrumentBean extends FileUploadBean implements Serializable {
 
-	private static final long serialVersionUID = 6578490211991423884L;
+	private static final long serialVersionUID = 3590765853235157932L;
 
 	static {
 		FORM_NAME = "instrumentForm";
@@ -123,11 +124,6 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	private List<Map<Integer, String>> sampleFileContents = null;
 	
 	/**
-	 * The number of files in the sample file
-	 */
-	private int sampleFileColumnCount = -1;
-	
-	/**
 	 * The result of the sample file extraction
 	 */
 	private int sampleFileExtractionResult = EXTRACTION_OK;
@@ -166,8 +162,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 */
 	@PostConstruct
 	public void init() {
-		instrumentDetails = new Instrument();
-		instrumentDetails.setOwnerId(getUser().getDatabaseID());
+		instrumentDetails = new Instrument(getUser().getDatabaseID());
 	}
 	
 	/**
@@ -275,11 +270,10 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		otherSeparatorChar = null;
 		file = null;
 		sampleFileContents = null;
-		sampleFileColumnCount = -1;
 		sampleFileExtractionResult = EXTRACTION_OK;
 		sampleFileExtractionMessage = "The extraction has not been run";
 		runTypeClassifications = null;
-		instrumentDetails = new Instrument();
+		instrumentDetails = new Instrument(getUser().getDatabaseID());
 	}
 	
 	/**
@@ -293,7 +287,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		sampleFileContents = new ArrayList<Map<Integer, String>>();
 
 		try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(getFile().getInputstream()));		
+			BufferedReader in = new BufferedReader(new InputStreamReader(getFile().getInputstream(), StandardCharsets.UTF_8));		
 			String line;
 			int lineCount = 0;
 			while ((line = in.readLine()) != null) {
@@ -304,10 +298,10 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 						setSampleFileExtractionError("The source file has only one column. Please check that you have specified the correct column separator.");
 						break;
 					} else {
-						setSampleFileColumnCount(splitLine.length);
+						instrumentDetails.setRawFileColumnCount(splitLine.length);
 					}
 				} else {
-					if (getSampleFileColumnCount() != splitLine.length) {
+					if (instrumentDetails.getRawFileColumnCount() != splitLine.length) {
 						setSampleFileExtractionError("The file does not contain a consistent number of columns (line " + lineCount + ").");
 						break;
 					}
@@ -539,7 +533,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		
 		List<SampleFileColumn> columns = new ArrayList<SampleFileColumn>();
 		
-		for (int i = 0; i < sampleFileContents.get(0).size(); i++) {
+		for (int i = 0; i < instrumentDetails.getRawFileColumnCount(); i++) {
 			columns.add(new SampleFileColumn(i));
 		}
 		
@@ -600,23 +594,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	public void setOtherSeparatorChar(String otherSeparatorChar) {
 		this.otherSeparatorChar = otherSeparatorChar;
 	}
-	
-	/**
-	 * Retrieve the number of columns in the sample file
-	 * @return The number of columns in the sample file
-	 */
-	public int getSampleFileColumnCount() {
-		return sampleFileColumnCount;
-	}
-	
-	/**
-	 * Set the number of columns in the sample file
-	 * @param sampleFileColumnCount The number of columns in the sample file
-	 */
-	public void setSampleFileColumnCount(int sampleFileColumnCount) {
-		this.sampleFileColumnCount = sampleFileColumnCount;
-	}
-	
+		
 	/**
 	 * Returns the result of the sample file extraction. One of
 	 * {@link EXTRACTION_OK} or {@link EXTRACTION_FAILED}.

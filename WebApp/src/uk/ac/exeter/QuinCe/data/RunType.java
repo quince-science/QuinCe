@@ -33,6 +33,10 @@ public class RunType implements Comparable<RunType>, Serializable {
 	 */
 	public static final int RUN_TYPE_STANDARD = 2;
 	
+	/**
+	 * The database ID of the run type
+	 */
+	private long databaseId;
 	
 	/**
 	 * The database ID of the instrument to which this
@@ -56,7 +60,8 @@ public class RunType implements Comparable<RunType>, Serializable {
 	 * @param name The name of the run type
 	 * @param runType The type of the run type
 	 */
-	public RunType(long instrumentID, String name, int runType) {
+	public RunType(long id, long instrumentID, String name, int runType) {
+		this.databaseId = id;
 		this.instrumentID = instrumentID;
 		this.name = name;
 		this.runType = runType;
@@ -69,6 +74,7 @@ public class RunType implements Comparable<RunType>, Serializable {
 	 * @param runType The type of the run type
 	 */
 	public RunType(String name, int runType) {
+		this.databaseId = DatabaseUtils.NO_DATABASE_RECORD;
 		this.instrumentID = DatabaseUtils.NO_DATABASE_RECORD;
 		this.name = name;
 		this.runType = runType;
@@ -77,6 +83,14 @@ public class RunType implements Comparable<RunType>, Serializable {
 	/////////////// *** METHODS *** /////////////////
 	
 	/////////////// *** GETTERS AND SETTERS *** //////////////
+	
+	/**
+	 * Returns the database ID of this run type
+	 * @return The database ID
+	 */
+	public long getDatabaseId() {
+		return databaseId;
+	}
 	
 	/**
 	 * Returns the ID of the instrument to which this
@@ -108,6 +122,40 @@ public class RunType implements Comparable<RunType>, Serializable {
 	 * @return The type of this run type
 	 */
 	public int getRunType() {
+		return runType;
+	}
+	
+	/**
+	 * Determines whether or not this run type is a measurement,
+	 * as opposed to a standard or an ignored type
+	 * @return {@code true} if the run type is a measurement; {@code false} otherwise
+	 */
+	public boolean isMeasurementRunType() {
+		return (runType == RUN_TYPE_ATMOSPHERIC || runType == RUN_TYPE_WATER);
+	}
+	
+	/**
+	 * Determines whether or not this run type is a for a gas standard,
+	 * as opposed to a measurement or an ignored type
+	 * @return {@code true} if the run type is for a gas standard; {@code false} otherwise
+	 */
+	public boolean isStandardRunType() {
+		return runType == RUN_TYPE_STANDARD;
+	}
+	
+	/**
+	 * Determines whether or not this run type should be ignored.
+	 * @return {@code true} if the run type should be ignored; {@code false} if it should be used.
+	 */
+	public boolean isIgnoredRunType() {
+		return (runType == RUN_TYPE_NONE);
+	}
+	
+	/**
+	 * Returns the integer code for the run type
+	 * @return The run type code
+	 */
+	public int getCode() {
 		return runType;
 	}
 
