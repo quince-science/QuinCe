@@ -25,6 +25,8 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public class DataReductionJob extends FileJob {
 
+	private static final double PASCALS_TO_ATMOSPHERES = 0.00000986923266716013;
+	
 	public DataReductionJob(DataSource dataSource, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
 		super(dataSource, config, jobId, parameters);
 	}
@@ -67,9 +69,13 @@ public class DataReductionJob extends FileJob {
 					}
 					
 					double calibratedCo2 = calcCalibratedCo2(driedCo2, record.getTime(), standardRuns, instrument);
+					double pCo2TEDry = calcPco2TEDry(calibratedCo2, meanEqp);
+					
+					
 										
 					DataReductionDB.storeRow(conn, fileId, record.getRow(), record.getCo2Type(), meanIntakeTemp,
-							meanSalinity, meanEqt, meanEqp, trueMoisture, driedCo2, calibratedCo2);
+							meanSalinity, meanEqt, meanEqp, trueMoisture, driedCo2, calibratedCo2,
+							pCo2TEDry);
 				}
 				
 				if (Math.floorMod(lineNumber, 100) == 0) {
@@ -169,17 +175,17 @@ public class DataReductionJob extends FileJob {
 		int count = 0;
 		
 		if (instrument.hasEqp1()) {
-			total = total + values.getEqt1();
+			total = total + values.getEqp1();
 			count++;
 		}
 		
 		if (instrument.hasEqp2()) {
-			total = total + values.getEqt2();
+			total = total + values.getEqp2();
 			count++;
 		}
 		
 		if (instrument.hasEqp3()) {
-			total = total + values.getEqt3();
+			total = total + values.getEqp3();
 			count++;
 		}
 		
@@ -189,6 +195,15 @@ public class DataReductionJob extends FileJob {
 	private double calcCalibratedCo2(double driedCo2, Calendar time, GasStandardRuns standardRuns, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		SimpleRegression regression = standardRuns.getStandardsRegression(dataSource, instrument.getDatabaseId(), time);
 		return regression.predict(driedCo2);
+	}
+	
+	private double calcPco2TEDry(double co2, double eqp) {
+		
+		// Calibrated CO2 to Pascals (adjusted for equilibrator pressure)
+		double pressureAdjusted = (co2 * 1.0e-6) * (eqp * 100);
+		
+		// Convert back to microatmospheres
+		return pressureAdjusted * PASCALS_TO_ATMOSPHERES * 1.0e6;
 	}
 }
 

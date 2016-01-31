@@ -338,11 +338,12 @@ mean_intake_temp         Float          The intake temperature, as a mean of all
 mean_salinity            Float          The salinity, as a mean of all the sensor measurements.
 mean_eqt                 Float          The equilibrator temperature, as a mean of all the sensor measurements.
 mean_eqp                 Float          The equilibrator pressure, as a mean of all the sensor measurements.
+atmospheric_pressure     Float          The atmospheric pressure, either from the instrument or imported
 true_moisture            Float          The true moisture, calculated as the difference between the measured moisture and the moisture measured from the dry standard gases.
 dried_co2                Float          The mathematically dried CO~2~ value
 calibrated_co2           Float          The CO~2~ value calibrated to the gas standards
+pco2_te_dry              Float          Dry pCO~2~ at equilibrator temperature
 moisture                 Float          The moisture
-atmospheric_pressure     Float          The atmospheric pressure, either from the instrument or imported
 ph2o                     Float          The
 fco2                     Float          The calculated fCO~2~ value
 
