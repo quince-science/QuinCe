@@ -1,0 +1,65 @@
+% Sharing QC routines between QuinCe and SOCAT
+
+# Introduction
+
+The SOCAT automation website performs a number automatic quality control (QC) routines to reduce the human time required for QC and minimise the number of these errors that can easily be missed. Some of these routines have already been written for SOCAT, and have been deployed as part of the Sanity Checker used to flag very simple likely data errors (missing or out of range values, data spikes etc.). These routines will increase in both number and complexity over time, relieving more and more of the QC burden from the human QCers.
+
+The QuinCe website being developed for ICOS will perform very similar QC tasks, so it makes sense that these routines are designed so that they can be shared between the two systems to benefit both projects.
+
+This document describes how the QC routines have been developed for SOCAT, and what changes will be required to allow the routines to be shared between SOCAT and QuinCe. This will require a certain amount of code refactoring in SOCAT and a change of approach in how the routines are called.
+
+# Current SOCAT system
+
+QC routines in the SOCAT system are currently performed in two places. Missing value checks and range checks are performed as the data is loaded; whether values are required and the valid range of values for each column are specified in `socat_column_config.csv` file, which specifies the columns required for processing in SOCAT. The configuration file contains a number of columns, but the ones pertinent to this document are:
+
+Column                     Meaning
+---------------            ---------------------------
+Field                      The column name
+Required                   Indicates whether or not the column is required for processing
+Numeric                    Indicates whether or not the field is numeric
+Questionable_Range_Min     Values below this threshold will be given a Questionable flag
+Questionable_Range_Max     Values above this threshold will be given a Questionable flag
+Bad_Range_Min              Values below this threshold will be given a Bad flag
+Bad_Range_Max              Values above this threshold will be given a Bad flag
+Missing_Flag               The flag to be assigned to Required values that are missing (Questionable or Bad)
+
+For each column in the file, the SOCAT Sanity checker looks through each record to determine whether the required values are missing and whether or not they are within the configured range.
+
+All other checks are performed by individual classes that implement a specific interface. The Sanity Checker loops through each record in the data file (represented by a `SocatDataRecord` object), and passes it to each registered checker. The checker sets a WOCE flag on the record object according to whether or not the check passes or fails, and returns a message object that can be attached to the file for display to the user. The messages are not attached to the record, but instead are stored in a separate collection to be shown to the user in bulk.
+
+# Differences in behaviour in QuinCe
+
+The QuinCe system differs in behaviour from SOCAT in a few minor ways, which will have a bearing on how the system of combined checks will operate.
+
+## Missing values
+In SOCAT, the system assumes that the data reduction to compute the required CO~2~ values has already been performed. QuinCe performs the data reduction calculation for itself (indeed it is one of its main functions). In QuinCe, therefore, missing values are more critical, since they will prevent the calculation of CO~2~ values from being completed. Any missing values that prevent these calculations must therefore be detected *before* the calculations are attempted.
+
+In the future, it may be that QuinCe will use external data to substitute missing values if it is appropriate (and perhaps set a flag as well). SOCAT provides the option to specify how critical missing values are to the quality of the uploaded data. The difference in these approaches means that missing values will continue to be detected and processed independently by the two systems.
+
+## Flags and messages
+The SOCAT system stores an overall 'record' flag, and some of the columns have their own flag too (but not all) - any issues found in those columns without a dedicated flag have the flag placed in the record flag. Message relating to the flags are stored as `String` objects in appropriate locations.
+
+In QuinCe, there will be one flag stored per record. However, there will be a second field that contains the details of all the issues found in that record, and whether those issues are rated as Questionable or Bad. A utility method will be provided to extract the individual messages and their severity.
+
+## Different types of checker
+
+The SOCAT Sanity Checker currently only implements very simple checks that can be performed quickly. This is because the sanity checks are performed while the user is an active participant in the process, and must not be kept waiting for too long. In the future, a second level of QC checks will be implemented that may take much longer to process, which can be done as a batch task.
+
+In QuinCe, all the checks are performed as batch tasks, and so the speed requirement is not relevant at any stage.
+
+# The revised checker system
+
+## Range checks
+In SOCAT, range checking will be removed from the `socat_column_config.csv` file and the checks being performed at data extraction time. Instead, a new checker class will be created for this purpose, so it and its configuration can be shared with QuinCe.
+
+## Packages
+The checker classes and interfaces to be used by both SOCAT and QuinCe will be developed as a separate project, which can then be imported as a `.jar` file to each project. This project will have its own releases, made as new checkers are added or existing ones updated. These updates can then be applied to both systems (with configuration changes as necessary) without any need to change their own code.
+
+## Processing strategy
+Currently, the SOCAT Sanity Checker loops through each record individually, and passes that record to each checker in turn. Instead, each checker will be passed the entire data set to be processed in one go. This then allows the checker to determine the best strategy for processing the data. Tests have shown that this approach will not have a detrimental effect on the user experience for the initial sanity checking in SOCAT.
+
+## Classes
+The classes currently used in SOCAT for its checks (`SocatDataRecord`, `Message`, `MessageType` etc.) are very close in structure to those required by QuinCe. Therefore only minimal changes will be required to these classes, to make them slightly more generic. The two projects may extend these classes to add small extra functionality to suit their specific needs, but these should be minimal.
+
+## Configuration
+The configuration for the checkers will remain as it is now. A `.csv` file will contain the name of the checker class (just the tail of the complete class name), followed by a list of options that will be specific to each checker. Each checker class will provide a method for checking its parameters to ensure they are correct. These methods will be caused when the applications are deployed, to ensure that they will work correctly for the users.
