@@ -9,9 +9,11 @@ import javax.sql.DataSource;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
+import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RawDataValues;
 import uk.ac.exeter.QuinCe.data.RunType;
+import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.data.Calculation.GasStandardRuns;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
@@ -19,8 +21,10 @@ import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
 import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public class DataReductionJob extends FileJob {
@@ -86,8 +90,12 @@ public class DataReductionJob extends FileJob {
 				}
 			}
 			
+			// Queue up the data reduction job
+			User owner = JobManager.getJobOwner(dataSource, id);
+			JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_AUTO_QC, parameters);
+			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_AUTO_QC);
+
 			conn.commit();
-			
 		} catch (Exception e) {
 			throw new JobFailedException(id, e);
 		} finally {
