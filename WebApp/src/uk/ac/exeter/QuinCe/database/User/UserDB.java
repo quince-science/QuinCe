@@ -171,24 +171,53 @@ public class UserDB {
 	 * 
 	 * If the user can't be found, this method returns {@code null}.
 	 * 
-	 * @param conn The database connection to be used
-	 * @param email The user's database ID
+	 * @param dataSource A data source
+	 * @param id The user's database ID
 	 * @return A User object representing the user, or {@code null} if the user's record could not be found.
 	 * @throws MissingParamException If the supplied email is null
 	 * @throws SQLException
 	 * @see uk.ac.exeter.QuinCe.data.User
 	 */
 	public static User getUser(DataSource dataSource, long id) throws DatabaseException, MissingParamException {
-		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(id, "id");
 		
+		User user = null;
 		Connection conn = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			user = getUser(conn, id);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occured while finding the user", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return user;
+
+	}
+	
+	/**
+	 * Locate a user in the database using their database ID.
+	 * 
+	 * If the user can't be found, this method returns {@code null}.
+	 * 
+	 * @param conn The database connection to be used
+	 * @param id The user's database ID
+	 * @return A User object representing the user, or {@code null} if the user's record could not be found.
+	 * @throws MissingParamException If the supplied email is null
+	 * @throws SQLException
+	 * @see uk.ac.exeter.QuinCe.data.User
+	 */
+	public static User getUser(Connection conn, long id) throws DatabaseException, MissingParamException {
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkPositive(id, "id");
+		
 		PreparedStatement stmt = null;
 		User foundUser = null;
 		
 		try {
-			conn = dataSource.getConnection();
 			stmt = conn.prepareStatement(USER_SEARCH_BY_ID_STATEMENT);
 			stmt.setLong(1, id);
 			ResultSet result = stmt.executeQuery();
@@ -202,7 +231,6 @@ public class UserDB {
 			throw new DatabaseException("An error occurred while searching for the user", e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return foundUser;

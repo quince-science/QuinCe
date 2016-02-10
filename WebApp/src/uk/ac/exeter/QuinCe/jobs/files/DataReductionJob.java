@@ -91,7 +91,7 @@ public class DataReductionJob extends FileJob {
 			}
 			
 			// Queue up the data reduction job
-			User owner = JobManager.getJobOwner(dataSource, id);
+			User owner = JobManager.getJobOwner(conn, id);
 			JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_AUTO_QC, parameters);
 			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_AUTO_QC);
 

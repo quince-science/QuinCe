@@ -738,18 +738,36 @@ public class JobManager {
 		
 	}
 
-	public static User getJobOwner(DataSource dataSource, long jobId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+	public static User getJobOwner(DataSource dataSource, long jobId) throws MissingParamException, DatabaseException, RecordNotFoundException, SQLException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(jobId, "jobId");
 		
 		User owner = null;
-		
 		Connection conn = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			owner = getJobOwner(conn, jobId);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occured while finding the job owner", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return owner;
+	}
+	
+		
+	public static User getJobOwner(Connection conn, long jobId) throws MissingParamException, RecordNotFoundException, DatabaseException {
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkPositive(jobId, "jobId");
+
+		User owner = null;
+		
 		PreparedStatement stmt = null;
 		ResultSet record = null;
 		
 		try {
-			conn = dataSource.getConnection();
 			stmt = conn.prepareStatement(GET_JOB_OWNER_QUERY);
 			stmt.setLong(1, jobId);
 			
@@ -760,7 +778,7 @@ public class JobManager {
 			} else {
 				long ownerId = record.getLong(1);
 				if (ownerId != NO_OWNER) {
-					owner = UserDB.getUser(dataSource, ownerId);
+					owner = UserDB.getUser(conn, ownerId);
 				}
 			}	
 		} catch (SQLException|DatabaseException e) {
@@ -768,7 +786,6 @@ public class JobManager {
 		} finally {
 			DatabaseUtils.closeResultSets(record);
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return owner;
