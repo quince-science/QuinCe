@@ -27,6 +27,8 @@ public class FileInfo {
 	
 	public static final String JOB_NAME_AUTO_QC = "Automatic QC";
 	
+	public static final String JOB_CLASS_AUTO_QC = "uk.ac.exeter.QuinCe.jobs.files.AutoQCJob";
+
 	public static final int JOB_CODE_USER_QC = 4;
 	
 	public static final String JOB_NAME_USER_QC = "User QC";
