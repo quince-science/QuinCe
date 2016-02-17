@@ -350,10 +350,10 @@ Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
 data_file_id             F_KEY          File ID
 row                      Integer        Row number (from the original data file)
-salinity_1_used          Boolean        Indicates whether the first salinity sensor is used
 intake_temp_1_used       Boolean        Indicates whether the first intake temperature sensor is used
 intake_temp_2_used       Boolean        Indicates whether the second intake temperature sensor is used
 intake_temp_3_used       Boolean        Indicates whether the third intake temperature sensor is used
+salinity_1_used          Boolean        Indicates whether the first salinity sensor is used
 salinity_2_used          Boolean        Indicates whether the second salinity sensor is used
 salinity_3_used          Boolean        Indicates whether the third salinity sensor is used
 eqt_1_used               Boolean        Indicates whether the first equilibrator pressure sensor is used

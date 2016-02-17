@@ -29,12 +29,13 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public class DataReductionJob extends FileJob {
 
+
 	private static final double PASCALS_TO_ATMOSPHERES = 0.00000986923266716013;
-	
-	public DataReductionJob(DataSource dataSource, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
+
+	public DataReductionJob(DataSource dataSource, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(dataSource, config, jobId, parameters);
 	}
-
+	
 	@Override
 	protected void execute() throws JobFailedException {
 		reset();

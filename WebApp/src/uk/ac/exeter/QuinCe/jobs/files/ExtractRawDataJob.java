@@ -17,6 +17,7 @@ import uk.ac.exeter.QuinCe.data.SensorCode;
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
+import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.database.Instrument.CalibrationDB;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
@@ -36,8 +37,10 @@ public class ExtractRawDataJob extends FileJob {
 	 * @param fileId The data file ID
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws InvalidJobParametersException If the parameters are invalid
+	 * @throws RecordNotFoundException 
+	 * @throws DatabaseException 
 	 */
-	public ExtractRawDataJob(DataSource dataSource, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
+	public ExtractRawDataJob(DataSource dataSource, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(dataSource, config, jobId, parameters);
 	}
 

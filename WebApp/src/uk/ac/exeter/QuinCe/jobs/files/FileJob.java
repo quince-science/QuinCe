@@ -5,6 +5,10 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.data.Instrument;
+import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
@@ -22,9 +26,11 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public abstract class FileJob extends Job {
 	
 	/**
-	 * The ID of the 
+	 * The ID of the data file
 	 */
 	protected long fileId;
+	
+	protected Instrument instrument = null;
 	
 	/**
 	 * Constructs a job object that will operate on a data file
@@ -36,10 +42,13 @@ public abstract class FileJob extends Job {
 	 * @param jobId The id of the job in the database
 	 * @param parameters The job parameters, containing the file ID
 	 * @throws InvalidJobParametersException If the parameters are not valid for the job
+	 * @throws RecordNotFoundException 
+	 * @throws DatabaseException 
 	 */
-	public FileJob(DataSource dataSource, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
+	public FileJob(DataSource dataSource, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		// File jobs have no parameters.
 		super(dataSource, config, jobId, parameters);
+		instrument = InstrumentDB.getInstrumentByFileId(dataSource, fileId);
 	}
 
 	/**

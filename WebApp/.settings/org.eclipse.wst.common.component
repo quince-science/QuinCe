@@ -2,7 +2,9 @@
     <wb-module deploy-name="QuinCe">
         <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
-        <wb-resource deploy-path="/WEB-INF/classes" source-path="/junit"/>
+        <dependent-module archiveName="QC_Routines.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/QC_Routines/QC_Routines">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="QuinCe"/>
         <property name="java-output-path" value="/QuinCe/build/classes"/>
     </wb-module>
