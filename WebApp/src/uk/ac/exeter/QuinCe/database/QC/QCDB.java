@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.data.DataRecordException;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.QCRecord;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
@@ -121,14 +122,7 @@ public class QCDB {
 				recordData.add(String.valueOf(instrument.hasEqp1()));
 				recordData.add(String.valueOf(instrument.hasEqp2()));
 				recordData.add(String.valueOf(instrument.hasEqp3()));
-				
-				// Flags and messages are empty.
-				// Fields are QC Flag, QC messages, WOCE flag, WOCE messages
-				recordData.add(String.valueOf(QCRecord.FLAG_NOT_SET));
-				recordData.add("");
-				recordData.add(String.valueOf(QCRecord.FLAG_NOT_SET));
-				recordData.add("");
-				
+								
 				// Store the default QC data in the database
 				PreparedStatement qcStatement = conn.prepareStatement(ADD_QC_RECORD_STATEMENT);
 				
@@ -159,7 +153,7 @@ public class QCDB {
 
 			conn.commit();
 			
-		} catch (SQLException e) {
+		} catch (SQLException|DataRecordException e) {
 			throw new DatabaseException("An error occurred while retrieving records for QC", e);
 		} finally {
 			DatabaseUtils.closeResultSets(records);

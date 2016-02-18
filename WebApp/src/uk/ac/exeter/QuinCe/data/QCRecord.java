@@ -156,7 +156,7 @@ public class QCRecord extends DataRecord {
 		}
 	}
 	
-	public QCRecord(long dataFileId, List<String> dataFields, int lineNumber, Instrument instrument, int qcFlag, ) throws DataRecordException {
+	public QCRecord(long dataFileId, List<String> dataFields, int lineNumber, Instrument instrument) throws DataRecordException {
 		super(dataFields, lineNumber);
 		this.dataFileId = dataFileId;
 		this.instrument = instrument;

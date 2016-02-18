@@ -5,7 +5,9 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.data.QCRecord;
+import uk.ac.exeter.QCRoutines.Routine;
+import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
+import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.QC.QCDB;
@@ -19,15 +21,19 @@ public class AutoQCJob extends FileJob {
 		super(dataSource, config, jobId, parameters);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void execute() throws JobFailedException {
 		
 		reset();
 	
 		try {
-			List<QCRecord> qcRecords = QCDB.getPreQCRecords(dataSource, fileId, instrument);
+			List<? extends DataRecord> qcRecords = QCDB.getPreQCRecords(dataSource, fileId, instrument);
+			List<Routine> routines = RoutinesConfig.getInstance().getRoutines();
 			
-			
+			for (Routine routine : routines) {
+				routine.processRecords((List<DataRecord>) qcRecords);
+			}
 			
 		} catch (Exception e) {
 			throw new JobFailedException(id, e);

@@ -12,6 +12,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.config.ConfigException;
+import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
 import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
 
@@ -53,6 +55,13 @@ public class ResourceManager implements ServletContextListener {
 		} catch (InvalidThreadCountException e) {
 			// Do nothing for now
 		}
+       	
+       	// Initialise the QC Routines configuration
+       	try {
+       		RoutinesConfig.init(configuration.getProperty("routines.configfile"));
+       	} catch (ConfigException e) {
+       		throw new RuntimeException("Could not initialise QC Routines", e);
+       	}
 
        	// Register ourselves in the servlet context
         servletContext.setAttribute(ATTRIBUTE_NAME, this);
