@@ -10,21 +10,21 @@ public class MessageKey implements Comparable<MessageKey> {
 	 * The index of the column that messages under this key
 	 * refer to
 	 */
-	private int itsColumnIndex;
+	private int columnIndex;
 	
 	/**
 	 * The type of the messages referred to by this key
 	 */
-	private MessageType itsMessageType;
+	private Class<?> messageClass;
 	
 	/**
 	 * Construct a MessageKey object
 	 * @param columnIndex The column index
 	 * @param messageType The message type
 	 */
-	public MessageKey(int columnIndex, MessageType messageType) {
-		itsColumnIndex = columnIndex;
-		itsMessageType = messageType;
+	public MessageKey(int columnIndex, Class<?> messageClass) {
+		this.columnIndex = columnIndex;
+		this.messageClass = messageClass;
 	}
 	
 	/**
@@ -32,25 +32,25 @@ public class MessageKey implements Comparable<MessageKey> {
 	 * @return The column index
 	 */
 	public int getColumnIndex() {
-		return itsColumnIndex;
+		return columnIndex;
 	}
 	
 	/**
 	 * Return the message type
 	 * @return The message type
 	 */
-	public MessageType getMessageType() {
-		return itsMessageType;
+	public Class<?> getMessageClass() {
+		return messageClass;
 	}
 	
 	@Override
 	public int compareTo(MessageKey compare) {
 		
 		// Compare the column index first
-		int result = this.itsColumnIndex - compare.itsColumnIndex;
+		int result = this.columnIndex - compare.columnIndex;
 		
 		if (result == 0) {
-			result = itsMessageType.compareTo(compare.itsMessageType);
+			result = messageClass.getName().compareTo(compare.messageClass.getName());
 		}
 		
 		return result;

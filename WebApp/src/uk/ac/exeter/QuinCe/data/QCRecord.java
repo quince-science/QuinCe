@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.data;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.joda.time.DateTime;
 
@@ -226,6 +225,25 @@ public class QCRecord extends DataRecord {
 		super.setFlag(flag);
 		if (flag != FLAG_GOOD) {
 			woceFlag = flag;
+		}
+	}
+
+	@Override
+	public String getColumnName(int columnIndex) throws DataRecordException {
+		if (columnIndex < 1 || columnIndex >= columnNames.size()) {
+			throw new DataRecordException("Invalid column index '" + columnIndex + "'");
+		} else {
+			return columnNames.get(columnIndex - 1);
+		}
+	}
+
+	@Override
+	public int getColumnIndex(String columnName) throws DataRecordException {
+		int columnIndex = columnNames.indexOf(columnName);
+		if (columnIndex == -1) {
+			throw new DataRecordException("Invalid column name '" + columnName + "'");
+		} else {
+			return columnIndex;
 		}
 	}
 }

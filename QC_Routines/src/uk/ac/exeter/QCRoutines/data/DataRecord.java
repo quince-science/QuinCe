@@ -87,8 +87,35 @@ public abstract class DataRecord {
 	 * Returns the value of a named column
 	 * @param columnName The name of the column
 	 * @return The value of that column
+	 * @throws DataRecordException If the named column does not exist
 	 */
 	public abstract String getValue(String columnName) throws DataRecordException;
+	
+	/**
+	 * Returns the value held in the specified column
+	 * @param columnIndex The 1-based column index
+	 * @return The value of that column
+	 * @throws DataRecordException If the column does not exist
+	 */
+	public String getValue(int columnIndex) throws DataRecordException {
+		return getValue(getColumnName(columnIndex));
+	}
+	
+	/**
+	 * Returns the name of the column corresponding to the specified column index
+	 * @param columnIndex The 1-based column index
+	 * @return The column name
+	 * @throws DataRecordException If the column does not exist
+	 */
+	public abstract String getColumnName(int columnIndex) throws DataRecordException;
+	
+	/**
+	 * Returns the index of the named column
+	 * @param columnIndex The column name
+	 * @return The 1-based column index
+	 * @throws DataRecordException If the column does not exist
+	 */
+	public abstract int getColumnIndex(String columnName) throws DataRecordException;
 	
 	/**
 	 * Indicates whether or not errors were raised during the processing of this
@@ -130,6 +157,20 @@ public abstract class DataRecord {
 	 */
 	public void addMessage(Message message) {
 		messages.add(message);
+		
+		switch(message.getSeverity()) {
+		case Message.ERROR: {
+			hasErrors = true;
+			break;
+		}
+		case Message.WARNING: {
+			hasWarnings = true;
+			break;
+		}
+		default: {
+			// Noop
+		}
+		}
 	}
 	
 	public int getFlag() {

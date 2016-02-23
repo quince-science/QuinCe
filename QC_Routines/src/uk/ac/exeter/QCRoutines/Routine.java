@@ -47,4 +47,9 @@ public abstract class Routine {
 	public List<Message> getMessages() {
 		return messages;
 	}
+	
+	public void addMessage(Message message, DataRecord record) {
+		messages.add(message);
+		record.addMessage(message);
+	}
 }

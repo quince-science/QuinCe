@@ -1,6 +1,6 @@
 package uk.ac.exeter.QCRoutines.messages;
 
-public class Message {
+public abstract class Message {
 	
 	public static final int ERROR = 1;
 	
@@ -23,29 +23,47 @@ public class Message {
 	public static final int NO_COLUMN_INDEX = -999;
 	
 	public static final int NO_LINE_NUMBER = -999;
+	
+	/**
+	 * Token identifying the placeholder for the column name
+	 */
+	public static final String COLUMN_NAME_IDENTIFIER = "%c%";
+	
+	/**
+	 * Token identifying the placeholder for a field value
+	 */
+	public static final String FIELD_VALUE_IDENTIFIER = "%f%";
+	
+	/**
+	 * Token identifying the placeholder for a valid value
+	 */
+	public static final String VALID_VALUE_IDENTIFIER = "%v%";
+	
+	/**
+	 * String to be used if tokens are in the message string, but
+	 * no values are supplied to fill them.
+	 */
+	private static final String MISSING_VALUE_STRING = "MISSING_VALUE";
 
-	private int itsColumnIndex;
+	protected int columnIndex;
 	
-	private String itsColumnName;
+	private String columnName;
 	
-	private MessageType itsType;
+	private int severity;
 	
-	private int itsSeverity;
+	protected int lineNumber;
 	
-	private int itsLineNumber;
+	protected String actualValue;
 	
-	private String itsFieldValue;
+	protected String validValue;
 	
-	private String itsValidValue;
-	
-	public Message(int columnIndex, String columnName, MessageType type, int severity, int lineNumber, String fieldValue, String validValue) {
-		itsColumnIndex = columnIndex;
-		itsColumnName = columnName;
-		itsType = type;
-		itsSeverity = severity;
-		itsLineNumber = lineNumber;
-		itsFieldValue = fieldValue;
-		itsValidValue = validValue;
+	public Message(int columnIndex, String columnName, int severity, int lineNumber, String fieldValue, String validValue) {
+		this.columnIndex = columnIndex;
+		this.columnName = columnName;
+		this.severity = severity;
+		this.lineNumber = lineNumber;
+		this.actualValue = fieldValue;
+		this.validValue = validValue;
 	}
 	
 	/**
@@ -53,7 +71,7 @@ public class Message {
 	 * @return The line number for which this message was raised.
 	 */
 	public int getLineNumber() {
-		return itsLineNumber;
+		return lineNumber;
 	}
 	
 	/**
@@ -61,14 +79,14 @@ public class Message {
 	 * @return The column index for which this message was raised.
 	 */
 	public int getColumnIndex() {
-		return itsColumnIndex;
+		return columnIndex;
 	}
 
 	/**
 	 * @return the name of the column for which this message was raised.
 	 */
 	public String getColumnName() {
-		return itsColumnName;
+		return columnName;
 	}
 
 	/**
@@ -76,11 +94,7 @@ public class Message {
 	 * @return The severity of the message
 	 */
 	public int getSeverity() {
-		return itsSeverity;
-	}
-	
-	public MessageType getMessageType() {
-		return itsType;
+		return severity;
 	}
 	
 	/**
@@ -88,7 +102,7 @@ public class Message {
 	 * @return {@code true} if the message is an error; {@code false} otherwise.
 	 */
 	public boolean isError() {
-		return itsSeverity == ERROR;
+		return severity == ERROR;
 	}
 	
 	/**
@@ -96,7 +110,7 @@ public class Message {
 	 * @return {@code true} if the message is a warning; {@code false} otherwise.
 	 */
 	public boolean isWarning() {
-		return itsSeverity == WARNING;
+		return severity == WARNING;
 	}
 	
 	/**
@@ -106,7 +120,7 @@ public class Message {
 	 * @return The {@link MessageKey} object for this message 
 	 */
 	public MessageKey generateMessageKey() {
-		return new MessageKey(itsColumnIndex, itsType);
+		return new MessageKey(columnIndex, getClass());
 	}
 	
 	public String getMessageString() {
@@ -114,16 +128,16 @@ public class Message {
 		StringBuffer result = new StringBuffer();
 		result.append(getMessageSeverityString());
 		result.append(": LINE ");
-		result.append(itsLineNumber);
+		result.append(lineNumber);
 		result.append(": ");
-		result.append(itsType.getRecordMessage(itsColumnName, itsFieldValue, itsValidValue));
+		result.append(getRecordMessage(columnName, actualValue, validValue));
 		return result.toString();
 	}
 	
 	private String getMessageSeverityString() {
 		String result;
 		
-		switch (itsSeverity) {
+		switch (severity) {
 		case ERROR:
 		{
 			result = ERROR_STRING;
@@ -139,5 +153,48 @@ public class Message {
 		}
 		
 		return result;
+	}
+	
+	protected abstract String getFullMessage();
+	
+	protected abstract String getSummaryMessage();
+	
+	/**
+	 * Generate the long form error message for this error type, substituting in
+	 * the supplied field and valid values.
+	 * 
+	 * If the message requires these values but they are not provided, the message will still
+	 * be generated but the values will be replaced with {@link #MISSING_VALUE_STRING}.
+	 * 
+	 * @param fieldValue The field value from the data file
+	 * @param validValue The expected valid value(s)
+	 * @return The message string
+	 */
+	public String getRecordMessage(String columnName, String fieldValue, String validValue) {
+		
+		String columnReplaceValue = MISSING_VALUE_STRING;
+		if (null != columnName && columnName.trim().length() > 0) {
+			columnReplaceValue = columnName.trim();
+		}
+
+		String fieldReplaceValue = MISSING_VALUE_STRING;
+		if (null != fieldValue && fieldValue.trim().length() > 0) {
+			fieldReplaceValue = fieldValue.trim();
+		}
+		
+		String validReplaceValue = MISSING_VALUE_STRING;
+		if (null != validValue && validValue.trim().length() > 0) {
+			validReplaceValue = validValue.trim();
+		}
+
+		String result = getFullMessage().replaceAll(COLUMN_NAME_IDENTIFIER, columnReplaceValue);
+		result = result.replaceAll(FIELD_VALUE_IDENTIFIER, fieldReplaceValue);
+		result = result.replaceAll(VALID_VALUE_IDENTIFIER, validReplaceValue);
+
+		return result;
+	}
+	
+	public RebuildCode getRebuildCode() throws MessageException {
+		return new RebuildCode(this);
 	}
 }
