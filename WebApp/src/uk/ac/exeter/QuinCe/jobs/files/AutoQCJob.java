@@ -28,7 +28,7 @@ public class AutoQCJob extends FileJob {
 		reset();
 	
 		try {
-			List<? extends DataRecord> qcRecords = QCDB.getPreQCRecords(dataSource, fileId, instrument);
+			List<? extends DataRecord> qcRecords = QCDB.getQCRecords(dataSource, fileId, instrument);
 			List<Routine> routines = RoutinesConfig.getInstance().getRoutines();
 			
 			for (Routine routine : routines) {
@@ -41,11 +41,6 @@ public class AutoQCJob extends FileJob {
 	}
 
 	private void reset() throws JobFailedException {
-		try {
-			QCDB.clearQCData(dataSource, fileId);
-		} catch(DatabaseException e) {
-			throw new JobFailedException(id, e);
-		}
-
+		// Does nothing
 	}
 }

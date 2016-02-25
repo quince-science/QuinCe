@@ -7,7 +7,7 @@ import org.joda.time.DateTime;
 
 import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QCRoutines.data.DataRecordException;
-import uk.ac.exeter.QCRoutines.messages.Message;
+import uk.ac.exeter.QCRoutines.messages.MessageException;
 
 public class QCRecord extends DataRecord {
 
@@ -105,7 +105,7 @@ public class QCRecord extends DataRecord {
 	
 	private int woceFlag = FLAG_NOT_SET;
 	
-	private List<Message> woceMessages;
+	private String woceComment;
 	
 	static {
 		if (null == columnNames) {
@@ -155,11 +155,12 @@ public class QCRecord extends DataRecord {
 		}
 	}
 	
-	public QCRecord(long dataFileId, List<String> dataFields, int lineNumber, Instrument instrument) throws DataRecordException {
+	public QCRecord(long dataFileId, Instrument instrument, int lineNumber, List<String> dataFields, int qcFlag, String qcComment, int woceFlag, String woceComment) throws DataRecordException, MessageException {
 		super(dataFields, lineNumber);
 		this.dataFileId = dataFileId;
 		this.instrument = instrument;
-		this.woceMessages = new ArrayList<Message>();
+		setMessages(qcComment);
+		this.woceComment = woceComment;
 	}
 
 	@Override
@@ -221,11 +222,20 @@ public class QCRecord extends DataRecord {
 		return woceFlag;
 	}
 	
-	public void setFlag(int flag) {
-		super.setFlag(flag);
-		if (flag != FLAG_GOOD) {
-			woceFlag = flag;
-		}
+	public void setQCFlag(int flag) {
+		setFlag(flag);
+	}
+	
+	public void setWoceFlag(int flag) {
+		woceFlag = flag;
+	}
+	
+	public String getWoceComment() {
+		return woceComment;
+	}
+	
+	public void setWoceComment(String woceComment) {
+		this.woceComment = woceComment;
 	}
 
 	@Override

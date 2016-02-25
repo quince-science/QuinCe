@@ -6,6 +6,8 @@ import java.util.List;
 import org.joda.time.DateTime;
 
 import uk.ac.exeter.QCRoutines.messages.Message;
+import uk.ac.exeter.QCRoutines.messages.MessageException;
+import uk.ac.exeter.QCRoutines.messages.RebuildCode;
 
 public abstract class DataRecord {
 
@@ -179,5 +181,13 @@ public abstract class DataRecord {
 	
 	public void setFlag(int flag) {
 		this.flag = flag;
+	}
+	
+	public void setMessages(List<Message> messages) {
+		this.messages = messages;
+	}
+	
+	public void setMessages(String codes) throws MessageException {
+		this.messages = RebuildCode.getMessagesFromRebuildCodes(codes);
 	}
 }

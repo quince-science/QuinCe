@@ -1,6 +1,8 @@
 package uk.ac.exeter.QCRoutines.messages;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RebuildCode {
 	
@@ -12,17 +14,26 @@ public class RebuildCode {
 
 	private Class<?> messageClass;
 	
+	private int lineNumber;
+	
 	private int columnIndex;
 	
 	private String columnName;
 	
 	private int severity;
 	
+	String fieldValue;
+	
+	String validValue;
+	
 	public RebuildCode(Message message) throws MessageException {
 		messageClass = message.getClass();
+		lineNumber = message.getLineNumber();
 		columnIndex = message.getColumnIndex();
 		columnName = message.getColumnName();
 		severity = message.getSeverity();
+		fieldValue = message.getFieldValue();
+		validValue = message.getValidValue();
 		validateMessageClass();
 	}
 	
@@ -74,11 +85,17 @@ public class RebuildCode {
 		StringBuffer result = new StringBuffer();
 		result.append(messageClass.getName());
 		result.append('_');
+		result.append(lineNumber);
+		result.append('_');
 		result.append(columnIndex);
 		result.append('_');
 		result.append(columnName);
 		result.append('_');
 		result.append(severity);
+		result.append('_');
+		result.append(fieldValue);
+		result.append('_');
+		result.append(validValue);
 		result.append(';');
 		
 		return result.toString();
@@ -88,12 +105,32 @@ public class RebuildCode {
 		return getCode();
 	}
 	
-	public Message getMessage(int lineNumber, String fieldValue, String validValue) throws MessageException {
+	public Message getMessage() throws MessageException {
 		try {
 			Constructor<?> messageConstructor = messageClass.getConstructor(int.class, String.class, int.class, int.class, String.class, String.class);
 			return (Message) messageConstructor.newInstance(columnIndex, columnName, severity, lineNumber, fieldValue, validValue);
 		} catch (Exception e) {
 			throw new MessageException("Error while constructing message object from rebuild code", e);
 		}
+	}
+	
+	public static List<Message> getMessagesFromRebuildCodes(String codes) throws MessageException {
+
+		String[] splitCodes = codes.split(";");
+		List<Message> messages = new ArrayList<Message>(splitCodes.length);
+		for (int i = 0; i < splitCodes.length; i++) {
+			messages.add(new RebuildCode(splitCodes[i]).getMessage());
+		}
+		
+		return messages;
+	}
+	
+	public static String getRebuildCodes(List<Message> messages) throws MessageException {
+		StringBuffer codes = new StringBuffer();
+		for (int i = 0; i < messages.size(); i++) {
+			codes.append(new RebuildCode(messages.get(i)).getCode());
+		}
+		
+		return codes.toString();
 	}
 }

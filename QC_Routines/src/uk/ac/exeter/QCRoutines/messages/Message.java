@@ -53,7 +53,7 @@ public abstract class Message {
 	
 	protected int lineNumber;
 	
-	protected String actualValue;
+	protected String fieldValue;
 	
 	protected String validValue;
 	
@@ -62,7 +62,7 @@ public abstract class Message {
 		this.columnName = columnName;
 		this.severity = severity;
 		this.lineNumber = lineNumber;
-		this.actualValue = fieldValue;
+		this.fieldValue = fieldValue;
 		this.validValue = validValue;
 	}
 	
@@ -130,7 +130,7 @@ public abstract class Message {
 		result.append(": LINE ");
 		result.append(lineNumber);
 		result.append(": ");
-		result.append(getRecordMessage(columnName, actualValue, validValue));
+		result.append(getRecordMessage(columnName, fieldValue, validValue));
 		return result.toString();
 	}
 	
@@ -196,5 +196,13 @@ public abstract class Message {
 	
 	public RebuildCode getRebuildCode() throws MessageException {
 		return new RebuildCode(this);
+	}
+	
+	public String getFieldValue() {
+		return fieldValue;
+	}
+	
+	public String getValidValue() {
+		return validValue;
 	}
 }

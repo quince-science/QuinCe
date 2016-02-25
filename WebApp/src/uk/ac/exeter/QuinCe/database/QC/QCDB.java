@@ -10,6 +10,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.data.DataRecordException;
+import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.QCRecord;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
@@ -17,20 +18,18 @@ import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 
 public class QCDB {
 
-	private static final int QC_RECORDS_COMMON_FIELD_COUNT = 30;
+	private static final int QC_RECORD_FIELD_COUNT = 44;
+	
+	private static final int FIELD_QC_FLAG = 45;
+	
+	private static final int FIELD_QC_COMMENT = 46;
+	
+	private static final int FIELD_WOCE_FLAG = 47;
+	
+	private static final int FIELD_WOCE_COMMENT = 48;
 
 	private static final String CLEAR_QC_STATEMENT = "DELETE FROM qc WHERE data_file_id = ?";
 	
-	private static final String GET_PRE_QC_RECORDS_STATEMENT = "SELECT r.row, r.co2_type, r.date_time, r.longitude, "
-			+ "r.latitude, r.intake_temp_1, r.intake_temp_2, r.intake_temp_3, "
-			+ "r.salinity_1, r.salinity_2, r.salinity_3, r.eqt_1, r.eqt_2, r.eqt_3, r.eqp_1, r.eqp_2, r.eqp_3, "
-			+ "r.moisture, r.atmospheric_pressure, r.co2, "
-			+ "d.mean_intake_temp, d.mean_salinity, d.mean_eqt, d.mean_eqp, d.true_moisture, d.dried_co2, "
-			+ "d.calibrated_co2, d.pco2_te_dry, d.ph2o, d.pco2_te_wet, d.fco2_te, d.fco2 "
-			+ "FROM raw_data as r "
-			+ "INNER JOIN data_reduction as d ON r.data_file_id = d.data_file_id AND r.row = d.row "
-			+ "WHERE r.data_file_id = ? ORDER BY r.row ASC";
-
 	private static final String GET_QC_RECORDS_STATEMENT = "SELECT r.row, r.co2_type, r.date_time, r.longitude, "
 			+ "r.latitude, r.intake_temp_1, r.intake_temp_2, r.intake_temp_3, "
 			+ "r.salinity_1, r.salinity_2, r.salinity_3, r.eqt_1, r.eqt_2, r.eqt_3, r.eqp_1, r.eqp_2, r.eqp_3, "
@@ -85,19 +84,18 @@ public class QCDB {
 	 * @return The list of QC records ready to be processed
 	 * @throws DatabaseException If the QC records cannot be retrieved, or cannot be created.
 	 */
-	public static List<QCRecord> getPreQCRecords(DataSource dataSource, long fileId, Instrument instrument) throws DatabaseException {
+	public static List<QCRecord> getQCRecords(DataSource dataSource, long fileId, Instrument instrument) throws DatabaseException {
 		
 		Connection conn = null;
 		PreparedStatement readStatement = null;
 		ResultSet records = null;
-		List<PreparedStatement> saveQCStatements = new ArrayList<PreparedStatement>();
 		List<QCRecord> qcRecords = new ArrayList<QCRecord>();
 		
 		try {
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
 			
-			readStatement = conn.prepareStatement(GET_PRE_QC_RECORDS_STATEMENT);
+			readStatement = conn.prepareStatement(GET_QC_RECORDS_STATEMENT);
 			readStatement.setLong(1,  fileId);
 			
 			records = readStatement.executeQuery();
@@ -105,72 +103,63 @@ public class QCDB {
 			while (records.next()) {
 				List<String> recordData = new ArrayList<String>();
 				
-				// Add the raw data and data reduction values
-				populateRawAndReductionData(recordData, records);
+				// Simply copy all the field values into the record data list in order
+				for (int i = 1; i <= QC_RECORD_FIELD_COUNT; i++) {
+					recordData.add(records.getString(i));
+				}
 				
-				// Since QC is only just starting, all values are used
-				// if the instrument has those sensors
-				recordData.add(String.valueOf(instrument.hasIntakeTemp1()));
-				recordData.add(String.valueOf(instrument.hasIntakeTemp2()));
-				recordData.add(String.valueOf(instrument.hasIntakeTemp3()));
-				recordData.add(String.valueOf(instrument.hasSalinity1()));
-				recordData.add(String.valueOf(instrument.hasSalinity2()));
-				recordData.add(String.valueOf(instrument.hasSalinity3()));
-				recordData.add(String.valueOf(instrument.hasEqt1()));
-				recordData.add(String.valueOf(instrument.hasEqt2()));
-				recordData.add(String.valueOf(instrument.hasEqt3()));
-				recordData.add(String.valueOf(instrument.hasEqp1()));
-				recordData.add(String.valueOf(instrument.hasEqp2()));
-				recordData.add(String.valueOf(instrument.hasEqp3()));
-								
-				// Store the default QC data in the database
-				PreparedStatement qcStatement = conn.prepareStatement(ADD_QC_RECORD_STATEMENT);
+				int qcFlag = records.getInt(FIELD_QC_FLAG);
+				String qcComments = records.getString(FIELD_QC_COMMENT);
+				int woceFlag = records.getInt(FIELD_WOCE_FLAG);
+				String woceComment = records.getString(FIELD_WOCE_COMMENT);
 				
-				qcStatement.setLong(1, fileId);
-				qcStatement.setInt(2, records.getInt(1));
-				qcStatement.setBoolean(3, instrument.hasIntakeTemp1());
-				qcStatement.setBoolean(4, instrument.hasIntakeTemp2());
-				qcStatement.setBoolean(5, instrument.hasIntakeTemp3());
-				qcStatement.setBoolean(6, instrument.hasSalinity1());
-				qcStatement.setBoolean(7, instrument.hasSalinity2());
-				qcStatement.setBoolean(8, instrument.hasSalinity3());
-				qcStatement.setBoolean(9, instrument.hasEqt1());
-				qcStatement.setBoolean(10, instrument.hasEqt2());
-				qcStatement.setBoolean(11, instrument.hasEqt3());
-				qcStatement.setBoolean(12, instrument.hasEqp1());
-				qcStatement.setBoolean(13, instrument.hasEqp2());
-				qcStatement.setBoolean(14, instrument.hasEqp3());
-				qcStatement.setInt(15, QCRecord.FLAG_NOT_SET);
-				qcStatement.setString(16, "");
-				qcStatement.setInt(17, QCRecord.FLAG_NOT_SET);
-				qcStatement.setString(18, "");
-				
-				qcStatement.execute();
-				saveQCStatements.add(qcStatement);
-				
-				qcRecords.add(new QCRecord(fileId, recordData, records.getInt(1), instrument));
+				qcRecords.add(new QCRecord(fileId, instrument, records.getInt(1), recordData, qcFlag, qcComments, woceFlag, woceComment));
 			}
 
 			conn.commit();
 			
-		} catch (SQLException|DataRecordException e) {
+		} catch (SQLException|DataRecordException|MessageException e) {
 			throw new DatabaseException("An error occurred while retrieving records for QC", e);
 		} finally {
 			DatabaseUtils.closeResultSets(records);
 			DatabaseUtils.closeStatements(readStatement);
-			DatabaseUtils.closeStatements(saveQCStatements);
 			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return qcRecords;
 	}
 	
-	private static void populateRawAndReductionData(List<String> recordData, ResultSet records) throws SQLException {
+	public static void createQCRecord(Connection conn, long fileId, int row, Instrument instrument) throws DatabaseException {
+		PreparedStatement stmt = null;
 		
-		// The row and CO2 type are not used in the QC, so skip the first to fields
-		for (int i = 3; i <= 2 + QC_RECORDS_COMMON_FIELD_COUNT; i++) {
-			recordData.add(records.getString(i));
-		}
-	}
+		try {
+			stmt = conn.prepareStatement(ADD_QC_RECORD_STATEMENT);
+			stmt.setLong(1, fileId);
+			stmt.setInt(2, row);
+			stmt.setBoolean(3, instrument.hasIntakeTemp1());
+			stmt.setBoolean(4, instrument.hasIntakeTemp2());
+			stmt.setBoolean(5, instrument.hasIntakeTemp3());
+			stmt.setBoolean(6, instrument.hasSalinity1());
+			stmt.setBoolean(7, instrument.hasSalinity2());
+			stmt.setBoolean(8, instrument.hasSalinity3());
+			stmt.setBoolean(9, instrument.hasEqt1());
+			stmt.setBoolean(10, instrument.hasEqt2());
+			stmt.setBoolean(11, instrument.hasEqt3());
+			stmt.setBoolean(12, instrument.hasEqp1());
+			stmt.setBoolean(13, instrument.hasEqp2());
+			stmt.setBoolean(14, instrument.hasEqp3());
+			stmt.setInt(15, QCRecord.FLAG_NOT_SET);
+			stmt.setString(16, "");
+			stmt.setInt(17, QCRecord.FLAG_NOT_SET);
+			stmt.setString(18, "");
+			
+			stmt.execute();
 
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while creating QC record for file " + fileId + ", row " + row, e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+		}
+		
+	}
 }
