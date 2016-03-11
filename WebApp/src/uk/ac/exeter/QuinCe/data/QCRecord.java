@@ -11,6 +11,8 @@ import uk.ac.exeter.QCRoutines.messages.MessageException;
 
 public class QCRecord extends DataRecord {
 
+	public static final String COL_CO2_TYPE = "CO2 Type";
+	
 	public static final String COL_DATE = "Date";
 	
 	public static final String COL_LONGITUDE = "Longitude";
@@ -110,6 +112,7 @@ public class QCRecord extends DataRecord {
 	static {
 		if (null == columnNames) {
 			columnNames = new ArrayList<String>();
+			columnNames.add(COL_CO2_TYPE);
 			columnNames.add(COL_DATE);
 			columnNames.add(COL_LONGITUDE);
 			columnNames.add(COL_LATITUDE);
@@ -255,5 +258,9 @@ public class QCRecord extends DataRecord {
 		} else {
 			return columnIndex;
 		}
+	}
+	
+	public static List<String> getColumnNames() {
+		return columnNames;
 	}
 }

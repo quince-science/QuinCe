@@ -116,10 +116,14 @@ public class RebuildCode {
 	
 	public static List<Message> getMessagesFromRebuildCodes(String codes) throws MessageException {
 
-		String[] splitCodes = codes.split(";");
-		List<Message> messages = new ArrayList<Message>(splitCodes.length);
-		for (int i = 0; i < splitCodes.length; i++) {
-			messages.add(new RebuildCode(splitCodes[i]).getMessage());
+		List<Message> messages = new ArrayList<Message>();
+
+		String codeString = codes.trim();
+		if (codeString.length() > 0) {
+			String[] splitCodes = codeString.split(";");
+			for (int i = 0; i < splitCodes.length; i++) {
+				messages.add(new RebuildCode(splitCodes[i]).getMessage());
+			}
 		}
 		
 		return messages;

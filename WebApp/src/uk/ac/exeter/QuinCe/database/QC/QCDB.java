@@ -18,29 +18,32 @@ import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 
 public class QCDB {
 
-	private static final int QC_RECORD_FIELD_COUNT = 44;
+	private static final int FIELD_ROW_NUMBER = 1;
 	
-	private static final int FIELD_QC_FLAG = 45;
+	private static final int FIELD_QC_FLAG = 2;
 	
-	private static final int FIELD_QC_COMMENT = 46;
+	private static final int FIELD_QC_COMMENT = 3;
 	
-	private static final int FIELD_WOCE_FLAG = 47;
+	private static final int FIELD_WOCE_FLAG = 4;
 	
-	private static final int FIELD_WOCE_COMMENT = 48;
+	private static final int FIELD_WOCE_COMMENT = 5;
+	
+	private static final int FIRST_DATA_FIELD = 6;
 
 	private static final String CLEAR_QC_STATEMENT = "DELETE FROM qc WHERE data_file_id = ?";
 	
-	private static final String GET_QC_RECORDS_STATEMENT = "SELECT r.row, r.co2_type, r.date_time, r.longitude, "
+	private static final String GET_QC_RECORDS_STATEMENT = "SELECT r.row, q.qc_flag, q.qc_message, q.woce_flag, q.woce_message, "
+			+ "r.co2_type, r.date_time, r.longitude, "
 			+ "r.latitude, r.intake_temp_1, r.intake_temp_2, r.intake_temp_3, "
 			+ "r.salinity_1, r.salinity_2, r.salinity_3, r.eqt_1, r.eqt_2, r.eqt_3, r.eqp_1, r.eqp_2, r.eqp_3, "
 			+ "r.moisture, r.atmospheric_pressure, r.co2, "
 			+ "d.mean_intake_temp, d.mean_salinity, d.mean_eqt, d.mean_eqp, d.true_moisture, d.dried_co2, "
 			+ "d.calibrated_co2, d.pco2_te_dry, d.ph2o, d.pco2_te_wet, d.fco2_te, d.fco2, "
-			+ "qc.intake_temp_1_used, qc.intake_temp_2_used, qc.intake_temp_3_used, "
-			+ "qc.salinity_1_used, qc.salinity_2_used, qc.salinity_3_used, "
-			+ "qc.eqt_1_used, qc.eqt_2_used, qc.eqt_3_used, "
-			+ "qc.eqp_1_used, qc.eqp_2_used, qc.eqp_3_used, "
-			+ "qc.qc_flag, qc.qc_message, qc.woce_flag, qc.woce_message"
+			+ "q.intake_temp_1_used, q.intake_temp_2_used, q.intake_temp_3_used, "
+			+ "q.salinity_1_used, q.salinity_2_used, q.salinity_3_used, "
+			+ "q.eqt_1_used, q.eqt_2_used, q.eqt_3_used, "
+			+ "q.eqp_1_used, q.eqp_2_used, q.eqp_3_used, "
+			+ "q.qc_flag, q.qc_message, q.woce_flag, q.woce_message "
 			+ "FROM raw_data as r "
 			+ "INNER JOIN data_reduction as d ON r.data_file_id = d.data_file_id AND r.row = d.row "
 			+ "INNER JOIN qc as q ON d.data_file_id  = q.data_file_id AND d.row = q.row "
@@ -101,19 +104,22 @@ public class QCDB {
 			records = readStatement.executeQuery();
 			
 			while (records.next()) {
-				List<String> recordData = new ArrayList<String>();
 				
-				// Simply copy all the field values into the record data list in order
-				for (int i = 1; i <= QC_RECORD_FIELD_COUNT; i++) {
-					recordData.add(records.getString(i));
-				}
-				
+				// Extract the row number and QC flags/comments
+				int rowNumber = records.getInt(FIELD_ROW_NUMBER);
 				int qcFlag = records.getInt(FIELD_QC_FLAG);
 				String qcComments = records.getString(FIELD_QC_COMMENT);
 				int woceFlag = records.getInt(FIELD_WOCE_FLAG);
 				String woceComment = records.getString(FIELD_WOCE_COMMENT);
+
+				// The remainder of the fields are data fields for the QC record
+				int fieldCount = QCRecord.getColumnNames().size();
+				List<String> recordData = new ArrayList<String>();
+				for (int i = FIRST_DATA_FIELD; i <= FIRST_DATA_FIELD + fieldCount - 1; i++) {
+					recordData.add(records.getString(i));
+				}
 				
-				qcRecords.add(new QCRecord(fileId, instrument, records.getInt(1), recordData, qcFlag, qcComments, woceFlag, woceComment));
+				qcRecords.add(new QCRecord(fileId, instrument, rowNumber, recordData, qcFlag, qcComments, woceFlag, woceComment));
 			}
 
 			conn.commit();
