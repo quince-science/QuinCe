@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.RebuildCode;
@@ -17,14 +18,14 @@ public abstract class DataRecord {
 	private List<Message> messages;
 	
 	/**
-	 * Flag to indicate the presence of warnings raised during processing
+	 * Flag to indicate the presence of questionable flags raised during processing
 	 */
-	private boolean hasWarnings = false;
+	private boolean hasQuestionable = false;
 	
 	/**
-	 * Flag to indicate the presence of errors raised during processing
+	 * Flag to indicate the presence of bad flags raised during processing
 	 */
-	private boolean hasErrors = false;
+	private boolean hasBad = false;
 	
 	/**
 	 * The line of the input file that this record came from
@@ -35,7 +36,7 @@ public abstract class DataRecord {
 	 * The quality control flag for the record.
 	 * All records are assumed to be good unless otherwise stated
 	 */
-	private int flag = FLAG_GOOD;
+	private Flag flag = Flag.GOOD;
 
 	/**
 	 * Builds a complete record object
@@ -112,21 +113,21 @@ public abstract class DataRecord {
 	public abstract int getColumnIndex(String columnName) throws DataRecordException;
 	
 	/**
-	 * Indicates whether or not errors were raised during the processing of this
+	 * Indicates whether or not questionable flags were raised during the processing of this
 	 * data record
-	 * @return {@code true} if errors were raised; {@code false} otherwise.
+	 * @return {@code true} if questionable flags were raised; {@code false} otherwise.
 	 */
-	public boolean hasErrors() {
-		return hasErrors;
+	public boolean hasQuestionable() {
+		return hasQuestionable;
 	}
 	
 	/**
-	 * Indicates whether or not warnings were raised during the processing of this
+	 * Indicates whether or not bad flags were raised during the processing of this
 	 * data record
-	 * @return {@code true} if warnings were raised; {@code false} otherwise.
+	 * @return {@code true} if bad flags were raised; {@code false} otherwise.
 	 */
-	public boolean hasWarnings() {
-		return hasWarnings;
+	public boolean hasBad() {
+		return hasBad;
 	}
 	
 	/**
@@ -152,34 +153,56 @@ public abstract class DataRecord {
 	public void addMessage(Message message) {
 		messages.add(message);
 		
-		switch(message.getSeverity()) {
-		case Message.ERROR: {
-			hasErrors = true;
-			break;
+		Flag messageFlag = message.getFlag();
+		
+		if (messageFlag.moreSignificantThan(flag)) {
+			flag = messageFlag;
 		}
-		case Message.WARNING: {
-			hasWarnings = true;
-			break;
-		}
-		default: {
-			// Noop
-		}
+		
+		if (messageFlag.equals(Flag.BAD)) {
+			hasBad = true;
+		} else if (messageFlag.equals(Flag.QUESTIONABLE)) {
+			hasQuestionable = true;
 		}
 	}
-	
-	public int getFlag() {
+
+	/**
+	 * Get the most significant flag applied to this record
+	 * @return The flag for the record
+	 */
+	public Flag getFlag() {
 		return flag;
 	}
 	
-	public void setFlag(int flag) {
-		this.flag = flag;
-	}
-	
+	/**
+	 * Replace all the messages for this record with the supplied list of messages.
+	 * The record's flags will also be reset according to the flags on the messages.
+	 * @param messages The set of messages
+	 */
 	public void setMessages(List<Message> messages) {
-		this.messages = messages;
+		clearMessages();
+		for (Message message : messages) {
+			addMessage(message);
+		}
 	}
 	
+	/**
+	 * Replace all the messages for this record with the supplied message codes.
+	 * The record's flags will also be reset according to the flags on the messages.
+	 * @param messages The set of message codes
+	 */
 	public void setMessages(String codes) throws MessageException {
-		this.messages = RebuildCode.getMessagesFromRebuildCodes(codes);
+		setMessages(RebuildCode.getMessagesFromRebuildCodes(codes));
+	}
+	
+	/**
+	 * Clear all messages from the record, and reset the flags to the default
+	 * 'good' state.
+	 */
+	private void clearMessages() {
+		messages = new ArrayList<Message>(messages.size());
+		hasBad = false;
+		hasQuestionable = false;
+		flag = Flag.GOOD;
 	}
 }
