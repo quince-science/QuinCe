@@ -11,14 +11,6 @@ import uk.ac.exeter.QCRoutines.messages.RebuildCode;
 
 public abstract class DataRecord {
 
-	public static final int FLAG_GOOD = 2;
-	
-	public static final int FLAG_QUESTIONABLE = 3;
-	
-	public static final int FLAG_BAD = 4;
-	
-	public static final int FLAG_NOT_SET = -1;
-
 	/**
 	 * The output messages generated for this line, if any
 	 */

@@ -20,7 +20,7 @@ public class RebuildCode {
 	
 	private String columnName;
 	
-	private int severity;
+	private int flagValue;
 	
 	String fieldValue;
 	
@@ -31,7 +31,7 @@ public class RebuildCode {
 		lineNumber = message.getLineNumber();
 		columnIndex = message.getColumnIndex();
 		columnName = message.getColumnName();
-		severity = message.getSeverity();
+		flagValue = message.getFlag().getFlagValue();
 		fieldValue = message.getFieldValue();
 		validValue = message.getValidValue();
 		validateMessageClass();
@@ -60,8 +60,8 @@ public class RebuildCode {
 			}
 			
 			try {
-				severity = Integer.parseInt(codeComponents[CODE_INDEX_SEVERITY]);
-				if (severity != Message.ERROR && severity != Message.WARNING) {
+				flagValue = Integer.parseInt(codeComponents[CODE_INDEX_SEVERITY]);
+				if (!Flag.isValidFlagValue(flagValue)) {
 					throw new RebuildCodeException("Invalid severity value");
 				}
 			} catch (NumberFormatException e) {
@@ -91,7 +91,7 @@ public class RebuildCode {
 		result.append('_');
 		result.append(columnName);
 		result.append('_');
-		result.append(severity);
+		result.append(flagValue);
 		result.append('_');
 		result.append(fieldValue);
 		result.append('_');
@@ -108,7 +108,7 @@ public class RebuildCode {
 	public Message getMessage() throws MessageException {
 		try {
 			Constructor<?> messageConstructor = messageClass.getConstructor(int.class, String.class, int.class, int.class, String.class, String.class);
-			return (Message) messageConstructor.newInstance(columnIndex, columnName, severity, lineNumber, fieldValue, validValue);
+			return (Message) messageConstructor.newInstance(columnIndex, columnName, new Flag(flagValue), lineNumber, fieldValue, validValue);
 		} catch (Exception e) {
 			throw new MessageException("Error while constructing message object from rebuild code", e);
 		}

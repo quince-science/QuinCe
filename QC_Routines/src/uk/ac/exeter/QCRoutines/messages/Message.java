@@ -2,16 +2,6 @@ package uk.ac.exeter.QCRoutines.messages;
 
 public abstract class Message {
 	
-	public static final int ERROR = 1;
-	
-	public static final String ERROR_STRING = "ERROR";
-	
-	public static final int WARNING = 2;
-	
-	public static final String WARNING_STRING = "WARNING";
-	
-	public static final String UNKNOWN_SEVERITY_STRING = "*** Severity Unknown ***";
-	
 	public static final int DATE_TIME_COLUMN_INDEX = -1;
 	
 	public static final String DATE_TIME_COLUMN_NAME = "Date/Time";
@@ -49,7 +39,7 @@ public abstract class Message {
 	
 	private String columnName;
 	
-	private int severity;
+	private Flag flag;
 	
 	protected int lineNumber;
 	
@@ -57,10 +47,10 @@ public abstract class Message {
 	
 	protected String validValue;
 	
-	public Message(int columnIndex, String columnName, int severity, int lineNumber, String fieldValue, String validValue) {
+	public Message(int columnIndex, String columnName, Flag flag, int lineNumber, String fieldValue, String validValue) {
 		this.columnIndex = columnIndex;
 		this.columnName = columnName;
-		this.severity = severity;
+		this.flag = flag;
 		this.lineNumber = lineNumber;
 		this.fieldValue = fieldValue;
 		this.validValue = validValue;
@@ -90,27 +80,11 @@ public abstract class Message {
 	}
 
 	/**
-	 * Returns the severity of the message
-	 * @return The severity of the message
+	 * Returns the flag of the message
+	 * @return The flag of the message
 	 */
-	public int getSeverity() {
-		return severity;
-	}
-	
-	/**
-	 * Determines whether or not this message represents an error
-	 * @return {@code true} if the message is an error; {@code false} otherwise.
-	 */
-	public boolean isError() {
-		return severity == ERROR;
-	}
-	
-	/**
-	 * Determines whether or not this message represents an warning
-	 * @return {@code true} if the message is a warning; {@code false} otherwise.
-	 */
-	public boolean isWarning() {
-		return severity == WARNING;
+	public Flag getFlag() {
+		return flag;
 	}
 	
 	/**
@@ -126,35 +100,14 @@ public abstract class Message {
 	public String getMessageString() {
 		
 		StringBuffer result = new StringBuffer();
-		result.append(getMessageSeverityString());
+		result.append(flag.toString());
 		result.append(": LINE ");
 		result.append(lineNumber);
 		result.append(": ");
 		result.append(getRecordMessage(columnName, fieldValue, validValue));
 		return result.toString();
 	}
-	
-	private String getMessageSeverityString() {
-		String result;
 		
-		switch (severity) {
-		case ERROR:
-		{
-			result = ERROR_STRING;
-			break;
-		}
-		case WARNING:
-		{
-			result = WARNING_STRING;
-			break;
-		}
-		default:
-			result = UNKNOWN_SEVERITY_STRING; 
-		}
-		
-		return result;
-	}
-	
 	protected abstract String getFullMessage();
 	
 	protected abstract String getSummaryMessage();
