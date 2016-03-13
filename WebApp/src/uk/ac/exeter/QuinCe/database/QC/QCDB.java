@@ -10,6 +10,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.data.DataRecordException;
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.QCRecord;
@@ -154,9 +155,9 @@ public class QCDB {
 			stmt.setBoolean(12, instrument.hasEqp1());
 			stmt.setBoolean(13, instrument.hasEqp2());
 			stmt.setBoolean(14, instrument.hasEqp3());
-			stmt.setInt(15, QCRecord.FLAG_NOT_SET);
+			stmt.setInt(15, Flag.NOT_SET.getFlagValue());
 			stmt.setString(16, "");
-			stmt.setInt(17, QCRecord.FLAG_NOT_SET);
+			stmt.setInt(17, Flag.NOT_SET.getFlagValue());
 			stmt.setString(18, "");
 			
 			stmt.execute();

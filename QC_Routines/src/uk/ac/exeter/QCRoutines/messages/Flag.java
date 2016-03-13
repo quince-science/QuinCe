@@ -90,7 +90,7 @@ public class Flag implements Comparable<Flag> {
 	 * Returns the flag's WOCE value
 	 * @return The flag's WOCE value
 	 */
-	protected int getFlagValue() {
+	public int getFlagValue() {
 		return flagValue;
 	}
 	
