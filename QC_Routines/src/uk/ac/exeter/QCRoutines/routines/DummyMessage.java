@@ -1,11 +1,12 @@
 package uk.ac.exeter.QCRoutines.routines;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.Message;
 
 public class DummyMessage extends Message {
 
-	public DummyMessage(int columnIndex, String columnName, int severity, int lineNumber, String fieldValue) {
-		super(columnIndex, columnName, severity, lineNumber, fieldValue, null);
+	public DummyMessage(int columnIndex, String columnName, Flag flag, int lineNumber, String fieldValue) {
+		super(columnIndex, columnName, flag, lineNumber, fieldValue, null);
 	}
 
 	@Override
