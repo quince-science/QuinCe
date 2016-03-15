@@ -6,7 +6,6 @@ import uk.ac.exeter.QCRoutines.Routine;
 import uk.ac.exeter.QCRoutines.RoutineException;
 import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QCRoutines.messages.Message;
 
 public class DummyRoutine extends Routine {
 
