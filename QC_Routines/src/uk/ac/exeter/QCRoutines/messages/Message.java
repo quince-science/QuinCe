@@ -158,4 +158,8 @@ public abstract class Message {
 	public String getValidValue() {
 		return validValue;
 	}
+	
+	public String toString() {
+		return getFullMessage();
+	}
 }
