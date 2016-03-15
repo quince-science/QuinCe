@@ -7,6 +7,7 @@ import org.joda.time.DateTime;
 
 import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QCRoutines.data.DataRecordException;
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 
 public class QCRecord extends DataRecord {
@@ -105,7 +106,7 @@ public class QCRecord extends DataRecord {
 	
 	private Instrument instrument;
 	
-	private int woceFlag = FLAG_NOT_SET;
+	private Flag woceFlag = Flag.NOT_SET;
 	
 	private String woceComment;
 	
@@ -217,19 +218,15 @@ public class QCRecord extends DataRecord {
 		return getColumnDisplayName(columnName, instrument);
 	}
 	
-	public int getQCFlag() {
+	public Flag getQCFlag() {
 		return getFlag();
 	}
 	
-	public int getWoceFlag() {
+	public Flag getWoceFlag() {
 		return woceFlag;
 	}
 	
-	public void setQCFlag(int flag) {
-		setFlag(flag);
-	}
-	
-	public void setWoceFlag(int flag) {
+	public void setWoceFlag(Flag flag) {
 		woceFlag = flag;
 	}
 	
