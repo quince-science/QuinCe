@@ -111,7 +111,7 @@ public class JobManager {
 	 */
 	private static final String GET_JOB_COUNTS_QUERY = "SELECT status, COUNT(status) FROM job GROUP BY status";
 	
-	private static final String JOB_LIST_QUERY = "SELECT id, owner, class, submitted, status, started, ended, progress FROM job ORDER BY submitted DESC";
+	private static final String JOB_LIST_QUERY = "SELECT id, owner, class, submitted, status, started, ended, progress, stack_trace FROM job ORDER BY submitted DESC";
 	
 	private static final String REQUEUE_JOB_STATEMENT = "UPDATE job SET "
 			+ "status = 'WAITING', started = NULL, ended = NULL, thread_name = NULL, progress = 0, "
@@ -674,8 +674,9 @@ public class JobManager {
 				}
 				
 				double progress = records.getDouble(8);
+				String stackTrace = records.getString(9);
 				
-				result.add(new JobSummary(id, owner, className, submitted, status, started, ended, progress));
+				result.add(new JobSummary(id, owner, className, submitted, status, started, ended, progress, stackTrace));
 			}
 		
 		} catch (SQLException e) {

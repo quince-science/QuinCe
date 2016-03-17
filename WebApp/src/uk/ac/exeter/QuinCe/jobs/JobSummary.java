@@ -2,6 +2,8 @@ package uk.ac.exeter.QuinCe.jobs;
 
 import java.util.Date;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import uk.ac.exeter.QuinCe.data.User;
 
 /**
@@ -27,8 +29,10 @@ public class JobSummary {
 	
 	private double progress;
 	
+	private String stackTrace;
+	
 
-	public JobSummary(long id, User owner, String className, Date submitted, String status, Date started, Date ended, double progress) {
+	public JobSummary(long id, User owner, String className, Date submitted, String status, Date started, Date ended, double progress, String stackTrace) {
 		this.id = id;
 		this.owner = owner;
 		this.className = className;
@@ -37,6 +41,7 @@ public class JobSummary {
 		this.started = started;
 		this.ended = ended;
 		this.progress = progress;
+		this.stackTrace = stackTrace;
 	}
 
 	public long getId() {
@@ -71,5 +76,19 @@ public class JobSummary {
 
 	public double getProgress() {
 		return progress;
+	}
+	
+	public String getStackTrace() {
+		return stackTrace;
+	}
+	
+	public String getStackTraceAsHtml() {
+		String result = StringEscapeUtils.escapeHtml4(stackTrace);
+		
+		if (null != stackTrace) {
+			result = result.replace("\n", "<br/>");
+		}
+		
+		return result;
 	}
 }
