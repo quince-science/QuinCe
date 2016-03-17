@@ -5,6 +5,10 @@ import uk.ac.exeter.QCRoutines.messages.Message;
 
 public class DummyMessage extends Message {
 
+	public DummyMessage(int columnIndex, String columnName, Flag flag, int lineNumber, String fieldValue, String validValue) {
+		super(columnIndex, columnName, flag, lineNumber, fieldValue, validValue);
+	}
+
 	public DummyMessage(int columnIndex, String columnName, Flag flag, int lineNumber, String fieldValue) {
 		super(columnIndex, columnName, flag, lineNumber, fieldValue, null);
 	}
