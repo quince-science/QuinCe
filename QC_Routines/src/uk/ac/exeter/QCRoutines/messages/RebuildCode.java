@@ -8,9 +8,17 @@ public class RebuildCode {
 	
 	private static final int CODE_INDEX_CLASS_NAME = 0;
 	
-	private static final int CODE_INDEX_COL_INDEX = 1;
+	private static final int CODE_INDEX_LINE_NUMBER = 1;
 	
-	private static final int CODE_INDEX_SEVERITY = 2;
+	private static final int CODE_INDEX_COLUMN_INDEX = 2;
+	
+	private static final int CODE_INDEX_COLUMN_NAME = 3;
+	
+	private static final int CODE_INDEX_FLAG_VALUE = 4;
+	
+	private static final int CODE_INDEX_FIELD_VALUE = 5;
+	
+	private static final int CODE_INDEX_VALID_VALUE = 6;
 
 	private Class<?> messageClass;
 	
@@ -40,7 +48,7 @@ public class RebuildCode {
 	public RebuildCode(String code) throws RebuildCodeException {
 			
 		String[] codeComponents = code.split("_");
-		if (codeComponents.length != 3) {
+		if (codeComponents.length != 7) {
 			throw new RebuildCodeException("Incorrect number of elements");
 		} else {
 			
@@ -51,7 +59,16 @@ public class RebuildCode {
 			}
 			
 			try {
-				columnIndex = Integer.parseInt(codeComponents[CODE_INDEX_COL_INDEX]);
+				lineNumber = Integer.parseInt(codeComponents[CODE_INDEX_LINE_NUMBER]);
+				if (lineNumber < 1) {
+					throw new RebuildCodeException("Invalid line number");
+				}
+			} catch (NumberFormatException e) {
+				throw new RebuildCodeException("Unparseable line number value");
+			}
+			
+			try {
+				columnIndex = Integer.parseInt(codeComponents[CODE_INDEX_COLUMN_INDEX]);
 				if (columnIndex < 0) {
 					throw new RebuildCodeException("Invalid column index value");
 				}
@@ -59,14 +76,19 @@ public class RebuildCode {
 				throw new RebuildCodeException("Unparseable column index value");
 			}
 			
+			columnName = codeComponents[CODE_INDEX_COLUMN_NAME];
+			
 			try {
-				flagValue = Integer.parseInt(codeComponents[CODE_INDEX_SEVERITY]);
+				flagValue = Integer.parseInt(codeComponents[CODE_INDEX_FLAG_VALUE]);
 				if (!Flag.isValidFlagValue(flagValue)) {
 					throw new RebuildCodeException("Invalid severity value");
 				}
 			} catch (NumberFormatException e) {
 				throw new RebuildCodeException("Unparseable severity value");
 			}
+			
+			fieldValue = codeComponents[CODE_INDEX_FIELD_VALUE];
+			validValue = codeComponents[CODE_INDEX_VALID_VALUE];
 		}
 	}
 	
