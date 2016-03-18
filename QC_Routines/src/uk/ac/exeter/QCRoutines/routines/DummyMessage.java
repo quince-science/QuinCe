@@ -19,7 +19,7 @@ public class DummyMessage extends Message {
 	}
 
 	@Override
-	protected String getSummaryMessage() {
+	public String getShortMessage() {
 		return "Dummy message";
 	}
 }

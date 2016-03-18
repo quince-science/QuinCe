@@ -147,22 +147,34 @@ public abstract class DataRecord {
 	}
 
 	/**
-	 * Adds a message to the set of messages assigned to this record
+	 * Adds a message to the set of messages assigned to this record,
+	 * and automatically updates the record's flag to match
 	 * @param message The message
 	 */
 	public void addMessage(Message message) {
+		addMessage(message, true);
+	}
+	
+	/**
+	 * Adds a message to the set of messages assigned to this record,
+	 * and optionally updates the record's flag to match
+	 * @param message The message
+	 * @param updateFlag {@code true} if the record's flag should be updated; {@code false} if it should not.
+	 */
+	public void addMessage(Message message, boolean updateFlag) {
 		messages.add(message);
 		
 		Flag messageFlag = message.getFlag();
-		
-		if (messageFlag.moreSignificantThan(flag)) {
-			flag = messageFlag;
-		}
-		
-		if (messageFlag.equals(Flag.BAD)) {
+		if (flag.equals(Flag.BAD)) {
 			hasBad = true;
-		} else if (messageFlag.equals(Flag.QUESTIONABLE)) {
+		} else if (flag.equals(Flag.QUESTIONABLE)) {
 			hasQuestionable = true;
+		}
+
+		if (updateFlag) {
+			if (messageFlag.moreSignificantThan(flag)) {
+				flag = messageFlag;
+			}
 		}
 	}
 
@@ -176,14 +188,24 @@ public abstract class DataRecord {
 	
 	/**
 	 * Replace all the messages for this record with the supplied list of messages.
+	 * Optionally, the record's flags will also be reset according to the flags on the messages.
+	 * @param messages The set of messages
+	 * @param setFlag Indicates whether or not the record's flag is to be updated
+	 */
+	public void setMessages(List<Message> messages, boolean setFlag) {
+		clearMessages();
+		for (Message message : messages) {
+			addMessage(message, setFlag);
+		}
+	}
+	
+	/**
+	 * Replace all the messages for this record with the supplied list of messages.
 	 * The record's flags will also be reset according to the flags on the messages.
 	 * @param messages The set of messages
 	 */
 	public void setMessages(List<Message> messages) {
-		clearMessages();
-		for (Message message : messages) {
-			addMessage(message);
-		}
+		setMessages(messages, true);
 	}
 	
 	/**
@@ -204,5 +226,34 @@ public abstract class DataRecord {
 		hasBad = false;
 		hasQuestionable = false;
 		flag = Flag.GOOD;
+	}
+
+	/**
+	 * Sets the flag for this record
+	 * @param flag The flag
+	 */
+	public void setFlag(Flag flag) {
+		this.flag = flag;
+		if (flag.equals(Flag.BAD)) {
+			hasBad = true;
+		} else if (flag.equals(Flag.QUESTIONABLE)) {
+			hasQuestionable = true;
+		}
+	}
+	
+	/**
+	 * Return a string containing the summary for all messages in this record
+	 * @return The messages summary string
+	 */
+	public String getMessageSummaries() {
+		StringBuffer summaries = new StringBuffer();
+		for (int i = 0; i < messages.size(); i++) {
+			summaries.append(messages.get(i).getShortMessage());
+			if (i < messages.size() - 1) {
+				summaries.append("; ");
+			}
+		}
+		
+		return summaries.toString();
 	}
 }

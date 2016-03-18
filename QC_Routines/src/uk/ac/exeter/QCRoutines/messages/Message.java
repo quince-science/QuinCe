@@ -110,7 +110,7 @@ public abstract class Message {
 		
 	protected abstract String getFullMessage();
 	
-	protected abstract String getSummaryMessage();
+	public abstract String getShortMessage();
 	
 	/**
 	 * Generate the long form error message for this error type, substituting in
@@ -161,5 +161,25 @@ public abstract class Message {
 	
 	public String toString() {
 		return getFullMessage();
+	}
+	
+	public boolean equals(Object o) {
+		boolean equals = true;
+		
+		if (!(o instanceof Message)) {
+			equals = false;
+		} else {
+			Message compare = (Message) o;
+			if (compare.columnIndex != columnIndex ||
+					!compare.columnName.equals(columnName) ||
+					!compare.flag.equals(flag) ||
+					compare.lineNumber != lineNumber ||
+					!compare.fieldValue.equals(fieldValue) ||
+					!compare.validValue.equals(validValue)) {
+				equals = false;
+			}
+		}
+		
+		return equals;
 	}
 }

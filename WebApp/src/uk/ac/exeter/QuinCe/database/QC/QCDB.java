@@ -11,11 +11,15 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.data.DataRecordException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
+import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
+import uk.ac.exeter.QCRoutines.messages.RebuildCode;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.QCRecord;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
+import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 
 public class QCDB {
 
@@ -57,7 +61,13 @@ public class QCDB {
 			+ "eqp_1_used, eqp_2_used, eqp_3_used, "
 			+ "qc_flag, qc_message, woce_flag, woce_message) "
 			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+	
+	private static final String SET_QC_RESULT_STATEMENT = "UPDATE qc SET qc_flag = ?, qc_message = ?,"
+			+ "woce_flag = ?, woce_message = ? WHERE data_file_id = ? AND row = ?";
+	
+	private static final String GET_QC_MESSAGES_QUERY = "SELECT qc_message FROM qc WHERE data_file_id = ? AND row = ?";
 
+	private static final String GET_QC_FLAG_QUERY = "SELECT qc_flag FROM qc WHERE data_file_id = ? AND row = ?";
 
 	public static void clearQCData(DataSource dataSource, long fileId) throws DatabaseException {
 		
@@ -108,9 +118,9 @@ public class QCDB {
 				
 				// Extract the row number and QC flags/comments
 				int rowNumber = records.getInt(FIELD_ROW_NUMBER);
-				int qcFlag = records.getInt(FIELD_QC_FLAG);
-				String qcComments = records.getString(FIELD_QC_COMMENT);
-				int woceFlag = records.getInt(FIELD_WOCE_FLAG);
+				Flag qcFlag = new Flag(records.getInt(FIELD_QC_FLAG));
+				List<Message> qcComments = RebuildCode.getMessagesFromRebuildCodes(records.getString(FIELD_QC_COMMENT));
+				Flag woceFlag = new Flag(records.getInt(FIELD_WOCE_FLAG));
 				String woceComment = records.getString(FIELD_WOCE_COMMENT);
 
 				// The remainder of the fields are data fields for the QC record
@@ -125,7 +135,7 @@ public class QCDB {
 
 			conn.commit();
 			
-		} catch (SQLException|DataRecordException|MessageException e) {
+		} catch (SQLException|DataRecordException|MessageException|InvalidFlagException e) {
 			throw new DatabaseException("An error occurred while retrieving records for QC", e);
 		} finally {
 			DatabaseUtils.closeResultSets(records);
@@ -168,5 +178,86 @@ public class QCDB {
 			DatabaseUtils.closeStatements(stmt);
 		}
 		
+	}
+	
+	public static void setQC(Connection conn, long fileId, QCRecord record) throws DatabaseException, MessageException {
+		
+		PreparedStatement stmt = null;
+		
+		try {
+			stmt = conn.prepareStatement(SET_QC_RESULT_STATEMENT);
+			
+			stmt.setInt(1, record.getQCFlag().getFlagValue());
+			stmt.setString(2, RebuildCode.getRebuildCodes(record.getMessages()));
+			stmt.setInt(3, record.getWoceFlag().getFlagValue());
+			stmt.setString(4, record.getWoceComment());
+			stmt.setLong(5, fileId);
+			stmt.setInt(6, record.getLineNumber());
+			
+			stmt.execute();
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while storing the QC result", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+		}
+	}
+	
+	public static List<Message> getQCMessages(Connection conn, long fileId, int row) throws MessageException, DatabaseException, RecordNotFoundException {
+		
+		PreparedStatement stmt = null;
+		ResultSet record = null;
+		List<Message> result = null;
+		
+		try {
+			stmt = conn.prepareStatement(GET_QC_MESSAGES_QUERY);
+			
+			stmt.setLong(1, fileId);
+			stmt.setInt(2, row);
+			
+			record = stmt.executeQuery();
+			
+			if (!record.next()) {
+				throw new RecordNotFoundException("Could not find QC record for file " + fileId + ", row " + row);
+			} else {
+				result = RebuildCode.getMessagesFromRebuildCodes(record.getString(1));
+			}
+			
+			return result;
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving QC messages", e);
+		} finally {
+			DatabaseUtils.closeResultSets(record);
+			DatabaseUtils.closeStatements(stmt);
+		}
+	}
+
+	public static Flag getQCFlag(Connection conn, long fileId, int row) throws MessageException, DatabaseException, RecordNotFoundException {
+		
+		PreparedStatement stmt = null;
+		ResultSet record = null;
+		Flag result = null;
+		
+		try {
+			stmt = conn.prepareStatement(GET_QC_FLAG_QUERY);
+			
+			stmt.setLong(1, fileId);
+			stmt.setInt(2, row);
+			
+			record = stmt.executeQuery();
+			
+			if (!record.next()) {
+				throw new RecordNotFoundException("Could not find QC record for file " + fileId + ", row " + row);
+			} else {
+				result = new Flag(record.getInt(1));
+			}
+			
+			return result;
+		} catch (SQLException|InvalidFlagException e) {
+			throw new DatabaseException("An error occurred while retrieving QC messages", e);
+		} finally {
+			DatabaseUtils.closeResultSets(record);
+			DatabaseUtils.closeStatements(stmt);
+		}
 	}
 }
