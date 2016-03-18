@@ -36,6 +36,11 @@ public class AutoQCJob extends FileJob {
 		
 		try {
 			List<? extends DataRecord> qcRecords = QCDB.getQCRecords(dataSource, fileId, instrument);
+			
+			// Remove any existing QC flags and messages
+			for (DataRecord record : qcRecords) {
+				((QCRecord) record).clearQCData();
+			}
 			List<Routine> routines = RoutinesConfig.getInstance().getRoutines();
 			
 			for (Routine routine : routines) {

@@ -15,7 +15,7 @@ public abstract class DataRecord {
 	/**
 	 * The output messages generated for this line, if any
 	 */
-	private List<Message> messages;
+	protected List<Message> messages;
 	
 	/**
 	 * Flag to indicate the presence of questionable flags raised during processing
@@ -221,7 +221,7 @@ public abstract class DataRecord {
 	 * Clear all messages from the record, and reset the flags to the default
 	 * 'good' state.
 	 */
-	private void clearMessages() {
+	public void clearMessages() {
 		messages = new ArrayList<Message>(messages.size());
 		hasBad = false;
 		hasQuestionable = false;

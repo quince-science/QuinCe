@@ -304,4 +304,9 @@ public class QCRecord extends DataRecord {
 			}
 		}
 	}
+	
+	public void clearQCData() {
+		messages = new ArrayList<Message>();
+		setQCFlag(Flag.GOOD);
+	}
 }
