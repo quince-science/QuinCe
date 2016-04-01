@@ -3,8 +3,6 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.util.List;
 import java.util.Properties;
 
-import javax.sql.DataSource;
-
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
@@ -13,6 +11,7 @@ import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * A version of the Job class specifically for
@@ -37,7 +36,7 @@ public abstract class FileJob extends Job {
 	 * The parameters must contain a single entry that is the database ID
 	 * of the file to be processed. Any other parameters will be ignored.
 	 * 
-	 * @param dataSource A database connection
+	 * @param resourceManager The system resource manager
 	 * @param config The application configuration
 	 * @param jobId The id of the job in the database
 	 * @param parameters The job parameters, containing the file ID
@@ -45,9 +44,9 @@ public abstract class FileJob extends Job {
 	 * @throws RecordNotFoundException 
 	 * @throws DatabaseException 
 	 */
-	public FileJob(DataSource dataSource, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+	public FileJob(ResourceManager resourceManager, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		// File jobs have no parameters.
-		super(dataSource, config, jobId, parameters);
+		super(resourceManager, config, jobId, parameters);
 		instrument = InstrumentDB.getInstrumentByFileId(dataSource, fileId);
 	}
 

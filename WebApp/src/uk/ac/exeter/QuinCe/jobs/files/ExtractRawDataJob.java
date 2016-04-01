@@ -6,8 +6,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 
-import javax.sql.DataSource;
-
 import uk.ac.exeter.QuinCe.data.CalibrationCoefficients;
 import uk.ac.exeter.QuinCe.data.CalibrationStub;
 import uk.ac.exeter.QuinCe.data.FileInfo;
@@ -26,6 +24,7 @@ import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class ExtractRawDataJob extends FileJob {
 
@@ -40,8 +39,8 @@ public class ExtractRawDataJob extends FileJob {
 	 * @throws RecordNotFoundException 
 	 * @throws DatabaseException 
 	 */
-	public ExtractRawDataJob(DataSource dataSource, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
-		super(dataSource, config, jobId, parameters);
+	public ExtractRawDataJob(ResourceManager resourceManager, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+		super(resourceManager, config, jobId, parameters);
 	}
 
 	@Override

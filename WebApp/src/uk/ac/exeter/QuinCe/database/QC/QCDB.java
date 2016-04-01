@@ -9,14 +9,15 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.config.ColumnConfig;
 import uk.ac.exeter.QCRoutines.data.DataRecordException;
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.RebuildCode;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.QCRecord;
-import uk.ac.exeter.QuinCe.data.QuinceFlag;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
@@ -98,7 +99,7 @@ public class QCDB {
 	 * @return The list of QC records ready to be processed
 	 * @throws DatabaseException If the QC records cannot be retrieved, or cannot be created.
 	 */
-	public static List<QCRecord> getQCRecords(DataSource dataSource, long fileId, Instrument instrument) throws DatabaseException {
+	public static List<QCRecord> getQCRecords(DataSource dataSource, ColumnConfig columnConfig, long fileId, Instrument instrument) throws DatabaseException {
 		
 		Connection conn = null;
 		PreparedStatement readStatement = null;
@@ -118,19 +119,18 @@ public class QCDB {
 				
 				// Extract the row number and QC flags/comments
 				int rowNumber = records.getInt(FIELD_ROW_NUMBER);
-				QuinceFlag qcFlag = new QuinceFlag(records.getInt(FIELD_QC_FLAG));
+				Flag qcFlag = new Flag(records.getInt(FIELD_QC_FLAG));
 				List<Message> qcComments = RebuildCode.getMessagesFromRebuildCodes(records.getString(FIELD_QC_COMMENT));
-				QuinceFlag woceFlag = new QuinceFlag(records.getInt(FIELD_WOCE_FLAG));
+				Flag woceFlag = new Flag(records.getInt(FIELD_WOCE_FLAG));
 				String woceComment = records.getString(FIELD_WOCE_COMMENT);
 
 				// The remainder of the fields are data fields for the QC record
-				int fieldCount = QCRecord.getColumnNames().size();
 				List<String> recordData = new ArrayList<String>();
-				for (int i = FIRST_DATA_FIELD; i <= FIRST_DATA_FIELD + fieldCount - 1; i++) {
+				for (int i = FIRST_DATA_FIELD; i <= FIRST_DATA_FIELD + columnConfig.getColumnCount() - 1; i++) {
 					recordData.add(records.getString(i));
 				}
 				
-				qcRecords.add(new QCRecord(fileId, instrument, rowNumber, recordData, qcFlag, qcComments, woceFlag, woceComment));
+				qcRecords.add(new QCRecord(fileId, instrument, columnConfig, rowNumber, recordData, qcFlag, qcComments, woceFlag, woceComment));
 			}
 
 			conn.commit();
@@ -165,9 +165,9 @@ public class QCDB {
 			stmt.setBoolean(12, instrument.hasEqp1());
 			stmt.setBoolean(13, instrument.hasEqp2());
 			stmt.setBoolean(14, instrument.hasEqp3());
-			stmt.setInt(15, QuinceFlag.NOT_SET.getFlagValue());
+			stmt.setInt(15, Flag.NOT_SET.getFlagValue());
 			stmt.setString(16, "");
-			stmt.setInt(17, QuinceFlag.NOT_SET.getFlagValue());
+			stmt.setInt(17, Flag.NOT_SET.getFlagValue());
 			stmt.setString(18, "");
 			
 			stmt.execute();
@@ -232,11 +232,11 @@ public class QCDB {
 		}
 	}
 
-	public static QuinceFlag getQCFlag(Connection conn, long fileId, int row) throws MessageException, DatabaseException, RecordNotFoundException {
+	public static Flag getQCFlag(Connection conn, long fileId, int row) throws MessageException, DatabaseException, RecordNotFoundException {
 		
 		PreparedStatement stmt = null;
 		ResultSet record = null;
-		QuinceFlag result = null;
+		Flag result = null;
 		
 		try {
 			stmt = conn.prepareStatement(GET_QC_FLAG_QUERY);
@@ -249,7 +249,7 @@ public class QCDB {
 			if (!record.next()) {
 				throw new RecordNotFoundException("Could not find QC record for file " + fileId + ", row " + row);
 			} else {
-				result = new QuinceFlag(record.getInt(1));
+				result = new Flag(record.getInt(1));
 			}
 			
 			return result;

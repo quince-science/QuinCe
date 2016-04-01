@@ -11,6 +11,7 @@ import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Abstract class containing all the required parts for a backgorund job.
@@ -55,6 +56,11 @@ public abstract class Job {
 	/**
 	 * The database connection to be used by the job
 	 */
+	protected ResourceManager resourceManager;
+	
+	/**
+	 * The database connection to be used by the job
+	 */
 	protected DataSource dataSource;
 	
 	/**
@@ -69,20 +75,24 @@ public abstract class Job {
 	
 	/**
 	 * Constructs a job object, and validates the parameters passed to it
-	 * @param dataSource A database connection
+	 * @param resourceManager The system resource manager
 	 * @param config The application properties
 	 * @param id The id of the job in the database
 	 * @param parameters The parameters for the job
 	 * @throws InvalidJobParametersException If the parameters are not valid for the job
 	 */
-	public Job(DataSource dataSource, Properties config, long id, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
+	public Job(ResourceManager resourceManager, Properties config, long id, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		
-		this.dataSource = dataSource;
+		this.resourceManager = resourceManager;
 		this.config = config;
 		this.id = id;
 		this.parameters = parameters;
+
+		// Extract the data source into its own variable, since it's what we use most
+		this.dataSource = resourceManager.getDBDataSource();
+		
 		validateParameters();
 	}
 	

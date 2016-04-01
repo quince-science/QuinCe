@@ -3,8 +3,6 @@ package uk.ac.exeter.QuinCe.jobs.user;
 import java.util.List;
 import java.util.Properties;
 
-import javax.sql.DataSource;
-
 import org.apache.commons.mail.EmailException;
 
 import uk.ac.exeter.QuinCe.data.User;
@@ -15,13 +13,14 @@ import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.utils.EmailSender;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.User.VerifyEmailBean;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class SendEmailVerificationMailJob extends Job {
 
 	private static final int EMAIL_PARAM = 0;
 	
-	public SendEmailVerificationMailJob(DataSource dataSource, Properties config, long id, List<String> params) throws MissingParamException, InvalidJobParametersException {
-		super(dataSource, config, id, params);
+	public SendEmailVerificationMailJob(ResourceManager resourceManager, Properties config, long id, List<String> params) throws MissingParamException, InvalidJobParametersException {
+		super(resourceManager, config, id, params);
 	}
 	
 	@Override
