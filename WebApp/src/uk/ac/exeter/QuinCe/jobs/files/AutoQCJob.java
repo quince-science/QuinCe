@@ -6,12 +6,12 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QCRoutines.Routine;
 import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
 import uk.ac.exeter.QCRoutines.data.DataRecord;
-import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.Message;
+import uk.ac.exeter.QCRoutines.routines.Routine;
 import uk.ac.exeter.QuinCe.data.QCRecord;
+import uk.ac.exeter.QuinCe.data.QuinceFlag;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
@@ -57,15 +57,15 @@ public class AutoQCJob extends FileJob {
 				
 				int messageCount = qcRecord.getMessages().size();
 				
-				Flag previousQCFlag = QCDB.getQCFlag(conn, fileId, qcRecord.getLineNumber());
-				if (previousQCFlag.equals(Flag.NOT_SET)) {
+				QuinceFlag previousQCFlag = QCDB.getQCFlag(conn, fileId, qcRecord.getLineNumber());
+				if (previousQCFlag.equals(QuinceFlag.NOT_SET)) {
 					writeRecord = true;
 				}
 
 				if (messageCount == 0) {
 					if (!previousQCFlag.isGood()) {
-						qcRecord.setQCFlag(Flag.GOOD);
-						qcRecord.setWoceFlag(Flag.ASSUMED_GOOD);
+						qcRecord.setQCFlag(QuinceFlag.GOOD);
+						qcRecord.setWoceFlag(QuinceFlag.ASSUMED_GOOD);
 						qcRecord.setWoceComment(null);
 						writeRecord = true;
 					}
@@ -93,7 +93,7 @@ public class AutoQCJob extends FileJob {
 					}
 					
 					if (!messagesMatch) {
-						qcRecord.setWoceFlag(Flag.NEEDED);
+						qcRecord.setWoceFlag(QuinceFlag.NEEDED);
 						qcRecord.setWoceComment(qcRecord.getMessageSummaries());
 						writeRecord = true;
 					}
