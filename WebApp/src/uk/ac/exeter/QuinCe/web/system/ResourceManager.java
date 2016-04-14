@@ -59,13 +59,6 @@ public class ResourceManager implements ServletContextListener {
 			// Do nothing for now
 		}
        	
-       	// Initialise the QC Routines configuration
-       	try {
-       		RoutinesConfig.init(configuration.getProperty("routines.configfile"));
-       	} catch (ConfigException e) {
-       		throw new RuntimeException("Could not initialise QC Routines", e);
-       	}
-       	
        	// Initialise the column config
        	try {
        		ColumnConfig.init(configuration.getProperty("columns.configfile"));
@@ -73,6 +66,13 @@ public class ResourceManager implements ServletContextListener {
        		throw new RuntimeException("Could not initialise data column configuration", e);
        	}
 
+       	// Initialise the QC Routines configuration
+       	try {
+       		RoutinesConfig.init(configuration.getProperty("routines.configfile"));
+       	} catch (ConfigException e) {
+       		throw new RuntimeException("Could not initialise QC Routines", e);
+       	}
+       	
        	// Register ourselves in the servlet context
         servletContext.setAttribute(ATTRIBUTE_NAME, this);
 }
