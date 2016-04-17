@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.Calendar;
 import java.util.List;
@@ -180,12 +181,21 @@ public class ExtractRawDataJob extends FileJob {
 	}
 	
 	protected void reset() throws JobFailedException {
+		Connection conn = null;
 		try {
-			QCDB.clearQCData(dataSource, fileId);
-			DataReductionDB.clearDataReductionData(dataSource, fileId);
-			RawDataDB.clearRawData(dataSource, fileId);
-		} catch(DatabaseException e) {
+			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
+			
+			QCDB.clearQCData(conn, fileId);
+			DataReductionDB.clearDataReductionData(conn, fileId);
+			RawDataDB.clearRawData(conn, fileId);
+			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_EXTRACT);
+			
+			conn.commit();
+		} catch(MissingParamException|SQLException|DatabaseException e) {
 			throw new JobFailedException(id, e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 }

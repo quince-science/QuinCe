@@ -55,15 +55,26 @@ public class RawDataDB {
 	
 
 	public static void clearRawData(DataSource dataSource, long fileId) throws DatabaseException {
-		
 		Connection conn = null;
-		PreparedStatement rawDataStmt = null;
-		PreparedStatement gasStandardsStmt = null;
 		
 		try {
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
 			
+			clearRawData(conn, fileId);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while clearing out previous data", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+
+	public static void clearRawData(Connection conn, long fileId) throws DatabaseException {
+		
+		PreparedStatement rawDataStmt = null;
+		PreparedStatement gasStandardsStmt = null;
+		
+		try {
 			rawDataStmt = conn.prepareStatement(CLEAR_RAW_DATA_STATEMENT);
 			rawDataStmt.setLong(1, fileId);
 			rawDataStmt.execute();
@@ -78,7 +89,6 @@ public class RawDataDB {
 			throw new DatabaseException("An error occurred while clearing out previous data", e);
 		} finally {
 			DatabaseUtils.closeStatements(rawDataStmt, gasStandardsStmt);
-			DatabaseUtils.closeConnection(conn);
 		}
 	}
 	

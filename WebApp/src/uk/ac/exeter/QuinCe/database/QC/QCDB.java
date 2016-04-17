@@ -70,13 +70,25 @@ public class QCDB {
 	private static final String GET_QC_FLAG_QUERY = "SELECT qc_flag FROM qc WHERE data_file_id = ? AND row = ?";
 
 	public static void clearQCData(DataSource dataSource, long fileId) throws DatabaseException {
-		
 		Connection conn = null;
-		PreparedStatement stmt = null;
 		
 		try {
 			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
 			
+			clearQCData(conn, fileId);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while clearing out previous data", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	public static void clearQCData(Connection conn, long fileId) throws DatabaseException {
+		
+		PreparedStatement stmt = null;
+		
+		try {
 			stmt = conn.prepareStatement(CLEAR_QC_STATEMENT);
 			stmt.setLong(1, fileId);
 			stmt.execute();
@@ -85,7 +97,6 @@ public class QCDB {
 			throw new DatabaseException("An error occurred while clearing out previous data", e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
 		}
 	}
 	
