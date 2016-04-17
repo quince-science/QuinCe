@@ -48,8 +48,7 @@ public class QCDB {
 			+ "q.intake_temp_1_used, q.intake_temp_2_used, q.intake_temp_3_used, "
 			+ "q.salinity_1_used, q.salinity_2_used, q.salinity_3_used, "
 			+ "q.eqt_1_used, q.eqt_2_used, q.eqt_3_used, "
-			+ "q.eqp_1_used, q.eqp_2_used, q.eqp_3_used, "
-			+ "q.qc_flag, q.qc_message, q.woce_flag, q.woce_message "
+			+ "q.eqp_1_used, q.eqp_2_used, q.eqp_3_used "
 			+ "FROM raw_data as r "
 			+ "INNER JOIN data_reduction as d ON r.data_file_id = d.data_file_id AND r.row = d.row "
 			+ "INNER JOIN qc as q ON d.data_file_id  = q.data_file_id AND d.row = q.row "
@@ -126,6 +125,7 @@ public class QCDB {
 
 				// The remainder of the fields are data fields for the QC record
 				List<String> recordData = new ArrayList<String>();
+				recordData.add(null); // Field indices are 1-based
 				for (int i = FIRST_DATA_FIELD; i <= FIRST_DATA_FIELD + columnConfig.getColumnCount() - 1; i++) {
 					recordData.add(records.getString(i));
 				}
