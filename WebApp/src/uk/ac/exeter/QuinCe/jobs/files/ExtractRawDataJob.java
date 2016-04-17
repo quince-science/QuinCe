@@ -16,9 +16,11 @@ import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
 import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.database.Instrument.CalibrationDB;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -179,6 +181,8 @@ public class ExtractRawDataJob extends FileJob {
 	
 	protected void reset() throws JobFailedException {
 		try {
+			QCDB.clearQCData(dataSource, fileId);
+			DataReductionDB.clearDataReductionData(dataSource, fileId);
 			RawDataDB.clearRawData(dataSource, fileId);
 		} catch(DatabaseException e) {
 			throw new JobFailedException(id, e);
