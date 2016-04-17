@@ -365,8 +365,8 @@ public class DataFileDB {
 		
 		try {
 			stmt = conn.prepareStatement(SET_JOB_STATEMENT);
-			stmt.setLong(1, fileId);
-			stmt.setInt(2, jobCode);
+			stmt.setInt(1, jobCode);
+			stmt.setLong(2, fileId);
 			
 			stmt.execute();
 		} catch (SQLException e) {
