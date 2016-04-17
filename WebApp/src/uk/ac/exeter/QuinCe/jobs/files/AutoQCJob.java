@@ -9,11 +9,13 @@ import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.routines.Routine;
+import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.QCRecord;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.QC.QCDB;
+import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -102,6 +104,8 @@ public class AutoQCJob extends FileJob {
 					QCDB.setQC(conn, fileId, (QCRecord) record);
 				}
 			}
+			
+			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_USER_QC);
 			
 			conn.commit();
 		} catch (Exception e) {
