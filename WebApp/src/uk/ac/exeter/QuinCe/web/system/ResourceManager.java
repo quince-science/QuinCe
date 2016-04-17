@@ -62,6 +62,7 @@ public class ResourceManager implements ServletContextListener {
        	// Initialise the column config
        	try {
        		ColumnConfig.init(configuration.getProperty("columns.configfile"));
+       		columnConfig = ColumnConfig.getInstance();
        	} catch (ConfigException e) {
        		throw new RuntimeException("Could not initialise data column configuration", e);
        	}
