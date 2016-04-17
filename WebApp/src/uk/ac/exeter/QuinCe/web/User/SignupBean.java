@@ -111,7 +111,7 @@ public class SignupBean extends BaseManagedBean {
 				List<String> emailJobParams = new ArrayList<String>();
 				emailJobParams.add(emailAddress);
 				
-				JobManager.addInstantJob(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), newUser, "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob", emailJobParams);
+				JobManager.addInstantJob(ServletUtils.getResourceManager(), ServletUtils.getAppConfig(), newUser, "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob", emailJobParams);
 			} catch (DatabaseException|MissingParamException|ResourceException e) {
 				result = internalError(e);
 			} catch (UserExistsException e) {

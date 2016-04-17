@@ -28,6 +28,7 @@ import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * This class provides methods to manage the job queue
@@ -257,9 +258,10 @@ public class JobManager {
 	 * @throws JobThreadPoolNotInitialisedException If the job thread pool has not been initialised
 	 * @throws NoSuchJobException If the job mystreriously vanishes between being created and run
 	 */
-	public static void addInstantJob(DataSource dataSource, Properties config, User owner, String jobClass, List<String> parameters) throws DatabaseException, MissingParamException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, JobThreadPoolNotInitialisedException, NoSuchJobException {
+	public static void addInstantJob(ResourceManager resourceManager, Properties config, User owner, String jobClass, List<String> parameters) throws DatabaseException, MissingParamException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, JobThreadPoolNotInitialisedException, NoSuchJobException {
+		DataSource dataSource = resourceManager.getDBDataSource();
 		long jobID = addJob(dataSource, owner, jobClass, parameters);
-		JobThread emailThread = JobThreadPool.getInstance().getInstantJobThread(JobManager.getJob(dataSource, config, jobID));
+		JobThread emailThread = JobThreadPool.getInstance().getInstantJobThread(JobManager.getJob(resourceManager, config, jobID));
 		try {
 			startJob(dataSource.getConnection(), jobID);
 		} catch (SQLException e) {
@@ -361,9 +363,9 @@ public class JobManager {
 	 * @throws DatabaseException If any errors occurred retrieving the Job object
 	 * @throws NoSuchJobException If the specified job does not exist
 	 */
-	public static Job getJob(DataSource dataSource, Properties config, long jobID) throws MissingParamException, DatabaseException, NoSuchJobException {
+	public static Job getJob(ResourceManager resourceManager, Properties config, long jobID) throws MissingParamException, DatabaseException, NoSuchJobException {
 		
-		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(resourceManager, "resourceManager");
 
 		Job job = null;
 		Connection connection = null;
@@ -371,6 +373,7 @@ public class JobManager {
 		ResultSet result = null;
 		
 		try {
+			DataSource dataSource = resourceManager.getDBDataSource();
 			connection = dataSource.getConnection();
 			stmt = connection.prepareStatement(GET_JOB_QUERY);
 			stmt.setLong(1, jobID);
@@ -379,7 +382,7 @@ public class JobManager {
 			if (!result.next()) {
 				throw new NoSuchJobException(jobID);
 			} else {
-				job = getJobFromResultSet(result, dataSource, config);
+				job = getJobFromResultSet(result, resourceManager, config);
 			}
 		} catch (SQLException|ClassNotFoundException|NoSuchMethodException|InstantiationException|IllegalAccessException|IllegalArgumentException|InvocationTargetException e) {
 			// We handle all exceptions as DatabaseExceptions.
@@ -394,10 +397,10 @@ public class JobManager {
 		return job;
 	}
 	
-	private static Job getJobFromResultSet(ResultSet result, DataSource dataSource, Properties config) throws ClassNotFoundException, SQLException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	private static Job getJobFromResultSet(ResultSet result, ResourceManager resourceManager, Properties config) throws ClassNotFoundException, SQLException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		Class<?> jobClazz = Class.forName(result.getString(2));
-		Constructor<?> jobConstructor = jobClazz.getConstructor(DataSource.class, Properties.class, long.class, List.class);
-		return (Job) jobConstructor.newInstance(dataSource, config, result.getLong(1), StringUtils.delimitedToList(result.getString(3)));
+		Constructor<?> jobConstructor = jobClazz.getConstructor(ResourceManager.class, Properties.class, long.class, List.class);
+		return (Job) jobConstructor.newInstance(resourceManager, config, result.getLong(1), StringUtils.delimitedToList(result.getString(3)));
 	}
 	
 	/**
@@ -542,9 +545,9 @@ public class JobManager {
 	 * @throws MissingParamException If the data source is not supplied
 	 * @throws DatabaseException If an error occurs while retrieving details from the database.
 	 */
-	public static Job getNextJob(DataSource dataSource, Properties config) throws MissingParamException, DatabaseException {
+	public static Job getNextJob(ResourceManager resourceManager, Properties config) throws MissingParamException, DatabaseException {
 		
-		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(resourceManager, "resourceManager");
 
 		Job job = null;
 		Connection connection = null;
@@ -552,12 +555,13 @@ public class JobManager {
 		ResultSet result = null;
 		
 		try {
+			DataSource dataSource = resourceManager.getDBDataSource();
 			connection = dataSource.getConnection();
 			stmt = connection.prepareStatement(GET_NEXT_JOB_QUERY);
 			
 			result = stmt.executeQuery();
 			if (result.next()) {
-				job = getJobFromResultSet(result, dataSource, config);
+				job = getJobFromResultSet(result, resourceManager, config);
 			}
 		} catch (SQLException|ClassNotFoundException|NoSuchMethodException|InstantiationException|IllegalAccessException|IllegalArgumentException|InvocationTargetException e) {
 			// We handle all exceptions as DatabaseExceptions.
@@ -590,7 +594,7 @@ public class JobManager {
 			} else {
 				// Is there a constructor that takes the right parameters?
 				// We also check that the List is designated to contain String objects
-				Constructor<?> jobConstructor = jobClazz.getConstructor(DataSource.class, Properties.class, long.class, List.class);
+				Constructor<?> jobConstructor = jobClazz.getConstructor(ResourceManager.class, Properties.class, long.class, List.class);
 				Type[] constructorGenericTypes = jobConstructor.getGenericParameterTypes();
 				if (constructorGenericTypes.length != 4) {
 					checkResult = CLASS_CHECK_INVALID_CONSTRUCTOR;
@@ -730,8 +734,8 @@ public class JobManager {
 		return result;
 	}
 
-	public static void startNextJob(DataSource dataSource, Properties config) throws MissingParamException, DatabaseException, NoSuchJobException, JobThreadPoolNotInitialisedException {
-		Job nextJob = getNextJob(dataSource, config);
+	public static void startNextJob(ResourceManager resourceManager, Properties config) throws MissingParamException, DatabaseException, NoSuchJobException, JobThreadPoolNotInitialisedException {
+		Job nextJob = getNextJob(resourceManager, config);
 		JobThread thread = JobThreadPool.getInstance().getJobThread(nextJob);
 		if (null != thread) {
  			thread.start();

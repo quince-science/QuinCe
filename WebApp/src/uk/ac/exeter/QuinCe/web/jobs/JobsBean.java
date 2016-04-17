@@ -116,7 +116,7 @@ public class JobsBean extends BaseManagedBean {
 		parameters.add(String.valueOf(chunkCount));
 		
 		try {
-			JobManager.addInstantJob(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), getUser(), "uk.ac.exeter.QuinCe.jobs.test.TenSecondJob", parameters);
+			JobManager.addInstantJob(ServletUtils.getResourceManager(), ServletUtils.getAppConfig(), getUser(), "uk.ac.exeter.QuinCe.jobs.test.TenSecondJob", parameters);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -127,7 +127,7 @@ public class JobsBean extends BaseManagedBean {
 	
 	public void runNext() {
 		try {
-			JobManager.startNextJob(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig());
+			JobManager.startNextJob(ServletUtils.getResourceManager(), ServletUtils.getAppConfig());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

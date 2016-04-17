@@ -83,7 +83,7 @@ public abstract class Job {
 	 */
 	public Job(ResourceManager resourceManager, Properties config, long id, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
 		
-		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(resourceManager, "resourceManager");
 		
 		this.resourceManager = resourceManager;
 		this.config = config;
