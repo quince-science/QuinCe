@@ -17,23 +17,26 @@ public class FileInfo {
 	
 	public static final String JOB_CLASS_EXTRACT = "uk.ac.exeter.QuinCe.jobs.files.ExtractRawDataJob";
 	
-	public static final int JOB_CODE_REDUCTION = 2;
+	public static final int JOB_CODE_REDUCTION = 1;
 	
 	public static final String JOB_NAME_REDUCTION = "Data reduction";
 	
 	public static final String JOB_CLASS_REDUCTION = "uk.ac.exeter.QuinCe.jobs.files.DataReductionJob";
 	
-	public static final int JOB_CODE_AUTO_QC = 3;
+	public static final int JOB_CODE_AUTO_QC = 2;
 	
 	public static final String JOB_NAME_AUTO_QC = "Automatic QC";
 	
 	public static final String JOB_CLASS_AUTO_QC = "uk.ac.exeter.QuinCe.jobs.files.AutoQCJob";
 
-	public static final int JOB_CODE_USER_QC = 4;
+	public static final int JOB_CODE_USER_QC = 3;
 	
 	public static final String JOB_NAME_USER_QC = "User QC";
 
-/**
+	public static final int JOB_CODE_NEEDS_RECALC = 4;
+	
+	public static final String JOB_NAME_NEEDS_RECALC = "Recalculation Required";
+	/**
 	 * The file's database ID
 	 */
 	private long fileId;
