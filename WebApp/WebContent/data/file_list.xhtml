@@ -45,6 +45,11 @@
 	    	  }
 	      }
 	      
+	      function qcFile(id) {
+	    	  $('#fileListForm\\:chosenFile').val(id);
+	    	  return true;
+	      }
+	      
 	    </script>
 	</ui:define>
 
@@ -91,7 +96,11 @@
 					</p:column>
 					<p:column>
 						<f:facet name="header">Actions</f:facet>
-						Q|E|<h:commandLink id="Delete_#{file.fileId}" value="D" onclick="deleteFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.deleteFile}"/>
+						<h:commandLink id="QC_#{file.fileId}" value="Q" onclick="qcFile(#{file.fileId})" action="#{fileListBean.qcFile}"/>
+						|
+						E
+						|
+						<h:commandLink id="Delete_#{file.fileId}" value="D" onclick="deleteFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.deleteFile}"/>
 					</p:column>
 					<p:column>
 						<f:facet name="header">Time remaining</f:facet>

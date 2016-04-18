@@ -24,6 +24,8 @@ public class FileListBean extends BaseManagedBean {
 	 */
 	public static final String PAGE_FILE_LIST = "file_list";
 	
+	public static final String PAGE_FILE_DATA = "data_screen";
+	
 	/**
 	 * The ID of the chosen file
 	 */
@@ -70,6 +72,10 @@ public class FileListBean extends BaseManagedBean {
 		}
 
 		return PAGE_FILE_LIST;
+	}
+	
+	public String qcFile() {
+		return PAGE_FILE_DATA;
 	}
 
 	private FileInfo getChosenFileDetails() {

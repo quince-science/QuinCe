@@ -4,7 +4,7 @@
   <nodes xsi:type="pageflow:PFPage" name="internalerror.xhtml" id="pf14504639120692" referenceLink="//@navigationRule.0/@navigationCase.0/@toViewId|" inlinks="pf14504639120681" path="internalerror.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="index.xhtml" id="pf14504639120693" referenceLink="//@navigationRule.1/@fromViewId|" outlinks="pf14504639120694 pf14504639120695 pf14504639120696" inlinks="pf14504639120695" path="/index.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="SignupForm" id="pf14504639120697" referenceLink="//@navigationRule.2/@fromViewId|" outlinks="pf14504639120698 pf14504639120699 pf145046391206910" inlinks="pf14504639120694 pf14504639120698 pf14504639120699" path="/user/signup.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="FileList" id="pf145046391206911" referenceLink="//@navigationRule.9/@navigationCase.1/@toViewId|" outlinks="pf14511978712483 pf14523437070840" inlinks="pf14504639120696 pf14519168910990 pf14523437070840" path="/data/file_list.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="FileList" id="pf145046391206911" referenceLink="//@navigationRule.9/@fromViewId|" outlinks="pf14511978712483 pf14523437070840 pf14610036591180" inlinks="pf14504639120696 pf14519168910990 pf14523437070840" path="/data/file_list.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="SignupComplete" id="pf145046391206912" referenceLink="//@navigationRule.3/@fromViewId|" outlinks="pf145046391206913" inlinks="pf145046391206910" path="/user/signup_complete.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="index.html" id="pf145046391206914" referenceLink="//@navigationRule.4/@navigationCase.1/@toViewId|" inlinks="pf145046391206913 pf145046391206915" path="/index.html"/>
   <nodes xsi:type="pageflow:PFPage" name="SendEmailCode" id="pf145046391206916" referenceLink="//@navigationRule.4/@fromViewId|" outlinks="pf145046391206917 pf145046391206915" path="/user/verify_email.xhtml"/>
@@ -21,6 +21,7 @@
   <nodes xsi:type="pageflow:PFPage" name="CalibrationEdit" id="pf145046391206941" referenceLink="//@navigationRule.7/@navigationCase.2/@toViewId|" inlinks="pf14506344153600" path="/instrument/calibration_edit.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="instrument/standard_edit.xhtml" x="444" y="156" id="pf14506769842184" referenceLink="//@navigationRule.8/@navigationCase.2/@toViewId|" inlinks="pf14506769842173" path="/instrument/standard_edit.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="UploadDataFile" id="pf14511978712484" referenceLink="//@navigationRule.10/@fromViewId|" outlinks="pf14519168910990" inlinks="pf14511978712483" path="/data/upload_file.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="data/data_screen.xhtml" id="pf14610036591181" referenceLink="//@navigationRule.9/@navigationCase.2/@toViewId|" inlinks="pf14610036591180" path="/data/data_screen.xhtml"/>
   <links id="pf14504639120681" target="pf14504639120692" source="pf14504639120680" outcome="InternalError"/>
   <links id="pf14504639120694" target="pf14504639120697" source="pf14504639120693" outcome="SignUp"/>
   <links id="pf14504639120695" target="pf14504639120693" source="pf14504639120693" outcome="AuthenticationFailed"/>
@@ -50,4 +51,5 @@
   <links id="pf14511978712483" target="pf14511978712484" source="pf145046391206911" outcome="upload_file"/>
   <links id="pf14519168910990" target="pf145046391206911" source="pf14511978712484" outcome="file_list"/>
   <links id="pf14523437070840" target="pf145046391206911" source="pf145046391206911" outcome="file_list"/>
+  <links id="pf14610036591180" target="pf14610036591181" source="pf145046391206911" outcome="data_screen"/>
 </pageflow:Pageflow>
