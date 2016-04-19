@@ -70,6 +70,12 @@
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.files.UploadDataFileBean</managed-bean-class>
 		<managed-bean-scope>view</managed-bean-scope>
 	</managed-bean>
+	<managed-bean>
+		<description>Holds all data required by the Data Screen, where the user performs QC.</description>
+		<managed-bean-name>dataScreenBean</managed-bean-name>
+		<managed-bean-class>uk.ac.exeter.QuinCe.web.files.DataScreenBean</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+	</managed-bean>
 	<validator>
 		<description>Ensures that sensor calibration dates are unique</description>
 		<display-name>Calibration Date Validator</display-name>

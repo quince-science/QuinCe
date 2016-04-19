@@ -45,8 +45,8 @@
 	    	  }
 	      }
 	      
-	      function qcFile(id) {
-	    	  $('#fileListForm\\:chosenFile').val(id);
+	      function dataScreen(id) {
+	    	  $('#fileListForm\\:fileId').val(id);
 	    	  return true;
 	      }
 	      
@@ -58,6 +58,7 @@
 		<div class="fullPage">
 			<h:form id="fileListForm">
 				<h:inputHidden id="chosenFile" value="#{fileListBean.chosenFile}"/>
+				<h:inputHidden id="fileId" value="#{dataScreenBean.fileId}"/>
 				
 				<p:dataTable var="file" value="#{fileListBean.fileList}" scrollable="true" scrollHeight="450">
 					<p:column>
@@ -96,7 +97,7 @@
 					</p:column>
 					<p:column>
 						<f:facet name="header">Actions</f:facet>
-						<h:commandLink id="QC_#{file.fileId}" value="Q" onclick="qcFile(#{file.fileId})" action="#{fileListBean.qcFile}"/>
+						<h:commandLink id="QC_#{file.fileId}" value="Q" onclick="dataScreen(#{file.fileId})" action="#{dataScreenBean.start}"/>
 						|
 						E
 						|
