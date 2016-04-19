@@ -72,10 +72,25 @@ public class FileInfo {
 	private Calendar startDate;
 	
 	/**
-	 * The number of record measurements in the file
+	 * The number of records in the file
 	 */
 	private int recordCount;
-
+	
+	/**
+	 * The number of atmospheric measurement records in the file
+	 */
+	private int atmosphericMeasurementCount = -1;
+	
+	/**
+	 * The number of ocean measurement records in the file
+	 */
+	private int oceanMeasurementCount = -1;
+	
+	/**
+	 * The number of gas standard records in the file
+	 */
+	private int standardsCount = -1;
+	
 	/**
 	 * Constructor for all values
 	 * @param fileId The file ID
@@ -201,12 +216,52 @@ public class FileInfo {
 	public Calendar getLastTouched() {
 		return lastTouched;
 	}
-	
+		
 	/**
 	 * Returns the ID of the instrument to which this file belongs
 	 * @return The instrument ID
 	 */
 	public long getInstrumentId() {
 		return instrumentId;
+	}
+	
+	public int getAtmosphericMeasurementCount() {
+		return atmosphericMeasurementCount;
+	}
+	
+	public int getOceanMeasurementCount() {
+		return oceanMeasurementCount;
+	}
+	
+	public int getStandardsCount() {
+		return standardsCount;
+	}
+	
+	public void setAtmosphericMeasurementCount(int atmosphericMeasurementCount) {
+		this.atmosphericMeasurementCount = atmosphericMeasurementCount;
+	}
+	
+	public void setOceanMeasurementCount(int oceanMeasurementCount) {
+		this.oceanMeasurementCount = oceanMeasurementCount;
+	}
+	
+	public void setStandardsCount(int standardsCount) {
+		this.standardsCount = standardsCount;
+	}
+	
+	public String getRecordBreakdown() {
+		StringBuffer result = new StringBuffer();
+		
+		if (currentJob == JOB_CODE_EXTRACT) {
+			result.append("Processing...");
+		} else {
+			result.append(oceanMeasurementCount);
+			result.append(" / ");
+			result.append(atmosphericMeasurementCount);
+			result.append(" / ");
+			result.append(standardsCount);
+		}
+		
+		return result.toString();
 	}
 }

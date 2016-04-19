@@ -242,6 +242,25 @@ public class InstrumentDB {
 		return instrumentList;
 	}
 
+	
+	public static Instrument getInstrument(DataSource dataSource, long instrumentID) throws DatabaseException, MissingParamException, RecordNotFoundException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(instrumentID, "instrumentID");
+		
+		Connection conn = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			return getInstrument(conn, instrumentID);
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while updating record counts", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+
+	
 	/**
 	 * Returns a complete instrument object for the specified instrument ID
 	 * @param dataSource A data source
@@ -251,11 +270,10 @@ public class InstrumentDB {
 	 * @throws DatabaseException If an error occurs while retrieving the instrument details
 	 * @throws RecordNotFoundException If the specified instrument cannot be found
 	 */
-	public static Instrument getInstrument(DataSource dataSource, long instrumentID) throws MissingParamException, DatabaseException, RecordNotFoundException {
+	public static Instrument getInstrument(Connection conn, long instrumentID) throws MissingParamException, DatabaseException, RecordNotFoundException {
 
-		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(conn, "conn");
 		
-		Connection conn = null;
 		PreparedStatement instrStmt = null;
 		ResultSet record = null;
 		PreparedStatement runTypeStmt = null;
@@ -264,7 +282,6 @@ public class InstrumentDB {
 		TreeSet<RunType> runTypes = new TreeSet<RunType>();
 		
 		try {
-			conn = dataSource.getConnection();
 			instrStmt = conn.prepareStatement(GET_INSTRUMENT_QUERY);
 			instrStmt.setLong(1, instrumentID);
 			
@@ -340,7 +357,6 @@ public class InstrumentDB {
 		} finally {
 			DatabaseUtils.closeResultSets(record, runTypeRecords);
 			DatabaseUtils.closeStatements(instrStmt, runTypeStmt);
-			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return instrument;

@@ -16,6 +16,7 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.RawDataFile;
 import uk.ac.exeter.QuinCe.data.RawDataFileException;
+import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
@@ -65,6 +66,12 @@ public class DataFileDB {
 	
 	private static final String SET_JOB_STATEMENT = "UPDATE data_file SET current_job = ? WHERE id = ?";
 	
+	private static final String ATMOSPHERIC_MEAS_COUNT_QUERY = "SELECT COUNT(*) FROM raw_data WHERE data_file_id = ? AND co2_type = " + RunType.RUN_TYPE_ATMOSPHERIC;
+	
+	private static final String OCEAN_MEAS_COUNT_QUERY = "SELECT COUNT(*) FROM raw_data WHERE data_file_id = ? AND co2_type = " + RunType.RUN_TYPE_WATER;
+	
+	private static final String STANDARDS_COUNT_QUERY = "SELECT COUNT(*) FROM gas_standards_data WHERE data_file_id = ?";
+
 	/**
 	 * Store a file in the database and in the file store
 	 * @param dataSource A data source
@@ -143,8 +150,9 @@ public class DataFileDB {
 	 * @return {@code true} if the file exists; {@code false} if it does not
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws DatabaseException If an error occurs
+	 * @throws RecordNotFoundException 
 	 */
-	public static boolean fileExists(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException {
+	public static boolean fileExists(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		return (null != getFileDetails(dataSource, fileId));
 	}
 	
@@ -210,7 +218,7 @@ public class DataFileDB {
 			
 			records = stmt.executeQuery();
 			while (records.next()) {
-				fileInfo.add(makeFileInfo(records));
+				fileInfo.add(makeFileInfo(records, conn));
 			}
 			
 		} catch (Exception e) {
@@ -225,7 +233,7 @@ public class DataFileDB {
 		return fileInfo;
 	}
 	
-	public static FileInfo getFileDetails(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException {
+	public static FileInfo getFileDetails(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
 		FileInfo result = null;
 		
@@ -242,9 +250,9 @@ public class DataFileDB {
 			stmt.setLong(1, fileId);
 			record = stmt.executeQuery();
 			if (record.next()) {
-				result = makeFileInfo(record);
+				result = makeFileInfo(record, conn);
 			}
-			
+						
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while searching for the file", e);
 		} finally {
@@ -382,8 +390,11 @@ public class DataFileDB {
 	 * @param record The ResutSet whose current record is to be read
 	 * @return A FileInfo object for the record
 	 * @throws SQLException If the record is not of the right format
+	 * @throws RecordNotFoundException 
+	 * @throws MissingParamException 
+	 * @throws DatabaseException 
 	 */
-	private static FileInfo makeFileInfo(ResultSet record) throws SQLException {
+	private static FileInfo makeFileInfo(ResultSet record, Connection conn) throws SQLException, DatabaseException, MissingParamException, RecordNotFoundException {
 		long fileID = record.getLong(1);
 		long instrumentId = record.getLong(2);
 		String instrumentName = record.getString(3);
@@ -395,6 +406,72 @@ public class DataFileDB {
 		Calendar lastTouched = Calendar.getInstance();
 		lastTouched.setTime(record.getDate(8));
 		
-		return new FileInfo(fileID, instrumentId, instrumentName, fileName, startDate, recordCount, currentJob, lastTouched);
+		FileInfo result = new FileInfo(fileID, instrumentId, instrumentName, fileName, startDate, recordCount, currentJob, lastTouched);
+		updateRecordCounts(conn, result);
+		return result;
+	}
+	
+	public static void updateRecordCounts(DataSource dataSource, FileInfo fileInfo) throws DatabaseException, MissingParamException, RecordNotFoundException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(fileInfo, "fileInfo");
+		
+		Connection conn = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			updateRecordCounts(conn, fileInfo);
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while updating record counts", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	public static void updateRecordCounts(Connection conn, FileInfo fileInfo) throws DatabaseException, MissingParamException, RecordNotFoundException {
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkMissing(fileInfo, "fileInfo");
+
+		PreparedStatement atmosphericMeasurementsStmt = null;
+		PreparedStatement oceanMeasurementsStmt = null;
+		PreparedStatement standardsStmt = null;
+		ResultSet atmosphericMeasurementsCount = null;
+		ResultSet oceanMeasurementsCount = null;
+		ResultSet standardsCount = null;
+		
+		try {
+			
+			atmosphericMeasurementsStmt = conn.prepareStatement(ATMOSPHERIC_MEAS_COUNT_QUERY);
+			atmosphericMeasurementsStmt.setLong(1, fileInfo.getFileId());
+			
+			atmosphericMeasurementsCount = atmosphericMeasurementsStmt.executeQuery();
+			if (atmosphericMeasurementsCount.next()) {
+				fileInfo.setAtmosphericMeasurementCount(atmosphericMeasurementsCount.getInt(1));
+			}
+			
+			oceanMeasurementsStmt = conn.prepareStatement(OCEAN_MEAS_COUNT_QUERY);
+			oceanMeasurementsStmt.setLong(1, fileInfo.getFileId());
+			
+			oceanMeasurementsCount = oceanMeasurementsStmt.executeQuery();
+			if (oceanMeasurementsCount.next()) {
+				fileInfo.setOceanMeasurementCount(oceanMeasurementsCount.getInt(1));
+			}
+			
+			standardsStmt = conn.prepareStatement(STANDARDS_COUNT_QUERY);
+			standardsStmt.setLong(1, fileInfo.getFileId());
+			
+			standardsCount = standardsStmt.executeQuery();
+			if (standardsCount.next()) {
+				fileInfo.setStandardsCount(standardsCount.getInt(1));
+			}
+			
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while updating record counts", e);
+		} finally {
+			DatabaseUtils.closeResultSets(atmosphericMeasurementsCount, oceanMeasurementsCount, standardsCount);
+			DatabaseUtils.closeStatements(atmosphericMeasurementsStmt, oceanMeasurementsStmt, standardsStmt);
+		}
 	}
 }
