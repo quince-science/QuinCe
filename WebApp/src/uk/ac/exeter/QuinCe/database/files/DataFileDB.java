@@ -405,73 +405,50 @@ public class DataFileDB {
 		int currentJob = record.getInt(7);
 		Calendar lastTouched = Calendar.getInstance();
 		lastTouched.setTime(record.getDate(8));
-		
-		FileInfo result = new FileInfo(fileID, instrumentId, instrumentName, fileName, startDate, recordCount, currentJob, lastTouched);
-		updateRecordCounts(conn, result);
-		return result;
-	}
 	
-	public static void updateRecordCounts(DataSource dataSource, FileInfo fileInfo) throws DatabaseException, MissingParamException, RecordNotFoundException {
-		
-		MissingParam.checkMissing(dataSource, "dataSource");
-		MissingParam.checkMissing(fileInfo, "fileInfo");
-		
-		Connection conn = null;
-		
-		try {
-			conn = dataSource.getConnection();
-			updateRecordCounts(conn, fileInfo);
-		} catch (SQLException e) {
-			throw new DatabaseException("Error while updating record counts", e);
-		} finally {
-			DatabaseUtils.closeConnection(conn);
-		}
-	}
-	
-	public static void updateRecordCounts(Connection conn, FileInfo fileInfo) throws DatabaseException, MissingParamException, RecordNotFoundException {
-		
-		MissingParam.checkMissing(conn, "conn");
-		MissingParam.checkMissing(fileInfo, "fileInfo");
-
 		PreparedStatement atmosphericMeasurementsStmt = null;
 		PreparedStatement oceanMeasurementsStmt = null;
 		PreparedStatement standardsStmt = null;
 		ResultSet atmosphericMeasurementsCount = null;
 		ResultSet oceanMeasurementsCount = null;
 		ResultSet standardsCount = null;
-		
+		int atmosphericMeasurements = 0;
+		int oceanMeasurements = 0;
+		int standards = 0;
+
 		try {
-			
 			atmosphericMeasurementsStmt = conn.prepareStatement(ATMOSPHERIC_MEAS_COUNT_QUERY);
-			atmosphericMeasurementsStmt.setLong(1, fileInfo.getFileId());
+			atmosphericMeasurementsStmt.setLong(1, fileID);
 			
 			atmosphericMeasurementsCount = atmosphericMeasurementsStmt.executeQuery();
 			if (atmosphericMeasurementsCount.next()) {
-				fileInfo.setAtmosphericMeasurementCount(atmosphericMeasurementsCount.getInt(1));
+				atmosphericMeasurements = atmosphericMeasurementsCount.getInt(1);
 			}
 			
 			oceanMeasurementsStmt = conn.prepareStatement(OCEAN_MEAS_COUNT_QUERY);
-			oceanMeasurementsStmt.setLong(1, fileInfo.getFileId());
+			oceanMeasurementsStmt.setLong(1, fileID);
 			
 			oceanMeasurementsCount = oceanMeasurementsStmt.executeQuery();
 			if (oceanMeasurementsCount.next()) {
-				fileInfo.setOceanMeasurementCount(oceanMeasurementsCount.getInt(1));
+				oceanMeasurements = oceanMeasurementsCount.getInt(1);
 			}
 			
 			standardsStmt = conn.prepareStatement(STANDARDS_COUNT_QUERY);
-			standardsStmt.setLong(1, fileInfo.getFileId());
+			standardsStmt.setLong(1, fileID);
 			
 			standardsCount = standardsStmt.executeQuery();
 			if (standardsCount.next()) {
-				fileInfo.setStandardsCount(standardsCount.getInt(1));
+				standards = standardsCount.getInt(1);
 			}
-			
-			
-		} catch (SQLException e) {
-			throw new DatabaseException("Error while updating record counts", e);
+		} catch (Exception e) {
+			throw e;
 		} finally {
 			DatabaseUtils.closeResultSets(atmosphericMeasurementsCount, oceanMeasurementsCount, standardsCount);
 			DatabaseUtils.closeStatements(atmosphericMeasurementsStmt, oceanMeasurementsStmt, standardsStmt);
 		}
+
+		
+		FileInfo result = new FileInfo(fileID, instrumentId, instrumentName, fileName, startDate, recordCount, currentJob, lastTouched, atmosphericMeasurements, oceanMeasurements, standards);
+		return result;
 	}
 }

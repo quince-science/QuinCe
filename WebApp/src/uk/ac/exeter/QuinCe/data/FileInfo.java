@@ -103,7 +103,8 @@ public class FileInfo {
 	 * @param jobStatus The current job status
 	 * @param lastTouched The date that the file was last touched
 	 */
-	public FileInfo(long fileId, long instrumentId, String instrument, String fileName, Calendar startDate, int recordCount, int currentJob, Calendar lastTouched) {
+	public FileInfo(long fileId, long instrumentId, String instrument, String fileName, Calendar startDate, int recordCount,
+			int currentJob, Calendar lastTouched, int atmosphericMeasurementsCount, int oceanMeasurementsCount, int standardsCount) {
 		this.fileId = fileId;
 		this.instrumentId = instrumentId;
 		this.instrument = instrument;
@@ -112,6 +113,9 @@ public class FileInfo {
 		this.recordCount = recordCount;
 		this.currentJob = currentJob;
 		this.lastTouched = lastTouched;
+		this.atmosphericMeasurementCount = atmosphericMeasurementsCount;
+		this.oceanMeasurementCount = oceanMeasurementsCount;
+		this.standardsCount = standardsCount;
 	}
 
 	/**
