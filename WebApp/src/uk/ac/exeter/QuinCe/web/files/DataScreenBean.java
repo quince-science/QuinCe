@@ -1,6 +1,12 @@
 package uk.ac.exeter.QuinCe.web.files;
 
+import uk.ac.exeter.QuinCe.data.FileInfo;
+import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.files.DataFileDB;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.system.ResourceException;
+import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 public class DataScreenBean extends BaseManagedBean {
 
@@ -16,6 +22,8 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private long fileId;
 	
+	private FileInfo fileDetails;
+	
 	/**
 	 * Required basic constructor. All the actual construction
 	 * is done in init().
@@ -24,9 +32,9 @@ public class DataScreenBean extends BaseManagedBean {
 		// Do nothing
 	}
 
-	public String start() {
+	public String start() throws Exception {
 		clearData();
-		System.out.println("Data Screen for " + fileId);
+		loadFileDetails();
 		return PAGE_START;
 	}
 	
@@ -36,7 +44,7 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	private void clearData() {
-		
+		fileDetails = null;
 	}
 	
 	public long getFileId() {
@@ -45,5 +53,13 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public void setFileId(long fileId) {
 		this.fileId = fileId;
+	}
+	
+	public FileInfo getFileDetails() {
+		return fileDetails;
+	}
+	
+	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException {
+		fileDetails = DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), fileId);
 	}
 }

@@ -252,4 +252,12 @@
 			<to-view-id>/data/file_list.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
+	<navigation-rule>
+		<display-name>DataScreen</display-name>
+		<from-view-id>/data/data_screen.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>file_list</from-outcome>
+			<to-view-id>/data/file_list.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
 </faces-config>
