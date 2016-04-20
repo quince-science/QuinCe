@@ -79,17 +79,39 @@ public class FileInfo {
 	/**
 	 * The number of atmospheric measurement records in the file
 	 */
-	private int atmosphericMeasurementCount = -1;
+	private int atmosphericMeasurementCount = 0;
 	
 	/**
 	 * The number of ocean measurement records in the file
 	 */
-	private int oceanMeasurementCount = -1;
+	private int oceanMeasurementCount = 0;
 	
 	/**
 	 * The number of gas standard records in the file
 	 */
-	private int standardsCount = -1;
+	private int standardsCount = 0;
+	
+	private int qcGoodCount = 0;
+		
+	private int qcQuestionableCount = 0;
+	
+	private int qcBadCount = 0;
+	
+	private int qcNotSetCount = 0;
+	
+	private int woceGoodCount = 0;
+	
+	private int woceAssumedGoodCount = 0;
+	
+	private int woceQuestionableCount = 0;
+	
+	private int woceBadCount = 0;
+	
+	private int woceNotSetCount = 0;
+	
+	private int woceNeededCount = 0;
+	
+	private int ignoredCount = 0;
 	
 	/**
 	 * Constructor for all values
@@ -116,6 +138,8 @@ public class FileInfo {
 		this.atmosphericMeasurementCount = atmosphericMeasurementsCount;
 		this.oceanMeasurementCount = oceanMeasurementsCount;
 		this.standardsCount = standardsCount;
+		this.qcNotSetCount = getMeasurementCount();
+		this.woceNeededCount = getMeasurementCount();
 	}
 
 	/**
@@ -267,5 +291,111 @@ public class FileInfo {
 		}
 		
 		return result.toString();
+	}
+	
+	public int getMeasurementCount() {
+		return atmosphericMeasurementCount + oceanMeasurementCount;
+	}
+
+	public int getQcGoodCount() {
+		return qcGoodCount;
+	}
+
+	public void setQcGoodCount(int qcGoodCount) {
+		this.qcGoodCount = qcGoodCount;
+	}
+
+	public int getQcQuestionableCount() {
+		return qcQuestionableCount;
+	}
+
+	public void setQcQuestionableCount(int qcQuestionableCount) {
+		this.qcQuestionableCount = qcQuestionableCount;
+	}
+
+	public int getQcBadCount() {
+		return qcBadCount;
+	}
+
+	public void setQcBadCount(int qcBadCount) {
+		this.qcBadCount = qcBadCount;
+	}
+
+	public int getQcNotSetCount() {
+		return qcNotSetCount;
+	}
+
+	public void setQcNotSetCount(int qcNotSetCount) {
+		this.qcNotSetCount = qcNotSetCount;
+	}
+
+	public int getWoceGoodCount() {
+		return woceGoodCount;
+	}
+
+	public void setWoceGoodCount(int woceGoodCount) {
+		this.woceGoodCount = woceGoodCount;
+	}
+
+	public int getWoceAssumedGoodCount() {
+		return woceAssumedGoodCount;
+	}
+
+	public void setWoceAssumedGoodCount(int woceAssumedGoodCount) {
+		this.woceAssumedGoodCount = woceAssumedGoodCount;
+	}
+
+	public int getWoceQuestionableCount() {
+		return woceQuestionableCount;
+	}
+
+	public void setWoceQuestionableCount(int woceQuestionableCount) {
+		this.woceQuestionableCount = woceQuestionableCount;
+	}
+
+	public int getWoceBadCount() {
+		return woceBadCount;
+	}
+
+	public void setWoceBadCount(int woceBadCount) {
+		this.woceBadCount = woceBadCount;
+	}
+
+	public int getWoceNotSetCount() {
+		return woceNotSetCount;
+	}
+
+	public void setWoceNotSetCount(int woceNotSetCount) {
+		this.woceNotSetCount = woceNotSetCount;
+	}
+
+	public int getWoceNeededCount() {
+		return woceNeededCount;
+	}
+
+	public void setWoceNeededCount(int woceNeededCount) {
+		this.woceNeededCount = woceNeededCount;
+	}
+
+	public int getIgnoredCount() {
+		return ignoredCount;
+	}
+
+	public void setIgnoredCount(int ignoredCount) {
+		this.ignoredCount = ignoredCount;
+	}
+	
+	public void clearAllCounts() {
+		qcGoodCount = 0;
+		qcQuestionableCount = 0;
+		qcBadCount = 0;
+		qcNotSetCount = 0;
+		woceGoodCount = 0;
+		woceAssumedGoodCount = 0;
+		woceQuestionableCount = 0;
+		woceBadCount = 0;
+		woceNotSetCount = 0;
+		woceNeededCount = 0;
+		ignoredCount = 0;
 	}
 }

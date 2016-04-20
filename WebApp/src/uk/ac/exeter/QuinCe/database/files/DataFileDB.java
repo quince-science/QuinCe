@@ -13,6 +13,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.RawDataFile;
 import uk.ac.exeter.QuinCe.data.RawDataFileException;
@@ -71,6 +72,10 @@ public class DataFileDB {
 	private static final String OCEAN_MEAS_COUNT_QUERY = "SELECT COUNT(*) FROM raw_data WHERE data_file_id = ? AND co2_type = " + RunType.RUN_TYPE_WATER;
 	
 	private static final String STANDARDS_COUNT_QUERY = "SELECT COUNT(*) FROM gas_standards_data WHERE data_file_id = ?";
+	
+	private static final String GET_QC_FLAGS_QUERY = "SELECT DISTINCT qc_flag, COUNT(qc_flag) FROM qc WHERE data_file_id = ? GROUP BY qc_flag";
+
+	private static final String GET_WOCE_FLAGS_QUERY = "SELECT DISTINCT woce_flag, COUNT(woce_flag) FROM qc WHERE data_file_id = ? GROUP BY woce_flag";
 
 	/**
 	 * Store a file in the database and in the file store
@@ -449,6 +454,94 @@ public class DataFileDB {
 
 		
 		FileInfo result = new FileInfo(fileID, instrumentId, instrumentName, fileName, startDate, recordCount, currentJob, lastTouched, atmosphericMeasurements, oceanMeasurements, standards);
+		updateFlagCounts(conn, result);
 		return result;
+	}
+	
+	public static void updateFlagCounts(Connection conn, FileInfo fileInfo) throws DatabaseException {
+		
+		fileInfo.clearAllCounts();
+		
+		PreparedStatement qcFlagsStatement = null;
+		PreparedStatement woceFlagsStatement = null;
+		ResultSet qcFlags = null;
+		ResultSet woceFlags = null;
+		
+		try {
+			
+			qcFlagsStatement = conn.prepareStatement(GET_QC_FLAGS_QUERY);
+			qcFlagsStatement.setLong(1, fileInfo.getFileId());
+			
+			qcFlags = qcFlagsStatement.executeQuery();
+			
+			while (qcFlags.next()) {
+				switch (qcFlags.getInt(1)) {
+				case Flag.VALUE_GOOD: {
+					fileInfo.setQcGoodCount(qcFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_QUESTIONABLE: {
+					fileInfo.setQcQuestionableCount(qcFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_BAD: {
+					fileInfo.setQcBadCount(qcFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_NOT_SET: {
+					fileInfo.setQcNotSetCount(qcFlags.getInt(2));
+				}
+				default: {
+					throw new DatabaseException("Invalid QC Flag value " + qcFlags.getInt(1));
+				}
+				}
+			}
+			
+			woceFlagsStatement = conn.prepareStatement(GET_WOCE_FLAGS_QUERY);
+			woceFlagsStatement.setLong(1, fileInfo.getFileId());
+			
+			woceFlags = woceFlagsStatement.executeQuery();
+			
+			while (woceFlags.next()) {
+				switch (woceFlags.getInt(1)) {
+				case Flag.VALUE_GOOD: {
+					fileInfo.setWoceGoodCount(woceFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_ASSUMED_GOOD: {
+					fileInfo.setWoceAssumedGoodCount(woceFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_QUESTIONABLE: {
+					fileInfo.setWoceQuestionableCount(woceFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_BAD: {
+					fileInfo.setWoceBadCount(woceFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_NOT_SET: {
+					fileInfo.setWoceNotSetCount(woceFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_NEEDED: {
+					fileInfo.setWoceNeededCount(woceFlags.getInt(2));;
+					break;
+				}
+				case Flag.VALUE_IGNORED: {
+					fileInfo.setIgnoredCount(woceFlags.getInt(2));
+				}
+				default: {
+					throw new DatabaseException("Invalid WOCE Flag value " + qcFlags.getInt(1));
+				}
+				}
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving flag data", e);
+		} finally {
+			DatabaseUtils.closeResultSets(qcFlags, woceFlags);
+			DatabaseUtils.closeStatements(qcFlagsStatement, woceFlagsStatement);
+		}
 	}
 }

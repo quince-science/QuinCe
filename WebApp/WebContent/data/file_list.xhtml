@@ -7,35 +7,8 @@
 	template="/templates/app_page.xhtml">
 
 	<ui:define name="localHead">
-		<script type="text/javascript">
-	      var qcColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(50,50,50)"];
-	      var woceColors = ["rgb(255,0,0)", "rgb(255,200,0)", "rgb(0,200,0)", "rgb(118,211,118)", "rgb(180,180,180)", "rgb(50,50,50)"];
-	
-	      // Data structures for file stats.
-	      var recordCounts = new Array();
-	      recordCounts[0] = 562;
-	      recordCounts[1] = 719;
-	
-	      var qcStats = new Array();
-	      qcStats[0] = [35, 50, 403, 74];
-	      qcStats[1] = [203, 424, 65, 27];
-	
-	      var woceStats = new Array();
-	      woceStats[0] = [11, 50, 155, 145, 127, 119];
-	      woceStats[1] = [0, 627, 65, 0, 0, 27];
-	
-	      function drawStatBar(elementId, recordCount, stats, colors) {
-	        var canvas = $(elementId).get(0);
-	        var ctx = canvas.getContext('2d');
-	
-	        var barFilled = 0;
-	        for (var i = 0; i &lt; stats.length; i++) {
-	          ctx.fillStyle = colors[i];
-	          ctx.fillRect(barFilled * canvas.width, 0, (stats[i] / recordCount) * canvas.width, canvas.height);
-	          barFilled += (stats[i] / recordCount);
-	        }
-	      }
-	      
+		<h:outputScript name="/script/flag_bar.js"/>
+	    <script type="text/javascript">  
 	      function deleteFile(id, fileName) {
 	    	  if (confirm('Are you sure you want to delete file ' + fileName + '?')) {
 	    		  $('#fileListForm\\:chosenFile').val(id);
@@ -44,11 +17,60 @@
 	    		  return false;
 	    	  }
 	      }
-	      
-	    </script>
+	  	</script>
 	</ui:define>
 
 	<ui:define name="content">
+	    <div id="qcPopup" class="popup">
+	      <table>
+	        <tr class="bad">
+	          <td>Error</td>
+	          <td id="qcBad" class="numericCol"></td>
+	        </tr>
+	        <tr class="questionable">
+	          <td>Warning</td>
+	          <td id="qcQuestionable" class="numericCol"></td>
+	        </tr>
+	        <tr class="good">
+	          <td>Passed</td>
+	          <td id="qcGood" class="numericCol"></td>
+	        </tr>
+	        <tr class="ignore">
+	          <td>Ignored</td>
+	          <td id="qcIgnored" class="numericCol"></td>
+	        </tr>
+	      </table>
+	    </div>
+	
+	    <div id="wocePopup" class="popup">
+	      <table>
+	        <tr class="bad">
+	          <td>Bad</td>
+	          <td id="woceBad" class="numericCol"></td>
+	        </tr>
+	        <tr class="questionable">
+	          <td>Questionable</td>
+	          <td id="woceQuestionable" class="numericCol"></td>
+	        </tr>
+	        <tr class="good">
+	          <td>Marked Good</td>
+	          <td id="woceGood" class="numericCol"></td>
+	        </tr>
+	        <tr class="assumedGood">
+	          <td>Assumed Good</td>
+	          <td id="woceAssumedGood" class="numericCol"></td>
+	        </tr>
+	        <tr class="needsFlagging">
+	          <td>Needs Flagging</td>
+	          <td id="woceNeedsFlagging" class="numericCol"></td>
+	        </tr>
+	        <tr class="ignored">
+	          <td>Ignored</td>
+	          <td id="woceIgnored" class="numericCol"></td>
+	        </tr>
+	      </table>
+	    </div>
+		
 		<h1>Your files</h1>
 		<div class="fullPage">
 			<h:form id="fileListForm">
@@ -77,16 +99,16 @@
 					</p:column>
 					<p:column>
 						<f:facet name="header">QC Stats</f:facet>
-						<canvas id="qcBar_1" class="statBar"></canvas>
+						<canvas id="qcBar_#{file.fileId}" class="statBar"></canvas>
 			            <script type="text/javascript">
-			              drawStatBar('#qcBar_1', recordCounts[0], qcStats[0], qcColors);
+			              drawFlagBar('#qcBar_#{file.fileId}', #{file.oceanMeasurementCount}, #{file.qcBadCount}, #{file.qcQuestionableCount}, #{file.qcGoodCount}, 0, #{file.qcNotSetCount}, 0, #{file.ignoredCount});
 			            </script>
 					</p:column>
 					<p:column>
 						<f:facet name="header">WOCE Stats</f:facet>
-						<canvas id="woceBar_1" class="statBar"></canvas>
+						<canvas id="woceBar_#{file.fileId}" class="statBar"></canvas>
 			            <script type="text/javascript">
-			              drawStatBar('#woceBar_1', recordCounts[0], woceStats[0], woceColors);
+			              drawFlagBar('#woceBar_#{file.fileId}', #{file.oceanMeasurementCount}, #{file.woceBadCount}, #{file.woceQuestionableCount}, #{file.woceGoodCount}, #{file.woceAssumedGoodCount}, #{file.woceNotSetCount}, #{file.woceNeededCount}, #{file.ignoredCount});
 			            </script>
 					</p:column>
 					<p:column>
