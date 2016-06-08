@@ -7,13 +7,13 @@
 		<title>#{dataScreenBean.fileDetails.fileName} - QuinCe</title>
 	    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700,700italic" rel="stylesheet" type="text/css"/>
 		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
+		<h:outputScript name="script/jquery-ui.min.js"/>
+		<h:outputStylesheet name="script/jquery-ui.min.css"/>
 		<h:outputStylesheet name="style/main.css"/>
 		<h:outputStylesheet name="style/dataScreen.css"/>
-	    <script type="text/javascript">
-
-      </script>
+		<h:outputScript name="script/dataTable.js"/>
 	</h:head>
-	<h:body>
+	<h:body class="fullPage">
 		<h:form id="dataScreenForm">
 	    	<div id="header">
 	      		#{dataScreenBean.fileDetails.fileName}
@@ -22,7 +22,14 @@
 	      		</div>
 	    	</div>
 	    	<div id="content">
-				THIS IS THE DATA SCREEN FOR #{dataScreenBean.fileDetails.fileName}
+				<div id="plots">
+					Plots
+				</div>
+				<div id="dividerHorizontal">
+				</div>
+				<div id="dataTable">
+					Table
+				</div>
 	    	</div>
 	    </h:form>
 	</h:body>
