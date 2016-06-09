@@ -1,32 +1,26 @@
 var DATA_TABLE_MIN_HEIGHT = 250;
 
-// Initialise panel resizing
-// Vertical
+var tableSplitPercent = 0;
+var plotSplitPercent = 0;
+
 $(function() {
-	$('#plots').resizable({
-		handles: { 's' : $('#dividerHorizontal')},
-		resize: function(event, ui) { 
-		    ui.size.width = ui.originalSize.width;
-		},
-		stop: function(event, ui) {
-			resizeDataTable();
-		}
-	});
+	$('#dataScreenContent').split({orientation: 'horizontal', onDragEnd: function(){resizeContent()} });
+	$('#plots').split({orientation: 'vertical', onDragEnd: function(){resizeContent()} });
+	tableSplitPercent = '50%';
+	plotSplitPercent = '50%';
 	
-	resizeDataTable();
+	$(window).resize(function() {
+		scaleSplits();
+	});
 });
 
-function resizeDataTable() {
-	dataTableTop = $('#dividerHorizontal').position().top + 7;
-	windowHeight = window.innerHeight;
-	
-	dataTableHeight = window.innerHeight - dataTableTop - $('#plots').position().top * 2;
-	if (dataTableHeight < DATA_TABLE_MIN_HEIGHT) {
-		$('#plots').height(windowHeight - DATA_TABLE_MIN_HEIGHT - 7 - $('#plots').position().top);
-		dataTableHeight = DATA_TABLE_MIN_HEIGHT;
-	}
-	
-	$('#dataTable').height(dataTableHeight);
-	console.log(windowHeight);
-	console.log(dataTableTop + dataTableHeight);
+function resizeContent() {
+	tableSplitPercent = '' + $('#dataScreenContent').split().position() / $('#dataScreenContent').height() * 100 + '%';
+	plotSplitPercent = '' + $('#plots').split().position() / $('#dataScreenContent').width() * 100 + '%';
+}
+
+function scaleSplits() {
+	$('#dataScreenContent').split().position(tableSplitPercent);
+	$('#plots').split().position(plotSplitPercent);
+	resizeContent();
 }

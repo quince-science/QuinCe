@@ -8,9 +8,11 @@ body.fullPage {
 }
 
 #dataScreenContent {
-  margin-top: 5px;
-  position: relative;
-  clear: both;
+  margin-top: 30px;
+  position: absolute;
+  background: #BEE927;
+  width: 100%;
+  height: calc(100% - 30px);
 }
 
 #dividerHorizontal {
@@ -28,14 +30,19 @@ body.fullPage {
 }
 
 #plots {
-	height: 250px;
 	width: 100%;
 	background: #ff0;
 }
 
+#plotLeft {
+	
+}
+
+#plotRight {
+	
+}
+
 #dataTable {
-	height: 5000px;
 	background: #f0f;
 	width: 100%;
-	border-bottom: 1px solid black;
 }
