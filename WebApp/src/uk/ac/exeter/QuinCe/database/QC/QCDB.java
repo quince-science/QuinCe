@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.config.ColumnConfig;
 import uk.ac.exeter.QCRoutines.data.DataRecordException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
@@ -47,8 +48,7 @@ public class QCDB {
 			+ "q.intake_temp_1_used, q.intake_temp_2_used, q.intake_temp_3_used, "
 			+ "q.salinity_1_used, q.salinity_2_used, q.salinity_3_used, "
 			+ "q.eqt_1_used, q.eqt_2_used, q.eqt_3_used, "
-			+ "q.eqp_1_used, q.eqp_2_used, q.eqp_3_used, "
-			+ "q.qc_flag, q.qc_message, q.woce_flag, q.woce_message "
+			+ "q.eqp_1_used, q.eqp_2_used, q.eqp_3_used "
 			+ "FROM raw_data as r "
 			+ "INNER JOIN data_reduction as d ON r.data_file_id = d.data_file_id AND r.row = d.row "
 			+ "INNER JOIN qc as q ON d.data_file_id  = q.data_file_id AND d.row = q.row "
@@ -98,7 +98,7 @@ public class QCDB {
 	 * @return The list of QC records ready to be processed
 	 * @throws DatabaseException If the QC records cannot be retrieved, or cannot be created.
 	 */
-	public static List<QCRecord> getQCRecords(DataSource dataSource, long fileId, Instrument instrument) throws DatabaseException {
+	public static List<QCRecord> getQCRecords(DataSource dataSource, ColumnConfig columnConfig, long fileId, Instrument instrument) throws DatabaseException {
 		
 		Connection conn = null;
 		PreparedStatement readStatement = null;
@@ -124,13 +124,13 @@ public class QCDB {
 				String woceComment = records.getString(FIELD_WOCE_COMMENT);
 
 				// The remainder of the fields are data fields for the QC record
-				int fieldCount = QCRecord.getColumnNames().size();
 				List<String> recordData = new ArrayList<String>();
-				for (int i = FIRST_DATA_FIELD; i <= FIRST_DATA_FIELD + fieldCount - 1; i++) {
+				recordData.add(null); // Field indices are 1-based
+				for (int i = FIRST_DATA_FIELD; i <= FIRST_DATA_FIELD + columnConfig.getColumnCount() - 1; i++) {
 					recordData.add(records.getString(i));
 				}
 				
-				qcRecords.add(new QCRecord(fileId, instrument, rowNumber, recordData, qcFlag, qcComments, woceFlag, woceComment));
+				qcRecords.add(new QCRecord(fileId, instrument, columnConfig, rowNumber, recordData, qcFlag, qcComments, woceFlag, woceComment));
 			}
 
 			conn.commit();

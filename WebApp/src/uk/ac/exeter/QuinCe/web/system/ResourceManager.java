@@ -12,6 +12,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.config.ColumnConfig;
 import uk.ac.exeter.QCRoutines.config.ConfigException;
 import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
 import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
@@ -29,6 +30,8 @@ public class ResourceManager implements ServletContextListener {
 	private DataSource dbDataSource;
 	
 	private Properties configuration;
+	
+	private ColumnConfig columnConfig;
 	
 	@Override
     public void contextInitialized(ServletContextEvent event) {
@@ -56,13 +59,21 @@ public class ResourceManager implements ServletContextListener {
 			// Do nothing for now
 		}
        	
+       	// Initialise the column config
+       	try {
+       		ColumnConfig.init(configuration.getProperty("columns.configfile"));
+       		columnConfig = ColumnConfig.getInstance();
+       	} catch (ConfigException e) {
+       		throw new RuntimeException("Could not initialise data column configuration", e);
+       	}
+
        	// Initialise the QC Routines configuration
        	try {
        		RoutinesConfig.init(configuration.getProperty("routines.configfile"));
        	} catch (ConfigException e) {
        		throw new RuntimeException("Could not initialise QC Routines", e);
        	}
-
+       	
        	// Register ourselves in the servlet context
         servletContext.setAttribute(ATTRIBUTE_NAME, this);
 }
@@ -80,6 +91,10 @@ public class ResourceManager implements ServletContextListener {
         return configuration;
     }
 
+    public ColumnConfig getColumnConfig() {
+    	return columnConfig;
+    }
+    
     public static ResourceManager getInstance(ServletContext servletContext) {
         return (ResourceManager) servletContext.getAttribute(ATTRIBUTE_NAME);
     }

@@ -4,13 +4,11 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Properties;
 
-import javax.sql.DataSource;
-
-import uk.ac.exeter.QCRoutines.Routine;
 import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
 import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.Message;
+import uk.ac.exeter.QCRoutines.routines.Routine;
 import uk.ac.exeter.QuinCe.data.QCRecord;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
@@ -19,11 +17,12 @@ import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class AutoQCJob extends FileJob {
 
-	public AutoQCJob(DataSource dataSource, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
-		super(dataSource, config, jobId, parameters);
+	public AutoQCJob(ResourceManager resourceManager, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+		super(resourceManager, config, jobId, parameters);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -35,7 +34,7 @@ public class AutoQCJob extends FileJob {
 		Connection conn = null;
 		
 		try {
-			List<? extends DataRecord> qcRecords = QCDB.getQCRecords(dataSource, fileId, instrument);
+			List<? extends DataRecord> qcRecords = QCDB.getQCRecords(dataSource, resourceManager.getColumnConfig(), fileId, instrument);
 			
 			// Remove any existing QC flags and messages
 			for (DataRecord record : qcRecords) {

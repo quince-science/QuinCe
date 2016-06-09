@@ -34,7 +34,7 @@ public class SendEmailCodeBean extends BaseManagedBean {
 					List<String> emailJobParams = new ArrayList<String>();
 					emailJobParams.add(email);
 					
-					JobManager.addInstantJob(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), user, "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob", emailJobParams);
+					JobManager.addInstantJob(ServletUtils.getResourceManager(), ServletUtils.getAppConfig(), user, "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob", emailJobParams);
 					result = SUCCESS_RESULT;
 				}
 			} catch (Exception e) {

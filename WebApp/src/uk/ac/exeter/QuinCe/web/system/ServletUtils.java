@@ -15,6 +15,14 @@ import uk.ac.exeter.QuinCe.database.DatabaseException;
  */
 public class ServletUtils {
 
+	public static ResourceManager getResourceManager() throws ResourceException {
+		try {
+			return ResourceManager.getInstance((ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext());
+		} catch (Exception e) {
+			throw new ResourceException("Error while retrieving database data source", e);
+		}
+	}
+	
 	/**
 	 * Retrieve a database connection from the pool
 	 * @return A database connection
@@ -22,7 +30,7 @@ public class ServletUtils {
 	 */
 	public static DataSource getDBDataSource() throws ResourceException {
 		try {
-			return ResourceManager.getInstance((ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext()).getDBDataSource();
+			return getResourceManager().getDBDataSource();
 		} catch (Exception e) {
 			throw new ResourceException("Error while retrieving database data source", e);
 		}
@@ -35,7 +43,7 @@ public class ServletUtils {
 	 */
 	public static Properties getAppConfig() throws ResourceException {
 		try {
-			return ResourceManager.getInstance((ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext()).getConfig();
+			return getResourceManager().getConfig();
 		} catch (Exception e) {
 			throw new ResourceException("Error while retrieving application configuration", e);
 		}
