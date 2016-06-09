@@ -30,7 +30,7 @@ input {
 
 input[type="text"].numeric {
   text-align: right;
-}/index.jsf
+}
 
 input[type="text"].large {
   font-size: 18px;
