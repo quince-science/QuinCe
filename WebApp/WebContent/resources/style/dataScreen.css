@@ -10,7 +10,6 @@ body.fullPage {
 #dataScreenContent {
   margin-top: 30px;
   position: absolute;
-  background: #BEE927;
   width: 100%;
   height: calc(100% - 30px);
 }
@@ -31,7 +30,6 @@ body.fullPage {
 
 #plots {
 	width: 100%;
-	background: #ff0;
 }
 
 #plotLeft {
@@ -43,6 +41,12 @@ body.fullPage {
 }
 
 #dataTable {
-	background: #f0f;
 	width: 100%;
+}
+
+.loading {
+	text-align: center;
+	font-size: 22px;
+	margin-top: 50px;
+	font-style: italic;
 }
