@@ -16,6 +16,13 @@
 		<h:outputScript name="script/dataTable.js"/>
 	</h:head>
 	<h:body class="fullPage">
+		<div id="plotFieldList" class="popupMenu">
+			<h:outputText value="#{dataScreenBean.plotPopupEntries}" escape="false"/>
+			<div id="buttonWrapper">
+				<button class="smallButton" onclick="return savePlotSelection();">OK</button>
+				<button class="smallButton" onclick="return hidePlotPopup();">Cancel</button>
+			</div>
+		</div>
 		<h:form id="dataScreenForm">
 	    	<div id="header">
 	      		#{dataScreenBean.fileDetails.fileName}
@@ -25,26 +32,27 @@
 	    	</div>
     		<div id="dataScreenContent">
 	    		<div id="plots">
-		    		<div id="plotLeft">
-		    			<div class="loading">
-		    				Loading...
-		    				<br/>
-		    				<h:graphicImage value="/resources/image/loading.gif"/>
+		    		<div id="plotContainerLeft">
+						<div id="plotLeftContent"></div>
+		    			<div id="controlsLeft" class="controls">
+		    				Plot/Map
+		    				<button id="leftXAxis" class="smallButton" onclick="return showPlotPopup(event);">X Axis…</button>
+		    				<button id="leftYAxis" class="smallButton" onclick="return showPlotPopup(event);">Y Axis…</button>
+		    				<button id="leftUpdate" class="smallButton highlightButton" onclick="alert('Demo mode'); return false;">Update</button>
+		    				<button id="leftMapParmeter" class="smallButton" onclick="return showMapPopup(event);">Parameter…</button>
 		    			</div>
 		    		</div>
-		    		<div id="plotRight">
-		    			<div class="loading">
-		    				Loading...
-		    				<br/>
-		    				<h:graphicImage value="/resources/image/loading.gif"/>
+		    		<div id="plotContainerRight">
+						<div id="plotRightContent"></div>
+		    			<div id="controlsRight" class="controls">
+		    				Controls
 		    			</div>
 		    		</div>
 	    		</div>
 	    		<div id="dataTable">
-	    			<div class="loading">
-		    				Loading...
-		    				<br/>
-		    				<h:graphicImage value="/resources/image/loading.gif"/>
+	    			<div id="tableContent"></div>
+	    			<div id="tableControls" class="controls">
+	    				Controls
 	    			</div>
 	    		</div>
     		</div>

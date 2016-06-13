@@ -1310,4 +1310,91 @@ public class Instrument implements Serializable {
 		this.rawFileColumnCount = rawFileColumnCount;
 	}
 
+	/**
+	 * Returns the number of intake temperature sensors defined for this instrument
+	 * @return The number of intake temperature sensors
+	 */
+	public int getIntakeTempCount() {
+		int count = 0;
+		
+		if (hasIntakeTemp1()) {
+			count++;
+		}
+		
+		if (hasIntakeTemp2()) {
+			count++;
+		}
+		
+		if (hasIntakeTemp3()) {
+			count++;
+		}
+		
+		return count;
+	}
+
+	/**
+	 * Returns the number of salinity sensors defined for this instrument
+	 * @return The number of salinity sensors
+	 */
+	public int getSalinityCount() {
+		int count = 0;
+		
+		if (hasSalinity1()) {
+			count++;
+		}
+		
+		if (hasSalinity2()) {
+			count++;
+		}
+		
+		if (hasSalinity3()) {
+			count++;
+		}
+		
+		return count;
+	}
+
+	/**
+	 * Returns the number of equilibrator temperature sensors defined for this instrument
+	 * @return The number of equilibrator temperature sensors
+	 */
+	public int getEqtCount() {
+		int count = 0;
+		
+		if (hasEqt1()) {
+			count++;
+		}
+		
+		if (hasEqt2()) {
+			count++;
+		}
+		
+		if (hasEqt3()) {
+			count++;
+		}
+		
+		return count;
+	}
+
+	/**
+	 * Returns the number of equilibrator pressure sensors defined for this instrument
+	 * @return The number of equilibrator pressure sensors
+	 */
+	public int getEqpCount() {
+		int count = 0;
+		
+		if (hasEqp1()) {
+			count++;
+		}
+		
+		if (hasEqp2()) {
+			count++;
+		}
+		
+		if (hasEqp3()) {
+			count++;
+		}
+		
+		return count;
+	}
 }
