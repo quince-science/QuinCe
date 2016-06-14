@@ -1,9 +1,38 @@
+/*
+ * Javascript for the Data Screen
+ */
+
+/*
+ * MAIN VARIABLES
+ */
+
 // Keeps track of the split positions as a percentage of the
 // full data area
 var tableSplitPercent = 0;
 var plotSplitPercent = 0;
 
+// The X Axis popup can only have one item selected;
+// The Y axis can have more than one. This controls
+// the selection limits
+var plotPopupSingleSelection = true;
+
+// Specifies the target plot (1/2) and axis (X/Y) for the popup
+var plotPopupTarget = '1X';
+
+
+// The selected paramters for the plots and maps
+var plot1XAxis = 'plot_datetime_dateTime';
+var plot1YAxis = ['plot_eqt_eqtMean', 'plot_eqt_eqt1'];
+var plot1Map = 'plot_co2_fCO2Final';
+
+var plot2XAxis = 'plot_datetime_dateTime';
+var plot2YAxis = ['plot_co2_fCO2Final'];
+var plot2Map = 'plot_intaketemp_intakeTempMean';
+
+////////////////////////////////////////////////////////////////////////////////
+
 /*
+ * Document Load function.
  * Initialises the splits, and adds handler for window resizing
  */
 $(function() {
@@ -66,8 +95,16 @@ function drawLoading(el) {
 /*
  * Show the popup for plots
  */
-function showPlotPopup(event) {
+function showPlotPopup(event, target, singleSelection) {
 	
+	// Set the target information
+	plotPopupSingleSelection = singleSelection;
+	plotPopupTarget = target;
+	
+	// Update the inputs with the existing selections
+	setPlotPopupInputs();
+	
+	// Position and show the popup
     var button = '#' + event.target.id;
 	
 	container = $(button).parents('[id^=controls]')[0];
@@ -110,14 +147,29 @@ function processPlotFieldChange(input) {
 	var group = getGroupName(input.id);
 	
 	if (input.checked) {
-		$('#plotFieldList')
-        .find('input')
-        .each(function(index, item) {
-        	var itemGroup = getGroupName(item.id);
-        	if (itemGroup != group) {
-        		item.checked = false;
-        	}
-        });
+	
+		// If we're in single selection mode,
+		// uncheck all others
+		if (plotPopupSingleSelection) {
+			$('#plotFieldList')
+	        .find('input')
+	        .each(function(index, item) {
+	        	if (item.id != input.id) {
+	        		item.checked = false;
+	        	}
+	        });
+			
+		} else {
+			// We can leave entries in the same group checked.
+			$('#plotFieldList')
+	        .find('input')
+	        .each(function(index, item) {
+	        	var itemGroup = getGroupName(item.id);
+	        	if (itemGroup != group) {
+	        		item.checked = false;
+	        	}
+	        });
+		}
 	} else {
 		
 		var foundCheckedFriends = false;
@@ -144,4 +196,49 @@ function processPlotFieldChange(input) {
  */
 function getGroupName(inputName) {
 	return inputName.match(/_(.*)_/)[1];
+}
+
+/*
+ * Set up the plot popup's inputs according
+ * to which plot/axis has been selected
+ */
+function setPlotPopupInputs() {
+	
+	// Get the list of inputs to be checked
+	var selectedInputs = new Array();
+	
+	switch (plotPopupTarget) {
+	case '1X': {
+		selectedInputs[0] = plot1XAxis;
+		break;
+	}
+	case '1Y': {
+		selectedInputs = plot1YAxis;
+		break;
+	}
+	case '2X': {
+		selectedInputs[0] = plot2XAxis;
+		break;
+	}
+	case '2Y': {
+		selectedInputs = plot2YAxis;
+		break;
+	}
+	}
+	
+	console.log(selectedInputs);
+	
+	// Now update the inputs
+	$('#plotFieldList')
+	.find('input')
+	.each(function(index, item) {
+		console.log(item.id);
+		if (selectedInputs.indexOf(item.id) > -1) {
+			item.checked = true;
+		} else {
+			item.checked = false;
+		}
+	});
+	
+	
 }
