@@ -20,11 +20,11 @@ var plotPopupSingleSelection = true;
 var plotPopupTarget = '1X';
 
 // The selected paramters for the plots and maps
-var plot1XAxis = 'plot_datetime_dateTime';
+var plot1XAxis = ['plot_datetime_dateTime'];
 var plot1YAxis = ['plot_eqt_eqtMean', 'plot_eqt_eqt1'];
 var plot1Map = 'plot_co2_fCO2Final';
 
-var plot2XAxis = 'plot_datetime_dateTime';
+var plot2XAxis = ['plot_datetime_dateTime'];
 var plot2YAxis = ['plot_co2_fCO2Final'];
 var plot2Map = 'plot_intaketemp_intakeTempMean';
 
@@ -208,7 +208,7 @@ function setPlotPopupInputs() {
 	
 	switch (plotPopupTarget) {
 	case '1X': {
-		selectedInputs[0] = plot1XAxis;
+		selectedInputs = plot1XAxis;
 		break;
 	}
 	case '1Y': {
@@ -216,7 +216,7 @@ function setPlotPopupInputs() {
 		break;
 	}
 	case '2X': {
-		selectedInputs[0] = plot2XAxis;
+		selectedInputs = plot2XAxis;
 		break;
 	}
 	case '2Y': {
@@ -235,4 +235,40 @@ function setPlotPopupInputs() {
 			item.checked = false;
 		}
 	});
+}
+
+function savePlotSelection() {
+	
+	// Get the list of checked inputs
+	selectedInputs = new Array();
+	
+	$('#plotFieldList')
+	.find('input')
+	.each(function(index, item) {
+		if (item.checked) {
+			selectedInputs[selectedInputs.length] = item.id;
+		}
+	});
+
+	switch (plotPopupTarget) {
+	case '1X': {
+		plot1XAxis = selectedInputs;
+		break;
+	}
+	case '1Y': {
+		plot1YAxis = selectedInputs;
+		break;
+	}
+	case '2X': {
+		plot2XAxis = selectedInputs;
+		break;
+	}
+	case '2Y': {
+		plot2YAxis = selectedInputs;
+		break;
+	}
+	}
+	
+	hidePlotPopup();
+	return false;
 }
