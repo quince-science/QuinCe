@@ -19,7 +19,6 @@ var plotPopupSingleSelection = true;
 // Specifies the target plot (1/2) and axis (X/Y) for the popup
 var plotPopupTarget = '1X';
 
-
 // The selected paramters for the plots and maps
 var plot1XAxis = 'plot_datetime_dateTime';
 var plot1YAxis = ['plot_eqt_eqtMean', 'plot_eqt_eqt1'];
@@ -226,19 +225,14 @@ function setPlotPopupInputs() {
 	}
 	}
 	
-	console.log(selectedInputs);
-	
 	// Now update the inputs
 	$('#plotFieldList')
 	.find('input')
 	.each(function(index, item) {
-		console.log(item.id);
 		if (selectedInputs.indexOf(item.id) > -1) {
 			item.checked = true;
 		} else {
 			item.checked = false;
 		}
 	});
-	
-	
 }
