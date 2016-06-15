@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Miscellaneous date/time utilities
@@ -22,6 +23,8 @@ public class DateTimeUtils {
 	public static final long MILLIS_PER_DAY = 86400000;
 	
 	private static SimpleDateFormat dateFormatter = null;
+	
+	private static SimpleDateFormat dateTimeFormatter = null;
 
 	/**
 	 * Determines whether or not the current time is within a
@@ -78,5 +81,18 @@ public class DateTimeUtils {
 		}
 		
 		return dateFormatter.format(date.getTime());
+	}
+	
+	/**
+	 * Format a date/time to YYYY-MM-dd HH:mm:ss format
+	 * @param dateTime The date/time
+	 * @return The formatted date/time
+	 */
+	public static String formatDateTime(Date dateTime) {
+		if (null == dateTimeFormatter) {
+			dateTimeFormatter = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+		}
+		
+		return dateTimeFormatter.format(dateTime);
 	}
 }

@@ -126,6 +126,10 @@ ul input {
   font-weight: bold;
 }
 
+#hiddenData {
+	display: none;
+}
+
 #userSettings {
   float: right;
   margin-right: 20px;

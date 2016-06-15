@@ -1,12 +1,16 @@
 package uk.ac.exeter.QuinCe.web.files;
 
+import java.util.List;
+
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
+import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
@@ -30,6 +34,10 @@ public class DataScreenBean extends BaseManagedBean {
 	private long fileId;
 	
 	private FileInfo fileDetails;
+	
+	private String leftPlotColumns = null;
+	
+	private String leftPlotData = null;
 	
 	/**
 	 * Required basic constructor. All the actual construction
@@ -64,6 +72,22 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public FileInfo getFileDetails() {
 		return fileDetails;
+	}
+	
+	public String getLeftPlotColumns() {
+		return leftPlotColumns;
+	}
+	
+	public void setLeftPlotColumns(String leftPlotColumns) {
+		this.leftPlotColumns = leftPlotColumns;
+	}
+	
+	public String getLeftPlotData() {
+		return leftPlotData;
+	}
+	
+	public void setLeftPlotData(String leftPlotData) {
+		this.leftPlotData = leftPlotData;
 	}
 	
 	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException {
@@ -259,5 +283,20 @@ public class DataScreenBean extends BaseManagedBean {
 		checkbox.append("</label></td></tr>");
 		
 		return checkbox.toString();
+	}
+	
+	public void generateLeftPlotData() {
+		
+		String output = null;
+		
+		List<String> columns = StringUtils.delimitedToList(leftPlotColumns);
+		
+		try {
+			output = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), fileId, columns, false);
+		} catch (Exception e) {
+			output = "***ERROR: " + e.getMessage();
+		}
+		
+		setLeftPlotData(output);
 	}
 }

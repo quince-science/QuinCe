@@ -28,6 +28,10 @@ var plot2XAxis = ['plot_datetime_dateTime'];
 var plot2YAxis = ['plot_co2_fCO2Final'];
 var plot2Map = 'plot_intaketemp_intakeTempMean';
 
+// Variables for the plots
+var leftGraph = null;
+var rightGraph = null;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -197,6 +201,10 @@ function getGroupName(inputName) {
 	return inputName.match(/_(.*)_/)[1];
 }
 
+function getColumnName(inputName) {
+	return inputName.match(/_([^_]*)$/)[1];
+}
+
 /*
  * Set up the plot popup's inputs according
  * to which plot/axis has been selected
@@ -271,4 +279,62 @@ function savePlotSelection() {
 	
 	hidePlotPopup();
 	return false;
+}
+
+function updatePlot(plot) {
+	
+	if (plot == 'left') {
+		
+		// Replace the existing plot with the loading animation
+		drawLoading($('#plotLeftContent'));
+		
+		// Destroy the existing graph data
+		if (leftGraph != null) {
+			leftGraph.destroy();
+			leftGraph = null;
+		}
+		
+		// Build the list of columns to be sent to the server
+		var columnList = '';
+		for (i = 0; i < plot1XAxis.length; i++) {
+			columnList += getColumnName(plot1XAxis[i]);
+			columnList += ';';
+		}
+		for (i = 0; i < plot1YAxis.length; i++) {
+			columnList += getColumnName(plot1YAxis[i]);
+			if (i < plot1YAxis.length - 1) {
+				columnList += ';';
+			}
+		}
+		
+		// Fill in the hidden form and submit it
+		$('#plotDataForm\\:leftColumns').val(columnList);
+		$('#plotDataForm\\:leftGetData').click();
+
+	} else {
+		if (rightGraph != null) {
+			rightGraph.destroy();
+			rightGraph = null;
+		}
+	}
+	
+	
+	return false;
+}
+
+function drawLeftPlot(data) {
+	var status = data.status;
+	
+	if (status == "success") {
+		leftGraph = new Dygraph (
+			document.getElementById('plotLeftContent'),
+	        $('#plotDataForm\\:leftData').text(),
+	        {
+	          drawPoints: true,
+	          strokeWidth: 0.0
+	        }
+		);
+		        
+
+	}
 }
