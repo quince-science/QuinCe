@@ -124,13 +124,9 @@ function showPlotPopup(event, target, singleSelection) {
 	setPlotPopupInputs();
 	
 	// Position and show the popup
-    var button = '#' + event.target.id;
-	
-	container = $(button).parents('[id^=controls]')[0];
+	leftOffset = ($(window).width() / 2) - ($('#plotFieldList').width() / 2);
+	topOffset = ($(window).height() / 2) - ($('#plotFieldList').height() / 2);
 
-	leftOffset = $(button).position().left + $(container).position().left;
-	topOffset = $(button).position().top + $(container).position().top;
-	
 	$('#plotFieldList')
 	.css({"left": 0, "top": 0})
 	.offset({
@@ -142,7 +138,7 @@ function showPlotPopup(event, target, singleSelection) {
 	.zIndex(1000);
 
 	
-	$('#plotFieldList').show(100);
+	$('#plotFieldList').show(0);
 
     event.preventDefault();
     event.stopPropagation();
