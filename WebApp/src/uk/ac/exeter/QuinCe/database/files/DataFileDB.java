@@ -13,9 +13,11 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.RawDataFile;
 import uk.ac.exeter.QuinCe.data.RawDataFileException;
+import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
@@ -65,6 +67,16 @@ public class DataFileDB {
 	
 	private static final String SET_JOB_STATEMENT = "UPDATE data_file SET current_job = ? WHERE id = ?";
 	
+	private static final String ATMOSPHERIC_MEAS_COUNT_QUERY = "SELECT COUNT(*) FROM raw_data WHERE data_file_id = ? AND co2_type = " + RunType.RUN_TYPE_ATMOSPHERIC;
+	
+	private static final String OCEAN_MEAS_COUNT_QUERY = "SELECT COUNT(*) FROM raw_data WHERE data_file_id = ? AND co2_type = " + RunType.RUN_TYPE_WATER;
+	
+	private static final String STANDARDS_COUNT_QUERY = "SELECT COUNT(*) FROM gas_standards_data WHERE data_file_id = ?";
+	
+	private static final String GET_QC_FLAGS_QUERY = "SELECT DISTINCT qc_flag, COUNT(qc_flag) FROM qc WHERE data_file_id = ? GROUP BY qc_flag";
+
+	private static final String GET_WOCE_FLAGS_QUERY = "SELECT DISTINCT woce_flag, COUNT(woce_flag) FROM qc WHERE data_file_id = ? GROUP BY woce_flag";
+
 	/**
 	 * Store a file in the database and in the file store
 	 * @param dataSource A data source
@@ -143,8 +155,9 @@ public class DataFileDB {
 	 * @return {@code true} if the file exists; {@code false} if it does not
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws DatabaseException If an error occurs
+	 * @throws RecordNotFoundException 
 	 */
-	public static boolean fileExists(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException {
+	public static boolean fileExists(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		return (null != getFileDetails(dataSource, fileId));
 	}
 	
@@ -210,7 +223,7 @@ public class DataFileDB {
 			
 			records = stmt.executeQuery();
 			while (records.next()) {
-				fileInfo.add(makeFileInfo(records));
+				fileInfo.add(makeFileInfo(records, conn));
 			}
 			
 		} catch (Exception e) {
@@ -225,7 +238,7 @@ public class DataFileDB {
 		return fileInfo;
 	}
 	
-	public static FileInfo getFileDetails(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException {
+	public static FileInfo getFileDetails(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
 		FileInfo result = null;
 		
@@ -242,9 +255,9 @@ public class DataFileDB {
 			stmt.setLong(1, fileId);
 			record = stmt.executeQuery();
 			if (record.next()) {
-				result = makeFileInfo(record);
+				result = makeFileInfo(record, conn);
 			}
-			
+						
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while searching for the file", e);
 		} finally {
@@ -382,8 +395,11 @@ public class DataFileDB {
 	 * @param record The ResutSet whose current record is to be read
 	 * @return A FileInfo object for the record
 	 * @throws SQLException If the record is not of the right format
+	 * @throws RecordNotFoundException 
+	 * @throws MissingParamException 
+	 * @throws DatabaseException 
 	 */
-	private static FileInfo makeFileInfo(ResultSet record) throws SQLException {
+	private static FileInfo makeFileInfo(ResultSet record, Connection conn) throws SQLException, DatabaseException, MissingParamException, RecordNotFoundException {
 		long fileID = record.getLong(1);
 		long instrumentId = record.getLong(2);
 		String instrumentName = record.getString(3);
@@ -394,7 +410,138 @@ public class DataFileDB {
 		int currentJob = record.getInt(7);
 		Calendar lastTouched = Calendar.getInstance();
 		lastTouched.setTime(record.getDate(8));
+	
+		PreparedStatement atmosphericMeasurementsStmt = null;
+		PreparedStatement oceanMeasurementsStmt = null;
+		PreparedStatement standardsStmt = null;
+		ResultSet atmosphericMeasurementsCount = null;
+		ResultSet oceanMeasurementsCount = null;
+		ResultSet standardsCount = null;
+		int atmosphericMeasurements = 0;
+		int oceanMeasurements = 0;
+		int standards = 0;
+
+		try {
+			atmosphericMeasurementsStmt = conn.prepareStatement(ATMOSPHERIC_MEAS_COUNT_QUERY);
+			atmosphericMeasurementsStmt.setLong(1, fileID);
+			
+			atmosphericMeasurementsCount = atmosphericMeasurementsStmt.executeQuery();
+			if (atmosphericMeasurementsCount.next()) {
+				atmosphericMeasurements = atmosphericMeasurementsCount.getInt(1);
+			}
+			
+			oceanMeasurementsStmt = conn.prepareStatement(OCEAN_MEAS_COUNT_QUERY);
+			oceanMeasurementsStmt.setLong(1, fileID);
+			
+			oceanMeasurementsCount = oceanMeasurementsStmt.executeQuery();
+			if (oceanMeasurementsCount.next()) {
+				oceanMeasurements = oceanMeasurementsCount.getInt(1);
+			}
+			
+			standardsStmt = conn.prepareStatement(STANDARDS_COUNT_QUERY);
+			standardsStmt.setLong(1, fileID);
+			
+			standardsCount = standardsStmt.executeQuery();
+			if (standardsCount.next()) {
+				standards = standardsCount.getInt(1);
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DatabaseUtils.closeResultSets(atmosphericMeasurementsCount, oceanMeasurementsCount, standardsCount);
+			DatabaseUtils.closeStatements(atmosphericMeasurementsStmt, oceanMeasurementsStmt, standardsStmt);
+		}
+
 		
-		return new FileInfo(fileID, instrumentId, instrumentName, fileName, startDate, recordCount, currentJob, lastTouched);
+		FileInfo result = new FileInfo(fileID, instrumentId, instrumentName, fileName, startDate, recordCount, currentJob, lastTouched, atmosphericMeasurements, oceanMeasurements, standards);
+		updateFlagCounts(conn, result);
+		return result;
+	}
+	
+	public static void updateFlagCounts(Connection conn, FileInfo fileInfo) throws DatabaseException {
+		
+		fileInfo.clearAllCounts();
+		
+		PreparedStatement qcFlagsStatement = null;
+		PreparedStatement woceFlagsStatement = null;
+		ResultSet qcFlags = null;
+		ResultSet woceFlags = null;
+		
+		try {
+			
+			qcFlagsStatement = conn.prepareStatement(GET_QC_FLAGS_QUERY);
+			qcFlagsStatement.setLong(1, fileInfo.getFileId());
+			
+			qcFlags = qcFlagsStatement.executeQuery();
+			
+			while (qcFlags.next()) {
+				switch (qcFlags.getInt(1)) {
+				case Flag.VALUE_GOOD: {
+					fileInfo.setQcGoodCount(qcFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_QUESTIONABLE: {
+					fileInfo.setQcQuestionableCount(qcFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_BAD: {
+					fileInfo.setQcBadCount(qcFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_NOT_SET: {
+					fileInfo.setQcNotSetCount(qcFlags.getInt(2));
+				}
+				default: {
+					throw new DatabaseException("Invalid QC Flag value " + qcFlags.getInt(1));
+				}
+				}
+			}
+			
+			woceFlagsStatement = conn.prepareStatement(GET_WOCE_FLAGS_QUERY);
+			woceFlagsStatement.setLong(1, fileInfo.getFileId());
+			
+			woceFlags = woceFlagsStatement.executeQuery();
+			
+			while (woceFlags.next()) {
+				switch (woceFlags.getInt(1)) {
+				case Flag.VALUE_GOOD: {
+					fileInfo.setWoceGoodCount(woceFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_ASSUMED_GOOD: {
+					fileInfo.setWoceAssumedGoodCount(woceFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_QUESTIONABLE: {
+					fileInfo.setWoceQuestionableCount(woceFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_BAD: {
+					fileInfo.setWoceBadCount(woceFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_NOT_SET: {
+					fileInfo.setWoceNotSetCount(woceFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_NEEDED: {
+					fileInfo.setWoceNeededCount(woceFlags.getInt(2));;
+					break;
+				}
+				case Flag.VALUE_IGNORED: {
+					fileInfo.setIgnoredCount(woceFlags.getInt(2));
+				}
+				default: {
+					throw new DatabaseException("Invalid WOCE Flag value " + qcFlags.getInt(1));
+				}
+				}
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving flag data", e);
+		} finally {
+			DatabaseUtils.closeResultSets(qcFlags, woceFlags);
+			DatabaseUtils.closeStatements(qcFlagsStatement, woceFlagsStatement);
+		}
 	}
 }
