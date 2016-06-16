@@ -44,6 +44,7 @@ $(function() {
 	$('#plots').split({orientation: 'vertical', onDragEnd: function(){resizeContent()} });
 	tableSplitPercent = '50%';
 	plotSplitPercent = '50%';
+
 	
 	// Initial loading screens for each panel
 	drawLoading($('#plotLeftContent'));
@@ -79,15 +80,15 @@ function resizeContent() {
 	plotSplitPercent = '' + $('#plots').split().position() / $('#dataScreenContent').width() * 100 + '%';
 
 	$('#plotLeftContent').width('100%');
-	$('#plotLeftContent').height('' + $('#plotContainerLeft').height() - 50 + 'px');
+	$('#plotLeftContent').height($('#plotContainerLeft').height() - 30);
 	if (leftGraph != null) {
-		leftGraph.resize($('#plotLeftContent').width(), $('#plotLeftContent').height());
+		leftGraph.resize($('#plotLeftContent').width(), $('#plotLeftContent').height() - 35);
 	}
 	
 	$('#plotRightContent').width('100%');
-	$('#plotRightContent').height('' + $('#plotContainerRight').height() - 50 + 'px');
+	$('#plotRightContent').height('' + $('#plotContainerRight').height() - 30 + 'px');
 	if (rightGraph != null) {
-		rightGraph.resize($('#plotRightContent').width(), $('#plotRightContent').height());
+		rightGraph.resize($('#plotRightContent').width(), $('#plotRightContent').height() - 33);
 	}
 	
 }
@@ -349,7 +350,7 @@ function drawLeftPlot(data) {
 	          labelsSeparateLine: true
 	        }
 		);
-		        
-
+		
+		resizeContent();
 	}
 }
