@@ -112,7 +112,7 @@ public class DataScreenBean extends BaseManagedBean {
 		this.rightPlotData = rightPlotData;
 	}
 	
-	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException {
+	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException {
 		fileDetails = DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), fileId);
 	}
 	
