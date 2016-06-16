@@ -69,6 +69,9 @@ $(function() {
     		processPlotFieldChange(item);
     	});
     });
+    
+    updatePlot('left');
+    updatePlot('right');
 });
 
 
@@ -82,15 +85,14 @@ function resizeContent() {
 	$('#plotLeftContent').width('100%');
 	$('#plotLeftContent').height($('#plotContainerLeft').height() - 30);
 	if (leftGraph != null) {
-		leftGraph.resize($('#plotLeftContent').width(), $('#plotLeftContent').height() - 35);
+		leftGraph.resize($('#plotLeftContent').width(), $('#plotLeftContent').height() - 15);
 	}
 	
 	$('#plotRightContent').width('100%');
 	$('#plotRightContent').height('' + $('#plotContainerRight').height() - 30 + 'px');
 	if (rightGraph != null) {
-		rightGraph.resize($('#plotRightContent').width(), $('#plotRightContent').height() - 33);
+		rightGraph.resize($('#plotRightContent').width(), $('#plotRightContent').height() - 15);
 	}
-	
 }
 
 /*
@@ -298,7 +300,6 @@ function savePlotSelection() {
 function updatePlot(plot) {
 	
 	if (plot == 'left') {
-		
 		// Replace the existing plot with the loading animation
 		drawLoading($('#plotLeftContent'));
 		
@@ -324,12 +325,32 @@ function updatePlot(plot) {
 		// Fill in the hidden form and submit it
 		$('#plotDataForm\\:leftColumns').val(columnList);
 		$('#plotDataForm\\:leftGetData').click();
-
 	} else {
+		// Replace the existing plot with the loading animation
+		drawLoading($('#plotRightContent'));
+		
+		// Destroy the existing graph data
 		if (rightGraph != null) {
 			rightGraph.destroy();
 			rightGraph = null;
 		}
+		
+		// Build the list of columns to be sent to the server
+		var columnList = '';
+		for (i = 0; i < plot2XAxis.length; i++) {
+			columnList += getColumnName(plot2XAxis[i]);
+			columnList += ';';
+		}
+		for (i = 0; i < plot2YAxis.length; i++) {
+			columnList += getColumnName(plot2YAxis[i]);
+			if (i < plot2YAxis.length - 1) {
+				columnList += ';';
+			}
+		}
+		
+		// Fill in the hidden form and submit it
+		$('#plotDataForm\\:rightColumns').val(columnList);
+		$('#plotDataForm\\:rightGetData').click();
 	}
 	
 	
@@ -343,6 +364,25 @@ function drawLeftPlot(data) {
 		leftGraph = new Dygraph (
 			document.getElementById('plotLeftContent'),
 	        $('#plotDataForm\\:leftData').text(),
+	        {
+	          drawPoints: true,
+	          strokeWidth: 0.0,
+	          labelsUTC: true,
+	          labelsSeparateLine: true
+	        }
+		);
+		
+		resizeContent();
+	}
+}
+
+function drawRightPlot(data) {
+	var status = data.status;
+	
+	if (status == "success") {
+		rightGraph = new Dygraph (
+			document.getElementById('plotRightContent'),
+	        $('#plotDataForm\\:rightData').text(),
 	        {
 	          drawPoints: true,
 	          strokeWidth: 0.0,

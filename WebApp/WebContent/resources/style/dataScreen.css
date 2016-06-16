@@ -54,7 +54,7 @@ body.fullPage {
   height: 25px;
 }
 
-#plotLeftContent {
+.plotContent {
 	padding-top: 5px;
 	overflow: hidden;
 }

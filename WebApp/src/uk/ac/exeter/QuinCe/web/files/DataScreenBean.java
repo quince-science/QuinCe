@@ -41,6 +41,10 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private String leftPlotData = null;
 	
+	private String rightPlotColumns = null;
+	
+	private String rightPlotData = null;
+	
 	/**
 	 * Required basic constructor. All the actual construction
 	 * is done in init().
@@ -90,6 +94,22 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public void setLeftPlotData(String leftPlotData) {
 		this.leftPlotData = leftPlotData;
+	}
+	
+	public String getRightPlotColumns() {
+		return rightPlotColumns;
+	}
+	
+	public void setRightPlotColumns(String rightPlotColumns) {
+		this.rightPlotColumns = rightPlotColumns;
+	}
+	
+	public String getRightPlotData() {
+		return rightPlotData;
+	}
+	
+	public void setRightPlotData(String rightPlotData) {
+		this.rightPlotData = rightPlotData;
 	}
 	
 	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException {
@@ -303,5 +323,22 @@ public class DataScreenBean extends BaseManagedBean {
 		}
 		
 		setLeftPlotData(output);
+	}
+
+	public void generateRightPlotData() {
+		String output = null;
+		
+		List<String> columns = StringUtils.delimitedToList(rightPlotColumns);
+		
+		try {
+			DataSource dataSource = ServletUtils.getDBDataSource();
+			Instrument instrument = InstrumentDB.getInstrument(dataSource, fileDetails.getInstrumentId());
+			
+			output = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), fileId, instrument, columns, false);
+		} catch (Exception e) {
+			output = "***ERROR: " + e.getMessage();
+		}
+		
+		setRightPlotData(output);
 	}
 }
