@@ -17,16 +17,16 @@ var plotSplitPercent = 0;
 var plotPopupSingleSelection = true;
 
 // Specifies the target plot (1/2) and axis (X/Y) for the popup
-var plotPopupTarget = '1X';
+var plotPopupTarget = 'LX';
 
 // The selected paramters for the plots and maps
-var plot1XAxis = ['plot_datetime_dateTime'];
-var plot1YAxis = ['plot_eqt_eqtMean', 'plot_eqt_eqt1'];
-var plot1Map = 'plot_co2_fCO2Final';
+var leftPlotXAxis = ['plot_datetime_dateTime'];
+var leftPlotYAxis = ['plot_eqt_eqtMean', 'plot_eqt_eqt1'];
+var leftMap = 'plot_co2_fCO2Final';
 
-var plot2XAxis = ['plot_datetime_dateTime'];
-var plot2YAxis = ['plot_co2_fCO2Final'];
-var plot2Map = 'plot_intaketemp_intakeTempMean';
+var rightPlotXAxis = ['plot_datetime_dateTime'];
+var rightPlotYAxis = ['plot_co2_fCO2Final'];
+var rightMap = 'plot_intaketemp_intakeTempMean';
 
 // Variables for the plots
 var leftGraph = null;
@@ -231,20 +231,20 @@ function setPlotPopupInputs() {
 	var selectedInputs = new Array();
 	
 	switch (plotPopupTarget) {
-	case '1X': {
-		selectedInputs = plot1XAxis;
+	case 'LX': {
+		selectedInputs = leftPlotXAxis;
 		break;
 	}
-	case '1Y': {
-		selectedInputs = plot1YAxis;
+	case 'LY': {
+		selectedInputs = leftPlotYAxis;
 		break;
 	}
-	case '2X': {
-		selectedInputs = plot2XAxis;
+	case 'RX': {
+		selectedInputs = rightPlotXAxis;
 		break;
 	}
-	case '2Y': {
-		selectedInputs = plot2YAxis;
+	case 'RY': {
+		selectedInputs = rightPlotYAxis;
 		break;
 	}
 	}
@@ -275,20 +275,20 @@ function savePlotSelection() {
 	});
 
 	switch (plotPopupTarget) {
-	case '1X': {
-		plot1XAxis = selectedInputs;
+	case 'LX': {
+		leftPlotXAxis = selectedInputs;
 		break;
 	}
-	case '1Y': {
-		plot1YAxis = selectedInputs;
+	case 'LY': {
+		leftPlotYAxis = selectedInputs;
 		break;
 	}
-	case '2X': {
-		plot2XAxis = selectedInputs;
+	case 'RX': {
+		rightPlotXAxis = selectedInputs;
 		break;
 	}
-	case '2Y': {
-		plot2YAxis = selectedInputs;
+	case 'RY': {
+		rightPlotYAxis = selectedInputs;
 		break;
 	}
 	}
@@ -311,13 +311,13 @@ function updatePlot(plot) {
 		
 		// Build the list of columns to be sent to the server
 		var columnList = '';
-		for (i = 0; i < plot1XAxis.length; i++) {
-			columnList += getColumnName(plot1XAxis[i]);
+		for (i = 0; i < leftPlotXAxis.length; i++) {
+			columnList += getColumnName(leftPlotXAxis[i]);
 			columnList += ';';
 		}
-		for (i = 0; i < plot1YAxis.length; i++) {
-			columnList += getColumnName(plot1YAxis[i]);
-			if (i < plot1YAxis.length - 1) {
+		for (i = 0; i < leftPlotYAxis.length; i++) {
+			columnList += getColumnName(leftPlotYAxis[i]);
+			if (i < leftPlotYAxis.length - 1) {
 				columnList += ';';
 			}
 		}
@@ -337,13 +337,13 @@ function updatePlot(plot) {
 		
 		// Build the list of columns to be sent to the server
 		var columnList = '';
-		for (i = 0; i < plot2XAxis.length; i++) {
-			columnList += getColumnName(plot2XAxis[i]);
+		for (i = 0; i < rightPlotXAxis.length; i++) {
+			columnList += getColumnName(rightPlotXAxis[i]);
 			columnList += ';';
 		}
-		for (i = 0; i < plot2YAxis.length; i++) {
-			columnList += getColumnName(plot2YAxis[i]);
-			if (i < plot2YAxis.length - 1) {
+		for (i = 0; i < rightPlotYAxis.length; i++) {
+			columnList += getColumnName(rightPlotYAxis[i]);
+			if (i < rightPlotYAxis.length - 1) {
 				columnList += ';';
 			}
 		}
