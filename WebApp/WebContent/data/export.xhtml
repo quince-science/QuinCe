@@ -1,0 +1,34 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	template="/templates/app_page.xhtml">
+
+	<ui:define name="title">
+		Upload Data File
+	</ui:define>
+
+	<ui:define name="content">
+		<div style="text-align: center">
+			<h:form id="exportForm">
+				<h:inputHidden id="fileId" value="#{fileListBean.chosenFile}"/>
+				
+				<h1>Export</h1>
+				<h3><h:outputText value="#{fileListBean.chosenFileName}"/></h3>
+				<br/>
+				Please select the export format you want, and then click 'Export'
+				<br/>
+				
+				
+				
+				
+				<div class="buttonWrapper">
+					<h:commandButton id="doneButton" forceId="true" value="Back to File List" action="#{fileListBean.goToFileList}" immediate="true"/>
+				</div>
+			</h:form>
+		</div>
+		
+	</ui:define>
+</ui:composition>

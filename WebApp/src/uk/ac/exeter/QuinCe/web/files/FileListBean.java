@@ -3,8 +3,12 @@ package uk.ac.exeter.QuinCe.web.files;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.FileInfo;
+import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
@@ -23,6 +27,8 @@ public class FileListBean extends BaseManagedBean {
 	 * The navigation to the file list
 	 */
 	public static final String PAGE_FILE_LIST = "file_list";
+	
+	public static final String PAGE_EXPORT = "export";
 	
 	/**
 	 * The ID of the chosen file
@@ -99,5 +105,17 @@ public class FileListBean extends BaseManagedBean {
 	 */
 	public void setChosenFile(long chosenFile) {
 		this.chosenFile = chosenFile;
+	}
+	
+	public String exportFile() {
+		return PAGE_EXPORT;
+	}
+	
+	public String goToFileList() {
+		return PAGE_FILE_LIST;
+	}
+	
+	public String getChosenFileName() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
+		return DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), chosenFile).getFileName();
 	}
 }

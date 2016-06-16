@@ -17,6 +17,10 @@
 	    		  return false;
 	    	  }
 	      }
+	      
+	      function exportFile(id) {
+	    	  $('#fileListForm\\:chosenFile').val(id);
+	      }
 	  	</script>
 	</ui:define>
 
@@ -113,7 +117,11 @@
 					</p:column>
 					<p:column>
 						<f:facet name="header">Actions</f:facet>
-						Q|E|<h:commandLink id="Delete_#{file.fileId}" value="D" onclick="deleteFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.deleteFile}"/>
+						Q
+						|
+						<h:commandLink id="Export_#{file.fileId}" value="E" onclick="exportFile(#{file.fileId})" action="#{fileListBean.exportFile}"/>
+						|
+						<h:commandLink id="Delete_#{file.fileId}" value="D" onclick="deleteFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.deleteFile}"/>
 					</p:column>
 					<p:column>
 						<f:facet name="header">Time remaining</f:facet>
