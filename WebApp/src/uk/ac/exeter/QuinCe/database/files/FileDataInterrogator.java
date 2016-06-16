@@ -54,7 +54,7 @@ public class FileDataInterrogator {
 		COLUMN_MAPPINGS.put("atmosPressure", "data_reduction.atmospheric_pressure");
 		COLUMN_MAPPINGS.put("moistureMeasured", "raw_data.moisture");
 		COLUMN_MAPPINGS.put("moistureTrue", "data_reduction.true_moisture");
-		COLUMN_MAPPINGS.put("pH2O", "data_reduction.ph20");
+		COLUMN_MAPPINGS.put("pH2O", "data_reduction.ph2O");
 		COLUMN_MAPPINGS.put("co2Measured", "raw_data.co2");
 		COLUMN_MAPPINGS.put("co2Dried", "data_reduction.dried_co2");
 		COLUMN_MAPPINGS.put("co2Calibrated", "data_reduction.calibrated_co2");
