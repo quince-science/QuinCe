@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -63,7 +64,7 @@ public class FileDataInterrogator {
 		COLUMN_MAPPINGS.put("fCO2Final", "data_reduction.fco2");
 	}
 	
-	public static String getCSVData(DataSource dataSource, long fileId, List<String> columns, boolean includeBad) throws MissingParamException {
+	public static String getCSVData(DataSource dataSource, long fileId, Instrument instrument, List<String> columns, boolean includeBad) throws MissingParamException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(columns, "columns");
 
@@ -93,6 +94,15 @@ public class FileDataInterrogator {
 			records = stmt.executeQuery();
 			
 			StringBuffer outputBuffer = new StringBuffer();
+			for (int i = 1; i <= columns.size(); i++) {
+				outputBuffer.append(getColumnHeading(columns.get(i - 1), instrument));
+				if (i < columns.size()) {
+					outputBuffer.append(',');
+				}
+			}
+			outputBuffer.append('\n');
+			
+			
 			while (records.next()) {
 				for (int i = 1; i <= columns.size(); i++) {
 					if (columns.get(i - 1).equals("dateTime")) {
@@ -112,7 +122,7 @@ public class FileDataInterrogator {
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
-			output = "***ERROR: " + e.getMessage();
+			output = "***ERROR - " + e.getMessage();
 		} finally {
 			DatabaseUtils.closeResultSets(records);
 			DatabaseUtils.closeStatements(stmt);
@@ -120,6 +130,155 @@ public class FileDataInterrogator {
 		}
 		
 		return output;
+	}
+	
+	private static String getColumnHeading(String columnName, Instrument instrument) {
+		String result;
+		
+		switch (columnName) {
+		case "dateTime": {
+			result = "Date";
+			break;
+		}
+		case "longitude": {
+			result = "Longitude";
+			break;
+		}
+		case "latitude": {
+			result = "Latitude";
+			break;
+		}
+		case "intakeTempMean": {
+			if (instrument.getIntakeTempCount() == 1) {
+				result = "Intake Temperature";
+			} else {
+				result = "Intake Temperature (mean)";
+			}
+			break;
+		}
+		case "intakeTemp1": {
+			result = "Intake Temperature - " + instrument.getIntakeTempName1();
+			break;
+		}
+		case "intakeTemp2": {
+			result = "Intake Temperature - " + instrument.getIntakeTempName2();
+			break;
+		}
+		case "intakeTemp3": {
+			result = "Intake Temperature - " + instrument.getIntakeTempName3();
+			break;
+		}
+		case "salinityMean": {
+			if (instrument.getSalinityCount() == 1) {
+				result = "Salinity";
+			} else {
+				result = "Salinity (mean)";
+			}
+			break;
+		}
+		case "salinity1": {
+			result = "Salinity - " + instrument.getSalinityName1();
+			break;
+		}
+		case "salinity2": {
+			result = "Salinity - " + instrument.getSalinityName2();
+			break;
+		}
+		case "salinity3": {
+			result = "Salinity - " + instrument.getSalinityName3();
+			break;
+		}
+		case "eqtMean": {
+			if (instrument.getEqtCount() == 1) {
+				result = "Equilibrator Temperature";
+			} else {
+				result = "Equilibrator Temperature (mean)";
+			}
+			break;
+		}
+		case "eqt1": {
+			result = "Equilibrator Temperature - " + instrument.getEqtName1();
+			break;
+		}
+		case "eqt2": {
+			result = "Equilibrator Temperature - " + instrument.getEqtName2();
+			break;
+		}
+		case "eqt3": {
+			result = "Equilibrator Temperature - " + instrument.getEqtName3();
+			break;
+		}
+		case "eqpMean": {
+			if (instrument.getEqpCount() == 1) {
+				result = "Equilibrator Pressure";
+			} else {
+				result = "Equilibrator Pressure (mean)";
+			}
+			break;
+		}
+		case "eqp1": {
+			result = "Equilibrator Pressure - " + instrument.getEqpName1();
+			break;
+		}
+		case "eqp2": {
+			result = "Equilibrator Pressure - " + instrument.getEqpName2();
+			break;
+		}
+		case "eqp3": {
+			result = "Equilibrator Pressure - " + instrument.getEqpName3();
+			break;
+		}
+		case "atmosPressure":
+		{
+			result = "Atmospheric Pressure";
+			break;
+		}
+		case "moistureMeasured": {
+			result = "Moisture (measured)";
+			break;
+		}
+		case "moistureTrue": {
+			result = "Moisture (true)";
+			break;
+		}
+		case "pH2O": {
+			result = "pH₂O";
+			break;
+		}
+		case "co2Measured": {
+			result = "CO₂ (measured)";
+			break;
+		}
+		case "co2Dried": {
+			result = "CO₂ (dried)";
+			break;
+		}
+		case "co2Calibrated": {
+			result = "CO₂ (calibrated)";
+			break;
+		}
+		case "pCO2TEDry": {
+			result = "pCO₂ TE Dry";
+			break;
+		}
+		case "pCO2TEWet": {
+			result = "pCO₂ TE Wet";
+			break;
+		}
+		case "fCO2TE": {
+			result = "fCO₂ TE";
+			break;
+		}
+		case "fCO2Final": {
+			result = "fCO₂";
+			break;
+		}
+		default: {
+			result = "Unknown";
+		}
+		}
+		
+		return result;
 	}
 	
 }

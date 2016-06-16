@@ -331,7 +331,9 @@ function drawLeftPlot(data) {
 	        $('#plotDataForm\\:leftData').text(),
 	        {
 	          drawPoints: true,
-	          strokeWidth: 0.0
+	          strokeWidth: 0.0,
+	          labelsUTC: true,
+	          labelsSeparateLine: true
 	        }
 		);
 		        

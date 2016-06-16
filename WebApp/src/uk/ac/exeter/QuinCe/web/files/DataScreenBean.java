@@ -2,6 +2,8 @@ package uk.ac.exeter.QuinCe.web.files;
 
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
@@ -292,7 +294,10 @@ public class DataScreenBean extends BaseManagedBean {
 		List<String> columns = StringUtils.delimitedToList(leftPlotColumns);
 		
 		try {
-			output = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), fileId, columns, false);
+			DataSource dataSource = ServletUtils.getDBDataSource();
+			Instrument instrument = InstrumentDB.getInstrument(dataSource, fileDetails.getInstrumentId());
+			
+			output = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), fileId, instrument, columns, false);
 		} catch (Exception e) {
 			output = "***ERROR: " + e.getMessage();
 		}
