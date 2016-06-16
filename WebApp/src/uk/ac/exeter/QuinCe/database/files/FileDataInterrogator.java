@@ -96,7 +96,7 @@ public class FileDataInterrogator {
 			while (records.next()) {
 				for (int i = 1; i <= columns.size(); i++) {
 					if (columns.get(i - 1).equals("dateTime")) {
-						outputBuffer.append(DateTimeUtils.formatDateTime(records.getDate(i)));
+						outputBuffer.append(DateTimeUtils.formatDateTime(records.getTimestamp(i)));
 					} else {
 						outputBuffer.append(records.getString(i));
 					}
