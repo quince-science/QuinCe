@@ -77,6 +77,19 @@ $(function() {
 function resizeContent() {
 	tableSplitPercent = '' + $('#dataScreenContent').split().position() / $('#dataScreenContent').height() * 100 + '%';
 	plotSplitPercent = '' + $('#plots').split().position() / $('#dataScreenContent').width() * 100 + '%';
+
+	$('#plotLeftContent').width('100%');
+	$('#plotLeftContent').height('' + $('#plotContainerLeft').height() - 50 + 'px');
+	if (leftGraph != null) {
+		leftGraph.resize($('#plotLeftContent').width(), $('#plotLeftContent').height());
+	}
+	
+	$('#plotRightContent').width('100%');
+	$('#plotRightContent').height('' + $('#plotContainerRight').height() - 50 + 'px');
+	if (rightGraph != null) {
+		rightGraph.resize($('#plotRightContent').width(), $('#plotRightContent').height());
+	}
+	
 }
 
 /*
