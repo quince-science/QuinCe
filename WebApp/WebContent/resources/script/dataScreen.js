@@ -62,14 +62,14 @@ $(function() {
     
     // Set up change handlers for checkboxes on the plot popup
     $('#plotFieldList')
-        .find('input')
-        .each(function(index, item) {
-        	$(item).change(function(event) {
-        		processPlotFieldChange(item);
-        	});
-        });
-
+    .find('input')
+    .each(function(index, item) {
+    	$(item).change(function(event) {
+    		processPlotFieldChange(item);
+    	});
+    });
 });
+
 
 /*
  * Handles the resizing of individual panels
