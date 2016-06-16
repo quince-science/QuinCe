@@ -12,6 +12,12 @@ body.fullPage {
   position: absolute;
   width: 100%;
   height: calc(100% - 30px);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 #plots {
