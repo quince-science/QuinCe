@@ -7,7 +7,7 @@
 	template="/templates/app_page.xhtml">
 
 	<ui:define name="title">
-		Upload Data File
+		Export #{fileListBean.chosenFileName}
 	</ui:define>
 
 	<ui:define name="content">
@@ -20,10 +20,31 @@
 				<br/>
 				Please select the export format you want, and then click 'Export'
 				<br/>
-				
-				
-				
-				
+				<br/>
+				<p:outputPanel id="exportOptions">
+					<p:selectOneRadio id="exportOption" value="#{fileListBean.chosenExportOption}" layout="custom">
+						<f:selectItems value="#{fileListBean.exportOptions}" var="x" itemValue="#{x.index}" itemLabel=""/>
+					</p:selectOneRadio>
+
+					<table class="minimalCentered">
+						<c:forEach var="option" items="#{fileListBean.exportOptions}">
+							<tr>
+								<td>
+				            		<p:radioButton id="exportOption_#{option.index}" for="exportOption" itemIndex="#{option.index}" />
+				            	</td>
+				            	<td>
+				            		<h:outputLabel for="exportOption_#{option.index}" value="#{option.name}" />
+				            	</td>
+				            </tr>
+				        </c:forEach>
+			        </table>
+				</p:outputPanel>
+
+				<div class="buttonWrapper">
+					<h:commandButton id="exportButton" forceId="true" value="Export..." action="#{fileListBean.exportFile}" onclick="return false;" immediate="true"/>
+				</div>
+
+
 				<div class="buttonWrapper">
 					<h:commandButton id="doneButton" forceId="true" value="Back to File List" action="#{fileListBean.goToFileList}" immediate="true"/>
 				</div>

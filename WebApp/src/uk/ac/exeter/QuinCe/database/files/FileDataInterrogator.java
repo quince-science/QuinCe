@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -22,6 +23,8 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  *
  */
 public class FileDataInterrogator {
+	
+	private static final String COLUMN_ORIGINAL_FILE = "original";
 	
 	private static Map<String, String> COLUMN_MAPPINGS = null;
 	
@@ -281,4 +284,19 @@ public class FileDataInterrogator {
 		return result;
 	}
 	
+	public static String validateColumnNames(List<String> columnNames) {
+		
+		String invalidColumn = null;
+		
+		Set<String> knownColumnNames = COLUMN_MAPPINGS.keySet();
+		
+		for (String columnName : columnNames) {
+			if (!columnName.equals(COLUMN_ORIGINAL_FILE) && !knownColumnNames.contains(columnName)) {
+				invalidColumn = columnName;
+				break;
+			}
+		}
+		
+		return invalidColumn;
+	}
 }

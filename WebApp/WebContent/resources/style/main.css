@@ -528,3 +528,9 @@ table.fileDates {
 .minorHeading {
 	text-decoration: underline;
 }
+
+.minimalCentered {
+	text-align: left;
+	margin-left: auto;
+	margin-right: auto;
+}

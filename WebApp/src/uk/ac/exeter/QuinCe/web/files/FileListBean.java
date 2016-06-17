@@ -2,6 +2,9 @@ package uk.ac.exeter.QuinCe.web.files;
 
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.ExportConfig;
+import uk.ac.exeter.QuinCe.data.ExportException;
+import uk.ac.exeter.QuinCe.data.ExportOption;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
@@ -40,6 +43,8 @@ public class FileListBean extends BaseManagedBean {
 	 * getFileList is called
 	 */
 	private List<FileInfo> fileList;
+	
+	private int chosenExportOption;
 	
 	/**
 	 * Navigates to the file upload page
@@ -117,5 +122,17 @@ public class FileListBean extends BaseManagedBean {
 	
 	public String getChosenFileName() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
 		return DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), chosenFile).getFileName();
+	}
+	
+	public List<ExportOption> getExportOptions() throws ExportException {
+		return ExportConfig.getInstance().getOptions();
+	}
+	
+	public int getChosenExportOption() {
+		return chosenExportOption;
+	}
+	
+	public void setChosenExportOption(int chosenExportOption) {
+		this.chosenExportOption = chosenExportOption;
 	}
 }
