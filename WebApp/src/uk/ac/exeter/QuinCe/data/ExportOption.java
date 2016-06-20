@@ -34,4 +34,12 @@ public class ExportOption {
 	public String getName() {
 		return name;
 	}
+	
+	public List<String> getColumns() {
+		return columns;
+	}
+	
+	public String getSeparator() {
+		return separator;
+	}
 }

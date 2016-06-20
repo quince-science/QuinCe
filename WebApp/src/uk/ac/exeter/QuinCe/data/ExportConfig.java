@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.primefaces.component.separator.SeparatorRenderer;
+
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -70,7 +72,10 @@ public class ExportConfig {
 					
 					String name = fields.get(0);
 					String separator = fields.get(1);
-					List<String> columns = fields.subList(2, fields.size() - 1);
+					if (separator.equals("\\t")) {
+						separator = "\t";
+					}
+					List<String> columns = fields.subList(2, fields.size());
 					
 					options.add(new ExportOption(options.size(), name, separator, columns));
 				}
@@ -83,6 +88,12 @@ public class ExportConfig {
 				throw (ExportException) e;
 			} else {
 				throw new ExportException("Error initialising export options (line " + lineCount + ")", e);
+			}
+		} finally {
+			try {
+				reader.close();
+			} catch (Exception e) {
+				// Shrug
 			}
 		}
 	}

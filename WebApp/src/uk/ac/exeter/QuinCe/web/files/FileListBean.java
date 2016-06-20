@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.web.files;
 
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.faces.context.ExternalContext;
@@ -42,13 +41,13 @@ public class FileListBean extends BaseManagedBean {
 	
 	public static final String PAGE_EXPORT = "export";
 	
-	public static final String ATTR_CURRENT_FILE = "FileListBean.currentFile";
-	
 	/**
 	 * The list of the user's files. Updated whenever
 	 * getFileList is called
 	 */
 	private List<FileInfo> fileList;
+	
+	private long chosenFile;
 	
 	private int chosenExportOption;
 	
@@ -93,7 +92,7 @@ public class FileListBean extends BaseManagedBean {
 		FileInfo result = null;
 		
 		for (FileInfo info : fileList) {
-			if (info.getFileId() == getCurrentFile()) {
+			if (info.getFileId() == chosenFile) {
 				result = info;
 				break;
 			}
@@ -103,27 +102,19 @@ public class FileListBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Get the ID of the current file
+	 * Get the ID of the chosen file
 	 * @return The file ID
 	 */
-	public long getCurrentFile() {
-		
-		long result = 0;
-		
-		Object value = getSession().getAttribute(ATTR_CURRENT_FILE);
-		if (null != value) {
-			result = (long) value;
-		}
-		
-		return result;
+	public long getChosenFile() {
+		return chosenFile;
 	}
 	
 	/**
-	 * Set the ID of the current file
-	 * @param currentFile The file ID
+	 * Set the ID of the chosen file
+	 * @param chosenFile The file ID
 	 */
-	public void setCurrentFile(long currentFile) {
-		getSession().setAttribute(ATTR_CURRENT_FILE, currentFile);
+	public void setChosenFile(long chosenFile) {
+		this.chosenFile = chosenFile;
 	}
 	
 	public String export() {
@@ -134,8 +125,8 @@ public class FileListBean extends BaseManagedBean {
 		return PAGE_FILE_LIST;
 	}
 	
-	public String getCurrentFileName() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
-		return DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), getCurrentFile()).getFileName();
+	public String getChosenFileName() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
+		return DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), chosenFile).getFileName();
 	}
 	
 	public List<ExportOption> getExportOptions() throws ExportException {
@@ -154,12 +145,9 @@ public class FileListBean extends BaseManagedBean {
 
 		DataSource dataSource = ServletUtils.getDBDataSource();
 		
-		Instrument instrument = InstrumentDB.getInstrumentByFileId(dataSource, getCurrentFile());
+		Instrument instrument = InstrumentDB.getInstrumentByFileId(dataSource, chosenFile);
 		
-		List<String> fieldList = new ArrayList<String>();
-		fieldList.add("dateTime");
-		
-		String fileContent = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), getCurrentFile(), instrument, fieldList, true);
+		String fileContent = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), chosenFile, instrument, getExportOptions().get(chosenExportOption), true);
 				
 		FacesContext fc = FacesContext.getCurrentInstance();
 	    ExternalContext ec = fc.getExternalContext();
@@ -167,7 +155,7 @@ public class FileListBean extends BaseManagedBean {
 	    ec.responseReset();
 	    ec.setResponseContentType("text/csv");
 	    ec.setResponseContentLength(fileContent.length()); // Set it with the file size. This header is optional. It will work if it's omitted, but the download progress will be unknown.
-	    ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + getCurrentFileName() + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
+	    ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + getChosenFileName() + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
 
 	    OutputStream output = ec.getResponseOutputStream();
 	    output.write(fileContent.getBytes());

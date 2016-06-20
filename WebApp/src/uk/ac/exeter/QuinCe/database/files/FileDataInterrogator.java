@@ -11,6 +11,7 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.data.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -68,6 +69,22 @@ public class FileDataInterrogator {
 	}
 	
 	public static String getCSVData(DataSource dataSource, long fileId, Instrument instrument, List<String> columns, boolean includeBad) throws MissingParamException {
+		return getCSVData(dataSource, fileId, instrument, columns, ",", includeBad);
+	}
+	
+	public static String getCSVData(DataSource dataSource, long fileId, Instrument instrument, ExportOption exportOption, boolean includeBad) throws MissingParamException {
+
+		List<String> columns = exportOption.getColumns();
+		String separator = exportOption.getSeparator();
+		
+		if (columns.contains(COLUMN_ORIGINAL_FILE)) {
+			separator = String.valueOf(instrument.getSeparatorChar());
+		}
+		
+		return getCSVData(dataSource, fileId, instrument, columns, separator, includeBad);
+	}
+	
+	public static String getCSVData(DataSource dataSource, long fileId, Instrument instrument, List<String> columns, String separator, boolean includeBad) throws MissingParamException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(columns, "columns");
 
@@ -84,7 +101,7 @@ public class FileDataInterrogator {
 			for (int i = 0; i < columns.size(); i++) {
 				columnList.append(COLUMN_MAPPINGS.get(columns.get(i)));
 				if (i < columns.size() - 1) {
-					columnList.append(',');
+					columnList.append(",");
 				}
 			}
 
@@ -100,7 +117,7 @@ public class FileDataInterrogator {
 			for (int i = 1; i <= columns.size(); i++) {
 				outputBuffer.append(getColumnHeading(columns.get(i - 1), instrument));
 				if (i < columns.size()) {
-					outputBuffer.append(',');
+					outputBuffer.append(separator);
 				}
 			}
 			outputBuffer.append('\n');
@@ -115,7 +132,7 @@ public class FileDataInterrogator {
 					}
 					
 					if (i < columns.size()) {
-						outputBuffer.append(',');
+						outputBuffer.append(separator);
 					}
 				}
 				outputBuffer.append('\n');
