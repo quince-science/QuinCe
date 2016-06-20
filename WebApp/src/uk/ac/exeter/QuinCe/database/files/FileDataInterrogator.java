@@ -68,11 +68,11 @@ public class FileDataInterrogator {
 		COLUMN_MAPPINGS.put("fCO2Final", "data_reduction.fco2");
 	}
 	
-	public static String getCSVData(DataSource dataSource, long fileId, Instrument instrument, List<String> columns, boolean includeBad) throws MissingParamException {
-		return getCSVData(dataSource, fileId, instrument, columns, ",", includeBad);
+	public static String getCSVData(DataSource dataSource, long fileId, Instrument instrument, List<String> columns) throws MissingParamException {
+		return getCSVData(dataSource, fileId, instrument, columns, ",");
 	}
 	
-	public static String getCSVData(DataSource dataSource, long fileId, Instrument instrument, ExportOption exportOption, boolean includeBad) throws MissingParamException {
+	public static String getCSVData(DataSource dataSource, long fileId, Instrument instrument, ExportOption exportOption) throws MissingParamException {
 
 		List<String> columns = exportOption.getColumns();
 		String separator = exportOption.getSeparator();
@@ -81,10 +81,10 @@ public class FileDataInterrogator {
 			separator = String.valueOf(instrument.getSeparatorChar());
 		}
 		
-		return getCSVData(dataSource, fileId, instrument, columns, separator, includeBad);
+		return getCSVData(dataSource, fileId, instrument, columns, separator);
 	}
 	
-	public static String getCSVData(DataSource dataSource, long fileId, Instrument instrument, List<String> columns, String separator, boolean includeBad) throws MissingParamException {
+	public static String getCSVData(DataSource dataSource, long fileId, Instrument instrument, List<String> columns, String separator) throws MissingParamException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(columns, "columns");
 
