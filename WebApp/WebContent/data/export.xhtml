@@ -7,16 +7,14 @@
 	template="/templates/app_page.xhtml">
 
 	<ui:define name="title">
-		Export #{fileListBean.chosenFileName}
+		Export #{fileListBean.currentFileName}
 	</ui:define>
 
 	<ui:define name="content">
 		<div style="text-align: center">
 			<h:form id="exportForm">
-				<h:inputHidden id="fileId" value="#{fileListBean.chosenFile}"/>
-				
 				<h1>Export</h1>
-				<h3><h:outputText value="#{fileListBean.chosenFileName}"/></h3>
+				<h3><h:outputText value="#{fileListBean.currentFileName}"/></h3>
 				<br/>
 				Please select the export format you want, and then click 'Export'
 				<br/>
@@ -41,12 +39,12 @@
 				</p:outputPanel>
 
 				<div class="buttonWrapper">
-					<h:commandButton id="exportButton" forceId="true" value="Export..." action="#{fileListBean.exportFile}" onclick="return false;" immediate="true"/>
+					<h:commandButton id="exportButton" value="Export..." action="#{fileListBean.exportFile}" immediate="true"/>
 				</div>
 
 
 				<div class="buttonWrapper">
-					<h:commandButton id="doneButton" forceId="true" value="Back to File List" action="#{fileListBean.goToFileList}" immediate="true"/>
+					<h:commandButton id="doneButton" value="Back to File List" action="#{fileListBean.goToFileList}" immediate="true"/>
 				</div>
 			</h:form>
 		</div>

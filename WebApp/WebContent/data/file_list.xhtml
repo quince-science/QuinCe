@@ -11,7 +11,7 @@
 	    <script type="text/javascript">  
 	      function deleteFile(id, fileName) {
 	    	  if (confirm('Are you sure you want to delete file ' + fileName + '?')) {
-	    		  $('#fileListForm\\:chosenFile').val(id);
+	    		  $('#fileListForm\\:currentFile').val(id);
 	    		  return true;
 	    	  } else {
 	    		  return false;
@@ -24,7 +24,7 @@
 	      }
 	      
 	      function exportFile(id) {
-	    	  $('#fileListForm\\:chosenFile').val(id);
+	    	  $('#fileListForm\\:currentFile').val(id);
 	      }
 	  	</script>
 	</ui:define>
@@ -83,7 +83,7 @@
 		<h1>Your files</h1>
 		<div class="fullPage">
 			<h:form id="fileListForm">
-				<h:inputHidden id="chosenFile" value="#{fileListBean.chosenFile}"/>
+				<h:inputHidden id="currentFile" value="#{fileListBean.currentFile}"/>
 				<h:inputHidden id="fileId" value="#{dataScreenBean.fileId}"/>
 				
 				<p:dataTable var="file" value="#{fileListBean.fileList}" scrollable="true" scrollHeight="450">
@@ -125,7 +125,7 @@
 						<f:facet name="header">Actions</f:facet>
 						<h:commandLink id="QC_#{file.fileId}" value="Q" onclick="dataScreen(#{file.fileId})" action="#{dataScreenBean.start}"/>
 						|
-						<h:commandLink id="Export_#{file.fileId}" value="E" onclick="exportFile(#{file.fileId})" action="#{fileListBean.exportFile}"/>
+						<h:commandLink id="Export_#{file.fileId}" value="E" onclick="exportFile(#{file.fileId})" action="#{fileListBean.export}"/>
 						|
 						<h:commandLink id="Delete_#{file.fileId}" value="D" onclick="deleteFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.deleteFile}"/>
 					</p:column>

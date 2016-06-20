@@ -1,14 +1,23 @@
 package uk.ac.exeter.QuinCe.web.files;
 
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.ExportConfig;
 import uk.ac.exeter.QuinCe.data.ExportException;
 import uk.ac.exeter.QuinCe.data.ExportOption;
 import uk.ac.exeter.QuinCe.data.FileInfo;
+import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
+import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
@@ -33,10 +42,7 @@ public class FileListBean extends BaseManagedBean {
 	
 	public static final String PAGE_EXPORT = "export";
 	
-	/**
-	 * The ID of the chosen file
-	 */
-	private long chosenFile;
+	public static final String ATTR_CURRENT_FILE = "FileListBean.currentFile";
 	
 	/**
 	 * The list of the user's files. Updated whenever
@@ -75,7 +81,7 @@ public class FileListBean extends BaseManagedBean {
 	 */
 	public String deleteFile() {
 		try {
-			DataFileDB.deleteFile(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), getChosenFileDetails());
+			DataFileDB.deleteFile(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), getCurrentFileDetails());
 		} catch (Exception e) {
 			return internalError(e);
 		}
@@ -83,11 +89,11 @@ public class FileListBean extends BaseManagedBean {
 		return PAGE_FILE_LIST;
 	}
 	
-	private FileInfo getChosenFileDetails() {
+	private FileInfo getCurrentFileDetails() {
 		FileInfo result = null;
 		
 		for (FileInfo info : fileList) {
-			if (info.getFileId() == chosenFile) {
+			if (info.getFileId() == getCurrentFile()) {
 				result = info;
 				break;
 			}
@@ -97,22 +103,30 @@ public class FileListBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Get the ID of the chosen file
+	 * Get the ID of the current file
 	 * @return The file ID
 	 */
-	public long getChosenFile() {
-		return chosenFile;
+	public long getCurrentFile() {
+		
+		long result = 0;
+		
+		Object value = getSession().getAttribute(ATTR_CURRENT_FILE);
+		if (null != value) {
+			result = (long) value;
+		}
+		
+		return result;
 	}
 	
 	/**
-	 * Set the ID of the chosen file
-	 * @param chosenFile The file ID
+	 * Set the ID of the current file
+	 * @param currentFile The file ID
 	 */
-	public void setChosenFile(long chosenFile) {
-		this.chosenFile = chosenFile;
+	public void setCurrentFile(long currentFile) {
+		getSession().setAttribute(ATTR_CURRENT_FILE, currentFile);
 	}
 	
-	public String exportFile() {
+	public String export() {
 		return PAGE_EXPORT;
 	}
 	
@@ -120,8 +134,8 @@ public class FileListBean extends BaseManagedBean {
 		return PAGE_FILE_LIST;
 	}
 	
-	public String getChosenFileName() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
-		return DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), chosenFile).getFileName();
+	public String getCurrentFileName() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
+		return DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), getCurrentFile()).getFileName();
 	}
 	
 	public List<ExportOption> getExportOptions() throws ExportException {
@@ -134,5 +148,30 @@ public class FileListBean extends BaseManagedBean {
 	
 	public void setChosenExportOption(int chosenExportOption) {
 		this.chosenExportOption = chosenExportOption;
+	}
+	
+	public void exportFile() throws Exception {
+
+		DataSource dataSource = ServletUtils.getDBDataSource();
+		
+		Instrument instrument = InstrumentDB.getInstrumentByFileId(dataSource, getCurrentFile());
+		
+		List<String> fieldList = new ArrayList<String>();
+		fieldList.add("dateTime");
+		
+		String fileContent = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), getCurrentFile(), instrument, fieldList, true);
+				
+		FacesContext fc = FacesContext.getCurrentInstance();
+	    ExternalContext ec = fc.getExternalContext();
+
+	    ec.responseReset();
+	    ec.setResponseContentType("text/csv");
+	    ec.setResponseContentLength(fileContent.length()); // Set it with the file size. This header is optional. It will work if it's omitted, but the download progress will be unknown.
+	    ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + getCurrentFileName() + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
+
+	    OutputStream output = ec.getResponseOutputStream();
+	    output.write(fileContent.getBytes());
+
+	    fc.responseComplete();
 	}
 }
