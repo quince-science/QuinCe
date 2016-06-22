@@ -44,7 +44,7 @@ public class DataFileDB {
 	 * Statement to add a data file to the database
 	 */
 	private static final String ADD_FILE_STATEMENT = "INSERT INTO data_file (instrument_id, filename, start_date, record_count, current_job, last_touched) "
-		+ "VALUES (?, ?, ?, ?, ?, ?, ?)";
+		+ "VALUES (?, ?, ?, ?, ?, ?)";
 
 	/**
 	 * Query to find all the data files for a given user
