@@ -42,7 +42,7 @@ public class DatabaseUtils {
 	 */
 	public static void closeStatements(List<PreparedStatement> statements) {
 		for (PreparedStatement stmt : statements) {
-			if (null != statements) {
+			if (null != stmt) {
 				try {
 					stmt.close();
 				} catch (SQLException e) {
