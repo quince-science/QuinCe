@@ -490,6 +490,7 @@ public class DataFileDB {
 				}
 				case Flag.VALUE_NOT_SET: {
 					fileInfo.setQcNotSetCount(qcFlags.getInt(2));
+					break;
 				}
 				default: {
 					throw new DatabaseException("Invalid QC Flag value " + qcFlags.getInt(1));
