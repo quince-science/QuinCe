@@ -127,4 +127,16 @@ public class StringUtils {
 		
 		return result;
 	}
+	
+	public static boolean isNumeric(String value) {
+		boolean result = true;
+		
+		try {
+			Double.parseDouble(value);
+		} catch (NumberFormatException e) {
+			result = false;
+		}
+		
+		return result;
+	}
 }

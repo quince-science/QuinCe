@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Extracts data from the three file database tables in a single API
@@ -230,7 +231,13 @@ public class FileDataInterrogator {
 						outputBuffer.append(DateTimeUtils.formatDateTime(colDate));
 					} else if (!columnName.equals(COLUMN_ORIGINAL_FILE)) {
 						currentDBColumn++;
-						outputBuffer.append(records.getString(currentDBColumn));
+						
+						String value = records.getString(currentDBColumn);
+						if (StringUtils.isNumeric(value)) {
+							outputBuffer.append(String.format("%.3f", Double.parseDouble(value)));
+						} else {
+							outputBuffer.append(value);
+						}
 					} else {
 						// Find the line corresponding to the date from the database
 						int originalFileLine = originalFile.findLineByDate(rowDate, lastUsedLine);
