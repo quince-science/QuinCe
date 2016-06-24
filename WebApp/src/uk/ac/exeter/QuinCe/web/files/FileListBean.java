@@ -147,7 +147,7 @@ public class FileListBean extends BaseManagedBean {
 		
 		Instrument instrument = InstrumentDB.getInstrumentByFileId(dataSource, chosenFile);
 		
-		String fileContent = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), chosenFile, instrument, getExportOptions().get(chosenExportOption));
+		String fileContent = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), chosenFile, instrument, getExportOptions().get(chosenExportOption));
 				
 		FacesContext fc = FacesContext.getCurrentInstance();
 	    ExternalContext ec = fc.getExternalContext();

@@ -225,7 +225,7 @@ public class FileInfo {
 	 * @return The time remaining.
 	 */
 	public int getTimeRemaining() {
-		Calendar now = Calendar.getInstance();
+		Calendar now = DateTimeUtils.getUTCCalendarInstance();
 		now.setTimeInMillis(System.currentTimeMillis());
 		int daysRemaining = DateTimeUtils.getDaysBetween(lastTouched, now);
 		return 60 - daysRemaining;

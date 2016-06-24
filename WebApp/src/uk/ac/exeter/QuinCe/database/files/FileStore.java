@@ -56,7 +56,7 @@ public class FileStore {
 			}
 			
 			fileWriter = new FileWriter(file);
-			fileWriter.write(dataFile.getContentsAsString());
+			fileWriter.write(dataFile.getContentsAsString(true));
 			fileWriter.close();
 			
 		} catch (Exception e) {

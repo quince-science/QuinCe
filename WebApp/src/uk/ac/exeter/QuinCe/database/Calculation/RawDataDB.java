@@ -25,6 +25,7 @@ import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Instrument.GasStandardDB;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -266,7 +267,7 @@ public class RawDataDB {
 			while (records.next()) {
 				RawDataValues values = new RawDataValues(fileId, records.getInt(1));
 				
-				Calendar time = Calendar.getInstance();
+				Calendar time = DateTimeUtils.getUTCCalendarInstance();
 				time.setTime(records.getDate(2));
 				values.setTime(time);
 				values.setCo2Type(records.getInt(3));
@@ -335,7 +336,7 @@ public class RawDataDB {
 			} else {
 				// Load the gas standard concentrations for the first record
 				currentRun = records.getLong(1);
-				startTime = Calendar.getInstance();
+				startTime = DateTimeUtils.getUTCCalendarInstance();
 				startTime.setTime(records.getDate(2));
 				
 				StandardStub priorDeployment = GasStandardDB.getStandardBefore(dataSource, instrument.getDatabaseId(), startTime);
@@ -348,7 +349,7 @@ public class RawDataDB {
 			
 			while (records.next()) {
 				long runTypeId = records.getLong(1);
-				Calendar time = Calendar.getInstance(); 
+				Calendar time = DateTimeUtils.getUTCCalendarInstance();
 				time.setTime(records.getDate(2));
 				double moisture = records.getDouble(3);
 				double concentration = records.getDouble(4);

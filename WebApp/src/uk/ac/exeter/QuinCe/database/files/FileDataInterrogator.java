@@ -3,16 +3,20 @@ package uk.ac.exeter.QuinCe.database.files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument;
+import uk.ac.exeter.QuinCe.data.RawDataFile;
+import uk.ac.exeter.QuinCe.data.RawDataFileException;
+import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -31,7 +35,7 @@ public class FileDataInterrogator {
 	
 	private static final String GET_COLUMN_DATA_QUERY = "SELECT %%COLUMNS%% FROM raw_data INNER JOIN data_reduction"
 					+ " ON raw_data.data_file_id = data_reduction.data_file_id AND raw_data.row = data_reduction.row"
-					+ " WHERE raw_data.data_file_id = ? ORDER BY %%FIRST_COLUMN%% ASC";
+					+ " WHERE raw_data.data_file_id = ? ORDER BY raw_data.row ASC";
 	
 	static {
 		// Map input names from the web front end to database column names
@@ -66,47 +70,75 @@ public class FileDataInterrogator {
 		COLUMN_MAPPINGS.put("pCO2TEWet", "data_reduction.pco2_te_wet");
 		COLUMN_MAPPINGS.put("fCO2TE", "data_reduction.fco2_te");
 		COLUMN_MAPPINGS.put("fCO2Final", "data_reduction.fco2");
+		COLUMN_MAPPINGS.put("qcFlag", "qc.qc_flag");
+		COLUMN_MAPPINGS.put("qcMessage", "qc.qc_message");
+		COLUMN_MAPPINGS.put("woceFlag", "qc.woce_flag");
+		COLUMN_MAPPINGS.put("woceMessage", "qc.woce_message");
 	}
 	
-	public static String getCSVData(DataSource dataSource, long fileId, Instrument instrument, List<String> columns) throws MissingParamException {
-		return getCSVData(dataSource, fileId, instrument, columns, ",");
+	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns) throws MissingParamException, DatabaseException, RawDataFileException {
+		return getCSVData(dataSource, appConfig, fileId, instrument, columns, ",");
 	}
 	
-	public static String getCSVData(DataSource dataSource, long fileId, Instrument instrument, ExportOption exportOption) throws MissingParamException {
-
+	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, ExportOption exportOption) throws MissingParamException, DatabaseException, RawDataFileException {
 		List<String> columns = exportOption.getColumns();
 		String separator = exportOption.getSeparator();
-		
-		if (columns.contains(COLUMN_ORIGINAL_FILE)) {
-			separator = String.valueOf(instrument.getSeparatorChar());
-		}
-		
-		return getCSVData(dataSource, fileId, instrument, columns, separator);
+		return getCSVData(dataSource, appConfig, fileId, instrument, columns, separator);
 	}
 	
-	public static String getCSVData(DataSource dataSource, long fileId, Instrument instrument, List<String> columns, String separator) throws MissingParamException {
+	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns, String separator) throws MissingParamException, DatabaseException, RawDataFileException {
 		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		MissingParam.checkMissing(instrument, "instrument");
 		MissingParam.checkMissing(columns, "columns");
 
+		// Data output variable
 		String output = null;
 		
+		// Variables for original data. May not be used
+		RawDataFile originalFile = null;
+		List<List<String>> originalHeaderLines = null;
+		int lastUsedLine = 0;
+		
+		// Variables for getting data from database
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet records = null;
+		
+		boolean includesOriginalFile = columns.contains(COLUMN_ORIGINAL_FILE);
 
 		try {
+
+			// Get the original file contents
+			if (includesOriginalFile) {
+				// Load original data from file
+				originalFile = DataFileDB.getRawDataFile(dataSource, appConfig, fileId);
+				originalHeaderLines = originalFile.getHeaderLines();
+			}
+			
+			
+			// Build the database query for the remaining columns.
+			// Note that we always include the date to help with
+			// searching the original file data
 			conn = dataSource.getConnection();
 			
-			StringBuffer columnList = new StringBuffer();
-			for (int i = 0; i < columns.size(); i++) {
-				columnList.append(COLUMN_MAPPINGS.get(columns.get(i)));
-				if (i < columns.size() - 1) {
-					columnList.append(",");
+			StringBuffer databaseColumnList = new StringBuffer();
+			databaseColumnList.append(COLUMN_MAPPINGS.get("dateTime"));
+			databaseColumnList.append(',');
+			
+			for (int col = 0; col < columns.size(); col++) {
+				if (!columns.get(col).equals(COLUMN_ORIGINAL_FILE)) {
+					databaseColumnList.append(COLUMN_MAPPINGS.get(columns.get(col)));
+					databaseColumnList.append(',');
 				}
 			}
+			
+			// We always add a comma separator, so we remove the last character
+			// Normally we'd check as we built the string, but the optional 'original' field
+			// makes it awkward.
+			databaseColumnList.deleteCharAt(databaseColumnList.length() - 1);
 
-			String queryString = GET_COLUMN_DATA_QUERY.replaceAll("%%COLUMNS%%", columnList.toString());
-			queryString = queryString.replaceAll("%%FIRST_COLUMN%%", COLUMN_MAPPINGS.get(columns.get(0)));
+			String queryString = GET_COLUMN_DATA_QUERY.replaceAll("%%COLUMNS%%", databaseColumnList.toString());
 			
 			stmt = conn.prepareStatement(queryString);
 			stmt.setLong(1, fileId);
@@ -114,33 +146,121 @@ public class FileDataInterrogator {
 			records = stmt.executeQuery();
 			
 			StringBuffer outputBuffer = new StringBuffer();
-			for (int i = 1; i <= columns.size(); i++) {
-				outputBuffer.append(getColumnHeading(columns.get(i - 1), instrument));
-				if (i < columns.size()) {
+			
+			
+			// Build the first header line. This contains all headers
+			// exported from the database and the first header line from
+			// the data file (if it exists).
+			for (int col = 0; col < columns.size(); col++) {
+				
+				String columnName = columns.get(col);
+				
+				if (columnName.equals(COLUMN_ORIGINAL_FILE)) {
+					if (originalHeaderLines.size() > 0) {
+						
+						// For the first header line from the original file
+						outputBuffer.append(makeDelimitedHeaderLine(originalHeaderLines.get(0), separator));
+					} else {
+						
+						// If there was no header line, fill in separators
+						// for the correct number of columns
+						for (int rawCol = 0; rawCol < instrument.getRawFileColumnCount(); rawCol++) {
+							outputBuffer.append(separator);
+						}
+					}
+				} else {
+					
+					// For columns from the database, add the column header
+					outputBuffer.append(getColumnHeading(columns.get(col), instrument));
+				}
+				
+				// If this isn't the last column, add a separator
+				if (col < columns.size() - 1) {
 					outputBuffer.append(separator);
 				}
 			}
-			outputBuffer.append('\n');
 			
+			outputBuffer.append("\n");
 			
+			// Now add any remaining header lines from the original file
+			// if there are any
+			if (includesOriginalFile) {
+				
+				// For all the header lines after the first one...
+				for (int headerLine = 1; headerLine < originalHeaderLines.size(); headerLine++) {
+					
+					// Find the column for the original data
+					for (int col = 0; col < columns.size(); col++) {
+						if (columns.get(col).equals(COLUMN_ORIGINAL_FILE)) {
+							// Add the header line
+							outputBuffer.append(makeDelimitedHeaderLine(originalHeaderLines.get(headerLine), separator));
+						}
+
+						// If this isn't the last column, add a separator
+						// (non-original columns will get this too, to give empty columns)
+						if (headerLine < columns.size() - 1) {
+							outputBuffer.append(separator);
+						}
+					}
+				}
+				
+				outputBuffer.append("\n");
+			}
+			
+			// Now we add the data!
 			while (records.next()) {
-				for (int i = 1; i <= columns.size(); i++) {
-					if (columns.get(i - 1).equals("dateTime")) {
-						outputBuffer.append(DateTimeUtils.formatDateTime(records.getTimestamp(i)));
+
+				int currentDBColumn = 1;
+				
+				// Get the date from the first column
+				Calendar rowDate = DateTimeUtils.getUTCCalendarInstance();
+				rowDate.setTime(records.getTimestamp(currentDBColumn));
+				
+				// Loop through all the columns. Database columns are offset by 1
+				// for the 
+				for (int col = 0; col < columns.size(); col++) {
+					String columnName = columns.get(col);
+					
+					if (columnName.equals("dateTime")) {
+						currentDBColumn++;
+						
+						Calendar colDate = DateTimeUtils.getUTCCalendarInstance();
+						colDate.setTime(records.getTimestamp(currentDBColumn));
+												
+						outputBuffer.append(DateTimeUtils.formatDateTime(colDate));
+					} else if (!columnName.equals(COLUMN_ORIGINAL_FILE)) {
+						currentDBColumn++;
+						outputBuffer.append(records.getString(currentDBColumn));
 					} else {
-						outputBuffer.append(records.getString(i));
+						// Find the line corresponding to the date from the database
+						int originalFileLine = originalFile.findLineByDate(rowDate, lastUsedLine);
+						List<String> originalLine = originalFile.getLineData(originalFileLine);
+						
+						// Copy the values in
+						for (int field = 0; field < originalLine.size(); field++) {
+							outputBuffer.append(originalLine.get(field));
+							if (field < originalLine.size() - 1) {
+								outputBuffer.append(separator);
+							}
+						}
+						
+						// Store the line location as the starting point for the next
+						// search
+						lastUsedLine = originalFileLine;
 					}
 					
-					if (i < columns.size()) {
+					if (col < columns.size() - 1) {
 						outputBuffer.append(separator);
 					}
 				}
+
+				// The end of this record
 				outputBuffer.append('\n');
 			}
 			
 			output = outputBuffer.toString();
 			
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			output = "***ERROR - " + e.getMessage();
 		} finally {
@@ -293,6 +413,22 @@ public class FileDataInterrogator {
 			result = "fCO₂";
 			break;
 		}
+		case "qcFlag": {
+			result = "Automatic QC Flag";
+			break;
+		}
+		case "qcMessage": {
+			result = "Automatic QC Message";
+			break;
+		}
+		case "woceFlag": {
+			result = "WOCE Flag";
+			break;
+		}
+		case "woceMessage": {
+			result = "WOCE Message";
+			break;
+		}
 		default: {
 			result = "Unknown";
 		}
@@ -315,5 +451,18 @@ public class FileDataInterrogator {
 		}
 		
 		return invalidColumn;
+	}
+	
+	private static String makeDelimitedHeaderLine(List<String> headerLine, String separator) {
+		StringBuffer output = new StringBuffer();
+		
+		for (int i = 0; i < headerLine.size(); i++) {
+			output.append(headerLine.get(i));
+			if (i < headerLine.size() - 1) {
+				output.append(separator);
+			}
+		}
+		
+		return output.toString();
 	}
 }

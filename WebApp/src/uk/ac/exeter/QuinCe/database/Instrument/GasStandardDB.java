@@ -533,7 +533,7 @@ public class GasStandardDB {
 			
 			records = stmt.executeQuery();
 			while (records.next()) {
-				Calendar standardDate = Calendar.getInstance();
+				Calendar standardDate = DateTimeUtils.getUTCCalendarInstance();
 				standardDate.setTime(records.getDate(1));
 				result.add(standardDate);
 			}
@@ -593,7 +593,7 @@ public class GasStandardDB {
 			
 			records = stmt.executeQuery();
 			if (records.next()) {
-				result = Calendar.getInstance();
+				result = DateTimeUtils.getUTCCalendarInstance();
 				result.setTime(records.getDate(1));
 			}
 		} catch (SQLException e) {

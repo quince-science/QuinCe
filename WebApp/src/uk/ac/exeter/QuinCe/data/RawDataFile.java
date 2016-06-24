@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+
 /**
  * Handles data files in their raw text form.
  * @author Steve Jones
@@ -49,10 +51,14 @@ public class RawDataFile {
 	 */
 	private Calendar startDate = null;
 	
+	private List<Calendar> dates = null;
+	
 	/**
 	 * The number of CO2 lines in the file
 	 */
 	private int recordCount = 0;
+	
+	private List<List<String>> headerLines = null;
 	
 	/**
 	 * Initialises a new object, assuming the character set is UTF-8.
@@ -112,6 +118,7 @@ public class RawDataFile {
 		String errorMessage = null;
 		
 		contents = new ArrayList<List<String>>();
+		headerLines = new ArrayList<List<String>>(instrument.getHeaderLines());
 		
 		BufferedReader in = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(rawData), charSet));		
 		String line;
@@ -120,54 +127,58 @@ public class RawDataFile {
 		while ((line = in.readLine()) != null) {
 			lineCount++;
 		
-			List<String> lineList = new ArrayList<String>(instrument.getRawFileColumnCount());
-			
-			int linePos = 0;
-			
-			while (linePos > -1) {
-				
-				boolean fieldComplete = false;
-				StringBuffer field = new StringBuffer();
-				
-				while(!fieldComplete) {
-					int commaPos = line.indexOf(',', linePos);
-					if (commaPos == -1) {
-						field.append(line.substring(linePos));
-						linePos = -1;
-						fieldComplete = true;
-					} else if (line.charAt(commaPos - 1) == '\\') {
-						field.append(line.substring(linePos, commaPos - 1));
-						field.append(',');
-						linePos = commaPos + 1;
-					} else {
-						field.append(line.substring(linePos, commaPos));
-						linePos = commaPos + 1;
-						fieldComplete = true;
-					}
-				}
-				
-				lineList.add(field.toString());
-			}
-			if (lineList.size() != instrument.getRawFileColumnCount()) {
-
-				fileOK = false;
-				if (badLine < 0) {
-					badLine = lineCount;
-					errorMessage = "Incorrect number of columns";
-				}
+			if (lineCount <= instrument.getHeaderLines()) {
+				headerLines.add(Arrays.asList(line.split(",")));
 			} else {
+				List<String> lineList = new ArrayList<String>(instrument.getRawFileColumnCount());
 				
-				contents.add((List<String>) lineList);
+				int linePos = 0;
 				
-				String runType = lineList.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
-				
-				if (instrument.isMeasurementRunType(runType)) {
-					recordCount++;
-					if (null == startDate) {
-						try {
-							startDate = getDateFromLine(contents.size() - 1);
-						} catch (DateTimeParseException|InstrumentException e) {
-							// Do nothing - the next parseable date will be used instead.
+				while (linePos > -1) {
+					
+					boolean fieldComplete = false;
+					StringBuffer field = new StringBuffer();
+					
+					while(!fieldComplete) {
+						int commaPos = line.indexOf(',', linePos);
+						if (commaPos == -1) {
+							field.append(line.substring(linePos));
+							linePos = -1;
+							fieldComplete = true;
+						} else if (line.charAt(commaPos - 1) == '\\') {
+							field.append(line.substring(linePos, commaPos - 1));
+							field.append(',');
+							linePos = commaPos + 1;
+						} else {
+							field.append(line.substring(linePos, commaPos));
+							linePos = commaPos + 1;
+							fieldComplete = true;
+						}
+					}
+					
+					lineList.add(field.toString());
+				}
+				if (lineList.size() != instrument.getRawFileColumnCount()) {
+	
+					fileOK = false;
+					if (badLine < 0) {
+						badLine = lineCount;
+						errorMessage = "Incorrect number of columns";
+					}
+				} else {
+					
+					contents.add((List<String>) lineList);
+					
+					String runType = lineList.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+					
+					if (instrument.isMeasurementRunType(runType)) {
+						recordCount++;
+						if (null == startDate) {
+							try {
+								startDate = getDateFromLine(contents.size() - 1);
+							} catch (DateTimeParseException|InstrumentException e) {
+								// Do nothing - the next parseable date will be used instead.
+							}
 						}
 					}
 				}
@@ -195,6 +206,7 @@ public class RawDataFile {
 		String firstBadMessage = null;
 		
 		contents = new ArrayList<List<String>>();
+		headerLines = new ArrayList<List<String>>(instrument.getHeaderLines());
 		
 		BufferedReader in = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(rawData), charSet));		
 		String line;
@@ -203,8 +215,9 @@ public class RawDataFile {
 		while ((line = in.readLine()) != null) {
 			lineCount++;
 
-			// Skip header lines
-			if (lineCount > instrument.getHeaderLines()) {
+			if (lineCount <= instrument.getHeaderLines()) {
+				headerLines.add(Arrays.asList(line.split(instrument.getColumnSplitString())));
+			} else {
 				String[] splitLine = line.split(instrument.getColumnSplitString());
 				if (splitLine.length != instrument.getRawFileColumnCount()) {
 					fileOK = false;
@@ -253,16 +266,23 @@ public class RawDataFile {
 	 */
 	public List<Calendar> getDates(List<String> messages) throws RawDataFileException, IOException {
 		
+		if (null == dates) {
+			createDatesList(messages);
+		}
+		
+		return dates;
+	}
+	
+	private void createDatesList(List<String> messages) throws RawDataFileException, IOException {
 		boolean datesOK = true;
 		int firstBadDate = -1;
 		String firstBadMessage = null;
+		dates = new ArrayList<Calendar>();
 		
 		if (null == contents) {
 			readData(messages);
 		}
 		
-		List<Calendar> dates = new ArrayList<Calendar>(contents.size());
-
 		for (int i = 0; i < contents.size(); i++) {
 			try {
 				dates.add(getDateFromLine(i));
@@ -281,8 +301,6 @@ public class RawDataFile {
 		if (!datesOK) {
 			throw new RawDataFileException(firstBadDate, firstBadMessage);
 		}
-		
-		return dates;
 	}
 	
 	/**
@@ -309,13 +327,26 @@ public class RawDataFile {
 	 * @throws RawDataFileException If the contents cannot be extracted
 	 * @throws IOException If an error occurs while processing the file content
 	 */
-	public String getContentsAsString() throws RawDataFileException, IOException {
+	public String getContentsAsString(boolean includeHeader) throws RawDataFileException, IOException {
 		
 		if (null == contents) {
 			readData();
 		}
 		
 		StringBuffer result = new StringBuffer();
+		
+		if (includeHeader) {
+			for (List<String> headerLine : headerLines) {
+				for (int i = 0; i < headerLine.size(); i++) {
+					result.append(headerLine.get(i).replace(",", "\\,"));
+					
+					if (i < headerLine.size() - 1) {
+						result.append(',');
+					}
+				}
+				result.append('\n');
+			}
+		}
 		
 		for (List<String> line : contents) {
 			for (int i = 0; i < line.size(); i++) {
@@ -366,5 +397,58 @@ public class RawDataFile {
 	 */
 	public int getRecordCount() {
 		return recordCount;
+	}
+	
+	public List<String> getLineData(int lineNumber) throws RawDataFileException, IOException {
+		if (null == contents) {
+			readData();
+		}
+		
+		return contents.get(lineNumber);
+	}
+	
+	public String getOriginalLine(int lineNumber) throws RawDataFileException, IOException {
+		
+		List<String> fields = getLineData(lineNumber);
+		
+		StringBuffer result = new StringBuffer();
+		
+		for (int i = 0; i < fields.size(); i++) {
+			result.append(fields.get(i));
+			if (i < fields.size() - 1) {
+				result.append(instrument.getSeparatorChar());
+			}
+		}
+		
+		return result.toString();
+	}
+	
+	public int findLineByDate(Calendar date, int start) throws RawDataFileException, IOException {
+
+		if (null == dates) {
+			createDatesList(null);
+		}
+		
+		int currentLine = start;
+		
+		while (dates.get(currentLine).before(date)) {
+			currentLine++;
+		}
+		
+		// If we've gone past the required date, the line is missing
+		// so throw an exception
+		if (!DateTimeUtils.datesEqual(dates.get(currentLine), date)) {
+			throw new RawDataFileException(date);
+		}
+		
+		return currentLine;
+	}
+	
+	public List<List<String>> getHeaderLines() throws RawDataFileException, IOException {
+		if (null == headerLines) {
+			readData(null);
+		}
+		
+		return headerLines;
 	}
 }

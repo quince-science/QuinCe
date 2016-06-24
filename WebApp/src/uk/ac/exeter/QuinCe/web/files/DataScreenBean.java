@@ -317,7 +317,7 @@ public class DataScreenBean extends BaseManagedBean {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			Instrument instrument = InstrumentDB.getInstrument(dataSource, fileDetails.getInstrumentId());
 			
-			output = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), fileId, instrument, columns);
+			output = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), fileId, instrument, columns);
 		} catch (Exception e) {
 			output = "***ERROR: " + e.getMessage();
 		}
@@ -334,7 +334,7 @@ public class DataScreenBean extends BaseManagedBean {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			Instrument instrument = InstrumentDB.getInstrument(dataSource, fileDetails.getInstrumentId());
 			
-			output = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), fileId, instrument, columns);
+			output = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), fileId, instrument, columns);
 		} catch (Exception e) {
 			output = "***ERROR: " + e.getMessage();
 		}

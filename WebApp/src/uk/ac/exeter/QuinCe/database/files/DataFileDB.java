@@ -23,6 +23,7 @@ import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -404,11 +405,11 @@ public class DataFileDB {
 		long instrumentId = record.getLong(2);
 		String instrumentName = record.getString(3);
 		String fileName = record.getString(4);
-		Calendar startDate = Calendar.getInstance();
+		Calendar startDate = DateTimeUtils.getUTCCalendarInstance();
 		startDate.setTime(record.getDate(5));
 		int recordCount = record.getInt(6);
 		int currentJob = record.getInt(7);
-		Calendar lastTouched = Calendar.getInstance();
+		Calendar lastTouched = DateTimeUtils.getUTCCalendarInstance();
 		lastTouched.setTime(record.getDate(8));
 	
 		PreparedStatement atmosphericMeasurementsStmt = null;

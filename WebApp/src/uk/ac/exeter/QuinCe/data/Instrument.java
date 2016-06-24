@@ -10,6 +10,7 @@ import java.util.SimpleTimeZone;
 import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
@@ -519,7 +520,8 @@ public class Instrument implements Serializable {
 	}
 	
 	/**
-	 * Extracts the date and time from a line in a raw data file
+	 * Extracts the date and time from a line in a raw data file.
+	 * 
 	 * @param line The line
 	 * @return The date and time
 	 * @throws DateTimeParseException If the date or time cannot be parsed
@@ -527,7 +529,7 @@ public class Instrument implements Serializable {
 	 */
 	public Calendar getDateFromLine(List<String> line) throws DateTimeParseException, InstrumentException {
 		
-		Calendar result = Calendar.getInstance(new SimpleTimeZone(0, "UTC"), Locale.ENGLISH);
+		Calendar result = DateTimeUtils.getUTCCalendarInstance();
 
 		// Need to do date and time separately.
 		
@@ -576,7 +578,7 @@ public class Instrument implements Serializable {
 		switch(getTimeFormat()) {
 		case Instrument.SEPARATE_FIELDS: {
 			try {
-				result.set(Calendar.HOUR, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_HOUR))));
+				result.set(Calendar.HOUR_OF_DAY, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_HOUR))));
 			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
 				throw new DateTimeParseException("Invalid hour value " + line.get(getColumnAssignment(Instrument.COL_HOUR)));
 			}
@@ -602,7 +604,7 @@ public class Instrument implements Serializable {
 	
 				Calendar parsedTime = Calendar.getInstance();
 				parsedTime.setTime(timeFormatter.parse(line.get(getColumnAssignment(Instrument.COL_TIME))));
-				result.set(Calendar.HOUR, parsedTime.get(Calendar.HOUR));
+				result.set(Calendar.HOUR_OF_DAY, parsedTime.get(Calendar.HOUR_OF_DAY));
 				result.set(Calendar.MINUTE, parsedTime.get(Calendar.MINUTE));
 				result.set(Calendar.SECOND, parsedTime.get(Calendar.SECOND));
 			} catch (ParseException e) {
@@ -610,6 +612,8 @@ public class Instrument implements Serializable {
 			}
 		}
 		}
+		
+		result.set(Calendar.MILLISECOND, 0);
 		
 		return result;
 	}
@@ -656,11 +660,11 @@ public class Instrument implements Serializable {
 	
 		switch(getTimeFormat()) {
 		case Instrument.TIME_FORMAT_COLON: {
-			timeFormatter = new SimpleDateFormat("H:m:s");
+			timeFormatter = new SimpleDateFormat("HH:mm:ss");
 			break;
 		}
 		case Instrument.TIME_FORMAT_NO_COLON: {
-			timeFormatter = new SimpleDateFormat("Hms");
+			timeFormatter = new SimpleDateFormat("HHmmss");
 		}
 		default: {
 			throw new InstrumentException("Unrecognised time format code '" + getTimeFormat() + "'");
