@@ -6,6 +6,15 @@
  * MAIN VARIABLES
  */
 
+var GRAPH_OPTIONS = {
+        drawPoints: true,
+        strokeWidth: 0.0,
+        labelsUTC: true,
+        labelsSeparateLine: true,
+        digitsAfterDecimal: 2,
+        animatedZooms: true
+};
+
 // Keeps track of the split positions as a percentage of the
 // full data area
 var tableSplitPercent = 0;
@@ -360,12 +369,7 @@ function drawLeftPlot(data) {
 		leftGraph = new Dygraph (
 			document.getElementById('plotLeftContent'),
 	        $('#plotDataForm\\:leftData').text(),
-	        {
-	          drawPoints: true,
-	          strokeWidth: 0.0,
-	          labelsUTC: true,
-	          labelsSeparateLine: true
-	        }
+	        GRAPH_OPTIONS
 		);
 		
 		resizeContent();
@@ -379,12 +383,7 @@ function drawRightPlot(data) {
 		rightGraph = new Dygraph (
 			document.getElementById('plotRightContent'),
 	        $('#plotDataForm\\:rightData').text(),
-	        {
-	          drawPoints: true,
-	          strokeWidth: 0.0,
-	          labelsUTC: true,
-	          labelsSeparateLine: true
-	        }
+	        GRAPH_OPTIONS
 		);
 		
 		resizeContent();
