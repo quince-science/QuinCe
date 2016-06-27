@@ -282,17 +282,21 @@ function savePlotSelection() {
 	switch (plotPopupTarget) {
 	case 'LX': {
 		leftPlotXAxis = selectedInputs;
+		$('#leftUpdate').addClass('highlightButton');
 		break;
 	}
 	case 'LY': {
 		leftPlotYAxis = selectedInputs;
+		$('#leftUpdate').addClass('highlightButton');
 		break;
 	}
 	case 'RX': {
 		rightPlotXAxis = selectedInputs;
+		$('#rightUpdate').addClass('highlightButton');
 		break;
 	}
 	case 'RY': {
+		$('#rightUpdate').addClass('highlightButton');
 		rightPlotYAxis = selectedInputs;
 		break;
 	}
@@ -330,6 +334,7 @@ function updatePlot(plot) {
 		// Fill in the hidden form and submit it
 		$('#plotDataForm\\:leftColumns').val(columnList);
 		$('#plotDataForm\\:leftGetData').click();
+		$('#leftUpdate').removeClass('highlightButton');
 	} else {
 		// Replace the existing plot with the loading animation
 		drawLoading($('#plotRightContent'));
@@ -356,6 +361,7 @@ function updatePlot(plot) {
 		// Fill in the hidden form and submit it
 		$('#plotDataForm\\:rightColumns').val(columnList);
 		$('#plotDataForm\\:rightGetData').click();
+		$('#rightUpdate').removeClass('highlightButton');
 	}
 	
 	
