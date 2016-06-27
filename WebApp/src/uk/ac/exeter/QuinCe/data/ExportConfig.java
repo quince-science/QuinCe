@@ -8,8 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.primefaces.component.separator.SeparatorRenderer;
-
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
