@@ -104,6 +104,8 @@ atmospheric_pressure_col Integer        Atmospheric pressure
 moisture_col             Integer        Moisture
 co2_col                  Integer        CO~2~
 raw_col_count            Integer        The total number of columns in the instrument's data files
+pre_flushing_time        Integer        The number of seconds to discard at the start of each run type
+post_flushing_time       Integer        The number of seconds to discard at the end of each run type
 
 #### `date_format`
 The `date_format` field will have one of the following values:
