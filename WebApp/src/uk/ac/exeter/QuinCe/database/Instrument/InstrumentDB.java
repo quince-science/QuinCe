@@ -49,9 +49,11 @@ public class InstrumentDB {
 			+ "salinity_1_col, salinity_2_col, salinity_3_col, "
 			+ "eqt_1_col, eqt_2_col, eqt_3_col, "
 			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
-			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count) "
+			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count, "
+			+ "pre_flushing_time, post_flushing_time) "
 			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
+			+ "?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	/**
 	 * Statement for retrieving all the details of a specific instrument
@@ -70,7 +72,8 @@ public class InstrumentDB {
 			+ "salinity_1_col, salinity_2_col, salinity_3_col, "
 			+ "eqt_1_col, eqt_2_col, eqt_3_col, "
 			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
-			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count "
+			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count, "
+			+ "pre_flushing_time, post_flushing_time "
 			+ "FROM instrument WHERE id = ? ORDER BY name";
 			
 	
@@ -160,6 +163,8 @@ public class InstrumentDB {
 			instrStmt.setInt(49, instrument.getColumnAssignment(Instrument.COL_MOISTURE));
 			instrStmt.setInt(50, instrument.getColumnAssignment(Instrument.COL_CO2));
 			instrStmt.setInt(51, instrument.getRawFileColumnCount());
+			instrStmt.setInt(52, instrument.getPreFlushingTime());
+			instrStmt.setInt(53, instrument.getPostFlushingTime());
 			
 			
 			instrStmt.execute();
@@ -341,6 +346,8 @@ public class InstrumentDB {
 				instrument.setColumnAssignment(Instrument.COL_MOISTURE, record.getInt(49));
 				instrument.setColumnAssignment(Instrument.COL_CO2, record.getInt(50));
 				instrument.setRawFileColumnCount(record.getInt(51));
+				instrument.setPreFlushingTime(record.getInt(52));
+				instrument.setPostFlushingTime(record.getInt(53));
 				
 				runTypeStmt = conn.prepareStatement(GET_RUN_TYPES_QUERY);
 				runTypeStmt.setLong(1, instrumentID);

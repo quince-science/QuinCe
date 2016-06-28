@@ -262,6 +262,20 @@
                                 </input><label id="samplesDried_falseLabel" for="samplesDried_false"> No</label>
                             </td>
                         </tr>
+                        <tr>
+                        	<td width="50%">
+                        		<b>Flushing time for each run (in seconds):</b>
+                        	</td>
+                        	<td width="50%">
+                        		<b>Before:</b>
+                        		&#160;
+                        		<h:inputText id="preFlushingTime" value="#{newInstrumentBean.instrumentDetails.preFlushingTime}" size="4"/>
+                        		&#160;&#160;&#160;&#160;
+                        		<b>After:</b>
+                        		&#160;
+                        		<h:inputText id="postFlushingTime" value="#{newInstrumentBean.instrumentDetails.postFlushingTime}" size="4"/>
+                        	</td>
+                        </tr>
                     </table>
                 </div>
 	            <div class="buttonWrapper">

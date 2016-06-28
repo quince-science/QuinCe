@@ -5,8 +5,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
-import java.util.SimpleTimeZone;
 import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
@@ -357,6 +355,16 @@ public class Instrument implements Serializable {
 	 * Indicates whether or not samples are dried before being measured
 	 */
 	private boolean samplesDried = false;
+	
+	/**
+	 * The flushing time at the start of each run
+	 */
+	private int preFlushingTime = 0;
+	
+	/**
+	 * The flushing time at the end of each run
+	 */
+	private int postFlushingTime = 0;
 	
 	/**
 	 * The run types in recorded by the instrument and their classification
@@ -1092,6 +1100,38 @@ public class Instrument implements Serializable {
 	 */
 	public void setOwnerId(long ownerID) {
 		this.ownerID = ownerID;
+	}
+	
+	/**
+	 * Returns the pre-flushing time
+	 * @return The pre-flushing time
+	 */
+	public int getPreFlushingTime() {
+		return preFlushingTime;
+	}
+	
+	/**
+	 * Sets the pre-flushing time
+	 * @param databaseID The pre-flushing time
+	 */
+	public void setPreFlushingTime(int preFlushingTime) {
+		this.preFlushingTime = preFlushingTime;
+	}
+	
+	/**
+	 * Returns the post-flushing time
+	 * @return The post-flushing time
+	 */
+	public int getPostFlushingTime() {
+		return postFlushingTime;
+	}
+	
+	/**
+	 * Sets the post-flushing time
+	 * @param databaseID The post-flushing time
+	 */
+	public void setPostFlushingTime(int postFlushingTime) {
+		this.postFlushingTime = postFlushingTime;
 	}
 	
 	/**
