@@ -39,7 +39,7 @@ public class RawDataDB {
 			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String ADD_STANDARD_STATEMENT = "INSERT INTO gas_standards_data "
-			+ "(data_file_id, row, date_time, run_id, moisture, concentration)"
+			+ "(data_file_id, row, date_time, run_type_id, moisture, concentration)"
 			+ " VALUES(?, ?, ?, ?, ?, ?)";
 	
 	private static final String CLEAR_RAW_DATA_STATEMENT = "DELETE FROM raw_data WHERE data_file_id = ?";
@@ -51,7 +51,7 @@ public class RawDataDB {
 			+ "salinity_1, salinity_2, salinity_3, eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3,"
 			+ "moisture, atmospheric_pressure, co2 FROM raw_data WHERE data_file_id = ? ORDER BY row ASC";
 	
-	private static final String GET_STANDARDS_DATA_QUERY = "SELECT run_id, date_time, moisture, concentration "
+	private static final String GET_STANDARDS_DATA_QUERY = "SELECT run_type_id, date_time, moisture, concentration "
 			+ "FROM gas_standards_data WHERE data_file_id = ? ORDER BY row ASC";
 	
 

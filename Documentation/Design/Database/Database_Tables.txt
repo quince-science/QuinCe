@@ -310,7 +310,7 @@ Field                    Type           Description
 data_file_id             F_KEY          File ID
 row                      Integer        Row number (from the original data file)
 date_time                DateTime       Date and time
-run_type                 String         The gas standard name, as defined in the `run_types` table
+run_type_id              F_KEY          The ID of the gas standard in the `run_types` table
 concentration            Float          The concentration measured
 qc_flag                  Integer        A QC flag for the gas standards data. Used to disable the use of a standard during data reduction
 qc_message               String         A message describing the reason for the QC flag
