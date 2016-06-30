@@ -32,11 +32,11 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public class RawDataDB {
 
 	private static final String ADD_MEASUREMENT_STATEMENT = "INSERT INTO raw_data "
-			+ "(data_file_id, row, co2_type, date_time, longitude, latitude,"
+			+ "(data_file_id, row, run_type_id, co2_type, date_time, longitude, latitude,"
 			+ "intake_temp_1, intake_temp_2, intake_temp_3,"
 			+ "salinity_1, salinity_2, salinity_3,"
 			+ "eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3, moisture, atmospheric_pressure, co2)"
-			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String ADD_STANDARD_STATEMENT = "INSERT INTO gas_standards_data "
 			+ "(data_file_id, row, date_time, run_type_id, moisture, concentration)"
@@ -47,7 +47,7 @@ public class RawDataDB {
 	private static final String CLEAR_GAS_STANDARDS_STATEMENT = "DELETE FROM gas_standards_data WHERE data_file_id = ?";
 
 	private static final String GET_RAW_DATA_QUERY = "SELECT "
-			+ "row, date_time, co2_type, intake_temp_1, intake_temp_2, intake_temp_3,"
+			+ "row, date_time, run_type_id, co2_type, intake_temp_1, intake_temp_2, intake_temp_3,"
 			+ "salinity_1, salinity_2, salinity_3, eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3,"
 			+ "moisture, atmospheric_pressure, co2 FROM raw_data WHERE data_file_id = ? ORDER BY row ASC";
 	
@@ -139,97 +139,100 @@ public class RawDataDB {
 			stmt.setLong(1, fileId);
 			stmt.setInt(2, lineNumber);
 			
-			String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
-			stmt.setInt(3, instrument.getRunTypeCode(runType));
+			stmt.setLong(3, instrument.getRunTypeId(line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE))));
+
 			
-			stmt.setTimestamp(4, new Timestamp(instrument.getDateFromLine(line).getTimeInMillis()));
-			stmt.setDouble(5, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_LONGITUDE))));
-			stmt.setDouble(6, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_LATITUDE))));
+			String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+			stmt.setInt(4, instrument.getRunTypeCode(runType));
+			
+			stmt.setTimestamp(5, new Timestamp(instrument.getDateFromLine(line).getTimeInMillis()));
+			stmt.setDouble(6, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_LONGITUDE))));
+			stmt.setDouble(7, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_LATITUDE))));
 			
 			if (instrument.hasIntakeTemp1()) {
-				stmt.setDouble(7, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_1))));
-			} else {
-				stmt.setNull(7, Types.DOUBLE);
-			}
-			
-			if (instrument.hasIntakeTemp2()) {
-				stmt.setDouble(8, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_2))));
+				stmt.setDouble(8, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_1))));
 			} else {
 				stmt.setNull(8, Types.DOUBLE);
 			}
 			
-			if (instrument.hasIntakeTemp3()) {
-				stmt.setDouble(9, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_3))));
+			if (instrument.hasIntakeTemp2()) {
+				stmt.setDouble(9, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_2))));
 			} else {
 				stmt.setNull(9, Types.DOUBLE);
 			}
 			
-			if (instrument.hasSalinity1()) {
-				stmt.setDouble(10, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_SALINITY_1))));
+			if (instrument.hasIntakeTemp3()) {
+				stmt.setDouble(10, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_3))));
 			} else {
 				stmt.setNull(10, Types.DOUBLE);
 			}
 			
-			if (instrument.hasSalinity2()) {
-				stmt.setDouble(11, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_SALINITY_2))));
+			if (instrument.hasSalinity1()) {
+				stmt.setDouble(11, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_SALINITY_1))));
 			} else {
 				stmt.setNull(11, Types.DOUBLE);
 			}
 			
-			if (instrument.hasSalinity3()) {
-				stmt.setDouble(12, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_SALINITY_3))));
+			if (instrument.hasSalinity2()) {
+				stmt.setDouble(12, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_SALINITY_2))));
 			} else {
 				stmt.setNull(12, Types.DOUBLE);
 			}
 			
-			if (instrument.hasEqt1()) {
-				stmt.setDouble(13, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQT_1))));
+			if (instrument.hasSalinity3()) {
+				stmt.setDouble(13, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_SALINITY_3))));
 			} else {
 				stmt.setNull(13, Types.DOUBLE);
 			}
 			
-			if (instrument.hasEqt2()) {
-				stmt.setDouble(14, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQT_2))));
+			if (instrument.hasEqt1()) {
+				stmt.setDouble(14, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQT_1))));
 			} else {
 				stmt.setNull(14, Types.DOUBLE);
 			}
 			
-			if (instrument.hasEqt3()) {
-				stmt.setDouble(15, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQT_3))));
+			if (instrument.hasEqt2()) {
+				stmt.setDouble(15, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQT_2))));
 			} else {
 				stmt.setNull(15, Types.DOUBLE);
 			}
 			
-			if (instrument.hasEqp1()) {
-				stmt.setDouble(16, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQP_1))));
+			if (instrument.hasEqt3()) {
+				stmt.setDouble(16, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQT_3))));
 			} else {
 				stmt.setNull(16, Types.DOUBLE);
 			}
 			
-			if (instrument.hasEqp2()) {
-				stmt.setDouble(17, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQP_2))));
+			if (instrument.hasEqp1()) {
+				stmt.setDouble(17, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQP_1))));
 			} else {
 				stmt.setNull(17, Types.DOUBLE);
 			}
 			
-			if (instrument.hasEqp3()) {
-				stmt.setDouble(18, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQP_3))));
+			if (instrument.hasEqp2()) {
+				stmt.setDouble(18, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQP_2))));
 			} else {
 				stmt.setNull(18, Types.DOUBLE);
 			}
 			
-			if (!instrument.getSamplesDried()) {
-				stmt.setDouble(19, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
+			if (instrument.hasEqp3()) {
+				stmt.setDouble(19, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQP_3))));
 			} else {
 				stmt.setNull(19, Types.DOUBLE);
 			}
 			
-			if (instrument.getHasAtmosphericPressure()) {
-				stmt.setDouble(20, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE))));
+			if (!instrument.getSamplesDried()) {
+				stmt.setDouble(20, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
 			} else {
 				stmt.setNull(20, Types.DOUBLE);
 			}
-			stmt.setDouble(21, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));;
+			
+			if (instrument.getHasAtmosphericPressure()) {
+				stmt.setDouble(21, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE))));
+			} else {
+				stmt.setNull(21, Types.DOUBLE);
+			}
+			stmt.setDouble(22, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));;
 
 			stmt.execute();
 			
@@ -270,26 +273,27 @@ public class RawDataDB {
 				Calendar time = DateTimeUtils.getUTCCalendarInstance();
 				time.setTime(records.getDate(2));
 				values.setTime(time);
-				values.setCo2Type(records.getInt(3));
-				values.setIntakeTemp1(records.getDouble(4));
-				values.setIntakeTemp2(records.getDouble(5));
-				values.setIntakeTemp3(records.getDouble(6));
-				values.setSalinity1(records.getDouble(7));
-				values.setSalinity2(records.getDouble(8));
-				values.setSalinity3(records.getDouble(9));
-				values.setEqt1(records.getDouble(10));
-				values.setEqt2(records.getDouble(11));
-				values.setEqt3(records.getDouble(12));
-				values.setEqp1(records.getDouble(13));
-				values.setEqp2(records.getDouble(14));
-				values.setEqp3(records.getDouble(15));
-				values.setMoisture(records.getDouble(16));
+				values.setRunTypeId(records.getLong(3));
+				values.setCo2Type(records.getInt(4));
+				values.setIntakeTemp1(records.getDouble(5));
+				values.setIntakeTemp2(records.getDouble(6));
+				values.setIntakeTemp3(records.getDouble(7));
+				values.setSalinity1(records.getDouble(8));
+				values.setSalinity2(records.getDouble(9));
+				values.setSalinity3(records.getDouble(10));
+				values.setEqt1(records.getDouble(11));
+				values.setEqt2(records.getDouble(12));
+				values.setEqt3(records.getDouble(13));
+				values.setEqp1(records.getDouble(14));
+				values.setEqp2(records.getDouble(15));
+				values.setEqp3(records.getDouble(16));
+				values.setMoisture(records.getDouble(17));
 				
 				if (instrument.getHasAtmosphericPressure()) {
-					values.setAtmosphericPressure(records.getDouble(17));
+					values.setAtmosphericPressure(records.getDouble(18));
 				}
 				
-				values.setCo2(records.getDouble(18));
+				values.setCo2(records.getDouble(19));
 				
 				rawData.add(values);
 			}

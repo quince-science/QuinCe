@@ -271,6 +271,7 @@ Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
 data_file_id             F_KEY          File ID
 row                      Integer        Row number (from the original data file)
+run_type_id              F_KEY          The ID of the run type in the `run_types` table
 co2_type                 Integer        The type of CO~2~ measurement
 date_time                DateTime       Date and time
 longitude                Float          Longitude

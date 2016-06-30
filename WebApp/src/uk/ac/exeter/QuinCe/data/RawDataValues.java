@@ -10,6 +10,8 @@ public class RawDataValues {
 	
 	private Calendar time;
 	
+	private long runTypeId;
+	
 	private int co2Type;
 	
 	private double intakeTemp1; 
@@ -45,6 +47,14 @@ public class RawDataValues {
 	public RawDataValues(long dataFileId, int row) {
 		this.dataFileId = dataFileId;
 		this.row = row;
+	}
+	
+	public long getRunTypeId() {
+		return runTypeId;
+	}
+	
+	public void setRunTypeId(long runTypeId) {
+		this.runTypeId = runTypeId;
 	}
 
 	public int getCo2Type() {
