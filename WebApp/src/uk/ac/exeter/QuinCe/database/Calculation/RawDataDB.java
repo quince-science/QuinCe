@@ -13,6 +13,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.DateTimeParseException;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.InstrumentException;
@@ -39,8 +40,8 @@ public class RawDataDB {
 			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String ADD_STANDARD_STATEMENT = "INSERT INTO gas_standards_data "
-			+ "(data_file_id, row, date_time, run_type_id, moisture, concentration)"
-			+ " VALUES(?, ?, ?, ?, ?, ?)";
+			+ "(data_file_id, row, date_time, run_type_id, moisture, concentration, qc_flag, qc_message)"
+			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String CLEAR_RAW_DATA_STATEMENT = "DELETE FROM raw_data WHERE data_file_id = ?";
 
@@ -52,7 +53,7 @@ public class RawDataDB {
 			+ "moisture, atmospheric_pressure, co2 FROM raw_data WHERE data_file_id = ? ORDER BY row ASC";
 	
 	private static final String GET_STANDARDS_DATA_QUERY = "SELECT run_type_id, date_time, moisture, concentration "
-			+ "FROM gas_standards_data WHERE data_file_id = ? ORDER BY row ASC";
+			+ "FROM gas_standards_data WHERE data_file_id = ? AND qc_flag = " + Flag.VALUE_GOOD + " ORDER BY row ASC";
 	
 
 	public static void clearRawData(DataSource dataSource, long fileId) throws DatabaseException {
@@ -120,6 +121,9 @@ public class RawDataDB {
 			}
 			
 			stmt.setDouble(6, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));
+			
+			stmt.setInt(7, Flag.VALUE_GOOD);
+			stmt.setNull(8, Types.VARCHAR);
 
 			stmt.execute();
 			
