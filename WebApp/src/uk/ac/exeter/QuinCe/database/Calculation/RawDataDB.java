@@ -33,11 +33,12 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public class RawDataDB {
 
 	private static final String ADD_MEASUREMENT_STATEMENT = "INSERT INTO raw_data "
-			+ "(data_file_id, row, run_type_id, co2_type, date_time, longitude, latitude,"
-			+ "intake_temp_1, intake_temp_2, intake_temp_3,"
-			+ "salinity_1, salinity_2, salinity_3,"
-			+ "eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3, moisture, atmospheric_pressure, co2)"
-			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "(data_file_id, row, run_type_id, co2_type, date_time, longitude, latitude, "
+			+ "intake_temp_1, intake_temp_2, intake_temp_3, "
+			+ "salinity_1, salinity_2, salinity_3, "
+			+ "eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3, moisture, "
+			+ "atmospheric_pressure, co2, ignore_record)"
+			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String ADD_STANDARD_STATEMENT = "INSERT INTO gas_standards_data "
 			+ "(data_file_id, row, date_time, run_type_id, moisture, concentration, qc_flag, qc_message)"
@@ -237,6 +238,9 @@ public class RawDataDB {
 				stmt.setNull(21, Types.DOUBLE);
 			}
 			stmt.setDouble(22, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));;
+			
+			// In the first instance, no measurements will be ignored.
+			stmt.setBoolean(23, false);
 
 			stmt.execute();
 			

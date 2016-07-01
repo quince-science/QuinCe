@@ -291,6 +291,7 @@ eqp_3                    Float          Equilibrator pressure 3
 moisture                 Float          Moisture
 atmospheric_pressure     Float          Atmospheric pressure
 co2                      Float          The CO~2~ measurement
+ignore_record            Boolean        Indicates whether or not the value should be ignored during data reduction (for flushing periods)
 
 ##### `type`
 The `co2_type` column will contain one of the following values:
