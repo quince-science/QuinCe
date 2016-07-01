@@ -88,10 +88,10 @@ public class ExtractRawDataJob extends FileJob {
 				}
 			}
 			
-			// Queue up the data reduction job
+			// Queue up the Trim Flushing job
 			User owner = JobManager.getJobOwner(dataSource, id);
-			JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_REDUCTION, parameters);
-			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
+			JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_TRIM_FLUSHING, parameters);
+			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_TRIM_FLUSHING);
 
 			conn.commit();
 		} catch (Exception e) {
