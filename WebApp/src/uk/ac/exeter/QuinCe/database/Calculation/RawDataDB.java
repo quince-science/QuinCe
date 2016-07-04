@@ -8,10 +8,14 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
+
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.DateTimeParseException;
@@ -56,6 +60,22 @@ public class RawDataDB {
 	private static final String GET_STANDARDS_DATA_QUERY = "SELECT run_type_id, date_time, moisture, concentration "
 			+ "FROM gas_standards_data WHERE data_file_id = ? AND qc_flag = " + Flag.VALUE_GOOD + " ORDER BY row ASC";
 	
+	private static final String RAW_DATA_TRIM_FLUSHING_RECORDS_QUERY = "SELECT row, run_type_id, date_time FROM raw_data "
+			+ "WHERE data_file_id = ? ORDER BY row ASC";
+
+	private static final String GAS_STANDARDS_TRIM_FLUSHING_RECORDS_QUERY = "SELECT row, run_type_id, date_time FROM gas_standards_data "
+			+ "WHERE data_file_id = ? ORDER BY row ASC";
+	
+	private static final String SET_RAW_DATA_IGNORE_FLAG_STMT = "UPDATE raw_data SET ignore_record = 1 WHERE data_file_id = ? AND row = ?";
+	
+	private static final String SET_GAS_STANDARDS_INGNORE_FLAG_STMT = "UPDATE gas_standards_data SET qc_flag = " + Flag.VALUE_IGNORED
+			+ ", qc_message = 'Flushing time' WHERE data_file_id = ? AND row = ?";
+	
+	private static final String CLEAR_RAW_DATA_FLUSHING_IGNORE_STMT = "UPDATE raw_data SET ignore_record = 0 WHERE data_file_id = ?";
+	
+	private static final String CLEAR_GAS_STANDARDS_FLUSHING_IGNORE_STMT = "UPDATE gas_standards_data SET qc_flag = "  + Flag.VALUE_GOOD
+			+ ", qc_message = NULL WHERE data_file_id = ? AND qc_flag = " + Flag.VALUE_IGNORED;
+
 
 	public static void clearRawData(DataSource dataSource, long fileId) throws DatabaseException {
 		Connection conn = null;
@@ -411,5 +431,109 @@ public class RawDataDB {
 		}
 		
 		return result;
+	}
+	
+	public static List<TrimFlushingRecord> getTrimFlushingRecords(Connection conn, long fileId) throws DatabaseException {
+		
+		List<TrimFlushingRecord> trimFlushingRecords = new ArrayList<TrimFlushingRecord>();
+		
+		trimFlushingRecords.addAll(getTableTrimFlushingRecords(conn, fileId, RAW_DATA_TRIM_FLUSHING_RECORDS_QUERY, TrimFlushingRecord.RAW_DATA));
+		trimFlushingRecords.addAll(getTableTrimFlushingRecords(conn, fileId, GAS_STANDARDS_TRIM_FLUSHING_RECORDS_QUERY, TrimFlushingRecord.GAS_STANDARDS_DATA));
+		
+		
+		Collections.sort(trimFlushingRecords);
+		return trimFlushingRecords;
+	}
+	
+	private static List<TrimFlushingRecord> getTableTrimFlushingRecords(Connection conn, long fileId, String query, int recordType) throws DatabaseException {
+		
+		List<TrimFlushingRecord> tableTrimFlushingRecords = new ArrayList<TrimFlushingRecord>();
+		
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			stmt = conn.prepareStatement(query);
+			stmt.setLong(1,  fileId);
+			records = stmt.executeQuery();
+			
+			while (records.next()) {
+				int row = records.getInt(1);
+				long runTypeId = records.getLong(2);
+				DateTime dateTime = new DateTime(records.getTimestamp(3).getTime(), DateTimeZone.UTC);
+				
+				tableTrimFlushingRecords.add(new TrimFlushingRecord(recordType, row, dateTime, runTypeId));
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving trim flushing records", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+		}
+		
+		return tableTrimFlushingRecords;
+	}
+	
+	public static void setIgnoreFlag(Connection conn, long fileId, TrimFlushingRecord record) throws DatabaseException {
+		
+		if (record.getIgnore()) {
+			PreparedStatement stmt = null;
+			
+			try {
+				
+				switch(record.getRecordType()) {
+				case TrimFlushingRecord.RAW_DATA: {
+					stmt = conn.prepareStatement(SET_RAW_DATA_IGNORE_FLAG_STMT);
+					break;
+				}
+				case TrimFlushingRecord.GAS_STANDARDS_DATA: {
+					stmt = conn.prepareStatement(SET_GAS_STANDARDS_INGNORE_FLAG_STMT);
+					break;
+				}
+				}
+				
+				if (null != stmt) {
+					stmt.setLong(1, fileId);
+					stmt.setInt(2, record.getRow());
+					stmt.execute();
+				}
+				
+				
+			} catch (SQLException e) {
+				throw new DatabaseException("Error while setting ignore flag on row " + record.getRow() + ", file " + fileId, e);
+			} finally {
+				DatabaseUtils.closeStatements(stmt);
+			}
+		}
+	}
+	
+	public static void clearFlushingIgnoreFlags(DataSource dataSource, long fileId) throws DatabaseException {
+		
+		Connection conn = null;
+		PreparedStatement rawDataStatement = null;
+		PreparedStatement gasStandardsStatement = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
+			
+			rawDataStatement = conn.prepareStatement(CLEAR_RAW_DATA_FLUSHING_IGNORE_STMT);
+			rawDataStatement.setLong(1, fileId);
+			rawDataStatement.execute();
+			
+			gasStandardsStatement = conn.prepareStatement(CLEAR_GAS_STANDARDS_FLUSHING_IGNORE_STMT);
+			gasStandardsStatement.setLong(1, fileId);
+			gasStandardsStatement.execute();
+			
+			conn.commit();
+			
+		} catch (SQLException e) {
+			DatabaseUtils.rollBack(conn);
+			throw new DatabaseException("Error while clearing flushing time ignore flags for file " + fileId, e);
+		} finally {
+			DatabaseUtils.closeStatements(rawDataStatement, gasStandardsStatement);
+			DatabaseUtils.closeConnection(conn);
+		}
 	}
 }

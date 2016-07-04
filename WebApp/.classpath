@@ -36,7 +36,11 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/QC_Routines"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JodaTime"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JodaTime">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_45">
 		<attributes>
 			<attribute name="owner.project.facets" value="java"/>
