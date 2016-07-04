@@ -52,7 +52,8 @@ public class QCDB {
 			+ "FROM raw_data as r "
 			+ "INNER JOIN data_reduction as d ON r.data_file_id = d.data_file_id AND r.row = d.row "
 			+ "INNER JOIN qc as q ON d.data_file_id  = q.data_file_id AND d.row = q.row "
-			+ "WHERE r.data_file_id = ? AND q.woce_flag != " + Flag.VALUE_IGNORED + " ORDER BY r.row ASC";
+			+ "WHERE r.data_file_id = ? AND q.woce_flag != " + Flag.VALUE_IGNORED + " AND q.woce_flag != " + Flag.VALUE_BAD + " " 
+			+ "ORDER BY r.row ASC";
 	
 	private static final String ADD_QC_RECORD_STATEMENT = "INSERT INTO qc (data_file_id, row, "
 			+ "intake_temp_1_used, intake_temp_2_used, intake_temp_3_used, "
