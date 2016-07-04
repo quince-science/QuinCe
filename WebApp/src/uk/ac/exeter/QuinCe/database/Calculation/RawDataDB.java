@@ -57,7 +57,7 @@ public class RawDataDB {
 			+ "r.salinity_1, r.salinity_2, r.salinity_3, r.eqt_1, r.eqt_2, r.eqt_3, r.eqp_1, r.eqp_2, r.eqp_3,"
 			+ "r.moisture, r.atmospheric_pressure, r.co2 "
 			+ "FROM raw_data r INNER JOIN qc ON r.data_file_id = qc.data_file_id AND r.row = qc.row "
-			+ "WHERE r.data_file_id = ? AND (qc.woce_flag = 2 OR qc.woce_flag = 3 OR qc.woce_flag = -1000) ORDER BY row ASC";
+			+ "WHERE r.data_file_id = ? AND qc.woce_flag IN (2, 3, -1000, -1002) ORDER BY row ASC";
 	
 	private static final String GET_STANDARDS_DATA_QUERY = "SELECT run_type_id, date_time, moisture, concentration "
 			+ "FROM gas_standards_data WHERE data_file_id = ? AND qc_flag = " + Flag.VALUE_GOOD + " ORDER BY row ASC";
