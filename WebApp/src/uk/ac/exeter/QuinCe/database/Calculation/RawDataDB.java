@@ -41,8 +41,8 @@ public class RawDataDB {
 			+ "intake_temp_1, intake_temp_2, intake_temp_3, "
 			+ "salinity_1, salinity_2, salinity_3, "
 			+ "eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3, moisture, "
-			+ "atmospheric_pressure, co2, ignore_record)"
-			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "atmospheric_pressure, co2)"
+			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String ADD_STANDARD_STATEMENT = "INSERT INTO gas_standards_data "
 			+ "(data_file_id, row, date_time, run_type_id, moisture, concentration, qc_flag, qc_message)"
@@ -66,12 +66,8 @@ public class RawDataDB {
 	private static final String GAS_STANDARDS_TRIM_FLUSHING_RECORDS_QUERY = "SELECT row, run_type_id, date_time FROM gas_standards_data "
 			+ "WHERE data_file_id = ? ORDER BY row ASC";
 	
-	private static final String SET_RAW_DATA_IGNORE_FLAG_STMT = "UPDATE raw_data SET ignore_record = 1 WHERE data_file_id = ? AND row = ?";
-	
 	private static final String SET_GAS_STANDARDS_INGNORE_FLAG_STMT = "UPDATE gas_standards_data SET qc_flag = " + Flag.VALUE_IGNORED
 			+ ", qc_message = 'Flushing time' WHERE data_file_id = ? AND row = ?";
-	
-	private static final String CLEAR_RAW_DATA_FLUSHING_IGNORE_STMT = "UPDATE raw_data SET ignore_record = 0 WHERE data_file_id = ?";
 	
 	private static final String CLEAR_GAS_STANDARDS_FLUSHING_IGNORE_STMT = "UPDATE gas_standards_data SET qc_flag = "  + Flag.VALUE_GOOD
 			+ ", qc_message = NULL WHERE data_file_id = ? AND qc_flag = " + Flag.VALUE_IGNORED;
@@ -259,9 +255,6 @@ public class RawDataDB {
 			}
 			stmt.setDouble(22, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));;
 			
-			// In the first instance, no measurements will be ignored.
-			stmt.setBoolean(23, false);
-
 			stmt.execute();
 			
 		} catch (SQLException|InstrumentException|DateTimeParseException e) {
@@ -475,53 +468,32 @@ public class RawDataDB {
 		return tableTrimFlushingRecords;
 	}
 	
-	public static void setIgnoreFlag(Connection conn, long fileId, TrimFlushingRecord record) throws DatabaseException {
+	public static void setGasStandardIgnoreFlag(Connection conn, long fileId, TrimFlushingRecord record) throws DatabaseException {
 		
 		if (record.getIgnore()) {
 			PreparedStatement stmt = null;
 			
-			try {
-				
-				switch(record.getRecordType()) {
-				case TrimFlushingRecord.RAW_DATA: {
-					stmt = conn.prepareStatement(SET_RAW_DATA_IGNORE_FLAG_STMT);
-					break;
-				}
-				case TrimFlushingRecord.GAS_STANDARDS_DATA: {
+			if (record.getRecordType() == TrimFlushingRecord.GAS_STANDARDS_DATA) {
+				try {
 					stmt = conn.prepareStatement(SET_GAS_STANDARDS_INGNORE_FLAG_STMT);
-					break;
-				}
-				}
-				
-				if (null != stmt) {
 					stmt.setLong(1, fileId);
 					stmt.setInt(2, record.getRow());
 					stmt.execute();
+				} catch (SQLException e) {
+					throw new DatabaseException("Error while setting gas standard ignore flag on row " + record.getRow() + ", file " + fileId, e);
+				} finally {
+					DatabaseUtils.closeStatements(stmt);
 				}
-				
-				
-			} catch (SQLException e) {
-				throw new DatabaseException("Error while setting ignore flag on row " + record.getRow() + ", file " + fileId, e);
-			} finally {
-				DatabaseUtils.closeStatements(stmt);
-			}
+			}				
 		}
 	}
 	
-	public static void clearFlushingIgnoreFlags(DataSource dataSource, long fileId) throws DatabaseException {
+	public static void clearGasStandardIgnoreFlags(Connection conn, long fileId) throws DatabaseException {
 		
-		Connection conn = null;
 		PreparedStatement rawDataStatement = null;
 		PreparedStatement gasStandardsStatement = null;
 		
 		try {
-			conn = dataSource.getConnection();
-			conn.setAutoCommit(false);
-			
-			rawDataStatement = conn.prepareStatement(CLEAR_RAW_DATA_FLUSHING_IGNORE_STMT);
-			rawDataStatement.setLong(1, fileId);
-			rawDataStatement.execute();
-			
 			gasStandardsStatement = conn.prepareStatement(CLEAR_GAS_STANDARDS_FLUSHING_IGNORE_STMT);
 			gasStandardsStatement.setLong(1, fileId);
 			gasStandardsStatement.execute();
@@ -529,11 +501,9 @@ public class RawDataDB {
 			conn.commit();
 			
 		} catch (SQLException e) {
-			DatabaseUtils.rollBack(conn);
 			throw new DatabaseException("Error while clearing flushing time ignore flags for file " + fileId, e);
 		} finally {
 			DatabaseUtils.closeStatements(rawDataStatement, gasStandardsStatement);
-			DatabaseUtils.closeConnection(conn);
 		}
 	}
 }

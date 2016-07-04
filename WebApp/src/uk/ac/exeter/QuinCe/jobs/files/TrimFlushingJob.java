@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.joda.time.DateTime;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.User;
@@ -15,6 +16,7 @@ import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.database.Calculation.TrimFlushingRecord;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -23,6 +25,8 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class TrimFlushingJob extends FileJob {
+	
+	public static final String FLUSHING_MESSAGE = "Flushing";
 	
 	public TrimFlushingJob(ResourceManager resourceManager, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(resourceManager, config, jobId, parameters);
@@ -33,10 +37,9 @@ public class TrimFlushingJob extends FileJob {
 		Connection conn = null;
 
 		try {
-			reset();
-
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
+			reset(conn);
 			
 			Instrument instrument = InstrumentDB.getInstrumentByFileId(dataSource, fileId);
 			int preFlush = instrument.getPreFlushingTime();
@@ -66,7 +69,8 @@ public class TrimFlushingJob extends FileJob {
 				// See if we're in the pre-flushing period
 				if (preFlush > 0) {
 					if (record.checkPreFlushing(preFlushLimit)) {
-						RawDataDB.setIgnoreFlag(conn, fileId, record);
+						RawDataDB.setGasStandardIgnoreFlag(conn, fileId, record);
+						QCDB.setQCFlag(conn, fileId, record.getRow(), Flag.IGNORED, FLUSHING_MESSAGE);
 					}
 				}
 
@@ -112,7 +116,8 @@ public class TrimFlushingJob extends FileJob {
 				finished = !record.checkPostFlushing(postFlushLimit);
 				if (!finished) {
 					// Record the ignored flag
-					RawDataDB.setIgnoreFlag(conn, fileId, record);
+					RawDataDB.setGasStandardIgnoreFlag(conn, fileId, record);
+					QCDB.setQCFlag(conn, fileId, record.getRow(), Flag.IGNORED, FLUSHING_MESSAGE);
 					
 					// If we've hit the first record, stop
 					if (currentIndex == 0) {
@@ -125,7 +130,8 @@ public class TrimFlushingJob extends FileJob {
 		}
 	}
 	
-	private void reset() throws DatabaseException {
-		RawDataDB.clearFlushingIgnoreFlags(dataSource, fileId);
+	private void reset(Connection conn) throws DatabaseException {
+		RawDataDB.clearGasStandardIgnoreFlags(conn, fileId);
+		QCDB.resetQCFlags(conn, fileId, Flag.IGNORED, FLUSHING_MESSAGE);
 	}
 }

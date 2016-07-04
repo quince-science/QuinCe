@@ -68,7 +68,11 @@ public class QCDB {
 	private static final String GET_QC_MESSAGES_QUERY = "SELECT qc_message FROM qc WHERE data_file_id = ? AND row = ?";
 
 	private static final String GET_QC_FLAG_QUERY = "SELECT qc_flag FROM qc WHERE data_file_id = ? AND row = ?";
-
+	
+	private static final String CLEAR_QC_FLAGS_STATEMENT = "UPDATE qc SET qc_flag = " + Flag.VALUE_NOT_SET
+			+ ", qc_message = NULL, woce_flag = " + Flag.VALUE_NOT_SET + ", woce_message = NULL "
+			+ "WHERE data_file_id = ? AND qc_flag = ? AND qc_message = ?";
+	
 	public static void clearQCData(DataSource dataSource, long fileId) throws DatabaseException {
 		Connection conn = null;
 		
@@ -209,6 +213,50 @@ public class QCDB {
 			
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while storing the QC result", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+		}
+	}
+	
+	public static void setQCFlag(Connection conn, long fileId, int row, Flag qcFlag, String qcMessage) throws DatabaseException {
+		setQCFlag(conn, fileId, row, qcFlag, qcMessage, qcFlag, qcMessage);
+	}
+	
+	public static void setQCFlag(Connection conn, long fileId, int row, Flag qcFlag, String qcMessage, Flag woceFlag, String woceMessage) throws DatabaseException {
+		
+		PreparedStatement stmt = null;
+		
+		try {
+			stmt = conn.prepareStatement(SET_QC_RESULT_STATEMENT);
+			
+			stmt.setInt(1, qcFlag.getFlagValue());
+			stmt.setString(2, qcMessage);
+			stmt.setInt(3, woceFlag.getFlagValue());
+			stmt.setString(4, woceMessage);
+			stmt.setLong(5, fileId);
+			stmt.setInt(6, row);
+			
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while setting the QC flags", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+		}
+	}
+	
+	public static void resetQCFlags(Connection conn, long fileId, Flag qcSearchFlag, String qcSearchMessage) throws DatabaseException {
+		
+		PreparedStatement stmt = null;
+		
+		try {
+			stmt = conn.prepareStatement(CLEAR_QC_FLAGS_STATEMENT);
+			stmt.setLong(1, fileId);
+			stmt.setInt(2, qcSearchFlag.getFlagValue());
+			stmt.setString(3, qcSearchMessage);
+			
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while clearing the QC flags", e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
 		}

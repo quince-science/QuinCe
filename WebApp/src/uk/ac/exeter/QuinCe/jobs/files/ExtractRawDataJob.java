@@ -83,6 +83,12 @@ public class ExtractRawDataJob extends FileJob {
 				
 				applyCalibrations(line, instrument, currentCoefficients);
 				RawDataDB.storeRawData(conn, instrument, fileId, lineNumber, line);
+				
+				String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+				if (instrument.isMeasurementRunType(runType)) {
+					QCDB.createQCRecord(conn, fileId, lineNumber, instrument);
+				}
+				
 				if (lineNumber % 100 == 0) {
 					setProgress((double) lineNumber / (double) data.size() * 100.0);
 				}
