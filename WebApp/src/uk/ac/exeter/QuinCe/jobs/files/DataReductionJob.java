@@ -84,8 +84,6 @@ public class DataReductionJob extends FileJob {
 					DataReductionDB.storeRow(conn, fileId, record.getRow(), record.getCo2Type(), meanIntakeTemp,
 							meanSalinity, meanEqt, meanEqp, trueMoisture, driedCo2, calibratedCo2,
 							pCo2TEDry, pH2O, pCo2TEWet, fco2TE, fco2);
-					
-					QCDB.createQCRecord(conn, fileId, record.getRow(), instrument);
 				}
 				
 				if (Math.floorMod(lineNumber, 100) == 0) {
@@ -108,7 +106,6 @@ public class DataReductionJob extends FileJob {
 	
 	protected void reset() throws JobFailedException {
 		try {
-			QCDB.clearQCData(dataSource, fileId);
 			DataReductionDB.clearDataReductionData(dataSource, fileId);
 		} catch(DatabaseException e) {
 			throw new JobFailedException(id, e);

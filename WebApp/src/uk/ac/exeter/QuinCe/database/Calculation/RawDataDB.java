@@ -53,9 +53,11 @@ public class RawDataDB {
 	private static final String CLEAR_GAS_STANDARDS_STATEMENT = "DELETE FROM gas_standards_data WHERE data_file_id = ?";
 
 	private static final String GET_RAW_DATA_QUERY = "SELECT "
-			+ "row, date_time, run_type_id, co2_type, intake_temp_1, intake_temp_2, intake_temp_3,"
-			+ "salinity_1, salinity_2, salinity_3, eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3,"
-			+ "moisture, atmospheric_pressure, co2 FROM raw_data WHERE data_file_id = ? ORDER BY row ASC";
+			+ "r.row, r.date_time, r.run_type_id, r.co2_type, r.intake_temp_1, r.intake_temp_2, r.intake_temp_3,"
+			+ "r.salinity_1, r.salinity_2, r.salinity_3, r.eqt_1, r.eqt_2, r.eqt_3, r.eqp_1, r.eqp_2, r.eqp_3,"
+			+ "r.moisture, r.atmospheric_pressure, r.co2 "
+			+ "FROM raw_data r INNER JOIN qc ON r.data_file_id = qc.data_file_id AND r.row = qc.row "
+			+ "WHERE r.data_file_id = ? AND (qc.woce_flag = 2 OR qc.woce_flag = 3 OR qc.woce_flag = -1000) ORDER BY row ASC";
 	
 	private static final String GET_STANDARDS_DATA_QUERY = "SELECT run_type_id, date_time, moisture, concentration "
 			+ "FROM gas_standards_data WHERE data_file_id = ? AND qc_flag = " + Flag.VALUE_GOOD + " ORDER BY row ASC";
