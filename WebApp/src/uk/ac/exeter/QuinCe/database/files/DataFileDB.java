@@ -493,6 +493,10 @@ public class DataFileDB {
 					fileInfo.setQcNotSetCount(qcFlags.getInt(2));
 					break;
 				}
+				case Flag.VALUE_IGNORED: {
+					fileInfo.setIgnoredCount(qcFlags.getInt(2));
+					break;
+				}
 				default: {
 					throw new DatabaseException("Invalid QC Flag value " + qcFlags.getInt(1));
 				}
@@ -532,6 +536,7 @@ public class DataFileDB {
 				}
 				case Flag.VALUE_IGNORED: {
 					fileInfo.setIgnoredCount(woceFlags.getInt(2));
+					break;
 				}
 				default: {
 					throw new DatabaseException("Invalid WOCE Flag value " + qcFlags.getInt(1));
