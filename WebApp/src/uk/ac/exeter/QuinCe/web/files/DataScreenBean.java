@@ -1,9 +1,11 @@
 package uk.ac.exeter.QuinCe.web.files;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RunType;
@@ -47,6 +49,8 @@ public class DataScreenBean extends BaseManagedBean {
 	private String rightPlotData = null;
 	
 	private int co2Type = RunType.RUN_TYPE_WATER;
+	
+	private List<String> optionalFlags = null;
 	
 	/**
 	 * Required basic constructor. All the actual construction
@@ -121,6 +125,14 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public void setCo2Type(int co2Type) {
 		this.co2Type = co2Type;
+	}
+	
+	public List<String> getOptionalFlags() {
+		return optionalFlags;
+	}
+	
+	public void setOptionalFlags(List<String> optionalFlags) {
+		this.optionalFlags = optionalFlags;
 	}
 	
 	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException {
@@ -319,37 +331,42 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	public void generateLeftPlotData() {
-		
-		String output = null;
-		
 		List<String> columns = StringUtils.delimitedToList(leftPlotColumns);
-		
-		try {
-			DataSource dataSource = ServletUtils.getDBDataSource();
-			Instrument instrument = InstrumentDB.getInstrument(dataSource, fileDetails.getInstrumentId());
-			
-			output = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), fileId, instrument, columns, co2Type);
-		} catch (Exception e) {
-			output = "***ERROR: " + e.getMessage();
-		}
-		
+		String output = getPlotData(columns); 
 		setLeftPlotData(output);
 	}
 
 	public void generateRightPlotData() {
-		String output = null;
-		
 		List<String> columns = StringUtils.delimitedToList(rightPlotColumns);
+		String output = getPlotData(columns); 
+		setRightPlotData(output);
+	}
+	
+	private String getPlotData(List<String> columns) {
+		
+		String output;
 		
 		try {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			Instrument instrument = InstrumentDB.getInstrument(dataSource, fileDetails.getInstrumentId());
 			
-			output = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), fileId, instrument, columns, co2Type);
+			List<Integer> includeFlags = new ArrayList<Integer>();
+			includeFlags.add(Flag.VALUE_GOOD);
+			includeFlags.add(Flag.VALUE_ASSUMED_GOOD);
+			includeFlags.add(Flag.VALUE_QUESTIONABLE);
+			
+			if (null != optionalFlags) {
+				for (String optionalFlag : optionalFlags) {
+					includeFlags.add(Integer.parseInt(optionalFlag));
+				}
+			}
+			
+			output = FileDataInterrogator.getCSVData(dataSource, ServletUtils.getAppConfig(), fileId, instrument, columns, co2Type, includeFlags);
 		} catch (Exception e) {
+			e.printStackTrace();
 			output = "***ERROR: " + e.getMessage();
 		}
 		
-		setRightPlotData(output);
+		return output;
 	}
 }

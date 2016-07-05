@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
@@ -16,12 +17,19 @@ public class ExportOption {
 
 	private int co2Type;
 	
+	private List<Integer> flags;
+	
 	public ExportOption(int index, String name, String separator, List<String> columns, int co2Type) throws ExportException {
 		this.index = index;
 		this.name = name;
 		this.separator = separator;
 		this.columns = columns;
 		this.co2Type = co2Type;
+		
+		flags = new ArrayList<Integer>();
+		flags.add(2);
+		flags.add(3);
+		flags.add(4);
 		
 		String invalidColumn = FileDataInterrogator.validateColumnNames(columns);
 		
@@ -48,5 +56,9 @@ public class ExportOption {
 	
 	public int getCo2Type() {
 		return co2Type;
+	}
+	
+	public List<Integer> getFlags() {
+		return flags;
 	}
 }
