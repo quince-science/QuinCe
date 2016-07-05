@@ -73,9 +73,12 @@ public class ExportConfig {
 					if (separator.equals("\\t")) {
 						separator = "\t";
 					}
-					List<String> columns = fields.subList(2, fields.size());
 					
-					options.add(new ExportOption(options.size(), name, separator, columns));
+					int co2Type = Integer.parseInt(fields.get(2));
+					
+					List<String> columns = fields.subList(3, fields.size());
+					
+					options.add(new ExportOption(options.size(), name, separator, columns, co2Type));
 				}
 				
 				line = reader.readLine();

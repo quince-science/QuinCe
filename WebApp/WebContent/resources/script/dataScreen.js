@@ -79,10 +79,16 @@ $(function() {
     	});
     });
     
-    updatePlot('left');
-    updatePlot('right');
+    drawAllData();
 });
 
+function drawAllData() {
+	drawLoading($('#plotLeftContent'));
+	drawLoading($('#plotRightContent'));
+	drawLoading($('#tableContent'));
+    updatePlot('left');
+    updatePlot('right');
+}
 
 /*
  * Handles the resizing of individual panels

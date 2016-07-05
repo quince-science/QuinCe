@@ -13,12 +13,15 @@ public class ExportOption {
 	private String separator;
 	
 	private List<String> columns;
+
+	private int co2Type;
 	
-	public ExportOption(int index, String name, String separator, List<String> columns) throws ExportException {
+	public ExportOption(int index, String name, String separator, List<String> columns, int co2Type) throws ExportException {
 		this.index = index;
 		this.name = name;
 		this.separator = separator;
 		this.columns = columns;
+		this.co2Type = co2Type;
 		
 		String invalidColumn = FileDataInterrogator.validateColumnNames(columns);
 		
@@ -41,5 +44,9 @@ public class ExportOption {
 	
 	public String getSeparator() {
 		return separator;
+	}
+	
+	public int getCo2Type() {
+		return co2Type;
 	}
 }

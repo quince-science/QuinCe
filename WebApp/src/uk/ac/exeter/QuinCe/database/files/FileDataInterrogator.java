@@ -16,6 +16,7 @@ import uk.ac.exeter.QuinCe.data.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RawDataFile;
 import uk.ac.exeter.QuinCe.data.RawDataFileException;
+import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -36,7 +37,7 @@ public class FileDataInterrogator {
 	
 	private static final String GET_COLUMN_DATA_QUERY = "SELECT %%COLUMNS%% FROM raw_data INNER JOIN data_reduction"
 					+ " ON raw_data.data_file_id = data_reduction.data_file_id AND raw_data.row = data_reduction.row"
-					+ " WHERE raw_data.data_file_id = ? ORDER BY raw_data.row ASC";
+					+ " WHERE raw_data.data_file_id = ? AND raw_data.co2_type IN (%%CO2TYPES%%) ORDER BY raw_data.row ASC";
 	
 	static {
 		// Map input names from the web front end to database column names
@@ -77,17 +78,15 @@ public class FileDataInterrogator {
 		COLUMN_MAPPINGS.put("woceMessage", "qc.woce_message");
 	}
 	
-	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns) throws MissingParamException, DatabaseException, RawDataFileException {
-		return getCSVData(dataSource, appConfig, fileId, instrument, columns, ",");
+	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns, int co2Type) throws MissingParamException, DatabaseException, RawDataFileException {
+		return getCSVData(dataSource, appConfig, fileId, instrument, columns, ",", co2Type);
 	}
 	
 	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, ExportOption exportOption) throws MissingParamException, DatabaseException, RawDataFileException {
-		List<String> columns = exportOption.getColumns();
-		String separator = exportOption.getSeparator();
-		return getCSVData(dataSource, appConfig, fileId, instrument, columns, separator);
+		return getCSVData(dataSource, appConfig, fileId, instrument, exportOption.getColumns(), exportOption.getSeparator(), exportOption.getCo2Type());
 	}
 	
-	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns, String separator) throws MissingParamException, DatabaseException, RawDataFileException {
+	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns, String separator, int co2Type) throws MissingParamException, DatabaseException, RawDataFileException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(instrument, "instrument");
@@ -138,8 +137,18 @@ public class FileDataInterrogator {
 			// Normally we'd check as we built the string, but the optional 'original' field
 			// makes it awkward.
 			databaseColumnList.deleteCharAt(databaseColumnList.length() - 1);
+			StringBuffer co2Types = new StringBuffer();
+
+			if (co2Type == RunType.RUN_TYPE_BOTH) {
+				co2Types.append(RunType.RUN_TYPE_WATER);
+				co2Types.append(',');
+				co2Types.append(RunType.RUN_TYPE_ATMOSPHERIC);
+			} else {
+				co2Types.append(co2Type);
+			}
 
 			String queryString = GET_COLUMN_DATA_QUERY.replaceAll("%%COLUMNS%%", databaseColumnList.toString());
+			queryString = queryString.replaceAll("%%CO2TYPES%%", co2Types.toString());
 			
 			stmt = conn.prepareStatement(queryString);
 			stmt.setLong(1, fileId);

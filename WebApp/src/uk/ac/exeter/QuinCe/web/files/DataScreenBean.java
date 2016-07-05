@@ -6,6 +6,7 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
+import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
@@ -44,6 +45,8 @@ public class DataScreenBean extends BaseManagedBean {
 	private String rightPlotColumns = null;
 	
 	private String rightPlotData = null;
+	
+	private int co2Type = RunType.RUN_TYPE_WATER;
 	
 	/**
 	 * Required basic constructor. All the actual construction
@@ -110,6 +113,14 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public void setRightPlotData(String rightPlotData) {
 		this.rightPlotData = rightPlotData;
+	}
+	
+	public int getCo2Type() {
+		return co2Type;
+	}
+	
+	public void setCo2Type(int co2Type) {
+		this.co2Type = co2Type;
 	}
 	
 	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException {
@@ -317,7 +328,7 @@ public class DataScreenBean extends BaseManagedBean {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			Instrument instrument = InstrumentDB.getInstrument(dataSource, fileDetails.getInstrumentId());
 			
-			output = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), fileId, instrument, columns);
+			output = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), fileId, instrument, columns, co2Type);
 		} catch (Exception e) {
 			output = "***ERROR: " + e.getMessage();
 		}
@@ -334,7 +345,7 @@ public class DataScreenBean extends BaseManagedBean {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			Instrument instrument = InstrumentDB.getInstrument(dataSource, fileDetails.getInstrumentId());
 			
-			output = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), fileId, instrument, columns);
+			output = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), fileId, instrument, columns, co2Type);
 		} catch (Exception e) {
 			output = "***ERROR: " + e.getMessage();
 		}
