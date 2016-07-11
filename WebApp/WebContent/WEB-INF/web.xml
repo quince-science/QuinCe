@@ -67,7 +67,7 @@
 
 	<context-param>
 	    <param-name>configuration.path</param-name>
-	    <param-value>/home/sdj206/work/projects/QuinCe/quince.properties</param-value>
+	    <param-value>/Users/zuj007/Documents/QuinCe/quince.properties</param-value>
 	</context-param>
 
  	<filter>
