@@ -49,9 +49,11 @@ public class InstrumentDB {
 			+ "salinity_1_col, salinity_2_col, salinity_3_col, "
 			+ "eqt_1_col, eqt_2_col, eqt_3_col, "
 			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
-			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count) "
+			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count, "
+			+ "pre_flushing_time, post_flushing_time) "
 			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
+			+ "?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	/**
 	 * Statement for retrieving all the details of a specific instrument
@@ -70,7 +72,8 @@ public class InstrumentDB {
 			+ "salinity_1_col, salinity_2_col, salinity_3_col, "
 			+ "eqt_1_col, eqt_2_col, eqt_3_col, "
 			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
-			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count "
+			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count, "
+			+ "pre_flushing_time, post_flushing_time "
 			+ "FROM instrument WHERE id = ? ORDER BY name";
 			
 	
@@ -160,6 +163,8 @@ public class InstrumentDB {
 			instrStmt.setInt(49, instrument.getColumnAssignment(Instrument.COL_MOISTURE));
 			instrStmt.setInt(50, instrument.getColumnAssignment(Instrument.COL_CO2));
 			instrStmt.setInt(51, instrument.getRawFileColumnCount());
+			instrStmt.setInt(52, instrument.getPreFlushingTime());
+			instrStmt.setInt(53, instrument.getPostFlushingTime());
 			
 			
 			instrStmt.execute();
@@ -242,6 +247,25 @@ public class InstrumentDB {
 		return instrumentList;
 	}
 
+	
+	public static Instrument getInstrument(DataSource dataSource, long instrumentID) throws DatabaseException, MissingParamException, RecordNotFoundException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(instrumentID, "instrumentID");
+		
+		Connection conn = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			return getInstrument(conn, instrumentID);
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while updating record counts", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+
+	
 	/**
 	 * Returns a complete instrument object for the specified instrument ID
 	 * @param dataSource A data source
@@ -251,11 +275,10 @@ public class InstrumentDB {
 	 * @throws DatabaseException If an error occurs while retrieving the instrument details
 	 * @throws RecordNotFoundException If the specified instrument cannot be found
 	 */
-	public static Instrument getInstrument(DataSource dataSource, long instrumentID) throws MissingParamException, DatabaseException, RecordNotFoundException {
+	public static Instrument getInstrument(Connection conn, long instrumentID) throws MissingParamException, DatabaseException, RecordNotFoundException {
 
-		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(conn, "conn");
 		
-		Connection conn = null;
 		PreparedStatement instrStmt = null;
 		ResultSet record = null;
 		PreparedStatement runTypeStmt = null;
@@ -264,7 +287,6 @@ public class InstrumentDB {
 		TreeSet<RunType> runTypes = new TreeSet<RunType>();
 		
 		try {
-			conn = dataSource.getConnection();
 			instrStmt = conn.prepareStatement(GET_INSTRUMENT_QUERY);
 			instrStmt.setLong(1, instrumentID);
 			
@@ -324,6 +346,8 @@ public class InstrumentDB {
 				instrument.setColumnAssignment(Instrument.COL_MOISTURE, record.getInt(49));
 				instrument.setColumnAssignment(Instrument.COL_CO2, record.getInt(50));
 				instrument.setRawFileColumnCount(record.getInt(51));
+				instrument.setPreFlushingTime(record.getInt(52));
+				instrument.setPostFlushingTime(record.getInt(53));
 				
 				runTypeStmt = conn.prepareStatement(GET_RUN_TYPES_QUERY);
 				runTypeStmt.setLong(1, instrumentID);
@@ -340,7 +364,6 @@ public class InstrumentDB {
 		} finally {
 			DatabaseUtils.closeResultSets(record, runTypeRecords);
 			DatabaseUtils.closeStatements(instrStmt, runTypeStmt);
-			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return instrument;

@@ -33,6 +33,8 @@ public class RunType implements Comparable<RunType>, Serializable {
 	 */
 	public static final int RUN_TYPE_STANDARD = 2;
 	
+	public static final int RUN_TYPE_BOTH = 3;
+	
 	/**
 	 * The database ID of the run type
 	 */

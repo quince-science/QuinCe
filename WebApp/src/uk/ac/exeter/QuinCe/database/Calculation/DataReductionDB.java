@@ -21,13 +21,25 @@ public class DataReductionDB {
 			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	public static void clearDataReductionData(DataSource dataSource, long fileId) throws DatabaseException {
-		
 		Connection conn = null;
-		PreparedStatement stmt = null;
 		
 		try {
 			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
 			
+			clearDataReductionData(conn, fileId);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while clearing out previous data", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+
+	public static void clearDataReductionData(Connection conn, long fileId) throws DatabaseException {
+		
+		PreparedStatement stmt = null;
+		
+		try {
 			stmt = conn.prepareStatement(CLEAR_DATA_REDUCTION_STATEMENT);
 			stmt.setLong(1, fileId);
 			stmt.execute();
@@ -36,7 +48,6 @@ public class DataReductionDB {
 			throw new DatabaseException("An error occurred while clearing out previous data", e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
 		}
 	}
 	

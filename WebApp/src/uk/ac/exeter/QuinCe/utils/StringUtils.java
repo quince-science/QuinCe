@@ -95,4 +95,48 @@ public class StringUtils {
 		e.printStackTrace(pw);
 		return sw.toString();
 	}
+	
+	/**
+	 * Determines whether or not a line is a comment, signified by it starting with {@code #} or {@code !} or {@code //}
+	 * @param line The line to be checked
+	 * @return {@code true} if the line is a comment; {@code false} otherwise.
+	 */
+	public static boolean isComment(String line) {
+		String trimmedLine = line.trim();
+		return trimmedLine.length() == 0 || trimmedLine.charAt(0) == '#' || trimmedLine.charAt(0) == '!' || trimmedLine.startsWith("//", 0);
+	}
+	
+	/**
+	 * Trims all items in a list of strings. A string that starts with a
+	 * single backslash has that backslash removed.
+	 * @param source The strings to be converted 
+	 * @return The converted strings
+	 */
+	public static List<String> trimList(List<String> source) {
+		
+		List<String> result = new ArrayList<String>(source.size());
+		
+		for (int i = 0; i < source.size(); i++) {
+			String trimmedValue = source.get(i).trim();
+			if (trimmedValue.startsWith("\\")) {
+				trimmedValue = trimmedValue.substring(1);
+			}
+			
+			result.add(trimmedValue);
+		}
+		
+		return result;
+	}
+	
+	public static boolean isNumeric(String value) {
+		boolean result = true;
+		
+		try {
+			Double.parseDouble(value);
+		} catch (NumberFormatException e) {
+			result = false;
+		}
+		
+		return result;
+	}
 }

@@ -1,2 +1,7 @@
 .gmt*
 
+/bin/
+.classpath
+.project
+.settings
+

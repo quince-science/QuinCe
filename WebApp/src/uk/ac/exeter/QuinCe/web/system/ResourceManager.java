@@ -15,6 +15,8 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QCRoutines.config.ColumnConfig;
 import uk.ac.exeter.QCRoutines.config.ConfigException;
 import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
+import uk.ac.exeter.QuinCe.data.ExportConfig;
+import uk.ac.exeter.QuinCe.data.ExportException;
 import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
 
@@ -72,6 +74,12 @@ public class ResourceManager implements ServletContextListener {
        		RoutinesConfig.init(configuration.getProperty("routines.configfile"));
        	} catch (ConfigException e) {
        		throw new RuntimeException("Could not initialise QC Routines", e);
+       	}
+       	
+       	try {
+       		ExportConfig.init(configuration.getProperty("export.configfile"));
+       	} catch (ExportException e) {
+       		throw new RuntimeException("Could not initialise export configuration", e);
        	}
        	
        	// Register ourselves in the servlet context
