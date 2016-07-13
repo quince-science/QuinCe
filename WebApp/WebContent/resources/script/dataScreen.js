@@ -79,6 +79,10 @@ $(function() {
     	});
     });
     
+    // Set up the data table options
+    
+    
+    // Draw all the page contents
     drawAllData();
 });
 
@@ -88,6 +92,7 @@ function drawAllData() {
 	drawLoading($('#tableContent'));
     updatePlot('left');
     updatePlot('right');
+    updateTable();
 }
 
 /*
@@ -400,4 +405,49 @@ function drawRightPlot(data) {
 		
 		resizeContent();
 	}
+}
+
+function updateTable() {
+	
+	html = '<table id="dataTable" class="display nowrap" cellspacing="0" width="100%">';
+	html += '<thead>';
+    html += '<tr>';
+    html += '<th>Date/Time</th>';
+    html += '<th>Longitude</th>';
+    html += '<th>Latitude</th>';
+    html += '<th>QC Result</th>';
+    html += '<th>WOCE Flag</th>';
+    html += '</tr>';
+    html += '</table>';
+	
+    $('#tableContent').html(html);
+    
+    $('#dataTable').DataTable( {
+    	ordering: false,
+    	searching: false,
+    	serverSide: true,
+    	scroller: {
+    		loadingIndicator: true
+    	},
+    	scrollY: 350,
+    	bInfo: false,
+    	ajax: function ( data, callback, settings ) {
+            
+    		console.log(data);
+    		
+    		var out = [
+                       ['d1', 'o1', 'a1', 'q1', 'w1'],
+                       ['d2', 'o2', 'a2', 'q2', 'w2']
+                       ];
+ 
+            setTimeout( function () {
+                callback( {
+                    draw: data.draw,
+                    data: out,
+                    recordsTotal: 2,
+                    recordsFiltered: 2
+                } );
+            }, 50 );
+        }
+    });
 }
