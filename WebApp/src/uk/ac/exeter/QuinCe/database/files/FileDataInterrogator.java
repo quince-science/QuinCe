@@ -3,6 +3,9 @@ package uk.ac.exeter.QuinCe.database.files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +35,8 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 public class FileDataInterrogator {
 	
 	private static final String COLUMN_ORIGINAL_FILE = "original";
+	
+	private static final String COLUMN_RECORD_COUNT = "count";
 	
 	private static Map<String, String> COLUMN_MAPPINGS = null;
 	
@@ -81,19 +86,20 @@ public class FileDataInterrogator {
 	}
 	
 	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns, int co2Type, List<Integer> includeFlags) throws MissingParamException, DatabaseException, RawDataFileException {
-		return getCSVData(dataSource, appConfig, fileId, instrument, columns, ",", co2Type, includeFlags);
+		return getCSVData(dataSource, appConfig, fileId, instrument, columns, ",", co2Type, includeFlags, 0, -1);
 	}
 	
 	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, ExportOption exportOption) throws MissingParamException, DatabaseException, RawDataFileException {
-		return getCSVData(dataSource, appConfig, fileId, instrument, exportOption.getColumns(), exportOption.getSeparator(), exportOption.getCo2Type(), exportOption.getFlags());
+		return getCSVData(dataSource, appConfig, fileId, instrument, exportOption.getColumns(), exportOption.getSeparator(), exportOption.getCo2Type(), exportOption.getFlags(), 0, -1);
 	}
 	
-	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns, String separator, int co2Type, List<Integer> includeFlags) throws MissingParamException, DatabaseException, RawDataFileException {
+	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns, String separator, int co2Type, List<Integer> includeFlags, int start, int length) throws MissingParamException, DatabaseException, RawDataFileException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(instrument, "instrument");
 		MissingParam.checkMissing(columns, "columns");
 		MissingParam.checkMissing(includeFlags, "includeFlags");
+		MissingParam.checkZeroPositive(start, "start");
 
 		// Data output variable
 		String output = null;
@@ -120,56 +126,13 @@ public class FileDataInterrogator {
 			}
 			
 			
-			// Build the database query for the remaining columns.
-			// Note that we always include the date to help with
-			// searching the original file data
 			conn = dataSource.getConnection();
-			
-			StringBuffer databaseColumnList = new StringBuffer();
-			databaseColumnList.append(COLUMN_MAPPINGS.get("dateTime"));
-			databaseColumnList.append(',');
-			
-			for (int col = 0; col < columns.size(); col++) {
-				if (!columns.get(col).equals(COLUMN_ORIGINAL_FILE)) {
-					databaseColumnList.append(COLUMN_MAPPINGS.get(columns.get(col)));
-					databaseColumnList.append(',');
-				}
-			}
-			
-			// We always add a comma separator, so we remove the last character
-			// Normally we'd check as we built the string, but the optional 'original' field
-			// makes it awkward.
-			databaseColumnList.deleteCharAt(databaseColumnList.length() - 1);
-			StringBuffer co2Types = new StringBuffer();
-
-			if (co2Type == RunType.RUN_TYPE_BOTH) {
-				co2Types.append(RunType.RUN_TYPE_WATER);
-				co2Types.append(',');
-				co2Types.append(RunType.RUN_TYPE_ATMOSPHERIC);
-			} else {
-				co2Types.append(co2Type);
-			}
-			
-			StringBuffer flags = new StringBuffer();
-			for (int i = 0; i < includeFlags.size(); i++) {
-				flags.append(includeFlags.get(i));
-				if (i < includeFlags.size() - 1) {
-					flags.append(',');
-				}
-			}
-
-			String queryString = GET_COLUMN_DATA_QUERY.replaceAll("%%COLUMNS%%", databaseColumnList.toString());
-			queryString = queryString.replaceAll("%%CO2TYPES%%", co2Types.toString());
-			queryString = queryString.replaceAll("%%FLAGS%%", flags.toString());
-			
-			stmt = conn.prepareStatement(queryString);
-			stmt.setLong(1, fileId);
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, start, length);
 			
 			records = stmt.executeQuery();
 			
 			StringBuffer outputBuffer = new StringBuffer();
-			
-			
+
 			// Build the first header line. This contains all headers
 			// exported from the database and the first header line from
 			// the data file (if it exists).
@@ -298,6 +261,100 @@ public class FileDataInterrogator {
 		}
 		
 		return output;
+	}
+	
+	public static String getJsonData(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length) throws MissingParamException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		MissingParam.checkMissing(columns, "columns");
+		MissingParam.checkMissing(includeFlags, "includeFlags");
+		
+		String output = null;
+		
+		// Variables for getting data from database
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+
+		try {
+			conn = dataSource.getConnection();
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, start, length);
+			
+			records = stmt.executeQuery();
+			ResultSetMetaData rsmd = records.getMetaData();
+			int columnCount = rsmd.getColumnCount();
+
+			StringBuffer outputBuffer = new StringBuffer();
+			outputBuffer.append('[');
+			
+			while (records.next()) {
+				
+				outputBuffer.append('[');
+				for (int col = 1; col <= columnCount; col++) {
+					outputBuffer.append('\"');
+					outputBuffer.append(records.getString(col));
+					outputBuffer.append('\"');
+					if (col < columnCount) {
+						outputBuffer.append(',');
+					}
+				}
+
+				outputBuffer.append("],");
+			}
+			
+			// Remove the trailing comma from the last record
+			outputBuffer.deleteCharAt(outputBuffer.length() - 1);
+			outputBuffer.append(']');
+			
+			output = outputBuffer.toString();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			output = "***ERROR - " + e.getMessage();
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+
+		return output;
+	}
+	
+	public static int getRecordCount(DataSource dataSource, long fileId, int co2Type, List<Integer> includeFlags) throws MissingParamException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		MissingParam.checkMissing(includeFlags, "includeFlags");
+		
+		int count = 0;
+		
+		// Variables for getting data from database
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+
+		try {
+			List<String> columns = new ArrayList<String>(1);
+			columns.add(COLUMN_RECORD_COUNT);
+			
+			conn = dataSource.getConnection();
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, -1, -1);
+			
+			records = stmt.executeQuery();
+
+			if (records.next()) {
+				count = records.getInt(1);
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			count = 0;
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+
+		return count;
 	}
 	
 	private static String getColumnHeading(String columnName, Instrument instrument) {
@@ -492,5 +549,83 @@ public class FileDataInterrogator {
 		}
 		
 		return output.toString();
+	}
+	
+	private static PreparedStatement makeFileDataStatement(Connection conn, long fileId, List<String> columns, int co2Type, List<Integer> includeFlags, int start, int length) throws SQLException {
+		
+		PreparedStatement stmt = null;
+
+		try {
+			String databaseColumnList = makeDatabaseColumnList(columns);
+			String co2Types = makeCo2Types(co2Type);
+			String flags = makeFlags(includeFlags);
+
+			String queryString = GET_COLUMN_DATA_QUERY.replaceAll("%%COLUMNS%%", databaseColumnList);
+			queryString = queryString.replaceAll("%%CO2TYPES%%", co2Types);
+			queryString = queryString.replaceAll("%%FLAGS%%", flags);
+			if (length > 0) {
+				queryString += " LIMIT " + start + "," + length;
+			}
+
+			stmt = conn.prepareStatement(queryString);
+			stmt.setLong(1, fileId);
+		} catch (SQLException e) {
+			DatabaseUtils.closeStatements(stmt);
+			throw e;
+		}
+		
+		return stmt;
+	}
+	
+	private static String makeDatabaseColumnList(List<String> columns) {
+		
+		StringBuffer databaseColumnList = new StringBuffer();
+		
+		if (columns.contains(COLUMN_RECORD_COUNT)) {
+			databaseColumnList.append("COUNT(*)");
+		} else {
+			databaseColumnList.append(COLUMN_MAPPINGS.get("dateTime"));
+			databaseColumnList.append(',');
+			
+			for (int col = 0; col < columns.size(); col++) {
+				if (!columns.get(col).equals(COLUMN_ORIGINAL_FILE)) {
+					databaseColumnList.append(COLUMN_MAPPINGS.get(columns.get(col)));
+					databaseColumnList.append(',');
+				}
+			}
+			
+			// We always add a comma separator, so we remove the last character
+			// Normally we'd check as we built the string, but the optional 'original' field
+			// makes it awkward.
+			databaseColumnList.deleteCharAt(databaseColumnList.length() - 1);
+		}
+
+		return databaseColumnList.toString();
+	}
+	
+	private static String makeCo2Types(int co2Type) {
+		StringBuffer co2Types = new StringBuffer();
+
+		if (co2Type == RunType.RUN_TYPE_BOTH) {
+			co2Types.append(RunType.RUN_TYPE_WATER);
+			co2Types.append(',');
+			co2Types.append(RunType.RUN_TYPE_ATMOSPHERIC);
+		} else {
+			co2Types.append(co2Type);
+		}
+		
+		return co2Types.toString();
+	}
+	
+	private static String makeFlags(List<Integer> includeFlags) {
+		StringBuffer flags = new StringBuffer();
+		for (int i = 0; i < includeFlags.size(); i++) {
+			flags.append(includeFlags.get(i));
+			if (i < includeFlags.size() - 1) {
+				flags.append(',');
+			}
+		}
+		
+		return flags.toString();
 	}
 }

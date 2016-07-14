@@ -41,6 +41,16 @@
 				<h:commandLink id="rightGetData" action="#{dataScreenBean.generateRightPlotData}">
 					<f:ajax execute="rightColumns" render="rightData" onevent="drawRightPlot"/>
 				</h:commandLink>
+				
+				<h:inputHidden value="#{dataScreenBean.tableMode}" id="tableMode"/>
+				<h:inputHidden value="#{dataScreenBean.tableJsonData}" id="tableJsonData"/>
+				<h:inputHidden value="#{dataScreenBean.recordCount}" id="recordCount"/>
+				<h:inputHidden value="#{dataScreenBean.tableDataDraw}" id="tableDataDraw"/>
+				<h:inputHidden value="#{dataScreenBean.tableDataStart}" id="tableDataStart"/>
+				<h:inputHidden value="#{dataScreenBean.tableDataLength}" id="tableDataLength"/>
+				<h:commandLink id="tableGetData" action="#{dataScreenBean.generateTableData}">
+					<f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw recordCount" onevent="tableDataDownload"/>
+				</h:commandLink>
 			</h:form>
 		</div>
 		<h:form id="dataScreenForm">

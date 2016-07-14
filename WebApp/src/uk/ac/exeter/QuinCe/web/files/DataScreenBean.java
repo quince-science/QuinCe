@@ -52,6 +52,18 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private List<String> optionalFlags = null;
 	
+	private String tableMode = "default";
+	
+	private String tableJsonData = null;
+	
+	private int tableDataDraw;
+	
+	private int tableDataStart;
+	
+	private int tableDataLength;
+	
+	private int recordCount = -1;
+	
 	/**
 	 * Required basic constructor. All the actual construction
 	 * is done in init().
@@ -133,6 +145,57 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public void setOptionalFlags(List<String> optionalFlags) {
 		this.optionalFlags = optionalFlags;
+		
+		// Reset the record count, so it is retrieved from the database again.
+		recordCount = -1;
+	}
+	
+	public String getTableMode() {
+		return tableMode;
+	}
+	
+	public void setTableMode(String tableMode) {
+		this.tableMode = tableMode;
+	}
+	
+	public String getTableJsonData() {
+		return tableJsonData;
+	}
+	
+	public void setTableJsonData(String tableJsonData) {
+		this.tableJsonData = tableJsonData;
+	}
+	
+	public int getTableDataDraw() {
+		return tableDataDraw;
+	}
+	
+	public void setTableDataDraw(int tableDataDraw) {
+		this.tableDataDraw = tableDataDraw;
+	}
+	
+	public int getTableDataStart() {
+		return tableDataStart;
+	}
+	
+	public void setTableDataStart(int tableDataStart) {
+		this.tableDataStart = tableDataStart;
+	}
+	
+	public int getTableDataLength() {
+		return tableDataLength;
+	}
+	
+	public void setTableDataLength(int tableDataLength) {
+		this.tableDataLength = tableDataLength;
+	}
+	
+	public int getRecordCount() {
+		return recordCount;
+	}
+	
+	public void setRecordCount(int recordCount) {
+		this.recordCount = recordCount;
 	}
 	
 	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException {
@@ -350,23 +413,54 @@ public class DataScreenBean extends BaseManagedBean {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			Instrument instrument = InstrumentDB.getInstrument(dataSource, fileDetails.getInstrumentId());
 			
-			List<Integer> includeFlags = new ArrayList<Integer>();
-			includeFlags.add(Flag.VALUE_GOOD);
-			includeFlags.add(Flag.VALUE_ASSUMED_GOOD);
-			includeFlags.add(Flag.VALUE_QUESTIONABLE);
 			
-			if (null != optionalFlags) {
-				for (String optionalFlag : optionalFlags) {
-					includeFlags.add(Integer.parseInt(optionalFlag));
-				}
-			}
-			
-			output = FileDataInterrogator.getCSVData(dataSource, ServletUtils.getAppConfig(), fileId, instrument, columns, co2Type, includeFlags);
+			output = FileDataInterrogator.getCSVData(dataSource, ServletUtils.getAppConfig(), fileId, instrument, columns, co2Type, getIncludeFlags());
 		} catch (Exception e) {
 			e.printStackTrace();
 			output = "***ERROR: " + e.getMessage();
 		}
 		
 		return output;
+	}
+
+	public void generateTableData() {
+
+		try {
+			DataSource dataSource = ServletUtils.getDBDataSource();
+			
+			if (recordCount < 0) {
+				setRecordCount(FileDataInterrogator.getRecordCount(dataSource, fileId, co2Type, getIncludeFlags()));
+			}
+			
+			List<String> columns = new ArrayList<String>();
+			columns.add("longitude");
+			columns.add("latitude");
+			columns.add("qcFlag");
+			columns.add("qcMessage");
+			columns.add("woceFlag");
+			columns.add("woceMessage");
+			
+			
+			setTableJsonData(FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, columns, getIncludeFlags(), tableDataStart, tableDataLength));
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+			setTableJsonData("***ERROR: " + e.getMessage());
+		}
+	}
+	
+	private List<Integer> getIncludeFlags() {
+		List<Integer> includeFlags = new ArrayList<Integer>();
+		includeFlags.add(Flag.VALUE_GOOD);
+		includeFlags.add(Flag.VALUE_ASSUMED_GOOD);
+		includeFlags.add(Flag.VALUE_QUESTIONABLE);
+		
+		if (null != optionalFlags) {
+			for (String optionalFlag : optionalFlags) {
+				includeFlags.add(Integer.parseInt(optionalFlag));
+			}
+		}
+		
+		return includeFlags;
 	}
 }

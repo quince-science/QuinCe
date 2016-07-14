@@ -41,6 +41,9 @@ var rightMap = 'plot_intaketemp_intakeTempMean';
 var leftGraph = null;
 var rightGraph = null;
 
+// The callback function for the DataTables drawing call
+var dataTableDrawCallback = null;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -416,7 +419,9 @@ function updateTable() {
     html += '<th>Longitude</th>';
     html += '<th>Latitude</th>';
     html += '<th>QC Result</th>';
+    html += '<th>QC Message</th>';
     html += '<th>WOCE Flag</th>';
+    html += '<th>WOCE Message</th>';
     html += '</tr>';
     html += '</table>';
 	
@@ -429,25 +434,33 @@ function updateTable() {
     	scroller: {
     		loadingIndicator: true
     	},
-    	scrollY: 350,
+    	scrollY: 200,
     	bInfo: false,
     	ajax: function ( data, callback, settings ) {
             
-    		console.log(data);
+    		// Store the callback
+    		dataTableDrawCallback = callback;
+
+    		// Fill in the form inputs
+    		$('#plotDataForm\\:tableDataDraw').val(data.draw);
+    		$('#plotDataForm\\:tableDataStart').val(data.start);
+    		$('#plotDataForm\\:tableDataLength').val(data.length);
     		
-    		var out = [
-                       ['d1', 'o1', 'a1', 'q1', 'w1'],
-                       ['d2', 'o2', 'a2', 'q2', 'w2']
-                       ];
- 
-            setTimeout( function () {
-                callback( {
-                    draw: data.draw,
-                    data: out,
-                    recordsTotal: 2,
-                    recordsFiltered: 2
-                } );
-            }, 50 );
+    		// Submit the query to the server
+    		$('#plotDataForm\\:tableGetData').click();
         }
     });
+}
+
+function tableDataDownload(data) {
+	
+	var status = data.status;
+	if (status == "success") {
+		dataTableDrawCallback( {
+            draw: $('#plotdDataForm\\:tableDataDraw').val(),
+            data: JSON.parse($('#plotDataForm\\:tableJsonData').val()),
+            recordsTotal: $('#plotDataForm\\:recordCount').val(),
+            recordsFiltered: $('#plotDataForm\\:recordCount').val()
+		});
+	}
 }
