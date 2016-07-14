@@ -28,7 +28,7 @@ var plotPopupSingleSelection = true;
 // Specifies the target plot (1/2) and axis (X/Y) for the popup
 var plotPopupTarget = 'LX';
 
-// The selected paramters for the plots and maps
+// The selected parameters for the plots and maps
 var leftPlotXAxis = ['plot_datetime_dateTime'];
 var leftPlotYAxis = ['plot_eqt_eqtMean', 'plot_eqt_eqt1'];
 var leftMap = 'plot_co2_fCO2Final';
@@ -48,7 +48,8 @@ var dataTableDrawCallback = null;
 
 /*
  * Document Load function.
- * Initialises the splits, and adds handler for window resizing
+ * Initialises the splits, adds handler for window resizing,
+ * and kicks off drawing the data
  */
 $(function() {
 	// Make the panel splits
@@ -89,6 +90,9 @@ $(function() {
     drawAllData();
 });
 
+/*
+ * Refreshes all data objects (both plots and the table)
+ */
 function drawAllData() {
 	drawLoading($('#plotLeftContent'));
 	drawLoading($('#plotRightContent'));
@@ -236,6 +240,9 @@ function getGroupName(inputName) {
 	return inputName.match(/_(.*)_/)[1];
 }
 
+/*
+ * Extract the column name from an input's name
+ */
 function getColumnName(inputName) {
 	return inputName.match(/_([^_]*)$/)[1];
 }
@@ -280,6 +287,9 @@ function setPlotPopupInputs() {
 	});
 }
 
+/*
+ * Store the selected plot option in the relevant variable
+ */
 function savePlotSelection() {
 	
 	// Get the list of checked inputs
@@ -320,6 +330,12 @@ function savePlotSelection() {
 	return false;
 }
 
+/*
+ * Triggers an update of a plot's data.
+ * Gets the necessary details and submits them to the server by
+ * submitting the hidden form as an ajax request. The event handler
+ * redraws the plot when the request completes.
+ */
 function updatePlot(plot) {
 	
 	if (plot == 'left') {
@@ -382,6 +398,9 @@ function updatePlot(plot) {
 	return false;
 }
 
+/*
+ * Render the left plot
+ */
 function drawLeftPlot(data) {
 	var status = data.status;
 	
@@ -396,6 +415,9 @@ function drawLeftPlot(data) {
 	}
 }
 
+/*
+ * Render the right plot
+ */
 function drawRightPlot(data) {
 	var status = data.status;
 	
@@ -410,6 +432,12 @@ function drawRightPlot(data) {
 	}
 }
 
+/*
+ * Begins the redraw of the data table.
+ * The HTML table is initialised (with header only), and
+ * the DataTables object is created and configured to load
+ * its data from the server using the hidden form.
+ */
 function updateTable() {
 	
 	html = '<table id="dataTable" class="display nowrap" cellspacing="0" width="100%">';
@@ -452,6 +480,11 @@ function updateTable() {
     });
 }
 
+/*
+ * Called when table data has been downloaded from the server.
+ * The previously stored callback function is triggered with
+ * the data from the server.
+ */
 function tableDataDownload(data) {
 	
 	var status = data.status;
