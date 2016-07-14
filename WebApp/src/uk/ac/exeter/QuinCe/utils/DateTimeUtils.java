@@ -2,6 +2,10 @@ package uk.ac.exeter.QuinCe.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.SimpleTimeZone;
+import java.util.TimeZone;
 
 /**
  * Miscellaneous date/time utilities
@@ -22,6 +26,8 @@ public class DateTimeUtils {
 	public static final long MILLIS_PER_DAY = 86400000;
 	
 	private static SimpleDateFormat dateFormatter = null;
+	
+	private static SimpleDateFormat dateTimeFormatter = null;
 
 	/**
 	 * Determines whether or not the current time is within a
@@ -44,7 +50,7 @@ public class DateTimeUtils {
 	 */
 	public static Calendar setMidnight(Calendar date) {
 		Calendar result = (Calendar) date.clone();
-		result.set(Calendar.HOUR, 0);
+		result.set(Calendar.HOUR_OF_DAY, 0);
 		result.set(Calendar.MINUTE, 0);
 		result.set(Calendar.SECOND, 0);
 		result.set(Calendar.MILLISECOND, 0);
@@ -75,8 +81,53 @@ public class DateTimeUtils {
 	public static String formatDate(Calendar date) {
 		if (null == dateFormatter) {
 			dateFormatter = new SimpleDateFormat("YYYY-MM-dd");
+			dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 		}
 		
 		return dateFormatter.format(date.getTime());
+	}
+	
+	/**
+	 * Format a date/time to YYYY-MM-dd HH:mm:ss format
+	 * @param dateTime The date/time
+	 * @return The formatted date/time
+	 */
+	public static String formatDateTime(Date dateTime) {
+		if (null == dateTimeFormatter) {
+			dateTimeFormatter = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+			dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+		}
+		
+		return dateTimeFormatter.format(dateTime);
+	}
+	
+	public static String formatDateTime(Calendar dateTime) {
+		return formatDateTime(dateTime.getTime());
+	}
+	
+	public static boolean datesEqual(Calendar date1, Calendar date2) {
+		
+		boolean equal = true;
+		
+		if (date1.get(Calendar.YEAR) != date2.get(Calendar.YEAR)) {
+			equal = false;
+		} else if (date1.get(Calendar.MONTH) != date2.get(Calendar.MONTH)) {
+			equal = false;
+		} else if (date1.get(Calendar.DATE) != date2.get(Calendar.DATE)) {
+			equal = false;
+		} else if (date1.get(Calendar.HOUR_OF_DAY) != date2.get(Calendar.HOUR_OF_DAY)) {
+			equal = false;
+		} else if (date1.get(Calendar.MINUTE) != date2.get(Calendar.MINUTE)) {
+			equal = false;
+		} else if (date1.get(Calendar.SECOND) != date2.get(Calendar.SECOND)) {
+			equal = false;
+		}
+		
+		return equal;
+		
+	}
+	
+	public static Calendar getUTCCalendarInstance() {
+		return Calendar.getInstance(new SimpleTimeZone(0, "UTC"), Locale.ENGLISH);
 	}
 }

@@ -104,6 +104,8 @@ atmospheric_pressure_col Integer        Atmospheric pressure
 moisture_col             Integer        Moisture
 co2_col                  Integer        CO~2~
 raw_col_count            Integer        The total number of columns in the instrument's data files
+pre_flushing_time        Integer        The number of seconds to discard at the start of each run type
+post_flushing_time       Integer        The number of seconds to discard at the end of each run type
 
 #### `date_format`
 The `date_format` field will have one of the following values:
@@ -269,6 +271,7 @@ Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
 data_file_id             F_KEY          File ID
 row                      Integer        Row number (from the original data file)
+run_type_id              F_KEY          The ID of the run type in the `run_types` table
 co2_type                 Integer        The type of CO~2~ measurement
 date_time                DateTime       Date and time
 longitude                Float          Longitude
@@ -308,8 +311,10 @@ Field                    Type           Description
 data_file_id             F_KEY          File ID
 row                      Integer        Row number (from the original data file)
 date_time                DateTime       Date and time
-run_type                 String         The gas standard name, as defined in the `run_types` table
+run_type_id              F_KEY          The ID of the gas standard in the `run_types` table
 concentration            Float          The concentration measured
+qc_flag                  Integer        A QC flag for the gas standards data. Used to disable the use of a standard during data reduction
+qc_message               String         A message describing the reason for the QC flag
 
 ## `data_reduction`
 This table will contain the results of the data reduction, along with all the values used

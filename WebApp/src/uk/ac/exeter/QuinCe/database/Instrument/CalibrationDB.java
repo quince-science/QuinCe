@@ -457,7 +457,7 @@ public class CalibrationDB {
 			
 			records = stmt.executeQuery();
 			while (records.next()) {
-				Calendar calibrationDate = Calendar.getInstance();
+				Calendar calibrationDate = DateTimeUtils.getUTCCalendarInstance();
 				calibrationDate.setTime(records.getDate(2));
 				result.add(calibrationDate);
 			}
@@ -500,7 +500,7 @@ public class CalibrationDB {
 			
 			records = stmt.executeQuery();
 			if (records.next()) {
-				result = Calendar.getInstance();
+				result = DateTimeUtils.getUTCCalendarInstance();
 				result.setTime(records.getDate(2));
 			}
 		} catch (SQLException e) {

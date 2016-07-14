@@ -17,6 +17,12 @@ public class FileInfo {
 	
 	public static final String JOB_CLASS_EXTRACT = "uk.ac.exeter.QuinCe.jobs.files.ExtractRawDataJob";
 	
+	public static final int JOB_CODE_TRIM_FLUSHING = 1;
+	
+	public static final String JOB_NAME_TRIM_FLUSHING = "Trim flushing time";
+	
+	public static final String JOB_CLASS_TRIM_FLUSHING = "uk.ac.exeter.QuinCe.jobs.files.TrimFlushingJob";
+	
 	public static final int JOB_CODE_REDUCTION = 2;
 	
 	public static final String JOB_NAME_REDUCTION = "Data reduction";
@@ -33,7 +39,10 @@ public class FileInfo {
 	
 	public static final String JOB_NAME_USER_QC = "User QC";
 
-/**
+	public static final int JOB_CODE_NEEDS_RECALC = 5;
+	
+	public static final String JOB_NAME_NEEDS_RECALC = "Recalculation Required";
+	/**
 	 * The file's database ID
 	 */
 	private long fileId;
@@ -69,10 +78,47 @@ public class FileInfo {
 	private Calendar startDate;
 	
 	/**
-	 * The number of record measurements in the file
+	 * The number of records in the file
 	 */
 	private int recordCount;
-
+	
+	/**
+	 * The number of atmospheric measurement records in the file
+	 */
+	private int atmosphericMeasurementCount = 0;
+	
+	/**
+	 * The number of ocean measurement records in the file
+	 */
+	private int oceanMeasurementCount = 0;
+	
+	/**
+	 * The number of gas standard records in the file
+	 */
+	private int standardsCount = 0;
+	
+	private int qcGoodCount = 0;
+		
+	private int qcQuestionableCount = 0;
+	
+	private int qcBadCount = 0;
+	
+	private int qcNotSetCount = 0;
+	
+	private int woceGoodCount = 0;
+	
+	private int woceAssumedGoodCount = 0;
+	
+	private int woceQuestionableCount = 0;
+	
+	private int woceBadCount = 0;
+	
+	private int woceNotSetCount = 0;
+	
+	private int woceNeededCount = 0;
+	
+	private int ignoredCount = 0;
+	
 	/**
 	 * Constructor for all values
 	 * @param fileId The file ID
@@ -85,7 +131,8 @@ public class FileInfo {
 	 * @param jobStatus The current job status
 	 * @param lastTouched The date that the file was last touched
 	 */
-	public FileInfo(long fileId, long instrumentId, String instrument, String fileName, Calendar startDate, int recordCount, int currentJob, Calendar lastTouched) {
+	public FileInfo(long fileId, long instrumentId, String instrument, String fileName, Calendar startDate, int recordCount,
+			int currentJob, Calendar lastTouched, int atmosphericMeasurementsCount, int oceanMeasurementsCount, int standardsCount) {
 		this.fileId = fileId;
 		this.instrumentId = instrumentId;
 		this.instrument = instrument;
@@ -94,6 +141,11 @@ public class FileInfo {
 		this.recordCount = recordCount;
 		this.currentJob = currentJob;
 		this.lastTouched = lastTouched;
+		this.atmosphericMeasurementCount = atmosphericMeasurementsCount;
+		this.oceanMeasurementCount = oceanMeasurementsCount;
+		this.standardsCount = standardsCount;
+		this.qcNotSetCount = getMeasurementCount();
+		this.woceNeededCount = getMeasurementCount();
 	}
 
 	/**
@@ -179,7 +231,7 @@ public class FileInfo {
 	 * @return The time remaining.
 	 */
 	public int getTimeRemaining() {
-		Calendar now = Calendar.getInstance();
+		Calendar now = DateTimeUtils.getUTCCalendarInstance();
 		now.setTimeInMillis(System.currentTimeMillis());
 		int daysRemaining = DateTimeUtils.getDaysBetween(lastTouched, now);
 		return 60 - daysRemaining;
@@ -198,12 +250,158 @@ public class FileInfo {
 	public Calendar getLastTouched() {
 		return lastTouched;
 	}
-	
+		
 	/**
 	 * Returns the ID of the instrument to which this file belongs
 	 * @return The instrument ID
 	 */
 	public long getInstrumentId() {
 		return instrumentId;
+	}
+	
+	public int getAtmosphericMeasurementCount() {
+		return atmosphericMeasurementCount;
+	}
+	
+	public int getOceanMeasurementCount() {
+		return oceanMeasurementCount;
+	}
+	
+	public int getStandardsCount() {
+		return standardsCount;
+	}
+	
+	public void setAtmosphericMeasurementCount(int atmosphericMeasurementCount) {
+		this.atmosphericMeasurementCount = atmosphericMeasurementCount;
+	}
+	
+	public void setOceanMeasurementCount(int oceanMeasurementCount) {
+		this.oceanMeasurementCount = oceanMeasurementCount;
+	}
+	
+	public void setStandardsCount(int standardsCount) {
+		this.standardsCount = standardsCount;
+	}
+	
+	public String getRecordBreakdown() {
+		StringBuffer result = new StringBuffer();
+		
+		if (currentJob == JOB_CODE_EXTRACT) {
+			result.append("Processing...");
+		} else {
+			result.append(oceanMeasurementCount);
+			result.append(" / ");
+			result.append(atmosphericMeasurementCount);
+			result.append(" / ");
+			result.append(standardsCount);
+		}
+		
+		return result.toString();
+	}
+	
+	public int getMeasurementCount() {
+		return atmosphericMeasurementCount + oceanMeasurementCount;
+	}
+
+	public int getQcGoodCount() {
+		return qcGoodCount;
+	}
+
+	public void setQcGoodCount(int qcGoodCount) {
+		this.qcGoodCount = qcGoodCount;
+	}
+
+	public int getQcQuestionableCount() {
+		return qcQuestionableCount;
+	}
+
+	public void setQcQuestionableCount(int qcQuestionableCount) {
+		this.qcQuestionableCount = qcQuestionableCount;
+	}
+
+	public int getQcBadCount() {
+		return qcBadCount;
+	}
+
+	public void setQcBadCount(int qcBadCount) {
+		this.qcBadCount = qcBadCount;
+	}
+
+	public int getQcNotSetCount() {
+		return qcNotSetCount;
+	}
+
+	public void setQcNotSetCount(int qcNotSetCount) {
+		this.qcNotSetCount = qcNotSetCount;
+	}
+
+	public int getWoceGoodCount() {
+		return woceGoodCount;
+	}
+
+	public void setWoceGoodCount(int woceGoodCount) {
+		this.woceGoodCount = woceGoodCount;
+	}
+
+	public int getWoceAssumedGoodCount() {
+		return woceAssumedGoodCount;
+	}
+
+	public void setWoceAssumedGoodCount(int woceAssumedGoodCount) {
+		this.woceAssumedGoodCount = woceAssumedGoodCount;
+	}
+
+	public int getWoceQuestionableCount() {
+		return woceQuestionableCount;
+	}
+
+	public void setWoceQuestionableCount(int woceQuestionableCount) {
+		this.woceQuestionableCount = woceQuestionableCount;
+	}
+
+	public int getWoceBadCount() {
+		return woceBadCount;
+	}
+
+	public void setWoceBadCount(int woceBadCount) {
+		this.woceBadCount = woceBadCount;
+	}
+
+	public int getWoceNotSetCount() {
+		return woceNotSetCount;
+	}
+
+	public void setWoceNotSetCount(int woceNotSetCount) {
+		this.woceNotSetCount = woceNotSetCount;
+	}
+
+	public int getWoceNeededCount() {
+		return woceNeededCount;
+	}
+
+	public void setWoceNeededCount(int woceNeededCount) {
+		this.woceNeededCount = woceNeededCount;
+	}
+
+	public int getIgnoredCount() {
+		return ignoredCount;
+	}
+
+	public void setIgnoredCount(int ignoredCount) {
+		this.ignoredCount = ignoredCount;
+	}
+	
+	public void clearAllCounts() {
+		qcGoodCount = 0;
+		qcQuestionableCount = 0;
+		qcBadCount = 0;
+		qcNotSetCount = 0;
+		woceGoodCount = 0;
+		woceAssumedGoodCount = 0;
+		woceQuestionableCount = 0;
+		woceBadCount = 0;
+		woceNotSetCount = 0;
+		woceNeededCount = 0;
+		ignoredCount = 0;
 	}
 }

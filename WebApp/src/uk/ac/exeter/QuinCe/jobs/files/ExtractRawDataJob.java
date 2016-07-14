@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.Calendar;
 import java.util.List;
@@ -16,9 +17,11 @@ import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
 import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.database.Instrument.CalibrationDB;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -80,15 +83,21 @@ public class ExtractRawDataJob extends FileJob {
 				
 				applyCalibrations(line, instrument, currentCoefficients);
 				RawDataDB.storeRawData(conn, instrument, fileId, lineNumber, line);
+				
+				String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+				if (instrument.isMeasurementRunType(runType)) {
+					QCDB.createQCRecord(conn, fileId, lineNumber, instrument);
+				}
+				
 				if (lineNumber % 100 == 0) {
 					setProgress((double) lineNumber / (double) data.size() * 100.0);
 				}
 			}
 			
-			// Queue up the data reduction job
+			// Queue up the Trim Flushing job
 			User owner = JobManager.getJobOwner(dataSource, id);
-			JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_REDUCTION, parameters);
-			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
+			JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_TRIM_FLUSHING, parameters);
+			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_TRIM_FLUSHING);
 
 			conn.commit();
 		} catch (Exception e) {
@@ -178,10 +187,21 @@ public class ExtractRawDataJob extends FileJob {
 	}
 	
 	protected void reset() throws JobFailedException {
+		Connection conn = null;
 		try {
-			RawDataDB.clearRawData(dataSource, fileId);
-		} catch(DatabaseException e) {
+			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
+			
+			QCDB.clearQCData(conn, fileId);
+			DataReductionDB.clearDataReductionData(conn, fileId);
+			RawDataDB.clearRawData(conn, fileId);
+			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_EXTRACT);
+			
+			conn.commit();
+		} catch(MissingParamException|SQLException|DatabaseException e) {
 			throw new JobFailedException(id, e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 }

@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+	<h:head>
+		<title>#{dataScreenBean.fileDetails.fileName} - QuinCe</title>
+	    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700,700italic" rel="stylesheet" type="text/css"/>
+		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
+		<h:outputScript name="script/jquery-ui.min.js"/>
+		<h:outputScript name="script/jquery.splitter.js"/>
+		<h:outputStylesheet name="style/jquery-ui.min.css"/>
+		<h:outputStylesheet name="style/main.css"/>
+		<h:outputStylesheet name="style/dataScreen.css"/>
+    	<h:outputStylesheet name="style/jquery.splitter.css"/>
+		<h:outputScript name="script/dataScreen.js"/>
+		<h:outputScript name="script/dygraph-combined.js"/>
+	</h:head>
+	<h:body class="fullPage">
+		<div id="plotFieldList" class="popupMenu">
+			<h:outputText value="#{dataScreenBean.plotPopupEntries}" escape="false"/>
+			<div id="buttonWrapper">
+				<button class="smallButton" onclick="return savePlotSelection();">OK</button>
+				<button class="smallButton" onclick="return hidePlotPopup();">Cancel</button>
+			</div>
+		</div>
+		<div id="hiddenData">
+			<h:form id="plotDataForm">
+				<h:inputHidden value="#{dataScreenBean.leftPlotColumns}" id="leftColumns"/>
+				<h:outputText id="leftData" value="#{dataScreenBean.leftPlotData}"/>
+				<h:commandLink id="leftGetData" action="#{dataScreenBean.generateLeftPlotData}">
+					<f:ajax execute="leftColumns" render="leftData" onevent="drawLeftPlot"/>
+				</h:commandLink>
+
+				<h:inputHidden value="#{dataScreenBean.rightPlotColumns}" id="rightColumns"/>
+				<h:outputText id="rightData" value="#{dataScreenBean.rightPlotData}"/>
+				<h:commandLink id="rightGetData" action="#{dataScreenBean.generateRightPlotData}">
+					<f:ajax execute="rightColumns" render="rightData" onevent="drawRightPlot"/>
+				</h:commandLink>
+			</h:form>
+		</div>
+		<h:form id="dataScreenForm">
+	    	<div id="header">
+	      		#{dataScreenBean.fileDetails.fileName}
+	      		&nbsp;&nbsp;&nbsp;
+	      		<ui:remove>
+		      		<p:selectOneButton value="#{dataScreenBean.co2Type}">
+		      			<f:selectItem itemLabel="Water" itemValue="0"/>
+		      			<f:selectItem itemLabel="Atmos" itemValue="1"/>
+		      			<f:selectItem itemLabel="Both" itemValue="3"/>
+		      			<f:ajax render="@none" onevent="drawAllData"/>
+		      		</p:selectOneButton>
+		      	</ui:remove>
+		      	
+		      	<p:selectManyButton value="#{dataScreenBean.optionalFlags}">
+		      		<f:selectItem itemLabel="B" itemValue="4"/>
+		      		<f:selectItem itemLabel="I" itemValue="-1002"/>
+		      		<f:ajax render="@none" onevent="drawAllData"/>
+		      	</p:selectManyButton>
+	      		
+	      		<div id="updateStatus">
+	      			<h:commandLink id="FinishLink" value="Finished" action="#{dataScreenBean.end}"/>
+	      		</div>
+	    	</div>
+    		<div id="dataScreenContent">
+	    		<div id="plots">
+		    		<div id="plotContainerLeft">
+						<div id="plotLeftContent" class="plotContent"></div>
+		    			<div id="controlsLeft" class="controls">
+		    				<button id="leftXAxis" class="smallButton" onclick="return showPlotPopup(event, 'LX', true);">X Axis…</button>
+		    				<button id="leftYAxis" class="smallButton" onclick="return showPlotPopup(event, 'LY', false);">Y Axis…</button>
+		    				<button id="leftUpdate" class="smallButton" onclick="return updatePlot('left');">Update</button>
+		    			</div>
+		    		</div>
+		    		<div id="plotContainerRight">
+						<div id="plotRightContent" class="plotContent"></div>
+		    			<div id="controlsRight" class="controls">
+		    				<button id="rightXAxis" class="smallButton" onclick="return showPlotPopup(event, 'RX', true);">X Axis…</button>
+		    				<button id="rightYAxis" class="smallButton" onclick="return showPlotPopup(event, 'RY', false);">Y Axis…</button>
+		    				<button id="rightUpdate" class="smallButton" onclick="return updatePlot('right');">Update</button>
+		    			</div>
+		    		</div>
+	    		</div>
+	    		<div id="dataTable">
+	    			<div id="tableContent"></div>
+	    			<div id="tableControls" class="controls">
+	    				Controls
+	    			</div>
+	    		</div>
+    		</div>
+	    </h:form>
+	</h:body>
+</html>
