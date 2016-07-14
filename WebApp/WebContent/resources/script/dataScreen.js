@@ -442,7 +442,6 @@ function updateTable() {
 	
 	html = '<table id="dataTable" class="display nowrap" cellspacing="0" width="100%">';
 	html += '<thead>';
-    html += '<tr>';
     html += '<th>Date/Time</th>';
     html += '<th>Longitude</th>';
     html += '<th>Latitude</th>';
@@ -450,7 +449,7 @@ function updateTable() {
     html += '<th>QC Message</th>';
     html += '<th>WOCE Flag</th>';
     html += '<th>WOCE Message</th>';
-    html += '</tr>';
+    html += '</thead>';
     html += '</table>';
 	
     $('#tableContent').html(html);
@@ -462,7 +461,7 @@ function updateTable() {
     	scroller: {
     		loadingIndicator: true
     	},
-    	scrollY: 200,
+    	scrollY: $('#data').height() - $('#tableControls').outerHeight() - 41, // 41 is the post-rendered th height. Can we detect it somewhere?
     	bInfo: false,
     	ajax: function ( data, callback, settings ) {
             
