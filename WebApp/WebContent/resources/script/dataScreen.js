@@ -120,6 +120,10 @@ function resizeContent() {
 	if (rightGraph != null) {
 		rightGraph.resize($('#plotRightContent').width(), $('#plotRightContent').height() - 15);
 	}
+	
+	// Set the height of the DataTables scrollbody
+	// We have to select it by class, but there's only one so we can get away with it
+	$('.dataTables_scrollBody').height(calcTableScrollY());
 }
 
 /*
@@ -461,7 +465,7 @@ function updateTable() {
     	scroller: {
     		loadingIndicator: true
     	},
-    	scrollY: $('#data').height() - $('#tableControls').outerHeight() - 41, // 41 is the post-rendered th height. Can we detect it somewhere?
+    	scrollY: calcTableScrollY(),
     	bInfo: false,
     	ajax: function ( data, callback, settings ) {
             
@@ -495,4 +499,12 @@ function tableDataDownload(data) {
             recordsFiltered: $('#plotDataForm\\:recordCount').val()
 		});
 	}
+}
+
+/*
+ * Calculate the value of the scrollY entry for the data table
+ */
+function calcTableScrollY() {
+	// 41 is the post-rendered height of the header in FF (as measured on screen). Can we detect it somewhere?
+	return $('#data').height() - $('#tableControls').outerHeight() - 41;
 }
