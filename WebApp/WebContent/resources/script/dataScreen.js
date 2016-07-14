@@ -104,7 +104,7 @@ function resizeContent() {
 	}
 	
 	$('#plotRightContent').width('100%');
-	$('#plotRightContent').height('' + $('#plotContainerRight').height() - 30 + 'px');
+	$('#plotRightContent').height('' + $('#plotContainerRight').height() - 30);
 	if (rightGraph != null) {
 		rightGraph.resize($('#plotRightContent').width(), $('#plotRightContent').height() - 15);
 	}
