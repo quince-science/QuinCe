@@ -12,6 +12,8 @@ import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.InvalidDateTimeStringException;
 
 /**
  * An implementation of the QC Routines DataRecord class for QuinCe
@@ -39,6 +41,12 @@ public class QCRecord extends DataRecord {
 	
 	private String woceComment;
 	
+	private static final int FIELD_DATE_TIME = 2;
+
+	private static final int FIELD_LONGITUDE = 3;
+
+	private static final int FIELD_LATITUDE = 4;
+	
 	public QCRecord(long dataFileId, Instrument instrument, ColumnConfig columnConfig, int lineNumber, List<String> dataFields, Flag qcFlag, List<Message> qcComments, Flag woceFlag, String woceComment) throws DataRecordException, MessageException {
 		super(lineNumber, columnConfig, dataFields);
 		this.dataFileId = dataFileId;
@@ -50,21 +58,40 @@ public class QCRecord extends DataRecord {
 	}
 
 	@Override
-	public DateTime getTime() {
-		// TODO Auto-generated method stub
-		return null;
+	public DateTime getTime() throws DataRecordException {
+		String timeString = data.get(FIELD_DATE_TIME).getValue();
+		DateTime result = null;
+		try {
+			result = DateTimeUtils.makeDateTimeFromSql(timeString);
+		} catch (InvalidDateTimeStringException e) {
+			throw new DataRecordException(lineNumber, "Error occurred while retrieving Date/Time", e);
+		}
+		
+		return result;
 	}
 
 	@Override
-	public double getLongitude() {
-		// TODO Auto-generated method stub
-		return 0;
+	public double getLongitude() throws DataRecordException {
+		double result = 0;
+		try {
+			result = Double.parseDouble(data.get(FIELD_LONGITUDE).getValue());
+		} catch (NumberFormatException e) {
+			throw new DataRecordException(lineNumber, "Invalid longitude value '" + data.get(FIELD_LONGITUDE).getValue() + "'");
+		}
+		
+		return result;
 	}
 
 	@Override
-	public double getLatitude() {
-		// TODO Auto-generated method stub
-		return 0;
+	public double getLatitude() throws DataRecordException {
+		double result = 0;
+		try {
+			result = Double.parseDouble(data.get(FIELD_LATITUDE).getValue());
+		} catch (NumberFormatException e) {
+			throw new DataRecordException(lineNumber, "Invalid latitude value '" + data.get(FIELD_LONGITUDE).getValue() + "'");
+		}
+		
+		return result;
 	}
 
 	public long getDataFileId() {
