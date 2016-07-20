@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -255,7 +256,7 @@ public class FileDataInterrogator {
 						
 						String value = records.getString(currentDBColumn);
 						if (StringUtils.isNumeric(value)) {
-							outputBuffer.append(String.format("%.3f", Double.parseDouble(value)));
+							outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
 						} else {
 							outputBuffer.append(value);
 						}
