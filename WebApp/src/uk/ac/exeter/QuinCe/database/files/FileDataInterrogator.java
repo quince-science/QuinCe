@@ -13,6 +13,8 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.messages.Message;
+import uk.ac.exeter.QCRoutines.messages.RebuildCode;
 import uk.ac.exeter.QuinCe.data.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RawDataFile;
@@ -281,13 +283,37 @@ public class FileDataInterrogator {
 							addSeparator = false;
 						} else {
 							currentDBColumn++;
-							
 							String value = records.getString(currentDBColumn);
-							if (StringUtils.isNumeric(value)) {
-								outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
-							} else {
-								outputBuffer.append(value);
+							
+							switch (columnName) {
+							case "qcFlag":
+							case "woceFlag": {
+								outputBuffer.append(Integer.parseInt(value));
+								break;
 							}
+							case "qcMessage": {
+								List<Message> messages = RebuildCode.getMessagesFromRebuildCodes(value);
+								
+								for (int i = 0; i < messages.size(); i++) {
+									outputBuffer.append(messages.get(i).getShortMessage());
+									if (i < messages.size() - 1) {
+										outputBuffer.append(';');
+									}
+								}
+								break;
+							}
+							default: {
+								if (StringUtils.isNumeric(value)) {
+									outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
+								} else {
+									outputBuffer.append(value.replaceAll("\n", "\\n"));
+								}
+							}
+							}
+							
+							
+							
+							
 						}
 					} else {
 						// Find the line corresponding to the date from the database
