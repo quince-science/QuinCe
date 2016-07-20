@@ -53,9 +53,9 @@ public class FileDataInterrogator {
 		COLUMN_MAPPINGS.put("intakeTemp2", "raw_data.intake_temp_2");
 		COLUMN_MAPPINGS.put("intakeTemp3", "raw_data.intake_temp_3");
 		COLUMN_MAPPINGS.put("salinityMean", "data_reduction.mean_salinity");
-		COLUMN_MAPPINGS.put("salinityTemp1", "raw_data.salinity_1");
-		COLUMN_MAPPINGS.put("salinityTemp2", "raw_data.salinity_2");
-		COLUMN_MAPPINGS.put("salinityTemp3", "raw_data.salinity_3");
+		COLUMN_MAPPINGS.put("salinity1", "raw_data.salinity_1");
+		COLUMN_MAPPINGS.put("salinity2", "raw_data.salinity_2");
+		COLUMN_MAPPINGS.put("salinity3", "raw_data.salinity_3");
 		COLUMN_MAPPINGS.put("eqtMean", "data_reduction.mean_eqt");
 		COLUMN_MAPPINGS.put("eqt1", "raw_data.eqt_1");
 		COLUMN_MAPPINGS.put("eqt2", "raw_data.eqt_2");
@@ -132,8 +132,11 @@ public class FileDataInterrogator {
 			
 			for (int col = 0; col < columns.size(); col++) {
 				if (!columns.get(col).equals(COLUMN_ORIGINAL_FILE)) {
-					databaseColumnList.append(COLUMN_MAPPINGS.get(columns.get(col)));
-					databaseColumnList.append(',');
+					String column = columns.get(col);
+					if (instrumentHasColumn(instrument, column)) {
+						databaseColumnList.append(COLUMN_MAPPINGS.get(column));
+						databaseColumnList.append(',');
+					}
 				}
 			}
 			
@@ -177,6 +180,7 @@ public class FileDataInterrogator {
 			for (int col = 0; col < columns.size(); col++) {
 				
 				String columnName = columns.get(col);
+				boolean columnAdded = true;
 				
 				if (columnName.equals(COLUMN_ORIGINAL_FILE)) {
 					if (originalHeaderLines.size() > 0) {
@@ -194,14 +198,20 @@ public class FileDataInterrogator {
 				} else {
 					
 					// For columns from the database, add the column header
-					outputBuffer.append(getColumnHeading(columns.get(col), instrument));
+					if (instrumentHasColumn(instrument, columnName)) {
+						outputBuffer.append(getColumnHeading(columnName, instrument));
+					} else {
+						columnAdded = false;
+					}
 				}
 				
-				// If this isn't the last column, add a separator
-				if (col < columns.size() - 1) {
+				if (columnAdded) {
 					outputBuffer.append(separator);
 				}
 			}
+			
+			// Strip the trailing separator
+			outputBuffer.deleteCharAt(outputBuffer.length() - 1);
 			
 			outputBuffer.append("\n");
 			
@@ -214,19 +224,29 @@ public class FileDataInterrogator {
 					
 					// Find the column for the original data
 					for (int col = 0; col < columns.size(); col++) {
-						if (columns.get(col).equals(COLUMN_ORIGINAL_FILE)) {
+						String columnName = columns.get(col);
+						boolean addSeparator = true;
+												
+						if (columnName.equals(COLUMN_ORIGINAL_FILE)) {
 							// Add the header line
 							outputBuffer.append(makeDelimitedHeaderLine(originalHeaderLines.get(headerLine), separator));
+						} else {
+							if (!instrumentHasColumn(instrument, columnName)) {
+								addSeparator = false;
+							}
 						}
 
 						// If this isn't the last column, add a separator
 						// (non-original columns will get this too, to give empty columns)
-						if (headerLine < columns.size() - 1) {
+						if (addSeparator) {
 							outputBuffer.append(separator);
 						}
 					}
 				}
 				
+				// Strip the trailing separator
+				outputBuffer.deleteCharAt(outputBuffer.length() - 1);
+
 				outputBuffer.append("\n");
 			}
 			
@@ -243,8 +263,11 @@ public class FileDataInterrogator {
 				// for the 
 				for (int col = 0; col < columns.size(); col++) {
 					String columnName = columns.get(col);
+					boolean addSeparator = true;
 					
 					if (columnName.equals("dateTime")) {
+						
+						// Handle the date/time as a special case 
 						currentDBColumn++;
 						
 						Calendar colDate = DateTimeUtils.getUTCCalendarInstance();
@@ -252,13 +275,19 @@ public class FileDataInterrogator {
 												
 						outputBuffer.append(DateTimeUtils.formatDateTime(colDate));
 					} else if (!columnName.equals(COLUMN_ORIGINAL_FILE)) {
-						currentDBColumn++;
 						
-						String value = records.getString(currentDBColumn);
-						if (StringUtils.isNumeric(value)) {
-							outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
+						// Database fields are only added if the instrument has them
+						if (!instrumentHasColumn(instrument, columnName)) {
+							addSeparator = false;
 						} else {
-							outputBuffer.append(value);
+							currentDBColumn++;
+							
+							String value = records.getString(currentDBColumn);
+							if (StringUtils.isNumeric(value)) {
+								outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
+							} else {
+								outputBuffer.append(value);
+							}
 						}
 					} else {
 						// Find the line corresponding to the date from the database
@@ -278,10 +307,13 @@ public class FileDataInterrogator {
 						lastUsedLine = originalFileLine;
 					}
 					
-					if (col < columns.size() - 1) {
+					if (addSeparator) {
 						outputBuffer.append(separator);
 					}
 				}
+
+				// Strip the trailing separator
+				outputBuffer.deleteCharAt(outputBuffer.length() - 1);
 
 				// The end of this record
 				outputBuffer.append('\n');
@@ -493,5 +525,62 @@ public class FileDataInterrogator {
 		}
 		
 		return output.toString();
+	}
+	
+	private static boolean instrumentHasColumn(Instrument instrument, String column) {
+		boolean result = true;
+		
+		switch (column) {
+		case "intakeTemp1": {
+			result = instrument.hasIntakeTemp1();
+			break;
+		}
+		case "intakeTemp2": {
+			result = instrument.hasIntakeTemp2();
+			break;
+		}
+		case "intakeTemp3": {
+			result = instrument.hasIntakeTemp3();
+			break;
+		}
+		case "salinity1": {
+			result = instrument.hasSalinity1();
+			break;
+		}
+		case "salinity2": {
+			result = instrument.hasSalinity2();
+			break;
+		}
+		case "salinity3": {
+			result = instrument.hasSalinity3();
+			break;
+		}
+		case "eqt1": {
+			result = instrument.hasEqt1();
+			break;
+		}
+		case "eqt2": {
+			result = instrument.hasEqt2();
+			break;
+		}
+		case "eqt3": {
+			result = instrument.hasEqt3();
+			break;
+		}
+		case "eqp1": {
+			result = instrument.hasEqp1();
+			break;
+		}
+		case "eqp2": {
+			result = instrument.hasEqp2();
+			break;
+		}
+		case "eqp3": {
+			result = instrument.hasEqp3();
+			break;
+		}
+		}
+
+		return result;
 	}
 }
