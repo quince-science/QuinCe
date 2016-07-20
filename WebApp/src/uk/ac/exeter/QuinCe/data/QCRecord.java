@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.joda.time.DateTime;
 
@@ -69,6 +70,13 @@ public class QCRecord extends DataRecord {
 		
 		return result;
 	}
+	
+	@Override
+	public TreeSet<Integer> getDateTimeColumns() {
+		TreeSet<Integer> columnList = new TreeSet<Integer>();
+		columnList.add(FIELD_DATE_TIME);
+		return columnList;
+	}
 
 	@Override
 	public double getLongitude() throws DataRecordException {
@@ -83,6 +91,11 @@ public class QCRecord extends DataRecord {
 	}
 
 	@Override
+	public int getLongitudeColumn() {
+		return FIELD_LONGITUDE;
+	}
+	
+	@Override
 	public double getLatitude() throws DataRecordException {
 		double result = 0;
 		try {
@@ -94,6 +107,11 @@ public class QCRecord extends DataRecord {
 		return result;
 	}
 
+	@Override
+	public int getLatitudeColumn() {
+		return FIELD_LATITUDE;
+	}
+	
 	public long getDataFileId() {
 		return dataFileId;
 	}
