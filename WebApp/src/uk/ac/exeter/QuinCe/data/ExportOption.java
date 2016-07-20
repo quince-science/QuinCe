@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
 
 public class ExportOption {
@@ -27,9 +28,10 @@ public class ExportOption {
 		this.co2Type = co2Type;
 		
 		flags = new ArrayList<Integer>();
-		flags.add(2);
-		flags.add(3);
-		flags.add(4);
+		flags.add(Flag.VALUE_GOOD);
+		flags.add(Flag.VALUE_QUESTIONABLE);
+		flags.add(Flag.VALUE_BAD);
+		flags.add(Flag.VALUE_NEEDED);
 		
 		String invalidColumn = FileDataInterrogator.validateColumnNames(columns);
 		
