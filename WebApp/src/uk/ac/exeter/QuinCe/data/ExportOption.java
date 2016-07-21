@@ -29,6 +29,7 @@ public class ExportOption {
 		
 		flags = new ArrayList<Integer>();
 		flags.add(Flag.VALUE_GOOD);
+		flags.add(Flag.VALUE_ASSUMED_GOOD);
 		flags.add(Flag.VALUE_QUESTIONABLE);
 		flags.add(Flag.VALUE_BAD);
 		flags.add(Flag.VALUE_NEEDED);
