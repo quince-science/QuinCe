@@ -147,18 +147,18 @@ public class FileListBean extends BaseManagedBean {
 		
 		Instrument instrument = InstrumentDB.getInstrumentByFileId(dataSource, chosenFile);
 		
-		String fileContent = FileDataInterrogator.getCSVData(dataSource, ServletUtils.getAppConfig(), chosenFile, instrument, getExportOptions().get(chosenExportOption));
+		byte[] fileContent = FileDataInterrogator.getCSVData(dataSource, ServletUtils.getAppConfig(), chosenFile, instrument, getExportOptions().get(chosenExportOption)).getBytes();
 				
 		FacesContext fc = FacesContext.getCurrentInstance();
 	    ExternalContext ec = fc.getExternalContext();
 
 	    ec.responseReset();
 	    ec.setResponseContentType("text/csv");
-	    ec.setResponseContentLength(fileContent.length()); // Set it with the file size. This header is optional. It will work if it's omitted, but the download progress will be unknown.
+	    ec.setResponseContentLength(fileContent.length); // Set it with the file size. This header is optional. It will work if it's omitted, but the download progress will be unknown.
 	    ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + getChosenFileName() + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
 
 	    OutputStream output = ec.getResponseOutputStream();
-	    output.write(fileContent.getBytes());
+	    output.write(fileContent);
 
 	    fc.responseComplete();
 	}
