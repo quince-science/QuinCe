@@ -22,6 +22,9 @@ import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
+import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
+import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -292,6 +295,9 @@ public class DataFileDB {
 			conn.setAutoCommit(false);
 			
 			// Send out sub-record delete requests
+			QCDB.clearQCData(conn, fileDetails.getFileId());
+			DataReductionDB.clearDataReductionData(conn, fileDetails.getFileId());
+			RawDataDB.clearRawData(conn, fileDetails.getFileId());
 			
 			stmt = conn.prepareStatement(DELETE_FILE_STATEMENT);
 			stmt.setLong(1, fileDetails.getFileId());
