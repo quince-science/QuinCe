@@ -70,9 +70,15 @@ public class QCDB {
 
 	private static final String GET_QC_FLAG_QUERY = "SELECT qc_flag FROM qc WHERE data_file_id = ? AND row = ?";
 	
-	private static final String CLEAR_QC_FLAGS_STATEMENT = "UPDATE qc SET qc_flag = " + Flag.VALUE_NOT_SET
+	private static final String GET_WOCE_FLAG_QUERY = "SELECT woce_flag FROM qc WHERE data_file_id = ? AND row = ?";
+	
+	private static final String CLEAR_QC_FLAGS_BY_FLAG_STATEMENT = "UPDATE qc SET qc_flag = " + Flag.VALUE_NOT_SET
 			+ ", qc_message = NULL, woce_flag = " + Flag.VALUE_NOT_SET + ", woce_message = NULL "
 			+ "WHERE data_file_id = ? AND qc_flag = ? AND qc_message = ?";
+	
+	private static final String CLEAR_QC_FLAGS_BY_ROW_STATEMENT = "UPDATE qc SET qc_flag = " + Flag.VALUE_NOT_SET
+			+ ", qc_message = NULL, woce_flag = " + Flag.VALUE_NOT_SET + ", woce_message = NULL "
+			+ "WHERE data_file_id = ? AND row = ?";
 	
 	public static void clearQCData(DataSource dataSource, long fileId) throws DatabaseException {
 		Connection conn = null;
@@ -245,15 +251,31 @@ public class QCDB {
 		}
 	}
 	
-	public static void resetQCFlags(Connection conn, long fileId, Flag qcSearchFlag, String qcSearchMessage) throws DatabaseException {
+	public static void resetQCFlagsByFlagValue(Connection conn, long fileId, Flag qcSearchFlag, String qcSearchMessage) throws DatabaseException {
 		
 		PreparedStatement stmt = null;
 		
 		try {
-			stmt = conn.prepareStatement(CLEAR_QC_FLAGS_STATEMENT);
+			stmt = conn.prepareStatement(CLEAR_QC_FLAGS_BY_FLAG_STATEMENT);
 			stmt.setLong(1, fileId);
 			stmt.setInt(2, qcSearchFlag.getFlagValue());
 			stmt.setString(3, qcSearchMessage);
+			
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while clearing the QC flags", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+		}
+	}
+	
+	public static void resetQCFlagsByRow(Connection conn, long fileId, int row) throws DatabaseException {
+		PreparedStatement stmt = null;
+		
+		try {
+			stmt = conn.prepareStatement(CLEAR_QC_FLAGS_BY_ROW_STATEMENT);
+			stmt.setLong(1, fileId);
+			stmt.setInt(2, row);
 			
 			stmt.execute();
 		} catch (SQLException e) {
@@ -293,13 +315,21 @@ public class QCDB {
 	}
 
 	public static Flag getQCFlag(Connection conn, long fileId, int row) throws MessageException, DatabaseException, RecordNotFoundException {
+		return getFlag(conn, GET_QC_FLAG_QUERY, fileId, row);
+	}
+	
+	public static Flag getWoceFlag(Connection conn, long fileId, int row) throws MessageException, DatabaseException, RecordNotFoundException {
+		return getFlag(conn, GET_WOCE_FLAG_QUERY, fileId, row);
+	}
+	
+	private static Flag getFlag(Connection conn, String query, long fileId, int row) throws MessageException, DatabaseException, RecordNotFoundException {
 		
 		PreparedStatement stmt = null;
 		ResultSet record = null;
 		Flag result = null;
 		
 		try {
-			stmt = conn.prepareStatement(GET_QC_FLAG_QUERY);
+			stmt = conn.prepareStatement(query);
 			
 			stmt.setLong(1, fileId);
 			stmt.setInt(2, row);

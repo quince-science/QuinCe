@@ -18,6 +18,15 @@
 	    	  }
 	      }
 	      
+	      function reprocessFile(id, fileName) {
+	    	  if (confirm('Are you sure you want to reprocess file ' + fileName + '?')) {
+	    		  $('#fileListForm\\:chosenFile').val(id);
+	    		  return true;
+	    	  } else {
+	    		  return false;
+	    	  }
+	      }
+	      
 	      function dataScreen(id) {
 	    	  $('#fileListForm\\:fileId').val(id);
 	    	  return true;
@@ -140,6 +149,8 @@
 						<h:commandLink id="Export_#{file.fileId}" value="E" onclick="exportFile(#{file.fileId})" action="#{fileListBean.export}"/>
 						|
 						<h:commandLink id="Delete_#{file.fileId}" value="D" onclick="deleteFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.deleteFile}"/>
+						|
+						<h:commandLink id="Reprocess_#{file.fileId}" value="R" onclick="reprocessFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.reprocessFile}"/>
 					</p:column>
 				</p:dataTable>
 				

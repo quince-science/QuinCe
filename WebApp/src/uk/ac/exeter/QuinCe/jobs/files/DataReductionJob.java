@@ -7,6 +7,7 @@ import java.util.Properties;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RawDataValues;
@@ -19,6 +20,7 @@ import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
 import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -55,34 +57,40 @@ public class DataReductionJob extends FileJob {
 			for (RawDataValues record : rawData) {
 				lineNumber++;
 				
-				if (record.getCo2Type() == RunType.RUN_TYPE_WATER) {
+				// If the record has been marked bad, we skip it
+				if (!QCDB.getWoceFlag(conn, fileId, record.getRow()).equals(Flag.BAD)) {
+				
 					
-					// Sensor means
-					double meanIntakeTemp = calcMeanIntakeTemp(record, instrument);
-					double meanSalinity = calcMeanSalinity(record, instrument);
-					double meanEqt = calcMeanEqt(record, instrument);
-					double meanEqp = calcMeanEqp(record, instrument);
-					
-					// Get the moisture and mathematically dry the CO2 if required
-					double trueMoisture = 0;
-					double driedCo2 = record.getCo2();
-					
-					if (!instrument.getSamplesDried()) {
-						trueMoisture = record.getMoisture() - standardRuns.getInterpolatedMoisture(null, record.getTime());
-						driedCo2 = record.getCo2() / (1.0 - (trueMoisture / 1000));
+					if (record.getCo2Type() == RunType.RUN_TYPE_WATER) {
+						
+						// Sensor means
+						double meanIntakeTemp = calcMeanIntakeTemp(record, instrument);
+						double meanSalinity = calcMeanSalinity(record, instrument);
+						double meanEqt = calcMeanEqt(record, instrument);
+						double meanEqp = calcMeanEqp(record, instrument);
+						
+						// Get the moisture and mathematically dry the CO2 if required
+						double trueMoisture = 0;
+						double driedCo2 = record.getCo2();
+						
+						if (!instrument.getSamplesDried()) {
+							trueMoisture = record.getMoisture() - standardRuns.getInterpolatedMoisture(null, record.getTime());
+							driedCo2 = record.getCo2() / (1.0 - (trueMoisture / 1000));
+						}
+						
+						double calibratedCo2 = calcCalibratedCo2(driedCo2, record.getTime(), standardRuns, instrument);
+						double pCo2TEDry = calcPco2TEDry(calibratedCo2, meanEqp);
+						double pH2O = calcPH2O(meanSalinity, meanEqt);
+						double pCo2TEWet = calcPco2TEWet(pCo2TEDry, meanEqp, pH2O);
+						double fco2TE = calcFco2TE(pCo2TEWet, meanEqp, meanEqt);
+						double fco2 = calcFco2(fco2TE, meanEqt, meanIntakeTemp);
+											
+						DataReductionDB.storeRow(conn, fileId, record.getRow(), record.getCo2Type(), meanIntakeTemp,
+								meanSalinity, meanEqt, meanEqp, trueMoisture, driedCo2, calibratedCo2,
+								pCo2TEDry, pH2O, pCo2TEWet, fco2TE, fco2);
+						
+						QCDB.resetQCFlagsByRow(conn, fileId, record.getRow());
 					}
-					
-					double calibratedCo2 = calcCalibratedCo2(driedCo2, record.getTime(), standardRuns, instrument);
-					double pCo2TEDry = calcPco2TEDry(calibratedCo2, meanEqp);
-					double pH2O = calcPH2O(meanSalinity, meanEqt);
-					double pCo2TEWet = calcPco2TEWet(pCo2TEDry, meanEqp, pH2O);
-					double fco2TE = calcFco2TE(pCo2TEWet, meanEqp, meanEqt);
-					double fco2 = calcFco2(fco2TE, meanEqt, meanIntakeTemp);
-					
-										
-					DataReductionDB.storeRow(conn, fileId, record.getRow(), record.getCo2Type(), meanIntakeTemp,
-							meanSalinity, meanEqt, meanEqp, trueMoisture, driedCo2, calibratedCo2,
-							pCo2TEDry, pH2O, pCo2TEWet, fco2TE, fco2);
 				}
 				
 				if (Math.floorMod(lineNumber, 100) == 0) {
