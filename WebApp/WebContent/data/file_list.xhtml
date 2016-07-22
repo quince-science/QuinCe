@@ -109,17 +109,29 @@
 					</p:column>
 					<p:column>
 						<f:facet name="header">QC Stats</f:facet>
-						<canvas id="qcBar_#{file.fileId}" class="statBar"></canvas>
-			            <script type="text/javascript">
-			              drawFlagBar('#qcBar_#{file.fileId}', #{file.oceanMeasurementCount}, #{file.qcBadCount}, #{file.qcQuestionableCount}, #{file.qcGoodCount}, 0, #{file.qcNotSetCount}, 0, #{file.ignoredCount});
-			            </script>
+						<span class="bad">#{file.qcBadCount}</span>
+						/
+						<span class="questionable">#{file.qcQuestionableCount}</span>
+						/
+						<span class="good">#{file.qcGoodCount}</span>
+						/
+						<span class="notSet">#{file.qcNotSetCount}</span>
+						/
+						<span class="ignore">#{file.ignoredCount}</span>
 					</p:column>
 					<p:column>
 						<f:facet name="header">WOCE Stats</f:facet>
-						<canvas id="woceBar_#{file.fileId}" class="statBar"></canvas>
-			            <script type="text/javascript">
-			              drawFlagBar('#woceBar_#{file.fileId}', #{file.oceanMeasurementCount}, #{file.woceBadCount}, #{file.woceQuestionableCount}, #{file.woceGoodCount}, #{file.woceAssumedGoodCount}, #{file.woceNotSetCount}, #{file.woceNeededCount}, #{file.ignoredCount});
-			            </script>
+			            <span class="bad">#{file.woceBadCount}</span>
+			            /
+			            <span class="questionable">#{file.woceQuestionableCount}</span>
+			            /
+			            <span class="good">${file.woceGoodCount + file.woceAssumedGoodCount}</span>
+			            /
+			            <span class="notSet">#{file.woceNotSetCount}</span>
+			            /
+			            <span class="needsFlagging">#{file.woceNeededCount}</span>
+			            /
+			            <span class="ignore">#{file.ignoredCount}</span>
 					</p:column>
 					<p:column>
 						<f:facet name="header">Actions</f:facet>
