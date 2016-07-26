@@ -300,11 +300,6 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 					} else {
 						instrumentDetails.setRawFileColumnCount(splitLine.length);
 					}
-				} else {
-					if (instrumentDetails.getRawFileColumnCount() != splitLine.length) {
-						setSampleFileExtractionError("The file does not contain a consistent number of columns (line " + lineCount + ").");
-						break;
-					}
 				}
 				
 				Map<Integer, String> lineMap = new HashMap<Integer, String>();
