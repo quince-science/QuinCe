@@ -2,8 +2,6 @@ package uk.ac.exeter.QuinCe.web.system;
 
 import java.util.Properties;
 
-import javax.faces.context.FacesContext;
-import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.database.DatabaseException;
@@ -17,7 +15,7 @@ public class ServletUtils {
 
 	public static ResourceManager getResourceManager() throws ResourceException {
 		try {
-			return ResourceManager.getInstance((ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext());
+			return ResourceManager.getInstance();
 		} catch (Exception e) {
 			throw new ResourceException("Error while retrieving database data source", e);
 		}

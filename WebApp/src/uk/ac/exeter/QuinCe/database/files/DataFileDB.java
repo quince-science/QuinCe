@@ -22,6 +22,9 @@ import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
+import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
+import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -51,7 +54,7 @@ public class DataFileDB {
 	 * Query to find all the data files for a given user
 	 */
 	private static final String GET_USER_FILES_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
-			+ " WHERE i.owner = ? ORDER BY f.last_touched ASC";
+			+ " WHERE i.owner = ? ORDER BY f.last_touched DESC";
 	
 	/**
 	 * Statement to delete a file
@@ -292,6 +295,9 @@ public class DataFileDB {
 			conn.setAutoCommit(false);
 			
 			// Send out sub-record delete requests
+			QCDB.clearQCData(conn, fileDetails.getFileId());
+			DataReductionDB.clearDataReductionData(conn, fileDetails.getFileId());
+			RawDataDB.clearRawData(conn, fileDetails.getFileId());
 			
 			stmt = conn.prepareStatement(DELETE_FILE_STATEMENT);
 			stmt.setLong(1, fileDetails.getFileId());

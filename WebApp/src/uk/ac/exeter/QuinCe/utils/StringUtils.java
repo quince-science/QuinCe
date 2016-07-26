@@ -131,10 +131,14 @@ public class StringUtils {
 	public static boolean isNumeric(String value) {
 		boolean result = true;
 		
-		try {
-			Double.parseDouble(value);
-		} catch (NumberFormatException e) {
+		if (null == value) {
 			result = false;
+		} else {
+			try {
+				Double.parseDouble(value);
+			} catch (NumberFormatException e) {
+				result = false;
+			}
 		}
 		
 		return result;

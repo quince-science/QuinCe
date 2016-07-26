@@ -115,6 +115,8 @@ public class JobManager {
 	
 	private static final String JOB_LIST_QUERY = "SELECT id, owner, class, submitted, status, started, ended, progress, stack_trace FROM job ORDER BY submitted DESC";
 	
+	private static final String GET_JOB_STATUS_QUERY = "SELECT status FROM job WHERE id = ?";
+	
 	private static final String GET_JOB_OWNER_QUERY = "SELECT owner FROM job WHERE id = ?";
 
 	private static final String REQUEUE_JOB_STATEMENT = "UPDATE job SET "
@@ -734,13 +736,67 @@ public class JobManager {
 		return result;
 	}
 
-	public static void startNextJob(ResourceManager resourceManager, Properties config) throws MissingParamException, DatabaseException, NoSuchJobException, JobThreadPoolNotInitialisedException {
+	public static boolean startNextJob(ResourceManager resourceManager, Properties config) throws MissingParamException, DatabaseException, NoSuchJobException, JobThreadPoolNotInitialisedException {
+		boolean jobStarted = false;
 		Job nextJob = getNextJob(resourceManager, config);
-		JobThread thread = JobThreadPool.getInstance().getJobThread(nextJob);
-		if (null != thread) {
- 			thread.start();
+		if (null != nextJob) {
+			JobThread thread = JobThreadPool.getInstance().getJobThread(nextJob);
+			if (null != thread) {
+	 			thread.start();
+	 			
+	 			// Wait until the job's status is updated in the database
+	 			boolean jobRunning = false;
+	 			while (!jobRunning) {
+	 				if (!getJobStatus(resourceManager.getDBDataSource(), nextJob.getID()).equals(Job.WAITING_STATUS)) {
+	 					jobRunning = true;
+	 				} else {
+	 					try {
+	 						Thread.sleep(250);
+	 					} catch (InterruptedException e) {
+	 						// Do nothing
+	 					}
+	 				}
+	 			}
+	 			
+	 			jobStarted = true;
+			}
+		}
+		return jobStarted;
+	}
+	
+	private static String getJobStatus(DataSource dataSource, long jobId) throws NoSuchJobException, MissingParamException, DatabaseException {
+		
+		String result = null;
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(jobId, "jobId");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet record = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_JOB_STATUS_QUERY);
+			stmt.setLong(1, jobId);
+			
+			record = stmt.executeQuery();
+			if (!record.next()) {
+				throw new NoSuchJobException(jobId);
+			} else {
+				result = record.getString(1);
+			}
+			
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving job status", e);
+		} finally {
+			DatabaseUtils.closeResultSets(record);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 		
+		return result;
 	}
 
 	public static User getJobOwner(DataSource dataSource, long jobId) throws MissingParamException, DatabaseException, RecordNotFoundException, SQLException {

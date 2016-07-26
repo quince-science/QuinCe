@@ -1,0 +1,60 @@
+# This file contains the configuration for the file export options in QuinCe.
+#
+# Each line represents an export option, and has the following columns:
+#
+# Name: The name of the export, as it will be diplsayed in the application
+# Separator: The separator to use between columns
+# CO2 Type: 0 = Water, 1 = Atmospheric, 3 = Both
+# (Don't ask why it's 3...)
+#
+# Column*: Multiple entries indicating the column names to be exported.
+#
+# Supported column names are:
+#
+#dateTime
+#longitude
+#latitude
+#intakeTempMean
+#intakeTemp1
+#intakeTemp2
+#intakeTemp3
+#salinityMean
+#salinity1
+#salinity2
+#salinity3
+#eqtMean
+#eqt1
+#eqt2
+#eqt3
+#eqpMean
+#eqp1
+#eqp2
+#eqp3
+#atmosPressure
+#moistureMeasured
+#moistureTrue
+#pH2O
+#co2Measured
+#co2Dried
+#co2Calibrated
+#pCO2TEDry
+#pCO2TEWet
+#fCO2TE
+#fCO2Final
+#qcFlag
+#qcMessage
+#woceFlag
+#woceMessage
+#
+# There is also a special column called 'original', which will grab the original file from disk
+# and include it in the exported file. If this is included, the separator specified in this
+# file will be ignored, and the separator used in the original file will be used instead.
+#
+# If the separator is comma, use 
+# If the separator is tab, use 
+#
+# The list of columns that the application knows about can be found <somewhere>.
+
+# Name, Separator, CO2 Type, Column, Column, ...
+ICOS OTC Labelling Step 2,\,,0,dateTime,longitude,latitude,intakeTemp1,intakeTemp2,intakeTemp3,intakeTempMean,salinity1,salinity2,salinity3,salinityMean,eqt1,eqt2,eqt3,eqtMean,eqp1,eqp2,eqp3,eqpMean,moistureMeasured,moistureTrue,fCO2Final ,qcFlag ,qcMessage
+Original file,\,,0,original

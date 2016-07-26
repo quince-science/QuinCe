@@ -27,13 +27,13 @@ import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
  */
 public class ResourceManager implements ServletContextListener {
 
-	private static final String ATTRIBUTE_NAME = "pools";
-	
 	private DataSource dbDataSource;
 	
 	private Properties configuration;
 	
 	private ColumnConfig columnConfig;
+	
+	private static ResourceManager instance = null;
 	
 	@Override
     public void contextInitialized(ServletContextEvent event) {
@@ -82,8 +82,7 @@ public class ResourceManager implements ServletContextListener {
        		throw new RuntimeException("Could not initialise export configuration", e);
        	}
        	
-       	// Register ourselves in the servlet context
-        servletContext.setAttribute(ATTRIBUTE_NAME, this);
+       	instance = this;
 }
 
     @Override
@@ -103,7 +102,7 @@ public class ResourceManager implements ServletContextListener {
     	return columnConfig;
     }
     
-    public static ResourceManager getInstance(ServletContext servletContext) {
-        return (ResourceManager) servletContext.getAttribute(ATTRIBUTE_NAME);
+    public static ResourceManager getInstance() {
+        return instance;
     }
 }

@@ -31,8 +31,8 @@
 
 
 #Name,Type,Required,FlagCascade
-CO2_Type,N,Y,
-Date_Time,S,Y,
+CO2 Type,N,Y,
+Date/Time,S,Y,
 Longitude,N,Y,
 Latitude,N,Y,
 Intake Temp 1,N,Y,Mean Intake Temp|3|4
