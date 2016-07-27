@@ -263,8 +263,7 @@ public class FileDataInterrogator {
 				int currentDBColumn = 1;
 				
 				// Get the date from the first column
-				Calendar rowDate = DateTimeUtils.getUTCCalendarInstance();
-				rowDate.setTime(records.getTimestamp(currentDBColumn));
+				Calendar rowDate = DatabaseUtils.getUTCDateTime(records, currentDBColumn);
 				
 				// Loop through all the columns. Database columns are offset by 1
 				// for the 
@@ -277,9 +276,7 @@ public class FileDataInterrogator {
 						// Handle the date/time as a special case 
 						currentDBColumn++;
 						
-						Calendar colDate = DateTimeUtils.getUTCCalendarInstance();
-						colDate.setTime(records.getTimestamp(currentDBColumn));
-												
+						Calendar colDate = DatabaseUtils.getUTCDateTime(records, currentDBColumn);
 						outputBuffer.append(DateTimeUtils.formatDateTime(colDate));
 					} else if (!columnName.equals(COLUMN_ORIGINAL_FILE)) {
 						
@@ -392,8 +389,18 @@ public class FileDataInterrogator {
 				
 				outputBuffer.append('[');
 				for (int col = 1; col <= columnCount; col++) {
+					
 					outputBuffer.append('\"');
-					outputBuffer.append(records.getString(col));
+
+					// The first column is always the date/time (it's added automatically)
+					// Plus we check the other columns too (which are zero-based, and the automatic dateTime accounts for one)
+					if (col == 1 || columns.get(col - 2).equals("dateTime")) {
+						Calendar colDate = DatabaseUtils.getUTCDateTime(records, col);
+						outputBuffer.append(DateTimeUtils.formatDateTime(colDate));
+					} else {
+						outputBuffer.append(records.getString(col));
+					}
+					
 					outputBuffer.append('\"');
 					if (col < columnCount) {
 						outputBuffer.append(',');
