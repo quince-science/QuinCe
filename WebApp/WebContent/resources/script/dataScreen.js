@@ -9,7 +9,6 @@
 var GRAPH_OPTIONS = {
         drawPoints: true,
         strokeWidth: 0.0,
-        labelsUTC: true,
         labelsSeparateLine: true,
         digitsAfterDecimal: 2,
         animatedZooms: true
