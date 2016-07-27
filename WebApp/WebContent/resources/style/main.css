@@ -335,6 +335,10 @@ li.menuitem:hover, li.smallMenuitem:hover {
   color: #B4B4B4;
 }
 
+.notSet {
+  color: #999999;
+}
+
 #woceSelectMenu {
   position: absolute;
   background: white;

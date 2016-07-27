@@ -132,6 +132,6 @@ public class TrimFlushingJob extends FileJob {
 	
 	private void reset(Connection conn) throws DatabaseException {
 		RawDataDB.clearGasStandardIgnoreFlags(conn, fileId);
-		QCDB.resetQCFlags(conn, fileId, Flag.IGNORED, FLUSHING_MESSAGE);
+		QCDB.resetQCFlagsByFlagValue(conn, fileId, Flag.IGNORED, FLUSHING_MESSAGE);
 	}
 }

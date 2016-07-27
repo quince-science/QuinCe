@@ -28,7 +28,7 @@ var plotPopupSingleSelection = true;
 // Specifies the target plot (1/2) and axis (X/Y) for the popup
 var plotPopupTarget = 'LX';
 
-// The selected paramters for the plots and maps
+// The selected parameters for the plots and maps
 var leftPlotXAxis = ['plot_datetime_dateTime'];
 var leftPlotYAxis = ['plot_eqt_eqtMean', 'plot_eqt_eqt1'];
 var leftMap = 'plot_co2_fCO2Final';
@@ -41,11 +41,15 @@ var rightMap = 'plot_intaketemp_intakeTempMean';
 var leftGraph = null;
 var rightGraph = null;
 
+// The callback function for the DataTables drawing call
+var dataTableDrawCallback = null;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
  * Document Load function.
- * Initialises the splits, and adds handler for window resizing
+ * Initialises the splits, adds handler for window resizing,
+ * and kicks off drawing the data
  */
 $(function() {
 	// Make the panel splits
@@ -79,15 +83,23 @@ $(function() {
     	});
     });
     
+    // Set up the data table options
+    
+    
+    // Draw all the page contents
     drawAllData();
 });
 
+/*
+ * Refreshes all data objects (both plots and the table)
+ */
 function drawAllData() {
 	drawLoading($('#plotLeftContent'));
 	drawLoading($('#plotRightContent'));
 	drawLoading($('#tableContent'));
     updatePlot('left');
     updatePlot('right');
+    updateTable();
 }
 
 /*
@@ -108,6 +120,10 @@ function resizeContent() {
 	if (rightGraph != null) {
 		rightGraph.resize($('#plotRightContent').width(), $('#plotRightContent').height() - 15);
 	}
+	
+	// Set the height of the DataTables scrollbody
+	// We have to select it by class, but there's only one so we can get away with it
+	$('.dataTables_scrollBody').height(calcTableScrollY());
 }
 
 /*
@@ -228,6 +244,9 @@ function getGroupName(inputName) {
 	return inputName.match(/_(.*)_/)[1];
 }
 
+/*
+ * Extract the column name from an input's name
+ */
 function getColumnName(inputName) {
 	return inputName.match(/_([^_]*)$/)[1];
 }
@@ -272,6 +291,9 @@ function setPlotPopupInputs() {
 	});
 }
 
+/*
+ * Store the selected plot option in the relevant variable
+ */
 function savePlotSelection() {
 	
 	// Get the list of checked inputs
@@ -312,6 +334,12 @@ function savePlotSelection() {
 	return false;
 }
 
+/*
+ * Triggers an update of a plot's data.
+ * Gets the necessary details and submits them to the server by
+ * submitting the hidden form as an ajax request. The event handler
+ * redraws the plot when the request completes.
+ */
 function updatePlot(plot) {
 	
 	if (plot == 'left') {
@@ -374,6 +402,9 @@ function updatePlot(plot) {
 	return false;
 }
 
+/*
+ * Render the left plot
+ */
 function drawLeftPlot(data) {
 	var status = data.status;
 	
@@ -388,6 +419,9 @@ function drawLeftPlot(data) {
 	}
 }
 
+/*
+ * Render the right plot
+ */
 function drawRightPlot(data) {
 	var status = data.status;
 	
@@ -400,4 +434,77 @@ function drawRightPlot(data) {
 		
 		resizeContent();
 	}
+}
+
+/*
+ * Begins the redraw of the data table.
+ * The HTML table is initialised (with header only), and
+ * the DataTables object is created and configured to load
+ * its data from the server using the hidden form.
+ */
+function updateTable() {
+	
+	html = '<table id="dataTable" class="display nowrap" cellspacing="0" width="100%">';
+	html += '<thead>';
+    html += '<th>Date/Time</th>';
+    html += '<th>Longitude</th>';
+    html += '<th>Latitude</th>';
+    html += '<th>QC Result</th>';
+    html += '<th>QC Message</th>';
+    html += '<th>WOCE Flag</th>';
+    html += '<th>WOCE Message</th>';
+    html += '</thead>';
+    html += '</table>';
+	
+    $('#tableContent').html(html);
+    
+    $('#dataTable').DataTable( {
+    	ordering: false,
+    	searching: false,
+    	serverSide: true,
+    	scroller: {
+    		loadingIndicator: true
+    	},
+    	scrollY: calcTableScrollY(),
+    	bInfo: false,
+    	ajax: function ( data, callback, settings ) {
+            
+    		// Store the callback
+    		dataTableDrawCallback = callback;
+
+    		// Fill in the form inputs
+    		$('#plotDataForm\\:tableDataDraw').val(data.draw);
+    		$('#plotDataForm\\:tableDataStart').val(data.start);
+    		$('#plotDataForm\\:tableDataLength').val(data.length);
+    		
+    		// Submit the query to the server
+    		$('#plotDataForm\\:tableGetData').click();
+        }
+    });
+}
+
+/*
+ * Called when table data has been downloaded from the server.
+ * The previously stored callback function is triggered with
+ * the data from the server.
+ */
+function tableDataDownload(data) {
+	
+	var status = data.status;
+	if (status == "success") {
+		dataTableDrawCallback( {
+            draw: $('#plotdDataForm\\:tableDataDraw').val(),
+            data: JSON.parse($('#plotDataForm\\:tableJsonData').val()),
+            recordsTotal: $('#plotDataForm\\:recordCount').val(),
+            recordsFiltered: $('#plotDataForm\\:recordCount').val()
+		});
+	}
+}
+
+/*
+ * Calculate the value of the scrollY entry for the data table
+ */
+function calcTableScrollY() {
+	// 41 is the post-rendered height of the header in FF (as measured on screen). Can we detect it somewhere?
+	return $('#data').height() - $('#tableControls').outerHeight() - 41;
 }

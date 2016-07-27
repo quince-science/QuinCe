@@ -5,7 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
+
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
  * Miscellaneous database utilities
@@ -88,5 +91,11 @@ public class DatabaseUtils {
 				// DO nothing
 			}
 		}
+	}
+	
+	public static Calendar getUTCDateTime(ResultSet records, int columnIndex) throws SQLException {
+		Calendar result = DateTimeUtils.getUTCCalendarInstance();
+		result.setTimeInMillis(records.getTimestamp(columnIndex).getTime());
+		return result;
 	}
 }

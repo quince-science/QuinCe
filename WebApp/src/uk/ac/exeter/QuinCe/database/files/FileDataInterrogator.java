@@ -3,15 +3,21 @@ package uk.ac.exeter.QuinCe.database.files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.messages.Message;
+import uk.ac.exeter.QCRoutines.messages.RebuildCode;
 import uk.ac.exeter.QuinCe.data.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RawDataFile;
@@ -33,6 +39,8 @@ public class FileDataInterrogator {
 	
 	private static final String COLUMN_ORIGINAL_FILE = "original";
 	
+	private static final String COLUMN_RECORD_COUNT = "count";
+	
 	private static Map<String, String> COLUMN_MAPPINGS = null;
 	
 	private static final String GET_COLUMN_DATA_QUERY = "SELECT %%COLUMNS%% FROM raw_data "
@@ -52,9 +60,9 @@ public class FileDataInterrogator {
 		COLUMN_MAPPINGS.put("intakeTemp2", "raw_data.intake_temp_2");
 		COLUMN_MAPPINGS.put("intakeTemp3", "raw_data.intake_temp_3");
 		COLUMN_MAPPINGS.put("salinityMean", "data_reduction.mean_salinity");
-		COLUMN_MAPPINGS.put("salinityTemp1", "raw_data.salinity_1");
-		COLUMN_MAPPINGS.put("salinityTemp2", "raw_data.salinity_2");
-		COLUMN_MAPPINGS.put("salinityTemp3", "raw_data.salinity_3");
+		COLUMN_MAPPINGS.put("salinity1", "raw_data.salinity_1");
+		COLUMN_MAPPINGS.put("salinity2", "raw_data.salinity_2");
+		COLUMN_MAPPINGS.put("salinity3", "raw_data.salinity_3");
 		COLUMN_MAPPINGS.put("eqtMean", "data_reduction.mean_eqt");
 		COLUMN_MAPPINGS.put("eqt1", "raw_data.eqt_1");
 		COLUMN_MAPPINGS.put("eqt2", "raw_data.eqt_2");
@@ -81,19 +89,20 @@ public class FileDataInterrogator {
 	}
 	
 	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns, int co2Type, List<Integer> includeFlags) throws MissingParamException, DatabaseException, RawDataFileException {
-		return getCSVData(dataSource, appConfig, fileId, instrument, columns, ",", co2Type, includeFlags);
+		return getCSVData(dataSource, appConfig, fileId, instrument, columns, ",", co2Type, includeFlags, 0, -1);
 	}
 	
 	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, ExportOption exportOption) throws MissingParamException, DatabaseException, RawDataFileException {
-		return getCSVData(dataSource, appConfig, fileId, instrument, exportOption.getColumns(), exportOption.getSeparator(), exportOption.getCo2Type(), exportOption.getFlags());
+		return getCSVData(dataSource, appConfig, fileId, instrument, exportOption.getColumns(), exportOption.getSeparator(), exportOption.getCo2Type(), exportOption.getFlags(), 0, -1);
 	}
 	
-	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns, String separator, int co2Type, List<Integer> includeFlags) throws MissingParamException, DatabaseException, RawDataFileException {
+	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns, String separator, int co2Type, List<Integer> includeFlags, int start, int length) throws MissingParamException, DatabaseException, RawDataFileException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(instrument, "instrument");
 		MissingParam.checkMissing(columns, "columns");
 		MissingParam.checkMissing(includeFlags, "includeFlags");
+		MissingParam.checkZeroPositive(start, "start");
 
 		// Data output variable
 		String output = null;
@@ -131,8 +140,11 @@ public class FileDataInterrogator {
 			
 			for (int col = 0; col < columns.size(); col++) {
 				if (!columns.get(col).equals(COLUMN_ORIGINAL_FILE)) {
-					databaseColumnList.append(COLUMN_MAPPINGS.get(columns.get(col)));
-					databaseColumnList.append(',');
+					String column = columns.get(col);
+					if (instrumentHasColumn(instrument, column)) {
+						databaseColumnList.append(COLUMN_MAPPINGS.get(column));
+						databaseColumnList.append(',');
+					}
 				}
 			}
 			
@@ -168,14 +180,14 @@ public class FileDataInterrogator {
 			records = stmt.executeQuery();
 			
 			StringBuffer outputBuffer = new StringBuffer();
-			
-			
+
 			// Build the first header line. This contains all headers
 			// exported from the database and the first header line from
 			// the data file (if it exists).
 			for (int col = 0; col < columns.size(); col++) {
 				
 				String columnName = columns.get(col);
+				boolean columnAdded = true;
 				
 				if (columnName.equals(COLUMN_ORIGINAL_FILE)) {
 					if (originalHeaderLines.size() > 0) {
@@ -193,14 +205,20 @@ public class FileDataInterrogator {
 				} else {
 					
 					// For columns from the database, add the column header
-					outputBuffer.append(getColumnHeading(columns.get(col), instrument));
+					if (instrumentHasColumn(instrument, columnName)) {
+						outputBuffer.append(getColumnHeading(columnName, instrument));
+					} else {
+						columnAdded = false;
+					}
 				}
 				
-				// If this isn't the last column, add a separator
-				if (col < columns.size() - 1) {
+				if (columnAdded) {
 					outputBuffer.append(separator);
 				}
 			}
+			
+			// Strip the trailing separator
+			outputBuffer.deleteCharAt(outputBuffer.length() - 1);
 			
 			outputBuffer.append("\n");
 			
@@ -213,19 +231,29 @@ public class FileDataInterrogator {
 					
 					// Find the column for the original data
 					for (int col = 0; col < columns.size(); col++) {
-						if (columns.get(col).equals(COLUMN_ORIGINAL_FILE)) {
+						String columnName = columns.get(col);
+						boolean addSeparator = true;
+												
+						if (columnName.equals(COLUMN_ORIGINAL_FILE)) {
 							// Add the header line
 							outputBuffer.append(makeDelimitedHeaderLine(originalHeaderLines.get(headerLine), separator));
+						} else {
+							if (!instrumentHasColumn(instrument, columnName)) {
+								addSeparator = false;
+							}
 						}
 
 						// If this isn't the last column, add a separator
 						// (non-original columns will get this too, to give empty columns)
-						if (headerLine < columns.size() - 1) {
+						if (addSeparator) {
 							outputBuffer.append(separator);
 						}
 					}
 				}
 				
+				// Strip the trailing separator
+				outputBuffer.deleteCharAt(outputBuffer.length() - 1);
+
 				outputBuffer.append("\n");
 			}
 			
@@ -235,29 +263,59 @@ public class FileDataInterrogator {
 				int currentDBColumn = 1;
 				
 				// Get the date from the first column
-				Calendar rowDate = DateTimeUtils.getUTCCalendarInstance();
-				rowDate.setTime(records.getTimestamp(currentDBColumn));
+				Calendar rowDate = DatabaseUtils.getUTCDateTime(records, currentDBColumn);
 				
 				// Loop through all the columns. Database columns are offset by 1
 				// for the 
 				for (int col = 0; col < columns.size(); col++) {
 					String columnName = columns.get(col);
+					boolean addSeparator = true;
 					
 					if (columnName.equals("dateTime")) {
+						
+						// Handle the date/time as a special case 
 						currentDBColumn++;
 						
-						Calendar colDate = DateTimeUtils.getUTCCalendarInstance();
-						colDate.setTime(records.getTimestamp(currentDBColumn));
-												
+						Calendar colDate = DatabaseUtils.getUTCDateTime(records, currentDBColumn);
 						outputBuffer.append(DateTimeUtils.formatDateTime(colDate));
 					} else if (!columnName.equals(COLUMN_ORIGINAL_FILE)) {
-						currentDBColumn++;
 						
-						String value = records.getString(currentDBColumn);
-						if (StringUtils.isNumeric(value)) {
-							outputBuffer.append(String.format("%.3f", Double.parseDouble(value)));
+						// Database fields are only added if the instrument has them
+						if (!instrumentHasColumn(instrument, columnName)) {
+							addSeparator = false;
 						} else {
-							outputBuffer.append(value);
+							currentDBColumn++;
+							String value = records.getString(currentDBColumn);
+							
+							switch (columnName) {
+							case "qcFlag":
+							case "woceFlag": {
+								outputBuffer.append(Integer.parseInt(value));
+								break;
+							}
+							case "qcMessage": {
+								List<Message> messages = RebuildCode.getMessagesFromRebuildCodes(value);
+								
+								for (int i = 0; i < messages.size(); i++) {
+									outputBuffer.append(messages.get(i).getShortMessage());
+									if (i < messages.size() - 1) {
+										outputBuffer.append(';');
+									}
+								}
+								break;
+							}
+							default: {
+								if (StringUtils.isNumeric(value)) {
+									outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
+								} else {
+									outputBuffer.append(value.replaceAll("\n", "\\n"));
+								}
+							}
+							}
+							
+							
+							
+							
 						}
 					} else {
 						// Find the line corresponding to the date from the database
@@ -277,10 +335,13 @@ public class FileDataInterrogator {
 						lastUsedLine = originalFileLine;
 					}
 					
-					if (col < columns.size() - 1) {
+					if (addSeparator) {
 						outputBuffer.append(separator);
 					}
 				}
+
+				// Strip the trailing separator
+				outputBuffer.deleteCharAt(outputBuffer.length() - 1);
 
 				// The end of this record
 				outputBuffer.append('\n');
@@ -298,6 +359,110 @@ public class FileDataInterrogator {
 		}
 		
 		return output;
+	}
+	
+	public static String getJsonData(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length) throws MissingParamException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		MissingParam.checkMissing(columns, "columns");
+		MissingParam.checkMissing(includeFlags, "includeFlags");
+		
+		String output = null;
+		
+		// Variables for getting data from database
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+
+		try {
+			conn = dataSource.getConnection();
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, start, length);
+			
+			records = stmt.executeQuery();
+			ResultSetMetaData rsmd = records.getMetaData();
+			int columnCount = rsmd.getColumnCount();
+
+			StringBuffer outputBuffer = new StringBuffer();
+			outputBuffer.append('[');
+			
+			while (records.next()) {
+				
+				outputBuffer.append('[');
+				for (int col = 1; col <= columnCount; col++) {
+					
+					outputBuffer.append('\"');
+
+					// The first column is always the date/time (it's added automatically)
+					// Plus we check the other columns too (which are zero-based, and the automatic dateTime accounts for one)
+					if (col == 1 || columns.get(col - 2).equals("dateTime")) {
+						Calendar colDate = DatabaseUtils.getUTCDateTime(records, col);
+						outputBuffer.append(DateTimeUtils.formatDateTime(colDate));
+					} else {
+						outputBuffer.append(records.getString(col));
+					}
+					
+					outputBuffer.append('\"');
+					if (col < columnCount) {
+						outputBuffer.append(',');
+					}
+				}
+
+				outputBuffer.append("],");
+			}
+			
+			// Remove the trailing comma from the last record
+			outputBuffer.deleteCharAt(outputBuffer.length() - 1);
+			outputBuffer.append(']');
+			
+			output = outputBuffer.toString();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			output = "***ERROR - " + e.getMessage();
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+
+		return output;
+	}
+	
+	public static int getRecordCount(DataSource dataSource, long fileId, int co2Type, List<Integer> includeFlags) throws MissingParamException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		MissingParam.checkMissing(includeFlags, "includeFlags");
+		
+		int count = 0;
+		
+		// Variables for getting data from database
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+
+		try {
+			List<String> columns = new ArrayList<String>(1);
+			columns.add(COLUMN_RECORD_COUNT);
+			
+			conn = dataSource.getConnection();
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, -1, -1);
+			
+			records = stmt.executeQuery();
+
+			if (records.next()) {
+				count = records.getInt(1);
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			count = 0;
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+
+		return count;
 	}
 	
 	private static String getColumnHeading(String columnName, Instrument instrument) {
@@ -493,4 +658,140 @@ public class FileDataInterrogator {
 		
 		return output.toString();
 	}
+
+	private static PreparedStatement makeFileDataStatement(Connection conn, long fileId, List<String> columns, int co2Type, List<Integer> includeFlags, int start, int length) throws SQLException {
+		
+		PreparedStatement stmt = null;
+
+		try {
+			String databaseColumnList = makeDatabaseColumnList(columns);
+			String co2Types = makeCo2Types(co2Type);
+			String flags = makeFlags(includeFlags);
+
+			String queryString = GET_COLUMN_DATA_QUERY.replaceAll("%%COLUMNS%%", databaseColumnList);
+			queryString = queryString.replaceAll("%%CO2TYPES%%", co2Types);
+			queryString = queryString.replaceAll("%%FLAGS%%", flags);
+			if (length > 0) {
+				queryString += " LIMIT " + start + "," + length;
+			}
+
+			stmt = conn.prepareStatement(queryString);
+			stmt.setLong(1, fileId);
+		} catch (SQLException e) {
+			DatabaseUtils.closeStatements(stmt);
+			throw e;
+		}
+		
+		return stmt;
+	}
+	
+	private static String makeDatabaseColumnList(List<String> columns) {
+		
+		StringBuffer databaseColumnList = new StringBuffer();
+		
+		if (columns.contains(COLUMN_RECORD_COUNT)) {
+			databaseColumnList.append("COUNT(*)");
+		} else {
+			databaseColumnList.append(COLUMN_MAPPINGS.get("dateTime"));
+			databaseColumnList.append(',');
+			
+			for (int col = 0; col < columns.size(); col++) {
+				if (!columns.get(col).equals(COLUMN_ORIGINAL_FILE)) {
+					databaseColumnList.append(COLUMN_MAPPINGS.get(columns.get(col)));
+					databaseColumnList.append(',');
+				}
+			}
+			
+			// We always add a comma separator, so we remove the last character
+			// Normally we'd check as we built the string, but the optional 'original' field
+			// makes it awkward.
+			databaseColumnList.deleteCharAt(databaseColumnList.length() - 1);
+		}
+
+		return databaseColumnList.toString();
+	}
+	
+	private static String makeCo2Types(int co2Type) {
+		StringBuffer co2Types = new StringBuffer();
+
+		if (co2Type == RunType.RUN_TYPE_BOTH) {
+			co2Types.append(RunType.RUN_TYPE_WATER);
+			co2Types.append(',');
+			co2Types.append(RunType.RUN_TYPE_ATMOSPHERIC);
+		} else {
+			co2Types.append(co2Type);
+		}
+		
+		return co2Types.toString();
+	}
+	
+	private static String makeFlags(List<Integer> includeFlags) {
+		StringBuffer flags = new StringBuffer();
+		for (int i = 0; i < includeFlags.size(); i++) {
+			flags.append(includeFlags.get(i));
+			if (i < includeFlags.size() - 1) {
+				flags.append(',');
+			}
+		}
+		
+		return flags.toString();
+	}
+
+	private static boolean instrumentHasColumn(Instrument instrument, String column) {
+		boolean result = true;
+		
+		switch (column) {
+		case "intakeTemp1": {
+			result = instrument.hasIntakeTemp1();
+			break;
+		}
+		case "intakeTemp2": {
+			result = instrument.hasIntakeTemp2();
+			break;
+		}
+		case "intakeTemp3": {
+			result = instrument.hasIntakeTemp3();
+			break;
+		}
+		case "salinity1": {
+			result = instrument.hasSalinity1();
+			break;
+		}
+		case "salinity2": {
+			result = instrument.hasSalinity2();
+			break;
+		}
+		case "salinity3": {
+			result = instrument.hasSalinity3();
+			break;
+		}
+		case "eqt1": {
+			result = instrument.hasEqt1();
+			break;
+		}
+		case "eqt2": {
+			result = instrument.hasEqt2();
+			break;
+		}
+		case "eqt3": {
+			result = instrument.hasEqt3();
+			break;
+		}
+		case "eqp1": {
+			result = instrument.hasEqp1();
+			break;
+		}
+		case "eqp2": {
+			result = instrument.hasEqp2();
+			break;
+		}
+		case "eqp3": {
+			result = instrument.hasEqp3();
+			break;
+		}
+		}
+
+		return result;
+	}
+
 }

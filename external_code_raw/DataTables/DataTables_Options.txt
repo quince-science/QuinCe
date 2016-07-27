@@ -1,0 +1,26 @@
+Downloaded 2016-07-13
+
+Options
+=======
+
+- No jQuery
+- DataTables styling
+- Core DataTables library included
+- Minify
+- Single file
+- Local files
+
+Packages
+========
+
+[ ] AutoFill
+[ ] Buttons
+[ ] ColReorder
+[ ] Editor
+[x] FixedColumns
+[x] FixedHeader
+[ ] KeyTable
+[ ] Responsive
+[ ] RowReorder
+[x] Scroller
+[x] Select

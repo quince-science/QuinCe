@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.database.Calculation;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
@@ -19,6 +20,15 @@ public class DataReductionDB {
 			+ "data_file_id, row, co2_type, mean_intake_temp, mean_salinity, mean_eqt, mean_eqp, "
 			+ "true_moisture, dried_co2, calibrated_co2, pco2_te_dry, ph2o, pco2_te_wet, fco2_te, fco2) "
 			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+	
+	private static final String UPDATE_ROW_STATEMENT = "UPDATE data_reduction SET "
+			+ "mean_intake_temp = ?, mean_salinity = ?, mean_eqt = ?, mean_eqp = ?, "
+			+ "true_moisture = ?, dried_co2 = ?, calibrated_co2 = ?, pco2_te_dry = ?, "
+			+ "ph2o = ?, pco2_te_wet = ?, fco2_te = ?, fco2 = ? "
+			+ "WHERE data_file_id = ? AND row = ?";
+			
+	
+	private static final String FIND_ROW_STATEMENT = "SELECT COUNT(*) FROM data_reduction WHERE data_file_id = ? AND row = ?";
 	
 	public static void clearDataReductionData(DataSource dataSource, long fileId) throws DatabaseException {
 		Connection conn = null;
@@ -63,22 +73,40 @@ public class DataReductionDB {
 		PreparedStatement stmt = null;
 		
 		try {
-			stmt = conn.prepareStatement(STORE_ROW_STATEMENT);
-			stmt.setLong(1, fileId);
-			stmt.setInt(2, row);
-			stmt.setInt(3, co2Type);
-			stmt.setDouble(4, meanIntakeTemp);
-			stmt.setDouble(5, meanSalinity);
-			stmt.setDouble(6, meanEqt);
-			stmt.setDouble(7, meanEqp);
-			stmt.setDouble(8, trueMoisture);
-			stmt.setDouble(9, driedCo2);
-			stmt.setDouble(10, calibratedCo2);
-			stmt.setDouble(11, pCo2TEDry);
-			stmt.setDouble(12, pH2O);
-			stmt.setDouble(13, pCo2TEWet);
-			stmt.setDouble(14, fco2TE);
-			stmt.setDouble(15, fco2);
+			if (!rowExists(conn, fileId, row)) { 
+				stmt = conn.prepareStatement(STORE_ROW_STATEMENT);
+				stmt.setLong(1, fileId);
+				stmt.setInt(2, row);
+				stmt.setInt(3, co2Type);
+				stmt.setDouble(4, meanIntakeTemp);
+				stmt.setDouble(5, meanSalinity);
+				stmt.setDouble(6, meanEqt);
+				stmt.setDouble(7, meanEqp);
+				stmt.setDouble(8, trueMoisture);
+				stmt.setDouble(9, driedCo2);
+				stmt.setDouble(10, calibratedCo2);
+				stmt.setDouble(11, pCo2TEDry);
+				stmt.setDouble(12, pH2O);
+				stmt.setDouble(13, pCo2TEWet);
+				stmt.setDouble(14, fco2TE);
+				stmt.setDouble(15, fco2);
+			} else {
+				stmt = conn.prepareStatement(UPDATE_ROW_STATEMENT);
+				stmt.setDouble(1, meanIntakeTemp);
+				stmt.setDouble(2, meanSalinity);
+				stmt.setDouble(3, meanEqt);
+				stmt.setDouble(4, meanEqp);
+				stmt.setDouble(5, trueMoisture);
+				stmt.setDouble(6, driedCo2);
+				stmt.setDouble(7, calibratedCo2);
+				stmt.setDouble(8, pCo2TEDry);
+				stmt.setDouble(9, pH2O);
+				stmt.setDouble(10, pCo2TEWet);
+				stmt.setDouble(11, fco2TE);
+				stmt.setDouble(12, fco2);
+				stmt.setLong(13, fileId);
+				stmt.setInt(14, row);
+			}
 			
 			stmt.execute();
 		} catch (SQLException e) {
@@ -86,6 +114,32 @@ public class DataReductionDB {
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
 		}
+	}
+	
+	private static boolean rowExists(Connection conn, long fileId, int row) throws DatabaseException {
 		
+		boolean result = false;
+		
+		PreparedStatement stmt = null;
+		ResultSet recordCount = null;
+		
+		try {
+			stmt = conn.prepareStatement(FIND_ROW_STATEMENT);
+			stmt.setLong(1, fileId);
+			stmt.setInt(2, row);
+			
+			recordCount = stmt.executeQuery();
+			recordCount.first();
+			result = recordCount.getInt(1) > 0;
+			
+			stmt.executeQuery();
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while search for a row", e);
+		} finally {
+			DatabaseUtils.closeResultSets(recordCount);
+			DatabaseUtils.closeStatements(stmt);
+		}
+		
+		return result;
 	}
 }
