@@ -6,13 +6,45 @@
  * MAIN VARIABLES
  */
 
-var GRAPH_OPTIONS = {
+var BASE_GRAPH_OPTIONS = {
         drawPoints: true,
         strokeWidth: 0.0,
         labelsSeparateLine: true,
         digitsAfterDecimal: 2,
         animatedZooms: true
 };
+
+var AXIS_LABELS = {
+		'dateTime': 'Date/Time',
+		'longitude': 'Longitude (°E)',
+		'latitude': 'Latitude (°N)',
+		'intakeTemp1': 'Temperature (°C)',
+		'intakeTemp2': 'Temperature (°C)',
+		'intakeTemp3': 'Temperature (°C)',
+		'intakeTempMean': 'Temperature (°C)',
+		'salinity1': 'Salinity (PSU)',
+		'salinity2': 'Salinity (PSU)',
+		'salinity3': 'Salinity (PSU)',
+		'salinityMean': 'Salinity (PSU)',
+		'eqt1': 'Temperature (°C)',
+		'eqt2': 'Temperature (°C)',
+		'eqt3': 'Temperature (°C)',
+		'eqtMean': 'Temperature (°C)',
+		'eqp1': 'Pressure (hPa)',
+		'eqp2': 'Pressure (hPa)',
+		'eqp3': 'Pressure (hPa)',
+		'eqpMean': 'Pressure (hPa)',
+		'moistureMeasured': 'Moisture (%)',
+		'moistureTrue': 'Moisture (%)',
+		'pH2O': 'pH₂O (UNITS)',
+		'co2Measured': 'CO₂ (ppm/μatm)',
+		'co2Dried': 'CO₂ (ppm/μatm)',
+		'co2Calibrated': 'CO₂ (ppm/μatm)',
+		'pCO2TEDry': 'CO₂ (ppm/μatm)',
+		'pCO2TEWet': 'CO₂ (ppm/μatm)',
+		'fCO2TE': 'CO₂ (ppm/μatm)',
+		'fCO2Final': 'CO₂ (ppm/μatm)'
+}
 
 // Keeps track of the split positions as a percentage of the
 // full data area
@@ -407,11 +439,15 @@ function updatePlot(plot) {
 function drawLeftPlot(data) {
 	var status = data.status;
 	
+	graph_options = BASE_GRAPH_OPTIONS;
+	graph_options.xlabel = AXIS_LABELS[leftPlotXAxis[0].match(/[^_]*$/)];
+	graph_options.ylabel = AXIS_LABELS[leftPlotYAxis[0].match(/[^_]*$/)];
+	
 	if (status == "success") {
 		leftGraph = new Dygraph (
 			document.getElementById('plotLeftContent'),
 	        $('#plotDataForm\\:leftData').text(),
-	        GRAPH_OPTIONS
+	        graph_options
 		);
 		
 		resizeContent();
@@ -424,11 +460,15 @@ function drawLeftPlot(data) {
 function drawRightPlot(data) {
 	var status = data.status;
 	
+	graph_options = BASE_GRAPH_OPTIONS;
+	graph_options.xlabel = AXIS_LABELS[rightPlotXAxis[0].match(/[^_]*$/)];
+	graph_options.ylabel = AXIS_LABELS[rightPlotYAxis[0].match(/[^_]*$/)];
+	
 	if (status == "success") {
 		rightGraph = new Dygraph (
 			document.getElementById('plotRightContent'),
 	        $('#plotDataForm\\:rightData').text(),
-	        GRAPH_OPTIONS
+	        graph_options
 		);
 		
 		resizeContent();
