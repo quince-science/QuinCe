@@ -51,6 +51,7 @@ public class ExtractRawDataJob extends FileJob {
 		
 		reset();
 		Connection conn = null;
+		int lineNumber = 0;
 		
 		try {
 			RawDataFile inData = DataFileDB.getRawDataFile(dataSource, config, fileId);
@@ -67,7 +68,7 @@ public class ExtractRawDataJob extends FileJob {
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
 			
-			int lineNumber = 0;
+			lineNumber = 0;
 			for (List<String> line : data) {
 				lineNumber++;
 				
@@ -105,7 +106,7 @@ public class ExtractRawDataJob extends FileJob {
 			conn.commit();
 		} catch (Exception e) {
 			DatabaseUtils.rollBack(conn);
-			throw new JobFailedException(id, e);
+			throw new JobFailedException(id, lineNumber, e);
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}

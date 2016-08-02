@@ -35,6 +35,8 @@ import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public class RawDataDB {
+	
+	public static final double MISSING_VALUE = -999999999.9;
 
 	private static final String ADD_MEASUREMENT_STATEMENT = "INSERT INTO raw_data "
 			+ "(data_file_id, row, run_type_id, co2_type, date_time, longitude, latitude, "
@@ -53,7 +55,7 @@ public class RawDataDB {
 	private static final String CLEAR_GAS_STANDARDS_STATEMENT = "DELETE FROM gas_standards_data WHERE data_file_id = ?";
 
 	private static final String GET_RAW_DATA_QUERY = "SELECT "
-			+ "r.row, r.date_time, r.run_type_id, r.co2_type, r.intake_temp_1, r.intake_temp_2, r.intake_temp_3,"
+			+ "r.row, r.date_time, r.run_type_id, r.co2_type, r.longitude, r.latitude, r.intake_temp_1, r.intake_temp_2, r.intake_temp_3,"
 			+ "r.salinity_1, r.salinity_2, r.salinity_3, r.eqt_1, r.eqt_2, r.eqt_3, r.eqp_1, r.eqp_2, r.eqp_3,"
 			+ "r.moisture, r.atmospheric_pressure, r.co2 "
 			+ "FROM raw_data r INNER JOIN qc ON r.data_file_id = qc.data_file_id AND r.row = qc.row "
@@ -134,12 +136,12 @@ public class RawDataDB {
 			stmt.setLong(4, instrument.getRunTypeId(line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE))));
 			
 			if (!instrument.getSamplesDried()) {
-				stmt.setDouble(5, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
+				stmt.setDouble(5, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
 			} else {
 				stmt.setNull(5, Types.DOUBLE);
 			}
 			
-			stmt.setDouble(6, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));
+			stmt.setDouble(6, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));
 			
 			stmt.setInt(7, Flag.VALUE_GOOD);
 			stmt.setNull(8, Types.VARCHAR);
@@ -169,93 +171,93 @@ public class RawDataDB {
 			stmt.setInt(4, instrument.getRunTypeCode(runType));
 			
 			stmt.setTimestamp(5, new Timestamp(instrument.getDateFromLine(line).getTimeInMillis()));
-			stmt.setDouble(6, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_LONGITUDE))));
-			stmt.setDouble(7, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_LATITUDE))));
+			stmt.setDouble(6, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_LONGITUDE))));
+			stmt.setDouble(7, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_LATITUDE))));
 			
 			if (instrument.hasIntakeTemp1()) {
-				stmt.setDouble(8, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_1))));
+				stmt.setDouble(8, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_1))));
 			} else {
 				stmt.setNull(8, Types.DOUBLE);
 			}
 			
 			if (instrument.hasIntakeTemp2()) {
-				stmt.setDouble(9, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_2))));
+				stmt.setDouble(9, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_2))));
 			} else {
 				stmt.setNull(9, Types.DOUBLE);
 			}
 			
 			if (instrument.hasIntakeTemp3()) {
-				stmt.setDouble(10, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_3))));
+				stmt.setDouble(10, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_3))));
 			} else {
 				stmt.setNull(10, Types.DOUBLE);
 			}
 			
 			if (instrument.hasSalinity1()) {
-				stmt.setDouble(11, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_SALINITY_1))));
+				stmt.setDouble(11, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_SALINITY_1))));
 			} else {
 				stmt.setNull(11, Types.DOUBLE);
 			}
 			
 			if (instrument.hasSalinity2()) {
-				stmt.setDouble(12, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_SALINITY_2))));
+				stmt.setDouble(12, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_SALINITY_2))));
 			} else {
 				stmt.setNull(12, Types.DOUBLE);
 			}
 			
 			if (instrument.hasSalinity3()) {
-				stmt.setDouble(13, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_SALINITY_3))));
+				stmt.setDouble(13, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_SALINITY_3))));
 			} else {
 				stmt.setNull(13, Types.DOUBLE);
 			}
 			
 			if (instrument.hasEqt1()) {
-				stmt.setDouble(14, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQT_1))));
+				stmt.setDouble(14, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQT_1))));
 			} else {
 				stmt.setNull(14, Types.DOUBLE);
 			}
 			
 			if (instrument.hasEqt2()) {
-				stmt.setDouble(15, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQT_2))));
+				stmt.setDouble(15, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQT_2))));
 			} else {
 				stmt.setNull(15, Types.DOUBLE);
 			}
 			
 			if (instrument.hasEqt3()) {
-				stmt.setDouble(16, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQT_3))));
+				stmt.setDouble(16, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQT_3))));
 			} else {
 				stmt.setNull(16, Types.DOUBLE);
 			}
 			
 			if (instrument.hasEqp1()) {
-				stmt.setDouble(17, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQP_1))));
+				stmt.setDouble(17, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQP_1))));
 			} else {
 				stmt.setNull(17, Types.DOUBLE);
 			}
 			
 			if (instrument.hasEqp2()) {
-				stmt.setDouble(18, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQP_2))));
+				stmt.setDouble(18, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQP_2))));
 			} else {
 				stmt.setNull(18, Types.DOUBLE);
 			}
 			
 			if (instrument.hasEqp3()) {
-				stmt.setDouble(19, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQP_3))));
+				stmt.setDouble(19, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_EQP_3))));
 			} else {
 				stmt.setNull(19, Types.DOUBLE);
 			}
 			
 			if (!instrument.getSamplesDried()) {
-				stmt.setDouble(20, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
+				stmt.setDouble(20, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
 			} else {
 				stmt.setNull(20, Types.DOUBLE);
 			}
 			
 			if (instrument.getHasAtmosphericPressure()) {
-				stmt.setDouble(21, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE))));
+				stmt.setDouble(21, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE))));
 			} else {
 				stmt.setNull(21, Types.DOUBLE);
 			}
-			stmt.setDouble(22, Double.parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));;
+			stmt.setDouble(22, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));;
 			
 			stmt.execute();
 			
@@ -267,19 +269,38 @@ public class RawDataDB {
 	}
 	
 	public static List<RawDataValues> getRawData(DataSource dataSource, long fileId, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException {
-		
 		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		MissingParam.checkMissing(instrument, "instrument");
+
+		Connection conn = null;
+		List<RawDataValues> result = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			
+			result = getRawData(conn, fileId, instrument);
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving raw data", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
+	}
+	
+	public static List<RawDataValues> getRawData(Connection conn, long fileId, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		
+		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(instrument, "instrument");
 		
 		List<RawDataValues> rawData = new ArrayList<RawDataValues>();
 		
-		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet records = null;
 		
 		try {
-			conn = dataSource.getConnection();
 			stmt = conn.prepareStatement(GET_RAW_DATA_QUERY);
 			stmt.setLong(1, fileId);
 			
@@ -298,25 +319,27 @@ public class RawDataDB {
 				values.setTime(time);
 				values.setRunTypeId(records.getLong(3));
 				values.setCo2Type(records.getInt(4));
-				values.setIntakeTemp1(records.getDouble(5));
-				values.setIntakeTemp2(records.getDouble(6));
-				values.setIntakeTemp3(records.getDouble(7));
-				values.setSalinity1(records.getDouble(8));
-				values.setSalinity2(records.getDouble(9));
-				values.setSalinity3(records.getDouble(10));
-				values.setEqt1(records.getDouble(11));
-				values.setEqt2(records.getDouble(12));
-				values.setEqt3(records.getDouble(13));
-				values.setEqp1(records.getDouble(14));
-				values.setEqp2(records.getDouble(15));
-				values.setEqp3(records.getDouble(16));
-				values.setMoisture(records.getDouble(17));
+				values.setLongitude(records.getDouble(5));
+				values.setLatitude(records.getDouble(6));
+				values.setIntakeTemp1(records.getDouble(7));
+				values.setIntakeTemp2(records.getDouble(8));
+				values.setIntakeTemp3(records.getDouble(9));
+				values.setSalinity1(records.getDouble(10));
+				values.setSalinity2(records.getDouble(11));
+				values.setSalinity3(records.getDouble(12));
+				values.setEqt1(records.getDouble(13));
+				values.setEqt2(records.getDouble(14));
+				values.setEqt3(records.getDouble(15));
+				values.setEqp1(records.getDouble(16));
+				values.setEqp2(records.getDouble(17));
+				values.setEqp3(records.getDouble(18));
+				values.setMoisture(records.getDouble(19));
 				
 				if (instrument.getHasAtmosphericPressure()) {
-					values.setAtmosphericPressure(records.getDouble(18));
+					values.setAtmosphericPressure(records.getDouble(20));
 				}
 				
-				values.setCo2(records.getDouble(19));
+				values.setCo2(records.getDouble(21));
 				
 				rawData.add(values);
 			}
@@ -326,7 +349,6 @@ public class RawDataDB {
 		} finally {
 			DatabaseUtils.closeResultSets(records);
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return rawData;
@@ -507,5 +529,17 @@ public class RawDataDB {
 		} finally {
 			DatabaseUtils.closeStatements(rawDataStatement, gasStandardsStatement);
 		}
+	}
+	
+	private static double parseDouble(String value) {
+		double result = MISSING_VALUE;
+		
+		try {
+			result = Double.parseDouble(value);
+		} catch (NumberFormatException|NullPointerException e) {
+			// Do nothing - the missing value will remain
+		}
+		
+		return result;
 	}
 }

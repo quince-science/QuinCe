@@ -36,6 +36,7 @@ public class AutoQCJob extends FileJob {
 		Connection conn = null;
 		
 		try {
+			// This automatically filters out QC records that are already marked IGNORE or BAD
 			List<? extends DataRecord> qcRecords = QCDB.getQCRecords(dataSource, resourceManager.getColumnConfig(), fileId, instrument);
 			
 			// Remove any existing QC flags and messages

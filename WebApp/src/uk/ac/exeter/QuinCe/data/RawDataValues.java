@@ -14,6 +14,10 @@ public class RawDataValues {
 	
 	private int co2Type;
 	
+	private double longitude;
+	
+	private double latitude;
+	
 	private double intakeTemp1; 
 	
 	private double intakeTemp2; 
@@ -199,5 +203,21 @@ public class RawDataValues {
 	
 	public Calendar getTime() {
 		return time;
+	}
+
+	public double getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(double longitude) {
+		this.longitude = longitude;
+	}
+
+	public double getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(double latitude) {
+		this.latitude = latitude;
 	}
 }
