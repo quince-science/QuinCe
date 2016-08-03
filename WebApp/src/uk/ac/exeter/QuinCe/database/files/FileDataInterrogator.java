@@ -385,7 +385,9 @@ public class FileDataInterrogator {
 			StringBuffer outputBuffer = new StringBuffer();
 			outputBuffer.append('[');
 			
+			boolean hasRecords = false;
 			while (records.next()) {
+				hasRecords = true;
 				
 				outputBuffer.append('[');
 				for (int col = 1; col <= columnCount; col++) {
@@ -411,7 +413,9 @@ public class FileDataInterrogator {
 			}
 			
 			// Remove the trailing comma from the last record
-			outputBuffer.deleteCharAt(outputBuffer.length() - 1);
+			if (hasRecords) {
+				outputBuffer.deleteCharAt(outputBuffer.length() - 1);
+			}
 			outputBuffer.append(']');
 			
 			output = outputBuffer.toString();
