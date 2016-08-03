@@ -231,11 +231,16 @@ public class Instrument implements Serializable {
 	 * CO2 column code
 	 */
 	public static final int COL_CO2 = 27;
-
+	
+	/**
+	 * Custom date/time format column
+	 */
+	public static final int COL_CUSTOM_DATETIME_FORMAT = 28;
+	
 	/**
 	 * The total number of columns that could be defined for an instrument
 	 */
-	private static final int COL_COUNT = 28;
+	private static final int COL_COUNT = 29;
 	
 	////////////// *** FIELDS *** ///////////////
 	
@@ -336,6 +341,16 @@ public class Instrument implements Serializable {
 	 */
 	private int timeFormat = SEPARATE_FIELDS;
 
+	/**
+	 * Indicates that the file uses a custom date/time format
+	 */
+	private boolean customDateTimeFormat = false;
+	
+	/**
+	 * The custom date/time format
+	 */
+	private String customDateTimeFormatString = null;
+	
 	/**
 	 * The longitude format
 	 */
@@ -539,86 +554,98 @@ public class Instrument implements Serializable {
 		
 		Calendar result = DateTimeUtils.getUTCCalendarInstance();
 
-		// Need to do date and time separately.
-		
-		switch (getDateFormat()) {
-		case Instrument.SEPARATE_FIELDS: {
+		if (customDateTimeFormat) {
 			
+			String dateTimeString = line.get(getColumnAssignment(COL_CUSTOM_DATETIME_FORMAT));
 			try {
-				result.set(Calendar.YEAR, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_YEAR))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateTimeParseException("Invalid year value " + line.get(getColumnAssignment(Instrument.COL_YEAR)));
-			}
-			
-			try {
-				result.set(Calendar.MONTH, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_MONTH))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateTimeParseException("Invalid month value " + line.get(getColumnAssignment(Instrument.COL_MONTH)));
-			}
-			
-			try {
-				result.set(Calendar.DAY_OF_MONTH, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_DAY))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateTimeParseException("Invalid day value " + line.get(getColumnAssignment(Instrument.COL_DAY)));
-			}
-			break;
-		}
-		default: {
-			try {
-				if (null == dateFormatter) {
-					makeDateFormatter();
-				}
-				
-				Calendar parsedDate = Calendar.getInstance();
-				parsedDate.setTime(dateFormatter.parse(line.get(getColumnAssignment(Instrument.COL_DATE))));
-				result.set(Calendar.YEAR, parsedDate.get(Calendar.YEAR));
-				result.set(Calendar.MONTH, parsedDate.get(Calendar.MONTH));
-				result.set(Calendar.DAY_OF_MONTH, parsedDate.get(Calendar.DAY_OF_MONTH));
-				
+				SimpleDateFormat formatter = new SimpleDateFormat(customDateTimeFormatString);
+				result.setTime(formatter.parse(dateTimeString));
 			} catch (ParseException e) {
-				throw new DateTimeParseException("Invalid date value " + line.get(getColumnAssignment(Instrument.COL_DATE)));
-			}
-		}
-		}
-			
-
-		// Now the time
-		switch(getTimeFormat()) {
-		case Instrument.SEPARATE_FIELDS: {
-			try {
-				result.set(Calendar.HOUR_OF_DAY, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_HOUR))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateTimeParseException("Invalid hour value " + line.get(getColumnAssignment(Instrument.COL_HOUR)));
+				throw new DateTimeParseException("Cannot parse date/time '" + dateTimeString);
 			}
 			
-			try {
-				result.set(Calendar.MINUTE, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_MINUTE))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateTimeParseException("Invalid minute value " + line.get(getColumnAssignment(Instrument.COL_MINUTE)));
-			}
+		} else {
+			// Need to do date and time separately.
 			
-			try {
-				result.set(Calendar.SECOND, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_SECOND))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateTimeParseException("Invalid second value " + line.get(getColumnAssignment(Instrument.COL_SECOND)));
-			}
-			break;
-		}
-		default: {
-			try {
-				if (null == timeFormatter) {
-					makeTimeFormatter();
+			switch (getDateFormat()) {
+			case Instrument.SEPARATE_FIELDS: {
+				
+				try {
+					result.set(Calendar.YEAR, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_YEAR))));
+				} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+					throw new DateTimeParseException("Invalid year value " + line.get(getColumnAssignment(Instrument.COL_YEAR)));
 				}
+				
+				try {
+					result.set(Calendar.MONTH, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_MONTH))));
+				} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+					throw new DateTimeParseException("Invalid month value " + line.get(getColumnAssignment(Instrument.COL_MONTH)));
+				}
+				
+				try {
+					result.set(Calendar.DAY_OF_MONTH, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_DAY))));
+				} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+					throw new DateTimeParseException("Invalid day value " + line.get(getColumnAssignment(Instrument.COL_DAY)));
+				}
+				break;
+			}
+			default: {
+				try {
+					if (null == dateFormatter) {
+						makeDateFormatter();
+					}
+					
+					Calendar parsedDate = Calendar.getInstance();
+					parsedDate.setTime(dateFormatter.parse(line.get(getColumnAssignment(Instrument.COL_DATE))));
+					result.set(Calendar.YEAR, parsedDate.get(Calendar.YEAR));
+					result.set(Calendar.MONTH, parsedDate.get(Calendar.MONTH));
+					result.set(Calendar.DAY_OF_MONTH, parsedDate.get(Calendar.DAY_OF_MONTH));
+					
+				} catch (ParseException e) {
+					throw new DateTimeParseException("Invalid date value " + line.get(getColumnAssignment(Instrument.COL_DATE)));
+				}
+			}
+			}
+				
 	
-				Calendar parsedTime = Calendar.getInstance();
-				parsedTime.setTime(timeFormatter.parse(line.get(getColumnAssignment(Instrument.COL_TIME))));
-				result.set(Calendar.HOUR_OF_DAY, parsedTime.get(Calendar.HOUR_OF_DAY));
-				result.set(Calendar.MINUTE, parsedTime.get(Calendar.MINUTE));
-				result.set(Calendar.SECOND, parsedTime.get(Calendar.SECOND));
-			} catch (ParseException e) {
-				throw new DateTimeParseException("Invalid time value " + line.get(getColumnAssignment(Instrument.COL_TIME)));
+			// Now the time
+			switch(getTimeFormat()) {
+			case Instrument.SEPARATE_FIELDS: {
+				try {
+					result.set(Calendar.HOUR_OF_DAY, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_HOUR))));
+				} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+					throw new DateTimeParseException("Invalid hour value " + line.get(getColumnAssignment(Instrument.COL_HOUR)));
+				}
+				
+				try {
+					result.set(Calendar.MINUTE, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_MINUTE))));
+				} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+					throw new DateTimeParseException("Invalid minute value " + line.get(getColumnAssignment(Instrument.COL_MINUTE)));
+				}
+				
+				try {
+					result.set(Calendar.SECOND, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_SECOND))));
+				} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+					throw new DateTimeParseException("Invalid second value " + line.get(getColumnAssignment(Instrument.COL_SECOND)));
+				}
+				break;
 			}
-		}
+			default: {
+				try {
+					if (null == timeFormatter) {
+						makeTimeFormatter();
+					}
+		
+					Calendar parsedTime = Calendar.getInstance();
+					parsedTime.setTime(timeFormatter.parse(line.get(getColumnAssignment(Instrument.COL_TIME))));
+					result.set(Calendar.HOUR_OF_DAY, parsedTime.get(Calendar.HOUR_OF_DAY));
+					result.set(Calendar.MINUTE, parsedTime.get(Calendar.MINUTE));
+					result.set(Calendar.SECOND, parsedTime.get(Calendar.SECOND));
+				} catch (ParseException e) {
+					throw new DateTimeParseException("Invalid time value " + line.get(getColumnAssignment(Instrument.COL_TIME)));
+				}
+			}
+			}
 		}
 		
 		result.set(Calendar.MILLISECOND, 0);
@@ -1440,5 +1467,21 @@ public class Instrument implements Serializable {
 		}
 		
 		return count;
+	}
+	
+	public boolean getCustomDateTimeFormat() {
+		return customDateTimeFormat;
+	}
+	
+	public void setCustomDateTimeFormat(boolean customDateTimeFormat) {
+		this.customDateTimeFormat = customDateTimeFormat;
+	}
+	
+	public String getCustomDateTimeFormatString() {
+		return customDateTimeFormatString;
+	}
+	
+	public void setCustomDateTimeFormatString(String customDateTimeFormatString) {
+		this.customDateTimeFormatString = customDateTimeFormatString;
 	}
 }

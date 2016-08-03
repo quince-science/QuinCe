@@ -40,10 +40,11 @@ public class InstrumentDB {
 			+ "salinity_1_name, salinity_2_name, salinity_3_name, "
 			+ "eqt_1_name, eqt_2_name, eqt_3_name, "
 			+ "eqp_1_name, eqp_2_name, eqp_3_name, "
-			+ "separator_char, date_format, time_format, lat_format, " 
-			+ "lon_format, header_lines, has_atmospheric_pressure, samples_dried, "
+			+ "separator_char, date_format, time_format, " 
+			+ "custom_datetime_format, custom_datetime_format_string, "
+			+ "lat_format, lon_format, header_lines, has_atmospheric_pressure, samples_dried, "
 			+ "run_type_col, date_col, year_col, month_col, day_col, "
-			+ "time_col, hour_col, minute_col, second_col, "
+			+ "time_col, hour_col, minute_col, second_col, custom_datetime_col, "
 			+ "latitude_col, north_south_col, longitude_col, east_west_col, "
 			+ "intake_temp_1_col, intake_temp_2_col, intake_temp_3_col, "
 			+ "salinity_1_col, salinity_2_col, salinity_3_col, "
@@ -53,7 +54,7 @@ public class InstrumentDB {
 			+ "pre_flushing_time, post_flushing_time) "
 			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
 			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-			+ "?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	/**
 	 * Statement for retrieving all the details of a specific instrument
@@ -63,10 +64,11 @@ public class InstrumentDB {
 			+ "salinity_1_name, salinity_2_name, salinity_3_name, "
 			+ "eqt_1_name, eqt_2_name, eqt_3_name, "
 			+ "eqp_1_name, eqp_2_name, eqp_3_name, "
-			+ "separator_char, date_format, time_format, lat_format, " 
-			+ "lon_format, header_lines, has_atmospheric_pressure, samples_dried, "
+			+ "separator_char, date_format, time_format, " 
+			+ "custom_datetime_format, custom_datetime_format_string, "
+			+ "lat_format, lon_format, header_lines, has_atmospheric_pressure, samples_dried, "
 			+ "run_type_col, date_col, year_col, month_col, day_col, "
-			+ "time_col, hour_col, minute_col, second_col, "
+			+ "time_col, hour_col, minute_col, second_col, custom_datetime_col, "
 			+ "latitude_col, north_south_col, longitude_col, east_west_col, "
 			+ "intake_temp_1_col, intake_temp_2_col, intake_temp_3_col, "
 			+ "salinity_1_col, salinity_2_col, salinity_3_col, "
@@ -129,42 +131,45 @@ public class InstrumentDB {
 			instrStmt.setString(15, String.valueOf(instrument.getSeparatorChar()));
 			instrStmt.setInt(16, instrument.getDateFormat());
 			instrStmt.setInt(17, instrument.getTimeFormat());
-			instrStmt.setInt(18, instrument.getLatFormat());
-			instrStmt.setInt(19, instrument.getLonFormat());
-			instrStmt.setInt(20, instrument.getHeaderLines());
-			instrStmt.setBoolean(21, instrument.getHasAtmosphericPressure());
-			instrStmt.setBoolean(22, instrument.getSamplesDried());
-			instrStmt.setInt(23, instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
-			instrStmt.setInt(24, instrument.getColumnAssignment(Instrument.COL_DATE));
-			instrStmt.setInt(25, instrument.getColumnAssignment(Instrument.COL_YEAR));
-			instrStmt.setInt(26, instrument.getColumnAssignment(Instrument.COL_MONTH));
-			instrStmt.setInt(27, instrument.getColumnAssignment(Instrument.COL_DAY));
-			instrStmt.setInt(28, instrument.getColumnAssignment(Instrument.COL_TIME));
-			instrStmt.setInt(29, instrument.getColumnAssignment(Instrument.COL_HOUR));
-			instrStmt.setInt(30, instrument.getColumnAssignment(Instrument.COL_MINUTE));
-			instrStmt.setInt(31, instrument.getColumnAssignment(Instrument.COL_SECOND));
-			instrStmt.setInt(32, instrument.getColumnAssignment(Instrument.COL_LATITUDE));
-			instrStmt.setInt(33, instrument.getColumnAssignment(Instrument.COL_NORTH_SOUTH));
-			instrStmt.setInt(34, instrument.getColumnAssignment(Instrument.COL_LONGITUDE));
-			instrStmt.setInt(35, instrument.getColumnAssignment(Instrument.COL_EAST_WEST));
-			instrStmt.setInt(36, instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_1));
-			instrStmt.setInt(37, instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_2));
-			instrStmt.setInt(38, instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_3));
-			instrStmt.setInt(39, instrument.getColumnAssignment(Instrument.COL_SALINITY_1));
-			instrStmt.setInt(40, instrument.getColumnAssignment(Instrument.COL_SALINITY_2));
-			instrStmt.setInt(41, instrument.getColumnAssignment(Instrument.COL_SALINITY_3));
-			instrStmt.setInt(42, instrument.getColumnAssignment(Instrument.COL_EQT_1));
-			instrStmt.setInt(43, instrument.getColumnAssignment(Instrument.COL_EQT_2));
-			instrStmt.setInt(44, instrument.getColumnAssignment(Instrument.COL_EQT_3));
-			instrStmt.setInt(45, instrument.getColumnAssignment(Instrument.COL_EQP_1));
-			instrStmt.setInt(46, instrument.getColumnAssignment(Instrument.COL_EQP_2));
-			instrStmt.setInt(47, instrument.getColumnAssignment(Instrument.COL_EQP_3));
-			instrStmt.setInt(48, instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE));
-			instrStmt.setInt(49, instrument.getColumnAssignment(Instrument.COL_MOISTURE));
-			instrStmt.setInt(50, instrument.getColumnAssignment(Instrument.COL_CO2));
-			instrStmt.setInt(51, instrument.getRawFileColumnCount());
-			instrStmt.setInt(52, instrument.getPreFlushingTime());
-			instrStmt.setInt(53, instrument.getPostFlushingTime());
+			instrStmt.setBoolean(18, instrument.getCustomDateTimeFormat());
+			instrStmt.setString(19, instrument.getCustomDateTimeFormatString());
+			instrStmt.setInt(20, instrument.getLatFormat());
+			instrStmt.setInt(21, instrument.getLonFormat());
+			instrStmt.setInt(22, instrument.getHeaderLines());
+			instrStmt.setBoolean(23, instrument.getHasAtmosphericPressure());
+			instrStmt.setBoolean(24, instrument.getSamplesDried());
+			instrStmt.setInt(25, instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+			instrStmt.setInt(26, instrument.getColumnAssignment(Instrument.COL_DATE));
+			instrStmt.setInt(27, instrument.getColumnAssignment(Instrument.COL_YEAR));
+			instrStmt.setInt(28, instrument.getColumnAssignment(Instrument.COL_MONTH));
+			instrStmt.setInt(29, instrument.getColumnAssignment(Instrument.COL_DAY));
+			instrStmt.setInt(30, instrument.getColumnAssignment(Instrument.COL_TIME));
+			instrStmt.setInt(31, instrument.getColumnAssignment(Instrument.COL_HOUR));
+			instrStmt.setInt(32, instrument.getColumnAssignment(Instrument.COL_MINUTE));
+			instrStmt.setInt(33, instrument.getColumnAssignment(Instrument.COL_SECOND));
+			instrStmt.setInt(34, instrument.getColumnAssignment(Instrument.COL_CUSTOM_DATETIME_FORMAT));
+			instrStmt.setInt(35, instrument.getColumnAssignment(Instrument.COL_LATITUDE));
+			instrStmt.setInt(36, instrument.getColumnAssignment(Instrument.COL_NORTH_SOUTH));
+			instrStmt.setInt(37, instrument.getColumnAssignment(Instrument.COL_LONGITUDE));
+			instrStmt.setInt(38, instrument.getColumnAssignment(Instrument.COL_EAST_WEST));
+			instrStmt.setInt(39, instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_1));
+			instrStmt.setInt(40, instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_2));
+			instrStmt.setInt(41, instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_3));
+			instrStmt.setInt(42, instrument.getColumnAssignment(Instrument.COL_SALINITY_1));
+			instrStmt.setInt(43, instrument.getColumnAssignment(Instrument.COL_SALINITY_2));
+			instrStmt.setInt(44, instrument.getColumnAssignment(Instrument.COL_SALINITY_3));
+			instrStmt.setInt(45, instrument.getColumnAssignment(Instrument.COL_EQT_1));
+			instrStmt.setInt(46, instrument.getColumnAssignment(Instrument.COL_EQT_2));
+			instrStmt.setInt(47, instrument.getColumnAssignment(Instrument.COL_EQT_3));
+			instrStmt.setInt(48, instrument.getColumnAssignment(Instrument.COL_EQP_1));
+			instrStmt.setInt(49, instrument.getColumnAssignment(Instrument.COL_EQP_2));
+			instrStmt.setInt(50, instrument.getColumnAssignment(Instrument.COL_EQP_3));
+			instrStmt.setInt(51, instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE));
+			instrStmt.setInt(52, instrument.getColumnAssignment(Instrument.COL_MOISTURE));
+			instrStmt.setInt(53, instrument.getColumnAssignment(Instrument.COL_CO2));
+			instrStmt.setInt(54, instrument.getRawFileColumnCount());
+			instrStmt.setInt(55, instrument.getPreFlushingTime());
+			instrStmt.setInt(56, instrument.getPostFlushingTime());
 			
 			
 			instrStmt.execute();
@@ -312,42 +317,45 @@ public class InstrumentDB {
 				instrument.setSeparatorChar(record.getString(15).toCharArray()[0]);
 				instrument.setDateFormat(record.getInt(16));
 				instrument.setTimeFormat(record.getInt(17));
-				instrument.setLatFormat(record.getInt(18));
-				instrument.setLonFormat(record.getInt(19));
-				instrument.setHeaderLines(record.getInt(20));
-				instrument.setHasAtmosphericPressure(record.getBoolean(21));
-				instrument.setSamplesDried(record.getBoolean(22));
-				instrument.setColumnAssignment(Instrument.COL_RUN_TYPE, record.getInt(23));
-				instrument.setColumnAssignment(Instrument.COL_DATE, record.getInt(24));
-				instrument.setColumnAssignment(Instrument.COL_YEAR, record.getInt(25));
-				instrument.setColumnAssignment(Instrument.COL_MONTH, record.getInt(26));
-				instrument.setColumnAssignment(Instrument.COL_DAY, record.getInt(27));
-				instrument.setColumnAssignment(Instrument.COL_TIME, record.getInt(28));
-				instrument.setColumnAssignment(Instrument.COL_HOUR, record.getInt(29));
-				instrument.setColumnAssignment(Instrument.COL_MINUTE, record.getInt(30));
-				instrument.setColumnAssignment(Instrument.COL_SECOND, record.getInt(31));
-				instrument.setColumnAssignment(Instrument.COL_LATITUDE, record.getInt(32));
-				instrument.setColumnAssignment(Instrument.COL_NORTH_SOUTH, record.getInt(33));
-				instrument.setColumnAssignment(Instrument.COL_LONGITUDE, record.getInt(34));
-				instrument.setColumnAssignment(Instrument.COL_EAST_WEST, record.getInt(35));
-				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_1, record.getInt(36));
-				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_2, record.getInt(37));
-				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_3, record.getInt(38));
-				instrument.setColumnAssignment(Instrument.COL_SALINITY_1, record.getInt(39));
-				instrument.setColumnAssignment(Instrument.COL_SALINITY_2, record.getInt(40));
-				instrument.setColumnAssignment(Instrument.COL_SALINITY_3, record.getInt(41));
-				instrument.setColumnAssignment(Instrument.COL_EQT_1, record.getInt(42));
-				instrument.setColumnAssignment(Instrument.COL_EQT_2, record.getInt(43));
-				instrument.setColumnAssignment(Instrument.COL_EQT_3, record.getInt(44));
-				instrument.setColumnAssignment(Instrument.COL_EQP_1, record.getInt(45));
-				instrument.setColumnAssignment(Instrument.COL_EQP_2, record.getInt(46));
-				instrument.setColumnAssignment(Instrument.COL_EQP_3, record.getInt(47));
-				instrument.setColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE, record.getInt(48));
-				instrument.setColumnAssignment(Instrument.COL_MOISTURE, record.getInt(49));
-				instrument.setColumnAssignment(Instrument.COL_CO2, record.getInt(50));
-				instrument.setRawFileColumnCount(record.getInt(51));
-				instrument.setPreFlushingTime(record.getInt(52));
-				instrument.setPostFlushingTime(record.getInt(53));
+				instrument.setCustomDateTimeFormat(record.getBoolean(18));
+				instrument.setCustomDateTimeFormatString(record.getString(19));
+				instrument.setLatFormat(record.getInt(20));
+				instrument.setLonFormat(record.getInt(21));
+				instrument.setHeaderLines(record.getInt(22));
+				instrument.setHasAtmosphericPressure(record.getBoolean(23));
+				instrument.setSamplesDried(record.getBoolean(24));
+				instrument.setColumnAssignment(Instrument.COL_RUN_TYPE, record.getInt(25));
+				instrument.setColumnAssignment(Instrument.COL_DATE, record.getInt(26));
+				instrument.setColumnAssignment(Instrument.COL_YEAR, record.getInt(27));
+				instrument.setColumnAssignment(Instrument.COL_MONTH, record.getInt(28));
+				instrument.setColumnAssignment(Instrument.COL_DAY, record.getInt(29));
+				instrument.setColumnAssignment(Instrument.COL_TIME, record.getInt(30));
+				instrument.setColumnAssignment(Instrument.COL_HOUR, record.getInt(31));
+				instrument.setColumnAssignment(Instrument.COL_MINUTE, record.getInt(32));
+				instrument.setColumnAssignment(Instrument.COL_SECOND, record.getInt(33));
+				instrument.setColumnAssignment(Instrument.COL_CUSTOM_DATETIME_FORMAT, record.getInt(34));
+				instrument.setColumnAssignment(Instrument.COL_LATITUDE, record.getInt(35));
+				instrument.setColumnAssignment(Instrument.COL_NORTH_SOUTH, record.getInt(36));
+				instrument.setColumnAssignment(Instrument.COL_LONGITUDE, record.getInt(37));
+				instrument.setColumnAssignment(Instrument.COL_EAST_WEST, record.getInt(38));
+				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_1, record.getInt(39));
+				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_2, record.getInt(40));
+				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_3, record.getInt(41));
+				instrument.setColumnAssignment(Instrument.COL_SALINITY_1, record.getInt(42));
+				instrument.setColumnAssignment(Instrument.COL_SALINITY_2, record.getInt(43));
+				instrument.setColumnAssignment(Instrument.COL_SALINITY_3, record.getInt(44));
+				instrument.setColumnAssignment(Instrument.COL_EQT_1, record.getInt(45));
+				instrument.setColumnAssignment(Instrument.COL_EQT_2, record.getInt(46));
+				instrument.setColumnAssignment(Instrument.COL_EQT_3, record.getInt(47));
+				instrument.setColumnAssignment(Instrument.COL_EQP_1, record.getInt(48));
+				instrument.setColumnAssignment(Instrument.COL_EQP_2, record.getInt(49));
+				instrument.setColumnAssignment(Instrument.COL_EQP_3, record.getInt(50));
+				instrument.setColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE, record.getInt(51));
+				instrument.setColumnAssignment(Instrument.COL_MOISTURE, record.getInt(52));
+				instrument.setColumnAssignment(Instrument.COL_CO2, record.getInt(53));
+				instrument.setRawFileColumnCount(record.getInt(54));
+				instrument.setPreFlushingTime(record.getInt(55));
+				instrument.setPostFlushingTime(record.getInt(56));
 				
 				runTypeStmt = conn.prepareStatement(GET_RUN_TYPES_QUERY);
 				runTypeStmt.setLong(1, instrumentID);

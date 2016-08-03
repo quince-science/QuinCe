@@ -414,6 +414,10 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 			result = "Time";
 			break;
 		}
+		case Instrument.COL_CUSTOM_DATETIME_FORMAT: {
+			result = "Date/Time";
+			break;
+		}
 		case Instrument.COL_LONGITUDE: {
 			result = "Longitude";
 			break;
@@ -700,20 +704,25 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		
 		columnList.add(Instrument.COL_RUN_TYPE);
 
-		if (instrumentDetails.getDateFormat() == Instrument.SEPARATE_FIELDS) {
-			columnList.add(Instrument.COL_YEAR);
-			columnList.add(Instrument.COL_MONTH);
-			columnList.add(Instrument.COL_DAY);
+		if (instrumentDetails.getCustomDateTimeFormat()) {
+			columnList.add(Instrument.COL_CUSTOM_DATETIME_FORMAT);
 		} else {
-			columnList.add(Instrument.COL_DATE);
-		}
 		
-		if (instrumentDetails.getTimeFormat() == Instrument.SEPARATE_FIELDS) {
-			columnList.add(Instrument.COL_HOUR);
-			columnList.add(Instrument.COL_MINUTE);
-			columnList.add(Instrument.COL_SECOND);
-		} else {
-			columnList.add(Instrument.COL_TIME);
+			if (instrumentDetails.getDateFormat() == Instrument.SEPARATE_FIELDS) {
+				columnList.add(Instrument.COL_YEAR);
+				columnList.add(Instrument.COL_MONTH);
+				columnList.add(Instrument.COL_DAY);
+			} else {
+				columnList.add(Instrument.COL_DATE);
+			}
+			
+			if (instrumentDetails.getTimeFormat() == Instrument.SEPARATE_FIELDS) {
+				columnList.add(Instrument.COL_HOUR);
+				columnList.add(Instrument.COL_MINUTE);
+				columnList.add(Instrument.COL_SECOND);
+			} else {
+				columnList.add(Instrument.COL_TIME);
+			}
 		}
 		
 		columnList.add(Instrument.COL_LONGITUDE);

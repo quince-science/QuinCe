@@ -538,3 +538,7 @@ table.fileDates {
 	margin-left: auto;
 	margin-right: auto;
 }
+
+.indent {
+	padding-left: 40px;
+}

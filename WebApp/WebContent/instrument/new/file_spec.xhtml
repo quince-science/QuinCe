@@ -22,12 +22,33 @@
 	</ui:define>
 
 	<ui:define name="localHead">
+		<h:outputScript name="script/jquery-dateFormat.min.js"/>
 		<script type="text/javascript">
-        $(function() {
-            $('[id^=separator_]').click(function() {
-                $('#instrumentForm\\:otherSeparatorChar').attr('disabled', instrumentForm.separator.value != 'other');
-            });
-          });
+			var sampleDate = new Date();
+        
+
+			$(function() {
+	            $('[id^=separator_]').click(function() {
+	                $('#instrumentForm\\:otherSeparatorChar').attr('disabled', instrumentForm.separator.value != 'other');
+	            });
+	            
+	            $('#instrumentForm\\:customFormatString').bind('keyup', function() {
+	            	formatString = $('#instrumentForm\\:customFormatString').val();
+	            	formattedDate = $.format.date(sampleDate, formatString);
+	            	$('#customFormatPreview').html(formattedDate);
+	            })
+	          });
+	        
+	        function changeDateFormat() {
+	        	customDateFormat = $('input[name=instrumentForm\\:customDateTimeFormat]:checked').val();
+	        	if (customDateFormat == 'true') {
+	        		$('#separateDateTime').addClass('invisible');
+	        		$('#customDateTime').removeClass('invisible');
+	        	} else {
+	        		$('#separateDateTime').removeClass('invisible');
+	        		$('#customDateTime').addClass('invisible');
+	        	}
+	        }
 		</script>
 	</ui:define>
 	
@@ -88,86 +109,110 @@
                     Date/Time Format
                 </div>
                 <div class="sectionContent">
-                    <div class="instructions">
-                        Please select the date format used in your data file.
-                    </div>
-                    <table class="form">
-                        <tr>
-                            <td width="33%">
-                                <input type="radio" name="dateFormat" id="date_separate" jsf:id="dateFormatSeparate" a:name="dateFormat" value="0">
-                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 0}">
-                                		<f:passThroughAttribute name="checked" value="checked"/>
-                                	</c:if>
-                                </input><label id="date_separateLabel" for="date_separate"> Separate Fields</label>
-                            </td>
-                            <td width="33%">
-                                <input type="radio" name="dateFormat" id="date_ddmmyy" jsf:id="dateFormatDDMMYY" a:name="dateFormat" value="2">
-                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 2}">
-	                                	<f:passThroughAttribute name="checked" value="checked"/>
-	                                </c:if>
-                                </input><label id="date_ddmmyyLabel" for="date_ddmmyy"> DD/MM/YY</label>
-                            </td>
-                            <td width="33%">
-                                <input type="radio" name="dateFormat" id="date_mmddyy" jsf:id="dateFormatMMDDYY" a:name="dateFormat" value="4">
-                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 4}">
-	                                	<f:passThroughAttribute name="checked" value="checked"/>
-	                                </c:if>
-                                </input><label id="date_mmddyyLabel" for="date_mmddyy"> MM/DD/YY</label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td width="33%">
-                                <input type="radio" name="dateFormat" id="date_yyyymmdd" jsf:id="dateFormatYYYYMMDD" a:name="dateFormat" value="1">
-                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 1}">
-	                                	<f:passThroughAttribute name="checked" value="checked"/>
-	                                </c:if>
-                                </input><label id="date_yyyymmddLabel" for="date_yyyymmdd"> YYYYMMDD</label>
-                            </td>
-                            <td width="33%">
-                                <input type="radio" name="dateFormat" id="date_ddmmyyyy" jsf:id="dateFormatDDMMYYYY" a:name="dateFormat" value="3">
-                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 3}">
-	                                	<f:passThroughAttribute name="checked" value="checked"/>
-	                                </c:if>
-                                </input><label id="date_ddmmyyyyLabel" for="date_ddmmyyyy"> DD/MM/YYYY</label>
-                            </td>
-                            <td width="33%">
-                                <input type="radio" name="dateFormat" id="date_mmddyyyy" jsf:id="dateFormatMMDDYYYY" a:name="dateFormat" value="5">
-                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 5}">
-    	                            	<f:passThroughAttribute name="checked" value="checked"/>
-    	                            </c:if>
-                                </input><label id="date_mmddyyyyLabel" for="date_mmddyyyy"> MM/DD/YYYY</label>
-                            </td>
-                        </tr>
-                    </table>
-                    <div class="instructions">
-                        Please select the time format used in your data file.
-                    </div>
-                    <table class="form">
-                        <tr>
-                            <td width="33%">
-                                <input type="radio" name="timeFormat" id="time_separate" jsf:id="timeFormatSeparate" a:name="timeFormat" value="0">
-                            		<c:if test="#{newInstrumentBean.instrumentDetails.timeFormat == 0}">
-	                                	<f:passThroughAttribute name="checked" value="checked"/>
-	                                </c:if>
-                                </input><label id="time_separateLabel" for="time_separate"> Separate Fields</label>
-                            </td>
-                            <td width="33%">
-                                <input type="radio" name="timeFormat" id="time_no_colon" jsf:id="timeFormatNoColon" a:name="timeFormat" value="1">
-                            		<c:if test="#{newInstrumentBean.instrumentDetails.timeFormat == 1}">
-	                                	<f:passThroughAttribute name="checked" value="checked"/>
-	                                </c:if>
-                                </input><label id="time_no_colonLabel" for="time_no_colon"> HHMMSS</label>
-                            </td>
-                            <td width="33%">
-                                <input type="radio" name="timeFormat" id="time_colon" jsf:id="timeFormatColon" a:name="timeFormat" value="2">
-                            		<c:if test="#{newInstrumentBean.instrumentDetails.timeFormat == 2}">
-	                                	<f:passThroughAttribute name="checked" value="checked"/>
-	                                </c:if>
-                                </input><label id="time_colonLabel" for="time_colon"> HH:MM:SS</label>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
+                
+                	<h:selectOneRadio name="customDateTimeFormat" id="customDateTimeFormat" value="#{newInstrumentBean.instrumentDetails.customDateTimeFormat}" onchange="changeDateFormat()">
+   						<f:selectItem itemValue="false" itemLabel="Separate Date/Time Fields" />
+   						<f:selectItem itemValue="true" itemLabel="Single Date/Time Field (Custom Format)" />
+					</h:selectOneRadio>	   
+                
+                	<div id="separateDateTime" class="indent">
+	                    <div class="instructions">
+	                        Please select the date format used in your data file.
+	                    </div>
+	                    <table class="form">
+	                        <tr>
+	                            <td width="33%">
+	                                <input type="radio" name="dateFormat" id="date_separate" jsf:id="dateFormatSeparate" a:name="dateFormat" value="0">
+	                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 0}">
+	                                		<f:passThroughAttribute name="checked" value="checked"/>
+	                                	</c:if>
+	                                </input><label id="date_separateLabel" for="date_separate"> Separate Fields</label>
+	                            </td>
+	                            <td width="33%">
+	                                <input type="radio" name="dateFormat" id="date_ddmmyy" jsf:id="dateFormatDDMMYY" a:name="dateFormat" value="2">
+	                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 2}">
+		                                	<f:passThroughAttribute name="checked" value="checked"/>
+		                                </c:if>
+	                                </input><label id="date_ddmmyyLabel" for="date_ddmmyy"> DD/MM/YY</label>
+	                            </td>
+	                            <td width="33%">
+	                                <input type="radio" name="dateFormat" id="date_mmddyy" jsf:id="dateFormatMMDDYY" a:name="dateFormat" value="4">
+	                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 4}">
+		                                	<f:passThroughAttribute name="checked" value="checked"/>
+		                                </c:if>
+	                                </input><label id="date_mmddyyLabel" for="date_mmddyy"> MM/DD/YY</label>
+	                            </td>
+	                        </tr>
+	                        <tr>
+	                            <td width="33%">
+	                                <input type="radio" name="dateFormat" id="date_yyyymmdd" jsf:id="dateFormatYYYYMMDD" a:name="dateFormat" value="1">
+	                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 1}">
+		                                	<f:passThroughAttribute name="checked" value="checked"/>
+		                                </c:if>
+	                                </input><label id="date_yyyymmddLabel" for="date_yyyymmdd"> YYYYMMDD</label>
+	                            </td>
+	                            <td width="33%">
+	                                <input type="radio" name="dateFormat" id="date_ddmmyyyy" jsf:id="dateFormatDDMMYYYY" a:name="dateFormat" value="3">
+	                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 3}">
+		                                	<f:passThroughAttribute name="checked" value="checked"/>
+		                                </c:if>
+	                                </input><label id="date_ddmmyyyyLabel" for="date_ddmmyyyy"> DD/MM/YYYY</label>
+	                            </td>
+	                            <td width="33%">
+	                                <input type="radio" name="dateFormat" id="date_mmddyyyy" jsf:id="dateFormatMMDDYYYY" a:name="dateFormat" value="5">
+	                            		<c:if test="#{newInstrumentBean.instrumentDetails.dateFormat == 5}">
+	    	                            	<f:passThroughAttribute name="checked" value="checked"/>
+	    	                            </c:if>
+	                                </input><label id="date_mmddyyyyLabel" for="date_mmddyyyy"> MM/DD/YYYY</label>
+	                            </td>
+	                        </tr>
+	                    </table>
+	                    <div class="instructions">
+	                        Please select the time format used in your data file.
+	                    </div>
+	                    <table class="form">
+	                        <tr>
+	                            <td width="33%">
+	                                <input type="radio" name="timeFormat" id="time_separate" jsf:id="timeFormatSeparate" a:name="timeFormat" value="0">
+	                            		<c:if test="#{newInstrumentBean.instrumentDetails.timeFormat == 0}">
+		                                	<f:passThroughAttribute name="checked" value="checked"/>
+		                                </c:if>
+	                                </input><label id="time_separateLabel" for="time_separate"> Separate Fields</label>
+	                            </td>
+	                            <td width="33%">
+	                                <input type="radio" name="timeFormat" id="time_no_colon" jsf:id="timeFormatNoColon" a:name="timeFormat" value="1">
+	                            		<c:if test="#{newInstrumentBean.instrumentDetails.timeFormat == 1}">
+		                                	<f:passThroughAttribute name="checked" value="checked"/>
+		                                </c:if>
+	                                </input><label id="time_no_colonLabel" for="time_no_colon"> HHMMSS</label>
+	                            </td>
+	                            <td width="33%">
+	                                <input type="radio" name="timeFormat" id="time_colon" jsf:id="timeFormatColon" a:name="timeFormat" value="2">
+	                            		<c:if test="#{newInstrumentBean.instrumentDetails.timeFormat == 2}">
+		                                	<f:passThroughAttribute name="checked" value="checked"/>
+		                                </c:if>
+	                                </input><label id="time_colonLabel" for="time_colon"> HH:MM:SS</label>
+	                            </td>
+	                        </tr>
+	                    </table>
+	                </div>
+	                
+	                <div id="customDateTime" class="indent invisible">
+	                	<div class="instructions">
+	                		Please enter the format of the date/time field as it appears in your data file
+	                	</div>
+
+						<b>Date/Time Format:</b>
+						&#160;
+                		<h:inputText id="customFormatString" value="#{newInstrumentBean.instrumentDetails.customDateTimeFormatString}" size="20"/>
+                		&#160;&#160;&#160;&#160;
+                		<b>Sample Date:</b>
+                		&#160;
+                		<div id="customFormatPreview" style="display: inline"></div>
+	                </div>
+	            </div>
+                
+                
                 <div class="sectionHeader">
                     Longitude/Latitude Format
                 </div>
