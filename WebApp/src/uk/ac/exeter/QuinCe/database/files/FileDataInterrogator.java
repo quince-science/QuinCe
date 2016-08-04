@@ -398,7 +398,12 @@ public class FileDataInterrogator {
 						Calendar colDate = DatabaseUtils.getUTCDateTime(records, col);
 						outputBuffer.append(DateTimeUtils.formatDateTime(colDate));
 					} else {
-						outputBuffer.append(records.getString(col));
+						String value = records.getString(col);
+						if (StringUtils.isNumeric(value)) {
+							outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
+						} else {
+							outputBuffer.append(value);
+						}
 					}
 					
 					outputBuffer.append('\"');
