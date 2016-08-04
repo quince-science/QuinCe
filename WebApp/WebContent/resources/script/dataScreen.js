@@ -43,7 +43,6 @@ var rightGraph = null;
 
 // The data table
 var jsDataTable = null;
-var currentTableMode = 'basic';
 
 // The callback function for the DataTables drawing call
 var dataTableDrawCallback = null;
@@ -55,7 +54,7 @@ var compulsoryColumns = ['Date/Time', 'Longitude', 'Latitude', 'QC Flag', 'WOCE 
 var visibleColumns = {
 	'basic': [/Intake Temp/, /Intake Temp: Mean/, /Salinity/, /Salinity: Mean/, /Equil\. Temp/, /Equil\. Temp: Mean/, /Equil\. Pressure/, /Equil\. Pressure: Mean/, /Moisture \(True\)/, /fCO₂ Final/],
 	'water': [/Intake Temp.*/, /Salinity.*/],
-	'equilibrator': [/Equil.*/, /Moisture \(Measured\)/],
+	'equilibrator': [/Equil.*/, /Moisture.*/],
 	'co2': [/pH₂O/, /.*CO₂.*/]
 };
 
@@ -555,7 +554,9 @@ function calcTableScrollY() {
 	return $('#data').height() - $('#tableControls').outerHeight() - 41;
 }
 
-function setTableMode() {
+function setTableMode(event) {
+	
+	var tableMode = event.target.value;
 	
 	var visibleTableColumns = new Array();
 	var hiddenTableColumns = new Array();
@@ -567,7 +568,7 @@ function setTableMode() {
 		if ($.inArray(columnHeadings[i], compulsoryColumns) != -1) {
 			columnVisible = true;
 		} else {
-			searchColumns = visibleColumns[currentTableMode];
+			searchColumns = visibleColumns[tableMode];
 			for (j = 0; j < searchColumns.length && !columnVisible; j++) {
 				columnVisible = new RegExp(searchColumns[j]).test(columnHeadings[i]);
 			}

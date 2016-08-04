@@ -52,7 +52,7 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private List<String> optionalFlags = null;
 	
-	private String tableMode = "default";
+	private String tableMode = "basic";
 	
 	private String tableJsonData = null;
 	
@@ -65,7 +65,7 @@ public class DataScreenBean extends BaseManagedBean {
 	private int recordCount = -1;
 	
 	Instrument instrument;
-
+	
 	/**
 	 * Required basic constructor. All the actual construction
 	 * is done in start().

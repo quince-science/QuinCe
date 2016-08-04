@@ -62,7 +62,6 @@
 					<f:ajax execute="rightColumns" render="rightData" onevent="drawRightPlot"/>
 				</h:commandLink>
 				
-				<h:inputHidden value="#{dataScreenBean.tableMode}" id="tableMode"/>
 				<h:inputHidden value="#{dataScreenBean.tableJsonData}" id="tableJsonData"/>
 				<h:inputHidden value="#{dataScreenBean.recordCount}" id="recordCount"/>
 				<h:inputHidden value="#{dataScreenBean.tableDataDraw}" id="tableDataDraw"/>
@@ -118,7 +117,14 @@
 	    		<div id="data">
 	    			<div id="tableContent"></div>
 	    			<div id="tableControls" class="controls">
-	    				Controls
+			      		<p:selectOneButton value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="setTableMode(event)">
+			      			<f:selectItem itemLabel="Basic" itemValue="basic"/>
+			      			<f:selectItem itemLabel="Water" itemValue="water"/>
+			      			<f:selectItem itemLabel="Equilibrator" itemValue="equilibrator"/>
+			      			<f:selectItem itemLabel="CO₂" itemValue="co2"/>
+			      			<f:ajax render="@none"/>
+			      		</p:selectOneButton>
+
 	    			</div>
 	    		</div>
     		</div>
