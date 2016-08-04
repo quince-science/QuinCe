@@ -450,9 +450,9 @@ function updateTable() {
 	html = '<table id="dataTable" class="display nowrap" cellspacing="0" width="100%">';
 	html += '<thead>';
 
-	columnHeadings.forEach(function(entry) {
+	columnHeadings.forEach(heading => {
 		html += '<th>';
-		html += entry;
+		html += heading;
 		html += '</th>';
 	});
 
@@ -479,8 +479,28 @@ function updateTable() {
     		
     		// Submit the query to the server
     		$('#plotDataForm\\:tableGetData').click();
-        }
+        },
+        columnDefs:[
+            // DateTime doesn't wrap
+            {"className": "noWrap", "targets": [0]},
+            {"className": "numericCol", "targets": getNumericColumns()}
+            
+        ]
+        
     });
+}
+
+function getNumericColumns() {
+	
+	numericCols = new Array();
+
+	for (i = 0; i < columnHeadings.length; i++) {
+		if (columnHeadings[i] != 'Date/Time' && columnHeadings[i] != 'QC Flag' && columnHeadings[i] != 'QC Message' && columnHeadings[i] != 'WOCE Flag' && columnHeadings[i] != 'WOCE Message') {
+			numericCols.push(i);
+		}
+	}
+	
+	return numericCols;
 }
 
 /*
