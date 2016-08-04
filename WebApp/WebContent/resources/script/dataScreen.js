@@ -41,8 +41,23 @@ var rightMap = 'plot_intaketemp_intakeTempMean';
 var leftGraph = null;
 var rightGraph = null;
 
+// The data table
+var jsDataTable = null;
+var currentTableMode = 'basic';
+
 // The callback function for the DataTables drawing call
 var dataTableDrawCallback = null;
+
+// The list of visible table columns for each table mode
+var compulsoryColumns = ['Date/Time', 'Longitude', 'Latitude', 'QC Flag', 'WOCE Flag'];
+
+// These are regular expression patterns
+var visibleColumns = {
+	'basic': [/Intake Temp/, /Intake Temp: Mean/, /Salinity/, /Salinity: Mean/, /Equil\. Temp/, /Equil\. Temp: Mean/, /Equil\. Pressure/, /Equil\. Pressure: Mean/, /Moisture \(True\)/, /fCO₂ Final/],
+	'water': [/Intake Temp.*/, /Salinity.*/],
+	'equilibrator': [/Equil.*/, /Moisture \(Measured\)/],
+	'co2': [/pH₂O/, /.*CO₂.*/]
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -99,7 +114,7 @@ function drawAllData() {
 	drawLoading($('#tableContent'));
     updatePlot('left');
     updatePlot('right');
-    updateTable();
+    drawTable();
 }
 
 /*
@@ -124,6 +139,9 @@ function resizeContent() {
 	// Set the height of the DataTables scrollbody
 	// We have to select it by class, but there's only one so we can get away with it
 	$('.dataTables_scrollBody').height(calcTableScrollY());
+	
+	// Resize the table columns
+	jsDataTable.columns.adjust().draw(false);
 }
 
 /*
@@ -442,7 +460,7 @@ function drawRightPlot(data) {
  * the DataTables object is created and configured to load
  * its data from the server using the hidden form.
  */
-function updateTable() {
+function drawTable() {
 	
 	// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
 	
@@ -458,7 +476,7 @@ function updateTable() {
 
 	$('#tableContent').html(html);
     
-    $('#dataTable').DataTable( {
+    jsDataTable = $('#dataTable').DataTable( {
     	ordering: false,
     	searching: false,
     	serverSide: true,
@@ -483,24 +501,32 @@ function updateTable() {
         columnDefs:[
             // DateTime doesn't wrap
             {"className": "noWrap", "targets": [0]},
+            {"className": "centreCol", "targets": getQCColumns()},
             {"className": "numericCol", "targets": getNumericColumns()}
-            
         ]
-        
     });
+    
+    setTableMode();
 }
 
 function getNumericColumns() {
-	
 	numericCols = new Array();
-
 	for (i = 0; i < columnHeadings.length; i++) {
 		if (columnHeadings[i] != 'Date/Time' && columnHeadings[i] != 'QC Flag' && columnHeadings[i] != 'QC Message' && columnHeadings[i] != 'WOCE Flag' && columnHeadings[i] != 'WOCE Message') {
 			numericCols.push(i);
 		}
 	}
-	
 	return numericCols;
+}
+
+function getQCColumns() {
+	qcColumns = new Array();
+	for (i = 0; i < columnHeadings.length; i++) {
+		if (columnHeadings[i] == 'QC Flag' || columnHeadings[i] == 'QC Message' || columnHeadings[i] == 'WOCE Flag' || columnHeadings[i] == 'WOCE Message') {
+			qcColumns.push(i);
+		}
+	}
+	return qcColumns;
 }
 
 /*
@@ -527,4 +553,33 @@ function tableDataDownload(data) {
 function calcTableScrollY() {
 	// 41 is the post-rendered height of the header in FF (as measured on screen). Can we detect it somewhere?
 	return $('#data').height() - $('#tableControls').outerHeight() - 41;
+}
+
+function setTableMode() {
+	
+	var visibleTableColumns = new Array();
+	var hiddenTableColumns = new Array();
+	
+	// Do the stuff
+	for (i = 0; i < columnHeadings.length; i++) {
+		columnVisible = false;
+		
+		if ($.inArray(columnHeadings[i], compulsoryColumns) != -1) {
+			columnVisible = true;
+		} else {
+			searchColumns = visibleColumns[currentTableMode];
+			for (j = 0; j < searchColumns.length && !columnVisible; j++) {
+				columnVisible = new RegExp(searchColumns[j]).test(columnHeadings[i]);
+			}
+		}
+		
+		columnVisible ? visibleTableColumns.push(i) : hiddenTableColumns.push(i);
+		
+		
+	}
+	
+	// Update the table
+	jsDataTable.columns(visibleTableColumns).visible(true, false);
+	jsDataTable.columns(hiddenTableColumns).visible(false, false);
+	jsDataTable.columns.adjust().draw( false );
 }
