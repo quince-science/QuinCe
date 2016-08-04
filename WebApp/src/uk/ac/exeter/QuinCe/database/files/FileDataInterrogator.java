@@ -52,6 +52,7 @@ public class FileDataInterrogator {
 	static {
 		// Map input names from the web front end to database column names
 		COLUMN_MAPPINGS = new HashMap<String, String>();
+		COLUMN_MAPPINGS.put("row", "raw_data.row");
 		COLUMN_MAPPINGS.put("dateTime", "raw_data.date_time");
 		COLUMN_MAPPINGS.put("longitude", "raw_data.longitude");
 		COLUMN_MAPPINGS.put("latitude", "raw_data.latitude");
@@ -399,7 +400,7 @@ public class FileDataInterrogator {
 						outputBuffer.append(DateTimeUtils.formatDateTime(colDate));
 					} else {
 						String value = records.getString(col);
-						if (StringUtils.isNumeric(value)) {
+						if (StringUtils.isNumeric(value) && !columns.get(col - 2).equals("row")) {
 							outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
 						} else {
 							outputBuffer.append(value);
@@ -474,6 +475,10 @@ public class FileDataInterrogator {
 		String result;
 		
 		switch (columnName) {
+		case "row": {
+			result = "Row";
+			break;
+		}
 		case "dateTime": {
 			result = "Date";
 			break;

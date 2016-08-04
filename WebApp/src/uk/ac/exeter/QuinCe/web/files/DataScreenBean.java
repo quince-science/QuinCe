@@ -436,6 +436,7 @@ public class DataScreenBean extends BaseManagedBean {
 			}
 			
 			List<String> columns = new ArrayList<String>();
+			columns.add("row");
 			columns.add("longitude");
 			columns.add("latitude");
 			
@@ -532,7 +533,7 @@ public class DataScreenBean extends BaseManagedBean {
 
 		StringBuffer output = new StringBuffer('[');
 		
-		output.append("['Date/Time', 'Longitude', 'Latitude', ");
+		output.append("['Date/Time', 'Row', 'Longitude', 'Latitude', ");
 			
 		if (instrument.getIntakeTempCount() == 1) {
 			output.append("'Intake Temp', ");
