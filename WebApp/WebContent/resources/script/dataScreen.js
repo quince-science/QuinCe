@@ -444,19 +444,19 @@ function drawRightPlot(data) {
  */
 function updateTable() {
 	
+	// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
+	
+	
 	html = '<table id="dataTable" class="display nowrap" cellspacing="0" width="100%">';
 	html += '<thead>';
-    html += '<th>Date/Time</th>';
-    html += '<th>Longitude</th>';
-    html += '<th>Latitude</th>';
-    html += '<th>QC Result</th>';
-    html += '<th>QC Message</th>';
-    html += '<th>WOCE Flag</th>';
-    html += '<th>WOCE Message</th>';
-    html += '</thead>';
-    html += '</table>';
-	
-    $('#tableContent').html(html);
+
+	columnHeadings.forEach(function(entry) {
+		html += '<th>';
+		html += entry;
+		html += '</th>';
+	});
+
+	$('#tableContent').html(html);
     
     $('#dataTable').DataTable( {
     	ordering: false,
