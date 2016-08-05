@@ -107,6 +107,10 @@ public class QCDB {
 			+ "qc_flag = ?, qc_message = ?,"
 			+ "woce_flag = ?, woce_message = ? WHERE data_file_id = ? AND row = ?";
 	
+	private static final String SET_QC_FLAG_STATEMENT = "UPDATE qc SET "
+			+ "qc_flag = ?, qc_message = ?,"
+			+ "woce_flag = ?, woce_message = ? WHERE data_file_id = ? AND row = ?";
+	
 	private static final String GET_QC_MESSAGES_QUERY = "SELECT qc_message FROM qc WHERE data_file_id = ? AND row = ?";
 
 	private static final String GET_QC_FLAG_QUERY = "SELECT qc_flag FROM qc WHERE data_file_id = ? AND row = ?";
@@ -375,7 +379,7 @@ public class QCDB {
 		PreparedStatement stmt = null;
 		
 		try {
-			stmt = conn.prepareStatement(SET_QC_RESULT_STATEMENT);
+			stmt = conn.prepareStatement(SET_QC_FLAG_STATEMENT);
 			
 			stmt.setInt(1, qcFlag.getFlagValue());
 			stmt.setString(2, qcMessage);
