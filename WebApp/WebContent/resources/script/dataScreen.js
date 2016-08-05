@@ -58,6 +58,9 @@ var visibleColumns = {
 	'co2': [/pH₂O/, /.*CO₂.*/]
 };
 
+// The viewing mode for the table
+var tableMode = 'basic';
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -505,7 +508,7 @@ function drawTable() {
         ]
     });
     
-    setTableMode();
+    renderTableColumns();
 }
 
 function getNumericColumns() {
@@ -554,10 +557,8 @@ function calcTableScrollY() {
 	return $('#data').height() - $('#tableControls').outerHeight() - 41;
 }
 
-function setTableMode(event) {
-	
-	var tableMode = event.target.value;
-	
+function renderTableColumns() {
+		
 	var visibleTableColumns = new Array();
 	var hiddenTableColumns = new Array();
 	
@@ -583,4 +584,9 @@ function setTableMode(event) {
 	jsDataTable.columns(visibleTableColumns).visible(true, false);
 	jsDataTable.columns(hiddenTableColumns).visible(false, false);
 	jsDataTable.columns.adjust().draw( false );
+}
+
+function changeTableMode(event) {
+	tableMode = event.target.value;
+	renderTableColumns();
 }
