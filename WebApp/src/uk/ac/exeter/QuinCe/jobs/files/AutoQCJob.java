@@ -70,6 +70,13 @@ public class AutoQCJob extends FileJob {
 						qcRecord.setWoceFlag(Flag.ASSUMED_GOOD);
 						qcRecord.setWoceComment(null);
 						writeRecord = true;
+					} else {
+						Flag woceFlag = qcRecord.getWoceFlag();
+						if (!woceFlag.equals(Flag.ASSUMED_GOOD) && !woceFlag.equals(Flag.GOOD)) {
+							qcRecord.setWoceFlag(Flag.ASSUMED_GOOD);
+							qcRecord.setWoceComment(null);
+							writeRecord = true;
+						}
 					}
 				} else {
 					
