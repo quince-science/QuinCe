@@ -504,7 +504,18 @@ function drawTable() {
             // DateTime doesn't wrap
             {"className": "noWrap", "targets": [0]},
             {"className": "centreCol", "targets": getQCColumns()},
-            {"className": "numericCol", "targets": getNumericColumns()}
+            {"className": "numericCol", "targets": getNumericColumns()},
+            {"render":
+            	function (data, type, row) {
+	                var output = '<div onmouseover="showQCInfoPopup(' + (row[0] - 1) + ', this)" onmouseout="hideQCInfoPopup()" class="';
+	                output += getFlagClass(data);
+	                output += '">';
+	                output += getFlagText(data);
+	                output += '</div>';
+	                return output;
+	            },
+                "targets": getColumnIndex('QC Flag')
+            }
         ]
     });
     
@@ -529,6 +540,17 @@ function getQCColumns() {
 		}
 	}
 	return qcColumns;
+}
+
+function getColumnIndex(columnName) {
+	var index = -1;
+	for (i = 0; i < columnHeadings.length; i++) {
+		if (columnHeadings[i] == columnName) {
+			index = i;
+			break;
+		}
+	}
+	return index;
 }
 
 /*
@@ -589,4 +611,48 @@ function renderTableColumns() {
 function changeTableMode(event) {
 	tableMode = event.target.value;
 	renderTableColumns();
+}
+
+function getFlagText(flag) {
+    var flagText = "";
+
+    if (flag == '-999') {
+        flagText = 'Needs Flag';
+    } else if (flag == '-888') {
+        flagText = 'Ignore';
+    } else if (flag == '-2') {
+        flagText = 'Assumed Good';
+    } else if (flag == '2') {
+        flagText = 'Good';
+    } else if (flag == '3') {
+        flagText = 'Questionable';
+    } else if (flag == '4') {
+        flagText = 'Bad';
+    } else {
+        flagText = 'Needs Flag';
+    }
+
+    return flagText;
+}
+
+function getFlagClass(flag) {
+    var flagClass = "";
+
+    if (flag == '-999') {
+        flagClass = 'needsFlagging';
+    } else if (flag == '-888') {
+        flagClass = 'ignore';
+    } else if (flag == '-2') {
+        flagClass = 'assumedGood';
+    } else if (flag == '2') {
+        flagClass = 'good';
+    } else if (flag == '3') {
+        flagClass = 'questionable';
+    } else if (flag == '4') {
+        flagClass = 'bad';
+    } else {
+        flagClass = 'needsFlagging';
+    }
+
+    return flagClass;
 }
