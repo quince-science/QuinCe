@@ -17,6 +17,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Message;
+import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.RebuildCode;
 import uk.ac.exeter.QuinCe.data.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument;
@@ -276,9 +277,8 @@ public class FileDataInterrogator {
 						
 						// Handle the date/time as a special case 
 						currentDBColumn++;
+						outputBuffer.append(formatField(records, currentDBColumn, columnName));
 						
-						Calendar colDate = DatabaseUtils.getUTCDateTime(records, currentDBColumn);
-						outputBuffer.append(DateTimeUtils.formatDateTime(colDate));
 					} else if (!columnName.equals(COLUMN_ORIGINAL_FILE)) {
 						
 						// Database fields are only added if the instrument has them
@@ -286,37 +286,7 @@ public class FileDataInterrogator {
 							addSeparator = false;
 						} else {
 							currentDBColumn++;
-							String value = records.getString(currentDBColumn);
-							
-							switch (columnName) {
-							case "qcFlag":
-							case "woceFlag": {
-								outputBuffer.append(Integer.parseInt(value));
-								break;
-							}
-							case "qcMessage": {
-								List<Message> messages = RebuildCode.getMessagesFromRebuildCodes(value);
-								
-								for (int i = 0; i < messages.size(); i++) {
-									outputBuffer.append(messages.get(i).getShortMessage());
-									if (i < messages.size() - 1) {
-										outputBuffer.append(';');
-									}
-								}
-								break;
-							}
-							default: {
-								if (StringUtils.isNumeric(value)) {
-									outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
-								} else {
-									outputBuffer.append(value.replaceAll("\n", "\\n"));
-								}
-							}
-							}
-							
-							
-							
-							
+							outputBuffer.append(formatField(records, currentDBColumn, columnName));
 						}
 					} else {
 						// Find the line corresponding to the date from the database
@@ -361,8 +331,49 @@ public class FileDataInterrogator {
 		
 		return output;
 	}
+
+	private static String formatField(ResultSet records, int columnIndex, String columnName) throws SQLException, MessageException {
+		
+		StringBuffer result = new StringBuffer();
+		
+		switch (columnName) {
+		case "dateTime": {
+			Calendar colDate = DatabaseUtils.getUTCDateTime(records, columnIndex);
+			result.append(DateTimeUtils.formatDateTime(colDate));
+			break;
+		}
+		case "qcFlag":
+		case "woceFlag": {
+			result.append(records.getString(columnIndex));
+			break;
+		}
+		case "qcMessage": {
+			List<Message> messages = RebuildCode.getMessagesFromRebuildCodes(records.getString(columnIndex));
+			
+			for (int i = 0; i < messages.size(); i++) {
+				result.append(messages.get(i).getShortMessage());
+				if (i < messages.size() - 1) {
+					result.append(';');
+				}
+			}
+			break;
+		}
+		default: {
+			String value = records.getString(columnIndex);
+			if (null == value) {
+				result.append("");
+			} else if (StringUtils.isNumeric(value)) {
+				result.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
+			} else {
+				result.append(value.replaceAll("\n", "\\n"));
+			}
+		}
+		}
+		
+		return result.toString();
+	}
 	
-	public static String getJsonData(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length) throws MissingParamException {
+	public static String getJsonData(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length) throws MissingParamException, MessageException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(columns, "columns");
@@ -391,22 +402,18 @@ public class FileDataInterrogator {
 				outputBuffer.append('[');
 				for (int col = 1; col <= columnCount; col++) {
 					
-					outputBuffer.append('\"');
 
 					// The first column is always the date/time (it's added automatically)
 					// Plus we check the other columns too (which are zero-based, and the automatic dateTime accounts for one)
-					if (col == 1 || columns.get(col - 2).equals("dateTime")) {
-						Calendar colDate = DatabaseUtils.getUTCDateTime(records, col);
-						outputBuffer.append(DateTimeUtils.formatDateTime(colDate));
+					String columnName;
+					if (col == 1) {
+						columnName = "dateTime";
 					} else {
-						String value = records.getString(col);
-						if (StringUtils.isNumeric(value) && !columns.get(col - 2).equals("row")) {
-							outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
-						} else {
-							outputBuffer.append(value);
-						}
+						columnName = columns.get(col - 2);
 					}
 					
+					outputBuffer.append('\"');
+					outputBuffer.append(formatField(records, col, columnName));
 					outputBuffer.append('\"');
 					if (col < columnCount) {
 						outputBuffer.append(',');
