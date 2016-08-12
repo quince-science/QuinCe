@@ -25,6 +25,7 @@ import uk.ac.exeter.QuinCe.data.RawDataFileException;
 import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
+import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -306,16 +307,18 @@ public class FileDataInterrogator {
 							}
 							default: {
 								if (StringUtils.isNumeric(value)) {
-									outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
+									Double doubleValue = Double.parseDouble(value);
+									
+									if (doubleValue == RawDataDB.MISSING_VALUE) {
+										outputBuffer.append("NaN");
+									} else {
+										outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", doubleValue));
+									}
 								} else {
 									outputBuffer.append(value.replaceAll("\n", "\\n"));
 								}
 							}
 							}
-							
-							
-							
-							
 						}
 					} else {
 						// Find the line corresponding to the date from the database
@@ -400,7 +403,17 @@ public class FileDataInterrogator {
 						Calendar colDate = DatabaseUtils.getUTCDateTime(records, col);
 						outputBuffer.append(DateTimeUtils.formatDateTime(colDate));
 					} else {
-						outputBuffer.append(records.getString(col));
+						String value = records.getString(col);
+						if (StringUtils.isNumeric(value)) {
+							Double doubleValue = Double.parseDouble(value);
+							if (doubleValue == RawDataDB.MISSING_VALUE) {
+								outputBuffer.append("NaN");
+							} else {
+								outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", doubleValue));
+							}
+						} else {
+							outputBuffer.append(records.getString(col));
+						}
 					}
 					
 					outputBuffer.append('\"');
