@@ -69,7 +69,15 @@ public class DataReductionJob extends FileJob {
 				NoDataQCRecord qcRecord = qcRecords.get(record.getRow());
 				
 				// If the record has been marked bad, we skip it
-				if (!qcRecord.getWoceFlag().equals(Flag.BAD)) {
+				if (qcRecord.getWoceFlag().equals(Flag.BAD) || qcRecord.getWoceFlag().equals(Flag.IGNORED)) {
+				
+					// Store empty data reduction values (unless other values have previously been stored)
+					DataReductionDB.storeRow(conn, fileId, record.getRow(), false, record.getCo2Type(), RawDataDB.MISSING_VALUE,
+							RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, 
+							RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE,
+							RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE);
+					
+				} else {
 				
 					// Reset the QC flags
 					qcRecord.clearAllFlags();
@@ -169,7 +177,7 @@ public class DataReductionJob extends FileJob {
 							fco2 = calcFco2(fco2TE, meanEqt, meanIntakeTemp);
 						}
 												
-						DataReductionDB.storeRow(conn, fileId, record.getRow(), record.getCo2Type(), meanIntakeTemp,
+						DataReductionDB.storeRow(conn, fileId, record.getRow(), true, record.getCo2Type(), meanIntakeTemp,
 								meanSalinity, meanEqt, meanEqp, trueMoisture, driedCo2, calibratedCo2,
 								pCo2TEDry, pH2O, pCo2TEWet, fco2TE, fco2);
 						
