@@ -33,6 +33,7 @@ import uk.ac.exeter.QuinCe.database.Instrument.GasStandardDB;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 public class RawDataDB {
 	
@@ -532,12 +533,13 @@ public class RawDataDB {
 	}
 	
 	private static double parseDouble(String value) {
-		double result = MISSING_VALUE;
 		
-		try {
+		double result;
+		
+		if (StringUtils.isNumeric(value)) {
 			result = Double.parseDouble(value);
-		} catch (NumberFormatException|NullPointerException e) {
-			// Do nothing - the missing value will remain
+		} else {
+			result = MISSING_VALUE;
 		}
 		
 		return result;

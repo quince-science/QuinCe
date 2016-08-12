@@ -131,14 +131,13 @@ public class StringUtils {
 	public static boolean isNumeric(String value) {
 		boolean result = true;
 		
-		if (null == value) {
-			result = false;
-		} else {
-			try {
-				Double.parseDouble(value);
-			} catch (NumberFormatException e) {
+		try {
+			Double doubleValue = new Double(value);
+			if (doubleValue.isNaN()) {
 				result = false;
 			}
+		} catch (NumberFormatException e) {
+			result = false;
 		}
 		
 		return result;
