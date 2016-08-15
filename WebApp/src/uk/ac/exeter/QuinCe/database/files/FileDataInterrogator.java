@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.data.RawDataFileException;
 import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
+import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -363,7 +364,13 @@ public class FileDataInterrogator {
 			if (null == value) {
 				result.append("");
 			} else if (StringUtils.isNumeric(value)) {
-				result.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
+				Double doubleValue = Double.parseDouble(value);
+				
+				if (doubleValue == RawDataDB.MISSING_VALUE) {
+					result.append("NaN");
+				} else {
+					result.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
+				}
 			} else {
 				result.append(value.replaceAll("\n", "\\n"));
 			}
