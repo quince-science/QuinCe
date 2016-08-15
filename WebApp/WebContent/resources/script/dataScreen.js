@@ -468,9 +468,7 @@ function drawLeftPlot(data) {
 		columnVisibility.push(true);
 	}
 
-	console.log(columnVisibility);
 	graph_options.visibility = columnVisibility;
-	
 	
 	if (status == "success") {
 		leftGraph = new Dygraph (
