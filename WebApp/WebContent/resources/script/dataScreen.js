@@ -616,9 +616,9 @@ function changeTableMode(event) {
 function getFlagText(flag) {
     var flagText = "";
 
-    if (flag == '-999') {
+    if (flag == '-1001') {
         flagText = 'Needs Flag';
-    } else if (flag == '-888') {
+    } else if (flag == '-1002') {
         flagText = 'Ignore';
     } else if (flag == '-2') {
         flagText = 'Assumed Good';
@@ -638,9 +638,9 @@ function getFlagText(flag) {
 function getFlagClass(flag) {
     var flagClass = "";
 
-    if (flag == '-999') {
+    if (flag == '-1001') {
         flagClass = 'needsFlagging';
-    } else if (flag == '-888') {
+    } else if (flag == '-1002') {
         flagClass = 'ignore';
     } else if (flag == '-2') {
         flagClass = 'assumedGood';
