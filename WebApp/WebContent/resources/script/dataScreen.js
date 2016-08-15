@@ -463,6 +463,15 @@ function drawLeftPlot(data) {
 	graph_options.xlabel = AXIS_LABELS[leftPlotXAxis[0].match(/[^_]*$/)];
 	graph_options.ylabel = AXIS_LABELS[leftPlotYAxis[0].match(/[^_]*$/)];
 	
+	var columnVisibility = [false];
+	for (var i = 0; i < leftPlotYAxis.length; i++) {
+		columnVisibility.push(true);
+	}
+
+	console.log(columnVisibility);
+	graph_options.visibility = columnVisibility;
+	
+	
 	if (status == "success") {
 		leftGraph = new Dygraph (
 			document.getElementById('plotLeftContent'),
@@ -483,7 +492,14 @@ function drawRightPlot(data) {
 	graph_options = BASE_GRAPH_OPTIONS;
 	graph_options.xlabel = AXIS_LABELS[rightPlotXAxis[0].match(/[^_]*$/)];
 	graph_options.ylabel = AXIS_LABELS[rightPlotYAxis[0].match(/[^_]*$/)];
+
+	var columnVisibility = [false];
+	for (var i = 0; i < rightPlotYAxis.length; i++) {
+		columnVisibility.push(true);
+	}
 	
+	graph_options.visibility = columnVisibility;
+
 	if (status == "success") {
 		rightGraph = new Dygraph (
 			document.getElementById('plotRightContent'),

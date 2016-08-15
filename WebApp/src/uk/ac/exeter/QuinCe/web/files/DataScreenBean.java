@@ -398,14 +398,12 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public void generateLeftPlotData() {
 		List<String> columns = StringUtils.delimitedToList(leftPlotColumns);
-		String output = getPlotData(columns); 
-		setLeftPlotData(output);
+		setLeftPlotData(getPlotData(columns)); 
 	}
 
 	public void generateRightPlotData() {
 		List<String> columns = StringUtils.delimitedToList(rightPlotColumns);
-		String output = getPlotData(columns); 
-		setRightPlotData(output);
+		setRightPlotData(getPlotData(columns)); 
 	}
 	
 	private String getPlotData(List<String> columns) {
@@ -416,8 +414,20 @@ public class DataScreenBean extends BaseManagedBean {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			Instrument instrument = InstrumentDB.getInstrument(dataSource, fileDetails.getInstrumentId());
 			
+			// Add in the row number as the first Y-axis column. We need it for syncing the graphs and the table
+			// The list returned from delimitedToList does not allow inserting, so we have to do it the hard way.
+			List<String> submittedColumnList = new ArrayList<String>(columns.size() + 1);
 			
-			output = FileDataInterrogator.getCSVData(dataSource, ServletUtils.getAppConfig(), fileId, instrument, columns, co2Type, getIncludeFlags());
+			// Add the X axis
+			submittedColumnList.add(columns.get(0));
+			
+			// Now the row number
+			submittedColumnList.add("row");
+			
+			// And the Y axis columns
+			submittedColumnList.addAll(columns.subList(1, columns.size()));
+			
+			output = FileDataInterrogator.getCSVData(dataSource, ServletUtils.getAppConfig(), fileId, instrument, submittedColumnList, co2Type, getIncludeFlags());
 		} catch (Exception e) {
 			e.printStackTrace();
 			output = "***ERROR: " + e.getMessage();
