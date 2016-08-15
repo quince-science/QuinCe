@@ -35,6 +35,8 @@ import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 public class RawDataDB {
+	
+	public static final double MISSING_VALUE = -999999999.9;
 
 	private static final String ADD_MEASUREMENT_STATEMENT = "INSERT INTO raw_data "
 			+ "(data_file_id, row, run_type_id, co2_type, date_time, longitude, latitude, "

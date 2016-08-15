@@ -52,7 +52,7 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private List<String> optionalFlags = null;
 	
-	private String tableMode = "default";
+	private String tableMode = "basic";
 	
 	private String tableJsonData = null;
 	
@@ -64,9 +64,11 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private int recordCount = -1;
 	
+	Instrument instrument;
+	
 	/**
 	 * Required basic constructor. All the actual construction
-	 * is done in init().
+	 * is done in start().
 	 */
 	public DataScreenBean() {
 		// Do nothing
@@ -200,6 +202,7 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException {
 		fileDetails = DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), fileId);
+		instrument = InstrumentDB.getInstrumentByFileId(ServletUtils.getDBDataSource(), fileId);
 	}
 	
 	public String getPlotPopupEntries() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
@@ -433,8 +436,85 @@ public class DataScreenBean extends BaseManagedBean {
 			}
 			
 			List<String> columns = new ArrayList<String>();
+			columns.add("row");
 			columns.add("longitude");
 			columns.add("latitude");
+			
+			if (instrument.getIntakeTempCount() == 1) {
+				columns.add("intakeTempMean");
+			} else {
+				if (instrument.hasIntakeTemp1()) {
+					columns.add("intakeTemp1");
+				}
+				if (instrument.hasIntakeTemp2()) {
+					columns.add("intakeTemp2");
+				}
+				if (instrument.hasIntakeTemp3()) {
+					columns.add("intakeTemp3");
+				}
+				
+				columns.add("intakeTempMean");
+			}
+			
+			if (instrument.getSalinityCount() == 1) {
+				columns.add("salinityMean");
+			} else {
+				if (instrument.hasSalinity1()) {
+					columns.add("salinity1");
+				}
+				if (instrument.hasSalinity2()) {
+					columns.add("salinity2");
+				}
+				if (instrument.hasSalinity3()) {
+					columns.add("salinity3");
+				}
+				
+				columns.add("salinityMean");
+			}
+			
+			if (instrument.getEqtCount() == 1) {
+				columns.add("eqtMean");
+			} else {
+				if (instrument.hasEqt1()) {
+					columns.add("eqt1");
+				}
+				if (instrument.hasEqt2()) {
+					columns.add("eqt2");
+				}
+				if (instrument.hasEqt3()) {
+					columns.add("eqt3");
+				}
+				
+				columns.add("eqtMean");
+			}
+			
+			if (instrument.getEqpCount() == 1) {
+				columns.add("eqpMean");
+			} else {
+				if (instrument.hasEqp1()) {
+					columns.add("eqp1");
+				}
+				if (instrument.hasEqp2()) {
+					columns.add("eqp2");
+				}
+				if (instrument.hasEqp3()) {
+					columns.add("eqp3");
+				}
+				
+				columns.add("eqtMean");
+			}
+			
+			columns.add("atmosPressure");
+			columns.add("moistureMeasured");
+			columns.add("moistureTrue");
+			columns.add("pH2O");
+			columns.add("co2Measured");
+			columns.add("co2Dried");
+			columns.add("co2Calibrated");
+			columns.add("pCO2TEDry");
+			columns.add("pCO2TEWet");
+			columns.add("fCO2TE");
+			columns.add("fCO2Final");
 			columns.add("qcFlag");
 			columns.add("qcMessage");
 			columns.add("woceFlag");
@@ -449,6 +529,106 @@ public class DataScreenBean extends BaseManagedBean {
 		}
 	}
 	
+	public String getTableHeadings() {
+
+		StringBuffer output = new StringBuffer('[');
+		
+		output.append("['Date/Time', 'Row', 'Longitude', 'Latitude', ");
+			
+		if (instrument.getIntakeTempCount() == 1) {
+			output.append("'Intake Temp', ");
+		} else {
+			if (instrument.hasIntakeTemp1()) {
+				output.append("'Intake Temp: ");
+				output.append(instrument.getIntakeTempName1());
+				output.append("', ");
+			}
+			if (instrument.hasIntakeTemp2()) {
+				output.append("'Intake Temp: ");
+				output.append(instrument.getIntakeTempName2());
+				output.append("', ");
+			}
+			if (instrument.hasIntakeTemp3()) {
+				output.append("'Intake Temp: ");
+				output.append(instrument.getIntakeTempName3());
+				output.append("', ");
+			}
+			
+			output.append("'Intake Temp: Mean', ");
+		}
+			
+		if (instrument.getSalinityCount() == 1) {
+			output.append("'Salinity', ");
+		} else {
+			if (instrument.hasSalinity1()) {
+				output.append("'Salinity: ");
+				output.append(instrument.getSalinityName1());
+				output.append("', ");
+			}
+			if (instrument.hasSalinity2()) {
+				output.append("'Salinity: ");
+				output.append(instrument.getSalinityName2());
+				output.append("', ");
+			}
+			if (instrument.hasSalinity3()) {
+				output.append("'Salinity: ");
+				output.append(instrument.getSalinityName3());
+				output.append("', ");
+			}
+			
+			output.append("'Salinity: Mean', ");
+		}
+
+		if (instrument.getEqtCount() == 1) {
+			output.append("'Equil. Temp', ");
+		} else {
+			if (instrument.hasEqt1()) {
+				output.append("'Equil. Temp: ");
+				output.append(instrument.getEqtName1());
+				output.append("', ");
+			}
+			if (instrument.hasEqt2()) {
+				output.append("'Equil. Temp: ");
+				output.append(instrument.getEqtName2());
+				output.append("', ");
+			}
+			if (instrument.hasEqt3()) {
+				output.append("'Equil. Temp: ");
+				output.append(instrument.getEqtName3());
+				output.append("', ");
+			}
+			
+			output.append("'Equil. Temp: Mean', ");
+		}
+
+		if (instrument.getEqpCount() == 1) {
+			output.append("'Equil. Pressure', ");
+		} else {
+			if (instrument.hasEqp1()) {
+				output.append("'Equil. Pressure: ");
+				output.append(instrument.getEqpName1());
+				output.append("', ");
+			}
+			if (instrument.hasEqp2()) {
+				output.append("'Equil. Pressure: ");
+				output.append(instrument.getEqpName2());
+				output.append("', ");
+			}
+			if (instrument.hasEqp3()) {
+				output.append("'Equil. Pressure: ");
+				output.append(instrument.getEqpName3());
+				output.append("', ");
+			}
+			
+			output.append("'Equil. Pressure: Mean', ");
+		}
+
+		output.append("'Atmos. Pressure', 'Moisture (Measured)', 'Moisture (True)', 'pH₂O', 'CO₂ Measured', 'CO₂ Dried', 'CO₂ Calibrated', 'pCO₂ TE Dry', "
+				+ "'pCO₂ TE Wet', 'fCO₂ TE', 'fCO₂ Final', 'QC Flag', 'QC Message', 'WOCE Flag', 'WOCE Message']");
+		
+		return output.toString();
+	}
+
 	private List<Integer> getIncludeFlags() {
 		List<Integer> includeFlags = new ArrayList<Integer>();
 		includeFlags.add(Flag.VALUE_GOOD);
@@ -462,5 +642,9 @@ public class DataScreenBean extends BaseManagedBean {
 		}
 		
 		return includeFlags;
+	}
+	
+	public Instrument getInstrument() {
+		return instrument;
 	}
 }

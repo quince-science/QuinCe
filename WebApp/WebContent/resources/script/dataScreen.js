@@ -72,8 +72,25 @@ var rightMap = 'plot_intaketemp_intakeTempMean';
 var leftGraph = null;
 var rightGraph = null;
 
+// The data table
+var jsDataTable = null;
+
 // The callback function for the DataTables drawing call
 var dataTableDrawCallback = null;
+
+// The list of visible table columns for each table mode
+var compulsoryColumns = ['Date/Time', 'Longitude', 'Latitude', 'QC Flag', 'WOCE Flag'];
+
+// These are regular expression patterns
+var visibleColumns = {
+	'basic': [/Intake Temp/, /Intake Temp: Mean/, /Salinity/, /Salinity: Mean/, /Equil\. Temp/, /Equil\. Temp: Mean/, /Equil\. Pressure/, /Equil\. Pressure: Mean/, /Moisture \(True\)/, /fCO₂ Final/],
+	'water': [/Intake Temp.*/, /Salinity.*/],
+	'equilibrator': [/Equil.*/, /Moisture.*/],
+	'co2': [/pH₂O/, /.*CO₂.*/]
+};
+
+// The viewing mode for the table
+var tableMode = 'basic';
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -130,7 +147,7 @@ function drawAllData() {
 	drawLoading($('#tableContent'));
     updatePlot('left');
     updatePlot('right');
-    updateTable();
+    drawTable();
 }
 
 /*
@@ -155,6 +172,9 @@ function resizeContent() {
 	// Set the height of the DataTables scrollbody
 	// We have to select it by class, but there's only one so we can get away with it
 	$('.dataTables_scrollBody').height(calcTableScrollY());
+	
+	// Resize the table columns
+	jsDataTable.columns.adjust().draw(false);
 }
 
 /*
@@ -481,23 +501,23 @@ function drawRightPlot(data) {
  * the DataTables object is created and configured to load
  * its data from the server using the hidden form.
  */
-function updateTable() {
+function drawTable() {
+	
+	// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
+	
 	
 	html = '<table id="dataTable" class="display nowrap" cellspacing="0" width="100%">';
 	html += '<thead>';
-    html += '<th>Date/Time</th>';
-    html += '<th>Longitude</th>';
-    html += '<th>Latitude</th>';
-    html += '<th>QC Result</th>';
-    html += '<th>QC Message</th>';
-    html += '<th>WOCE Flag</th>';
-    html += '<th>WOCE Message</th>';
-    html += '</thead>';
-    html += '</table>';
-	
-    $('#tableContent').html(html);
+
+	columnHeadings.forEach(heading => {
+		html += '<th>';
+		html += heading;
+		html += '</th>';
+	});
+
+	$('#tableContent').html(html);
     
-    $('#dataTable').DataTable( {
+    jsDataTable = $('#dataTable').DataTable( {
     	ordering: false,
     	searching: false,
     	serverSide: true,
@@ -518,8 +538,58 @@ function updateTable() {
     		
     		// Submit the query to the server
     		$('#plotDataForm\\:tableGetData').click();
-        }
+        },
+        columnDefs:[
+            // DateTime doesn't wrap
+            {"className": "noWrap", "targets": [0]},
+            {"className": "centreCol", "targets": getQCColumns()},
+            {"className": "numericCol", "targets": getNumericColumns()},
+            {"render":
+            	function (data, type, row) {
+	                var output = '<div onmouseover="showQCInfoPopup(' + (row[0] - 1) + ', this)" onmouseout="hideQCInfoPopup()" class="';
+	                output += getFlagClass(data);
+	                output += '">';
+	                output += getFlagText(data);
+	                output += '</div>';
+	                return output;
+	            },
+                "targets": getColumnIndex('QC Flag')
+            }
+        ]
     });
+    
+    renderTableColumns();
+}
+
+function getNumericColumns() {
+	numericCols = new Array();
+	for (i = 0; i < columnHeadings.length; i++) {
+		if (columnHeadings[i] != 'Date/Time' && columnHeadings[i] != 'QC Flag' && columnHeadings[i] != 'QC Message' && columnHeadings[i] != 'WOCE Flag' && columnHeadings[i] != 'WOCE Message') {
+			numericCols.push(i);
+		}
+	}
+	return numericCols;
+}
+
+function getQCColumns() {
+	qcColumns = new Array();
+	for (i = 0; i < columnHeadings.length; i++) {
+		if (columnHeadings[i] == 'QC Flag' || columnHeadings[i] == 'QC Message' || columnHeadings[i] == 'WOCE Flag' || columnHeadings[i] == 'WOCE Message') {
+			qcColumns.push(i);
+		}
+	}
+	return qcColumns;
+}
+
+function getColumnIndex(columnName) {
+	var index = -1;
+	for (i = 0; i < columnHeadings.length; i++) {
+		if (columnHeadings[i] == columnName) {
+			index = i;
+			break;
+		}
+	}
+	return index;
 }
 
 /*
@@ -546,4 +616,82 @@ function tableDataDownload(data) {
 function calcTableScrollY() {
 	// 41 is the post-rendered height of the header in FF (as measured on screen). Can we detect it somewhere?
 	return $('#data').height() - $('#tableControls').outerHeight() - 41;
+}
+
+function renderTableColumns() {
+		
+	var visibleTableColumns = new Array();
+	var hiddenTableColumns = new Array();
+	
+	// Do the stuff
+	for (i = 0; i < columnHeadings.length; i++) {
+		columnVisible = false;
+		
+		if ($.inArray(columnHeadings[i], compulsoryColumns) != -1) {
+			columnVisible = true;
+		} else {
+			searchColumns = visibleColumns[tableMode];
+			for (j = 0; j < searchColumns.length && !columnVisible; j++) {
+				columnVisible = new RegExp(searchColumns[j]).test(columnHeadings[i]);
+			}
+		}
+		
+		columnVisible ? visibleTableColumns.push(i) : hiddenTableColumns.push(i);
+		
+		
+	}
+	
+	// Update the table
+	jsDataTable.columns(visibleTableColumns).visible(true, false);
+	jsDataTable.columns(hiddenTableColumns).visible(false, false);
+	jsDataTable.columns.adjust().draw( false );
+}
+
+function changeTableMode(event) {
+	tableMode = event.target.value;
+	renderTableColumns();
+}
+
+function getFlagText(flag) {
+    var flagText = "";
+
+    if (flag == '-1001') {
+        flagText = 'Needs Flag';
+    } else if (flag == '-1002') {
+        flagText = 'Ignore';
+    } else if (flag == '-2') {
+        flagText = 'Assumed Good';
+    } else if (flag == '2') {
+        flagText = 'Good';
+    } else if (flag == '3') {
+        flagText = 'Questionable';
+    } else if (flag == '4') {
+        flagText = 'Bad';
+    } else {
+        flagText = 'Needs Flag';
+    }
+
+    return flagText;
+}
+
+function getFlagClass(flag) {
+    var flagClass = "";
+
+    if (flag == '-1001') {
+        flagClass = 'needsFlagging';
+    } else if (flag == '-1002') {
+        flagClass = 'ignore';
+    } else if (flag == '-2') {
+        flagClass = 'assumedGood';
+    } else if (flag == '2') {
+        flagClass = 'good';
+    } else if (flag == '3') {
+        flagClass = 'questionable';
+    } else if (flag == '4') {
+        flagClass = 'bad';
+    } else {
+        flagClass = 'needsFlagging';
+    }
+
+    return flagClass;
 }
