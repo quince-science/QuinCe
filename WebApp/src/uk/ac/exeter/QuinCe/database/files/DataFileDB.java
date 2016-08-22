@@ -117,7 +117,7 @@ public class DataFileDB {
 			stmt.setDate(3, new java.sql.Date(dataFile.getStartDate().getTimeInMillis()));
 			stmt.setInt(4, dataFile.getRecordCount());
 			stmt.setInt(5, FileInfo.JOB_CODE_EXTRACT);
-			stmt.setDate(6, new java.sql.Date(System.currentTimeMillis()));
+			stmt.setTimestamp(6, new java.sql.Timestamp(System.currentTimeMillis()));
 			
 			stmt.execute();
 			
