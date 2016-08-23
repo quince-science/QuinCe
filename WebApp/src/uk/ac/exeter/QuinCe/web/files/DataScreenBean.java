@@ -6,6 +6,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RunType;
@@ -412,7 +413,6 @@ public class DataScreenBean extends BaseManagedBean {
 		
 		try {
 			DataSource dataSource = ServletUtils.getDBDataSource();
-			Instrument instrument = InstrumentDB.getInstrument(dataSource, fileDetails.getInstrumentId());
 			
 			// Add in the row number as the first Y-axis column. We need it for syncing the graphs and the table
 			// The list returned from delimitedToList does not allow inserting, so we have to do it the hard way.
@@ -427,7 +427,8 @@ public class DataScreenBean extends BaseManagedBean {
 			// And the Y axis columns
 			submittedColumnList.addAll(columns.subList(1, columns.size()));
 			
-			output = FileDataInterrogator.getCSVData(dataSource, ServletUtils.getAppConfig(), fileId, instrument, submittedColumnList, co2Type, getIncludeFlags());
+			//output = FileDataInterrogator.getCSVData(dataSource, ServletUtils.getAppConfig(), fileId, instrument, submittedColumnList, co2Type, getIncludeFlags());
+			output = FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, false);
 		} catch (Exception e) {
 			e.printStackTrace();
 			output = "***ERROR: " + e.getMessage();
@@ -446,6 +447,7 @@ public class DataScreenBean extends BaseManagedBean {
 			}
 			
 			List<String> columns = new ArrayList<String>();
+			columns.add("dateTime");
 			columns.add("row");
 			columns.add("longitude");
 			columns.add("latitude");
@@ -530,8 +532,7 @@ public class DataScreenBean extends BaseManagedBean {
 			columns.add("woceFlag");
 			columns.add("woceMessage");
 			
-			
-			setTableJsonData(FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, columns, getIncludeFlags(), tableDataStart, tableDataLength));
+			setTableJsonData(FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, columns, getIncludeFlags(), tableDataStart, tableDataLength, true));
 		
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -278,7 +278,7 @@ public class FileDataInterrogator {
 						
 						// Handle the date/time as a special case 
 						currentDBColumn++;
-						outputBuffer.append(formatField(records, currentDBColumn, columnName));
+						outputBuffer.append(formatField(records, currentDBColumn, columnName, true));
 						
 					} else if (!columnName.equals(COLUMN_ORIGINAL_FILE)) {
 						
@@ -287,7 +287,7 @@ public class FileDataInterrogator {
 							addSeparator = false;
 						} else {
 							currentDBColumn++;
-							outputBuffer.append(formatField(records, currentDBColumn, columnName));
+							outputBuffer.append(formatField(records, currentDBColumn, columnName, true));
 						}
 					} else {
 						// Find the line corresponding to the date from the database
@@ -333,14 +333,25 @@ public class FileDataInterrogator {
 		return output;
 	}
 
-	private static String formatField(ResultSet records, int columnIndex, String columnName) throws SQLException, MessageException {
+	private static String formatField(ResultSet records, int columnIndex, String columnName, boolean asString) throws SQLException, MessageException {
 		
 		StringBuffer result = new StringBuffer();
 		
 		switch (columnName) {
 		case "dateTime": {
 			Calendar colDate = DatabaseUtils.getUTCDateTime(records, columnIndex);
-			result.append(DateTimeUtils.formatDateTime(colDate));
+			
+			if (asString) {
+				result.append(DateTimeUtils.formatDateTime(colDate));
+			} else {
+				// We return the date as a milliseconds value, which can
+				// be parsed into a Date object by the Javascript
+				result.append(colDate.getTimeInMillis());
+			}
+			break;
+		}
+		case "row": {
+			result.append(records.getInt(columnIndex));
 			break;
 		}
 		case "qcFlag":
@@ -380,7 +391,7 @@ public class FileDataInterrogator {
 		return result.toString();
 	}
 	
-	public static String getJsonData(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length) throws MissingParamException, MessageException {
+	public static String getJsonData(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean valuesAsStrings) throws MissingParamException, MessageException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(columns, "columns");
@@ -412,16 +423,17 @@ public class FileDataInterrogator {
 
 					// The first column is always the date/time (it's added automatically)
 					// Plus we check the other columns too (which are zero-based, and the automatic dateTime accounts for one)
-					String columnName;
-					if (col == 1) {
-						columnName = "dateTime";
-					} else {
-						columnName = columns.get(col - 2);
+					String columnName = columns.get(col - 1);
+					
+					if (valuesAsStrings) {
+						outputBuffer.append('\"');
+					}
+					outputBuffer.append(formatField(records, col, columnName, valuesAsStrings));
+					
+					if (valuesAsStrings) {
+						outputBuffer.append('\"');
 					}
 					
-					outputBuffer.append('\"');
-					outputBuffer.append(formatField(records, col, columnName));
-					outputBuffer.append('\"');
 					if (col < columnCount) {
 						outputBuffer.append(',');
 					}
@@ -716,9 +728,6 @@ public class FileDataInterrogator {
 		if (columns.contains(COLUMN_RECORD_COUNT)) {
 			databaseColumnList.append("COUNT(*)");
 		} else {
-			databaseColumnList.append(COLUMN_MAPPINGS.get("dateTime"));
-			databaseColumnList.append(',');
-			
 			for (int col = 0; col < columns.size(); col++) {
 				if (!columns.get(col).equals(COLUMN_ORIGINAL_FILE)) {
 					databaseColumnList.append(COLUMN_MAPPINGS.get(columns.get(col)));

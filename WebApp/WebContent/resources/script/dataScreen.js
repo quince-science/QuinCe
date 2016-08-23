@@ -462,18 +462,23 @@ function drawLeftPlot(data) {
 	graph_options = BASE_GRAPH_OPTIONS;
 	graph_options.xlabel = AXIS_LABELS[leftPlotXAxis[0].match(/[^_]*$/)];
 	graph_options.ylabel = AXIS_LABELS[leftPlotYAxis[0].match(/[^_]*$/)];
-	
+
 	var columnVisibility = [false];
 	for (var i = 0; i < leftPlotYAxis.length; i++) {
 		columnVisibility.push(true);
 	}
 
 	graph_options.visibility = columnVisibility;
+
+	graph_data = JSON.parse($('#plotDataForm\\:leftData').text());
+	if (leftPlotXAxis[0] == 'plot_datetime_dateTime') {
+		graph_data = makeJSDates(graph_data);
+	}
 	
 	if (status == "success") {
 		leftGraph = new Dygraph (
 			document.getElementById('plotLeftContent'),
-	        $('#plotDataForm\\:leftData').text(),
+			graph_data,
 	        graph_options
 		);
 		
@@ -498,10 +503,15 @@ function drawRightPlot(data) {
 	
 	graph_options.visibility = columnVisibility;
 
+	graph_data = JSON.parse($('#plotDataForm\\:rightData').text());
+	if (leftPlotXAxis[0] == 'plot_datetime_dateTime') {
+		graph_data = makeJSDates(graph_data);
+	}
+
 	if (status == "success") {
 		rightGraph = new Dygraph (
 			document.getElementById('plotRightContent'),
-	        $('#plotDataForm\\:rightData').text(),
+			graph_data,
 	        graph_options
 		);
 		
@@ -708,4 +718,14 @@ function getFlagClass(flag) {
     }
 
     return flagClass;
+}
+
+function makeJSDates(data) {
+	for (i = 0; i < data.length; i++) {
+		point_data = data[i];
+		point_data[0] = new Date(point_data[0]);
+		data[i] = point_data;
+	}
+
+	return data;
 }
