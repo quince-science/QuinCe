@@ -50,13 +50,13 @@
 		</div>
 		<div id="hiddenData">
 			<h:form id="plotDataForm">
-				<h:inputHidden value="#{dataScreenBean.leftPlotColumns}" id="leftColumns"/>
+				<h:inputHidden id="leftColumns" value="#{dataScreenBean.leftPlotColumns}"/>
 				<h:outputText id="leftData" value="#{dataScreenBean.leftPlotData}"/>
 				<h:commandLink id="leftGetData" action="#{dataScreenBean.generateLeftPlotData}">
 					<f:ajax execute="leftColumns" render="leftData" onevent="drawLeftPlot"/>
 				</h:commandLink>
 
-				<h:inputHidden value="#{dataScreenBean.rightPlotColumns}" id="rightColumns"/>
+				<h:inputHidden id="rightColumns" value="#{dataScreenBean.rightPlotColumns}"/>
 				<h:outputText id="rightData" value="#{dataScreenBean.rightPlotData}"/>
 				<h:commandLink id="rightGetData" action="#{dataScreenBean.generateRightPlotData}">
 					<f:ajax execute="rightColumns" render="rightData" onevent="drawRightPlot"/>
