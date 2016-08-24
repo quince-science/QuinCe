@@ -459,23 +459,23 @@ function updatePlot(plot) {
 function drawLeftPlot(data) {
 	var status = data.status;
 	
-	graph_options = BASE_GRAPH_OPTIONS;
-	graph_options.xlabel = AXIS_LABELS[leftPlotXAxis[0].match(/[^_]*$/)];
-	graph_options.ylabel = AXIS_LABELS[leftPlotYAxis[0].match(/[^_]*$/)];
-
-	var columnVisibility = [false];
-	for (var i = 0; i < leftPlotYAxis.length; i++) {
-		columnVisibility.push(true);
-	}
-
-	graph_options.visibility = columnVisibility;
-
-	graph_data = JSON.parse($('#plotDataForm\\:leftData').text());
-	if (leftPlotXAxis[0] == 'plot_datetime_dateTime') {
-		graph_data = makeJSDates(graph_data);
-	}
-	
 	if (status == "success") {
+		graph_options = BASE_GRAPH_OPTIONS;
+		graph_options.xlabel = AXIS_LABELS[leftPlotXAxis[0].match(/[^_]*$/)];
+		graph_options.ylabel = AXIS_LABELS[leftPlotYAxis[0].match(/[^_]*$/)];
+	
+		var columnVisibility = [false];
+		for (var i = 0; i < leftPlotYAxis.length; i++) {
+			columnVisibility.push(true);
+		}
+	
+		graph_options.visibility = columnVisibility;
+	
+		graph_data = JSON.parse($('#plotDataForm\\:leftData').text());
+		if (leftPlotXAxis[0] == 'plot_datetime_dateTime') {
+			graph_data = makeJSDates(graph_data);
+		}
+	
 		leftGraph = new Dygraph (
 			document.getElementById('plotLeftContent'),
 			graph_data,
@@ -492,23 +492,23 @@ function drawLeftPlot(data) {
 function drawRightPlot(data) {
 	var status = data.status;
 	
-	graph_options = BASE_GRAPH_OPTIONS;
-	graph_options.xlabel = AXIS_LABELS[rightPlotXAxis[0].match(/[^_]*$/)];
-	graph_options.ylabel = AXIS_LABELS[rightPlotYAxis[0].match(/[^_]*$/)];
-
-	var columnVisibility = [false];
-	for (var i = 0; i < rightPlotYAxis.length; i++) {
-		columnVisibility.push(true);
-	}
-	
-	graph_options.visibility = columnVisibility;
-
-	graph_data = JSON.parse($('#plotDataForm\\:rightData').text());
-	if (leftPlotXAxis[0] == 'plot_datetime_dateTime') {
-		graph_data = makeJSDates(graph_data);
-	}
-
 	if (status == "success") {
+		graph_options = BASE_GRAPH_OPTIONS;
+		graph_options.xlabel = AXIS_LABELS[rightPlotXAxis[0].match(/[^_]*$/)];
+		graph_options.ylabel = AXIS_LABELS[rightPlotYAxis[0].match(/[^_]*$/)];
+	
+		var columnVisibility = [false];
+		for (var i = 0; i < rightPlotYAxis.length; i++) {
+			columnVisibility.push(true);
+		}
+		
+		graph_options.visibility = columnVisibility;
+	
+		graph_data = JSON.parse($('#plotDataForm\\:rightData').text());
+		if (leftPlotXAxis[0] == 'plot_datetime_dateTime') {
+			graph_data = makeJSDates(graph_data);
+		}
+
 		rightGraph = new Dygraph (
 			document.getElementById('plotRightContent'),
 			graph_data,
