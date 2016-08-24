@@ -92,6 +92,9 @@ var visibleColumns = {
 // The viewing mode for the table
 var tableMode = 'basic';
 
+// The list of dates in the current view. Used for searching.
+var dateList = null;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -460,7 +463,7 @@ function drawLeftPlot(data) {
 	var status = data.status;
 	
 	if (status == "success") {
-		graph_options = BASE_GRAPH_OPTIONS;
+		var graph_options = BASE_GRAPH_OPTIONS;
 		graph_options.xlabel = AXIS_LABELS[leftPlotXAxis[0].match(/[^_]*$/)];
 		graph_options.ylabel = AXIS_LABELS[leftPlotYAxis[0].match(/[^_]*$/)];
 	
@@ -470,10 +473,15 @@ function drawLeftPlot(data) {
 		}
 	
 		graph_options.visibility = columnVisibility;
-	
+		
 		graph_data = JSON.parse($('#plotDataForm\\:leftData').text());
 		if (leftPlotXAxis[0] == 'plot_datetime_dateTime') {
 			graph_data = makeJSDates(graph_data);
+			graph_options.clickCallback = function(e, x, points) {
+				scrollToTableRow(x);
+			};
+		} else {
+			graph_options.clickCallback = null;
 		}
 	
 		leftGraph = new Dygraph (
@@ -493,7 +501,7 @@ function drawRightPlot(data) {
 	var status = data.status;
 	
 	if (status == "success") {
-		graph_options = BASE_GRAPH_OPTIONS;
+		var graph_options = BASE_GRAPH_OPTIONS;
 		graph_options.xlabel = AXIS_LABELS[rightPlotXAxis[0].match(/[^_]*$/)];
 		graph_options.ylabel = AXIS_LABELS[rightPlotYAxis[0].match(/[^_]*$/)];
 	
@@ -505,8 +513,13 @@ function drawRightPlot(data) {
 		graph_options.visibility = columnVisibility;
 	
 		graph_data = JSON.parse($('#plotDataForm\\:rightData').text());
-		if (leftPlotXAxis[0] == 'plot_datetime_dateTime') {
+		if (rightPlotXAxis[0] == 'plot_datetime_dateTime') {
 			graph_data = makeJSDates(graph_data);
+			graph_options.clickCallback = function(e, x, points) {
+				scrollToTableRow(x);
+			};
+		} else {
+			graph_options.clickCallback = null;
 		}
 
 		rightGraph = new Dygraph (
@@ -721,11 +734,27 @@ function getFlagClass(flag) {
 }
 
 function makeJSDates(data) {
+	
+	dateList = new Array();
+	
 	for (i = 0; i < data.length; i++) {
 		point_data = data[i];
+		
+		// Store the milliseconds value in the global dates list
+		dateList.push(point_data[0]);
+		
+		// Replace the milliseconds value with a Javascript date
 		point_data[0] = new Date(point_data[0]);
+		
 		data[i] = point_data;
 	}
 
 	return data;
+}
+
+function scrollToTableRow(milliseconds) {
+	var tableRow = dateList.indexOf(milliseconds);
+	if (tableRow >= 0) {
+		jsDataTable.scroller().scrollToRow(tableRow);
+	}
 }
