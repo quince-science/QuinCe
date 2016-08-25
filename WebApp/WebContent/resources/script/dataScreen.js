@@ -62,7 +62,7 @@ var plotPopupTarget = 'LX';
 
 // The selected parameters for the plots and maps
 var leftPlotXAxis = ['plot_datetime_dateTime'];
-var leftPlotYAxis = ['plot_eqt_eqtMean', 'plot_eqt_eqt1'];
+var leftPlotYAxis = ['plot_intaketemp_intakeTempMean', 'plot_intaketemp_intakeTemp1', 'plot_intaketemp_intakeTemp2', 'plot_intaketemp_intakeTemp3'];
 var leftMap = 'plot_co2_fCO2Final';
 
 var rightPlotXAxis = ['plot_datetime_dateTime'];

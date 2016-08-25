@@ -373,7 +373,11 @@ public class FileDataInterrogator {
 		default: {
 			String value = records.getString(columnIndex);
 			if (null == value) {
-				result.append("");
+				if (asString) {
+					result.append("");
+				} else {
+					result.append("null");
+				}
 			} else if (StringUtils.isNumeric(value)) {
 				Double doubleValue = Double.parseDouble(value);
 				
