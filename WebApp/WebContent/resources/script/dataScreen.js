@@ -467,7 +467,7 @@ function drawTable() {
 	// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
 	
 	
-	html = '<table id="dataTable" class="display nowrap" cellspacing="0" width="100%">';
+	html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%">';
 	html += '<thead>';
 
 	columnHeadings.forEach(heading => {
