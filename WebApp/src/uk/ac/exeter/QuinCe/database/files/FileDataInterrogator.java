@@ -382,7 +382,13 @@ public class FileDataInterrogator {
 				Double doubleValue = Double.parseDouble(value);
 				
 				if (doubleValue == RawDataDB.MISSING_VALUE) {
-					result.append("NaN");
+					
+					if (asString) {
+						// The calling method will wrap this in quotes, so we don't have to
+						result.append("NaN");
+					} else {
+						result.append("\"NaN\"");
+					}
 				} else {
 					result.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
 				}
