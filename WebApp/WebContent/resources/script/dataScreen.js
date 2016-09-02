@@ -12,7 +12,9 @@ var BASE_GRAPH_OPTIONS = {
         labelsUTC: true,
         labelsSeparateLine: true,
         digitsAfterDecimal: 2,
-        animatedZooms: true
+        animatedZooms: true,
+        pointSize: 2,
+        highlightCircleSize: 5
 };
 
 var AXIS_LABELS = {
