@@ -414,7 +414,7 @@ public class DataScreenBean extends BaseManagedBean {
 		try {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			
-			// Add in the row number as the first Y-axis column. We need it for syncing the graphs and the table
+			// Add in the row number and flags as the first Y-axis columns. We need it for syncing the graphs and the table
 			// The list returned from delimitedToList does not allow inserting, so we have to do it the hard way.
 			List<String> submittedColumnList = new ArrayList<String>(columns.size() + 1);
 			
@@ -424,10 +424,13 @@ public class DataScreenBean extends BaseManagedBean {
 			// Now the row number
 			submittedColumnList.add("row");
 			
+			// Add QC and WOCE flags
+			submittedColumnList.add("qcFlag");
+			submittedColumnList.add("woceFlag");
+			
 			// And the Y axis columns
 			submittedColumnList.addAll(columns.subList(1, columns.size()));
 			
-			//output = FileDataInterrogator.getCSVData(dataSource, ServletUtils.getAppConfig(), fileId, instrument, submittedColumnList, co2Type, getIncludeFlags());
 			output = FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, false);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -645,6 +648,7 @@ public class DataScreenBean extends BaseManagedBean {
 		includeFlags.add(Flag.VALUE_GOOD);
 		includeFlags.add(Flag.VALUE_ASSUMED_GOOD);
 		includeFlags.add(Flag.VALUE_QUESTIONABLE);
+		includeFlags.add(Flag.VALUE_NEEDED);
 		
 		if (null != optionalFlags) {
 			for (String optionalFlag : optionalFlags) {
