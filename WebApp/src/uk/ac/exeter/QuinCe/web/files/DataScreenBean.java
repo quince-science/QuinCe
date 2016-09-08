@@ -6,6 +6,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RunType;
@@ -398,14 +399,12 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public void generateLeftPlotData() {
 		List<String> columns = StringUtils.delimitedToList(leftPlotColumns);
-		String output = getPlotData(columns); 
-		setLeftPlotData(output);
+		setLeftPlotData(getPlotData(columns)); 
 	}
 
 	public void generateRightPlotData() {
 		List<String> columns = StringUtils.delimitedToList(rightPlotColumns);
-		String output = getPlotData(columns); 
-		setRightPlotData(output);
+		setRightPlotData(getPlotData(columns)); 
 	}
 	
 	private String getPlotData(List<String> columns) {
@@ -414,10 +413,25 @@ public class DataScreenBean extends BaseManagedBean {
 		
 		try {
 			DataSource dataSource = ServletUtils.getDBDataSource();
-			Instrument instrument = InstrumentDB.getInstrument(dataSource, fileDetails.getInstrumentId());
 			
+			// Add in the row number and flags as the first Y-axis columns. We need it for syncing the graphs and the table
+			// The list returned from delimitedToList does not allow inserting, so we have to do it the hard way.
+			List<String> submittedColumnList = new ArrayList<String>(columns.size() + 1);
 			
-			output = FileDataInterrogator.getCSVData(dataSource, ServletUtils.getAppConfig(), fileId, instrument, columns, co2Type, getIncludeFlags());
+			// Add the X axis
+			submittedColumnList.add(columns.get(0));
+			
+			// Now the row number
+			submittedColumnList.add("row");
+			
+			// Add QC and WOCE flags
+			submittedColumnList.add("qcFlag");
+			submittedColumnList.add("woceFlag");
+			
+			// And the Y axis columns
+			submittedColumnList.addAll(columns.subList(1, columns.size()));
+			
+			output = FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, false);
 		} catch (Exception e) {
 			e.printStackTrace();
 			output = "***ERROR: " + e.getMessage();
@@ -436,6 +450,7 @@ public class DataScreenBean extends BaseManagedBean {
 			}
 			
 			List<String> columns = new ArrayList<String>();
+			columns.add("dateTime");
 			columns.add("row");
 			columns.add("longitude");
 			columns.add("latitude");
@@ -520,8 +535,7 @@ public class DataScreenBean extends BaseManagedBean {
 			columns.add("woceFlag");
 			columns.add("woceMessage");
 			
-			
-			setTableJsonData(FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, columns, getIncludeFlags(), tableDataStart, tableDataLength));
+			setTableJsonData(FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, columns, getIncludeFlags(), tableDataStart, tableDataLength, true));
 		
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -634,6 +648,7 @@ public class DataScreenBean extends BaseManagedBean {
 		includeFlags.add(Flag.VALUE_GOOD);
 		includeFlags.add(Flag.VALUE_ASSUMED_GOOD);
 		includeFlags.add(Flag.VALUE_QUESTIONABLE);
+		includeFlags.add(Flag.VALUE_NEEDED);
 		
 		if (null != optionalFlags) {
 			for (String optionalFlag : optionalFlags) {

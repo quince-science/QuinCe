@@ -6,14 +6,69 @@
  * MAIN VARIABLES
  */
 
-var GRAPH_OPTIONS = {
-        drawPoints: true,
-        strokeWidth: 0.0,
-        labelsUTC: true,
-        labelsSeparateLine: true,
-        digitsAfterDecimal: 2,
-        animatedZooms: true
+var PLOT_ROW_INDEX = 1;
+var PLOT_QCFLAG_INDEX = 2;
+var PLOT_WOCEFLAG_INDEX = 3;
+
+var FLAG_GOOD = 2;
+var FLAG_ASSUMED_GOOD = -2;
+var FLAG_QUESTIONABLE = 3;
+var FLAG_BAD = 4;
+var FLAG_NEEDS_FLAG = -1001;
+var FLAG_IGNORED = -1002;
+
+var BASE_GRAPH_OPTIONS = {
+    drawPoints: true,
+    strokeWidth: 0.0,
+    labelsUTC: true,
+    labelsSeparateLine: true,
+    digitsAfterDecimal: 2,
+    animatedZooms: true,
+    pointSize: 2,
+    highlightCircleSize: 5,
+    axes: {
+        x: {
+          drawGrid: false
+        },
+        y: {
+          drawGrid: true,
+          gridLinePattern: [1, 3],
+          gridLineColor: 'rbg(200, 200, 200)',
+        }
+    }
 };
+
+var AXIS_LABELS = {
+		'dateTime': 'Date/Time',
+		'longitude': 'Longitude (°E)',
+		'latitude': 'Latitude (°N)',
+		'intakeTemp1': 'Temperature (°C)',
+		'intakeTemp2': 'Temperature (°C)',
+		'intakeTemp3': 'Temperature (°C)',
+		'intakeTempMean': 'Temperature (°C)',
+		'salinity1': 'Salinity (PSU)',
+		'salinity2': 'Salinity (PSU)',
+		'salinity3': 'Salinity (PSU)',
+		'salinityMean': 'Salinity (PSU)',
+		'eqt1': 'Temperature (°C)',
+		'eqt2': 'Temperature (°C)',
+		'eqt3': 'Temperature (°C)',
+		'eqtMean': 'Temperature (°C)',
+		'eqp1': 'Pressure (hPa)',
+		'eqp2': 'Pressure (hPa)',
+		'eqp3': 'Pressure (hPa)',
+		'eqpMean': 'Pressure (hPa)',
+		'moistureMeasured': 'Moisture (%)',
+		'moistureTrue': 'Moisture (%)',
+		'pH2O': 'pH₂O (UNITS)',
+		'co2Measured': 'CO₂ (ppm/μatm)',
+		'co2Dried': 'CO₂ (ppm/μatm)',
+		'co2Calibrated': 'CO₂ (ppm/μatm)',
+		'pCO2TEDry': 'CO₂ (ppm/μatm)',
+		'pCO2TEWet': 'CO₂ (ppm/μatm)',
+		'fCO2TE': 'CO₂ (ppm/μatm)',
+		'fCO2Final': 'CO₂ (ppm/μatm)'
+}
 
 // Keeps track of the split positions as a percentage of the
 // full data area
@@ -30,7 +85,7 @@ var plotPopupTarget = 'LX';
 
 // The selected parameters for the plots and maps
 var leftPlotXAxis = ['plot_datetime_dateTime'];
-var leftPlotYAxis = ['plot_eqt_eqtMean', 'plot_eqt_eqt1'];
+var leftPlotYAxis = ['plot_intaketemp_intakeTempMean', 'plot_intaketemp_intakeTemp1', 'plot_intaketemp_intakeTemp2', 'plot_intaketemp_intakeTemp3'];
 var leftMap = 'plot_co2_fCO2Final';
 
 var rightPlotXAxis = ['plot_datetime_dateTime'];
@@ -60,6 +115,9 @@ var visibleColumns = {
 
 // The viewing mode for the table
 var tableMode = 'basic';
+
+// The list of dates in the current view. Used for searching.
+var dateList = null;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -133,7 +191,7 @@ function resizeContent() {
 	}
 	
 	$('#plotRightContent').width('100%');
-	$('#plotRightContent').height('' + $('#plotContainerRight').height() - 30 + 'px');
+	$('#plotRightContent').height('' + $('#plotContainerRight').height() - 30);
 	if (rightGraph != null) {
 		rightGraph.resize($('#plotRightContent').width(), $('#plotRightContent').height() - 15);
 	}
@@ -429,10 +487,51 @@ function drawLeftPlot(data) {
 	var status = data.status;
 	
 	if (status == "success") {
+		var graph_options = BASE_GRAPH_OPTIONS;
+		graph_options.xlabel = AXIS_LABELS[leftPlotXAxis[0].match(/[^_]*$/)];
+		graph_options.ylabel = AXIS_LABELS[leftPlotYAxis[0].match(/[^_]*$/)];
+	
+		// Row, QC Flag and WOCE flag are always invisible
+		var columnVisibility = [false, false, false];
+		for (var i = 0; i < leftPlotYAxis.length; i++) {
+			columnVisibility.push(true);
+		}
+	
+		graph_options.visibility = columnVisibility;
+		
+		graph_data = JSON.parse($('#plotDataForm\\:leftData').text());
+		leftPlotHighlights = makeHighlights(graph_data);
+		
+		if (leftPlotXAxis[0] == 'plot_datetime_dateTime') {
+			graph_data = makeJSDates(graph_data);
+			graph_options.clickCallback = function(e, x, points) {
+				scrollToTableRow(x);
+			};
+
+			plotHighlights = makeHighlights(graph_data);
+			if (plotHighlights.length > 0) {
+				graph_options.underlayCallback = function(canvas, area, g) {
+					for (var i = 0; i < plotHighlights.length; i++) {
+						var canvas_left_x = g.toDomXCoord(plotHighlights[i][0]);
+			            var canvas_right_x = g.toDomXCoord(plotHighlights[i][1]);
+			            var canvas_width = canvas_right_x - canvas_left_x;
+			            canvas.fillStyle = plotHighlights[i][2];
+			            canvas.fillRect(canvas_left_x, area.y, canvas_width, area.h);
+					}
+				}
+			} else {
+				graph_options.underlayCallback = null;
+			}
+		
+		} else {
+			graph_options.clickCallback = null;
+			graph_options.underlayCallback = null
+		}
+	
 		leftGraph = new Dygraph (
 			document.getElementById('plotLeftContent'),
-	        $('#plotDataForm\\:leftData').text(),
-	        GRAPH_OPTIONS
+			graph_data,
+	        graph_options
 		);
 		
 		resizeContent();
@@ -446,10 +545,49 @@ function drawRightPlot(data) {
 	var status = data.status;
 	
 	if (status == "success") {
+		var graph_options = BASE_GRAPH_OPTIONS;
+		graph_options.xlabel = AXIS_LABELS[rightPlotXAxis[0].match(/[^_]*$/)];
+		graph_options.ylabel = AXIS_LABELS[rightPlotYAxis[0].match(/[^_]*$/)];
+	
+		// Row, QC Flag and WOCE flag are always invisible
+		var columnVisibility = [false, false, false];
+		for (var i = 0; i < rightPlotYAxis.length; i++) {
+			columnVisibility.push(true);
+		}
+		
+		graph_options.visibility = columnVisibility;
+	
+		graph_data = JSON.parse($('#plotDataForm\\:rightData').text());
+		if (rightPlotXAxis[0] == 'plot_datetime_dateTime') {
+			graph_data = makeJSDates(graph_data);
+			rightPlotHighlights = makeHighlights(graph_data);
+			graph_options.clickCallback = function(e, x, points) {
+				scrollToTableRow(x);
+			};
+
+			plotHighlights = makeHighlights(graph_data);
+			if (plotHighlights.length > 0) {
+				graph_options.underlayCallback = function(canvas, area, g) {
+					for (var i = 0; i < plotHighlights.length; i++) {
+						var canvas_left_x = g.toDomXCoord(plotHighlights[i][0]);
+			            var canvas_right_x = g.toDomXCoord(plotHighlights[i][1]);
+			            var canvas_width = canvas_right_x - canvas_left_x;
+			            canvas.fillStyle = plotHighlights[i][2];
+			            canvas.fillRect(canvas_left_x, area.y, canvas_width, area.h);
+					}
+				}
+			} else {
+				graph_options.underlayCallback = null;
+			}
+		} else {
+			graph_options.underlayCallback = null;
+			graph_options.clickCallback = null;
+		}
+
 		rightGraph = new Dygraph (
 			document.getElementById('plotRightContent'),
-	        $('#plotDataForm\\:rightData').text(),
-	        GRAPH_OPTIONS
+			graph_data,
+	        graph_options
 		);
 		
 		resizeContent();
@@ -655,4 +793,90 @@ function getFlagClass(flag) {
     }
 
     return flagClass;
+}
+
+function makeJSDates(data) {
+	
+	dateList = new Array();
+	
+	for (i = 0; i < data.length; i++) {
+		point_data = data[i];
+		
+		// Store the milliseconds value in the global dates list
+		dateList.push(point_data[0]);
+		
+		// Replace the milliseconds value with a Javascript date
+		point_data[0] = new Date(point_data[0]);
+		
+		data[i] = point_data;
+	}
+
+	return data;
+}
+
+function scrollToTableRow(milliseconds) {
+	var tableRow = dateList.indexOf(milliseconds);
+	if (tableRow >= 0) {
+		jsDataTable.scroller().scrollToRow(tableRow);
+	}
+}
+
+
+function makeHighlights(plotData) {
+	
+	var highlights = [];
+	
+	var currentFlag = FLAG_GOOD;
+	var highlightStart = -1;
+	var highlightEnd = -1;
+	var highlightColor = null;
+	
+	for (var i = 0; i < plotData.length; i++) {
+		var woceFlag = plotData[i][PLOT_WOCEFLAG_INDEX];
+		
+		if (woceFlag != currentFlag) {
+			if (highlightStart > -1) {
+				highlightEnd = plotData[i][0];
+				highlights.push([highlightStart, highlightEnd, highlightColor]);
+			}
+			
+			if (Math.abs(woceFlag) == FLAG_GOOD) {
+				highlightStart = -1;
+			} else {
+				highlightStartIndex = i - 1;
+				if (highlightStartIndex < 0) {
+					highlightStartIndex = 0;
+				}
+				
+				highlightStart = plotData[highlightStartIndex][0];
+				switch (woceFlag) {
+				case FLAG_BAD: {
+					highlightColor = 'rgba(255, 0, 0, 1)';
+					break;
+				}
+				case FLAG_QUESTIONABLE: {
+					highlightColor = 'rgba(216, 177, 0, 1)';
+					break;
+				}
+				case FLAG_NEEDS_FLAG: {
+					highlightColor = 'rgba(69, 66, 255, 1)';
+					break;
+				}
+				case FLAG_IGNORED: {
+					highlightColor = 'rgba(225, 225, 225, 1)';
+					break;
+				}
+				}
+			}
+
+			currentFlag = woceFlag;
+		}
+	}
+	
+	if (highlightStart != -1) {
+		highllightEnd = plotData[plotData.length - 1][0];
+		highlights.push([highlightStart, highlightEnd, highlightColor]);
+	}
+		
+	return highlights;
 }
