@@ -17,6 +17,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Message;
+import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.RebuildCode;
 import uk.ac.exeter.QuinCe.data.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument;
@@ -53,6 +54,7 @@ public class FileDataInterrogator {
 	static {
 		// Map input names from the web front end to database column names
 		COLUMN_MAPPINGS = new HashMap<String, String>();
+		COLUMN_MAPPINGS.put("row", "raw_data.row");
 		COLUMN_MAPPINGS.put("dateTime", "raw_data.date_time");
 		COLUMN_MAPPINGS.put("longitude", "raw_data.longitude");
 		COLUMN_MAPPINGS.put("latitude", "raw_data.latitude");
@@ -276,9 +278,8 @@ public class FileDataInterrogator {
 						
 						// Handle the date/time as a special case 
 						currentDBColumn++;
+						outputBuffer.append(formatField(records, currentDBColumn, columnName, true));
 						
-						Calendar colDate = DatabaseUtils.getUTCDateTime(records, currentDBColumn);
-						outputBuffer.append(DateTimeUtils.formatDateTime(colDate));
 					} else if (!columnName.equals(COLUMN_ORIGINAL_FILE)) {
 						
 						// Database fields are only added if the instrument has them
@@ -286,39 +287,7 @@ public class FileDataInterrogator {
 							addSeparator = false;
 						} else {
 							currentDBColumn++;
-							String value = records.getString(currentDBColumn);
-							
-							switch (columnName) {
-							case "qcFlag":
-							case "woceFlag": {
-								outputBuffer.append(Integer.parseInt(value));
-								break;
-							}
-							case "qcMessage": {
-								List<Message> messages = RebuildCode.getMessagesFromRebuildCodes(value);
-								
-								for (int i = 0; i < messages.size(); i++) {
-									outputBuffer.append(messages.get(i).getShortMessage());
-									if (i < messages.size() - 1) {
-										outputBuffer.append(';');
-									}
-								}
-								break;
-							}
-							default: {
-								if (StringUtils.isNumeric(value)) {
-									Double doubleValue = Double.parseDouble(value);
-									
-									if (doubleValue == RawDataDB.MISSING_VALUE) {
-										outputBuffer.append("NaN");
-									} else {
-										outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", doubleValue));
-									}
-								} else {
-									outputBuffer.append(value.replaceAll("\n", "\\n"));
-								}
-							}
-							}
+							outputBuffer.append(formatField(records, currentDBColumn, columnName, true));
 						}
 					} else {
 						// Find the line corresponding to the date from the database
@@ -363,8 +332,76 @@ public class FileDataInterrogator {
 		
 		return output;
 	}
+
+	private static String formatField(ResultSet records, int columnIndex, String columnName, boolean asString) throws SQLException, MessageException {
+		
+		StringBuffer result = new StringBuffer();
+		
+		switch (columnName) {
+		case "dateTime": {
+			Calendar colDate = DatabaseUtils.getUTCDateTime(records, columnIndex);
+			
+			if (asString) {
+				result.append(DateTimeUtils.formatDateTime(colDate));
+			} else {
+				// We return the date as a milliseconds value, which can
+				// be parsed into a Date object by the Javascript
+				result.append(colDate.getTimeInMillis());
+			}
+			break;
+		}
+		case "row": {
+			result.append(records.getInt(columnIndex));
+			break;
+		}
+		case "qcFlag":
+		case "woceFlag": {
+			result.append(records.getString(columnIndex));
+			break;
+		}
+		case "qcMessage": {
+			List<Message> messages = RebuildCode.getMessagesFromRebuildCodes(records.getString(columnIndex));
+			
+			for (int i = 0; i < messages.size(); i++) {
+				result.append(messages.get(i).getShortMessage());
+				if (i < messages.size() - 1) {
+					result.append(';');
+				}
+			}
+			break;
+		}
+		default: {
+			String value = records.getString(columnIndex);
+			if (null == value) {
+				if (asString) {
+					result.append("");
+				} else {
+					result.append("null");
+				}
+			} else if (StringUtils.isNumeric(value)) {
+				Double doubleValue = Double.parseDouble(value);
+				
+				if (doubleValue == RawDataDB.MISSING_VALUE) {
+					
+					if (asString) {
+						// The calling method will wrap this in quotes, so we don't have to
+						result.append("NaN");
+					} else {
+						result.append("\"NaN\"");
+					}
+				} else {
+					result.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
+				}
+			} else {
+				result.append(value.replaceAll("\n", "\\n"));
+			}
+		}
+		}
+		
+		return result.toString();
+	}
 	
-	public static String getJsonData(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length) throws MissingParamException {
+	public static String getJsonData(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean valuesAsStrings) throws MissingParamException, MessageException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(columns, "columns");
@@ -395,28 +432,20 @@ public class FileDataInterrogator {
 				outputBuffer.append('[');
 				for (int col = 1; col <= columnCount; col++) {
 					
-					outputBuffer.append('\"');
 
 					// The first column is always the date/time (it's added automatically)
 					// Plus we check the other columns too (which are zero-based, and the automatic dateTime accounts for one)
-					if (col == 1 || columns.get(col - 2).equals("dateTime")) {
-						Calendar colDate = DatabaseUtils.getUTCDateTime(records, col);
-						outputBuffer.append(DateTimeUtils.formatDateTime(colDate));
-					} else {
-						String value = records.getString(col);
-						if (StringUtils.isNumeric(value)) {
-							Double doubleValue = Double.parseDouble(value);
-							if (doubleValue == RawDataDB.MISSING_VALUE) {
-								outputBuffer.append("NaN");
-							} else {
-								outputBuffer.append(String.format(Locale.ENGLISH, "%.3f", doubleValue));
-							}
-						} else {
-							outputBuffer.append(records.getString(col));
-						}
+					String columnName = columns.get(col - 1);
+					
+					if (valuesAsStrings) {
+						outputBuffer.append('\"');
+					}
+					outputBuffer.append(formatField(records, col, columnName, valuesAsStrings));
+					
+					if (valuesAsStrings) {
+						outputBuffer.append('\"');
 					}
 					
-					outputBuffer.append('\"');
 					if (col < columnCount) {
 						outputBuffer.append(',');
 					}
@@ -486,6 +515,10 @@ public class FileDataInterrogator {
 		String result;
 		
 		switch (columnName) {
+		case "row": {
+			result = "Row";
+			break;
+		}
 		case "dateTime": {
 			result = "Date";
 			break;
@@ -709,9 +742,6 @@ public class FileDataInterrogator {
 		if (columns.contains(COLUMN_RECORD_COUNT)) {
 			databaseColumnList.append("COUNT(*)");
 		} else {
-			databaseColumnList.append(COLUMN_MAPPINGS.get("dateTime"));
-			databaseColumnList.append(',');
-			
 			for (int col = 0; col < columns.size(); col++) {
 				if (!columns.get(col).equals(COLUMN_ORIGINAL_FILE)) {
 					databaseColumnList.append(COLUMN_MAPPINGS.get(columns.get(col)));

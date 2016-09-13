@@ -19,6 +19,26 @@
 		<h:outputScript name="script/dygraph-combined.js"/>
 		<h:outputScript name="script/datatables.min.js"/>
 		<h:outputStylesheet name="style/datatables.min.css"/>
+		
+		<script type="text/javascript">
+			var intakeTempCount = #{dataScreenBean.instrument.intakeTempCount};
+			var intakeTemp1Name = '#{dataScreenBean.instrument.intakeTempName1}';
+			var intakeTemp2Name = '#{dataScreenBean.instrument.intakeTempName2}';
+			var intakeTemp3Name = '#{dataScreenBean.instrument.intakeTempName3}';
+			var salinityCount = #{dataScreenBean.instrument.salinityCount};
+			var salinity1Name = '#{dataScreenBean.instrument.salinityName1}';
+			var salinity2Name = '#{dataScreenBean.instrument.salinityName2}';
+			var salinity3Name = '#{dataScreenBean.instrument.salinityName3}';
+			var eqtCount = #{dataScreenBean.instrument.eqtCount};
+			var eqt1Name = '#{dataScreenBean.instrument.eqtName1}';
+			var eqt2Name = '#{dataScreenBean.instrument.eqtName2}';
+			var eqt3Name = '#{dataScreenBean.instrument.eqtName3}';
+			var eqpCount = #{dataScreenBean.instrument.eqpCount};
+			var eqp1Name = '#{dataScreenBean.instrument.eqpName1}';
+			var eqp2Name = '#{dataScreenBean.instrument.eqpName2}';
+			var eqp3Name = '#{dataScreenBean.instrument.eqpName3}';
+			var columnHeadings = #{dataScreenBean.tableHeadings};
+		</script>
 	</h:head>
 	<h:body class="fullPage">
 		<div id="plotFieldList" class="popupMenu">
@@ -30,19 +50,18 @@
 		</div>
 		<div id="hiddenData">
 			<h:form id="plotDataForm">
-				<h:inputHidden value="#{dataScreenBean.leftPlotColumns}" id="leftColumns"/>
+				<h:inputHidden id="leftColumns" value="#{dataScreenBean.leftPlotColumns}"/>
 				<h:outputText id="leftData" value="#{dataScreenBean.leftPlotData}"/>
 				<h:commandLink id="leftGetData" action="#{dataScreenBean.generateLeftPlotData}">
 					<f:ajax execute="leftColumns" render="leftData" onevent="drawLeftPlot"/>
 				</h:commandLink>
 
-				<h:inputHidden value="#{dataScreenBean.rightPlotColumns}" id="rightColumns"/>
+				<h:inputHidden id="rightColumns" value="#{dataScreenBean.rightPlotColumns}"/>
 				<h:outputText id="rightData" value="#{dataScreenBean.rightPlotData}"/>
 				<h:commandLink id="rightGetData" action="#{dataScreenBean.generateRightPlotData}">
 					<f:ajax execute="rightColumns" render="rightData" onevent="drawRightPlot"/>
 				</h:commandLink>
 				
-				<h:inputHidden value="#{dataScreenBean.tableMode}" id="tableMode"/>
 				<h:inputHidden value="#{dataScreenBean.tableJsonData}" id="tableJsonData"/>
 				<h:inputHidden value="#{dataScreenBean.recordCount}" id="recordCount"/>
 				<h:inputHidden value="#{dataScreenBean.tableDataDraw}" id="tableDataDraw"/>
@@ -98,7 +117,14 @@
 	    		<div id="data">
 	    			<div id="tableContent"></div>
 	    			<div id="tableControls" class="controls">
-	    				Controls
+			      		<p:selectOneButton value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="changeTableMode(event)">
+			      			<f:selectItem itemLabel="Basic" itemValue="basic"/>
+			      			<f:selectItem itemLabel="Water" itemValue="water"/>
+			      			<f:selectItem itemLabel="Equilibrator" itemValue="equilibrator"/>
+			      			<f:selectItem itemLabel="CO₂" itemValue="co2"/>
+			      			<f:ajax render="@none"/>
+			      		</p:selectOneButton>
+
 	    			</div>
 	    		</div>
     		</div>

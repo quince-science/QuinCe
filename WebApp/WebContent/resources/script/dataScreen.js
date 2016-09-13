@@ -6,14 +6,69 @@
  * MAIN VARIABLES
  */
 
-var GRAPH_OPTIONS = {
-        drawPoints: true,
-        strokeWidth: 0.0,
-        labelsUTC: true,
-        labelsSeparateLine: true,
-        digitsAfterDecimal: 2,
-        animatedZooms: true
+var PLOT_ROW_INDEX = 1;
+var PLOT_QCFLAG_INDEX = 2;
+var PLOT_WOCEFLAG_INDEX = 3;
+
+var FLAG_GOOD = 2;
+var FLAG_ASSUMED_GOOD = -2;
+var FLAG_QUESTIONABLE = 3;
+var FLAG_BAD = 4;
+var FLAG_NEEDS_FLAG = -1001;
+var FLAG_IGNORED = -1002;
+
+var BASE_GRAPH_OPTIONS = {
+    drawPoints: true,
+    strokeWidth: 0.0,
+    labelsUTC: true,
+    labelsSeparateLine: true,
+    digitsAfterDecimal: 2,
+    animatedZooms: true,
+    pointSize: 2,
+    highlightCircleSize: 5,
+    axes: {
+        x: {
+          drawGrid: false
+        },
+        y: {
+          drawGrid: true,
+          gridLinePattern: [1, 3],
+          gridLineColor: 'rbg(200, 200, 200)',
+        }
+    }
 };
+
+var AXIS_LABELS = {
+		'dateTime': 'Date/Time',
+		'longitude': 'Longitude (°E)',
+		'latitude': 'Latitude (°N)',
+		'intakeTemp1': 'Temperature (°C)',
+		'intakeTemp2': 'Temperature (°C)',
+		'intakeTemp3': 'Temperature (°C)',
+		'intakeTempMean': 'Temperature (°C)',
+		'salinity1': 'Salinity (PSU)',
+		'salinity2': 'Salinity (PSU)',
+		'salinity3': 'Salinity (PSU)',
+		'salinityMean': 'Salinity (PSU)',
+		'eqt1': 'Temperature (°C)',
+		'eqt2': 'Temperature (°C)',
+		'eqt3': 'Temperature (°C)',
+		'eqtMean': 'Temperature (°C)',
+		'eqp1': 'Pressure (hPa)',
+		'eqp2': 'Pressure (hPa)',
+		'eqp3': 'Pressure (hPa)',
+		'eqpMean': 'Pressure (hPa)',
+		'moistureMeasured': 'Moisture (%)',
+		'moistureTrue': 'Moisture (%)',
+		'pH2O': 'pH₂O (UNITS)',
+		'co2Measured': 'CO₂ (ppm/μatm)',
+		'co2Dried': 'CO₂ (ppm/μatm)',
+		'co2Calibrated': 'CO₂ (ppm/μatm)',
+		'pCO2TEDry': 'CO₂ (ppm/μatm)',
+		'pCO2TEWet': 'CO₂ (ppm/μatm)',
+		'fCO2TE': 'CO₂ (ppm/μatm)',
+		'fCO2Final': 'CO₂ (ppm/μatm)'
+}
 
 // Keeps track of the split positions as a percentage of the
 // full data area
@@ -30,7 +85,7 @@ var plotPopupTarget = 'LX';
 
 // The selected parameters for the plots and maps
 var leftPlotXAxis = ['plot_datetime_dateTime'];
-var leftPlotYAxis = ['plot_eqt_eqtMean', 'plot_eqt_eqt1', 'plot_eqt_eqt2', 'plot_eqt_eqt3'];
+var leftPlotYAxis = ['plot_intaketemp_intakeTempMean', 'plot_intaketemp_intakeTemp1', 'plot_intaketemp_intakeTemp2', 'plot_intaketemp_intakeTemp3'];
 var leftMap = 'plot_co2_fCO2Final';
 
 var rightPlotXAxis = ['plot_datetime_dateTime'];
@@ -41,8 +96,28 @@ var rightMap = 'plot_intaketemp_intakeTempMean';
 var leftGraph = null;
 var rightGraph = null;
 
+// The data table
+var jsDataTable = null;
+
 // The callback function for the DataTables drawing call
 var dataTableDrawCallback = null;
+
+// The list of visible table columns for each table mode
+var compulsoryColumns = ['Date/Time', 'Longitude', 'Latitude', 'QC Flag', 'WOCE Flag'];
+
+// These are regular expression patterns
+var visibleColumns = {
+	'basic': [/Intake Temp/, /Intake Temp: Mean/, /Salinity/, /Salinity: Mean/, /Equil\. Temp/, /Equil\. Temp: Mean/, /Equil\. Pressure/, /Equil\. Pressure: Mean/, /Moisture \(True\)/, /fCO₂ Final/],
+	'water': [/Intake Temp.*/, /Salinity.*/],
+	'equilibrator': [/Equil.*/, /Moisture.*/],
+	'co2': [/pH₂O/, /.*CO₂.*/]
+};
+
+// The viewing mode for the table
+var tableMode = 'basic';
+
+// The list of dates in the current view. Used for searching.
+var dateList = null;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -99,7 +174,7 @@ function drawAllData() {
 	drawLoading($('#tableContent'));
     updatePlot('left');
     updatePlot('right');
-    updateTable();
+    drawTable();
 }
 
 /*
@@ -116,7 +191,7 @@ function resizeContent() {
 	}
 	
 	$('#plotRightContent').width('100%');
-	$('#plotRightContent').height('' + $('#plotContainerRight').height() - 30 + 'px');
+	$('#plotRightContent').height('' + $('#plotContainerRight').height() - 30);
 	if (rightGraph != null) {
 		rightGraph.resize($('#plotRightContent').width(), $('#plotRightContent').height() - 15);
 	}
@@ -124,6 +199,9 @@ function resizeContent() {
 	// Set the height of the DataTables scrollbody
 	// We have to select it by class, but there's only one so we can get away with it
 	$('.dataTables_scrollBody').height(calcTableScrollY());
+	
+	// Resize the table columns
+	jsDataTable.columns.adjust().draw(false);
 }
 
 /*
@@ -409,10 +487,51 @@ function drawLeftPlot(data) {
 	var status = data.status;
 	
 	if (status == "success") {
+		var graph_options = BASE_GRAPH_OPTIONS;
+		graph_options.xlabel = AXIS_LABELS[leftPlotXAxis[0].match(/[^_]*$/)];
+		graph_options.ylabel = AXIS_LABELS[leftPlotYAxis[0].match(/[^_]*$/)];
+	
+		// Row, QC Flag and WOCE flag are always invisible
+		var columnVisibility = [false, false, false];
+		for (var i = 0; i < leftPlotYAxis.length; i++) {
+			columnVisibility.push(true);
+		}
+	
+		graph_options.visibility = columnVisibility;
+		
+		graph_data = JSON.parse($('#plotDataForm\\:leftData').text());
+		leftPlotHighlights = makeHighlights(graph_data);
+		
+		if (leftPlotXAxis[0] == 'plot_datetime_dateTime') {
+			graph_data = makeJSDates(graph_data);
+			graph_options.clickCallback = function(e, x, points) {
+				scrollToTableRow(x);
+			};
+
+			plotHighlights = makeHighlights(graph_data);
+			if (plotHighlights.length > 0) {
+				graph_options.underlayCallback = function(canvas, area, g) {
+					for (var i = 0; i < plotHighlights.length; i++) {
+						var canvas_left_x = g.toDomXCoord(plotHighlights[i][0]);
+			            var canvas_right_x = g.toDomXCoord(plotHighlights[i][1]);
+			            var canvas_width = canvas_right_x - canvas_left_x;
+			            canvas.fillStyle = plotHighlights[i][2];
+			            canvas.fillRect(canvas_left_x, area.y, canvas_width, area.h);
+					}
+				}
+			} else {
+				graph_options.underlayCallback = null;
+			}
+		
+		} else {
+			graph_options.clickCallback = null;
+			graph_options.underlayCallback = null
+		}
+	
 		leftGraph = new Dygraph (
 			document.getElementById('plotLeftContent'),
-	        $('#plotDataForm\\:leftData').text(),
-	        GRAPH_OPTIONS
+			graph_data,
+	        	graph_options
 		);
 		
 		resizeContent();
@@ -426,10 +545,49 @@ function drawRightPlot(data) {
 	var status = data.status;
 	
 	if (status == "success") {
+		var graph_options = BASE_GRAPH_OPTIONS;
+		graph_options.xlabel = AXIS_LABELS[rightPlotXAxis[0].match(/[^_]*$/)];
+		graph_options.ylabel = AXIS_LABELS[rightPlotYAxis[0].match(/[^_]*$/)];
+	
+		// Row, QC Flag and WOCE flag are always invisible
+		var columnVisibility = [false, false, false];
+		for (var i = 0; i < rightPlotYAxis.length; i++) {
+			columnVisibility.push(true);
+		}
+		
+		graph_options.visibility = columnVisibility;
+	
+		graph_data = JSON.parse($('#plotDataForm\\:rightData').text());
+		if (rightPlotXAxis[0] == 'plot_datetime_dateTime') {
+			graph_data = makeJSDates(graph_data);
+			rightPlotHighlights = makeHighlights(graph_data);
+			graph_options.clickCallback = function(e, x, points) {
+				scrollToTableRow(x);
+			};
+
+			plotHighlights = makeHighlights(graph_data);
+			if (plotHighlights.length > 0) {
+				graph_options.underlayCallback = function(canvas, area, g) {
+					for (var i = 0; i < plotHighlights.length; i++) {
+						var canvas_left_x = g.toDomXCoord(plotHighlights[i][0]);
+			            var canvas_right_x = g.toDomXCoord(plotHighlights[i][1]);
+			            var canvas_width = canvas_right_x - canvas_left_x;
+			            canvas.fillStyle = plotHighlights[i][2];
+			            canvas.fillRect(canvas_left_x, area.y, canvas_width, area.h);
+					}
+				}
+			} else {
+				graph_options.underlayCallback = null;
+			}
+		} else {
+			graph_options.underlayCallback = null;
+			graph_options.clickCallback = null;
+		}
+
 		rightGraph = new Dygraph (
 			document.getElementById('plotRightContent'),
-	        $('#plotDataForm\\:rightData').text(),
-	        GRAPH_OPTIONS
+			graph_data,
+	        	graph_options
 		);
 		
 		resizeContent();
@@ -442,23 +600,23 @@ function drawRightPlot(data) {
  * the DataTables object is created and configured to load
  * its data from the server using the hidden form.
  */
-function updateTable() {
+function drawTable() {
+	
+	// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
+	
 	
 	html = '<table id="dataTable" class="display nowrap" cellspacing="0" width="100%">';
 	html += '<thead>';
-    html += '<th>Date/Time</th>';
-    html += '<th>Longitude</th>';
-    html += '<th>Latitude</th>';
-    html += '<th>QC Result</th>';
-    html += '<th>QC Message</th>';
-    html += '<th>WOCE Flag</th>';
-    html += '<th>WOCE Message</th>';
-    html += '</thead>';
-    html += '</table>';
-	
-    $('#tableContent').html(html);
+
+	columnHeadings.forEach(heading => {
+		html += '<th>';
+		html += heading;
+		html += '</th>';
+	});
+
+	$('#tableContent').html(html);
     
-    $('#dataTable').DataTable( {
+    jsDataTable = $('#dataTable').DataTable( {
     	ordering: false,
     	searching: false,
     	serverSide: true,
@@ -479,8 +637,58 @@ function updateTable() {
     		
     		// Submit the query to the server
     		$('#plotDataForm\\:tableGetData').click();
-        }
+        },
+        columnDefs:[
+            // DateTime doesn't wrap
+            {"className": "noWrap", "targets": [0]},
+            {"className": "centreCol", "targets": getQCColumns()},
+            {"className": "numericCol", "targets": getNumericColumns()},
+            {"render":
+            	function (data, type, row) {
+	                var output = '<div onmouseover="showQCInfoPopup(' + (row[0] - 1) + ', this)" onmouseout="hideQCInfoPopup()" class="';
+	                output += getFlagClass(data);
+	                output += '">';
+	                output += getFlagText(data);
+	                output += '</div>';
+	                return output;
+	            },
+                "targets": getColumnIndex('QC Flag')
+            }
+        ]
     });
+    
+    renderTableColumns();
+}
+
+function getNumericColumns() {
+	numericCols = new Array();
+	for (i = 0; i < columnHeadings.length; i++) {
+		if (columnHeadings[i] != 'Date/Time' && columnHeadings[i] != 'QC Flag' && columnHeadings[i] != 'QC Message' && columnHeadings[i] != 'WOCE Flag' && columnHeadings[i] != 'WOCE Message') {
+			numericCols.push(i);
+		}
+	}
+	return numericCols;
+}
+
+function getQCColumns() {
+	qcColumns = new Array();
+	for (i = 0; i < columnHeadings.length; i++) {
+		if (columnHeadings[i] == 'QC Flag' || columnHeadings[i] == 'QC Message' || columnHeadings[i] == 'WOCE Flag' || columnHeadings[i] == 'WOCE Message') {
+			qcColumns.push(i);
+		}
+	}
+	return qcColumns;
+}
+
+function getColumnIndex(columnName) {
+	var index = -1;
+	for (i = 0; i < columnHeadings.length; i++) {
+		if (columnHeadings[i] == columnName) {
+			index = i;
+			break;
+		}
+	}
+	return index;
 }
 
 /*
@@ -507,4 +715,168 @@ function tableDataDownload(data) {
 function calcTableScrollY() {
 	// 41 is the post-rendered height of the header in FF (as measured on screen). Can we detect it somewhere?
 	return $('#data').height() - $('#tableControls').outerHeight() - 41;
+}
+
+function renderTableColumns() {
+		
+	var visibleTableColumns = new Array();
+	var hiddenTableColumns = new Array();
+	
+	// Do the stuff
+	for (i = 0; i < columnHeadings.length; i++) {
+		columnVisible = false;
+		
+		if ($.inArray(columnHeadings[i], compulsoryColumns) != -1) {
+			columnVisible = true;
+		} else {
+			searchColumns = visibleColumns[tableMode];
+			for (j = 0; j < searchColumns.length && !columnVisible; j++) {
+				columnVisible = new RegExp(searchColumns[j]).test(columnHeadings[i]);
+			}
+		}
+		
+		columnVisible ? visibleTableColumns.push(i) : hiddenTableColumns.push(i);
+		
+		
+	}
+	
+	// Update the table
+	jsDataTable.columns(visibleTableColumns).visible(true, false);
+	jsDataTable.columns(hiddenTableColumns).visible(false, false);
+	jsDataTable.columns.adjust().draw( false );
+}
+
+function changeTableMode(event) {
+	tableMode = event.target.value;
+	renderTableColumns();
+}
+
+function getFlagText(flag) {
+    var flagText = "";
+
+    if (flag == '-1001') {
+        flagText = 'Needs Flag';
+    } else if (flag == '-1002') {
+        flagText = 'Ignore';
+    } else if (flag == '-2') {
+        flagText = 'Assumed Good';
+    } else if (flag == '2') {
+        flagText = 'Good';
+    } else if (flag == '3') {
+        flagText = 'Questionable';
+    } else if (flag == '4') {
+        flagText = 'Bad';
+    } else {
+        flagText = 'Needs Flag';
+    }
+
+    return flagText;
+}
+
+function getFlagClass(flag) {
+    var flagClass = "";
+
+    if (flag == '-1001') {
+        flagClass = 'needsFlagging';
+    } else if (flag == '-1002') {
+        flagClass = 'ignore';
+    } else if (flag == '-2') {
+        flagClass = 'assumedGood';
+    } else if (flag == '2') {
+        flagClass = 'good';
+    } else if (flag == '3') {
+        flagClass = 'questionable';
+    } else if (flag == '4') {
+        flagClass = 'bad';
+    } else {
+        flagClass = 'needsFlagging';
+    }
+
+    return flagClass;
+}
+
+function makeJSDates(data) {
+	
+	dateList = new Array();
+	
+	for (i = 0; i < data.length; i++) {
+		point_data = data[i];
+		
+		// Store the milliseconds value in the global dates list
+		dateList.push(point_data[0]);
+		
+		// Replace the milliseconds value with a Javascript date
+		point_data[0] = new Date(point_data[0]);
+		
+		data[i] = point_data;
+	}
+
+	return data;
+}
+
+function scrollToTableRow(milliseconds) {
+	var tableRow = dateList.indexOf(milliseconds);
+	if (tableRow >= 0) {
+		jsDataTable.scroller().scrollToRow(tableRow);
+	}
+}
+
+
+function makeHighlights(plotData) {
+	
+	var highlights = [];
+	
+	var currentFlag = FLAG_GOOD;
+	var highlightStart = -1;
+	var highlightEnd = -1;
+	var highlightColor = null;
+	
+	for (var i = 0; i < plotData.length; i++) {
+		var woceFlag = plotData[i][PLOT_WOCEFLAG_INDEX];
+		
+		if (woceFlag != currentFlag) {
+			if (highlightStart > -1) {
+				highlightEnd = plotData[i][0];
+				highlights.push([highlightStart, highlightEnd, highlightColor]);
+			}
+			
+			if (Math.abs(woceFlag) == FLAG_GOOD) {
+				highlightStart = -1;
+			} else {
+				highlightStartIndex = i - 1;
+				if (highlightStartIndex < 0) {
+					highlightStartIndex = 0;
+				}
+				
+				highlightStart = plotData[highlightStartIndex][0];
+				switch (woceFlag) {
+				case FLAG_BAD: {
+					highlightColor = 'rgba(255, 0, 0, 1)';
+					break;
+				}
+				case FLAG_QUESTIONABLE: {
+					highlightColor = 'rgba(216, 177, 0, 1)';
+					break;
+				}
+				case FLAG_NEEDS_FLAG: {
+					highlightColor = 'rgba(69, 66, 255, 1)';
+					break;
+				}
+				case FLAG_IGNORED: {
+					highlightColor = 'rgba(225, 225, 225, 1)';
+					break;
+				}
+				}
+			}
+
+			currentFlag = woceFlag;
+		}
+	}
+	
+	if (highlightStart != -1) {
+		highllightEnd = plotData[plotData.length - 1][0];
+		highlights.push([highlightStart, highlightEnd, highlightColor]);
+	}
+		
+	return highlights;
 }

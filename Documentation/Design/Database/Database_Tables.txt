@@ -260,7 +260,7 @@ filename                 String         The filename of the uploaded file. Must 
 start_date               Date           The date of the first record in the file
 record_count             Integer        The number of records in the file
 current_job              Integer        The current activity being performed on the file. See below.
-last_touched             Date           The date when the file was last touched. Files held beyond a given length of time will be automatically deleted.
+last_touched             DateTime       The date when the file was last touched. Files held beyond a given length of time will be automatically deleted.
 
 #### `current_job`
 When a file is uploaded, it is processed in a number of stages, which are indicated by an integer value.
