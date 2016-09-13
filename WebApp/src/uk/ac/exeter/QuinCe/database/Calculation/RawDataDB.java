@@ -43,13 +43,17 @@ public class RawDataDB {
 			+ "(data_file_id, row, run_type_id, co2_type, date_time, longitude, latitude, "
 			+ "intake_temp_1, intake_temp_2, intake_temp_3, "
 			+ "salinity_1, salinity_2, salinity_3, "
-			+ "eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3, moisture, "
-			+ "atmospheric_pressure, co2)"
-			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3, "
+			+ "air_flow_1, air_flow_2, air_flow_3, "
+			+ "water_flow_1, water_flow_2, water_flow_3, "
+			+ "moisture, atmospheric_pressure, co2)"
+			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String ADD_STANDARD_STATEMENT = "INSERT INTO gas_standards_data "
-			+ "(data_file_id, row, date_time, run_type_id, moisture, concentration, qc_flag, qc_message)"
-			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "(data_file_id, row, date_time, run_type_id, "
+			+ "air_flow_1, air_flow_2, air_flow_3, "
+			+ "moisture, concentration, qc_flag, qc_message)"
+			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String CLEAR_RAW_DATA_STATEMENT = "DELETE FROM raw_data WHERE data_file_id = ?";
 
@@ -58,6 +62,7 @@ public class RawDataDB {
 	private static final String GET_RAW_DATA_QUERY = "SELECT "
 			+ "r.row, r.date_time, r.run_type_id, r.co2_type, r.longitude, r.latitude, r.intake_temp_1, r.intake_temp_2, r.intake_temp_3,"
 			+ "r.salinity_1, r.salinity_2, r.salinity_3, r.eqt_1, r.eqt_2, r.eqt_3, r.eqp_1, r.eqp_2, r.eqp_3,"
+			+ "r.air_flow_1, r.air_flow_2, r.air_flow_3, r.water_flow_1, r.water_flow_2, r.water_flow_3,"
 			+ "r.moisture, r.atmospheric_pressure, r.co2 "
 			+ "FROM raw_data r INNER JOIN qc ON r.data_file_id = qc.data_file_id AND r.row = qc.row "
 			+ "WHERE r.data_file_id = ? ORDER BY row ASC";
@@ -136,16 +141,34 @@ public class RawDataDB {
 			stmt.setTimestamp(3, new Timestamp(instrument.getDateFromLine(line).getTimeInMillis()));
 			stmt.setLong(4, instrument.getRunTypeId(line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE))));
 			
-			if (!instrument.getSamplesDried()) {
-				stmt.setDouble(5, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
+			if (instrument.hasAirFlow1()) {
+				stmt.setDouble(5, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_AIR_FLOW_1))));
 			} else {
 				stmt.setNull(5, Types.DOUBLE);
 			}
 			
-			stmt.setDouble(6, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));
+			if (instrument.hasAirFlow2()) {
+				stmt.setDouble(6, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_AIR_FLOW_2))));
+			} else {
+				stmt.setNull(6, Types.DOUBLE);
+			}
 			
-			stmt.setInt(7, Flag.VALUE_GOOD);
-			stmt.setNull(8, Types.VARCHAR);
+			if (instrument.hasAirFlow3()) {
+				stmt.setDouble(7, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_AIR_FLOW_3))));
+			} else {
+				stmt.setNull(7, Types.DOUBLE);
+			}
+			
+			if (!instrument.getSamplesDried()) {
+				stmt.setDouble(8, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
+			} else {
+				stmt.setNull(8, Types.DOUBLE);
+			}
+			
+			stmt.setDouble(9, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));
+			
+			stmt.setInt(10, Flag.VALUE_GOOD);
+			stmt.setNull(11, Types.VARCHAR);
 
 			stmt.execute();
 			
@@ -247,18 +270,54 @@ public class RawDataDB {
 				stmt.setNull(19, Types.DOUBLE);
 			}
 			
-			if (!instrument.getSamplesDried()) {
-				stmt.setDouble(20, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
+			if (instrument.hasAirFlow1()) {
+				stmt.setDouble(20, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_AIR_FLOW_1))));
 			} else {
 				stmt.setNull(20, Types.DOUBLE);
 			}
 			
-			if (instrument.getHasAtmosphericPressure()) {
-				stmt.setDouble(21, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE))));
+			if (instrument.hasAirFlow2()) {
+				stmt.setDouble(21, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_AIR_FLOW_2))));
 			} else {
 				stmt.setNull(21, Types.DOUBLE);
 			}
-			stmt.setDouble(22, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));;
+			
+			if (instrument.hasAirFlow3()) {
+				stmt.setDouble(22, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_AIR_FLOW_3))));
+			} else {
+				stmt.setNull(22, Types.DOUBLE);
+			}
+			
+			if (instrument.hasWaterFlow1()) {
+				stmt.setDouble(23, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_WATER_FLOW_1))));
+			} else {
+				stmt.setNull(23, Types.DOUBLE);
+			}
+			
+			if (instrument.hasWaterFlow2()) {
+				stmt.setDouble(24, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_WATER_FLOW_2))));
+			} else {
+				stmt.setNull(24, Types.DOUBLE);
+			}
+			
+			if (instrument.hasWaterFlow3()) {
+				stmt.setDouble(25, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_WATER_FLOW_3))));
+			} else {
+				stmt.setNull(25, Types.DOUBLE);
+			}
+			
+			if (!instrument.getSamplesDried()) {
+				stmt.setDouble(26, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
+			} else {
+				stmt.setNull(26, Types.DOUBLE);
+			}
+			
+			if (instrument.getHasAtmosphericPressure()) {
+				stmt.setDouble(27, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE))));
+			} else {
+				stmt.setNull(27, Types.DOUBLE);
+			}
+			stmt.setDouble(28, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_CO2))));;
 			
 			stmt.execute();
 			
@@ -334,6 +393,12 @@ public class RawDataDB {
 				values.setEqp1(records.getDouble(16));
 				values.setEqp2(records.getDouble(17));
 				values.setEqp3(records.getDouble(18));
+				values.setAirFlow1(records.getDouble(19));
+				values.setAirFlow2(records.getDouble(19));
+				values.setAirFlow3(records.getDouble(19));
+				values.setWaterFlow1(records.getDouble(19));
+				values.setWaterFlow2(records.getDouble(19));
+				values.setWaterFlow3(records.getDouble(19));
 				values.setMoisture(records.getDouble(19));
 				
 				if (instrument.getHasAtmosphericPressure()) {

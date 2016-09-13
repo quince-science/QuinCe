@@ -42,6 +42,18 @@ public class RawDataValues {
 	
 	private double eqp3;
 	
+	private double airFlow1;
+	
+	private double airFlow2;
+	
+	private double airFlow3;
+	
+	private double waterFlow1;
+	
+	private double waterFlow2;
+	
+	private double waterFlow3;
+	
 	private double moisture;
 	
 	private double atmosphericPressure;
@@ -163,6 +175,54 @@ public class RawDataValues {
 
 	public void setEqp3(double eqp3) {
 		this.eqp3 = eqp3;
+	}
+
+	public double getAirFlow1() {
+		return airFlow1;
+	}
+
+	public void setAirFlow1(double airFlow1) {
+		this.airFlow1 = airFlow1;
+	}
+
+	public double getAirFlow2() {
+		return airFlow2;
+	}
+
+	public void setAirFlow2(double airFlow2) {
+		this.airFlow2 = airFlow2;
+	}
+
+	public double getAirFlow3() {
+		return airFlow3;
+	}
+
+	public void setAirFlow3(double airFlow3) {
+		this.airFlow3 = airFlow3;
+	}
+
+	public double getWaterFlow1() {
+		return waterFlow1;
+	}
+
+	public void setWaterFlow1(double waterFlow1) {
+		this.waterFlow1 = waterFlow1;
+	}
+
+	public double getWaterFlow2() {
+		return waterFlow2;
+	}
+
+	public void setWaterFlow2(double waterFlow2) {
+		this.waterFlow2 = waterFlow2;
+	}
+
+	public double getWaterFlow3() {
+		return waterFlow3;
+	}
+
+	public void setWaterFlow3(double waterFlow3) {
+		this.waterFlow3 = waterFlow3;
 	}
 
 	public double getMoisture() {

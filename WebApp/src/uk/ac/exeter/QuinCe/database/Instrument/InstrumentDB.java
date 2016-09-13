@@ -82,7 +82,6 @@ public class InstrumentDB {
 			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
 			+ "air_flow_1_col, air_flow_2_col, air_flow_3_col, "
 			+ "water_flow_1_col, water_flow_2_col, water_flow_3_col, "
-			+ "water_flow_1_col, water_flow_2_col, water_flow_3_col, "
 			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count, "
 			+ "pre_flushing_time, post_flushing_time "
 			+ "FROM instrument WHERE id = ? ORDER BY name";
