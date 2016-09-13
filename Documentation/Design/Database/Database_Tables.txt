@@ -330,7 +330,10 @@ data_file_id             F_KEY          File ID
 row                      Integer        Row number (from the original data file)
 date_time                DateTime       Date and time
 run_type_id              F_KEY          The ID of the gas standard in the `run_types` table
-concentration            Float          The concentration measured
+air_flow_1               Double         Air flow 1
+air_flow_2               Double         Air flow 2
+air_flow_3               Double         Air flow 3
+concentration            Double         The concentration measured
 qc_flag                  Integer        A QC flag for the gas standards data. Used to disable the use of a standard during data reduction
 qc_message               String         A message describing the reason for the QC flag
 
