@@ -67,6 +67,12 @@ eqt_3_name               String         The name of the third equilibrator tempe
 eqp_1_name               String         The name of the first equilibrator pressure sensor
 eqp_2_name               String         The name of the second equilibrator pressure sensor
 eqp_3_name               String         The name of the third equilibrator pressure sensor
+air_flow_1_name          String         The name of the first air flow sensor
+air_flow_2_name          String         The name of the second air flow sensor
+air_flow_3_name          String         The name of the third air flow sensor
+water_flow_1_name        String         The name of the first water flow sensor
+water_flow_2_name        String         The name of the second water flow sensor
+water_flow_3_name        String         The name of the third water flow sensor
 separator_char           String         The character that separates fields in the instrument's data files
 date_format              Integer        The date format used in the instrument's data files
 time_format              Integer        The time format used in the instrument's data files
@@ -100,6 +106,12 @@ eqt_3_col                Integer        Equilibrator temperature 3
 eqp_1_col                Integer        Equilibrator pressure 1
 eqp_2_col                Integer        Equilibrator pressure 2
 eqp_3_col                Integer        Equilibrator pressure 3
+air_flow_1_col           Integer        Air flow 1
+air_flow_2_col           Integer        Air flow 2
+air_flow_3_col           Integer        Air flow 3
+water_flow_1_col         Integer        Water flow 1
+water_flow_2_col         Integer        Water flow 2
+water_flow_3_col         Integer        Water flow 3
 atmospheric_pressure_col Integer        Atmospheric pressure
 moisture_col             Integer        Moisture
 co2_col                  Integer        CO~2~
@@ -288,6 +300,12 @@ eqt_3                    Float          Equilibrator temperature 3
 eqp_1                    Float          Equilibrator pressure 1
 eqp_2                    Float          Equilibrator pressure 2
 eqp_3                    Float          Equilibrator pressure 3
+air_flow_1               Float          Air flow 1
+air_flow_2               Float          Air flow 2
+air_flow_3               Float          Air flow 3
+water_flow_1             Float          Water flow 1
+water_flow_2             Float          Water flow 2
+water_flow_3             Float          Water flow 3
 moisture                 Float          Moisture
 atmospheric_pressure     Float          Atmospheric pressure
 co2                      Float          The CO~2~ measurement
