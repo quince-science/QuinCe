@@ -271,6 +271,55 @@ public class DataScreenBean extends BaseManagedBean {
 		
 		// End of first column/start of second
 		output.append("</table></td><td><table>");
+		
+		boolean flowSensor = false;
+		
+		if (instrument.getAirFlowCount() > 0) {
+			flowSensor = true;
+			
+			output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Air Flow:</td></tr>");
+			output.append("<tr><td></td><td><table>");
+			
+			if (instrument.hasAirFlow1()) {
+				output.append(makePlotCheckbox("airFlow", "airFlow1", instrument.getAirFlowName1()));
+			}
+			
+			if (instrument.hasAirFlow2()) {
+				output.append(makePlotCheckbox("airFlow", "airFlow2", instrument.getAirFlowName2()));
+			}
+			
+			if (instrument.hasAirFlow3()) {
+				output.append(makePlotCheckbox("airFlow", "airFlow3", instrument.getAirFlowName3()));
+			}
+			
+			output.append("</table></td></tr>");
+		}
+		
+		if (instrument.getWaterFlowCount() > 0) {
+			flowSensor = true;
+			
+			output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Water Flow:</td></tr>");
+			output.append("<tr><td></td><td><table>");
+			
+			if (instrument.hasWaterFlow1()) {
+				output.append(makePlotCheckbox("waterFlow", "waterFlow1", instrument.getWaterFlowName1()));
+			}
+			
+			if (instrument.hasWaterFlow2()) {
+				output.append(makePlotCheckbox("waterFlow", "waterFlow2", instrument.getWaterFlowName2()));
+			}
+			
+			if (instrument.hasWaterFlow3()) {
+				output.append(makePlotCheckbox("waterFlow", "waterFlow3", instrument.getWaterFlowName3()));
+			}
+			
+			output.append("</table></td></tr>");
+		}
+		
+		if (flowSensor) {
+			// End of 2nd column/start of 3rd
+			output.append("</table></td><td><table>");
+		}
 
 		// Equilibrator temperature
 		if (instrument.getEqtCount() == 1) {
@@ -341,7 +390,7 @@ public class DataScreenBean extends BaseManagedBean {
 		// pH2O
 		output.append(makePlotCheckbox("pH2O", "pH2O", "pH<sub>2</sub>O"));
 
-		// End of second column/Start of 3rd column
+		// End of 3rd column/Start of 4th column
 		output.append("</table></td><td><table>");
 
 		// CO2
@@ -362,7 +411,7 @@ public class DataScreenBean extends BaseManagedBean {
 
 		output.append("</table></td></tr>");
 
-		// End of column 3
+		// End of column 4
 		output.append("</td></table>");
 		
 		// End of outer table

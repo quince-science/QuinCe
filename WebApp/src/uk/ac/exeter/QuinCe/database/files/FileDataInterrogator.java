@@ -74,6 +74,12 @@ public class FileDataInterrogator {
 		COLUMN_MAPPINGS.put("eqp1", "raw_data.eqp_1");
 		COLUMN_MAPPINGS.put("eqp2", "raw_data.eqp_2");
 		COLUMN_MAPPINGS.put("eqp3", "raw_data.eqp_3");
+		COLUMN_MAPPINGS.put("airFlow1", "raw_data.air_flow_1");
+		COLUMN_MAPPINGS.put("airFlow2", "raw_data.air_flow_2");
+		COLUMN_MAPPINGS.put("airFlow3", "raw_data.air_flow_3");
+		COLUMN_MAPPINGS.put("waterFlow1", "raw_data.water_flow_1");
+		COLUMN_MAPPINGS.put("waterFlow2", "raw_data.water_flow_2");
+		COLUMN_MAPPINGS.put("waterFlow3", "raw_data.water_flow_3");
 		COLUMN_MAPPINGS.put("atmosPressure", "data_reduction.atmospheric_pressure");
 		COLUMN_MAPPINGS.put("moistureMeasured", "raw_data.moisture");
 		COLUMN_MAPPINGS.put("moistureTrue", "data_reduction.true_moisture");
@@ -611,6 +617,30 @@ public class FileDataInterrogator {
 			result = "Equilibrator Pressure - " + instrument.getEqpName3();
 			break;
 		}
+		case "airFlow1": {
+			result = "Air Flow - " + instrument.getAirFlowName1();
+			break;
+		}
+		case "airFlow2": {
+			result = "Air Flow - " + instrument.getAirFlowName2();
+			break;
+		}
+		case "airFlow3": {
+			result = "Air Flow - " + instrument.getAirFlowName3();
+			break;
+		}
+		case "waterFlow1": {
+			result = "Water Flow - " + instrument.getWaterFlowName1();
+			break;
+		}
+		case "waterFlow2": {
+			result = "Water Flow - " + instrument.getWaterFlowName2();
+			break;
+		}
+		case "waterFlow3": {
+			result = "Water Flow - " + instrument.getWaterFlowName3();
+			break;
+		}
 		case "atmosPressure":
 		{
 			result = "Atmospheric Pressure";
@@ -834,6 +864,30 @@ public class FileDataInterrogator {
 		}
 		case "eqp3": {
 			result = instrument.hasEqp3();
+			break;
+		}
+		case "airFlow1": {
+			result = instrument.hasAirFlow1();
+			break;
+		}
+		case "airFlow2": {
+			result = instrument.hasAirFlow2();
+			break;
+		}
+		case "airFlow3": {
+			result = instrument.hasAirFlow3();
+			break;
+		}
+		case "waterFlow1": {
+			result = instrument.hasWaterFlow1();
+			break;
+		}
+		case "waterFlow2": {
+			result = instrument.hasWaterFlow2();
+			break;
+		}
+		case "waterFlow3": {
+			result = instrument.hasWaterFlow3();
 			break;
 		}
 		}
