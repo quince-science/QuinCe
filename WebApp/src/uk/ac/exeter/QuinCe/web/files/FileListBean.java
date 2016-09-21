@@ -170,10 +170,10 @@ public class FileListBean extends BaseManagedBean {
 	public void exportFile() throws Exception {
 
 		DataSource dataSource = ServletUtils.getDBDataSource();
-		
 		Instrument instrument = InstrumentDB.getInstrumentByFileId(dataSource, chosenFile);
+		ExportOption exportOption = getExportOptions().get(chosenExportOption);
 		
-		byte[] fileContent = FileDataInterrogator.getCSVData(dataSource, ServletUtils.getAppConfig(), chosenFile, instrument, getExportOptions().get(chosenExportOption)).getBytes();
+		byte[] fileContent = FileDataInterrogator.getCSVData(dataSource, ServletUtils.getAppConfig(), chosenFile, instrument, exportOption).getBytes();
 				
 		FacesContext fc = FacesContext.getCurrentInstance();
 	    ExternalContext ec = fc.getExternalContext();
@@ -181,11 +181,25 @@ public class FileListBean extends BaseManagedBean {
 	    ec.responseReset();
 	    ec.setResponseContentType("text/csv");
 	    ec.setResponseContentLength(fileContent.length); // Set it with the file size. This header is optional. It will work if it's omitted, but the download progress will be unknown.
-	    ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + getChosenFileName() + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
+	    ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + getExportFilename(exportOption) + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
 
 	    OutputStream output = ec.getResponseOutputStream();
 	    output.write(fileContent);
 
 	    fc.responseComplete();
+	}
+	
+	private String getExportFilename(ExportOption exportOption) throws Exception {
+		StringBuffer fileName = new StringBuffer(getChosenFileName().replaceAll("\\.", "_"));
+		fileName.append('-');
+		fileName.append(exportOption.getName());
+		
+		if (exportOption.getSeparator().equals("\t")) {
+			fileName.append(".tsv");
+		} else {
+			fileName.append(".csv");
+		}
+		
+		return fileName.toString();
 	}
 }
