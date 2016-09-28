@@ -898,23 +898,16 @@ function showQCInfoPopup(qcMessage, target) {
 	    content += qcMessage;
 	    content += '</div>';
 
-        //.offset({"left": $(target).position().left - $('#qcInfoPopup').width() - 10, "top": $('#data').position().top + $(target).position().top - 3})
-        //.show('slide', {direction: 'right'}, 100);
-    	
-	    console.log($(target).position().top);
-	    console.log($(target).offset().top);
-	    
     	$('#qcInfoPopup')
           .html(content)
           .css({"left": 0, "top": 0})
           .offset({"left": $(target).position().left - $('#qcInfoPopup').width() - 10, "top": $(target).offset().top - 3})
-          .show();
+          .show('slide', {direction: 'right'}, 100);;
    }
  }
 
  function hideQCInfoPopup() {
      $('#qcInfoPopup').stop(true, true);
-     //$('#qcInfoPopup').hide('slide', {direction: 'right'}, 100);
-     $('#qcInfoPopup').hide();
+     $('#qcInfoPopup').hide('slide', {direction: 'right'}, 100);
  }
 
