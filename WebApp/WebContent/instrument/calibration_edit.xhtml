@@ -18,7 +18,7 @@
 					<div class="instructions">
 						Select the date on which the calibration was performed
 					</div>
-					<p:calendar id="calibrationDate" value="#{calibrationsBean.calibrationDate}" showOn="both" readonlyInput="true" navigator="true" maxdate="#{calibrationsBean.today}" pattern="yyyy-MM-dd" required="true" requiredMessage="Calibration date is required">
+					<p:calendar id="calibrationDate" value="#{calibrationsBean.calibrationDate}" showOn="both" readonlyInput="true" navigator="true" maxdate="#{calibrationsBean.today}" pattern="yyyy-MM-dd" required="true" requiredMessage="Calibration date is required" yearRange="1990:c">
 						<f:validator validatorId="calibrationDateValidator"/>
 					</p:calendar>
 					<h:message id="calibrationDateMessage" for="calibrationDate" errorClass="error"/>

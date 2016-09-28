@@ -26,7 +26,7 @@
 	            	Please provide names of the sensors in your instrument. Up to three sensors of each type can be specified.
 	          	</div>
 	          	<div class="sectionHeader">
-	            	Intake Temperature
+	            	Intake Temperature (1 required)
 	          	</div>
 	          	<div class="sectionContent">
 	            	<table class="form">
@@ -49,7 +49,7 @@
 	              	</table>
 	          	</div>
 	          	<div class="sectionHeader">
-	            	Salinity
+	            	Salinity (1 required)
 	          	</div>
 	          	<div class="sectionContent">
 	             	<table class="form">
@@ -72,7 +72,7 @@
 	              	</table>
 	          	</div>
 	          	<div class="sectionHeader">
-	            	Equilibrator Temperature
+	            	Equilibrator Temperature (1 required)
 	          	</div>
 	          	<div class="sectionContent">
 	              	<table class="form">
@@ -95,7 +95,7 @@
 	              	</table>
 	          	</div>
 	          	<div class="sectionHeader">
-	            	Equilibrator Pressure
+	            	Equilibrator Pressure (1 required)
 	          	</div>
 	          	<div class="sectionContent">
 	              	<table class="form">
@@ -114,6 +114,44 @@
 	                  	<tr>
 	                    	<td class="labels"><h:outputLabel id="eqpName3Label" for="eqpName3" value="Sensor 3 Name:"/></td>
 	                    	<td><h:inputText id="eqpName3" value="#{newInstrumentBean.instrumentDetails.eqpName3}" class="large" size="20"/></td>
+	                  	</tr>
+	              	</table>
+	          	</div>
+	          	<div class="sectionHeader">
+	            	Air flow (optional)
+	          	</div>
+	          	<div class="sectionContent">
+	              	<table class="form">
+	                	<tr>
+	                    	<td class="labels"><h:outputLabel id="airFlowName1Label" for="airFlowName1" value="Sensor 1 Name:"/></td>
+	                    	<td><h:inputText id="airFlowName1" value="#{newInstrumentBean.instrumentDetails.airFlowName1}" class="large" size="20"/></td>
+	                	</tr>
+	                	<tr>
+	                    	<td class="labels"><h:outputLabel id="airFlowName2Label" for="airFlowName2" value="Sensor 2 Name:"/></td>
+	                    	<td><h:inputText id="airFlowName2" value="#{newInstrumentBean.instrumentDetails.airFlowName2}" class="large" size="20"/></td>
+	                  	</tr>
+	                  	<tr>
+	                    	<td class="labels"><h:outputLabel id="airFlowName3Label" for="airFlowName3" value="Sensor 3 Name:"/></td>
+	                    	<td><h:inputText id="airFlowName3" value="#{newInstrumentBean.instrumentDetails.airFlowName3}" class="large" size="20"/></td>
+	                  	</tr>
+	              	</table>
+	          	</div>
+	          	<div class="sectionHeader">
+	            	Water flow (optional)
+	          	</div>
+	          	<div class="sectionContent">
+	              	<table class="form">
+	                	<tr>
+	                    	<td class="labels"><h:outputLabel id="waterFlowName1Label" for="waterFlowName1" value="Sensor 1 Name:"/></td>
+	                    	<td><h:inputText id="waterFlowName1" value="#{newInstrumentBean.instrumentDetails.waterFlowName1}" class="large" size="20"/></td>
+	                	</tr>
+	                	<tr>
+	                    	<td class="labels"><h:outputLabel id="waterFlowName2Label" for="waterFlowName2" value="Sensor 2 Name:"/></td>
+	                    	<td><h:inputText id="waterFlowName2" value="#{newInstrumentBean.instrumentDetails.waterFlowName2}" class="large" size="20"/></td>
+	                  	</tr>
+	                  	<tr>
+	                    	<td class="labels"><h:outputLabel id="waterFlowName3Label" for="waterFlowName3" value="Sensor 3 Name:"/></td>
+	                    	<td><h:inputText id="waterFlowName3" value="#{newInstrumentBean.instrumentDetails.waterFlowName3}" class="large" size="20"/></td>
 	                  	</tr>
 	              	</table>
 	          	</div>

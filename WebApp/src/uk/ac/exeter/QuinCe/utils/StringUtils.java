@@ -135,7 +135,10 @@ public class StringUtils {
 			result = false;
 		} else {
 			try {
-				Double.parseDouble(value);
+				Double doubleValue = new Double(value);
+				if (doubleValue.isNaN()) {
+					result = false;
+				}
 			} catch (NumberFormatException e) {
 				result = false;
 			}

@@ -61,9 +61,9 @@ public class DataReductionDB {
 		}
 	}
 	
-	public static void storeRow(Connection conn, long fileId, int row, int co2Type, double meanIntakeTemp,
-			double meanSalinity, double meanEqt, double meanEqp, double trueMoisture, double driedCo2,
-			double calibratedCo2, double pCo2TEDry, double pH2O, double pCo2TEWet,
+	public static void storeRow(Connection conn, long fileId, int row, boolean overwrite,
+			int co2Type, double meanIntakeTemp, double meanSalinity, double meanEqt, double meanEqp,
+			double trueMoisture, double driedCo2, double calibratedCo2, double pCo2TEDry, double pH2O, double pCo2TEWet,
 			double fco2TE, double fco2) throws DatabaseException, MissingParamException {
 		
 		MissingParam.checkMissing(conn, "conn");
@@ -90,7 +90,7 @@ public class DataReductionDB {
 				stmt.setDouble(13, pCo2TEWet);
 				stmt.setDouble(14, fco2TE);
 				stmt.setDouble(15, fco2);
-			} else {
+			} else if (overwrite) {
 				stmt = conn.prepareStatement(UPDATE_ROW_STATEMENT);
 				stmt.setDouble(1, meanIntakeTemp);
 				stmt.setDouble(2, meanSalinity);

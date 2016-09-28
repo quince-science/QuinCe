@@ -57,6 +57,12 @@ var AXIS_LABELS = {
 		'eqp1': 'Pressure (hPa)',
 		'eqp2': 'Pressure (hPa)',
 		'eqp3': 'Pressure (hPa)',
+		'airFlow1': 'Flow (ml/min)',
+		'airFlow2': 'Flow (ml/min)',
+		'airFlow3': 'Flow (ml/min)',
+		'waterFlow1': 'Flow (ml/min)',
+		'waterFlow2': 'Flow (ml/min)',
+		'waterFlow3': 'Flow (ml/min)',
 		'eqpMean': 'Pressure (hPa)',
 		'moistureMeasured': 'Moisture (%)',
 		'moistureTrue': 'Moisture (%)',
@@ -531,7 +537,7 @@ function drawLeftPlot(data) {
 		leftGraph = new Dygraph (
 			document.getElementById('plotLeftContent'),
 			graph_data,
-	        graph_options
+	        	graph_options
 		);
 		
 		resizeContent();
@@ -587,7 +593,7 @@ function drawRightPlot(data) {
 		rightGraph = new Dygraph (
 			document.getElementById('plotRightContent'),
 			graph_data,
-	        graph_options
+	        	graph_options
 		);
 		
 		resizeContent();

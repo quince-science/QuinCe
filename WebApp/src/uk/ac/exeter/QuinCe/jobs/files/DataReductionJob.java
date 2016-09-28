@@ -1,15 +1,23 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.TreeSet;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
+import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QCRoutines.messages.Message;
+import uk.ac.exeter.QCRoutines.messages.MessageException;
+import uk.ac.exeter.QCRoutines.messages.MissingValueMessage;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
+import uk.ac.exeter.QuinCe.data.NoDataQCRecord;
 import uk.ac.exeter.QuinCe.data.RawDataValues;
 import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.data.User;
@@ -52,44 +60,129 @@ public class DataReductionJob extends FileJob {
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
 			
-			List<RawDataValues> rawData = RawDataDB.getRawData(dataSource, fileId, instrument);
+			List<RawDataValues> rawData = RawDataDB.getRawData(conn, fileId, instrument);
+			Map<Integer, NoDataQCRecord> qcRecords = QCDB.getNoDataQCRecords(conn, resourceManager.getColumnConfig(), fileId, instrument);
+			
 			int lineNumber = 0;
 			for (RawDataValues record : rawData) {
 				lineNumber++;
+				NoDataQCRecord qcRecord = qcRecords.get(record.getRow());
 				
 				// If the record has been marked bad, we skip it
-				if (!QCDB.getWoceFlag(conn, fileId, record.getRow()).equals(Flag.BAD)) {
+				if (qcRecord.getWoceFlag().equals(Flag.BAD) || qcRecord.getWoceFlag().equals(Flag.IGNORED)) {
 				
+					// Store empty data reduction values (unless other values have previously been stored)
+					DataReductionDB.storeRow(conn, fileId, record.getRow(), false, record.getCo2Type(), RawDataDB.MISSING_VALUE,
+							RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, 
+							RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE,
+							RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE);
+					
+				} else {
+				
+					// Reset the QC flags
+					qcRecord.clearAllFlags();
 					
 					if (record.getCo2Type() == RunType.RUN_TYPE_WATER) {
 						
-						// Sensor means
-						double meanIntakeTemp = calcMeanIntakeTemp(record, instrument);
-						double meanSalinity = calcMeanSalinity(record, instrument);
-						double meanEqt = calcMeanEqt(record, instrument);
-						double meanEqp = calcMeanEqp(record, instrument);
+						boolean canCalculateCO2 = true;
 						
-						// Get the moisture and mathematically dry the CO2 if required
-						double trueMoisture = 0;
-						double driedCo2 = record.getCo2();
-						
-						if (!instrument.getSamplesDried()) {
-							trueMoisture = record.getMoisture() - standardRuns.getInterpolatedMoisture(null, record.getTime());
-							driedCo2 = record.getCo2() / (1.0 - (trueMoisture / 1000));
+						// Check that the date/time is present
+						if (null == record.getTime()) {
+							canCalculateCO2 = false;
+							qcRecord.addMessage(new MissingValueMessage(record.getRow(), qcRecord.getDateTimeColumns(), qcRecord.getDateTimeColumnNames(), Flag.BAD));
+							qcRecord.setWoceFlag(Flag.BAD);
+							qcRecord.appendWoceComment("Missing Date/Time");
 						}
 						
-						double calibratedCo2 = calcCalibratedCo2(driedCo2, record.getTime(), standardRuns, instrument);
-						double pCo2TEDry = calcPco2TEDry(calibratedCo2, meanEqp);
-						double pH2O = calcPH2O(meanSalinity, meanEqt);
-						double pCo2TEWet = calcPco2TEWet(pCo2TEDry, meanEqp, pH2O);
-						double fco2TE = calcFco2TE(pCo2TEWet, meanEqp, meanEqt);
-						double fco2 = calcFco2(fco2TE, meanEqt, meanIntakeTemp);
-											
-						DataReductionDB.storeRow(conn, fileId, record.getRow(), record.getCo2Type(), meanIntakeTemp,
+						if (RawDataDB.MISSING_VALUE == record.getLongitude()) {
+							canCalculateCO2 = false;
+							qcRecord.addMessage(new MissingValueMessage(record.getRow(), qcRecord.getLongitudeColumn(), qcRecord.getLongitudeColumnName(), Flag.BAD));
+							qcRecord.setWoceFlag(Flag.BAD);
+							qcRecord.appendWoceComment("Missing Longitude");
+						}
+						
+						if (RawDataDB.MISSING_VALUE == record.getLatitude()) {
+							canCalculateCO2 = false;
+							qcRecord.addMessage(new MissingValueMessage(record.getRow(), qcRecord.getLatitudeColumn(), qcRecord.getLatitudeColumnName(), Flag.BAD));
+							qcRecord.setWoceFlag(Flag.BAD);
+							qcRecord.appendWoceComment("Missing Latitude");
+						}
+						
+						
+						// Sensor means
+						double meanIntakeTemp = calcMeanIntakeTemp(record, instrument, qcRecord);
+						if (meanIntakeTemp == RawDataDB.MISSING_VALUE) {
+							canCalculateCO2 = false;
+							qcRecord.setWoceFlag(Flag.BAD);
+							qcRecord.appendWoceComment("Missing intake temperature");
+						}
+						
+						double meanSalinity = calcMeanSalinity(record, instrument, qcRecord);
+						if (meanSalinity == RawDataDB.MISSING_VALUE) {
+							canCalculateCO2 = false;
+							qcRecord.setWoceFlag(Flag.BAD);
+							qcRecord.appendWoceComment("Missing salinity");
+						}
+						
+						double meanEqt = calcMeanEqt(record, instrument, qcRecord);
+						if (meanEqt == RawDataDB.MISSING_VALUE) {
+							canCalculateCO2 = false;
+							qcRecord.setWoceFlag(Flag.BAD);
+							qcRecord.appendWoceComment("Missing equilibrator temperature");
+						}
+						
+						double meanEqp = calcMeanEqp(record, instrument, qcRecord);
+						if (meanEqp == RawDataDB.MISSING_VALUE) {
+							canCalculateCO2 = false;
+							qcRecord.setWoceFlag(Flag.BAD);
+							qcRecord.appendWoceComment("Missing equilibrator pressure");
+						}
+						
+						// Get the moisture and mathematically dry the CO2 if required
+						double driedCo2 = record.getCo2();
+						if (driedCo2 == RawDataDB.MISSING_VALUE) {
+							canCalculateCO2 = false;
+							qcRecord.addMessage(new MissingValueMessage(record.getRow(), NoDataQCRecord.FIELD_CO2, qcRecord.getColumnName(NoDataQCRecord.FIELD_CO2), Flag.BAD));
+							qcRecord.setWoceFlag(Flag.BAD);
+							qcRecord.appendWoceComment("Missing CO2");
+						}
+						
+						double trueMoisture = 0;
+						if (canCalculateCO2 && !instrument.getSamplesDried()) {
+							double measuredMoisture = record.getMoisture();
+							if (measuredMoisture == RawDataDB.MISSING_VALUE) {
+								canCalculateCO2 = false;
+								qcRecord.addMessage(new MissingValueMessage(record.getRow(), NoDataQCRecord.FIELD_MOISTURE, qcRecord.getColumnName(NoDataQCRecord.FIELD_MOISTURE), Flag.BAD));
+								qcRecord.setWoceFlag(Flag.BAD);
+								qcRecord.appendWoceComment("Missing Moisture");
+							}
+
+							trueMoisture = measuredMoisture - standardRuns.getInterpolatedMoisture(null, record.getTime());
+							driedCo2 = record.getCo2() / (1.0 - (trueMoisture / 1000));
+						}
+
+						double calibratedCo2 = RawDataDB.MISSING_VALUE;
+						double pCo2TEDry = RawDataDB.MISSING_VALUE;
+						double pH2O = RawDataDB.MISSING_VALUE;
+						double pCo2TEWet = RawDataDB.MISSING_VALUE;
+						double fco2TE = RawDataDB.MISSING_VALUE;
+						double fco2 = RawDataDB.MISSING_VALUE;
+
+						if (canCalculateCO2) {
+							calibratedCo2 = calcCalibratedCo2(driedCo2, record.getTime(), standardRuns, instrument);
+							pCo2TEDry = calcPco2TEDry(calibratedCo2, meanEqp);
+							pH2O = calcPH2O(meanSalinity, meanEqt);
+							pCo2TEWet = calcPco2TEWet(pCo2TEDry, meanEqp, pH2O);
+							fco2TE = calcFco2TE(pCo2TEWet, meanEqp, meanEqt);
+							fco2 = calcFco2(fco2TE, meanEqt, meanIntakeTemp);
+						}
+												
+						DataReductionDB.storeRow(conn, fileId, record.getRow(), true, record.getCo2Type(), meanIntakeTemp,
 								meanSalinity, meanEqt, meanEqp, trueMoisture, driedCo2, calibratedCo2,
 								pCo2TEDry, pH2O, pCo2TEWet, fco2TE, fco2);
 						
-						QCDB.resetQCFlagsByRow(conn, fileId, record.getRow());
+						
+						QCDB.setQC(conn, fileId, qcRecord);
 					}
 				}
 				
@@ -119,98 +212,238 @@ public class DataReductionJob extends FileJob {
 		}
 	}
 	
-	private double calcMeanIntakeTemp(RawDataValues values, Instrument instrument) {
+	private double calcMeanIntakeTemp(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
 		
 		double total = 0;
 		int count = 0;
+		List<Message> qcMessages = new ArrayList<Message>();
+		TreeSet<Integer> missingColumnIndices = new TreeSet<Integer>();
 		
 		if (instrument.hasIntakeTemp1()) {
-			total = total + values.getIntakeTemp1();
+			double value = values.getIntakeTemp1();
+
+			if (RawDataDB.MISSING_VALUE == value) {
+				int colIndex = NoDataQCRecord.FIELD_INTAKE_TEMP_1;
+				qcMessages.add(new MissingValueMessage(values.getRow(), colIndex, qcRecord.getColumnName(colIndex), Flag.QUESTIONABLE));
+				qcRecord.setIntakeTemp1Used(false);
+			}
+			
+			total = total + value;
 			count++;
 		}
 		
 		if (instrument.hasIntakeTemp2()) {
-			total = total + values.getIntakeTemp2();
+			double value = values.getIntakeTemp2();
+
+			if (RawDataDB.MISSING_VALUE == value) {
+				int colIndex = NoDataQCRecord.FIELD_INTAKE_TEMP_2;
+				qcMessages.add(new MissingValueMessage(values.getRow(), colIndex, qcRecord.getColumnName(colIndex), Flag.QUESTIONABLE));
+				qcRecord.setIntakeTemp2Used(false);
+			}
+			
+			total = total + value;
 			count++;
 		}
 		
 		if (instrument.hasIntakeTemp3()) {
-			total = total + values.getIntakeTemp3();
+			double value = values.getIntakeTemp3();
+
+			if (RawDataDB.MISSING_VALUE == value) {
+				int colIndex = NoDataQCRecord.FIELD_INTAKE_TEMP_3;
+				qcMessages.add(new MissingValueMessage(values.getRow(), colIndex, qcRecord.getColumnName(colIndex), Flag.QUESTIONABLE));
+				qcRecord.setIntakeTemp3Used(false);
+			}
+			
+			total = total + value;
 			count++;
 		}
 		
-		return total / (double) count;
+		double result;
+		if (count == 0) {
+			result = RawDataDB.MISSING_VALUE;
+			qcMessages.clear();
+			qcMessages.add(new MissingValueMessage(values.getRow(), missingColumnIndices, qcRecord.getColumnNames(missingColumnIndices), Flag.BAD));
+		} else {
+			result= total / (double) count;
+		}
+		
+		return result;
 	}
 
-	private double calcMeanSalinity(RawDataValues values, Instrument instrument) {
+	private double calcMeanSalinity(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
 		
 		double total = 0;
 		int count = 0;
+		List<Message> qcMessages = new ArrayList<Message>();
+		TreeSet<Integer> missingColumnIndices = new TreeSet<Integer>();
 		
 		if (instrument.hasSalinity1()) {
-			total = total + values.getSalinity1();
+			double value = values.getSalinity1();
+
+			if (RawDataDB.MISSING_VALUE == value) {
+				int colIndex = NoDataQCRecord.FIELD_SALINITY_1;
+				qcMessages.add(new MissingValueMessage(values.getRow(), colIndex, qcRecord.getColumnName(colIndex), Flag.QUESTIONABLE));
+				qcRecord.setSalinity1Used(false);
+			}
+			
+			total = total + value;
 			count++;
 		}
 		
 		if (instrument.hasSalinity2()) {
-			total = total + values.getSalinity2();
+			double value = values.getSalinity2();
+
+			if (RawDataDB.MISSING_VALUE == value) {
+				int colIndex = NoDataQCRecord.FIELD_SALINITY_2;
+				qcMessages.add(new MissingValueMessage(values.getRow(), colIndex, qcRecord.getColumnName(colIndex), Flag.QUESTIONABLE));
+				qcRecord.setSalinity2Used(false);
+			}
+			
+			total = total + value;
 			count++;
 		}
 		
 		if (instrument.hasSalinity3()) {
-			total = total + values.getSalinity3();
+			double value = values.getSalinity3();
+
+			if (RawDataDB.MISSING_VALUE == value) {
+				int colIndex = NoDataQCRecord.FIELD_SALINITY_3;
+				qcMessages.add(new MissingValueMessage(values.getRow(), colIndex, qcRecord.getColumnName(colIndex), Flag.QUESTIONABLE));
+				qcRecord.setSalinity3Used(false);
+			}
+			
+			total = total + value;
 			count++;
 		}
 		
-		return total / (double) count;
+		double result;
+		if (count == 0) {
+			result = RawDataDB.MISSING_VALUE;
+			qcMessages.clear();
+			qcMessages.add(new MissingValueMessage(values.getRow(), missingColumnIndices, qcRecord.getColumnNames(missingColumnIndices), Flag.BAD));
+		} else {
+			result= total / (double) count;
+		}
+		
+		return result;
 	}
 
-	private double calcMeanEqt(RawDataValues values, Instrument instrument) {
+	private double calcMeanEqt(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
 		
 		double total = 0;
 		int count = 0;
+		List<Message> qcMessages = new ArrayList<Message>();
+		TreeSet<Integer> missingColumnIndices = new TreeSet<Integer>();
 		
 		if (instrument.hasEqt1()) {
-			total = total + values.getEqt1();
+			double value = values.getEqt1();
+
+			if (RawDataDB.MISSING_VALUE == value) {
+				int colIndex = NoDataQCRecord.FIELD_EQT_1;
+				qcMessages.add(new MissingValueMessage(values.getRow(), colIndex, qcRecord.getColumnName(colIndex), Flag.QUESTIONABLE));
+				qcRecord.setEqt1Used(false);
+			}
+			
+			total = total + value;
 			count++;
 		}
 		
 		if (instrument.hasEqt2()) {
-			total = total + values.getEqt2();
+			double value = values.getEqt2();
+
+			if (RawDataDB.MISSING_VALUE == value) {
+				int colIndex = NoDataQCRecord.FIELD_EQT_2;
+				qcMessages.add(new MissingValueMessage(values.getRow(), colIndex, qcRecord.getColumnName(colIndex), Flag.QUESTIONABLE));
+				qcRecord.setEqt2Used(false);
+			}
+			
+			total = total + value;
 			count++;
 		}
 		
 		if (instrument.hasEqt3()) {
-			total = total + values.getEqt3();
+			double value = values.getEqt3();
+
+			if (RawDataDB.MISSING_VALUE == value) {
+				int colIndex = NoDataQCRecord.FIELD_EQT_3;
+				qcMessages.add(new MissingValueMessage(values.getRow(), colIndex, qcRecord.getColumnName(colIndex), Flag.QUESTIONABLE));
+				qcRecord.setEqt3Used(false);
+			}
+			
+			total = total + value;
 			count++;
 		}
 		
-		return total / (double) count;
+		double result;
+		if (count == 0) {
+			result = RawDataDB.MISSING_VALUE;
+			qcMessages.clear();
+			qcMessages.add(new MissingValueMessage(values.getRow(), missingColumnIndices, qcRecord.getColumnNames(missingColumnIndices), Flag.BAD));
+		} else {
+			result= total / (double) count;
+		}
+		
+		return result;
 	}
 
-	private double calcMeanEqp(RawDataValues values, Instrument instrument) {
+	private double calcMeanEqp(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
 		
 		double total = 0;
 		int count = 0;
+		List<Message> qcMessages = new ArrayList<Message>();
+		TreeSet<Integer> missingColumnIndices = new TreeSet<Integer>();
 		
 		if (instrument.hasEqp1()) {
-			total = total + values.getEqp1();
+			double value = values.getEqp1();
+
+			if (RawDataDB.MISSING_VALUE == value) {
+				int colIndex = NoDataQCRecord.FIELD_EQP_1;
+				qcMessages.add(new MissingValueMessage(values.getRow(), colIndex, qcRecord.getColumnName(colIndex), Flag.QUESTIONABLE));
+				qcRecord.setEqp1Used(false);
+			}
+			
+			total = total + value;
 			count++;
 		}
 		
 		if (instrument.hasEqp2()) {
-			total = total + values.getEqp2();
+			double value = values.getEqp2();
+
+			if (RawDataDB.MISSING_VALUE == value) {
+				int colIndex = NoDataQCRecord.FIELD_EQP_2;
+				qcMessages.add(new MissingValueMessage(values.getRow(), colIndex, qcRecord.getColumnName(colIndex), Flag.QUESTIONABLE));
+				qcRecord.setEqp2Used(false);
+			}
+			
+			total = total + value;
 			count++;
 		}
 		
 		if (instrument.hasEqp3()) {
-			total = total + values.getEqp3();
+			double value = values.getEqp3();
+
+			if (RawDataDB.MISSING_VALUE == value) {
+				int colIndex = NoDataQCRecord.FIELD_EQP_3;
+				qcMessages.add(new MissingValueMessage(values.getRow(), colIndex, qcRecord.getColumnName(colIndex), Flag.QUESTIONABLE));
+				qcRecord.setEqp3Used(false);
+			}
+			
+			total = total + value;
 			count++;
 		}
 		
-		return total / (double) count;
+		double result;
+		if (count == 0) {
+			result = RawDataDB.MISSING_VALUE;
+			qcMessages.clear();
+			qcMessages.add(new MissingValueMessage(values.getRow(), missingColumnIndices, qcRecord.getColumnNames(missingColumnIndices), Flag.BAD));
+		} else {
+			result= total / (double) count;
+		}
+		
+		return result;
 	}
-	
+
 	private double calcCalibratedCo2(double driedCo2, Calendar time, GasStandardRuns standardRuns, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		SimpleRegression regression = standardRuns.getStandardsRegression(dataSource, instrument.getDatabaseId(), time);
 		return regression.predict(driedCo2);
