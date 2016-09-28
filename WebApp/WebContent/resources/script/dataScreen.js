@@ -651,7 +651,7 @@ function drawTable() {
             {"className": "numericCol", "targets": getNumericColumns()},
             {"render":
             	function (data, type, row) {
-	                var output = '<div onmouseover="showQCInfoPopup(\'' + row[getColumnIndex('QC Message')] + '\', this)" onmouseout="hideQCInfoPopup()" class="';
+	                var output = '<div onmouseover="showQCInfoPopup(' + row[getColumnIndex('QC Flag')] + ', \'' + row[getColumnIndex('QC Message')] + '\', this)" onmouseout="hideQCInfoPopup()" class="';
 	                output += getFlagClass(data);
 	                output += '">';
 	                output += getFlagText(data);
@@ -887,14 +887,28 @@ function makeHighlights(plotData) {
 	return highlights;
 }
 
-function showQCInfoPopup(qcMessage, target) {
+function showQCInfoPopup(qcFlag, qcMessage, target) {
 
     $('#qcInfoPopup').stop(true, true);
 
     if (qcMessage != "") {
 
         var content = '';
-	    content += '<div class="qcInfoMessage">';
+	    content += '<div class="qcInfoMessage ';
+
+	    switch (qcFlag) {
+	    case 3: {
+	    	content += 'questionable';
+	    	break;
+	    }
+	    case 4: {
+	    	content += 'bad';
+	    	break;
+    	}
+	    }
+
+	    
+	    content += '">';
 	    content += qcMessage;
 	    content += '</div>';
 
