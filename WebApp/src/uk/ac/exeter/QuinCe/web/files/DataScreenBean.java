@@ -344,6 +344,9 @@ public class DataScreenBean extends BaseManagedBean {
 			
 			output.append("</table></td></tr>");
 		}
+		
+		// Delta T
+		output.append(makePlotCheckbox("deltaT", "deltaT", "Δ Temperature"));
 
 		// Equilibrator Pressure
 		if (instrument.getEqpCount() == 1) {
@@ -552,6 +555,8 @@ public class DataScreenBean extends BaseManagedBean {
 				columns.add("eqtMean");
 			}
 			
+			columns.add("deltaT");
+			
 			if (instrument.getEqpCount() == 1) {
 				columns.add("eqpMean");
 			} else {
@@ -663,6 +668,8 @@ public class DataScreenBean extends BaseManagedBean {
 			
 			output.append("'Equil. Temp: Mean', ");
 		}
+		
+		output.append("'Δ Temperature', ");
 
 		if (instrument.getEqpCount() == 1) {
 			output.append("'Equil. Pressure', ");

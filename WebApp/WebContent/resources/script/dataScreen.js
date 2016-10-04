@@ -54,6 +54,7 @@ var AXIS_LABELS = {
 		'eqt2': 'Temperature (°C)',
 		'eqt3': 'Temperature (°C)',
 		'eqtMean': 'Temperature (°C)',
+		'deltaT': 'Δ Temperature (°C)',
 		'eqp1': 'Pressure (hPa)',
 		'eqp2': 'Pressure (hPa)',
 		'eqp3': 'Pressure (hPa)',
@@ -115,7 +116,7 @@ var compulsoryColumns = ['Date/Time', 'Longitude', 'Latitude', 'QC Flag', 'WOCE 
 var visibleColumns = {
 	'basic': [/Intake Temp/, /Intake Temp: Mean/, /Salinity/, /Salinity: Mean/, /Equil\. Temp/, /Equil\. Temp: Mean/, /Equil\. Pressure/, /Equil\. Pressure: Mean/, /Moisture \(True\)/, /fCO₂ Final/],
 	'water': [/Intake Temp.*/, /Salinity.*/],
-	'equilibrator': [/Equil.*/, /Moisture.*/],
+	'equilibrator': [/Equil.*/, /Δ.*/, /Moisture.*/],
 	'co2': [/pH₂O/, /.*CO₂.*/]
 };
 
