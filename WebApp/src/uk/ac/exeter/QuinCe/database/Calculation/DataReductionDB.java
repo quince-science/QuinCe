@@ -17,12 +17,12 @@ public class DataReductionDB {
 	private static final String CLEAR_DATA_REDUCTION_STATEMENT = "DELETE FROM data_reduction WHERE data_file_id = ?";
 	
 	private static final String STORE_ROW_STATEMENT = "INSERT INTO data_reduction ("
-			+ "data_file_id, row, co2_type, mean_intake_temp, mean_salinity, mean_eqt, mean_eqp, "
+			+ "data_file_id, row, co2_type, mean_intake_temp, mean_salinity, mean_eqt, delta_temperature, mean_eqp, "
 			+ "true_moisture, dried_co2, calibrated_co2, pco2_te_dry, ph2o, pco2_te_wet, fco2_te, fco2) "
-			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String UPDATE_ROW_STATEMENT = "UPDATE data_reduction SET "
-			+ "mean_intake_temp = ?, mean_salinity = ?, mean_eqt = ?, mean_eqp = ?, "
+			+ "mean_intake_temp = ?, mean_salinity = ?, mean_eqt = ?, delta_temperature = ?, mean_eqp = ?, "
 			+ "true_moisture = ?, dried_co2 = ?, calibrated_co2 = ?, pco2_te_dry = ?, "
 			+ "ph2o = ?, pco2_te_wet = ?, fco2_te = ?, fco2 = ? "
 			+ "WHERE data_file_id = ? AND row = ?";
@@ -62,7 +62,7 @@ public class DataReductionDB {
 	}
 	
 	public static void storeRow(Connection conn, long fileId, int row, boolean overwrite,
-			int co2Type, double meanIntakeTemp, double meanSalinity, double meanEqt, double meanEqp,
+			int co2Type, double meanIntakeTemp, double meanSalinity, double meanEqt, double deltaTemperature, double meanEqp,
 			double trueMoisture, double driedCo2, double calibratedCo2, double pCo2TEDry, double pH2O, double pCo2TEWet,
 			double fco2TE, double fco2) throws DatabaseException, MissingParamException {
 		
@@ -81,31 +81,33 @@ public class DataReductionDB {
 				stmt.setDouble(4, meanIntakeTemp);
 				stmt.setDouble(5, meanSalinity);
 				stmt.setDouble(6, meanEqt);
-				stmt.setDouble(7, meanEqp);
-				stmt.setDouble(8, trueMoisture);
-				stmt.setDouble(9, driedCo2);
-				stmt.setDouble(10, calibratedCo2);
-				stmt.setDouble(11, pCo2TEDry);
-				stmt.setDouble(12, pH2O);
-				stmt.setDouble(13, pCo2TEWet);
-				stmt.setDouble(14, fco2TE);
-				stmt.setDouble(15, fco2);
+				stmt.setDouble(7, deltaTemperature);
+				stmt.setDouble(8, meanEqp);
+				stmt.setDouble(9, trueMoisture);
+				stmt.setDouble(10, driedCo2);
+				stmt.setDouble(11, calibratedCo2);
+				stmt.setDouble(12, pCo2TEDry);
+				stmt.setDouble(13, pH2O);
+				stmt.setDouble(14, pCo2TEWet);
+				stmt.setDouble(15, fco2TE);
+				stmt.setDouble(16, fco2);
 			} else if (overwrite) {
 				stmt = conn.prepareStatement(UPDATE_ROW_STATEMENT);
 				stmt.setDouble(1, meanIntakeTemp);
 				stmt.setDouble(2, meanSalinity);
 				stmt.setDouble(3, meanEqt);
-				stmt.setDouble(4, meanEqp);
-				stmt.setDouble(5, trueMoisture);
-				stmt.setDouble(6, driedCo2);
-				stmt.setDouble(7, calibratedCo2);
-				stmt.setDouble(8, pCo2TEDry);
-				stmt.setDouble(9, pH2O);
-				stmt.setDouble(10, pCo2TEWet);
-				stmt.setDouble(11, fco2TE);
-				stmt.setDouble(12, fco2);
-				stmt.setLong(13, fileId);
-				stmt.setInt(14, row);
+				stmt.setDouble(4, deltaTemperature);
+				stmt.setDouble(5, meanEqp);
+				stmt.setDouble(6, trueMoisture);
+				stmt.setDouble(7, driedCo2);
+				stmt.setDouble(8, calibratedCo2);
+				stmt.setDouble(9, pCo2TEDry);
+				stmt.setDouble(10, pH2O);
+				stmt.setDouble(11, pCo2TEWet);
+				stmt.setDouble(12, fco2TE);
+				stmt.setDouble(13, fco2);
+				stmt.setLong(14, fileId);
+				stmt.setInt(15, row);
 			}
 			
 			stmt.execute();

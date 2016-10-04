@@ -355,6 +355,7 @@ co2_type                 Integer        The type of CO~2~ measurement
 mean_intake_temp         Float          The intake temperature, as a mean of all the sensor measurements.
 mean_salinity            Float          The salinity, as a mean of all the sensor measurements.
 mean_eqt                 Float          The equilibrator temperature, as a mean of all the sensor measurements.
+delta_temperature        Float          The difference between the mean intake temperature and the mean equilibrator temperature
 mean_eqp                 Float          The equilibrator pressure, as a mean of all the sensor measurements.
 atmospheric_pressure     Float          The atmospheric pressure, either from the instrument or imported
 true_moisture            Float          The true moisture, calculated as the difference between the measured moisture and the moisture measured from the dry standard gases.

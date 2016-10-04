@@ -70,6 +70,7 @@ public class FileDataInterrogator {
 		COLUMN_MAPPINGS.put("eqt1", "raw_data.eqt_1");
 		COLUMN_MAPPINGS.put("eqt2", "raw_data.eqt_2");
 		COLUMN_MAPPINGS.put("eqt3", "raw_data.eqt_3");
+		COLUMN_MAPPINGS.put("delta_t", "data_reduction.delta_temperature");
 		COLUMN_MAPPINGS.put("eqpMean", "data_reduction.mean_eqp");
 		COLUMN_MAPPINGS.put("eqp1", "raw_data.eqp_1");
 		COLUMN_MAPPINGS.put("eqp2", "raw_data.eqp_2");
@@ -595,6 +596,10 @@ public class FileDataInterrogator {
 		}
 		case "eqt3": {
 			result = "Equilibrator Temperature - " + instrument.getEqtName3();
+			break;
+		}
+		case "delta_t": {
+			result = "Delta Temperature";
 			break;
 		}
 		case "eqpMean": {

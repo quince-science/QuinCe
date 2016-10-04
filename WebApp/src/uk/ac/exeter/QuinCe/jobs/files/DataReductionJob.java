@@ -75,7 +75,7 @@ public class DataReductionJob extends FileJob {
 					DataReductionDB.storeRow(conn, fileId, record.getRow(), false, record.getCo2Type(), RawDataDB.MISSING_VALUE,
 							RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, 
 							RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE,
-							RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE);
+							RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE);
 					
 				} else {
 				
@@ -131,6 +131,11 @@ public class DataReductionJob extends FileJob {
 							qcRecord.appendWoceComment("Missing equilibrator temperature");
 						}
 						
+						double deltaTemperature = RawDataDB.MISSING_VALUE;
+						if (meanIntakeTemp != RawDataDB.MISSING_VALUE && meanEqt != RawDataDB.MISSING_VALUE) {
+							deltaTemperature = meanEqt - meanIntakeTemp;
+						}
+						
 						double meanEqp = calcMeanEqp(record, instrument, qcRecord);
 						if (meanEqp == RawDataDB.MISSING_VALUE) {
 							canCalculateCO2 = false;
@@ -178,7 +183,7 @@ public class DataReductionJob extends FileJob {
 						}
 												
 						DataReductionDB.storeRow(conn, fileId, record.getRow(), true, record.getCo2Type(), meanIntakeTemp,
-								meanSalinity, meanEqt, meanEqp, trueMoisture, driedCo2, calibratedCo2,
+								meanSalinity, meanEqt, deltaTemperature, meanEqp, trueMoisture, driedCo2, calibratedCo2,
 								pCo2TEDry, pH2O, pCo2TEWet, fco2TE, fco2);
 						
 						
