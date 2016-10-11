@@ -612,7 +612,7 @@ function drawTable() {
 	// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
 	
 	
-	html = '<table id="dataTable" class="display nowrap" cellspacing="0" width="100%">';
+	html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%">';
 	html += '<thead>';
 
 	columnHeadings.forEach(heading => {
@@ -652,7 +652,7 @@ function drawTable() {
             {"className": "numericCol", "targets": getNumericColumns()},
             {"render":
             	function (data, type, row) {
-	                var output = '<div onmouseover="showQCInfoPopup(' + (row[0] - 1) + ', this)" onmouseout="hideQCInfoPopup()" class="';
+	                var output = '<div onmouseover="showQCInfoPopup(' + row[getColumnIndex('QC Flag')] + ', \'' + row[getColumnIndex('QC Message')] + '\', this)" onmouseout="hideQCInfoPopup()" class="';
 	                output += getFlagClass(data);
 	                output += '">';
 	                output += getFlagText(data);
@@ -887,3 +887,42 @@ function makeHighlights(plotData) {
 		
 	return highlights;
 }
+
+function showQCInfoPopup(qcFlag, qcMessage, target) {
+
+    $('#qcInfoPopup').stop(true, true);
+
+    if (qcMessage != "") {
+
+        var content = '';
+	    content += '<div class="qcInfoMessage ';
+
+	    switch (qcFlag) {
+	    case 3: {
+	    	content += 'questionable';
+	    	break;
+	    }
+	    case 4: {
+	    	content += 'bad';
+	    	break;
+    	}
+	    }
+
+	    
+	    content += '">';
+	    content += qcMessage;
+	    content += '</div>';
+
+    	$('#qcInfoPopup')
+          .html(content)
+          .css({"left": 0, "top": 0})
+          .offset({"left": $(target).position().left - $('#qcInfoPopup').width() - 10, "top": $(target).offset().top - 3})
+          .show('slide', {direction: 'right'}, 100);;
+   }
+ }
+
+ function hideQCInfoPopup() {
+     $('#qcInfoPopup').stop(true, true);
+     $('#qcInfoPopup').hide('slide', {direction: 'right'}, 100);
+ }
+

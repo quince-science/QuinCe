@@ -81,6 +81,8 @@ public class DataFileDB {
 
 	private static final String GET_WOCE_FLAGS_QUERY = "SELECT DISTINCT woce_flag, COUNT(woce_flag) FROM qc WHERE data_file_id = ? GROUP BY woce_flag";
 
+	private static final String TOUCH_FILE_STATEMENT = "UPDATE data_file SET last_touched = NOW() WHERE id = ?";
+
 	/**
 	 * Store a file in the database and in the file store
 	 * @param dataSource A data source
@@ -555,6 +557,26 @@ public class DataFileDB {
 		} finally {
 			DatabaseUtils.closeResultSets(qcFlags, woceFlags);
 			DatabaseUtils.closeStatements(qcFlagsStatement, woceFlagsStatement);
+		}
+	}
+	
+	public static void touchFile(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(TOUCH_FILE_STATEMENT);
+			stmt.setLong(1, fileId);
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while touching file", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 }

@@ -203,6 +203,7 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException {
 		fileDetails = DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), fileId);
+		DataFileDB.touchFile(ServletUtils.getDBDataSource(), fileId);
 		instrument = InstrumentDB.getInstrumentByFileId(ServletUtils.getDBDataSource(), fileId);
 	}
 	
@@ -607,66 +608,66 @@ public class DataScreenBean extends BaseManagedBean {
 			output.append("'Intake Temp', ");
 		} else {
 			if (instrument.hasIntakeTemp1()) {
-				output.append("'Intake Temp: ");
+				output.append("'Intake Temp:<br/>");
 				output.append(instrument.getIntakeTempName1());
 				output.append("', ");
 			}
 			if (instrument.hasIntakeTemp2()) {
-				output.append("'Intake Temp: ");
+				output.append("'Intake Temp:<br/>");
 				output.append(instrument.getIntakeTempName2());
 				output.append("', ");
 			}
 			if (instrument.hasIntakeTemp3()) {
-				output.append("'Intake Temp: ");
+				output.append("'Intake Temp:<br/>");
 				output.append(instrument.getIntakeTempName3());
 				output.append("', ");
 			}
 			
-			output.append("'Intake Temp: Mean', ");
+			output.append("'Intake Temp:<br/>Mean', ");
 		}
 			
 		if (instrument.getSalinityCount() == 1) {
 			output.append("'Salinity', ");
 		} else {
 			if (instrument.hasSalinity1()) {
-				output.append("'Salinity: ");
+				output.append("'Salinity:<br/>");
 				output.append(instrument.getSalinityName1());
 				output.append("', ");
 			}
 			if (instrument.hasSalinity2()) {
-				output.append("'Salinity: ");
+				output.append("'Salinity:<br/>");
 				output.append(instrument.getSalinityName2());
 				output.append("', ");
 			}
 			if (instrument.hasSalinity3()) {
-				output.append("'Salinity: ");
+				output.append("'Salinity:<br/>");
 				output.append(instrument.getSalinityName3());
 				output.append("', ");
 			}
 			
-			output.append("'Salinity: Mean', ");
+			output.append("'Salinity:<br/>Mean', ");
 		}
 
 		if (instrument.getEqtCount() == 1) {
 			output.append("'Equil. Temp', ");
 		} else {
 			if (instrument.hasEqt1()) {
-				output.append("'Equil. Temp: ");
+				output.append("'Equil. Temp:<br/>");
 				output.append(instrument.getEqtName1());
 				output.append("', ");
 			}
 			if (instrument.hasEqt2()) {
-				output.append("'Equil. Temp: ");
+				output.append("'Equil. Temp:<br/>");
 				output.append(instrument.getEqtName2());
 				output.append("', ");
 			}
 			if (instrument.hasEqt3()) {
-				output.append("'Equil. Temp: ");
+				output.append("'Equil. Temp:<br/>");
 				output.append(instrument.getEqtName3());
 				output.append("', ");
 			}
 			
-			output.append("'Equil. Temp: Mean', ");
+			output.append("'Equil. Temp:<br/>Mean', ");
 		}
 		
 		output.append("'Δ Temperature', ");
@@ -675,22 +676,22 @@ public class DataScreenBean extends BaseManagedBean {
 			output.append("'Equil. Pressure', ");
 		} else {
 			if (instrument.hasEqp1()) {
-				output.append("'Equil. Pressure: ");
+				output.append("'Equil. Pressure:<br/>");
 				output.append(instrument.getEqpName1());
 				output.append("', ");
 			}
 			if (instrument.hasEqp2()) {
-				output.append("'Equil. Pressure: ");
+				output.append("'Equil. Pressure:<br/>");
 				output.append(instrument.getEqpName2());
 				output.append("', ");
 			}
 			if (instrument.hasEqp3()) {
-				output.append("'Equil. Pressure: ");
+				output.append("'Equil. Pressure:<br/>");
 				output.append(instrument.getEqpName3());
 				output.append("', ");
 			}
 			
-			output.append("'Equil. Pressure: Mean', ");
+			output.append("'Equil. Pressure:<br/>Mean', ");
 		}
 
 		output.append("'Atmos. Pressure', 'Moisture (Measured)', 'Moisture (True)', 'pH₂O', 'CO₂ Measured', 'CO₂ Dried', 'CO₂ Calibrated', 'pCO₂ TE Dry', "
