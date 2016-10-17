@@ -402,10 +402,10 @@ public class RawDataDB {
 				values.setMoisture(records.getDouble(25));
 				
 				if (instrument.getHasAtmosphericPressure()) {
-					values.setAtmosphericPressure(records.getDouble(20));
+					values.setAtmosphericPressure(records.getDouble(26));
 				}
 				
-				values.setCo2(records.getDouble(21));
+				values.setCo2(records.getDouble(27));
 				
 				rawData.add(values);
 			}
