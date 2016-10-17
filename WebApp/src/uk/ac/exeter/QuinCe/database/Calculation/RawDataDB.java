@@ -394,12 +394,12 @@ public class RawDataDB {
 				values.setEqp2(records.getDouble(17));
 				values.setEqp3(records.getDouble(18));
 				values.setAirFlow1(records.getDouble(19));
-				values.setAirFlow2(records.getDouble(19));
-				values.setAirFlow3(records.getDouble(19));
-				values.setWaterFlow1(records.getDouble(19));
-				values.setWaterFlow2(records.getDouble(19));
-				values.setWaterFlow3(records.getDouble(19));
-				values.setMoisture(records.getDouble(19));
+				values.setAirFlow2(records.getDouble(20));
+				values.setAirFlow3(records.getDouble(21));
+				values.setWaterFlow1(records.getDouble(22));
+				values.setWaterFlow2(records.getDouble(23));
+				values.setWaterFlow3(records.getDouble(24));
+				values.setMoisture(records.getDouble(25));
 				
 				if (instrument.getHasAtmosphericPressure()) {
 					values.setAtmosphericPressure(records.getDouble(20));
