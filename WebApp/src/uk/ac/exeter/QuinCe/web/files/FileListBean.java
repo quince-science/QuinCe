@@ -155,6 +155,10 @@ public class FileListBean extends BaseManagedBean {
 		return DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), chosenFile).getFileName();
 	}
 	
+	public String getChosenFileInstrumentName() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
+		return InstrumentDB.getInstrumentByFileId(ServletUtils.getDBDataSource(), chosenFile).getName();
+	}
+	
 	public List<ExportOption> getExportOptions() throws ExportException {
 		return ExportConfig.getInstance().getOptions();
 	}
