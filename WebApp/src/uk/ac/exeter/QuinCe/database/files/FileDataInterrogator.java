@@ -598,7 +598,7 @@ public class FileDataInterrogator {
 			result = "Equilibrator Temperature - " + instrument.getEqtName3();
 			break;
 		}
-		case "delta_t": {
+		case "deltaT": {
 			result = "Delta Temperature";
 			break;
 		}
