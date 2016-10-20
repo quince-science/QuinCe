@@ -484,7 +484,7 @@ public class DataScreenBean extends BaseManagedBean {
 			// And the Y axis columns
 			submittedColumnList.addAll(columns.subList(1, columns.size()));
 			
-			output = FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, false);
+			output = FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, true, false);
 		} catch (Exception e) {
 			e.printStackTrace();
 			output = "***ERROR: " + e.getMessage();
@@ -590,7 +590,7 @@ public class DataScreenBean extends BaseManagedBean {
 			columns.add("woceFlag");
 			columns.add("woceMessage");
 			
-			setTableJsonData(FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, columns, getIncludeFlags(), tableDataStart, tableDataLength, true));
+			setTableJsonData(FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, columns, getIncludeFlags(), tableDataStart, tableDataLength, false, true));
 		
 		} catch (Exception e) {
 			e.printStackTrace();

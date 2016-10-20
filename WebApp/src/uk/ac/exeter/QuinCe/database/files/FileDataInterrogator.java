@@ -49,7 +49,7 @@ public class FileDataInterrogator {
 					+ " INNER JOIN data_reduction ON raw_data.data_file_id = data_reduction.data_file_id AND raw_data.row = data_reduction.row"
 					+ " INNER JOIN qc ON raw_data.data_file_id = qc.data_file_id AND raw_data.row = qc.row"
 					+ " WHERE raw_data.data_file_id = ? AND raw_data.co2_type IN (%%CO2TYPES%%) AND qc.woce_flag IN (%%FLAGS%%)"
-					+ " ORDER BY raw_data.row ASC";
+					+ " ORDER BY %%ORDER%% ASC";
 	
 	static {
 		// Map input names from the web front end to database column names
@@ -408,7 +408,7 @@ public class FileDataInterrogator {
 		return result.toString();
 	}
 	
-	public static String getJsonData(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean valuesAsStrings) throws MissingParamException, MessageException {
+	public static String getJsonData(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings) throws MissingParamException, MessageException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(columns, "columns");
@@ -423,7 +423,7 @@ public class FileDataInterrogator {
 
 		try {
 			conn = dataSource.getConnection();
-			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, start, length);
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, start, length, sortByFirstColumn);
 			
 			records = stmt.executeQuery();
 			ResultSetMetaData rsmd = records.getMetaData();
@@ -498,7 +498,7 @@ public class FileDataInterrogator {
 			columns.add(COLUMN_RECORD_COUNT);
 			
 			conn = dataSource.getConnection();
-			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, -1, -1);
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, -1, -1, false);
 			
 			records = stmt.executeQuery();
 
@@ -744,7 +744,7 @@ public class FileDataInterrogator {
 		return output.toString();
 	}
 
-	private static PreparedStatement makeFileDataStatement(Connection conn, long fileId, List<String> columns, int co2Type, List<Integer> includeFlags, int start, int length) throws SQLException {
+	private static PreparedStatement makeFileDataStatement(Connection conn, long fileId, List<String> columns, int co2Type, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn) throws SQLException {
 		
 		PreparedStatement stmt = null;
 
@@ -756,6 +756,13 @@ public class FileDataInterrogator {
 			String queryString = GET_COLUMN_DATA_QUERY.replaceAll("%%COLUMNS%%", databaseColumnList);
 			queryString = queryString.replaceAll("%%CO2TYPES%%", co2Types);
 			queryString = queryString.replaceAll("%%FLAGS%%", flags);
+			
+			if (!sortByFirstColumn) {
+				queryString = queryString.replaceAll("%%ORDER%%", "raw_data.row");
+			} else {
+				queryString = queryString.replaceAll("%%ORDER%%", COLUMN_MAPPINGS.get(columns.get(0)));
+			}
+			
 			if (length > 0) {
 				queryString += " LIMIT " + start + "," + length;
 			}
