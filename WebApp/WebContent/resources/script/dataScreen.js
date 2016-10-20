@@ -660,11 +660,26 @@ function drawTable() {
 	                return output;
 	            },
                 "targets": getColumnIndex('QC Flag')
+            },
+            {"render":
+            	function (data, type, row) {
+            		var output = '<div class="selectButton ';
+            		output += getFlagClass(data);
+            		output += '" onclick="showWoceCommentDialog(' + row[1] + ')">';
+    				output += getFlagText(data);
+    				output += '</div>';
+    				return output;
+	            },
+                "targets": getColumnIndex('WOCE Flag')
             }
         ]
     });
     
     renderTableColumns();
+}
+
+function showWoceCommentDialog(row) {
+	alert('Woce Comment Dialog for row ' + row);
 }
 
 function getNumericColumns() {
