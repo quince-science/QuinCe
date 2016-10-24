@@ -649,9 +649,9 @@ function drawTable() {
             },
             {"render":
             	function (data, type, row) {
-            		var output = '<div class="selectButton ';
+            		var output = '<div class="';
             		output += getFlagClass(data);
-            		output += '" onclick="showWoceCommentDialog(' + row[1] + ')">';
+            		output += '">';
     				output += getFlagText(data);
     				output += '</div>';
     				return output;
@@ -662,10 +662,6 @@ function drawTable() {
     });
     
     renderTableColumns();
-}
-
-function showWoceCommentDialog(row) {
-	alert('Woce Comment Dialog for row ' + row);
 }
 
 function getNumericColumns() {
