@@ -700,7 +700,7 @@ function getColumnIndex(columnName) {
  */
 function calcTableScrollY() {
 	// 41 is the post-rendered height of the header in FF (as measured on screen). Can we detect it somewhere?
-	return $('#data').height() - $('#tableControls').outerHeight() - 41;
+	return $('#data').height() - $('#tableControls').outerHeight() - 50;
 }
 
 function renderTableColumns() {

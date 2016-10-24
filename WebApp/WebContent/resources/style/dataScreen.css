@@ -57,7 +57,6 @@ body.fullPage {
   padding: 5px 10px 5px 10px;
   font-size: 14px;
   font-weight: bold;
-  height: 25px;
 }
 
 .plotContent {
@@ -88,4 +87,8 @@ body.fullPage {
   user-select: none;
   height: 20px;
   text-align: center;
+}
+
+#tableControls {
+  height: 40px;
 }
