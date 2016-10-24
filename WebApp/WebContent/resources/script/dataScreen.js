@@ -126,6 +126,9 @@ var tableMode = 'basic';
 // The list of dates in the current view. Used for searching.
 var dateList = null;
 
+// Variables for timed functions
+var tableScrollRow = null;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -803,7 +806,15 @@ function makeJSDates(data) {
 function scrollToTableRow(milliseconds) {
 	var tableRow = dateList.indexOf(milliseconds);
 	if (tableRow >= 0) {
-		jsDataTable.scroller().scrollToRow(tableRow);
+		jsDataTable.scroller().scrollToRow(tableRow - 2);
+		
+		tableScrollRow = jsDataTable.row(tableRow);
+		setTimeout(function() {
+			$(tableScrollRow.node()).css('animationName', 'rowFlash').css('animationDuration', '1s');
+			setTimeout(function() {
+				$(tableScrollRow.node()).css('animationName', '');
+			}, 1000);
+		}, 250);
 	}
 }
 
@@ -887,7 +898,6 @@ function showQCInfoPopup(qcFlag, qcMessage, target) {
     	}
 	    }
 
-	    
 	    content += '">';
 	    content += qcMessage;
 	    content += '</div>';
