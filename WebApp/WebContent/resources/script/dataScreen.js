@@ -624,27 +624,13 @@ function drawTable() {
 	$('#tableContent').html(html);
     
     jsDataTable = $('#dataTable').DataTable( {
+    	data: tableData,
     	ordering: false,
     	searching: false,
-    	serverSide: true,
-    	scroller: {
-    		loadingIndicator: true
-    	},
+    	serverSide: false,
+    	scroller: true,
     	scrollY: calcTableScrollY(),
     	bInfo: false,
-    	ajax: function ( data, callback, settings ) {
-            
-    		// Store the callback
-    		dataTableDrawCallback = callback;
-
-    		// Fill in the form inputs
-    		$('#plotDataForm\\:tableDataDraw').val(data.draw);
-    		$('#plotDataForm\\:tableDataStart').val(data.start);
-    		$('#plotDataForm\\:tableDataLength').val(data.length);
-    		
-    		// Submit the query to the server
-    		$('#plotDataForm\\:tableGetData').click();
-        },
         columnDefs:[
             // DateTime doesn't wrap
             {"className": "noWrap", "targets": [0]},
@@ -711,24 +697,6 @@ function getColumnIndex(columnName) {
 		}
 	}
 	return index;
-}
-
-/*
- * Called when table data has been downloaded from the server.
- * The previously stored callback function is triggered with
- * the data from the server.
- */
-function tableDataDownload(data) {
-	
-	var status = data.status;
-	if (status == "success") {
-		dataTableDrawCallback( {
-            draw: $('#plotdDataForm\\:tableDataDraw').val(),
-            data: JSON.parse($('#plotDataForm\\:tableJsonData').val()),
-            recordsTotal: $('#plotDataForm\\:recordCount').val(),
-            recordsFiltered: $('#plotDataForm\\:recordCount').val()
-		});
-	}
 }
 
 /*
