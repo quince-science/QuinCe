@@ -150,12 +150,6 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	public String getTableData() {
-		
-		// If the table data hasn't yet been retrieved, do so
-		if (null == tableData) {
-			generateTableData();
-		}
-		
 		return tableData;
 	}
 	

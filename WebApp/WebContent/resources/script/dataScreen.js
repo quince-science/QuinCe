@@ -184,7 +184,7 @@ function drawAllData() {
 	drawLoading($('#tableContent'));
     updatePlot('left');
     updatePlot('right');
-    drawTable();
+    updateTable();
 }
 
 /*
@@ -211,7 +211,9 @@ function resizeContent() {
 	$('.dataTables_scrollBody').height(calcTableScrollY());
 	
 	// Resize the table columns
-	jsDataTable.columns.adjust().draw(false);
+	if (null != jsDataTable) {
+		jsDataTable.columns.adjust().draw(false);
+	}
 }
 
 /*
@@ -490,6 +492,19 @@ function updatePlot(plot) {
 	return false;
 }
 
+function updateTable() {
+	
+	// Replace the table with the loading animation
+	drawLoading($('#tableContent'));
+	
+	// Destroy the existing table instance
+	if (null != jsDataTable) {
+		jsDataTable.destroy();
+	}
+	
+	$('#plotDataForm\\:getTableData').click();
+}
+
 /*
  * Render the left plot
  */
@@ -610,61 +625,64 @@ function drawRightPlot(data) {
  * the DataTables object is created and configured to load
  * its data from the server using the hidden form.
  */
-function drawTable() {
+function drawTable(data) {
+	var status = data.status;
 	
-	// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
+	if (status == "success") {
 	
+		// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
+		html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%">';
+		html += '<thead>';
 	
-	html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%">';
-	html += '<thead>';
-
-	columnHeadings.forEach(heading => {
-		html += '<th>';
-		html += heading;
-		html += '</th>';
-	});
-
-	$('#tableContent').html(html);
-    
-    jsDataTable = $('#dataTable').DataTable( {
-    	data: tableData,
-    	ordering: false,
-    	searching: false,
-    	serverSide: false,
-    	scroller: true,
-    	scrollY: calcTableScrollY(),
-    	bInfo: false,
-        columnDefs:[
-            // DateTime doesn't wrap
-            {"className": "noWrap", "targets": [0]},
-            {"className": "centreCol", "targets": getQCColumns()},
-            {"className": "numericCol", "targets": getNumericColumns()},
-            {"render":
-            	function (data, type, row) {
-	                var output = '<div onmouseover="showQCInfoPopup(' + row[getColumnIndex('QC Flag')] + ', \'' + row[getColumnIndex('QC Message')] + '\', this)" onmouseout="hideQCInfoPopup()" class="';
-	                output += getFlagClass(data);
-	                output += '">';
-	                output += getFlagText(data);
-	                output += '</div>';
-	                return output;
+		columnHeadings.forEach(heading => {
+			html += '<th>';
+			html += heading;
+			html += '</th>';
+		});
+	
+		$('#tableContent').html(html);
+	    
+	    jsDataTable = $('#dataTable').DataTable( {
+	    	data: JSON.parse($('#plotDataForm\\:tableData').val()),
+	    	ordering: false,
+	    	searching: false,
+	    	serverSide: false,
+	    	scroller: true,
+	    	scrollY: calcTableScrollY(),
+	    	bInfo: false,
+	        columnDefs:[
+	            // DateTime doesn't wrap
+	            {"className": "noWrap", "targets": [0]},
+	            {"className": "centreCol", "targets": getQCColumns()},
+	            {"className": "numericCol", "targets": getNumericColumns()},
+	            {"render":
+	            	function (data, type, row) {
+		                var output = '<div onmouseover="showQCInfoPopup(' + row[getColumnIndex('QC Flag')] + ', \'' + row[getColumnIndex('QC Message')] + '\', this)" onmouseout="hideQCInfoPopup()" class="';
+		                output += getFlagClass(data);
+		                output += '">';
+		                output += getFlagText(data);
+		                output += '</div>';
+		                return output;
+		            },
+	                "targets": getColumnIndex('QC Flag')
 	            },
-                "targets": getColumnIndex('QC Flag')
-            },
-            {"render":
-            	function (data, type, row) {
-            		var output = '<div class="';
-            		output += getFlagClass(data);
-            		output += '">';
-    				output += getFlagText(data);
-    				output += '</div>';
-    				return output;
-	            },
-                "targets": getColumnIndex('WOCE Flag')
-            }
-        ]
-    });
-    
-    renderTableColumns();
+	            {"render":
+	            	function (data, type, row) {
+	            		var output = '<div class="';
+	            		output += getFlagClass(data);
+	            		output += '">';
+	    				output += getFlagText(data);
+	    				output += '</div>';
+	    				return output;
+		            },
+	                "targets": getColumnIndex('WOCE Flag')
+	            }
+	        ]
+	    });
+	    
+	    renderTableColumns();
+	    resizeContent();
+	}
 }
 
 function getNumericColumns() {

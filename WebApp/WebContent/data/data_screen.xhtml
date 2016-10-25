@@ -46,7 +46,6 @@
 			var waterFlow2Name = '#{dataScreenBean.instrument.waterFlowName2}';
 			var waterFlow3Name = '#{dataScreenBean.instrument.waterFlowName3}';
 			var columnHeadings = #{dataScreenBean.tableHeadings};
-			var tableData = #{dataScreenBean.tableData};
 		</script>
 	</h:head>
 	<h:body class="fullPage">
@@ -69,6 +68,11 @@
 				<h:outputText id="rightData" value="#{dataScreenBean.rightPlotData}"/>
 				<h:commandLink id="rightGetData" action="#{dataScreenBean.generateRightPlotData}">
 					<f:ajax execute="rightColumns" render="rightData" onevent="drawRightPlot"/>
+				</h:commandLink>
+				
+				<h:inputHidden id="tableData" value="#{dataScreenBean.tableData}"/>
+				<h:commandLink id="getTableData" action="#{dataScreenBean.generateTableData}">
+					<f:ajax render="tableData" onevent="drawTable"/>
 				</h:commandLink>
 			</h:form>
 		</div>
