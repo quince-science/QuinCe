@@ -627,7 +627,7 @@ function drawRightPlot(data) {
  */
 function drawTable(data) {
 	var status = data.status;
-	
+
 	if (status == "success") {
 	
 		// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN

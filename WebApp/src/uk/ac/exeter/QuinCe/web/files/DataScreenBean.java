@@ -38,7 +38,7 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private long fileId;
 	
-	private FileInfo fileDetails;
+	private FileInfo fileDetails = null;
 	
 	private String leftPlotColumns = null;
 	
@@ -79,6 +79,12 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private void clearData() {
 		fileDetails = null;
+		leftPlotColumns = null;
+		leftPlotData = null;
+		rightPlotColumns = null;
+		rightPlotData = null;
+		optionalFlags = null;
+		tableData = null;
 	}
 	
 	public long getFileId() {
