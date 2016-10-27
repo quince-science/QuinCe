@@ -970,7 +970,6 @@ function rowSelected(indexes) {
 		}
 	});
 
-	console.log(selectionQCMessageCounts);
 	updateSelectionControls();
 }
 
@@ -993,7 +992,6 @@ function rowDeselected(indexes) {
 		}
 	});
 
-	console.log(selectionQCMessageCounts);
 	updateSelectionControls();
 }
 
