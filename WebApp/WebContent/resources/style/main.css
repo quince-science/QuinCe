@@ -68,7 +68,15 @@ input[type="submit"].inline {
 }
 
 input[type="submit"][disabled="disabled"] {
-    background: #aaa;
+    background: #ccc;
+    color: #999;
+    border: 1px solid #aaa;
+    cursor: default;
+}
+
+.disabledButton {
+    background: #ccc;
+    color: #999;
     border: 1px solid #aaa;
     cursor: default;
 }

@@ -124,13 +124,24 @@
 	    		<div id="data">
 	    			<div id="tableContent"></div>
 	    			<div id="tableControls" class="controls">
-			      		<p:selectOneButton value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="changeTableMode(event)">
-			      			<f:selectItem itemLabel="Basic" itemValue="basic"/>
-			      			<f:selectItem itemLabel="Water" itemValue="water"/>
-			      			<f:selectItem itemLabel="Equilibrator" itemValue="equilibrator"/>
-			      			<f:selectItem itemLabel="CO₂" itemValue="co2"/>
-			      			<f:ajax render="@none"/>
-			      		</p:selectOneButton>
+	    				<table>
+	    					<tr>
+	    						<td>
+						      		<p:selectOneButton value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="changeTableMode(event)">
+						      			<f:selectItem itemLabel="Basic" itemValue="basic"/>
+						      			<f:selectItem itemLabel="Water" itemValue="water"/>
+						      			<f:selectItem itemLabel="Equilibrator" itemValue="equilibrator"/>
+						      			<f:selectItem itemLabel="CO₂" itemValue="co2"/>
+						      			<f:ajax render="@none"/>
+						      		</p:selectOneButton>
+	    						</td>
+	    						<td>
+						      		Selected rows: <span id="selectedRowsCount">0</span>
+						      		<button id="acceptFlagsButton" class="smallButton disabledButton" disabled="disabled">Accept QC Flags</button>
+						      		<button id="overrideFlagsButton" class="smallButton disabledButton" disabled="disabled">Override QC Flags</button>
+	    						</td>
+	    					</tr>
+	    				</table>
 	    			</div>
 	    		</div>
     		</div>

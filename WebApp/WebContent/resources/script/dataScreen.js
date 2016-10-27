@@ -129,6 +129,11 @@ var dateList = null;
 // Variables for timed functions
 var tableScrollRow = null;
 
+// Table selections
+var selectedRows = [];
+var selectionQCMessageCounts = {};
+var NO_MESSAGE_ENTRY = 'No QC message';
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -650,6 +655,7 @@ function drawTable(data) {
 	    	scroller: true,
 	    	scrollY: calcTableScrollY(),
 	    	bInfo: false,
+	    	select: 'multi',
 	        columnDefs:[
 	            // DateTime doesn't wrap
 	            {"className": "noWrap", "targets": [0]},
@@ -678,6 +684,14 @@ function drawTable(data) {
 	                "targets": getColumnIndex('WOCE Flag')
 	            }
 	        ]
+	    });
+	    
+	    jsDataTable.on('select', function(e, dt, type, indexes) {
+	    	rowSelected(indexes);
+	    });
+	    
+	    jsDataTable.on('deselect', function(e, dt, type, indexes) {
+	    	rowDeselected(indexes);
 	    });
 	    
 	    renderTableColumns();
@@ -928,8 +942,69 @@ function showQCInfoPopup(qcFlag, qcMessage, target) {
    }
  }
 
- function hideQCInfoPopup() {
-     $('#qcInfoPopup').stop(true, true);
-     $('#qcInfoPopup').hide('slide', {direction: 'right'}, 100);
- }
+function hideQCInfoPopup() {
+    $('#qcInfoPopup').stop(true, true);
+    $('#qcInfoPopup').hide('slide', {direction: 'right'}, 100);
+}
 
+/*
+ * Process selected rows.
+ * Add the row index and its QC Message to the global selection arrays
+ */
+function rowSelected(indexes) {
+	$.each(indexes, function(index, rowIndex) {
+		if ($.inArray(rowIndex, selectedRows) == -1) {
+			selectedRows[selectedRows.length] = rowIndex;
+			
+			// Add the message to the list of selection messages
+			qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
+			if (qcMessage == "") {
+				qcMessage = NO_MESSAGE_ENTRY;
+			}
+			
+			if (qcMessage in selectionQCMessageCounts) {
+				selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] + 1;
+			} else {
+				selectionQCMessageCounts[qcMessage] = 1;
+			}
+		}
+	});
+
+	console.log(selectionQCMessageCounts);
+	updateSelectionControls();
+}
+
+/*
+ * Process deselected rows
+ * Remove the row index and its QC Message from the global selection arrays
+ */
+function rowDeselected(indexes) {
+	$.each(indexes, function(index, rowIndex) {
+		var arrayIndex = $.inArray(rowIndex, selectedRows);
+		if (arrayIndex > -1) {
+			selectedRows.splice(arrayIndex, 1);
+
+			qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
+			if (qcMessage == "") {
+				qcMessage = NO_MESSAGE_ENTRY;
+			}
+
+			selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] - 1;
+		}
+	});
+
+	console.log(selectionQCMessageCounts);
+	updateSelectionControls();
+}
+
+function updateSelectionControls() {
+	$('#selectedRowsCount').html(selectedRows.length);
+	
+	if (selectedRows.length == 0) {
+		$('#acceptFlagsButton').prop('disabled', true).addClass('disabledButton');
+		$('#overrideFlagsButton').prop('disabled', true).addClass('disabledButton');
+	} else {
+		$('#acceptFlagsButton').prop('disabled', false).removeClass('disabledButton');
+		$('#overrideFlagsButton').prop('disabled', false).removeClass('disabledButton');
+	}
+}
