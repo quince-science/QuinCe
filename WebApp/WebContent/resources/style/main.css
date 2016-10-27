@@ -89,6 +89,10 @@ input[type="submit"]:last-of-type {
     margin-top: 0px;
 }
 
+.tightButton {
+	min-width: 0px;
+}
+
 .highlightButton {
 	border: 2px solid #0030FF;
 }

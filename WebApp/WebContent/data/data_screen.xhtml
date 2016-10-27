@@ -124,7 +124,7 @@
 	    		<div id="data">
 	    			<div id="tableContent"></div>
 	    			<div id="tableControls" class="controls">
-	    				<table>
+	    				<table width="100%">
 	    					<tr>
 	    						<td>
 						      		<p:selectOneButton value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="changeTableMode(event)">
@@ -135,8 +135,9 @@
 						      			<f:ajax render="@none"/>
 						      		</p:selectOneButton>
 	    						</td>
-	    						<td>
+	    						<td style="text-align: right">
 						      		Selected rows: <span id="selectedRowsCount">0</span>
+						      		<button id="clearSelectionButton" class="smallButton tightButton" onclick="clearSelection(); return false;">x</button>
 						      		<button id="acceptFlagsButton" class="smallButton disabledButton" disabled="disabled">Accept QC Flags</button>
 						      		<button id="overrideFlagsButton" class="smallButton disabledButton" disabled="disabled">Override QC Flags</button>
 	    						</td>

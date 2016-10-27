@@ -1008,3 +1008,10 @@ function updateSelectionControls() {
 		$('#overrideFlagsButton').prop('disabled', false).removeClass('disabledButton');
 	}
 }
+
+function clearSelection() {
+	jsDataTable.rows(selectedRows).deselect();
+	selectedRows = [];
+	selectionQCMessageCounts = {};
+	updateSelectionControls();
+}
