@@ -12,6 +12,7 @@ import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -55,6 +56,8 @@ public class DataScreenBean extends BaseManagedBean {
 	private String tableMode = "basic";
 	
 	private String tableData = null;
+	
+	private String selectedRows = null;
 	
 	Instrument instrument;
 	
@@ -161,6 +164,14 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public void setTableData(String tableData) {
 		this.tableData = tableData;
+	}
+	
+	public String getSelectedRows() {
+		return selectedRows;
+	}
+	
+	public void setSelectedRows(String selectedRows) {
+		this.selectedRows = selectedRows;
 	}
 	
 	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException {
@@ -676,5 +687,13 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public Instrument getInstrument() {
 		return instrument;
+	}
+	
+	public void acceptQCFlags() {
+		try {
+			QCDB.acceptQCFlags(ServletUtils.getDBDataSource(), fileId, getSelectedRows());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

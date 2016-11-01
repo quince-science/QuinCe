@@ -1013,3 +1013,36 @@ function clearSelection() {
 	selectionQCMessageCounts = {};
 	updateSelectionControls();
 }
+
+function acceptQCFlags() {
+	$('#dataScreenForm\\:selectedRows').val(getSelectionFileRows());
+	$('#dataScreenForm\\:acceptQCFlags').click();
+}
+
+function updateFlags(data) {
+	if (data.status == 'success') {
+		
+		qcFlagColumn = getColumnIndex('QC Flag');
+		qcMessageColumn = getColumnIndex('QC Message');
+		woceFlagColumn= getColumnIndex('WOCE Flag');
+		woceMessageColumn = getColumnIndex('WOCE Message');
+		
+		for (i = 0; i < selectedRows.length; i++) {
+			jsDataTable.cell(selectedRows[i], woceMessageColumn).data(jsDataTable.cell(selectedRows[i], qcMessageColumn).data());
+			jsDataTable.cell(selectedRows[i], woceFlagColumn).data(jsDataTable.cell(selectedRows[i], qcFlagColumn).data());
+		}
+		
+		clearSelection();
+	}
+}
+
+function getSelectionFileRows() {
+	var fileRows = [];
+	var rowNumberColumn = getColumnIndex('Row');
+	
+	for (i = 0; i < selectedRows.length; i++) {
+		fileRows[fileRows.length] = jsDataTable.row(selectedRows[i]).data()[rowNumberColumn];
+	}
+	
+	return fileRows;
+}

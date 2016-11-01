@@ -75,4 +75,24 @@ public class MissingParam {
 			throw new MissingParamException(parameterName);
 		}
 	}
+	
+	public static void checkListOfIntegers(String list, String parameterName) throws ParameterException {
+		
+		checkMissing(list, parameterName);
+
+		boolean ok = true;
+
+		try {
+			String[] entries = list.split(",");
+			for (String entry : entries) {
+				Integer.parseInt(entry);
+			}
+		} catch (NumberFormatException e) {
+			ok = false;
+		}
+		
+		if (!ok) {
+			throw new ParameterException(parameterName, "is not a list of integers");
+		}
+	}
 }

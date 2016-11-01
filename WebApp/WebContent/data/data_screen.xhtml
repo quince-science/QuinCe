@@ -80,6 +80,10 @@
 			QC Info
 		</div>
 		<h:form id="dataScreenForm">
+			<h:inputHidden id="selectedRows" value="#{dataScreenBean.selectedRows}"/>
+			<h:commandLink id="acceptQCFlags" action="#{dataScreenBean.acceptQCFlags}">
+				<f:ajax execute="selectedRows" render="selectedRows" onevent="updateFlags"/>
+			</h:commandLink>
 	    	<div id="header">
 	      		#{dataScreenBean.fileDetails.fileName}
 	      		&nbsp;&nbsp;&nbsp;
@@ -138,8 +142,8 @@
 	    						<td style="text-align: right">
 						      		Selected rows: <span id="selectedRowsCount">0</span>
 						      		<button id="clearSelectionButton" class="smallButton tightButton" onclick="clearSelection(); return false;">x</button>
-						      		<button id="acceptFlagsButton" class="smallButton disabledButton" disabled="disabled">Accept QC Flags</button>
-						      		<button id="overrideFlagsButton" class="smallButton disabledButton" disabled="disabled">Override QC Flags</button>
+						      		<button id="acceptFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="acceptQCFlags(); return false;">Accept QC Flags</button>
+						      		<button id="overrideFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="alert('OQCF'); return false;">Override QC Flags</button>
 	    						</td>
 	    					</tr>
 	    				</table>
