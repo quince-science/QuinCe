@@ -82,7 +82,7 @@
 		<h:form id="dataScreenForm">
 			<h:inputHidden id="selectedRows" value="#{dataScreenBean.selectedRows}"/>
 			<h:commandLink id="acceptQCFlags" action="#{dataScreenBean.acceptQCFlags}">
-				<f:ajax execute="selectedRows" render="selectedRows" onevent="updateFlags"/>
+				<f:ajax execute="selectedRows" render="@none" onevent="updateFlags"/>
 			</h:commandLink>
 	    	<div id="header">
 	      		#{dataScreenBean.fileDetails.fileName}
