@@ -132,7 +132,9 @@ var tableScrollRow = null;
 // Table selections
 var selectedRows = [];
 var selectionQCMessageCounts = {};
-var NO_MESSAGE_ENTRY = 'No QC message';
+var selectionWoceMessageCounts = {};
+var worstSelectedFlag = FLAG_GOOD;
+var NO_MESSAGE_ENTRY = 'No message';
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -449,11 +451,11 @@ function updatePlot(plot) {
 		
 		// Build the list of columns to be sent to the server
 		var columnList = '';
-		for (i = 0; i < leftPlotXAxis.length; i++) {
+		for (var i = 0; i < leftPlotXAxis.length; i++) {
 			columnList += getColumnName(leftPlotXAxis[i]);
 			columnList += ';';
 		}
-		for (i = 0; i < leftPlotYAxis.length; i++) {
+		for (var i = 0; i < leftPlotYAxis.length; i++) {
 			columnList += getColumnName(leftPlotYAxis[i]);
 			if (i < leftPlotYAxis.length - 1) {
 				columnList += ';';
@@ -476,11 +478,11 @@ function updatePlot(plot) {
 		
 		// Build the list of columns to be sent to the server
 		var columnList = '';
-		for (i = 0; i < rightPlotXAxis.length; i++) {
+		for (var i = 0; i < rightPlotXAxis.length; i++) {
 			columnList += getColumnName(rightPlotXAxis[i]);
 			columnList += ';';
 		}
-		for (i = 0; i < rightPlotYAxis.length; i++) {
+		for (var i = 0; i < rightPlotYAxis.length; i++) {
 			columnList += getColumnName(rightPlotYAxis[i]);
 			if (i < rightPlotYAxis.length - 1) {
 				columnList += ';';
@@ -701,7 +703,7 @@ function drawTable(data) {
 
 function getNumericColumns() {
 	numericCols = new Array();
-	for (i = 0; i < columnHeadings.length; i++) {
+	for (var i = 0; i < columnHeadings.length; i++) {
 		if (columnHeadings[i] != 'Date/Time' && columnHeadings[i] != 'QC Flag' && columnHeadings[i] != 'QC Message' && columnHeadings[i] != 'WOCE Flag' && columnHeadings[i] != 'WOCE Message') {
 			numericCols.push(i);
 		}
@@ -711,7 +713,7 @@ function getNumericColumns() {
 
 function getQCColumns() {
 	qcColumns = new Array();
-	for (i = 0; i < columnHeadings.length; i++) {
+	for (var i = 0; i < columnHeadings.length; i++) {
 		if (columnHeadings[i] == 'QC Flag' || columnHeadings[i] == 'QC Message' || columnHeadings[i] == 'WOCE Flag' || columnHeadings[i] == 'WOCE Message') {
 			qcColumns.push(i);
 		}
@@ -721,7 +723,7 @@ function getQCColumns() {
 
 function getColumnIndex(columnName) {
 	var index = -1;
-	for (i = 0; i < columnHeadings.length; i++) {
+	for (var i = 0; i < columnHeadings.length; i++) {
 		if (columnHeadings[i] == columnName) {
 			index = i;
 			break;
@@ -744,7 +746,7 @@ function renderTableColumns() {
 	var hiddenTableColumns = new Array();
 	
 	// Do the stuff
-	for (i = 0; i < columnHeadings.length; i++) {
+	for (var i = 0; i < columnHeadings.length; i++) {
 		columnVisible = false;
 		
 		if ($.inArray(columnHeadings[i], compulsoryColumns) != -1) {
@@ -820,7 +822,7 @@ function makeJSDates(data) {
 	
 	dateList = new Array();
 	
-	for (i = 0; i < data.length; i++) {
+	for (var i = 0; i < data.length; i++) {
 		point_data = data[i];
 		
 		// Store the milliseconds value in the global dates list
@@ -967,10 +969,24 @@ function rowSelected(indexes) {
 			} else {
 				selectionQCMessageCounts[qcMessage] = 1;
 			}
+			
+			woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
+			
+			// If the WOCE message is empty, use the QC message instead
+			if (woceMessage == "") {
+				woceMessage = qcMessage;
+			}
+			
+			if (woceMessage in selectionWoceMessageCounts) {
+				selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] + 1;
+			} else {
+				selectionWoceMessageCounts[woceMessage] = 1;
+			}
+			
 		}
 	});
 
-	updateSelectionControls();
+	selectionUpdated();
 }
 
 /*
@@ -989,15 +1005,43 @@ function rowDeselected(indexes) {
 			}
 
 			selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] - 1;
+			
+			woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
+			if (woceMessage == "") {
+				woceMessage = NO_MESSAGE_ENTRY;
+			}
+			
+			selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] - 1;
 		}
 	});
 
-	updateSelectionControls();
+	selectionUpdated();
 }
 
-function updateSelectionControls() {
+function selectionUpdated() {
+	
+	// Update the worst selected flag
+	if (selectedRows.length > 0) {
+		worstSelectedFlag = Number(jsDataTable.row(selectedRows[0]).data()[getColumnIndex('WOCE Flag')]);
+		if (selectedRows.length > 1) {
+			for (var i = 1; i < selectedRows.length; i++) {
+				rowFlag = Number(jsDataTable.row(selectedRows[i]).data()[getColumnIndex('WOCE Flag')]);
+				if (rowFlag == FLAG_NEEDS_FLAG) {
+					worstSelectedFlag = FLAG_NEEDS_FLAG;
+				} else if (rowFlag > worstSelectedFlag) {
+					worstSelectedFlag = rowFlag;
+					if (rowFlag == FLAG_NEEDS_FLAG) {
+						break;
+					}
+				}
+			}
+		}
+	}
+	
+	// Update the selected rows counter
 	$('#selectedRowsCount').html(selectedRows.length);
 	
+	// Update the buttons
 	if (selectedRows.length == 0) {
 		$('#acceptFlagsButton').prop('disabled', true).addClass('disabledButton');
 		$('#overrideFlagsButton').prop('disabled', true).addClass('disabledButton');
@@ -1011,7 +1055,7 @@ function clearSelection() {
 	jsDataTable.rows(selectedRows).deselect();
 	selectedRows = [];
 	selectionQCMessageCounts = {};
-	updateSelectionControls();
+	selectionUpdated();
 }
 
 function acceptQCFlags() {
@@ -1027,7 +1071,7 @@ function updateFlags(data) {
 		woceFlagColumn= getColumnIndex('WOCE Flag');
 		woceMessageColumn = getColumnIndex('WOCE Message');
 		
-		for (i = 0; i < selectedRows.length; i++) {
+		for (var i = 0; i < selectedRows.length; i++) {
 			jsDataTable.cell(selectedRows[i], woceMessageColumn).data(jsDataTable.cell(selectedRows[i], qcMessageColumn).data());
 			jsDataTable.cell(selectedRows[i], woceFlagColumn).data(jsDataTable.cell(selectedRows[i], qcFlagColumn).data());
 		}
@@ -1040,9 +1084,53 @@ function getSelectionFileRows() {
 	var fileRows = [];
 	var rowNumberColumn = getColumnIndex('Row');
 	
-	for (i = 0; i < selectedRows.length; i++) {
+	for (var i = 0; i < selectedRows.length; i++) {
 		fileRows[fileRows.length] = jsDataTable.row(selectedRows[i]).data()[rowNumberColumn];
 	}
 	
 	return fileRows;
+}
+
+function showWoceMenu(e) {
+    $('#woceSelectMenu').fadeIn(100);
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+}
+
+function hideWoceMenu() {
+    $('#woceSelectMenu').fadeOut(100);
+}
+
+function showWoceCommentDialog() {
+
+	var woceRowHtml = selectedRows.length.toString() + ' row';
+	if (selectedRows.length > 1) {
+		woceRowHtml += 's';
+	} 
+	
+	$('#woceRowCount').html(woceRowHtml);
+	
+    //setWoceFlag(worstSelectedFlag);
+
+    var woceComment = '';
+    for (var comment in selectionWoceMessageCounts) {
+    	woceComment += comment + ' (' + selectionWoceMessageCounts[comment] + ')\n';
+    }
+    
+    $('#dataScreenForm\\:woceCommentDialogComment').attr('disabled', (worstSelectedFlag == FLAG_IGNORED));
+    $('#dataScreenForm\\:woceCommentDialogComment').val(woceComment);
+    $('#woceCommentDialog').fadeIn(100);
+}
+
+function saveWoceComment() {
+	hideWoceDialog();
+}
+
+function cancelWoceComment() {
+	hideWoceDialog();
+}
+
+function hideWoceDialog() {
+    $('#woceCommentDialog').fadeOut(100);
 }

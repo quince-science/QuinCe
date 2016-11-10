@@ -59,6 +59,10 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private String selectedRows = null;
 	
+	private String woceComment = null;
+	
+	private int woceFlag = Flag.VALUE_NEEDED;
+	
 	Instrument instrument;
 	
 	/**
@@ -172,6 +176,22 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public void setSelectedRows(String selectedRows) {
 		this.selectedRows = selectedRows;
+	}
+	
+	public String getWoceComment() {
+		return woceComment;
+	}
+	
+	public void setWoceComment(String woceComment) {
+		this.woceComment = woceComment;
+	}
+	
+	public int getWoceFlag() {
+		return woceFlag;
+	}
+	
+	public void setWoceFlag(int woceFlag) {
+		this.woceFlag = woceFlag;
 	}
 	
 	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException {

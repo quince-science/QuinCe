@@ -84,6 +84,23 @@
 			<h:commandLink id="acceptQCFlags" action="#{dataScreenBean.acceptQCFlags}">
 				<f:ajax execute="selectedRows" render="@none" onevent="updateFlags"/>
 			</h:commandLink>
+		    <div id="woceCommentDialog" class="popup">
+		        <div class="dialogTitle">Set flag for <span id="woceRowCount"></span></div>
+		        <div>WOCE Flag:</div>
+		        <div id="woceCommentDialogFlag" onclick="showWoceMenu(event)">FLAG_VALUE</div>
+		        <div id="woceSelectMenu">
+		        	<ul>
+		            	<li class="good" onclick="woceSelection('2')">Good</li>
+		            	<li class="questionable" onclick="woceSelection('3')">Questionable</li>
+		            	<li class="bad" onclick="woceSelection('4')">Bad</li>
+		            	<li class="ignored" onclick="woceSelection('-1002')">Ignore</li>
+		          	</ul>
+		        </div>
+		        <div style="clear: both">Comment:</div>
+	           	<h:inputTextarea id="woceCommentDialogComment" value="#{dataScreenBean.woceComment}"/>
+	           	<button name="woceCommentDialogSave" class="woceCommentDialogButton" onclick="saveWoceComment(); return false;">Save</button>
+	            <button name="woceCommentDialogCancel" class="woceCommentDialogButton" onclick="cancelWoceComment(); return false;">Cancel</button>
+	        </div>
 	    	<div id="header">
 	      		#{dataScreenBean.fileDetails.fileName}
 	      		&nbsp;&nbsp;&nbsp;
@@ -143,7 +160,7 @@
 						      		Selected rows: <span id="selectedRowsCount">0</span>
 						      		<button id="clearSelectionButton" class="smallButton tightButton" onclick="clearSelection(); return false;">x</button>
 						      		<button id="acceptFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="acceptQCFlags(); return false;">Use QC Flags</button>
-						      		<button id="overrideFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="alert('OQCF'); return false;">Override QC Flags</button>
+						      		<button id="overrideFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="showWoceCommentDialog(); return false;">Override QC Flags</button>
 	    						</td>
 	    					</tr>
 	    				</table>
