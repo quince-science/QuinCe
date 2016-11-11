@@ -40,6 +40,11 @@ input.expand {
   width: 100%;
 }
 
+textarea {
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 14px;
+}
+
 input[type="submit"], input[type="button"], button {
   display: inline;
   margin-top: 20px;
@@ -406,37 +411,11 @@ td.labels {
     display: inline;
 }
 
-#woceCommentDialog {
-    display: none;
-    position: absolute;
-    width: 500px;
-    height: 320px;
-    padding: 5px;
-}
-
 .dialogTitle {
   text-align: center;
   font-size: 16px;
   left: 10px;
-  padding-bottom: 15px;
-}
-
-#woceCommentDialogComment {
-    width: 490px;
-    height: 150px;
-    resize: none;
-}
-
-.woceCommentDialogButton {
-    display: inline;
-    width: 20%;
-}
-
-.woceCommentDialogFlagButton {
-    width: 150px;
-    position: relative;
-    left: 90px;
-    top: -22px;
+  padding-bottom: 20px;
 }
 
 .scrollable {

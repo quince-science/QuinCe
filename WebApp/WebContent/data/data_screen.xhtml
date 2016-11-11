@@ -85,22 +85,22 @@
 				<f:ajax execute="selectedRows" render="@none" onevent="updateFlags"/>
 			</h:commandLink>
 		    <div id="woceCommentDialog" class="popup">
-		        <div class="dialogTitle">Set flag for <span id="woceRowCount"></span></div>
+		        <div class="dialogTitle">Set WOCE flag for <span id="woceRowCount"></span></div>
 		        <div>WOCE Flag:</div>
 		        <div id="woceCommentDialogFlag" onclick="showWoceMenu(event)">FLAG_VALUE</div>
 		        <div id="woceSelectMenu">
 		        	<ul>
-		            	<li class="good" onclick="woceSelection('2')">Good</li>
-		            	<li class="questionable" onclick="woceSelection('3')">Questionable</li>
-		            	<li class="bad" onclick="woceSelection('4')">Bad</li>
-		            	<li class="ignored" onclick="woceSelection('-1002')">Ignore</li>
+		            	<li class="good" onclick="woceSelection(2)">Good</li>
+		            	<li class="questionable" onclick="woceSelection(3)">Questionable</li>
+		            	<li class="bad" onclick="woceSelection(4)">Bad</li>
+		            	<li class="ignored" onclick="woceSelection(-1002)">Ignore</li>
 		          	</ul>
 		        </div>
 		        <div style="clear: both">Comment:</div>
-	           	<h:inputTextarea id="woceCommentDialogComment" rows="5" cols="50" value="#{dataScreenBean.woceComment}"/>
+	           	<h:inputTextarea id="woceCommentDialogComment" value="#{dataScreenBean.woceComment}"/>
 	           	<div class="buttonWrapper">
-		           	<button name="woceCommentDialogSave" class="woceCommentDialogButton" onclick="saveWoceComment(); return false;">Save</button>
-		            <button name="woceCommentDialogCancel" class="woceCommentDialogButton" onclick="cancelWoceComment(); return false;">Cancel</button>
+		           	<button name="woceCommentDialogSave" class="woceCommentDialogButton" onclick="saveWoceComment(event); return false;">Save</button>
+		            <button name="woceCommentDialogCancel" class="woceCommentDialogButton" onclick="cancelWoceComment(event); return false;">Cancel</button>
 	            </div>
 	        </div>
 	    	<div id="header">

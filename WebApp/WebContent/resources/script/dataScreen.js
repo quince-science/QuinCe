@@ -940,7 +940,7 @@ function showQCInfoPopup(qcFlag, qcMessage, target) {
           .html(content)
           .css({"left": 0, "top": 0})
           .offset({"left": $(target).position().left - $('#qcInfoPopup').width() - 10, "top": $(target).offset().top - 3})
-          .show('slide', {direction: 'right'}, 100);;
+          .show('slide', {direction: 'right'}, 100);
    }
  }
 
@@ -1092,14 +1092,14 @@ function getSelectionFileRows() {
 }
 
 function showWoceMenu(e) {
-    $('#woceSelectMenu').fadeIn(100);
+    $('#woceSelectMenu').show('slide', {direction: 'up'}, 100);
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
 }
 
-function hideWoceMenu() {
-    $('#woceSelectMenu').fadeOut(100);
+function hideWoceMenu(e) {
+    $('#woceSelectMenu').hide('slide', {direction: 'up'}, 100);
 }
 
 function showWoceCommentDialog() {
@@ -1123,14 +1123,22 @@ function showWoceCommentDialog() {
     $('#woceCommentDialog').fadeIn(100);
 }
 
-function saveWoceComment() {
-	hideWoceDialog();
+function saveWoceComment(e) {
+	hideWoceDialog(e);
 }
 
-function cancelWoceComment() {
-	hideWoceDialog();
+function cancelWoceComment(e) {
+	hideWoceDialog(e);
 }
 
-function hideWoceDialog() {
+function hideWoceDialog(e) {
     $('#woceCommentDialog').fadeOut(100);
+    hideWoceMenu(e);
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+}
+
+function woceSelection(flagValue) {
+	hideWoceMenu();
 }

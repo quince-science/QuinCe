@@ -121,14 +121,14 @@ body.fullPage {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  width: 154px;
+  width: 160px;
   border: 1px solid black;
   border-radius: 3px;
-  padding: 3px;
+  padding: 0px;
   cursor: pointer;
   z-index: 10;
-  left: 95px;
-  top: 67px;
+  left: 110px;
+  top: 88px;
   display: none;
   text-align: center;
 }
@@ -139,6 +139,30 @@ body.fullPage {
   margin: 0px;
 }
 
+#woceSelectMenu li {
+	margin: 0px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
 #woceSelectMenu li:hover {
-  background: #eeeeee;
+  background: #8cd5ed;
+}
+
+#woceCommentDialog {
+    display: none;
+    position: absolute;
+    width: 500px;
+    height: 320px;
+    top: 30%;
+    margin-top: -160px;
+    left: 50%;
+    margin-left: -250px;
+    padding: 20px;
+}
+
+#dataScreenForm\:woceCommentDialogComment {
+    width: 490px;
+    height: 150px;
+    resize: none;
 }
