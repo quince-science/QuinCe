@@ -341,8 +341,7 @@ li.menuitem:hover, li.smallMenuitem:hover {
 }
 
 .ignore {
-  color: #E1E1E1;
-  font-style: italic;
+  color: #B0B0B0;
 }
 
 .assumedGood {
