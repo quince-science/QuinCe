@@ -352,36 +352,6 @@ li.menuitem:hover, li.smallMenuitem:hover {
   color: #999999;
 }
 
-#woceSelectMenu {
-  position: absolute;
-  background: white;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  width: 150px;
-  border: 1px solid #CECBC9;
-  border-radius: 3px;
-  padding: 3px;
-  cursor: pointer;
-  z-index: 10;
-  left: 95px;
-  top: 62px;
-  display: none;
-}
-
-#woceSelectMenu ul {
-  list-style-type: none;
-  padding: 0px;
-  margin: 0px;
-}
-
-#woceSelectMenu li:hover {
-  background: #eeeeee;
-}
-
 div.fullPage {
 	margin-left: 30px;
 	margin-right: 30px;

@@ -97,9 +97,11 @@
 		          	</ul>
 		        </div>
 		        <div style="clear: both">Comment:</div>
-	           	<h:inputTextarea id="woceCommentDialogComment" value="#{dataScreenBean.woceComment}"/>
-	           	<button name="woceCommentDialogSave" class="woceCommentDialogButton" onclick="saveWoceComment(); return false;">Save</button>
-	            <button name="woceCommentDialogCancel" class="woceCommentDialogButton" onclick="cancelWoceComment(); return false;">Cancel</button>
+	           	<h:inputTextarea id="woceCommentDialogComment" rows="5" cols="50" value="#{dataScreenBean.woceComment}"/>
+	           	<div class="buttonWrapper">
+		           	<button name="woceCommentDialogSave" class="woceCommentDialogButton" onclick="saveWoceComment(); return false;">Save</button>
+		            <button name="woceCommentDialogCancel" class="woceCommentDialogButton" onclick="cancelWoceComment(); return false;">Cancel</button>
+	            </div>
 	        </div>
 	    	<div id="header">
 	      		#{dataScreenBean.fileDetails.fileName}

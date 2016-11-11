@@ -100,3 +100,45 @@ body.fullPage {
    75% {background-color: #fd0;}
   100% {background-color: #fff;}
 }
+
+#woceCommentDialogFlag {
+    width: 150px;
+    position: relative;
+    left: 90px;
+    top: -22px;
+    border: 1px solid black;
+    padding: 5px;
+    text-align: center;
+    background-image: linear-gradient(to top, #B8B8B8 0%, #CFCFCF 4%, #E3E3E3 68%, #FAFAFA 100%);
+}
+
+#woceSelectMenu {
+  position: absolute;
+  background: #F5F5F5;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  width: 154px;
+  border: 1px solid black;
+  border-radius: 3px;
+  padding: 3px;
+  cursor: pointer;
+  z-index: 10;
+  left: 95px;
+  top: 67px;
+  display: none;
+  text-align: center;
+}
+
+#woceSelectMenu ul {
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+}
+
+#woceSelectMenu li:hover {
+  background: #eeeeee;
+}
