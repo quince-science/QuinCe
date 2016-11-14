@@ -20,7 +20,7 @@ public class MissingParam {
 		} else {
 			if (!canBeEmpty) {
 				if (parameter instanceof String) {
-					if (((String) parameter).length() == 0) {
+					if (((String) parameter).trim().length() == 0) {
 						isMissing = true;
 					}
 				} else if (parameter instanceof Collection) {
