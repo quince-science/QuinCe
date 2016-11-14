@@ -1063,7 +1063,7 @@ function acceptQCFlags() {
 	$('#dataScreenForm\\:acceptQCFlags').click();
 }
 
-function updateFlags(data) {
+function qcFlagsAccepted(data) {
 	if (data.status == 'success') {
 		
 		qcFlagColumn = getColumnIndex('QC Flag');
@@ -1078,6 +1078,21 @@ function updateFlags(data) {
 		
 		clearSelection();
 	}
+}
+
+function woceFlagsUpdated(data) {
+	if (data.status == 'success') {
+		
+		woceFlagColumn = getColumnIndex('WOCE Flag');
+		woceMessageColumn = getColumnIndex('WOCE Message');
+		
+		for (var i = 0; i < selectedRows.length; i++) {
+			jsDataTable.cell(selectedRows[i], woceFlagColumn).data($('#dataScreenForm\\:woceFlag').val());
+			jsDataTable.cell(selectedRows[i], woceMessageColumn).data($('#dataScreenForm\\:woceComment').val());
+		}
+		
+		clearSelection();
+	} 
 }
 
 function getSelectionFileRows() {
@@ -1123,12 +1138,14 @@ function showWoceCommentDialog() {
     	woceComment += comment + ' (' + selectionWoceMessageCounts[comment] + ')\n';
     }
     
-    $('#dataScreenForm\\:woceCommentDialogComment').attr('disabled', (worstSelectedFlag == FLAG_IGNORED));
-    $('#dataScreenForm\\:woceCommentDialogComment').val(woceComment);
+    $('#dataScreenForm\\:woceComment').attr('disabled', (worstSelectedFlag == FLAG_IGNORED));
+    $('#dataScreenForm\\:woceComment').val(woceComment);
     $('#woceCommentDialog').fadeIn(100);
 }
 
 function saveWoceComment() {
+	$('#dataScreenForm\\:selectedRows').val(getSelectionFileRows());
+	$('#dataScreenForm\\:applyWoceFlag').click();
 	hideWoceDialog();
 }
 
@@ -1144,6 +1161,9 @@ function hideWoceDialog() {
 function woceSelection(flagValue) {
 	$('#woceCommentDialogFlag').html(getFlagText(flagValue))
 	  .removeClass().addClass(getFlagClass(flagValue));
+	
+	$('#dataScreenForm\\:woceFlag').val(flagValue);
+	
 	hideWoceMenu();
 }
 

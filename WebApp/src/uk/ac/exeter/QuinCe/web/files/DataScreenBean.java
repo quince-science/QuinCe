@@ -716,4 +716,12 @@ public class DataScreenBean extends BaseManagedBean {
 			e.printStackTrace();
 		}
 	}
+	
+	public void applyWoceFlag() {
+		try {
+			QCDB.setWoceFlags(ServletUtils.getDBDataSource(), fileId, getSelectedRows(), getWoceFlag(), getWoceComment());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

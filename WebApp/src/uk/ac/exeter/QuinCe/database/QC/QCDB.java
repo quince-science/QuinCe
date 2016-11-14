@@ -132,6 +132,8 @@ public class QCDB {
 	
 	private static final String SET_WOCE_DETAILS_STATEMENT = "UPDATE qc SET woce_flag = ?, woce_message = ? WHERE data_file_id = ? AND row = ?";
 	
+	private static final String SET_WOCE_FLAG_STATEMENT = "UPDATE qc SET woce_flag = ?, woce_message = ? WHERE data_file_id = ? AND row IN (%%ROWS%%)";
+	
 	public static void clearQCData(DataSource dataSource, long fileId) throws DatabaseException {
 		Connection conn = null;
 		
@@ -477,7 +479,7 @@ public class QCDB {
 	
 	public static void acceptQCFlags(DataSource dataSource, long fileId, String rows) throws ParameterException, DatabaseException {
 		MissingParam.checkMissing(dataSource, "dataSource");
-		MissingParam.checkMissing(fileId, "fileId");
+		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(rows, "rows");
 		MissingParam.checkListOfIntegers(rows, "rows");
 		
@@ -575,5 +577,41 @@ public class QCDB {
 			DatabaseUtils.closeResultSets(record);
 			DatabaseUtils.closeStatements(stmt);
 		}
+	}
+	
+	public static void setWoceFlags(DataSource dataSource, long fileId, String rows, int flag, String comment) throws ParameterException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		MissingParam.checkMissing(rows, "rows");
+		MissingParam.checkListOfIntegers(rows, "rows");
+		if (!Flag.isValidFlagValue(flag)) {
+			throw new ParameterException("flag", "Invalid flag value");
+		}
+		MissingParam.checkMissing(comment, "comment");
+		
+		String queryString = SET_WOCE_FLAG_STATEMENT;
+		queryString = queryString.replaceAll("%%ROWS%%", rows);
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			
+			stmt = conn.prepareStatement(queryString);
+			stmt.setInt(1, flag);
+			stmt.setString(2, comment);
+			stmt.setLong(3, fileId);
+			
+			stmt.execute();
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while setting WOCE flags", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
 	}
 }
