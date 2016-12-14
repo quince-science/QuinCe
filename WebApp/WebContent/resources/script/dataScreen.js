@@ -698,6 +698,11 @@ function drawTable(data) {
 	    
 	    renderTableColumns();
 	    resizeContent();
+	    
+	    // Clear the table form data - otherwise subsequent
+	    // requests send it all back to the server, and it breaks
+	    // any Ajax requests
+	    $('#plotDataForm\\:tableData').val("");
 	}
 }
 
