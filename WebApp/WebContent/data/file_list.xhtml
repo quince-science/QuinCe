@@ -1,10 +1,164 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	template="/templates/app_page.xhtml">
 
+	<ui:define name="localHead">
+		<h:outputScript name="/script/flag_bar.js"/>
+	    <script type="text/javascript">  
+	      function deleteFile(id, fileName) {
+	    	  if (confirm('Are you sure you want to delete file ' + fileName + '?')) {
+	    		  $('#fileListForm\\:chosenFile').val(id);
+	    		  return true;
+	    	  } else {
+	    		  return false;
+	    	  }
+	      }
+	      
+	      function reprocessFile(id, fileName) {
+	    	  if (confirm('Are you sure you want to reprocess file ' + fileName + '?')) {
+	    		  $('#fileListForm\\:chosenFile').val(id);
+	    		  return true;
+	    	  } else {
+	    		  return false;
+	    	  }
+	      }
+	      
+	      function dataScreen(id) {
+	    	  $('#fileListForm\\:fileId').val(id);
+	    	  return true;
+	      }
+	      
+	      function exportFile(id) {
+	    	  $('#fileListForm\\:chosenFile').val(id);
+	      }
+	  	</script>
+	</ui:define>
+
 	<ui:define name="content">
-		<h1>Logged In!</h1>
+	    <div id="qcPopup" class="popup">
+	      <table>
+	        <tr class="bad">
+	          <td>Error</td>
+	          <td id="qcBad" class="numericCol"></td>
+	        </tr>
+	        <tr class="questionable">
+	          <td>Warning</td>
+	          <td id="qcQuestionable" class="numericCol"></td>
+	        </tr>
+	        <tr class="good">
+	          <td>Passed</td>
+	          <td id="qcGood" class="numericCol"></td>
+	        </tr>
+	        <tr class="ignore">
+	          <td>Ignored</td>
+	          <td id="qcIgnored" class="numericCol"></td>
+	        </tr>
+	      </table>
+	    </div>
+	
+	    <div id="wocePopup" class="popup">
+	      <table>
+	        <tr class="bad">
+	          <td>Bad</td>
+	          <td id="woceBad" class="numericCol"></td>
+	        </tr>
+	        <tr class="questionable">
+	          <td>Questionable</td>
+	          <td id="woceQuestionable" class="numericCol"></td>
+	        </tr>
+	        <tr class="good">
+	          <td>Marked Good</td>
+	          <td id="woceGood" class="numericCol"></td>
+	        </tr>
+	        <tr class="assumedGood">
+	          <td>Assumed Good</td>
+	          <td id="woceAssumedGood" class="numericCol"></td>
+	        </tr>
+	        <tr class="needsFlagging">
+	          <td>Needs Flagging</td>
+	          <td id="woceNeedsFlagging" class="numericCol"></td>
+	        </tr>
+	        <tr class="ignored">
+	          <td>Ignored</td>
+	          <td id="woceIgnored" class="numericCol"></td>
+	        </tr>
+	      </table>
+	    </div>
+		
+		<h1>Your files</h1>
+		<div class="fullPage">
+			<h:form id="fileListForm">
+				<h:inputHidden id="chosenFile" value="#{fileListBean.chosenFile}"/>
+				<h:inputHidden id="fileId" value="#{dataScreenBean.fileId}"/>
+				
+				<p:dataTable var="file" value="#{fileListBean.fileList}" scrollable="true" scrollHeight="450">
+					<p:column>
+						<f:facet name="header">File</f:facet>
+						#{file.fileName}
+					</p:column>
+					<p:column>
+						<f:facet name="header">Instrument</f:facet>
+						#{file.instrument}
+					</p:column>
+					<p:column>
+						<f:facet name="header">Start Date</f:facet>
+						#{file.startDateString}
+					</p:column>
+					<p:column>
+						<f:facet name="header">Ocean/Atmos/Standards</f:facet>
+						#{file.recordBreakdown}
+					</p:column>
+					<p:column>
+						<f:facet name="header">Status</f:facet>
+						#{file.jobName}
+					</p:column>
+					<p:column>
+						<f:facet name="header">QC Stats</f:facet>
+						<span class="bad">#{file.qcBadCount}</span>
+						/
+						<span class="questionable">#{file.qcQuestionableCount}</span>
+						/
+						<span class="good">#{file.qcGoodCount}</span>
+						/
+						<span class="notSet">#{file.qcNotSetCount}</span>
+						/
+						<span class="ignore">#{file.ignoredCount}</span>
+					</p:column>
+					<p:column>
+						<f:facet name="header">WOCE Stats</f:facet>
+			            <span class="bad">#{file.woceBadCount}</span>
+			            /
+			            <span class="questionable">#{file.woceQuestionableCount}</span>
+			            /
+			            <span class="good">${file.woceGoodCount + file.woceAssumedGoodCount}</span>
+			            /
+			            <span class="notSet">#{file.woceNotSetCount}</span>
+			            /
+			            <span class="needsFlagging">#{file.woceNeededCount}</span>
+			            /
+			            <span class="ignore">#{file.ignoredCount}</span>
+					</p:column>
+					<p:column>
+						<f:facet name="header">Actions</f:facet>
+						<h:commandLink id="QC_#{file.fileId}" value="Q" onclick="dataScreen(#{file.fileId})" action="#{dataScreenBean.start}"/>
+						|
+						<h:commandLink id="Export_#{file.fileId}" value="E" onclick="exportFile(#{file.fileId})" action="#{fileListBean.export}"/>
+						|
+						<h:commandLink id="Delete_#{file.fileId}" value="D" onclick="deleteFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.deleteFile}"/>
+						|
+						<h:commandLink id="Reprocess_#{file.fileId}" value="R" onclick="reprocessFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.reprocessFile}"/>
+					</p:column>
+				</p:dataTable>
+				
+				<div class="buttonWrapper">
+					<h:commandButton value="Upload" action="#{fileListBean.uploadFile}"/>
+				</div>
+				
+			</h:form>
+		</div>
 	</ui:define>
 </ui:composition>
-	

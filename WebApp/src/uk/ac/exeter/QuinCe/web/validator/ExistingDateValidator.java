@@ -19,15 +19,22 @@ import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
- * This validator class checks to see if a selected value
- * exist in its target table. This is an abstract class - 
- * the table and field to be searched must be implemented in
+ * This validator class checks to see if a selected date
+ * exist in its target table. It can be used to ensure that
+ * no duplicate dates are entered into that table.
+ *  
+ * This is an abstract class - the table and field to be searched must be implemented in
  * a concrete subclass using the fields getTable and getField
  * 
  * The search can further be restricted by optionally providing
  * a second field and value in getRestrictionField and getRestrictionValue
  * 
- * The error messaage is defined in ERROR_MESSAGE and can be overridden if desired.
+ * The message displayed when an existing date is found is defined in
+ * getErrorMessage(), which can also be overridden as required.
+ * 
+ * If an existing date is being edited, that date must not be detected
+ * as a duplicate. Therefore the session attribute defined in ATTR_ALLOWED_DATE
+ * can be populated with the edited record's date. That date will then be ignored.
  *   
  * @author Steve Jones
  *

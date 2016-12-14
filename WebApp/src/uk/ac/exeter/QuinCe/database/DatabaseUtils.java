@@ -5,7 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
+
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
  * Miscellaneous database utilities
@@ -25,9 +28,8 @@ public class DatabaseUtils {
 	 * @param results The ResultSets
 	 */
 	public static void closeResultSets(ResultSet... results) {
-		
-		if (null != results) {
-			for (ResultSet result : results) {
+		for (ResultSet result : results) {
+			if (null != result) {
 				try {
 					result.close();
 				} catch(SQLException e) {
@@ -42,8 +44,8 @@ public class DatabaseUtils {
 	 * @param statements The statements
 	 */
 	public static void closeStatements(List<PreparedStatement> statements) {
-		if (null != statements) {
-			for (PreparedStatement stmt : statements) {
+		for (PreparedStatement stmt : statements) {
+			if (null != stmt) {
 				try {
 					stmt.close();
 				} catch (SQLException e) {
@@ -75,5 +77,25 @@ public class DatabaseUtils {
 				// Do nothing
 			}
 		}
+	}
+	
+	/**
+	 * Roll back an open transaction
+	 * @param conn The database connection
+	 */
+	public static void rollBack(Connection conn) {
+		if (null != conn) {
+			try {
+				conn.rollback();
+			} catch (SQLException e) {
+				// DO nothing
+			}
+		}
+	}
+	
+	public static Calendar getUTCDateTime(ResultSet records, int columnIndex) throws SQLException {
+		Calendar result = DateTimeUtils.getUTCCalendarInstance();
+		result.setTimeInMillis(records.getTimestamp(columnIndex).getTime());
+		return result;
 	}
 }

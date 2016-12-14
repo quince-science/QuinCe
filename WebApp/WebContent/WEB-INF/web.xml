@@ -11,6 +11,8 @@
 		more bandwidth but fewer server resources. Client-side also helps to avoid 
 		the dreaded view expired exceptions. From JSF 2 and PrimeFaces tutorial at 
 		http://www.coreservlets.com/JSF-Tutorial/jsf2/ -->
+	<display-name>QuinCe</display-name>
+	
 	<servlet>
 		<servlet-name>Faces Servlet</servlet-name>
 		<servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
@@ -67,7 +69,7 @@
 
 	<context-param>
 	    <param-name>configuration.path</param-name>
-	    <param-value>/home/sdj206/work/projects/QuinCe/quince.properties</param-value>
+	    <param-value>/Users/zuj007/Documents/QuinCe/quince.properties</param-value>
 	</context-param>
 
  	<filter>

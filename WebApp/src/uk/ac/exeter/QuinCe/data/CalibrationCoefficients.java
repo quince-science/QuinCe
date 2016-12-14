@@ -8,7 +8,7 @@ import java.util.List;
  * @author Steve Jones
  *
  */
-public class CalibrationCoefficients {
+public class CalibrationCoefficients implements Comparable<SensorCode> {
 
 	/**
 	 * The code for the sensor. The sensor code
@@ -117,6 +117,26 @@ public class CalibrationCoefficients {
 		return result;
 	}
 	
+	public static CalibrationCoefficients findSensorCoefficients(List<CalibrationCoefficients> coefficients, SensorCode code) {
+		CalibrationCoefficients result = null;
+		
+		for (CalibrationCoefficients coeffs : coefficients) {
+			if (coeffs.compareTo(code) == 0) {
+				result = coeffs;
+				break;
+			}
+		}
+		
+		return result;
+	}
+
+	/**
+	 * CalibrationCoefficients objects are the same if their sensor codes are the same
+	 */
+	@Override
+	public int compareTo(SensorCode o) {
+		return sensorCode.compareTo(o);
+	}
 	
 	/////////// *** GETTERS AND SETTERS *** //////////////
 

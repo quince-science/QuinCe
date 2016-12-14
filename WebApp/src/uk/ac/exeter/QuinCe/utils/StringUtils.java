@@ -14,7 +14,7 @@ import java.util.List;
 public class StringUtils {
 
 	/**
-	 * Converts a list of String values to a single string,
+	 * Converts a list of values to a single string,
 	 * with a semi-colon delimiter.
 	 * 
 	 * <b>Note that this does not handle semi-colons within the values themselves.</b>
@@ -22,15 +22,28 @@ public class StringUtils {
 	 * @param list The list to be converted
 	 * @return The converted list
 	 */
-	public static String listToDelimited(List<String> list) {
-		String delimiter = ";";
+	public static String listToDelimited(List<?> list) {
+		return listToDelimited(list, ";");
+	}
+	
+	/**
+	 * Converts a list of values to a single string,
+	 * with a specified delimiter.
+	 * 
+	 * <b>Note that this does not handle the case where the delimiter is found within the values themselves.</b>
+	 * 
+	 * @param list The list to be converted
+	 * @param delimiter The delimiter to use
+	 * @return The converted list
+	 */
+	public static String listToDelimited(List<?> list, String delimiter) {
 		
 		String result = null;
 		
 		if (null != list) {
 			StringBuffer buildResult = new StringBuffer();
 			for (int i = 0; i < list.size(); i++) {
-				buildResult.append(list.get(i));
+				buildResult.append(list.get(i).toString());
 				if (i < (list.size() - 1)) {
 					buildResult.append(delimiter);
 				}
@@ -94,5 +107,56 @@ public class StringUtils {
 		PrintWriter pw = new PrintWriter(sw);
 		e.printStackTrace(pw);
 		return sw.toString();
+	}
+	
+	/**
+	 * Determines whether or not a line is a comment, signified by it starting with {@code #} or {@code !} or {@code //}
+	 * @param line The line to be checked
+	 * @return {@code true} if the line is a comment; {@code false} otherwise.
+	 */
+	public static boolean isComment(String line) {
+		String trimmedLine = line.trim();
+		return trimmedLine.length() == 0 || trimmedLine.charAt(0) == '#' || trimmedLine.charAt(0) == '!' || trimmedLine.startsWith("//", 0);
+	}
+	
+	/**
+	 * Trims all items in a list of strings. A string that starts with a
+	 * single backslash has that backslash removed.
+	 * @param source The strings to be converted 
+	 * @return The converted strings
+	 */
+	public static List<String> trimList(List<String> source) {
+		
+		List<String> result = new ArrayList<String>(source.size());
+		
+		for (int i = 0; i < source.size(); i++) {
+			String trimmedValue = source.get(i).trim();
+			if (trimmedValue.startsWith("\\")) {
+				trimmedValue = trimmedValue.substring(1);
+			}
+			
+			result.add(trimmedValue);
+		}
+		
+		return result;
+	}
+	
+	public static boolean isNumeric(String value) {
+		boolean result = true;
+		
+		if (null == value) {
+			result = false;
+		} else {
+			try {
+				Double doubleValue = new Double(value);
+				if (doubleValue.isNaN()) {
+					result = false;
+				}
+			} catch (NumberFormatException e) {
+				result = false;
+			}
+		}
+		
+		return result;
 	}
 }

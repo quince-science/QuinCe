@@ -12,6 +12,11 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.config.ColumnConfig;
+import uk.ac.exeter.QCRoutines.config.ConfigException;
+import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
+import uk.ac.exeter.QuinCe.data.ExportConfig;
+import uk.ac.exeter.QuinCe.data.ExportException;
 import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
 
@@ -22,11 +27,13 @@ import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
  */
 public class ResourceManager implements ServletContextListener {
 
-	private static final String ATTRIBUTE_NAME = "pools";
-	
 	private DataSource dbDataSource;
 	
 	private Properties configuration;
+	
+	private ColumnConfig columnConfig;
+	
+	private static ResourceManager instance = null;
 	
 	@Override
     public void contextInitialized(ServletContextEvent event) {
@@ -53,9 +60,29 @@ public class ResourceManager implements ServletContextListener {
 		} catch (InvalidThreadCountException e) {
 			// Do nothing for now
 		}
+       	
+       	// Initialise the column config
+       	try {
+       		ColumnConfig.init(configuration.getProperty("columns.configfile"));
+       		columnConfig = ColumnConfig.getInstance();
+       	} catch (ConfigException e) {
+       		throw new RuntimeException("Could not initialise data column configuration", e);
+       	}
 
-       	// Register ourselves in the servlet context
-        servletContext.setAttribute(ATTRIBUTE_NAME, this);
+       	// Initialise the QC Routines configuration
+       	try {
+       		RoutinesConfig.init(configuration.getProperty("routines.configfile"));
+       	} catch (ConfigException e) {
+       		throw new RuntimeException("Could not initialise QC Routines", e);
+       	}
+       	
+       	try {
+       		ExportConfig.init(configuration.getProperty("export.configfile"));
+       	} catch (ExportException e) {
+       		throw new RuntimeException("Could not initialise export configuration", e);
+       	}
+       	
+       	instance = this;
 }
 
     @Override
@@ -71,7 +98,11 @@ public class ResourceManager implements ServletContextListener {
         return configuration;
     }
 
-    public static ResourceManager getInstance(ServletContext servletContext) {
-        return (ResourceManager) servletContext.getAttribute(ATTRIBUTE_NAME);
+    public ColumnConfig getColumnConfig() {
+    	return columnConfig;
+    }
+    
+    public static ResourceManager getInstance() {
+        return instance;
     }
 }

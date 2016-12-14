@@ -1,0 +1,124 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	template="/templates/app_page.xhtml">
+
+	<ui:define name="title">
+		Upload Data File
+	</ui:define>
+	
+	<ui:define name="localHead">
+		<script type="text/javascript">
+			function restart() {
+				$('#checkFilesOutput').hide();
+				$('#checkFileMessages').hide();
+				$('#restartButton').hide();
+				$('#uploadFileForm\\:submitButton').hide();
+				$('#uploadFileForm\\:file').show();
+				return false;
+			}
+		
+			function initCheckFiles() {
+				$('#uploadFileForm\\:file').hide();
+				$('#uploadFileForm\\:cancelButton').hide();
+				$('#checkFilesWait').show();
+				$('#uploadFileForm\\:checkFileLink').trigger("click");
+			}
+			
+			function handleCheckResult(xhr, status, args) {
+				
+				$('#checkFilesWait').hide();
+				
+				var resultHtml = '';
+				
+				if (args.CHECK_RESULT == 0 || args.CHECK_RESULT == 2) {
+					// Make dates table
+					resultHtml += '<div class="instructions">The table below lists the dates of sensor'
+		                + ' calibrations and gas standards that will apply to the uploaded file.</div>'
+					resultHtml += args.DATES_TABLE;					
+				} else {
+					resultHtml = '<span class="error">The data file could not be processed because of the following errors:</span>';
+				}
+
+				$('#checkFilesOutput').html(resultHtml);
+				$('#checkFilesOutput').show();
+				
+				if (args.CHECK_RESULT > 0) {
+					var errorHtml = "<ul>";
+					var messageList = args.MESSAGES.split(';');
+					for (i = 0; i &lt; messageList.length; i++) {
+						errorHtml += '<li>' + messageList[i] + '</li>';
+					}
+					errorHtml += '</ul>';
+					
+					$('#checkFileMessages').html(errorHtml);
+					$('#checkFileMessages').show();
+				}
+				
+				if (args.CHECK_RESULT == 0) {
+					$('#uploadFileForm\\:submitButton').show();
+				}
+				
+				$('#restartButton').show();
+				$('#uploadFileForm\\:cancelButton').show();
+			}
+			
+			function sendInstrument() {
+				$('#uploadFileForm\\:file').hide();
+				//if ($('#uploadFileForm\\:instrument').getSelectedValue() == "") {
+				//} else {
+					$('#checkInstrumentWait').show();
+					$('#uploadFileForm\\:sendInstrumentLink').trigger("click");
+				//}
+			}
+			
+			function handleStoreInstrument(xhr, status, args) {
+				$('#checkInstrumentWait').hide();
+				$('#uploadFileForm\\:file').show();
+			}
+		</script>
+	</ui:define>
+	
+
+	<ui:define name="content">
+		<h1>Upload File</h1>
+		<div class="fullPage">
+			<h:form id="uploadFileForm" method="post" accept-charset="utf8" enctype="multipart/form-data">
+				<p:outputLabel id="instrumentLabel" for="instrument">Select Instrument: </p:outputLabel>
+				<p:selectOneMenu id="instrument" name="instrument" value="#{uploadDataFileBean.instrument}" onchange="sendInstrument()">
+					<f:selectItem itemLabel="Select..." itemValue=""/>
+					<f:selectItems value="#{uploadDataFileBean.instrumentList}" var="instr" itemLabel="#{instr.name}" itemValue="#{instr.id}"/>
+					<p:column>
+						#{instr.name}
+					</p:column>
+				</p:selectOneMenu>
+				<br/>
+				<br/>
+				<div id="checkInstrumentWait" style="display: none">
+					<b>Processing selection. Please wait...</b>
+				</div>				
+				<p:fileUpload id="file" fileUploadListener="#{uploadDataFileBean.handleFileUpload}" widgetVar="upload" style="display: none" mode="advanced" auto="true" label="Select File..." allowTypes="/(\.|\/)(csv|tsv|txt|dat)$/" oncomplete="initCheckFiles()"/>
+				<br/>
+				<br/>
+				<div id="checkFilesWait" style="display: none">
+					Checking file. Please wait...
+				</div>
+				<div id="checkFilesOutput" style="display: none">
+					The result!
+				</div>
+				<div id="checkFileMessages" class="error listBox" style="display: none;">
+					Errors
+				</div>
+				<div class="buttonWrapper">
+					<p:commandLink id="checkFileLink" forceId="true" value="Check File" style="display: none" actionListener="#{uploadDataFileBean.checkFile}" oncomplete="handleCheckResult(xhr, status, args)"/>
+					<p:commandLink id="sendInstrumentLink" forceId="true" value="SI" style="display: none" actionListener="#{uploadDataFileBean.storeInstrument}" oncomplete="handleStoreInstrument(xhr, status, args)"/>
+					<h:commandButton id="cancelButton" forceId="true" value="Cancel" action="#{uploadDataFileBean.cancelUpload}" immediate="true"/>
+					<input type="button" id="restartButton" style="display: none" value="Select New File" onclick="restart()"/>
+					<h:commandButton id="submitButton" forceId="true" value="Submit File" action="#{uploadDataFileBean.submitFile}" style="display: none"/>
+				</div>
+			</h:form>
+		</div>
+	</ui:define>
+</ui:composition>

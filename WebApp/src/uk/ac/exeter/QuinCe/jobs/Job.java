@@ -1,13 +1,17 @@
 package uk.ac.exeter.QuinCe.jobs;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Abstract class containing all the required parts for a backgorund job.
@@ -52,6 +56,11 @@ public abstract class Job {
 	/**
 	 * The database connection to be used by the job
 	 */
+	protected ResourceManager resourceManager;
+	
+	/**
+	 * The database connection to be used by the job
+	 */
 	protected DataSource dataSource;
 	
 	/**
@@ -66,20 +75,24 @@ public abstract class Job {
 	
 	/**
 	 * Constructs a job object, and validates the parameters passed to it
-	 * @param dataSource A database connection
+	 * @param resourceManager The system resource manager
 	 * @param config The application properties
 	 * @param id The id of the job in the database
 	 * @param parameters The parameters for the job
 	 * @throws InvalidJobParametersException If the parameters are not valid for the job
 	 */
-	public Job(DataSource dataSource, Properties config, long id, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
+	public Job(ResourceManager resourceManager, Properties config, long id, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
 		
-		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(resourceManager, "resourceManager");
 		
-		this.dataSource = dataSource;
+		this.resourceManager = resourceManager;
 		this.config = config;
 		this.id = id;
 		this.parameters = parameters;
+
+		// Extract the data source into its own variable, since it's what we use most
+		this.dataSource = resourceManager.getDBDataSource();
+		
 		validateParameters();
 	}
 	
@@ -111,7 +124,69 @@ public abstract class Job {
 	 * @throws DatabaseException If an error occurs while updating the database
 	 */
 	protected void setProgress(double progress) throws MissingParamException, BadProgressException, NoSuchJobException, DatabaseException {
-		JobManager.setProgress(dataSource, id, progress);
+		Connection conn = null;
+		try {
+			conn = dataSource.getConnection();
+			JobManager.setProgress(conn, id, progress);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving a database connection", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	/**
+	 * Log the fact that the job has been started in the appropriate locations.
+	 * Initially this is just in the job manager, but it can be extended by other classes
+	 * @throws MissingParamException If any of the parameters to the underlying commands are missing
+	 * @throws DatabaseException If an error occurs while updating the database
+	 * @throws NoSuchJobException If the job has disappeared.
+	 */
+	protected void logStarted() throws MissingParamException, DatabaseException, NoSuchJobException {
+		Connection conn = null;
+		try {
+			conn = dataSource.getConnection();
+			JobManager.startJob(conn, id);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving a database connection", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	/**
+	 * Log the fact that the job has been finished in the appropriate locations.
+	 * Initially this is just in the job manager, but it can be extended by other classes
+	 * @throws MissingParamException If any of the parameters to the underlying commands are missing
+	 * @throws DatabaseException If an error occurs while updating the database
+	 * @throws NoSuchJobException If the job has disappeared.
+	 */
+	protected void logFinished() throws MissingParamException, DatabaseException, NoSuchJobException {
+		Connection conn = null;
+		try {
+			conn = dataSource.getConnection();
+			JobManager.finishJob(conn, id);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving a database connection", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	/**
+	 * Logs a job error to the appropriate locations
+	 * @param error The error
+	 */
+	protected void logError(Throwable error) {
+		Connection conn = null;
+		try {
+			conn = dataSource.getConnection();
+			JobManager.errorJob(conn, id, error);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
 	}
 	
 	/**

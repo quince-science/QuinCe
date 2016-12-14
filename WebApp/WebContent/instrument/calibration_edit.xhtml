@@ -6,12 +6,6 @@
 	template="/templates/app_page.xhtml">
 	<ui:define name="title">Calibration Details</ui:define>
 
-	<ui:define name="localHead">
-		<script type="text/javascript">
-		
-		</script>
-	</ui:define>
-	
 	<ui:define name="content">
 		<h1>#{currentInstrument.name} - Calibration Details</h1>
 		<div class="fullPage">
@@ -24,7 +18,7 @@
 					<div class="instructions">
 						Select the date on which the calibration was performed
 					</div>
-					<p:calendar id="calibrationDate" value="#{calibrationsBean.calibrationDate}" showOn="both" readonlyInput="true" navigator="true" maxdate="#{calibrationsBean.today}" pattern="yyyy-MM-dd" required="true" requiredMessage="Calibration date is required">
+					<p:calendar id="calibrationDate" value="#{calibrationsBean.calibrationDate}" showOn="both" readonlyInput="true" navigator="true" maxdate="#{calibrationsBean.today}" pattern="yyyy-MM-dd" required="true" requiredMessage="Calibration date is required" yearRange="1990:c">
 						<f:validator validatorId="calibrationDateValidator"/>
 					</p:calendar>
 					<h:message id="calibrationDateMessage" for="calibrationDate" errorClass="error"/>

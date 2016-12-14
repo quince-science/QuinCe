@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+	<h:head>
+		<title>#{dataScreenBean.fileDetails.fileName} - QuinCe</title>
+	    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700,700italic" rel="stylesheet" type="text/css"/>
+		<h:outputStylesheet name="style/main.css"/>
+		<h:outputScript name="script/dataScreen.js"/>
+		<h:outputStylesheet name="style/dataScreen.css"/>
+		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
+		<h:outputScript name="script/jquery-ui.min.js"/>
+		<h:outputStylesheet name="style/jquery-ui.min.css"/>
+		<h:outputScript name="script/jquery.splitter.js"/>
+    	<h:outputStylesheet name="style/jquery.splitter.css"/>
+		<h:outputScript name="script/dygraph-combined.js"/>
+		<h:outputScript name="script/datatables.min.js"/>
+		<h:outputStylesheet name="style/datatables.min.css"/>
+		
+		<script type="text/javascript">
+			var intakeTempCount = #{dataScreenBean.instrument.intakeTempCount};
+			var intakeTemp1Name = '#{dataScreenBean.instrument.intakeTempName1}';
+			var intakeTemp2Name = '#{dataScreenBean.instrument.intakeTempName2}';
+			var intakeTemp3Name = '#{dataScreenBean.instrument.intakeTempName3}';
+			var salinityCount = #{dataScreenBean.instrument.salinityCount};
+			var salinity1Name = '#{dataScreenBean.instrument.salinityName1}';
+			var salinity2Name = '#{dataScreenBean.instrument.salinityName2}';
+			var salinity3Name = '#{dataScreenBean.instrument.salinityName3}';
+			var eqtCount = #{dataScreenBean.instrument.eqtCount};
+			var eqt1Name = '#{dataScreenBean.instrument.eqtName1}';
+			var eqt2Name = '#{dataScreenBean.instrument.eqtName2}';
+			var eqt3Name = '#{dataScreenBean.instrument.eqtName3}';
+			var eqpCount = #{dataScreenBean.instrument.eqpCount};
+			var eqp1Name = '#{dataScreenBean.instrument.eqpName1}';
+			var eqp2Name = '#{dataScreenBean.instrument.eqpName2}';
+			var eqp3Name = '#{dataScreenBean.instrument.eqpName3}';
+			var airFlowCount = #{dataScreenBean.instrument.airFlowCount};
+			var airFlow1Name = '#{dataScreenBean.instrument.airFlowName1}';
+			var airFlow2Name = '#{dataScreenBean.instrument.airFlowName2}';
+			var airFlow3Name = '#{dataScreenBean.instrument.airFlowName3}';
+			var waterFlowCount = #{dataScreenBean.instrument.waterFlowCount};
+			var waterFlow1Name = '#{dataScreenBean.instrument.waterFlowName1}';
+			var waterFlow2Name = '#{dataScreenBean.instrument.waterFlowName2}';
+			var waterFlow3Name = '#{dataScreenBean.instrument.waterFlowName3}';
+			var columnHeadings = #{dataScreenBean.tableHeadings};
+		</script>
+	</h:head>
+	<h:body class="fullPage">
+		<div id="plotFieldList" class="popupMenu">
+			<h:outputText value="#{dataScreenBean.plotPopupEntries}" escape="false"/>
+			<div id="buttonWrapper">
+				<button class="smallButton" onclick="return savePlotSelection();">OK</button>
+				<button class="smallButton" onclick="return hidePlotPopup();">Cancel</button>
+			</div>
+		</div>
+		<div id="hiddenData">
+			<h:form id="plotDataForm">
+				<h:inputHidden id="leftColumns" value="#{dataScreenBean.leftPlotColumns}"/>
+				<h:outputText id="leftData" value="#{dataScreenBean.leftPlotData}"/>
+				<h:commandLink id="leftGetData" action="#{dataScreenBean.generateLeftPlotData}">
+					<f:ajax execute="leftColumns" render="leftData" onevent="drawLeftPlot"/>
+				</h:commandLink>
+
+				<h:inputHidden id="rightColumns" value="#{dataScreenBean.rightPlotColumns}"/>
+				<h:outputText id="rightData" value="#{dataScreenBean.rightPlotData}"/>
+				<h:commandLink id="rightGetData" action="#{dataScreenBean.generateRightPlotData}">
+					<f:ajax execute="rightColumns" render="rightData" onevent="drawRightPlot"/>
+				</h:commandLink>
+				
+				<h:inputHidden id="tableData" value="#{dataScreenBean.tableData}"/>
+				<h:commandLink id="getTableData" action="#{dataScreenBean.generateTableData}">
+					<f:ajax render="tableData" onevent="drawTable"/>
+				</h:commandLink>
+			</h:form>
+		</div>
+		<div id="qcInfoPopup" class="popup">
+			QC Info
+		</div>
+		<h:form id="dataScreenForm">
+			<h:inputHidden id="selectedRows" value="#{dataScreenBean.selectedRows}"/>
+			<h:commandLink id="acceptQCFlags" action="#{dataScreenBean.acceptQCFlags}">
+				<f:ajax execute="selectedRows" render="@none" onevent="qcFlagsAccepted"/>
+			</h:commandLink>
+			
+			<h:inputHidden id="woceFlag" value="#{dataScreenBean.woceFlag}"/>
+			<h:commandLink id="applyWoceFlag" action="#{dataScreenBean.applyWoceFlag}">
+				<f:ajax execute="selectedRows woceFlag woceComment" render="@none" onevent="woceFlagsUpdated"/>
+			</h:commandLink>
+		    <div id="woceCommentDialog" class="popup">
+		        <div class="dialogTitle">Set WOCE flag for <span id="woceRowCount"></span></div>
+		        <div>WOCE Flag:</div>
+		        <div id="woceCommentDialogFlag" onclick="woceFlagClick(); return false;">FLAG_VALUE</div>
+		        <div id="woceSelectMenu">
+		        	<ul>
+		            	<li class="good" onclick="woceSelection(2)">Good</li>
+		            	<li class="questionable" onclick="woceSelection(3)">Questionable</li>
+		            	<li class="bad" onclick="woceSelection(4)">Bad</li>
+		            	<li class="ignore" onclick="woceSelection(-1002)">Ignore</li>
+		          	</ul>
+		        </div>
+		        <div style="clear: both">Comment:</div>
+	           	<h:inputTextarea id="woceComment" value="#{dataScreenBean.woceComment}"/>
+	           	<div class="buttonWrapper">
+		           	<button name="woceCommentDialogSave" class="woceCommentDialogButton" onclick="saveWoceComment(); return false;">Save</button>
+		            <button name="woceCommentDialogCancel" class="woceCommentDialogButton" onclick="cancelWoceComment(); return false;">Cancel</button>
+	            </div>
+	        </div>
+	    	<div id="header">
+	      		#{dataScreenBean.fileDetails.fileName}
+	      		&nbsp;&nbsp;&nbsp;
+	      		<ui:remove>
+		      		<p:selectOneButton value="#{dataScreenBean.co2Type}">
+		      			<f:selectItem itemLabel="Water" itemValue="0"/>
+		      			<f:selectItem itemLabel="Atmos" itemValue="1"/>
+		      			<f:selectItem itemLabel="Both" itemValue="3"/>
+		      			<f:ajax render="@none" onevent="drawAllData"/>
+		      		</p:selectOneButton>
+		      	</ui:remove>
+		      	<ui:remove>
+			      	<p:selectManyButton value="#{dataScreenBean.optionalFlags}">
+			      		<f:selectItem itemLabel="B" itemValue="4"/>
+			      		<f:selectItem itemLabel="I" itemValue="-1002"/>
+			      		<f:ajax render="@none" onevent="drawAllData"/>
+			      	</p:selectManyButton>
+	      		</ui:remove>
+	      		
+	      		<div id="updateStatus">
+	      			<h:commandLink id="FinishLink" value="Finished" action="#{dataScreenBean.end}"/>
+	      		</div>
+	    	</div>
+    		<div id="dataScreenContent">
+	    		<div id="plots">
+		    		<div id="plotContainerLeft">
+						<div id="plotLeftContent" class="plotContent"></div>
+		    			<div id="controlsLeft" class="controls">
+		    				<button id="leftXAxis" class="smallButton" onclick="return showPlotPopup(event, 'LX', true);">X Axis…</button>
+		    				<button id="leftYAxis" class="smallButton" onclick="return showPlotPopup(event, 'LY', false);">Y Axis…</button>
+		    				<button id="leftUpdate" class="smallButton" onclick="return updatePlot('left');">Update</button>
+		    			</div>
+		    		</div>
+		    		<div id="plotContainerRight">
+						<div id="plotRightContent" class="plotContent"></div>
+		    			<div id="controlsRight" class="controls">
+		    				<button id="rightXAxis" class="smallButton" onclick="return showPlotPopup(event, 'RX', true);">X Axis…</button>
+		    				<button id="rightYAxis" class="smallButton" onclick="return showPlotPopup(event, 'RY', false);">Y Axis…</button>
+		    				<button id="rightUpdate" class="smallButton" onclick="return updatePlot('right');">Update</button>
+		    			</div>
+		    		</div>
+	    		</div>
+	    		<div id="data">
+	    			<div id="tableContent"></div>
+	    			<div id="tableControls" class="controls">
+	    				<table width="100%">
+	    					<tr>
+	    						<td>
+						      		<p:selectOneButton value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="changeTableMode(event)">
+						      			<f:selectItem itemLabel="Basic" itemValue="basic"/>
+						      			<f:selectItem itemLabel="Water" itemValue="water"/>
+						      			<f:selectItem itemLabel="Equilibrator" itemValue="equilibrator"/>
+						      			<f:selectItem itemLabel="CO₂" itemValue="co2"/>
+						      			<f:ajax render="@none"/>
+						      		</p:selectOneButton>
+	    						</td>
+	    						<td style="text-align: right">
+						      		Selected rows: <span id="selectedRowsCount">0</span>
+						      		<button id="clearSelectionButton" class="smallButton tightButton" onclick="clearSelection(); return false;">x</button>
+						      		<button id="acceptFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="acceptQCFlags(); return false;">Use QC Flags</button>
+						      		<button id="overrideFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="showWoceCommentDialog(); return false;">Override QC Flags</button>
+	    						</td>
+	    					</tr>
+	    				</table>
+	    			</div>
+	    		</div>
+    		</div>
+	    </h:form>
+	</h:body>
+</html>
