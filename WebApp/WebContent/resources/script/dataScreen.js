@@ -126,6 +126,16 @@ var tableMode = 'basic';
 // The list of dates in the current view. Used for searching.
 var dateList = null;
 
+// Variables for timed functions
+var tableScrollRow = null;
+
+// Table selections
+var selectedRows = [];
+var selectionQCMessageCounts = {};
+var selectionWoceMessageCounts = {};
+var worstSelectedFlag = FLAG_GOOD;
+var NO_MESSAGE_ENTRY = 'No message';
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -181,7 +191,7 @@ function drawAllData() {
 	drawLoading($('#tableContent'));
     updatePlot('left');
     updatePlot('right');
-    drawTable();
+    updateTable();
 }
 
 /*
@@ -208,7 +218,9 @@ function resizeContent() {
 	$('.dataTables_scrollBody').height(calcTableScrollY());
 	
 	// Resize the table columns
-	jsDataTable.columns.adjust().draw(false);
+	if (null != jsDataTable) {
+		jsDataTable.columns.adjust().draw(false);
+	}
 }
 
 /*
@@ -439,11 +451,11 @@ function updatePlot(plot) {
 		
 		// Build the list of columns to be sent to the server
 		var columnList = '';
-		for (i = 0; i < leftPlotXAxis.length; i++) {
+		for (var i = 0; i < leftPlotXAxis.length; i++) {
 			columnList += getColumnName(leftPlotXAxis[i]);
 			columnList += ';';
 		}
-		for (i = 0; i < leftPlotYAxis.length; i++) {
+		for (var i = 0; i < leftPlotYAxis.length; i++) {
 			columnList += getColumnName(leftPlotYAxis[i]);
 			if (i < leftPlotYAxis.length - 1) {
 				columnList += ';';
@@ -466,11 +478,11 @@ function updatePlot(plot) {
 		
 		// Build the list of columns to be sent to the server
 		var columnList = '';
-		for (i = 0; i < rightPlotXAxis.length; i++) {
+		for (var i = 0; i < rightPlotXAxis.length; i++) {
 			columnList += getColumnName(rightPlotXAxis[i]);
 			columnList += ';';
 		}
-		for (i = 0; i < rightPlotYAxis.length; i++) {
+		for (var i = 0; i < rightPlotYAxis.length; i++) {
 			columnList += getColumnName(rightPlotYAxis[i]);
 			if (i < rightPlotYAxis.length - 1) {
 				columnList += ';';
@@ -485,6 +497,19 @@ function updatePlot(plot) {
 	
 	
 	return false;
+}
+
+function updateTable() {
+	
+	// Replace the table with the loading animation
+	drawLoading($('#tableContent'));
+	
+	// Destroy the existing table instance
+	if (null != jsDataTable) {
+		jsDataTable.destroy();
+	}
+	
+	$('#plotDataForm\\:getTableData').click();
 }
 
 /*
@@ -607,69 +632,83 @@ function drawRightPlot(data) {
  * the DataTables object is created and configured to load
  * its data from the server using the hidden form.
  */
-function drawTable() {
-	
-	// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
-	
-	
-	html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%">';
-	html += '<thead>';
+function drawTable(data) {
+	var status = data.status;
 
-	columnHeadings.forEach(heading => {
-		html += '<th>';
-		html += heading;
-		html += '</th>';
-	});
-
-	$('#tableContent').html(html);
-    
-    jsDataTable = $('#dataTable').DataTable( {
-    	ordering: false,
-    	searching: false,
-    	serverSide: true,
-    	scroller: {
-    		loadingIndicator: true
-    	},
-    	scrollY: calcTableScrollY(),
-    	bInfo: false,
-    	ajax: function ( data, callback, settings ) {
-            
-    		// Store the callback
-    		dataTableDrawCallback = callback;
-
-    		// Fill in the form inputs
-    		$('#plotDataForm\\:tableDataDraw').val(data.draw);
-    		$('#plotDataForm\\:tableDataStart').val(data.start);
-    		$('#plotDataForm\\:tableDataLength').val(data.length);
-    		
-    		// Submit the query to the server
-    		$('#plotDataForm\\:tableGetData').click();
-        },
-        columnDefs:[
-            // DateTime doesn't wrap
-            {"className": "noWrap", "targets": [0]},
-            {"className": "centreCol", "targets": getQCColumns()},
-            {"className": "numericCol", "targets": getNumericColumns()},
-            {"render":
-            	function (data, type, row) {
-	                var output = '<div onmouseover="showQCInfoPopup(' + row[getColumnIndex('QC Flag')] + ', \'' + row[getColumnIndex('QC Message')] + '\', this)" onmouseout="hideQCInfoPopup()" class="';
-	                output += getFlagClass(data);
-	                output += '">';
-	                output += getFlagText(data);
-	                output += '</div>';
-	                return output;
+	if (status == "success") {
+	
+		// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
+		html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%">';
+		html += '<thead>';
+	
+		columnHeadings.forEach(heading => {
+			html += '<th>';
+			html += heading;
+			html += '</th>';
+		});
+	
+		$('#tableContent').html(html);
+	    
+	    jsDataTable = $('#dataTable').DataTable( {
+	    	data: JSON.parse($('#plotDataForm\\:tableData').val()),
+	    	ordering: false,
+	    	searching: false,
+	    	serverSide: false,
+	    	scroller: true,
+	    	scrollY: calcTableScrollY(),
+	    	bInfo: false,
+	    	select: 'multi',
+	        columnDefs:[
+	            // DateTime doesn't wrap
+	            {"className": "noWrap", "targets": [0]},
+	            {"className": "centreCol", "targets": getQCColumns()},
+	            {"className": "numericCol", "targets": getNumericColumns()},
+	            {"render":
+	            	function (data, type, row) {
+		                var output = '<div onmouseover="showQCInfoPopup(' + row[getColumnIndex('QC Flag')] + ', \'' + row[getColumnIndex('QC Message')] + '\', this)" onmouseout="hideQCInfoPopup()" class="';
+		                output += getFlagClass(data);
+		                output += '">';
+		                output += getFlagText(data);
+		                output += '</div>';
+		                return output;
+		            },
+	                "targets": getColumnIndex('QC Flag')
 	            },
-                "targets": getColumnIndex('QC Flag')
-            }
-        ]
-    });
-    
-    renderTableColumns();
+	            {"render":
+	            	function (data, type, row) {
+	            		var output = '<div class="';
+	            		output += getFlagClass(data);
+	            		output += '">';
+	    				output += getFlagText(data);
+	    				output += '</div>';
+	    				return output;
+		            },
+	                "targets": getColumnIndex('WOCE Flag')
+	            }
+	        ]
+	    });
+	    
+	    jsDataTable.on('select', function(e, dt, type, indexes) {
+	    	rowSelected(indexes);
+	    });
+	    
+	    jsDataTable.on('deselect', function(e, dt, type, indexes) {
+	    	rowDeselected(indexes);
+	    });
+	    
+	    renderTableColumns();
+	    resizeContent();
+	    
+	    // Clear the table form data - otherwise subsequent
+	    // requests send it all back to the server, and it breaks
+	    // any Ajax requests
+	    $('#plotDataForm\\:tableData').val("");
+	}
 }
 
 function getNumericColumns() {
 	numericCols = new Array();
-	for (i = 0; i < columnHeadings.length; i++) {
+	for (var i = 0; i < columnHeadings.length; i++) {
 		if (columnHeadings[i] != 'Date/Time' && columnHeadings[i] != 'QC Flag' && columnHeadings[i] != 'QC Message' && columnHeadings[i] != 'WOCE Flag' && columnHeadings[i] != 'WOCE Message') {
 			numericCols.push(i);
 		}
@@ -679,7 +718,7 @@ function getNumericColumns() {
 
 function getQCColumns() {
 	qcColumns = new Array();
-	for (i = 0; i < columnHeadings.length; i++) {
+	for (var i = 0; i < columnHeadings.length; i++) {
 		if (columnHeadings[i] == 'QC Flag' || columnHeadings[i] == 'QC Message' || columnHeadings[i] == 'WOCE Flag' || columnHeadings[i] == 'WOCE Message') {
 			qcColumns.push(i);
 		}
@@ -689,7 +728,7 @@ function getQCColumns() {
 
 function getColumnIndex(columnName) {
 	var index = -1;
-	for (i = 0; i < columnHeadings.length; i++) {
+	for (var i = 0; i < columnHeadings.length; i++) {
 		if (columnHeadings[i] == columnName) {
 			index = i;
 			break;
@@ -699,29 +738,11 @@ function getColumnIndex(columnName) {
 }
 
 /*
- * Called when table data has been downloaded from the server.
- * The previously stored callback function is triggered with
- * the data from the server.
- */
-function tableDataDownload(data) {
-	
-	var status = data.status;
-	if (status == "success") {
-		dataTableDrawCallback( {
-            draw: $('#plotdDataForm\\:tableDataDraw').val(),
-            data: JSON.parse($('#plotDataForm\\:tableJsonData').val()),
-            recordsTotal: $('#plotDataForm\\:recordCount').val(),
-            recordsFiltered: $('#plotDataForm\\:recordCount').val()
-		});
-	}
-}
-
-/*
  * Calculate the value of the scrollY entry for the data table
  */
 function calcTableScrollY() {
 	// 41 is the post-rendered height of the header in FF (as measured on screen). Can we detect it somewhere?
-	return $('#data').height() - $('#tableControls').outerHeight() - 41;
+	return $('#data').height() - $('#tableControls').outerHeight() - 50;
 }
 
 function renderTableColumns() {
@@ -730,7 +751,7 @@ function renderTableColumns() {
 	var hiddenTableColumns = new Array();
 	
 	// Do the stuff
-	for (i = 0; i < columnHeadings.length; i++) {
+	for (var i = 0; i < columnHeadings.length; i++) {
 		columnVisible = false;
 		
 		if ($.inArray(columnHeadings[i], compulsoryColumns) != -1) {
@@ -806,7 +827,7 @@ function makeJSDates(data) {
 	
 	dateList = new Array();
 	
-	for (i = 0; i < data.length; i++) {
+	for (var i = 0; i < data.length; i++) {
 		point_data = data[i];
 		
 		// Store the milliseconds value in the global dates list
@@ -824,7 +845,15 @@ function makeJSDates(data) {
 function scrollToTableRow(milliseconds) {
 	var tableRow = dateList.indexOf(milliseconds);
 	if (tableRow >= 0) {
-		jsDataTable.scroller().scrollToRow(tableRow);
+		jsDataTable.scroller().scrollToRow(tableRow - 2);
+		
+		tableScrollRow = jsDataTable.row(tableRow);
+		setTimeout(function() {
+			$(tableScrollRow.node()).css('animationName', 'rowFlash').css('animationDuration', '1s');
+			setTimeout(function() {
+				$(tableScrollRow.node()).css('animationName', '');
+			}, 1000);
+		}, 250);
 	}
 }
 
@@ -908,7 +937,6 @@ function showQCInfoPopup(qcFlag, qcMessage, target) {
     	}
 	    }
 
-	    
 	    content += '">';
 	    content += qcMessage;
 	    content += '</div>';
@@ -917,12 +945,234 @@ function showQCInfoPopup(qcFlag, qcMessage, target) {
           .html(content)
           .css({"left": 0, "top": 0})
           .offset({"left": $(target).position().left - $('#qcInfoPopup').width() - 10, "top": $(target).offset().top - 3})
-          .show('slide', {direction: 'right'}, 100);;
+          .show('slide', {direction: 'right'}, 100);
    }
  }
 
- function hideQCInfoPopup() {
-     $('#qcInfoPopup').stop(true, true);
-     $('#qcInfoPopup').hide('slide', {direction: 'right'}, 100);
- }
+function hideQCInfoPopup() {
+    $('#qcInfoPopup').stop(true, true);
+    $('#qcInfoPopup').hide('slide', {direction: 'right'}, 100);
+}
 
+/*
+ * Process selected rows.
+ * Add the row index and its QC Message to the global selection arrays
+ */
+function rowSelected(indexes) {
+	$.each(indexes, function(index, rowIndex) {
+		if ($.inArray(rowIndex, selectedRows) == -1) {
+			selectedRows[selectedRows.length] = rowIndex;
+			
+			// Add the message to the list of selection messages
+			qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
+			if (qcMessage == "") {
+				qcMessage = NO_MESSAGE_ENTRY;
+			}
+			
+			if (qcMessage in selectionQCMessageCounts) {
+				selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] + 1;
+			} else {
+				selectionQCMessageCounts[qcMessage] = 1;
+			}
+			
+			woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
+			
+			// If the WOCE message is empty, use the QC message instead
+			if (woceMessage == "") {
+				woceMessage = qcMessage;
+			}
+			
+			if (woceMessage in selectionWoceMessageCounts) {
+				selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] + 1;
+			} else {
+				selectionWoceMessageCounts[woceMessage] = 1;
+			}
+			
+		}
+	});
+
+	selectionUpdated();
+}
+
+/*
+ * Process deselected rows
+ * Remove the row index and its QC Message from the global selection arrays
+ */
+function rowDeselected(indexes) {
+	$.each(indexes, function(index, rowIndex) {
+		var arrayIndex = $.inArray(rowIndex, selectedRows);
+		if (arrayIndex > -1) {
+			selectedRows.splice(arrayIndex, 1);
+
+			qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
+			if (qcMessage == "") {
+				qcMessage = NO_MESSAGE_ENTRY;
+			}
+
+			selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] - 1;
+			
+			woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
+			if (woceMessage == "") {
+				woceMessage = NO_MESSAGE_ENTRY;
+			}
+			
+			selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] - 1;
+		}
+	});
+
+	selectionUpdated();
+}
+
+function selectionUpdated() {
+	
+	// Update the worst selected flag
+	if (selectedRows.length > 0) {
+		worstSelectedFlag = Number(jsDataTable.row(selectedRows[0]).data()[getColumnIndex('WOCE Flag')]);
+		if (selectedRows.length > 1) {
+			for (var i = 1; i < selectedRows.length; i++) {
+				rowFlag = Number(jsDataTable.row(selectedRows[i]).data()[getColumnIndex('WOCE Flag')]);
+				if (rowFlag == FLAG_NEEDS_FLAG) {
+					worstSelectedFlag = FLAG_NEEDS_FLAG;
+				} else if (rowFlag > worstSelectedFlag) {
+					worstSelectedFlag = rowFlag;
+					if (rowFlag == FLAG_NEEDS_FLAG) {
+						break;
+					}
+				}
+			}
+		}
+	}
+	
+	// Update the selected rows counter
+	$('#selectedRowsCount').html(selectedRows.length);
+	
+	// Update the buttons
+	if (selectedRows.length == 0) {
+		$('#acceptFlagsButton').prop('disabled', true).addClass('disabledButton');
+		$('#overrideFlagsButton').prop('disabled', true).addClass('disabledButton');
+	} else {
+		$('#acceptFlagsButton').prop('disabled', false).removeClass('disabledButton');
+		$('#overrideFlagsButton').prop('disabled', false).removeClass('disabledButton');
+	}
+}
+
+function clearSelection() {
+	jsDataTable.rows(selectedRows).deselect();
+	selectedRows = [];
+	selectionQCMessageCounts = {};
+	selectionWoceMessageCounts = {};
+	selectionUpdated();
+}
+
+function acceptQCFlags() {
+	$('#dataScreenForm\\:selectedRows').val(getSelectionFileRows());
+	$('#dataScreenForm\\:acceptQCFlags').click();
+}
+
+function qcFlagsAccepted(data) {
+	if (data.status == 'success') {
+		
+		qcFlagColumn = getColumnIndex('QC Flag');
+		qcMessageColumn = getColumnIndex('QC Message');
+		woceFlagColumn= getColumnIndex('WOCE Flag');
+		woceMessageColumn = getColumnIndex('WOCE Message');
+		
+		for (var i = 0; i < selectedRows.length; i++) {
+			jsDataTable.cell(selectedRows[i], woceMessageColumn).data(jsDataTable.cell(selectedRows[i], qcMessageColumn).data());
+			jsDataTable.cell(selectedRows[i], woceFlagColumn).data(jsDataTable.cell(selectedRows[i], qcFlagColumn).data());
+		}
+		
+		clearSelection();
+	}
+}
+
+function woceFlagsUpdated(data) {
+	if (data.status == 'success') {
+		
+		woceFlagColumn = getColumnIndex('WOCE Flag');
+		woceMessageColumn = getColumnIndex('WOCE Message');
+		
+		for (var i = 0; i < selectedRows.length; i++) {
+			jsDataTable.cell(selectedRows[i], woceFlagColumn).data($('#dataScreenForm\\:woceFlag').val());
+			jsDataTable.cell(selectedRows[i], woceMessageColumn).data($('#dataScreenForm\\:woceComment').val());
+		}
+		
+		clearSelection();
+	} 
+}
+
+function getSelectionFileRows() {
+	var fileRows = [];
+	var rowNumberColumn = getColumnIndex('Row');
+	
+	for (var i = 0; i < selectedRows.length; i++) {
+		fileRows[fileRows.length] = jsDataTable.row(selectedRows[i]).data()[rowNumberColumn];
+	}
+	
+	return fileRows;
+}
+
+function woceFlagClick() {
+    if ($('#woceSelectMenu').is(':hidden')) {
+    	showWoceMenu();
+    } else {
+    	hideWoceMenu();
+    }
+}
+
+function showWoceMenu() {
+    $('#woceSelectMenu').show('slide', {direction: 'up'}, 100);
+}
+
+function hideWoceMenu() {
+    $('#woceSelectMenu').hide('slide', {direction: 'up'}, 100);
+}
+
+function showWoceCommentDialog() {
+
+	var woceRowHtml = selectedRows.length.toString() + ' row';
+	if (selectedRows.length > 1) {
+		woceRowHtml += 's';
+	} 
+	
+	$('#woceRowCount').html(woceRowHtml);
+	
+    woceSelection(worstSelectedFlag);
+
+    var woceComment = '';
+    for (var comment in selectionWoceMessageCounts) {
+    	woceComment += comment + ' (' + selectionWoceMessageCounts[comment] + ')\n';
+    }
+    
+    $('#dataScreenForm\\:woceComment').attr('disabled', (worstSelectedFlag == FLAG_IGNORED));
+    $('#dataScreenForm\\:woceComment').val(woceComment);
+    $('#woceCommentDialog').fadeIn(100);
+}
+
+function saveWoceComment() {
+	$('#dataScreenForm\\:selectedRows').val(getSelectionFileRows());
+	$('#dataScreenForm\\:applyWoceFlag').click();
+	hideWoceDialog();
+}
+
+function cancelWoceComment() {
+	hideWoceDialog();
+}
+
+function hideWoceDialog() {
+    $('#woceCommentDialog').fadeOut(100);
+    hideWoceMenu();
+}
+
+function woceSelection(flagValue) {
+	$('#woceCommentDialogFlag').html(getFlagText(flagValue))
+	  .removeClass().addClass(getFlagClass(flagValue));
+	
+	$('#dataScreenForm\\:woceFlag').val(flagValue);
+	
+	hideWoceMenu();
+}
+
+function setWoceSelectedFlag(flagValue) {
+	$('#woceCommentDialogFlag').html(getFlagText(flagValue));
+}

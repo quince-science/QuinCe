@@ -40,6 +40,11 @@ input.expand {
   width: 100%;
 }
 
+textarea {
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 14px;
+}
+
 input[type="submit"], input[type="button"], button {
   display: inline;
   margin-top: 20px;
@@ -68,7 +73,15 @@ input[type="submit"].inline {
 }
 
 input[type="submit"][disabled="disabled"] {
-    background: #aaa;
+    background: #ccc;
+    color: #999;
+    border: 1px solid #aaa;
+    cursor: default;
+}
+
+.disabledButton {
+    background: #ccc;
+    color: #999;
     border: 1px solid #aaa;
     cursor: default;
 }
@@ -79,6 +92,10 @@ input[type="submit"]:last-of-type {
 
 .smallButton {
     margin-top: 0px;
+}
+
+.tightButton {
+	min-width: 0px;
 }
 
 .highlightButton {
@@ -324,8 +341,7 @@ li.menuitem:hover, li.smallMenuitem:hover {
 }
 
 .ignore {
-  color: #E1E1E1;
-  font-style: italic;
+  color: #B0B0B0;
 }
 
 .assumedGood {
@@ -338,36 +354,6 @@ li.menuitem:hover, li.smallMenuitem:hover {
 
 .notSet {
   color: #999999;
-}
-
-#woceSelectMenu {
-  position: absolute;
-  background: white;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  width: 150px;
-  border: 1px solid #CECBC9;
-  border-radius: 3px;
-  padding: 3px;
-  cursor: pointer;
-  z-index: 10;
-  left: 95px;
-  top: 62px;
-  display: none;
-}
-
-#woceSelectMenu ul {
-  list-style-type: none;
-  padding: 0px;
-  margin: 0px;
-}
-
-#woceSelectMenu li:hover {
-  background: #eeeeee;
 }
 
 div.fullPage {
@@ -424,37 +410,11 @@ td.labels {
     display: inline;
 }
 
-#woceCommentDialog {
-    display: none;
-    position: absolute;
-    width: 500px;
-    height: 320px;
-    padding: 5px;
-}
-
 .dialogTitle {
   text-align: center;
   font-size: 16px;
   left: 10px;
-  padding-bottom: 15px;
-}
-
-#woceCommentDialogComment {
-    width: 490px;
-    height: 150px;
-    resize: none;
-}
-
-.woceCommentDialogButton {
-    display: inline;
-    width: 20%;
-}
-
-.woceCommentDialogFlagButton {
-    width: 150px;
-    position: relative;
-    left: 90px;
-    top: -22px;
+  padding-bottom: 20px;
 }
 
 .scrollable {

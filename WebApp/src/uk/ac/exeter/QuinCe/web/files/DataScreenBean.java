@@ -6,13 +6,13 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -39,7 +39,7 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private long fileId;
 	
-	private FileInfo fileDetails;
+	private FileInfo fileDetails = null;
 	
 	private String leftPlotColumns = null;
 	
@@ -55,15 +55,13 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private String tableMode = "basic";
 	
-	private String tableJsonData = null;
+	private String tableData = null;
 	
-	private int tableDataDraw;
+	private String selectedRows = null;
 	
-	private int tableDataStart;
+	private String woceComment = null;
 	
-	private int tableDataLength;
-	
-	private int recordCount = -1;
+	private int woceFlag = Flag.VALUE_NEEDED;
 	
 	Instrument instrument;
 	
@@ -88,6 +86,12 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private void clearData() {
 		fileDetails = null;
+		leftPlotColumns = null;
+		leftPlotData = null;
+		rightPlotColumns = null;
+		rightPlotData = null;
+		optionalFlags = null;
+		tableData = null;
 	}
 	
 	public long getFileId() {
@@ -148,9 +152,6 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public void setOptionalFlags(List<String> optionalFlags) {
 		this.optionalFlags = optionalFlags;
-		
-		// Reset the record count, so it is retrieved from the database again.
-		recordCount = -1;
 	}
 	
 	public String getTableMode() {
@@ -161,44 +162,36 @@ public class DataScreenBean extends BaseManagedBean {
 		this.tableMode = tableMode;
 	}
 	
-	public String getTableJsonData() {
-		return tableJsonData;
+	public String getTableData() {
+		return tableData;
 	}
 	
-	public void setTableJsonData(String tableJsonData) {
-		this.tableJsonData = tableJsonData;
+	public void setTableData(String tableData) {
+		this.tableData = tableData;
 	}
 	
-	public int getTableDataDraw() {
-		return tableDataDraw;
+	public String getSelectedRows() {
+		return selectedRows;
 	}
 	
-	public void setTableDataDraw(int tableDataDraw) {
-		this.tableDataDraw = tableDataDraw;
+	public void setSelectedRows(String selectedRows) {
+		this.selectedRows = selectedRows;
 	}
 	
-	public int getTableDataStart() {
-		return tableDataStart;
+	public String getWoceComment() {
+		return woceComment;
 	}
 	
-	public void setTableDataStart(int tableDataStart) {
-		this.tableDataStart = tableDataStart;
+	public void setWoceComment(String woceComment) {
+		this.woceComment = woceComment;
 	}
 	
-	public int getTableDataLength() {
-		return tableDataLength;
+	public int getWoceFlag() {
+		return woceFlag;
 	}
 	
-	public void setTableDataLength(int tableDataLength) {
-		this.tableDataLength = tableDataLength;
-	}
-	
-	public int getRecordCount() {
-		return recordCount;
-	}
-	
-	public void setRecordCount(int recordCount) {
-		this.recordCount = recordCount;
+	public void setWoceFlag(int woceFlag) {
+		this.woceFlag = woceFlag;
 	}
 	
 	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException {
@@ -498,10 +491,6 @@ public class DataScreenBean extends BaseManagedBean {
 		try {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			
-			if (recordCount < 0) {
-				setRecordCount(FileDataInterrogator.getRecordCount(dataSource, fileId, co2Type, getIncludeFlags()));
-			}
-			
 			List<String> columns = new ArrayList<String>();
 			columns.add("dateTime");
 			columns.add("row");
@@ -590,11 +579,10 @@ public class DataScreenBean extends BaseManagedBean {
 			columns.add("woceFlag");
 			columns.add("woceMessage");
 			
-			setTableJsonData(FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, columns, getIncludeFlags(), tableDataStart, tableDataLength, false, true));
-		
+			setTableData(FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, columns, getIncludeFlags(), 0, 0, true, true));
 		} catch (Exception e) {
 			e.printStackTrace();
-			setTableJsonData("***ERROR: " + e.getMessage());
+			setTableData("***ERROR: " + e.getMessage());
 		}
 	}
 	
@@ -718,5 +706,21 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public Instrument getInstrument() {
 		return instrument;
+	}
+	
+	public void acceptQCFlags() {
+		try {
+			QCDB.acceptQCFlags(ServletUtils.getDBDataSource(), fileId, getSelectedRows());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void applyWoceFlag() {
+		try {
+			QCDB.setWoceFlags(ServletUtils.getDBDataSource(), fileId, getSelectedRows(), getWoceFlag(), getWoceComment());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

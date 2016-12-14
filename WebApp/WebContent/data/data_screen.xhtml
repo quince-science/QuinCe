@@ -70,13 +70,9 @@
 					<f:ajax execute="rightColumns" render="rightData" onevent="drawRightPlot"/>
 				</h:commandLink>
 				
-				<h:inputHidden value="#{dataScreenBean.tableJsonData}" id="tableJsonData"/>
-				<h:inputHidden value="#{dataScreenBean.recordCount}" id="recordCount"/>
-				<h:inputHidden value="#{dataScreenBean.tableDataDraw}" id="tableDataDraw"/>
-				<h:inputHidden value="#{dataScreenBean.tableDataStart}" id="tableDataStart"/>
-				<h:inputHidden value="#{dataScreenBean.tableDataLength}" id="tableDataLength"/>
-				<h:commandLink id="tableGetData" action="#{dataScreenBean.generateTableData}">
-					<f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw recordCount" onevent="tableDataDownload"/>
+				<h:inputHidden id="tableData" value="#{dataScreenBean.tableData}"/>
+				<h:commandLink id="getTableData" action="#{dataScreenBean.generateTableData}">
+					<f:ajax render="tableData" onevent="drawTable"/>
 				</h:commandLink>
 			</h:form>
 		</div>
@@ -84,6 +80,34 @@
 			QC Info
 		</div>
 		<h:form id="dataScreenForm">
+			<h:inputHidden id="selectedRows" value="#{dataScreenBean.selectedRows}"/>
+			<h:commandLink id="acceptQCFlags" action="#{dataScreenBean.acceptQCFlags}">
+				<f:ajax execute="selectedRows" render="@none" onevent="qcFlagsAccepted"/>
+			</h:commandLink>
+			
+			<h:inputHidden id="woceFlag" value="#{dataScreenBean.woceFlag}"/>
+			<h:commandLink id="applyWoceFlag" action="#{dataScreenBean.applyWoceFlag}">
+				<f:ajax execute="selectedRows woceFlag woceComment" render="@none" onevent="woceFlagsUpdated"/>
+			</h:commandLink>
+		    <div id="woceCommentDialog" class="popup">
+		        <div class="dialogTitle">Set WOCE flag for <span id="woceRowCount"></span></div>
+		        <div>WOCE Flag:</div>
+		        <div id="woceCommentDialogFlag" onclick="woceFlagClick(); return false;">FLAG_VALUE</div>
+		        <div id="woceSelectMenu">
+		        	<ul>
+		            	<li class="good" onclick="woceSelection(2)">Good</li>
+		            	<li class="questionable" onclick="woceSelection(3)">Questionable</li>
+		            	<li class="bad" onclick="woceSelection(4)">Bad</li>
+		            	<li class="ignore" onclick="woceSelection(-1002)">Ignore</li>
+		          	</ul>
+		        </div>
+		        <div style="clear: both">Comment:</div>
+	           	<h:inputTextarea id="woceComment" value="#{dataScreenBean.woceComment}"/>
+	           	<div class="buttonWrapper">
+		           	<button name="woceCommentDialogSave" class="woceCommentDialogButton" onclick="saveWoceComment(); return false;">Save</button>
+		            <button name="woceCommentDialogCancel" class="woceCommentDialogButton" onclick="cancelWoceComment(); return false;">Cancel</button>
+	            </div>
+	        </div>
 	    	<div id="header">
 	      		#{dataScreenBean.fileDetails.fileName}
 	      		&nbsp;&nbsp;&nbsp;
@@ -95,12 +119,13 @@
 		      			<f:ajax render="@none" onevent="drawAllData"/>
 		      		</p:selectOneButton>
 		      	</ui:remove>
-		      	
-		      	<p:selectManyButton value="#{dataScreenBean.optionalFlags}">
-		      		<f:selectItem itemLabel="B" itemValue="4"/>
-		      		<f:selectItem itemLabel="I" itemValue="-1002"/>
-		      		<f:ajax render="@none" onevent="drawAllData"/>
-		      	</p:selectManyButton>
+		      	<ui:remove>
+			      	<p:selectManyButton value="#{dataScreenBean.optionalFlags}">
+			      		<f:selectItem itemLabel="B" itemValue="4"/>
+			      		<f:selectItem itemLabel="I" itemValue="-1002"/>
+			      		<f:ajax render="@none" onevent="drawAllData"/>
+			      	</p:selectManyButton>
+	      		</ui:remove>
 	      		
 	      		<div id="updateStatus">
 	      			<h:commandLink id="FinishLink" value="Finished" action="#{dataScreenBean.end}"/>
@@ -128,14 +153,25 @@
 	    		<div id="data">
 	    			<div id="tableContent"></div>
 	    			<div id="tableControls" class="controls">
-			      		<p:selectOneButton value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="changeTableMode(event)">
-			      			<f:selectItem itemLabel="Basic" itemValue="basic"/>
-			      			<f:selectItem itemLabel="Water" itemValue="water"/>
-			      			<f:selectItem itemLabel="Equilibrator" itemValue="equilibrator"/>
-			      			<f:selectItem itemLabel="CO₂" itemValue="co2"/>
-			      			<f:ajax render="@none"/>
-			      		</p:selectOneButton>
-
+	    				<table width="100%">
+	    					<tr>
+	    						<td>
+						      		<p:selectOneButton value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="changeTableMode(event)">
+						      			<f:selectItem itemLabel="Basic" itemValue="basic"/>
+						      			<f:selectItem itemLabel="Water" itemValue="water"/>
+						      			<f:selectItem itemLabel="Equilibrator" itemValue="equilibrator"/>
+						      			<f:selectItem itemLabel="CO₂" itemValue="co2"/>
+						      			<f:ajax render="@none"/>
+						      		</p:selectOneButton>
+	    						</td>
+	    						<td style="text-align: right">
+						      		Selected rows: <span id="selectedRowsCount">0</span>
+						      		<button id="clearSelectionButton" class="smallButton tightButton" onclick="clearSelection(); return false;">x</button>
+						      		<button id="acceptFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="acceptQCFlags(); return false;">Use QC Flags</button>
+						      		<button id="overrideFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="showWoceCommentDialog(); return false;">Override QC Flags</button>
+	    						</td>
+	    					</tr>
+	    				</table>
 	    			</div>
 	    		</div>
     		</div>

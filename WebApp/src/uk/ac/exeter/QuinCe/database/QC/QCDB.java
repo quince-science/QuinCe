@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -24,6 +25,8 @@ import uk.ac.exeter.QuinCe.data.QCRecord;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.utils.MissingParam;
+import uk.ac.exeter.QuinCe.utils.ParameterException;
 
 public class QCDB {
 
@@ -124,6 +127,12 @@ public class QCDB {
 	private static final String CLEAR_QC_FLAGS_BY_ROW_STATEMENT = "UPDATE qc SET qc_flag = " + Flag.VALUE_NOT_SET
 			+ ", qc_message = NULL, woce_flag = " + Flag.VALUE_NOT_SET + ", woce_message = NULL "
 			+ "WHERE data_file_id = ? AND row = ?";
+	
+	private static final String GET_QC_FLAGS_QUERY = "SELECT row, qc_flag, qc_message FROM qc WHERE data_file_id = ? AND row IN (%%ROWS%%)";
+	
+	private static final String SET_WOCE_DETAILS_STATEMENT = "UPDATE qc SET woce_flag = ?, woce_message = ? WHERE data_file_id = ? AND row = ?";
+	
+	private static final String SET_WOCE_FLAG_STATEMENT = "UPDATE qc SET woce_flag = ?, woce_message = ? WHERE data_file_id = ? AND row IN (%%ROWS%%)";
 	
 	public static void clearQCData(DataSource dataSource, long fileId) throws DatabaseException {
 		Connection conn = null;
@@ -468,6 +477,79 @@ public class QCDB {
 		return getFlag(conn, GET_WOCE_FLAG_QUERY, fileId, row);
 	}
 	
+	public static void acceptQCFlags(DataSource dataSource, long fileId, String rows) throws ParameterException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		MissingParam.checkMissing(rows, "rows");
+		MissingParam.checkListOfIntegers(rows, "rows");
+		
+		String queryString = GET_QC_FLAGS_QUERY;
+		queryString = queryString.replaceAll("%%ROWS%%", rows);
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet resultSet = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
+			
+			stmt = conn.prepareStatement(queryString);
+			stmt.setLong(1, fileId);
+			resultSet = stmt.executeQuery();
+			
+			while (resultSet.next()) {
+				
+				int row = resultSet.getInt(1);
+				int qcFlag = resultSet.getInt(2);
+				List<Message> messageList = RebuildCode.getMessagesFromRebuildCodes(resultSet.getString(3));
+				
+				setWoceDetails(conn, fileId, row, qcFlag, messageList);
+			}
+			
+			conn.commit();
+			
+		} catch (SQLException|MessageException e) {
+			DatabaseUtils.rollBack(conn);
+			throw new DatabaseException("An error occurred while accepting QC flags", e);
+		} finally {
+			DatabaseUtils.closeResultSets(resultSet);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	public static void setWoceDetails(Connection conn, long fileId, int row, int flag, List<Message> messages) throws DatabaseException {
+		
+		PreparedStatement stmt = null;
+		
+		StringBuilder messageString = new StringBuilder();
+		Iterator<Message> i = messages.iterator();
+		while (i.hasNext()) {
+			Message message = i.next();
+			messageString.append(message.getShortMessage());
+			if (i.hasNext()) {
+				messageString.append(';');
+			}
+		}
+		
+		try {
+			stmt = conn.prepareStatement(SET_WOCE_DETAILS_STATEMENT);
+			stmt.setInt(1, flag);
+			stmt.setString(2, messageString.toString());
+			stmt.setLong(3, fileId);
+			stmt.setInt(4, row);
+			
+			stmt.execute();
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while setting the WOCE details");
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+		}
+		
+	}
+	
 	private static Flag getFlag(Connection conn, String query, long fileId, int row) throws MessageException, DatabaseException, RecordNotFoundException {
 		
 		PreparedStatement stmt = null;
@@ -495,5 +577,41 @@ public class QCDB {
 			DatabaseUtils.closeResultSets(record);
 			DatabaseUtils.closeStatements(stmt);
 		}
+	}
+	
+	public static void setWoceFlags(DataSource dataSource, long fileId, String rows, int flag, String comment) throws ParameterException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		MissingParam.checkMissing(rows, "rows");
+		MissingParam.checkListOfIntegers(rows, "rows");
+		if (!Flag.isValidFlagValue(flag)) {
+			throw new ParameterException("flag", "Invalid flag value");
+		}
+		MissingParam.checkMissing(comment, "comment");
+		
+		String queryString = SET_WOCE_FLAG_STATEMENT;
+		queryString = queryString.replaceAll("%%ROWS%%", rows);
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			
+			stmt = conn.prepareStatement(queryString);
+			stmt.setInt(1, flag);
+			stmt.setString(2, comment);
+			stmt.setLong(3, fileId);
+			
+			stmt.execute();
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while setting WOCE flags", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
 	}
 }
