@@ -119,12 +119,13 @@
 		      			<f:ajax render="@none" onevent="drawAllData"/>
 		      		</p:selectOneButton>
 		      	</ui:remove>
-		      	
-		      	<p:selectManyButton value="#{dataScreenBean.optionalFlags}">
-		      		<f:selectItem itemLabel="B" itemValue="4"/>
-		      		<f:selectItem itemLabel="I" itemValue="-1002"/>
-		      		<f:ajax render="@none" onevent="drawAllData"/>
-		      	</p:selectManyButton>
+		      	<ui:remove>
+			      	<p:selectManyButton value="#{dataScreenBean.optionalFlags}">
+			      		<f:selectItem itemLabel="B" itemValue="4"/>
+			      		<f:selectItem itemLabel="I" itemValue="-1002"/>
+			      		<f:ajax render="@none" onevent="drawAllData"/>
+			      	</p:selectManyButton>
+	      		</ui:remove>
 	      		
 	      		<div id="updateStatus">
 	      			<h:commandLink id="FinishLink" value="Finished" action="#{dataScreenBean.end}"/>
