@@ -1055,6 +1055,7 @@ function clearSelection() {
 	jsDataTable.rows(selectedRows).deselect();
 	selectedRows = [];
 	selectionQCMessageCounts = {};
+	selectionWoceMessageCounts = {};
 	selectionUpdated();
 }
 
