@@ -1,6 +1,8 @@
 package uk.ac.exeter.QuinCe.web.files;
 
 import java.io.OutputStream;
+import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.faces.context.ExternalContext;
@@ -13,10 +15,12 @@ import uk.ac.exeter.QuinCe.data.ExportOption;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
@@ -88,6 +92,28 @@ public class FileListBean extends BaseManagedBean {
 		return PAGE_FILE_LIST;
 	}
 	
+	public String reprocessFile() {
+		
+		Connection conn = null;
+
+		try {
+			DataSource dataSource = ServletUtils.getDBDataSource();
+			conn = dataSource.getConnection();
+			
+			List<String> params = new ArrayList<String>(1);
+			params.add(String.valueOf(chosenFile));
+			
+			JobManager.addJob(conn, getUser(), FileInfo.JOB_CLASS_REDUCTION, params);
+			DataFileDB.setCurrentJob(conn, chosenFile, FileInfo.JOB_CODE_REDUCTION);
+		} catch (Exception e) {
+			return internalError(e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return PAGE_FILE_LIST;
+	}
+	
 	private FileInfo getCurrentFileDetails() {
 		FileInfo result = null;
 		
@@ -129,6 +155,10 @@ public class FileListBean extends BaseManagedBean {
 		return DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), chosenFile).getFileName();
 	}
 	
+	public String getChosenFileInstrumentName() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
+		return InstrumentDB.getInstrumentByFileId(ServletUtils.getDBDataSource(), chosenFile).getName();
+	}
+	
 	public List<ExportOption> getExportOptions() throws ExportException {
 		return ExportConfig.getInstance().getOptions();
 	}
@@ -144,22 +174,36 @@ public class FileListBean extends BaseManagedBean {
 	public void exportFile() throws Exception {
 
 		DataSource dataSource = ServletUtils.getDBDataSource();
-		
 		Instrument instrument = InstrumentDB.getInstrumentByFileId(dataSource, chosenFile);
+		ExportOption exportOption = getExportOptions().get(chosenExportOption);
 		
-		String fileContent = FileDataInterrogator.getCSVData(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), chosenFile, instrument, getExportOptions().get(chosenExportOption));
+		byte[] fileContent = FileDataInterrogator.getCSVData(dataSource, ServletUtils.getAppConfig(), chosenFile, instrument, exportOption).getBytes();
 				
 		FacesContext fc = FacesContext.getCurrentInstance();
 	    ExternalContext ec = fc.getExternalContext();
 
 	    ec.responseReset();
 	    ec.setResponseContentType("text/csv");
-	    ec.setResponseContentLength(fileContent.length()); // Set it with the file size. This header is optional. It will work if it's omitted, but the download progress will be unknown.
-	    ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + getChosenFileName() + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
+	    ec.setResponseContentLength(fileContent.length); // Set it with the file size. This header is optional. It will work if it's omitted, but the download progress will be unknown.
+	    ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + getExportFilename(exportOption) + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
 
 	    OutputStream output = ec.getResponseOutputStream();
-	    output.write(fileContent.getBytes());
+	    output.write(fileContent);
 
 	    fc.responseComplete();
+	}
+	
+	private String getExportFilename(ExportOption exportOption) throws Exception {
+		StringBuffer fileName = new StringBuffer(getChosenFileName().replaceAll("\\.", "_"));
+		fileName.append('-');
+		fileName.append(exportOption.getName());
+		
+		if (exportOption.getSeparator().equals("\t")) {
+			fileName.append(".tsv");
+		} else {
+			fileName.append(".csv");
+		}
+		
+		return fileName.toString();
 	}
 }

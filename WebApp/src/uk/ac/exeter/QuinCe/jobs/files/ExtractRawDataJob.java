@@ -51,6 +51,7 @@ public class ExtractRawDataJob extends FileJob {
 		
 		reset();
 		Connection conn = null;
+		int lineNumber = 0;
 		
 		try {
 			RawDataFile inData = DataFileDB.getRawDataFile(dataSource, config, fileId);
@@ -67,26 +68,29 @@ public class ExtractRawDataJob extends FileJob {
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
 			
-			int lineNumber = 0;
+			lineNumber = 0;
 			for (List<String> line : data) {
 				lineNumber++;
 				
-				// Check that we're still using the right calibration
-				if (currentCalibration + 1 < fileCalibrations.size()) {
-					Calendar lineDate = instrument.getDateFromLine(line);
-					Date nextCalibrationDate = fileCalibrations.get(currentCalibration + 1).getDate();
-					if (nextCalibrationDate.getTime() < lineDate.getTimeInMillis()) {
-						currentCalibration++;
-						currentCoefficients = CalibrationDB.getCalibrationCoefficients(dataSource, fileCalibrations.get(currentCalibration));
-					}
-				}
-				
-				applyCalibrations(line, instrument, currentCoefficients);
-				RawDataDB.storeRawData(conn, instrument, fileId, lineNumber, line);
-				
 				String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
-				if (instrument.isMeasurementRunType(runType)) {
-					QCDB.createQCRecord(conn, fileId, lineNumber, instrument);
+				if (instrument.isMeasurementRunType(runType) || instrument.isStandardRunType(runType)) {
+				
+					// Check that we're still using the right calibration
+					if (currentCalibration + 1 < fileCalibrations.size()) {
+						Calendar lineDate = instrument.getDateFromLine(line);
+						Date nextCalibrationDate = fileCalibrations.get(currentCalibration + 1).getDate();
+						if (nextCalibrationDate.getTime() < lineDate.getTimeInMillis()) {
+							currentCalibration++;
+							currentCoefficients = CalibrationDB.getCalibrationCoefficients(dataSource, fileCalibrations.get(currentCalibration));
+						}
+					}
+					
+					applyCalibrations(line, instrument, currentCoefficients);
+					RawDataDB.storeRawData(conn, instrument, fileId, lineNumber, line);
+					
+					if (instrument.isMeasurementRunType(runType)) {
+						QCDB.createQCRecord(conn, fileId, lineNumber, instrument);
+					}
 				}
 				
 				if (lineNumber % 100 == 0) {
@@ -102,7 +106,7 @@ public class ExtractRawDataJob extends FileJob {
 			conn.commit();
 		} catch (Exception e) {
 			DatabaseUtils.rollBack(conn);
-			throw new JobFailedException(id, e);
+			throw new JobFailedException(id, lineNumber, e);
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}

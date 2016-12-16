@@ -7,6 +7,10 @@ import java.util.Locale;
 import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 /**
  * Miscellaneous date/time utilities
  * 
@@ -28,6 +32,8 @@ public class DateTimeUtils {
 	private static SimpleDateFormat dateFormatter = null;
 	
 	private static SimpleDateFormat dateTimeFormatter = null;
+	
+	private static DateTimeFormatter sqlDateTimeFormatter = null;
 
 	/**
 	 * Determines whether or not the current time is within a
@@ -129,5 +135,21 @@ public class DateTimeUtils {
 	
 	public static Calendar getUTCCalendarInstance() {
 		return Calendar.getInstance(new SimpleTimeZone(0, "UTC"), Locale.ENGLISH);
+	}
+	
+	public static DateTime makeDateTimeFromSql(String dateTime) throws InvalidDateTimeStringException {
+		if (null == sqlDateTimeFormatter) {
+			sqlDateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.S");
+		}
+		
+		DateTime result = null;
+		
+		try {
+			result = sqlDateTimeFormatter.parseDateTime(dateTime);
+		} catch (IllegalArgumentException e) {
+			throw new InvalidDateTimeStringException(dateTime);
+		}
+		
+		return result;
 	}
 }

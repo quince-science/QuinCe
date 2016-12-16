@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.StandardConcentration;
 import uk.ac.exeter.QuinCe.data.StandardStub;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.database.Instrument.GasStandardDB;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -90,7 +91,9 @@ public class GasStandardRuns {
 		
 		double result;
 		
-		if (null == previous) {
+		if (null == previous && null == next) {
+			result = RawDataDB.MISSING_VALUE;
+		} else if (null == previous) {
 			result = next.getMeanValue(valueType);
 		} else if (null == next) {
 			result = previous.getMeanValue(valueType);
@@ -158,10 +161,12 @@ public class GasStandardRuns {
 			// The gas standard as measured either side of the 'real' CO2 measurement
 			double measuredStandard = getInterpolatedCo2(runType, time);
 			
-			// The actual concentration of the gas standard
-			double actualConcentration = actualConcentrations.get(runType).getConcentration();
-			
-			result.addData(measuredStandard, actualConcentration);
+			if (measuredStandard != RawDataDB.MISSING_VALUE) {
+				// The actual concentration of the gas standard
+				double actualConcentration = actualConcentrations.get(runType).getConcentration();
+				
+				result.addData(measuredStandard, actualConcentration);
+			}
 		}
 		
 		return result;

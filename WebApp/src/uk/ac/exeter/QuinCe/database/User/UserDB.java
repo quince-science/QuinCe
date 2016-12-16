@@ -480,6 +480,7 @@ public class UserDB {
 				stmt.setBytes(2, generatedPassword.hashedPassword);
 				stmt.setInt(3, user.getDatabaseID());
 				stmt.execute();
+				result = true;
 				
 			} catch (SQLException|InvalidKeySpecException|NoSuchAlgorithmException e) {
 				result = false;

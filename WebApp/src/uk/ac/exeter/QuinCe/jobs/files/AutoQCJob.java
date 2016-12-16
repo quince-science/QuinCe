@@ -36,6 +36,7 @@ public class AutoQCJob extends FileJob {
 		Connection conn = null;
 		
 		try {
+			// This automatically filters out QC records that are already marked IGNORE or BAD
 			List<? extends DataRecord> qcRecords = QCDB.getQCRecords(dataSource, resourceManager.getColumnConfig(), fileId, instrument);
 			
 			// Remove any existing QC flags and messages
@@ -69,6 +70,13 @@ public class AutoQCJob extends FileJob {
 						qcRecord.setWoceFlag(Flag.ASSUMED_GOOD);
 						qcRecord.setWoceComment(null);
 						writeRecord = true;
+					} else {
+						Flag woceFlag = qcRecord.getWoceFlag();
+						if (!woceFlag.equals(Flag.ASSUMED_GOOD) && !woceFlag.equals(Flag.GOOD)) {
+							qcRecord.setWoceFlag(Flag.ASSUMED_GOOD);
+							qcRecord.setWoceComment(null);
+							writeRecord = true;
+						}
 					}
 				} else {
 					

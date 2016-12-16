@@ -14,7 +14,7 @@ import java.util.List;
 public class StringUtils {
 
 	/**
-	 * Converts a list of String values to a single string,
+	 * Converts a list of values to a single string,
 	 * with a semi-colon delimiter.
 	 * 
 	 * <b>Note that this does not handle semi-colons within the values themselves.</b>
@@ -22,15 +22,28 @@ public class StringUtils {
 	 * @param list The list to be converted
 	 * @return The converted list
 	 */
-	public static String listToDelimited(List<String> list) {
-		String delimiter = ";";
+	public static String listToDelimited(List<?> list) {
+		return listToDelimited(list, ";");
+	}
+	
+	/**
+	 * Converts a list of values to a single string,
+	 * with a specified delimiter.
+	 * 
+	 * <b>Note that this does not handle the case where the delimiter is found within the values themselves.</b>
+	 * 
+	 * @param list The list to be converted
+	 * @param delimiter The delimiter to use
+	 * @return The converted list
+	 */
+	public static String listToDelimited(List<?> list, String delimiter) {
 		
 		String result = null;
 		
 		if (null != list) {
 			StringBuffer buildResult = new StringBuffer();
 			for (int i = 0; i < list.size(); i++) {
-				buildResult.append(list.get(i));
+				buildResult.append(list.get(i).toString());
 				if (i < (list.size() - 1)) {
 					buildResult.append(delimiter);
 				}
@@ -131,10 +144,17 @@ public class StringUtils {
 	public static boolean isNumeric(String value) {
 		boolean result = true;
 		
-		try {
-			Double.parseDouble(value);
-		} catch (NumberFormatException e) {
+		if (null == value) {
 			result = false;
+		} else {
+			try {
+				Double doubleValue = new Double(value);
+				if (doubleValue.isNaN()) {
+					result = false;
+				}
+			} catch (NumberFormatException e) {
+				result = false;
+			}
 		}
 		
 		return result;

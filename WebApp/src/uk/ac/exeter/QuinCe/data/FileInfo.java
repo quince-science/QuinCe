@@ -227,17 +227,6 @@ public class FileInfo {
 	}
 	
 	/**
-	 * Return the days remaining before the data file will be purged,
-	 * @return The time remaining.
-	 */
-	public int getTimeRemaining() {
-		Calendar now = DateTimeUtils.getUTCCalendarInstance();
-		now.setTimeInMillis(System.currentTimeMillis());
-		int daysRemaining = DateTimeUtils.getDaysBetween(lastTouched, now);
-		return 60 - daysRemaining;
-	}
-	
-	/**
 	 * @return the currentJob
 	 */
 	public int getCurrentJob() {

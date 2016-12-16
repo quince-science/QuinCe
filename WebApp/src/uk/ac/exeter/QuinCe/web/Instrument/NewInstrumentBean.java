@@ -300,11 +300,6 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 					} else {
 						instrumentDetails.setRawFileColumnCount(splitLine.length);
 					}
-				} else {
-					if (instrumentDetails.getRawFileColumnCount() != splitLine.length) {
-						setSampleFileExtractionError("The file does not contain a consistent number of columns (line " + lineCount + ").");
-						break;
-					}
 				}
 				
 				Map<Integer, String> lineMap = new HashMap<Integer, String>();
@@ -419,6 +414,10 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 			result = "Time";
 			break;
 		}
+		case Instrument.COL_CUSTOM_DATETIME_FORMAT: {
+			result = "Date/Time";
+			break;
+		}
 		case Instrument.COL_LONGITUDE: {
 			result = "Longitude";
 			break;
@@ -481,6 +480,30 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		}
 		case Instrument.COL_EQP_3: {
 			result = instrumentDetails.getLongEqpName3();
+			break;
+		}
+		case Instrument.COL_AIR_FLOW_1: {
+			result = instrumentDetails.getLongAirFlowName1();
+			break;
+		}
+		case Instrument.COL_AIR_FLOW_2: {
+			result = instrumentDetails.getLongAirFlowName2();
+			break;
+		}
+		case Instrument.COL_AIR_FLOW_3: {
+			result = instrumentDetails.getLongAirFlowName3();
+			break;
+		}
+		case Instrument.COL_WATER_FLOW_1: {
+			result = instrumentDetails.getLongWaterFlowName1();
+			break;
+		}
+		case Instrument.COL_WATER_FLOW_2: {
+			result = instrumentDetails.getLongWaterFlowName2();
+			break;
+		}
+		case Instrument.COL_WATER_FLOW_3: {
+			result = instrumentDetails.getLongWaterFlowName3();
 			break;
 		}
 		case Instrument.COL_ATMOSPHERIC_PRESSURE: {
@@ -705,20 +728,25 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		
 		columnList.add(Instrument.COL_RUN_TYPE);
 
-		if (instrumentDetails.getDateFormat() == Instrument.SEPARATE_FIELDS) {
-			columnList.add(Instrument.COL_YEAR);
-			columnList.add(Instrument.COL_MONTH);
-			columnList.add(Instrument.COL_DAY);
+		if (instrumentDetails.getCustomDateTimeFormat()) {
+			columnList.add(Instrument.COL_CUSTOM_DATETIME_FORMAT);
 		} else {
-			columnList.add(Instrument.COL_DATE);
-		}
 		
-		if (instrumentDetails.getTimeFormat() == Instrument.SEPARATE_FIELDS) {
-			columnList.add(Instrument.COL_HOUR);
-			columnList.add(Instrument.COL_MINUTE);
-			columnList.add(Instrument.COL_SECOND);
-		} else {
-			columnList.add(Instrument.COL_TIME);
+			if (instrumentDetails.getDateFormat() == Instrument.SEPARATE_FIELDS) {
+				columnList.add(Instrument.COL_YEAR);
+				columnList.add(Instrument.COL_MONTH);
+				columnList.add(Instrument.COL_DAY);
+			} else {
+				columnList.add(Instrument.COL_DATE);
+			}
+			
+			if (instrumentDetails.getTimeFormat() == Instrument.SEPARATE_FIELDS) {
+				columnList.add(Instrument.COL_HOUR);
+				columnList.add(Instrument.COL_MINUTE);
+				columnList.add(Instrument.COL_SECOND);
+			} else {
+				columnList.add(Instrument.COL_TIME);
+			}
 		}
 		
 		columnList.add(Instrument.COL_LONGITUDE);
@@ -733,50 +761,66 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		
 		columnList.add(Instrument.COL_INTAKE_TEMP_1);
 		
-		String intakeTempName2 = instrumentDetails.getIntakeTempName2();
-		if (null != intakeTempName2 && intakeTempName2.length() > 0) {
+		if (instrumentDetails.hasIntakeTemp2()) {
 			columnList.add(Instrument.COL_INTAKE_TEMP_2);
 		}
 		
-		String intakeTempName3 = instrumentDetails.getIntakeTempName3();
-		if (null != intakeTempName3 && intakeTempName3.length() > 0) {
+		if (instrumentDetails.hasIntakeTemp3()) {
 			columnList.add(Instrument.COL_INTAKE_TEMP_3);
 		}
 		
 		columnList.add(Instrument.COL_SALINITY_1);
 		
-		String salinityName2 = instrumentDetails.getSalinityName2();
-		if (null != salinityName2 && salinityName2.length() > 0) {
+		if (instrumentDetails.hasSalinity2()) {
 			columnList.add(Instrument.COL_SALINITY_2);
 		}
 		
-		String salinityName3 = instrumentDetails.getSalinityName3();
-		if (null != salinityName3 && salinityName3.length() > 0) {
+		if (instrumentDetails.hasSalinity3()) {
 			columnList.add(Instrument.COL_SALINITY_3);
 		}
 		
 		columnList.add(Instrument.COL_EQT_1);
 		
-		String eqtName2 = instrumentDetails.getEqtName2();
-		if (null != eqtName2 && eqtName2.length() > 0) {
+		if (instrumentDetails.hasEqt2()) {
 			columnList.add(Instrument.COL_EQT_2);
 		}
 		
-		String eqtName3 = instrumentDetails.getEqtName3();
-		if (null != eqtName3 && eqtName3.length() > 0) {
+		if (instrumentDetails.hasEqt3()) {
 			columnList.add(Instrument.COL_EQT_3);
 		}
 		
 		columnList.add(Instrument.COL_EQP_1);
 		
-		String eqpName2 = instrumentDetails.getEqpName2();
-		if (null != eqpName2 && eqpName2.length() > 0) {
+		if (instrumentDetails.hasEqp2()) {
 			columnList.add(Instrument.COL_EQP_2);
 		}
 		
-		String eqpName3 = instrumentDetails.getEqpName3();
-		if (null != eqpName3 && eqpName3.length() > 0) {
+		if (instrumentDetails.hasEqp3()) {
 			columnList.add(Instrument.COL_EQP_3);
+		}
+		
+		if (instrumentDetails.hasAirFlow1()) {
+			columnList.add(Instrument.COL_AIR_FLOW_1);
+		}
+		
+		if (instrumentDetails.hasAirFlow2()) {
+			columnList.add(Instrument.COL_AIR_FLOW_2);
+		}
+		
+		if (instrumentDetails.hasAirFlow3()) {
+			columnList.add(Instrument.COL_AIR_FLOW_3);
+		}
+		
+		if (instrumentDetails.hasWaterFlow1()) {
+			columnList.add(Instrument.COL_WATER_FLOW_1);
+		}
+		
+		if (instrumentDetails.hasWaterFlow2()) {
+			columnList.add(Instrument.COL_WATER_FLOW_2);
+		}
+		
+		if (instrumentDetails.hasWaterFlow3()) {
+			columnList.add(Instrument.COL_WATER_FLOW_3);
 		}
 		
 		if (instrumentDetails.getHasAtmosphericPressure()) {

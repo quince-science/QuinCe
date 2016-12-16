@@ -15,7 +15,11 @@
 			<h:form id="exportForm">
 				<h:inputHidden id="chosenFile" value="#{fileListBean.chosenFile}"/>
 				<h1>Export</h1>
-				<h3><h:outputText value="#{fileListBean.chosenFileName}"/></h3>
+				<h3>
+					<h:outputText value="#{fileListBean.chosenFileInstrumentName}"/>
+					<br/>
+					<h:outputText value="#{fileListBean.chosenFileName}"/>
+				</h3>
 				<br/>
 				Please select the export format you want, and then click 'Export'
 				<br/>

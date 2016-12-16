@@ -25,10 +25,11 @@
       		<ul class="menu">
         		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/data/file_list.jsf';">Files</li>
         		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/instrument/instrument_list.jsf';">Instruments</li>
-        		<li class="menuitem">Account</li>
+        		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/user/user_edit.xhtml';">Account</li>
         		<ui:fragment rendered="#{User.jobManager}">
         			<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/jobs/job_list.jsf';">Jobs</li>
         		</ui:fragment>
+
         		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/logout';">Log Out</li>
       		</ul>
     	</div>

@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.joda.time.DateTime;
 
@@ -12,6 +13,8 @@ import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.InvalidDateTimeStringException;
 
 /**
  * An implementation of the QC Routines DataRecord class for QuinCe
@@ -39,7 +42,70 @@ public class QCRecord extends DataRecord {
 	
 	private String woceComment;
 	
-	public QCRecord(long dataFileId, Instrument instrument, ColumnConfig columnConfig, int lineNumber, List<String> dataFields, Flag qcFlag, List<Message> qcComments, Flag woceFlag, String woceComment) throws DataRecordException, MessageException {
+	private static final int FIELD_DATE_TIME = 2;
+
+	private static final int FIELD_LONGITUDE = 3;
+
+	private static final int FIELD_LATITUDE = 4;
+	
+	public static final int FIELD_INTAKE_TEMP_1 = 5;
+	
+	public static final int FIELD_INTAKE_TEMP_2 = 6;
+	
+	public static final int FIELD_INTAKE_TEMP_3 = 7;
+	
+	public static final int FIELD_SALINITY_1 = 8;
+	
+	public static final int FIELD_SALINITY_2 = 9;
+	
+	public static final int FIELD_SALINITY_3 = 10;
+	
+	public static final int FIELD_EQT_1 = 11;
+	
+	public static final int FIELD_EQT_2 = 12;
+	
+	public static final int FIELD_EQT_3 = 13;
+	
+	public static final int FIELD_EQP_1 = 14;
+	
+	public static final int FIELD_EQP_2 = 15;
+	
+	public static final int FIELD_EQP_3 = 16;
+	
+	public static final int FIELD_MOISTURE = 17;
+	
+	public static final int FIELD_CO2 = 19;
+	
+	private boolean intakeTemp1Used;
+	
+	private boolean intakeTemp2Used;
+	
+	private boolean intakeTemp3Used;
+	
+	private boolean salinity1Used;
+	
+	private boolean salinity2Used;
+	
+	private boolean salinity3Used;
+	
+	private boolean eqt1Used;
+	
+	private boolean eqt2Used;
+	
+	private boolean eqt3Used;
+	
+	private boolean eqp1Used;
+	
+	private boolean eqp2Used;
+	
+	private boolean eqp3Used;
+	
+	public QCRecord(long dataFileId, Instrument instrument, ColumnConfig columnConfig, int lineNumber, List<String> dataFields,
+			boolean intakeTemp1Used, boolean intakeTemp2Used, boolean intakeTemp3Used,
+			boolean salinity1Used, boolean salinity2Used, boolean salinity3Used,
+			boolean eqt1Used, boolean eqt2Used, boolean eqt3Used,
+			boolean eqp1Used, boolean eqp2Used, boolean eqp3Used,
+			Flag qcFlag, List<Message> qcComments, Flag woceFlag, String woceComment) throws DataRecordException, MessageException {
 		super(lineNumber, columnConfig, dataFields);
 		this.dataFileId = dataFileId;
 		this.instrument = instrument;
@@ -47,26 +113,75 @@ public class QCRecord extends DataRecord {
 		setMessages(qcComments);
 		this.woceFlag = woceFlag;
 		this.woceComment = woceComment;
+		
+		this.intakeTemp1Used = intakeTemp1Used;
+		this.intakeTemp2Used = intakeTemp2Used;
+		this.intakeTemp3Used = intakeTemp3Used;
+		this.salinity1Used = salinity1Used;
+		this.salinity2Used = salinity2Used;
+		this.salinity3Used = salinity3Used;
+		this.eqt1Used = eqt1Used;
+		this.eqt2Used = eqt2Used;
+		this.eqt3Used = eqt3Used;
+		this.eqp1Used = eqp1Used;
+		this.eqp2Used = eqp2Used;
+		this.eqp3Used = eqp3Used;
 	}
 
 	@Override
-	public DateTime getTime() {
-		// TODO Auto-generated method stub
-		return null;
+	public DateTime getTime() throws DataRecordException {
+		String timeString = data.get(FIELD_DATE_TIME).getValue();
+		DateTime result = null;
+		try {
+			result = DateTimeUtils.makeDateTimeFromSql(timeString);
+		} catch (InvalidDateTimeStringException e) {
+			throw new DataRecordException(lineNumber, "Error occurred while retrieving Date/Time", e);
+		}
+		
+		return result;
+	}
+	
+	@Override
+	public TreeSet<Integer> getDateTimeColumns() {
+		TreeSet<Integer> columnList = new TreeSet<Integer>();
+		columnList.add(FIELD_DATE_TIME);
+		return columnList;
 	}
 
 	@Override
-	public double getLongitude() {
-		// TODO Auto-generated method stub
-		return 0;
+	public double getLongitude() throws DataRecordException {
+		double result = 0;
+		try {
+			result = Double.parseDouble(data.get(FIELD_LONGITUDE).getValue());
+		} catch (NumberFormatException e) {
+			throw new DataRecordException(lineNumber, "Invalid longitude value '" + data.get(FIELD_LONGITUDE).getValue() + "'");
+		}
+		
+		return result;
 	}
 
 	@Override
-	public double getLatitude() {
-		// TODO Auto-generated method stub
-		return 0;
+	public int getLongitudeColumn() {
+		return FIELD_LONGITUDE;
+	}
+	
+	@Override
+	public double getLatitude() throws DataRecordException {
+		double result = 0;
+		try {
+			result = Double.parseDouble(data.get(FIELD_LATITUDE).getValue());
+		} catch (NumberFormatException e) {
+			throw new DataRecordException(lineNumber, "Invalid latitude value '" + data.get(FIELD_LONGITUDE).getValue() + "'");
+		}
+		
+		return result;
 	}
 
+	@Override
+	public int getLatitudeColumn() {
+		return FIELD_LATITUDE;
+	}
+	
 	public long getDataFileId() {
 		return dataFileId;
 	}
@@ -103,6 +218,14 @@ public class QCRecord extends DataRecord {
 	public void setWoceComment(String woceComment) {
 		this.woceComment = woceComment;
 	}
+	
+	public void appendWoceComment(String comment) {
+		if (null == woceComment || woceComment.length() == 0) {
+			woceComment = comment;
+		} else {
+			woceComment = woceComment + ';' + comment;
+		}
+	}
 
 	@Override
 	public void addMessage(Message message) throws NoSuchColumnException {
@@ -116,5 +239,107 @@ public class QCRecord extends DataRecord {
 	public void clearQCData() {
 		messages = new ArrayList<Message>();
 		setQCFlag(Flag.GOOD);
+	}
+	
+	public void clearAllFlags() {
+		clearQCData();
+		woceFlag = Flag.NOT_SET;
+		woceComment = null;
+	}
+
+	public boolean getIntakeTemp1Used() {
+		return intakeTemp1Used;
+	}
+
+	public void setIntakeTemp1Used(boolean intakeTemp1Used) {
+		this.intakeTemp1Used = intakeTemp1Used;
+	}
+
+	public boolean getIntakeTemp2Used() {
+		return intakeTemp2Used;
+	}
+
+	public void setIntakeTemp2Used(boolean intakeTemp2Used) {
+		this.intakeTemp2Used = intakeTemp2Used;
+	}
+
+	public boolean getIntakeTemp3Used() {
+		return intakeTemp3Used;
+	}
+
+	public void setIntakeTemp3Used(boolean intakeTemp3Used) {
+		this.intakeTemp3Used = intakeTemp3Used;
+	}
+
+	public boolean getSalinity1Used() {
+		return salinity1Used;
+	}
+
+	public void setSalinity1Used(boolean salinity1Used) {
+		this.salinity1Used = salinity1Used;
+	}
+
+	public boolean getSalinity2Used() {
+		return salinity2Used;
+	}
+
+	public void setSalinity2Used(boolean salinity2Used) {
+		this.salinity2Used = salinity2Used;
+	}
+
+	public boolean getSalinity3Used() {
+		return salinity3Used;
+	}
+
+	public void setSalinity3Used(boolean salinity3Used) {
+		this.salinity3Used = salinity3Used;
+	}
+
+	public boolean getEqt1Used() {
+		return eqt1Used;
+	}
+
+	public void setEqt1Used(boolean eqt1Used) {
+		this.eqt1Used = eqt1Used;
+	}
+
+	public boolean getEqt2Used() {
+		return eqt2Used;
+	}
+
+	public void setEqt2Used(boolean eqt2Used) {
+		this.eqt2Used = eqt2Used;
+	}
+
+	public boolean getEqt3Used() {
+		return eqt3Used;
+	}
+
+	public void setEqt3Used(boolean eqt3Used) {
+		this.eqt3Used = eqt3Used;
+	}
+
+	public boolean getEqp1Used() {
+		return eqp1Used;
+	}
+
+	public void setEqp1Used(boolean eqp1Used) {
+		this.eqp1Used = eqp1Used;
+	}
+
+	public boolean getEqp2Used() {
+		return eqp2Used;
+	}
+
+	public void setEqp2Used(boolean eqp2Used) {
+		this.eqp2Used = eqp2Used;
+	}
+
+	public boolean getEqp3Used() {
+		return eqp3Used;
+	}
+
+	public void setEqp3Used(boolean eqp3Used) {
+		this.eqp3Used = eqp3Used;
 	}
 }

@@ -67,6 +67,12 @@ eqt_3_name               String         The name of the third equilibrator tempe
 eqp_1_name               String         The name of the first equilibrator pressure sensor
 eqp_2_name               String         The name of the second equilibrator pressure sensor
 eqp_3_name               String         The name of the third equilibrator pressure sensor
+air_flow_1_name          String         The name of the first air flow sensor
+air_flow_2_name          String         The name of the second air flow sensor
+air_flow_3_name          String         The name of the third air flow sensor
+water_flow_1_name        String         The name of the first water flow sensor
+water_flow_2_name        String         The name of the second water flow sensor
+water_flow_3_name        String         The name of the third water flow sensor
 separator_char           String         The character that separates fields in the instrument's data files
 date_format              Integer        The date format used in the instrument's data files
 time_format              Integer        The time format used in the instrument's data files
@@ -100,6 +106,12 @@ eqt_3_col                Integer        Equilibrator temperature 3
 eqp_1_col                Integer        Equilibrator pressure 1
 eqp_2_col                Integer        Equilibrator pressure 2
 eqp_3_col                Integer        Equilibrator pressure 3
+air_flow_1_col           Integer        Air flow 1
+air_flow_2_col           Integer        Air flow 2
+air_flow_3_col           Integer        Air flow 3
+water_flow_1_col         Integer        Water flow 1
+water_flow_2_col         Integer        Water flow 2
+water_flow_3_col         Integer        Water flow 3
 atmospheric_pressure_col Integer        Atmospheric pressure
 moisture_col             Integer        Moisture
 co2_col                  Integer        CO~2~
@@ -248,7 +260,7 @@ filename                 String         The filename of the uploaded file. Must 
 start_date               Date           The date of the first record in the file
 record_count             Integer        The number of records in the file
 current_job              Integer        The current activity being performed on the file. See below.
-last_touched             Date           The date when the file was last touched. Files held beyond a given length of time will be automatically deleted.
+last_touched             DateTime       The date when the file was last touched. Files held beyond a given length of time will be automatically deleted.
 
 #### `current_job`
 When a file is uploaded, it is processed in a number of stages, which are indicated by an integer value.
@@ -288,6 +300,12 @@ eqt_3                    Float          Equilibrator temperature 3
 eqp_1                    Float          Equilibrator pressure 1
 eqp_2                    Float          Equilibrator pressure 2
 eqp_3                    Float          Equilibrator pressure 3
+air_flow_1               Float          Air flow 1
+air_flow_2               Float          Air flow 2
+air_flow_3               Float          Air flow 3
+water_flow_1             Float          Water flow 1
+water_flow_2             Float          Water flow 2
+water_flow_3             Float          Water flow 3
 moisture                 Float          Moisture
 atmospheric_pressure     Float          Atmospheric pressure
 co2                      Float          The CO~2~ measurement
@@ -312,7 +330,10 @@ data_file_id             F_KEY          File ID
 row                      Integer        Row number (from the original data file)
 date_time                DateTime       Date and time
 run_type_id              F_KEY          The ID of the gas standard in the `run_types` table
-concentration            Float          The concentration measured
+air_flow_1               Double         Air flow 1
+air_flow_2               Double         Air flow 2
+air_flow_3               Double         Air flow 3
+concentration            Double         The concentration measured
 qc_flag                  Integer        A QC flag for the gas standards data. Used to disable the use of a standard during data reduction
 qc_message               String         A message describing the reason for the QC flag
 
@@ -334,6 +355,7 @@ co2_type                 Integer        The type of CO~2~ measurement
 mean_intake_temp         Float          The intake temperature, as a mean of all the sensor measurements.
 mean_salinity            Float          The salinity, as a mean of all the sensor measurements.
 mean_eqt                 Float          The equilibrator temperature, as a mean of all the sensor measurements.
+delta_temperature        Float          The difference between the mean intake temperature and the mean equilibrator temperature
 mean_eqp                 Float          The equilibrator pressure, as a mean of all the sensor measurements.
 atmospheric_pressure     Float          The atmospheric pressure, either from the instrument or imported
 true_moisture            Float          The true moisture, calculated as the difference between the measured moisture and the moisture measured from the dry standard gases.

@@ -231,11 +231,46 @@ public class Instrument implements Serializable {
 	 * CO2 column code
 	 */
 	public static final int COL_CO2 = 27;
-
+	
+	/**
+	 * Custom date/time format column
+	 */
+	public static final int COL_CUSTOM_DATETIME_FORMAT = 28;
+	
+	/**
+	 * Air flow 1 column code
+	 */
+	public static final int COL_AIR_FLOW_1 = 29;
+	
+	/**
+	 * Air flow 2 column code
+	 */
+	public static final int COL_AIR_FLOW_2 = 30;
+	
+	/**
+	 * Air flow 3 column code
+	 */
+	public static final int COL_AIR_FLOW_3 = 31;
+	
+	/**
+	 * Water flow 1 column code
+	 */
+	public static final int COL_WATER_FLOW_1 = 32;
+	
+	/**
+	 * Water flow 2 column code
+	 */
+	public static final int COL_WATER_FLOW_2 = 33;
+	
+	/**
+	 * Water flow 3 column code
+	 */
+	public static final int COL_WATER_FLOW_3 = 34;
+	
 	/**
 	 * The total number of columns that could be defined for an instrument
 	 */
-	private static final int COL_COUNT = 28;
+	private static final int COL_COUNT = 35;
 	
 	////////////// *** FIELDS *** ///////////////
 	
@@ -327,6 +362,36 @@ public class Instrument implements Serializable {
 	private String eqpName3 = null;
 	
 	/**
+	 * The name of the first air flow sensor
+	 */
+	private String airFlowName1 = null;
+	
+	/**
+	 * The name of the second air flow sensor
+	 */
+	private String airFlowName2 = null;
+	
+	/**
+	 * The name of the third air flow sensor
+	 */
+	private String airFlowName3 = null;
+	
+	/**
+	 * The name of the first water flow sensor
+	 */
+	private String waterFlowName1 = null;
+	
+	/**
+	 * The name of the second water flow sensor
+	 */
+	private String waterFlowName2 = null;
+	
+	/**
+	 * The name of the third water flow sensor
+	 */
+	private String waterFlowName3 = null;
+	
+	/**
 	 * The date format
 	 */
 	private int dateFormat = SEPARATE_FIELDS;
@@ -336,6 +401,16 @@ public class Instrument implements Serializable {
 	 */
 	private int timeFormat = SEPARATE_FIELDS;
 
+	/**
+	 * Indicates that the file uses a custom date/time format
+	 */
+	private boolean customDateTimeFormat = false;
+	
+	/**
+	 * The custom date/time format
+	 */
+	private String customDateTimeFormatString = null;
+	
 	/**
 	 * The longitude format
 	 */
@@ -539,86 +614,98 @@ public class Instrument implements Serializable {
 		
 		Calendar result = DateTimeUtils.getUTCCalendarInstance();
 
-		// Need to do date and time separately.
-		
-		switch (getDateFormat()) {
-		case Instrument.SEPARATE_FIELDS: {
+		if (customDateTimeFormat) {
 			
+			String dateTimeString = line.get(getColumnAssignment(COL_CUSTOM_DATETIME_FORMAT));
 			try {
-				result.set(Calendar.YEAR, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_YEAR))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateTimeParseException("Invalid year value " + line.get(getColumnAssignment(Instrument.COL_YEAR)));
-			}
-			
-			try {
-				result.set(Calendar.MONTH, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_MONTH))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateTimeParseException("Invalid month value " + line.get(getColumnAssignment(Instrument.COL_MONTH)));
-			}
-			
-			try {
-				result.set(Calendar.DAY_OF_MONTH, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_DAY))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateTimeParseException("Invalid day value " + line.get(getColumnAssignment(Instrument.COL_DAY)));
-			}
-			break;
-		}
-		default: {
-			try {
-				if (null == dateFormatter) {
-					makeDateFormatter();
-				}
-				
-				Calendar parsedDate = Calendar.getInstance();
-				parsedDate.setTime(dateFormatter.parse(line.get(getColumnAssignment(Instrument.COL_DATE))));
-				result.set(Calendar.YEAR, parsedDate.get(Calendar.YEAR));
-				result.set(Calendar.MONTH, parsedDate.get(Calendar.MONTH));
-				result.set(Calendar.DAY_OF_MONTH, parsedDate.get(Calendar.DAY_OF_MONTH));
-				
+				SimpleDateFormat formatter = new SimpleDateFormat(customDateTimeFormatString);
+				result.setTime(formatter.parse(dateTimeString));
 			} catch (ParseException e) {
-				throw new DateTimeParseException("Invalid date value " + line.get(getColumnAssignment(Instrument.COL_DATE)));
-			}
-		}
-		}
-			
-
-		// Now the time
-		switch(getTimeFormat()) {
-		case Instrument.SEPARATE_FIELDS: {
-			try {
-				result.set(Calendar.HOUR_OF_DAY, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_HOUR))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateTimeParseException("Invalid hour value " + line.get(getColumnAssignment(Instrument.COL_HOUR)));
+				throw new DateTimeParseException("Cannot parse date/time '" + dateTimeString);
 			}
 			
-			try {
-				result.set(Calendar.MINUTE, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_MINUTE))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateTimeParseException("Invalid minute value " + line.get(getColumnAssignment(Instrument.COL_MINUTE)));
-			}
+		} else {
+			// Need to do date and time separately.
 			
-			try {
-				result.set(Calendar.SECOND, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_SECOND))));
-			} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
-				throw new DateTimeParseException("Invalid second value " + line.get(getColumnAssignment(Instrument.COL_SECOND)));
-			}
-			break;
-		}
-		default: {
-			try {
-				if (null == timeFormatter) {
-					makeTimeFormatter();
+			switch (getDateFormat()) {
+			case Instrument.SEPARATE_FIELDS: {
+				
+				try {
+					result.set(Calendar.YEAR, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_YEAR))));
+				} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+					throw new DateTimeParseException("Invalid year value " + line.get(getColumnAssignment(Instrument.COL_YEAR)));
 				}
+				
+				try {
+					result.set(Calendar.MONTH, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_MONTH))));
+				} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+					throw new DateTimeParseException("Invalid month value " + line.get(getColumnAssignment(Instrument.COL_MONTH)));
+				}
+				
+				try {
+					result.set(Calendar.DAY_OF_MONTH, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_DAY))));
+				} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+					throw new DateTimeParseException("Invalid day value " + line.get(getColumnAssignment(Instrument.COL_DAY)));
+				}
+				break;
+			}
+			default: {
+				try {
+					if (null == dateFormatter) {
+						makeDateFormatter();
+					}
+					
+					Calendar parsedDate = Calendar.getInstance();
+					parsedDate.setTime(dateFormatter.parse(line.get(getColumnAssignment(Instrument.COL_DATE))));
+					result.set(Calendar.YEAR, parsedDate.get(Calendar.YEAR));
+					result.set(Calendar.MONTH, parsedDate.get(Calendar.MONTH));
+					result.set(Calendar.DAY_OF_MONTH, parsedDate.get(Calendar.DAY_OF_MONTH));
+					
+				} catch (ParseException e) {
+					throw new DateTimeParseException("Invalid date value " + line.get(getColumnAssignment(Instrument.COL_DATE)));
+				}
+			}
+			}
+				
 	
-				Calendar parsedTime = Calendar.getInstance();
-				parsedTime.setTime(timeFormatter.parse(line.get(getColumnAssignment(Instrument.COL_TIME))));
-				result.set(Calendar.HOUR_OF_DAY, parsedTime.get(Calendar.HOUR_OF_DAY));
-				result.set(Calendar.MINUTE, parsedTime.get(Calendar.MINUTE));
-				result.set(Calendar.SECOND, parsedTime.get(Calendar.SECOND));
-			} catch (ParseException e) {
-				throw new DateTimeParseException("Invalid time value " + line.get(getColumnAssignment(Instrument.COL_TIME)));
+			// Now the time
+			switch(getTimeFormat()) {
+			case Instrument.SEPARATE_FIELDS: {
+				try {
+					result.set(Calendar.HOUR_OF_DAY, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_HOUR))));
+				} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+					throw new DateTimeParseException("Invalid hour value " + line.get(getColumnAssignment(Instrument.COL_HOUR)));
+				}
+				
+				try {
+					result.set(Calendar.MINUTE, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_MINUTE))));
+				} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+					throw new DateTimeParseException("Invalid minute value " + line.get(getColumnAssignment(Instrument.COL_MINUTE)));
+				}
+				
+				try {
+					result.set(Calendar.SECOND, Integer.parseInt(line.get(getColumnAssignment(Instrument.COL_SECOND))));
+				} catch (NumberFormatException|ArrayIndexOutOfBoundsException e) {
+					throw new DateTimeParseException("Invalid second value " + line.get(getColumnAssignment(Instrument.COL_SECOND)));
+				}
+				break;
 			}
-		}
+			default: {
+				try {
+					if (null == timeFormatter) {
+						makeTimeFormatter();
+					}
+		
+					Calendar parsedTime = Calendar.getInstance();
+					parsedTime.setTime(timeFormatter.parse(line.get(getColumnAssignment(Instrument.COL_TIME))));
+					result.set(Calendar.HOUR_OF_DAY, parsedTime.get(Calendar.HOUR_OF_DAY));
+					result.set(Calendar.MINUTE, parsedTime.get(Calendar.MINUTE));
+					result.set(Calendar.SECOND, parsedTime.get(Calendar.SECOND));
+				} catch (ParseException e) {
+					throw new DateTimeParseException("Invalid time value " + line.get(getColumnAssignment(Instrument.COL_TIME)));
+				}
+			}
+			}
 		}
 		
 		result.set(Calendar.MILLISECOND, 0);
@@ -924,6 +1011,102 @@ public class Instrument implements Serializable {
 		this.eqpName3 = eqpName3;
 	}
 	
+	/**
+	 * Get the name of the first air flow sensor
+	 * @return The name of the first air flow sensor
+	 */
+	public String getAirFlowName1() {
+		return airFlowName1;
+	}
+	
+	/**
+	 * Set the name of the first air flow sensor
+	 * @param name The name of the first air flow sensor
+	 */
+	public void setAirFlowName1(String airFlowName1) {
+		this.airFlowName1 = airFlowName1;
+	}
+
+	/**
+	 * Get the name of the second air flow sensor
+	 * @return The name of the second air flow sensor
+	 */
+	public String getAirFlowName2() {
+		return airFlowName2;
+	}
+	
+	/**
+	 * Set the name of the second air flow sensor
+	 * @param name The name of the second air flow sensor
+	 */
+	public void setAirFlowName2(String airFlowName2) {
+		this.airFlowName2 = airFlowName2;
+	}
+
+	/**
+	 * Get the name of the third air flow sensor
+	 * @return The name of the third air flow sensor
+	 */
+	public String getAirFlowName3() {
+		return airFlowName3;
+	}
+	
+	/**
+	 * Set the name of the third air flow sensor
+	 * @param name The name of the third air flow sensor
+	 */
+	public void setAirFlowName3(String airFlowName3) {
+		this.airFlowName3 = airFlowName3;
+	}
+
+	/**
+	 * Get the name of the first water flow sensor
+	 * @return The name of the first water flow sensor
+	 */
+	public String getWaterFlowName1() {
+		return waterFlowName1;
+	}
+	
+	/**
+	 * Set the name of the first water flow sensor
+	 * @param name The name of the first water flow sensor
+	 */
+	public void setWaterFlowName1(String waterFlowName1) {
+		this.waterFlowName1 = waterFlowName1;
+	}
+
+	/**
+	 * Get the name of the second water flow sensor
+	 * @return The name of the second water flow sensor
+	 */
+	public String getWaterFlowName2() {
+		return waterFlowName2;
+	}
+	
+	/**
+	 * Set the name of the second water flow sensor
+	 * @param name The name of the second water flow sensor
+	 */
+	public void setWaterFlowName2(String waterFlowName2) {
+		this.waterFlowName2 = waterFlowName2;
+	}
+
+	/**
+	 * Get the name of the third water flow sensor
+	 * @return The name of the third water flow sensor
+	 */
+	public String getWaterFlowName3() {
+		return waterFlowName3;
+	}
+	
+	/**
+	 * Set the name of the third water flow sensor
+	 * @param name The name of the third water flow sensor
+	 */
+	public void setWaterFlowName3(String waterFlowName3) {
+		this.waterFlowName3 = waterFlowName3;
+	}
+
 	/**
 	 * Get the date columns format
 	 * @return The date columns format
@@ -1231,6 +1414,54 @@ public class Instrument implements Serializable {
 	}
 
 	/**
+	 * Indicates whether or not the instrument has Air Flow 1 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasAirFlow1() {
+		return (null == airFlowName1 || !airFlowName1.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Air Flow 2 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasAirFlow2() {
+		return (null == airFlowName2 || !airFlowName2.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Water Flow 3 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasAirFlow3() {
+		return (null == airFlowName3 || !airFlowName3.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Water Flow 1 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasWaterFlow1() {
+		return (null == waterFlowName1 || !waterFlowName1.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Water Flow 2 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasWaterFlow2() {
+		return (null == waterFlowName2 || !waterFlowName2.isEmpty());
+	}
+	
+	/**
+	 * Indicates whether or not the instrument has Water Flow 3 defined
+	 * @return {@code true} if the sensor is defined; {@code false} if it is not.
+	 */
+	public boolean hasWaterFlow3() {
+		return (null == waterFlowName3 || !waterFlowName3.isEmpty());
+	}
+	
+	/**
 	 * Get the long version of intake temperature 1's name. This includes the sensor type,
 	 * e.g. 'Intake temperature: Aanderaa'.
 	 * @return The long version of the sensor's name
@@ -1339,6 +1570,60 @@ public class Instrument implements Serializable {
 	}
 	
 	/**
+	 * Get the long version of air flow 1's name. This includes the sensor type,
+	 * e.g. 'Air Flow: Honeywell'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongAirFlowName1() {
+		return "Air Flow: " + airFlowName1;
+	}
+
+	/**
+	 * Get the long version of air flow 2's name. This includes the sensor type,
+	 * e.g. 'Air Flow: Honeywell'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongAirFlowName2() {
+		return "Air Flow: " + airFlowName2;
+	}
+
+	/**
+	 * Get the long version of air flow 3's name. This includes the sensor type,
+	 * e.g. 'Air Flow: Honeywell'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongAirFlowName3() {
+		return "Air Flow: " + airFlowName3;
+	}
+
+	/**
+	 * Get the long version of water flow 1's name. This includes the sensor type,
+	 * e.g. 'Water Flow: Proteus'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongWaterFlowName1() {
+		return "Water Flow: " + waterFlowName1;
+	}
+
+	/**
+	 * Get the long version of water flow 2's name. This includes the sensor type,
+	 * e.g. 'Water Flow: Proteus'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongWaterFlowName2() {
+		return "Water Flow: " + waterFlowName2;
+	}
+
+	/**
+	 * Get the long version of water flow 3's name. This includes the sensor type,
+	 * e.g. 'Water Flow: Proteus'.
+	 * @return The long version of the sensor's name
+	 */
+	public String getLongWaterFlowName3() {
+		return "Water Flow: " + waterFlowName3;
+	}
+
+	/**
 	 * Returns the number of columns in the instrument's raw data files
 	 * @return The number of columns in the instrument's raw data files
 	 */
@@ -1440,5 +1725,65 @@ public class Instrument implements Serializable {
 		}
 		
 		return count;
+	}
+	
+	/**
+	 * Returns the number of air flow sensors defined for this instrument
+	 * @return The number of air flow sensors
+	 */
+	public int getAirFlowCount() {
+		int count = 0;
+		
+		if (hasAirFlow1()) {
+			count++;
+		}
+		
+		if (hasAirFlow2()) {
+			count++;
+		}
+		
+		if (hasAirFlow3()) {
+			count++;
+		}
+		
+		return count;
+	}
+	
+	/**
+	 * Returns the number of water flow sensors defined for this instrument
+	 * @return The number of water flow sensors
+	 */
+	public int getWaterFlowCount() {
+		int count = 0;
+		
+		if (hasWaterFlow1()) {
+			count++;
+		}
+		
+		if (hasWaterFlow2()) {
+			count++;
+		}
+		
+		if (hasWaterFlow3()) {
+			count++;
+		}
+		
+		return count;
+	}
+	
+	public boolean getCustomDateTimeFormat() {
+		return customDateTimeFormat;
+	}
+	
+	public void setCustomDateTimeFormat(boolean customDateTimeFormat) {
+		this.customDateTimeFormat = customDateTimeFormat;
+	}
+	
+	public String getCustomDateTimeFormatString() {
+		return customDateTimeFormatString;
+	}
+	
+	public void setCustomDateTimeFormatString(String customDateTimeFormatString) {
+		this.customDateTimeFormatString = customDateTimeFormatString;
 	}
 }

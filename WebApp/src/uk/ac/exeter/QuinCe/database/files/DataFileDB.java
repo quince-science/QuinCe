@@ -22,6 +22,9 @@ import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
+import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
+import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -51,7 +54,7 @@ public class DataFileDB {
 	 * Query to find all the data files for a given user
 	 */
 	private static final String GET_USER_FILES_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
-			+ " WHERE i.owner = ? ORDER BY f.last_touched ASC";
+			+ " WHERE i.owner = ? ORDER BY f.last_touched DESC";
 	
 	/**
 	 * Statement to delete a file
@@ -77,6 +80,8 @@ public class DataFileDB {
 	private static final String GET_QC_FLAGS_QUERY = "SELECT DISTINCT qc_flag, COUNT(qc_flag) FROM qc WHERE data_file_id = ? GROUP BY qc_flag";
 
 	private static final String GET_WOCE_FLAGS_QUERY = "SELECT DISTINCT woce_flag, COUNT(woce_flag) FROM qc WHERE data_file_id = ? GROUP BY woce_flag";
+
+	private static final String TOUCH_FILE_STATEMENT = "UPDATE data_file SET last_touched = NOW() WHERE id = ?";
 
 	/**
 	 * Store a file in the database and in the file store
@@ -114,7 +119,7 @@ public class DataFileDB {
 			stmt.setDate(3, new java.sql.Date(dataFile.getStartDate().getTimeInMillis()));
 			stmt.setInt(4, dataFile.getRecordCount());
 			stmt.setInt(5, FileInfo.JOB_CODE_EXTRACT);
-			stmt.setDate(6, new java.sql.Date(System.currentTimeMillis()));
+			stmt.setTimestamp(6, new java.sql.Timestamp(System.currentTimeMillis()));
 			
 			stmt.execute();
 			
@@ -292,6 +297,9 @@ public class DataFileDB {
 			conn.setAutoCommit(false);
 			
 			// Send out sub-record delete requests
+			QCDB.clearQCData(conn, fileDetails.getFileId());
+			DataReductionDB.clearDataReductionData(conn, fileDetails.getFileId());
+			RawDataDB.clearRawData(conn, fileDetails.getFileId());
 			
 			stmt = conn.prepareStatement(DELETE_FILE_STATEMENT);
 			stmt.setLong(1, fileDetails.getFileId());
@@ -549,6 +557,26 @@ public class DataFileDB {
 		} finally {
 			DatabaseUtils.closeResultSets(qcFlags, woceFlags);
 			DatabaseUtils.closeStatements(qcFlagsStatement, woceFlagsStatement);
+		}
+	}
+	
+	public static void touchFile(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(TOUCH_FILE_STATEMENT);
+			stmt.setLong(1, fileId);
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while touching file", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 }

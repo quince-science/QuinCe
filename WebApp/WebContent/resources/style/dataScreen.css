@@ -8,7 +8,7 @@ body.fullPage {
 }
 
 #dataScreenContent {
-  margin-top: 30px;
+  margin-top: 39px;
   position: absolute;
   width: 100%;
   height: calc(100% - 30px);
@@ -34,7 +34,7 @@ body.fullPage {
 	overflow: hidden;
 }
 
-#dataTable {
+#data {
 	width: 100%;
 	overflow: hidden;
 }
@@ -57,7 +57,6 @@ body.fullPage {
   padding: 5px 10px 5px 10px;
   font-size: 14px;
   font-weight: bold;
-  height: 25px;
 }
 
 .plotContent {
@@ -71,4 +70,99 @@ body.fullPage {
 
 #plotContainerRight {
 	overflow: hidden;
+}
+
+.selectButton {
+  border: 1px solid #CECBC9;
+  border-radius: 3px;
+  padding: 3px;
+  background-image: linear-gradient(0deg, rgb(240,239,238), rgb(255, 255, 255));
+  cursor: pointer;
+  text-align: left;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  height: 20px;
+  text-align: center;
+}
+
+#tableControls {
+  height: 40px;
+}
+
+@keyframes rowFlash {
+    0% {background-color: #fff;}
+   25% {background-color: #fd0;}
+   50% {background-color: #fff;}
+   75% {background-color: #fd0;}
+  100% {background-color: #fff;}
+}
+
+#woceCommentDialogFlag {
+    width: 150px;
+    position: relative;
+    left: 90px;
+    top: -22px;
+    border: 1px solid black;
+    padding: 5px;
+    text-align: center;
+    background-image: linear-gradient(to top, #B8B8B8 0%, #CFCFCF 4%, #E3E3E3 68%, #FAFAFA 100%);
+}
+
+#woceSelectMenu {
+  position: absolute;
+  background: #F5F5F5;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  width: 160px;
+  border: 1px solid black;
+  border-radius: 3px;
+  padding: 0px;
+  cursor: pointer;
+  z-index: 10;
+  left: 110px;
+  top: 88px;
+  display: none;
+  text-align: center;
+}
+
+#woceSelectMenu ul {
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+}
+
+#woceSelectMenu li {
+	margin: 0px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+#woceSelectMenu li:hover {
+  background: #8cd5ed;
+}
+
+#woceCommentDialog {
+    display: none;
+    position: absolute;
+    width: 500px;
+    height: 320px;
+    top: 30%;
+    margin-top: -160px;
+    left: 50%;
+    margin-left: -250px;
+    padding: 20px;
+}
+
+#dataScreenForm\:woceCommentDialogComment {
+    width: 490px;
+    height: 150px;
+    resize: none;
 }

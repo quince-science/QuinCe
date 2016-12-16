@@ -53,6 +53,12 @@
 		<managed-bean-scope>session</managed-bean-scope>
 	</managed-bean>
 	<managed-bean>
+		<description>Handles editing of the user profile</description>
+		<managed-bean-name>userProfileBean</managed-bean-name>
+		<managed-bean-class>uk.ac.exeter.QuinCe.web.User.UserProfileBean</managed-bean-class>
+		<managed-bean-scope>view</managed-bean-scope>
+	</managed-bean>
+	<managed-bean>
 		<description>Handles everything to do with the Jobs list page</description>
 		<managed-bean-name>jobsBean</managed-bean-name>
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.jobs.JobsBean</managed-bean-class>
@@ -229,6 +235,18 @@
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
+		<display-name>UserProfileEdit</display-name>
+		<from-view-id>/user/user_edit.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>file_list</from-outcome>
+			<to-view-id>/data/file_list.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>edit_profile</from-outcome>
+			<to-view-id>/user/user_edit.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
 		<display-name>FileList</display-name>
 		<from-view-id>/data/file_list.xhtml</from-view-id>
 		<navigation-case>
@@ -272,4 +290,6 @@
 			<to-view-id>/data/file_list.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
+
+
 </faces-config>
