@@ -191,7 +191,7 @@ function drawAllData() {
 	drawLoading($('#tableContent'));
     updatePlot('left');
     updatePlot('right');
-    updateTable();
+    drawTable();
 }
 
 /*
@@ -499,19 +499,6 @@ function updatePlot(plot) {
 	return false;
 }
 
-function updateTable() {
-	
-	// Replace the table with the loading animation
-	drawLoading($('#tableContent'));
-	
-	// Destroy the existing table instance
-	if (null != jsDataTable) {
-		jsDataTable.destroy();
-	}
-	
-	$('#plotDataForm\\:getTableData').click();
-}
-
 /*
  * Render the left plot
  */
@@ -632,78 +619,82 @@ function drawRightPlot(data) {
  * the DataTables object is created and configured to load
  * its data from the server using the hidden form.
  */
-function drawTable(data) {
-	var status = data.status;
+function drawTable() {
 
-	if (status == "success") {
-	
-		// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
-		html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%">';
-		html += '<thead>';
-	
-		columnHeadings.forEach(heading => {
-			html += '<th>';
-			html += heading;
-			html += '</th>';
-		});
-	
-		$('#tableContent').html(html);
-	    
-	    jsDataTable = $('#dataTable').DataTable( {
-	    	data: JSON.parse($('#plotDataForm\\:tableData').val()),
-	    	ordering: false,
-	    	searching: false,
-	    	serverSide: false,
-	    	scroller: true,
-	    	scrollY: calcTableScrollY(),
-	    	bInfo: false,
-	    	select: 'multi',
-	        columnDefs:[
-	            // DateTime doesn't wrap
-	            {"className": "noWrap", "targets": [0]},
-	            {"className": "centreCol", "targets": getQCColumns()},
-	            {"className": "numericCol", "targets": getNumericColumns()},
-	            {"render":
-	            	function (data, type, row) {
-		                var output = '<div onmouseover="showQCInfoPopup(' + row[getColumnIndex('QC Flag')] + ', \'' + row[getColumnIndex('QC Message')] + '\', this)" onmouseout="hideQCInfoPopup()" class="';
-		                output += getFlagClass(data);
-		                output += '">';
-		                output += getFlagText(data);
-		                output += '</div>';
-		                return output;
-		            },
-	                "targets": getColumnIndex('QC Flag')
+	// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
+	html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%">';
+	html += '<thead>';
+
+	columnHeadings.forEach(heading => {
+		html += '<th>';
+		html += heading;
+		html += '</th>';
+	});
+
+	$('#tableContent').html(html);
+    
+    jsDataTable = $('#dataTable').DataTable( {
+    	ordering: false,
+    	searching: false,
+    	serverSide: true,
+    	scroller: {
+    		loadingIndicator: true		
+    	},
+    	scrollY: calcTableScrollY(),
+    	ajax: function ( data, callback, settings ) {		
+    		// Store the callback		
+    		dataTableDrawCallback = callback;		
+    				
+    		// Fill in the form inputs		
+    		$('#plotDataForm\\:tableDataDraw').val(data.draw);		
+    		$('#plotDataForm\\:tableDataStart').val(data.start);		
+    		$('#plotDataForm\\:tableDataLength').val(data.length);		
+    		
+    		// Submit the query to the server		
+    		$('#plotDataForm\\:tableGetData').click();		
+    	},
+    	bInfo: false,
+    	select: 'multi',
+        columnDefs:[
+            // DateTime doesn't wrap
+            {"className": "noWrap", "targets": [0]},
+            {"className": "centreCol", "targets": getQCColumns()},
+            {"className": "numericCol", "targets": getNumericColumns()},
+            {"render":
+            	function (data, type, row) {
+	                var output = '<div onmouseover="showQCInfoPopup(' + row[getColumnIndex('QC Flag')] + ', \'' + row[getColumnIndex('QC Message')] + '\', this)" onmouseout="hideQCInfoPopup()" class="';
+	                output += getFlagClass(data);
+	                output += '">';
+	                output += getFlagText(data);
+	                output += '</div>';
+	                return output;
 	            },
-	            {"render":
-	            	function (data, type, row) {
-	            		var output = '<div class="';
-	            		output += getFlagClass(data);
-	            		output += '">';
-	    				output += getFlagText(data);
-	    				output += '</div>';
-	    				return output;
-		            },
-	                "targets": getColumnIndex('WOCE Flag')
-	            }
-	        ]
-	    });
-	    
-	    jsDataTable.on('select', function(e, dt, type, indexes) {
-	    	rowSelected(indexes);
-	    });
-	    
-	    jsDataTable.on('deselect', function(e, dt, type, indexes) {
-	    	rowDeselected(indexes);
-	    });
-	    
-	    renderTableColumns();
-	    resizeContent();
-	    
-	    // Clear the table form data - otherwise subsequent
-	    // requests send it all back to the server, and it breaks
-	    // any Ajax requests
-	    $('#plotDataForm\\:tableData').val("");
-	}
+                "targets": getColumnIndex('QC Flag')
+            },
+            {"render":
+            	function (data, type, row) {
+            		var output = '<div class="';
+            		output += getFlagClass(data);
+            		output += '">';
+    				output += getFlagText(data);
+    				output += '</div>';
+    				return output;
+	            },
+                "targets": getColumnIndex('WOCE Flag')
+            }
+        ]
+    });
+    
+    jsDataTable.on('select', function(e, dt, type, indexes) {
+    	rowSelected(indexes);
+    });
+    
+    jsDataTable.on('deselect', function(e, dt, type, indexes) {
+    	rowDeselected(indexes);
+    });
+    
+    renderTableColumns();
+    resizeContent();
 }
 
 function getNumericColumns() {
@@ -1176,3 +1167,21 @@ function woceSelection(flagValue) {
 function setWoceSelectedFlag(flagValue) {
 	$('#woceCommentDialogFlag').html(getFlagText(flagValue));
 }
+
+/*
+ * Called when table data has been downloaded from the server.		
+ * The previously stored callback function is triggered with		
+ * the data from the server.		
+ */		
+function tableDataDownload(data) {		
+			
+	var status = data.status;		
+	if (status == "success") {
+		dataTableDrawCallback( {		
+            draw: $('#plotdDataForm\\:tableDataDraw').val(),		
+            data: JSON.parse($('#plotDataForm\\:tableJsonData').val()),		
+            recordsTotal: $('#plotDataForm\\:recordCount').val(),		
+            recordsFiltered: $('#plotDataForm\\:recordCount').val()		
+		});
+	}
+}		
