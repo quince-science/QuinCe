@@ -145,16 +145,16 @@
 					<p:column>
 						<f:facet name="header">Actions</f:facet>
 						<h:commandLink id="QC_#{file.fileId}" onclick="dataScreen(#{file.fileId})" action="#{dataScreenBean.start}">
-							<h:graphicImage value="/resources/image/qc.svg" styleClass="actionIcon"/>
+							<h:graphicImage value="/resources/image/qc.svg" styleClass="actionIcon" alt="QC" title="QC"/>
 						</h:commandLink>
 						<h:commandLink id="Export_#{file.fileId}" onclick="exportFile(#{file.fileId})" action="#{fileListBean.export}">
-							<h:graphicImage value="/resources/image/export.svg" styleClass="actionIcon"/>
+							<h:graphicImage value="/resources/image/export.svg" styleClass="actionIcon" alt="Export" title="Export"/>
 						</h:commandLink>
 						<h:commandLink id="Delete_#{file.fileId}" onclick="deleteFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.deleteFile}">
-							<h:graphicImage value="/resources/image/delete.svg" styleClass="actionIcon"/>
+							<h:graphicImage value="/resources/image/delete.svg" styleClass="actionIcon" alt="Delete" title="Delete"/>
 						</h:commandLink>
 						<h:commandLink id="Reprocess_#{file.fileId}" onclick="reprocessFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.reprocessFile}">
-							<h:graphicImage value="/resources/image/recalculate.svg" styleClass="actionIcon"/>
+							<h:graphicImage value="/resources/image/recalculate.svg" styleClass="actionIcon" alt="Reprocess" title="Reprocess"/>
 						</h:commandLink>
 					</p:column>
 				</p:dataTable>
