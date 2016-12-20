@@ -503,3 +503,9 @@ table.fileDates {
 .indent {
 	padding-left: 40px;
 }
+
+.actionIcon {
+	margin-right: 7px;
+	width: 20px;
+	height: 20px;
+}
