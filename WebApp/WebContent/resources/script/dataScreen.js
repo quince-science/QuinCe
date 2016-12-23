@@ -1019,11 +1019,10 @@ function deselectRow(rowIndex, rowNumber) {
 
 function selectionUpdated() {
 
-	
 	// Update the displayed rows
-	var rows = $('#dataTable').DataTable().rows()[0];
+	var rows = jsDataTable.rows()[0];
 	for (var i = 0; i < rows.length; i++) {
-		var row = $('#dataTable').DataTable().row(i);
+		var row = jsDataTable.row(i);
 		if ($.inArray(row.data()[getColumnIndex('Row')], selectedRows) > -1) {
 			$(row.node()).addClass('selected');
 		} else {
@@ -1071,21 +1070,26 @@ function clearSelection() {
 }
 
 function acceptQCFlags() {
-	$('#dataScreenForm\\:selectedRows').val(getSelectionFileRows());
+	$('#dataScreenForm\\:selectedRows').val(selectedRows);
 	$('#dataScreenForm\\:acceptQCFlags').click();
 }
 
 function qcFlagsAccepted(data) {
 	if (data.status == 'success') {
 		
-		qcFlagColumn = getColumnIndex('QC Flag');
-		qcMessageColumn = getColumnIndex('QC Message');
-		woceFlagColumn= getColumnIndex('WOCE Flag');
-		woceMessageColumn = getColumnIndex('WOCE Message');
+		var qcFlagColumn = getColumnIndex('QC Flag');
+		var qcMessageColumn = getColumnIndex('QC Message');
+		var woceFlagColumn= getColumnIndex('WOCE Flag');
+		var woceMessageColumn = getColumnIndex('WOCE Message');
+		var rowColumn = getColumnIndex('Row');
 		
-		for (var i = 0; i < selectedRows.length; i++) {
-			jsDataTable.cell(selectedRows[i], woceMessageColumn).data(jsDataTable.cell(selectedRows[i], qcMessageColumn).data());
-			jsDataTable.cell(selectedRows[i], woceFlagColumn).data(jsDataTable.cell(selectedRows[i], qcFlagColumn).data());
+		var rows = jsDataTable.rows()[0];
+		for (var i = 0; i < rows.length; i++) {
+			var row = jsDataTable.row(i);
+			if ($.inArray(row.data()[rowColumn], selectedRows) > -1) {
+				jsDataTable.cell(i, woceMessageColumn).data(jsDataTable.cell(selectedRows[i], qcMessageColumn).data());
+				jsDataTable.cell(i, woceFlagColumn).data(jsDataTable.cell(selectedRows[i], qcFlagColumn).data());
+			}
 		}
 		
 		clearSelection();
@@ -1095,27 +1099,21 @@ function qcFlagsAccepted(data) {
 function woceFlagsUpdated(data) {
 	if (data.status == 'success') {
 		
-		woceFlagColumn = getColumnIndex('WOCE Flag');
-		woceMessageColumn = getColumnIndex('WOCE Message');
+		var woceFlagColumn = getColumnIndex('WOCE Flag');
+		var woceMessageColumn = getColumnIndex('WOCE Message');
+		var rowColumn = getColumnIndex('Row');
 		
-		for (var i = 0; i < selectedRows.length; i++) {
-			jsDataTable.cell(selectedRows[i], woceFlagColumn).data($('#dataScreenForm\\:woceFlag').val());
-			jsDataTable.cell(selectedRows[i], woceMessageColumn).data($('#dataScreenForm\\:woceComment').val());
+		var rows = jsDataTable.rows()[0];
+		for (var i = 0; i < rows.length; i++) {
+			var row = jsDataTable.row(i);
+			if ($.inArray(row.data()[rowColumn], selectedRows) > -1) {
+				jsDataTable.cell(i, woceMessageColumn).data($('#dataScreenForm\\:woceComment').val());
+				jsDataTable.cell(i, woceFlagColumn).data($('#dataScreenForm\\:woceFlag').val());
+			}
 		}
 		
 		clearSelection();
 	} 
-}
-
-function getSelectionFileRows() {
-	var fileRows = [];
-	var rowNumberColumn = getColumnIndex('Row');
-	
-	for (var i = 0; i < selectedRows.length; i++) {
-		fileRows[fileRows.length] = jsDataTable.row(selectedRows[i]).data()[rowNumberColumn];
-	}
-	
-	return fileRows;
 }
 
 function woceFlagClick() {
@@ -1156,7 +1154,7 @@ function showWoceCommentDialog() {
 }
 
 function saveWoceComment() {
-	$('#dataScreenForm\\:selectedRows').val(getSelectionFileRows());
+	$('#dataScreenForm\\:selectedRows').val(selectedRows);
 	$('#dataScreenForm\\:applyWoceFlag').click();
 	hideWoceDialog();
 }
