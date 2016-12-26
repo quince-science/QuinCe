@@ -131,9 +131,9 @@ var tableScrollRow = null;
 
 // Table selections
 var selectedRows = [];
+var selectedWoceFlags = [];
 var selectionQCMessageCounts = {};
 var selectionWoceMessageCounts = {};
-var worstSelectedFlag = FLAG_GOOD;
 var NO_MESSAGE_ENTRY = 'No message';
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -965,6 +965,7 @@ function toggleSelection(rowIndex, rowNumber) {
  */
 function selectRow(rowIndex, rowNumber) {
 	selectedRows[selectedRows.length] = rowNumber;
+	selectedWoceFlags[selectedWoceFlags.length] = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Flag')];
 	
 	// Add the message to the list of selection messages
 	qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
@@ -1000,6 +1001,7 @@ function deselectRow(rowIndex, rowNumber) {
 	var arrayIndex = $.inArray(rowNumber, selectedRows);
 	if (arrayIndex > -1) {
 		selectedRows.splice(arrayIndex, 1);
+		selectedWoceFlags.splice(arrayIndex, 1);
 
 		qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
 		if (qcMessage == "") {
@@ -1030,24 +1032,6 @@ function selectionUpdated() {
 		}
 	}
 	
-	// Update the worst selected flag
-	if (selectedRows.length > 0) {
-		worstSelectedFlag = Number(jsDataTable.row(selectedRows[0]).data()[getColumnIndex('WOCE Flag')]);
-		if (selectedRows.length > 1) {
-			for (var i = 1; i < selectedRows.length; i++) {
-				rowFlag = Number(jsDataTable.row(selectedRows[i]).data()[getColumnIndex('WOCE Flag')]);
-				if (rowFlag == FLAG_NEEDS_FLAG) {
-					worstSelectedFlag = FLAG_NEEDS_FLAG;
-				} else if (rowFlag > worstSelectedFlag) {
-					worstSelectedFlag = rowFlag;
-					if (rowFlag == FLAG_NEEDS_FLAG) {
-						break;
-					}
-				}
-			}
-		}
-	}
-	
 	// Update the selected rows counter
 	$('#selectedRowsCount').html(selectedRows.length);
 	
@@ -1064,6 +1048,7 @@ function selectionUpdated() {
 function clearSelection() {
 	jsDataTable.rows(selectedRows).deselect();
 	selectedRows = [];
+	selectedWoceFlags = [];
 	selectionQCMessageCounts = {};
 	selectionWoceMessageCounts = {};
 	selectionUpdated();
@@ -1087,8 +1072,8 @@ function qcFlagsAccepted(data) {
 		for (var i = 0; i < rows.length; i++) {
 			var row = jsDataTable.row(i);
 			if ($.inArray(row.data()[rowColumn], selectedRows) > -1) {
-				jsDataTable.cell(i, woceMessageColumn).data(jsDataTable.cell(selectedRows[i], qcMessageColumn).data());
-				jsDataTable.cell(i, woceFlagColumn).data(jsDataTable.cell(selectedRows[i], qcFlagColumn).data());
+				jsDataTable.cell(i, woceMessageColumn).data(jsDataTable.cell(row, qcMessageColumn).data());
+				jsDataTable.cell(i, woceFlagColumn).data(jsDataTable.cell(row, qcFlagColumn).data());
 			}
 		}
 		
@@ -1140,6 +1125,8 @@ function showWoceCommentDialog() {
 	} 
 	
 	$('#woceRowCount').html(woceRowHtml);
+	
+	var worstSelectedFlag = Math.max.apply(null, selectedWoceFlags);
 	
     woceSelection(worstSelectedFlag);
 
