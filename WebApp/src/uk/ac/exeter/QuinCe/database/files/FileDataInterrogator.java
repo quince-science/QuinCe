@@ -66,6 +66,12 @@ public class FileDataInterrogator {
 		COLUMN_MAPPINGS.put("salinity1", "raw_data.salinity_1");
 		COLUMN_MAPPINGS.put("salinity2", "raw_data.salinity_2");
 		COLUMN_MAPPINGS.put("salinity3", "raw_data.salinity_3");
+		COLUMN_MAPPINGS.put("air_flow_1", "raw_data.air_flow_1");
+		COLUMN_MAPPINGS.put("air_flow_2", "raw_data.air_flow_2");
+		COLUMN_MAPPINGS.put("air_flow_3", "raw_data.air_flow_3");
+		COLUMN_MAPPINGS.put("water_flow_1", "raw_data.water_flow_1");
+		COLUMN_MAPPINGS.put("water_flow_2", "raw_data.water_flow_2");
+		COLUMN_MAPPINGS.put("water_flow_3", "raw_data.water_flow_3");
 		COLUMN_MAPPINGS.put("eqtMean", "data_reduction.mean_eqt");
 		COLUMN_MAPPINGS.put("eqt1", "raw_data.eqt_1");
 		COLUMN_MAPPINGS.put("eqt2", "raw_data.eqt_2");
