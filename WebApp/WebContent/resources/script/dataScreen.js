@@ -115,7 +115,7 @@ var compulsoryColumns = ['Date/Time', 'Longitude', 'Latitude', 'QC Flag', 'WOCE 
 // These are regular expression patterns
 var visibleColumns = {
 	'basic': [/Intake Temp/, /Intake Temp: Mean/, /Salinity/, /Salinity: Mean/, /Equil\. Temp/, /Equil\. Temp: Mean/, /Equil\. Pressure/, /Equil\. Pressure: Mean/, /Moisture \(True\)/, /fCO₂ Final/],
-	'water': [/Intake Temp.*/, /Salinity.*/],
+	'water': [/Intake Temp.*/, /Salinity.*/, /Air Flow.*/, /Water Flow.*/],
 	'equilibrator': [/Equil.*/, /Δ.*/, /Moisture.*/],
 	'co2': [/pH₂O/, /.*CO₂.*/]
 };

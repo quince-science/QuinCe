@@ -577,6 +577,26 @@ public class DataScreenBean extends BaseManagedBean {
 				columns.add("salinityMean");
 			}
 			
+			if (instrument.hasAirFlow1()) {
+				columns.add("air_flow_1");
+			}
+			if (instrument.hasAirFlow2()) {
+				columns.add("air_flow_2");
+			}
+			if (instrument.hasAirFlow3()) {
+				columns.add("air_flow_3");
+			}
+
+			if (instrument.hasWaterFlow1()) {
+				columns.add("water_flow_1");
+			}
+			if (instrument.hasWaterFlow2()) {
+				columns.add("water_flow_2");
+			}
+			if (instrument.hasWaterFlow3()) {
+				columns.add("water_flow_3");
+			}
+			
 			if (instrument.getEqtCount() == 1) {
 				columns.add("eqtMean");
 			} else {
@@ -682,6 +702,38 @@ public class DataScreenBean extends BaseManagedBean {
 			}
 			
 			output.append("'Salinity:<br/>Mean', ");
+		}
+		
+		if (instrument.hasAirFlow1()) {
+			output.append("'Air Flow:<br/>");
+			output.append(instrument.getAirFlowName1());
+			output.append("', ");
+		}
+		if (instrument.hasAirFlow2()) {
+			output.append("'Air Flow:<br/>");
+			output.append(instrument.getAirFlowName2());
+			output.append("', ");
+		}
+		if (instrument.hasAirFlow3()) {
+			output.append("'Air Flow:<br/>");
+			output.append(instrument.getAirFlowName3());
+			output.append("', ");
+		}
+
+		if (instrument.hasWaterFlow1()) {
+			output.append("'Water Flow:<br/>");
+			output.append(instrument.getWaterFlowName1());
+			output.append("', ");
+		}
+		if (instrument.hasWaterFlow2()) {
+			output.append("'Water Flow:<br/>");
+			output.append(instrument.getWaterFlowName2());
+			output.append("', ");
+		}
+		if (instrument.hasWaterFlow3()) {
+			output.append("'Water Flow:<br/>");
+			output.append(instrument.getWaterFlowName3());
+			output.append("', ");
 		}
 
 		if (instrument.getEqtCount() == 1) {
