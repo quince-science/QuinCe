@@ -86,12 +86,12 @@ public class JobManager {
 	/**
 	 * SQL statement for recording that a job has started
 	 */
-	private static final String START_JOB_STATEMENT = "UPDATE job SET status = '" + Job.RUNNING_STATUS + "', started = ? WHERE id = ?";
+	private static final String START_JOB_STATEMENT = "UPDATE job SET status = '" + Job.RUNNING_STATUS + "', started = ?, thread_name = ? WHERE id = ?";
 	
 	/**
 	 * SQL statement for recording that a job has completed
 	 */
-	private static final String END_JOB_STATEMENT = "UPDATE job SET status = '" + Job.FINISHED_STATUS + "', ended = ?, progress = 100 WHERE id = ?";
+	private static final String END_JOB_STATEMENT = "UPDATE job SET status = '" + Job.FINISHED_STATUS + "', ended = ?, progress = 100, thread_name = NULL WHERE id = ?";
 	
 	/**
 	 * SQL statement for recording that a job has failed with an error
@@ -258,18 +258,18 @@ public class JobManager {
 	 * @throws InvalidJobConstructorException If the specified job class does not have the correct constructor
 	 * @throws JobException If an unknown problem is found with the specified job class
 	 * @throws JobThreadPoolNotInitialisedException If the job thread pool has not been initialised
-	 * @throws NoSuchJobException If the job mystreriously vanishes between being created and run
+	 * @throws NoSuchJobException If the job mysteriously vanishes between being created and run
 	 */
 	public static void addInstantJob(ResourceManager resourceManager, Properties config, User owner, String jobClass, List<String> parameters) throws DatabaseException, MissingParamException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, JobThreadPoolNotInitialisedException, NoSuchJobException {
 		DataSource dataSource = resourceManager.getDBDataSource();
 		long jobID = addJob(dataSource, owner, jobClass, parameters);
-		JobThread emailThread = JobThreadPool.getInstance().getInstantJobThread(JobManager.getJob(resourceManager, config, jobID));
+		JobThread jobThread = JobThreadPool.getInstance().getInstantJobThread(JobManager.getJob(resourceManager, config, jobID));
 		try {
-			startJob(dataSource.getConnection(), jobID);
+			startJob(dataSource.getConnection(), jobID, jobThread.getName());
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while updating the job status", e);
 		}
-		emailThread.start();
+		jobThread.start();
 	}
 
 	/**
@@ -335,7 +335,7 @@ public class JobManager {
 	 * @throws DatabaseException If an error occurs while updating the record
 	 * @throws NoSuchJobException If the specified job doesn't exist
 	 */
-	public static void startJob(Connection conn, long jobID) throws MissingParamException, DatabaseException, NoSuchJobException {
+	public static void startJob(Connection conn, long jobID, String threadName) throws MissingParamException, DatabaseException, NoSuchJobException {
 		
 		MissingParam.checkMissing(conn, "conn");
 		
@@ -348,7 +348,8 @@ public class JobManager {
 		try {
 			stmt = conn.prepareStatement(START_JOB_STATEMENT);
 			stmt.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
-			stmt.setLong(2, jobID);
+			stmt.setString(2, threadName);
+			stmt.setLong(3, jobID);
 			stmt.execute();
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while setting the job to 'started' state", e);
