@@ -467,7 +467,7 @@ public class DataReductionJob extends FileJob {
 	 * Calculate pH2O. From Weiss and Price (1980)
 	 * @param salinity Salinity
 	 * @param eqt Equilibrator temperature (in celcius)
-	 * @return
+	 * @return The calculated pH2O value
 	 */
 	private double calcPH2O(double salinity, double eqt) {
 		double kelvin = eqt + 273.15;

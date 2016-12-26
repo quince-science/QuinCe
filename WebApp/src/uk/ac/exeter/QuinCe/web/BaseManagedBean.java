@@ -41,7 +41,7 @@ public abstract class BaseManagedBean {
 	/**
 	 * Generates a JSF component ID for a given form input name
 	 * @param componentName The form input name
-	 * @return
+	 * @return The JSF component ID
 	 */
 	protected String getComponentID(String componentName) {
 		return FORM_NAME + ":" + componentName;
