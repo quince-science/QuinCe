@@ -113,12 +113,24 @@ public class JobManager {
 	 */
 	private static final String GET_JOB_COUNTS_QUERY = "SELECT status, COUNT(status) FROM job GROUP BY status";
 	
+	/**
+	 * Statement to retrieve the list of jobs
+	 */
 	private static final String JOB_LIST_QUERY = "SELECT id, owner, class, submitted, status, started, ended, progress, stack_trace FROM job ORDER BY submitted DESC";
 	
+	/**
+	 * Statement to retrieve the status of a given job
+	 */
 	private static final String GET_JOB_STATUS_QUERY = "SELECT status FROM job WHERE id = ?";
 	
+	/**
+	 * Statement to retrieve the owner of a given job
+	 */
 	private static final String GET_JOB_OWNER_QUERY = "SELECT owner FROM job WHERE id = ?";
 
+	/**
+	 * Statement to reset a job's status and return it to waiting state, ready to be re-run
+	 */
 	private static final String REQUEUE_JOB_STATEMENT = "UPDATE job SET "
 			+ "status = 'WAITING', started = NULL, ended = NULL, thread_name = NULL, progress = 0, "
 			+ "stack_trace = NULL WHERE id = ?";
