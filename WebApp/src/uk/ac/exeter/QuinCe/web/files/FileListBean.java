@@ -144,6 +144,11 @@ public class FileListBean extends BaseManagedBean {
 	}
 	
 	public String export() {
+		try {
+			DataFileDB.touchFile(ServletUtils.getDBDataSource(), chosenFile);
+		} catch (Exception e) {
+			// If the touch fails, we don't really mind
+		}
 		return PAGE_EXPORT;
 	}
 	
