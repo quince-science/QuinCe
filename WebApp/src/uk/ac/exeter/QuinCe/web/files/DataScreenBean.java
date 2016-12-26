@@ -55,8 +55,16 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private String tableMode = "basic";
 	
-	private String tableData = null;
-	
+	private String tableJsonData = null;
+
+	private int tableDataDraw;		
+
+	private int tableDataStart;		
+
+	private int tableDataLength;		
+
+	private int recordCount = -1;	
+
 	private String selectedRows = null;
 	
 	private String woceComment = null;
@@ -91,7 +99,8 @@ public class DataScreenBean extends BaseManagedBean {
 		rightPlotColumns = null;
 		rightPlotData = null;
 		optionalFlags = null;
-		tableData = null;
+		tableJsonData = null;
+		recordCount = -1;
 	}
 	
 	public long getFileId() {
@@ -152,6 +161,9 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public void setOptionalFlags(List<String> optionalFlags) {
 		this.optionalFlags = optionalFlags;
+		
+		// Reset the record count, so it is retrieved from the database again.		
+		recordCount = -1;
 	}
 	
 	public String getTableMode() {
@@ -162,14 +174,46 @@ public class DataScreenBean extends BaseManagedBean {
 		this.tableMode = tableMode;
 	}
 	
-	public String getTableData() {
-		return tableData;
-	}
+	public String getTableJsonData() {
+ 		return tableJsonData;		
+ 	}
 	
-	public void setTableData(String tableData) {
-		this.tableData = tableData;
+ 	public void setTableJsonData(String tableJsonData) {
+ 		this.tableJsonData = tableJsonData;
+ 	}		
+ 
+ 	public int getTableDataDraw() {		
+		return tableDataDraw;		
+	}		
+			
+	public void setTableDataDraw(int tableDataDraw) {		
+		this.tableDataDraw = tableDataDraw;		
+	}		
+			
+	public int getTableDataStart() {		
+		return tableDataStart;		
+	}		
+			
+	public void setTableDataStart(int tableDataStart) {		
+		this.tableDataStart = tableDataStart;		
+	}		
+			
+	public int getTableDataLength() {		
+		return tableDataLength;		
+	}		
+			
+	public void setTableDataLength(int tableDataLength) {		
+		this.tableDataLength = tableDataLength;		
+	}		
+			
+	public int getRecordCount() {		
+		return recordCount;		
 	}
-	
+  			  	
+	public void setRecordCount(int recordCount) {
+		this.recordCount = recordCount;
+  	}
+ 
 	public String getSelectedRows() {
 		return selectedRows;
 	}
@@ -491,6 +535,10 @@ public class DataScreenBean extends BaseManagedBean {
 		try {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			
+			if (recordCount < 0) {		
+				setRecordCount(FileDataInterrogator.getRecordCount(dataSource, fileId, co2Type, getIncludeFlags()));
+			}
+			
 			List<String> columns = new ArrayList<String>();
 			columns.add("dateTime");
 			columns.add("row");
@@ -579,10 +627,10 @@ public class DataScreenBean extends BaseManagedBean {
 			columns.add("woceFlag");
 			columns.add("woceMessage");
 			
-			setTableData(FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, columns, getIncludeFlags(), 0, 0, true, true));
+			setTableJsonData(FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, columns, getIncludeFlags(), tableDataStart, tableDataLength, true, true));
 		} catch (Exception e) {
 			e.printStackTrace();
-			setTableData("***ERROR: " + e.getMessage());
+			setTableJsonData("***ERROR: " + e.getMessage());
 		}
 	}
 	
