@@ -50,8 +50,15 @@ public class JobRunScheduler implements ServletContextListener, Runnable {
 		}
 		
 		if (doRun) {
+			ResourceManager resourceManager = ResourceManager.getInstance();
 			try {
-				ResourceManager resourceManager = ResourceManager.getInstance();
+				JobManager.resetInterruptedJobs(resourceManager);
+			} catch (Exception e) {
+				// We don't mind if this fails.
+			}
+				
+			try {
+				JobManager.resetInterruptedJobs(resourceManager);
 				
 				boolean ranJob = true;
 				while (ranJob) {

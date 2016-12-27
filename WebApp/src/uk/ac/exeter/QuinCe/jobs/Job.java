@@ -142,11 +142,11 @@ public abstract class Job {
 	 * @throws DatabaseException If an error occurs while updating the database
 	 * @throws NoSuchJobException If the job has disappeared.
 	 */
-	protected void logStarted() throws MissingParamException, DatabaseException, NoSuchJobException {
+	protected void logStarted(String threadName) throws MissingParamException, DatabaseException, NoSuchJobException {
 		Connection conn = null;
 		try {
 			conn = dataSource.getConnection();
-			JobManager.startJob(conn, id);
+			JobManager.startJob(conn, id, threadName);
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while retrieving a database connection", e);
 		} finally {

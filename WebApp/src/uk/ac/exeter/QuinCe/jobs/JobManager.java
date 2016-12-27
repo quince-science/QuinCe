@@ -86,12 +86,12 @@ public class JobManager {
 	/**
 	 * SQL statement for recording that a job has started
 	 */
-	private static final String START_JOB_STATEMENT = "UPDATE job SET status = '" + Job.RUNNING_STATUS + "', started = ? WHERE id = ?";
+	private static final String START_JOB_STATEMENT = "UPDATE job SET status = '" + Job.RUNNING_STATUS + "', started = ?, thread_name = ? WHERE id = ?";
 	
 	/**
 	 * SQL statement for recording that a job has completed
 	 */
-	private static final String END_JOB_STATEMENT = "UPDATE job SET status = '" + Job.FINISHED_STATUS + "', ended = ?, progress = 100 WHERE id = ?";
+	private static final String END_JOB_STATEMENT = "UPDATE job SET status = '" + Job.FINISHED_STATUS + "', ended = ?, progress = 100, thread_name = NULL WHERE id = ?";
 	
 	/**
 	 * SQL statement for recording that a job has failed with an error
@@ -122,6 +122,8 @@ public class JobManager {
 	private static final String REQUEUE_JOB_STATEMENT = "UPDATE job SET "
 			+ "status = 'WAITING', started = NULL, ended = NULL, thread_name = NULL, progress = 0, "
 			+ "stack_trace = NULL WHERE id = ?";
+	
+	private static final String GET_RUNNING_THREAD_NAMES_STATEMENT = "SELECT id, thread_name FROM job WHERE status = 'RUNNING'";
 	
 	/**
 	 * Adds a job to the database
@@ -258,18 +260,18 @@ public class JobManager {
 	 * @throws InvalidJobConstructorException If the specified job class does not have the correct constructor
 	 * @throws JobException If an unknown problem is found with the specified job class
 	 * @throws JobThreadPoolNotInitialisedException If the job thread pool has not been initialised
-	 * @throws NoSuchJobException If the job mystreriously vanishes between being created and run
+	 * @throws NoSuchJobException If the job mysteriously vanishes between being created and run
 	 */
 	public static void addInstantJob(ResourceManager resourceManager, Properties config, User owner, String jobClass, List<String> parameters) throws DatabaseException, MissingParamException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, JobThreadPoolNotInitialisedException, NoSuchJobException {
 		DataSource dataSource = resourceManager.getDBDataSource();
 		long jobID = addJob(dataSource, owner, jobClass, parameters);
-		JobThread emailThread = JobThreadPool.getInstance().getInstantJobThread(JobManager.getJob(resourceManager, config, jobID));
+		JobThread jobThread = JobThreadPool.getInstance().getInstantJobThread(JobManager.getJob(resourceManager, config, jobID));
 		try {
-			startJob(dataSource.getConnection(), jobID);
+			startJob(dataSource.getConnection(), jobID, jobThread.getName());
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while updating the job status", e);
 		}
-		emailThread.start();
+		jobThread.start();
 	}
 
 	/**
@@ -335,7 +337,7 @@ public class JobManager {
 	 * @throws DatabaseException If an error occurs while updating the record
 	 * @throws NoSuchJobException If the specified job doesn't exist
 	 */
-	public static void startJob(Connection conn, long jobID) throws MissingParamException, DatabaseException, NoSuchJobException {
+	public static void startJob(Connection conn, long jobID, String threadName) throws MissingParamException, DatabaseException, NoSuchJobException {
 		
 		MissingParam.checkMissing(conn, "conn");
 		
@@ -348,7 +350,8 @@ public class JobManager {
 		try {
 			stmt = conn.prepareStatement(START_JOB_STATEMENT);
 			stmt.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
-			stmt.setLong(2, jobID);
+			stmt.setString(2, threadName);
+			stmt.setLong(3, jobID);
 			stmt.execute();
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while setting the job to 'started' state", e);
@@ -764,6 +767,51 @@ public class JobManager {
 		return jobStarted;
 	}
 	
+	public static void resetInterruptedJobs(ResourceManager resourceManager) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(resourceManager, "resourceManager");
+		
+		DataSource dataSource = resourceManager.getDBDataSource();
+		Connection conn = null;
+		PreparedStatement threadNamesStmt = null;
+		ResultSet runningThreadNames = null;
+		
+		try {
+			
+			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
+			threadNamesStmt = conn.prepareStatement(GET_RUNNING_THREAD_NAMES_STATEMENT);
+			runningThreadNames = threadNamesStmt.executeQuery();
+			
+			List<Long> jobsToRequeue = new ArrayList<Long>();
+			
+			while (runningThreadNames.next()) {
+				long jobId = runningThreadNames.getLong(1);
+				String threadName = runningThreadNames.getString(2);
+				
+				JobThreadPool threadPool = JobThreadPool.getInstance();
+				if (!threadPool.isThreadRunning(threadName)) {
+					jobsToRequeue.add(jobId);
+				}
+			}
+			
+			requeueJobs(conn, jobsToRequeue);
+			
+			conn.commit();
+		} catch (SQLException e) {
+			DatabaseUtils.rollBack(conn);
+			throw new DatabaseException("Error while resetting interrupted jobs");
+		} catch (JobThreadPoolNotInitialisedException e) {
+			DatabaseUtils.rollBack(conn);
+			// Not much we can do about that.
+		} finally {
+			DatabaseUtils.closeResultSets(runningThreadNames);
+			DatabaseUtils.closeStatements(threadNamesStmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+	}
+	
 	private static String getJobStatus(DataSource dataSource, long jobId) throws NoSuchJobException, MissingParamException, DatabaseException {
 		
 		String result = null;
@@ -852,16 +900,38 @@ public class JobManager {
 		return owner;
 	}
 
+	public static void requeueJobs(Connection conn, List<Long> jobIds) throws MissingParamException, DatabaseException {
+		
+		// TODO We can make a new REQUEUE statement that takes multiple job ids.
+		for (long jobId : jobIds) {
+			requeueJob(conn, jobId);
+		}
+	}
+	
 	public static void requeueJob(DataSource dataSource, long jobId) throws MissingParamException, DatabaseException {
 
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(jobId, "jobId");
-		
+
 		Connection conn = null;
+		try {
+			conn = dataSource.getConnection();
+			requeueJob(conn, jobId);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while requeuing job " + jobId, e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+
+	public static void requeueJob(Connection conn, long jobId) throws MissingParamException, DatabaseException {
+
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkPositive(jobId, "jobId");
+		
 		PreparedStatement stmt = null;
 
 		try {
-			conn = dataSource.getConnection();
 			stmt = conn.prepareStatement(REQUEUE_JOB_STATEMENT);
 			stmt.setLong(1, jobId);
 			stmt.execute();
@@ -870,7 +940,6 @@ public class JobManager {
 			throw new DatabaseException("An error occurred while requeuing job " + jobId, e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
 		}
 	}
 }

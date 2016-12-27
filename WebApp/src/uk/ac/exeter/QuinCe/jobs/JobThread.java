@@ -50,7 +50,6 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 	public void setupJob(Job job) throws MissingParamException {
 		MissingParam.checkMissing(job, "job");
 		this.job = job;
-		setName("JOB_" + job.getID());
 	}
 	
 	/**
@@ -77,9 +76,11 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 	 */
 	public void run() {
 		try {
+			setName(String.valueOf(job.getID()) + '_' + System.currentTimeMillis());
+			
 			// Run the job
 			job.setProgress(0);
-			job.logStarted();
+			job.logStarted(getName());
 			job.execute();
 			job.logFinished();
 		} catch (Exception e) {

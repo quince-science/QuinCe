@@ -62,14 +62,14 @@ public class JobsBean extends BaseManagedBean {
 		}
 		
 		try {
-			runningThreads = JobThreadPool.getInstance().getRunningThreads();
+			runningThreads = JobThreadPool.getInstance().getRunningThreadsCount();
 		} catch (Exception e) {
 			e.printStackTrace();
 			runningThreads = -1;
 		}
 		
 		try {
-			overflowThreads = JobThreadPool.getInstance().getOverflowThreads();
+			overflowThreads = JobThreadPool.getInstance().getOverflowThreadsCount();
 		} catch (Exception e) {
 			e.printStackTrace();
 			overflowThreads = -1;
