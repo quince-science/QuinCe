@@ -22,7 +22,7 @@ public class JobThreadPool {
 	/**
 	 * The singleton instance of the thread pool
 	 */
-	private static JobThreadPool itsInstance = null;
+	private static JobThreadPool instance = null;
 	
 	/**
 	 * The maximum number of threads in the pool
@@ -139,7 +139,7 @@ public class JobThreadPool {
 	 * @return {@code true} if the pool has been initialised; {@code false} if it has not.
 	 */
 	public static boolean isInitialised() {
-		return !(null == itsInstance);
+		return !(null == instance);
 	}
 	
 	/**
@@ -155,22 +155,21 @@ public class JobThreadPool {
 			throw new InvalidThreadCountException();
 		}
 		
-		if (null == itsInstance) {
-			itsInstance = new JobThreadPool(maxThreads);
+		if (null == instance) {
+			instance = new JobThreadPool(maxThreads);
 		}
 	}
 	
-	
 	public static JobThreadPool getInstance() throws JobThreadPoolNotInitialisedException {
-		if (null == itsInstance) {
+		if (null == instance) {
 			throw new JobThreadPoolNotInitialisedException();
 		}
 		
-		return itsInstance;
+		return instance;
 	}
 	
 	public static void destroy() {
-		itsInstance = null;
+		instance = null;
 	}
 	
 	public int getPoolThreadCount() {
@@ -181,11 +180,11 @@ public class JobThreadPool {
 		return maxThreads;
 	}
 	
-	public int getRunningThreads() {
+	public int getRunningThreadsCount() {
 		return allocatedThreads.size();
 	}
 	
-	public int getOverflowThreads() {
+	public int getOverflowThreadsCount() {
 		int overflowThreads = 0;
 		
 		for (JobThread thread : allocatedThreads) {
@@ -195,5 +194,27 @@ public class JobThreadPool {
 		}
 		
 		return overflowThreads;
+	}
+	
+	/**
+	 * <p>Determines whether or not a thread with a given name is currently running
+	 * as part of the job thread pool.</p>
+	 * <p><b>N.B.</b> If a thread with the supplied name is running, but is not part of the job thread pool,
+	 * it will not be detected.</p> 
+	 * 
+	 * @param threadName The name of the thread
+	 * @return {@code true} if the thread is running in the job thread pool; {@code false} if it is not.
+	 */
+	public boolean isThreadRunning(String threadName) {
+		boolean threadRunning = false;
+		
+		for (JobThread thread : allocatedThreads) {
+			if (thread.getName().equals(threadName)) {
+				threadRunning = true;
+				break;
+			}
+		}
+		
+		return threadRunning;
 	}
 }
