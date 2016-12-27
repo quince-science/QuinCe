@@ -10,10 +10,17 @@
 		<h:outputStylesheet name="style/main.css"/>
 	    <script type="text/javascript">
 	    	function toggleSettingsMenu() {
+	    		
+	    		//Menu height = lines * 29  + 3
+	    		var menuItems = $('#menuEntries').children().length;
+	    		var menuHeight = menuItems * 29;
+	    		$('#userSettingsMenu').height(menuHeight);
+	    		
         		$('#userSettingsMenu').toggleClass('visible');
       		}
 
       		function hideSettingsMenu() {
+      			$('#userSettingsMenu').height(0);
         		$('#userSettingsMenu').removeClass('visible');
       		}
       </script>
@@ -22,14 +29,13 @@
 	</h:head>
 	<h:body>
 	    <div id="userSettingsMenu">
-      		<ul class="menu">
+      		<ul class="menu" id="menuEntries">
         		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/data/file_list.jsf';">Files</li>
         		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/instrument/instrument_list.jsf';">Instruments</li>
         		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/user/user_edit.xhtml';">Account</li>
         		<ui:fragment rendered="#{User.jobManager}">
         			<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/jobs/job_list.jsf';">Jobs</li>
         		</ui:fragment>
-
         		<li class="menuitem" onclick="hideSettingsMenu();self.document.location='#{application.contextPath}/logout';">Log Out</li>
       		</ul>
     	</div>
