@@ -653,6 +653,12 @@ function drawTable() {
     		// Submit the query to the server		
     		$('#plotDataForm\\:tableGetData').click();		
     	},
+    	drawCallback: function (settings) {
+    		if (null != tableScrollRow) {
+    			highlightRow(tableScrollRow);
+    			tableScrollRow = null;
+    		}
+    	},
     	bInfo: false,
     	rowCallback: function( row, data, index ) {
     		var rowNumber = data[getColumnIndex('Row')];
@@ -839,13 +845,11 @@ function scrollToTableRow(milliseconds) {
 	if (tableRow >= 0) {
 		jsDataTable.scroller().scrollToRow(tableRow - 2);
 		
-		tableScrollRow = jsDataTable.row(tableRow);
-		setTimeout(function() {
-			$(tableScrollRow.node()).css('animationName', 'rowFlash').css('animationDuration', '1s');
-			setTimeout(function() {
-				$(tableScrollRow.node()).css('animationName', '');
-			}, 1000);
-		}, 250);
+		// Because we scroll to the row - 2, we know that the
+		// row we want to highlight is the third row
+		tableScrollRow = tableRow;
+		
+		// The highlight is done as part of the table draw callback
 	}
 }
 
@@ -1185,3 +1189,13 @@ function tableDataDownload(data) {
 		});
 	}
 }		
+
+function highlightRow(tableRow) {
+	setTimeout(function() {
+		var rowNode = $('#row' + tableRow)[0];
+		$(rowNode).css('animationName', 'rowFlash').css('animationDuration', '1s');
+		setTimeout(function() {
+			$(rowNode).css('animationName', '');
+		}, 1000);
+	}, 100);
+}

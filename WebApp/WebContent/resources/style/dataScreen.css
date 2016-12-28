@@ -166,3 +166,7 @@ body.fullPage {
     height: 150px;
     resize: none;
 }
+
+tr.selected {
+	background-color: #FFFF00 !important;
+}
