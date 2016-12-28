@@ -414,7 +414,90 @@ public class FileDataInterrogator {
 		return result.toString();
 	}
 	
-	public static String getJsonData(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings) throws MissingParamException, MessageException {
+	public static String getJsonDataObjects(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings, boolean includeRowId)  throws MissingParamException, MessageException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		MissingParam.checkMissing(columns, "columns");
+		MissingParam.checkMissing(includeFlags, "includeFlags");
+		
+		String output = null;
+
+		// Variables for getting data from database
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+
+		try {
+			conn = dataSource.getConnection();
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, start, length, sortByFirstColumn);
+			
+			records = stmt.executeQuery();
+			ResultSetMetaData rsmd = records.getMetaData();
+			int columnCount = rsmd.getColumnCount();
+
+			StringBuilder outputBuffer = new StringBuilder();
+			outputBuffer.append('[');
+		
+			int currentRow = start - 1;
+			boolean hasRecords = false;
+			while (records.next()) {
+				currentRow++;
+				hasRecords = true;
+				
+				outputBuffer.append('{');
+				if (includeRowId) {
+					outputBuffer.append("\"DT_RowId\":\"row");
+					outputBuffer.append(currentRow);
+					outputBuffer.append("\",");
+				}
+				
+				for (int col = 1; col <= columnCount; col++) {
+
+					// The first column is always the date/time (it's added automatically)
+					// Plus we check the other columns too (which are zero-based, and the automatic dateTime accounts for one)
+					String columnName = columns.get(col - 1);
+					outputBuffer.append('\"');
+					outputBuffer.append(col - 1);
+					outputBuffer.append("\":");
+					
+					if (valuesAsStrings) {
+						outputBuffer.append('\"');
+					}
+					outputBuffer.append(formatField(records, col, columnName, valuesAsStrings));
+					
+					if (valuesAsStrings) {
+						outputBuffer.append('\"');
+					}
+					
+					if (col < columnCount) {
+						outputBuffer.append(',');
+					}
+				}
+
+				outputBuffer.append("},");
+			}
+			
+			// Remove the trailing comma from the last record
+			if (hasRecords) {
+				outputBuffer.deleteCharAt(outputBuffer.length() - 1);
+			}
+			outputBuffer.append(']');
+			
+			output = outputBuffer.toString();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			output = "***ERROR - " + e.getMessage();
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+
+		return output;
+	}
+	
+	public static String getJsonDataArray(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings) throws MissingParamException, MessageException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(columns, "columns");
@@ -435,7 +518,7 @@ public class FileDataInterrogator {
 			ResultSetMetaData rsmd = records.getMetaData();
 			int columnCount = rsmd.getColumnCount();
 
-			StringBuffer outputBuffer = new StringBuffer();
+			StringBuilder outputBuffer = new StringBuilder();
 			outputBuffer.append('[');
 			
 			boolean hasRecords = false;
@@ -444,7 +527,6 @@ public class FileDataInterrogator {
 				
 				outputBuffer.append('[');
 				for (int col = 1; col <= columnCount; col++) {
-					
 
 					// The first column is always the date/time (it's added automatically)
 					// Plus we check the other columns too (which are zero-based, and the automatic dateTime accounts for one)
