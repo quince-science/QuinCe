@@ -40,13 +40,16 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * 
  * <p>If the {@code AutoQCJob} has been run before, some WOCE Flags and Comments will have already been set by the user.
  *    These will be dealt with as follows: 
-
- *   <ul>
- *     <li>If the QC results have not changed from their previous value, the WOCE flags are kept unchanged</li>
- *     <li>If the QC results are different, the WOCE flag is replaced with {@code ASSUMED_GOOD} or {@code NEEDS_FLAG}
- *         as described above. The user will have to re-examine these records and set the WOCE Flag and Comment once more.</li>
- *   </ul>
  * </p>
+ *  <ul>
+ *    <li>
+ *      If the QC results have not changed from their previous value, the WOCE flags are kept unchanged.
+ *    </li>
+ *    <li>
+ *      If the QC results are different, the WOCE flag is replaced with {@code ASSUMED_GOOD} or {@code NEEDS_FLAG}
+ *      as described above. The user will have to re-examine these records and set the WOCE Flag and Comment once more.
+ *    </li>
+ *  </ul>
  * 
  * @author Steve Jones
  *
