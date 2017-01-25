@@ -28,7 +28,9 @@ import uk.ac.exeter.QuinCe.data.User;
  *   <li>Password Reset page</li>
  * </ul>
  * 
- * Based on code from {@link http://stackoverflow.com/questions/8480100/how-implement-a-login-filter-in-jsf}
+ * <p>Based on code from stackoverflow (see the See Also below).</p>
+ * 
+ * @see <a href="http://stackoverflow.com/questions/8480100/how-implement-a-login-filter-in-jsf">How implement a login filter in JSF?</a> 
  * 
  * @author Steve Jones
  *
@@ -36,8 +38,14 @@ import uk.ac.exeter.QuinCe.data.User;
 @WebFilter("*")
 public class AuthenticatedFilter implements Filter {
 
+	/**
+	 * The list of paths that can be accessed without being logged in. 
+	 */
 	private List<String> allowedPaths = new ArrayList<String>();
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain filterChain) throws IOException, ServletException {
 		HttpServletRequest request = (HttpServletRequest) req;
@@ -89,7 +97,7 @@ public class AuthenticatedFilter implements Filter {
 	}
 
 	/**
-	 * Initialisation - set up the list of allowed paths
+	 * Initialisation - set up the list of paths that can be accessed without being logged in.
 	 */
 	@Override
 	public void init(FilterConfig arg0) throws ServletException {
