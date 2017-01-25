@@ -54,11 +54,8 @@ public class CalibrationsBean extends BaseManagedBean {
 	
 	/**
 	 * Clear the bean's data
-	 * @throws ResourceException 
-	 * @throws DatabaseException 
-	 * @throws MissingParamException 
 	 */
-	private void clearData() throws MissingParamException, DatabaseException, ResourceException {
+	private void clearData() {
 		calibrationDate = null;
 		chosenCalibration = DatabaseUtils.NO_DATABASE_RECORD;
 		coefficients = null;
