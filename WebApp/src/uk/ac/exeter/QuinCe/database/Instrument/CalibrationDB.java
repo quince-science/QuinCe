@@ -24,6 +24,12 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
+/**
+ * This class provides database calls related to instrument calibrations.
+ * 
+ * @author Steve Jones
+ *
+ */
 public class CalibrationDB {
 
 	/**
@@ -60,7 +66,7 @@ public class CalibrationDB {
 			+ "calibration_coefficients WHERE calibration_id = ? ORDER BY sensor ASC";
 	
 	/**
-	 * Statememnt to update the date for a given calibration
+	 * Statement to change the date for a given calibration
 	 */
 	private static final String UPDATE_CALIBRATION_STATEMENT = "UPDATE sensor_calibration SET calibration_date = ? WHERE id = ?";
 	
@@ -161,7 +167,11 @@ public class CalibrationDB {
 	}
 	
 	/**
-	 * Retrieve the list of calibrations for a specific instrument from the database
+	 * Retrieve the list of calibrations for a specific instrument from the database. The calibrations are
+	 * returned as {@link CalibrationStub} objects, which contain the basic details of the calibration but
+	 * not the coefficients for the sensors. These can be retrieved using the
+	 * {@link #getCalibrationCoefficients(DataSource, CalibrationStub)} method.
+	 * 
 	 * @param dataSource A data source
 	 * @param instrumentID The instrument ID
 	 * @return The list of calibrations.
@@ -199,7 +209,10 @@ public class CalibrationDB {
 	}
 	
 	/**
-	 * Retrieve a calibration stub object for a given calibration ID
+	 * Retrieve a {@link CalibrationStub} object for a given calibration ID. This contains the basic details
+	 * of the calibration, but does not contain the calibration coefficients for the instrument's sensors.
+	 * These can be retrieved using the {@link #getCalibrationCoefficients(DataSource, CalibrationStub)} method.
+	 * 
 	 * @param dataSource A data source
 	 * @param calibrationID The calibration ID
 	 * @return The calibration stub
@@ -240,6 +253,18 @@ public class CalibrationDB {
 		}
 	}
 
+	/**
+	 * Retrieve the calibration coefficients for an instrument's sensors given a {@link CalibrationStub}
+	 * object that contains the instrument ID and the date of the calibration.
+	 * 
+	 * @param dataSource A data source
+	 * @param calibration The basic calibration details
+	 * @return The calibration coefficients for each of the instrument's sensors
+	 * 
+	 * @throws MissingParamException If any of the parameters are {@code null}
+	 * @throws RecordNotFoundException If the specified calibration does not exist in the database
+	 * @throws DatabaseException If a database error occurs
+	 */
 	public static List<CalibrationCoefficients> getCalibrationCoefficients(DataSource dataSource, CalibrationStub calibration) throws MissingParamException, RecordNotFoundException, DatabaseException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -287,6 +312,17 @@ public class CalibrationDB {
 		return coefficients;
 	}
 
+	/**
+	 * Updates the details of an existing calibration in the database.
+	 * 
+	 * @param dataSource A data source
+	 * @param calibrationID The database ID of the calibration to be updated
+	 * @param calibrationDate The date of the calibration
+	 * @param coefficients The calibration coefficients for the instrument's sensors
+	 * @throws MissingParamException If any of the required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the specified calibration database ID does not exist
+	 */
 	public static void updateCalibration(DataSource dataSource, long calibrationID, Date calibrationDate, List<CalibrationCoefficients> coefficients) throws MissingParamException, DatabaseException, RecordNotFoundException {
 
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -352,8 +388,9 @@ public class CalibrationDB {
 	
 	/**
 	 * Search for an existing calibration record with a given ID
+	 * 
 	 * @param conn A database connection
-	 * @param calibrationID The calibration ID
+	 * @param calibrationID The calibration's database ID
 	 * @return {@code true} if the calibration exists; {@code false} if it does not.
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while searching the database
@@ -387,10 +424,11 @@ public class CalibrationDB {
 
 	/**
 	 * Remove a calibration from the database
+	 * 
 	 * @param dataSource A data source
 	 * @param calibrationID The calibration ID
-	 * @throws MissingParamException
-	 * @throws DatabaseException
+	 * @throws MissingParamException If any of the parameters are missing
+	 * @throws DatabaseException If a database error occurs
 	 */
 	public static void deleteCalibration(DataSource dataSource, long calibrationID) throws MissingParamException, DatabaseException {
 
@@ -514,6 +552,25 @@ public class CalibrationDB {
 		return result;
 	}
 	
+	/**
+	 * <p>Return the list of instrument calibrations that encompass a given data file, provided as the first and last record
+	 * dates in that file. The calibrations returned include all those that happened during the file's duration, as well as
+	 * the calibration immeditately preceding the file's first record, as that will be the calibration in place for the first
+	 * record(s).</p>
+	 * 
+	 * <p>The calibrations are returned as {@link CalibrationStub} objects, which contain the basic details
+	 * of the calibration, but notthe calibration coefficients for the instrument's sensors.
+	 * These can be retrieved using the {@link #getCalibrationCoefficients(DataSource, CalibrationStub)} method.</p>
+	 * 
+	 * @param dataSource A data source 
+	 * @param instrumentId The ID of the instrument whose calibrations are to be retrieved
+	 * @param startDate The date of the first record in the data file
+	 * @param endDate The date of the last record in the instrument file
+	 * @return The set of calibrations that occurred 
+	 * @throws MissingParamException If any of the parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws InstrumentException If there is no calibration preceding the start of the data file
+	 */
 	public static List<CalibrationStub> getCalibrationsForFile(DataSource dataSource, long instrumentId, Calendar startDate, Calendar endDate) throws MissingParamException, DatabaseException, InstrumentException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
