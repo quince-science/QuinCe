@@ -31,8 +31,6 @@ public class AutoQCJob extends FileJob {
 	@Override
 	protected void execute() throws JobFailedException {
 		
-		reset();
-	
 		Connection conn = null;
 		
 		try {
@@ -121,9 +119,5 @@ public class AutoQCJob extends FileJob {
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}
-	}
-
-	private void reset() throws JobFailedException {
-		// Does nothing
 	}
 }
