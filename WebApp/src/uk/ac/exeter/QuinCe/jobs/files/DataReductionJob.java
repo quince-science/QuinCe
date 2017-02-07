@@ -37,9 +37,14 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * The background job to perform data reduction on a data file
+ * The background job to perform data reduction on a data file.
+ * 
+ * <p>
+ *   The calculations follow the procedure in Pierrot et al. 2009
+ *   (doi:10.1016/j.dsr2.2008.12.005), with direct input from Denis Pierrot.
+ * 
  * @author Steve Jones
- *
+ * @see <a href="http://www.sciencedirect.com/science/article/pii/S0967064508004268">Recommendations for autonomous underway pCO<sub>2</sub> measuring systems and data-reduction routines</a> 
  */
 public class DataReductionJob extends FileJob {
 
