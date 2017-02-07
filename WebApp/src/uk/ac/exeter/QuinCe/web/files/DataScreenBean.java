@@ -69,7 +69,7 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private int woceFlag = Flag.VALUE_NEEDED;
 	
-	Instrument instrument;
+	private Instrument instrument;
 	
 	/**
 	 * Required basic constructor. All the actual construction
