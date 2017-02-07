@@ -26,8 +26,6 @@ public class DataScreenBean extends BaseManagedBean {
 	static {
 		FORM_NAME = "dataScreen";
 	}
-
-	public static final String CURRENT_FILE_SESSION_ATTRIBUTE = "currentFile";
 	
 	public static final String PAGE_START = "data_screen";
 	
