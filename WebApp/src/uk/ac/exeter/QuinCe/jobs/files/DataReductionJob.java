@@ -36,11 +36,31 @@ import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+/**
+ * The background job to perform data reduction on a data file
+ * @author Steve Jones
+ *
+ */
 public class DataReductionJob extends FileJob {
 
-
+	/**
+	 * The conversion factor from Pascals to Atmospheres
+	 */
 	private static final double PASCALS_TO_ATMOSPHERES = 0.00000986923266716013;
 
+	/**
+	 * Constructor for a data reduction job to be run on a specific data file.
+	 * The job record must already have been created in the database.
+	 * 
+	 * @param resourceManager The QuinCe resource manager
+	 * @param config The application configuration
+	 * @param jobId The job's database ID
+	 * @param parameters The job parameters. These will be ignored.
+	 * @throws MissingParamException If any constructor parameters are missing
+	 * @throws InvalidJobParametersException If any of the parameters are invalid. Because parameters are ignored for this job, this exception will not be thrown.
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the job cannot be found in the database
+	 */
 	public DataReductionJob(ResourceManager resourceManager, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(resourceManager, config, jobId, parameters);
 	}
@@ -209,6 +229,10 @@ public class DataReductionJob extends FileJob {
 		}
 	}
 	
+	/**
+	 * Removes any previously calculated data reduction results from the database
+	 * @throws JobFailedException If an error occurs
+	 */
 	protected void reset() throws JobFailedException {
 		try {
 			DataReductionDB.clearDataReductionData(dataSource, fileId);
@@ -217,6 +241,19 @@ public class DataReductionJob extends FileJob {
 		}
 	}
 	
+	/**
+	 * <p>Calculates the mean intake temperature for a single measurement from all intake temperature sensors.</p>
+	 * 
+	 * <p>Only sensors defined for the instrument are used. If any sensor values are missing
+	 * (identified by {@link RawDataDB#MISSING_VALUE}), the sensor is not included in the calculation,
+	 * and the appropriate flag is set on the measurment's QC record.</p>
+	 * @param values The raw data for the measurement
+	 * @param instrument The instrument from which the measurement was taken
+	 * @param qcRecord The QC record for the measurement
+	 * @return The mean intake temperature
+	 * @throws NoSuchColumnException If an intake temperature column is missing.
+	 * @throws MessageException If an error occurs while creating a QC message
+	 */
 	private double calcMeanIntakeTemp(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
 		
 		double total = 0;
@@ -275,6 +312,19 @@ public class DataReductionJob extends FileJob {
 		return result;
 	}
 
+	/**
+	 * <p>Calculates the mean salinity for a single measurement from all salinity sensors.</p>
+	 * 
+	 * <p>Only sensors defined for the instrument are used. If any sensor values are missing
+	 * (identified by {@link RawDataDB#MISSING_VALUE}), the sensor is not included in the calculation,
+	 * and the appropriate flag is set on the measurment's QC record.</p>
+	 * @param values The raw data for the measurement
+	 * @param instrument The instrument from which that the measurement was taken
+	 * @param qcRecord The QC record for the measurement
+	 * @return The mean salinity
+	 * @throws NoSuchColumnException If a salinity column is missing.
+	 * @throws MessageException If an error occurs while creating a QC message
+	 */
 	private double calcMeanSalinity(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
 		
 		double total = 0;
@@ -333,6 +383,19 @@ public class DataReductionJob extends FileJob {
 		return result;
 	}
 
+	/**
+	 * <p>Calculates the mean equilibrator temperature for a single measurement from all equilibrator temperature sensors.</p>
+	 * 
+	 * <p>Only sensors defined for the instrument are used. If any sensor values are missing
+	 * (identified by {@link RawDataDB#MISSING_VALUE}), the sensor is not included in the calculation,
+	 * and the appropriate flag is set on the measurment's QC record.</p>
+	 * @param values The raw data for the measurement
+	 * @param instrument The instrument from which the measurement was taken
+	 * @param qcRecord The QC record for the measurement
+	 * @return The mean equilibrator temperature
+	 * @throws NoSuchColumnException If an equilibrator temperature column is missing.
+	 * @throws MessageException If an error occurs while creating a QC message
+	 */
 	private double calcMeanEqt(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
 		
 		double total = 0;
@@ -391,6 +454,19 @@ public class DataReductionJob extends FileJob {
 		return result;
 	}
 
+	/**
+	 * <p>Calculates the mean equilibrator pressure for a single measurement from all equilibrator pressure sensors.</p>
+	 * 
+	 * <p>Only sensors defined for the instrument are used. If any sensor values are missing
+	 * (identified by {@link RawDataDB#MISSING_VALUE}), the sensor is not included in the calculation,
+	 * and the appropriate flag is set on the measurment's QC record.</p>
+	 * @param values The raw data for the measurement
+	 * @param instrument The instrument from which the measurement was taken
+	 * @param qcRecord The QC record for the measurement
+	 * @return The mean equilibrator pressure
+	 * @throws NoSuchColumnException If an equilibrator pressure column is missing.
+	 * @throws MessageException If an error occurs while creating a QC message
+	 */
 	private double calcMeanEqp(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
 		
 		double total = 0;
@@ -449,11 +525,41 @@ public class DataReductionJob extends FileJob {
 		return result;
 	}
 
+	/**
+	 * <p>Calibrate a CO<sub>2</sub> measurement to the gas standards.</p>
+	 * 
+	 * <p>The calibration is performed by retrieving the gas standard runs immediately before
+	 * and after the measurement, which implicitly include the adjustment of the measured CO<sub>2</sub>
+	 * in the gas standard run to the true value of the standard
+	 * (see {@link GasStandardRuns#getStandardsRegression(javax.sql.DataSource, long, Calendar)}).
+	 * If only one standard is available (e.g. at the beginning or end of a data file), the single
+	 * available standard is used.
+	 * 
+	 * The CO<sub>2</sub> value measured for the current record is adjusted to the linear progression between
+	 * the two gas standard runs.
+	 * 
+	 * @param driedCo2 The CO<sub>2</sub> value after drying
+	 * @param time The time that the measurement was taken
+	 * @param standardRuns The set of gas standard runs for the data file
+	 * @param instrument The instrument from which the measurement was taken
+	 * @return The calibrated CO<sub>2</sub> value
+	 * @throws MissingParamException If any parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If any required database records are missing
+	 */
 	private double calcCalibratedCo2(double driedCo2, Calendar time, GasStandardRuns standardRuns, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		SimpleRegression regression = standardRuns.getStandardsRegression(dataSource, instrument.getDatabaseId(), time);
 		return regression.predict(driedCo2);
 	}
 	
+	/**
+	 * Calculates dry pCO<sub>2</sub> at the equilibrator temperature.
+	 * Assumes that the CO<sub>2</sub> value has already been calibrated.
+	 *  
+	 * @param co2 The calibrated CO<sub>2</sub> value 
+	 * @param eqp The equilibrator pressure
+	 * @return The dry pCO<sub>2</sub> at the equilibrator temperature
+	 */
 	private double calcPco2TEDry(double co2, double eqp) {
 		
 		// Calibrated CO2 to Pascals (adjusted for equilibrator pressure)
@@ -464,7 +570,8 @@ public class DataReductionJob extends FileJob {
 	}
 	
 	/**
-	 * Calculate pH2O. From Weiss and Price (1980)
+	 * Calculates the water vapour pressure (pH<sub>2</sub>O).
+	 * From Weiss and Price (1980)
 	 * @param salinity Salinity
 	 * @param eqt Equilibrator temperature (in celcius)
 	 * @return The calculated pH2O value
@@ -474,11 +581,25 @@ public class DataReductionJob extends FileJob {
 		return Math.exp(24.4543 - 67.4509 * (100 / kelvin) - 4.8489 * Math.log(kelvin / 100) - 0.000544 * salinity);
 	}
 	
+	/**
+	 * Calculates pCO<sub>2</sub> in water at equlibrator temperature
+	 * @param co2TEDry Dry pCO<sub>2</sub> at equilibrator temperature 
+	 * @param eqp The equilibrator pressure
+	 * @param pH2O The water vapour pressure
+	 * @return pCO<sub>2</sub> in water at equlibrator temperature
+	 */
 	private double calcPco2TEWet(double co2TEDry, double eqp, double pH2O) {
 		double eqp_atm = eqp * PASCALS_TO_ATMOSPHERES * 100;
 		return co2TEDry * (eqp_atm - pH2O);
 	}
 	
+	/**
+	 * Calculates fCO<sub>2</sub> at equilibrator temperature
+	 * @param pco2TEWet pCO<sub>2</sub> at equilibrator temperature
+	 * @param eqp The equilibrator pressure
+	 * @param eqt The equilibrator temperature
+	 * @return fCO<sub>2</sub> at equilibrator temperature
+	 */
 	private double calcFco2TE(double pco2TEWet, double eqp, double eqt) {
 		double kelvin = eqt + 273.15;
 		double B = -1636.75 + 12.0408 * kelvin -0.0327957 * Math.pow(kelvin, 2) + (3.16528 * 1e-5) * Math.pow(kelvin, 3);
@@ -487,6 +608,13 @@ public class DataReductionJob extends FileJob {
 		return pco2TEWet * Math.exp(((B + 2 * (delta * 1e-6)) * (eqp * 1e-6)) / (8.314472 * kelvin));		
 	}
 	
+	/**
+	 * Calculates fCO<sub>2</sub> at the sea surface temperature
+	 * @param fco2TE fCO<sub>2</sub> at equilibrator temperature
+	 * @param eqt The equilibrator temperature
+	 * @param sst The sea surface temperature
+	 * @return fCO<sub>2</sub> at the sea surface temperature
+	 */
 	private double calcFco2(double fco2TE, double eqt, double sst) {
 		double sst_kelvin = sst + 273.15;
 		double eqt_kelvin = eqt + 273.15;
