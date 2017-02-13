@@ -22,6 +22,7 @@ import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -31,7 +32,9 @@ public class TrimFlushingJob extends FileJob {
 		super(resourceManager, config, jobId, parameters);
 	}
 
-	public void execute() throws JobFailedException {
+	public void executeFileJob(JobThread thread) throws JobFailedException {
+		
+		// Note that this job ignores interrupt calls!
 		
 		Connection conn = null;
 
@@ -85,9 +88,13 @@ public class TrimFlushingJob extends FileJob {
 			}
 			
 			// Queue up the Data Reduction job
-			User owner = JobManager.getJobOwner(dataSource, id);
-			JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_REDUCTION, parameters);
-			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
+			try {
+				User owner = JobManager.getJobOwner(dataSource, id);
+				JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_REDUCTION, parameters);
+				DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
+			} catch (RecordNotFoundException e) {
+				// This means the file has been marked for deletion. No action is required.
+			}
 	
 			conn.commit();
 
@@ -132,5 +139,11 @@ public class TrimFlushingJob extends FileJob {
 	private void reset(Connection conn) throws DatabaseException {
 		RawDataDB.clearGasStandardIgnoreFlags(conn, fileId);
 		QCDB.resetQCFlagsByWoceFlag(conn, fileId, Flag.IGNORED, FlushingQCMessage.MESSAGE_TEXT);
+	}
+	
+	@Override
+	protected String getFinishState() {
+		// Since we ignore interrupts, we always return FINISHED
+		return FINISHED_STATUS;
 	}
 }

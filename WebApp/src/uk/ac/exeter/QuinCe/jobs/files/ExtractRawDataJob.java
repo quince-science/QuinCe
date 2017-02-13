@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -47,7 +48,7 @@ public class ExtractRawDataJob extends FileJob {
 	}
 
 	@Override
-	protected void execute() throws JobFailedException {
+	protected void executeFileJob(JobThread thread) throws JobFailedException {
 		
 		reset();
 		Connection conn = null;
@@ -70,6 +71,11 @@ public class ExtractRawDataJob extends FileJob {
 			
 			lineNumber = 0;
 			for (List<String> line : data) {
+				
+				if (thread.isInterrupted()) {
+					break;
+				}
+				
 				lineNumber++;
 				
 				String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
@@ -98,12 +104,18 @@ public class ExtractRawDataJob extends FileJob {
 				}
 			}
 			
-			// Queue up the Trim Flushing job
-			User owner = JobManager.getJobOwner(dataSource, id);
-			JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_TRIM_FLUSHING, parameters);
-			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_TRIM_FLUSHING);
-
-			conn.commit();
+			// If the thread was interrupted, reset everything an requeue the job.
+			// Otherwise commit all changes and queue the Trim Flushing job
+			if (thread.isInterrupted()) {
+				conn.rollback();
+				reset();
+			} else {
+				// Queue up the Trim Flushing job
+				User owner = JobManager.getJobOwner(dataSource, id);
+				JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_TRIM_FLUSHING, parameters);
+				DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_TRIM_FLUSHING);
+				conn.commit();
+			}
 		} catch (Exception e) {
 			DatabaseUtils.rollBack(conn);
 			throw new JobFailedException(id, lineNumber, e);
@@ -199,10 +211,14 @@ public class ExtractRawDataJob extends FileJob {
 			QCDB.clearQCData(conn, fileId);
 			DataReductionDB.clearDataReductionData(conn, fileId);
 			RawDataDB.clearRawData(conn, fileId);
-			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_EXTRACT);
+			
+			// If the data file isn't marked for deletion, re-queue the job
+			if (!DataFileDB.getDeleteFlag(dataSource, fileId)) {
+				DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_EXTRACT);
+			}
 			
 			conn.commit();
-		} catch(MissingParamException|SQLException|DatabaseException e) {
+		} catch(MissingParamException|SQLException|DatabaseException|RecordNotFoundException e) {
 			throw new JobFailedException(id, e);
 		} finally {
 			DatabaseUtils.closeConnection(conn);
