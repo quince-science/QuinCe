@@ -54,7 +54,7 @@ public class DataFileDB {
 	 * Query to find all the data files for a given user
 	 */
 	private static final String GET_USER_FILES_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
-			+ " WHERE i.owner = ? ORDER BY f.last_touched DESC";
+			+ " WHERE f.delete_flag = 0 AND i.owner = ? ORDER BY f.last_touched DESC";
 	
 	/**
 	 * Statement to delete a file
