@@ -144,18 +144,21 @@
 					</p:column>
 					<p:column>
 						<f:facet name="header">Actions</f:facet>
-						<h:commandLink id="QC_#{file.fileId}" onclick="dataScreen(#{file.fileId})" action="#{dataScreenBean.start}">
+						<h:commandLink id="QC_#{file.fileId}" onclick="dataScreen(#{file.fileId})" action="#{dataScreenBean.start}" rendered="#{file.actionsAllowed}">
 							<h:graphicImage value="/resources/image/qc.svg" styleClass="actionIcon" alt="QC" title="QC"/>
 						</h:commandLink>
-						<h:commandLink id="Export_#{file.fileId}" onclick="exportFile(#{file.fileId})" action="#{fileListBean.export}">
+						<h:graphicImage value="/resources/image/qc_disabled.svg" styleClass="actionIcon" alt="QC (disabled)" title="QC (disabled)" rendered="#{!file.actionsAllowed}"/>
+						<h:commandLink id="Export_#{file.fileId}" onclick="exportFile(#{file.fileId})" action="#{fileListBean.export}" rendered="#{file.actionsAllowed}">
 							<h:graphicImage value="/resources/image/export.svg" styleClass="actionIcon" alt="Export" title="Export"/>
 						</h:commandLink>
+						<h:graphicImage value="/resources/image/export_disabled.svg" styleClass="actionIcon" alt="Export (disabled)" title="Export (disabled)" rendered="#{!file.actionsAllowed}"/>
 						<h:commandLink id="Delete_#{file.fileId}" onclick="deleteFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.deleteFile}">
 							<h:graphicImage value="/resources/image/delete.svg" styleClass="actionIcon" alt="Delete" title="Delete"/>
 						</h:commandLink>
-						<h:commandLink id="Reprocess_#{file.fileId}" onclick="reprocessFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.reprocessFile}">
+						<h:commandLink id="Reprocess_#{file.fileId}" onclick="reprocessFile(#{file.fileId}, '#{file.fileName}')" action="#{fileListBean.reprocessFile}" rendered="#{file.actionsAllowed}">
 							<h:graphicImage value="/resources/image/recalculate.svg" styleClass="actionIcon" alt="Reprocess" title="Reprocess"/>
 						</h:commandLink>
+						<h:graphicImage value="/resources/image/recalculate_disabled.svg" styleClass="actionIcon" alt="Reprocess (disabled)" title="Reprocess (disabled)" rendered="#{!file.actionsAllowed}"/>
 					</p:column>
 				</p:dataTable>
 				

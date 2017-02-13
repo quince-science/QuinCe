@@ -53,7 +53,7 @@ public class DataFileDB {
 	/**
 	 * Query to find all the data files for a given user
 	 */
-	private static final String GET_USER_FILES_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
+	private static final String GET_USER_FILES_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched, f.delete_flag FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
 			+ " WHERE f.delete_flag = 0 AND i.owner = ? ORDER BY f.last_touched DESC";
 	
 	/**
@@ -64,7 +64,7 @@ public class DataFileDB {
 	/**
 	 * Query to find a file using its ID
 	 */
-	private static final String FIND_FILE_BY_ID_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
+	private static final String FIND_FILE_BY_ID_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched, f.delete_flag FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
 			+ " WHERE f.id = ?";
 	
 	private static final String GET_INSTRUMENT_ID_QUERY = "SELECT instrument_id FROM data_file WHERE id = ?";
@@ -449,6 +449,7 @@ public class DataFileDB {
 		int currentJob = record.getInt(7);
 		Calendar lastTouched = DateTimeUtils.getUTCCalendarInstance();
 		lastTouched.setTime(record.getDate(8));
+		boolean deleteFlag = record.getBoolean(9);
 	
 		PreparedStatement atmosphericMeasurementsStmt = null;
 		PreparedStatement oceanMeasurementsStmt = null;
@@ -492,7 +493,7 @@ public class DataFileDB {
 		}
 
 		
-		FileInfo result = new FileInfo(fileID, instrumentId, instrumentName, fileName, startDate, recordCount, currentJob, lastTouched, atmosphericMeasurements, oceanMeasurements, standards);
+		FileInfo result = new FileInfo(fileID, instrumentId, instrumentName, fileName, startDate, recordCount, deleteFlag, currentJob, lastTouched, atmosphericMeasurements, oceanMeasurements, standards);
 		updateFlagCounts(conn, result);
 		return result;
 	}
