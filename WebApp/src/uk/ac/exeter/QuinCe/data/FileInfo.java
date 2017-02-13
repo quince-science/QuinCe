@@ -400,7 +400,19 @@ public class FileInfo {
 		ignoredCount = 0;
 	}
 	
-	public boolean isActionsAllowed() {
+	public boolean isQcable() {
+		return !deleteFlag && currentJob == JOB_CODE_USER_QC;
+	}
+	
+	public boolean isExportable() {
+		return !deleteFlag && currentJob == JOB_CODE_USER_QC;
+	}
+	
+	public boolean isDeleteable() {
+		return true;
+	}
+	
+	public boolean isRecalculateable() {
 		return !deleteFlag && currentJob == JOB_CODE_USER_QC;
 	}
 }
