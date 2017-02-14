@@ -130,10 +130,6 @@
 			      		<f:ajax render="@none" onevent="drawAllData"/>
 			      	</p:selectManyButton>
 	      		</ui:remove>
-	      		
-	      		<div id="updateStatus">
-	      			<h:commandLink id="FinishLink" value="Finished" action="#{dataScreenBean.end}"/>
-	      		</div>
 	    	</div>
     		<div id="dataScreenContent">
 	    		<div id="plots">
@@ -173,6 +169,8 @@
 						      		<button id="clearSelectionButton" class="smallButton tightButton" onclick="clearSelection(); return false;">x</button>
 						      		<button id="acceptFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="acceptQCFlags(); return false;">Use QC Flags</button>
 						      		<button id="overrideFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="showWoceCommentDialog(); return false;">Override QC Flags</button>
+						      		|
+			      			        <h:commandButton id="finishButton" class="smallButton" value="Finish" action="#{dataScreenBean.end}"/>
 	    						</td>
 	    					</tr>
 	    				</table>

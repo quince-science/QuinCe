@@ -136,6 +136,9 @@ var selectionQCMessageCounts = {};
 var selectionWoceMessageCounts = {};
 var NO_MESSAGE_ENTRY = 'No message';
 
+// Indicates whether data has changed
+var dirty = false;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -1077,6 +1080,10 @@ function qcFlagsAccepted(data) {
 			}
 		}
 		
+		if (!dirty) {
+			dirty = true;
+			$('#dataScreenForm\\:finishButton').val('Finish*');
+		}
 		clearSelection();
 	}
 }
@@ -1097,6 +1104,10 @@ function woceFlagsUpdated(data) {
 			}
 		}
 		
+		if (!dirty) {
+			dirty = true;
+			$('#dataScreenForm\\:finishButton').val('Finish*');
+		}
 		clearSelection();
 	} 
 }

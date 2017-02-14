@@ -86,11 +86,11 @@ input[type="submit"][disabled="disabled"] {
     cursor: default;
 }
 
-input[type="submit"]:last-of-type {
+input[type="submit"]:last-of-type, button:last-of-type {
     margin-right: 0px;
 }
 
-.smallButton {
+input.smallButton, button.smallButton {
     margin-top: 0px;
 }
 
