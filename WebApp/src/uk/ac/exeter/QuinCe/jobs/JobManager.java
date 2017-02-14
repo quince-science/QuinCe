@@ -289,7 +289,7 @@ public class JobManager {
 		long jobID = addJob(dataSource, owner, jobClass, parameters);
 		JobThread jobThread = JobThreadPool.getInstance().getInstantJobThread(JobManager.getJob(resourceManager, config, jobID));
 		try {
-			logJobStarted(dataSource.getConnection(), jobID);
+			logJobStarted(dataSource.getConnection(), jobID, jobThread.getName());
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while updating the job status", e);
 		}
@@ -359,7 +359,7 @@ public class JobManager {
 	 * @throws DatabaseException If an error occurs while updating the record
 	 * @throws NoSuchJobException If the specified job doesn't exist
 	 */
-	public static void logJobStarted(Connection conn, long jobID) throws MissingParamException, DatabaseException, NoSuchJobException {
+	public static void logJobStarted(Connection conn, long jobID, String threadName) throws MissingParamException, DatabaseException, NoSuchJobException {
 		
 		MissingParam.checkMissing(conn, "conn");
 		

@@ -121,6 +121,7 @@ public class JobThreadPool {
 		}
 		
 		thread.setupJob(job);
+		thread.setName("Instant job thread (not yet started)");
 		
 		return thread;
 		

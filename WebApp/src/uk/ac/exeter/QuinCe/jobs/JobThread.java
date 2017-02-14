@@ -81,7 +81,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 			// Run the job
 			job.setFinishState(Job.FINISHED_STATUS);
 			job.setProgress(0);
-			job.logStarted();
+			job.logStarted(getName());
 			job.execute(this);
 			
 			switch (job.getFinishState()) {

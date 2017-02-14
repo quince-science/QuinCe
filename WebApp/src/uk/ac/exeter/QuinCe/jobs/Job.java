@@ -167,7 +167,7 @@ public abstract class Job {
 		Connection conn = null;
 		try {
 			conn = dataSource.getConnection();
-			JobManager.logJobStarted(conn, id);
+			JobManager.logJobStarted(conn, id, threadName);
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while retrieving a database connection", e);
 		} finally {
