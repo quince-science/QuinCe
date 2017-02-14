@@ -44,6 +44,11 @@ public abstract class Job {
 	public static final String FINISHED_STATUS = "FINISHED";
 	
 	/**
+	 * Status indicating that the job was killed
+	 */
+	public static final String KILLED_STATUS = "KILLED";
+	
+	/**
 	 * The job's ID 
 	 */
 	protected long id = 0;
@@ -72,6 +77,22 @@ public abstract class Job {
 	 * The set of parameters passed to the job
 	 */
 	protected List<String> parameters;
+	
+	/**
+	 * Indicates the state that caused the thread to complete.
+	 * 
+	 * <p>
+	 *   This will be one of {@link Job#FINISHED_STATUS} or {@link Job#KILLED_STATUS}.
+	 *   The value determines how the thread indicates to the rest of the application
+	 *   that it has finished.
+	 * </p>
+	 * 
+	 * <p>
+	 *   This only applies if the job completes through normal running. Exceptions
+	 *   are handled directly by the parent {@link JobThread} method.
+	 * </p>
+	 */
+	private String finishState = FINISHED_STATUS;
 	
 	/**
 	 * Constructs a job object, and validates the parameters passed to it
@@ -108,13 +129,13 @@ public abstract class Job {
 	/**
 	 * Performs the job tasks
 	 */
-	protected abstract void execute() throws JobFailedException;
+	protected abstract void execute(JobThread thread) throws JobFailedException;
 	
 	/**
 	 * Validate the parameters passed in to this job
 	 * @throws InvalidJobParametersException If the parameters are invalid
 	 */
-	protected abstract void validateParameters() throws InvalidJobParametersException; 
+	protected abstract void validateParameters() throws InvalidJobParametersException;
 	
 	/**
 	 * Set the progress for the job, as a percentage
@@ -146,7 +167,7 @@ public abstract class Job {
 		Connection conn = null;
 		try {
 			conn = dataSource.getConnection();
-			JobManager.startJob(conn, id, threadName);
+			JobManager.logJobStarted(conn, id);
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while retrieving a database connection", e);
 		} finally {
@@ -165,9 +186,28 @@ public abstract class Job {
 		Connection conn = null;
 		try {
 			conn = dataSource.getConnection();
-			JobManager.finishJob(conn, id);
+			JobManager.logJobFinished(conn, id);
 		} catch (SQLException e) {
-			throw new DatabaseException("An error occurred while retrieving a database connection", e);
+			throw new DatabaseException("An error occurred while updating a job's status", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	/**
+	 * Log the fact that the job has been finished in the appropriate locations.
+	 * Initially this is just in the job manager, but it can be extended by other classes
+	 * @throws MissingParamException If any of the parameters to the underlying commands are missing
+	 * @throws DatabaseException If an error occurs while updating the database
+	 * @throws NoSuchJobException If the job has disappeared.
+	 */
+	protected void logKilled() throws MissingParamException, DatabaseException, NoSuchJobException {
+		Connection conn = null;
+		try {
+			conn = dataSource.getConnection();
+			JobManager.logJobKilled(conn, id);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while updating a job's status", e);
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}
@@ -176,14 +216,17 @@ public abstract class Job {
 	/**
 	 * Logs a job error to the appropriate locations
 	 * @param error The error
+	 * @throws DatabaseException If an error occurs while updating the database
+	 * @throws NoSuchJobException If the job has disappeared
+	 * @throws MissingParamException If any parameters in called methods are missing
 	 */
-	protected void logError(Throwable error) {
+	protected void logError(Throwable error) throws DatabaseException, MissingParamException, NoSuchJobException {
 		Connection conn = null;
 		try {
 			conn = dataSource.getConnection();
-			JobManager.errorJob(conn, id, error);
-		} catch (Exception e) {
-			e.printStackTrace();
+			JobManager.logJobError(conn, id, error);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while updating a job's status", e);
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}
@@ -204,5 +247,32 @@ public abstract class Job {
 		parameters = null;
 		destroyed = true;
 		dataSource = null;
+	}
+
+	/**
+	 * Set the finish state for the job that this thread is running.
+	 * 
+	 * <p>
+	 *   Must be one of {@link Job#FINISHED_STATUS} or {@link Job#KILLED_STATUS}.
+	 *   See {@link #finishState}.
+	 * @param finishState The finish state of the job
+	 * @throws JobException If the supplied finish state is invalid
+	 */
+	protected void setFinishState(String finishState) throws JobException {
+		
+		if (!finishState.equals(Job.FINISHED_STATUS) && !finishState.equals(Job.KILLED_STATUS)) {
+			throw new JobException("Invalid finished state (" + finishState + ") set on job");
+		} else {
+			this.finishState = finishState;
+		}
+	}
+	
+	/**
+	 * Return the finish state of this job. See {@link #finishState}.
+	 * @return The job's finish state
+	 */
+	protected String getFinishState() {
+		return finishState;
+	
 	}
 }

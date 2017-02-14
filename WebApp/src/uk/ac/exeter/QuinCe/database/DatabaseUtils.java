@@ -65,13 +65,15 @@ public class DatabaseUtils {
 	
 	/**
 	 * Close a database connection, ignoring any errors.
-	 * All connections have their auto-commit flag set to true.
+	 * Any uncommitted changes are rolled back.
 	 * @param conn The connection
 	 */
 	public static void closeConnection(Connection conn) {
 		if (null != conn) {
 			try {
-				conn.setAutoCommit(true);
+				if (!conn.getAutoCommit()) {
+					conn.rollback();
+				}
 				conn.close();
 			} catch (SQLException e) {
 				// Do nothing

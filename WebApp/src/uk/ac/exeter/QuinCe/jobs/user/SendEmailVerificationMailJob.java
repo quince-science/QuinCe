@@ -10,6 +10,7 @@ import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
+import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.EmailSender;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.User.VerifyEmailBean;
@@ -24,7 +25,7 @@ public class SendEmailVerificationMailJob extends Job {
 	}
 	
 	@Override
-	protected void execute() throws JobFailedException {
+	protected void execute(JobThread thread) throws JobFailedException {
 		
 		StringBuffer emailText = new StringBuffer();
 		emailText.append("Click the link\n\n");
@@ -95,5 +96,11 @@ public class SendEmailVerificationMailJob extends Job {
 		}
 		
 		return link.toString();
+	}
+	
+	@Override
+	protected String getFinishState() {
+		// Since we ignore interrupts, we always return FINISHED
+		return FINISHED_STATUS;
 	}
 }

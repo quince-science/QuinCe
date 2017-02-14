@@ -11,6 +11,7 @@ import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.routines.Routine;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.QCRecord;
+import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
@@ -18,6 +19,8 @@ import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -29,7 +32,7 @@ public class AutoQCJob extends FileJob {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected void execute() throws JobFailedException {
+	protected void executeFileJob(JobThread thread) throws JobFailedException {
 		
 		Connection conn = null;
 		
@@ -51,6 +54,10 @@ public class AutoQCJob extends FileJob {
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
 			for (DataRecord record : qcRecords) {
+				
+				if (thread.isInterrupted()) {
+					break;
+				}
 				
 				QCRecord qcRecord = (QCRecord) record;
 				boolean writeRecord = false;
@@ -111,9 +118,23 @@ public class AutoQCJob extends FileJob {
 				}
 			}
 			
-			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_USER_QC);
-			
-			conn.commit();
+			// If the thread was interrupted, undo everything
+			if (!thread.isInterrupted()) {
+				conn.rollback();
+
+				// Queue up a new data reduction job
+				try {
+					User owner = JobManager.getJobOwner(dataSource, id);
+					JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_REDUCTION, parameters);
+					DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
+					conn.commit();
+				} catch (RecordNotFoundException e) {
+					// This means the file has been marked for deletion. No action is required.
+				}
+			} else {
+				DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_USER_QC);
+				conn.commit();
+			}
 		} catch (Exception e) {
 			throw new JobFailedException(id, e);
 		} finally {
