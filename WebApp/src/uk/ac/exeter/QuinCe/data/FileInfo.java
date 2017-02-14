@@ -405,7 +405,7 @@ public class FileInfo {
 	}
 	
 	public boolean isExportable() {
-		return !deleteFlag && currentJob == JOB_CODE_USER_QC;
+		return !deleteFlag && currentJob == JOB_CODE_USER_QC && woceNeededCount == 0;
 	}
 	
 	public boolean isDeleteable() {
