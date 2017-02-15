@@ -19,22 +19,32 @@ import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
- * This validator class checks to see if a selected date
- * exist in its target table. It can be used to ensure that
- * no duplicate dates are entered into that table.
+ * <p>
+ *   This validator class checks to see if a selected date
+ *   exists in its target table. It can be used to ensure that
+ *   no duplicate dates are entered into that table.
+ * </p>
  *  
- * This is an abstract class - the table and field to be searched must be implemented in
- * a concrete subclass using the fields getTable and getField
+ * <p>
+ *   This is an abstract class - the table and field to be searched must be implemented in
+ *   a concrete subclass using the {@link #getTable()} and {@link getField()} methods.
+ * </p>
  * 
- * The search can further be restricted by optionally providing
- * a second field and value in getRestrictionField and getRestrictionValue
+ * <p>
+ *   The set of dates to be checked can further restricted by optionally providing
+ *   a second field and value in {@link #getRestrictionField()} and {@link #getRestrictionValue()}
+ *   methods. These identify a field that must be set to the specified value.
+ * </p> 
  * 
- * The message displayed when an existing date is found is defined in
- * getErrorMessage(), which can also be overridden as required.
+ * <p>
+ *   The message displayed when an existing date is found is defined in {@link #getErrorMessage()}.
+ * </p>
  * 
- * If an existing date is being edited, that date must not be detected
- * as a duplicate. Therefore the session attribute defined in ATTR_ALLOWED_DATE
- * can be populated with the edited record's date. That date will then be ignored.
+ * <p>
+ *   If an existing date is being edited, that date must not be detected
+ *   as a duplicate. Therefore the session attribute defined in ATTR_ALLOWED_DATE
+ *   can be populated with the edited record's date. That date will then be ignored.
+ * </p>
  *   
  * @author Steve Jones
  *
