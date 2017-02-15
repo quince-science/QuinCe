@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
@@ -25,6 +26,8 @@ import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.User.NoSuchUserException;
 import uk.ac.exeter.QuinCe.database.User.UserDB;
+import uk.ac.exeter.QuinCe.database.files.DataFileDB;
+import uk.ac.exeter.QuinCe.jobs.files.FileJob;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -94,6 +97,11 @@ public class JobManager {
 	private static final String END_JOB_STATEMENT = "UPDATE job SET status = '" + Job.FINISHED_STATUS + "', ended = ?, progress = 100, thread_name = NULL WHERE id = ?";
 	
 	/**
+	 * SQL statement for recording that a job has been killed
+	 */
+	private static final String KILL_JOB_STATEMENT = "UPDATE job SET status = '" + Job.KILLED_STATUS + "', ended = ? WHERE id = ?";
+	
+	/**
 	 * SQL statement for recording that a job has failed with an error
 	 */
 	private static final String ERROR_JOB_STATEMENT = "UPDATE job SET status = '" + Job.ERROR_STATUS + "', ended = ?, stack_trace = ? WHERE id = ?";
@@ -124,6 +132,8 @@ public class JobManager {
 			+ "stack_trace = NULL WHERE id = ?";
 	
 	private static final String GET_RUNNING_THREAD_NAMES_STATEMENT = "SELECT id, thread_name FROM job WHERE status = 'RUNNING'";
+	
+	private static final String GET_QUEUED_RUNNING_JOBS_QUERY = "SELECT id, class, parameters FROM job WHERE status = 'WAITING' OR status = 'RUNNING'";
 	
 	/**
 	 * Adds a job to the database
@@ -199,6 +209,21 @@ public class JobManager {
 		switch (classCheck) {
 		case CLASS_CHECK_OK: {
 			
+			// If this is a File Job, check that the file (a) exists and (b)
+			// hasn't been marked for deletion
+			long fileId = -1;
+			try {
+				if (isFileJob(jobClass)) {
+					fileId = Long.parseLong(parameters.get(0));
+					if (!DataFileDB.fileExists(conn, fileId) || DataFileDB.getDeleteFlag(conn, fileId)) {
+						throw new JobException("Data file with ID " + fileId + " does not exist or is marked for deletion. Job cannot be queued.");
+					}
+				}
+			} catch (RecordNotFoundException e) {
+				throw new JobException("Data file with ID " + fileId + " does not exist or is marked for deletion. Job cannot be queued.");
+			}
+			
+			
 			PreparedStatement stmt = null;
 			ResultSet generatedKeys = null;
 
@@ -267,7 +292,7 @@ public class JobManager {
 		long jobID = addJob(dataSource, owner, jobClass, parameters);
 		JobThread jobThread = JobThreadPool.getInstance().getInstantJobThread(JobManager.getJob(resourceManager, config, jobID));
 		try {
-			startJob(dataSource.getConnection(), jobID, jobThread.getName());
+			logJobStarted(dataSource.getConnection(), jobID, jobThread.getName());
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while updating the job status", e);
 		}
@@ -337,7 +362,7 @@ public class JobManager {
 	 * @throws DatabaseException If an error occurs while updating the record
 	 * @throws NoSuchJobException If the specified job doesn't exist
 	 */
-	public static void startJob(Connection conn, long jobID, String threadName) throws MissingParamException, DatabaseException, NoSuchJobException {
+	public static void logJobStarted(Connection conn, long jobID, String threadName) throws MissingParamException, DatabaseException, NoSuchJobException {
 		
 		MissingParam.checkMissing(conn, "conn");
 		
@@ -416,7 +441,7 @@ public class JobManager {
 	 * @throws DatabaseException If an error occurs while updating the record
 	 * @throws NoSuchJobException If the specified job doesn't exist
 	 */
-	public static void finishJob(Connection conn, long jobID) throws MissingParamException, DatabaseException, NoSuchJobException {
+	public static void logJobFinished(Connection conn, long jobID) throws MissingParamException, DatabaseException, NoSuchJobException {
 		
 		MissingParam.checkMissing(conn, "conn");
 		
@@ -439,6 +464,36 @@ public class JobManager {
 	}
 	
 	/**
+	 * Update a job record with the necessary details when it's been killed. The {@code status} is set to
+	 * {@link Job#KILLED_STATE}, and the {@code ended} field is given the current time.
+	 * @param conn A database connection
+	 * @param jobID The job that has been started
+	 * @throws DatabaseException If an error occurs while updating the record
+	 * @throws NoSuchJobException If the specified job doesn't exist
+	 */
+	public static void logJobKilled(Connection conn, long jobID) throws MissingParamException, DatabaseException, NoSuchJobException {
+		
+		MissingParam.checkMissing(conn, "conn");
+		
+		if (!jobExists(conn, jobID)) {
+			throw new NoSuchJobException(jobID);
+		}
+
+		PreparedStatement stmt = null;
+		
+		try {
+			stmt = conn.prepareStatement(KILL_JOB_STATEMENT);
+			stmt.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
+			stmt.setLong(2, jobID);
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while setting the job to 'finished' state", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+		}
+	}
+	
+	/**
 	 * Update a job record indicating that the job failed due to an error
 	 * @param conn A database connection
 	 * @param jobID The ID of the job
@@ -446,7 +501,7 @@ public class JobManager {
 	 * @throws DatabaseException If an error occurs while updating the database
 	 * @throws NoSuchJobException If the specified job does not exist
 	 */
-	public static void errorJob(Connection conn, long jobID, Throwable error) throws MissingParamException, DatabaseException, NoSuchJobException {
+	public static void logJobError(Connection conn, long jobID, Throwable error) throws MissingParamException, DatabaseException, NoSuchJobException {
 		
 		MissingParam.checkMissing(conn, "conn");
 		
@@ -640,7 +695,8 @@ public class JobManager {
 		if (status.equals(Job.WAITING_STATUS) ||
 				status.equals(Job.RUNNING_STATUS) ||
 				status.equals(Job.FINISHED_STATUS) ||
-				status.equals(Job.ERROR_STATUS)) {
+				status.equals(Job.ERROR_STATUS) ||
+				status.equals(Job.KILLED_STATUS)) {
 
 			statusOK = true;
 		}
@@ -812,19 +868,36 @@ public class JobManager {
 		
 	}
 	
-	private static String getJobStatus(DataSource dataSource, long jobId) throws NoSuchJobException, MissingParamException, DatabaseException {
+	private static String getJobStatus(DataSource dataSource, long jobId) throws MissingParamException, NoSuchJobException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(jobId, "jobId");
+
+		String result = null;
+		Connection conn = null;
+
+		try {
+			conn = dataSource.getConnection();
+			result = getJobStatus(conn, jobId);
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving job status", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
+	}
+	
+	private static String getJobStatus(Connection conn, long jobId) throws NoSuchJobException, MissingParamException, DatabaseException {
 		
 		String result = null;
 		
-		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkPositive(jobId, "jobId");
 		
-		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet record = null;
 		
 		try {
-			conn = dataSource.getConnection();
 			stmt = conn.prepareStatement(GET_JOB_STATUS_QUERY);
 			stmt.setLong(1, jobId);
 			
@@ -940,6 +1013,147 @@ public class JobManager {
 			throw new DatabaseException("An error occurred while requeuing job " + jobId, e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
+		}
+	}
+	
+	/**
+	 * Kill a job specified by its database ID.
+	 * 
+	 * <p>
+	 *   If the job is waiting, then it is marked as killed and no further action is taken.
+	 * </p>
+	 * <p>
+	 *   If the job is running, then its thread is interrupted. The job will be responsible for
+	 *   shutting down and updating its status.
+	 * </p>
+	 * <p>
+	 *   If the job has already finished then no action is taken.
+	 * </p>
+	 * 
+	 * @param dataSource A data source
+	 * @param jobId The database ID of the job
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws JobThreadPoolNotInitialisedException If the job thread pool is not initialised
+	 * @throws NoSuchJobException If the specified job is not in the database
+	 * @throws UnrecognisedStatusException If an unrecognised status is set on the job
+	 */
+	public static void killJob(DataSource dataSource, long jobId) throws MissingParamException, DatabaseException, UnrecognisedStatusException, NoSuchJobException, JobThreadPoolNotInitialisedException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(jobId, "jobId");
+		
+		Connection conn = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
+			
+			killJob(conn, jobId);
+			
+			conn.commit();
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while killing job '" + jobId + "'");
+		} finally {
+			DatabaseUtils.rollBack(conn);
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	/**
+	 * Kill a job specified by its database ID.
+	 * 
+	 * <p>
+	 *   If the job is waiting, then it is marked as killed and no further action is taken.
+	 * </p>
+	 * <p>
+	 *   If the job is running, then its thread is interrupted. The job will be responsible for
+	 *   shutting down and updating its status.
+	 * </p>
+	 * <p>
+	 *   If the job has already finished then no action is taken.
+	 * </p>
+	 * 
+	 * @param conn A database connection
+	 * @param jobId The database ID of the job
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws JobThreadPoolNotInitialisedException If the job thread pool is not initialised
+	 * @throws NoSuchJobException If the specified job is not in the database
+	 * @throws UnrecognisedStatusException If an unrecognised status is set on the job
+	 */
+	public static void killJob(Connection conn, long jobId) throws MissingParamException, UnrecognisedStatusException, DatabaseException, NoSuchJobException, JobThreadPoolNotInitialisedException {
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkPositive(jobId, "jobId");
+		
+		// Find the job in the Thread Pool
+		int jobKilled = JobThreadPool.getInstance().killJob(jobId);
+		
+		// No running thread was found, so we update the job's status
+		// according to its current status
+		if (jobKilled == JobThreadPool.THREAD_NOT_RUNNING) {
+			if (getJobStatus(conn, jobId).equals(Job.WAITING_STATUS)) {
+				setStatus(conn, jobId, Job.KILLED_STATUS);
+			}
+		}
+	}
+	
+	private static boolean isFileJob(String jobClass) throws JobClassNotFoundException {
+		try {
+			return FileJob.class.isAssignableFrom(Class.forName(jobClass));
+		} catch (ClassNotFoundException e) {
+			throw new JobClassNotFoundException(jobClass);
+		}
+	}
+	
+	/**
+	 * Kill any jobs associated with a given data file
+	 * @param dataSource A data source
+	 * @param fileId The data file's database ID
+	 * @return {@code true} if any jobs were found and killed; {@code false} otherwise.
+	 * @throws DatabaseException 
+	 * @throws MissingParamException 
+	 * @throws JobClassNotFoundException 
+	 * @throws JobThreadPoolNotInitialisedException 
+	 * @throws NoSuchJobException 
+	 * @throws UnrecognisedStatusException 
+	 */
+	public static TreeSet<Long> killFileJobs(DataSource dataSource, List<Long> fileIds) throws MissingParamException, DatabaseException, JobClassNotFoundException, UnrecognisedStatusException, NoSuchJobException, JobThreadPoolNotInitialisedException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(fileIds, "fileIds");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet jobs = null;
+
+		try {
+			TreeSet<Long> fileJobsKilled = new TreeSet<Long>();
+			
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_QUEUED_RUNNING_JOBS_QUERY);
+			jobs = stmt.executeQuery();
+			
+			while (jobs.next()) {
+				String jobClass = jobs.getString(2);
+				if (isFileJob(jobClass)) {
+					List<String> parameters = StringUtils.delimitedToList(jobs.getString(3));
+					long jobFileId = Long.parseLong(parameters.get(0));
+
+					int fileListIndex = fileIds.indexOf(jobFileId);
+					if (fileListIndex > -1) {
+						killJob(dataSource, jobs.getLong(1));
+						fileJobsKilled.add(jobFileId);
+					}
+				}
+			}
+
+			return fileJobsKilled;
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while killing jobs for data files", e);
+		} finally {
+			DatabaseUtils.closeResultSets(jobs);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 }

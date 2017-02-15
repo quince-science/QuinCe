@@ -84,7 +84,7 @@ public class FileListBean extends BaseManagedBean {
 	 */
 	public String deleteFile() {
 		try {
-			DataFileDB.deleteFile(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), getCurrentFileDetails());
+			DataFileDB.setDeleteFlag(ServletUtils.getDBDataSource(), chosenFile, true);
 		} catch (Exception e) {
 			return internalError(e);
 		}

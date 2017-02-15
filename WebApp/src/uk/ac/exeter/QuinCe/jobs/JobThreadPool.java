@@ -20,6 +20,16 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public class JobThreadPool {
 
 	/**
+	 * Indicates that a running thread was not found for a particular job
+	 */
+	public static final int THREAD_NOT_RUNNING = 0;
+	
+	/**
+	 * Indicates that a running thread for a job was found, and the thread has been interrupted
+	 */
+	public static final int THREAD_INTERRUPTED = 1;
+	
+	/**
 	 * The singleton instance of the thread pool
 	 */
 	private static JobThreadPool instance = null;
@@ -111,6 +121,7 @@ public class JobThreadPool {
 		}
 		
 		thread.setupJob(job);
+		thread.setName("Instant job thread (not yet started)");
 		
 		return thread;
 		
@@ -216,5 +227,42 @@ public class JobThreadPool {
 		}
 		
 		return threadRunning;
+	}
+
+	/**
+	 * Kill a job.
+	 * 
+	 * <p>
+	 *   This checks the list of running threads to see if the specified job is currently running.
+	 *   If it is, an interrupt signal is sent to it, indicating that it should close down. It is
+	 *   up to the job to decide how it interprets this signal.
+	 * </p>
+	 * 
+	 * <p>
+	 *   If the job is not running, no action is taken. The return value of the method
+	 *   indicates whether or not a running thread was found.
+	 * </p>
+	 * 
+	 * @param jobId The job's database ID
+	 * @return {@code #THREAD_INTERRUPTED} if a thread for the job was found; {@code #THREAD_NOT_RUNNING} if no thread was found.
+	 */
+	public int killJob(long jobId) {
+		
+		int result = THREAD_NOT_RUNNING;
+
+		// We don't want the list of allocated threads changing underneath us
+		synchronized (allocatedThreads) {
+			
+			for (JobThread thread : allocatedThreads) {
+				if (thread.getId() == jobId) {
+					// Interrupt the thread
+					thread.interrupt();
+					result = THREAD_INTERRUPTED;
+					break;
+				}
+			}
+		}
+		
+		return result;
 	}
 }

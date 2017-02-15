@@ -35,8 +35,6 @@ public class DataReductionDB {
 		
 		try {
 			conn = dataSource.getConnection();
-			conn.setAutoCommit(false);
-			
 			clearDataReductionData(conn, fileId);
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while clearing out previous data", e);

@@ -83,6 +83,11 @@ public class FileInfo {
 	private int recordCount;
 	
 	/**
+	 * The delete flag for the file
+	 */
+	private boolean deleteFlag;
+	
+	/**
 	 * The number of atmospheric measurement records in the file
 	 */
 	private int atmosphericMeasurementCount = 0;
@@ -132,13 +137,14 @@ public class FileInfo {
 	 * @param lastTouched The date that the file was last touched
 	 */
 	public FileInfo(long fileId, long instrumentId, String instrument, String fileName, Calendar startDate, int recordCount,
-			int currentJob, Calendar lastTouched, int atmosphericMeasurementsCount, int oceanMeasurementsCount, int standardsCount) {
+			boolean deleteFlag, int currentJob, Calendar lastTouched, int atmosphericMeasurementsCount, int oceanMeasurementsCount, int standardsCount) {
 		this.fileId = fileId;
 		this.instrumentId = instrumentId;
 		this.instrument = instrument;
 		this.fileName = fileName;
 		this.startDate = startDate;
 		this.recordCount = recordCount;
+		this.deleteFlag = deleteFlag;
 		this.currentJob = currentJob;
 		this.lastTouched = lastTouched;
 		this.atmosphericMeasurementCount = atmosphericMeasurementsCount;
@@ -392,5 +398,21 @@ public class FileInfo {
 		woceNotSetCount = 0;
 		woceNeededCount = 0;
 		ignoredCount = 0;
+	}
+	
+	public boolean isQcable() {
+		return !deleteFlag && currentJob == JOB_CODE_USER_QC;
+	}
+	
+	public boolean isExportable() {
+		return !deleteFlag && currentJob == JOB_CODE_USER_QC && woceNeededCount == 0;
+	}
+	
+	public boolean isDeleteable() {
+		return true;
+	}
+	
+	public boolean isRecalculateable() {
+		return !deleteFlag && currentJob == JOB_CODE_USER_QC;
 	}
 }

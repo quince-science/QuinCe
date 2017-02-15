@@ -33,6 +33,7 @@ import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -46,7 +47,7 @@ public class DataReductionJob extends FileJob {
 	}
 	
 	@Override
-	protected void execute() throws JobFailedException {
+	protected void executeFileJob(JobThread thread) throws JobFailedException {
 		reset();
 		
 		Connection conn = null;
@@ -65,6 +66,11 @@ public class DataReductionJob extends FileJob {
 			
 			int lineNumber = 0;
 			for (RawDataValues record : rawData) {
+				
+				if (thread.isInterrupted()) {
+					break;
+				}
+				
 				lineNumber++;
 				NoDataQCRecord qcRecord = qcRecords.get(record.getRow());
 				
@@ -196,12 +202,29 @@ public class DataReductionJob extends FileJob {
 				}
 			}
 			
-			// Queue up the automatic QC job
-			User owner = JobManager.getJobOwner(conn, id);
-			JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_AUTO_QC, parameters);
-			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_AUTO_QC);
 
-			conn.commit();
+			// If the thread was interrupted, undo everything
+			if (thread.isInterrupted()) {
+				conn.rollback();
+
+				// Requeue the data reduction job
+				try {
+					User owner = JobManager.getJobOwner(dataSource, id);
+					JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_REDUCTION, parameters);
+					DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
+					conn.commit();
+				} catch (RecordNotFoundException e) {
+					// This means the file has been marked for deletion. No action is required.
+				}
+			} else {
+				// Queue up the automatic QC job
+				User owner = JobManager.getJobOwner(conn, id);
+				JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_AUTO_QC, parameters);
+				DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_AUTO_QC);
+				conn.commit();
+			}
+
+			
 		} catch (Exception e) {
 			throw new JobFailedException(id, e);
 		} finally {
