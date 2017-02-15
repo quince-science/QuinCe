@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
@@ -131,6 +132,8 @@ public class JobManager {
 			+ "stack_trace = NULL WHERE id = ?";
 	
 	private static final String GET_RUNNING_THREAD_NAMES_STATEMENT = "SELECT id, thread_name FROM job WHERE status = 'RUNNING'";
+	
+	private static final String GET_QUEUED_RUNNING_JOBS_QUERY = "SELECT id, class, parameters FROM job WHERE status = 'WAITING' OR status = 'RUNNING'";
 	
 	/**
 	 * Adds a job to the database
@@ -1099,6 +1102,58 @@ public class JobManager {
 			return FileJob.class.isAssignableFrom(Class.forName(jobClass));
 		} catch (ClassNotFoundException e) {
 			throw new JobClassNotFoundException(jobClass);
+		}
+	}
+	
+	/**
+	 * Kill any jobs associated with a given data file
+	 * @param dataSource A data source
+	 * @param fileId The data file's database ID
+	 * @return {@code true} if any jobs were found and killed; {@code false} otherwise.
+	 * @throws DatabaseException 
+	 * @throws MissingParamException 
+	 * @throws JobClassNotFoundException 
+	 * @throws JobThreadPoolNotInitialisedException 
+	 * @throws NoSuchJobException 
+	 * @throws UnrecognisedStatusException 
+	 */
+	public static TreeSet<Long> killFileJobs(DataSource dataSource, List<Long> fileIds) throws MissingParamException, DatabaseException, JobClassNotFoundException, UnrecognisedStatusException, NoSuchJobException, JobThreadPoolNotInitialisedException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(fileIds, "fileIds");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet jobs = null;
+
+		try {
+			TreeSet<Long> fileJobsKilled = new TreeSet<Long>();
+			
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_QUEUED_RUNNING_JOBS_QUERY);
+			jobs = stmt.executeQuery();
+			
+			while (jobs.next()) {
+				String jobClass = jobs.getString(2);
+				if (isFileJob(jobClass)) {
+					List<String> parameters = StringUtils.delimitedToList(jobs.getString(3));
+					long jobFileId = Long.parseLong(parameters.get(0));
+
+					int fileListIndex = fileIds.indexOf(jobFileId);
+					if (fileListIndex > -1) {
+						killJob(dataSource, jobs.getLong(1));
+						fileJobsKilled.add(jobFileId);
+					}
+				}
+			}
+
+			return fileJobsKilled;
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while killing jobs for data files", e);
+		} finally {
+			DatabaseUtils.closeResultSets(jobs);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 }

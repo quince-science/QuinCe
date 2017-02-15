@@ -30,7 +30,6 @@ public class JobSummary {
 	private double progress;
 	
 	private String stackTrace;
-	
 
 	public JobSummary(long id, User owner, String className, Date submitted, String status, Date started, Date ended, double progress, String stackTrace) {
 		this.id = id;

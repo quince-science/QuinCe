@@ -86,6 +86,8 @@ public class DataFileDB {
 	private static final String SET_DELETE_FLAG_STATEMENT = "UPDATE data_file SET delete_flag = ? WHERE id = ?";
 
 	private static final String GET_DELETE_FLAG_STATEMENT = "SELECT delete_flag FROM data_file WHERE id = ?";
+	
+	private static final String GET_DELETE_FLAG_FILES_QUERY = "SELECT id FROM data_file WHERE delete_flag = 1";
 
 	/**
 	 * Store a file in the database and in the file store
@@ -303,6 +305,13 @@ public class DataFileDB {
 		}
 		
 		return result;
+	}
+	
+	public static void deleteFile(DataSource dataSource, Properties appConfig, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(appConfig, "appConfig");
+		MissingParam.checkPositive(fileId, "fileId");
+		deleteFile(dataSource, appConfig, getFileDetails(dataSource, fileId));
 	}
 	
 	/**
@@ -714,6 +723,33 @@ public class DataFileDB {
 		} finally {
 			DatabaseUtils.closeResultSets(records);
 			DatabaseUtils.closeStatements(stmt);
+		}
+	}
+	
+	public static List<Long> getFilesWithDeleteFlag(DataSource dataSource) throws MissingParamException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			List<Long> deleteFiles = new ArrayList<Long>();
+
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_DELETE_FLAG_FILES_QUERY);
+			records = stmt.executeQuery();
+			while (records.next()) {
+				deleteFiles.add(records.getLong(1));
+			}
+			
+			return deleteFiles;
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while searching for delete flag files", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 }
