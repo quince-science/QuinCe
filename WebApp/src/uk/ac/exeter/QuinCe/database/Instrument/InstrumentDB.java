@@ -271,6 +271,22 @@ public class InstrumentDB {
 		return instrumentList;
 	}
 
+	public static boolean instrumentExists(DataSource dataSource, User owner, String name) throws MissingParamException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(owner, "owner");
+		MissingParam.checkMissing(name, "name");
+		
+		boolean exists = false;
+		
+		for (InstrumentStub instrument : getInstrumentList(dataSource, owner)) {
+			if (instrument.getName().equalsIgnoreCase(name)) {
+				exists = true;
+				break;
+			}
+		}
+		
+		return exists;
+	}
 	
 	public static Instrument getInstrument(DataSource dataSource, long instrumentID) throws DatabaseException, MissingParamException, RecordNotFoundException {
 		
