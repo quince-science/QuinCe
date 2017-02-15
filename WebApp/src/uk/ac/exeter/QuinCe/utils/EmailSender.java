@@ -14,7 +14,7 @@ import org.apache.commons.mail.SimpleEmail;
 public class EmailSender {
 
 	/**
-	 * Send an email. The email sending details are extracted from the supplied config
+	 * Send an email. The email server/authentication details are extracted from the supplied config
 	 * @param config The application configuration
 	 * @param address The destination email address
 	 * @param subject The email subject
