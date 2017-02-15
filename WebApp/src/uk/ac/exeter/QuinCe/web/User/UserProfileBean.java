@@ -8,10 +8,6 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 public class UserProfileBean extends BaseManagedBean {
 
-	static {
-		FORM_NAME = "userProfileForm";
-	}
-	
 	/**
 	 * The navigation string for the file list page
 	 */
@@ -117,5 +113,10 @@ public class UserProfileBean extends BaseManagedBean {
 	 */
 	public void setNewPassword2(String newPassword2) {
 		this.newPassword2 = newPassword2;
+	}
+
+	@Override
+	public String getFormName() {
+		return "userProfileForm";
 	}
 }

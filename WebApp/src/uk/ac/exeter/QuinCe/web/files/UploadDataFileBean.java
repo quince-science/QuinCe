@@ -28,10 +28,6 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 public class UploadDataFileBean extends FileUploadBean {
 
-	static {
-		FORM_NAME = "uploadFileForm";
-	}
-	
 	/**
 	 * Indicates that the file was processed with no errors
 	 */
@@ -315,5 +311,10 @@ public class UploadDataFileBean extends FileUploadBean {
 	 */
 	public void setInstrument(long instrument) {
 		this.instrument = instrument;
+	}
+
+	@Override
+	protected String getFormName() {
+		return "uploadFileForm";
 	}
 }
