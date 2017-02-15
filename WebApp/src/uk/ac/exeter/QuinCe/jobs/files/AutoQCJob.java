@@ -119,7 +119,7 @@ public class AutoQCJob extends FileJob {
 			}
 			
 			// If the thread was interrupted, undo everything
-			if (!thread.isInterrupted()) {
+			if (thread.isInterrupted()) {
 				conn.rollback();
 
 				// Queue up a new data reduction job
