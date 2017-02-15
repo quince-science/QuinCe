@@ -29,10 +29,6 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  */
 public class SignupBean extends BaseManagedBean {
 	
-	static {
-		FORM_NAME = "signupForm";
-	}
-
 	public static final String USER_EXISTS_RESULT = "UserExists";
 	
 	private String emailAddress = null;
@@ -149,4 +145,10 @@ public class SignupBean extends BaseManagedBean {
 		
 		return ok;
 	}
+
+	@Override
+	public String getFormName() {
+		return "signupForm";
+	}
+
 }

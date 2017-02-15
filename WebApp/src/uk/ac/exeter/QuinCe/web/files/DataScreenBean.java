@@ -26,10 +26,6 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 public class DataScreenBean extends BaseManagedBean {
 
-	static {
-		FORM_NAME = "dataScreen";
-	}
-	
 	public static final String PAGE_START = "data_screen";
 	
 	public static final String PAGE_END = "file_list";
@@ -841,4 +837,11 @@ public class DataScreenBean extends BaseManagedBean {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	protected String getFormName() {
+		return "dataScreen";
+	}
+	
+
 }
