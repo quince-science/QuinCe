@@ -58,7 +58,7 @@
 		<div class="fullPage">
 			<div class="sectionHeader">Summary</div>
 			<div class="sectionContent">
-				<h:form id="jobsForm">
+				<h:form id="jobsForm" method="post" accept-charset="utf8">
 					<b>Idle Threads:</b>
 					<h:outputText id="idleThreads" value="#{jobsBean.idleThreads}" />
 					<br />
@@ -95,7 +95,7 @@
 			<div class="sectionHeader">Test Job</div>
 			<div class="sectionContent">
 
-				<h:form id="testJobForm">
+				<h:form id="testJobForm" method="post" accept-charset="utf8">
 					<b>Chunk count (10 seconds each):</b>
 					<h:inputText id="chunkCount" value="#{jobsBean.chunkCount}" />
 					<br />
@@ -112,7 +112,7 @@
 			</div>
 			<div class="sectionHeader">Job List</div>
 			<div class="sectionContent">
-				<h:form id="jobListForm">
+				<h:form id="jobListForm" method="post" accept-charset="utf8">
 					<p:dataTable id="jobList" var="job" value="#{jobsBean.jobList}"
 						scrollable="true" scrollHeight="450px">
 						<p:column>
