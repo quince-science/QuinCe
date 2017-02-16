@@ -25,7 +25,7 @@ public abstract class BackgroundTask implements ServletContextListener, Runnable
 	@Override
 	public void contextInitialized(ServletContextEvent arg0) {
 		scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(this, 30, 15, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this, 30, getRunInterval(), TimeUnit.SECONDS);
 	}
 
 	@Override
@@ -55,4 +55,6 @@ public abstract class BackgroundTask implements ServletContextListener, Runnable
 	}
 	
 	protected abstract void doTask() throws BackgroundTaskException;
+	
+	protected abstract long getRunInterval();
 }

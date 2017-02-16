@@ -33,4 +33,9 @@ public class JobRunScheduler extends BackgroundTask {
 			throw new BackgroundTaskException(e);
 		}
 	}
+	
+	@Override
+	protected long getRunInterval() {
+		return 15;
+	}
 }
