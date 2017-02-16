@@ -135,6 +135,8 @@ public class JobManager {
 	
 	private static final String GET_QUEUED_RUNNING_JOBS_QUERY = "SELECT id, class, parameters FROM job WHERE status = 'WAITING' OR status = 'RUNNING'";
 	
+	private static final String DELETE_OLD_FINISHED_JOBS_STATEMENT = "DELETE FROM job WHERE status = 'FINISHED' AND ended < (NOW() - INTERVAL ? DAY)";
+	
 	/**
 	 * Adds a job to the database
 	 * @param dataSource A data source
@@ -1152,6 +1154,49 @@ public class JobManager {
 			throw new DatabaseException("Error while killing jobs for data files", e);
 		} finally {
 			DatabaseUtils.closeResultSets(jobs);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	/**
+	 * Delete old jobs from the system.
+	 * 
+	 * <p>
+	 *   This method will delete jobs from the system that are no longer required. It will
+	 *   only delete jobs that successfully finished (i.e. have the status {@link Job#FINISHED_STATUS}).
+	 *   Jobs that finished with an error will be left in the system so that they can be invetigated.
+	 *   These must be deleted manually.
+	 * </p>
+	 * 
+	 * <p>
+	 *   The {@code age} parameter indicates how old (in days) jobs must be before they are deleted.
+	 *   The age will be taken from the time that the job finished. Jobs that finished more recently
+	 *   than this threshold will be left alone.
+	 * </p>
+	 * 
+	 * @param dataSource A data source
+	 * @param age The age of the jobs to delete, in days
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MissingParamException If any parameters are missing or invalid
+	 */
+	public static void deleteFinishedJobs(DataSource dataSource, int age) throws DatabaseException, MissingParamException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(age, "age");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(DELETE_OLD_FINISHED_JOBS_STATEMENT);
+			stmt.setInt(1, age);
+			stmt.execute();
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while deleting old jobs", e);
+		} finally {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(conn);
 		}
