@@ -551,6 +551,7 @@ public class DataReductionJob extends FileJob {
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If any required database records are missing
+	 * @see GasStandardRuns
 	 */
 	private double calcCalibratedCo2(double driedCo2, Calendar time, GasStandardRuns standardRuns, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		SimpleRegression regression = standardRuns.getStandardsRegression(dataSource, instrument.getDatabaseId(), time);

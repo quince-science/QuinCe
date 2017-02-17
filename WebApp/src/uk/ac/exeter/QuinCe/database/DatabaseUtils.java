@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
@@ -102,6 +104,7 @@ public class DatabaseUtils {
 	 * @param columnIndex The colum index of the date/time
 	 * @return The date/time in UTC
 	 * @throws SQLException If an error occurs while reading from the database record
+	 * @see java.util.Calendar#getInstance(TimeZone, Locale)
 	 */
 	public static Calendar getUTCDateTime(ResultSet records, int columnIndex) throws SQLException {
 		Calendar result = DateTimeUtils.getUTCCalendarInstance();

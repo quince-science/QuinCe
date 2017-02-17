@@ -594,6 +594,7 @@ public class JobManager {
 	 * Checks a class name to see if it a valid {@link Job} class
 	 * @param jobClass The class name
 	 * @return An integer flag containing the result of the check. See {@code CLASS_CHECK_*} fields.
+	 * @see Job
 	 */
 	protected static int checkJobClass(String jobClass) {
 		

@@ -82,8 +82,10 @@ public class DataScreenBean extends BaseManagedBean {
 	 * 
 	 * <p>
 	 *   The data is stored as a JSON string, which will be parsed by the Javascript on
-	 *   the user interface. The data is retrieved by the {@link #getPlotData(List)} method.
+	 *   the user interface.
 	 * </p>
+	 * @see #generateLeftPlotData()
+	 * @see #getPlotData(List)
 	 */
 	private String leftPlotData = null;
 	
@@ -104,14 +106,17 @@ public class DataScreenBean extends BaseManagedBean {
 	 *
 	 * <p>
 	 *   The data is stored as a JSON string, which will be parsed by the Javascript on
-	 *   the user interface. The data is retrieved by the {@link #getPlotData(List)} method.
+	 *   the user interface.
 	 * </p>
+	 * @see #generateRightPlotData()
+	 * @see #getPlotData(List)
 	 */
 	private String rightPlotData = null;
 	
 	/**
 	 * The type of CO<sub>2</sub> measurements being viewed.
-	 * Can only be one of {@link RunType#RUN_TYPE_WATER} or {@link RunType#RUN_TYPE_ATMOSPHERIC}.  
+	 * Can only be one of {@link RunType#RUN_TYPE_WATER} or {@link RunType#RUN_TYPE_ATMOSPHERIC}.
+	 * The behaviour of the application if this is set to any other value is undefined.
 	 */
 	private int co2Type = RunType.RUN_TYPE_WATER;
 	
@@ -245,64 +250,72 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Get the columns to be displayed in the left plot. See {@link #leftPlotColumns}.
+	 * Get the columns to be displayed in the left plot.
 	 * @return The columns for the left plot
+	 * @see #leftPlotColumns
 	 */
 	public String getLeftPlotColumns() {
 		return leftPlotColumns;
 	}
 	
 	/**
-	 * Set the columns to be displayed in the left plot. See {@link #leftPlotColumns}.
+	 * Set the columns to be displayed in the left plot.
 	 * @param leftPlotColumns The columns for the left plot
+	 * @see #leftPlotColumns
 	 */
 	public void setLeftPlotColumns(String leftPlotColumns) {
 		this.leftPlotColumns = leftPlotColumns;
 	}
 	
 	/**
-	 * Get the data for the left plot. See {@link #leftPlotData}.
+	 * Get the data for the left plot.
 	 * @return The data for the left plot
+	 * @see #leftPlotData
 	 */
 	public String getLeftPlotData() {
 		return leftPlotData;
 	}
 	
 	/**
-	 * Set the data for the left plot. See {@link #leftPlotData}.
+	 * Set the data for the left plot.
 	 * @param leftPlotData The data for the left plot
+	 * @see #leftPlotData
 	 */
 	public void setLeftPlotData(String leftPlotData) {
 		this.leftPlotData = leftPlotData;
 	}
 	
 	/**
-	 * Get the columns to be displayed in the right plot. See {@link #rightPlotColumns}.
+	 * Get the columns to be displayed in the right plot.
 	 * @return The columns for the right plot
+	 * @see #rightPlotColumns
 	 */
 	public String getRightPlotColumns() {
 		return rightPlotColumns;
 	}
 	
 	/**
-	 * Set the columns to be displayed in the right plot. See {@link #rightPlotColumns}.
+	 * Set the columns to be displayed in the right plot.
 	 * @param rightPlotColumns The columns for the right plot
+	 * @see #rightPlotColumns
 	 */
 	public void setRightPlotColumns(String rightPlotColumns) {
 		this.rightPlotColumns = rightPlotColumns;
 	}
 	
 	/**
-	 * Get the data for the right plot. See {@link #rightPlotData}.
+	 * Get the data for the right plot.
 	 * @return The data for the right plot
+	 * @see #rightPlotData
 	 */
 	public String getRightPlotData() {
 		return rightPlotData;
 	}
 	
 	/**
-	 * Set the data for the right plot. See {@link #rightPlotData}.
+	 * Set the data for the right plot.
 	 * @param rightPlotData The data for the right plot
+	 * @see #rightPlotData
 	 */
 	public void setRightPlotData(String rightPlotData) {
 		this.rightPlotData = rightPlotData;
@@ -330,9 +343,8 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	/**
 	 * Get the list of flags for display of records in addition to the default set.
-	 * See {@link #optionalFlags}.
-	 *  
 	 * @return The list of additional flags
+	 * @see #optionalFlags
 	 */
 	public List<String> getOptionalFlags() {
 		return optionalFlags;
@@ -340,8 +352,8 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	/**
 	 * Set the list of flags for display of records in addition to the default set.
-	 * See {@link #optionalFlags}.
 	 * @param optionalFlags The list of additional flags
+	 * @see #optionalFlags
 	 */
 	public void setOptionalFlags(List<String> optionalFlags) {
 		this.optionalFlags = optionalFlags;
@@ -364,16 +376,18 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Get the currently loaded data for the table. See {@link #tableData}.
+	 * Get the currently loaded data for the table.
 	 * @return The table data
+	 * @see #tableData
 	 */
 	public String getTableData() {
 		return tableData;
 	}
 	
 	/**
-	 * Set the currently loaded data for the table. See {@link #tableData}.
+	 * Set the currently loaded data for the table.
 	 * @param tableData The table data
+	 * @see #tableData
 	 */
 	public void setTableData(String tableData) {
 		this.tableData = tableData;
@@ -382,14 +396,16 @@ public class DataScreenBean extends BaseManagedBean {
 	/**
 	 * Get the set of selected table rows. See {@link #selectedRows}.
 	 * @return The selected rows.
+	 * @see #selectedRows
 	 */
 	public String getSelectedRows() {
 		return selectedRows;
 	}
 	
 	/**
-	 * Set the selected table rows. See {@link #selectedRows}.
+	 * Set the selected table rows.
 	 * @param selectedRows The selected rows
+	 * @see #selectedRows
 	 */
 	public void setSelectedRows(String selectedRows) {
 		this.selectedRows = selectedRows;
@@ -720,6 +736,7 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	/**
 	 * Generate the data for the left plot. See {@link #getPlotData(List)}.
+	 * @see #getPlotData(List)
 	 */
 	public void generateLeftPlotData() {
 		List<String> columns = StringUtils.delimitedToList(leftPlotColumns);
@@ -727,7 +744,8 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 
 	/**
-	 * Generate the data for the right plot. See {@link #getPlotData(List)}.
+	 * Generate the data for the right plot.
+	 * @see #getPlotData(List)
 	 */
 	public void generateRightPlotData() {
 		List<String> columns = StringUtils.delimitedToList(rightPlotColumns);
@@ -986,6 +1004,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 * Generate the list of WOCE flags that will be used to select records to be displayed on the data screen.
 	 * Includes the default set of flags plus any other set in {@link #optionalFlags}.
 	 * @return The list of flags
+	 * @see uk.ac.exeter.QCRoutines.messages.Flag
 	 */
 	private List<Integer> getIncludeFlags() {
 		List<Integer> includeFlags = new ArrayList<Integer>();

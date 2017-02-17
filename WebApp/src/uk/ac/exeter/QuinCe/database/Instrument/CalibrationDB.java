@@ -177,6 +177,7 @@ public class CalibrationDB {
 	 * @return The list of calibrations.
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while retrieving the list
+	 * @see CalibrationStub
 	 */
 	public static List<CalibrationStub> getCalibrationList(DataSource dataSource, long instrumentID) throws MissingParamException, DatabaseException {
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -219,6 +220,7 @@ public class CalibrationDB {
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while retrieving the stub
 	 * @throws RecordNotFoundException If the calibration ID does not exist in the database
+	 * @see CalibrationStub
 	 */
 	public static CalibrationStub getCalibrationStub(DataSource dataSource, long calibrationID) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
@@ -264,6 +266,7 @@ public class CalibrationDB {
 	 * @throws MissingParamException If any of the parameters are {@code null}
 	 * @throws RecordNotFoundException If the specified calibration does not exist in the database
 	 * @throws DatabaseException If a database error occurs
+	 * @see CalibrationStub
 	 */
 	public static List<CalibrationCoefficients> getCalibrationCoefficients(DataSource dataSource, CalibrationStub calibration) throws MissingParamException, RecordNotFoundException, DatabaseException {
 		
@@ -570,6 +573,7 @@ public class CalibrationDB {
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws InstrumentException If there is no calibration preceding the start of the data file
+	 * @see CalibrationStub
 	 */
 	public static List<CalibrationStub> getCalibrationsForFile(DataSource dataSource, long instrumentId, Calendar startDate, Calendar endDate) throws MissingParamException, DatabaseException, InstrumentException {
 		

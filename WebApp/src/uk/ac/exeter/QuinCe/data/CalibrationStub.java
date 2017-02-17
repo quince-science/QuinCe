@@ -16,7 +16,7 @@ import uk.ac.exeter.QuinCe.database.Instrument.CalibrationDB;
  * </p>
  * 
  * @author Steve Jones
- *
+ * @see CalibrationDB
  */
 public class CalibrationStub {
 

@@ -43,11 +43,11 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  *   This class provides the API for all raw data handling activities.
  *   All methods automatically make the appropriate calls to store and
  *   retrieve files on the file system, and methods in the {@link FileStore}
- *   class should be called directly (they are {@code protected} within this package). 
+ *   class should not be called directly (they are {@code protected} within this package). 
  * </p>
  * 
  * @author Steve Jones
- *
+ * @see FileStore
  */
 public class DataFileDB {
 
@@ -291,6 +291,7 @@ public class DataFileDB {
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the specified data file does not exist
+	 * @see FileInfo
 	 */
 	public static FileInfo getFileDetails(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
@@ -444,6 +445,7 @@ public class DataFileDB {
 	 * @param jobCode The Job Code of the job that is running (or will be run)
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
+	 * @see FileInfo
 	 */
 	public static void setCurrentJob(Connection conn, long fileId, int jobCode) throws MissingParamException, DatabaseException {
 		
@@ -480,6 +482,7 @@ public class DataFileDB {
 	 * @throws RecordNotFoundException If the database record disappears while its details are being retrieved  
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
+	 * @see FileInfo
 	 */
 	private static FileInfo makeFileInfo(ResultSet record, Connection conn) throws SQLException, DatabaseException, MissingParamException, RecordNotFoundException {
 		long fileID = record.getLong(1);
@@ -551,6 +554,8 @@ public class DataFileDB {
 	 * @param conn A database connection
 	 * @param fileInfo The {@link FileInfo} for the file whose flag counts are to be updated
 	 * @throws DatabaseException If a database error occurs
+	 * @see FileInfo
+	 * @see uk.ac.exeter.QCRoutines.messages.Flag
 	 */
 	public static void updateFlagCounts(Connection conn, FileInfo fileInfo) throws DatabaseException {
 		

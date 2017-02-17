@@ -8,7 +8,7 @@ import org.primefaces.model.UploadedFile;
  * file upload handling.
  * 
  * @author Steve Jones
- *
+ * @see BaseManagedBean
  */
 public abstract class FileUploadBean extends BaseManagedBean {
 	

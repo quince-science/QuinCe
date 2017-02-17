@@ -622,6 +622,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 * Returns the result of the sample file extraction. One of
 	 * {@link EXTRACTION_OK} or {@link EXTRACTION_FAILED}.
 	 * @return The result of the sample file extraction
+	 * @see #processUploadedFile()
 	 */
 	public int getSampleFileExtractionResult() {
 		return sampleFileExtractionResult;

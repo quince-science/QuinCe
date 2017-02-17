@@ -17,7 +17,7 @@ public class BadProgressException extends Exception {
 
 	/**
 	 * The exception constructor.
-	 * Creates a basic {@link Exception} with a simple message.
+	 * Creates a basic exception with a simple message.
 	 */
 	public BadProgressException() {
 		super("The progress must be between 1 and 100");

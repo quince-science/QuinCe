@@ -40,7 +40,7 @@ public abstract class BaseManagedBean {
 	 * The name of the main form in the bean's corresponding HTML page.
 	 * 
 	 * In order to construct the HTML ID for an input on the page,
-	 * the {@link BaseManagedBean#getComponentID(String)} method must know
+	 * the {@link #getComponentID(String)} method must know
 	 * the name of the form that contains it. As the base class for a number of beans,
 	 * a default form name is provided that can be overridden if required. 
 	 */

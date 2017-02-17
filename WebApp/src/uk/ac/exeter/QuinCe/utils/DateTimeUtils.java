@@ -167,9 +167,8 @@ public class DateTimeUtils {
 	 * The calendar object will be set to the current time, and can have its
 	 * value updated as required.
 	 * 
-	 * See {@link Calendar#getInstance(TimeZone, Locale)}.
-	 * 
 	 * @return A {@link Calendar} object with the time zone set to UTC.
+	 * @see Calendar#getInstance(TimeZone, Locale)
 	 */
 	public static Calendar getUTCCalendarInstance() {
 		return Calendar.getInstance(new SimpleTimeZone(0, "UTC"), Locale.ENGLISH);
