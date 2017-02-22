@@ -57,7 +57,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class AutoQCJob extends FileJob {
 
 	/**
-	 * Initialise the job so it is ready to run
+	 * Initialise the job object so it is ready to run
 	 * 
 	 * @param resourceManager The system resource manager
 	 * @param config The application configuration

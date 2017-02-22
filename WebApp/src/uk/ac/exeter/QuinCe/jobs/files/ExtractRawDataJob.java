@@ -29,23 +29,47 @@ import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+/**
+ * This job extracts the data from uploaded files and
+ * adds it into the database ready for processing.
+ * 
+ * <p>
+ *   Gas standards, and measurements are extracted from the file
+ *   and loaded into the appropriate database tables. Empty QC database
+ *   records are created ready for the data reduction/auto QC jobs
+ *   to fill them in.
+ * </p>
+ * <p>  
+ *   Sensor calibrations are applied to the measurements as they are loaded.
+ * </p>
+ * <p>
+ *   Once the job is complete, the {@link TrimFlushingJob} is queued to run
+ *   on the file's data.
+ * </p>
+ * @author Steve Jones
+ *
+ */
 public class ExtractRawDataJob extends FileJob {
 
 	/**
-	 * Creates the job
-	 * @param dataSource A datasource
+	 * Initialise the job object so it is ready to run
+	 * 
+	 * @param resourceManager The system resource manager
 	 * @param config The application configuration
-	 * @param jobId The job's database ID
-	 * @param fileId The data file ID
-	 * @throws MissingParamException If any parameters are missing
-	 * @throws InvalidJobParametersException If the parameters are invalid
-	 * @throws RecordNotFoundException 
-	 * @throws DatabaseException 
+	 * @param jobId The id of the job in the database
+	 * @param parameters The job parameters, containing the file ID
+	 * @throws InvalidJobParametersException If the parameters are not valid for the job
+	 * @throws MissingParamException If any of the parameters are invalid
+	 * @throws RecordNotFoundException If the job record cannot be found in the database
+	 * @throws DatabaseException If a database error occurs
 	 */
 	public ExtractRawDataJob(ResourceManager resourceManager, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(resourceManager, config, jobId, parameters);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected void execute() throws JobFailedException {
 		
@@ -112,6 +136,13 @@ public class ExtractRawDataJob extends FileJob {
 		}
 	}
 	
+	/**
+	 * Apply all the calibrations to the sensor values present in a given line from
+	 * the raw data file
+	 * @param line The line from the file
+	 * @param instrument The instrument with which the data is associated
+	 * @param coefficients The calibration coefficients to be applied
+	 */
 	private void applyCalibrations(List<String> line, Instrument instrument, List<CalibrationCoefficients> coefficients) {
 		
 		if (instrument.hasIntakeTemp1()) {
@@ -175,6 +206,14 @@ public class ExtractRawDataJob extends FileJob {
 		}
 	}
 	
+	/**
+	 * Apply a set of calibration coefficients to a specific sensor
+	 * that has a measurement on the current data line
+	 * @param line The data line
+	 * @param sensorColumn The column in the line where the sensor's value can be found
+	 * @param sensorCode The sensor code for the sensor
+	 * @param coefficients The calibration coefficients
+	 */
 	private void applyCoefficients(List<String> line, int sensorColumn, SensorCode sensorCode, List<CalibrationCoefficients> coefficients) {
 		
 		CalibrationCoefficients calibration = CalibrationCoefficients.findSensorCoefficients(coefficients, sensorCode);
@@ -190,6 +229,19 @@ public class ExtractRawDataJob extends FileJob {
 		line.set(sensorColumn, String.valueOf(calibratedValue));
 	}
 	
+	/**
+	 * Reset the data for the data file configured for this job.
+	 * 
+	 * <p>
+	 *   This deletes all data relating to the data file from the database,
+	 *   including the raw data, data reduction calculations, and QC details.
+	 * </p>
+	 * <p>
+	 *   Once data removal is complete, a new instance of this job
+	 *   is queued to restart the data extraction process.
+	 * </p>
+	 * @throws JobFailedException If any of the data clearance operations fail
+	 */
 	protected void reset() throws JobFailedException {
 		Connection conn = null;
 		try {
