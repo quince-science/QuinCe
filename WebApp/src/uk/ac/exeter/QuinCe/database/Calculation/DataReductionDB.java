@@ -108,7 +108,9 @@ public class DataReductionDB {
 				stmt.setInt(15, row);
 			}
 			
-			stmt.execute();
+			if (null != stmt) {
+				stmt.execute();
+			}
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while storing the row", e);
 		} finally {
