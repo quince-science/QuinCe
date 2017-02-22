@@ -48,8 +48,6 @@ public class DataReductionJob extends FileJob {
 	
 	@Override
 	protected void executeFileJob(JobThread thread) throws JobFailedException {
-		reset();
-		
 		Connection conn = null;
 		
 		try {
@@ -84,10 +82,6 @@ public class DataReductionJob extends FileJob {
 							RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE);
 					
 				} else {
-				
-					// Reset the QC flags
-					qcRecord.clearAllFlags();
-					
 					if (record.getCo2Type() == RunType.RUN_TYPE_WATER) {
 						
 						boolean canCalculateCO2 = true;
@@ -191,7 +185,6 @@ public class DataReductionJob extends FileJob {
 						DataReductionDB.storeRow(conn, fileId, record.getRow(), true, record.getCo2Type(), meanIntakeTemp,
 								meanSalinity, meanEqt, deltaTemperature, meanEqp, trueMoisture, driedCo2, calibratedCo2,
 								pCo2TEDry, pH2O, pCo2TEWet, fco2TE, fco2);
-						
 						
 						QCDB.setQC(conn, fileId, qcRecord);
 					}
