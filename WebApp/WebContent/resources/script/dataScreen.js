@@ -509,7 +509,12 @@ function drawLeftPlot(data) {
 	var status = data.status;
 	
 	if (status == "success") {
+		var interaction_model = Dygraph.defaultInteractionModel;
+		interaction_model.dblclick = null;
+
 		var graph_options = BASE_GRAPH_OPTIONS;
+		graph_options.interactionModel = interaction_model;
+
 		graph_options.xlabel = AXIS_LABELS[leftPlotXAxis[0].match(/[^_]*$/)];
 		graph_options.ylabel = AXIS_LABELS[leftPlotYAxis[0].match(/[^_]*$/)];
 	
@@ -567,7 +572,12 @@ function drawRightPlot(data) {
 	var status = data.status;
 	
 	if (status == "success") {
+		var interaction_model = Dygraph.defaultInteractionModel;
+		interaction_model.dblclick = null;
+
 		var graph_options = BASE_GRAPH_OPTIONS;
+		graph_options.interactionModel = interaction_model;
+
 		graph_options.xlabel = AXIS_LABELS[rightPlotXAxis[0].match(/[^_]*$/)];
 		graph_options.ylabel = AXIS_LABELS[rightPlotYAxis[0].match(/[^_]*$/)];
 	
@@ -1209,4 +1219,13 @@ function highlightRow(tableRow) {
 			$(rowNode).css('animationName', '');
 		}, 1000);
 	}, 100);
+}
+
+function zoomOut(g) {
+	g.updateOptions({
+	    dateWindow: null,
+	    valueRange: null
+	});
+	
+	return false;
 }

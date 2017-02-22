@@ -16,7 +16,8 @@
 		<h:outputStylesheet name="style/jquery-ui.min.css"/>
 		<h:outputScript name="script/jquery.splitter.js"/>
     	<h:outputStylesheet name="style/jquery.splitter.css"/>
-		<h:outputScript name="script/dygraph-combined.js"/>
+		<h:outputScript name="script/dygraph.min.js"/>
+		<h:outputStylesheet name="style/dygraph.css"/>
 		<h:outputScript name="script/datatables.min.js"/>
 		<h:outputStylesheet name="style/datatables.min.css"/>
 		
@@ -139,6 +140,7 @@
 		    				<button id="leftXAxis" class="smallButton" onclick="return showPlotPopup(event, 'LX', true);">X Axis…</button>
 		    				<button id="leftYAxis" class="smallButton" onclick="return showPlotPopup(event, 'LY', false);">Y Axis…</button>
 		    				<button id="leftUpdate" class="smallButton" onclick="return updatePlot('left');">Update</button>
+		    				<button id="leftZoomOut" class="smallButton" onclick="return zoomOut(leftGraph);">Zoom Out</button>
 		    			</div>
 		    		</div>
 		    		<div id="plotContainerRight">
@@ -147,6 +149,7 @@
 		    				<button id="rightXAxis" class="smallButton" onclick="return showPlotPopup(event, 'RX', true);">X Axis…</button>
 		    				<button id="rightYAxis" class="smallButton" onclick="return showPlotPopup(event, 'RY', false);">Y Axis…</button>
 		    				<button id="rightUpdate" class="smallButton" onclick="return updatePlot('right');">Update</button>
+		    				<button id="rightZoomOut" class="smallButton" onclick="return zoomOut(rightGraph);">Zoom Out</button>
 		    			</div>
 		    		</div>
 	    		</div>
