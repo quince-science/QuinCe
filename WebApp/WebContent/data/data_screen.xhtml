@@ -61,14 +61,16 @@
 			<h:form id="plotDataForm" method="post" accept-charset="utf8">
 				<h:inputHidden id="leftColumns" value="#{dataScreenBean.leftPlotColumns}"/>
 				<h:outputText id="leftData" value="#{dataScreenBean.leftPlotData}"/>
+				<h:outputText id="leftNames" value="#{dataScreenBean.leftPlotNames}"/>
 				<h:commandLink id="leftGetData" action="#{dataScreenBean.generateLeftPlotData}">
-					<f:ajax execute="leftColumns" render="leftData" onevent="drawLeftPlot"/>
+					<f:ajax execute="leftColumns" render="leftData leftNames" onevent="drawLeftPlot"/>
 				</h:commandLink>
 
 				<h:inputHidden id="rightColumns" value="#{dataScreenBean.rightPlotColumns}"/>
 				<h:outputText id="rightData" value="#{dataScreenBean.rightPlotData}"/>
+				<h:outputText id="rightNames" value="#{dataScreenBean.rightPlotNames}"/>
 				<h:commandLink id="rightGetData" action="#{dataScreenBean.generateRightPlotData}">
-					<f:ajax execute="rightColumns" render="rightData" onevent="drawRightPlot"/>
+					<f:ajax execute="rightColumns" render="rightData rightNames" onevent="drawRightPlot"/>
 				</h:commandLink>
 				
 				<h:inputHidden value="#{dataScreenBean.tableJsonData}" id="tableJsonData"/>		

@@ -58,13 +58,13 @@ var AXIS_LABELS = {
 		'eqp1': 'Pressure (hPa)',
 		'eqp2': 'Pressure (hPa)',
 		'eqp3': 'Pressure (hPa)',
+		'eqpMean': 'Pressure (hPa)',
 		'airFlow1': 'Flow (ml/min)',
 		'airFlow2': 'Flow (ml/min)',
 		'airFlow3': 'Flow (ml/min)',
 		'waterFlow1': 'Flow (ml/min)',
 		'waterFlow2': 'Flow (ml/min)',
 		'waterFlow3': 'Flow (ml/min)',
-		'eqpMean': 'Pressure (hPa)',
 		'moistureMeasured': 'Moisture (%)',
 		'moistureTrue': 'Moisture (%)',
 		'pH2O': 'pH₂O (UNITS)',
@@ -92,7 +92,7 @@ var plotPopupTarget = 'LX';
 
 // The selected parameters for the plots and maps
 var leftPlotXAxis = ['plot_datetime_dateTime'];
-var leftPlotYAxis = ['plot_intaketemp_intakeTempMean', 'plot_intaketemp_intakeTemp1', 'plot_intaketemp_intakeTemp2', 'plot_intaketemp_intakeTemp3'];
+var leftPlotYAxis = ['plot_intaketemp_intakeTempMean'];
 var leftMap = 'plot_co2_fCO2Final';
 
 var rightPlotXAxis = ['plot_datetime_dateTime'];
@@ -517,6 +517,7 @@ function drawLeftPlot(data) {
 
 		graph_options.xlabel = AXIS_LABELS[leftPlotXAxis[0].match(/[^_]*$/)];
 		graph_options.ylabel = AXIS_LABELS[leftPlotYAxis[0].match(/[^_]*$/)];
+		graph_options.labels = $('#plotDataForm\\:leftNames').html().split(';');
 		graph_options.labelsDiv = 'plotLeftLabels';
 	
 		// Row, QC Flag and WOCE flag are always invisible
@@ -580,6 +581,7 @@ function drawRightPlot(data) {
 
 		graph_options.xlabel = AXIS_LABELS[rightPlotXAxis[0].match(/[^_]*$/)];
 		graph_options.ylabel = AXIS_LABELS[rightPlotYAxis[0].match(/[^_]*$/)];
+		graph_options.labels = $('#plotDataForm\\:rightNames').html().split(';');
 		graph_options.labelsDiv = 'plotRightLabels';
 	
 		// Row, QC Flag and WOCE flag are always invisible

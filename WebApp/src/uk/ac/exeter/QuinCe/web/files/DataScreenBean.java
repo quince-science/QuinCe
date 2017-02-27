@@ -10,7 +10,6 @@ import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RunType;
-import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
@@ -42,9 +41,13 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private String leftPlotData = null;
 	
+	private String leftPlotNames = null;
+	
 	private String rightPlotColumns = null;
 	
 	private String rightPlotData = null;
+	
+	private String rightPlotNames = null;
 	
 	private int co2Type = RunType.RUN_TYPE_WATER;
 	
@@ -143,6 +146,14 @@ public class DataScreenBean extends BaseManagedBean {
 		this.leftPlotData = leftPlotData;
 	}
 	
+	public String getLeftPlotNames() {
+		return leftPlotNames;
+	}
+	
+	public void setLeftPlotNames(String leftPlotNames){
+		this.leftPlotNames = leftPlotNames;
+	}
+	
 	public String getRightPlotColumns() {
 		return rightPlotColumns;
 	}
@@ -157,6 +168,14 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public void setRightPlotData(String rightPlotData) {
 		this.rightPlotData = rightPlotData;
+	}
+	
+	public String getRightPlotNames() {
+		return rightPlotNames;
+	}
+	
+	public void setRightPlotNames(String rightPlotNames){
+		this.rightPlotNames = rightPlotNames;
 	}
 	
 	public int getCo2Type() {
@@ -501,12 +520,14 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public void generateLeftPlotData() {
 		List<String> columns = StringUtils.delimitedToList(leftPlotColumns);
-		setLeftPlotData(getPlotData(columns)); 
+		setLeftPlotData(getPlotData(columns));
+		setLeftPlotNames(makePlotNames(columns));
 	}
 
 	public void generateRightPlotData() {
 		List<String> columns = StringUtils.delimitedToList(rightPlotColumns);
 		setRightPlotData(getPlotData(columns)); 
+		setRightPlotNames(makePlotNames(columns));
 	}
 	
 	private String getPlotData(List<String> columns) {
@@ -843,5 +864,188 @@ public class DataScreenBean extends BaseManagedBean {
 		return "dataScreen";
 	}
 	
+	/**
+	 * 
+	 * @param columns
+	 * @return
+	 * @see #getPlotData(List)
+	 */
+	private String makePlotNames(List<String> columns) {
 
+		List<String> output = new ArrayList<String>(columns.size());
+		
+		// The first column is the X axis
+		output.add(getPlotSeriesName(columns.get(0)));
+		
+		// Next are the row, QC Flag and WOCE Flag. These are fixed internal series
+		// That are never displayed.
+		output.add("Row");
+		output.add("QC Flag");
+		output.add("WOCE Flag");
+		
+		// Now the rest of the columns
+		for (int i = 1; i < columns.size(); i++) {
+			output.add(getPlotSeriesName(columns.get(i)));
+		}
+		
+		return StringUtils.listToDelimited(output);
+	}
+
+
+	private String getPlotSeriesName(String series) {
+		
+		String result;
+		
+		switch (series) {
+		case "dateTime": {
+			result = ("Date/Time");
+			break;
+		}
+		case("longitude"): {
+			result = ("Longitude");
+			break;
+		}
+		case("latitude"): {
+			result = ("Latitude");
+			break;
+		}
+		case("intakeTemp1"): {
+			result = (instrument.getIntakeTempName1());
+			break;
+		}
+		case("intakeTemp2"): {
+			result = (instrument.getIntakeTempName2());
+			break;
+		}
+		case("intakeTemp3"): {
+			result = (instrument.getIntakeTempName3());
+			break;
+		}
+		case("intakeTempMean"): {
+			result = ("Mean Intake Temp");
+			break;
+		}
+		case("salinity1"): {
+			result = (instrument.getSalinityName1());
+			break;
+		}
+		case("salinity2"): {
+			result = (instrument.getSalinityName2());
+			break;
+		}
+		case("salinity3"): {
+			result = (instrument.getSalinityName3());
+			break;
+		}
+		case("salinityMean"): {
+			result = ("Mean Salinity");
+			break;
+		}
+		case("eqt1"): {
+			result = (instrument.getEqtName1());
+			break;
+		}
+		case("eqt2"): {
+			result = (instrument.getEqtName2());
+			break;
+		}
+		case("eqt3"): {
+			result = (instrument.getEqtName3());
+			break;
+		}
+		case("eqtMean"): {
+			result = ("Mean Equil Temp");
+			break;
+		}
+		case("deltaT"): {
+			result = ("Δ Temp");
+			break;
+		}
+		case("eqp1"): {
+			result = (instrument.getEqpName1());
+			break;
+		}
+		case("eqp2"): {
+			result = (instrument.getEqpName2());
+			break;
+		}
+		case("eqp3"): {
+			result = (instrument.getEqpName3());
+			break;
+		}
+		case("eqpMean"): {
+			result = ("Mean Equil Pres");
+			break;
+		}
+		case("airFlow1"): {
+			result = (instrument.getAirFlowName1());
+			break;
+		}
+		case("airFlow2"): {
+			result = (instrument.getAirFlowName2());
+			break;
+		}
+		case("airFlow3"): {
+			result = (instrument.getAirFlowName3());
+			break;
+		}
+		case("waterFlow1"): {
+			result = (instrument.getWaterFlowName1());
+			break;
+		}
+		case("waterFlow2"): {
+			result = (instrument.getWaterFlowName2());
+			break;
+		}
+		case("waterFlow3"): {
+			result = (instrument.getWaterFlowName3());
+			break;
+		}
+		case("moistureMeasured"): {
+			result = ("Moisture (Measured)");
+			break;
+		}
+		case("moistureTrue"): {
+			result = ("Moisture (True)");
+			break;
+		}
+		case("pH2O"): {
+			result = ("pH₂O");
+			break;
+		}
+		case("co2Measured"): {
+			result = ("Measured CO₂");
+			break;
+		}
+		case("co2Dried"): {
+			result = ("Dried CO₂");
+			break;
+		}
+		case("co2Calibrated"): {
+			result = ("Calibrated CO₂");
+			break;
+		}
+		case("pCO2TEDry"): {
+			result = ("pCO₂ TE Dry");
+			break;
+		}
+		case("pCO2TEWet"): {
+			result = ("pCO₂ TE Wet");
+			break;
+		}
+		case("fCO2TE"): {
+			result = ("fCO₂ TE");
+			break;
+		}
+		case("fCO2Final"): {
+			result = ("Final fCO₂");
+			break;
+		}
+		default: {
+			result = ("***UNKNOWN COLUMN " + series + "***");
+		}
+		}
+
+		return result;
+	}
 }
