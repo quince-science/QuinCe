@@ -517,6 +517,7 @@ function drawLeftPlot(data) {
 
 		graph_options.xlabel = AXIS_LABELS[leftPlotXAxis[0].match(/[^_]*$/)];
 		graph_options.ylabel = AXIS_LABELS[leftPlotYAxis[0].match(/[^_]*$/)];
+		graph_options.labelsDiv = 'plotLeftLabels';
 	
 		// Row, QC Flag and WOCE flag are always invisible
 		var columnVisibility = [false, false, false];
@@ -579,6 +580,7 @@ function drawRightPlot(data) {
 
 		graph_options.xlabel = AXIS_LABELS[rightPlotXAxis[0].match(/[^_]*$/)];
 		graph_options.ylabel = AXIS_LABELS[rightPlotYAxis[0].match(/[^_]*$/)];
+		graph_options.labelsDiv = 'plotRightLabels';
 	
 		// Row, QC Flag and WOCE flag are always invisible
 		var columnVisibility = [false, false, false];
