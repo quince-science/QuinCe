@@ -14,7 +14,7 @@ var FLAG_GOOD = 2;
 var FLAG_ASSUMED_GOOD = -2;
 var FLAG_QUESTIONABLE = 3;
 var FLAG_BAD = 4;
-var FLAG_NEEDS_FLAG = -1001;
+var FLAG_NEEDS_FLAG = -10;
 var FLAG_IGNORED = -1002;
 
 var BASE_GRAPH_OPTIONS = {
@@ -509,7 +509,12 @@ function drawLeftPlot(data) {
 	var status = data.status;
 	
 	if (status == "success") {
+		var interaction_model = Dygraph.defaultInteractionModel;
+		interaction_model.dblclick = null;
+
 		var graph_options = BASE_GRAPH_OPTIONS;
+		graph_options.interactionModel = interaction_model;
+
 		graph_options.xlabel = AXIS_LABELS[leftPlotXAxis[0].match(/[^_]*$/)];
 		graph_options.ylabel = AXIS_LABELS[leftPlotYAxis[0].match(/[^_]*$/)];
 	
@@ -522,8 +527,7 @@ function drawLeftPlot(data) {
 		graph_options.visibility = columnVisibility;
 		
 		graph_data = JSON.parse($('#plotDataForm\\:leftData').text());
-		leftPlotHighlights = makeHighlights(graph_data);
-		
+
 		if (leftPlotXAxis[0] == 'plot_datetime_dateTime') {
 			graph_data = makeJSDates(graph_data);
 			graph_options.clickCallback = function(e, x, points) {
@@ -534,8 +538,8 @@ function drawLeftPlot(data) {
 			if (plotHighlights.length > 0) {
 				graph_options.underlayCallback = function(canvas, area, g) {
 					for (var i = 0; i < plotHighlights.length; i++) {
-						var canvas_left_x = g.toDomXCoord(plotHighlights[i][0]);
-			            var canvas_right_x = g.toDomXCoord(plotHighlights[i][1]);
+						var canvas_left_x = g.toDomXCoord(plotHighlights[i][0]) - 1;
+			            var canvas_right_x = g.toDomXCoord(plotHighlights[i][1]) + 1;
 			            var canvas_width = canvas_right_x - canvas_left_x;
 			            canvas.fillStyle = plotHighlights[i][2];
 			            canvas.fillRect(canvas_left_x, area.y, canvas_width, area.h);
@@ -567,7 +571,12 @@ function drawRightPlot(data) {
 	var status = data.status;
 	
 	if (status == "success") {
+		var interaction_model = Dygraph.defaultInteractionModel;
+		interaction_model.dblclick = null;
+
 		var graph_options = BASE_GRAPH_OPTIONS;
+		graph_options.interactionModel = interaction_model;
+
 		graph_options.xlabel = AXIS_LABELS[rightPlotXAxis[0].match(/[^_]*$/)];
 		graph_options.ylabel = AXIS_LABELS[rightPlotYAxis[0].match(/[^_]*$/)];
 	
@@ -582,7 +591,6 @@ function drawRightPlot(data) {
 		graph_data = JSON.parse($('#plotDataForm\\:rightData').text());
 		if (rightPlotXAxis[0] == 'plot_datetime_dateTime') {
 			graph_data = makeJSDates(graph_data);
-			rightPlotHighlights = makeHighlights(graph_data);
 			graph_options.clickCallback = function(e, x, points) {
 				scrollToTableRow(x);
 			};
@@ -591,8 +599,8 @@ function drawRightPlot(data) {
 			if (plotHighlights.length > 0) {
 				graph_options.underlayCallback = function(canvas, area, g) {
 					for (var i = 0; i < plotHighlights.length; i++) {
-						var canvas_left_x = g.toDomXCoord(plotHighlights[i][0]);
-			            var canvas_right_x = g.toDomXCoord(plotHighlights[i][1]);
+						var canvas_left_x = g.toDomXCoord(plotHighlights[i][0]) - 1;
+			            var canvas_right_x = g.toDomXCoord(plotHighlights[i][1]) + 1;
 			            var canvas_width = canvas_right_x - canvas_left_x;
 			            canvas.fillStyle = plotHighlights[i][2];
 			            canvas.fillRect(canvas_left_x, area.y, canvas_width, area.h);
@@ -871,14 +879,14 @@ function makeHighlights(plotData) {
 		
 		if (woceFlag != currentFlag) {
 			if (highlightStart > -1) {
-				highlightEnd = plotData[i][0];
+				highlightEnd = plotData[i - 1][0];
 				highlights.push([highlightStart, highlightEnd, highlightColor]);
 			}
 			
 			if (Math.abs(woceFlag) == FLAG_GOOD) {
 				highlightStart = -1;
 			} else {
-				highlightStartIndex = i - 1;
+				highlightStartIndex = i;
 				if (highlightStartIndex < 0) {
 					highlightStartIndex = 0;
 				}
@@ -1209,4 +1217,13 @@ function highlightRow(tableRow) {
 			$(rowNode).css('animationName', '');
 		}, 1000);
 	}, 100);
+}
+
+function zoomOut(g) {
+	g.updateOptions({
+	    dateWindow: null,
+	    valueRange: null
+	});
+	
+	return false;
 }
