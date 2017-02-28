@@ -16,6 +16,7 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.RebuildCode;
@@ -33,18 +34,59 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
- * Extracts data from the three file database tables in a single API
+ * An API to retrieve all kinds of data for a data file from the database.
  * @author Steve Jones
  *
  */
 public class FileDataInterrogator {
 	
+	/**
+	 * A special column identifier indicating that the data from the original file
+	 * should be included.
+	 */
 	private static final String COLUMN_ORIGINAL_FILE = "original";
 	
+	/**
+	 * A special column identifier indicating that the record count should be included.
+	 * This equates to the {@code COUNT(*)} SQL directive. If the rest of the requested
+	 * columns are not compatible with this in the final SQL query {@link #GET_COLUMN_DATA_QUERY},
+	 * the final output of the request is undefined, although it is likely that a {@link DatabaseException}
+	 * will be thrown.
+	 */
 	private static final String COLUMN_RECORD_COUNT = "count";
 	
+	/**
+	 * The internal set of mappings from a column identifier to its table and field name in SQL.
+	 * These are set fixed in the code.
+	 */
 	private static Map<String, String> COLUMN_MAPPINGS = null;
 	
+	/**
+	 * The template SQL query for retrieving data from the database.
+	 * 
+	 * <p>
+	 *   This contains tags delimited by {@code %%} that are substituted for the required
+	 *   values by the method that will ultimately invoke the query. These are:
+	 * </p>
+	 * <ul>
+	 *   <li>
+	 *     {@code COLUMNS}: The columns to be read from the database. This is a comma-separated list (as required
+	 *     by SQL syntax) of values from the {@link #COLUMN_MAPPINGS} lookup, or the special values
+	 *     {@link #COLUMN_ORIGINAL_FILE} or {@link #COLUMN_RECORD_COUNT}.
+	 *   </li>
+	 *   <li>
+	 *     {@code CO2TYPES}: The type of CO<sub>2</sub> measurements to include in the output.
+	 *     Can contain {@link RunType#RUN_TYPE_WATER}, {@link RunType#RUN_TYPE_ATMOSPHERIC}, or
+	 *     both (separated by a comma). If other values are included, the data resulting from
+	 *     the query will contain unpredictable results.
+	 *   </li>
+	 *   <li>
+	 *     {@code ORDER}: The sort order for the resulting data. This can be any value that's available in the
+	 *     {@link #COLUMN_MAPPINGS} lookup table. To sort by the order of records as they are in the original
+	 *     file, use {@code raw_data.row}.
+	 *   </li>
+	 * </ul> 
+	 */
 	private static final String GET_COLUMN_DATA_QUERY = "SELECT %%COLUMNS%% FROM raw_data "
 					+ " INNER JOIN data_reduction ON raw_data.data_file_id = data_reduction.data_file_id AND raw_data.row = data_reduction.row"
 					+ " INNER JOIN qc ON raw_data.data_file_id = qc.data_file_id AND raw_data.row = qc.row"
@@ -98,6 +140,38 @@ public class FileDataInterrogator {
 		COLUMN_MAPPINGS.put("woceMessage", "qc.woce_message");
 	}
 	
+	/**
+	 * Retrieve the data for a data file in CSV format.
+	 * 
+	 * <p>
+	 *   The {@code columns} must be provided as a list of entries from {@link #COLUMN_MAPPINGS}, or the
+	 *   special values {@link #COLUMN_ORIGINAL_FILE} or {@code #COLUMN_RECORD_COUNT}.
+	 * </p>
+	 * <p>
+	 *   The {@code co2Type} must be one of either {@link RunType#RUN_TYPE_WATER} or {@link RunType#RUN_TYPE_ATMOSPHERIC}.
+	 *   If any other value is used, the behaviour of the method is undefined.
+	 * </p>
+	 * <p>
+	 *   {@code includeFlags} is a list of WOCE flag values that will be included in the output. This can be any
+	 *   of the numeric flag values defined in {@link Flag}. Any record that does not have a flag value in this list
+	 *   will be omitted from the output.
+	 * </p> 
+	 * 
+	 * @param dataSource A data source
+	 * @param appConfig The application configuration
+	 * @param fileId The file's database ID
+	 * @param instrument The instrument that the file belongs to
+	 * @param columns The columns to be included in the output
+	 * @param co2Type The type of observations to be included in the output. Either {@link RunType#RUN_TYPE_WATER} or {@link RunType#RUN_TYPE_ATMOSPHERIC}.
+	 * @param includeFlags The WOCE flags to be included in the output
+	 * @return The requested data in CSV format
+	 * @throws MissingParamException If any of the parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RawDataFileException If the original data file cannot be accessed
+	 * @see #GET_COLUMN_DATA_QUERY
+	 * @see RunType
+	 * @see Flag
+	 */
 	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns, int co2Type, List<Integer> includeFlags) throws MissingParamException, DatabaseException, RawDataFileException {
 		return getCSVData(dataSource, appConfig, fileId, instrument, columns, ",", co2Type, includeFlags, 0, -1);
 	}
