@@ -2,7 +2,9 @@ package uk.ac.exeter.QuinCe.web.files;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -10,7 +12,6 @@ import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RunType;
-import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
@@ -18,6 +19,7 @@ import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.FileJob;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
@@ -89,8 +91,8 @@ public class DataScreenBean extends BaseManagedBean {
 	public String end() throws Exception {
 		
 		if (dirty) {
-			List<String> parameters = new ArrayList<String>();
-			parameters.add(String.valueOf(fileId));
+			Map<String, String> parameters = new HashMap<String, String>(1);
+			parameters.put(FileJob.FILE_ID_KEY, String.valueOf(fileId));
 			
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			Connection conn = dataSource.getConnection();

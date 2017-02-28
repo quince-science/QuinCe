@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.web.User;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
@@ -17,7 +17,9 @@ import uk.ac.exeter.QuinCe.jobs.JobException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPoolNotInitialisedException;
 import uk.ac.exeter.QuinCe.jobs.NoSuchJobException;
+import uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.StringFormatException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
@@ -90,8 +92,10 @@ public class SignupBean extends BaseManagedBean {
 	/**
 	 * The main signup action method
 	 * @return Result string
+	 * @throws StringFormatException 
+	 * @throws SecurityException 
 	 */
-	public String signUp() {
+	public String signUp() throws SecurityException, StringFormatException {
 		
 		String result = SUCCESS_RESULT;
 		
@@ -104,8 +108,8 @@ public class SignupBean extends BaseManagedBean {
 				User newUser = UserDB.createUser(ServletUtils.getDBDataSource(), emailAddress, password1.toCharArray(), givenName, surname, true);
 
 				// Build and start the job to send out the verification email
-				List<String> emailJobParams = new ArrayList<String>();
-				emailJobParams.add(emailAddress);
+				Map<String, String> emailJobParams = new HashMap<String, String>(1);
+				emailJobParams.put(SendEmailVerificationMailJob.EMAIL_KEY, emailAddress);
 				
 				JobManager.addInstantJob(ServletUtils.getResourceManager(), ServletUtils.getAppConfig(), newUser, "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob", emailJobParams);
 			} catch (DatabaseException|MissingParamException|ResourceException e) {
