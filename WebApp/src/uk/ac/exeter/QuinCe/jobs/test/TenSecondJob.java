@@ -1,6 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs.test;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
@@ -18,11 +18,13 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 public class TenSecondJob extends Job {
 
+	public static final String CHUNK_KEY = "chunks";
+	
 	private int chunkCount = 1;
 	
-	public TenSecondJob(ResourceManager resourceManager, Properties config, long id, List<String> parameters) throws MissingParamException, InvalidJobParametersException {
+	public TenSecondJob(ResourceManager resourceManager, Properties config, long id, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException {
 		super(resourceManager, config, id, parameters);
-		chunkCount = Integer.parseInt(parameters.get(0));
+		chunkCount = Integer.parseInt(parameters.get(CHUNK_KEY));
 	}
 
 	@Override

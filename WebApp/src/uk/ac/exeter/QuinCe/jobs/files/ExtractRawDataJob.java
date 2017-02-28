@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.CalibrationCoefficients;
@@ -43,7 +44,7 @@ public class ExtractRawDataJob extends FileJob {
 	 * @throws RecordNotFoundException 
 	 * @throws DatabaseException 
 	 */
-	public ExtractRawDataJob(ResourceManager resourceManager, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+	public ExtractRawDataJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(resourceManager, config, jobId, parameters);
 	}
 

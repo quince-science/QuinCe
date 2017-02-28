@@ -1,11 +1,12 @@
 package uk.ac.exeter.QuinCe.web.User;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
@@ -31,8 +32,8 @@ public class SendEmailCodeBean extends BaseManagedBean {
 				User user = UserDB.getUser(ServletUtils.getDBDataSource(), email);
 				if (null != user) {
 					UserDB.generateEmailVerificationCode(ServletUtils.getDBDataSource(), user);
-					List<String> emailJobParams = new ArrayList<String>();
-					emailJobParams.add(email);
+					Map<String, String> emailJobParams = new HashMap<String, String>(1);
+					emailJobParams.put(SendEmailVerificationMailJob.EMAIL_KEY, email);
 					
 					JobManager.addInstantJob(ServletUtils.getResourceManager(), ServletUtils.getAppConfig(), user, "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob", emailJobParams);
 					result = SUCCESS_RESULT;

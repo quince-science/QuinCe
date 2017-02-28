@@ -8,7 +8,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -26,6 +28,7 @@ import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
 import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.FileJob;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -132,8 +135,8 @@ public class DataFileDB {
 			generatedKeys = stmt.getGeneratedKeys();
 			if (generatedKeys.next()) {
 			
-				List<String> jobParameters = new ArrayList<String>(1);
-				jobParameters.add(String.valueOf(generatedKeys.getLong(1)));
+				Map<String, String> jobParameters = new HashMap<String, String>(1);
+				jobParameters.put(FileJob.FILE_ID_KEY, String.valueOf(generatedKeys.getLong(1)));
 				JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_EXTRACT, jobParameters);
 				
 				// Store the file

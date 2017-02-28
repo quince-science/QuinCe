@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
@@ -26,7 +27,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class AutoQCJob extends FileJob {
 
-	public AutoQCJob(ResourceManager resourceManager, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+	public AutoQCJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(resourceManager, config, jobId, parameters);
 	}
 

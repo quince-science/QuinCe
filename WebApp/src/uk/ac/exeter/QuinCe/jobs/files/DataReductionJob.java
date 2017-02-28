@@ -42,7 +42,7 @@ public class DataReductionJob extends FileJob {
 
 	private static final double PASCALS_TO_ATMOSPHERES = 0.00000986923266716013;
 
-	public DataReductionJob(ResourceManager resourceManager, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+	public DataReductionJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(resourceManager, config, jobId, parameters);
 	}
 	
