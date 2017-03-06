@@ -638,6 +638,19 @@ public class GasStandardDB {
 		return getStandardDateFromQuery(dataSource, instrumentId, date, GET_DATE_AFTER_QUERY);
 	}
 	
+	/**
+	 * Search for and extract a standards deployment date from an SQL query.
+	 * This is used by {@link #getStandardDateBefore(DataSource, long, Calendar)} and
+	 * {@link #getStandardDateAfter(DataSource, long, Calendar)}.
+	 * 
+	 * @param dataSource A data source
+	 * @param instrumentId The instrument's database ID
+	 * @param date The base date for the query 
+	 * @param query The SQL query
+	 * @return The date that matched the query, or {@code null} there was no match
+	 * @throws MissingParamException If any parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
 	private static Calendar getStandardDateFromQuery(DataSource dataSource, long instrumentId, Calendar date, String query) throws MissingParamException, DatabaseException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(instrumentId, "instrumentId");
