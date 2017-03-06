@@ -10,9 +10,15 @@ import uk.ac.exeter.QuinCe.data.StandardConcentration;
  * gas standard run. The instrument will measure a single standard
  * for a period, and the mean measured value during that period will
  * be used to calibrate the actual ocean/atmosphere measurements.
+ * 
+ * <p>
+ *   {@code GasStandardMean} objects implement the {@link Comparable}
+ *   interface. Comparisons are based on the {@link #startTime}, allowing
+ *   them to be sorted by time order.
+ * </p>
  *
  * @author Steve Jones
- *
+ * @see GasStandardRuns
  */
 public class GasStandardMean implements Comparable<GasStandardMean> {
 

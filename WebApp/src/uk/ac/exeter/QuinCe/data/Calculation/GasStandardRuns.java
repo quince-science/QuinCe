@@ -21,9 +21,9 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
- * Represents a set of gas standard runs from a data file
+ * Represents a complete set of gas standard runs from a data file
  * @author Steve Jones
- *
+ * @see GasStandardMean
  */
 public class GasStandardRuns {
 
@@ -46,6 +46,7 @@ public class GasStandardRuns {
 	/**
 	 * Creates an empty set of gas standard runs for a given data file
 	 * @param fileId The database ID of the file
+	 * @param instrument The instrument to which the data file belongs
 	 */
 	public GasStandardRuns(long fileId, Instrument instrument) {
 		this.fileId = fileId;
@@ -77,14 +78,59 @@ public class GasStandardRuns {
 		allStandardMeans.add(standardMean);
 	}
 	
+	/**
+	 * Retrieve the interpolated moisture value at a given time for
+	 * a given standard run type
+	 * 
+	 * <p>
+	 *   The interpolated value is calculated as a linear interpolation
+	 *   of the moisture values between the standard runs immediately
+	 *   preceding and following the specified time. If the specified time
+	 *   is before the first standard run, the value for the first run is used.
+	 *   If the specified time is after the last standard run, the value for
+	 *   the last run is used.
+	 * </p>
+	 * @param runType The run type
+	 * @param time The time to which the values should be interpolated
+	 * @return The interpolated moisture value
+	 * @see RunType
+	 */
 	public double getInterpolatedMoisture(String runType, Calendar time) {
 		return getInterpolatedValue(runType, time, GasStandardMean.TYPE_MOISTURE);
 	}
 	
+	/**
+	 * Retrieve the interpolated CO<sub>2</sub> value at a given time for
+	 * a given standard run type
+	 * 
+	 * <p>
+	 *   The interpolated value is calculated as a linear interpolation
+	 *   of the moisture values between the standard runs immediately
+	 *   preceding and following the specified time. If the specified time
+	 *   is before the first standard run, the value for the first run is used.
+	 *   If the specified time is after the last standard run, the value for
+	 *   the last run is used.
+	 * </p>
+	 * @param runType The run type
+	 * @param time The time to which the values should be interpolated
+	 * @return The interpolated CO<sub>2</sub> value
+	 * @see RunType
+	 */
 	public double getInterpolatedCo2(String runType, Calendar time) {
 		return getInterpolatedValue(runType, time, GasStandardMean.TYPE_CO2);
 	}
 	
+	/**
+	 * Calculate an interpolated moisture or CO<sub>2</sub> value for a given
+	 * gas standard type. This performs the calculations for
+	 * {@link #getInterpolatedCo2(String, Calendar)} and {@link #getInterpolatedMoisture(String, Calendar)}.
+	 * 
+	 * @param runType The gas standard type
+	 * @param time The time to which the values should be interpolated
+	 * @param valueType The type of value to interpolate. Either {@link GasStandardMean#TYPE_CO2} or {@link GasStandardMean#TYPE_MOISTURE}.
+	 * @return The interpolated value
+	 * @see RunType
+	 */
 	private double getInterpolatedValue(String runType, Calendar time, int valueType) {
 		GasStandardMean previous = getStandardBefore(runType, time);
 		GasStandardMean next = getStandardAfter(runType, time);
@@ -110,6 +156,14 @@ public class GasStandardRuns {
 		return result;
 	}
 	
+	/**
+	 * Find the standard run immediately preceding the specified time for a given gas standard run type.
+	 * If there is no standard before that time {@code null} is returned.
+	 * 
+	 * @param runType The gas standard type
+	 * @param time The target time
+	 * @return The standard before the specified time, or {@code null} if there is no standard
+	 */
 	private GasStandardMean getStandardBefore(String runType, Calendar time) {
 		
 		TreeSet<GasStandardMean> searchSet = getSearchSet(runType);
@@ -128,6 +182,14 @@ public class GasStandardRuns {
 		
 	}
 	
+	/**
+	 * Find the standard run immediately following the specified time for a given gas standard run type.
+	 * If there is no standard after that time {@code null} is returned.
+	 * 
+	 * @param runType The gas standard type
+	 * @param time The target time
+	 * @return The standard after the specified time, or {@code null} if there is no standard
+	 */
 	private GasStandardMean getStandardAfter(String runType, Calendar time) {
 		
 		TreeSet<GasStandardMean> searchSet = getSearchSet(runType);
@@ -145,10 +207,44 @@ public class GasStandardRuns {
 		
 	}
 	
+	/**
+	 * Retrieve the set of gas standard runs to be searched for a calculation.
+	 * 
+	 * <p>
+	 *   If {@code runType} is null, all standard runs are returned. Otherwise
+	 *   only the specified runs are returned.
+	 * </p>
+	 * 
+	 * @param runType The run type
+	 * @return The set of standards to be searched
+	 * @see RunType
+	 */
 	private TreeSet<GasStandardMean> getSearchSet(String runType) {
 		return (null == runType ? allStandardMeans : groupedStandardMeans.get(runType));
 	}
 	
+	/**
+	 * Retrieve the linear regression to be used to calibrate a measurement against the gas standard
+	 * runs.
+	 * 
+	 * <p>
+	 *   Calibrating a measurement against gas standards is a two dimensional process.
+	 *   First, the gas standards of each type are examined individually, and the standard value for each
+	 *   type is calculated as a linear interpolation of the standard runs immediately preceding and
+	 *   following the measurement. This gives the value of the standards that would be measured at that time.
+	 *   
+     *   Plotting the measured values against the known true concentrations of the gas standards gives what
+     *   is close to a linear relationship between a measured value and its true value. This can be expressed
+     *   as a linear regression, which can then be used to calculate the true value of a measurement.
+	 * </p>
+	 * @param dataSource A data source
+	 * @param instrumentId The database ID of the instrument
+	 * @param time The time of the measurement being calibrated
+	 * @return The regression that can be used to calculate the true value of a measurement
+	 * @throws MissingParamException If any parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If any required database records are missing
+	 */
 	public SimpleRegression getStandardsRegression(DataSource dataSource, long instrumentId, Calendar time) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
 		SimpleRegression result = new SimpleRegression(true);
