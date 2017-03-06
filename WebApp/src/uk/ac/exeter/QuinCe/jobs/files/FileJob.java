@@ -14,13 +14,10 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * A version of the Job class specifically for
- * jobs operating on data files. It ensures that
- * the job details and progress in the job table
- * are updated along with those in the Job Manager.
+ * A version of the Job class specifically for jobs operating on data files.
  * 
  * @author Steve Jones
- *
+ * @see Job
  */
 public abstract class FileJob extends Job {
 	
@@ -29,20 +26,27 @@ public abstract class FileJob extends Job {
 	 */
 	protected long fileId;
 	
+	/**
+	 * The instrument to which the data file being processed belongs
+	 */
 	protected Instrument instrument = null;
 	
 	/**
-	 * Constructs a job object that will operate on a data file
-	 * The parameters must contain a single entry that is the database ID
-	 * of the file to be processed. Any other parameters will be ignored.
+	 * Construct a Job to run on a data file.
 	 * 
+	 * <p>
+	 *   The first entry in the {@code parameters} list must be the
+	 *   database ID of the file to be processed.
+	 * </p>
+	 *  
 	 * @param resourceManager The system resource manager
 	 * @param config The application configuration
-	 * @param jobId The id of the job in the database
-	 * @param parameters The job parameters, containing the file ID
-	 * @throws InvalidJobParametersException If the parameters are not valid for the job
-	 * @throws RecordNotFoundException 
-	 * @throws DatabaseException 
+	 * @param jobId The job's database ID
+	 * @param parameters The job parameters
+	 * @throws MissingParamException If any constructor parameters are missing
+	 * @throws InvalidJobParametersException If the supplied job parameters are invalid
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If any referenced database records are missing
 	 */
 	public FileJob(ResourceManager resourceManager, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		// File jobs have no parameters.
