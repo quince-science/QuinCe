@@ -24,10 +24,24 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
+/**
+ * Methods for handling records of gas standards in the database.
+ * 
+ * <p>
+ *   There are two terms to understand with this class. The first is a Standards Deployment,
+ *   which represents an installation of a complete set of gas standard bottles. The second
+ *   is a Standard Concentration, which is the actual concentration of a single bottle within
+ *   a deployment. A Standard Concentration is sometimes associated with its identification
+ *   in the data file (its {@link RunType}), but this is not always required.
+ * </p>
+ * 
+ * @author Steve Jones
+ *
+ */
 public class GasStandardDB {
 
 	/**
-	 * Statement for creating a gas standard parent record
+	 * Statement for creating a gas standards deployment record
 	 */
 	private static final String CREATE_STANDARD_STATEMENT = "INSERT INTO gas_standard_deployment ("
 			+ "instrument_id, deployed_date) VALUES (?, ?)";
@@ -41,80 +55,83 @@ public class GasStandardDB {
 			+ "VALUES (?, ?, ?)";
 	
 	/**
-	 * Statement for retrieving the list of standards for a given instrument.
+	 * Statement for retrieving the list of standards deployments for a given instrument.
 	 * The list is ordered by descending date.
 	 */
 	private static final String GET_STANDARD_LIST_QUERY = "SELECT id, deployed_date FROM "
 			+ "gas_standard_deployment WHERE instrument_id = ? ORDER BY deployed_date DESC";
 	
 	/**
-	 * Statement for retrieving the stub details for a given standard
+	 * Statement for retrieving the stub details for a given standards deployment
 	 */
 	private static final String GET_STANDARD_STUB_QUERY = "SELECT id, instrument_id, deployed_date FROM "
 			+ "gas_standard_deployment WHERE id = ?";
 	
 	/**
-	 * Statement for retrieving the concentrations for a given standard
+	 * Statement for retrieving the concentrations for a given standards deployment
 	 */
 	private static final String GET_CONCENTRATIONS_QUERY = "SELECT standard_name, concentration FROM "
 			+ "gas_standard_concentration WHERE standard_id = ? ORDER BY standard_name ASC";
 	
 	/**
-	 * Statememnt to update the date for a given standard
+	 * Statement to update the date for a given standards deployment
 	 */
 	private static final String UPDATE_STANDARD_STATEMENT = "UPDATE gas_standard_deployment SET "
 			+ "deployed_date = ? WHERE id = ?";
 	
 	/**
-	 * Statement to remove all concentrations for a given standard.
+	 * Statement to remove all concentrations for a given standards deployment.
 	 * This is used prior to adding the revised concentrations.
 	 */
 	private static final String REMOVE_CONCENTRATIONS_STATEMENT = "DELETE FROM gas_standard_concentration WHERE standard_id = ?";
 	
 	/**
-	 * Statement for finding a standard record with a given ID
+	 * Statement for finding a standards deployment record with a given ID
 	 */
 	private static final String FIND_STANDARD_QUERY = "SELECT id FROM gas_standard_deployment WHERE id = ?";
 	
 	/**
-	 * Statement for removing a standard record.
+	 * Statement for removing a standards deployment record.
 	 */
 	private static final String REMOVE_STANDARD_STATEMENT = "DELETE FROM gas_standard_deployment WHERE id = ?";
 	
 	/**
-	 * Query to get the names of the gas standards for a given instrument
+	 * Query to get the names of the gas standards run types for a given instrument.
+	 * @see RunType
 	 */
 	private static final String GET_STANDARD_NAMES_QUERY = "SELECT run_name FROM run_types WHERE "
 			+ "instrument_id = ? AND run_type = " + RunType.RUN_TYPE_STANDARD;
 	
 	/**
-	 * Statement to find standard dates between two given dates
+	 * Statement to find standards deployment dates between two given dates
 	 */
 	private static final String GET_DATES_BETWEEN_QUERY = "SELECT deployed_date FROM gas_standard_deployment WHERE instrument_id = ? AND deployed_date >= ? AND deployed_date <= ? ORDER BY deployed_date ASC";
 	
 	/**
-	 * Statement to find the latest standard date before a given date
+	 * Statement to find the latest standards deployment date before a given date
 	 */
 	private static final String GET_DATE_BEFORE_QUERY = "SELECT deployed_date FROM gas_standard_deployment WHERE instrument_id = ? AND deployed_date <= ? ORDER BY deployed_date DESC LIMIT 1";
 	
 	/**
-	 * Statement to find the latest standard date before a given date
+	 * Statement to find the latest standards deployment date before a given date
 	 */
 	private static final String GET_DATE_AFTER_QUERY = "SELECT deployed_date FROM gas_standard_deployment WHERE instrument_id = ? AND deployed_date >= ? ORDER BY deployed_date DESC LIMIT 1";
 	
 	/**
-	 * Statement to find the latest standard date before a given date
+	 * Statement to find the latest standards deployment date before a given date
 	 */
 	private static final String GET_STANDARD_BEFORE_QUERY = "SELECT id, deployed_date FROM gas_standard_deployment WHERE instrument_id = ? AND deployed_date <= ? ORDER BY deployed_date DESC LIMIT 1";
 	
 	/**
-	 * Add a standard to the database
+	 * Add a standards deployment to the database
 	 * @param dataSource A data source
 	 * @param instrumentID The ID of the instrument
 	 * @param deployedDate The date of the standard deployment
 	 * @param concentrations The concentrations for each of the gas standards
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while creating the database records
+	 * @see #CREATE_STANDARD_STATEMENT
+	 * @see #CREATE_CONCENTRATIONS_STATEMENT
 	 */
 	public static void addStandard(DataSource dataSource, long instrumentID, Date deployedDate, List<StandardConcentration> concentrations) throws MissingParamException, DatabaseException {
 		
@@ -172,12 +189,13 @@ public class GasStandardDB {
 	}
 	
 	/**
-	 * Retrieve the list of standards for a specific instrument from the database
+	 * Retrieve the list of standards deployments for a specific instrument from the database
 	 * @param dataSource A data source
 	 * @param instrumentID The instrument ID
-	 * @return The list of standards.
+	 * @return The list of standards deployments
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while retrieving the list
+	 * @see #GET_STANDARD_LIST_QUERY
 	 */
 	public static List<StandardStub> getStandardList(DataSource dataSource, long instrumentID) throws MissingParamException, DatabaseException {
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -210,13 +228,15 @@ public class GasStandardDB {
 	}
 	
 	/**
-	 * Retrieve a standard stub object for a given standard ID
+	 * Retrieve a standards deployment stub object for a given standard ID
 	 * @param dataSource A data source
 	 * @param standardID The standard ID
-	 * @return The standard stub
+	 * @return The standards deployment stub
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while retrieving the stub
 	 * @throws RecordNotFoundException If the standard ID does not exist in the database
+	 * @see StandardStub
+	 * @see #GET_STANDARD_STUB_QUERY
 	 */
 	public static StandardStub getStandardStub(DataSource dataSource, long standardID) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
@@ -251,6 +271,16 @@ public class GasStandardDB {
 		}
 	}
 
+	/**
+	 * Retrieve the set of standard concentrations for a given gas standards deployment
+	 * @param dataSource A data source
+	 * @param standard The gas standard whose concentrations should be retrieved
+	 * @return The standard concentrations
+	 * @throws MissingParamException If any parameters are missing
+	 * @throws RecordNotFoundException If any database records are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @see #GET_CONCENTRATIONS_QUERY
+	 */
 	public static List<StandardConcentration> getConcentrations(DataSource dataSource, StandardStub standard) throws MissingParamException, RecordNotFoundException, DatabaseException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -288,6 +318,16 @@ public class GasStandardDB {
 		return concentrations;
 	}
 
+	/**
+	 * Retrieve a lookup table of the gas standard concentrations for a given standards deployment
+	 * @param dataSource A data source
+	 * @param standard The standards deployment
+	 * @return The gas standard concentrations
+	 * @throws MissingParamException If any parameters are missing
+	 * @throws RecordNotFoundException If any required database records are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @see #GET_CONCENTRATIONS_QUERY
+	 */
 	public static Map<String, StandardConcentration> getConcentrationsMap(DataSource dataSource, StandardStub standard) throws MissingParamException, RecordNotFoundException, DatabaseException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -325,6 +365,19 @@ public class GasStandardDB {
 		return concentrations;
 	}
 
+	/**
+	 * Update the gas standard concentrations for a given standards deployment.
+	 * @param dataSource A data source
+	 * @param standardID The database ID of the standards deployment
+	 * @param deployedDate The date of the deployment
+	 * @param concentrations The gas standard concentrations
+	 * @throws MissingParamException If any parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the standards deployment does not exist
+	 * @see #UPDATE_STANDARD_STATEMENT
+	 * @see #REMOVE_CONCENTRATIONS_STATEMENT
+	 * @see #CREATE_CONCENTRATIONS_STATEMENT
+	 */
 	public static void updateStandard(DataSource dataSource, long standardID, Date deployedDate, List<StandardConcentration> concentrations) throws MissingParamException, DatabaseException, RecordNotFoundException {
 
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -383,12 +436,13 @@ public class GasStandardDB {
 	}
 	
 	/**
-	 * Search for an existing standard record with a given ID
+	 * Search for an existing standards deployment record with a given ID
 	 * @param conn A database connection
 	 * @param standardID The standard ID
 	 * @return {@code true} if the standard exists; {@code false} if it does not.
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while searching the database
+	 * @see #FIND_STANDARD_QUERY
 	 */
 	private static boolean standardExists(Connection conn, long standardID) throws MissingParamException, DatabaseException {
 		
@@ -418,11 +472,13 @@ public class GasStandardDB {
 	}
 
 	/**
-	 * Remove a standard from the database
+	 * Remove a standards deployment from the database
 	 * @param dataSource A data source
 	 * @param standardID The standard ID
-	 * @throws MissingParamException
-	 * @throws DatabaseException
+	 * @throws MissingParamException If any parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @see #REMOVE_CONCENTRATIONS_STATEMENT
+	 * @see #REMOVE_STANDARD_STATEMENT
 	 */
 	public static void deleteStandard(DataSource dataSource, long standardID) throws MissingParamException, DatabaseException {
 
@@ -457,13 +513,17 @@ public class GasStandardDB {
 	}
 
 	/**
-	 * Retrieve the list of gas standard names for a given instrument
+	 * Retrieve the list of gas standard names for a given instrument.
+	 * The standard names are the Run Types recorded for standards runs in the data file.
+	 * 
 	 * @param dataSource A data source
 	 * @param instrumentID The instrument ID
 	 * @return The list of standard names
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while searching the database
 	 * @throws RecordNotFoundException If no standards are found
+	 * @see #GET_STANDARD_NAMES_QUERY
+	 * @see RunType
 	 */
 	public static List<String> getStandardNames(DataSource dataSource, long instrumentID) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
@@ -502,7 +562,7 @@ public class GasStandardDB {
 	}
 
 	/**
-	 * Return a list of gas standard dates for a given instrument that
+	 * Return a list of standards deployment dates for a given instrument that
 	 * fall between two specified dates
 	 * @param dataSource A data source
 	 * @param instrumentID The database ID of the instrument
@@ -511,6 +571,7 @@ public class GasStandardDB {
 	 * @return A list of standard dates
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while retrieving the dates
+	 * @see #GET_DATES_BETWEEN_QUERY
 	 */
 	public static List<Calendar> getStandardDatesBetween(DataSource dataSource, long instrumentID, Calendar firstDate, Calendar lastDate) throws MissingParamException, DatabaseException {
 		
@@ -550,26 +611,28 @@ public class GasStandardDB {
 	}
 
 	/**
-	 * Find the last gas standard date for a specified instrument before a given date
+	 * Find the last standards deployment date for a specified instrument before a given date
 	 * @param dataSource A data source
-	 * @param instrumentID The instrument ID
+	 * @param instrumentId The instrument ID
 	 * @param date The date
-	 * @return The last standard date before the given date. If there is no date, returns null.
+	 * @return The last standards deployment date before the given date. If there is no date, returns null.
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while retrieving the date.
+	 * @see #GET_DATE_BEFORE_QUERY
 	 */
 	public static Calendar getStandardDateBefore(DataSource dataSource, long instrumentId, Calendar date) throws MissingParamException, DatabaseException {
 		return getStandardDateFromQuery(dataSource, instrumentId, date, GET_DATE_BEFORE_QUERY);
 	}
 	
 	/**
-	 * Find the last gas standard date for a specified instrument before a given date
+	 * Find the first standards deployment date for a specified instrument after a given date
 	 * @param dataSource A data source
-	 * @param instrumentID The instrument ID
+	 * @param instrumentId The instrument ID
 	 * @param date The date
-	 * @return The last standard date before the given date. If there is no date, returns null.
+	 * @return The first standards deployment date after the given date. If there is no date, returns null.
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while retrieving the date.
+	 * @see #GET_DATE_AFTER_QUERY
 	 */
 	public static Calendar getStandardDateAfter(DataSource dataSource, long instrumentId, Calendar date) throws MissingParamException, DatabaseException {
 		return getStandardDateFromQuery(dataSource, instrumentId, date, GET_DATE_AFTER_QUERY);
