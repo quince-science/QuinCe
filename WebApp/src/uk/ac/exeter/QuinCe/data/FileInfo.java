@@ -108,6 +108,8 @@ public class FileInfo {
 	
 	private int qcBadCount = 0;
 	
+	private int qcFatalCount = 0;
+	
 	private int qcNotSetCount = 0;
 	
 	private int woceGoodCount = 0;
@@ -117,6 +119,8 @@ public class FileInfo {
 	private int woceQuestionableCount = 0;
 	
 	private int woceBadCount = 0;
+
+	private int woceFatalCount = 0;
 	
 	private int woceNotSetCount = 0;
 	
@@ -322,6 +326,14 @@ public class FileInfo {
 		this.qcBadCount = qcBadCount;
 	}
 
+	public int getQcFatalCount() {
+		return qcFatalCount;
+	}
+
+	public void setQcFatalCount(int qcFatalCount) {
+		this.qcFatalCount = qcFatalCount;
+	}
+
 	public int getQcNotSetCount() {
 		return qcNotSetCount;
 	}
@@ -360,6 +372,14 @@ public class FileInfo {
 
 	public void setWoceBadCount(int woceBadCount) {
 		this.woceBadCount = woceBadCount;
+	}
+
+	public int getWoceFatalCount() {
+		return woceBadCount;
+	}
+
+	public void setWoceFatalCount(int woceFatalCount) {
+		this.woceFatalCount = woceFatalCount;
 	}
 
 	public int getWoceNotSetCount() {

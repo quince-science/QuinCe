@@ -540,6 +540,10 @@ public class DataFileDB {
 					fileInfo.setQcBadCount(qcFlags.getInt(2));
 					break;
 				}
+				case Flag.VALUE_FATAL: {
+					fileInfo.setQcFatalCount(qcFlags.getInt(2));
+					break;
+				}
 				case Flag.VALUE_NOT_SET: {
 					fileInfo.setQcNotSetCount(qcFlags.getInt(2));
 					break;
@@ -575,6 +579,10 @@ public class DataFileDB {
 				}
 				case Flag.VALUE_BAD: {
 					fileInfo.setWoceBadCount(woceFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_FATAL: {
+					fileInfo.setWoceFatalCount(qcFlags.getInt(2));
 					break;
 				}
 				case Flag.VALUE_NOT_SET: {
