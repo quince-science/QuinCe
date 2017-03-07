@@ -69,6 +69,13 @@ public class ResourceManager implements ServletContextListener {
        		throw new RuntimeException("Could not initialise data column configuration", e);
        	}
 
+       	// Initialise the Extraction Check Routines configuration
+       	try {
+       		RoutinesConfig.init("ExtractionCheck", configuration.getProperty("extract_routines.configfile"));
+       	} catch (ConfigException e) {
+       		throw new RuntimeException("Could not initialise Extraction Check Routines", e);
+       	}
+       	
        	// Initialise the QC Routines configuration
        	try {
        		RoutinesConfig.init("QC", configuration.getProperty("qc_routines.configfile"));
@@ -76,6 +83,7 @@ public class ResourceManager implements ServletContextListener {
        		throw new RuntimeException("Could not initialise QC Routines", e);
        	}
        	
+       	// Initialise the file export options configuration
        	try {
        		ExportConfig.init(configuration.getProperty("export.configfile"));
        	} catch (ExportException e) {
