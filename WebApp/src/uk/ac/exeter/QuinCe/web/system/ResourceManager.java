@@ -71,7 +71,7 @@ public class ResourceManager implements ServletContextListener {
 
        	// Initialise the QC Routines configuration
        	try {
-       		RoutinesConfig.init(configuration.getProperty("routines.configfile"));
+       		RoutinesConfig.init("QC", configuration.getProperty("qc_routines.configfile"));
        	} catch (ConfigException e) {
        		throw new RuntimeException("Could not initialise QC Routines", e);
        	}

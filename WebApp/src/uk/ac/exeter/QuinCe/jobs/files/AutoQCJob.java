@@ -45,7 +45,7 @@ public class AutoQCJob extends FileJob {
 			for (DataRecord record : qcRecords) {
 				((QCRecord) record).clearQCData();
 			}
-			List<Routine> routines = RoutinesConfig.getInstance().getRoutines();
+			List<Routine> routines = RoutinesConfig.getInstance("QC").getRoutines();
 			
 			for (Routine routine : routines) {
 				routine.processRecords((List<DataRecord>) qcRecords);
