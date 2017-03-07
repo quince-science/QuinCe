@@ -91,7 +91,7 @@ public class TrimFlushingJob extends FileJob {
 			// Queue up the Data Reduction job
 			try {
 				User owner = JobManager.getJobOwner(dataSource, id);
-				JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_REDUCTION, parameters);
+				JobManager.addJob(conn, owner, FileInfo.getJobClass(FileInfo.JOB_CODE_REDUCTION), parameters);
 				DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
 			} catch (RecordNotFoundException e) {
 				// This means the file has been marked for deletion. No action is required.

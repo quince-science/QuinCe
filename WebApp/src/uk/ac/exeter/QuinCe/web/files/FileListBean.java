@@ -105,7 +105,7 @@ public class FileListBean extends BaseManagedBean {
 			Map<String, String> params = new HashMap<String, String>(1);
 			params.put(FileJob.FILE_ID_KEY, String.valueOf(chosenFile));
 			
-			JobManager.addJob(conn, getUser(), FileInfo.JOB_CLASS_REDUCTION, params);
+			JobManager.addJob(conn, getUser(), FileInfo.getJobClass(FileInfo.JOB_CODE_REDUCTION), params);
 			DataFileDB.setCurrentJob(conn, chosenFile, FileInfo.JOB_CODE_REDUCTION);
 		} catch (Exception e) {
 			return internalError(e);

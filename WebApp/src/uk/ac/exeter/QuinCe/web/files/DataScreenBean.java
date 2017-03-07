@@ -97,7 +97,7 @@ public class DataScreenBean extends BaseManagedBean {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			Connection conn = dataSource.getConnection();
 			
-			JobManager.addJob(conn, getUser(), FileInfo.JOB_CLASS_REDUCTION, parameters);
+			JobManager.addJob(conn, getUser(), FileInfo.getJobClass(FileInfo.JOB_CODE_REDUCTION), parameters);
 			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
 		}
 		

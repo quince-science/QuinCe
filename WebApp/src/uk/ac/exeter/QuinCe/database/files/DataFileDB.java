@@ -137,7 +137,7 @@ public class DataFileDB {
 			
 				Map<String, String> jobParameters = new HashMap<String, String>(1);
 				jobParameters.put(FileJob.FILE_ID_KEY, String.valueOf(generatedKeys.getLong(1)));
-				JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_EXTRACT, jobParameters);
+				JobManager.addJob(conn, owner, FileInfo.getJobClass(FileInfo.JOB_CODE_EXTRACT), jobParameters);
 				
 				// Store the file
 				FileStore.storeFile(appConfig, instrumentID, dataFile);
@@ -582,7 +582,7 @@ public class DataFileDB {
 					break;
 				}
 				case Flag.VALUE_FATAL: {
-					fileInfo.setWoceFatalCount(qcFlags.getInt(2));
+					fileInfo.setWoceFatalCount(woceFlags.getInt(2));
 					break;
 				}
 				case Flag.VALUE_NOT_SET: {
