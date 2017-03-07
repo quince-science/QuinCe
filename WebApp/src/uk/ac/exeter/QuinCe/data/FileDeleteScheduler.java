@@ -37,6 +37,6 @@ public class FileDeleteScheduler extends BackgroundTask {
 	
 	@Override
 	protected long getRunInterval() {
-		return 900;
+		return 10;
 	}
 }
