@@ -984,32 +984,38 @@ function toggleSelection(rowIndex, rowNumber) {
  * Add the row index and its QC Message to the global selection arrays
  */
 function selectRow(rowIndex, rowNumber) {
-	selectedRows[selectedRows.length] = rowNumber;
-	selectedWoceFlags[selectedWoceFlags.length] = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Flag')];
 	
-	// Add the message to the list of selection messages
-	qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
-	if (qcMessage == "") {
-		qcMessage = NO_MESSAGE_ENTRY;
-	}
-	
-	if (qcMessage in selectionQCMessageCounts) {
-		selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] + 1;
+	var woceFlag = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Flag')];
+	if (woceFlag == '44') {
+		deselectRow(rowIndex, rowNumber);
 	} else {
-		selectionQCMessageCounts[qcMessage] = 1;
-	}
-	
-	woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
-	
-	// If the WOCE message is empty, use the QC message instead
-	if (woceMessage == "") {
-		woceMessage = qcMessage;
-	}
-	
-	if (woceMessage in selectionWoceMessageCounts) {
-		selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] + 1;
-	} else {
-		selectionWoceMessageCounts[woceMessage] = 1;
+		selectedRows[selectedRows.length] = rowNumber;
+		selectedWoceFlags[selectedWoceFlags.length] = woceFlag;
+		
+		// Add the message to the list of selection messages
+		qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
+		if (qcMessage == "") {
+			qcMessage = NO_MESSAGE_ENTRY;
+		}
+		
+		if (qcMessage in selectionQCMessageCounts) {
+			selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] + 1;
+		} else {
+			selectionQCMessageCounts[qcMessage] = 1;
+		}
+		
+		woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
+		
+		// If the WOCE message is empty, use the QC message instead
+		if (woceMessage == "") {
+			woceMessage = qcMessage;
+		}
+		
+		if (woceMessage in selectionWoceMessageCounts) {
+			selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] + 1;
+		} else {
+			selectionWoceMessageCounts[woceMessage] = 1;
+		}
 	}
 }
 
