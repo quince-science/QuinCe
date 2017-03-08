@@ -27,6 +27,10 @@ import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
  */
 public class ResourceManager implements ServletContextListener {
 
+	public static final String INITIAL_CHECK_ROUTINES_CONFIG = "InitialCheck";
+	
+	public static final String QC_ROUTINES_CONFIG = "QC";
+
 	private DataSource dbDataSource;
 	
 	private Properties configuration;
@@ -69,13 +73,21 @@ public class ResourceManager implements ServletContextListener {
        		throw new RuntimeException("Could not initialise data column configuration", e);
        	}
 
+       	// Initialise the Extraction Check Routines configuration
+       	try {
+       		RoutinesConfig.init(INITIAL_CHECK_ROUTINES_CONFIG, configuration.getProperty("extract_routines.configfile"));
+       	} catch (ConfigException e) {
+       		throw new RuntimeException("Could not initialise Extraction Check Routines", e);
+       	}
+       	
        	// Initialise the QC Routines configuration
        	try {
-       		RoutinesConfig.init(configuration.getProperty("routines.configfile"));
+       		RoutinesConfig.init(QC_ROUTINES_CONFIG, configuration.getProperty("qc_routines.configfile"));
        	} catch (ConfigException e) {
        		throw new RuntimeException("Could not initialise QC Routines", e);
        	}
        	
+       	// Initialise the file export options configuration
        	try {
        		ExportConfig.init(configuration.getProperty("export.configfile"));
        	} catch (ExportException e) {

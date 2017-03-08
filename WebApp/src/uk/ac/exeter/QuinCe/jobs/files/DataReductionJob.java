@@ -48,8 +48,6 @@ public class DataReductionJob extends FileJob {
 	
 	@Override
 	protected void executeFileJob(JobThread thread) throws JobFailedException {
-		reset();
-		
 		Connection conn = null;
 		
 		try {
@@ -75,7 +73,7 @@ public class DataReductionJob extends FileJob {
 				NoDataQCRecord qcRecord = qcRecords.get(record.getRow());
 				
 				// If the record has been marked bad, we skip it
-				if (qcRecord.getWoceFlag().equals(Flag.BAD) || qcRecord.getWoceFlag().equals(Flag.IGNORED)) {
+				if (qcRecord.getWoceFlag().equals(Flag.FATAL) || qcRecord.getWoceFlag().equals(Flag.BAD) || qcRecord.getWoceFlag().equals(Flag.IGNORED)) {
 				
 					// Store empty data reduction values (unless other values have previously been stored)
 					DataReductionDB.storeRow(conn, fileId, record.getRow(), false, record.getCo2Type(), RawDataDB.MISSING_VALUE,
@@ -84,10 +82,6 @@ public class DataReductionJob extends FileJob {
 							RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE);
 					
 				} else {
-				
-					// Reset the QC flags
-					qcRecord.clearAllFlags();
-					
 					if (record.getCo2Type() == RunType.RUN_TYPE_WATER) {
 						
 						boolean canCalculateCO2 = true;
@@ -192,7 +186,12 @@ public class DataReductionJob extends FileJob {
 								meanSalinity, meanEqt, deltaTemperature, meanEqp, trueMoisture, driedCo2, calibratedCo2,
 								pCo2TEDry, pH2O, pCo2TEWet, fco2TE, fco2);
 						
+						QCDB.setQC(conn, fileId, qcRecord);
+					} else {
 						
+						// For the time being we're ignoring atmospheric records,
+						// so clear all the QC flags
+						qcRecord.clearAllFlags();
 						QCDB.setQC(conn, fileId, qcRecord);
 					}
 				}
@@ -210,7 +209,7 @@ public class DataReductionJob extends FileJob {
 				// Requeue the data reduction job
 				try {
 					User owner = JobManager.getJobOwner(dataSource, id);
-					JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_REDUCTION, parameters);
+					JobManager.addJob(conn, owner, FileInfo.getJobClass(FileInfo.JOB_CODE_REDUCTION), parameters);
 					DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
 					conn.commit();
 				} catch (RecordNotFoundException e) {
@@ -218,8 +217,10 @@ public class DataReductionJob extends FileJob {
 				}
 			} else {
 				// Queue up the automatic QC job
+				Map<String, String> nextJobParameters = AutoQCJob.getJobParameters(FileInfo.JOB_CODE_AUTO_QC, fileId);
+				
 				User owner = JobManager.getJobOwner(conn, id);
-				JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_AUTO_QC, parameters);
+				JobManager.addJob(conn, owner, FileInfo.getJobClass(FileInfo.JOB_CODE_AUTO_QC), nextJobParameters);
 				DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_AUTO_QC);
 				conn.commit();
 			}

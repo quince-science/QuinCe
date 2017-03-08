@@ -14,6 +14,7 @@ var FLAG_GOOD = 2;
 var FLAG_ASSUMED_GOOD = -2;
 var FLAG_QUESTIONABLE = 3;
 var FLAG_BAD = 4;
+var FLAG_BAD = 44;
 var FLAG_NEEDS_FLAG = -10;
 var FLAG_IGNORED = -1002;
 
@@ -807,6 +808,8 @@ function getFlagText(flag) {
         flagText = 'Questionable';
     } else if (flag == '4') {
         flagText = 'Bad';
+    } else if (flag == '44') {
+    	flagText = 'Fatal';
     } else {
         flagText = 'Needs Flag';
     }
@@ -827,7 +830,7 @@ function getFlagClass(flag) {
         flagClass = 'good';
     } else if (flag == '3') {
         flagClass = 'questionable';
-    } else if (flag == '4') {
+    } else if (flag == '4' || flag == '44') {
         flagClass = 'bad';
     } else {
         flagClass = 'needsFlagging';
@@ -897,7 +900,8 @@ function makeHighlights(plotData) {
 				
 				highlightStart = plotData[highlightStartIndex][0];
 				switch (woceFlag) {
-				case FLAG_BAD: {
+				case FLAG_BAD:
+				case FLAG_FATAL: {
 					highlightColor = 'rgba(255, 0, 0, 1)';
 					break;
 				}
@@ -942,7 +946,8 @@ function showQCInfoPopup(qcFlag, qcMessage, target) {
 	    	content += 'questionable';
 	    	break;
 	    }
-	    case 4: {
+	    case 4:
+	    case 44: {
 	    	content += 'bad';
 	    	break;
     	}
@@ -983,32 +988,38 @@ function toggleSelection(rowIndex, rowNumber) {
  * Add the row index and its QC Message to the global selection arrays
  */
 function selectRow(rowIndex, rowNumber) {
-	selectedRows[selectedRows.length] = rowNumber;
-	selectedWoceFlags[selectedWoceFlags.length] = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Flag')];
 	
-	// Add the message to the list of selection messages
-	qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
-	if (qcMessage == "") {
-		qcMessage = NO_MESSAGE_ENTRY;
-	}
-	
-	if (qcMessage in selectionQCMessageCounts) {
-		selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] + 1;
+	var woceFlag = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Flag')];
+	if (woceFlag == '44') {
+		deselectRow(rowIndex, rowNumber);
 	} else {
-		selectionQCMessageCounts[qcMessage] = 1;
-	}
-	
-	woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
-	
-	// If the WOCE message is empty, use the QC message instead
-	if (woceMessage == "") {
-		woceMessage = qcMessage;
-	}
-	
-	if (woceMessage in selectionWoceMessageCounts) {
-		selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] + 1;
-	} else {
-		selectionWoceMessageCounts[woceMessage] = 1;
+		selectedRows[selectedRows.length] = rowNumber;
+		selectedWoceFlags[selectedWoceFlags.length] = woceFlag;
+		
+		// Add the message to the list of selection messages
+		qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
+		if (qcMessage == "") {
+			qcMessage = NO_MESSAGE_ENTRY;
+		}
+		
+		if (qcMessage in selectionQCMessageCounts) {
+			selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] + 1;
+		} else {
+			selectionQCMessageCounts[qcMessage] = 1;
+		}
+		
+		woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
+		
+		// If the WOCE message is empty, use the QC message instead
+		if (woceMessage == "") {
+			woceMessage = qcMessage;
+		}
+		
+		if (woceMessage in selectionWoceMessageCounts) {
+			selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] + 1;
+		} else {
+			selectionWoceMessageCounts[woceMessage] = 1;
+		}
 	}
 }
 

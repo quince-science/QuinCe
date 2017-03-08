@@ -89,6 +89,12 @@ public class DataScreenBean extends BaseManagedBean {
 	public String start() throws Exception {
 		clearData();
 		loadFileDetails();
+		
+		// Temporarily always show Bad flags
+		List<String> badFlags = new ArrayList<String>(1);
+		badFlags.add("4");
+		setOptionalFlags(badFlags);
+		
 		return PAGE_START;
 	}
 	
@@ -101,7 +107,7 @@ public class DataScreenBean extends BaseManagedBean {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			Connection conn = dataSource.getConnection();
 			
-			JobManager.addJob(conn, getUser(), FileInfo.JOB_CLASS_REDUCTION, parameters);
+			JobManager.addJob(conn, getUser(), FileInfo.getJobClass(FileInfo.JOB_CODE_REDUCTION), parameters);
 			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
 		}
 		
@@ -194,6 +200,10 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	public void setOptionalFlags(List<String> optionalFlags) {
+		if (optionalFlags.contains(String.valueOf(Flag.VALUE_BAD)) && !optionalFlags.contains(String.valueOf(Flag.VALUE_FATAL))) {
+			optionalFlags.add(String.valueOf(Flag.VALUE_FATAL));
+		}
+		
 		this.optionalFlags = optionalFlags;
 		
 		// Reset the record count, so it is retrieved from the database again.		

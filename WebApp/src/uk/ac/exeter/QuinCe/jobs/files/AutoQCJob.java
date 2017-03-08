@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -19,6 +20,7 @@ import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
+import uk.ac.exeter.QuinCe.jobs.JobException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
@@ -27,6 +29,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class AutoQCJob extends FileJob {
 
+	private static final String PARAM_ROUTINES_CONFIG = "ROUTINES_CONFIG";
+	
+	private static final String PARAM_NEXT_JOB_CODE = "NEXT_CODE";
+	
+	private static final String PARAM_INTERRUPTED_JOB_CODE = "INTERRUPTED_CODE";
+	
 	public AutoQCJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(resourceManager, config, jobId, parameters);
 	}
@@ -45,7 +53,7 @@ public class AutoQCJob extends FileJob {
 			for (DataRecord record : qcRecords) {
 				((QCRecord) record).clearQCData();
 			}
-			List<Routine> routines = RoutinesConfig.getInstance().getRoutines();
+			List<Routine> routines = RoutinesConfig.getInstance(parameters.get(PARAM_ROUTINES_CONFIG)).getRoutines();
 			
 			for (Routine routine : routines) {
 				routine.processRecords((List<DataRecord>) qcRecords);
@@ -108,7 +116,11 @@ public class AutoQCJob extends FileJob {
 					}
 					
 					if (!messagesMatch) {
-						qcRecord.setWoceFlag(Flag.NEEDED);
+						if (qcRecord.getQCFlag().equals(Flag.FATAL)) {
+							qcRecord.setWoceFlag(Flag.FATAL);
+						} else {
+							qcRecord.setWoceFlag(Flag.NEEDED);
+						}
 						qcRecord.setWoceComment(qcRecord.getMessageSummaries());
 						writeRecord = true;
 					}
@@ -123,17 +135,33 @@ public class AutoQCJob extends FileJob {
 			if (thread.isInterrupted()) {
 				conn.rollback();
 
-				// Queue up a new data reduction job
+				// Queue up the fallback job
 				try {
+					int interruptedJobCode = Integer.parseInt(parameters.get(PARAM_INTERRUPTED_JOB_CODE));
+					Map<String, String> interruptedJobParams = getJobParameters(interruptedJobCode, fileId);
+					
 					User owner = JobManager.getJobOwner(dataSource, id);
-					JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_REDUCTION, parameters);
-					DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
+					JobManager.addJob(conn, owner, FileInfo.getJobClass(interruptedJobCode), interruptedJobParams);
+					DataFileDB.setCurrentJob(conn, fileId, interruptedJobCode);
 					conn.commit();
 				} catch (RecordNotFoundException e) {
 					// This means the file has been marked for deletion. No action is required.
 				}
 			} else {
-				DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_USER_QC);
+				// Commit all the records
+				conn.commit();
+				
+				// Queue up the next job
+				int nextJobCode = Integer.parseInt(parameters.get(PARAM_NEXT_JOB_CODE));
+				if (nextJobCode == FileInfo.JOB_CODE_USER_QC) {
+					DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_USER_QC);
+				} else {
+					Map<String, String> nextJobParams = getJobParameters(nextJobCode, fileId);
+					User owner = JobManager.getJobOwner(dataSource, id);
+					JobManager.addJob(conn, owner, FileInfo.getJobClass(nextJobCode), nextJobParams);
+					DataFileDB.setCurrentJob(conn, fileId, nextJobCode);
+				}
+				
 				conn.commit();
 			}
 		} catch (Exception e) {
@@ -141,5 +169,27 @@ public class AutoQCJob extends FileJob {
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}
+	}
+	
+	protected static Map<String, String> getJobParameters(int jobCode, long fileId) throws JobException {
+		Map<String, String> parameters = new HashMap<String, String>(4);
+		parameters.put(FILE_ID_KEY, String.valueOf(fileId));
+		
+		switch (jobCode) {
+		case FileInfo.JOB_CODE_INITIAL_CHECK: {
+			parameters.put(PARAM_ROUTINES_CONFIG, ResourceManager.INITIAL_CHECK_ROUTINES_CONFIG);
+			parameters.put(PARAM_INTERRUPTED_JOB_CODE, String.valueOf(FileInfo.JOB_CODE_INITIAL_CHECK));
+			parameters.put(PARAM_NEXT_JOB_CODE, String.valueOf(FileInfo.JOB_CODE_TRIM_FLUSHING));
+			break;
+		}
+		case FileInfo.JOB_CODE_AUTO_QC: {
+			parameters.put(PARAM_ROUTINES_CONFIG, ResourceManager.QC_ROUTINES_CONFIG);
+			parameters.put(PARAM_INTERRUPTED_JOB_CODE, String.valueOf(FileInfo.JOB_CODE_REDUCTION));
+			parameters.put(PARAM_NEXT_JOB_CODE, String.valueOf(FileInfo.JOB_CODE_USER_QC));
+			break;
+		}
+		}
+		
+		return parameters;
 	}
 }

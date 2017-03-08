@@ -97,6 +97,12 @@ public class ExtractRawDataJob extends FileJob {
 					
 					if (instrument.isMeasurementRunType(runType)) {
 						QCDB.createQCRecord(conn, fileId, lineNumber, instrument);
+						
+						// Store empty data reduction values (unless other values have previously been stored)
+						DataReductionDB.storeRow(conn, fileId, lineNumber, false, instrument.getRunTypeCode(runType), RawDataDB.MISSING_VALUE,
+								RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, 
+								RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE,
+								RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE);
 					}
 				}
 				
@@ -111,10 +117,14 @@ public class ExtractRawDataJob extends FileJob {
 				conn.rollback();
 				reset();
 			} else {
-				// Queue up the Trim Flushing job
+				// Save the created records
+				conn.commit();
+				
+				// Queue up the Initial Check job
+				Map<String, String> nextJobParams = AutoQCJob.getJobParameters(FileInfo.JOB_CODE_INITIAL_CHECK, fileId);
 				User owner = JobManager.getJobOwner(dataSource, id);
-				JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_TRIM_FLUSHING, parameters);
-				DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_TRIM_FLUSHING);
+				JobManager.addJob(conn, owner, FileInfo.getJobClass(FileInfo.JOB_CODE_INITIAL_CHECK), nextJobParams);
+				DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_INITIAL_CHECK);
 				conn.commit();
 			}
 		} catch (Exception e) {
