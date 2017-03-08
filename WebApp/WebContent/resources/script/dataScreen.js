@@ -14,6 +14,7 @@ var FLAG_GOOD = 2;
 var FLAG_ASSUMED_GOOD = -2;
 var FLAG_QUESTIONABLE = 3;
 var FLAG_BAD = 4;
+var FLAG_BAD = 44;
 var FLAG_NEEDS_FLAG = -10;
 var FLAG_IGNORED = -1002;
 
@@ -803,6 +804,8 @@ function getFlagText(flag) {
         flagText = 'Questionable';
     } else if (flag == '4') {
         flagText = 'Bad';
+    } else if (flag == '44') {
+    	flagText = 'Fatal';
     } else {
         flagText = 'Needs Flag';
     }
@@ -823,7 +826,7 @@ function getFlagClass(flag) {
         flagClass = 'good';
     } else if (flag == '3') {
         flagClass = 'questionable';
-    } else if (flag == '4') {
+    } else if (flag == '4' || flag == '44') {
         flagClass = 'bad';
     } else {
         flagClass = 'needsFlagging';
@@ -893,7 +896,8 @@ function makeHighlights(plotData) {
 				
 				highlightStart = plotData[highlightStartIndex][0];
 				switch (woceFlag) {
-				case FLAG_BAD: {
+				case FLAG_BAD:
+				case FLAG_FATAL: {
 					highlightColor = 'rgba(255, 0, 0, 1)';
 					break;
 				}
@@ -938,7 +942,8 @@ function showQCInfoPopup(qcFlag, qcMessage, target) {
 	    	content += 'questionable';
 	    	break;
 	    }
-	    case 4: {
+	    case 4:
+	    case 44: {
 	    	content += 'bad';
 	    	break;
     	}
