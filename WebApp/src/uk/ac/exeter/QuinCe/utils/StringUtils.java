@@ -4,7 +4,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Various miscellaneous string utilities
@@ -154,6 +156,42 @@ public class StringUtils {
 				}
 			} catch (NumberFormatException e) {
 				result = false;
+			}
+		}
+		
+		return result;
+	}
+	
+	public static String mapToDelimited(Map<String, String> map) {
+		
+		StringBuilder result = new StringBuilder();
+		
+		int counter = 0;
+		for (Map.Entry<String, String> entry : map.entrySet()) {
+			counter++;
+			result.append(entry.getKey());
+			result.append('=');
+			result.append(entry.getValue());
+			
+			if (counter < map.size()) {
+				result.append(';');
+			}
+		}
+		
+		return result.toString();
+	}
+	
+	public static Map<String,String> delimitedToMap(String values) throws StringFormatException {
+		
+		Map<String, String> result = new HashMap<String, String>();
+		
+		for (String entry : values.split(";", 0)) {
+			
+			String[] entrySplit = entry.split("=", 0);
+			if (entrySplit.length != 2) {
+				throw new StringFormatException("Invalid map format", entry);
+			} else {
+				result.put(entrySplit[0], entrySplit[1]);
 			}
 		}
 		

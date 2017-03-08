@@ -8,7 +8,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -26,6 +28,7 @@ import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
 import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.FileJob;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -132,9 +135,9 @@ public class DataFileDB {
 			generatedKeys = stmt.getGeneratedKeys();
 			if (generatedKeys.next()) {
 			
-				List<String> jobParameters = new ArrayList<String>(1);
-				jobParameters.add(String.valueOf(generatedKeys.getLong(1)));
-				JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_EXTRACT, jobParameters);
+				Map<String, String> jobParameters = new HashMap<String, String>(1);
+				jobParameters.put(FileJob.FILE_ID_KEY, String.valueOf(generatedKeys.getLong(1)));
+				JobManager.addJob(conn, owner, FileInfo.getJobClass(FileInfo.JOB_CODE_EXTRACT), jobParameters);
 				
 				// Store the file
 				FileStore.storeFile(appConfig, instrumentID, dataFile);
@@ -537,6 +540,10 @@ public class DataFileDB {
 					fileInfo.setQcBadCount(qcFlags.getInt(2));
 					break;
 				}
+				case Flag.VALUE_FATAL: {
+					fileInfo.setQcFatalCount(qcFlags.getInt(2));
+					break;
+				}
 				case Flag.VALUE_NOT_SET: {
 					fileInfo.setQcNotSetCount(qcFlags.getInt(2));
 					break;
@@ -572,6 +579,10 @@ public class DataFileDB {
 				}
 				case Flag.VALUE_BAD: {
 					fileInfo.setWoceBadCount(woceFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_FATAL: {
+					fileInfo.setWoceFatalCount(woceFlags.getInt(2));
 					break;
 				}
 				case Flag.VALUE_NOT_SET: {

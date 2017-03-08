@@ -2,8 +2,9 @@ package uk.ac.exeter.QuinCe.web.files;
 
 import java.io.OutputStream;
 import java.sql.Connection;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
@@ -21,6 +22,7 @@ import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.FileJob;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
@@ -100,10 +102,10 @@ public class FileListBean extends BaseManagedBean {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			conn = dataSource.getConnection();
 			
-			List<String> params = new ArrayList<String>(1);
-			params.add(String.valueOf(chosenFile));
+			Map<String, String> params = new HashMap<String, String>(1);
+			params.put(FileJob.FILE_ID_KEY, String.valueOf(chosenFile));
 			
-			JobManager.addJob(conn, getUser(), FileInfo.JOB_CLASS_REDUCTION, params);
+			JobManager.addJob(conn, getUser(), FileInfo.getJobClass(FileInfo.JOB_CODE_REDUCTION), params);
 			DataFileDB.setCurrentJob(conn, chosenFile, FileInfo.JOB_CODE_REDUCTION);
 		} catch (Exception e) {
 			return internalError(e);

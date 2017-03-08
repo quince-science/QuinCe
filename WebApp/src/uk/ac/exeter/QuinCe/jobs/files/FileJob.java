@@ -1,6 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Instrument;
@@ -26,11 +26,16 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 public abstract class FileJob extends Job {
 	
+	public static final String FILE_ID_KEY = "FILE_ID";
+	
 	/**
 	 * The ID of the data file
 	 */
 	protected long fileId;
 	
+	/**
+	 * The instrument that the data file is associated with
+	 */
 	protected Instrument instrument = null;
 	
 	/**
@@ -46,10 +51,10 @@ public abstract class FileJob extends Job {
 	 * @throws RecordNotFoundException 
 	 * @throws DatabaseException 
 	 */
-	public FileJob(ResourceManager resourceManager, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
-		// File jobs have no parameters.
+	public FileJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(resourceManager, config, jobId, parameters);
-		instrument = InstrumentDB.getInstrumentByFileId(dataSource, fileId);
+		
+		// The file ID and instrument are extracted in the validateParameters method 
 	}
 
 	/**
@@ -57,10 +62,14 @@ public abstract class FileJob extends Job {
 	 * It's not strictly a parameter, but it's a handy place to do it.
 	 */
 	protected void validateParameters() throws InvalidJobParametersException {
-		
+		if (!parameters.containsKey(FILE_ID_KEY)) {
+			throw new InvalidJobParametersException("Data file not specified");
+		}
+
 		try {
-			fileId = Long.parseLong(parameters.get(0));
-			
+			fileId = Long.parseLong(parameters.get(FILE_ID_KEY));
+			instrument = InstrumentDB.getInstrumentByFileId(dataSource, fileId);
+
 			if (!DataFileDB.fileExists(dataSource, fileId)) {
 				throw new InvalidJobParametersException("The data file " + fileId + " does not exist");
 			}

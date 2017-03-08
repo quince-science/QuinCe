@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.joda.time.DateTime;
@@ -28,7 +29,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class TrimFlushingJob extends FileJob {
 	
-	public TrimFlushingJob(ResourceManager resourceManager, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+	public TrimFlushingJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(resourceManager, config, jobId, parameters);
 	}
 
@@ -90,7 +91,7 @@ public class TrimFlushingJob extends FileJob {
 			// Queue up the Data Reduction job
 			try {
 				User owner = JobManager.getJobOwner(dataSource, id);
-				JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_REDUCTION, parameters);
+				JobManager.addJob(conn, owner, FileInfo.getJobClass(FileInfo.JOB_CODE_REDUCTION), parameters);
 				DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
 			} catch (RecordNotFoundException e) {
 				// This means the file has been marked for deletion. No action is required.

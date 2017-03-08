@@ -117,29 +117,31 @@
 					</p:column>
 					<p:column>
 						<f:facet name="header">QC Stats</f:facet>
-						<span class="bad">#{file.qcBadCount}</span>
+						<h:outputText class="bad" value="#{file.qcBadCount + file.qcFatalCount}"/>
+			            <h:outputText class="bad" value="(#{file.qcFatalCount})" rendered="#{file.qcFatalCount > 0}"/>
 						/
-						<span class="questionable">#{file.qcQuestionableCount}</span>
+			            <h:outputText class="questionable" value="#{file.qcQuestionableCount}"/>
 						/
-						<span class="good">#{file.qcGoodCount}</span>
+			            <h:outputText class="good" value="${file.qcGoodCount}"/>
 						/
-						<span class="notSet">#{file.qcNotSetCount}</span>
+			            <h:outputText class="notSet" value="#{file.qcNotSetCount}"/>
 						/
-						<span class="ignore">#{file.ignoredCount}</span>
+			            <h:outputText class="ignore" value="#{file.ignoredCount}"/>
 					</p:column>
 					<p:column>
 						<f:facet name="header">WOCE Stats</f:facet>
-			            <span class="bad">#{file.woceBadCount}</span>
+			            <h:outputText class="bad" value="#{file.woceBadCount + file.woceFatalCount}"/>
+			            <h:outputText class="bad" value="(#{file.woceFatalCount})" rendered="#{file.woceFatalCount > 0}"/>
 			            /
-			            <span class="questionable">#{file.woceQuestionableCount}</span>
+			            <h:outputText class="questionable" value="#{file.woceQuestionableCount}"/>
 			            /
-			            <span class="good">${file.woceGoodCount + file.woceAssumedGoodCount}</span>
+			            <h:outputText class="good" value="${file.woceGoodCount + file.woceAssumedGoodCount}"/>
 			            /
-			            <span class="notSet">#{file.woceNotSetCount}</span>
+			            <h:outputText class="notSet" value="#{file.woceNotSetCount}"/>
 			            /
-			            <span class="needsFlagging">#{file.woceNeededCount}</span>
+			            <h:outputText class="needsFlagging" value="#{file.woceNeededCount}"/>
 			            /
-			            <span class="ignore">#{file.ignoredCount}</span>
+			            <h:outputText class="ignore" value="#{file.ignoredCount}"/>
 					</p:column>
 					<p:column>
 						<f:facet name="header">Actions</f:facet>

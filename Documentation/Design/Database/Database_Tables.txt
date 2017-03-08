@@ -394,6 +394,7 @@ qc_flag                  Integer        The QC flag assigned by the automatic QC
 qc_message               String         The message(s) from the automatic QC routines
 woce_flag                Integer        The WOCE flag assigned by the user
 woce_comment             String         The WOCE comment
+woce_fatal               Boolean        Indicates whether or not a WOCE Bad flag is Fatal
 
 
 # Jobs
