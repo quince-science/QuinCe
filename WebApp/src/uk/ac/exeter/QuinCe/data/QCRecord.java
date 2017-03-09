@@ -72,7 +72,7 @@ public class QCRecord extends DataRecord {
 	
 	public static final int FIELD_EQP_3 = 16;
 	
-	public static final int FIELD_MOISTURE = 17;
+	public static final int FIELD_XH2O = 17;
 	
 	public static final int FIELD_CO2 = 19;
 	

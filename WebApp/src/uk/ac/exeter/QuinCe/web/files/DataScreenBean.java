@@ -463,12 +463,12 @@ public class DataScreenBean extends BaseManagedBean {
 		output.append("</td><td>Atmospheric Pressure</td></tr>");
 		*/
 		
-		// Moisture
-		output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Moisture:</td></tr>");
+		// xH2O
+		output.append("<tr><td colspan=\"2\" class=\"minorHeading\">xH<sub>2</sub>O:</td></tr>");
 		output.append("<tr><td></td><td><table>");
 
-		output.append(makePlotCheckbox("moisture", "moistureMeasured", "Measured"));
-		output.append(makePlotCheckbox("moisture", "moistureTrue", "True"));
+		output.append(makePlotCheckbox("xh2o", "xh2oMeasured", "Measured"));
+		output.append(makePlotCheckbox("xh2o", "xh2oTrue", "True"));
 		
 		output.append("</table></td></tr>");
 
@@ -678,8 +678,8 @@ public class DataScreenBean extends BaseManagedBean {
 			}
 			
 			columns.add("atmosPressure");
-			columns.add("moistureMeasured");
-			columns.add("moistureTrue");
+			columns.add("xh2oMeasured");
+			columns.add("xh2oTrue");
 			columns.add("pH2O");
 			columns.add("co2Measured");
 			columns.add("co2Dried");
@@ -828,7 +828,7 @@ public class DataScreenBean extends BaseManagedBean {
 			output.append("'Equil. Pressure:<br/>Mean', ");
 		}
 
-		output.append("'Atmos. Pressure', 'Moisture (Measured)', 'Moisture (True)', 'pH₂O', 'CO₂ Measured', 'CO₂ Dried', 'CO₂ Calibrated', 'pCO₂ TE Dry', "
+		output.append("'Atmos. Pressure', 'xH₂O (Measured)', 'xH₂O (True)', 'pH₂O', 'CO₂ Measured', 'CO₂ Dried', 'CO₂ Calibrated', 'pCO₂ TE Dry', "
 				+ "'pCO₂ TE Wet', 'fCO₂ TE', 'fCO₂ Final', 'QC Flag', 'QC Message', 'WOCE Flag', 'WOCE Message']");
 		
 		return output.toString();
