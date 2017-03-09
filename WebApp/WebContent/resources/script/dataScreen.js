@@ -14,7 +14,7 @@ var FLAG_GOOD = 2;
 var FLAG_ASSUMED_GOOD = -2;
 var FLAG_QUESTIONABLE = 3;
 var FLAG_BAD = 4;
-var FLAG_BAD = 44;
+var FLAG_FATAL = 44;
 var FLAG_NEEDS_FLAG = -10;
 var FLAG_IGNORED = -1002;
 
@@ -66,8 +66,8 @@ var AXIS_LABELS = {
 		'waterFlow2': 'Flow (ml/min)',
 		'waterFlow3': 'Flow (ml/min)',
 		'eqpMean': 'Pressure (hPa)',
-		'moistureMeasured': 'Moisture (%)',
-		'moistureTrue': 'Moisture (%)',
+		'xh2oMeasured': 'xH₂O (μmol/mol)',
+		'xh2oTrue': 'xH₂O (μmol/mol)',
 		'pH2O': 'pH₂O (UNITS)',
 		'co2Measured': 'CO₂ (ppm/μatm)',
 		'co2Dried': 'CO₂ (ppm/μatm)',
@@ -115,9 +115,9 @@ var compulsoryColumns = ['Date/Time', 'Longitude', 'Latitude', 'QC Flag', 'WOCE 
 
 // These are regular expression patterns
 var visibleColumns = {
-	'basic': [/Intake Temp/, /Intake Temp: Mean/, /Salinity/, /Salinity: Mean/, /Equil\. Temp/, /Equil\. Temp: Mean/, /Equil\. Pressure/, /Equil\. Pressure: Mean/, /Moisture \(True\)/, /fCO₂ Final/],
+	'basic': [/Intake Temp/, /Intake Temp: Mean/, /Salinity/, /Salinity: Mean/, /Equil\. Temp/, /Equil\. Temp: Mean/, /Equil\. Pressure/, /Equil\. Pressure: Mean/, /xH₂O \(True\)/, /fCO₂ Final/],
 	'water': [/Intake Temp.*/, /Salinity.*/, /Air Flow.*/, /Water Flow.*/],
-	'equilibrator': [/Equil.*/, /Δ.*/, /Moisture.*/],
+	'equilibrator': [/Equil.*/, /Δ.*/, /xH₂O.*/],
 	'co2': [/pH₂O/, /.*CO₂.*/]
 };
 

@@ -11,7 +11,7 @@ import uk.ac.exeter.QuinCe.data.StandardConcentration;
  */
 public class GasStandardMean implements Comparable<GasStandardMean> {
 
-	protected static final int TYPE_MOISTURE = 0;
+	protected static final int TYPE_XH2O = 0;
 	
 	protected static final int TYPE_CO2 = 1;
 	
@@ -37,9 +37,9 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	private double meanConcentration;
 	
 	/**
-	 * The mean moisture measured during the run
+	 * The mean xH2O measured during the run
 	 */
-	private double meanMoisture;
+	private double meanXh2o;
 	
 	/**
 	 * Simple constructor to set all fields
@@ -47,14 +47,14 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	 * @param startTime The start time of the gas standard run
 	 * @param endTime The end time of the gas standard run
 	 * @param meanConcentration The mean concentration measured during the run
-	 * @param meanMoisture The mean moisture measured during the run
+	 * @param meanXh2o The mean xH2O measured during the run
 	 */
-	public GasStandardMean(StandardConcentration standardConcentration, Calendar startTime, Calendar endTime, double meanConcentration, double meanMoisture) {
+	public GasStandardMean(StandardConcentration standardConcentration, Calendar startTime, Calendar endTime, double meanConcentration, double meanXh2o) {
 		this.standardConcentration = standardConcentration;
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.meanConcentration = meanConcentration;
-		this.meanMoisture = meanMoisture;
+		this.meanXh2o = meanXh2o;
 	}
 
 	public StandardConcentration getStandardConcentration() {
@@ -73,8 +73,8 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 		return meanConcentration;
 	}
 
-	public double getMeanMoisture() {
-		return meanMoisture;
+	public double getMeanXh2o() {
+		return meanXh2o;
 	}
 	
 	public Calendar getMidTime() {
@@ -96,8 +96,8 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	public double getMeanValue(int valueType) {
 		double result;
 		
-		if (valueType == TYPE_MOISTURE) {
-			result = meanMoisture;
+		if (valueType == TYPE_XH2O) {
+			result = meanXh2o;
 		} else {
 			result = meanConcentration;
 		}

@@ -13,7 +13,7 @@ ConstantValue,Equilibrator Temperature 3,120
 ConstantValue,Equilibrator Pressure 1,120
 ConstantValue,Equilibrator Pressure 2,120
 ConstantValue,Equilibrator Pressure 3,120
-ConstantValue,Moisture,120
+ConstantValue,xH2O,120
 ConstantValue,Atmospheric Pressure,120
 ConstantValue,fCO2,120
 RangeCheck,Intake Temp 1,-5,40,-10,50
@@ -30,4 +30,4 @@ RangeCheck,Equilibrator Pressure 2,900,1100,750,1250
 RangeCheck,Equilibrator Pressure 3,900,1100,750,1250
 RangeCheck,Atmospheric Pressure,900,1100,750,1250
 RangeCheck,fCO2,80,1200,0,50000
-RangeCheck,Moisture,0,100,0,100
+RangeCheck,xH2O,0,100,0,100
