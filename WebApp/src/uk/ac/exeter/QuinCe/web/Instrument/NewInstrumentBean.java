@@ -520,8 +520,8 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 			result = "Atmospheric Pressure";
 			break;
 		}
-		case Instrument.COL_MOISTURE: {
-			result = "Moisture";
+		case Instrument.COL_XH2O: {
+			result = "xH2O";
 			break;
 		}
 		case Instrument.COL_CO2: {
@@ -838,7 +838,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		}
 		
 		if (!instrumentDetails.getSamplesDried()) {
-			columnList.add(Instrument.COL_MOISTURE);
+			columnList.add(Instrument.COL_XH2O);
 		}
 	
 		columnList.add(Instrument.COL_CO2);

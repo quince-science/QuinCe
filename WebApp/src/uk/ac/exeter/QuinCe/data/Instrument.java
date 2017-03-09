@@ -223,9 +223,9 @@ public class Instrument implements Serializable {
 	public static final int COL_ATMOSPHERIC_PRESSURE = 25;
 	
 	/**
-	 * Moisture column code
+	 * xH2O column code
 	 */
-	public static final int COL_MOISTURE = 26;
+	public static final int COL_XH2O = 26;
 	
 	/**
 	 * CO2 column code

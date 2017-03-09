@@ -54,7 +54,7 @@ public class RawDataValues {
 	
 	private double waterFlow3;
 	
-	private double moisture;
+	private double xh2o;
 	
 	private double atmosphericPressure;
 	
@@ -225,12 +225,12 @@ public class RawDataValues {
 		this.waterFlow3 = waterFlow3;
 	}
 
-	public double getMoisture() {
-		return moisture;
+	public double getXh2o() {
+		return xh2o;
 	}
 
-	public void setMoisture(double moisture) {
-		this.moisture = moisture;
+	public void setXh2o(double xh2o) {
+		this.xh2o = xh2o;
 	}
 
 	public double getAtmosphericPressure() {

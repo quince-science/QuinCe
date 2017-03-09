@@ -46,13 +46,13 @@ public class RawDataDB {
 			+ "eqt_1, eqt_2, eqt_3, eqp_1, eqp_2, eqp_3, "
 			+ "air_flow_1, air_flow_2, air_flow_3, "
 			+ "water_flow_1, water_flow_2, water_flow_3, "
-			+ "moisture, atmospheric_pressure, co2)"
+			+ "xh2o, atmospheric_pressure, co2)"
 			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String ADD_STANDARD_STATEMENT = "INSERT INTO gas_standards_data "
 			+ "(data_file_id, row, date_time, run_type_id, "
 			+ "air_flow_1, air_flow_2, air_flow_3, "
-			+ "moisture, concentration, qc_flag, qc_message)"
+			+ "xh2o, concentration, qc_flag, qc_message)"
 			+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String CLEAR_RAW_DATA_STATEMENT = "DELETE FROM raw_data WHERE data_file_id = ?";
@@ -63,11 +63,11 @@ public class RawDataDB {
 			+ "r.row, r.date_time, r.run_type_id, r.co2_type, r.longitude, r.latitude, r.intake_temp_1, r.intake_temp_2, r.intake_temp_3,"
 			+ "r.salinity_1, r.salinity_2, r.salinity_3, r.eqt_1, r.eqt_2, r.eqt_3, r.eqp_1, r.eqp_2, r.eqp_3,"
 			+ "r.air_flow_1, r.air_flow_2, r.air_flow_3, r.water_flow_1, r.water_flow_2, r.water_flow_3,"
-			+ "r.moisture, r.atmospheric_pressure, r.co2 "
+			+ "r.xh2o, r.atmospheric_pressure, r.co2 "
 			+ "FROM raw_data r INNER JOIN qc ON r.data_file_id = qc.data_file_id AND r.row = qc.row "
 			+ "WHERE r.data_file_id = ? ORDER BY row ASC";
 	
-	private static final String GET_STANDARDS_DATA_QUERY = "SELECT run_type_id, date_time, moisture, concentration "
+	private static final String GET_STANDARDS_DATA_QUERY = "SELECT run_type_id, date_time, xh2o, concentration "
 			+ "FROM gas_standards_data WHERE data_file_id = ? AND qc_flag = " + Flag.VALUE_GOOD + " ORDER BY row ASC";
 	
 	private static final String RAW_DATA_TRIM_FLUSHING_RECORDS_QUERY = "SELECT row, run_type_id, date_time FROM raw_data "
@@ -160,7 +160,7 @@ public class RawDataDB {
 			}
 			
 			if (!instrument.getSamplesDried()) {
-				stmt.setDouble(8, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
+				stmt.setDouble(8, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_XH2O))));
 			} else {
 				stmt.setNull(8, Types.DOUBLE);
 			}
@@ -307,7 +307,7 @@ public class RawDataDB {
 			}
 			
 			if (!instrument.getSamplesDried()) {
-				stmt.setDouble(26, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_MOISTURE))));
+				stmt.setDouble(26, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_XH2O))));
 			} else {
 				stmt.setNull(26, Types.DOUBLE);
 			}
@@ -399,7 +399,7 @@ public class RawDataDB {
 				values.setWaterFlow1(records.getDouble(22));
 				values.setWaterFlow2(records.getDouble(23));
 				values.setWaterFlow3(records.getDouble(24));
-				values.setMoisture(records.getDouble(25));
+				values.setXh2o(records.getDouble(25));
 				
 				if (instrument.getHasAtmosphericPressure()) {
 					values.setAtmosphericPressure(records.getDouble(26));
@@ -442,7 +442,7 @@ public class RawDataDB {
 			long currentRun = -1;
 			Calendar startTime = null;
 			Calendar endTime = null;
-			double moistureTotal = 0;
+			double xh2oTotal = 0;
 			double concentrationTotal = 0;
 			int recordCount = 0;
 			
@@ -466,20 +466,20 @@ public class RawDataDB {
 				long runTypeId = records.getLong(1);
 				Calendar time = DateTimeUtils.getUTCCalendarInstance();
 				time.setTime(records.getTimestamp(2));
-				double moisture = records.getDouble(3);
+				double xh2o = records.getDouble(3);
 				double concentration = records.getDouble(4);
 				
 				
 				
 				if (runTypeId != currentRun) {
-					double meanMoisture = moistureTotal / (double) recordCount;
+					double meanXh2o = xh2oTotal / (double) recordCount;
 					double meanConcentration = concentrationTotal / (double) recordCount;
 					String runTypeName = instrument.getRunTypeName(currentRun);
 					
-					GasStandardMean standardMean = new GasStandardMean(priorConcentrations.get(runTypeName), startTime, endTime, meanConcentration, meanMoisture);
+					GasStandardMean standardMean = new GasStandardMean(priorConcentrations.get(runTypeName), startTime, endTime, meanConcentration, meanXh2o);
 					result.addStandardMean(standardMean);
 					
-					moistureTotal = 0;
+					xh2oTotal = 0;
 					concentrationTotal = 0;
 					recordCount = 0;
 					currentRun = runTypeId;
@@ -494,15 +494,15 @@ public class RawDataDB {
 				}
 				
 				endTime = time;
-				moistureTotal += moisture;
+				xh2oTotal += xh2o;
 				concentrationTotal += concentration;
 				recordCount++;
 			}
 			
-			double meanMoisture = moistureTotal / (double) recordCount;
+			double meanXh2o = xh2oTotal / (double) recordCount;
 			double meanConcentration = concentrationTotal / (double) recordCount;
 			String runTypeName = instrument.getRunTypeName(currentRun);
-			GasStandardMean standardMean = new GasStandardMean(priorConcentrations.get(runTypeName), startTime, endTime, meanMoisture, meanConcentration);
+			GasStandardMean standardMean = new GasStandardMean(priorConcentrations.get(runTypeName), startTime, endTime, meanXh2o, meanConcentration);
 			result.addStandardMean(standardMean);
 
 		} catch (SQLException e) {

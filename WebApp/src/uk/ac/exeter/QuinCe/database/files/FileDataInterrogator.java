@@ -88,8 +88,8 @@ public class FileDataInterrogator {
 		COLUMN_MAPPINGS.put("waterFlow2", "raw_data.water_flow_2");
 		COLUMN_MAPPINGS.put("waterFlow3", "raw_data.water_flow_3");
 		COLUMN_MAPPINGS.put("atmosPressure", "data_reduction.atmospheric_pressure");
-		COLUMN_MAPPINGS.put("moistureMeasured", "raw_data.moisture");
-		COLUMN_MAPPINGS.put("moistureTrue", "data_reduction.true_moisture");
+		COLUMN_MAPPINGS.put("xh2oMeasured", "raw_data.xh2o");
+		COLUMN_MAPPINGS.put("xh2oTrue", "data_reduction.true_xh2o");
 		COLUMN_MAPPINGS.put("pH2O", "data_reduction.ph2O");
 		COLUMN_MAPPINGS.put("co2Measured", "raw_data.co2");
 		COLUMN_MAPPINGS.put("co2Dried", "data_reduction.dried_co2");
@@ -739,12 +739,12 @@ public class FileDataInterrogator {
 			result = "Atmospheric Pressure";
 			break;
 		}
-		case "moistureMeasured": {
-			result = "Moisture (measured)";
+		case "xh2oMeasured": {
+			result = "xH₂O (measured)";
 			break;
 		}
-		case "moistureTrue": {
-			result = "Moisture (true)";
+		case "xh2oTrue": {
+			result = "xH₂O (true)";
 			break;
 		}
 		case "pH2O": {

@@ -149,7 +149,7 @@ public class DataReductionJob extends FileJob {
 							qcRecord.appendWoceComment("Missing equilibrator pressure");
 						}
 						
-						// Get the moisture and mathematically dry the CO2 if required
+						// Get the xH2O and mathematically dry the CO2 if required
 						double driedCo2 = record.getCo2();
 						if (driedCo2 == RawDataDB.MISSING_VALUE) {
 							canCalculateCO2 = false;
@@ -158,18 +158,18 @@ public class DataReductionJob extends FileJob {
 							qcRecord.appendWoceComment("Missing CO2");
 						}
 						
-						double trueMoisture = 0;
+						double trueXh2o = 0;
 						if (canCalculateCO2 && !instrument.getSamplesDried()) {
-							double measuredMoisture = record.getMoisture();
-							if (measuredMoisture == RawDataDB.MISSING_VALUE) {
+							double measuredXh2o = record.getXh2o();
+							if (measuredXh2o == RawDataDB.MISSING_VALUE) {
 								canCalculateCO2 = false;
-								qcRecord.addMessage(new MissingValueMessage(record.getRow(), NoDataQCRecord.FIELD_MOISTURE, qcRecord.getColumnName(NoDataQCRecord.FIELD_MOISTURE), Flag.BAD));
+								qcRecord.addMessage(new MissingValueMessage(record.getRow(), NoDataQCRecord.FIELD_XH2O, qcRecord.getColumnName(NoDataQCRecord.FIELD_XH2O), Flag.BAD));
 								qcRecord.setWoceFlag(Flag.BAD);
-								qcRecord.appendWoceComment("Missing Moisture");
+								qcRecord.appendWoceComment("Missing xH2O");
 							}
 
-							trueMoisture = measuredMoisture - standardRuns.getInterpolatedMoisture(null, record.getTime());
-							driedCo2 = record.getCo2() / (1.0 - (trueMoisture / 1000));
+							trueXh2o = measuredXh2o - standardRuns.getInterpolatedXh2o(null, record.getTime());
+							driedCo2 = record.getCo2() / (1.0 - (trueXh2o / 1000));
 						}
 
 						double calibratedCo2 = RawDataDB.MISSING_VALUE;
@@ -189,7 +189,7 @@ public class DataReductionJob extends FileJob {
 						}
 												
 						DataReductionDB.storeRow(conn, fileId, record.getRow(), true, record.getCo2Type(), meanIntakeTemp,
-								meanSalinity, meanEqt, deltaTemperature, meanEqp, trueMoisture, driedCo2, calibratedCo2,
+								meanSalinity, meanEqt, deltaTemperature, meanEqp, trueXh2o, driedCo2, calibratedCo2,
 								pCo2TEDry, pH2O, pCo2TEWet, fco2TE, fco2);
 						
 						

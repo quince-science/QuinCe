@@ -47,14 +47,14 @@ Equilibrator Temperature 3,N,N,Mean Equilibrator Temperature|3|4
 Equilibrator Pressure 1,N,Y,Mean Equilibrator Pressure|3|4
 Equilibrator Pressure 2,N,N,Mean Equilibrator Pressure|3|4
 Equilibrator Pressure 3,N,N,Mean Equilibrator Pressure|3|4
-Moisture,N,Y,True Moisture|3|4
+xH2O,N,Y,True xH2O|3|4
 Atmospheric Pressure,N,Y,
 CO2,N,Y,
 Mean Intake Temp,N,Y,
 Mean Salinity,N,Y,
 Mean Equilibrator Temperature,N,Y,
 Mean Equilibrator Pressure,N,Y,
-True Moisture,N,Y,
+True xH2O,N,Y,
 Dried CO2,N,Y,
 Calibrated CO2,N,Y,
 pCO2 TE Dry,N,Y,
