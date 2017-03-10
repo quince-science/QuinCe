@@ -9,6 +9,11 @@
 var PLOT_ROW_INDEX = 1;
 var PLOT_QCFLAG_INDEX = 2;
 var PLOT_WOCEFLAG_INDEX = 3;
+var PLOT_FIRST_Y_INDEX = 4;
+
+var PLOT_POINT_SIZE = 2;
+var PLOT_HIGHLIGHT_SIZE = 5;
+var PLOT_FLAG_SIZE = 8;
 
 var FLAG_GOOD = 2;
 var FLAG_ASSUMED_GOOD = -2;
@@ -25,8 +30,8 @@ var BASE_GRAPH_OPTIONS = {
     labelsSeparateLine: true,
     digitsAfterDecimal: 2,
     animatedZooms: true,
-    pointSize: 2,
-    highlightCircleSize: 5,
+    pointSize: PLOT_POINT_SIZE,
+    highlightCircleSize: PLOT_HIGHLIGHT_SIZE,
     axes: {
         x: {
           drawGrid: false
@@ -530,7 +535,7 @@ function drawLeftPlot(data) {
 	
 		graph_options.visibility = columnVisibility;
 		
-		graph_data = JSON.parse($('#plotDataForm\\:leftData').text());
+		var graph_data = JSON.parse($('#plotDataForm\\:leftData').text());
 
 		if (leftPlotXAxis[0] == 'plot_datetime_dateTime') {
 			graph_data = makeJSDates(graph_data);
@@ -538,15 +543,16 @@ function drawLeftPlot(data) {
 				scrollToTableRow(x);
 			};
 
-			plotHighlights = makeHighlights(graph_data);
+			var plotHighlights = makeHighlights(graph_data);
 			if (plotHighlights.length > 0) {
 				graph_options.underlayCallback = function(canvas, area, g) {
 					for (var i = 0; i < plotHighlights.length; i++) {
-						var canvas_left_x = g.toDomXCoord(plotHighlights[i][0]) - 1;
-			            var canvas_right_x = g.toDomXCoord(plotHighlights[i][1]) + 1;
-			            var canvas_width = canvas_right_x - canvas_left_x;
-			            canvas.fillStyle = plotHighlights[i][2];
-			            canvas.fillRect(canvas_left_x, area.y, canvas_width, area.h);
+						var xPoint = g.toDomXCoord(plotHighlights[i][0]);
+						var yPoint = g.toDomYCoord(plotHighlights[i][1]);
+						canvas.fillStyle = plotHighlights[i][2];
+						canvas.beginPath();
+						canvas.arc(xPoint, yPoint, PLOT_FLAG_SIZE, 0, 2 * Math.PI, false);
+						canvas.fill();
 					}
 				}
 			} else {
@@ -605,11 +611,12 @@ function drawRightPlot(data) {
 			if (plotHighlights.length > 0) {
 				graph_options.underlayCallback = function(canvas, area, g) {
 					for (var i = 0; i < plotHighlights.length; i++) {
-						var canvas_left_x = g.toDomXCoord(plotHighlights[i][0]) - 1;
-			            var canvas_right_x = g.toDomXCoord(plotHighlights[i][1]) + 1;
-			            var canvas_width = canvas_right_x - canvas_left_x;
-			            canvas.fillStyle = plotHighlights[i][2];
-			            canvas.fillRect(canvas_left_x, area.y, canvas_width, area.h);
+						var xPoint = g.toDomXCoord(plotHighlights[i][0]);
+						var yPoint = g.toDomYCoord(plotHighlights[i][1]);
+						canvas.fillStyle = plotHighlights[i][2];
+						canvas.beginPath();
+						canvas.arc(xPoint, yPoint, PLOT_FLAG_SIZE, 0, 2 * Math.PI, false);
+						canvas.fill();
 					}
 				}
 			} else {
@@ -878,56 +885,36 @@ function makeHighlights(plotData) {
 	var highlights = [];
 	
 	var currentFlag = FLAG_GOOD;
-	var highlightStart = -1;
-	var highlightEnd = -1;
 	var highlightColor = null;
 	
 	for (var i = 0; i < plotData.length; i++) {
-		var woceFlag = plotData[i][PLOT_WOCEFLAG_INDEX];
 		
-		if (woceFlag != currentFlag) {
-			if (highlightStart > -1) {
-				highlightEnd = plotData[i - 1][0];
-				highlights.push([highlightStart, highlightEnd, highlightColor]);
+		if (Math.abs(plotData[i][PLOT_WOCEFLAG_INDEX]) != FLAG_GOOD) {
+		
+			switch (plotData[i][PLOT_WOCEFLAG_INDEX]) {
+			case FLAG_BAD:
+			case FLAG_FATAL: {
+				highlightColor = 'rgba(255, 0, 0, 1)';
+				break;
+			}
+			case FLAG_QUESTIONABLE: {
+				highlightColor = 'rgba(216, 177, 0, 1)';
+				break;
+			}
+			case FLAG_NEEDS_FLAG: {
+				highlightColor = 'rgba(129, 127, 255, 1)';
+				break;
+			}
+			case FLAG_IGNORED: {
+				highlightColor = 'rgba(225, 225, 225, 1)';
+				break;
+			}
 			}
 			
-			if (Math.abs(woceFlag) == FLAG_GOOD) {
-				highlightStart = -1;
-			} else {
-				highlightStartIndex = i;
-				if (highlightStartIndex < 0) {
-					highlightStartIndex = 0;
-				}
-				
-				highlightStart = plotData[highlightStartIndex][0];
-				switch (woceFlag) {
-				case FLAG_BAD:
-				case FLAG_FATAL: {
-					highlightColor = 'rgba(255, 0, 0, 1)';
-					break;
-				}
-				case FLAG_QUESTIONABLE: {
-					highlightColor = 'rgba(216, 177, 0, 1)';
-					break;
-				}
-				case FLAG_NEEDS_FLAG: {
-					highlightColor = 'rgba(69, 66, 255, 1)';
-					break;
-				}
-				case FLAG_IGNORED: {
-					highlightColor = 'rgba(225, 225, 225, 1)';
-					break;
-				}
-				}
+			for (j = PLOT_FIRST_Y_INDEX; j < plotData[i].length; j++) {
+				highlights.push([plotData[i][0], plotData[i][j], highlightColor]);
 			}
-
-			currentFlag = woceFlag;
 		}
-	}
-	
-	if (highlightStart != -1) {
-		highllightEnd = plotData[plotData.length - 1][0];
-		highlights.push([highlightStart, highlightEnd, highlightColor]);
 	}
 		
 	return highlights;
