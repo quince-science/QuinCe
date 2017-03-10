@@ -14,9 +14,13 @@
 	    		//Menu height = lines * 29  + 3
 	    		var menuItems = $('#menuEntries').children().length;
 	    		var menuHeight = menuItems * 29;
-	    		$('#userSettingsMenu').height(menuHeight);
 	    		
-        		$('#userSettingsMenu').toggleClass('visible');
+				if ($('#userSettingsMenu').height() == 0) {
+		    		$('#userSettingsMenu').height(menuHeight);
+	        		$('#userSettingsMenu').addClass('visible');
+				} else {
+					hideSettingsMenu();
+				}
       		}
 
       		function hideSettingsMenu() {
