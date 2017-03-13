@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.sql.DataSource;
@@ -57,6 +58,11 @@ public class FileListBean extends BaseManagedBean {
 	
 	private int chosenExportOption;
 	
+	@PostConstruct
+	public void init() {
+		updateFileList();
+	}
+	
 	/**
 	 * Navigates to the file upload page
 	 * @return The navigation string
@@ -70,14 +76,15 @@ public class FileListBean extends BaseManagedBean {
 	 * @return The user's files
 	 */
 	public List<FileInfo> getFileList() {
-		
+		return fileList;
+	}
+	
+	public void updateFileList() {
 		try {
 			fileList = DataFileDB.getUserFiles(ServletUtils.getDBDataSource(), getUser());
 		} catch (Exception e) {
-			// Do nothing
+			fileList = null;
 		}
-		
-		return fileList;
 	}
 	
 	/**
@@ -114,19 +121,6 @@ public class FileListBean extends BaseManagedBean {
 		}
 		
 		return PAGE_FILE_LIST;
-	}
-	
-	private FileInfo getCurrentFileDetails() {
-		FileInfo result = null;
-		
-		for (FileInfo info : fileList) {
-			if (info.getFileId() == chosenFile) {
-				result = info;
-				break;
-			}
-		}
-		
-		return result;
 	}
 	
 	/**

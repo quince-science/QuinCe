@@ -34,6 +34,14 @@
 	      function exportFile(id) {
 	    	  $('#fileListForm\\:chosenFile').val(id);
 	      }
+	      
+		  function triggerUpdateFileList() {
+              $('#fileListForm\\:updateFileList').trigger("click");
+		  }
+		  
+          setInterval(function() {
+        	  triggerUpdateFileList();
+          }, 10000);
 	  	</script>
 	</ui:define>
 
@@ -87,14 +95,19 @@
 	        </tr>
 	      </table>
 	    </div>
-		
 		<h1>Your files</h1>
 		<div class="fullPage">
 			<h:form id="fileListForm" method="post" accept-charset="utf8">
+			    <div id="hiddenData">
+					<h:commandLink id="updateFileList" action="#{fileListBean.updateFileList}">		
+						<f:ajax render="@form :fileListForm:fileList"/>		
+					</h:commandLink>
+			    </div>
+				
 				<h:inputHidden id="chosenFile" value="#{fileListBean.chosenFile}"/>
 				<h:inputHidden id="fileId" value="#{dataScreenBean.fileId}"/>
 				
-				<p:dataTable var="file" value="#{fileListBean.fileList}" scrollable="true" scrollHeight="450">
+				<p:dataTable id="fileList" var="file" value="#{fileListBean.fileList}" scrollable="true" scrollHeight="450">
 					<p:column>
 						<f:facet name="header">File</f:facet>
 						#{file.fileName}
@@ -123,8 +136,6 @@
 			            <h:outputText class="questionable" value="#{file.qcQuestionableCount}"/>
 						/
 			            <h:outputText class="good" value="${file.qcGoodCount}"/>
-						/
-			            <h:outputText class="notSet" value="#{file.qcNotSetCount}"/>
 						/
 			            <h:outputText class="ignore" value="#{file.ignoredCount}"/>
 					</p:column>
