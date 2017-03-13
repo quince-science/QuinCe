@@ -80,9 +80,9 @@ public class DataFileDB {
 	
 	private static final String STANDARDS_COUNT_QUERY = "SELECT COUNT(*) FROM gas_standards_data WHERE data_file_id = ?";
 	
-	private static final String GET_QC_FLAGS_QUERY = "SELECT DISTINCT qc_flag, COUNT(qc_flag) FROM qc WHERE data_file_id = ? GROUP BY qc_flag";
+	private static final String GET_QC_FLAGS_QUERY = "SELECT DISTINCT qc_flag, COUNT(qc_flag) FROM qc AS q INNER JOIN raw_data AS w on w.data_file_id = q.data_file_id AND w.row = q.row WHERE q.data_file_id = ? AND w.co2_type = 0 GROUP BY qc_flag";
 
-	private static final String GET_WOCE_FLAGS_QUERY = "SELECT DISTINCT woce_flag, COUNT(woce_flag) FROM qc WHERE data_file_id = ? GROUP BY woce_flag";
+	private static final String GET_WOCE_FLAGS_QUERY = "SELECT DISTINCT woce_flag, COUNT(woce_flag) FROM qc AS q INNER JOIN raw_data AS w on w.data_file_id = q.data_file_id AND w.row = q.row WHERE q.data_file_id = ? AND w.co2_type = 0 GROUP BY woce_flag";
 
 	private static final String TOUCH_FILE_STATEMENT = "UPDATE data_file SET last_touched = NOW() WHERE id = ?";
 	
