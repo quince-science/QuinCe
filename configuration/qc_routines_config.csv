@@ -1,5 +1,5 @@
 #Class,Option,Option....
-ShipSpeed,150,750
+#ShipSpeed,150,750
 TimeGap,7
 ConstantValue,Intake Temp 1,120
 ConstantValue,Intake Temp 2,120
