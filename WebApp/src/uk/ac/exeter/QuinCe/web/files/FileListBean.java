@@ -114,6 +114,7 @@ public class FileListBean extends BaseManagedBean {
 			
 			JobManager.addJob(conn, getUser(), FileInfo.getJobClass(FileInfo.JOB_CODE_REDUCTION), params);
 			DataFileDB.setCurrentJob(conn, chosenFile, FileInfo.JOB_CODE_REDUCTION);
+			updateFileList();
 		} catch (Exception e) {
 			return internalError(e);
 		} finally {
