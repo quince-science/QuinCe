@@ -113,6 +113,7 @@ public class DataReductionJob extends FileJob {
 						double meanIntakeTemp = calcMeanIntakeTemp(record, instrument, qcRecord);
 						if (meanIntakeTemp == RawDataDB.MISSING_VALUE) {
 							canCalculateCO2 = false;
+							qcRecord.addMessage(new MissingValueMessage(qcRecord.getLineNumber(), qcRecord.getColumnIndex("Intake Temp 1"), instrument.getIntakeTempName1(), Flag.FATAL));
 							qcRecord.setWoceFlag(Flag.BAD);
 							qcRecord.appendWoceComment("Missing intake temperature");
 						}
@@ -120,13 +121,15 @@ public class DataReductionJob extends FileJob {
 						double meanSalinity = calcMeanSalinity(record, instrument, qcRecord);
 						if (meanSalinity == RawDataDB.MISSING_VALUE) {
 							canCalculateCO2 = false;
-							qcRecord.setWoceFlag(Flag.BAD);
+							qcRecord.addMessage(new MissingValueMessage(qcRecord.getLineNumber(), qcRecord.getColumnIndex("Salinity 1"), instrument.getSalinityName1(), Flag.FATAL));
+							qcRecord.setWoceFlag(Flag.FATAL);
 							qcRecord.appendWoceComment("Missing salinity");
 						}
 						
 						double meanEqt = calcMeanEqt(record, instrument, qcRecord);
 						if (meanEqt == RawDataDB.MISSING_VALUE) {
 							canCalculateCO2 = false;
+							qcRecord.addMessage(new MissingValueMessage(qcRecord.getLineNumber(), qcRecord.getColumnIndex("Equilibrator Temperature 1"), instrument.getEqtName1(), Flag.FATAL));
 							qcRecord.setWoceFlag(Flag.BAD);
 							qcRecord.appendWoceComment("Missing equilibrator temperature");
 						}
@@ -139,6 +142,7 @@ public class DataReductionJob extends FileJob {
 						double meanEqp = calcMeanEqp(record, instrument, qcRecord);
 						if (meanEqp == RawDataDB.MISSING_VALUE) {
 							canCalculateCO2 = false;
+							qcRecord.addMessage(new MissingValueMessage(qcRecord.getLineNumber(), qcRecord.getColumnIndex("Equilibrator Pressure 1"), instrument.getEqpName1(), Flag.FATAL));
 							qcRecord.setWoceFlag(Flag.BAD);
 							qcRecord.appendWoceComment("Missing equilibrator pressure");
 						}
