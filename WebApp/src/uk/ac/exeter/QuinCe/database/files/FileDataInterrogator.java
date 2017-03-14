@@ -291,7 +291,7 @@ public class FileDataInterrogator {
 						
 						// Handle the date/time as a special case 
 						currentDBColumn++;
-						outputBuffer.append(formatField(records, currentDBColumn, columnName, true));
+						outputBuffer.append(formatField(records, currentDBColumn, columnName, false, "NaN"));
 						
 					} else if (!columnName.equals(COLUMN_ORIGINAL_FILE)) {
 						
@@ -300,7 +300,7 @@ public class FileDataInterrogator {
 							addSeparator = false;
 						} else {
 							currentDBColumn++;
-							outputBuffer.append(formatField(records, currentDBColumn, columnName, true));
+							outputBuffer.append(formatField(records, currentDBColumn, columnName, false, "NaN"));
 						}
 					} else {
 						// Find the line corresponding to the date from the database
@@ -346,72 +346,65 @@ public class FileDataInterrogator {
 		return output;
 	}
 
-	private static String formatField(ResultSet records, int columnIndex, String columnName, boolean asString) throws SQLException, MessageException {
+	private static String formatField(ResultSet records, int columnIndex, String columnName, boolean jsonMode, String missingValue) throws SQLException, MessageException {
 		
-		StringBuffer result = new StringBuffer();
+		String result;
 		
 		switch (columnName) {
 		case "dateTime": {
 			Calendar colDate = DatabaseUtils.getUTCDateTime(records, columnIndex);
 			
-			if (asString) {
-				result.append(DateTimeUtils.formatDateTime(colDate));
-			} else {
+			if (jsonMode) {
 				// We return the date as a milliseconds value, which can
 				// be parsed into a Date object by the Javascript
-				result.append(colDate.getTimeInMillis());
+				result = String.valueOf(colDate.getTimeInMillis());
+			} else {
+				result = DateTimeUtils.formatDateTime(colDate);
 			}
 			break;
 		}
-		case "row": {
-			result.append(records.getInt(columnIndex));
-			break;
-		}
+		case "row":
 		case "qcFlag":
 		case "woceFlag": {
-			result.append(records.getString(columnIndex));
+			result = records.getString(columnIndex);
 			break;
 		}
 		case "qcMessage": {
+			StringBuilder messageString = new StringBuilder();
 			List<Message> messages = RebuildCode.getMessagesFromRebuildCodes(records.getString(columnIndex));
 			
 			for (int i = 0; i < messages.size(); i++) {
-				result.append(messages.get(i).getShortMessage());
+				messageString.append(messages.get(i).getShortMessage());
 				if (i < messages.size() - 1) {
-					result.append(';');
+					messageString.append(';');
 				}
 			}
+			
+			result = messageString.toString();
 			break;
 		}
 		default: {
+
+			// Includes row, qcFlag and woceFlag
+			
 			String value = records.getString(columnIndex);
 			if (null == value) {
-				if (asString) {
-					result.append("");
-				} else {
-					result.append("null");
-				}
+				result = null;
 			} else if (StringUtils.isNumeric(value)) {
 				Double doubleValue = Double.parseDouble(value);
 				
 				if (doubleValue == RawDataDB.MISSING_VALUE) {
-					
-					if (asString) {
-						// The calling method will wrap this in quotes, so we don't have to
-						result.append("NaN");
-					} else {
-						result.append("\"NaN\"");
-					}
+					result = missingValue;
 				} else {
-					result.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
+					result = String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value));
 				}
 			} else {
-				result.append(value.replaceAll("\n", "\\n"));
+				result = value.replaceAll("\n", "\\n");
 			}
 		}
 		}
 		
-		return result.toString();
+		return result;
 	}
 	
 	public static String getJsonDataObjects(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings, boolean includeRowId)  throws MissingParamException, MessageException {
@@ -422,6 +415,11 @@ public class FileDataInterrogator {
 		
 		String output = null;
 
+		String missingValue = null;
+		if (valuesAsStrings) {
+			missingValue = "NaN";
+		}
+		
 		// Variables for getting data from database
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -463,7 +461,7 @@ public class FileDataInterrogator {
 					if (valuesAsStrings) {
 						outputBuffer.append('\"');
 					}
-					outputBuffer.append(formatField(records, col, columnName, valuesAsStrings));
+					outputBuffer.append(formatField(records, col, columnName, true, missingValue));
 					
 					if (valuesAsStrings) {
 						outputBuffer.append('\"');
@@ -505,6 +503,11 @@ public class FileDataInterrogator {
 		
 		String output = null;
 		
+		String missingValue = null;
+		if (valuesAsStrings) {
+			missingValue = "NaN";
+		}
+		
 		// Variables for getting data from database
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -535,7 +538,8 @@ public class FileDataInterrogator {
 					if (valuesAsStrings) {
 						outputBuffer.append('\"');
 					}
-					outputBuffer.append(formatField(records, col, columnName, valuesAsStrings));
+
+					outputBuffer.append(formatField(records, col, columnName, true, missingValue));
 					
 					if (valuesAsStrings) {
 						outputBuffer.append('\"');
