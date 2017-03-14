@@ -7,6 +7,9 @@
 	    <div id="contentbox">
 		      <h1>QuinCe</h1>
 		      <h:messages layout="table" class="errors"/>
+		      <div class="errors">
+			      <h:outputText value="Your session has expired. Please log in again." rendered="#{sessionScope.SESSION_EXPIRED != null}"/>
+		      </div>
 		      <h:form id="loginform" method="post" accept-charset="utf8">
 		        <ul>
 		          <li>

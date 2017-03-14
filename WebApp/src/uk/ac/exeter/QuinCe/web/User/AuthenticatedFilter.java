@@ -35,7 +35,7 @@ import uk.ac.exeter.QuinCe.data.User;
  */
 @WebFilter("*")
 public class AuthenticatedFilter implements Filter {
-
+	
 	private List<String> allowedPaths = new ArrayList<String>();
 	
 	@Override
@@ -52,6 +52,7 @@ public class AuthenticatedFilter implements Filter {
         if (user != null || resourceRequest || isAllowedPath(request)) {
         	filterChain.doFilter(request, response);
         } else {
+        	session.setAttribute("SESSION_EXPIRED", "true");
             response.sendRedirect(request.getContextPath());
         }
 	}
@@ -74,7 +75,7 @@ public class AuthenticatedFilter implements Filter {
 				
 				if (request.getRequestURI().equals(pathURIBase + ".jsf")) {
 					pathMatched = true;
-				} else if (request.getRequestURI().equals(pathURIBase + ".html")) {
+				} else if (request.getRequestURI().equals(pathURIBase + ".xhtml")) {
 					pathMatched = true;
 				}
 				
@@ -93,7 +94,6 @@ public class AuthenticatedFilter implements Filter {
 	 */
 	@Override
 	public void init(FilterConfig arg0) throws ServletException {
-		allowedPaths.add("/index");
 		allowedPaths.add("/index");
 		allowedPaths.add("/user/signup");
 		allowedPaths.add("/user/signup_complete");

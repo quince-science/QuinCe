@@ -73,6 +73,7 @@ public class LoginBean extends BaseManagedBean {
 			internalError(e);
 		}
 		
+		getSession().removeAttribute("SESSION_EXPIRED");
 		return result;
 	}
 	
