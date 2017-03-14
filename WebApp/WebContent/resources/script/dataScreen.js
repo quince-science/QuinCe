@@ -127,9 +127,6 @@ var visibleColumns = {
 	'co2': [/pH₂O/, /.*CO₂.*/]
 };
 
-// The viewing mode for the table
-var tableMode = 'basic';
-
 // The list of dates in the current view. Used for searching.
 var dateList = null;
 
@@ -779,7 +776,7 @@ function renderTableColumns() {
 		if ($.inArray(columnHeadings[i], compulsoryColumns) != -1) {
 			columnVisible = true;
 		} else {
-			searchColumns = visibleColumns[tableMode];
+			searchColumns = visibleColumns[PF('tableModeSelector').getJQ().find(':checked').val()];
 			for (j = 0; j < searchColumns.length && !columnVisible; j++) {
 				columnVisible = new RegExp(searchColumns[j]).test(columnHeadings[i]);
 			}
@@ -794,11 +791,6 @@ function renderTableColumns() {
 	jsDataTable.columns(visibleTableColumns).visible(true, false);
 	jsDataTable.columns(hiddenTableColumns).visible(false, false);
 	jsDataTable.columns.adjust().draw( false );
-}
-
-function changeTableMode(event) {
-	tableMode = event.target.value;
-	renderTableColumns();
 }
 
 function getFlagText(flag) {

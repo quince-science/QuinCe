@@ -47,6 +47,9 @@
 			var waterFlow2Name = '#{dataScreenBean.instrument.waterFlowName2}';
 			var waterFlow3Name = '#{dataScreenBean.instrument.waterFlowName3}';
 			var columnHeadings = #{dataScreenBean.tableHeadings};
+			
+			// The viewing mode for the table
+			var tableMode = 'basic';
 		</script>
 	</h:head>
 	<h:body class="fullPage">
@@ -163,7 +166,7 @@
 	    				<table width="100%">
 	    					<tr>
 	    						<td>
-						      		<p:selectOneButton value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="changeTableMode(event)">
+						      		<p:selectOneButton value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="renderTableColumns()">
 						      			<f:selectItem itemLabel="Basic" itemValue="basic"/>
 						      			<f:selectItem itemLabel="Water + Flow" itemValue="water"/>
 						      			<f:selectItem itemLabel="Equilibrator" itemValue="equilibrator"/>
