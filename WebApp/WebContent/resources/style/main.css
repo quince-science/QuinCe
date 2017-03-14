@@ -111,7 +111,8 @@ input.smallButton, button.smallButton {
 }
 
 form ul {
-  list-style: outside none none;
+  list-style: none;
+  padding: 0px;
 }
 
 form li {
