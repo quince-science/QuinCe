@@ -912,7 +912,9 @@ function makeHighlights(plotData) {
 			}
 			
 			for (j = PLOT_FIRST_Y_INDEX; j < plotData[i].length; j++) {
-				highlights.push([plotData[i][0], plotData[i][j], highlightColor]);
+				if (plotData[i][j] != null) {
+					highlights.push([plotData[i][0], plotData[i][j], highlightColor]);
+				}
 			}
 		}
 	}
