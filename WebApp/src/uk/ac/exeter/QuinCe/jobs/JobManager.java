@@ -1147,8 +1147,8 @@ public class JobManager {
 			while (jobs.next()) {
 				String jobClass = jobs.getString(2);
 				if (isFileJob(jobClass)) {
-					List<String> parameters = StringUtils.delimitedToList(jobs.getString(3));
-					long jobFileId = Long.parseLong(parameters.get(0));
+					Map<String, String> parameters = StringUtils.delimitedToMap(jobs.getString(3));
+					long jobFileId = Long.parseLong(parameters.get(FileJob.FILE_ID_KEY));
 
 					int fileListIndex = fileIds.indexOf(jobFileId);
 					if (fileListIndex > -1) {
@@ -1159,7 +1159,7 @@ public class JobManager {
 			}
 
 			return fileJobsKilled;
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			throw new DatabaseException("Error while killing jobs for data files", e);
 		} finally {
 			DatabaseUtils.closeResultSets(jobs);
