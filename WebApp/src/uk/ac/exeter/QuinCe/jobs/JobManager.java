@@ -128,9 +128,9 @@ public class JobManager {
 	
 	private static final String GET_JOB_OWNER_QUERY = "SELECT owner FROM job WHERE id = ?";
 
-	private static final String REQUEUE_JOB_STATEMENT = "UPDATE job SET "
+	private static final String REQUEUE_JOBS_STATEMENT = "UPDATE job SET "
 			+ "status = 'WAITING', started = NULL, ended = NULL, thread_name = NULL, progress = 0, "
-			+ "stack_trace = NULL WHERE id = ?";
+			+ "stack_trace = NULL WHERE id IN (%%IDS%%)";
 	
 	private static final String GET_RUNNING_THREAD_NAMES_STATEMENT = "SELECT id, thread_name FROM job WHERE status = 'RUNNING'";
 	
@@ -862,7 +862,9 @@ public class JobManager {
 				}
 			}
 			
-			requeueJobs(conn, jobsToRequeue);
+			if (jobsToRequeue.size() > 0) {
+				requeueJobs(conn, jobsToRequeue);
+			}
 			
 			conn.commit();
 		} catch (SQLException e) {
@@ -986,45 +988,49 @@ public class JobManager {
 
 	public static void requeueJobs(Connection conn, List<Long> jobIds) throws MissingParamException, DatabaseException {
 		
-		// TODO We can make a new REQUEUE statement that takes multiple job ids.
-		for (long jobId : jobIds) {
-			requeueJob(conn, jobId);
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkMissing(jobIds, "jobIds");
+		
+		PreparedStatement stmt = null;
+
+		try {
+			String statement = REQUEUE_JOBS_STATEMENT.replaceAll("%%IDS%%", StringUtils.listToDelimited(jobIds));
+			stmt = conn.prepareStatement(statement);
+			stmt.execute();
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while requeuing jobs", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
 		}
 	}
 	
-	public static void requeueJob(DataSource dataSource, long jobId) throws MissingParamException, DatabaseException {
+	public static void requeueJobs(DataSource dataSource, List<Long> jobIds) throws MissingParamException, DatabaseException {
 
 		MissingParam.checkMissing(dataSource, "dataSource");
-		MissingParam.checkPositive(jobId, "jobId");
+		MissingParam.checkMissing(jobIds, "jobIds");
 
 		Connection conn = null;
 		try {
 			conn = dataSource.getConnection();
-			requeueJob(conn, jobId);
+			requeueJobs(conn, jobIds);
 		} catch (SQLException e) {
-			throw new DatabaseException("An error occurred while requeuing job " + jobId, e);
+			throw new DatabaseException("An error occurred while requeuing jobs", e);
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}
 	}
 
 	public static void requeueJob(Connection conn, long jobId) throws MissingParamException, DatabaseException {
-
-		MissingParam.checkMissing(conn, "conn");
-		MissingParam.checkPositive(jobId, "jobId");
-		
-		PreparedStatement stmt = null;
-
-		try {
-			stmt = conn.prepareStatement(REQUEUE_JOB_STATEMENT);
-			stmt.setLong(1, jobId);
-			stmt.execute();
-			
-		} catch (SQLException e) {
-			throw new DatabaseException("An error occurred while requeuing job " + jobId, e);
-		} finally {
-			DatabaseUtils.closeStatements(stmt);
-		}
+		List<Long> jobList = new ArrayList<Long>(1);
+		jobList.add(jobId);
+		requeueJobs(conn, jobList);
+	}
+	
+	public static void requeueJob(DataSource dataSource, long jobId) throws MissingParamException, DatabaseException {
+		List<Long> jobList = new ArrayList<Long>(1);
+		jobList.add(jobId);
+		requeueJobs(dataSource, jobList);
 	}
 	
 	/**
