@@ -21,6 +21,14 @@ h1,h2 {
   justify-content: center;
 }
 
+#logoTitle {
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 28px;
+}
+
 label {
   font-weight: bold;
 }
