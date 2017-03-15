@@ -37,6 +37,7 @@ import uk.ac.exeter.QuinCe.data.User;
 public class AuthenticatedFilter implements Filter {
 	
 	private List<String> allowedPaths = new ArrayList<String>();
+	private List<String> resourcePaths = new ArrayList<String>();
 	
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain filterChain) throws IOException, ServletException {
@@ -47,14 +48,30 @@ public class AuthenticatedFilter implements Filter {
         // Get the user's email address from the session (if possible)
         User user = (session != null) ? (User) session.getAttribute(LoginBean.USER_SESSION_ATTR) : null;
 
-        boolean resourceRequest = request.getRequestURI().startsWith(request.getContextPath() + ResourceHandler.RESOURCE_IDENTIFIER);
-
-        if (user != null || resourceRequest || isAllowedPath(request)) {
+        if (user != null || isResourceRequest(request) || isAllowedPath(request)) {
         	filterChain.doFilter(request, response);
         } else {
         	session.setAttribute("SESSION_EXPIRED", "true");
             response.sendRedirect(request.getContextPath());
         }
+	}
+	
+	/**
+	 * Loop through the list of resource paths to determine whether or not this is a resource request
+	 * @param request The request
+	 * @return {@code true} if the request is a resource request; {@code false} otherwise.
+	 */
+	private boolean isResourceRequest(HttpServletRequest request) {
+		boolean result = false;
+		
+		for (String resourcePath : resourcePaths) {
+			if (request.getRequestURI().startsWith(request.getContextPath() + resourcePath)) {
+				result = true;
+				break;
+			}
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -98,6 +115,9 @@ public class AuthenticatedFilter implements Filter {
 		allowedPaths.add("/user/signup");
 		allowedPaths.add("/user/signup_complete");
 		allowedPaths.add("/user/verify_email");
+		
+		resourcePaths.add(ResourceHandler.RESOURCE_IDENTIFIER);
+		resourcePaths.add("/resources");
 	}
 
 	/**

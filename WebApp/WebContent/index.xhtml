@@ -5,27 +5,30 @@
 
 	<ui:define name="content">
 	    <div id="contentbox">
-		      <h1>QuinCe</h1>
-		      <h:messages layout="table" class="errors"/>
-		      <div class="errors">
-			      <h:outputText value="Your session has expired. Please log in again." rendered="#{sessionScope.SESSION_EXPIRED != null}"/>
-		      </div>
-		      <h:form id="loginform" method="post" accept-charset="utf8">
-		        <ul>
-		          <li>
-		            <label for="email" class="separateline">Email Address</label>
-		            <h:inputText value="#{loginBean.emailAddress}"/>
-		          </li>
-		          <li>
-		            <label for="password" class="separateline">Password</label>
-		            <h:inputSecret value="#{loginBean.password}"/>
-		          </li>
-		          <li class="buttonWrapper">
-		            <h:commandButton value="Log In" action="#{loginBean.authenticate}"/>
-		            <h:commandButton value="Sign Up" action="#{loginBean.signUp}"/>
-		          </li>
-		        </ul>
-		      </h:form>
+		    <h1>
+		    	<h:graphicImage value="/resources/image/quince.png"/>
+		    	QuinCe
+		    </h1>
+		    <h:messages layout="table" class="errors"/>
+		    <div class="errors">
+			    <h:outputText value="Your session has expired. Please log in again." rendered="#{sessionScope.SESSION_EXPIRED != null}"/>
 		    </div>
+		    <h:form id="loginform" method="post" accept-charset="utf8">
+		      <ul>
+		        <li>
+		          <label for="email" class="separateline">Email Address</label>
+		          <h:inputText value="#{loginBean.emailAddress}"/>
+		        </li>
+		        <li>
+		          <label for="password" class="separateline">Password</label>
+		          <h:inputSecret value="#{loginBean.password}"/>
+		        </li>
+		        <li class="buttonWrapper">
+		          <h:commandButton value="Log In" action="#{loginBean.authenticate}"/>
+		          <h:commandButton value="Sign Up" action="#{loginBean.signUp}"/>
+		        </li>
+		      </ul>
+		    </h:form>
+	    </div>
 	</ui:define>
 </ui:composition>
