@@ -10,16 +10,30 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.User.LoginBean;
 
 /**
- * Base class for managed beans that provides a few useful methods
+ * Several Managed Beans are used in the QuinCe application. This abstract class provides a
+ * an abstract bean that provides a set of useful methods for inheriting concrete bean classes to use.
+
  * @author Steve Jones
  *
  */
 public abstract class BaseManagedBean {
 
+	/**
+	 * The default result for successful completion of a process. This will be used in the
+	 * {@code faces-config.xml} file to determine the next navigation destination. 
+	 */
 	public static final String SUCCESS_RESULT = "Success";
 	
+	/**
+	 * The default result for indicating that an error occurred during a processing action.
+	 * This will be used in the {@code faces-config.xml} file to determine the next navigation destination. 
+	 */
 	public static final String INTERNAL_ERROR_RESULT = "InternalError";
 	
+	/**
+	 * The default result for indicating that the data validation failed for a given processing action.
+	 * This will be used in the {@code faces-config.xml} file to determine the next navigation destination. 
+	 */
 	public static final String VALIDATION_FAILED_RESULT = "ValidationFailed";
 	
 	/**
@@ -39,7 +53,7 @@ public abstract class BaseManagedBean {
 	/**
 	 * Generates a JSF component ID for a given form input name
 	 * @param componentName The form input name
-	 * @return
+	 * @return The JSF component ID
 	 */
 	protected String getComponentID(String componentName) {
 		return getFormName() + ":" + componentName;
@@ -73,6 +87,10 @@ public abstract class BaseManagedBean {
 		return (String) FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(paramName);
 	}
 	
+	/**
+	 * Retrieves the current HTTP Session object
+	 * @return The HTTP Session object
+	 */
 	public HttpSession getSession() {
 		return (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(true);
 	}

@@ -174,7 +174,7 @@ public class User {
 	 * Return the database ID for this user. Note that this should
 	 * not be used for any user-facing activities.
 	 * 
-	 * @return
+	 * @return The user's database ID
 	 */
 	public int getDatabaseID() {
 		return databaseID;
@@ -190,7 +190,7 @@ public class User {
 	
 	/**
 	 * Determines whether or not this user is a job manager
-	 * @return {@code} true if this user is a job manager; {@code false} if not
+	 * @return {@code true} if this user is a job manager; {@code false} if not
 	 */
 	public boolean getJobManager() {
 		return (permissions & BIT_JOB_MANAGER) > 0;

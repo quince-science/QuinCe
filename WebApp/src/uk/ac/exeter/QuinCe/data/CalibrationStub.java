@@ -2,20 +2,31 @@ package uk.ac.exeter.QuinCe.data;
 
 import java.util.Date;
 
+import uk.ac.exeter.QuinCe.database.Instrument.CalibrationDB;
+
 /**
- * A read-only stub object for a single calibration run.
+ * <p>
+ *   A read-only stub object for a single set of sensor calibrations for an instrument.
+ * </p>
+ * 
+ * <p>
+ *   This stub contains the information required to retrieve the full calibration coefficients
+ *   for the instrument's sensors, using the {@link CalibrationDB#getCalibrationCoefficients(javax.sql.DataSource, CalibrationStub)}
+ *   method.
+ * </p>
+ * 
  * @author Steve Jones
- *
+ * @see CalibrationDB
  */
 public class CalibrationStub {
 
 	/**
-	 * The ID of the calibration's database record
+	 * The database ID of the calibration
 	 */
 	private long id;
 	
 	/**
-	 * The ID of the instrument that this calibration belongs to
+	 * The database ID of the instrument to which the calibration belongs
 	 */
 	private long instrumentId;
 	
@@ -25,8 +36,9 @@ public class CalibrationStub {
 	private Date date;
 	
 	/**
-	 * Simple constructor for the two fields
+	 * Simple constructor that stores the stub fields
 	 * @param id The database ID
+	 * @param instrumentId The instrument ID
 	 * @param date The calibration date
 	 */
 	public CalibrationStub (long id, long instrumentId, Date date) {
@@ -58,5 +70,4 @@ public class CalibrationStub {
 	public Date getDate() {
 		return date;
 	}
-	
 }

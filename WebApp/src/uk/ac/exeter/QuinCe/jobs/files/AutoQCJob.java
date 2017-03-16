@@ -27,6 +27,38 @@ import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+/**
+ * <p>This {@link Job} class runs the configured set of QC routines on the records for a given data file.</p>
+ * 
+ * <p>Records that have already had their WOCE flag to {@code BAD} or {@code IGNORE} are excluded from the QC checks.</p>
+ * 
+ * <p>Once the QC has been completed, the QC Flag and QC Message are set. The QC flag will be set to {@code GOOD},
+ *    {@code QUESTIONABLE} or {@code BAD}. In the latter two cases, the QC Message will contain details of the fault(s)
+ *    that were found.
+ * </p>
+ * <p>If the QC flag was set to {@code GOOD}, the WOCE flag for the record will be set to {@code ASSUMED_GOOD}, to
+ *    indicate that the software will assume that the record is good unless the user indicates otherwise. Otherwise,
+ *    the WOCE Flag will be set to {@code NEEDS_FLAG}. The user will be required to manually choose a value for the WOCE
+ *    Flag, either by accepting the suggestion from the QC job, or overriding the flag and choosing their own. The WOCE
+ *    Comment will default to being identical to the QC Message, but this can also be changed if required.
+ * </p>
+ * 
+ * <p>If the {@code AutoQCJob} has been run before, some WOCE Flags and Comments will have already been set by the user.
+ *    These will be dealt with as follows: 
+ * </p>
+ *  <ul>
+ *    <li>
+ *      If the QC results have not changed from their previous value, the WOCE flags are kept unchanged.
+ *    </li>
+ *    <li>
+ *      If the QC results are different, the WOCE flag is replaced with {@code ASSUMED_GOOD} or {@code NEEDS_FLAG}
+ *      as described above. The user will have to re-examine these records and set the WOCE Flag and Comment once more.
+ *    </li>
+ *  </ul>
+ * 
+ * @author Steve Jones
+ *
+ */
 public class AutoQCJob extends FileJob {
 
 	private static final String PARAM_ROUTINES_CONFIG = "ROUTINES_CONFIG";
@@ -39,6 +71,9 @@ public class AutoQCJob extends FileJob {
 		super(resourceManager, config, jobId, parameters);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void executeFileJob(JobThread thread) throws JobFailedException {

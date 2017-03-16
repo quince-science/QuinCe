@@ -592,8 +592,8 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 
 	////////////// *** GETTERS AND SETTERS *** /////////////////
 	/**
-	 * Get the separator for the file. One of {@link COMMA_SEPARATOR},
-	 * {@link TAB_SEPARATOR}, or {@link OTHER_SEPARATOR}.
+	 * Get the separator for the file. One of {@link #SEPARATOR_COMMA},
+	 * {@link #SEPARATOR_TAB}, {@link #SEPARATOR_SPACE}, or {@link #SEPARATOR_OTHER}.
 	 * @return The separator for the file
 	 */
 	public String getSeparator() {
@@ -603,7 +603,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	/**
 	 * 
 	 * Set the separator for the file. Must be one of 
-	 * {@link COMMA_SEPARATOR}, {@link TAB_SEPARATOR}, or {@link OTHER_SEPARATOR}.
+	 * {@link #SEPARATOR_COMMA}, {@link #SEPARATOR_TAB}, {@link #SEPARATOR_SPACE}, or {@link #SEPARATOR_OTHER}.
 	 * @param separator The separator
 	 */
 	public void setSeparator(String separator) {
@@ -632,6 +632,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 * Returns the result of the sample file extraction. One of
 	 * {@link EXTRACTION_OK} or {@link EXTRACTION_FAILED}.
 	 * @return The result of the sample file extraction
+	 * @see #processUploadedFile()
 	 */
 	public int getSampleFileExtractionResult() {
 		return sampleFileExtractionResult;

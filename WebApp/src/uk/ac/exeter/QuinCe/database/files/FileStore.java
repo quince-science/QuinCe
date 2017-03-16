@@ -20,9 +20,14 @@ import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
- * Class to handle all things to do with storing data files on disk
+ * Class to handle storage, retrieval and management of data file on disk.
+ * 
+ * <p>
+ *   Note that these methods are not publicly accessible; all calls to this
+ *   class are made through the {@code DataFileDB} class.
+ * </p>
  * @author Steve Jones
- *
+ * @see DataFileDB
  */
 public class FileStore {
 
@@ -83,6 +88,18 @@ public class FileStore {
 		deleteFile(fileToDelete);
 	}
 	
+	/**
+	 * Retrieve a file from the file store
+	 * @param dataSource A data source
+	 * @param config The application configuration
+	 * @param fileInfo The details of the file to load
+	 * @return The data file
+	 * @throws IOException If a disk I/O error occurs
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RawDataFileException If there is a fault in processing the data file
+	 * @throws RecordNotFoundException If any required database records cannot be found
+	 */
 	protected static RawDataFile getFile(DataSource dataSource, Properties config, FileInfo fileInfo) throws IOException, MissingParamException, DatabaseException, RawDataFileException, RecordNotFoundException {
 		
 		Instrument instrument = InstrumentDB.getInstrument(dataSource, fileInfo.getInstrumentId());
@@ -136,6 +153,13 @@ public class FileStore {
 		return fileStorePath + File.separator + instrumentID;
 	}
 	
+	/**
+	 * Get the Java File object for a stored data file
+	 * @param fileStorePath The path to the data file within the file store
+	 * @param instrumentId The database ID of the instrument to which the file belongs
+	 * @param fileName The filename of the data file
+	 * @return The Java File object
+	 */
 	private static File getFileObject(String fileStorePath, long instrumentId, String fileName) {
 		return new File(getInstrumentDirectory(fileStorePath, instrumentId) + File.separator + fileName);
 	}
@@ -156,8 +180,8 @@ public class FileStore {
 	}
 	
 	/**
-	 * Delete a file from the file system
-	 * @param file
+	 * Delete a file from the file system. If the file does not exist, no action is taken.
+	 * @param file The file to be deleted
 	 */
 	private static void deleteFile(File file) {
 		if (null != file) {

@@ -4,64 +4,76 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Holds the calibration coefficients for a single sensor
+ * <p>Each sensor for an instrument must have calibration data associated with it.
+ * Calibrations for each sensor should be made on a regular basis.</p>
+ * 
+ * <p>Calibrations are stored as coefficients of a curve that is used to convert the 'raw'
+ * measured value to the calibrated value. This is commonly a linear adjustment, but this class allows
+ * for calibration curves of up to a fifth order polynomial. If any coefficients are unused in a calibration,
+ * they can be set to zero.</p>
+ * 
+ * <p>This class holds a single set of calibration coefficients for a single sensor.</p>
+
  * @author Steve Jones
- *
  */
 public class CalibrationCoefficients implements Comparable<SensorCode> {
 
 	/**
-	 * The code for the sensor. The sensor code
-	 * can be generated using the generateSensorCode method
+	 * The identifying code for the sensor.
 	 */
 	private SensorCode sensorCode;
 	
 	/**
-	 * The intercept of the fitted calibration curve
+	 * The intercept of the calibration curve.
 	 */
 	private double intercept = 0.0;
 	
 	/**
-	 * The linear coefficient of the fitted calibration curve
+	 * The linear coefficient of the calibration curve.
 	 */
 	private double x = 1.0;
 	
 	/**
-	 * The x^2 coefficient of the fitted calibration curve
+	 * The second order polynomial coefficient of the calibration curve.
 	 */
 	private double x2 = 0.0;
 	
 	/**
-	 * The x^3 coefficient of the fitted calibration curve
+	 * The third order polynomial coefficient of the calibration curve.
 	 */
 	private double x3 = 0.0;
 	
 	/**
-	 * The x^4 coefficient of the fitted calibration curve
+	 * The fourth order polynomial coefficient of the calibration curve.
 	 */
 	private double x4 = 0.0;
 	
 	/**
-	 * The x^5 coefficient of the fitted calibration curve
+	 * The fifth order polynomial coefficient of the calibration curve.
 	 */
 	private double x5 = 0.0;
 	
 	/////////// *** METHODS *** ////////////////////
 	
 	/**
-	 * Creates a coefficients object with the specified sensor code and name.
-	 * The coefficients are initialised to a linear 1:1 relationship
-	 * @param sensorCode The sensor code
-	 * @param sensorName The sensor name
+	 * <p>Creates a set of calibration coefficients for a sensor, identified
+	 * by its {@code SensorCode}.</p>
+	 * 
+	 * <p>The coefficients are initialised to a linear 1:1 relationship, implying
+	 * that no calibration adjustments are required.</p>
+	 * 
+	 * @param sensorCode The {@code SensorCode} identifying the sensor.
 	 */
 	public CalibrationCoefficients(SensorCode sensorCode) {
 		this.sensorCode = sensorCode;
 	}
 	
 	/**
-	 * Construct a list of coefficients objects for all the sensors attached to a given instrument
-	 * @param instrument The instrument
-	 * @return A list of coefficients objects
+	 * Construct a list of coefficients objects for all the sensors attached to a given instrument.
+	 * All objects will have the default linear 1:1 relationship.
+	 * 
+	 * @param instrument The instrument for whose sensors the {@code CalibrationCoefficients} objects will be created.
+	 * @return The coefficients objects for all sensors attached to the instrument.
 	 */
 	public static List<CalibrationCoefficients> initCalibrationCoefficients(Instrument instrument) {
 		List<CalibrationCoefficients> result = new ArrayList<CalibrationCoefficients>();
@@ -117,6 +129,15 @@ public class CalibrationCoefficients implements Comparable<SensorCode> {
 		return result;
 	}
 	
+	/**
+	 * Search a list of {@code CalibrationCoefficients} objects for an object matching the supplied {@code SensorCode}.
+	 * 
+	 * If none of the objects matches the {@code SensorCode}, the method returns {@code null}.
+	 * 
+	 * @param coefficients The list of {@code CalibrationCoefficients} objects to be searched.
+	 * @param code The {@code SensorCode} for the desired sensor.
+	 * @return The {@code CalibrationCoefficients} object for the supplied {@code SensorCode}, or {@code null} if no matching object can be found.
+	 */
 	public static CalibrationCoefficients findSensorCoefficients(List<CalibrationCoefficients> coefficients, SensorCode code) {
 		CalibrationCoefficients result = null;
 		
@@ -131,7 +152,7 @@ public class CalibrationCoefficients implements Comparable<SensorCode> {
 	}
 
 	/**
-	 * CalibrationCoefficients objects are the same if their sensor codes are the same
+	 * <b>N.B.</b> Comparison of {@code CalibrationCoefficients} objects is only performed on the {@code SensorCode}; the coefficients themselves are not compared.
 	 */
 	@Override
 	public int compareTo(SensorCode o) {
@@ -141,104 +162,104 @@ public class CalibrationCoefficients implements Comparable<SensorCode> {
 	/////////// *** GETTERS AND SETTERS *** //////////////
 
 	/**
-	 * Returns the sensor code
-	 * @return The sensor code
+	 * Get the {@code SensorCode} of the sensor that this object refers to.
+	 * @return The {@code SensorCode}
 	 */
 	public SensorCode getSensorCode() {
 		return sensorCode;
 	}
 
 	/**
-	 * Returns the intercept of the fitted calibration curve
-	 * @return The intercept of the fitted calibration curve
+	 * Get the intercept of the calibration curve.
+	 * @return The intercept of the calibration curve.
 	 */
 	public double getIntercept() {
 		return intercept;
 	}
 
 	/**
-	 * Sets the intercept of the fitted calibration curve
-	 * @param intercept The intercept of the fitted calibration curve
+	 * Set the intercept of the calibration curve.
+	 * @param intercept The intercept.
 	 */
 	public void setIntercept(double intercept) {
 		this.intercept = intercept;
 	}
 
 	/**
-	 * Returns the linear coefficient of the fitted calibration curve
-	 * @return The linear coefficient of the fitted calibration curve
+	 * Get the linear coefficient of the calibration curve.
+	 * @return The coefficient.
 	 */
 	public double getX() {
 		return x;
 	}
 
 	/**
-	 * Sets the linear coefficient of the fitted calibration curve
-	 * @param x The linear coefficient of the fitted calibration curve
+	 * Set the linear coefficient of the calibration curve.
+	 * @param x The coefficient.
 	 */
 	public void setX(double x) {
 		this.x = x;
 	}
 
 	/**
-	 * Returns the x^2 coefficient of the fitted calibration curve
-	 * @return The x^2 coefficient of the fitted calibration curve
+	 * Get the second order polynomial coefficient of the calibration curve.
+	 * @return The coefficient.
 	 */
 	public double getX2() {
 		return x2;
 	}
 
 	/**
-	 * Sets the x^2 coefficient of the fitted calibration curve
-	 * @param x2 The x^2 coefficient of the fitted calibration curve
+	 * Set the second order polynomial coefficient of the calibration curve.
+	 * @param x2 The coefficient.
 	 */
 	public void setX2(double x2) {
 		this.x2 = x2;
 	}
 
 	/**
-	 * Returns the x^3 coefficient of the fitted calibration curve
-	 * @return The x^3 coefficient of the fitted calibration curve
+	 * Get the third order polynomial coefficient of the calibration curve.
+	 * @return The coefficient.
 	 */
 	public double getX3() {
 		return x3;
 	}
 
 	/**
-	 * Sets the x^3 coefficient of the fitted calibration curve
-	 * @param x3 The x^3 coefficient of the fitted calibration curve
+	 * Set the third order polynomial coefficient of the calibration curve.
+	 * @param x3 The coefficient.
 	 */
 	public void setX3(double x3) {
 		this.x3 = x3;
 	}
 
 	/**
-	 * Returns the x^4 coefficient of the fitted calibration curve
-	 * @return The x^4 coefficient of the fitted calibration curve
+	 * Get the fourth order polynomial coefficient of the calibration curve.
+	 * @return The coefficient.
 	 */
 	public double getX4() {
 		return x4;
 	}
 
 	/**
-	 * Sets the x^4 coefficient of the fitted calibration curve
-	 * @param x4 The x^4 coefficient of the fitted calibration curve
+	 * Set the fourth order polynomial coefficient of the calibration curve.
+	 * @param x4 The coefficient.
 	 */
 	public void setX4(double x4) {
 		this.x4 = x4;
 	}
 
 	/**
-	 * Returns the x^5 coefficient of the fitted calibration curve
-	 * @return The x^5 coefficient of the fitted calibration curve
+	 * Get the fifth order polynomial coefficient of the calibration curve.
+	 * @return The coefficient.
 	 */
 	public double getX5() {
 		return x5;
 	}
 
 	/**
-	 * Sets the x^5 coefficient of the fitted calibration curve
-	 * @param x5 The x^5 coefficient of the fitted calibration curve
+	 * Set the fifth order polynomial coefficient of the calibration curve.
+	 * @param x5 The coefficient.
 	 */
 	public void setX5(double x5) {
 		this.x5 = x5;

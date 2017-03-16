@@ -281,7 +281,7 @@ public class UploadDataFileBean extends FileUploadBean {
 
 	/**
 	 * Stores the uploaded file
-	 * @return
+	 * @return The navigation string for the file list
 	 */
 	public String submitFile() {
 		

@@ -41,12 +41,12 @@ public class CalibrationsBean extends BaseManagedBean {
 	
 	/**
 	 * The ID of the calibration record being edited. If this is a new
-	 * calibration, this will be NO_DATABASE_RECORD.
+	 * calibration, this will be {@link DatabaseUtils#NO_DATABASE_RECORD}.
 	 */
 	private long chosenCalibration = DatabaseUtils.NO_DATABASE_RECORD;
 	
 	/**
-	 * Empty constructor
+	 * Simple constructor - does nothing
 	 */
 	public CalibrationsBean() {
 		// Do nothing
@@ -54,11 +54,8 @@ public class CalibrationsBean extends BaseManagedBean {
 	
 	/**
 	 * Clear the bean's data
-	 * @throws ResourceException 
-	 * @throws DatabaseException 
-	 * @throws MissingParamException 
 	 */
-	private void clearData() throws MissingParamException, DatabaseException, ResourceException {
+	private void clearData() {
 		calibrationDate = null;
 		chosenCalibration = DatabaseUtils.NO_DATABASE_RECORD;
 		coefficients = null;
@@ -66,8 +63,7 @@ public class CalibrationsBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Set up a new, empty calibration and navigate to the editor
-	 * and set the date to today.
+	 * Set up a new, empty calibration, set its date to today, and navigate to the editor
 	 * @return The navigation result
 	 */
 	public String newCalibration() {
@@ -86,7 +82,7 @@ public class CalibrationsBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Store a calibration in the database
+	 * Store the calibration currently being edited to the database
 	 * @return The navigation back to the calibrations list
 	 */
 	public String saveCalibration() {
@@ -112,7 +108,7 @@ public class CalibrationsBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Cancels an edit action and returns to the calibrations list
+	 * Cancels editing of the current calibration and returns to the calibrations list
 	 * @return The navigation result
 	 */
 	public String cancelEdit() {
@@ -133,7 +129,7 @@ public class CalibrationsBean extends BaseManagedBean {
 			CalibrationStub stub = CalibrationDB.getCalibrationStub(ServletUtils.getDBDataSource(), chosenCalibration);
 			calibrationDate = stub.getDate();
 			
-			// Store the date in the session so the date validator knows to skip it
+			// Store the calibration's date in the session so the date validator knows to skip it
 			getSession().setAttribute(ExistingDateValidator.ATTR_ALLOWED_DATE, calibrationDate);
 			
 			coefficients = CalibrationDB.getCalibrationCoefficients(ServletUtils.getDBDataSource(), stub);
@@ -145,6 +141,10 @@ public class CalibrationsBean extends BaseManagedBean {
 		return PAGE_CALIBRATION_EDITOR;
 	}
 	
+	/**
+	 * Delete the currently selected calibration from the database and returns to the calibrations list
+	 * @return The navigation result
+	 */
 	public String deleteCalibration() {
 		try {
 			CalibrationDB.deleteCalibration(ServletUtils.getDBDataSource(), chosenCalibration);
@@ -194,16 +194,16 @@ public class CalibrationsBean extends BaseManagedBean {
 	/**
 	 * Returns the list of calibrations
 	 * @return The list of calibrations
-	 * @throws ResourceException 
-	 * @throws DatabaseException 
-	 * @throws MissingParamException 
+	 * @throws ResourceException If a data source cannot be retrieved
+	 * @throws DatabaseException If a database exception occurs
+	 * @throws MissingParamException If any of the parameters passed to the underlying methods are invalid
 	 */
 	public List<CalibrationStub> getCalibrationsList() throws MissingParamException, DatabaseException, ResourceException {
 		return CalibrationDB.getCalibrationList(ServletUtils.getDBDataSource(), getCurrentInstrumentID());
 	}
 
 	/**
-	 * Retrieve the ID of the current instrument from the session
+	 * Retrieve the database ID of the current instrument from the session
 	 * @return The current instrument ID
 	 */
 	private long getCurrentInstrumentID() {

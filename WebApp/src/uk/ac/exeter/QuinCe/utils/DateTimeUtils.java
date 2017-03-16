@@ -29,10 +29,20 @@ public class DateTimeUtils {
 	 */
 	public static final long MILLIS_PER_DAY = 86400000;
 	
+	/**
+	 * A formatter for generating date strings. The output format is {@code YYYY-MM-DD}.
+	 */
 	private static SimpleDateFormat dateFormatter = null;
 	
+	/**
+	 * A formatter for generating date/time strings. The output format is {@code YYYY-MM-DD HH:mm:ss}.
+	 */
 	private static SimpleDateFormat dateTimeFormatter = null;
 	
+	/**
+	 * A formatter for parsing date/time strings returned by SQL queries.
+	 * The format is {@code yyyy-MM-dd HH:mm:ss.S}.
+	 */
 	private static DateTimeFormatter sqlDateTimeFormatter = null;
 
 	/**
@@ -48,11 +58,11 @@ public class DateTimeUtils {
 	}
 	
 	/**
-	 * Set the time of a Calendar object to midnight by truncation.
+	 * Set the time of a {@link Calendar} object to midnight by truncation.
 	 * This returns a new object - the original remains untouched.
 	 * 
-	 * @param date The Calendar object to be set to midnight
-	 * @return A copy of the Calendar object with the time set to midnight
+	 * @param date The {@link Calendar} object to be set to midnight
+	 * @return A copy of the {@link Calendar} object with the time set to midnight
 	 */
 	public static Calendar setMidnight(Calendar date) {
 		Calendar result = (Calendar) date.clone();
@@ -74,6 +84,13 @@ public class DateTimeUtils {
 		return (int) Math.floorDiv(diffMillis, MILLIS_PER_DAY);
 	}
 	
+	/**
+	 * Returns the number of seconds between two dates. If the second date is
+	 * before the first date, the result will be negative.
+	 * @param firstDate The first date
+	 * @param lastDate The last date
+	 * @return The number of seconds between the dates.
+	 */
 	public static int getSecondsBetween(Calendar firstDate, Calendar lastDate) {
 		long diffMillis = lastDate.getTimeInMillis() - firstDate.getTimeInMillis();
 		return (int) Math.floorDiv(diffMillis, 1000);
@@ -107,10 +124,22 @@ public class DateTimeUtils {
 		return dateTimeFormatter.format(dateTime);
 	}
 	
+	/**
+	 * Format a date/time to YYYY-MM-dd HH:mm:ss format
+	 * @param dateTime The date/time
+	 * @return The formatted date/time
+	 */
 	public static String formatDateTime(Calendar dateTime) {
 		return formatDateTime(dateTime.getTime());
 	}
 	
+	/**
+	 * Determines whether or not two dates are equal.
+	 * The dates are compared to a resolution of one second (milliseconds are ignored).
+	 * @param date1 The first date
+	 * @param date2 The second date
+	 * @return {@code true} if the dates are equal; {@code false} if they are different.
+	 */
 	public static boolean datesEqual(Calendar date1, Calendar date2) {
 		
 		boolean equal = true;
@@ -133,10 +162,24 @@ public class DateTimeUtils {
 		
 	}
 	
+	/**
+	 * Get an instance of a {@link Calendar} object with a UTC time zone.
+	 * The calendar object will be set to the current time, and can have its
+	 * value updated as required.
+	 * 
+	 * @return A {@link Calendar} object with the time zone set to UTC.
+	 * @see Calendar#getInstance(TimeZone, Locale)
+	 */
 	public static Calendar getUTCCalendarInstance() {
 		return Calendar.getInstance(new SimpleTimeZone(0, "UTC"), Locale.ENGLISH);
 	}
 	
+	/**
+	 * Construct a {@link DateTime} object from a date/time string returned by an SQL query.
+	 * @param dateTime The date/time string from the SQL query
+	 * @return The {@link DateTime} object
+	 * @throws InvalidDateTimeStringException If the date/time string cannot be parsed.
+	 */
 	public static DateTime makeDateTimeFromSql(String dateTime) throws InvalidDateTimeStringException {
 		if (null == sqlDateTimeFormatter) {
 			sqlDateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.S");

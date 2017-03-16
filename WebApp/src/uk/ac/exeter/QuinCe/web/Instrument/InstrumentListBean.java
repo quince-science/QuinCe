@@ -88,7 +88,7 @@ public class InstrumentListBean extends BaseManagedBean {
 	
 	/**
 	 * Returns to the instrument list
-	 * @return
+	 * @return The navigation string for the instrument list
 	 */
 	public String viewInstrumentList() {
 		return InstrumentListBean.PAGE_INSTRUMENT_LIST;

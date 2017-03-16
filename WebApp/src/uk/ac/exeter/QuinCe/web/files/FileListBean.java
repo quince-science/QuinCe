@@ -30,7 +30,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
- * Bean for the main file list
+ * Backing bean for the data file list
  * @author Steve Jones
  *
  */
@@ -46,6 +46,9 @@ public class FileListBean extends BaseManagedBean {
 	 */
 	public static final String PAGE_FILE_LIST = "file_list";
 	
+	/**
+	 * The navigation to the file export page
+	 */
 	public static final String PAGE_EXPORT = "export";
 	
 	/**
@@ -54,8 +57,14 @@ public class FileListBean extends BaseManagedBean {
 	 */
 	private List<FileInfo> fileList;
 	
+	/**
+	 * The database ID of the selected data file
+	 */
 	private long chosenFile;
 	
+	/**
+	 * The index of the selected file export option
+	 */
 	private int chosenExportOption;
 	
 	@PostConstruct
@@ -101,6 +110,10 @@ public class FileListBean extends BaseManagedBean {
 		return PAGE_FILE_LIST;
 	}
 	
+	/**
+	 * Trigger reprocessing of a data file, from data reduction onwards.
+	 * @return The navigation back to the file list page
+	 */
 	public String reprocessFile() {
 		
 		Connection conn = null;
@@ -140,6 +153,10 @@ public class FileListBean extends BaseManagedBean {
 		this.chosenFile = chosenFile;
 	}
 	
+	/**
+	 * Navigates to the file export page
+	 * @return The navigation to the export page
+	 */
 	public String export() {
 		try {
 			DataFileDB.touchFile(ServletUtils.getDBDataSource(), chosenFile);
@@ -149,30 +166,69 @@ public class FileListBean extends BaseManagedBean {
 		return PAGE_EXPORT;
 	}
 	
+	/**
+	 * Navigates to the main file list
+	 * @return The navigation to the file list
+	 */
 	public String goToFileList() {
 		return PAGE_FILE_LIST;
 	}
 	
+	/**
+	 * Gets the filename of the chosen data file
+	 * @return The filename
+	 * @throws MissingParamException If any parameters on internal calls are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the file does not exist in the database
+	 * @throws ResourceException If an error occurs in any application resources
+	 */
 	public String getChosenFileName() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
 		return DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), chosenFile).getFileName();
 	}
 	
+	/**
+	 * Get the name of the instrument to which the selected file belongs
+	 * @return The instrument name
+	 * @throws MissingParamException If any parameters on internal calls are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the file does not exist in the database
+	 * @throws ResourceException If an error occurs in any application resources
+	 */
 	public String getChosenFileInstrumentName() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
 		return InstrumentDB.getInstrumentByFileId(ServletUtils.getDBDataSource(), chosenFile).getName();
 	}
-	
+
+	/**
+	 * Get the list of available file export options
+	 * @return The export options
+	 * @throws ExportException In an error occurs while retrieving the export options
+	 */
 	public List<ExportOption> getExportOptions() throws ExportException {
 		return ExportConfig.getInstance().getOptions();
 	}
 	
+	/**
+	 * Return the ID of the chosen file export option
+	 * @return The export option ID
+	 */
 	public int getChosenExportOption() {
 		return chosenExportOption;
 	}
 	
+	/**
+	 * Set the ID of the chosen export option
+	 * @param chosenExportOption The export option ID
+	 */
 	public void setChosenExportOption(int chosenExportOption) {
 		this.chosenExportOption = chosenExportOption;
 	}
 	
+	/**
+	 * Export the selected data file using the chosen export option
+	 * @throws Exception If any errors occur
+	 * @see #chosenFile
+	 * @see #chosenExportOption
+	 */
 	public void exportFile() throws Exception {
 
 		DataSource dataSource = ServletUtils.getDBDataSource();
@@ -195,6 +251,12 @@ public class FileListBean extends BaseManagedBean {
 	    fc.responseComplete();
 	}
 	
+	/**
+	 * Get the filename of the file that will be exported
+	 * @param exportOption The export option
+	 * @return The export filename
+	 * @throws Exception If any errors occur
+	 */
 	private String getExportFilename(ExportOption exportOption) throws Exception {
 		StringBuffer fileName = new StringBuffer(getChosenFileName().replaceAll("\\.", "_"));
 		fileName.append('-');

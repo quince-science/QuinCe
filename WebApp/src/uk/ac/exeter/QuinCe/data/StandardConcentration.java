@@ -10,11 +10,6 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
-/**
- * Holds the calibration coefficients for a single sensor
- * @author Steve Jones
- *
- */
 public class StandardConcentration {
 
 	/**
