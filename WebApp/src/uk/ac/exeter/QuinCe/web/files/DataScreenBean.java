@@ -85,6 +85,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	private String leftPlotData = null;
 	
+	private String leftPlotNames = null;
+
 	/**
 	 * The data columns being used in the right plot.
 	 * 
@@ -109,6 +111,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	private String rightPlotData = null;
 	
+	private String rightPlotNames = null;
+
 	/**
 	 * The type of CO<sub>2</sub> measurements being viewed.
 	 * Can only be one of {@link RunType#RUN_TYPE_WATER} or {@link RunType#RUN_TYPE_ATMOSPHERIC}.

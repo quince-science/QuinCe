@@ -172,6 +172,8 @@ public class FileInfo {
 	 */
 	private int qcBadCount = 0;
 	
+	private int qcFatalCount = 0;
+
 	/**
 	 * The number of records marked that have not been marked by automatic QC
 	 */
