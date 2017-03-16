@@ -4,7 +4,7 @@
 
 Version      Date           Description
 ---------    ------------   ------------------------------------------------------
-1.0          xx             xx
+alpha1       2017-03-16     2017-03-16
 
 # Introduction
 This document specifies the database tables that are used in the QuinCe project.
