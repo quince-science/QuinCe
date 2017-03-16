@@ -15,8 +15,18 @@ body {
 }
 
 h1,h2 {
-  text-align: center;
   margin-bottom: 30px;
+  display:flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#logoTitle {
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 28px;
 }
 
 label {
@@ -86,11 +96,11 @@ input[type="submit"][disabled="disabled"] {
     cursor: default;
 }
 
-input[type="submit"]:last-of-type {
+input[type="submit"]:last-of-type, button:last-of-type {
     margin-right: 0px;
 }
 
-.smallButton {
+input.smallButton, button.smallButton {
     margin-top: 0px;
 }
 
@@ -111,7 +121,8 @@ input[type="submit"]:last-of-type {
 }
 
 form ul {
-  list-style: outside none none;
+  list-style: none;
+  padding: 0px;
 }
 
 form li {
@@ -150,6 +161,14 @@ ul input {
 #userSettings {
   float: right;
   margin-right: 20px;
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  white-space: nowrap;
 }
 
 .dropDown {
@@ -333,7 +352,7 @@ li.menuitem:hover, li.smallMenuitem:hover {
 }
 
 .questionable {
-  color: #D8B100;
+  color: #FFA42B;
 }
 
 .good {
@@ -349,7 +368,7 @@ li.menuitem:hover, li.smallMenuitem:hover {
 }
 
 .needsFlagging {
-  color: #4542FF;
+  color: #817FFF;
 }
 
 .notSet {
@@ -502,4 +521,10 @@ table.fileDates {
 
 .indent {
 	padding-left: 40px;
+}
+
+.actionIcon {
+	margin-right: 7px;
+	width: 20px;
+	height: 20px;
 }

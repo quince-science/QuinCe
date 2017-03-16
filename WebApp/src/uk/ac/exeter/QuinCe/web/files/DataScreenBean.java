@@ -1,7 +1,10 @@
 package uk.ac.exeter.QuinCe.web.files;
 
+import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -15,6 +18,8 @@ import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.FileJob;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
@@ -23,12 +28,6 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 public class DataScreenBean extends BaseManagedBean {
 
-	static {
-		FORM_NAME = "dataScreen";
-	}
-
-	public static final String CURRENT_FILE_SESSION_ATTRIBUTE = "currentFile";
-	
 	public static final String PAGE_START = "data_screen";
 	
 	public static final String PAGE_END = "file_list";
@@ -45,9 +44,13 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private String leftPlotData = null;
 	
+	private String leftPlotNames = null;
+	
 	private String rightPlotColumns = null;
 	
 	private String rightPlotData = null;
+	
+	private String rightPlotNames = null;
 	
 	private int co2Type = RunType.RUN_TYPE_WATER;
 	
@@ -55,15 +58,25 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	private String tableMode = "basic";
 	
-	private String tableData = null;
-	
+	private String tableJsonData = null;
+
+	private int tableDataDraw;		
+
+	private int tableDataStart;		
+
+	private int tableDataLength;		
+
+	private int recordCount = -1;	
+
 	private String selectedRows = null;
 	
 	private String woceComment = null;
 	
 	private int woceFlag = Flag.VALUE_NEEDED;
 	
-	Instrument instrument;
+	private Instrument instrument;
+
+	private boolean dirty = false;
 	
 	/**
 	 * Required basic constructor. All the actual construction
@@ -76,10 +89,28 @@ public class DataScreenBean extends BaseManagedBean {
 	public String start() throws Exception {
 		clearData();
 		loadFileDetails();
+		
+		// Temporarily always show Bad flags
+		List<String> badFlags = new ArrayList<String>(1);
+		badFlags.add("4");
+		setOptionalFlags(badFlags);
+		
 		return PAGE_START;
 	}
 	
-	public String end() {
+	public String end() throws Exception {
+		
+		if (dirty) {
+			Map<String, String> parameters = new HashMap<String, String>(1);
+			parameters.put(FileJob.FILE_ID_KEY, String.valueOf(fileId));
+			
+			DataSource dataSource = ServletUtils.getDBDataSource();
+			Connection conn = dataSource.getConnection();
+			
+			JobManager.addJob(conn, getUser(), FileInfo.getJobClass(FileInfo.JOB_CODE_REDUCTION), parameters);
+			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
+		}
+		
 		clearData();
 		return PAGE_END;
 	}
@@ -91,7 +122,9 @@ public class DataScreenBean extends BaseManagedBean {
 		rightPlotColumns = null;
 		rightPlotData = null;
 		optionalFlags = null;
-		tableData = null;
+		tableJsonData = null;
+		recordCount = -1;
+		dirty = false;
 	}
 	
 	public long getFileId() {
@@ -122,6 +155,14 @@ public class DataScreenBean extends BaseManagedBean {
 		this.leftPlotData = leftPlotData;
 	}
 	
+	public String getLeftPlotNames() {
+		return leftPlotNames;
+	}
+	
+	public void setLeftPlotNames(String leftPlotNames){
+		this.leftPlotNames = leftPlotNames;
+	}
+	
 	public String getRightPlotColumns() {
 		return rightPlotColumns;
 	}
@@ -138,6 +179,14 @@ public class DataScreenBean extends BaseManagedBean {
 		this.rightPlotData = rightPlotData;
 	}
 	
+	public String getRightPlotNames() {
+		return rightPlotNames;
+	}
+	
+	public void setRightPlotNames(String rightPlotNames){
+		this.rightPlotNames = rightPlotNames;
+	}
+	
 	public int getCo2Type() {
 		return co2Type;
 	}
@@ -151,7 +200,14 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	public void setOptionalFlags(List<String> optionalFlags) {
+		if (optionalFlags.contains(String.valueOf(Flag.VALUE_BAD)) && !optionalFlags.contains(String.valueOf(Flag.VALUE_FATAL))) {
+			optionalFlags.add(String.valueOf(Flag.VALUE_FATAL));
+		}
+		
 		this.optionalFlags = optionalFlags;
+		
+		// Reset the record count, so it is retrieved from the database again.		
+		recordCount = -1;
 	}
 	
 	public String getTableMode() {
@@ -162,14 +218,46 @@ public class DataScreenBean extends BaseManagedBean {
 		this.tableMode = tableMode;
 	}
 	
-	public String getTableData() {
-		return tableData;
-	}
+	public String getTableJsonData() {
+ 		return tableJsonData;		
+ 	}
 	
-	public void setTableData(String tableData) {
-		this.tableData = tableData;
+ 	public void setTableJsonData(String tableJsonData) {
+ 		this.tableJsonData = tableJsonData;
+ 	}		
+ 
+ 	public int getTableDataDraw() {		
+		return tableDataDraw;		
+	}		
+			
+	public void setTableDataDraw(int tableDataDraw) {		
+		this.tableDataDraw = tableDataDraw;		
+	}		
+			
+	public int getTableDataStart() {		
+		return tableDataStart;		
+	}		
+			
+	public void setTableDataStart(int tableDataStart) {		
+		this.tableDataStart = tableDataStart;		
+	}		
+			
+	public int getTableDataLength() {		
+		return tableDataLength;		
+	}		
+			
+	public void setTableDataLength(int tableDataLength) {		
+		this.tableDataLength = tableDataLength;		
+	}		
+			
+	public int getRecordCount() {		
+		return recordCount;		
 	}
-	
+  			  	
+	public void setRecordCount(int recordCount) {
+		this.recordCount = recordCount;
+  	}
+ 
 	public String getSelectedRows() {
 		return selectedRows;
 	}
@@ -375,12 +463,12 @@ public class DataScreenBean extends BaseManagedBean {
 		output.append("</td><td>Atmospheric Pressure</td></tr>");
 		*/
 		
-		// Moisture
-		output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Moisture:</td></tr>");
+		// xH2O
+		output.append("<tr><td colspan=\"2\" class=\"minorHeading\">xH<sub>2</sub>O:</td></tr>");
 		output.append("<tr><td></td><td><table>");
 
-		output.append(makePlotCheckbox("moisture", "moistureMeasured", "Measured"));
-		output.append(makePlotCheckbox("moisture", "moistureTrue", "True"));
+		output.append(makePlotCheckbox("xh2o", "xh2oMeasured", "Measured"));
+		output.append(makePlotCheckbox("xh2o", "xh2oTrue", "True"));
 		
 		output.append("</table></td></tr>");
 
@@ -445,12 +533,14 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	public void generateLeftPlotData() {
 		List<String> columns = StringUtils.delimitedToList(leftPlotColumns);
-		setLeftPlotData(getPlotData(columns)); 
+		setLeftPlotData(getPlotData(columns));
+		setLeftPlotNames(makePlotNames(columns));
 	}
 
 	public void generateRightPlotData() {
 		List<String> columns = StringUtils.delimitedToList(rightPlotColumns);
 		setRightPlotData(getPlotData(columns)); 
+		setRightPlotNames(makePlotNames(columns));
 	}
 	
 	private String getPlotData(List<String> columns) {
@@ -477,7 +567,7 @@ public class DataScreenBean extends BaseManagedBean {
 			// And the Y axis columns
 			submittedColumnList.addAll(columns.subList(1, columns.size()));
 			
-			output = FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, true, false);
+			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, true, false);
 		} catch (Exception e) {
 			e.printStackTrace();
 			output = "***ERROR: " + e.getMessage();
@@ -490,6 +580,10 @@ public class DataScreenBean extends BaseManagedBean {
 
 		try {
 			DataSource dataSource = ServletUtils.getDBDataSource();
+			
+			if (recordCount < 0) {		
+				setRecordCount(FileDataInterrogator.getRecordCount(dataSource, fileId, co2Type, getIncludeFlags()));
+			}
 			
 			List<String> columns = new ArrayList<String>();
 			columns.add("dateTime");
@@ -529,6 +623,26 @@ public class DataScreenBean extends BaseManagedBean {
 				columns.add("salinityMean");
 			}
 			
+			if (instrument.hasAirFlow1()) {
+				columns.add("air_flow_1");
+			}
+			if (instrument.hasAirFlow2()) {
+				columns.add("air_flow_2");
+			}
+			if (instrument.hasAirFlow3()) {
+				columns.add("air_flow_3");
+			}
+
+			if (instrument.hasWaterFlow1()) {
+				columns.add("water_flow_1");
+			}
+			if (instrument.hasWaterFlow2()) {
+				columns.add("water_flow_2");
+			}
+			if (instrument.hasWaterFlow3()) {
+				columns.add("water_flow_3");
+			}
+			
 			if (instrument.getEqtCount() == 1) {
 				columns.add("eqtMean");
 			} else {
@@ -564,8 +678,8 @@ public class DataScreenBean extends BaseManagedBean {
 			}
 			
 			columns.add("atmosPressure");
-			columns.add("moistureMeasured");
-			columns.add("moistureTrue");
+			columns.add("xh2oMeasured");
+			columns.add("xh2oTrue");
 			columns.add("pH2O");
 			columns.add("co2Measured");
 			columns.add("co2Dried");
@@ -579,10 +693,10 @@ public class DataScreenBean extends BaseManagedBean {
 			columns.add("woceFlag");
 			columns.add("woceMessage");
 			
-			setTableData(FileDataInterrogator.getJsonData(dataSource, fileId, co2Type, columns, getIncludeFlags(), 0, 0, true, true));
+			setTableJsonData(FileDataInterrogator.getJsonDataObjects(dataSource, fileId, co2Type, columns, getIncludeFlags(), tableDataStart, tableDataLength, true, true, true));
 		} catch (Exception e) {
 			e.printStackTrace();
-			setTableData("***ERROR: " + e.getMessage());
+			setTableJsonData("***ERROR: " + e.getMessage());
 		}
 	}
 	
@@ -635,6 +749,38 @@ public class DataScreenBean extends BaseManagedBean {
 			
 			output.append("'Salinity:<br/>Mean', ");
 		}
+		
+		if (instrument.hasAirFlow1()) {
+			output.append("'Air Flow:<br/>");
+			output.append(instrument.getAirFlowName1());
+			output.append("', ");
+		}
+		if (instrument.hasAirFlow2()) {
+			output.append("'Air Flow:<br/>");
+			output.append(instrument.getAirFlowName2());
+			output.append("', ");
+		}
+		if (instrument.hasAirFlow3()) {
+			output.append("'Air Flow:<br/>");
+			output.append(instrument.getAirFlowName3());
+			output.append("', ");
+		}
+
+		if (instrument.hasWaterFlow1()) {
+			output.append("'Water Flow:<br/>");
+			output.append(instrument.getWaterFlowName1());
+			output.append("', ");
+		}
+		if (instrument.hasWaterFlow2()) {
+			output.append("'Water Flow:<br/>");
+			output.append(instrument.getWaterFlowName2());
+			output.append("', ");
+		}
+		if (instrument.hasWaterFlow3()) {
+			output.append("'Water Flow:<br/>");
+			output.append(instrument.getWaterFlowName3());
+			output.append("', ");
+		}
 
 		if (instrument.getEqtCount() == 1) {
 			output.append("'Equil. Temp', ");
@@ -682,7 +828,7 @@ public class DataScreenBean extends BaseManagedBean {
 			output.append("'Equil. Pressure:<br/>Mean', ");
 		}
 
-		output.append("'Atmos. Pressure', 'Moisture (Measured)', 'Moisture (True)', 'pH₂O', 'CO₂ Measured', 'CO₂ Dried', 'CO₂ Calibrated', 'pCO₂ TE Dry', "
+		output.append("'Atmos. Pressure', 'xH₂O (Measured)', 'xH₂O (True)', 'pH₂O', 'CO₂ Measured', 'CO₂ Dried', 'CO₂ Calibrated', 'pCO₂ TE Dry', "
 				+ "'pCO₂ TE Wet', 'fCO₂ TE', 'fCO₂ Final', 'QC Flag', 'QC Message', 'WOCE Flag', 'WOCE Message']");
 		
 		return output.toString();
@@ -711,6 +857,7 @@ public class DataScreenBean extends BaseManagedBean {
 	public void acceptQCFlags() {
 		try {
 			QCDB.acceptQCFlags(ServletUtils.getDBDataSource(), fileId, getSelectedRows());
+			dirty = true;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -719,8 +866,199 @@ public class DataScreenBean extends BaseManagedBean {
 	public void applyWoceFlag() {
 		try {
 			QCDB.setWoceFlags(ServletUtils.getDBDataSource(), fileId, getSelectedRows(), getWoceFlag(), getWoceComment());
+			dirty = true;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	protected String getFormName() {
+		return "dataScreen";
+	}
+	
+	/**
+	 * 
+	 * @param columns
+	 * @return
+	 * @see #getPlotData(List)
+	 */
+	private String makePlotNames(List<String> columns) {
+
+		List<String> output = new ArrayList<String>(columns.size());
+		
+		// The first column is the X axis
+		output.add(getPlotSeriesName(columns.get(0)));
+		
+		// Next are the row, QC Flag and WOCE Flag. These are fixed internal series
+		// That are never displayed.
+		output.add("Row");
+		output.add("QC Flag");
+		output.add("WOCE Flag");
+		
+		// Now the rest of the columns
+		for (int i = 1; i < columns.size(); i++) {
+			output.add(getPlotSeriesName(columns.get(i)));
+		}
+		
+		return StringUtils.listToDelimited(output);
+	}
+
+
+	private String getPlotSeriesName(String series) {
+		
+		String result;
+		
+		switch (series) {
+		case "dateTime": {
+			result = ("Date/Time");
+			break;
+		}
+		case("longitude"): {
+			result = ("Longitude");
+			break;
+		}
+		case("latitude"): {
+			result = ("Latitude");
+			break;
+		}
+		case("intakeTemp1"): {
+			result = (instrument.getIntakeTempName1());
+			break;
+		}
+		case("intakeTemp2"): {
+			result = (instrument.getIntakeTempName2());
+			break;
+		}
+		case("intakeTemp3"): {
+			result = (instrument.getIntakeTempName3());
+			break;
+		}
+		case("intakeTempMean"): {
+			result = ("Mean Intake Temp");
+			break;
+		}
+		case("salinity1"): {
+			result = (instrument.getSalinityName1());
+			break;
+		}
+		case("salinity2"): {
+			result = (instrument.getSalinityName2());
+			break;
+		}
+		case("salinity3"): {
+			result = (instrument.getSalinityName3());
+			break;
+		}
+		case("salinityMean"): {
+			result = ("Mean Salinity");
+			break;
+		}
+		case("eqt1"): {
+			result = (instrument.getEqtName1());
+			break;
+		}
+		case("eqt2"): {
+			result = (instrument.getEqtName2());
+			break;
+		}
+		case("eqt3"): {
+			result = (instrument.getEqtName3());
+			break;
+		}
+		case("eqtMean"): {
+			result = ("Mean Equil Temp");
+			break;
+		}
+		case("deltaT"): {
+			result = ("Δ Temp");
+			break;
+		}
+		case("eqp1"): {
+			result = (instrument.getEqpName1());
+			break;
+		}
+		case("eqp2"): {
+			result = (instrument.getEqpName2());
+			break;
+		}
+		case("eqp3"): {
+			result = (instrument.getEqpName3());
+			break;
+		}
+		case("eqpMean"): {
+			result = ("Mean Equil Pres");
+			break;
+		}
+		case("airFlow1"): {
+			result = (instrument.getAirFlowName1());
+			break;
+		}
+		case("airFlow2"): {
+			result = (instrument.getAirFlowName2());
+			break;
+		}
+		case("airFlow3"): {
+			result = (instrument.getAirFlowName3());
+			break;
+		}
+		case("waterFlow1"): {
+			result = (instrument.getWaterFlowName1());
+			break;
+		}
+		case("waterFlow2"): {
+			result = (instrument.getWaterFlowName2());
+			break;
+		}
+		case("waterFlow3"): {
+			result = (instrument.getWaterFlowName3());
+			break;
+		}
+		case("moistureMeasured"): {
+			result = ("Moisture (Measured)");
+			break;
+		}
+		case("moistureTrue"): {
+			result = ("Moisture (True)");
+			break;
+		}
+		case("pH2O"): {
+			result = ("pH₂O");
+			break;
+		}
+		case("co2Measured"): {
+			result = ("Measured CO₂");
+			break;
+		}
+		case("co2Dried"): {
+			result = ("Dried CO₂");
+			break;
+		}
+		case("co2Calibrated"): {
+			result = ("Calibrated CO₂");
+			break;
+		}
+		case("pCO2TEDry"): {
+			result = ("pCO₂ TE Dry");
+			break;
+		}
+		case("pCO2TEWet"): {
+			result = ("pCO₂ TE Wet");
+			break;
+		}
+		case("fCO2TE"): {
+			result = ("fCO₂ TE");
+			break;
+		}
+		case("fCO2Final"): {
+			result = ("Final fCO₂");
+			break;
+		}
+		default: {
+			result = ("***UNKNOWN COLUMN " + series + "***");
+		}
+		}
+
+		return result;
 	}
 }

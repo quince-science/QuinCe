@@ -16,7 +16,8 @@
 		<h:outputStylesheet name="style/jquery-ui.min.css"/>
 		<h:outputScript name="script/jquery.splitter.js"/>
     	<h:outputStylesheet name="style/jquery.splitter.css"/>
-		<h:outputScript name="script/dygraph-combined.js"/>
+		<h:outputScript name="script/dygraph.min.js"/>
+		<h:outputStylesheet name="style/dygraph.css"/>
 		<h:outputScript name="script/datatables.min.js"/>
 		<h:outputStylesheet name="style/datatables.min.css"/>
 		
@@ -46,6 +47,9 @@
 			var waterFlow2Name = '#{dataScreenBean.instrument.waterFlowName2}';
 			var waterFlow3Name = '#{dataScreenBean.instrument.waterFlowName3}';
 			var columnHeadings = #{dataScreenBean.tableHeadings};
+			
+			// The viewing mode for the table
+			var tableMode = 'basic';
 		</script>
 	</h:head>
 	<h:body class="fullPage">
@@ -57,29 +61,35 @@
 			</div>
 		</div>
 		<div id="hiddenData">
-			<h:form id="plotDataForm">
+			<h:form id="plotDataForm" method="post" accept-charset="utf8">
 				<h:inputHidden id="leftColumns" value="#{dataScreenBean.leftPlotColumns}"/>
 				<h:outputText id="leftData" value="#{dataScreenBean.leftPlotData}"/>
+				<h:outputText id="leftNames" value="#{dataScreenBean.leftPlotNames}"/>
 				<h:commandLink id="leftGetData" action="#{dataScreenBean.generateLeftPlotData}">
-					<f:ajax execute="leftColumns" render="leftData" onevent="drawLeftPlot"/>
+					<f:ajax execute="leftColumns" render="leftData leftNames" onevent="drawLeftPlot"/>
 				</h:commandLink>
 
 				<h:inputHidden id="rightColumns" value="#{dataScreenBean.rightPlotColumns}"/>
 				<h:outputText id="rightData" value="#{dataScreenBean.rightPlotData}"/>
+				<h:outputText id="rightNames" value="#{dataScreenBean.rightPlotNames}"/>
 				<h:commandLink id="rightGetData" action="#{dataScreenBean.generateRightPlotData}">
-					<f:ajax execute="rightColumns" render="rightData" onevent="drawRightPlot"/>
+					<f:ajax execute="rightColumns" render="rightData rightNames" onevent="drawRightPlot"/>
 				</h:commandLink>
 				
-				<h:inputHidden id="tableData" value="#{dataScreenBean.tableData}"/>
-				<h:commandLink id="getTableData" action="#{dataScreenBean.generateTableData}">
-					<f:ajax render="tableData" onevent="drawTable"/>
-				</h:commandLink>
+				<h:inputHidden value="#{dataScreenBean.tableJsonData}" id="tableJsonData"/>		
+				<h:inputHidden value="#{dataScreenBean.recordCount}" id="recordCount"/>		
+  				<h:inputHidden value="#{dataScreenBean.tableDataDraw}" id="tableDataDraw"/>		
+  				<h:inputHidden value="#{dataScreenBean.tableDataStart}" id="tableDataStart"/>		
+  				<h:inputHidden value="#{dataScreenBean.tableDataLength}" id="tableDataLength"/>		
+  				<h:commandLink id="tableGetData" action="#{dataScreenBean.generateTableData}">		
+  					<f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw recordCount" onevent="tableDataDownload"/>		
+  				</h:commandLink>
 			</h:form>
 		</div>
 		<div id="qcInfoPopup" class="popup">
 			QC Info
 		</div>
-		<h:form id="dataScreenForm">
+		<h:form id="dataScreenForm" method="post" accept-charset="utf8">
 			<h:inputHidden id="selectedRows" value="#{dataScreenBean.selectedRows}"/>
 			<h:commandLink id="acceptQCFlags" action="#{dataScreenBean.acceptQCFlags}">
 				<f:ajax execute="selectedRows" render="@none" onevent="qcFlagsAccepted"/>
@@ -126,27 +136,27 @@
 			      		<f:ajax render="@none" onevent="drawAllData"/>
 			      	</p:selectManyButton>
 	      		</ui:remove>
-	      		
-	      		<div id="updateStatus">
-	      			<h:commandLink id="FinishLink" value="Finished" action="#{dataScreenBean.end}"/>
-	      		</div>
 	    	</div>
     		<div id="dataScreenContent">
 	    		<div id="plots">
 		    		<div id="plotContainerLeft">
 						<div id="plotLeftContent" class="plotContent"></div>
+						<div id="plotLeftLabels" class="plotLabels"></div>
 		    			<div id="controlsLeft" class="controls">
 		    				<button id="leftXAxis" class="smallButton" onclick="return showPlotPopup(event, 'LX', true);">X Axis…</button>
 		    				<button id="leftYAxis" class="smallButton" onclick="return showPlotPopup(event, 'LY', false);">Y Axis…</button>
 		    				<button id="leftUpdate" class="smallButton" onclick="return updatePlot('left');">Update</button>
+		    				<button id="leftZoomOut" class="smallButton" onclick="return zoomOut(leftGraph);">Zoom Out</button>
 		    			</div>
 		    		</div>
 		    		<div id="plotContainerRight">
 						<div id="plotRightContent" class="plotContent"></div>
+						<div id="plotRightLabels" class="plotLabels"></div>
 		    			<div id="controlsRight" class="controls">
 		    				<button id="rightXAxis" class="smallButton" onclick="return showPlotPopup(event, 'RX', true);">X Axis…</button>
 		    				<button id="rightYAxis" class="smallButton" onclick="return showPlotPopup(event, 'RY', false);">Y Axis…</button>
 		    				<button id="rightUpdate" class="smallButton" onclick="return updatePlot('right');">Update</button>
+		    				<button id="rightZoomOut" class="smallButton" onclick="return zoomOut(rightGraph);">Zoom Out</button>
 		    			</div>
 		    		</div>
 	    		</div>
@@ -156,9 +166,9 @@
 	    				<table width="100%">
 	    					<tr>
 	    						<td>
-						      		<p:selectOneButton value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="changeTableMode(event)">
+						      		<p:selectOneButton value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="renderTableColumns()">
 						      			<f:selectItem itemLabel="Basic" itemValue="basic"/>
-						      			<f:selectItem itemLabel="Water" itemValue="water"/>
+						      			<f:selectItem itemLabel="Water + Flow" itemValue="water"/>
 						      			<f:selectItem itemLabel="Equilibrator" itemValue="equilibrator"/>
 						      			<f:selectItem itemLabel="CO₂" itemValue="co2"/>
 						      			<f:ajax render="@none"/>
@@ -169,6 +179,8 @@
 						      		<button id="clearSelectionButton" class="smallButton tightButton" onclick="clearSelection(); return false;">x</button>
 						      		<button id="acceptFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="acceptQCFlags(); return false;">Use QC Flags</button>
 						      		<button id="overrideFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="showWoceCommentDialog(); return false;">Override QC Flags</button>
+						      		|
+			      			        <h:commandButton id="finishButton" class="smallButton" value="Finish" action="#{dataScreenBean.end}"/>
 	    						</td>
 	    					</tr>
 	    				</table>

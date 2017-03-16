@@ -12,7 +12,7 @@
 
 	<ui:define name="content">
 		<div style="text-align: center">
-			<h:form id="exportForm">
+			<h:form id="exportForm" method="post" accept-charset="utf8">
 				<h:inputHidden id="chosenFile" value="#{fileListBean.chosenFile}"/>
 				<h1>Export</h1>
 				<h3>

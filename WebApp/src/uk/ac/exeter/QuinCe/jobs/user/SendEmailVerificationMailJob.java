@@ -1,6 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs.user;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.mail.EmailException;
@@ -10,6 +10,7 @@ import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
+import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.EmailSender;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.User.VerifyEmailBean;
@@ -17,14 +18,14 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class SendEmailVerificationMailJob extends Job {
 
-	private static final int EMAIL_PARAM = 0;
+	public static final String EMAIL_KEY = "emailAddress";
 	
-	public SendEmailVerificationMailJob(ResourceManager resourceManager, Properties config, long id, List<String> params) throws MissingParamException, InvalidJobParametersException {
+	public SendEmailVerificationMailJob(ResourceManager resourceManager, Properties config, long id, Map<String, String> params) throws MissingParamException, InvalidJobParametersException {
 		super(resourceManager, config, id, params);
 	}
 	
 	@Override
-	protected void execute() throws JobFailedException {
+	protected void execute(JobThread thread) throws JobFailedException {
 		
 		StringBuffer emailText = new StringBuffer();
 		emailText.append("Click the link\n\n");
@@ -32,7 +33,7 @@ public class SendEmailVerificationMailJob extends Job {
 		emailText.append("\n");
 		
 		try {
-			EmailSender.sendEmail(config, parameters.get(EMAIL_PARAM), "Activate your QuinCe account", emailText.toString());
+			EmailSender.sendEmail(config, parameters.get(EMAIL_KEY), "Activate your QuinCe account", emailText.toString());
 		} catch (EmailException e) {
 			throw new JobFailedException(id, e);
 		}
@@ -51,7 +52,7 @@ public class SendEmailVerificationMailJob extends Job {
 		
 		User dbUser;
 		try {
-			dbUser = UserDB.getUser(dataSource, parameters.get(EMAIL_PARAM));
+			dbUser = UserDB.getUser(dataSource, parameters.get(EMAIL_KEY));
 			if (null == dbUser) {
 				throw new InvalidJobParametersException("The specified user doesn't exist in the database");
 			} else if (null == dbUser.getEmailVerificationCode()) {
@@ -64,7 +65,7 @@ public class SendEmailVerificationMailJob extends Job {
 	
 	private String buildLink(Properties config) throws JobFailedException {
 		
-		String emailAddress = parameters.get(EMAIL_PARAM);
+		String emailAddress = parameters.get(EMAIL_KEY);
 		
 		StringBuffer link = new StringBuffer();
 
@@ -95,5 +96,11 @@ public class SendEmailVerificationMailJob extends Job {
 		}
 		
 		return link.toString();
+	}
+	
+	@Override
+	protected String getFinishState() {
+		// Since we ignore interrupts, we always return FINISHED
+		return FINISHED_STATUS;
 	}
 }

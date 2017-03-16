@@ -72,7 +72,7 @@ public class QCRecord extends DataRecord {
 	
 	public static final int FIELD_EQP_3 = 16;
 	
-	public static final int FIELD_MOISTURE = 17;
+	public static final int FIELD_XH2O = 17;
 	
 	public static final int FIELD_CO2 = 19;
 	
@@ -238,7 +238,7 @@ public class QCRecord extends DataRecord {
 	
 	public void clearQCData() {
 		messages = new ArrayList<Message>();
-		setQCFlag(Flag.GOOD);
+		setQCFlag(Flag.NOT_SET);
 	}
 	
 	public void clearAllFlags() {

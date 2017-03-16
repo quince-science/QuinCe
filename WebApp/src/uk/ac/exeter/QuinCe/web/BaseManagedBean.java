@@ -22,8 +22,6 @@ public abstract class BaseManagedBean {
 	
 	public static final String VALIDATION_FAILED_RESULT = "ValidationFailed";
 	
-	protected static String FORM_NAME = "DEFAULT_FORM";
-	
 	/**
 	 * Set a message that can be displayed to the user on a form
 	 * @param componentID The component ID (e.g. {@code form:inputName})
@@ -44,7 +42,7 @@ public abstract class BaseManagedBean {
 	 * @return
 	 */
 	protected String getComponentID(String componentName) {
-		return FORM_NAME + ":" + componentName;
+		return getFormName() + ":" + componentName;
 	}
 	
 	/**
@@ -104,5 +102,9 @@ public abstract class BaseManagedBean {
 	 */
 	public User getUser() {
 		return (User) getSession().getAttribute(LoginBean.USER_SESSION_ATTR);
+	}
+	
+	protected String getFormName() {
+		return "DEFAULT_FORM";
 	}
 }

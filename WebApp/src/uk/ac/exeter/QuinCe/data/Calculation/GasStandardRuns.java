@@ -77,8 +77,8 @@ public class GasStandardRuns {
 		allStandardMeans.add(standardMean);
 	}
 	
-	public double getInterpolatedMoisture(String runType, Calendar time) {
-		return getInterpolatedValue(runType, time, GasStandardMean.TYPE_MOISTURE);
+	public double getInterpolatedXh2o(String runType, Calendar time) {
+		return getInterpolatedValue(runType, time, GasStandardMean.TYPE_XH2O);
 	}
 	
 	public double getInterpolatedCo2(String runType, Calendar time) {

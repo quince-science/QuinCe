@@ -67,11 +67,10 @@
 			
 			function sendInstrument() {
 				$('#uploadFileForm\\:file').hide();
-				//if ($('#uploadFileForm\\:instrument').getSelectedValue() == "") {
-				//} else {
+				if (PF('instrument').getSelectedValue() != "") {
 					$('#checkInstrumentWait').show();
 					$('#uploadFileForm\\:sendInstrumentLink').trigger("click");
-				//}
+				}
 			}
 			
 			function handleStoreInstrument(xhr, status, args) {
@@ -87,7 +86,7 @@
 		<div class="fullPage">
 			<h:form id="uploadFileForm" method="post" accept-charset="utf8" enctype="multipart/form-data">
 				<p:outputLabel id="instrumentLabel" for="instrument">Select Instrument: </p:outputLabel>
-				<p:selectOneMenu id="instrument" name="instrument" value="#{uploadDataFileBean.instrument}" onchange="sendInstrument()">
+				<p:selectOneMenu id="instrument" name="instrument" value="#{uploadDataFileBean.instrument}" onchange="sendInstrument()" widgetVar="instrument">
 					<f:selectItem itemLabel="Select..." itemValue=""/>
 					<f:selectItems value="#{uploadDataFileBean.instrumentList}" var="instr" itemLabel="#{instr.name}" itemValue="#{instr.id}"/>
 					<p:column>

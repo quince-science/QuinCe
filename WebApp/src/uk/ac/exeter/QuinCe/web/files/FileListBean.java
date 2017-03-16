@@ -2,9 +2,11 @@ package uk.ac.exeter.QuinCe.web.files;
 
 import java.io.OutputStream;
 import java.sql.Connection;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.sql.DataSource;
@@ -21,6 +23,7 @@ import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.FileJob;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
@@ -55,6 +58,11 @@ public class FileListBean extends BaseManagedBean {
 	
 	private int chosenExportOption;
 	
+	@PostConstruct
+	public void init() {
+		updateFileList();
+	}
+	
 	/**
 	 * Navigates to the file upload page
 	 * @return The navigation string
@@ -68,14 +76,15 @@ public class FileListBean extends BaseManagedBean {
 	 * @return The user's files
 	 */
 	public List<FileInfo> getFileList() {
-		
+		return fileList;
+	}
+	
+	public void updateFileList() {
 		try {
 			fileList = DataFileDB.getUserFiles(ServletUtils.getDBDataSource(), getUser());
 		} catch (Exception e) {
-			// Do nothing
+			fileList = null;
 		}
-		
-		return fileList;
 	}
 	
 	/**
@@ -84,7 +93,7 @@ public class FileListBean extends BaseManagedBean {
 	 */
 	public String deleteFile() {
 		try {
-			DataFileDB.deleteFile(ServletUtils.getDBDataSource(), ServletUtils.getAppConfig(), getCurrentFileDetails());
+			DataFileDB.setDeleteFlag(ServletUtils.getDBDataSource(), chosenFile, true);
 		} catch (Exception e) {
 			return internalError(e);
 		}
@@ -100,11 +109,12 @@ public class FileListBean extends BaseManagedBean {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			conn = dataSource.getConnection();
 			
-			List<String> params = new ArrayList<String>(1);
-			params.add(String.valueOf(chosenFile));
+			Map<String, String> params = new HashMap<String, String>(1);
+			params.put(FileJob.FILE_ID_KEY, String.valueOf(chosenFile));
 			
-			JobManager.addJob(conn, getUser(), FileInfo.JOB_CLASS_REDUCTION, params);
+			JobManager.addJob(conn, getUser(), FileInfo.getJobClass(FileInfo.JOB_CODE_REDUCTION), params);
 			DataFileDB.setCurrentJob(conn, chosenFile, FileInfo.JOB_CODE_REDUCTION);
+			updateFileList();
 		} catch (Exception e) {
 			return internalError(e);
 		} finally {
@@ -112,19 +122,6 @@ public class FileListBean extends BaseManagedBean {
 		}
 		
 		return PAGE_FILE_LIST;
-	}
-	
-	private FileInfo getCurrentFileDetails() {
-		FileInfo result = null;
-		
-		for (FileInfo info : fileList) {
-			if (info.getFileId() == chosenFile) {
-				result = info;
-				break;
-			}
-		}
-		
-		return result;
 	}
 	
 	/**
@@ -144,6 +141,11 @@ public class FileListBean extends BaseManagedBean {
 	}
 	
 	public String export() {
+		try {
+			DataFileDB.touchFile(ServletUtils.getDBDataSource(), chosenFile);
+		} catch (Exception e) {
+			// If the touch fails, we don't really mind
+		}
 		return PAGE_EXPORT;
 	}
 	

@@ -15,9 +15,12 @@ import javax.annotation.PostConstruct;
 
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RunType;
+import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
+import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
@@ -28,10 +31,6 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 public class NewInstrumentBean extends FileUploadBean implements Serializable {
 
 	private static final long serialVersionUID = 3590765853235157932L;
-
-	static {
-		FORM_NAME = "instrumentForm";
-	}
 
 	//////////////// *** CONSTANTS *** ///////////////////////
 	
@@ -188,9 +187,20 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	/**
 	 * Navigate to the file specification page
 	 * @return The navigation result
+	 * @throws ResourceException 
+	 * @throws DatabaseException 
+	 * @throws MissingParamException 
 	 */
-	public String goToFileSpec() {
-		return PAGE_FILE_SPEC;
+	public String goToFileSpec() throws MissingParamException, DatabaseException, ResourceException {
+		
+		String result = PAGE_FILE_SPEC;
+		
+		if (InstrumentDB.instrumentExists(ServletUtils.getDBDataSource(), getUser(), instrumentDetails.getName())) {
+			setMessage(getComponentID("instrumentName"), "An instrument with that name already exists");
+			result = PAGE_NAMES;
+		}
+
+		return result;
 	}
 	
 	/**
@@ -510,8 +520,8 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 			result = "Atmospheric Pressure";
 			break;
 		}
-		case Instrument.COL_MOISTURE: {
-			result = "Moisture";
+		case Instrument.COL_XH2O: {
+			result = "xH2O";
 			break;
 		}
 		case Instrument.COL_CO2: {
@@ -828,7 +838,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 		}
 		
 		if (!instrumentDetails.getSamplesDried()) {
-			columnList.add(Instrument.COL_MOISTURE);
+			columnList.add(Instrument.COL_XH2O);
 		}
 	
 		columnList.add(Instrument.COL_CO2);
@@ -850,5 +860,10 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 */
 	public void setColumnSelection(String columnSelection) {
 		this.columnSelection = columnSelection;
+	}
+
+	@Override
+	protected String getFormName() {
+		return "instrumentForm";
 	}
 }

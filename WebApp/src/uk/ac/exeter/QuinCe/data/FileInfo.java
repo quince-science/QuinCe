@@ -13,35 +13,38 @@ public class FileInfo {
 
 	public static final int JOB_CODE_EXTRACT = 0;
 	
-	public static final String JOB_NAME_EXTRACT = "Extracting data";
+	private static final String JOB_NAME_EXTRACT = "Extracting data";
 	
-	public static final String JOB_CLASS_EXTRACT = "uk.ac.exeter.QuinCe.jobs.files.ExtractRawDataJob";
+	private static final String JOB_CLASS_EXTRACT = "uk.ac.exeter.QuinCe.jobs.files.ExtractRawDataJob";
 	
-	public static final int JOB_CODE_TRIM_FLUSHING = 1;
+	public static final int JOB_CODE_INITIAL_CHECK = 1;
 	
-	public static final String JOB_NAME_TRIM_FLUSHING = "Trim flushing time";
-	
-	public static final String JOB_CLASS_TRIM_FLUSHING = "uk.ac.exeter.QuinCe.jobs.files.TrimFlushingJob";
-	
-	public static final int JOB_CODE_REDUCTION = 2;
-	
-	public static final String JOB_NAME_REDUCTION = "Data reduction";
-	
-	public static final String JOB_CLASS_REDUCTION = "uk.ac.exeter.QuinCe.jobs.files.DataReductionJob";
-	
-	public static final int JOB_CODE_AUTO_QC = 3;
-	
-	public static final String JOB_NAME_AUTO_QC = "Automatic QC";
-	
-	public static final String JOB_CLASS_AUTO_QC = "uk.ac.exeter.QuinCe.jobs.files.AutoQCJob";
+	private static final String JOB_NAME_INITIAL_CHECK = "Initial data check";
 
-	public static final int JOB_CODE_USER_QC = 4;
+	private static final String JOB_CLASS_INITIAL_CHECK = "uk.ac.exeter.QuinCe.jobs.files.AutoQCJob";
 	
-	public static final String JOB_NAME_USER_QC = "User QC";
+	public static final int JOB_CODE_TRIM_FLUSHING = 2;
+	
+	private static final String JOB_NAME_TRIM_FLUSHING = "Trim flushing time";
+	
+	private static final String JOB_CLASS_TRIM_FLUSHING = "uk.ac.exeter.QuinCe.jobs.files.TrimFlushingJob";
+	
+	public static final int JOB_CODE_REDUCTION = 3;
+	
+	private static final String JOB_NAME_REDUCTION = "Data reduction";
+	
+	private static final String JOB_CLASS_REDUCTION = "uk.ac.exeter.QuinCe.jobs.files.DataReductionJob";
+	
+	public static final int JOB_CODE_AUTO_QC = 4;
+	
+	private static final String JOB_NAME_AUTO_QC = "Automatic QC";
+	
+	private static final String JOB_CLASS_AUTO_QC = "uk.ac.exeter.QuinCe.jobs.files.AutoQCJob";
 
-	public static final int JOB_CODE_NEEDS_RECALC = 5;
+	public static final int JOB_CODE_USER_QC = 5;
 	
-	public static final String JOB_NAME_NEEDS_RECALC = "Recalculation Required";
+	private static final String JOB_NAME_USER_QC = "User QC";
+
 	/**
 	 * The file's database ID
 	 */
@@ -83,6 +86,11 @@ public class FileInfo {
 	private int recordCount;
 	
 	/**
+	 * The delete flag for the file
+	 */
+	private boolean deleteFlag;
+	
+	/**
 	 * The number of atmospheric measurement records in the file
 	 */
 	private int atmosphericMeasurementCount = 0;
@@ -103,6 +111,8 @@ public class FileInfo {
 	
 	private int qcBadCount = 0;
 	
+	private int qcFatalCount = 0;
+	
 	private int qcNotSetCount = 0;
 	
 	private int woceGoodCount = 0;
@@ -112,6 +122,8 @@ public class FileInfo {
 	private int woceQuestionableCount = 0;
 	
 	private int woceBadCount = 0;
+
+	private int woceFatalCount = 0;
 	
 	private int woceNotSetCount = 0;
 	
@@ -132,13 +144,14 @@ public class FileInfo {
 	 * @param lastTouched The date that the file was last touched
 	 */
 	public FileInfo(long fileId, long instrumentId, String instrument, String fileName, Calendar startDate, int recordCount,
-			int currentJob, Calendar lastTouched, int atmosphericMeasurementsCount, int oceanMeasurementsCount, int standardsCount) {
+			boolean deleteFlag, int currentJob, Calendar lastTouched, int atmosphericMeasurementsCount, int oceanMeasurementsCount, int standardsCount) {
 		this.fileId = fileId;
 		this.instrumentId = instrumentId;
 		this.instrument = instrument;
 		this.fileName = fileName;
 		this.startDate = startDate;
 		this.recordCount = recordCount;
+		this.deleteFlag = deleteFlag;
 		this.currentJob = currentJob;
 		this.lastTouched = lastTouched;
 		this.atmosphericMeasurementCount = atmosphericMeasurementsCount;
@@ -199,31 +212,7 @@ public class FileInfo {
 	 * @return The job code
 	 */
 	public String getJobName() {
-		String result;
-		
-		switch (currentJob) {
-		case JOB_CODE_EXTRACT: {
-			result = JOB_NAME_EXTRACT;
-			break;
-		}
-		case JOB_CODE_REDUCTION: {
-			result = JOB_NAME_REDUCTION;
-			break;
-		}
-		case JOB_CODE_AUTO_QC: {
-			result = JOB_NAME_AUTO_QC;
-			break;
-		}
-		case JOB_CODE_USER_QC: {
-			result = JOB_NAME_USER_QC;
-			break;
-		}
-		default: {
-			result = "Unknown";
-		}
-		}
-		
-		return result;
+		return getJobName(currentJob);
 	}
 	
 	/**
@@ -316,6 +305,14 @@ public class FileInfo {
 		this.qcBadCount = qcBadCount;
 	}
 
+	public int getQcFatalCount() {
+		return qcFatalCount;
+	}
+
+	public void setQcFatalCount(int qcFatalCount) {
+		this.qcFatalCount = qcFatalCount;
+	}
+
 	public int getQcNotSetCount() {
 		return qcNotSetCount;
 	}
@@ -356,6 +353,14 @@ public class FileInfo {
 		this.woceBadCount = woceBadCount;
 	}
 
+	public int getWoceFatalCount() {
+		return woceFatalCount;
+	}
+
+	public void setWoceFatalCount(int woceFatalCount) {
+		this.woceFatalCount = woceFatalCount;
+	}
+
 	public int getWoceNotSetCount() {
 		return woceNotSetCount;
 	}
@@ -392,5 +397,89 @@ public class FileInfo {
 		woceNotSetCount = 0;
 		woceNeededCount = 0;
 		ignoredCount = 0;
+	}
+	
+	public boolean isQcable() {
+		return !deleteFlag && currentJob == JOB_CODE_USER_QC;
+	}
+	
+	public boolean isExportable() {
+		return !deleteFlag && currentJob == JOB_CODE_USER_QC && woceNeededCount == 0;
+	}
+	
+	public boolean isDeleteable() {
+		return true;
+	}
+	
+	public boolean isRecalculateable() {
+		return !deleteFlag && currentJob == JOB_CODE_USER_QC;
+	}
+	
+	public static String getJobClass(int jobCode) {
+		String result;
+		
+		switch (jobCode) {
+		case JOB_CODE_EXTRACT: {
+			result = JOB_CLASS_EXTRACT;
+			break;
+		}
+		case JOB_CODE_INITIAL_CHECK: {
+			result = JOB_CLASS_INITIAL_CHECK;
+			break;
+		}
+		case JOB_CODE_TRIM_FLUSHING: {
+			result = JOB_CLASS_TRIM_FLUSHING;
+			break;
+		}
+		case JOB_CODE_REDUCTION: {
+			result = JOB_CLASS_REDUCTION;
+			break;
+		}
+		case JOB_CODE_AUTO_QC: {
+			result = JOB_CLASS_AUTO_QC;
+			break;
+		}
+		default: {
+			result = null;
+		}
+		}
+		
+		return result;
+	}
+
+	public static String getJobName(int jobCode) {
+		String result = null;
+		
+		switch (jobCode) {
+		case JOB_CODE_EXTRACT: {
+			result = JOB_NAME_EXTRACT;
+			break;
+		}
+		case JOB_CODE_INITIAL_CHECK: {
+			result = JOB_NAME_INITIAL_CHECK;
+			break;
+		}
+		case JOB_CODE_TRIM_FLUSHING: {
+			result = JOB_NAME_TRIM_FLUSHING;
+			break;
+		}
+		case JOB_CODE_REDUCTION: {
+			result = JOB_NAME_REDUCTION;
+			break;
+		}
+		case JOB_CODE_AUTO_QC: {
+			result = JOB_NAME_AUTO_QC;
+			break;
+		}
+		case JOB_CODE_USER_QC: {
+			result = JOB_NAME_USER_QC;
+			break;
+		}
+		default: {
+			result = "Unknown";
+		}
+		}
+		
+		return result;
 	}
 }

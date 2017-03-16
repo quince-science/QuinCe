@@ -26,13 +26,20 @@
 #eqt1
 #eqt2
 #eqt3
+#deltaT
 #eqpMean
 #eqp1
 #eqp2
 #eqp3
+#airFlow1
+#airFlow2
+#airFlow3
+#waterFlow1
+#waterFlow2
+#waterFlow3
 #atmosPressure
-#moistureMeasured
-#moistureTrue
+#xh2oMeasured
+#xh2oTrue
 #pH2O
 #co2Measured
 #co2Dried
@@ -52,9 +59,8 @@
 #
 # If the separator is comma, use 
 # If the separator is tab, use 
-#
-# The list of columns that the application knows about can be found <somewhere>.
 
 # Name, Separator, CO2 Type, Column, Column, ...
-ICOS OTC Labelling Step 2,\,,0,dateTime,longitude,latitude,intakeTemp1,intakeTemp2,intakeTemp3,intakeTempMean,salinity1,salinity2,salinity3,salinityMean,eqt1,eqt2,eqt3,eqtMean,eqp1,eqp2,eqp3,eqpMean,moistureMeasured,moistureTrue,fCO2Final ,qcFlag ,qcMessage
-Original file,\,,0,original
+ICOS OTC Labelling Step 2,\,,0,dateTime,longitude,latitude,intakeTempMean,salinityMean,eqtMean,deltaT,eqpMean,airFlow1,airFlow2,airFlow3,waterFlow1,waterFlow2,waterFlow3,xh2oMeasured,xh2oTrue,fCO2Final ,qcFlag ,qcMessage
+SOCAT,\,,0,dateTime,longitude,latitude,intakeTempMean,salinityMean,eqtMean,deltaT,eqpMean,airFlow1,airFlow2,airFlow3,waterFlow1,waterFlow2,waterFlow3,xh2oMeasured,xh2oTrue,fCO2Final,qcFlag,qcMessage
+#Original file,\,,0,original

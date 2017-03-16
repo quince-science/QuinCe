@@ -285,7 +285,10 @@ public class RawDataFile {
 		
 		for (int i = 0; i < contents.size(); i++) {
 			try {
-				dates.add(getDateFromLine(i));
+				String runType = contents.get(i).get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+				if (!instrument.isIgnoredRunType(runType)) {
+					dates.add(getDateFromLine(i));
+				}
 			} catch (DateTimeParseException|InstrumentException e) {
 				datesOK = false;
 				if (firstBadDate < 0) {

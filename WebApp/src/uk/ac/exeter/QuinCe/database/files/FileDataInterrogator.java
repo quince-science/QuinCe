@@ -66,6 +66,12 @@ public class FileDataInterrogator {
 		COLUMN_MAPPINGS.put("salinity1", "raw_data.salinity_1");
 		COLUMN_MAPPINGS.put("salinity2", "raw_data.salinity_2");
 		COLUMN_MAPPINGS.put("salinity3", "raw_data.salinity_3");
+		COLUMN_MAPPINGS.put("air_flow_1", "raw_data.air_flow_1");
+		COLUMN_MAPPINGS.put("air_flow_2", "raw_data.air_flow_2");
+		COLUMN_MAPPINGS.put("air_flow_3", "raw_data.air_flow_3");
+		COLUMN_MAPPINGS.put("water_flow_1", "raw_data.water_flow_1");
+		COLUMN_MAPPINGS.put("water_flow_2", "raw_data.water_flow_2");
+		COLUMN_MAPPINGS.put("water_flow_3", "raw_data.water_flow_3");
 		COLUMN_MAPPINGS.put("eqtMean", "data_reduction.mean_eqt");
 		COLUMN_MAPPINGS.put("eqt1", "raw_data.eqt_1");
 		COLUMN_MAPPINGS.put("eqt2", "raw_data.eqt_2");
@@ -82,8 +88,8 @@ public class FileDataInterrogator {
 		COLUMN_MAPPINGS.put("waterFlow2", "raw_data.water_flow_2");
 		COLUMN_MAPPINGS.put("waterFlow3", "raw_data.water_flow_3");
 		COLUMN_MAPPINGS.put("atmosPressure", "data_reduction.atmospheric_pressure");
-		COLUMN_MAPPINGS.put("moistureMeasured", "raw_data.moisture");
-		COLUMN_MAPPINGS.put("moistureTrue", "data_reduction.true_moisture");
+		COLUMN_MAPPINGS.put("xh2oMeasured", "raw_data.xh2o");
+		COLUMN_MAPPINGS.put("xh2oTrue", "data_reduction.true_xh2o");
 		COLUMN_MAPPINGS.put("pH2O", "data_reduction.ph2O");
 		COLUMN_MAPPINGS.put("co2Measured", "raw_data.co2");
 		COLUMN_MAPPINGS.put("co2Dried", "data_reduction.dried_co2");
@@ -285,7 +291,7 @@ public class FileDataInterrogator {
 						
 						// Handle the date/time as a special case 
 						currentDBColumn++;
-						outputBuffer.append(formatField(records, currentDBColumn, columnName, true));
+						outputBuffer.append(formatField(records, currentDBColumn, columnName, false, "NaN"));
 						
 					} else if (!columnName.equals(COLUMN_ORIGINAL_FILE)) {
 						
@@ -294,7 +300,7 @@ public class FileDataInterrogator {
 							addSeparator = false;
 						} else {
 							currentDBColumn++;
-							outputBuffer.append(formatField(records, currentDBColumn, columnName, true));
+							outputBuffer.append(formatField(records, currentDBColumn, columnName, false, "NaN"));
 						}
 					} else {
 						// Find the line corresponding to the date from the database
@@ -340,81 +346,79 @@ public class FileDataInterrogator {
 		return output;
 	}
 
-	private static String formatField(ResultSet records, int columnIndex, String columnName, boolean asString) throws SQLException, MessageException {
+	private static String formatField(ResultSet records, int columnIndex, String columnName, boolean jsonMode, String missingValue) throws SQLException, MessageException {
 		
-		StringBuffer result = new StringBuffer();
+		String result;
 		
 		switch (columnName) {
 		case "dateTime": {
 			Calendar colDate = DatabaseUtils.getUTCDateTime(records, columnIndex);
 			
-			if (asString) {
-				result.append(DateTimeUtils.formatDateTime(colDate));
-			} else {
+			if (jsonMode) {
 				// We return the date as a milliseconds value, which can
 				// be parsed into a Date object by the Javascript
-				result.append(colDate.getTimeInMillis());
+				result = String.valueOf(colDate.getTimeInMillis());
+			} else {
+				result = DateTimeUtils.formatDateTime(colDate);
 			}
 			break;
 		}
-		case "row": {
-			result.append(records.getInt(columnIndex));
-			break;
-		}
+		case "row":
 		case "qcFlag":
 		case "woceFlag": {
-			result.append(records.getString(columnIndex));
+			result = records.getString(columnIndex);
 			break;
 		}
 		case "qcMessage": {
+			StringBuilder messageString = new StringBuilder();
 			List<Message> messages = RebuildCode.getMessagesFromRebuildCodes(records.getString(columnIndex));
 			
 			for (int i = 0; i < messages.size(); i++) {
-				result.append(messages.get(i).getShortMessage());
+				messageString.append(messages.get(i).getShortMessage());
 				if (i < messages.size() - 1) {
-					result.append(';');
+					messageString.append(';');
 				}
 			}
+			
+			result = messageString.toString();
 			break;
 		}
 		default: {
+
+			// Includes row, qcFlag and woceFlag
+			
 			String value = records.getString(columnIndex);
 			if (null == value) {
-				if (asString) {
-					result.append("");
-				} else {
-					result.append("null");
-				}
+				result = null;
 			} else if (StringUtils.isNumeric(value)) {
 				Double doubleValue = Double.parseDouble(value);
 				
 				if (doubleValue == RawDataDB.MISSING_VALUE) {
-					
-					if (asString) {
-						// The calling method will wrap this in quotes, so we don't have to
-						result.append("NaN");
-					} else {
-						result.append("\"NaN\"");
-					}
+					result = missingValue;
 				} else {
-					result.append(String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value)));
+					result = String.format(Locale.ENGLISH, "%.3f", Double.parseDouble(value));
 				}
 			} else {
-				result.append(value.replaceAll("\n", "\\n"));
+				result = value.replaceAll("\n", "\\n");
 			}
 		}
 		}
 		
-		return result.toString();
+		return result;
 	}
 	
-	public static String getJsonData(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings) throws MissingParamException, MessageException {
+	public static String getJsonDataObjects(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings, boolean includeRowId)  throws MissingParamException, MessageException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(columns, "columns");
 		MissingParam.checkMissing(includeFlags, "includeFlags");
 		
 		String output = null;
+
+		String missingValue = null;
+		if (valuesAsStrings) {
+			missingValue = "NaN";
+		}
 		
 		// Variables for getting data from database
 		Connection conn = null;
@@ -429,7 +433,95 @@ public class FileDataInterrogator {
 			ResultSetMetaData rsmd = records.getMetaData();
 			int columnCount = rsmd.getColumnCount();
 
-			StringBuffer outputBuffer = new StringBuffer();
+			StringBuilder outputBuffer = new StringBuilder();
+			outputBuffer.append('[');
+		
+			int currentRow = start - 1;
+			boolean hasRecords = false;
+			while (records.next()) {
+				currentRow++;
+				hasRecords = true;
+				
+				outputBuffer.append('{');
+				if (includeRowId) {
+					outputBuffer.append("\"DT_RowId\":\"row");
+					outputBuffer.append(currentRow);
+					outputBuffer.append("\",");
+				}
+				
+				for (int col = 1; col <= columnCount; col++) {
+
+					// The first column is always the date/time (it's added automatically)
+					// Plus we check the other columns too (which are zero-based, and the automatic dateTime accounts for one)
+					String columnName = columns.get(col - 1);
+					outputBuffer.append('\"');
+					outputBuffer.append(col - 1);
+					outputBuffer.append("\":");
+					
+					if (valuesAsStrings) {
+						outputBuffer.append('\"');
+					}
+					outputBuffer.append(formatField(records, col, columnName, true, missingValue));
+					
+					if (valuesAsStrings) {
+						outputBuffer.append('\"');
+					}
+					
+					if (col < columnCount) {
+						outputBuffer.append(',');
+					}
+				}
+
+				outputBuffer.append("},");
+			}
+			
+			// Remove the trailing comma from the last record
+			if (hasRecords) {
+				outputBuffer.deleteCharAt(outputBuffer.length() - 1);
+			}
+			outputBuffer.append(']');
+			
+			output = outputBuffer.toString();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			output = "***ERROR - " + e.getMessage();
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+
+		return output;
+	}
+	
+	public static String getJsonDataArray(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings) throws MissingParamException, MessageException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		MissingParam.checkMissing(columns, "columns");
+		MissingParam.checkMissing(includeFlags, "includeFlags");
+		
+		String output = null;
+		
+		String missingValue = null;
+		if (valuesAsStrings) {
+			missingValue = "NaN";
+		}
+		
+		// Variables for getting data from database
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+
+		try {
+			conn = dataSource.getConnection();
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, start, length, sortByFirstColumn);
+			
+			records = stmt.executeQuery();
+			ResultSetMetaData rsmd = records.getMetaData();
+			int columnCount = rsmd.getColumnCount();
+
+			StringBuilder outputBuffer = new StringBuilder();
 			outputBuffer.append('[');
 			
 			boolean hasRecords = false;
@@ -438,7 +530,6 @@ public class FileDataInterrogator {
 				
 				outputBuffer.append('[');
 				for (int col = 1; col <= columnCount; col++) {
-					
 
 					// The first column is always the date/time (it's added automatically)
 					// Plus we check the other columns too (which are zero-based, and the automatic dateTime accounts for one)
@@ -447,7 +538,8 @@ public class FileDataInterrogator {
 					if (valuesAsStrings) {
 						outputBuffer.append('\"');
 					}
-					outputBuffer.append(formatField(records, col, columnName, valuesAsStrings));
+
+					outputBuffer.append(formatField(records, col, columnName, true, missingValue));
 					
 					if (valuesAsStrings) {
 						outputBuffer.append('\"');
@@ -651,12 +743,12 @@ public class FileDataInterrogator {
 			result = "Atmospheric Pressure";
 			break;
 		}
-		case "moistureMeasured": {
-			result = "Moisture (measured)";
+		case "xh2oMeasured": {
+			result = "xH₂O (measured)";
 			break;
 		}
-		case "moistureTrue": {
-			result = "Moisture (true)";
+		case "xh2oTrue": {
+			result = "xH₂O (true)";
 			break;
 		}
 		case "pH2O": {
