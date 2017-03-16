@@ -33,6 +33,7 @@ import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -66,14 +67,12 @@ public class DataReductionJob extends FileJob {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the job cannot be found in the database
 	 */
-	public DataReductionJob(ResourceManager resourceManager, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+	public DataReductionJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(resourceManager, config, jobId, parameters);
 	}
 	
 	@Override
-	protected void execute() throws JobFailedException {
-		reset();
-		
+	protected void executeFileJob(JobThread thread) throws JobFailedException {
 		Connection conn = null;
 		
 		try {
@@ -90,11 +89,16 @@ public class DataReductionJob extends FileJob {
 			
 			int lineNumber = 0;
 			for (RawDataValues record : rawData) {
+				
+				if (thread.isInterrupted()) {
+					break;
+				}
+				
 				lineNumber++;
 				NoDataQCRecord qcRecord = qcRecords.get(record.getRow());
 				
 				// If the record has been marked bad, we skip it
-				if (qcRecord.getWoceFlag().equals(Flag.BAD) || qcRecord.getWoceFlag().equals(Flag.IGNORED)) {
+				if (qcRecord.getWoceFlag().equals(Flag.FATAL) || qcRecord.getWoceFlag().equals(Flag.BAD) || qcRecord.getWoceFlag().equals(Flag.IGNORED)) {
 				
 					// Store empty data reduction values (unless other values have previously been stored)
 					DataReductionDB.storeRow(conn, fileId, record.getRow(), false, record.getCo2Type(), RawDataDB.MISSING_VALUE,
@@ -103,10 +107,6 @@ public class DataReductionJob extends FileJob {
 							RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE, RawDataDB.MISSING_VALUE);
 					
 				} else {
-				
-					// Reset the QC flags
-					qcRecord.clearAllFlags();
-					
 					if (record.getCo2Type() == RunType.RUN_TYPE_WATER) {
 						
 						boolean canCalculateCO2 = true;
@@ -138,6 +138,7 @@ public class DataReductionJob extends FileJob {
 						double meanIntakeTemp = calcMeanIntakeTemp(record, instrument, qcRecord);
 						if (meanIntakeTemp == RawDataDB.MISSING_VALUE) {
 							canCalculateCO2 = false;
+							qcRecord.addMessage(new MissingValueMessage(qcRecord.getLineNumber(), qcRecord.getColumnIndex("Intake Temp 1"), instrument.getIntakeTempName1(), Flag.FATAL));
 							qcRecord.setWoceFlag(Flag.BAD);
 							qcRecord.appendWoceComment("Missing intake temperature");
 						}
@@ -145,13 +146,15 @@ public class DataReductionJob extends FileJob {
 						double meanSalinity = calcMeanSalinity(record, instrument, qcRecord);
 						if (meanSalinity == RawDataDB.MISSING_VALUE) {
 							canCalculateCO2 = false;
-							qcRecord.setWoceFlag(Flag.BAD);
+							qcRecord.addMessage(new MissingValueMessage(qcRecord.getLineNumber(), qcRecord.getColumnIndex("Salinity 1"), instrument.getSalinityName1(), Flag.FATAL));
+							qcRecord.setWoceFlag(Flag.FATAL);
 							qcRecord.appendWoceComment("Missing salinity");
 						}
 						
 						double meanEqt = calcMeanEqt(record, instrument, qcRecord);
 						if (meanEqt == RawDataDB.MISSING_VALUE) {
 							canCalculateCO2 = false;
+							qcRecord.addMessage(new MissingValueMessage(qcRecord.getLineNumber(), qcRecord.getColumnIndex("Equilibrator Temperature 1"), instrument.getEqtName1(), Flag.FATAL));
 							qcRecord.setWoceFlag(Flag.BAD);
 							qcRecord.appendWoceComment("Missing equilibrator temperature");
 						}
@@ -164,11 +167,12 @@ public class DataReductionJob extends FileJob {
 						double meanEqp = calcMeanEqp(record, instrument, qcRecord);
 						if (meanEqp == RawDataDB.MISSING_VALUE) {
 							canCalculateCO2 = false;
+							qcRecord.addMessage(new MissingValueMessage(qcRecord.getLineNumber(), qcRecord.getColumnIndex("Equilibrator Pressure 1"), instrument.getEqpName1(), Flag.FATAL));
 							qcRecord.setWoceFlag(Flag.BAD);
 							qcRecord.appendWoceComment("Missing equilibrator pressure");
 						}
 						
-						// Get the moisture and mathematically dry the CO2 if required
+						// Get the xH2O and mathematically dry the CO2 if required
 						double driedCo2 = record.getCo2();
 						if (driedCo2 == RawDataDB.MISSING_VALUE) {
 							canCalculateCO2 = false;
@@ -177,18 +181,18 @@ public class DataReductionJob extends FileJob {
 							qcRecord.appendWoceComment("Missing CO2");
 						}
 						
-						double trueMoisture = 0;
+						double trueXh2o = 0;
 						if (canCalculateCO2 && !instrument.getSamplesDried()) {
-							double measuredMoisture = record.getMoisture();
-							if (measuredMoisture == RawDataDB.MISSING_VALUE) {
+							double measuredXh2o = record.getXh2o();
+							if (measuredXh2o == RawDataDB.MISSING_VALUE) {
 								canCalculateCO2 = false;
-								qcRecord.addMessage(new MissingValueMessage(record.getRow(), NoDataQCRecord.FIELD_MOISTURE, qcRecord.getColumnName(NoDataQCRecord.FIELD_MOISTURE), Flag.BAD));
+								qcRecord.addMessage(new MissingValueMessage(record.getRow(), NoDataQCRecord.FIELD_XH2O, qcRecord.getColumnName(NoDataQCRecord.FIELD_XH2O), Flag.BAD));
 								qcRecord.setWoceFlag(Flag.BAD);
-								qcRecord.appendWoceComment("Missing Moisture");
+								qcRecord.appendWoceComment("Missing xH2O");
 							}
 
-							trueMoisture = measuredMoisture - standardRuns.getInterpolatedMoisture(null, record.getTime());
-							driedCo2 = record.getCo2() / (1.0 - (trueMoisture / 1000));
+							trueXh2o = measuredXh2o - standardRuns.getInterpolatedXh2o(null, record.getTime());
+							driedCo2 = record.getCo2() / (1.0 - (trueXh2o / 1000));
 						}
 
 						double calibratedCo2 = RawDataDB.MISSING_VALUE;
@@ -208,10 +212,15 @@ public class DataReductionJob extends FileJob {
 						}
 												
 						DataReductionDB.storeRow(conn, fileId, record.getRow(), true, record.getCo2Type(), meanIntakeTemp,
-								meanSalinity, meanEqt, deltaTemperature, meanEqp, trueMoisture, driedCo2, calibratedCo2,
+								meanSalinity, meanEqt, deltaTemperature, meanEqp, trueXh2o, driedCo2, calibratedCo2,
 								pCo2TEDry, pH2O, pCo2TEWet, fco2TE, fco2);
 						
+						QCDB.setQC(conn, fileId, qcRecord);
+					} else {
 						
+						// For the time being we're ignoring atmospheric records,
+						// so clear all the QC flags
+						qcRecord.clearAllFlags();
 						QCDB.setQC(conn, fileId, qcRecord);
 					}
 				}
@@ -221,12 +230,31 @@ public class DataReductionJob extends FileJob {
 				}
 			}
 			
-			// Queue up the automatic QC job
-			User owner = JobManager.getJobOwner(conn, id);
-			JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_AUTO_QC, parameters);
-			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_AUTO_QC);
 
-			conn.commit();
+			// If the thread was interrupted, undo everything
+			if (thread.isInterrupted()) {
+				conn.rollback();
+
+				// Requeue the data reduction job
+				try {
+					User owner = JobManager.getJobOwner(dataSource, id);
+					JobManager.addJob(conn, owner, FileInfo.getJobClass(FileInfo.JOB_CODE_REDUCTION), parameters);
+					DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
+					conn.commit();
+				} catch (RecordNotFoundException e) {
+					// This means the file has been marked for deletion. No action is required.
+				}
+			} else {
+				// Queue up the automatic QC job
+				Map<String, String> nextJobParameters = AutoQCJob.getJobParameters(FileInfo.JOB_CODE_AUTO_QC, fileId);
+				
+				User owner = JobManager.getJobOwner(conn, id);
+				JobManager.addJob(conn, owner, FileInfo.getJobClass(FileInfo.JOB_CODE_AUTO_QC), nextJobParameters);
+				DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_AUTO_QC);
+				conn.commit();
+			}
+
+			
 		} catch (Exception e) {
 			throw new JobFailedException(id, e);
 		} finally {

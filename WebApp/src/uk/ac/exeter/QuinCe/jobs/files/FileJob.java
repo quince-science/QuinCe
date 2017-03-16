@@ -1,6 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Instrument;
@@ -10,6 +10,8 @@ import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
+import uk.ac.exeter.QuinCe.jobs.JobFailedException;
+import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -20,6 +22,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @see Job
  */
 public abstract class FileJob extends Job {
+	
+	public static final String FILE_ID_KEY = "FILE_ID";
 	
 	/**
 	 * The ID of the data file
@@ -48,10 +52,10 @@ public abstract class FileJob extends Job {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If any referenced database records are missing
 	 */
-	public FileJob(ResourceManager resourceManager, Properties config, long jobId, List<String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
-		// File jobs have no parameters.
+	public FileJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(resourceManager, config, jobId, parameters);
-		instrument = InstrumentDB.getInstrumentByFileId(dataSource, fileId);
+		
+		// The file ID and instrument are extracted in the validateParameters method 
 	}
 
 	/**
@@ -59,10 +63,14 @@ public abstract class FileJob extends Job {
 	 * It's not strictly a parameter, but it's a handy place to do it.
 	 */
 	protected void validateParameters() throws InvalidJobParametersException {
-		
+		if (!parameters.containsKey(FILE_ID_KEY)) {
+			throw new InvalidJobParametersException("Data file not specified");
+		}
+
 		try {
-			fileId = Long.parseLong(parameters.get(0));
-			
+			fileId = Long.parseLong(parameters.get(FILE_ID_KEY));
+			instrument = InstrumentDB.getInstrumentByFileId(dataSource, fileId);
+
 			if (!DataFileDB.fileExists(dataSource, fileId)) {
 				throw new InvalidJobParametersException("The data file " + fileId + " does not exist");
 			}
@@ -70,4 +78,22 @@ public abstract class FileJob extends Job {
 			throw new InvalidJobParametersException("An unexpected error occurred: " + e.getMessage());
 		}
 	}
+	
+	@Override
+	protected final void execute(JobThread thread) throws JobFailedException {
+		try {
+			boolean deleteFlag = DataFileDB.getDeleteFlag(dataSource, fileId);
+			if (deleteFlag) {
+				setFinishState(KILLED_STATUS);
+			} else {
+				executeFileJob(thread);
+			}
+		} catch (JobFailedException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new JobFailedException(id, "Error while performing checks for file job", e);
+		}
+	}
+	
+	protected abstract void executeFileJob(JobThread thread) throws JobFailedException;
 }

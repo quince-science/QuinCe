@@ -54,7 +54,7 @@ public class InstrumentDB {
 			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
 			+ "air_flow_1_col, air_flow_2_col, air_flow_3_col, "
 			+ "water_flow_1_col, water_flow_2_col, water_flow_3_col, "
-			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count, "
+			+ "atmospheric_pressure_col, xh2o_col, co2_col, raw_col_count, "
 			+ "pre_flushing_time, post_flushing_time) "
 			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
 			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
@@ -82,7 +82,7 @@ public class InstrumentDB {
 			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
 			+ "air_flow_1_col, air_flow_2_col, air_flow_3_col, "
 			+ "water_flow_1_col, water_flow_2_col, water_flow_3_col, "
-			+ "atmospheric_pressure_col, moisture_col, co2_col, raw_col_count, "
+			+ "atmospheric_pressure_col, xh2o_col, co2_col, raw_col_count, "
 			+ "pre_flushing_time, post_flushing_time "
 			+ "FROM instrument WHERE id = ? ORDER BY name";
 			
@@ -185,7 +185,7 @@ public class InstrumentDB {
 			instrStmt.setInt(61, instrument.getColumnAssignment(Instrument.COL_WATER_FLOW_2));
 			instrStmt.setInt(62, instrument.getColumnAssignment(Instrument.COL_WATER_FLOW_3));
 			instrStmt.setInt(63, instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE));
-			instrStmt.setInt(64, instrument.getColumnAssignment(Instrument.COL_MOISTURE));
+			instrStmt.setInt(64, instrument.getColumnAssignment(Instrument.COL_XH2O));
 			instrStmt.setInt(65, instrument.getColumnAssignment(Instrument.COL_CO2));
 			instrStmt.setInt(66, instrument.getRawFileColumnCount());
 			instrStmt.setInt(67, instrument.getPreFlushingTime());
@@ -271,6 +271,22 @@ public class InstrumentDB {
 		return instrumentList;
 	}
 
+	public static boolean instrumentExists(DataSource dataSource, User owner, String name) throws MissingParamException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(owner, "owner");
+		MissingParam.checkMissing(name, "name");
+		
+		boolean exists = false;
+		
+		for (InstrumentStub instrument : getInstrumentList(dataSource, owner)) {
+			if (instrument.getName().equalsIgnoreCase(name)) {
+				exists = true;
+				break;
+			}
+		}
+		
+		return exists;
+	}
 	
 	public static Instrument getInstrument(DataSource dataSource, long instrumentID) throws DatabaseException, MissingParamException, RecordNotFoundException {
 		
@@ -382,7 +398,7 @@ public class InstrumentDB {
 				instrument.setColumnAssignment(Instrument.COL_WATER_FLOW_2, record.getInt(61));
 				instrument.setColumnAssignment(Instrument.COL_WATER_FLOW_3, record.getInt(62));
 				instrument.setColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE, record.getInt(63));
-				instrument.setColumnAssignment(Instrument.COL_MOISTURE, record.getInt(64));
+				instrument.setColumnAssignment(Instrument.COL_XH2O, record.getInt(64));
 				instrument.setColumnAssignment(Instrument.COL_CO2, record.getInt(65));
 				instrument.setRawFileColumnCount(record.getInt(66));
 				instrument.setPreFlushingTime(record.getInt(67));

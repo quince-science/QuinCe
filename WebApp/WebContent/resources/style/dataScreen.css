@@ -51,12 +51,22 @@ body.fullPage {
   position: absolute;
   background: #AAA;
   width: 100%;
+  height: 23px;
   margin: 0px;
   bottom: 0px;
   left: 0px;
   padding: 5px 10px 5px 10px;
   font-size: 14px;
   font-weight: bold;
+}
+
+.plotLabels {
+  position: absolute;
+  bottom: 33px;
+  left: 0px;
+  padding: 2px;
+  background: #DDD;
+  margin: 0px;
 }
 
 .plotContent {
@@ -165,4 +175,8 @@ body.fullPage {
     width: 490px;
     height: 150px;
     resize: none;
+}
+
+tr.selected {
+	background-color: #FFFF00 !important;
 }

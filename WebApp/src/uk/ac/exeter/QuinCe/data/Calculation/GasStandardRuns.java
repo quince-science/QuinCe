@@ -84,7 +84,7 @@ public class GasStandardRuns {
 	 * 
 	 * <p>
 	 *   The interpolated value is calculated as a linear interpolation
-	 *   of the moisture values between the standard runs immediately
+	 *   of the xH<sub>2</sub>O values between the standard runs immediately
 	 *   preceding and following the specified time. If the specified time
 	 *   is before the first standard run, the value for the first run is used.
 	 *   If the specified time is after the last standard run, the value for
@@ -95,8 +95,8 @@ public class GasStandardRuns {
 	 * @return The interpolated moisture value
 	 * @see RunType
 	 */
-	public double getInterpolatedMoisture(String runType, Calendar time) {
-		return getInterpolatedValue(runType, time, GasStandardMean.TYPE_MOISTURE);
+	public double getInterpolatedXh2o(String runType, Calendar time) {
+		return getInterpolatedValue(runType, time, GasStandardMean.TYPE_XH2O);
 	}
 	
 	/**

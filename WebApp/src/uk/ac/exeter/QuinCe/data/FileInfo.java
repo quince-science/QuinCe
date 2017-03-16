@@ -26,60 +26,66 @@ public class FileInfo {
 	 */
 	public static final String JOB_CLASS_EXTRACT = "uk.ac.exeter.QuinCe.jobs.files.ExtractRawDataJob";
 	
+	public static final int JOB_CODE_INITIAL_CHECK = 1;
+	
+	private static final String JOB_NAME_INITIAL_CHECK = "Initial data check";
+
+	private static final String JOB_CLASS_INITIAL_CHECK = "uk.ac.exeter.QuinCe.jobs.files.AutoQCJob";
+	
 	/**
 	 * The internal code for the flushing time trimming job stage
 	 */
-	public static final int JOB_CODE_TRIM_FLUSHING = 1;
+	public static final int JOB_CODE_TRIM_FLUSHING = 2;
 	
 	/**
 	 * The human-readable text for the flushing time trimming job stage
 	 */
-	public static final String JOB_NAME_TRIM_FLUSHING = "Trim flushing time";
+	private static final String JOB_NAME_TRIM_FLUSHING = "Trim flushing time";
 	
 	/**
 	 * The job class for flushing time trimming
 	 */
-	public static final String JOB_CLASS_TRIM_FLUSHING = "uk.ac.exeter.QuinCe.jobs.files.TrimFlushingJob";
+	private static final String JOB_CLASS_TRIM_FLUSHING = "uk.ac.exeter.QuinCe.jobs.files.TrimFlushingJob";
 	
 	/**
 	 * The internal job code for the data reduction job stage
 	 */
-	public static final int JOB_CODE_REDUCTION = 2;
+	public static final int JOB_CODE_REDUCTION = 3;
 	
 	/**
 	 * The human-readable text for the data reduction job stage
 	 */
-	public static final String JOB_NAME_REDUCTION = "Data reduction";
+	private static final String JOB_NAME_REDUCTION = "Data reduction";
 	
 	/**
 	 * The job class for data reduction
 	 */
-	public static final String JOB_CLASS_REDUCTION = "uk.ac.exeter.QuinCe.jobs.files.DataReductionJob";
+	private static final String JOB_CLASS_REDUCTION = "uk.ac.exeter.QuinCe.jobs.files.DataReductionJob";
 	
 	/**
 	 * The internal code for the automatic QC stage
 	 */
-	public static final int JOB_CODE_AUTO_QC = 3;
+	public static final int JOB_CODE_AUTO_QC = 4;
 	
 	/**
 	 * The human-readable text for the automatic QC stage
 	 */
-	public static final String JOB_NAME_AUTO_QC = "Automatic QC";
+	private static final String JOB_NAME_AUTO_QC = "Automatic QC";
 	
 	/**
 	 * The job class for automatic QC
 	 */
-	public static final String JOB_CLASS_AUTO_QC = "uk.ac.exeter.QuinCe.jobs.files.AutoQCJob";
+	private static final String JOB_CLASS_AUTO_QC = "uk.ac.exeter.QuinCe.jobs.files.AutoQCJob";
 
 	/**
 	 * The internal code for the user QC stage
 	 */
-	public static final int JOB_CODE_USER_QC = 4;
+	public static final int JOB_CODE_USER_QC = 5;
 	
 	/**
 	 * The human-readable text for the user QC stage
 	 */
-	public static final String JOB_NAME_USER_QC = "User QC";
+	private static final String JOB_NAME_USER_QC = "User QC";
 
 	/**
 	 * The internal code indicating that data recalculation is required
@@ -130,6 +136,11 @@ public class FileInfo {
 	 * The number of records in the file
 	 */
 	private int recordCount;
+	
+	/**
+	 * The delete flag for the file
+	 */
+	private boolean deleteFlag;
 	
 	/**
 	 * The number of atmospheric measurement records in the file
@@ -185,6 +196,8 @@ public class FileInfo {
 	 * The number of records that have been assigned a Bad WOCE flag
 	 */
 	private int woceBadCount = 0;
+
+	private int woceFatalCount = 0;
 	
 	/**
 	 * The number of records that not been assigned a WOCE flag
@@ -220,13 +233,14 @@ public class FileInfo {
 	 * @param standardsCount The number of gas standards measurements in the file
 	 */
 	public FileInfo(long fileId, long instrumentId, String instrument, String fileName, Calendar startDate, int recordCount,
-			int currentJob, Calendar lastTouched, int atmosphericMeasurementsCount, int oceanMeasurementsCount, int standardsCount) {
+			boolean deleteFlag, int currentJob, Calendar lastTouched, int atmosphericMeasurementsCount, int oceanMeasurementsCount, int standardsCount) {
 		this.fileId = fileId;
 		this.instrumentId = instrumentId;
 		this.instrument = instrument;
 		this.fileName = fileName;
 		this.startDate = startDate;
 		this.recordCount = recordCount;
+		this.deleteFlag = deleteFlag;
 		this.currentJob = currentJob;
 		this.lastTouched = lastTouched;
 		this.atmosphericMeasurementCount = atmosphericMeasurementsCount;
@@ -471,6 +485,14 @@ public class FileInfo {
 		this.qcBadCount = qcBadCount;
 	}
 
+	public int getQcFatalCount() {
+		return qcFatalCount;
+	}
+
+	public void setQcFatalCount(int qcFatalCount) {
+		this.qcFatalCount = qcFatalCount;
+	}
+
 	/**
 	 * Get the number of records that do not have a flag from automatic QC
 	 * @return The number of records that do not have a flag from automatic QC
@@ -551,6 +573,14 @@ public class FileInfo {
 		this.woceBadCount = woceBadCount;
 	}
 
+	public int getWoceFatalCount() {
+		return woceFatalCount;
+	}
+
+	public void setWoceFatalCount(int woceFatalCount) {
+		this.woceFatalCount = woceFatalCount;
+	}
+
 	/**
 	 * Get the number of records that have not yet had a WOCE flag assigned
 	 * @return The number of records that have not yet had a WOCE flag assigned
@@ -614,5 +644,89 @@ public class FileInfo {
 		woceNotSetCount = 0;
 		woceNeededCount = 0;
 		ignoredCount = 0;
+	}
+	
+	public boolean isQcable() {
+		return !deleteFlag && currentJob == JOB_CODE_USER_QC;
+	}
+	
+	public boolean isExportable() {
+		return !deleteFlag && currentJob == JOB_CODE_USER_QC && woceNeededCount == 0;
+	}
+	
+	public boolean isDeleteable() {
+		return true;
+	}
+	
+	public boolean isRecalculateable() {
+		return !deleteFlag && currentJob == JOB_CODE_USER_QC;
+	}
+	
+	public static String getJobClass(int jobCode) {
+		String result;
+		
+		switch (jobCode) {
+		case JOB_CODE_EXTRACT: {
+			result = JOB_CLASS_EXTRACT;
+			break;
+		}
+		case JOB_CODE_INITIAL_CHECK: {
+			result = JOB_CLASS_INITIAL_CHECK;
+			break;
+		}
+		case JOB_CODE_TRIM_FLUSHING: {
+			result = JOB_CLASS_TRIM_FLUSHING;
+			break;
+		}
+		case JOB_CODE_REDUCTION: {
+			result = JOB_CLASS_REDUCTION;
+			break;
+		}
+		case JOB_CODE_AUTO_QC: {
+			result = JOB_CLASS_AUTO_QC;
+			break;
+		}
+		default: {
+			result = null;
+		}
+		}
+		
+		return result;
+	}
+
+	public static String getJobName(int jobCode) {
+		String result = null;
+		
+		switch (jobCode) {
+		case JOB_CODE_EXTRACT: {
+			result = JOB_NAME_EXTRACT;
+			break;
+		}
+		case JOB_CODE_INITIAL_CHECK: {
+			result = JOB_NAME_INITIAL_CHECK;
+			break;
+		}
+		case JOB_CODE_TRIM_FLUSHING: {
+			result = JOB_NAME_TRIM_FLUSHING;
+			break;
+		}
+		case JOB_CODE_REDUCTION: {
+			result = JOB_NAME_REDUCTION;
+			break;
+		}
+		case JOB_CODE_AUTO_QC: {
+			result = JOB_NAME_AUTO_QC;
+			break;
+		}
+		case JOB_CODE_USER_QC: {
+			result = JOB_NAME_USER_QC;
+			break;
+		}
+		default: {
+			result = "Unknown";
+		}
+		}
+		
+		return result;
 	}
 }

@@ -20,9 +20,19 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public class JobThreadPool {
 
 	/**
+	 * Indicates that a running thread was not found for a particular job
+	 */
+	public static final int THREAD_NOT_RUNNING = 0;
+	
+	/**
+	 * Indicates that a running thread for a job was found, and the thread has been interrupted
+	 */
+	public static final int THREAD_INTERRUPTED = 1;
+	
+	/**
 	 * The singleton instance of the thread pool
 	 */
-	private static JobThreadPool itsInstance = null;
+	private static JobThreadPool instance = null;
 	
 	/**
 	 * The maximum number of threads in the pool
@@ -111,6 +121,7 @@ public class JobThreadPool {
 		}
 		
 		thread.setupJob(job);
+		thread.setName("Instant job thread (not yet started)");
 		
 		return thread;
 		
@@ -139,7 +150,7 @@ public class JobThreadPool {
 	 * @return {@code true} if the pool has been initialised; {@code false} if it has not.
 	 */
 	public static boolean isInitialised() {
-		return !(null == itsInstance);
+		return !(null == instance);
 	}
 	
 	/**
@@ -155,22 +166,21 @@ public class JobThreadPool {
 			throw new InvalidThreadCountException();
 		}
 		
-		if (null == itsInstance) {
-			itsInstance = new JobThreadPool(maxThreads);
+		if (null == instance) {
+			instance = new JobThreadPool(maxThreads);
 		}
 	}
 	
-	
 	public static JobThreadPool getInstance() throws JobThreadPoolNotInitialisedException {
-		if (null == itsInstance) {
+		if (null == instance) {
 			throw new JobThreadPoolNotInitialisedException();
 		}
 		
-		return itsInstance;
+		return instance;
 	}
 	
 	public static void destroy() {
-		itsInstance = null;
+		instance = null;
 	}
 	
 	public int getPoolThreadCount() {
@@ -181,11 +191,11 @@ public class JobThreadPool {
 		return maxThreads;
 	}
 	
-	public int getRunningThreads() {
+	public int getRunningThreadsCount() {
 		return allocatedThreads.size();
 	}
 	
-	public int getOverflowThreads() {
+	public int getOverflowThreadsCount() {
 		int overflowThreads = 0;
 		
 		for (JobThread thread : allocatedThreads) {
@@ -195,5 +205,64 @@ public class JobThreadPool {
 		}
 		
 		return overflowThreads;
+	}
+	
+	/**
+	 * <p>Determines whether or not a thread with a given name is currently running
+	 * as part of the job thread pool.</p>
+	 * <p><b>N.B.</b> If a thread with the supplied name is running, but is not part of the job thread pool,
+	 * it will not be detected.</p> 
+	 * 
+	 * @param threadName The name of the thread
+	 * @return {@code true} if the thread is running in the job thread pool; {@code false} if it is not.
+	 */
+	public boolean isThreadRunning(String threadName) {
+		boolean threadRunning = false;
+		
+		for (JobThread thread : allocatedThreads) {
+			if (thread.getName().equals(threadName)) {
+				threadRunning = true;
+				break;
+			}
+		}
+		
+		return threadRunning;
+	}
+
+	/**
+	 * Kill a job.
+	 * 
+	 * <p>
+	 *   This checks the list of running threads to see if the specified job is currently running.
+	 *   If it is, an interrupt signal is sent to it, indicating that it should close down. It is
+	 *   up to the job to decide how it interprets this signal.
+	 * </p>
+	 * 
+	 * <p>
+	 *   If the job is not running, no action is taken. The return value of the method
+	 *   indicates whether or not a running thread was found.
+	 * </p>
+	 * 
+	 * @param jobId The job's database ID
+	 * @return {@code #THREAD_INTERRUPTED} if a thread for the job was found; {@code #THREAD_NOT_RUNNING} if no thread was found.
+	 */
+	public int killJob(long jobId) {
+		
+		int result = THREAD_NOT_RUNNING;
+
+		// We don't want the list of allocated threads changing underneath us
+		synchronized (allocatedThreads) {
+			
+			for (JobThread thread : allocatedThreads) {
+				if (thread.getId() == jobId) {
+					// Interrupt the thread
+					thread.interrupt();
+					result = THREAD_INTERRUPTED;
+					break;
+				}
+			}
+		}
+		
+		return result;
 	}
 }

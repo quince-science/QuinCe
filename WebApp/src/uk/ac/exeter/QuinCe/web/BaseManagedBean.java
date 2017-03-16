@@ -37,16 +37,6 @@ public abstract class BaseManagedBean {
 	public static final String VALIDATION_FAILED_RESULT = "ValidationFailed";
 	
 	/**
-	 * The name of the main form in the bean's corresponding HTML page.
-	 * 
-	 * In order to construct the HTML ID for an input on the page,
-	 * the {@link #getComponentID(String)} method must know
-	 * the name of the form that contains it. As the base class for a number of beans,
-	 * a default form name is provided that can be overridden if required. 
-	 */
-	protected static String FORM_NAME = "DEFAULT_FORM";
-	
-	/**
 	 * Set a message that can be displayed to the user on a form
 	 * @param componentID The component ID (e.g. {@code form:inputName})
 	 * @param messageString The message string
@@ -66,7 +56,7 @@ public abstract class BaseManagedBean {
 	 * @return The JSF component ID
 	 */
 	protected String getComponentID(String componentName) {
-		return FORM_NAME + ":" + componentName;
+		return getFormName() + ":" + componentName;
 	}
 	
 	/**
@@ -130,5 +120,9 @@ public abstract class BaseManagedBean {
 	 */
 	public User getUser() {
 		return (User) getSession().getAttribute(LoginBean.USER_SESSION_ATTR);
+	}
+	
+	protected String getFormName() {
+		return "DEFAULT_FORM";
 	}
 }

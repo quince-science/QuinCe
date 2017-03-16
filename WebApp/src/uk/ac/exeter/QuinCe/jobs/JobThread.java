@@ -26,7 +26,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 	 * once they have completed.
 	 */
 	private boolean overflowThread;
-	
+		
 	/**
 	 * Creates a job thread
 	 * @param overflowThread Indicates whether or not this is an overflow thread
@@ -50,7 +50,6 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 	public void setupJob(Job job) throws MissingParamException {
 		MissingParam.checkMissing(job, "job");
 		this.job = job;
-		setName("JOB_" + job.getID());
 	}
 	
 	/**
@@ -77,13 +76,35 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 	 */
 	public void run() {
 		try {
+			setName(String.valueOf(job.getID()) + '_' + System.currentTimeMillis());
+			
 			// Run the job
+			job.setFinishState(Job.FINISHED_STATUS);
 			job.setProgress(0);
-			job.logStarted();
-			job.execute();
-			job.logFinished();
+			job.logStarted(getName());
+			job.execute(this);
+			
+			switch (job.getFinishState()) {
+			case (Job.KILLED_STATUS):
+			{
+				job.logKilled();
+				break;
+			}
+			case (Job.FINISHED_STATUS):
+			{
+				job.logFinished();
+				break;
+			}
+			default: {
+				throw new JobException("Invalid finished state (" + job.getFinishState() + ") set on job");
+			}
+			}
 		} catch (Exception e) {
-			job.logError(e);
+			try {
+				job.logError(e);
+			} catch (Exception e2) {
+				e.printStackTrace();
+			}
 		} finally {
 			job.destroy();
 			setName(WAITING_THREAD_NAME);
@@ -101,5 +122,18 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 	@Override
 	public int compareTo(JobThread o) {
 		return Long.signum(getId() - o.getId());
+	}
+	
+	@Override
+	public void interrupt() {
+		// Do the standard thread interruption
+		super.interrupt();
+		
+		// Set the finish state on the job to KILLED
+		try {
+			job.setFinishState(Job.KILLED_STATUS);
+		} catch (JobException e) {
+			e.printStackTrace();
+		}
 	}
 }

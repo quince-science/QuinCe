@@ -74,7 +74,9 @@ public class DatabaseUtils {
 	public static void closeConnection(Connection conn) {
 		if (null != conn) {
 			try {
-				conn.setAutoCommit(true);
+				if (!conn.getAutoCommit()) {
+					conn.rollback();
+				}
 				conn.close();
 			} catch (SQLException e) {
 				// Do nothing

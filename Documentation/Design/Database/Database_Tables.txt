@@ -4,7 +4,7 @@
 
 Version      Date           Description
 ---------    ------------   ------------------------------------------------------
-1.0          xx             xx
+alpha1       2017-03-16     2017-03-16
 
 # Introduction
 This document specifies the database tables that are used in the QuinCe project.
@@ -113,7 +113,7 @@ water_flow_1_col         Integer        Water flow 1
 water_flow_2_col         Integer        Water flow 2
 water_flow_3_col         Integer        Water flow 3
 atmospheric_pressure_col Integer        Atmospheric pressure
-moisture_col             Integer        Moisture
+xh2o_col                 Integer        xH~2~O
 co2_col                  Integer        CO~2~
 raw_col_count            Integer        The total number of columns in the instrument's data files
 pre_flushing_time        Integer        The number of seconds to discard at the start of each run type
@@ -261,6 +261,7 @@ start_date               Date           The date of the first record in the file
 record_count             Integer        The number of records in the file
 current_job              Integer        The current activity being performed on the file. See below.
 last_touched             DateTime       The date when the file was last touched. Files held beyond a given length of time will be automatically deleted.
+delete_flag              Integer        A flag that is set when a file is marked for deletion
 
 #### `current_job`
 When a file is uploaded, it is processed in a number of stages, which are indicated by an integer value.
@@ -306,7 +307,7 @@ air_flow_3               Float          Air flow 3
 water_flow_1             Float          Water flow 1
 water_flow_2             Float          Water flow 2
 water_flow_3             Float          Water flow 3
-moisture                 Float          Moisture
+xh2o                     Float          xH~2~O
 atmospheric_pressure     Float          Atmospheric pressure
 co2                      Float          The CO~2~ measurement
 
@@ -330,10 +331,11 @@ data_file_id             F_KEY          File ID
 row                      Integer        Row number (from the original data file)
 date_time                DateTime       Date and time
 run_type_id              F_KEY          The ID of the gas standard in the `run_types` table
-air_flow_1               Double         Air flow 1
-air_flow_2               Double         Air flow 2
-air_flow_3               Double         Air flow 3
-concentration            Double         The concentration measured
+air_flow_1               Float          Air flow 1
+air_flow_2               Float          Air flow 2
+air_flow_3               Float          Air flow 3
+xh2o                     Float          xH~2~O
+concentration            Float          The concentration measured
 qc_flag                  Integer        A QC flag for the gas standards data. Used to disable the use of a standard during data reduction
 qc_message               String         A message describing the reason for the QC flag
 
@@ -358,7 +360,7 @@ mean_eqt                 Float          The equilibrator temperature, as a mean 
 delta_temperature        Float          The difference between the mean intake temperature and the mean equilibrator temperature
 mean_eqp                 Float          The equilibrator pressure, as a mean of all the sensor measurements.
 atmospheric_pressure     Float          The atmospheric pressure, either from the instrument or imported
-true_moisture            Float          The true moisture, calculated as the difference between the measured moisture and the moisture measured from the dry standard gases.
+true_xh2o                Float          The true xH~2~O, after correction to the gas standards
 dried_co2                Float          The mathematically dried CO~2~ value
 calibrated_co2           Float          The CO~2~ value calibrated to the gas standards
 pco2_te_dry              Float          Dry pCO~2~ at equilibrator temperature
@@ -393,6 +395,7 @@ qc_flag                  Integer        The QC flag assigned by the automatic QC
 qc_message               String         The message(s) from the automatic QC routines
 woce_flag                Integer        The WOCE flag assigned by the user
 woce_comment             String         The WOCE comment
+woce_fatal               Boolean        Indicates whether or not a WOCE Bad flag is Fatal
 
 
 # Jobs
@@ -410,7 +413,7 @@ owner                    F_KEY          The user id of the owner of the job
 submitted                DateTime       The date and time on which the job was submitted
 class                    String         The class name of the job to be run
 parameters               String         The parameters to be passed to the job when it is run
-status                   ENUM           The current status of the job (WAITING, RUNNING, FINISHED, ERROR)
+status                   ENUM           The current status of the job (WAITING, RUNNING, FINISHED, ERROR, KILLED)
 started                  DateTime       The time when the job was started
 ended                    DateTime       The time when the job completed
 thread_name              String         The name of the thread which is running the job

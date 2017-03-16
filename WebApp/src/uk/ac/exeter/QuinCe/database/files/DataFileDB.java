@@ -8,7 +8,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -27,6 +29,7 @@ import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.FileJob;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -65,8 +68,8 @@ public class DataFileDB {
 	/**
 	 * Query to find all the data files owned by a given user
 	 */
-	private static final String GET_USER_FILES_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
-			+ " WHERE i.owner = ? ORDER BY f.last_touched DESC";
+	private static final String GET_USER_FILES_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched, f.delete_flag FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
+			+ " WHERE f.delete_flag = 0 AND i.owner = ? ORDER BY f.last_touched DESC";
 	
 	/**
 	 * Statement to delete the details of a data file
@@ -76,7 +79,7 @@ public class DataFileDB {
 	/**
 	 * Query to find a file using its database ID
 	 */
-	private static final String FIND_FILE_BY_ID_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
+	private static final String FIND_FILE_BY_ID_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched, f.delete_flag FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
 			+ " WHERE f.id = ?";
 	
 	/**
@@ -106,11 +109,13 @@ public class DataFileDB {
 	
 	/**
 	 * Query to retrieve the number of records with each possible QC flag value for a given data file
+         * Only marine measurements are included.
 	 */
-	private static final String GET_QC_FLAGS_QUERY = "SELECT DISTINCT qc_flag, COUNT(qc_flag) FROM qc WHERE data_file_id = ? GROUP BY qc_flag";
+	private static final String GET_QC_FLAGS_QUERY = "SELECT DISTINCT qc_flag, COUNT(qc_flag) FROM qc AS q INNER JOIN raw_data AS w on w.data_file_id = q.data_file_id AND w.row = q.row WHERE q.data_file_id = ? AND w.co2_type = 0 GROUP BY qc_flag";
 
 	/**
 	 * Query to retrieve the number of records with each possible WOCE flag value for a given data file
+         * Only marine measurements are included.
 	 */
 	private static final String GET_WOCE_FLAGS_QUERY = "SELECT DISTINCT woce_flag, COUNT(woce_flag) FROM qc WHERE data_file_id = ? GROUP BY woce_flag";
 
@@ -118,6 +123,12 @@ public class DataFileDB {
 	 * Statement to set the given data file's {@code last_touched} value to the current time
 	 */
 	private static final String TOUCH_FILE_STATEMENT = "UPDATE data_file SET last_touched = NOW() WHERE id = ?";
+	
+	private static final String SET_DELETE_FLAG_STATEMENT = "UPDATE data_file SET delete_flag = ? WHERE id = ?";
+
+	private static final String GET_DELETE_FLAG_STATEMENT = "SELECT delete_flag FROM data_file WHERE id = ?";
+	
+	private static final String GET_DELETE_FLAG_FILES_QUERY = "SELECT id FROM data_file WHERE delete_flag = 1";
 
 	/**
 	 * Store a file in the database and in the file store
@@ -163,9 +174,9 @@ public class DataFileDB {
 			generatedKeys = stmt.getGeneratedKeys();
 			if (generatedKeys.next()) {
 			
-				List<String> jobParameters = new ArrayList<String>(1);
-				jobParameters.add(String.valueOf(generatedKeys.getLong(1)));
-				JobManager.addJob(conn, owner, FileInfo.JOB_CLASS_EXTRACT, jobParameters);
+				Map<String, String> jobParameters = new HashMap<String, String>(1);
+				jobParameters.put(FileJob.FILE_ID_KEY, String.valueOf(generatedKeys.getLong(1)));
+				JobManager.addJob(conn, owner, FileInfo.getJobClass(FileInfo.JOB_CODE_EXTRACT), jobParameters);
 				
 				// Store the file
 				FileStore.storeFile(appConfig, instrumentID, dataFile);
@@ -202,6 +213,19 @@ public class DataFileDB {
 	 */
 	public static boolean fileExists(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		return (null != getFileDetails(dataSource, fileId));
+	}
+	
+	/**
+	 * Determinsed whether a file with the specified ID exists in the database
+	 * @param conn A database connection
+	 * @param fileId The file ID
+	 * @return {@code true} if the file exists; {@code false} if it does not
+	 * @throws MissingParamException If any parameters are missing
+	 * @throws DatabaseException If an error occurs
+	 * @throws RecordNotFoundException If the file disappears between locating it and reading its details
+	 */
+	public static boolean fileExists(Connection conn, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		return (null != getFileDetails(conn, fileId));
 	}
 	
 	/**
@@ -294,18 +318,32 @@ public class DataFileDB {
 	 * @see FileInfo
 	 */
 	public static FileInfo getFileDetails(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-		
-		FileInfo result = null;
-		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
-				
+		
 		Connection conn = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			return getFileDetails(conn, fileId);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while searching for the file", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+		
+	public static FileInfo getFileDetails(Connection conn, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+			
+		FileInfo result = null;
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkPositive(fileId, "fileId");
+				
 		PreparedStatement stmt = null;
 		ResultSet record = null;
 		
 		try {
-			conn = dataSource.getConnection();
 			stmt = conn.prepareStatement(FIND_FILE_BY_ID_QUERY);
 			stmt.setLong(1, fileId);
 			record = stmt.executeQuery();
@@ -318,10 +356,16 @@ public class DataFileDB {
 		} finally {
 			DatabaseUtils.closeResultSets(record);
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return result;
+	}
+	
+	public static void deleteFile(DataSource dataSource, Properties appConfig, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(appConfig, "appConfig");
+		MissingParam.checkPositive(fileId, "fileId");
+		deleteFile(dataSource, appConfig, getFileDetails(dataSource, fileId));
 	}
 	
 	/**
@@ -495,6 +539,7 @@ public class DataFileDB {
 		int currentJob = record.getInt(7);
 		Calendar lastTouched = DateTimeUtils.getUTCCalendarInstance();
 		lastTouched.setTime(record.getDate(8));
+		boolean deleteFlag = record.getBoolean(9);
 	
 		PreparedStatement atmosphericMeasurementsStmt = null;
 		PreparedStatement oceanMeasurementsStmt = null;
@@ -538,7 +583,7 @@ public class DataFileDB {
 		}
 
 		
-		FileInfo result = new FileInfo(fileID, instrumentId, instrumentName, fileName, startDate, recordCount, currentJob, lastTouched, atmosphericMeasurements, oceanMeasurements, standards);
+		FileInfo result = new FileInfo(fileID, instrumentId, instrumentName, fileName, startDate, recordCount, deleteFlag, currentJob, lastTouched, atmosphericMeasurements, oceanMeasurements, standards);
 		updateFlagCounts(conn, result);
 		return result;
 	}
@@ -590,6 +635,10 @@ public class DataFileDB {
 					fileInfo.setQcBadCount(qcFlags.getInt(2));
 					break;
 				}
+				case Flag.VALUE_FATAL: {
+					fileInfo.setQcFatalCount(qcFlags.getInt(2));
+					break;
+				}
 				case Flag.VALUE_NOT_SET: {
 					fileInfo.setQcNotSetCount(qcFlags.getInt(2));
 					break;
@@ -625,6 +674,10 @@ public class DataFileDB {
 				}
 				case Flag.VALUE_BAD: {
 					fileInfo.setWoceBadCount(woceFlags.getInt(2));
+					break;
+				}
+				case Flag.VALUE_FATAL: {
+					fileInfo.setWoceFatalCount(woceFlags.getInt(2));
 					break;
 				}
 				case Flag.VALUE_NOT_SET: {
@@ -676,6 +729,139 @@ public class DataFileDB {
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while touching file", e);
 		} finally {
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	/**
+	 * Set the delete flag on a data file. If set to {@code true}, this will
+	 * indicate that the file should be deleted.
+	 * 
+	 * <p>
+	 *   Files that have their delete flag set will not appear in the system
+	 *   as far as users are concerned. A background task will perform the actual deletion.
+	 * </p>
+	 * @param dataSource A data source
+	 * @param fileId The database ID of the data file
+	 * @param deleteFlag The delete flag
+	 * @throws MissingParamException If any of the parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the specified data file does not exist in the database
+	 */
+	public static void setDeleteFlag(DataSource dataSource, long fileId, boolean deleteFlag) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		
+		Connection conn = null;
+		PreparedStatement stmt= null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(SET_DELETE_FLAG_STATEMENT);
+			stmt.setBoolean(1, deleteFlag);
+			stmt.setLong(2, fileId);
+			
+			stmt.execute();
+			if (stmt.getUpdateCount() == 0) {
+				throw new RecordNotFoundException("Data file missing while setting delete flag", "data_file", fileId);
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while setting delete flag", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	/**
+	 * Get the delete flag for a data file.
+	 * @param dataSource A data source
+	 * @param fileId The database ID of the data file
+	 * @return {@code true} if the file is marked for deletion; {@code false} if it is not
+	 * @throws MissingParamException If any parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the specified data file does not exist in the database
+	 */
+	public static boolean getDeleteFlag(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkPositive(fileId, "fileId");
+		
+		Connection conn = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			return getDeleteFlag(conn, fileId);
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while searching for the file", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+		
+
+	/**
+	 * Get the delete flag for a data file.
+	 * @param conn A database connection
+	 * @param fileId The database ID of the data file
+	 * @return {@code true} if the file is marked for deletion; {@code false} if it is not
+	 * @throws MissingParamException If any parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the specified data file does not exist in the database
+	 */
+	public static boolean getDeleteFlag(Connection conn, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkPositive(fileId, "fileId");
+	
+		boolean result = false;
+		
+		PreparedStatement stmt= null;
+		ResultSet records = null;
+		
+		try {
+			stmt = conn.prepareStatement(GET_DELETE_FLAG_STATEMENT);
+			stmt.setLong(1, fileId);
+			
+			records = stmt.executeQuery();
+			if (!records.next()) {
+				throw new RecordNotFoundException("Data file missing while getting delete flag", "data_file", fileId);
+			} else {
+				result = records.getBoolean(1);
+			}
+			
+			return result;
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while setting delete flag", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+		}
+	}
+	
+	public static List<Long> getFilesWithDeleteFlag(DataSource dataSource) throws MissingParamException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			List<Long> deleteFiles = new ArrayList<Long>();
+
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_DELETE_FLAG_FILES_QUERY);
+			records = stmt.executeQuery();
+			while (records.next()) {
+				deleteFiles.add(records.getLong(1));
+			}
+			
+			return deleteFiles;
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while searching for delete flag files", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(conn);
 		}

@@ -20,8 +20,6 @@ public class LoginBean extends BaseManagedBean {
 	
 	public static final String USER_SESSION_ATTR = "User";
 	
-	protected static String FORM_NAME = "loginform";
-	
 	private String emailAddress = null;
 	
 	private String password = null;
@@ -75,10 +73,16 @@ public class LoginBean extends BaseManagedBean {
 			internalError(e);
 		}
 		
+		getSession().removeAttribute("SESSION_EXPIRED");
 		return result;
 	}
 	
 	public String signUp() {
 		return SIGNUP_RESULT;
+	}
+
+	@Override
+	protected String getFormName() {
+		return "loginform";
 	}
 }

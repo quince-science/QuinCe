@@ -9,12 +9,18 @@
 var PLOT_ROW_INDEX = 1;
 var PLOT_QCFLAG_INDEX = 2;
 var PLOT_WOCEFLAG_INDEX = 3;
+var PLOT_FIRST_Y_INDEX = 4;
+
+var PLOT_POINT_SIZE = 2;
+var PLOT_HIGHLIGHT_SIZE = 5;
+var PLOT_FLAG_SIZE = 8;
 
 var FLAG_GOOD = 2;
 var FLAG_ASSUMED_GOOD = -2;
 var FLAG_QUESTIONABLE = 3;
 var FLAG_BAD = 4;
-var FLAG_NEEDS_FLAG = -1001;
+var FLAG_FATAL = 44;
+var FLAG_NEEDS_FLAG = -10;
 var FLAG_IGNORED = -1002;
 
 var BASE_GRAPH_OPTIONS = {
@@ -24,8 +30,8 @@ var BASE_GRAPH_OPTIONS = {
     labelsSeparateLine: true,
     digitsAfterDecimal: 2,
     animatedZooms: true,
-    pointSize: 2,
-    highlightCircleSize: 5,
+    pointSize: PLOT_POINT_SIZE,
+    highlightCircleSize: PLOT_HIGHLIGHT_SIZE,
     axes: {
         x: {
           drawGrid: false
@@ -58,6 +64,7 @@ var AXIS_LABELS = {
 		'eqp1': 'Pressure (hPa)',
 		'eqp2': 'Pressure (hPa)',
 		'eqp3': 'Pressure (hPa)',
+		'eqpMean': 'Pressure (hPa)',
 		'airFlow1': 'Flow (ml/min)',
 		'airFlow2': 'Flow (ml/min)',
 		'airFlow3': 'Flow (ml/min)',
@@ -65,8 +72,8 @@ var AXIS_LABELS = {
 		'waterFlow2': 'Flow (ml/min)',
 		'waterFlow3': 'Flow (ml/min)',
 		'eqpMean': 'Pressure (hPa)',
-		'moistureMeasured': 'Moisture (%)',
-		'moistureTrue': 'Moisture (%)',
+		'xh2oMeasured': 'xH₂O (μmol/mol)',
+		'xh2oTrue': 'xH₂O (μmol/mol)',
 		'pH2O': 'pH₂O (UNITS)',
 		'co2Measured': 'CO₂ (ppm/μatm)',
 		'co2Dried': 'CO₂ (ppm/μatm)',
@@ -92,7 +99,7 @@ var plotPopupTarget = 'LX';
 
 // The selected parameters for the plots and maps
 var leftPlotXAxis = ['plot_datetime_dateTime'];
-var leftPlotYAxis = ['plot_intaketemp_intakeTempMean', 'plot_intaketemp_intakeTemp1', 'plot_intaketemp_intakeTemp2', 'plot_intaketemp_intakeTemp3'];
+var leftPlotYAxis = ['plot_intaketemp_intakeTempMean'];
 var leftMap = 'plot_co2_fCO2Final';
 
 var rightPlotXAxis = ['plot_datetime_dateTime'];
@@ -114,14 +121,11 @@ var compulsoryColumns = ['Date/Time', 'Longitude', 'Latitude', 'QC Flag', 'WOCE 
 
 // These are regular expression patterns
 var visibleColumns = {
-	'basic': [/Intake Temp/, /Intake Temp: Mean/, /Salinity/, /Salinity: Mean/, /Equil\. Temp/, /Equil\. Temp: Mean/, /Equil\. Pressure/, /Equil\. Pressure: Mean/, /Moisture \(True\)/, /fCO₂ Final/],
-	'water': [/Intake Temp.*/, /Salinity.*/],
-	'equilibrator': [/Equil.*/, /Δ.*/, /Moisture.*/],
+	'basic': [/Intake Temp/, /Intake Temp: Mean/, /Salinity/, /Salinity: Mean/, /Equil\. Temp/, /Equil\. Temp: Mean/, /Equil\. Pressure/, /Equil\. Pressure: Mean/, /xH₂O \(True\)/, /fCO₂ Final/],
+	'water': [/Intake Temp.*/, /Salinity.*/, /Air Flow.*/, /Water Flow.*/],
+	'equilibrator': [/Equil.*/, /Δ.*/, /xH₂O.*/],
 	'co2': [/pH₂O/, /.*CO₂.*/]
 };
-
-// The viewing mode for the table
-var tableMode = 'basic';
 
 // The list of dates in the current view. Used for searching.
 var dateList = null;
@@ -131,10 +135,13 @@ var tableScrollRow = null;
 
 // Table selections
 var selectedRows = [];
+var selectedWoceFlags = [];
 var selectionQCMessageCounts = {};
 var selectionWoceMessageCounts = {};
-var worstSelectedFlag = FLAG_GOOD;
 var NO_MESSAGE_ENTRY = 'No message';
+
+// Indicates whether data has changed
+var dirty = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -191,7 +198,7 @@ function drawAllData() {
 	drawLoading($('#tableContent'));
     updatePlot('left');
     updatePlot('right');
-    updateTable();
+    drawTable();
 }
 
 /*
@@ -499,19 +506,6 @@ function updatePlot(plot) {
 	return false;
 }
 
-function updateTable() {
-	
-	// Replace the table with the loading animation
-	drawLoading($('#tableContent'));
-	
-	// Destroy the existing table instance
-	if (null != jsDataTable) {
-		jsDataTable.destroy();
-	}
-	
-	$('#plotDataForm\\:getTableData').click();
-}
-
 /*
  * Render the left plot
  */
@@ -519,9 +513,16 @@ function drawLeftPlot(data) {
 	var status = data.status;
 	
 	if (status == "success") {
+		var interaction_model = Dygraph.defaultInteractionModel;
+		interaction_model.dblclick = null;
+
 		var graph_options = BASE_GRAPH_OPTIONS;
+		graph_options.interactionModel = interaction_model;
+
 		graph_options.xlabel = AXIS_LABELS[leftPlotXAxis[0].match(/[^_]*$/)];
 		graph_options.ylabel = AXIS_LABELS[leftPlotYAxis[0].match(/[^_]*$/)];
+		graph_options.labels = $('#plotDataForm\\:leftNames').html().split(';');
+		graph_options.labelsDiv = 'plotLeftLabels';
 	
 		// Row, QC Flag and WOCE flag are always invisible
 		var columnVisibility = [false, false, false];
@@ -531,24 +532,24 @@ function drawLeftPlot(data) {
 	
 		graph_options.visibility = columnVisibility;
 		
-		graph_data = JSON.parse($('#plotDataForm\\:leftData').text());
-		leftPlotHighlights = makeHighlights(graph_data);
-		
+		var graph_data = JSON.parse($('#plotDataForm\\:leftData').text());
+
 		if (leftPlotXAxis[0] == 'plot_datetime_dateTime') {
 			graph_data = makeJSDates(graph_data);
 			graph_options.clickCallback = function(e, x, points) {
 				scrollToTableRow(x);
 			};
 
-			plotHighlights = makeHighlights(graph_data);
+			var plotHighlights = makeHighlights(graph_data);
 			if (plotHighlights.length > 0) {
 				graph_options.underlayCallback = function(canvas, area, g) {
 					for (var i = 0; i < plotHighlights.length; i++) {
-						var canvas_left_x = g.toDomXCoord(plotHighlights[i][0]);
-			            var canvas_right_x = g.toDomXCoord(plotHighlights[i][1]);
-			            var canvas_width = canvas_right_x - canvas_left_x;
-			            canvas.fillStyle = plotHighlights[i][2];
-			            canvas.fillRect(canvas_left_x, area.y, canvas_width, area.h);
+						var xPoint = g.toDomXCoord(plotHighlights[i][0]);
+						var yPoint = g.toDomYCoord(plotHighlights[i][1]);
+						canvas.fillStyle = plotHighlights[i][2];
+						canvas.beginPath();
+						canvas.arc(xPoint, yPoint, PLOT_FLAG_SIZE, 0, 2 * Math.PI, false);
+						canvas.fill();
 					}
 				}
 			} else {
@@ -577,9 +578,16 @@ function drawRightPlot(data) {
 	var status = data.status;
 	
 	if (status == "success") {
+		var interaction_model = Dygraph.defaultInteractionModel;
+		interaction_model.dblclick = null;
+
 		var graph_options = BASE_GRAPH_OPTIONS;
+		graph_options.interactionModel = interaction_model;
+
 		graph_options.xlabel = AXIS_LABELS[rightPlotXAxis[0].match(/[^_]*$/)];
 		graph_options.ylabel = AXIS_LABELS[rightPlotYAxis[0].match(/[^_]*$/)];
+		graph_options.labels = $('#plotDataForm\\:rightNames').html().split(';');
+		graph_options.labelsDiv = 'plotRightLabels';
 	
 		// Row, QC Flag and WOCE flag are always invisible
 		var columnVisibility = [false, false, false];
@@ -592,7 +600,6 @@ function drawRightPlot(data) {
 		graph_data = JSON.parse($('#plotDataForm\\:rightData').text());
 		if (rightPlotXAxis[0] == 'plot_datetime_dateTime') {
 			graph_data = makeJSDates(graph_data);
-			rightPlotHighlights = makeHighlights(graph_data);
 			graph_options.clickCallback = function(e, x, points) {
 				scrollToTableRow(x);
 			};
@@ -601,11 +608,12 @@ function drawRightPlot(data) {
 			if (plotHighlights.length > 0) {
 				graph_options.underlayCallback = function(canvas, area, g) {
 					for (var i = 0; i < plotHighlights.length; i++) {
-						var canvas_left_x = g.toDomXCoord(plotHighlights[i][0]);
-			            var canvas_right_x = g.toDomXCoord(plotHighlights[i][1]);
-			            var canvas_width = canvas_right_x - canvas_left_x;
-			            canvas.fillStyle = plotHighlights[i][2];
-			            canvas.fillRect(canvas_left_x, area.y, canvas_width, area.h);
+						var xPoint = g.toDomXCoord(plotHighlights[i][0]);
+						var yPoint = g.toDomYCoord(plotHighlights[i][1]);
+						canvas.fillStyle = plotHighlights[i][2];
+						canvas.beginPath();
+						canvas.arc(xPoint, yPoint, PLOT_FLAG_SIZE, 0, 2 * Math.PI, false);
+						canvas.fill();
 					}
 				}
 			} else {
@@ -632,78 +640,89 @@ function drawRightPlot(data) {
  * the DataTables object is created and configured to load
  * its data from the server using the hidden form.
  */
-function drawTable(data) {
-	var status = data.status;
+function drawTable() {
 
-	if (status == "success") {
-	
-		// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
-		html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%">';
-		html += '<thead>';
-	
-		columnHeadings.forEach(heading => {
-			html += '<th>';
-			html += heading;
-			html += '</th>';
-		});
-	
-		$('#tableContent').html(html);
-	    
-	    jsDataTable = $('#dataTable').DataTable( {
-	    	data: JSON.parse($('#plotDataForm\\:tableData').val()),
-	    	ordering: false,
-	    	searching: false,
-	    	serverSide: false,
-	    	scroller: true,
-	    	scrollY: calcTableScrollY(),
-	    	bInfo: false,
-	    	select: 'multi',
-	        columnDefs:[
-	            // DateTime doesn't wrap
-	            {"className": "noWrap", "targets": [0]},
-	            {"className": "centreCol", "targets": getQCColumns()},
-	            {"className": "numericCol", "targets": getNumericColumns()},
-	            {"render":
-	            	function (data, type, row) {
-		                var output = '<div onmouseover="showQCInfoPopup(' + row[getColumnIndex('QC Flag')] + ', \'' + row[getColumnIndex('QC Message')] + '\', this)" onmouseout="hideQCInfoPopup()" class="';
-		                output += getFlagClass(data);
-		                output += '">';
-		                output += getFlagText(data);
-		                output += '</div>';
-		                return output;
-		            },
-	                "targets": getColumnIndex('QC Flag')
+	// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
+	html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%">';
+	html += '<thead>';
+
+	columnHeadings.forEach(heading => {
+		html += '<th>';
+		html += heading;
+		html += '</th>';
+	});
+
+	$('#tableContent').html(html);
+    
+    jsDataTable = $('#dataTable').DataTable( {
+    	ordering: false,
+    	searching: false,
+    	serverSide: true,
+    	scroller: {
+    		loadingIndicator: true		
+    	},
+    	scrollY: calcTableScrollY(),
+    	ajax: function ( data, callback, settings ) {		
+    		// Store the callback		
+    		dataTableDrawCallback = callback;		
+    				
+    		// Fill in the form inputs		
+    		$('#plotDataForm\\:tableDataDraw').val(data.draw);		
+    		$('#plotDataForm\\:tableDataStart').val(data.start);		
+    		$('#plotDataForm\\:tableDataLength').val(data.length);		
+    		
+    		// Submit the query to the server		
+    		$('#plotDataForm\\:tableGetData').click();		
+    	},
+    	drawCallback: function (settings) {
+    		if (null != tableScrollRow) {
+    			highlightRow(tableScrollRow);
+    			tableScrollRow = null;
+    		}
+    	},
+    	bInfo: false,
+    	rowCallback: function( row, data, index ) {
+    		var rowNumber = data[getColumnIndex('Row')];
+            if ( $.inArray(rowNumber, selectedRows) !== -1 ) {
+                $(row).addClass('selected');
+            }
+            
+            $(row).on('click', function() {
+            	toggleSelection(index, rowNumber);
+            });
+        },
+        columnDefs:[
+            // DateTime doesn't wrap
+            {"className": "noWrap", "targets": [0]},
+            {"className": "centreCol", "targets": getQCColumns()},
+            {"className": "numericCol", "targets": getNumericColumns()},
+            {"render":
+            	function (data, type, row) {
+	                var output = '<div onmouseover="showQCInfoPopup(' + row[getColumnIndex('QC Flag')] + ', \'' + row[getColumnIndex('QC Message')] + '\', this)" onmouseout="hideQCInfoPopup()" class="';
+	                output += getFlagClass(data);
+	                output += '">';
+	                output += getFlagText(data);
+	                output += '</div>';
+	                return output;
 	            },
-	            {"render":
-	            	function (data, type, row) {
-	            		var output = '<div class="';
-	            		output += getFlagClass(data);
-	            		output += '">';
-	    				output += getFlagText(data);
-	    				output += '</div>';
-	    				return output;
-		            },
-	                "targets": getColumnIndex('WOCE Flag')
-	            }
-	        ]
-	    });
-	    
-	    jsDataTable.on('select', function(e, dt, type, indexes) {
-	    	rowSelected(indexes);
-	    });
-	    
-	    jsDataTable.on('deselect', function(e, dt, type, indexes) {
-	    	rowDeselected(indexes);
-	    });
-	    
-	    renderTableColumns();
-	    resizeContent();
-	    
-	    // Clear the table form data - otherwise subsequent
-	    // requests send it all back to the server, and it breaks
-	    // any Ajax requests
-	    $('#plotDataForm\\:tableData').val("");
-	}
+                "targets": getColumnIndex('QC Flag')
+            },
+            {"render":
+            	function (data, type, row) {
+            		var output = '<div class="';
+            		output += getFlagClass(data);
+            		output += '">';
+    				output += getFlagText(data);
+    				output += '</div>';
+    				return output;
+	            },
+                "targets": getColumnIndex('WOCE Flag')
+            }
+        ]
+    });
+    
+    renderTableColumns();
+    resizeContent();
 }
 
 function getNumericColumns() {
@@ -757,7 +776,7 @@ function renderTableColumns() {
 		if ($.inArray(columnHeadings[i], compulsoryColumns) != -1) {
 			columnVisible = true;
 		} else {
-			searchColumns = visibleColumns[tableMode];
+			searchColumns = visibleColumns[PF('tableModeSelector').getJQ().find(':checked').val()];
 			for (j = 0; j < searchColumns.length && !columnVisible; j++) {
 				columnVisible = new RegExp(searchColumns[j]).test(columnHeadings[i]);
 			}
@@ -772,11 +791,6 @@ function renderTableColumns() {
 	jsDataTable.columns(visibleTableColumns).visible(true, false);
 	jsDataTable.columns(hiddenTableColumns).visible(false, false);
 	jsDataTable.columns.adjust().draw( false );
-}
-
-function changeTableMode(event) {
-	tableMode = event.target.value;
-	renderTableColumns();
 }
 
 function getFlagText(flag) {
@@ -794,6 +808,8 @@ function getFlagText(flag) {
         flagText = 'Questionable';
     } else if (flag == '4') {
         flagText = 'Bad';
+    } else if (flag == '44') {
+    	flagText = 'Fatal';
     } else {
         flagText = 'Needs Flag';
     }
@@ -814,7 +830,7 @@ function getFlagClass(flag) {
         flagClass = 'good';
     } else if (flag == '3') {
         flagClass = 'questionable';
-    } else if (flag == '4') {
+    } else if (flag == '4' || flag == '44') {
         flagClass = 'bad';
     } else {
         flagClass = 'needsFlagging';
@@ -847,13 +863,11 @@ function scrollToTableRow(milliseconds) {
 	if (tableRow >= 0) {
 		jsDataTable.scroller().scrollToRow(tableRow - 2);
 		
-		tableScrollRow = jsDataTable.row(tableRow);
-		setTimeout(function() {
-			$(tableScrollRow.node()).css('animationName', 'rowFlash').css('animationDuration', '1s');
-			setTimeout(function() {
-				$(tableScrollRow.node()).css('animationName', '');
-			}, 1000);
-		}, 250);
+		// Because we scroll to the row - 2, we know that the
+		// row we want to highlight is the third row
+		tableScrollRow = tableRow;
+		
+		// The highlight is done as part of the table draw callback
 	}
 }
 
@@ -863,55 +877,38 @@ function makeHighlights(plotData) {
 	var highlights = [];
 	
 	var currentFlag = FLAG_GOOD;
-	var highlightStart = -1;
-	var highlightEnd = -1;
 	var highlightColor = null;
 	
 	for (var i = 0; i < plotData.length; i++) {
-		var woceFlag = plotData[i][PLOT_WOCEFLAG_INDEX];
 		
-		if (woceFlag != currentFlag) {
-			if (highlightStart > -1) {
-				highlightEnd = plotData[i][0];
-				highlights.push([highlightStart, highlightEnd, highlightColor]);
+		if (Math.abs(plotData[i][PLOT_WOCEFLAG_INDEX]) != FLAG_GOOD) {
+		
+			switch (plotData[i][PLOT_WOCEFLAG_INDEX]) {
+			case FLAG_BAD:
+			case FLAG_FATAL: {
+				highlightColor = 'rgba(255, 0, 0, 1)';
+				break;
+			}
+			case FLAG_QUESTIONABLE: {
+				highlightColor = 'rgba(216, 177, 0, 1)';
+				break;
+			}
+			case FLAG_NEEDS_FLAG: {
+				highlightColor = 'rgba(129, 127, 255, 1)';
+				break;
+			}
+			case FLAG_IGNORED: {
+				highlightColor = 'rgba(225, 225, 225, 1)';
+				break;
+			}
 			}
 			
-			if (Math.abs(woceFlag) == FLAG_GOOD) {
-				highlightStart = -1;
-			} else {
-				highlightStartIndex = i - 1;
-				if (highlightStartIndex < 0) {
-					highlightStartIndex = 0;
-				}
-				
-				highlightStart = plotData[highlightStartIndex][0];
-				switch (woceFlag) {
-				case FLAG_BAD: {
-					highlightColor = 'rgba(255, 0, 0, 1)';
-					break;
-				}
-				case FLAG_QUESTIONABLE: {
-					highlightColor = 'rgba(216, 177, 0, 1)';
-					break;
-				}
-				case FLAG_NEEDS_FLAG: {
-					highlightColor = 'rgba(69, 66, 255, 1)';
-					break;
-				}
-				case FLAG_IGNORED: {
-					highlightColor = 'rgba(225, 225, 225, 1)';
-					break;
-				}
+			for (j = PLOT_FIRST_Y_INDEX; j < plotData[i].length; j++) {
+				if (plotData[i][j] != null) {
+					highlights.push([plotData[i][0], plotData[i][j], highlightColor]);
 				}
 			}
-
-			currentFlag = woceFlag;
 		}
-	}
-	
-	if (highlightStart != -1) {
-		highllightEnd = plotData[plotData.length - 1][0];
-		highlights.push([highlightStart, highlightEnd, highlightColor]);
 	}
 		
 	return highlights;
@@ -931,7 +928,8 @@ function showQCInfoPopup(qcFlag, qcMessage, target) {
 	    	content += 'questionable';
 	    	break;
 	    }
-	    case 4: {
+	    case 4:
+	    case 44: {
 	    	content += 'bad';
 	    	break;
     	}
@@ -955,91 +953,94 @@ function hideQCInfoPopup() {
 }
 
 /*
- * Process selected rows.
- * Add the row index and its QC Message to the global selection arrays
+ * Process row clicks as selections
  */
-function rowSelected(indexes) {
-	$.each(indexes, function(index, rowIndex) {
-		if ($.inArray(rowIndex, selectedRows) == -1) {
-			selectedRows[selectedRows.length] = rowIndex;
-			
-			// Add the message to the list of selection messages
-			qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
-			if (qcMessage == "") {
-				qcMessage = NO_MESSAGE_ENTRY;
-			}
-			
-			if (qcMessage in selectionQCMessageCounts) {
-				selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] + 1;
-			} else {
-				selectionQCMessageCounts[qcMessage] = 1;
-			}
-			
-			woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
-			
-			// If the WOCE message is empty, use the QC message instead
-			if (woceMessage == "") {
-				woceMessage = qcMessage;
-			}
-			
-			if (woceMessage in selectionWoceMessageCounts) {
-				selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] + 1;
-			} else {
-				selectionWoceMessageCounts[woceMessage] = 1;
-			}
-			
-		}
-	});
-
+function toggleSelection(rowIndex, rowNumber) {
+	if ($.inArray(rowNumber, selectedRows) == -1) {
+		selectRow(rowIndex, rowNumber);
+	} else {
+		deselectRow(rowIndex, rowNumber);
+	}
+	
 	selectionUpdated();
 }
 
 /*
- * Process deselected rows
+ * Process a selected row.
+ * Add the row index and its QC Message to the global selection arrays
+ */
+function selectRow(rowIndex, rowNumber) {
+	
+	var woceFlag = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Flag')];
+	if (woceFlag == '44') {
+		deselectRow(rowIndex, rowNumber);
+	} else {
+		selectedRows[selectedRows.length] = rowNumber;
+		selectedWoceFlags[selectedWoceFlags.length] = woceFlag;
+		
+		// Add the message to the list of selection messages
+		qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
+		if (qcMessage == "") {
+			qcMessage = NO_MESSAGE_ENTRY;
+		}
+		
+		if (qcMessage in selectionQCMessageCounts) {
+			selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] + 1;
+		} else {
+			selectionQCMessageCounts[qcMessage] = 1;
+		}
+		
+		woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
+		
+		// If the WOCE message is empty, use the QC message instead
+		if (woceMessage == "") {
+			woceMessage = qcMessage;
+		}
+		
+		if (woceMessage in selectionWoceMessageCounts) {
+			selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] + 1;
+		} else {
+			selectionWoceMessageCounts[woceMessage] = 1;
+		}
+	}
+}
+
+/*
+ * Process a deselected row
  * Remove the row index and its QC Message from the global selection arrays
  */
-function rowDeselected(indexes) {
-	$.each(indexes, function(index, rowIndex) {
-		var arrayIndex = $.inArray(rowIndex, selectedRows);
-		if (arrayIndex > -1) {
-			selectedRows.splice(arrayIndex, 1);
+function deselectRow(rowIndex, rowNumber) {
+	var arrayIndex = $.inArray(rowNumber, selectedRows);
+	if (arrayIndex > -1) {
+		selectedRows.splice(arrayIndex, 1);
+		selectedWoceFlags.splice(arrayIndex, 1);
 
-			qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
-			if (qcMessage == "") {
-				qcMessage = NO_MESSAGE_ENTRY;
-			}
-
-			selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] - 1;
-			
-			woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
-			if (woceMessage == "") {
-				woceMessage = NO_MESSAGE_ENTRY;
-			}
-			
-			selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] - 1;
+		qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
+		if (qcMessage == "") {
+			qcMessage = NO_MESSAGE_ENTRY;
 		}
-	});
 
-	selectionUpdated();
+		selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] - 1;
+		
+		woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
+		if (woceMessage == "") {
+			woceMessage = NO_MESSAGE_ENTRY;
+		}
+		
+		selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] - 1;
+	}
 }
 
 function selectionUpdated() {
-	
-	// Update the worst selected flag
-	if (selectedRows.length > 0) {
-		worstSelectedFlag = Number(jsDataTable.row(selectedRows[0]).data()[getColumnIndex('WOCE Flag')]);
-		if (selectedRows.length > 1) {
-			for (var i = 1; i < selectedRows.length; i++) {
-				rowFlag = Number(jsDataTable.row(selectedRows[i]).data()[getColumnIndex('WOCE Flag')]);
-				if (rowFlag == FLAG_NEEDS_FLAG) {
-					worstSelectedFlag = FLAG_NEEDS_FLAG;
-				} else if (rowFlag > worstSelectedFlag) {
-					worstSelectedFlag = rowFlag;
-					if (rowFlag == FLAG_NEEDS_FLAG) {
-						break;
-					}
-				}
-			}
+
+	// Update the displayed rows
+	var rows = jsDataTable.rows()[0];
+	for (var i = 0; i < rows.length; i++) {
+		var row = jsDataTable.row(i);
+		if ($.inArray(row.data()[getColumnIndex('Row')], selectedRows) > -1) {
+			$(row.node()).addClass('selected');
+		} else {
+			$(row.node()).removeClass('selected');
 		}
 	}
 	
@@ -1059,29 +1060,39 @@ function selectionUpdated() {
 function clearSelection() {
 	jsDataTable.rows(selectedRows).deselect();
 	selectedRows = [];
+	selectedWoceFlags = [];
 	selectionQCMessageCounts = {};
 	selectionWoceMessageCounts = {};
 	selectionUpdated();
 }
 
 function acceptQCFlags() {
-	$('#dataScreenForm\\:selectedRows').val(getSelectionFileRows());
+	$('#dataScreenForm\\:selectedRows').val(selectedRows);
 	$('#dataScreenForm\\:acceptQCFlags').click();
 }
 
 function qcFlagsAccepted(data) {
 	if (data.status == 'success') {
 		
-		qcFlagColumn = getColumnIndex('QC Flag');
-		qcMessageColumn = getColumnIndex('QC Message');
-		woceFlagColumn= getColumnIndex('WOCE Flag');
-		woceMessageColumn = getColumnIndex('WOCE Message');
+		var qcFlagColumn = getColumnIndex('QC Flag');
+		var qcMessageColumn = getColumnIndex('QC Message');
+		var woceFlagColumn= getColumnIndex('WOCE Flag');
+		var woceMessageColumn = getColumnIndex('WOCE Message');
+		var rowColumn = getColumnIndex('Row');
 		
-		for (var i = 0; i < selectedRows.length; i++) {
-			jsDataTable.cell(selectedRows[i], woceMessageColumn).data(jsDataTable.cell(selectedRows[i], qcMessageColumn).data());
-			jsDataTable.cell(selectedRows[i], woceFlagColumn).data(jsDataTable.cell(selectedRows[i], qcFlagColumn).data());
+		var rows = jsDataTable.rows()[0];
+		for (var i = 0; i < rows.length; i++) {
+			var row = jsDataTable.row(i);
+			if ($.inArray(row.data()[rowColumn], selectedRows) > -1) {
+				jsDataTable.cell(i, woceMessageColumn).data(jsDataTable.cell(row, qcMessageColumn).data());
+				jsDataTable.cell(i, woceFlagColumn).data(jsDataTable.cell(row, qcFlagColumn).data());
+			}
 		}
 		
+		if (!dirty) {
+			dirty = true;
+			$('#dataScreenForm\\:finishButton').val('Finish*');
+		}
 		clearSelection();
 	}
 }
@@ -1089,27 +1100,25 @@ function qcFlagsAccepted(data) {
 function woceFlagsUpdated(data) {
 	if (data.status == 'success') {
 		
-		woceFlagColumn = getColumnIndex('WOCE Flag');
-		woceMessageColumn = getColumnIndex('WOCE Message');
+		var woceFlagColumn = getColumnIndex('WOCE Flag');
+		var woceMessageColumn = getColumnIndex('WOCE Message');
+		var rowColumn = getColumnIndex('Row');
 		
-		for (var i = 0; i < selectedRows.length; i++) {
-			jsDataTable.cell(selectedRows[i], woceFlagColumn).data($('#dataScreenForm\\:woceFlag').val());
-			jsDataTable.cell(selectedRows[i], woceMessageColumn).data($('#dataScreenForm\\:woceComment').val());
+		var rows = jsDataTable.rows()[0];
+		for (var i = 0; i < rows.length; i++) {
+			var row = jsDataTable.row(i);
+			if ($.inArray(row.data()[rowColumn], selectedRows) > -1) {
+				jsDataTable.cell(i, woceMessageColumn).data($('#dataScreenForm\\:woceComment').val());
+				jsDataTable.cell(i, woceFlagColumn).data($('#dataScreenForm\\:woceFlag').val());
+			}
 		}
 		
+		if (!dirty) {
+			dirty = true;
+			$('#dataScreenForm\\:finishButton').val('Finish*');
+		}
 		clearSelection();
 	} 
-}
-
-function getSelectionFileRows() {
-	var fileRows = [];
-	var rowNumberColumn = getColumnIndex('Row');
-	
-	for (var i = 0; i < selectedRows.length; i++) {
-		fileRows[fileRows.length] = jsDataTable.row(selectedRows[i]).data()[rowNumberColumn];
-	}
-	
-	return fileRows;
 }
 
 function woceFlagClick() {
@@ -1137,6 +1146,8 @@ function showWoceCommentDialog() {
 	
 	$('#woceRowCount').html(woceRowHtml);
 	
+	var worstSelectedFlag = Math.max.apply(null, selectedWoceFlags);
+	
     woceSelection(worstSelectedFlag);
 
     var woceComment = '';
@@ -1150,7 +1161,7 @@ function showWoceCommentDialog() {
 }
 
 function saveWoceComment() {
-	$('#dataScreenForm\\:selectedRows').val(getSelectionFileRows());
+	$('#dataScreenForm\\:selectedRows').val(selectedRows);
 	$('#dataScreenForm\\:applyWoceFlag').click();
 	hideWoceDialog();
 }
@@ -1175,4 +1186,41 @@ function woceSelection(flagValue) {
 
 function setWoceSelectedFlag(flagValue) {
 	$('#woceCommentDialogFlag').html(getFlagText(flagValue));
+}
+
+/*
+ * Called when table data has been downloaded from the server.		
+ * The previously stored callback function is triggered with		
+ * the data from the server.		
+ */		
+function tableDataDownload(data) {		
+			
+	var status = data.status;		
+	if (status == "success") {
+		dataTableDrawCallback( {		
+            draw: $('#plotdDataForm\\:tableDataDraw').val(),		
+            data: JSON.parse($('#plotDataForm\\:tableJsonData').val()),		
+            recordsTotal: $('#plotDataForm\\:recordCount').val(),		
+            recordsFiltered: $('#plotDataForm\\:recordCount').val()		
+		});
+	}
+}		
+
+function highlightRow(tableRow) {
+	setTimeout(function() {
+		var rowNode = $('#row' + tableRow)[0];
+		$(rowNode).css('animationName', 'rowFlash').css('animationDuration', '1s');
+		setTimeout(function() {
+			$(rowNode).css('animationName', '');
+		}, 1000);
+	}, 100);
+}
+
+function zoomOut(g) {
+	g.updateOptions({
+	    dateWindow: null,
+	    valueRange: null
+	});
+	
+	return false;
 }

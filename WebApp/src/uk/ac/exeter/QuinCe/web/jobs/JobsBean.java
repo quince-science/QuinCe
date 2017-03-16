@@ -1,6 +1,6 @@
 package uk.ac.exeter.QuinCe.web.jobs;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -8,6 +8,7 @@ import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobSummary;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
+import uk.ac.exeter.QuinCe.jobs.test.TenSecondJob;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
@@ -62,14 +63,14 @@ public class JobsBean extends BaseManagedBean {
 		}
 		
 		try {
-			runningThreads = JobThreadPool.getInstance().getRunningThreads();
+			runningThreads = JobThreadPool.getInstance().getRunningThreadsCount();
 		} catch (Exception e) {
 			e.printStackTrace();
 			runningThreads = -1;
 		}
 		
 		try {
-			overflowThreads = JobThreadPool.getInstance().getOverflowThreads();
+			overflowThreads = JobThreadPool.getInstance().getOverflowThreadsCount();
 		} catch (Exception e) {
 			e.printStackTrace();
 			overflowThreads = -1;
@@ -98,11 +99,8 @@ public class JobsBean extends BaseManagedBean {
 	}
 	
 	public void submitJob() {
-		List<String> parameters = new ArrayList<String>(1);
-		parameters.add(String.valueOf(chunkCount));
-		
 		try {
-			JobManager.addJob(ServletUtils.getDBDataSource(), getUser(), "uk.ac.exeter.QuinCe.jobs.test.TenSecondJob", parameters);
+			JobManager.addJob(ServletUtils.getDBDataSource(), getUser(), "uk.ac.exeter.QuinCe.jobs.test.TenSecondJob", getNewJobParams());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -112,17 +110,20 @@ public class JobsBean extends BaseManagedBean {
 	}
 	
 	public void submitImmediateJob() {
-		List<String> parameters = new ArrayList<String>(1);
-		parameters.add(String.valueOf(chunkCount));
-		
 		try {
-			JobManager.addInstantJob(ServletUtils.getResourceManager(), ServletUtils.getAppConfig(), getUser(), "uk.ac.exeter.QuinCe.jobs.test.TenSecondJob", parameters);
+			JobManager.addInstantJob(ServletUtils.getResourceManager(), ServletUtils.getAppConfig(), getUser(), "uk.ac.exeter.QuinCe.jobs.test.TenSecondJob", getNewJobParams());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
 		// Finally, update everything
 		update();
+	}
+	
+	private Map<String, String> getNewJobParams() {
+		Map<String, String> parameters = new HashMap<String, String>(1);
+		parameters.put(TenSecondJob.CHUNK_KEY, String.valueOf(chunkCount));
+		return parameters;
 	}
 	
 	public void runNext() {
