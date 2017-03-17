@@ -53,14 +53,31 @@ public class AuthenticatedFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
         HttpSession session = request.getSession(false);
 
-        // Get the user's email address from the session (if possible)
-        User user = (session != null) ? (User) session.getAttribute(LoginBean.USER_SESSION_ATTR) : null;
-
-        if (user != null || isResourceRequest(request) || isAllowedPath(request)) {
-        	filterChain.doFilter(request, response);
+    	String requestURL = request.getRequestURI();
+    	if (requestURL.endsWith("/")) {
+    		requestURL = requestURL.substring(0, requestURL.length() - 1);
+    	}
+    	
+        if (null == session) {
+        	if (requestURL.equals(request.getContextPath())) {
+            	filterChain.doFilter(request, response);
+        	} else {
+        		response.sendRedirect(request.getContextPath());
+        	}
         } else {
-        	session.setAttribute("SESSION_EXPIRED", "true");
-            response.sendRedirect(request.getContextPath());
+            // Get the user's email address from the session (if possible)
+            User user = (User) session.getAttribute(LoginBean.USER_SESSION_ATTR);
+
+            if (user != null || isResourceRequest(request) || isAllowedPath(request)) {
+            	filterChain.doFilter(request, response);
+            } else {
+            	if (requestURL.equals(request.getContextPath())) {
+                	session.removeAttribute("SESSION_EXPIRED");            		
+            	} else {
+                	session.setAttribute("SESSION_EXPIRED", "true");
+            	}
+                response.sendRedirect(request.getContextPath());
+            }
         }
 	}
 	
