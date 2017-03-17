@@ -28,7 +28,7 @@ import uk.ac.exeter.QuinCe.data.User;
  *   <li>Password Reset page</li>
  * </ul>
  * 
- * <p>Based on code from stackoverflow (see the See Also below).</p>
+ * <p>Based on code from stackoverflow.</p>
  * 
  * @see <a href="http://stackoverflow.com/questions/8480100/how-implement-a-login-filter-in-jsf">How implement a login filter in JSF?</a> 
  * 
@@ -42,10 +42,22 @@ public class AuthenticatedFilter implements Filter {
 	 * The list of paths that can be accessed without being logged in. 
 	 */
 	private List<String> allowedPaths = new ArrayList<String>();
+	
+	/**
+	 * The list of paths that will be identified as resources.
+	 * 
+	 * <p>
+	 *   Resources are things like Javascript files, images, stylesheets etc.
+	 *   They do not need checking as they are not security-restricted in terms
+	 *   of the application.
+	 * </p>
+	 */
 	private List<String> resourcePaths = new ArrayList<String>();
 	
 	/**
-	 * {@inheritDoc}
+	 * Checks all requests for application pages to ensure that the user is
+	 * logged in. If the user is not logged in, they will be redirected
+	 * to the login page with a 'session expired' message.
 	 */
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain filterChain) throws IOException, ServletException {
@@ -82,9 +94,11 @@ public class AuthenticatedFilter implements Filter {
 	}
 	
 	/**
-	 * Loop through the list of resource paths to determine whether or not this is a resource request
+	 * Determines whether or not this is a request for a resource rather than
+	 * a page of the application.
 	 * @param request The request
 	 * @return {@code true} if the request is a resource request; {@code false} otherwise.
+	 * @see #resourcePaths
 	 */
 	private boolean isResourceRequest(HttpServletRequest request) {
 		boolean result = false;
@@ -100,9 +114,10 @@ public class AuthenticatedFilter implements Filter {
 	}
 	
 	/**
-	 * Loop through the list of allowed paths, seeing if any match the current request
+	 * Determines whether or not a page can be accessed without the user having logged in.
 	 * @param request The request
 	 * @return {@code true} if the request is allowed without being logged in; {@code false} otherwise.
+	 * @see #allowedPaths
 	 */
 	private boolean isAllowedPath(HttpServletRequest request) {
 		boolean allowed = false;
@@ -132,7 +147,7 @@ public class AuthenticatedFilter implements Filter {
 	}
 
 	/**
-	 * Initialisation - set up the list of paths that can be accessed without being logged in.
+	 * Sets up the list of resource paths, and pages that can be accessed without being logged in.
 	 */
 	@Override
 	public void init(FilterConfig arg0) throws ServletException {

@@ -258,13 +258,17 @@ public class AutoQCJob extends FileJob {
 	 * 
 	 * <p>
 	 *   The job's file id is passed in to the method. The routines
-	 *   and job parameters are set according to the {#link #jobCode},
+	 *   and job parameters are set according to the {@code jobCode},
 	 *   which indicates the current state of processing the data file.
 	 * </p>
 	 * 
 	 * @param jobCode The current job code
 	 * @param fileId The data file's database ID
 	 * @return The parameters for the job
+	 * @see FileJob#FILE_ID_KEY
+	 * @see #PARAM_ROUTINES_CONFIG
+	 * @see #PARAM_NEXT_JOB_CODE
+	 * @see #PARAM_INTERRUPTED_JOB_CODE
 	 */
 	protected static Map<String, String> getJobParameters(int jobCode, long fileId) {
 		Map<String, String> parameters = new HashMap<String, String>(4);
