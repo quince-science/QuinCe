@@ -232,7 +232,7 @@ public class ExportConfig {
 	 * </p>
 	 * 
 	 * <p>
-	 *   This method will throw an (@link ArrayIndexOutOfBoundsException} if the specified index is outside the range
+	 *   This method will throw an {@link ArrayIndexOutOfBoundsException} if the specified index is outside the range
 	 *   of the list of export options.
 	 * </p>
 	 * 
