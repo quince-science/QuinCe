@@ -84,6 +84,7 @@ public class DataFileDB {
 	 * Query to find a file using its database ID
 	 * @see #getFileDetails(Connection, long)
 	 * @see #makeFileInfo(ResultSet, Connection)
+	 * @see #fileExists(Connection, long)
 	 */
 	private static final String FIND_FILE_BY_ID_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched, f.delete_flag FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
 			+ " WHERE f.id = ?";
@@ -248,7 +249,30 @@ public class DataFileDB {
 	 * @throws RecordNotFoundException If the file disappears between locating it and reading its details
 	 */
 	public static boolean fileExists(Connection conn, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-		return (null != getFileDetails(conn, fileId));
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkPositive(fileId, "fileId");
+		
+		boolean result = false;
+		
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			stmt = conn.prepareStatement(FIND_FILE_BY_ID_QUERY);
+			stmt.setLong(1, fileId);
+			records = stmt.executeQuery();
+			if (records.next()) {
+				result = true;
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while search for the data file", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+		}
+		
+		return result;
 	}
 	
 	/**
