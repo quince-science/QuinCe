@@ -168,6 +168,7 @@ public class DataFileDB {
 	 * @throws FileExistsException If the file already exists in the system
 	 * @throws DatabaseException If an error occurs while storing the file
 	 * @see #ADD_FILE_STATEMENT
+	 * @see FileStore#storeFile(Properties, long, RawDataFile)
 	 */
 	public static void storeFile(DataSource dataSource, Properties appConfig, User owner, long instrumentID, RawDataFile dataFile) throws MissingParamException, FileExistsException, DatabaseException {
 		
@@ -234,6 +235,7 @@ public class DataFileDB {
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws DatabaseException If an error occurs
 	 * @throws RecordNotFoundException If the database record disappears during checks. A very unlikely occurrence.
+	 * @see #getFileDetails(Connection, long)
 	 */
 	public static boolean fileExists(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		return (null != getFileDetails(dataSource, fileId));
@@ -447,6 +449,7 @@ public class DataFileDB {
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws DatabaseException If an error occurs during deletion
 	 * @see #DELETE_FILE_STATEMENT
+	 * @see FileStore#deleteFile(Properties, FileInfo)
 	 */
 	public static void deleteFile(DataSource dataSource, Properties appConfig, FileInfo fileDetails) throws MissingParamException, DatabaseException {
 		
@@ -536,6 +539,7 @@ public class DataFileDB {
 	 * @throws DatabaseException If an error occurs while retrieving the file details or contents
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws RawDataFileException If the data file cannot be parsed
+	 * @see FileStore#getFile(DataSource, Properties, FileInfo)
 	 */
 	public static RawDataFile getRawDataFile(DataSource dataSource, Properties appConfig, long fileId) throws MissingParamException, DatabaseException, RawDataFileException {
 		

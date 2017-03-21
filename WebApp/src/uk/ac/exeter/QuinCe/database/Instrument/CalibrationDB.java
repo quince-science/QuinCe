@@ -34,6 +34,7 @@ public class CalibrationDB {
 
 	/**
 	 * Statement for creating a sensor calibration parent record
+	 * @see #addCalibration(DataSource, long, Date, List)
 	 */
 	private static final String CREATE_CALIBRATION_STATEMENT = "INSERT INTO sensor_calibration ("
 			+ "instrument_id, calibration_date) VALUES (?, ?)";
@@ -41,6 +42,8 @@ public class CalibrationDB {
 	/**
 	 * Statement for creating the coefficients record for a specific sensor within
 	 * a calibration
+	 * @see #addCalibration(DataSource, long, Date, List)
+	 * @see #updateCalibration(DataSource, long, Date, List)
 	 */
 	private static final String CREATE_COEFFICIENTS_STATEMENT = "INSERT INTO calibration_coefficients ("
 			+ "calibration_id, sensor, intercept, x, x2, x3, x4, x5) "
@@ -49,50 +52,62 @@ public class CalibrationDB {
 	/**
 	 * Statement for retrieving the list of calibrations for a given instrument.
 	 * The list is ordered by descending date.
+	 * @see #getCalibrationList(DataSource, long)
 	 */
 	private static final String GET_CALIBRATION_LIST_QUERY = "SELECT id, calibration_date FROM "
 			+ "sensor_calibration WHERE instrument_id = ? ORDER BY calibration_date DESC";
 	
 	/**
 	 * Statement for retrieving the calibration stub details for a given calibration
+	 * @see #getCalibrationStub(DataSource, long)
 	 */
 	private static final String GET_CALIBRATION_STUB_QUERY = "SELECT id, instrument_id, calibration_date FROM "
 			+ "sensor_calibration WHERE id = ?";
 	
 	/**
 	 * Statement for retrieving the calibration coefficients for a given calibration
+	 * @see #getCalibrationCoefficients(DataSource, CalibrationStub)
 	 */
 	private static final String GET_COEFFICIENTS_QUERY = "SELECT sensor, intercept, x, x2, x3, x4, x5 FROM "
 			+ "calibration_coefficients WHERE calibration_id = ? ORDER BY sensor ASC";
 	
 	/**
 	 * Statement to change the date for a given calibration
+	 * @see #updateCalibration(DataSource, long, Date, List)
 	 */
 	private static final String UPDATE_CALIBRATION_STATEMENT = "UPDATE sensor_calibration SET calibration_date = ? WHERE id = ?";
 	
 	/**
 	 * Statement to remove all calibration coefficients for a given calibration.
 	 * This is used prior to adding the revised coefficients.
+	 * @see #deleteCalibration(DataSource, long)
+	 * @see #updateCalibration(DataSource, long, Date, List)
 	 */
 	private static final String REMOVE_COEFFICIENTS_STATEMENT = "DELETE FROM calibration_coefficients WHERE calibration_id = ?";
 	
 	/**
 	 * Statement for finding a calibration record with a given ID
+	 * @see #calibrationExists(Connection, long)
 	 */
 	private static final String FIND_CALIBRATION_QUERY = "SELECT id FROM sensor_calibration WHERE id = ?";
 	
 	/**
 	 * Statement for removing a calibration record.
+	 * @see #deleteCalibration(DataSource, long)
 	 */
 	private static final String REMOVE_CALIBRATION_STATEMENT = "DELETE FROM sensor_calibration WHERE id = ?";
 	
 	/**
 	 * Statement to find calibration dates between two given dates
+	 * @see #getCalibrationDatesBetween(DataSource, long, Calendar, Calendar)
+	 * @see #getCalibrationsForFile(DataSource, long, Calendar, Calendar)
 	 */
 	private static final String GET_CALIBRATIONS_BETWEEN_QUERY = "SELECT id, calibration_date FROM sensor_calibration WHERE instrument_id = ? AND calibration_date > ? AND calibration_date <= ? ORDER BY calibration_date ASC";
 	
 	/**
 	 * Statement to find the latest calibration date before a given date
+	 * @see #getCalibrationDateBefore(DataSource, long, Calendar)
+	 * @see #getCalibrationsForFile(DataSource, long, Calendar, Calendar)
 	 */
 	private static final String GET_CALIBRATION_BEFORE_QUERY = "SELECT id, calibration_date FROM sensor_calibration WHERE instrument_id = ? AND calibration_date <= ? ORDER BY calibration_date DESC LIMIT 1";
 	
@@ -104,6 +119,8 @@ public class CalibrationDB {
 	 * @param coefficients The calibration coefficients for each of the instrument's sensors
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while creating the database records
+	 * @see #CREATE_CALIBRATION_STATEMENT
+	 * @see #CREATE_COEFFICIENTS_STATEMENT
 	 */
 	public static void addCalibration(DataSource dataSource, long instrumentID, Date calibrationDate, List<CalibrationCoefficients> coefficients) throws MissingParamException, DatabaseException {
 		
@@ -178,6 +195,7 @@ public class CalibrationDB {
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while retrieving the list
 	 * @see CalibrationStub
+	 * @see #GET_CALIBRATION_LIST_QUERY
 	 */
 	public static List<CalibrationStub> getCalibrationList(DataSource dataSource, long instrumentID) throws MissingParamException, DatabaseException {
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -220,7 +238,7 @@ public class CalibrationDB {
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while retrieving the stub
 	 * @throws RecordNotFoundException If the calibration ID does not exist in the database
-	 * @see CalibrationStub
+	 * @see #GET_CALIBRATION_STUB_QUERY 
 	 */
 	public static CalibrationStub getCalibrationStub(DataSource dataSource, long calibrationID) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
@@ -266,7 +284,7 @@ public class CalibrationDB {
 	 * @throws MissingParamException If any of the parameters are {@code null}
 	 * @throws RecordNotFoundException If the specified calibration does not exist in the database
 	 * @throws DatabaseException If a database error occurs
-	 * @see CalibrationStub
+	 * @see #GET_COEFFICIENTS_QUERY
 	 */
 	public static List<CalibrationCoefficients> getCalibrationCoefficients(DataSource dataSource, CalibrationStub calibration) throws MissingParamException, RecordNotFoundException, DatabaseException {
 		
@@ -325,6 +343,9 @@ public class CalibrationDB {
 	 * @throws MissingParamException If any of the required parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the specified calibration database ID does not exist
+	 * @see #UPDATE_CALIBRATION_STATEMENT
+	 * @see #REMOVE_COEFFICIENTS_STATEMENT
+	 * @see #CREATE_COEFFICIENTS_STATEMENT
 	 */
 	public static void updateCalibration(DataSource dataSource, long calibrationID, Date calibrationDate, List<CalibrationCoefficients> coefficients) throws MissingParamException, DatabaseException, RecordNotFoundException {
 
@@ -397,6 +418,7 @@ public class CalibrationDB {
 	 * @return {@code true} if the calibration exists; {@code false} if it does not.
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while searching the database
+	 * @see #FIND_CALIBRATION_QUERY
 	 */
 	private static boolean calibrationExists(Connection conn, long calibrationID) throws MissingParamException, DatabaseException {
 		
@@ -432,6 +454,8 @@ public class CalibrationDB {
 	 * @param calibrationID The calibration ID
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If a database error occurs
+	 * @see #REMOVE_COEFFICIENTS_STATEMENT
+	 * @see #REMOVE_CALIBRATION_STATEMENT
 	 */
 	public static void deleteCalibration(DataSource dataSource, long calibrationID) throws MissingParamException, DatabaseException {
 
@@ -476,6 +500,7 @@ public class CalibrationDB {
 	 * @return A list of calibration dates
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while retrieving the dates
+	 * @see #GET_CALIBRATIONS_BETWEEN_QUERY
 	 */
 	public static List<Calendar> getCalibrationDatesBetween(DataSource dataSource, long instrumentID, Calendar firstDate, Calendar lastDate) throws MissingParamException, DatabaseException {
 		
@@ -522,6 +547,7 @@ public class CalibrationDB {
 	 * @return The last calibration date before the given date. If there is no date, returns null.
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs while retrieving the date.
+	 * @see #GET_CALIBRATION_BEFORE_QUERY
 	 */
 	public static Calendar getCalibrationDateBefore(DataSource dataSource, long instrumentID, Calendar date) throws MissingParamException, DatabaseException {
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -558,11 +584,11 @@ public class CalibrationDB {
 	/**
 	 * <p>Return the list of instrument calibrations that encompass a given data file, provided as the first and last record
 	 * dates in that file. The calibrations returned include all those that happened during the file's duration, as well as
-	 * the calibration immeditately preceding the file's first record, as that will be the calibration in place for the first
+	 * the calibration immediately preceding the file's first record, as that will be the calibration in place for the first
 	 * record(s).</p>
 	 * 
 	 * <p>The calibrations are returned as {@link CalibrationStub} objects, which contain the basic details
-	 * of the calibration, but notthe calibration coefficients for the instrument's sensors.
+	 * of the calibration, but not the calibration coefficients for the instrument's sensors.
 	 * These can be retrieved using the {@link #getCalibrationCoefficients(DataSource, CalibrationStub)} method.</p>
 	 * 
 	 * @param dataSource A data source 
@@ -573,7 +599,8 @@ public class CalibrationDB {
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws InstrumentException If there is no calibration preceding the start of the data file
-	 * @see CalibrationStub
+	 * @see #GET_CALIBRATIONS_BETWEEN_QUERY
+	 * @see #GET_CALIBRATION_BEFORE_QUERY
 	 */
 	public static List<CalibrationStub> getCalibrationsForFile(DataSource dataSource, long instrumentId, Calendar startDate, Calendar endDate) throws MissingParamException, DatabaseException, InstrumentException {
 		
