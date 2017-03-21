@@ -34,20 +34,29 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  */
 public class DataScreenBean extends BaseManagedBean {
 
+	/**
+	 * The navigation result returned after the bean is initialised
+	 * @see #start()
+	 */
 	public static final String PAGE_START = "data_screen";
 	
 	/**
-	 * Navigation result to display the file list
+	 * Navigation result returned after the user leaves the QC pages
+	 * @see #end()
 	 */
 	public static final String PAGE_END = "file_list";
 	
 	/**
 	 * Indicator for HTML controls for the plot configuration popup
+	 * @see #makeCheckbox(String, String, String, String)
+	 * @see #makePlotCheckbox(String, String, String)
 	 */
 	private static final String POPUP_PLOT = "plot";
 	
 	/**
 	 * Indicator for HTML controls for the map configuration popup
+	 * @see #makeCheckbox(String, String, String, String)
+	 * @see #makeMapCheckbox(String, String, String)
 	 */
 	private static final String POPUP_MAP = "map";
 	
@@ -70,6 +79,13 @@ public class DataScreenBean extends BaseManagedBean {
 	 *   The Javascript on the user interface will be responsible for ensuring that
 	 *   the columns are set appropriately; the bean will not perform any checks.
 	 * </p>
+	 * 
+	 * <p>
+	 *   The first three Y axis columns are always the row number, QC and WOCE flag,
+	 *   which are hidden when the plot is rendered.
+	 *   The row is used to cross-reference with the data table, and the flags
+	 *   are used to highlight values on the plots.
+	 * </p> 
 	 */
 	private String leftPlotColumns = null;
 	
@@ -85,6 +101,10 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	private String leftPlotData = null;
 	
+	/**
+	 * The names of the columns shown in the left plot.
+	 * @see #leftPlotColumns
+	 */
 	private String leftPlotNames = null;
 
 	/**
@@ -96,6 +116,13 @@ public class DataScreenBean extends BaseManagedBean {
 	 *   The Javascript on the user interface will be responsible for ensuring that
 	 *   the columns are set appropriately; the bean will not perform any checks.
 	 * </p>
+	 * 
+	 * <p>
+	 *   The first three Y axis columns are always the row number, QC and WOCE flag,
+	 *   which are hidden when the plot is rendered.
+	 *   The row is used to cross-reference with the data table, and the flags
+	 *   are used to highlight values on the plots.
+	 * </p> 
 	 */
 	private String rightPlotColumns = null;
 	
@@ -111,6 +138,10 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	private String rightPlotData = null;
 	
+	/**
+	 * The names of the columns shown in the right plot.
+	 * @see #rightPlotColumns
+	 */
 	private String rightPlotNames = null;
 
 	/**
@@ -187,6 +218,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 * Any data from previous data files is removed first.
 	 * @return The navigation to the QC screen
 	 * @throws Exception If any errors occur
+	 * @see #PAGE_START
 	 */
 	public String start() throws Exception {
 		clearData();
@@ -200,6 +232,13 @@ public class DataScreenBean extends BaseManagedBean {
 		return PAGE_START;
 	}
 	
+	/**
+	 * Finishes the user's session on the QC page. If anything has been changed,
+	 * the file is resubmitted for data reduction.
+	 * @return The navigation to the file list
+	 * @throws Exception If any errors occur during processing
+	 * @see #end()
+	 */
 	public String end() throws Exception {
 		
 		if (dirty) {
