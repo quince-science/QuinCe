@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
@@ -564,7 +566,7 @@ public class DataReductionJob extends FileJob {
 	 * <p>The calibration is performed by retrieving the gas standard runs immediately before
 	 * and after the measurement, which implicitly include the adjustment of the measured CO<sub>2</sub>
 	 * in the gas standard run to the true value of the standard
-	 * (see {@link GasStandardRuns#getStandardsRegression(javax.sql.DataSource, long, Calendar)}).
+	 * (see {@link GasStandardRuns#getStandardsRegression(DataSource, long, Calendar)}).
 	 * If only one standard is available (e.g. at the beginning or end of a data file), the single
 	 * available standard is used.
 	 * 
