@@ -25,7 +25,8 @@ public abstract class BaseManagedBean {
 	
 	/**
 	 * The default result for indicating that an error occurred during a processing action.
-	 * This will be used in the {@code faces-config.xml} file to determine the next navigation destination. 
+	 * This will be used in the {@code faces-config.xml} file to determine the next navigation destination.
+	 * @see #internalError(Throwable)
 	 */
 	public static final String INTERNAL_ERROR_RESULT = "InternalError";
 	
@@ -71,6 +72,7 @@ public abstract class BaseManagedBean {
 	 * 
 	 * @param error The error
 	 * @return A result string that will direct to the internal error page.
+	 * @see #INTERNAL_ERROR_RESULT
 	 */
 	public String internalError(Throwable error) {
 		setMessage("STACK_TRACE", StringUtils.stackTraceToString(error));

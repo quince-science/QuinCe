@@ -74,7 +74,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 * The data columns being used in the left plot.
 	 * 
 	 * <p>
-	 *   The columns are stored as a semi-colon separated list. The first
+	 *   The columns are stored as a semi-colon separated list of internal column names. The first
 	 *   column is the X axis, and all subsequent columns will be displayed on the Y axis.
 	 *   The Javascript on the user interface will be responsible for ensuring that
 	 *   the columns are set appropriately; the bean will not perform any checks.
@@ -85,7 +85,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 *   which are hidden when the plot is rendered.
 	 *   The row is used to cross-reference with the data table, and the flags
 	 *   are used to highlight values on the plots.
-	 * </p> 
+	 * </p>
+	 * @see FileDataInterrogator 
 	 */
 	private String leftPlotColumns = null;
 	
@@ -102,7 +103,7 @@ public class DataScreenBean extends BaseManagedBean {
 	private String leftPlotData = null;
 	
 	/**
-	 * The names of the columns shown in the left plot.
+	 * The human-readable names of the columns shown in the left plot.
 	 * @see #leftPlotColumns
 	 */
 	private String leftPlotNames = null;
@@ -111,7 +112,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 * The data columns being used in the right plot.
 	 * 
 	 * <p>
-	 *   The columns are stored as a semi-colon separated list. The first
+	 *   The columns are stored as a semi-colon separated list of internal column names. The first
 	 *   column is the X axis, and all subsequent columns will be displayed on the Y axis.
 	 *   The Javascript on the user interface will be responsible for ensuring that
 	 *   the columns are set appropriately; the bean will not perform any checks.
@@ -123,6 +124,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 *   The row is used to cross-reference with the data table, and the flags
 	 *   are used to highlight values on the plots.
 	 * </p> 
+	 * @see FileDataInterrogator 
 	 */
 	private String rightPlotColumns = null;
 	
@@ -177,16 +179,54 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	private String tableMode = "basic";
 	
+	/**
+	 * The data for the current view of the data table.
+	 * 
+	 * <p>
+	 *   The table data is loaded on demand as the user scrolls around, to
+	 *   eliminate the delay and memory requirements of loading a complete
+	 *   voayge's data in one go. When the user scrolls to a particular row,
+	 *   the data for that row and a set of rows before and after it is loaded.
+	 * </p>
+	 * 
+	 * @see #generateTableData()
+	 * @see <a href="https://datatables.net/examples/data_sources/server_side.html">DataTables Server-Side Processing</a>
+	 */
 	private String tableJsonData = null;
 
+ 	/**
+ 	 * An internal value for the DataTables library,
+ 	 * used when drawing retrieving table data from the server
+	 * @see <a href="https://datatables.net/examples/data_sources/server_side.html">DataTables Server-Side Processing</a>
+ 	 */
 	private int tableDataDraw;		
 
+	/**
+	 * The first row of the table data view to be loaded for DataTables
+	 * @see <a href="https://datatables.net/examples/data_sources/server_side.html">DataTables Server-Side Processing</a>
+	 */
 	private int tableDataStart;		
 
+	/**
+	 * The number of rows to be loaded for DataTables
+	 * @see <a href="https://datatables.net/examples/data_sources/server_side.html">DataTables Server-Side Processing</a>
+	 */
 	private int tableDataLength;		
 
+	/**
+	 * The total number of records in the data set. A negative value indicates that the record count is not known and
+	 *   needs to be retrieved from the server.
+	 * 
+	 * <p>
+	 *   Note that this is the number
+	 *   of atmospheric or ocean records, depending on what is being displayed.
+	 * </p>
+	 */
 	private int recordCount = -1;	
 
+	/**
+	 * The row numbers that have been selected by the user. Stored as a comma-separated list.
+	 */
 	private String selectedRows = null;
 	
 	/**
@@ -201,8 +241,16 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	private int woceFlag = Flag.VALUE_NEEDED;
 	
+	/**
+	 * The instrument to which the data file belongs
+	 */
 	private Instrument instrument;
 
+	/**
+	 * Indicates whether or not any WOCE flags have been changed.
+	 * If they have, the data file will be resubmitted for data reduction
+	 * when the user leaves the data screen.
+	 */
 	private boolean dirty = false;
 	
 	/**
@@ -331,14 +379,31 @@ public class DataScreenBean extends BaseManagedBean {
 		this.leftPlotData = leftPlotData;
 	}
 	
+	/**
+	 * Get the human-readable names of the columns being displayed
+	 * in the left plot.
+	 * @return The columns names
+	 * @see #leftPlotNames
+	 */
 	public String getLeftPlotNames() {
 		return leftPlotNames;
 	}
 	
+	/**
+	 * Set the human-readable names of the columns being displayed
+	 * in the left plot.
+	 * @param leftPlotNames The column names
+	 * @see #leftPlotNames
+	 */
 	public void setLeftPlotNames(String leftPlotNames){
 		this.leftPlotNames = leftPlotNames;
 	}
 	
+	/**
+	 * Get the columns to be displayed in the right plot.
+	 * @return The columns for the right plot
+	 * @see #rightPlotColumns
+	 */
 	public String getRightPlotColumns() {
 		return rightPlotColumns;
 	}
@@ -370,14 +435,31 @@ public class DataScreenBean extends BaseManagedBean {
 		this.rightPlotData = rightPlotData;
 	}
 	
+	/**
+	 * Get the human-readable names of the columns being displayed
+	 * in the right plot.
+	 * @return The columns names
+	 * @see #rightPlotNames
+	 */
 	public String getRightPlotNames() {
 		return rightPlotNames;
 	}
 	
+	/**
+	 * Set the human-readable names of the columns being displayed
+	 * in the right plot.
+	 * @param rightPlotNames The column names
+	 * @see #rightPlotNames
+	 */
 	public void setRightPlotNames(String rightPlotNames){
 		this.rightPlotNames = rightPlotNames;
 	}
 	
+	/**
+	 * Return the type of CO<sub>2</sub> measurement being viewed
+	 * @return The CO<sub>2</sub> measurement type
+	 * @see #co2Type
+	 */
 	public int getCo2Type() {
 		return co2Type;
 	}
@@ -386,8 +468,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 * Get the type of CO<sub>2</sub> measurement to be displayed.
 	 * Must be one of {@link RunType#RUN_TYPE_WATER} or {@link RunType#RUN_TYPE_ATMOSPHERIC}.
 	 * The behaviour of the user interface is undefined if this is set to anything else.
-	 * 
 	 * @param co2Type The type of measurement
+	 * @see #co2Type
 	 */
 	public void setCo2Type(int co2Type) {
 		this.co2Type = co2Type;
@@ -434,46 +516,113 @@ public class DataScreenBean extends BaseManagedBean {
 		this.tableMode = tableMode;
 	}
 	
+	/**
+	 * Get the data for the current view in the data table
+	 * @return The table data
+	 * @see #tableJsonData
+	 */
 	public String getTableJsonData() {
  		return tableJsonData;		
  	}
 	
+	/**
+	 * Set the data for the current view in the data table
+	 * @param tableJsonData The table data
+	 * @see #tableJsonData
+	 */
  	public void setTableJsonData(String tableJsonData) {
  		this.tableJsonData = tableJsonData;
  	}		
  
+ 	/**
+ 	 * Get the current value for the DataTables internal {@code draw} parameter
+ 	 * @return The DataTables {@code draw} parameter
+ 	 * @see #tableDataDraw
+ 	 */
  	public int getTableDataDraw() {		
 		return tableDataDraw;		
 	}		
 			
+ 	/**
+ 	 * Set the value for the DataTables internal {@code draw} parameter
+ 	 * @param tableDataDraw The DataTables {@code draw} parameter
+ 	 * @see #tableDataDraw
+ 	 */
 	public void setTableDataDraw(int tableDataDraw) {		
 		this.tableDataDraw = tableDataDraw;		
 	}		
-			
+
+	/**
+	 * Get the first row of the current view in the data table
+	 * @return The first row of the view
+	 * @see #tableDataStart
+	 */
 	public int getTableDataStart() {		
 		return tableDataStart;		
 	}		
-			
+
+	/**
+	 * Set the first row of the view in the data table
+	 * @param tableDataStart The first row of the view
+	 * @see #tableDataStart
+	 */
 	public void setTableDataStart(int tableDataStart) {		
 		this.tableDataStart = tableDataStart;		
 	}		
-			
+	
+	/**
+	 * Get the number of rows in the current view in the data table
+	 * @return The number of rows in the view
+	 * @see #tableDataLength
+	 */
 	public int getTableDataLength() {		
 		return tableDataLength;		
 	}		
-			
+
+	/**
+	 * Set the number of rows in the current view in the data file
+	 * @param tableDataLength The number of rows in the view
+	 * @see #tableDataLength
+	 */
 	public void setTableDataLength(int tableDataLength) {		
 		this.tableDataLength = tableDataLength;		
 	}		
-			
+
+	/**
+	 * Get the total number of rows in the data file. If the number of rows is not
+	 * known, the result will be negative.
+	 * 
+	 * <p>
+	 *   Note that this is the number
+	 *   of atmospheric or ocean records, depending on what is being displayed.
+	 * </p>
+	 * 
+	 * @return The number of records
+	 */
 	public int getRecordCount() {		
 		return recordCount;		
 	}
-  			  	
+ 
+	/**
+	 * Set the total number of records in the data file. If the number of records
+	 * is not known, set a negative value.
+	 * 
+	 * <p>
+	 *   Note that this is the number
+	 *   of atmospheric or ocean records, depending on what is being displayed.
+	 * </p>
+	 * 
+	 * @param recordCount The number of records
+	 */
 	public void setRecordCount(int recordCount) {
 		this.recordCount = recordCount;
   	}
  
+	/**
+	 * Get the set of rows that have been selected by the user.
+	 * The rows are returned as an unsorted comma-separated list.
+	 * @return The selected rows
+	 */
 	public String getSelectedRows() {
 		return selectedRows;
 	}
@@ -870,7 +1019,7 @@ public class DataScreenBean extends BaseManagedBean {
 
 	/**
 	 * Retrieve the data for the table from the database as a JSON string.
-	 * The data is stored in {@link #tableData}.
+	 * The data is stored in {@link #tableJsonData}.
 	 */
 	public void generateTableData() {
 
@@ -1194,10 +1343,12 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * 
-	 * @param columns
-	 * @return
+	 * Generate the list of human-readable column names for a given set of
+	 * internal column names
+	 * @param columns The internal column names
+	 * @return The human-readable column names
 	 * @see #getPlotData(List)
+	 * @see FileDataInterrogator
 	 */
 	private String makePlotNames(List<String> columns) {
 
@@ -1220,7 +1371,12 @@ public class DataScreenBean extends BaseManagedBean {
 		return StringUtils.listToDelimited(output);
 	}
 
-
+	/**
+	 * Get the complete human-readable name for a series in a plot.
+	 * Sensors are given their user-entered name if they are defined.
+	 * @param series The series name
+	 * @return The human-readable name
+	 */
 	private String getPlotSeriesName(String series) {
 		
 		String result;
