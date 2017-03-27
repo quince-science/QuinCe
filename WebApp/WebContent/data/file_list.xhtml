@@ -136,8 +136,6 @@
 			            <h:outputText class="questionable" value="#{file.qcQuestionableCount}"/>
 						/
 			            <h:outputText class="good" value="${file.qcGoodCount}"/>
-						/
-			            <h:outputText class="ignore" value="#{file.ignoredCount}"/>
 					</p:column>
 					<p:column>
 						<f:facet name="header">WOCE Stats</f:facet>
@@ -149,8 +147,6 @@
 			            <h:outputText class="good" value="${file.woceGoodCount + file.woceAssumedGoodCount}"/>
 			            /
 			            <h:outputText class="needsFlagging" value="#{file.woceNeededCount}"/>
-			            /
-			            <h:outputText class="ignore" value="#{file.ignoredCount}"/>
 					</p:column>
 					<p:column>
 						<f:facet name="header">Actions</f:facet>
