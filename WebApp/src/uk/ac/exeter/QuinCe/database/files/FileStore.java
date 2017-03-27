@@ -13,6 +13,7 @@ import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RawDataFile;
 import uk.ac.exeter.QuinCe.data.RawDataFileException;
+import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
@@ -40,6 +41,7 @@ public class FileStore {
 	 * @param dataFile The data file
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws FileStoreException If an error occurs while storing the file
+	 * @see DataFileDB#storeFile(DataSource, Properties, User, long, RawDataFile)
 	 */
 	protected static void storeFile(Properties config, long instrumentID, RawDataFile dataFile) throws MissingParamException, FileStoreException {
 		
@@ -78,6 +80,7 @@ public class FileStore {
 	 * @param config The application configuration
 	 * @param fileDetails The file details
 	 * @throws MissingParamException If any of the parameters are missing
+	 * @see DataFileDB#deleteFile(DataSource, Properties, FileInfo)
 	 */
 	protected static void deleteFile(Properties config, FileInfo fileDetails) throws MissingParamException {
 		
@@ -99,6 +102,7 @@ public class FileStore {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RawDataFileException If there is a fault in processing the data file
 	 * @throws RecordNotFoundException If any required database records cannot be found
+	 * @see DataFileDB#getRawDataFile(DataSource, Properties, long)
 	 */
 	protected static RawDataFile getFile(DataSource dataSource, Properties config, FileInfo fileInfo) throws IOException, MissingParamException, DatabaseException, RawDataFileException, RecordNotFoundException {
 		

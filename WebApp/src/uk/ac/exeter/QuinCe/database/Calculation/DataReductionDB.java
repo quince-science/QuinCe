@@ -24,11 +24,13 @@ public class DataReductionDB {
 
 	/**
 	 * Statement to remove all data reduction data for a given data file
+	 * @see #clearDataReductionData(Connection, long)
 	 */
 	private static final String CLEAR_DATA_REDUCTION_STATEMENT = "DELETE FROM data_reduction WHERE data_file_id = ?";
 	
 	/**
 	 * Statement to store a data reduction calculation result in the database for a given row in a given data file
+	 * @see #storeRow(Connection, long, int, boolean, int, double, double, double, double, double, double, double, double, double, double, double, double, double)
 	 */
 	private static final String STORE_ROW_STATEMENT = "INSERT INTO data_reduction ("
 			+ "data_file_id, row, co2_type, mean_intake_temp, mean_salinity, mean_eqt, delta_temperature, mean_eqp, "
@@ -37,6 +39,7 @@ public class DataReductionDB {
 	
 	/**
 	 * Statement to update a data reduction calculation result for a given row in a given data file
+	 * @see #storeRow(Connection, long, int, boolean, int, double, double, double, double, double, double, double, double, double, double, double, double, double)
 	 */
 	private static final String UPDATE_ROW_STATEMENT = "UPDATE data_reduction SET "
 			+ "mean_intake_temp = ?, mean_salinity = ?, mean_eqt = ?, delta_temperature = ?, mean_eqp = ?, "
@@ -46,6 +49,7 @@ public class DataReductionDB {
 			
 	/**
 	 * Query to retrieve the data reduction result for a given row in a given data file
+	 * @see #rowExists(Connection, long, int)
 	 */
 	private static final String FIND_ROW_STATEMENT = "SELECT COUNT(*) FROM data_reduction WHERE data_file_id = ? AND row = ?";
 	
@@ -54,6 +58,7 @@ public class DataReductionDB {
 	 * @param dataSource A data source
 	 * @param fileId The database ID of the data file
 	 * @throws DatabaseException If a database error occurs
+	 * @see #clearDataReductionData(Connection, long)
 	 */
 	public static void clearDataReductionData(DataSource dataSource, long fileId) throws DatabaseException {
 		Connection conn = null;
@@ -73,6 +78,7 @@ public class DataReductionDB {
 	 * @param conn A database connection
 	 * @param fileId The database ID of the data file
 	 * @throws DatabaseException If a database error occurs
+	 * @see #CLEAR_DATA_REDUCTION_STATEMENT
 	 */
 	public static void clearDataReductionData(Connection conn, long fileId) throws DatabaseException {
 		
@@ -118,6 +124,8 @@ public class DataReductionDB {
 	 * @param fco2 The fugacity of CO<sub>2</sub> at the sea surface temperature (the final result of the calculation)
 	 * @throws DatabaseException If a database error occurs
 	 * @throws MissingParamException If any of the parameters are missing
+	 * @see #STORE_ROW_STATEMENT
+	 * @see #UPDATE_ROW_STATEMENT
 	 */
 	public static void storeRow(Connection conn, long fileId, int row, boolean overwrite,
 			int co2Type, double meanIntakeTemp, double meanSalinity, double meanEqt, double deltaTemperature, double meanEqp,
@@ -191,6 +199,7 @@ public class DataReductionDB {
 	 * @param row The row number
 	 * @return {@code true} if a result has been stored for this row; {@code false} otherwise
 	 * @throws DatabaseException If a database error occurs
+	 * @see #FIND_ROW_STATEMENT
 	 */
 	private static boolean rowExists(Connection conn, long fileId, int row) throws DatabaseException {
 		

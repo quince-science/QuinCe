@@ -35,7 +35,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
- * <p>Methods for handling raw data files.</p>
+ * Methods for handling raw data files.
  * 
  * <p>
  *   The database stores details of the files, while the files themselves
@@ -56,78 +56,105 @@ public class DataFileDB {
 
 	/**
 	 * Query to find a data file in the database by name and instrument ID
+	 * @see #fileExists(DataSource, long, String)
 	 */
 	private static final String FIND_FILE_QUERY = "SELECT id FROM data_file WHERE instrument_id = ? AND filename = ?";
 	
 	/**
 	 * Statement to add a data file to the database
+	 * @see #storeFile(DataSource, Properties, User, long, RawDataFile)
 	 */
 	private static final String ADD_FILE_STATEMENT = "INSERT INTO data_file (instrument_id, filename, start_date, record_count, current_job, last_touched) "
 		+ "VALUES (?, ?, ?, ?, ?, ?)";
 
 	/**
 	 * Query to find all the data files owned by a given user
+	 * @see #getUserFiles(DataSource, User)
 	 */
 	private static final String GET_USER_FILES_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched, f.delete_flag FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
 			+ " WHERE f.delete_flag = 0 AND i.owner = ? ORDER BY f.last_touched DESC";
 	
 	/**
 	 * Statement to delete the details of a data file
+	 * @see #deleteFile(DataSource, Properties, FileInfo)
 	 */
 	private static final String DELETE_FILE_STATEMENT = "DELETE FROM data_file WHERE id = ?";
 	
 	/**
 	 * Query to find a file using its database ID
+	 * @see #getFileDetails(Connection, long)
+	 * @see #makeFileInfo(ResultSet, Connection)
+	 * @see #fileExists(Connection, long)
 	 */
 	private static final String FIND_FILE_BY_ID_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched, f.delete_flag FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
 			+ " WHERE f.id = ?";
 	
 	/**
 	 * Query to get the database ID of the instrument associated with a given data file
+	 * @see #getInstrumentId(DataSource, long)
 	 */
 	private static final String GET_INSTRUMENT_ID_QUERY = "SELECT instrument_id FROM data_file WHERE id = ?";
 	
 	/**
 	 * Statement to set the ID of the job currently being run on a given data file
+	 * @see #setCurrentJob(Connection, long, int)
 	 */
 	private static final String SET_JOB_STATEMENT = "UPDATE data_file SET current_job = ? WHERE id = ?";
 	
 	/**
 	 * Query to retrieve the number of atmospheric CO<sub>2</sub> measurements in a given data file
+	 * @see #makeFileInfo(ResultSet, Connection)
 	 */
 	private static final String ATMOSPHERIC_MEAS_COUNT_QUERY = "SELECT COUNT(*) FROM raw_data WHERE data_file_id = ? AND co2_type = " + RunType.RUN_TYPE_ATMOSPHERIC;
 	
 	/**
 	 * Query to retrieve the number of ocean CO<sub>2</sub> measurements in a given data file
+	 * @see #makeFileInfo(ResultSet, Connection)
 	 */
 	private static final String OCEAN_MEAS_COUNT_QUERY = "SELECT COUNT(*) FROM raw_data WHERE data_file_id = ? AND co2_type = " + RunType.RUN_TYPE_WATER;
 	
 	/**
 	 * Query to retrieve the number of gas standard measurements in a given data file
+	 * @see #makeFileInfo(ResultSet, Connection)
 	 */
 	private static final String STANDARDS_COUNT_QUERY = "SELECT COUNT(*) FROM gas_standards_data WHERE data_file_id = ?";
 	
 	/**
 	 * Query to retrieve the number of records with each possible QC flag value for a given data file
-         * Only marine measurements are included.
+     * Only marine measurements are included.
+     * @see #updateFlagCounts(Connection, FileInfo)
 	 */
 	private static final String GET_QC_FLAGS_QUERY = "SELECT DISTINCT qc_flag, COUNT(qc_flag) FROM qc AS q INNER JOIN raw_data AS w on w.data_file_id = q.data_file_id AND w.row = q.row WHERE q.data_file_id = ? AND w.co2_type = 0 GROUP BY qc_flag";
 
 	/**
 	 * Query to retrieve the number of records with each possible WOCE flag value for a given data file
-         * Only marine measurements are included.
+     * Only marine measurements are included.
+     * @see #updateFlagCounts(Connection, FileInfo)
 	 */
 	private static final String GET_WOCE_FLAGS_QUERY = "SELECT DISTINCT woce_flag, COUNT(woce_flag) FROM qc WHERE data_file_id = ? GROUP BY woce_flag";
 
 	/**
 	 * Statement to set the given data file's {@code last_touched} value to the current time
+	 * @see #touchFile(DataSource, long)
 	 */
 	private static final String TOUCH_FILE_STATEMENT = "UPDATE data_file SET last_touched = NOW() WHERE id = ?";
 	
+	/**
+	 * Query to flag a data file for deletion
+	 * @see #setDeleteFlag(DataSource, long, boolean)
+	 */
 	private static final String SET_DELETE_FLAG_STATEMENT = "UPDATE data_file SET delete_flag = ? WHERE id = ?";
 
+	/**
+	 * Query to get the delete flag for a given data file
+	 * @see #getDeleteFlag(Connection, long)
+	 */
 	private static final String GET_DELETE_FLAG_STATEMENT = "SELECT delete_flag FROM data_file WHERE id = ?";
 	
+	/**
+	 * Query to get the set of data files whose delete flags have been set
+	 * @see #getFilesWithDeleteFlag(DataSource)
+	 */
 	private static final String GET_DELETE_FLAG_FILES_QUERY = "SELECT id FROM data_file WHERE delete_flag = 1";
 
 	/**
@@ -140,6 +167,8 @@ public class DataFileDB {
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws FileExistsException If the file already exists in the system
 	 * @throws DatabaseException If an error occurs while storing the file
+	 * @see #ADD_FILE_STATEMENT
+	 * @see FileStore#storeFile(Properties, long, RawDataFile)
 	 */
 	public static void storeFile(DataSource dataSource, Properties appConfig, User owner, long instrumentID, RawDataFile dataFile) throws MissingParamException, FileExistsException, DatabaseException {
 		
@@ -183,8 +212,6 @@ public class DataFileDB {
 
 				conn.commit();
 			}
-			
-			
 		} catch (Exception e) {
 			try {
 				DatabaseUtils.rollBack(conn);
@@ -198,8 +225,6 @@ public class DataFileDB {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(conn);
 		}
-		
-		
 	}
 
 	/**
@@ -210,13 +235,14 @@ public class DataFileDB {
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws DatabaseException If an error occurs
 	 * @throws RecordNotFoundException If the database record disappears during checks. A very unlikely occurrence.
+	 * @see #getFileDetails(Connection, long)
 	 */
 	public static boolean fileExists(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		return (null != getFileDetails(dataSource, fileId));
 	}
 	
 	/**
-	 * Determinsed whether a file with the specified ID exists in the database
+	 * Determines whether a file with the specified ID exists in the database
 	 * @param conn A database connection
 	 * @param fileId The file ID
 	 * @return {@code true} if the file exists; {@code false} if it does not
@@ -225,7 +251,30 @@ public class DataFileDB {
 	 * @throws RecordNotFoundException If the file disappears between locating it and reading its details
 	 */
 	public static boolean fileExists(Connection conn, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-		return (null != getFileDetails(conn, fileId));
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkPositive(fileId, "fileId");
+		
+		boolean result = false;
+		
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			stmt = conn.prepareStatement(FIND_FILE_BY_ID_QUERY);
+			stmt.setLong(1, fileId);
+			records = stmt.executeQuery();
+			if (records.next()) {
+				result = true;
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while search for the data file", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -237,6 +286,7 @@ public class DataFileDB {
 	 * @return {@code true} if the file exists; {@code false} if it does not
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If an error occurs during the search
+	 * @see #FIND_FILE_QUERY
 	 */
 	public static boolean fileExists(DataSource dataSource, long instrumentID, String fileName) throws MissingParamException, DatabaseException {
 		
@@ -275,6 +325,8 @@ public class DataFileDB {
 	 * @param user The user
 	 * @return The list of files
 	 * @throws DatabaseException If an error occurs during the search
+	 * @see #GET_USER_FILES_QUERY
+	 * @see #makeFileInfo(ResultSet, Connection)
 	 */
 	public static List<FileInfo> getUserFiles(DataSource dataSource, User user) throws DatabaseException {
 		
@@ -315,7 +367,7 @@ public class DataFileDB {
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the specified data file does not exist
-	 * @see FileInfo
+	 * @see #getFileDetails(Connection, long)
 	 */
 	public static FileInfo getFileDetails(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -332,7 +384,18 @@ public class DataFileDB {
 			DatabaseUtils.closeConnection(conn);
 		}
 	}
-		
+	
+	/**
+	 * Returns the details of a specified data file
+	 * @param conn A database connection
+	 * @param fileId The database ID of the data file
+	 * @return The file details
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If any of the file's details cannot be found
+	 * @see #FIND_FILE_BY_ID_QUERY
+	 * @see #makeFileInfo(ResultSet, Connection)
+	 */
 	public static FileInfo getFileDetails(Connection conn, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 			
 		FileInfo result = null;
@@ -361,6 +424,16 @@ public class DataFileDB {
 		return result;
 	}
 	
+	/**
+	 * Removes a file from the database and the underlying file store.
+	 * @param dataSource A data source
+	 * @param appConfig The application configuration
+	 * @param fileId The database ID of the data file
+	 * @throws MissingParamException If any parameters are missing
+	 * @throws DatabaseException If an error occurs during deletion
+	 * @throws RecordNotFoundException If any database lookups fail
+	 * @see #deleteFile(DataSource, Properties, FileInfo)
+	 */
 	public static void deleteFile(DataSource dataSource, Properties appConfig, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(appConfig, "appConfig");
@@ -375,6 +448,8 @@ public class DataFileDB {
 	 * @param fileDetails The details of the file to be deleted
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws DatabaseException If an error occurs during deletion
+	 * @see #DELETE_FILE_STATEMENT
+	 * @see FileStore#deleteFile(Properties, FileInfo)
 	 */
 	public static void deleteFile(DataSource dataSource, Properties appConfig, FileInfo fileDetails) throws MissingParamException, DatabaseException {
 		
@@ -419,6 +494,7 @@ public class DataFileDB {
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the specified data file does not exist
+	 * @see #GET_INSTRUMENT_ID_QUERY
 	 */
 	public static long getInstrumentId(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
@@ -463,6 +539,7 @@ public class DataFileDB {
 	 * @throws DatabaseException If an error occurs while retrieving the file details or contents
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws RawDataFileException If the data file cannot be parsed
+	 * @see FileStore#getFile(DataSource, Properties, FileInfo)
 	 */
 	public static RawDataFile getRawDataFile(DataSource dataSource, Properties appConfig, long fileId) throws MissingParamException, DatabaseException, RawDataFileException {
 		
@@ -490,6 +567,7 @@ public class DataFileDB {
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @see FileInfo
+	 * @see #SET_JOB_STATEMENT
 	 */
 	public static void setCurrentJob(Connection conn, long fileId, int jobCode) throws MissingParamException, DatabaseException {
 		
@@ -526,7 +604,10 @@ public class DataFileDB {
 	 * @throws RecordNotFoundException If the database record disappears while its details are being retrieved  
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
-	 * @see FileInfo
+	 * @see #ATMOSPHERIC_MEAS_COUNT_QUERY
+	 * @see #OCEAN_MEAS_COUNT_QUERY
+	 * @see #STANDARDS_COUNT_QUERY
+	 * @see #updateFlagCounts(Connection, FileInfo)
 	 */
 	private static FileInfo makeFileInfo(ResultSet record, Connection conn) throws SQLException, DatabaseException, MissingParamException, RecordNotFoundException {
 		long fileID = record.getLong(1);
@@ -599,13 +680,13 @@ public class DataFileDB {
 	 * @param conn A database connection
 	 * @param fileInfo The {@link FileInfo} for the file whose flag counts are to be updated
 	 * @throws DatabaseException If a database error occurs
-	 * @see FileInfo
-	 * @see uk.ac.exeter.QCRoutines.messages.Flag
+	 * @throws RecordNotFoundException If the specified data file does not exist
+	 * @throws MissingParamException If any required parameters in internal method calls are missing
+	 * @see Flag
+	 * @see #GET_QC_FLAGS_QUERY
+	 * @see #GET_WOCE_FLAGS_QUERY
 	 */
-	public static void updateFlagCounts(Connection conn, FileInfo fileInfo) throws DatabaseException {
-		
-		//TODO This method doesn't check that the file still exists. It should throw a 
-		//     RecordNotFoundException if the query doesn't find anything.
+	public static void updateFlagCounts(Connection conn, FileInfo fileInfo) throws DatabaseException, RecordNotFoundException, MissingParamException {
 		
 		fileInfo.clearAllCounts();
 		
@@ -615,7 +696,9 @@ public class DataFileDB {
 		ResultSet woceFlags = null;
 		
 		try {
-			
+			if (!fileExists(conn, fileInfo.getFileId())) {
+				throw new RecordNotFoundException("Data file ID " + fileInfo.getFileId() + " does not exist");
+			}
 			qcFlagsStatement = conn.prepareStatement(GET_QC_FLAGS_QUERY);
 			qcFlagsStatement.setLong(1, fileInfo.getFileId());
 			
@@ -713,6 +796,7 @@ public class DataFileDB {
 	 * @param fileId The database ID of the data file
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws DatabaseException If a database error occurs
+	 * @see #TOUCH_FILE_STATEMENT
 	 */
 	public static void touchFile(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException {
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -748,6 +832,7 @@ public class DataFileDB {
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the specified data file does not exist in the database
+	 * @see #SET_DELETE_FLAG_STATEMENT
 	 */
 	public static void setDeleteFlag(DataSource dataSource, long fileId, boolean deleteFlag) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
@@ -810,6 +895,7 @@ public class DataFileDB {
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the specified data file does not exist in the database
+	 * @see #GET_DELETE_FLAG_STATEMENT
 	 */
 	public static boolean getDeleteFlag(Connection conn, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		MissingParam.checkMissing(conn, "conn");
@@ -840,6 +926,14 @@ public class DataFileDB {
 		}
 	}
 	
+	/**
+	 * Retrieves a list of all data files that have their delete flag set
+	 * @param dataSource A data source
+	 * @return The list of data files that have their delete flag set
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @see #GET_DELETE_FLAG_FILES_QUERY
+	 */
 	public static List<Long> getFilesWithDeleteFlag(DataSource dataSource) throws MissingParamException, DatabaseException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		

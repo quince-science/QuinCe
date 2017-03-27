@@ -25,6 +25,8 @@ public class CalibrationsBean extends BaseManagedBean {
 
 	/**
 	 * Navigation to the calibration editor
+	 * @see #editCalibration()
+	 * @see #newCalibration()
 	 */
 	private static final String PAGE_CALIBRATION_EDITOR = "calibrationEditor";
 	
@@ -65,6 +67,7 @@ public class CalibrationsBean extends BaseManagedBean {
 	/**
 	 * Set up a new, empty calibration, set its date to today, and navigate to the editor
 	 * @return The navigation result
+	 * @see #PAGE_CALIBRATION_EDITOR
 	 */
 	public String newCalibration() {
 		try {
@@ -123,6 +126,7 @@ public class CalibrationsBean extends BaseManagedBean {
 	/**
 	 * Begin editing an existing calibration
 	 * @return The navigation to the calibration editor page
+	 * @see #PAGE_CALIBRATION_EDITOR
 	 */
 	public String editCalibration() {
 		try {
