@@ -136,7 +136,7 @@ public class CalibrationCoefficients implements Comparable<SensorCode> {
 	 * 
 	 * @param coefficients The list of {@code CalibrationCoefficients} objects to be searched.
 	 * @param code The {@code SensorCode} for the desired sensor.
-	 * @return The {@code CalibrationCoefficients} object for the supplied {@code SensorCode}, or {@code null} if no matching object can be found.
+	 * @return The {@code CalibrationCoefficients} object for the supplied {@code SensorCode}, or {@code null} if no matching coefficients can be found.
 	 */
 	public static CalibrationCoefficients findSensorCoefficients(List<CalibrationCoefficients> coefficients, SensorCode code) {
 		CalibrationCoefficients result = null;
