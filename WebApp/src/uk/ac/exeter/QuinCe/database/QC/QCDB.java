@@ -588,7 +588,10 @@ public class QCDB {
 		if (!Flag.isValidFlagValue(flag)) {
 			throw new ParameterException("flag", "Invalid flag value");
 		}
-		MissingParam.checkMissing(comment, "comment");
+		
+		if (flag != Flag.VALUE_GOOD) {
+			MissingParam.checkMissing(comment, "comment");
+		}
 		
 		String queryString = SET_WOCE_FLAG_STATEMENT;
 		queryString = queryString.replaceAll("%%ROWS%%", rows);

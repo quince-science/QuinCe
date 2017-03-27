@@ -17,6 +17,7 @@ import javax.sql.DataSource;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.DateTimeParseException;
 import uk.ac.exeter.QuinCe.data.Instrument;
@@ -37,7 +38,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 public class RawDataDB {
 	
-	public static final double MISSING_VALUE = -99999.9;
+	public static final double MISSING_VALUE = RoutinesConfig.NO_VALUE;
 
 	private static final String ADD_MEASUREMENT_STATEMENT = "INSERT INTO raw_data "
 			+ "(data_file_id, row, run_type_id, co2_type, date_time, longitude, latitude, "
