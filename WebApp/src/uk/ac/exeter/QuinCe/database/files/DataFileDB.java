@@ -131,7 +131,7 @@ public class DataFileDB {
      * Only marine measurements are included.
      * @see #updateFlagCounts(Connection, FileInfo)
 	 */
-	private static final String GET_WOCE_FLAGS_QUERY = "SELECT DISTINCT woce_flag, COUNT(woce_flag) FROM qc WHERE data_file_id = ? GROUP BY woce_flag";
+	private static final String GET_WOCE_FLAGS_QUERY = "SELECT DISTINCT woce_flag, COUNT(woce_flag) FROM qc AS q INNER JOIN raw_data AS w on w.data_file_id = q.data_file_id AND w.row = q.row WHERE q.data_file_id = ? AND w.co2_type = 0 GROUP BY woce_flag";
 
 	/**
 	 * Statement to set the given data file's {@code last_touched} value to the current time
