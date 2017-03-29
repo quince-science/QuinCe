@@ -6,22 +6,12 @@ import java.util.Map;
 import org.apache.commons.validator.routines.EmailValidator;
 
 import uk.ac.exeter.QuinCe.data.User;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.User.NoSuchUserException;
 import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.database.User.UserExistsException;
-import uk.ac.exeter.QuinCe.jobs.InvalidJobClassTypeException;
-import uk.ac.exeter.QuinCe.jobs.InvalidJobConstructorException;
-import uk.ac.exeter.QuinCe.jobs.JobClassNotFoundException;
-import uk.ac.exeter.QuinCe.jobs.JobException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
-import uk.ac.exeter.QuinCe.jobs.JobThreadPoolNotInitialisedException;
-import uk.ac.exeter.QuinCe.jobs.NoSuchJobException;
 import uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringFormatException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
-import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
