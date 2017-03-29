@@ -112,14 +112,10 @@ public class SignupBean extends BaseManagedBean {
 				emailJobParams.put(SendEmailVerificationMailJob.EMAIL_KEY, emailAddress);
 				
 				JobManager.addInstantJob(ServletUtils.getResourceManager(), ServletUtils.getAppConfig(), newUser, "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob", emailJobParams);
-			} catch (DatabaseException|MissingParamException|ResourceException e) {
-				result = internalError(e);
 			} catch (UserExistsException e) {
 				setMessage(getComponentID("emailAddress"), "A user already exists with that email address");
 				result = USER_EXISTS_RESULT;
-			} catch (JobException|InvalidJobConstructorException|InvalidJobClassTypeException|JobClassNotFoundException|NoSuchUserException e) {
-				result = internalError(e);
-			} catch (JobThreadPoolNotInitialisedException|NoSuchJobException e) {
+			} catch (Exception e) {
 				result = internalError(e);
 			}
 		}
