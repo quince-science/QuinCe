@@ -116,7 +116,6 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 				// is irrelevant.
 			}
 		}
-		
 	}
 
 	@Override

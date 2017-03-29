@@ -299,12 +299,13 @@ public class JobManager {
 	 * @throws InvalidJobClassTypeException If the specified job class is not of the correct type
 	 * @throws InvalidJobConstructorException If the specified job class does not have the correct constructor
 	 * @throws JobException If an unknown problem is found with the specified job class
+	 * @throws JobFailedException If the job could not be executed
 	 * @throws JobThreadPoolNotInitialisedException If the job thread pool has not been initialised
 	 * @throws NoSuchJobException If the job mysteriously vanishes between being created and run
 	 * @throws StringFormatException 
 	 * @throws SecurityException 
 	 */
-	public static void addInstantJob(ResourceManager resourceManager, Properties config, User owner, String jobClass, Map<String,String> parameters) throws DatabaseException, MissingParamException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, JobThreadPoolNotInitialisedException, NoSuchJobException, SecurityException, StringFormatException {
+	public static void addInstantJob(ResourceManager resourceManager, Properties config, User owner, String jobClass, Map<String,String> parameters) throws DatabaseException, MissingParamException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, JobThreadPoolNotInitialisedException, NoSuchJobException, JobFailedException {
 		DataSource dataSource = resourceManager.getDBDataSource();
 		long jobID = addJob(dataSource, owner, jobClass, parameters);
 		JobThread jobThread = JobThreadPool.getInstance().getInstantJobThread(JobManager.getJob(resourceManager, config, jobID));
@@ -412,7 +413,7 @@ public class JobManager {
 	 * @throws StringFormatException 
 	 * @throws SecurityException 
 	 */
-	public static Job getJob(ResourceManager resourceManager, Properties config, long jobID) throws MissingParamException, DatabaseException, NoSuchJobException, SecurityException, StringFormatException {
+	public static Job getJob(ResourceManager resourceManager, Properties config, long jobID) throws MissingParamException, DatabaseException, NoSuchJobException, JobFailedException {
 		
 		MissingParam.checkMissing(resourceManager, "resourceManager");
 
@@ -433,7 +434,7 @@ public class JobManager {
 			} else {
 				job = getJobFromResultSet(result, resourceManager, config);
 			}
-		} catch (SQLException|ClassNotFoundException|NoSuchMethodException|InstantiationException|IllegalAccessException|IllegalArgumentException|InvocationTargetException e) {
+		} catch (SQLException e) {
 			// We handle all exceptions as DatabaseExceptions.
 			// The fact is that invalid jobs should never get into the database in the first place.
 			throw new DatabaseException("Error while retrieving details for job " + jobID, e);
@@ -446,10 +447,20 @@ public class JobManager {
 		return job;
 	}
 	
-	private static Job getJobFromResultSet(ResultSet result, ResourceManager resourceManager, Properties config) throws ClassNotFoundException, SQLException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, StringFormatException {
-		Class<?> jobClazz = Class.forName(result.getString(2));
-		Constructor<?> jobConstructor = jobClazz.getConstructor(ResourceManager.class, Properties.class, long.class, Map.class);
-		return (Job) jobConstructor.newInstance(resourceManager, config, result.getLong(1), StringUtils.delimitedToMap(result.getString(3)));
+	private static Job getJobFromResultSet(ResultSet result, ResourceManager resourceManager, Properties config) throws JobFailedException, SQLException {
+		
+		long jobId = -1;
+		
+		try {
+			jobId = result.getLong(1);
+			Class<?> jobClazz = Class.forName(result.getString(2));
+			Constructor<?> jobConstructor = jobClazz.getConstructor(ResourceManager.class, Properties.class, long.class, Map.class);
+			return (Job) jobConstructor.newInstance(resourceManager, config, result.getLong(1), StringUtils.delimitedToMap(result.getString(3)));
+		} catch (SQLException e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new JobFailedException(jobId, "Error while creating job object", e);
+		}
 	}
 	
 	/**
@@ -621,12 +632,13 @@ public class JobManager {
 	 * from the database 
 	 * @param dataSource A data source
 	 * @return The next queued job, or {@code null} if there are no jobs.
+	 * @throws JobFailedException 
 	 * @throws MissingParamException If the data source is not supplied
 	 * @throws DatabaseException If an error occurs while retrieving details from the database.
 	 * @throws StringFormatException 
 	 * @throws SecurityException 
 	 */
-	public static Job getNextJob(ResourceManager resourceManager, Properties config) throws MissingParamException, DatabaseException, SecurityException, StringFormatException {
+	public static Job getNextJob(ResourceManager resourceManager, Properties config) throws JobFailedException, DatabaseException, MissingParamException {
 		
 		MissingParam.checkMissing(resourceManager, "resourceManager");
 
@@ -634,6 +646,7 @@ public class JobManager {
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet result = null;
+		long nextJobId = -1;
 		
 		try {
 			DataSource dataSource = resourceManager.getDBDataSource();
@@ -642,9 +655,19 @@ public class JobManager {
 			
 			result = stmt.executeQuery();
 			if (result.next()) {
+				nextJobId = result.getLong(1);
 				job = getJobFromResultSet(result, resourceManager, config);
 			}
-		} catch (SQLException|ClassNotFoundException|NoSuchMethodException|InstantiationException|IllegalAccessException|IllegalArgumentException|InvocationTargetException e) {
+		} catch (JobFailedException e) {
+			try {
+				if (null != result) {
+					logJobError(connection, nextJobId, e.getCause());
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+				// Do nothing. The job scheduler will try again.
+			}
+		} catch (SQLException e) {
 			// We handle all exceptions as DatabaseExceptions.
 			// The fact is that invalid jobs should never get into the database in the first place.
 			throw new DatabaseException("Error while retrieving details for next queued job", e);
@@ -819,7 +842,7 @@ public class JobManager {
 		return result;
 	}
 
-	public static boolean startNextJob(ResourceManager resourceManager, Properties config) throws MissingParamException, DatabaseException, NoSuchJobException, JobThreadPoolNotInitialisedException, SecurityException, StringFormatException {
+	public static boolean startNextJob(ResourceManager resourceManager, Properties config) throws MissingParamException, JobFailedException, DatabaseException, JobThreadPoolNotInitialisedException, NoSuchJobException {
 		boolean jobStarted = false;
 		Job nextJob = getNextJob(resourceManager, config);
 		if (null != nextJob) {
