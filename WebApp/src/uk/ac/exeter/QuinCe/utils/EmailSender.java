@@ -24,17 +24,16 @@ public class EmailSender {
 	public static void sendEmail(Properties config, String address, String subject, String message) throws EmailException {
 		Email email = new SimpleEmail();
 
-		if (Boolean.valueOf(config.getProperty("email.starttls"))) {
-			email.setStartTLSEnabled(true);
-		}
-		
-		if (Boolean.valueOf(config.getProperty("email.ssl"))) {
-			email.setSSLOnConnect(true);
-		}
+		email.setStartTLSEnabled(Boolean.valueOf(config.getProperty("email.starttls", "false")));
+		email.setSSLOnConnect(Boolean.valueOf(config.getProperty("email.ssl", "false")));
 		
 		email.setHostName(config.getProperty("email.hostname"));
 		email.setSmtpPort(Integer.parseInt(config.getProperty("email.port")));
-		email.setAuthentication(config.getProperty("email.username"), config.getProperty("email.password"));
+		
+		String userName = config.getProperty("email.username");
+		if (null != userName && userName.trim().length() > 0) {
+			email.setAuthentication(config.getProperty("email.username"), config.getProperty("email.password"));
+		}
 		email.setFrom(config.getProperty("email.fromaddress"), config.getProperty("email.fromname"));
 		email.setSubject(subject);
 		email.setMsg(message);

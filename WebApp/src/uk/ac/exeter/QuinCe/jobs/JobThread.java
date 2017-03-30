@@ -99,7 +99,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 				throw new JobException("Invalid finished state (" + job.getFinishState() + ") set on job");
 			}
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			try {
 				job.logError(e);
 			} catch (Exception e2) {
@@ -116,7 +116,6 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 				// is irrelevant.
 			}
 		}
-		
 	}
 
 	@Override
