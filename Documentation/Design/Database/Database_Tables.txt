@@ -2,9 +2,10 @@
 
 # Version History
 
-Version      Date           Description
----------    ------------   ------------------------------------------------------
-alpha1       2017-03-16     2017-03-16
+Version      Date                     Description
+---------    ----------------------   ------------------------------------------------------
+alpha1       2017-03-16               2017-03-16
+xx           xx                       Redesign of database to handle instruments with multiple data files, and processing data by crossing instead of by data file.
 
 # Introduction
 This document specifies the database tables that are used in the QuinCe project.
@@ -51,73 +52,12 @@ files. Entries are supplied for all the possible formatting options. Those that
 aren't needed will be left empty.
 
 Field                    Type           Description
---------------------     ------------   -----------------------------------------------------------------
+--------------------     ------------   --------------------------------------------------------------------------------------
 id                       Integer        ID
 owner                    F_KEY          The ID of the user who owns this instrument
 name                     String         The name of the instrument
-intake_temp_1_name       String         The name of the first intake temperature sensor
-intake_temp_2_name       String         The name of the second intake temperature sensor
-intake_temp_3_name       String         The name of the third intake temperature sensor
-salinity_1_name          String         The name of the first salinity sensor
-salinity_2_name          String         The name of the second salinity sensor
-salinity_3_name          String         The name of the third salinity sensor
-eqt_1_name               String         The name of the first equilibrator temperature sensor
-eqt_2_name               String         The name of the second equilibrator temperature sensor
-eqt_3_name               String         The name of the third equilibrator temperature sensor
-eqp_1_name               String         The name of the first equilibrator pressure sensor
-eqp_2_name               String         The name of the second equilibrator pressure sensor
-eqp_3_name               String         The name of the third equilibrator pressure sensor
-air_flow_1_name          String         The name of the first air flow sensor
-air_flow_2_name          String         The name of the second air flow sensor
-air_flow_3_name          String         The name of the third air flow sensor
-water_flow_1_name        String         The name of the first water flow sensor
-water_flow_2_name        String         The name of the second water flow sensor
-water_flow_3_name        String         The name of the third water flow sensor
-separator_char           String         The character that separates fields in the instrument's data files
-date_format              Integer        The date format used in the instrument's data files
-time_format              Integer        The time format used in the instrument's data files
-lat_format               Integer        The latitude format used in the instrument's data files
-lon_format               Integer        The longitude format used in the instrument's data files
-header_lines             Integer        The number of header lines in the instrument's data files
-has_atmospheric_pressure Boolean        Indicates whether or not the instrument records atmospheric pressure
-samples_dried            Boolean        Indicates whether or not samples are dried before being analysed
-run_type_col             Integer        Run type
-date_col                 Integer        Date (all parts in one column)
-year_col                 Integer        Year
-month_col                Integer        Month
-day_col                  Integer        Day
-time_col                 Integer        Time (all parts in one column)
-hour_col                 Integer        Hour
-minute_col               Integer        Minute
-second_col               Integer        Second
-latitude_col             Integer        Latitude
-north_south_col          Integer        Latitude direction (N/S)
-longitude_col            Integer        Longitude
-east_west_col            Integer        Longitude direction (E/W)
-intake_temp_1_col        Integer        Intake temperature 1
-intake_temp_2_col        Integer        Intake temperature 2
-intake_temp_3_col        Integer        Intake temperature 3
-salinity_1_col           Integer        Salinity 1
-salinity_2_col           Integer        Salinity 2
-salinity_3_col           Integer        Salinity 3
-eqt_1_col                Integer        Equilibrator temperature 1
-eqt_2_col                Integer        Equilibrator temperature 2
-eqt_3_col                Integer        Equilibrator temperature 3
-eqp_1_col                Integer        Equilibrator pressure 1
-eqp_2_col                Integer        Equilibrator pressure 2
-eqp_3_col                Integer        Equilibrator pressure 3
-air_flow_1_col           Integer        Air flow 1
-air_flow_2_col           Integer        Air flow 2
-air_flow_3_col           Integer        Air flow 3
-water_flow_1_col         Integer        Water flow 1
-water_flow_2_col         Integer        Water flow 2
-water_flow_3_col         Integer        Water flow 3
-atmospheric_pressure_col Integer        Atmospheric pressure
-xh2o_col                 Integer        xH~2~O
-co2_col                  Integer        CO~2~
-raw_col_count            Integer        The total number of columns in the instrument's data files
-pre_flushing_time        Integer        The number of seconds to discard at the start of each run type
-post_flushing_time       Integer        The number of seconds to discard at the end of each run type
+pre_flushing_time        Integer        The number of seconds' worth of measurements to discard at the start of each run type
+post_flushing_time       Integer        The number of seconds' worth of measurements to discard at the end of each run type
 
 #### `date_format`
 The `date_format` field will have one of the following values:
