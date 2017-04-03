@@ -59,6 +59,41 @@ name                     String         The name of the instrument
 pre_flushing_time        Integer        The number of seconds' worth of measurements to discard at the start of each run type
 post_flushing_time       Integer        The number of seconds' worth of measurements to discard at the end of each run type
 
+## `file_definition`
+This table defines the layout of data files used with a given instrument. This definition will be
+set up by the user when they define their instrument.
+
+An instrument may have only one data file, or it may have multiple files if
+different data comes from different places.
+
+Columns indices for the date/time and position are stored in this table, since they are universal
+for all instrument types. Other column details are stored in the child `file_columns` table.
+
+Field                    Type           Description
+--------------------     ------------   --------------------------------------------------------------------------------------
+id                       Integer        ID
+instrument_id            F_KEY          The ID of the instrument that this data file belongs to
+primary_file             Boolean        Indicates whether or not this is the primary data file for the instrument. This is
+                                        decided by QuinCe and is implementation-specific.
+date_format              Integer        The date format used in the instrument's data files
+time_format              Integer        The time format used in the instrument's data files
+date_col                 Integer        Date column (all parts in one column)
+year_col                 Integer        Year column
+month_col                Integer        Month column
+day_col                  Integer        Day column
+time_col                 Integer        Time column (all parts in one column)
+hour_col                 Integer        Hour column
+minute_col               Integer        Minute column
+second_col               Integer        Second column
+has_position             Boolean        Indicates whether or not this file contains position information
+lon_format               Integer        The longitude format used in the instrument's data files
+lat_format               Integer        The latitude format used in the instrument's data files
+latitude_col             Integer        Latitude column
+north_south_col          Integer        Latitude direction (N/S) column
+longitude_col            Integer        Longitude column
+east_west_col            Integer        Longitude direction (E/W) column
+run_type_col             Integer        The column in which run type indentifiers are stored
+
 #### `date_format`
 The `date_format` field will have one of the following values:
 
@@ -97,54 +132,64 @@ Value    Format
 1        -180 to 180
 2        0 to 180, with E/W in a separate column
 
-### `run_types`
-Each instrument will have a number of run types. QuinCe has only two types: CO~2~ and gas standards.
+
+## `file_columns`
+This table will contains details of the columns present in a given
+file definition
+
+Field                    Type           Description
+--------------------     ------------   -----------------------------------------------------------------
+file_definition_id       F_KEY          The ID of the file definition
+sensor_type              String         The name of the sensor type, as identified in the `sensor_config.csv`file
+column_name              String         The name of this column as it will be displayed in QuinCe
+column_index             Integer        The column where this sensor's value can be found in the data file
+missing_value            String         Value that indicates a missing value (`NaN`, `-999` etc.)
+value_index              Integer        The position at which this value will be stored in the `voyage_data` file
+
+## `run_types`
+Each instrument will have a number of run types, for measurements, gas standards etc.
+
 This table will hold details of which values in the
-`run_type` column (as defined in the `columns` table) correspond to which run types.
+`run_type` column (as defined in the `file_definition` table) correspond to which run types.
 
 Field                    Type           Description
 --------------------     ------------   -----------------------------------------------------------------
 id                       Integer        ID
 instrument_id            F_KEY          Instrument ID
 run_name                 String         The value from the `run_type` column in the Columns table
-type                     Integer        The run type
+~~type~~                 ~~Integer~~    ~~The run type~~
 
 ##### `type`
-The `type` column will contain one of the following values:
+~~The `type` column will contain one of the following values:~~
 
-Value    Run type
------    --------------------------
--1       Not used
-0        Sea water CO~2~
-1        Atmospheric CO~2~
-2        Gas standard
+~~Value~~    ~~Run type~~
+---------    --------------------------
+~~-1~~       ~~Not used~~
+~~0~~        ~~Sea water CO~2~~~
+~~1~~        ~~Atmospheric CO~2~~~
+~~2~~        ~~Gas standard~~
 
 ## `gas_standard_deployment`
 Each gas standard is supplied at a specific concentration, which may vary between
-cylinders. This table will store records of when gas standards were deployed,
-and the concentrations for each standard are stored in the child `gas_standard_concentration`
-table.
+cylinders. This table will store records of when each gas standard is deployed.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
 concentration_id         Integer        ID
 instrument_id            F_KEY          Instrument ID
-deployed_date            Date           The date on which the standard was deployed
-
-## `gas_standard_concentration`
-
-
-Field                    Type           Description
---------------------     ------------   -------------------------------------------------------------------------
-concentration_id         F_KEY          The parent gas standard deployment record
+deployment_date          Date           The date on which the standard was deployed
 standard_name            String         The name of the standard (from the `run_types` table)
 concentration            Float          The concentration of the standard
 
+## `calibration`
+Each sensor in an instrument must be periodically calibrated. In some instruments,
+this calibration is not applied to the raw data, and so the adjustments must be made
+within QuinCe.
 
-## `sensor_calibration`
-This table will store the sensor calibrations for the instrument. It holds the
-name overall details of the calibration session, and the `calibration_coefficients`
-table below stores the actual calibration values
+It is also possible that some values are reported in millivolts or similar, and must
+be converted to the true units of the parameter being measured. The calibrations table
+can be dual-purposed for this eventuality.
+
 Each calibration will be defined as a polynomial curve with up to five harmonics.
 
 Field                    Type           Description
@@ -152,16 +197,8 @@ Field                    Type           Description
 id                       Integer        ID
 instrument_id            F_KEY          Instrument ID
 caibration_date          Date           The date of the calibration
-
-## `calibration_coefficients`
-This table stores the individual calibration coefficients for a single sensor.
-It will contain one record for each sensor on the instrument for each record in
-the parent `sensor_calibration` table.
-
-Field                    Type           Description
---------------------     ------------   -------------------------------------------------------------------------
-calibration_id           F_KEY          Instrument ID
-sensor                   String         The sensor identifier
+sensor_file              F_KEY          The ID of the file in which this sensor is defined
+sensor_column            Integer        The column in which this sensor's data is found in the specified file
 intercept                Float          The intercept of the calibration curve
 x                        Float          Slope
 x2                       Float          Second harmonic
