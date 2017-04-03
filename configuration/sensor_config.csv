@@ -1,0 +1,15 @@
+# This file lists the sensors etc that are needed for a particular
+# configuration of QuinCe.
+
+# Sensor Name,Required?,RequiredGroup,DependsOn,Many?
+Intake Temperature,Y,,,Y
+Salinity,Y,,,Y
+Equilibrator Temperature,Y,,,Y
+Equilibrator Pressure (absolute),Y,EqP,,Y
+Equilibrator Pressure (differential),Y,EqP,Atmospheric Pressure,Y
+Atmospheric Pressure,N,,,Y
+xH2O,Y,,,Y
+CO2,Y,,,N
+Other Temperature,N,,,Y
+Air Flow,N,,,Y
+Water Flow,N,,,Y
