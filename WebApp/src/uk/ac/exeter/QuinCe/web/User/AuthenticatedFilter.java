@@ -69,14 +69,15 @@ public class AuthenticatedFilter implements Filter {
     	if (requestURL.endsWith("/")) {
     		requestURL = requestURL.substring(0, requestURL.length() - 1);
     	}
-    	
+
         if (null == session) {
         	if (requestURL.equals(request.getContextPath())) {
-            	filterChain.doFilter(request, response);
+        		filterChain.doFilter(request, response);
         	} else {
         		response.sendRedirect(request.getContextPath());
         	}
         } else {
+        	
             // Get the user's email address from the session (if possible)
             User user = (User) session.getAttribute(LoginBean.USER_SESSION_ATTR);
 
@@ -84,11 +85,12 @@ public class AuthenticatedFilter implements Filter {
             	filterChain.doFilter(request, response);
             } else {
             	if (requestURL.equals(request.getContextPath())) {
-                	session.removeAttribute("SESSION_EXPIRED");            		
+                	session.removeAttribute("SESSION_EXPIRED");
+                	filterChain.doFilter(request, response);
             	} else {
                 	session.setAttribute("SESSION_EXPIRED", "true");
+                    response.sendRedirect(request.getContextPath());
             	}
-                response.sendRedirect(request.getContextPath());
             }
         }
 	}
@@ -127,12 +129,21 @@ public class AuthenticatedFilter implements Filter {
 		} else {
 			for (String allowedPath: allowedPaths) {
 				String pathURIBase = request.getContextPath() + allowedPath;
+				String requestURI = request.getRequestURI();
+				int sessionIdPos = requestURI.indexOf(";jsessionid");
+				if (sessionIdPos != -1) {
+					requestURI = requestURI.substring(0, sessionIdPos);
+				}
 				
 				boolean pathMatched = false;
 				
-				if (request.getRequestURI().equals(pathURIBase + ".jsf")) {
+				
+				// Allowed paths with . in are complete, so don't try adding a suffix
+				if (allowedPath.contains(".") && requestURI.equals(pathURIBase)) {
 					pathMatched = true;
-				} else if (request.getRequestURI().equals(pathURIBase + ".xhtml")) {
+				} else if (requestURI.equals(pathURIBase + ".jsf")) {
+					pathMatched = true;
+				} else if (requestURI.equals(pathURIBase + ".xhtml")) {
 					pathMatched = true;
 				}
 				
@@ -155,6 +166,8 @@ public class AuthenticatedFilter implements Filter {
 		allowedPaths.add("/user/signup");
 		allowedPaths.add("/user/signup_complete");
 		allowedPaths.add("/user/verify_email");
+		allowedPaths.add("/credits");
+		allowedPaths.add("/favicon.ico");
 		
 		resourcePaths.add(ResourceHandler.RESOURCE_IDENTIFIER);
 		resourcePaths.add("/resources");
