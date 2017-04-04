@@ -223,156 +223,71 @@ The second digit will be in the range 1-3. Therefore a `sensor` field value of
 `3_2` indicates the second equilibrator pressure sensor.
 
 # Data Files
-For each data file that's uploaded, there are a number of pieces of information
-that are required alongside it. This section describes all the tables required
-to hold these details.
+This section describes the tables used to hold data as it is processed to calculate and
+QC the CO~2~ measurements.
 
-## `data_file`
-This table is a simple list of all the data files held in the system.
-
-Field                    Type           Description
---------------------     ------------   -------------------------------------------------------------------------
-instrument_id            F_KEY          The instrument ID
-filename                 String         The filename of the uploaded file. Must be unique for a given instrument
-start_date               Date           The date of the first record in the file
-record_count             Integer        The number of records in the file
-current_job              Integer        The current activity being performed on the file. See below.
-last_touched             DateTime       The date when the file was last touched. Files held beyond a given length of time will be automatically deleted.
-delete_flag              Integer        A flag that is set when a file is marked for deletion
-
-#### `current_job`
-When a file is uploaded, it is processed in a number of stages, which are indicated by an integer value.
-These stages are:
-
-Value                Meaning
------------------    -----------------------------------------------------------------------------------------
-0                    The contents of the file are extracted into the database ready for processing.
-1                    The system will load any additional data required for calculations from its own archives.
-2                    The data reduction calculations are performed
-3                    The automatic QC checks are performed
-4                    The user will perform manual QC
-
-## `raw_data`
-This table will contain the records from the data file corresponding to the CO~2~ runs (both sea water and
-atmospheric). It will contain the raw data directly from the uploaded file, ready to be processed. Sensor values
-will be adjusted according to their calibrations, but CO~2~ values will remain in their raw state.
+## `voyage`
+This table will define a voyage. Itwill not contain any data,
+but its contents will be used to determine which data should be
+extracted from uploaded data files to be made part of the voyage.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-data_file_id             F_KEY          File ID
-row                      Integer        Row number (from the original data file)
-run_type_id              F_KEY          The ID of the run type in the `run_types` table
-co2_type                 Integer        The type of CO~2~ measurement
-date_time                DateTime       Date and time
-longitude                Float          Longitude
-latitude                 Float          Latitude
-intake_temp_1            Float          Intake temperature 1
-intake_temp_2            Float          Intake temperature 2
-intake_temp_3            Float          Intake temperature 3
-salinity_1               Float          Salinity 1
-salinity_2               Float          Salinity 2
-salinity_3               Float          Salinity 3
-eqt_1                    Float          Equilibrator temperature 1
-eqt_2                    Float          Equilibrator temperature 2
-eqt_3                    Float          Equilibrator temperature 3
-eqp_1                    Float          Equilibrator pressure 1
-eqp_2                    Float          Equilibrator pressure 2
-eqp_3                    Float          Equilibrator pressure 3
-air_flow_1               Float          Air flow 1
-air_flow_2               Float          Air flow 2
-air_flow_3               Float          Air flow 3
-water_flow_1             Float          Water flow 1
-water_flow_2             Float          Water flow 2
-water_flow_3             Float          Water flow 3
-xh2o                     Float          xH~2~O
-atmospheric_pressure     Float          Atmospheric pressure
-co2                      Float          The CO~2~ measurement
+id                       Integer        The voyage ID
+instrument_id            F_KEY          The instrument for which this voyage is defined
+start                    DateTime       The start date and time of the voyage
+end                      DateTime       The end date and time of the voyage
+status                   Integer        The current processing state of the voyage
+properties               String         Miscellaneous properties related to the voyage
 
-##### `type`
-The `co2_type` column will contain one of the following values:
+#### `status`
+As a voyage's data is processed, it will go through a number of stages. The actions that can be performed
+for a voyage will vary at each stage. Stages are likely to include:
 
-Value    Run type
------    --------------------------
-0        Sea water CO~2~
-1        Atmospheric CO~2~
+* Data extraction
+* Initial data check
+* Data reduction
+* Automatic QC
+* User QC
 
-## `gas_standards_data`
-This file stores details of the gas standard measurements from the data files.
-These will primarily be used in the data reduction routines to calibrate the actual
-sea water measurements, but they will be recorded here so they can be examined by
-the user.
+## `voyage_data`
+After a voyage is defined, the relevant data will be extracted from the data files and stored in this table.
+The data reduction and QC performed by QuinCe will be based on this data.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-data_file_id             F_KEY          File ID
-row                      Integer        Row number (from the original data file)
-date_time                DateTime       Date and time
-run_type_id              F_KEY          The ID of the gas standard in the `run_types` table
-air_flow_1               Float          Air flow 1
-air_flow_2               Float          Air flow 2
-air_flow_3               Float          Air flow 3
-xh2o                     Float          xH~2~O
-concentration            Float          The concentration measured
-qc_flag                  Integer        A QC flag for the gas standards data. Used to disable the use of a standard during data reduction
-qc_message               String         A message describing the reason for the QC flag
+voyage_id                F_KEY          The voyage to which this data relates
+time                     DateTime       The date/time of the record
+longitude                Float          The longitude at which the measurement was taken
+latitude                 Float          The latitude at which the measurement was taken
+run_type                 F_KEY          The run type for this measurement
+value0
+.
+.
+value255                 Float          Fields to contain data values. The values stored will vary between instruments
+qc_flag                  Integer        The QC flag assigned to the data during initial data checks
+qc_comment               String         Reasons for the `qc_flag` being set to its value
 
-## `data_reduction`
-This table will contain the results of the data reduction, along with all the values used
-during calculation. It will include the mean sensor values, any other input values, and
-any data imported from external sources (such as atmospheric pressure). Values stored in this
-table will have had calibrations applied from both sensors and gas standards.
-
-The table will also include intermediate values calculated
-during the data reduction, so the user can trace the calculation to help locate the source of
-certain issues.
+## `calculation_data`
+This table will hold the results of calculations performed on the `voyage_data`, including
+any intermediate results that are required. It will also hold the results of the automatic and
+user QC process.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-data_file_id             F_KEY          File ID
-row                      Integer        Row number (from the original data file)
-co2_type                 Integer        The type of CO~2~ measurement
-mean_intake_temp         Float          The intake temperature, as a mean of all the sensor measurements.
-mean_salinity            Float          The salinity, as a mean of all the sensor measurements.
-mean_eqt                 Float          The equilibrator temperature, as a mean of all the sensor measurements.
-delta_temperature        Float          The difference between the mean intake temperature and the mean equilibrator temperature
-mean_eqp                 Float          The equilibrator pressure, as a mean of all the sensor measurements.
-atmospheric_pressure     Float          The atmospheric pressure, either from the instrument or imported
-true_xh2o                Float          The true xH~2~O, after correction to the gas standards
-dried_co2                Float          The mathematically dried CO~2~ value
-calibrated_co2           Float          The CO~2~ value calibrated to the gas standards
-pco2_te_dry              Float          Dry pCO~2~ at equilibrator temperature
-ph2o                     Float          The correction factor to 100% humidity
-pco2_te_wet              Float          Wet pCO~2~ at equilibrator temperature
-fco2_te                  Float          fCO~2~ at equilibrator temperature
-fco2                     Float          The final fCO~2~ value
-
-
-## `qc`
-This table will contain details of the Quality Control carried out by both the automated routines
-and the scientist. It will allow individual sensors to be disabled for individual measurements
-(if one of a set is poor), and record flags and comments for all measurements.
-
-Field                    Type           Description
---------------------     ------------   -------------------------------------------------------------------------
-data_file_id             F_KEY          File ID
-row                      Integer        Row number (from the original data file)
-intake_temp_1_used       Boolean        Indicates whether the first intake temperature sensor is used
-intake_temp_2_used       Boolean        Indicates whether the second intake temperature sensor is used
-intake_temp_3_used       Boolean        Indicates whether the third intake temperature sensor is used
-salinity_1_used          Boolean        Indicates whether the first salinity sensor is used
-salinity_2_used          Boolean        Indicates whether the second salinity sensor is used
-salinity_3_used          Boolean        Indicates whether the third salinity sensor is used
-eqt_1_used               Boolean        Indicates whether the first equilibrator pressure sensor is used
-eqt_2_used               Boolean        Indicates whether the second equilibrator pressure sensor is used
-eqt_3_used               Boolean        Indicates whether the third equilibrator pressure sensor is used
-eqp_1_used               Boolean        Indicates whether the first equilibrator pressure sensor is used
-eqp_2_used               Boolean        Indicates whether the second equilibrator pressure sensor is used
-eqp_3_used               Boolean        Indicates whether the third equilibrator pressure sensor is used
+voyage_id                F_KEY          The voyage to which this data relates
+time                     DateTime       The date/time of the record
+longitude                Float          The longitude at which the measurement was taken
+latitude                 Float          The latitude at which the measurement was taken
+run_type                 F_KEY          The run type for the measurement
+value0
+.
+.
+value255                 Float          Calculation values. These will vary according to the type of calculation being performed.
 qc_flag                  Integer        The QC flag assigned by the automatic QC routines
 qc_message               String         The message(s) from the automatic QC routines
 woce_flag                Integer        The WOCE flag assigned by the user
 woce_comment             String         The WOCE comment
-woce_fatal               Boolean        Indicates whether or not a WOCE Bad flag is Fatal
 
 
 # Jobs
@@ -380,7 +295,6 @@ The majority of the data processing performed by QuinCe will be done by backgrou
 which will be managed within the database.
 
 ## `job`
-
 Each background task will have a row in this table.
 
 Field                    Type           Description
