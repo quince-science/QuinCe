@@ -10,6 +10,12 @@ xx           xx                       Redesign of database to handle instruments
 # Introduction
 This document specifies the database tables that are used in the QuinCe project.
 
+Field names followed by stars indicate primary keys. Multiple fields are sometimes combined to produce
+a compound primary key.
+
+The field type F_KEY indicates a lookup to a value in another table. The table in question will be
+made clear in the field description.
+
 # Users
 This section defines tables related to users and the different parts
 of the system they are linked to.
@@ -19,7 +25,7 @@ Defines a user account
 
 Field                    Type           Description
 --------------------     ------------   ---------------------------------------------------
-email                    String         The user's email address - used as the username
+email*                   String         The user's email address - used as the username
 salt                     Binary         The salt used for the password
 password                 Binary         Password field (salted and hashed)
 first_name               String         The user's first/given name
@@ -53,7 +59,7 @@ aren't needed will be left empty.
 
 Field                    Type           Description
 --------------------     ------------   --------------------------------------------------------------------------------------
-id                       Integer        ID
+id*                      Integer        ID
 owner                    F_KEY          The ID of the user who owns this instrument
 name                     String         The name of the instrument
 pre_flushing_time        Integer        The number of seconds' worth of measurements to discard at the start of each run type
@@ -71,7 +77,7 @@ for all instrument types. Other column details are stored in the child `file_col
 
 Field                    Type           Description
 --------------------     ------------   --------------------------------------------------------------------------------------
-id                       Integer        ID
+id*                      Integer        ID
 instrument_id            F_KEY          The ID of the instrument that this data file belongs to
 primary_file             Boolean        Indicates whether or not this is the primary data file for the instrument. This is
                                         decided by QuinCe and is implementation-specific.
@@ -139,10 +145,10 @@ file definition
 
 Field                    Type           Description
 --------------------     ------------   -----------------------------------------------------------------
-file_definition_id       F_KEY          The ID of the file definition
+file_definition_id*      F_KEY          The ID of the file definition
 sensor_type              String         The name of the sensor type, as identified in the `sensor_config.csv` file
 column_name              String         The name of this column as it will be displayed in QuinCe
-column_index             Integer        The column where this sensor's value can be found in the data file
+column_index*            Integer        The column where this sensor's value can be found in the data file
 missing_value            String         Value that indicates a missing value (`NaN`, `-999` etc.)
 value_index              Integer        The position at which this value will be stored in the `voyage_data` table
 
@@ -157,7 +163,7 @@ file. This file defines a code for each run type that will be stored in the `run
 
 Field                    Type           Description
 --------------------     ------------   -----------------------------------------------------------------
-id                       Integer        ID
+id*                      Integer        ID
 instrument_id            F_KEY          Instrument ID
 run_name                 String         The value from the `run_type` column in the Columns table
 type                     String         The run type code
@@ -168,9 +174,9 @@ cylinders (in the example of gas standards). This table will store records of wh
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-standard_id              F_KEY          The ID of the run type that this deployment relates to
-deployment_date          Date           The date on which the standard was deployed
-concentration            Float          The concentration of the standard
+standard_id*             F_KEY          The ID of the `run_type` that this deployment relates to
+deployment_date*         Date           The date on which the standard was deployed
+value                    Float          The value of the standard
 
 The `standard_id` and `deployment_date` will jointly act as the primary key for the table.
 
@@ -187,9 +193,9 @@ Each calibration will be defined as a polynomial curve with up to five harmonics
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-sensor_file              F_KEY          The ID of the file in which this sensor is defined
-sensor_column            Integer        The column in which this sensor's data is found in the specified file
-caibration_date          Date           The date of the calibration
+sensor_file*             F_KEY          The ID of the file in which this sensor is defined
+sensor_column*           F_KEY          The column in which this sensor's data is found in the specified file
+caibration_date*         Date           The date of the calibration
 intercept                Float          The intercept of the calibration curve
 x                        Float          Slope
 x2                       Float          Second harmonic
@@ -211,7 +217,7 @@ extracted from uploaded data files to be made part of the voyage.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-id                       Integer        The voyage ID
+id*                      Integer        The voyage ID
 instrument_id            F_KEY          The instrument for which this voyage is defined
 start                    DateTime       The start date and time of the voyage
 end                      DateTime       The end date and time of the voyage
@@ -234,8 +240,8 @@ The data reduction and QC performed by QuinCe will be based on this data.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-voyage_id                F_KEY          The voyage to which this data relates
-time                     DateTime       The date/time of the record
+voyage_id*               F_KEY          The voyage to which this data relates
+time*                    DateTime       The date/time of the record
 longitude                Float          The longitude at which the measurement was taken
 latitude                 Float          The latitude at which the measurement was taken
 run_type                 F_KEY          The run type for this measurement
@@ -253,8 +259,8 @@ user QC process.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-voyage_id                F_KEY          The voyage to which this data relates
-time                     DateTime       The date/time of the record
+voyage_id*               F_KEY          The voyage to which this data relates
+time*                    DateTime       The date/time of the record
 longitude                Float          The longitude at which the measurement was taken
 latitude                 Float          The latitude at which the measurement was taken
 run_type                 F_KEY          The run type for the measurement
@@ -277,7 +283,7 @@ Each background task will have a row in this table.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-job_id                   Integer        Job ID
+job_id*                  Integer        Job ID
 owner                    F_KEY          The user id of the owner of the job
 submitted                DateTime       The date and time on which the job was submitted
 class                    String         The class name of the job to be run
