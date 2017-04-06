@@ -9,12 +9,16 @@ body {
   overflow-x: hidden;
 }
 
-#contentbox {
+.contentBox {
   max-width: 400px;
   margin: 40px auto 28px;
   border: 1px solid #DEDEDE;
   padding: 15px;
   background: #FFF;
+}
+
+.wideContentBox {
+	max-width: 600px !important;
 }
 
 h1,h2 {
