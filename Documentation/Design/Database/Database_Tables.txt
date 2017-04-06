@@ -140,11 +140,11 @@ file definition
 Field                    Type           Description
 --------------------     ------------   -----------------------------------------------------------------
 file_definition_id       F_KEY          The ID of the file definition
-sensor_type              String         The name of the sensor type, as identified in the `sensor_config.csv`file
+sensor_type              String         The name of the sensor type, as identified in the `sensor_config.csv` file
 column_name              String         The name of this column as it will be displayed in QuinCe
 column_index             Integer        The column where this sensor's value can be found in the data file
 missing_value            String         Value that indicates a missing value (`NaN`, `-999` etc.)
-value_index              Integer        The position at which this value will be stored in the `voyage_data` file
+value_index              Integer        The position at which this value will be stored in the `voyage_data` table
 
 ## `run_types`
 Each instrument will have a number of run types, for measurements, gas standards etc.
@@ -162,17 +162,17 @@ instrument_id            F_KEY          Instrument ID
 run_name                 String         The value from the `run_type` column in the Columns table
 type                     String         The run type code
 
-## `gas_standard_deployment`
-Each gas standard is supplied at a specific concentration, which may vary between
-cylinders. This table will store records of when each gas standard is deployed.
+## `standard_deployment`
+Each standard is supplied at a value, which may vary between
+cylinders (in the example of gas standards). This table will store records of when each standard is deployed.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-concentration_id         Integer        ID
-instrument_id            F_KEY          Instrument ID
+standard_id              F_KEY          The ID of the run type that this deployment relates to
 deployment_date          Date           The date on which the standard was deployed
-standard_name            String         The name of the standard (from the `run_types` table)
 concentration            Float          The concentration of the standard
+
+The `standard_id` and `deployment_date` will jointly act as the primary key for the table.
 
 ## `calibration`
 Each sensor in an instrument must be periodically calibrated. In some instruments,
@@ -187,11 +187,9 @@ Each calibration will be defined as a polynomial curve with up to five harmonics
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-id                       Integer        ID
-instrument_id            F_KEY          Instrument ID
-caibration_date          Date           The date of the calibration
 sensor_file              F_KEY          The ID of the file in which this sensor is defined
 sensor_column            Integer        The column in which this sensor's data is found in the specified file
+caibration_date          Date           The date of the calibration
 intercept                Float          The intercept of the calibration curve
 x                        Float          Slope
 x2                       Float          Second harmonic
@@ -199,21 +197,8 @@ x3                       Float          Third harmonic
 x4                       Float          Fourth harmonic
 x5                       Float          Fifth harmonic
 
-#### `sensor`
-The `sensor` field will identify the sensor that the calibration is for.
-It will be of the form `<sensortype>_<sensornumber>` (there can be up to three sensors of each type).
-
-`sensor_type` will be one of:
-
-Digit      Value
------      -----
-0          Intake temperature
-1          Salinity
-2          Equilibrator temperature
-3          Equilibrator pressure
-
-The second digit will be in the range 1-3. Therefore a `sensor` field value of
-`3_2` indicates the second equilibrator pressure sensor.
+The `sensor_file` and `sensor_column` together will identify the specific sensor being calibrated. These combined
+with the `calibration_date` will form the primary key for the table.
 
 # Data Files
 This section describes the tables used to hold data as it is processed to calculate and
