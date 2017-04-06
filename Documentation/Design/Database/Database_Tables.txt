@@ -152,22 +152,15 @@ Each instrument will have a number of run types, for measurements, gas standards
 This table will hold details of which values in the
 `run_type` column (as defined in the `file_definition` table) correspond to which run types.
 
+The run types will be specific to each application, and will be defined in the `run_types_config.csv`
+file. This file defines a code for each run type that will be stored in the `run_type` column.
+
 Field                    Type           Description
 --------------------     ------------   -----------------------------------------------------------------
 id                       Integer        ID
 instrument_id            F_KEY          Instrument ID
 run_name                 String         The value from the `run_type` column in the Columns table
-~~type~~                 ~~Integer~~    ~~The run type~~
-
-##### `type`
-~~The `type` column will contain one of the following values:~~
-
-~~Value~~    ~~Run type~~
----------    --------------------------
-~~-1~~       ~~Not used~~
-~~0~~        ~~Sea water CO~2~~~
-~~1~~        ~~Atmospheric CO~2~~~
-~~2~~        ~~Gas standard~~
+type                     String         The run type code
 
 ## `gas_standard_deployment`
 Each gas standard is supplied at a specific concentration, which may vary between
