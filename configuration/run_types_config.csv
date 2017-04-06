@@ -1,0 +1,7 @@
+# This file contains the types of run code the application
+# expects.
+#
+#Code,Name
+STD,Gas Standard
+MCO2,Marine CO2
+ACO2,Atmospheric CO2

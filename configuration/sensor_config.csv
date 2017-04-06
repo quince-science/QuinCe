@@ -11,5 +11,6 @@ Atmospheric Pressure,N,,,Y
 xH2O,Y,,,Y
 CO2,Y,,,N
 Other Temperature,N,,,Y
+Other Pressure,N,,,Y
 Air Flow,N,,,Y
 Water Flow,N,,,Y
