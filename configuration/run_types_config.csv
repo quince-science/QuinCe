@@ -1,7 +1,9 @@
 # This file contains the types of run code the application
 # expects.
 #
+# The special run type 'STD' for a standard is automatically
+# added to the list, so does not need to be put in this file.
+#
 #Code,Name
-STD,Gas Standard
-MCO2,Marine CO2
-ACO2,Atmospheric CO2
+MCO2,Marine CO₂
+ACO2,Atmospheric CO₂
