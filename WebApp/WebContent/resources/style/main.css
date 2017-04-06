@@ -1,6 +1,9 @@
+@import 'https://fonts.googleapis.com/css?family=Noto Sans:400,700';
+
 body {
   font-family: 'Noto Sans', sans-serif;
   font-size: 14px;
+  font-weight: 400;
   background: #F3F3F3;
   margin: 0px;
   overflow-x: hidden;
@@ -27,10 +30,11 @@ h1,h2 {
   justify-content: center;
   font-weight: 700;
   font-size: 28px;
+  margin-bottom: 40px;
 }
 
 label {
-  font-weight: bold;
+  font-weight: 700;
 }
 
 input {
@@ -69,7 +73,7 @@ input[type="submit"], input[type="button"], button {
 
   font-family: 'Noto Sans', sans-serif;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 700;
   cursor: pointer;
   min-width: 100px;
   margin-right: 20px;
@@ -112,12 +116,12 @@ input.smallButton, button.smallButton {
 	border: 2px solid #0030FF;
 }
 
-.buttonWrapper {
+.buttonPanel {
+	width: 100%;
+}
+
+.buttonPanel td {
     text-align: center;
-    clear: both;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    width: 100%;
 }
 
 form ul {
@@ -151,7 +155,7 @@ ul input {
   left: 0px;
   padding: 5px 10px 5px 10px;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 #hiddenData {
@@ -241,7 +245,7 @@ td.columnBorder:first-of-type {
 
 td.alert {
   color: red;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .statBarCol {
@@ -288,7 +292,7 @@ ul.menu {
 li.menuitem {
   font-size: 14px;
   color: #555;
-  font-weight: bold;
+  font-weight: 700;
   cursor: pointer;
   padding: 5px 0px 5px 5px;
   -webkit-touch-callout: none;
@@ -301,7 +305,7 @@ li.menuitem {
 }
 
 li.smallMenuitem {
-    font-weight: bold;
+    font-weight: 700;
     cursor: pointer;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -328,7 +332,7 @@ li.menuitem:hover, li.smallMenuitem:hover {
   display: none;
   z-index: 1000;
   box-shadow: 1px 2px 3px #000000;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .popupMenu {
@@ -391,7 +395,7 @@ div.fullPage {
   background: #8CD5ED;
   margin-top: 5px;
   padding: 5px;
-  font-weight: bold;
+  font-weight: 700;
   font-style: italic;
 }
 
@@ -407,7 +411,7 @@ td.labels {
   width: 50%;
   text-align: right;
   padding-right: 10px;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .shown {
@@ -453,11 +457,11 @@ td.disabled {
 }
 
 tr.header {
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .smallHeader {
-    font-weight: bold;
+    font-weight: 700;
     font-size: 15px;
 }
 
@@ -467,7 +471,7 @@ hr {
 
 .error {
 	color: #ff0000;
-	font-weight: bold;
+	font-weight: 700;
 }
 
 .info {
@@ -476,7 +480,7 @@ hr {
 
 .errors {
 	color: #ff0000;
-	font-weight: bold;
+	font-weight: 700;
 	text-align: center;	
 }
 
@@ -527,4 +531,24 @@ table.fileDates {
 	margin-right: 7px;
 	width: 20px;
 	height: 20px;
+}
+
+.inputForm {
+	margin-top: 15px;
+	margin-bottom: 15px;
+	width: 100%;
+}
+
+.inputLabels {
+	text-align: right;
+	vertical-align: middle;
+	white-space: nowrap; 
+}
+
+.inputInputs {
+	width: 100%;
+}
+
+.inputFormInput {
+	width: 95%;
 }
