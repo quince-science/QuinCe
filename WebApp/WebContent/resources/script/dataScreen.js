@@ -23,6 +23,9 @@ var FLAG_FATAL = 44;
 var FLAG_NEEDS_FLAG = -10;
 var FLAG_IGNORED = -1002;
 
+var SELECT_ACTION = 1;
+var DESELECT_ACTION = 0;
+
 var BASE_GRAPH_OPTIONS = {
     drawPoints: true,
     strokeWidth: 0.0,
@@ -139,6 +142,11 @@ var selectedWoceFlags = [];
 var selectionQCMessageCounts = {};
 var selectionWoceMessageCounts = {};
 var NO_MESSAGE_ENTRY = 'No message';
+
+// The row number (in the data file) of the last selected/deselected row, and
+// which action was performed.
+var lastClickedRow = -1;
+var lastClickedAction = DESELECT_ACTION;
 
 // Indicates whether data has changed
 var dirty = false;
@@ -687,8 +695,8 @@ function drawTable() {
                 $(row).addClass('selected');
             }
             
-            $(row).on('click', function() {
-            	toggleSelection(index, rowNumber);
+            $(row).on('click', function(event) {
+            	clickRowAction(index, rowNumber, event.shiftKey);
             });
         },
         columnDefs:[
@@ -955,7 +963,10 @@ function hideQCInfoPopup() {
 /*
  * Process row clicks as selections
  */
-function toggleSelection(rowIndex, rowNumber) {
+function clickRowAction(rowIndex, rowNumber, shiftClick) {
+	
+	console.log(shiftClick);
+	
 	if ($.inArray(rowNumber, selectedRows) == -1) {
 		selectRow(rowIndex, rowNumber);
 	} else {
@@ -1002,6 +1013,9 @@ function selectRow(rowIndex, rowNumber) {
 		} else {
 			selectionWoceMessageCounts[woceMessage] = 1;
 		}
+		
+		lastClickedRow = rowNumber;
+		lastClickedAction = SELECT_ACTION;
 	}
 }
 
@@ -1028,6 +1042,9 @@ function deselectRow(rowIndex, rowNumber) {
 		}
 		
 		selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] - 1;
+
+		lastClickedRow = rowNumber;
+		lastClickedAction = DESELECT_ACTION;
 	}
 }
 
