@@ -139,7 +139,6 @@ var tableScrollRow = null;
 // Table selections
 var selectedRows = [];
 var selectedWoceFlags = [];
-var selectionQCMessageCounts = {};
 var selectionWoceMessageCounts = {};
 var NO_MESSAGE_ENTRY = 'No message';
 
@@ -990,28 +989,17 @@ function selectRow(rowIndex, rowNumber) {
 		selectedWoceFlags[selectedWoceFlags.length] = woceFlag;
 		
 		// Add the message to the list of selection messages
-		qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
-		if (qcMessage == "") {
-			qcMessage = NO_MESSAGE_ENTRY;
-		}
-		
-		if (qcMessage in selectionQCMessageCounts) {
-			selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] + 1;
-		} else {
-			selectionQCMessageCounts[qcMessage] = 1;
-		}
-		
 		woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
-		
-		// If the WOCE message is empty, use the QC message instead
-		if (woceMessage == "") {
-			woceMessage = qcMessage;
+		if (woceMessage == "null" || woceMessage == "") {
+			woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
 		}
 		
-		if (woceMessage in selectionWoceMessageCounts) {
-			selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] + 1;
-		} else {
-			selectionWoceMessageCounts[woceMessage] = 1;
+		if (woceMessage != "null" && woceMessage != "") {
+			if (woceMessage in selectionWoceMessageCounts) {
+				selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] + 1;
+			} else {
+				selectionWoceMessageCounts[woceMessage] = 1;
+			}
 		}
 		
 		lastClickedRow = rowNumber;
@@ -1029,19 +1017,15 @@ function deselectRow(rowIndex, rowNumber) {
 		selectedRows.splice(arrayIndex, 1);
 		selectedWoceFlags.splice(arrayIndex, 1);
 
-		qcMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
-		if (qcMessage == "") {
-			qcMessage = NO_MESSAGE_ENTRY;
-		}
-
-		selectionQCMessageCounts[qcMessage] = selectionQCMessageCounts[qcMessage] - 1;
-		
+		// Update the WOCE message counts
 		woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
-		if (woceMessage == "") {
-			woceMessage = NO_MESSAGE_ENTRY;
+		if (woceMessage == null || woceMessage == "") {
+			woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
 		}
 		
-		selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] - 1;
+		if (woceMessage != null && woceMessage != "") {
+			selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] - 1;
+		}
 
 		lastClickedRow = rowNumber;
 		lastClickedAction = DESELECT_ACTION;
@@ -1169,7 +1153,7 @@ function showWoceCommentDialog() {
 
     var woceComment = '';
     for (var comment in selectionWoceMessageCounts) {
-    	woceComment += comment + ' (' + selectionWoceMessageCounts[comment] + ')\n';
+    	woceComment += comment + '\n';
     }
     
     $('#dataScreenForm\\:woceComment').attr('disabled', (worstSelectedFlag == FLAG_IGNORED));
