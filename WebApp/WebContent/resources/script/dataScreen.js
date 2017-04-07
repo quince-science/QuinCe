@@ -698,6 +698,12 @@ function drawTable() {
             {"className": "numericCol", "targets": getNumericColumns()},
             {"render":
             	function (data, type, row) {
+            		return $.format.date(data, 'yyyy-MM-dd HH:mm:ss');
+            	},
+            	"targets": 0
+            },
+            {"render":
+            	function (data, type, row) {
 	                var output = '<div onmouseover="showQCInfoPopup(' + row[getColumnIndex('QC Flag')] + ', \'' + row[getColumnIndex('QC Message')] + '\', this)" onmouseout="hideQCInfoPopup()" class="';
 	                output += getFlagClass(data);
 	                output += '">';
