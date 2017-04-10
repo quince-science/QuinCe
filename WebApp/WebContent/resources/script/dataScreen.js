@@ -130,8 +130,11 @@ var visibleColumns = {
 // The list of dates in the current view. Used for searching.
 var dateList = null;
 
-// Variables for timed functions
+// Variables for highlighting selected row in table
 var tableScrollRow = null;
+var scrollEventTimer = null;
+var scrollEventTimeLimit = 300;
+
 
 // Table selections
 var selectedRows = [];
@@ -662,7 +665,12 @@ function drawTable() {
     		loadingIndicator: true		
     	},
     	scrollY: calcTableScrollY(),
-    	ajax: function ( data, callback, settings ) {		
+    	ajax: function ( data, callback, settings ) {
+    		// Since we've done a major scroll, disable the short
+    		// scroll timeout
+    		clearTimeout(scrollEventTimer);
+    		scrollEventTimer = null;
+    		
     		// Store the callback		
     		dataTableDrawCallback = callback;		
     				
@@ -729,6 +737,21 @@ function drawTable() {
     
     renderTableColumns();
     resizeContent();
+    
+    // Large table scrolls trigger highlights when the table is redrawn.
+    // This handles small scrolls that don't trigger a redraw.
+    $('.dataTables_scrollBody').scroll(function() {
+		if (null != tableScrollRow) {
+			if (scrollEventTimer) {
+				clearTimeout(scrollEventTimer);
+			}
+			
+			scrollEventTimer = setTimeout(function() {
+				highlightRow(tableScrollRow);
+				tableScrollRow = null;
+			}, scrollEventTimeLimit);
+		}
+    });
 }
 
 function getNumericColumns() {
