@@ -27,7 +27,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  *  
  * <p>
  *   This is an abstract class - the table and field to be searched must be implemented in
- *   a concrete subclass using the {@link #getTable()} and {@link getField()} methods.
+ *   a concrete subclass using the {@link #getTable()} and {@link #getField()} methods.
  * </p>
  * 
  * <p>

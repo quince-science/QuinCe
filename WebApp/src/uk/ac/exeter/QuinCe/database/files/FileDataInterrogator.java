@@ -662,12 +662,12 @@ public class FileDataInterrogator {
 					outputBuffer.append(col - 1);
 					outputBuffer.append("\":");
 					
-					if (valuesAsStrings) {
+					if (valuesAsStrings && !columnName.equals("dateTime")) {
 						outputBuffer.append('\"');
 					}
 					outputBuffer.append(formatField(records, col, columnName, true, missingValue));
 					
-					if (valuesAsStrings) {
+					if (valuesAsStrings && !columnName.equals("dateTime")) {
 						outputBuffer.append('\"');
 					}
 					

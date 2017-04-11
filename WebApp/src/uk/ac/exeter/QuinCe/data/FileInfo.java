@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data;
 
 import java.util.Calendar;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
@@ -26,10 +27,19 @@ public class FileInfo {
 	 */
 	public static final String JOB_CLASS_EXTRACT = "uk.ac.exeter.QuinCe.jobs.files.ExtractRawDataJob";
 	
+	/**
+	 * The job code for the initial data check job stage
+	 */
 	public static final int JOB_CODE_INITIAL_CHECK = 1;
 	
+	/**
+	 * The human-readable text for the initial data check job stage
+	 */
 	private static final String JOB_NAME_INITIAL_CHECK = "Initial data check";
 
+	/**
+	 * The job class for the initial data check
+	 */
 	private static final String JOB_CLASS_INITIAL_CHECK = "uk.ac.exeter.QuinCe.jobs.files.AutoQCJob";
 	
 	/**
@@ -172,6 +182,9 @@ public class FileInfo {
 	 */
 	private int qcBadCount = 0;
 	
+	/**
+	 * The number of records marked as fatally bad during automatic QC
+	 */
 	private int qcFatalCount = 0;
 
 	/**
@@ -180,25 +193,28 @@ public class FileInfo {
 	private int qcNotSetCount = 0;
 	
 	/**
-	 * The number of records that have been assigned a Good WOCE flag
+	 * The number of records that have been assigned a {@link Flag#GOOD} WOCE flag
 	 */
 	private int woceGoodCount = 0;
 	
 	/**
-	 * The number of records that have been assigned an Assumed Good WOCE flag
+	 * The number of records that have been assigned an {@link Flag#ASSUMED_GOOD} WOCE flag
 	 */
 	private int woceAssumedGoodCount = 0;
 	
 	/**
-	 * The number of records that have been assigned a Questionable WOCE flag
+	 * The number of records that have been assigned a {@link Flag#QUESTIONABLE} WOCE flag
 	 */
 	private int woceQuestionableCount = 0;
 	
 	/**
-	 * The number of records that have been assigned a Bad WOCE flag
+	 * The number of records that have been assigned a {@link Flag#BAD} WOCE flag
 	 */
 	private int woceBadCount = 0;
 
+	/**
+	 * The number of records that have been assigned a {@link Flag#FATAL} WOCE flag
+	 */
 	private int woceFatalCount = 0;
 	
 	/**
@@ -228,6 +244,7 @@ public class FileInfo {
 	 * @param fileName The file's original filename
 	 * @param startDate The first date in the file
 	 * @param recordCount The total number of records in the file
+	 * @param deleteFlag Indicates whether or not the file has been marked for deletion
 	 * @param currentJob The current job that is running (or scheduled to run) on the file
 	 * @param lastTouched The time at which the user last touched the file
 	 * @param atmosphericMeasurementsCount The number of atmospheric measurements in the file
@@ -487,10 +504,18 @@ public class FileInfo {
 		this.qcBadCount = qcBadCount;
 	}
 
+	/**
+	 * Get the number of records that have been marked as Fatally Bad during automatic QC
+	 * @return The number of Fatally Bad records from the automatic QC
+	 */
 	public int getQcFatalCount() {
 		return qcFatalCount;
 	}
 
+	/**
+	 * Set the number of records that have been marked as Fatally Bad during automatic QC
+	 * @param qcFatalCount The number of Fatally Bad records from the automatic QC
+	 */
 	public void setQcFatalCount(int qcFatalCount) {
 		this.qcFatalCount = qcFatalCount;
 	}
@@ -512,73 +537,81 @@ public class FileInfo {
 	}
 
 	/**
-	 * Get the number of records that have a Good WOCE flag
-	 * @return The number of records that have a Good WOCE flag
+	 * Get the number of records that have a {@link Flag#GOOD} WOCE flag
+	 * @return The number of records that have a {@link Flag#GOOD} WOCE flag
 	 */
 	public int getWoceGoodCount() {
 		return woceGoodCount;
 	}
 
 	/**
-	 * Set the number of records that have a Good WOCE flag
-	 * @param woceGoodCount The number of records that have a Good WOCE flag
+	 * Set the number of records that have a {@link Flag#GOOD} WOCE flag
+	 * @param woceGoodCount The number of records that have a {@link Flag#GOOD} WOCE flag
 	 */
 	public void setWoceGoodCount(int woceGoodCount) {
 		this.woceGoodCount = woceGoodCount;
 	}
 
 	/**
-	 * Get the number of records that have an Assumed Good WOCE flag
-	 * @return The number of records that have an Assumed Good WOCE flag
+	 * Get the number of records that have an {@link Flag#ASSUMED_GOOD} WOCE flag
+	 * @return The number of records that have an {@link Flag#ASSUMED_GOOD} WOCE flag
 	 */
 	public int getWoceAssumedGoodCount() {
 		return woceAssumedGoodCount;
 	}
 
 	/**
-	 * Set the number of records that have an Assumed Good WOCE flag
-	 * @param woceAssumedGoodCount The number of records that have an Assumed Good WOCE flag
+	 * Set the number of records that have an {@link Flag#ASSUMED_GOOD} WOCE flag
+	 * @param woceAssumedGoodCount The number of records that have an {@link Flag#ASSUMED_GOOD} WOCE flag
 	 */
 	public void setWoceAssumedGoodCount(int woceAssumedGoodCount) {
 		this.woceAssumedGoodCount = woceAssumedGoodCount;
 	}
 
 	/**
-	 * Get the number of records that have a Questionable WOCE flag
-	 * @return The number of records that have a Questionable WOCE flag
+	 * Get the number of records that have a {@link Flag#QUESTIONABLE} WOCE flag
+	 * @return The number of records that have a {@link Flag#QUESTIONABLE} WOCE flag
 	 */
 	public int getWoceQuestionableCount() {
 		return woceQuestionableCount;
 	}
 
 	/**
-	 * Set the number of records that have a Questionable WOCE flag
-	 * @param woceQuestionableCount The number of records that have a Questionable WOCE flag
+	 * Set the number of records that have a {@link Flag#QUESTIONABLE} WOCE flag
+	 * @param woceQuestionableCount The number of records that have a {@link Flag#QUESTIONABLE} WOCE flag
 	 */
 	public void setWoceQuestionableCount(int woceQuestionableCount) {
 		this.woceQuestionableCount = woceQuestionableCount;
 	}
 
 	/**
-	 * Get the number of records that have a Bad WOCE flag
-	 * @return The number of records that have a Bad WOCE flag
+	 * Get the number of records that have a {@link Flag#BAD} WOCE flag
+	 * @return The number of records that have a {@link Flag#BAD} WOCE flag
 	 */
 	public int getWoceBadCount() {
 		return woceBadCount;
 	}
 
 	/**
-	 * Set the number of records that have a Bad WOCE flag
-	 * @param woceBadCount The number of records that have a Bad WOCE flag
+	 * Set the number of records that have a {@link Flag#BAD} WOCE flag
+	 * @param woceBadCount The number of records that have a {@link Flag#BAD} WOCE flag
 	 */
 	public void setWoceBadCount(int woceBadCount) {
 		this.woceBadCount = woceBadCount;
 	}
 
+	/**
+	 * Get the number of records that have a {@link Flag#FATAL} WOCE flag
+	 * @return The number of records that have a {@link Flag#FATAL} WOCE flag
+	 */
 	public int getWoceFatalCount() {
 		return woceFatalCount;
 	}
 
+	/**
+	 * Set the number of records that have a {@link Flag#FATAL} WOCE flag
+	 * @param woceFatalCount The number of records that have a {@link Flag#FATAL} WOCE flag
+	 */
 	public void setWoceFatalCount(int woceFatalCount) {
 		this.woceFatalCount = woceFatalCount;
 	}
@@ -648,22 +681,43 @@ public class FileInfo {
 		ignoredCount = 0;
 	}
 	
+	/**
+	 * Determines whether this file is ready for user QC
+	 * @return {@code true} if the file is ready for user QC; {@code false} if it is not
+	 */
 	public boolean isQcable() {
 		return !deleteFlag && currentJob == JOB_CODE_USER_QC;
 	}
 	
+	/**
+	 * Determines whether this file can be exported
+	 * @return {@code true} if the file can be exported; {@code false} if it cannot
+	 */
 	public boolean isExportable() {
 		return !deleteFlag && currentJob == JOB_CODE_USER_QC && woceNeededCount == 0;
 	}
 	
+	/**
+	 * Determines whether this file can be flagged for deletion
+	 * @return {@code true} if the file can be flagged for deletion; {@code false} if it cannot
+	 */
 	public boolean isDeleteable() {
 		return true;
 	}
 	
+	/**
+	 * Determines whether this file can be queued for recalculation
+	 * @return {@code true} if the file can be queued for recalculation; {@code false} if it cannot
+	 */
 	public boolean isRecalculateable() {
 		return !deleteFlag && currentJob == JOB_CODE_USER_QC;
 	}
 	
+	/**
+	 * Returns the name of the Java class of the job to be performed on a file, identified by its job code.
+	 * @param jobCode The job code
+	 * @return The Java class name for the job
+	 */
 	public static String getJobClass(int jobCode) {
 		String result;
 		
@@ -696,6 +750,11 @@ public class FileInfo {
 		return result;
 	}
 
+	/**
+	 * Get the human-readable name for a given job to be performed on a file, identified by its job code
+	 * @param jobCode The job code
+	 * @return The human-readable name for the job
+	 */
 	public static String getJobName(int jobCode) {
 		String result = null;
 		

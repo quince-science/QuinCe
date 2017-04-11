@@ -128,6 +128,8 @@ public abstract class Job {
 	
 	/**
 	 * Performs the job tasks
+	 * @param thread The thread that will be running the job
+	 * @throws JobFailedException If an error occurs during the job
 	 */
 	protected abstract void execute(JobThread thread) throws JobFailedException;
 	
