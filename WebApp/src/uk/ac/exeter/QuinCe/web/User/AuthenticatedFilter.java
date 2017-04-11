@@ -159,6 +159,11 @@ public class AuthenticatedFilter implements Filter {
 
 	/**
 	 * Sets up the list of resource paths, and pages that can be accessed without being logged in.
+	 * 
+	 * <p>
+	 *   Pages specified without an extension are checked for both{@code .jsf} and {@code .xhtml} requests.
+	 *   Pages with extensions are checked as-is.
+	 * </p>
 	 */
 	@Override
 	public void init(FilterConfig arg0) throws ServletException {
