@@ -67,6 +67,10 @@ public class FileListBean extends BaseManagedBean {
 	 */
 	private int chosenExportOption;
 	
+	/**
+	 * Bean initialisation
+	 * @see #updateFileList()
+	 */
 	@PostConstruct
 	public void init() {
 		updateFileList();
@@ -88,6 +92,10 @@ public class FileListBean extends BaseManagedBean {
 		return fileList;
 	}
 	
+	/**
+	 * Update the file list content from the database
+	 * @see DataFileDB#getUserFiles(DataSource, uk.ac.exeter.QuinCe.data.User)
+	 */
 	public void updateFileList() {
 		try {
 			fileList = DataFileDB.getUserFiles(ServletUtils.getDBDataSource(), getUser());
