@@ -193,6 +193,18 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @see <a href="https://datatables.net/examples/data_sources/server_side.html">DataTables Server-Side Processing</a>
 	 */
 	private String tableJsonData = null;
+	
+	/**
+	 * A JSON string containing the list of all row numbers in the current data file that can be
+	 * selected in the data table. Selectable rows can have their WOCE flag set by the user.
+	 * Unselectable rows are typically rows that have their QC flag set to FATAL, which means they
+	 * cannot be processed at all.
+	 * 
+	 * <p>
+	 * The rows are loaded during {@link #start} via {@link #loadSelectableRowNumbers}.
+	 * </p>
+	 */
+	private String selectableRowNumbers = null;
 
  	/**
  	 * An internal value for the DataTables library,
@@ -271,6 +283,7 @@ public class DataScreenBean extends BaseManagedBean {
 	public String start() throws Exception {
 		clearData();
 		loadFileDetails();
+		loadSelectableRowNumbers();
 		
 		// Temporarily always show Bad flags
 		List<String> badFlags = new ArrayList<String>(1);
@@ -1532,5 +1545,22 @@ public class DataScreenBean extends BaseManagedBean {
 		}
 
 		return result;
+	}
+	
+	/**
+	 * Retrieve the list of selectablerow numbers for this data file from the database.
+	 * @see #selectableRowNumbers
+	 */
+	private void loadSelectableRowNumbers() throws Exception {
+		selectableRowNumbers = FileDataInterrogator.getSelectableRowNumbers(ServletUtils.getDBDataSource(), fileId);
+	}
+	
+	/**
+	 * Get the JSON string of all selectable row numbers in the current data file
+	 * @return The row numbers
+	 * @see #selectableRowNumbers
+	 */
+	public String getSelectableRowNumbers() {
+		return selectableRowNumbers;
 	}
 }

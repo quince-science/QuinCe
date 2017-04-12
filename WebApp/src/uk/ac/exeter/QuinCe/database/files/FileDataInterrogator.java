@@ -93,6 +93,17 @@ public class FileDataInterrogator {
 					+ " WHERE raw_data.data_file_id = ? AND raw_data.co2_type IN (%%CO2TYPES%%) AND qc.woce_flag IN (%%FLAGS%%)"
 					+ " ORDER BY %%ORDER%% ASC";
 	
+	/**
+	 * Query to retrieve the list of selectable row numbers for a given data file.
+
+	 * <p>
+	 *   Selectable rows can have their WOCE flag set by the user.
+	 *   Unselectable rows are rows that have their QC flag set to FATAL, which means they
+	 *   cannot be processed at all.
+	 * </p>
+	 */
+	private static final String GET_SELECTABLE_ROW_NUMBERS_QUERY = "SELECT row FROM qc WHERE data_file_id = ? AND qc_flag != " + Flag.VALUE_FATAL;
+	
 	static {
 		// Map input names from the web front end to database column names
 		COLUMN_MAPPINGS = new HashMap<String, String>();
@@ -1287,5 +1298,50 @@ public class FileDataInterrogator {
 		}
 
 		return result;
+	}
+	
+	/**
+	 * Retrieve a JSON string containing the list of all row numbers in the current data file that can be
+	 * selected in the data table.
+	 * 
+	 * @param dataSource A data source
+	 * @param fileId The file's database ID
+	 * @return The selectable row numbers
+	 * @throws DatabaseException If a database error occurs
+	 * @see #GET_SELECTABLE_ROW_NUMBERS_QUERY
+	 */
+	public static String getSelectableRowNumbers(DataSource dataSource, long fileId) throws DatabaseException {
+		
+		StringBuilder output = new StringBuilder();
+		output.append('[');
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_SELECTABLE_ROW_NUMBERS_QUERY);
+			stmt.setLong(1, fileId);
+			records = stmt.executeQuery();
+			while (records.next()) {
+				output.append(records.getInt(1));
+				output.append(',');
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving selectable row numbers", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		// Remove the last trailing comma
+		output.deleteCharAt(output.length() - 1);
+		output.append(']');
+		
+		return output.toString();
 	}
 }
