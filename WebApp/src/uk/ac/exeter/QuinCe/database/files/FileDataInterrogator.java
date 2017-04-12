@@ -102,7 +102,7 @@ public class FileDataInterrogator {
 	 *   cannot be processed at all.
 	 * </p>
 	 */
-	private static final String GET_SELECTABLE_ROW_NUMBERS_QUERY = "SELECT row FROM qc WHERE data_file_id = ? AND qc_flag != " + Flag.VALUE_FATAL;
+	private static final String GET_SELECTABLE_ROW_NUMBERS_QUERY = "SELECT row FROM qc WHERE data_file_id = ? AND qc.woce_flag IN (%%FLAGS%%)";
 	
 	static {
 		// Map input names from the web front end to database column names
@@ -673,12 +673,12 @@ public class FileDataInterrogator {
 					outputBuffer.append(col - 1);
 					outputBuffer.append("\":");
 					
-					if (valuesAsStrings && !columnName.equals("dateTime")) {
+					if (valuesAsStrings && !columnName.equals("dateTime") && !columnName.equals("row")) {
 						outputBuffer.append('\"');
 					}
 					outputBuffer.append(formatField(records, col, columnName, true, missingValue));
 					
-					if (valuesAsStrings && !columnName.equals("dateTime")) {
+					if (valuesAsStrings && !columnName.equals("dateTime") && !columnName.equals("row")) {
 						outputBuffer.append('\"');
 					}
 					
@@ -1303,14 +1303,20 @@ public class FileDataInterrogator {
 	/**
 	 * Retrieve a JSON string containing the list of all row numbers in the current data file that can be
 	 * selected in the data table.
+	 * <p>
+	 *   {@code includeFlags} is a list of WOCE flag values that will be included in the output. This can be any
+	 *   of the numeric flag values defined in {@link Flag}. Any record that does not have a flag value in this list
+	 *   will be omitted from the output.
+	 * </p>
 	 * 
 	 * @param dataSource A data source
 	 * @param fileId The file's database ID
+	 * @param includeFlags The WOCE flags to be included in the output
 	 * @return The selectable row numbers
 	 * @throws DatabaseException If a database error occurs
 	 * @see #GET_SELECTABLE_ROW_NUMBERS_QUERY
 	 */
-	public static String getSelectableRowNumbers(DataSource dataSource, long fileId) throws DatabaseException {
+	public static String getSelectableRowNumbers(DataSource dataSource, long fileId, List<Integer> includeFlags) throws DatabaseException {
 		
 		StringBuilder output = new StringBuilder();
 		output.append('[');
@@ -1322,7 +1328,11 @@ public class FileDataInterrogator {
 		try {
 			
 			conn = dataSource.getConnection();
-			stmt = conn.prepareStatement(GET_SELECTABLE_ROW_NUMBERS_QUERY);
+			
+			String flags = makeFlags(includeFlags);
+			String queryString = GET_SELECTABLE_ROW_NUMBERS_QUERY.replaceAll("%%FLAGS%%", flags);
+			
+			stmt = conn.prepareStatement(queryString);
 			stmt.setLong(1, fileId);
 			records = stmt.executeQuery();
 			while (records.next()) {

@@ -195,7 +195,7 @@ public class DataScreenBean extends BaseManagedBean {
 	private String tableJsonData = null;
 	
 	/**
-	 * A JSON string containing the list of all row numbers in the current data file that can be
+	 * A Javascript array string containing the list of all row numbers in the current data file that can be
 	 * selected in the data table. Selectable rows can have their WOCE flag set by the user.
 	 * Unselectable rows are typically rows that have their QC flag set to FATAL, which means they
 	 * cannot be processed at all.
@@ -1548,15 +1548,15 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Retrieve the list of selectablerow numbers for this data file from the database.
+	 * Retrieve the list of selectable row numbers for this data file from the database.
 	 * @see #selectableRowNumbers
 	 */
 	private void loadSelectableRowNumbers() throws Exception {
-		selectableRowNumbers = FileDataInterrogator.getSelectableRowNumbers(ServletUtils.getDBDataSource(), fileId);
+		selectableRowNumbers = FileDataInterrogator.getSelectableRowNumbers(ServletUtils.getDBDataSource(), fileId, getIncludeFlags());
 	}
 	
 	/**
-	 * Get the JSON string of all selectable row numbers in the current data file
+	 * Get the list of all selectable row numbers in the current data file as a javascript array string
 	 * @return The row numbers
 	 * @see #selectableRowNumbers
 	 */

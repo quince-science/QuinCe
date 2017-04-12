@@ -141,9 +141,6 @@ var scrollEventTimeLimit = 300;
 
 // Table selections
 var selectedRows = [];
-var selectedWoceFlags = [];
-var selectionWoceMessageCounts = {};
-var NO_MESSAGE_ENTRY = 'No message';
 
 // The row number (in the data file) of the last selected/deselected row, and
 // which action was performed.
@@ -697,13 +694,13 @@ function drawTable() {
     	},
     	bInfo: false,
     	rowCallback: function( row, data, index ) {
-    		var rowNumber = data[getColumnIndex('Row')];
+    		var rowNumber = parseInt(data[getColumnIndex('Row')], 10);
             if ( $.inArray(rowNumber, selectedRows) !== -1 ) {
                 $(row).addClass('selected');
             }
             
             $(row).on('click', function(event) {
-            	clickRowAction(index, rowNumber, event.shiftKey);
+            	clickRowAction(rowNumber, event.shiftKey);
             });
         },
         columnDefs:[
@@ -989,76 +986,99 @@ function hideQCInfoPopup() {
 }
 
 /*
- * Process row clicks as selections
+ * Process row clicks as selections/deselections
  */
-function clickRowAction(rowIndex, rowNumber, shiftClick) {
+function clickRowAction(rowNumber, shiftClick) {
 	
-	console.log(shiftClick);
-	
-	if ($.inArray(rowNumber, selectedRows) == -1) {
-		selectRow(rowIndex, rowNumber);
-	} else {
-		deselectRow(rowIndex, rowNumber);
-	}
-	
-	selectionUpdated();
-}
-
-/*
- * Process a selected row.
- * Add the row index and its QC Message to the global selection arrays
- */
-function selectRow(rowIndex, rowNumber) {
-	
-	var woceFlag = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Flag')];
-	if (woceFlag == '44') {
-		deselectRow(rowIndex, rowNumber);
-	} else {
-		selectedRows[selectedRows.length] = rowNumber;
-		selectedWoceFlags[selectedWoceFlags.length] = woceFlag;
+	// We only do something if the row is selectable
+	if ($.inArray(rowNumber, selectableRows) != -1) {
 		
-		// Add the message to the list of selection messages
-		woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
-		if (woceMessage == "null" || woceMessage == "") {
-			woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
+		var action = lastClickedAction;
+		var actionRows = [rowNumber];
+		
+		if (!shiftClick) {
+			if ($.inArray(rowNumber, selectedRows) != -1) {
+				action = DESELECT_ACTION;
+			} else {
+				action = SELECT_ACTION;
+			}
+		} else {
+			actionRows = getRowsInRange(lastClickedRow, rowNumber);
 		}
 		
-		if (woceMessage != "null" && woceMessage != "") {
-			if (woceMessage in selectionWoceMessageCounts) {
-				selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] + 1;
-			} else {
-				selectionWoceMessageCounts[woceMessage] = 1;
+		if (action == SELECT_ACTION) {
+			addRowsToSelection(actionRows);
+		} else {
+			removeRowsFromSelection(actionRows);
+		}
+		
+		selectionUpdated();
+		lastClickedRow = rowNumber;
+		lastClickedAction = action;
+	}
+}
+
+function addRowsToSelection(rows) {
+	var rowsIndex = 0;
+	var selectionIndex = 0;
+	
+	while (selectionIndex < selectedRows.length && rowsIndex < rows.length) {
+		while (selectedRows[selectionIndex] > rows[rowsIndex]) {
+			selectedRows.splice(selectionIndex, 0, rows[rowsIndex]);
+			selectionIndex++;
+			rowsIndex++;
+		}
+		
+		if (selectedRows[selectionIndex] == rows[rowsIndex]) {
+			rowsIndex++;
+		}
+		selectionIndex++;
+	}
+	
+	if (rowsIndex < rows.length) {
+		selectedRows = selectedRows.concat(rows.slice(rowsIndex));
+	}
+}
+
+function removeRowsFromSelection(rows) {
+	
+	var rowsIndex = 0;
+	var selectionIndex = 0;
+	
+	while (selectionIndex < selectedRows.length && rowsIndex < rows.length) {
+		while (selectedRows[selectionIndex] == rows[rowsIndex]) {
+			selectedRows.splice(selectionIndex, 1);
+			rowsIndex++;
+			if (rowsIndex == rows.length || selectionIndex == selectedRows.length) {
+				break;
 			}
 		}
-		
-		lastClickedRow = rowNumber;
-		lastClickedAction = SELECT_ACTION;
+		selectionIndex++;
 	}
 }
 
-/*
- * Process a deselected row
- * Remove the row index and its QC Message from the global selection arrays
- */
-function deselectRow(rowIndex, rowNumber) {
-	var arrayIndex = $.inArray(rowNumber, selectedRows);
-	if (arrayIndex > -1) {
-		selectedRows.splice(arrayIndex, 1);
-		selectedWoceFlags.splice(arrayIndex, 1);
-
-		// Update the WOCE message counts
-		woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('WOCE Message')];
-		if (woceMessage == null || woceMessage == "") {
-			woceMessage = jsDataTable.row(rowIndex).data()[getColumnIndex('QC Message')];
-		}
-		
-		if (woceMessage != null && woceMessage != "") {
-			selectionWoceMessageCounts[woceMessage] = selectionWoceMessageCounts[woceMessage] - 1;
-		}
-
-		lastClickedRow = rowNumber;
-		lastClickedAction = DESELECT_ACTION;
+function getRowsInRange(startRow, endRow) {
+	
+	var rows = [];
+	
+	var step = 1;
+	if (endRow < startRow) {
+		step = -1;
 	}
+	
+	var startIndex = $.inArray(startRow, selectableRows);
+	var currentIndex = startIndex;
+	
+	while (selectableRows[currentIndex] != endRow) {
+		currentIndex = currentIndex + step;
+		rows.push(selectableRows[currentIndex]);
+	}
+	
+	if (step == -1) {
+		rows = rows.reverse();
+	}
+	
+	return rows;
 }
 
 function selectionUpdated() {
@@ -1090,9 +1110,6 @@ function selectionUpdated() {
 function clearSelection() {
 	jsDataTable.rows(selectedRows).deselect();
 	selectedRows = [];
-	selectedWoceFlags = [];
-	selectionQCMessageCounts = {};
-	selectionWoceMessageCounts = {};
 	selectionUpdated();
 }
 
