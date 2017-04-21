@@ -82,6 +82,12 @@
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.files.DataScreenBean</managed-bean-class>
 		<managed-bean-scope>session</managed-bean-scope>
 	</managed-bean>
+	<managed-bean>
+		<description>Bean that can be touched to keep user sessions alive</description>
+		<managed-bean-name>keepAliveBean</managed-bean-name>
+		<managed-bean-class>uk.ac.exeter.QuinCe.web.KeepAliveBean</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+	</managed-bean>
 	<validator>
 		<description>Ensures that sensor calibration dates are unique</description>
 		<display-name>Calibration Date Validator</display-name>

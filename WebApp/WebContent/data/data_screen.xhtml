@@ -14,6 +14,7 @@
 		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
 		<h:outputScript name="script/jquery-ui.min.js"/>
 		<h:outputStylesheet name="style/jquery-ui.min.css"/>
+		<h:outputScript name="script/jquery-dateFormat.min.js"/>
 		<h:outputScript name="script/jquery.splitter.js"/>
     	<h:outputStylesheet name="style/jquery.splitter.css"/>
 		<h:outputScript name="script/dygraph.min.js"/>
@@ -53,6 +54,7 @@
 		</script>
 	</h:head>
 	<h:body class="fullPage">
+		<ui:include src="/WEB-INF/templates/keep_alive.xhtml"/>
 		<div id="plotFieldList" class="popupMenu">
 			<h:outputText value="#{dataScreenBean.plotPopupEntries}" escape="false"/>
 			<div id="buttonWrapper">

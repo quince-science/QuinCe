@@ -12,6 +12,12 @@ import uk.ac.exeter.QuinCe.utils.BackgroundTask;
 import uk.ac.exeter.QuinCe.utils.BackgroundTaskException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+/**
+ * A scheduled task to remove files that have been marked for deletion.
+ * @author Steve Jones
+ *
+ */
+
 @WebListener
 public class FileDeleteScheduler extends BackgroundTask {
 

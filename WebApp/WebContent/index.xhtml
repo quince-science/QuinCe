@@ -2,7 +2,7 @@
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 	xmlns:p="http://primefaces.org/ui"
-	template="/templates/basic_page.xhtml">
+	template="/WEB-INF/templates/basic_page.xhtml">
 
 	<ui:define name="content">
 	    <div style="text-align: right">
@@ -18,18 +18,17 @@
 			    <h:outputText value="Your session has expired. Please log in again." rendered="#{sessionScope.SESSION_EXPIRED != null}"/>
 		    </div>
 		    <h:form id="loginform" method="post" accept-charset="utf8">
-				<h:panelGrid columns="2" styleClass="inputForm" columnClasses="inputLabels,inputInputs" cellpadding="5">
+			<h:panelGrid columns="2" styleClass="inputForm" columnClasses="inputLabels,inputInputs" cellpadding="5">
 		          <h:outputLabel for="email" value="Email Address"/>
 		          <p:inputText id="email" value="#{loginBean.emailAddress}" styleClass="inputFormInput"/>
 
 		          <h:outputLabel for="password" value="Password"/>
 		          <p:password id="password" value="#{loginBean.password}" styleClass="inputFormInput"/>
-
 		        </h:panelGrid>
-				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
-					<p:commandButton value="Log In" action="#{loginBean.authenticate}"/>
-					<p:commandButton value="Sign Up" action="#{loginBean.signUp}"/>
-				</h:panelGrid>
+			<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+				<p:commandButton value="Log In" action="#{loginBean.authenticate}"/>
+				<p:commandButton value="Sign Up" action="#{loginBean.signUp}"/>
+			</h:panelGrid>
 		    </h:form>
 	    </div>
 	</ui:define>

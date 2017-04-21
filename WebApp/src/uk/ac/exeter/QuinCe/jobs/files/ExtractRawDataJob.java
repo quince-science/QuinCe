@@ -70,7 +70,7 @@ public class ExtractRawDataJob extends FileJob {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Performs the raw data extraction.
 	 */
 	@Override
 	protected void executeFileJob(JobThread thread) throws JobFailedException {
