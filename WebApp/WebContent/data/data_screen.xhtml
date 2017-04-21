@@ -54,6 +54,7 @@
 		</script>
 	</h:head>
 	<h:body class="fullPage">
+		<ui:include src="/templates/keep_alive.xhtml"/>
 		<div id="plotFieldList" class="popupMenu">
 			<h:outputText value="#{dataScreenBean.plotPopupEntries}" escape="false"/>
 			<div id="buttonWrapper">
@@ -62,21 +63,6 @@
 			</div>
 		</div>
 		<div id="hiddenData">
-		
-			<h:form id="sessionTouchForm" method="post">
-  				<h:commandLink id="sessionTouch" action="#{keepAliveBean.sessionTouch}">
-  					<f:ajax render="@none"/>
-  				</h:commandLink>
-  				<script>
-  					var sessionTouchFunction = function() {
-  						$('#sessionTouchForm\\:sessionTouch').click();
-  						setTimeout(sessionTouchFunction, 10000);
-  					};
-  				
-					setTimeout(sessionTouchFunction, 10000);
-  				</script>
-			</h:form>
-		
 			<h:form id="plotDataForm" method="post" accept-charset="utf8">
 				<h:inputHidden id="leftColumns" value="#{dataScreenBean.leftPlotColumns}"/>
 				<h:outputText id="leftData" value="#{dataScreenBean.leftPlotData}"/>
