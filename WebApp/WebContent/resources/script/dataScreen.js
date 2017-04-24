@@ -116,6 +116,11 @@ var rightMapVar = 'map_intaketemp_intakeTempMean';
 var leftMap = null;
 var rightMap = null;
 
+var mapSource = new ol.source.Stamen({
+		layer: "terrain",
+		url: "https://stamen-tiles-{a-d}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png"
+});
+
 // The data table
 var jsDataTable = null;
 
@@ -835,15 +840,13 @@ function renderTableColumns() {
 		if ($.inArray(columnHeadings[i], compulsoryColumns) != -1) {
 			columnVisible = true;
 		} else {
-			searchColumns = visibleColumns[PF('tableModeSelector').getJQ().find(':checked').val()];
+			searchColumns = visibleColumns[$('#dataScreenForm\\:tableModeSelector').find(':checked').val()];
 			for (j = 0; j < searchColumns.length && !columnVisible; j++) {
 				columnVisible = new RegExp(searchColumns[j]).test(columnHeadings[i]);
 			}
 		}
 		
 		columnVisible ? visibleTableColumns.push(i) : hiddenTableColumns.push(i);
-		
-		
 	}
 	
 	// Update the table
@@ -1415,9 +1418,33 @@ function saveMapSelection() {
 }
 
 function initLeftMap() {
-	$('#leftContent').html('MAP!');
+	leftMap = new ol.Map({
+ 		target: 'leftContent',
+ 		layers: [
+    		new ol.layer.Tile({
+        		source: mapSource
+    		}),
+  		],
+  		view: new ol.View({
+    		center: ol.proj.fromLonLat([10, 45]),
+    		zoom: 4,
+    		minZoom: 2
+  		}),
+	});
 }
 
 function initRightMap() {
-	$('#rightContent').html('MAP!');
+	rightMap = new ol.Map({
+ 		target: 'rightContent',
+ 		layers: [
+    		new ol.layer.Tile({
+        		source: mapSource
+    		}),
+  		],
+  		view: new ol.View({
+    		center: ol.proj.fromLonLat([10, 45]),
+    		zoom: 4,
+    		minZoom: 2
+  		}),
+	});
 }

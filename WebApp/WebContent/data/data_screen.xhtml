@@ -8,11 +8,10 @@
 	<h:head>
 		<title>#{dataScreenBean.fileDetails.fileName} - QuinCe</title>
 	    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700,700italic" rel="stylesheet" type="text/css"/>
-		<h:outputStylesheet name="style/main.css"/>
-		<h:outputScript name="script/dataScreen.js"/>
-		<h:outputStylesheet name="style/dataScreen.css"/>
-		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
+		<h:outputScript name="script/ol.js"/>
+		<h:outputStylesheet name="style/ol.css"/>
 		<h:outputScript name="script/jquery-ui.min.js"/>
+		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
 		<h:outputStylesheet name="style/jquery-ui.min.css"/>
 		<h:outputScript name="script/jquery-dateFormat.min.js"/>
 		<h:outputScript name="script/jquery.splitter.js"/>
@@ -21,6 +20,9 @@
 		<h:outputStylesheet name="style/dygraph.css"/>
 		<h:outputScript name="script/datatables.min.js"/>
 		<h:outputStylesheet name="style/datatables.min.css"/>
+		<h:outputStylesheet name="style/main.css"/>
+		<h:outputStylesheet name="style/dataScreen.css"/>
+		<h:outputScript name="script/dataScreen.js"/>
 		
 		<script type="text/javascript">
 			var intakeTempCount = #{dataScreenBean.instrument.intakeTempCount};
@@ -185,7 +187,7 @@
 	    				<table width="100%">
 	    					<tr>
 	    						<td>
-						      		<p:selectOneButton value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="renderTableColumns()">
+						      		<p:selectOneButton id="tableModeSelector" value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="renderTableColumns()">
 						      			<f:selectItem itemLabel="Basic" itemValue="basic"/>
 						      			<f:selectItem itemLabel="Water + Flow" itemValue="water"/>
 						      			<f:selectItem itemLabel="Equilibrator" itemValue="equilibrator"/>
