@@ -254,6 +254,22 @@ public class DataScreenBean extends BaseManagedBean {
 	private boolean dirty = false;
 	
 	/**
+	 * The bounds of the data. This is a list of values, of the form:
+	 * <ul>
+	 *   <li>Upper latitude</li>
+	 *   <li>Right-most longitude</li>
+	 *   <li>Lower latitude</li>
+	 *   <li>Left-most longitude</li>
+	 *   <li>Centre longitude</li>
+	 *   <li>Centre latitude</li>
+	 * </ul>
+	 * 
+	 * The values will take into account data that crosses the 180° line.
+	 * These values are calculated by {@link FileDataInterrogator#getGeographicalBounds}
+	 */
+	private List<Double> dataBounds = null;
+	
+	/**
 	 * Required basic constructor. This does nothing: all the actual construction
 	 * is done in {@link #start()}.
 	 */
@@ -682,6 +698,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException {
 		fileDetails = DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), fileId);
+		dataBounds = FileDataInterrogator.getGeographicalBounds(ServletUtils.getDBDataSource(), fileId);
 		DataFileDB.touchFile(ServletUtils.getDBDataSource(), fileId);
 		instrument = InstrumentDB.getInstrumentByFileId(ServletUtils.getDBDataSource(), fileId);
 	}
@@ -1754,5 +1771,18 @@ public class DataScreenBean extends BaseManagedBean {
 		}
 
 		return result;
+	}
+	
+	/**
+	 * Get the data bounds for the current data file
+	 * @return The data bounds
+	 * @see #dataBounds
+	 */
+	public String getDataBounds() {
+		StringBuilder output = new StringBuilder();
+		output.append('[');
+		output.append(StringUtils.listToDelimited(dataBounds, ","));
+		output.append(']');
+		return output.toString();
 	}
 }

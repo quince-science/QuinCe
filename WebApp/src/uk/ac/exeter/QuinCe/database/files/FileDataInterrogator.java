@@ -93,6 +93,8 @@ public class FileDataInterrogator {
 					+ " WHERE raw_data.data_file_id = ? AND raw_data.co2_type IN (%%CO2TYPES%%) AND qc.woce_flag IN (%%FLAGS%%)"
 					+ " ORDER BY %%ORDER%% ASC";
 	
+	private static final String GET_GEOGRAPHICAL_BOUNDS_QUERY = "SELECT MAX(latitude), MAX(longitude), MIN(latitude), MIN(longitude) FROM raw_data WHERE data_file_id = ? AND row IN (SELECT row FROM qc WHERE data_file_id = ?)";
+	
 	static {
 		// Map input names from the web front end to database column names
 		COLUMN_MAPPINGS = new HashMap<String, String>();
@@ -1286,6 +1288,119 @@ public class FileDataInterrogator {
 		}
 		}
 
+		return result;
+	}
+
+	/**
+	 * The bounds of the data. This is a list of values, of the form:
+	 * <ul>
+	 *   <li>Upper latitude</li>
+	 *   <li>Right-most longitude</li>
+	 *   <li>Lower latitude</li>
+	 *   <li>Left-most longitude</li>
+	 *   <li>Centre longitude</li>
+	 *   <li>Centre latitude</li>
+	 * </ul>
+	 * 
+	 * The values will take into account data that crosses the 180° line.
+	 *
+	 * @param dataSource A data source
+	 * @param fileId The file's database ID
+	 * @throws DatabaseException If a database error occurs
+	 * @return The list of geographical bounds values
+	 */
+	public static List<Double> getGeographicalBounds(DataSource dataSource, long fileId) throws DatabaseException {
+		
+		List<Double> result = new ArrayList<Double>(6);
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet results= null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_GEOGRAPHICAL_BOUNDS_QUERY);
+			stmt.setLong(1, fileId);
+			stmt.setLong(2, fileId);
+			
+			results = stmt.executeQuery();
+			if (!results.next()) {
+				throw new DatabaseException("No data retrieved while getting geographical bounds");
+			} else {
+
+				double topLatitude = results.getDouble(1);
+				double rightLongitude = results.getDouble(2);
+				double bottomLatitude = results.getDouble(3);
+				double leftLongitude = results.getDouble(4);
+
+				if (rightLongitude - leftLongitude > 180) {
+					double temp = rightLongitude;
+					rightLongitude = leftLongitude;
+					leftLongitude = temp;
+				}
+				
+				List<Double> midPoint = rhumbMidPoint(leftLongitude, bottomLatitude, rightLongitude, topLatitude);
+				
+				result.add(topLatitude);
+				result.add(rightLongitude);
+				result.add(bottomLatitude);
+				result.add(leftLongitude);
+				result.add(midPoint.get(0));
+				result.add(midPoint.get(1));
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while getting geographical bounds", e);
+		} finally {
+			DatabaseUtils.closeResultSets(results);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Calculate the mid-point of four co-ordinates. We use the
+	 * rhumb line calculation because the data will be viewed on a rectangular projection
+	 * @param lon1
+	 * @param lat1
+	 * @param lon2
+	 * @param lat2
+	 * @return The mid-point of the coordinates
+	 * @see http://www.movable-type.co.uk/scripts/latlong.html
+	 */
+	private static List<Double> rhumbMidPoint(double lon1, double lat1, double lon2, double lat2) {
+		
+		lon1 = Math.toRadians(lon1);
+		lat1 = Math.toRadians(lat1);
+		lon2 = Math.toRadians(lon2);
+		lat2 = Math.toRadians(lat2);
+		
+		List<Double> result = new ArrayList<Double>(2);
+		
+		if (Math.abs(lon2 - lon1) > Math.PI) {
+			lon1 += 2 * Math.PI;
+		}
+		
+		double midLat = (lat1 + lat2) / 2;
+		double f1 = Math.tan(Math.PI / 4 + lat1 / 2);
+		double f2 = Math.tan(Math.PI / 4 + lat2 / 2);
+		double f3 = Math.tan(Math.PI / 4 + midLat / 2);
+		
+		double midLon;
+		double bottomPart = Math.log(f2 / f1);
+		if (bottomPart == 0) {
+			midLon = (lon1 + lon2) / 2;
+		} else {
+			midLon = ((lon2 - lon1) * Math.log(f3) + lon1 * Math.log(f2) - lon2 * Math.log(f1)) / Math.log(f2 / f1);
+		}
+		
+		midLon = (Math.toDegrees(midLon) + 540) % 360 - 180;
+		
+		result.add(midLon);
+		result.add(Math.toDegrees(midLat));
+		
 		return result;
 	}
 }
