@@ -691,7 +691,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @return The HTML for the check boxes
 	 * @throws MissingParamException If any parameters for underlying data retrieval calls are missing
 	 * @throws DatabaseException If a database error occurs
-	 * @throws RecordNotFoundException If any required database records are mising
+	 * @throws RecordNotFoundException If any required database records are missing
 	 * @throws ResourceException If the application resources cannot be accessed
 	 */
 	public String getPlotPopupEntries() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
@@ -899,6 +899,228 @@ public class DataScreenBean extends BaseManagedBean {
 		output.append(makePlotCheckbox("co2", "pCO2TEWet", "pCO<sub>2</sub> TE Wet"));
 		output.append(makePlotCheckbox("co2", "fCO2TE", "fCO<sub>2</sub> TE"));
 		output.append(makePlotCheckbox("co2", "fCO2Final", "fCO<sub>2</sub> Final"));
+
+		output.append("</table></td></tr>");
+
+		// End of column 4
+		output.append("</td></table>");
+		
+		// End of outer table
+		output.append("</tr></table>");
+		
+		return output.toString();
+	}
+	
+	/**
+	 * Generate the check boxes to select columns for the data maps.
+	 * @return The HTML for the check boxes
+	 * @throws MissingParamException If any parameters for underlying data retrieval calls are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If any required database records are missing
+	 * @throws ResourceException If the application resources cannot be accessed
+	 */
+	public String getMapPopupEntries() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
+		Instrument instrument = InstrumentDB.getInstrument(ServletUtils.getDBDataSource(), fileDetails.getInstrumentId());
+		
+		StringBuffer output = new StringBuffer();
+		
+		output.append("<table><tr>");
+		
+		// First column
+		output.append("<td><table>");
+		
+		output.append(makeMapCheckbox("datetime", "dateTime", "Date/Time"));
+
+		// Intake temperature
+		if (instrument.getIntakeTempCount() == 1) {
+			output.append(makeMapCheckbox("intakeTemp", "intakeTempMean", "Intake Temperature"));
+		} else {
+			output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Intake Temperature:</td></tr>");
+			output.append("<tr><td></td><td><table>");
+
+			output.append(makeMapCheckbox("intakeTemp", "intakeTempMean", "Mean"));
+			
+			if (instrument.hasIntakeTemp1()) {
+				output.append(makeMapCheckbox("intakeTemp", "intakeTemp1", instrument.getIntakeTempName1()));
+			}
+			
+			if (instrument.hasIntakeTemp2()) {
+				output.append(makeMapCheckbox("intakeTemp", "intakeTemp2", instrument.getIntakeTempName2()));
+			}
+			
+			if (instrument.hasIntakeTemp3()) {
+				output.append(makeMapCheckbox("intakeTemp", "intakeTemp3", instrument.getIntakeTempName3()));
+			}
+			
+			output.append("</table></td></tr>");
+		}
+
+		// Salinity
+		if (instrument.getSalinityCount() == 1) {
+			output.append(makeMapCheckbox("salinity", "salinityMean", "Salinity"));
+		} else {
+			output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Salinity:</td></tr>");
+			output.append("<tr><td></td><td><table>");
+
+			output.append(makeMapCheckbox("salinity", "salinityMean", "Mean"));
+			
+			if (instrument.hasSalinity1()) {
+				output.append(makeMapCheckbox("salinity", "salinity1", instrument.getSalinityName1()));
+			}
+			
+			if (instrument.hasSalinity2()) {
+				output.append(makeMapCheckbox("salinity", "salinity2", instrument.getSalinityName2()));
+			}
+			
+			if (instrument.hasSalinity3()) {
+				output.append(makeMapCheckbox("salinity", "salinity3", instrument.getSalinityName3()));
+			}
+
+			output.append("</table></td></tr>");
+		}
+		
+		// End of first column/start of second
+		output.append("</table></td><td><table>");
+		
+		boolean flowSensor = false;
+		
+		if (instrument.getAirFlowCount() > 0) {
+			flowSensor = true;
+			
+			output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Air Flow:</td></tr>");
+			output.append("<tr><td></td><td><table>");
+			
+			if (instrument.hasAirFlow1()) {
+				output.append(makeMapCheckbox("airFlow", "airFlow1", instrument.getAirFlowName1()));
+			}
+			
+			if (instrument.hasAirFlow2()) {
+				output.append(makeMapCheckbox("airFlow", "airFlow2", instrument.getAirFlowName2()));
+			}
+			
+			if (instrument.hasAirFlow3()) {
+				output.append(makeMapCheckbox("airFlow", "airFlow3", instrument.getAirFlowName3()));
+			}
+			
+			output.append("</table></td></tr>");
+		}
+		
+		if (instrument.getWaterFlowCount() > 0) {
+			flowSensor = true;
+			
+			output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Water Flow:</td></tr>");
+			output.append("<tr><td></td><td><table>");
+			
+			if (instrument.hasWaterFlow1()) {
+				output.append(makeMapCheckbox("waterFlow", "waterFlow1", instrument.getWaterFlowName1()));
+			}
+			
+			if (instrument.hasWaterFlow2()) {
+				output.append(makeMapCheckbox("waterFlow", "waterFlow2", instrument.getWaterFlowName2()));
+			}
+			
+			if (instrument.hasWaterFlow3()) {
+				output.append(makeMapCheckbox("waterFlow", "waterFlow3", instrument.getWaterFlowName3()));
+			}
+			
+			output.append("</table></td></tr>");
+		}
+		
+		if (flowSensor) {
+			// End of 2nd column/start of 3rd
+			output.append("</table></td><td><table>");
+		}
+
+		// Equilibrator temperature
+		if (instrument.getEqtCount() == 1) {
+			output.append(makeMapCheckbox("eqt", "eqtMean", "Equilibrator Temperature"));
+		} else {
+			output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Equilibrator Temperature:</td></tr>");
+			output.append("<tr><td></td><td><table>");
+			
+			output.append(makeMapCheckbox("eqt", "eqtMean", "Mean"));
+			
+			if (instrument.hasEqt1()) {
+				output.append(makeMapCheckbox("eqt", "eqt1", instrument.getEqtName1()));
+			}
+			
+			if (instrument.hasEqt2()) {
+				output.append(makeMapCheckbox("eqt", "eqt2", instrument.getEqtName2()));
+			}
+			
+			if (instrument.hasEqt3()) {
+				output.append(makeMapCheckbox("eqt", "eqt3", instrument.getEqtName3()));
+			}
+			
+			output.append("</table></td></tr>");
+		}
+		
+		// Delta T
+		output.append(makePlotCheckbox("deltaT", "deltaT", "Δ Temperature"));
+
+		// Equilibrator Pressure
+		if (instrument.getEqpCount() == 1) {
+			output.append(makeMapCheckbox("eqp", "eqpMean", "Equilibrator Pressure"));
+		} else {
+			output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Equilibrator Pressure:</td></tr>");
+			output.append("<tr><td></td><td><table>");
+
+			output.append(makeMapCheckbox("eqp", "eqpMean", "Mean"));
+			
+			if (instrument.hasEqp1()) {
+				output.append(makeMapCheckbox("eqp", "eqp1", instrument.getEqpName1()));
+			}
+			
+			if (instrument.hasEqp2()) {
+				output.append(makeMapCheckbox("eqp", "eqp2", instrument.getEqpName2()));
+			}
+			
+			if (instrument.hasEqp3()) {
+				output.append(makeMapCheckbox("eqp", "eqp3", instrument.getEqpName3()));
+			}
+
+			output.append("</table></td></tr>");
+		}
+		
+		// Atmospheric Pressure
+		/*
+		 * We'll put this in when we get to doing atmospheric stuff.
+		 * It needs to specify whether it's measured or from external data
+		 * 
+		output.append(makePlotCheckbox("atmosPressure", "atmospressure", "Atmospheric Pressure"));
+		output.append("</td><td>Atmospheric Pressure</td></tr>");
+		*/
+		
+		// xH2O
+		output.append("<tr><td colspan=\"2\" class=\"minorHeading\">xH<sub>2</sub>O:</td></tr>");
+		output.append("<tr><td></td><td><table>");
+
+		output.append(makeMapCheckbox("xh2o", "xh2oMeasured", "Measured"));
+		output.append(makeMapCheckbox("xh2o", "xh2oTrue", "True"));
+		
+		output.append("</table></td></tr>");
+
+		// pH2O
+		output.append(makeMapCheckbox("pH2O", "pH2O", "pH<sub>2</sub>O"));
+
+		// End of 3rd column/Start of 4th column
+		output.append("</table></td><td><table>");
+
+		// CO2
+		output.append("<tr><td colspan=\"2\" class=\"minorHeading\">CO<sub>2</sub>:</td></tr>");
+		output.append("<tr><td></td><td><table>");
+
+		output.append(makeMapCheckbox("co2", "co2Measured", "Measured"));
+
+		if (!instrument.getSamplesDried()) {
+			output.append(makeMapCheckbox("co2", "co2Dried", "Dried"));
+		}
+
+		output.append(makeMapCheckbox("co2", "co2Calibrated", "Calibrated"));
+		output.append(makeMapCheckbox("co2", "pCO2TEDry", "pCO<sub>2</sub> TE Dry"));
+		output.append(makeMapCheckbox("co2", "pCO2TEWet", "pCO<sub>2</sub> TE Wet"));
+		output.append(makeMapCheckbox("co2", "fCO2TE", "fCO<sub>2</sub> TE"));
+		output.append(makeMapCheckbox("co2", "fCO2Final", "fCO<sub>2</sub> Final"));
 
 		output.append("</table></td></tr>");
 

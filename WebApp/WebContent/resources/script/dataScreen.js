@@ -94,21 +94,27 @@ var plotSplitPercent = 0;
 // the selection limits
 var plotPopupSingleSelection = true;
 
-// Specifies the target plot (1/2) and axis (X/Y) for the popup
+// Specifies the target plot (L/R) and axis (X/Y) for the popup
 var plotPopupTarget = 'LX';
 
 // The selected parameters for the plots and maps
 var leftPlotXAxis = ['plot_datetime_dateTime'];
 var leftPlotYAxis = ['plot_intaketemp_intakeTempMean'];
-var leftMap = 'plot_co2_fCO2Final';
 
 var rightPlotXAxis = ['plot_datetime_dateTime'];
 var rightPlotYAxis = ['plot_co2_fCO2Final'];
-var rightMap = 'plot_intaketemp_intakeTempMean';
 
 // Variables for the plots
 var leftGraph = null;
 var rightGraph = null;
+
+// Map variables
+var mapPopupTarget = 'L';
+var leftMapVar = 'map_co2_fCO2Final';
+var rightMapVar = 'map_intaketemp_intakeTempMean';
+
+var leftMap = null;
+var rightMap = null;
 
 // The data table
 var jsDataTable = null;
@@ -162,8 +168,8 @@ $(function() {
 
 	
 	// Initial loading screens for each panel
-	drawLoading($('#plotLeftContent'));
-	drawLoading($('#plotRightContent'));
+	drawLoading($('#leftContent'));
+	drawLoading($('#rightContent'));
 	drawLoading($('#tableContent'));
 	
 	// When the window is resized, scale the panels
@@ -185,6 +191,15 @@ $(function() {
     	});
     });
     
+    // Set up change handlers for checkboxes on the map popup
+    $('#mapFieldList')
+    .find('input')
+    .each(function(index, item) {
+    	$(item).change(function(event) {
+    		processMapFieldChange(item);
+    	});
+    });
+    
     // Set up the data table options
     
     
@@ -196,8 +211,8 @@ $(function() {
  * Refreshes all data objects (both plots and the table)
  */
 function drawAllData() {
-	drawLoading($('#plotLeftContent'));
-	drawLoading($('#plotRightContent'));
+	drawLoading($('#leftContent'));
+	drawLoading($('#rightContent'));
 	drawLoading($('#tableContent'));
     updatePlot('left');
     updatePlot('right');
@@ -211,16 +226,16 @@ function resizeContent() {
 	tableSplitPercent = '' + $('#dataScreenContent').split().position() / $('#dataScreenContent').height() * 100 + '%';
 	plotSplitPercent = '' + $('#plots').split().position() / $('#dataScreenContent').width() * 100 + '%';
 
-	$('#plotLeftContent').width('100%');
-	$('#plotLeftContent').height($('#plotContainerLeft').height() - 30);
+	$('#leftContent').width('100%');
+	$('#leftContent').height($('#plotContainerLeft').height() - 30);
 	if (leftGraph != null) {
-		leftGraph.resize($('#plotLeftContent').width(), $('#plotLeftContent').height() - 15);
+		leftGraph.resize($('#leftContent').width(), $('#leftContent').height() - 15);
 	}
 	
-	$('#plotRightContent').width('100%');
-	$('#plotRightContent').height('' + $('#plotContainerRight').height() - 30);
+	$('#rightContent').width('100%');
+	$('#rightContent').height('' + $('#plotContainerRight').height() - 30);
 	if (rightGraph != null) {
-		rightGraph.resize($('#plotRightContent').width(), $('#plotRightContent').height() - 15);
+		rightGraph.resize($('#rightContent').width(), $('#rightContent').height() - 15);
 	}
 	
 	// Set the height of the DataTables scrollbody
@@ -451,7 +466,7 @@ function updatePlot(plot) {
 	
 	if (plot == 'left') {
 		// Replace the existing plot with the loading animation
-		drawLoading($('#plotLeftContent'));
+		drawLoading($('#leftContent'));
 		
 		// Destroy the existing graph data
 		if (leftGraph != null) {
@@ -459,26 +474,14 @@ function updatePlot(plot) {
 			leftGraph = null;
 		}
 		
-		// Build the list of columns to be sent to the server
-		var columnList = '';
-		for (var i = 0; i < leftPlotXAxis.length; i++) {
-			columnList += getColumnName(leftPlotXAxis[i]);
-			columnList += ';';
+		if ($('#plotControlsLeft').is(':visible')) {
+			initLeftPlot();
+		} else {
+			initLeftMap();
 		}
-		for (var i = 0; i < leftPlotYAxis.length; i++) {
-			columnList += getColumnName(leftPlotYAxis[i]);
-			if (i < leftPlotYAxis.length - 1) {
-				columnList += ';';
-			}
-		}
-		
-		// Fill in the hidden form and submit it
-		$('#plotDataForm\\:leftColumns').val(columnList);
-		$('#plotDataForm\\:leftGetData').click();
-		$('#leftUpdate').removeClass('highlightButton');
 	} else {
 		// Replace the existing plot with the loading animation
-		drawLoading($('#plotRightContent'));
+		drawLoading($('#rightContent'));
 		
 		// Destroy the existing graph data
 		if (rightGraph != null) {
@@ -486,27 +489,54 @@ function updatePlot(plot) {
 			rightGraph = null;
 		}
 		
-		// Build the list of columns to be sent to the server
-		var columnList = '';
-		for (var i = 0; i < rightPlotXAxis.length; i++) {
-			columnList += getColumnName(rightPlotXAxis[i]);
-			columnList += ';';
+		if ($('#plotControlsRight').is(':visible')) {
+			initRightPlot();
+		} else {
+			initRightMap();
 		}
-		for (var i = 0; i < rightPlotYAxis.length; i++) {
-			columnList += getColumnName(rightPlotYAxis[i]);
-			if (i < rightPlotYAxis.length - 1) {
-				columnList += ';';
-			}
-		}
-		
-		// Fill in the hidden form and submit it
-		$('#plotDataForm\\:rightColumns').val(columnList);
-		$('#plotDataForm\\:rightGetData').click();
-		$('#rightUpdate').removeClass('highlightButton');
 	}
 	
-	
 	return false;
+}
+
+function initLeftPlot() {
+	// Build the list of columns to be sent to the server
+	var columnList = '';
+	for (var i = 0; i < leftPlotXAxis.length; i++) {
+		columnList += getColumnName(leftPlotXAxis[i]);
+		columnList += ';';
+	}
+	for (var i = 0; i < leftPlotYAxis.length; i++) {
+		columnList += getColumnName(leftPlotYAxis[i]);
+		if (i < leftPlotYAxis.length - 1) {
+			columnList += ';';
+		}
+	}
+	
+	// Fill in the hidden form and submit it
+	$('#plotDataForm\\:leftColumns').val(columnList);
+	$('#plotDataForm\\:leftGetData').click();
+	$('#leftUpdate').removeClass('highlightButton');
+}
+
+function initRightPlot() {
+	// Build the list of columns to be sent to the server
+	var columnList = '';
+	for (var i = 0; i < rightPlotXAxis.length; i++) {
+		columnList += getColumnName(rightPlotXAxis[i]);
+		columnList += ';';
+	}
+	for (var i = 0; i < rightPlotYAxis.length; i++) {
+		columnList += getColumnName(rightPlotYAxis[i]);
+		if (i < rightPlotYAxis.length - 1) {
+			columnList += ';';
+		}
+	}
+	
+	// Fill in the hidden form and submit it
+	$('#plotDataForm\\:rightColumns').val(columnList);
+	$('#plotDataForm\\:rightGetData').click();
+	$('#rightUpdate').removeClass('highlightButton');
 }
 
 /*
@@ -565,7 +595,7 @@ function drawLeftPlot(data) {
 		}
 	
 		leftGraph = new Dygraph (
-			document.getElementById('plotLeftContent'),
+			document.getElementById('leftContent'),
 			graph_data,
 	        	graph_options
 		);
@@ -628,7 +658,7 @@ function drawRightPlot(data) {
 		}
 
 		rightGraph = new Dygraph (
-			document.getElementById('plotRightContent'),
+			document.getElementById('rightContent'),
 			graph_data,
 	        	graph_options
 		);
@@ -1252,4 +1282,142 @@ function zoomOut(g) {
 	});
 	
 	return false;
+}
+
+function showLeftMap() {
+	$('#mapControlsLeft').show();
+	$('#plotControlsLeft').hide();
+	updatePlot('left');
+	return false;
+}
+
+function showLeftPlot() {
+	$('#mapControlsLeft').hide();
+	$('#plotControlsLeft').show();
+	updatePlot('left');
+	return false;
+}
+
+function showRightMap() {
+	$('#mapControlsRight').show();
+	$('#plotControlsRight').hide();
+	updatePlot('right');
+	return false;
+}
+
+function showRightPlot() {
+	$('#mapControlsRight').hide();
+	$('#plotControlsRight').show();
+	updatePlot('right');
+	return false;
+}
+
+function setMapPopupInputs() {
+
+	var selectedInput = null;
+	
+	switch (mapPopupTarget) {
+	case 'L': {
+		selectedInput = leftMapVar;
+		break;
+	}
+	case 'R': {
+		selectedInput = rightMapVar;
+		break;
+	}
+	}
+	
+	// Now update the inputs
+	$('#mapFieldList')
+	.find('input')
+	.each(function(index, item) {
+		if (item.id == selectedInput) {
+			item.checked = true;
+		} else {
+			item.checked = false;
+		}
+	});
+}
+
+function showMapPopup(event, target) {
+	// Set the target information
+	mapPopupTarget = target;
+	
+	// Update the inputs with the existing selections
+	setMapPopupInputs();
+	
+	// Position and show the popup
+	leftOffset = ($(window).width() / 2) - ($('#mapFieldList').width() / 2);
+	topOffset = ($(window).height() / 2) - ($('#mapFieldList').height() / 2);
+
+	$('#mapFieldList')
+	.css({"left": 0, "top": 0})
+	.offset({
+		"left": leftOffset,
+		"top": topOffset,
+		"width": $('#mapFieldList').width(),
+		"height": $('#mapFieldList').height()
+	})
+	.zIndex(1000);
+
+	
+	$('#mapFieldList').show(0);
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+	return false;
+}
+
+function hideMapPopup() {
+	$('#mapFieldList').hide(100);
+}
+
+function processMapFieldChange(input) {
+	$('#mapFieldList')
+	.find('input')
+	.each(function(index, item) {
+		if (item.id != input.id) {
+			item.checked = false;
+		}
+	});
+}
+
+function saveMapSelection() {
+	
+	// Get the list of checked inputs
+	selectedInput = null;
+	
+	$('#mapFieldList')
+	.find('input')
+	.each(function(index, item) {
+		if (item.checked) {
+			selectedInput = item.id;
+		}
+	});
+
+	switch (mapPopupTarget) {
+	case 'L': {
+		leftMapVar = selectedInput;
+		updatePlot('left');
+		break;
+	}
+	case 'R': {
+		rightMapVar = selectedInput;
+		updatePlot('right');
+		break;
+	}
+	}
+	
+	hideMapPopup();
+	return false;
+}
+
+function initLeftMap() {
+	$('#leftContent').html('MAP!');
+}
+
+function initRightMap() {
+	$('#rightContent').html('MAP!');
 }

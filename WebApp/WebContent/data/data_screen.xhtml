@@ -62,6 +62,13 @@
 				<button class="smallButton" onclick="return hidePlotPopup();">Cancel</button>
 			</div>
 		</div>
+		<div id="mapFieldList" class="popupMenu">
+			<h:outputText value="#{dataScreenBean.mapPopupEntries}" escape="false"/>
+			<div id="buttonWrapper">
+				<button class="smallButton" onclick="return saveMapSelection();">OK</button>
+				<button class="smallButton" onclick="return hideMapPopup();">Cancel</button>
+			</div>
+		</div>
 		<div id="hiddenData">
 			<h:form id="plotDataForm" method="post" accept-charset="utf8">
 				<h:inputHidden id="leftColumns" value="#{dataScreenBean.leftPlotColumns}"/>
@@ -142,23 +149,33 @@
     		<div id="dataScreenContent">
 	    		<div id="plots">
 		    		<div id="plotContainerLeft">
-						<div id="plotLeftContent" class="plotContent"></div>
+						<div id="leftContent" class="plotContent"></div>
 						<div id="plotLeftLabels" class="plotLabels"></div>
-		    			<div id="controlsLeft" class="controls">
+		    			<div id="plotControlsLeft" class="controls">
 		    				<button id="leftXAxis" class="smallButton" onclick="return showPlotPopup(event, 'LX', true);">X Axis…</button>
 		    				<button id="leftYAxis" class="smallButton" onclick="return showPlotPopup(event, 'LY', false);">Y Axis…</button>
 		    				<button id="leftUpdate" class="smallButton" onclick="return updatePlot('left');">Update</button>
 		    				<button id="leftZoomOut" class="smallButton" onclick="return zoomOut(leftGraph);">Zoom Out</button>
+		    				<button id="leftMapSwitch" class="smallButton" onclick="return showLeftMap();">Map</button>
+		    			</div>
+		    			<div id="mapControlsLeft" class="controls hidden">
+		    				<button id="leftMapVar" class="smallButton" onclick="return showMapPopup(event, 'L');">Variable…</button>
+		    				<button id="leftPlotSwitch" class="smallButton" onclick="return showLeftPlot();">Plot</button>
 		    			</div>
 		    		</div>
 		    		<div id="plotContainerRight">
-						<div id="plotRightContent" class="plotContent"></div>
+						<div id="rightContent" class="plotContent"></div>
 						<div id="plotRightLabels" class="plotLabels"></div>
-		    			<div id="controlsRight" class="controls">
+		    			<div id="plotControlsRight" class="controls">
 		    				<button id="rightXAxis" class="smallButton" onclick="return showPlotPopup(event, 'RX', true);">X Axis…</button>
 		    				<button id="rightYAxis" class="smallButton" onclick="return showPlotPopup(event, 'RY', false);">Y Axis…</button>
 		    				<button id="rightUpdate" class="smallButton" onclick="return updatePlot('right');">Update</button>
 		    				<button id="rightZoomOut" class="smallButton" onclick="return zoomOut(rightGraph);">Zoom Out</button>
+		    				<button id="rightMapSwitch" class="smallButton" onclick="return showRightMap();">Map</button>
+		    			</div>
+		    			<div id="mapControlsRight" class="controls hidden">
+		    				<button id="rightMapVar" class="smallButton" onclick="return showMapPopup(event, 'R');">Variable…</button>
+		    				<button id="rightPlotSwitch" class="smallButton" onclick="return showRightPlot();">Plot</button>
 		    			</div>
 		    		</div>
 	    		</div>
