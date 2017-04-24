@@ -173,8 +173,8 @@ $(function() {
 
 	
 	// Initial loading screens for each panel
-	drawLoading($('#leftContent'));
-	drawLoading($('#rightContent'));
+	drawLoading($('#plotLeft'));
+	drawLoading($('#plotRight'));
 	drawLoading($('#tableContent'));
 	
 	// When the window is resized, scale the panels
@@ -216,8 +216,8 @@ $(function() {
  * Refreshes all data objects (both plots and the table)
  */
 function drawAllData() {
-	drawLoading($('#leftContent'));
-	drawLoading($('#rightContent'));
+	drawLoading($('#plotLeft'));
+	drawLoading($('#plotRight'));
 	drawLoading($('#tableContent'));
     updatePlot('left');
     updatePlot('right');
@@ -231,16 +231,16 @@ function resizeContent() {
 	tableSplitPercent = '' + $('#dataScreenContent').split().position() / $('#dataScreenContent').height() * 100 + '%';
 	plotSplitPercent = '' + $('#plots').split().position() / $('#dataScreenContent').width() * 100 + '%';
 
-	$('#leftContent').width('100%');
-	$('#leftContent').height($('#plotContainerLeft').height() - 30);
+	$('#plotLeft').width('100%');
+	$('#plotLeft').height($('#plotContainerLeft').height() - 30);
 	if (leftGraph != null) {
-		leftGraph.resize($('#leftContent').width(), $('#leftContent').height() - 15);
+		leftGraph.resize($('#plotLeft').width(), $('#plotLeft').height() - 15);
 	}
 	
-	$('#rightContent').width('100%');
-	$('#rightContent').height('' + $('#plotContainerRight').height() - 30);
+	$('#plotRight').width('100%');
+	$('#plotRight').height('' + $('#plotContainerRight').height() - 30);
 	if (rightGraph != null) {
-		rightGraph.resize($('#rightContent').width(), $('#rightContent').height() - 15);
+		rightGraph.resize($('#plotRight').width(), $('#plotRight').height() - 15);
 	}
 	
 	// Set the height of the DataTables scrollbody
@@ -470,23 +470,15 @@ function savePlotSelection() {
 function updatePlot(plot) {
 	
 	if (plot == 'left') {
-		// Replace the existing plot with the loading animation
-		drawLoading($('#leftContent'));
-		
 		// Destroy the existing graph data
 		if (leftGraph != null) {
 			leftGraph.destroy();
 			leftGraph = null;
 		}
 		
-		if ($('#plotControlsLeft').is(':visible')) {
-			initLeftPlot();
-		} else {
-			initLeftMap();
-		}
+		drawLoading($('#plotLeft'));
+		initLeftPlot();
 	} else {
-		// Replace the existing plot with the loading animation
-		drawLoading($('#rightContent'));
 		
 		// Destroy the existing graph data
 		if (rightGraph != null) {
@@ -494,11 +486,8 @@ function updatePlot(plot) {
 			rightGraph = null;
 		}
 		
-		if ($('#plotControlsRight').is(':visible')) {
-			initRightPlot();
-		} else {
-			initRightMap();
-		}
+		drawLoading($('#plotRight'));
+		initRightPlot();
 	}
 	
 	return false;
@@ -600,7 +589,7 @@ function drawLeftPlot(data) {
 		}
 	
 		leftGraph = new Dygraph (
-			document.getElementById('leftContent'),
+			document.getElementById('plotLeft'),
 			graph_data,
 	        	graph_options
 		);
@@ -663,7 +652,7 @@ function drawRightPlot(data) {
 		}
 
 		rightGraph = new Dygraph (
-			document.getElementById('rightContent'),
+			document.getElementById('plotRight'),
 			graph_data,
 	        	graph_options
 		);
@@ -1288,30 +1277,36 @@ function zoomOut(g) {
 }
 
 function showLeftMap() {
-	$('#mapControlsLeft').show();
+	$('#plotLeft').hide();
 	$('#plotControlsLeft').hide();
-	updatePlot('left');
+	$('#mapLeft').show();
+	$('#mapControlsLeft').show();
+	initLeftMap();
 	return false;
 }
 
 function showLeftPlot() {
+	$('#mapLeft').hide();
 	$('#mapControlsLeft').hide();
+	$('#plotLeft').show();
 	$('#plotControlsLeft').show();
-	updatePlot('left');
 	return false;
 }
 
 function showRightMap() {
-	$('#mapControlsRight').show();
+	$('#plotRight').hide();
 	$('#plotControlsRight').hide();
-	updatePlot('right');
+	$('#mapRight').show();
+	$('#mapControlsRight').show();
+	initRightMap();
 	return false;
 }
 
 function showRightPlot() {
+	$('#mapRight').hide();
 	$('#mapControlsRight').hide();
+	$('#plotRight').show();
 	$('#plotControlsRight').show();
-	updatePlot('right');
 	return false;
 }
 
@@ -1403,12 +1398,12 @@ function saveMapSelection() {
 	switch (mapPopupTarget) {
 	case 'L': {
 		leftMapVar = selectedInput;
-		updatePlot('left');
+		updateMap('left');
 		break;
 	}
 	case 'R': {
 		rightMapVar = selectedInput;
-		updatePlot('right');
+		updateMap('right');
 		break;
 	}
 	}
@@ -1417,34 +1412,47 @@ function saveMapSelection() {
 	return false;
 }
 
+function updateMap(target) {
+	if (target == 'left') {
+		initLeftMap();
+	} else {
+		initRightMap();
+	}
+}
+
 function initLeftMap() {
-	leftMap = new ol.Map({
- 		target: 'leftContent',
- 		layers: [
-    		new ol.layer.Tile({
-        		source: mapSource
-    		}),
-  		],
-  		view: new ol.View({
-    		center: ol.proj.fromLonLat([10, 45]),
-    		zoom: 4,
-    		minZoom: 2
-  		}),
-	});
+	
+	if (leftMap == null) {
+		leftMap = new ol.Map({
+	 		target: 'mapLeft',
+	 		layers: [
+	    		new ol.layer.Tile({
+	        		source: mapSource
+	    		}),
+	  		],
+	  		view: new ol.View({
+	    		center: ol.proj.fromLonLat([10, 45]),
+	    		zoom: 4,
+	    		minZoom: 2
+	  		}),
+		});
+	}
 }
 
 function initRightMap() {
-	rightMap = new ol.Map({
- 		target: 'rightContent',
- 		layers: [
-    		new ol.layer.Tile({
-        		source: mapSource
-    		}),
-  		],
-  		view: new ol.View({
-    		center: ol.proj.fromLonLat([10, 45]),
-    		zoom: 4,
-    		minZoom: 2
-  		}),
-	});
+	if (rightMap == null) {
+		rightMap = new ol.Map({
+	 		target: 'mapRight',
+	 		layers: [
+	    		new ol.layer.Tile({
+	        		source: mapSource
+	    		}),
+	  		],
+	  		view: new ol.View({
+	    		center: ol.proj.fromLonLat([10, 45]),
+	    		zoom: 4,
+	    		minZoom: 2
+	  		}),
+		});
+	}
 }
