@@ -1282,6 +1282,7 @@ function showLeftMap() {
 	$('#mapLeft').show();
 	$('#mapControlsLeft').show();
 	initLeftMap();
+	resizeContent();
 	return false;
 }
 
@@ -1290,6 +1291,7 @@ function showLeftPlot() {
 	$('#mapControlsLeft').hide();
 	$('#plotLeft').show();
 	$('#plotControlsLeft').show();
+	resizeContent();
 	return false;
 }
 
@@ -1299,6 +1301,7 @@ function showRightMap() {
 	$('#mapRight').show();
 	$('#mapControlsRight').show();
 	initRightMap();
+	resizeContent();
 	return false;
 }
 
@@ -1307,6 +1310,7 @@ function showRightPlot() {
 	$('#mapControlsRight').hide();
 	$('#plotRight').show();
 	$('#plotControlsRight').show();
+	resizeContent();
 	return false;
 }
 
