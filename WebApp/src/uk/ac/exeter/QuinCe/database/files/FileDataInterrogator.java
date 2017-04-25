@@ -17,6 +17,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.RebuildCode;
@@ -92,6 +93,22 @@ public class FileDataInterrogator {
 					+ " INNER JOIN qc ON raw_data.data_file_id = qc.data_file_id AND raw_data.row = qc.row"
 					+ " WHERE raw_data.data_file_id = ? AND raw_data.co2_type IN (%%CO2TYPES%%) AND qc.woce_flag IN (%%FLAGS%%)"
 					+ " ORDER BY %%ORDER%% ASC";
+	
+	/**
+	 * Query to retrieve the list of selectable row numbers for a given data file.
+
+	 * <p>
+	 *   Selectable rows can have their WOCE flag set by the user.
+	 *   Unselectable rows are rows that have their QC flag set to FATAL, which means they
+	 *   cannot be processed at all.
+	 * </p>
+	 */
+	private static final String GET_SELECTABLE_ROW_NUMBERS_QUERY = "SELECT row FROM qc WHERE data_file_id = ? AND woce_flag IN (%%FLAGS%%)";
+	
+	/**
+	 * Query to retrieve all comments and flags for a set of rows in a data file. QC messages include their own flags
+	 */
+	private static final String GET_COMMENTS_QUERY = "SELECT qc_message, woce_message, woce_flag FROM qc WHERE data_file_id = ? AND row IN (%%ROWS%%)";
 	
 	static {
 		// Map input names from the web front end to database column names
@@ -662,12 +679,12 @@ public class FileDataInterrogator {
 					outputBuffer.append(col - 1);
 					outputBuffer.append("\":");
 					
-					if (valuesAsStrings && !columnName.equals("dateTime")) {
+					if (valuesAsStrings && !columnName.equals("dateTime") && !columnName.equals("row")) {
 						outputBuffer.append('\"');
 					}
 					outputBuffer.append(formatField(records, col, columnName, true, missingValue));
 					
-					if (valuesAsStrings && !columnName.equals("dateTime")) {
+					if (valuesAsStrings && !columnName.equals("dateTime") && !columnName.equals("row")) {
 						outputBuffer.append('\"');
 					}
 					
@@ -1286,6 +1303,119 @@ public class FileDataInterrogator {
 		}
 		}
 
+		return result;
+	}
+	
+	/**
+	 * Retrieve a JSON string containing the list of all row numbers in the current data file that can be
+	 * selected in the data table.
+	 * <p>
+	 *   {@code includeFlags} is a list of WOCE flag values that will be included in the output. This can be any
+	 *   of the numeric flag values defined in {@link Flag}. Any record that does not have a flag value in this list
+	 *   will be omitted from the output.
+	 * </p>
+	 * 
+	 * @param dataSource A data source
+	 * @param fileId The file's database ID
+	 * @param includeFlags The WOCE flags to be included in the output
+	 * @return The selectable row numbers
+	 * @throws DatabaseException If a database error occurs
+	 * @see #GET_SELECTABLE_ROW_NUMBERS_QUERY
+	 */
+	public static String getSelectableRowNumbers(DataSource dataSource, long fileId, List<Integer> includeFlags) throws DatabaseException {
+		
+		StringBuilder output = new StringBuilder();
+		output.append('[');
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			
+			conn = dataSource.getConnection();
+			
+			String flags = makeFlags(includeFlags);
+			String queryString = GET_SELECTABLE_ROW_NUMBERS_QUERY.replaceAll("%%FLAGS%%", flags);
+			
+			stmt = conn.prepareStatement(queryString);
+			stmt.setLong(1, fileId);
+			records = stmt.executeQuery();
+			while (records.next()) {
+				output.append(records.getInt(1));
+				output.append(',');
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving selectable row numbers", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		// Remove the last trailing comma
+		output.deleteCharAt(output.length() - 1);
+		output.append(']');
+		
+		return output.toString();
+	}
+	
+	/**
+	 * Retrieve a set of comments for a specified set of rows in a data file.
+	 * The comments are grouped by their comment string. Each string also has the number
+	 * of times that comment appeared, along with the 'worst' flag assigned to that comment.
+	 * 
+	 * Both QC comments and WOCE comments are included in the list.
+	 * 
+	 * @param dataSource A data source
+	 * @param fileId The file's database ID
+	 * @param rows The rows for which comments must be retrieved.
+	 * @return The comments
+	 * @throws DatabaseException If a database error occurs 
+	 * @throws InvalidFlagException If a flag retrieved from the database is invalid
+	 * @throws MessageException If a QC message cannot be reconstructed from its rebuild code
+	 */
+	public static CommentSet getCommentsForRows(DataSource dataSource, long fileId, String rows) throws DatabaseException, InvalidFlagException, MessageException {
+		
+		CommentSet result = new CommentSet();
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			
+			String queryString = GET_COMMENTS_QUERY.replace("%%ROWS%%", rows);
+			stmt = conn.prepareStatement(queryString);
+			stmt.setLong(1, fileId);
+			records = stmt.executeQuery();
+			while (records.next()) {
+				
+				String qcCodes = records.getString(1);
+				String woceMessage = records.getString(2);
+				Flag woceFlag = new Flag(records.getInt(3));
+				
+				for (Message message : RebuildCode.getMessagesFromRebuildCodes(qcCodes)) {
+					if (woceFlag.equals(Flag.NEEDED) || !message.getShortMessage().equalsIgnoreCase(woceMessage)) {
+						result.addComment(message.getShortMessage(), message.getFlag());
+					}
+				}
+				
+				if (!woceFlag.equals(Flag.NEEDED) && null != woceMessage && woceMessage.length() > 0) {
+					result.addComment(woceMessage, woceFlag);
+				}
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving comments", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
 		return result;
 	}
 }
