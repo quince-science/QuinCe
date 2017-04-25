@@ -16,6 +16,8 @@ import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.database.QC.QCDB;
+import uk.ac.exeter.QuinCe.database.files.CommentSet;
+import uk.ac.exeter.QuinCe.database.files.CommentSetEntry;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
@@ -266,14 +268,15 @@ public class DataScreenBean extends BaseManagedBean {
 	private boolean dirty = false;
 	
 	/**
-	 * The set of comments for the WOCE dialog
+	 * The set of comments for the WOCE dialog. Stored as a Javascript array of entries, with each entry containing
+	 * Comment, Count and Flag value
 	 */
-	private List<String> woceCommentList = null;
+	private String woceCommentList = null;
 	
 	/**
 	 * The worst flag set on the selected rows
 	 */
-	private int worstSelectedFlag = Flag.VALUE_GOOD;
+	private Flag worstSelectedFlag = Flag.GOOD;
 	
 	/**
 	 * Required basic constructor. This does nothing: all the actual construction
@@ -1579,12 +1582,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @return The comments for the WOCE dialog
 	 */
 	public String getWoceCommentList() {
-		StringBuilder output = new StringBuilder();
-		output.append('[');
-		output.append(StringUtils.listToDelimited(woceCommentList, ",", "\""));
-		output.append(']');
-		
-		return output.toString();
+		return woceCommentList;
 	}
 	
 	/**
@@ -1593,7 +1591,6 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @param commentList The comment list from the form
 	 */
 	public void setWoceCommentList(String commentList) {
-		
 	}
 	
 	/**
@@ -1601,7 +1598,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @return The worst flag on the selected rows
 	 */
 	public int getWorstSelectedFlag() {
-		return worstSelectedFlag;
+		return worstSelectedFlag.getFlagValue();
 	}
 	
 	/**
@@ -1610,20 +1607,45 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @param flag The comment list from the form
 	 */
 	public void setWorstSelectedFlag(int flag) {
-		
 	}
 	
 	/**
 	 * Generate the list of comments for the WOCE dialog
 	 */
 	public void generateWoceCommentList() {
-		woceCommentList = new ArrayList<String>();
-		woceCommentList.add("WOCE 1");
-		woceCommentList.add("I am another comment");
-		woceCommentList.add("What the hell?");
-		woceCommentList.add("Doozy");
-		woceCommentList.add("Do you even CO2?");
+
+		worstSelectedFlag = Flag.GOOD;
 		
-		worstSelectedFlag = Flag.VALUE_BAD;
+		StringBuilder list = new StringBuilder();
+		list.append('[');
+		
+		try {
+			CommentSet comments = FileDataInterrogator.getCommentsForRows(ServletUtils.getDBDataSource(), fileId, selectedRows);
+			for (CommentSetEntry entry : comments) {
+				list.append("[\"");
+				list.append(entry.getComment());
+				list.append("\",");
+				list.append(entry.getFlag().getFlagValue());
+				list.append(",");
+				list.append(entry.getCount());
+				list.append("],");
+				
+				if (entry.getFlag().moreSignificantThan(worstSelectedFlag)) {
+					worstSelectedFlag = entry.getFlag();
+				}
+			}
+			
+		} catch (Exception e) {
+			list.append("[\"Existing comments could not be retrieved\", -1, 4],");
+			worstSelectedFlag = Flag.BAD;
+		}
+		
+		// Remove the trailing comma from the last entry
+		if (list.charAt(list.length() - 1) == ',') {
+			list.deleteCharAt(list.length() - 1);
+		}
+		list.append(']');
+		
+		woceCommentList = list.toString();
 	}
 }

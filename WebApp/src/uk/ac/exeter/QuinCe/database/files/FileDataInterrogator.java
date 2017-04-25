@@ -17,6 +17,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.RebuildCode;
@@ -102,7 +103,12 @@ public class FileDataInterrogator {
 	 *   cannot be processed at all.
 	 * </p>
 	 */
-	private static final String GET_SELECTABLE_ROW_NUMBERS_QUERY = "SELECT row FROM qc WHERE data_file_id = ? AND qc.woce_flag IN (%%FLAGS%%)";
+	private static final String GET_SELECTABLE_ROW_NUMBERS_QUERY = "SELECT row FROM qc WHERE data_file_id = ? AND woce_flag IN (%%FLAGS%%)";
+	
+	/**
+	 * Query to retrieve all comments and flags for a set of rows in a data file. QC messages include their own flags
+	 */
+	private static final String GET_COMMENTS_QUERY = "SELECT qc_message, woce_message, woce_flag FROM qc WHERE data_file_id = ? AND row IN (%%ROWS%%)";
 	
 	static {
 		// Map input names from the web front end to database column names
@@ -1353,5 +1359,63 @@ public class FileDataInterrogator {
 		output.append(']');
 		
 		return output.toString();
+	}
+	
+	/**
+	 * Retrieve a set of comments for a specified set of rows in a data file.
+	 * The comments are grouped by their comment string. Each string also has the number
+	 * of times that comment appeared, along with the 'worst' flag assigned to that comment.
+	 * 
+	 * Both QC comments and WOCE comments are included in the list.
+	 * 
+	 * @param dataSource A data source
+	 * @param fileId The file's database ID
+	 * @param rows The rows for which comments must be retrieved.
+	 * @return The comments
+	 * @throws DatabaseException If a database error occurs 
+	 * @throws InvalidFlagException If a flag retrieved from the database is invalid
+	 * @throws MessageException If a QC message cannot be reconstructed from its rebuild code
+	 */
+	public static CommentSet getCommentsForRows(DataSource dataSource, long fileId, String rows) throws DatabaseException, InvalidFlagException, MessageException {
+		
+		CommentSet result = new CommentSet();
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			
+			String queryString = GET_COMMENTS_QUERY.replace("%%ROWS%%", rows);
+			stmt = conn.prepareStatement(queryString);
+			stmt.setLong(1, fileId);
+			records = stmt.executeQuery();
+			while (records.next()) {
+				
+				String qcCodes = records.getString(1);
+				String woceMessage = records.getString(2);
+				Flag woceFlag = new Flag(records.getInt(3));
+				
+				for (Message message : RebuildCode.getMessagesFromRebuildCodes(qcCodes)) {
+					if (woceFlag.equals(Flag.NEEDED) || !message.getShortMessage().equalsIgnoreCase(woceMessage)) {
+						result.addComment(message.getShortMessage(), message.getFlag());
+					}
+				}
+				
+				if (!woceFlag.equals(Flag.NEEDED)) {
+					result.addComment(woceMessage, woceFlag);
+				}
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving comments", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
 	}
 }
