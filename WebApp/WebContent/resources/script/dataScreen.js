@@ -1204,11 +1204,19 @@ function showWoceCommentDialog(data) {
 		
 	    woceSelection(worstSelectedFlag);
 	
+	    var commentsString = '';
 	    var comments = JSON.parse($('#dataScreenForm\\:woceCommentList').val());
-	    
+	    for (var i = 0; i < comments.length; i++) {
+	    	var comment = comments[i];
+	    	commentsString += comment[0];
+	    	commentsString += ' (' + comment[2] + ')';
+	    	if (i < comments.length - 1) {
+	    		commentsString += '\n';
+	    	}
+	    }
 	    
 	    $('#dataScreenForm\\:woceComment').attr('disabled', (worstSelectedFlag == FLAG_IGNORED));
-	    $('#dataScreenForm\\:woceComment').val(comments);
+	    $('#dataScreenForm\\:woceComment').val(commentsString);
 	    $('#woceCommentDialog').fadeIn(100);
 	}
 }
