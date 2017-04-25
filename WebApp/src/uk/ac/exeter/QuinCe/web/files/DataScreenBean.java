@@ -266,6 +266,16 @@ public class DataScreenBean extends BaseManagedBean {
 	private boolean dirty = false;
 	
 	/**
+	 * The set of comments for the WOCE dialog
+	 */
+	private List<String> woceCommentList = null;
+	
+	/**
+	 * The worst flag set on the selected rows
+	 */
+	private int worstSelectedFlag = Flag.VALUE_GOOD;
+	
+	/**
 	 * Required basic constructor. This does nothing: all the actual construction
 	 * is done in {@link #start()}.
 	 */
@@ -1562,5 +1572,58 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	public String getSelectableRowNumbers() {
 		return selectableRowNumbers;
+	}
+	
+	/**
+	 * Returns the set of comments for the WOCE dialog
+	 * @return The comments for the WOCE dialog
+	 */
+	public String getWoceCommentList() {
+		StringBuilder output = new StringBuilder();
+		output.append('[');
+		output.append(StringUtils.listToDelimited(woceCommentList, ",", "\""));
+		output.append(']');
+		
+		return output.toString();
+	}
+	
+	/**
+	 * Dummy method to allow the data screen form to submit properly.
+	 * We don't actually process the value.
+	 * @param commentList The comment list from the form
+	 */
+	public void setWoceCommentList(String commentList) {
+		
+	}
+	
+	/**
+	 * Get the worst flag set on the selected rows
+	 * @return The worst flag on the selected rows
+	 */
+	public int getWorstSelectedFlag() {
+		return worstSelectedFlag;
+	}
+	
+	/**
+	 * Dummy method to allow the data screen form to submit properly.
+	 * We don't actually process the value.
+	 * @param flag The comment list from the form
+	 */
+	public void setWorstSelectedFlag(int flag) {
+		
+	}
+	
+	/**
+	 * Generate the list of comments for the WOCE dialog
+	 */
+	public void generateWoceCommentList() {
+		woceCommentList = new ArrayList<String>();
+		woceCommentList.add("WOCE 1");
+		woceCommentList.add("I am another comment");
+		woceCommentList.add("What the hell?");
+		woceCommentList.add("Doozy");
+		woceCommentList.add("Do you even CO2?");
+		
+		worstSelectedFlag = Flag.VALUE_BAD;
 	}
 }

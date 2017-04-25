@@ -1184,27 +1184,33 @@ function hideWoceMenu() {
     $('#woceSelectMenu').hide('slide', {direction: 'up'}, 100);
 }
 
-function showWoceCommentDialog() {
+function startWoceComment() {
+	$('#dataScreenForm\\:selectedRows').val(selectedRows);
+	$('#dataScreenForm\\:generateWoceComments').click();
+}
 
-	var woceRowHtml = selectedRows.length.toString() + ' row';
-	if (selectedRows.length > 1) {
-		woceRowHtml += 's';
-	} 
-	
-	$('#woceRowCount').html(woceRowHtml);
-	
-	var worstSelectedFlag = Math.max.apply(null, selectedWoceFlags);
-	
-    woceSelection(worstSelectedFlag);
+function showWoceCommentDialog(data) {
 
-    var woceComment = '';
-    for (var comment in selectionWoceMessageCounts) {
-    	woceComment += comment + '\n';
-    }
-    
-    $('#dataScreenForm\\:woceComment').attr('disabled', (worstSelectedFlag == FLAG_IGNORED));
-    $('#dataScreenForm\\:woceComment').val(woceComment);
-    $('#woceCommentDialog').fadeIn(100);
+	var status = data.status;		
+	if (status == "success") {
+		var woceRowHtml = selectedRows.length.toString() + ' row';
+		if (selectedRows.length > 1) {
+			woceRowHtml += 's';
+		} 
+		
+		$('#woceRowCount').html(woceRowHtml);
+		
+		var worstSelectedFlag = parseInt($('#dataScreenForm\\:worstSelectedFlag').val());
+		
+	    woceSelection(worstSelectedFlag);
+	
+	    var comments = JSON.parse($('#dataScreenForm\\:woceCommentList').val());
+	    
+	    
+	    $('#dataScreenForm\\:woceComment').attr('disabled', (worstSelectedFlag == FLAG_IGNORED));
+	    $('#dataScreenForm\\:woceComment').val(comments);
+	    $('#woceCommentDialog').fadeIn(100);
+	}
 }
 
 function saveWoceComment() {
