@@ -1403,7 +1403,7 @@ public class FileDataInterrogator {
 					}
 				}
 				
-				if (!woceFlag.equals(Flag.NEEDED)) {
+				if (!woceFlag.equals(Flag.NEEDED) && null != woceMessage && woceMessage.length() > 0) {
 					result.addComment(woceMessage, woceFlag);
 				}
 			}
