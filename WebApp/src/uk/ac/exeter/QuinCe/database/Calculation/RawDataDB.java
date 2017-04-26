@@ -196,8 +196,25 @@ public class RawDataDB {
 			stmt.setInt(4, instrument.getRunTypeCode(runType));
 			
 			stmt.setTimestamp(5, new Timestamp(instrument.getDateFromLine(line).getTimeInMillis()));
-			stmt.setDouble(6, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_LONGITUDE))));
-			stmt.setDouble(7, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_LATITUDE))));
+			
+			double longitude = parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_LONGITUDE)));
+			if (instrument.getLonFormat() == Instrument.LON_FORMAT_0_180) {
+				String hemisphere = line.get(instrument.getColumnAssignment(Instrument.COL_EAST_WEST));
+				if (hemisphere.equalsIgnoreCase("w")) {
+					longitude = longitude * -1;
+				}
+			}
+			
+			double latitude = parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_LATITUDE)));
+			if (instrument.getLatFormat() == Instrument.LAT_FORMAT_0_90) {
+				String hemisphere = line.get(instrument.getColumnAssignment(Instrument.COL_NORTH_SOUTH));
+				if (hemisphere.equalsIgnoreCase("s")) {
+					latitude = latitude * -1;
+				}
+			}
+			
+			stmt.setDouble(6, longitude);
+			stmt.setDouble(7, latitude);
 			
 			if (instrument.hasIntakeTemp1()) {
 				stmt.setDouble(8, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_1))));
