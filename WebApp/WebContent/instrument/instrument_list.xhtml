@@ -12,7 +12,13 @@
 	</ui:define>
 	
 	<ui:define name="content">
-		The list of instruments goes here.
+		<h:form id="instrumentListForm" method="post" accept-charset="utf8">
+			The list of instruments goes here.
+		
+			<h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+				<p:commandButton value="Add New Instrument" action="#{newInstrumentBean.start}"/>
+			</h:panelGrid>
+		</h:form>
 	</ui:define>
 	
 

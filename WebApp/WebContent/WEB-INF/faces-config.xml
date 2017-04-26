@@ -164,6 +164,10 @@
 		<display-name>InstrumentList</display-name>
 		<from-view-id>/instrument/instrument_list.xhtml</from-view-id>
 		<navigation-case>
+			<from-outcome>start</from-outcome>
+			<to-view-id>/instrument/new/instrument_name.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
 			<from-outcome>names</from-outcome>
 			<to-view-id>/instrument/new/names.xhtml</to-view-id>
 		</navigation-case>
