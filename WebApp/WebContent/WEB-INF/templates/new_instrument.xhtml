@@ -13,6 +13,7 @@
 	
 	<ui:define name="content">
 		<div id="content">
+			<div id="instrumentName"><ui:insert name="new_instrument_name"><h:outputText value="#{newInstrumentBean.instrumentName}"/></ui:insert></div>
 			<div id="progress">
 				<p:steps activeIndex="#{instrumentStep}">
 					<p:menuitem value="Name"/>
