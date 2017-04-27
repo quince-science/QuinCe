@@ -170,7 +170,7 @@
 		<display-name>InstrumentList</display-name>
 		<from-view-id>/instrument/instrument_list.xhtml</from-view-id>
 		<navigation-case>
-			<from-outcome>start</from-outcome>
+			<from-outcome>name</from-outcome>
 			<to-view-id>/instrument/new/instrument_name.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
@@ -190,6 +190,10 @@
 		<display-name>NewInstrumentNavigation</display-name>
 		<from-view-id>/instrument/new/*</from-view-id>
 		<navigation-case>
+			<from-outcome>name</from-outcome>
+			<to-view-id>/instrument/new/instrument_name.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
 			<from-outcome>cancel</from-outcome>
 			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
 		</navigation-case>
@@ -198,8 +202,8 @@
 			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
-			<from-outcome>upload_files</from-outcome>
-			<to-view-id>/instrument/new/upload_files.xhtml</to-view-id>
+			<from-outcome>files</from-outcome>
+			<to-view-id>/instrument/new/files.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>

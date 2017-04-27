@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 import java.io.Serializable;
+import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 
@@ -14,7 +15,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	/**
 	 * Navigation to start definition of a new instrument
 	 */
-	public static final String NAV_START = "start";
+	public static final String NAV_NAME = "name";
 	
 	/**
 	 * Navigation when cancelling definition of a new instrument
@@ -24,7 +25,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	/**
 	 * Navigation to the Upload File page
 	 */
-	public static final String NAV_UPLOAD_FILES = "upload_files";
+	public static final String NAV_FILES = "files";
 	
 	/**
 	 * The name of the new instrument
@@ -32,12 +33,22 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	private String instrumentName;
 	
 	/**
+	 * The set of sample files for the instrument definition
+	 */
+	private TreeSet<InstrumentFile> instrumentFiles;
+	
+	/**
+	 * The sample file that is currently being edited
+	 */
+	private InstrumentFile currentInstrumentFile;
+	
+	/**
 	 * Begin a new instrument definition
 	 * @return The navigation to the start page
 	 */
 	public String start() {
 		clearAllData();
-		return NAV_START;
+		return NAV_NAME;
 	}
 	
 	/**
@@ -50,11 +61,19 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	}
 	
 	/**
+	 * Navigate to the Name page
+	 * @return Navigation to the name page
+	 */
+	public String goToName() {
+		return NAV_NAME;
+	}
+	
+	/**
 	 * Navigate to the file upload step
 	 * @return Navigation to the file upload step
 	 */
 	public String goToUploadFiles() {
-		return NAV_UPLOAD_FILES;
+		return NAV_FILES;
 	}
 	
 	@Override
