@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.Instrument;
+package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;

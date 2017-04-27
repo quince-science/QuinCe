@@ -13,6 +13,12 @@
 	margin-bottom: 25px;
 }
 
+#instrumentName {
+	margin: auto;
+	text-align: center;
+	font-size: 2em;
+	font-weight: 700;
+}
 #newInstrumentContent {
 	margin-left: 50px;
 	margin-right: 50px;

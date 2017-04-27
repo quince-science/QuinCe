@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.Instrument;
+package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 import java.io.Serializable;
 
@@ -72,7 +72,7 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 * instrument to be defined
 	 */
 	private void clearAllData() {
-		
+		instrumentName = null;
 	}
 	
 	/**
