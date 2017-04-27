@@ -11,19 +11,8 @@
 		<ui:insert name="instrumentHead"/>
 	</ui:define>
 	
-	
 	<ui:define name="content">
 		<div id="content">
-			<h:form id="cancelNewInstrumentForm" method="post" accept-charset="utf8">
-				<div id="cancel">
-					<p:commandButton value="Cancel" onclick="PF('cancelConfirm').show()"/>
-					
-					<p:confirmDialog widgetVar="cancelConfirm" header="Cancel New Instrument?" message="All progress in creating the new instrument will be lost.">
-						<p:commandButton value="Cancel New Instrument" ajax="false" action="#{newInstrumentBean.cancel}"/>
-						<p:commandButton value="Continue" onclick="PF('cancelConfirm').hide()"/>
-					</p:confirmDialog>
-				</div>
-			</h:form>
 			<div id="progress">
 				<p:steps activeIndex="#{instrumentStep}">
 					<p:menuitem value="Name"/>
