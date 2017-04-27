@@ -100,6 +100,12 @@
 		<validator-id>standardDateValidator</validator-id>
 		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.StandardDateValidator</validator-class>
 	</validator>
+	<validator>
+		<description>Ensures that instrument names are not empty, and are unique to the user</description>
+		<display-name>Instrument Name Validator</display-name>
+		<validator-id>instrumentNameValidator</validator-id>
+		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.InstrumentNameValidator</validator-class>
+	</validator>
 	<navigation-rule>
 		<display-name>all_pages</display-name>
 		<from-view-id>*</from-view-id>
@@ -188,28 +194,12 @@
 			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
-			<from-outcome>names</from-outcome>
-			<to-view-id>/instrument/new/names.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>filespec</from-outcome>
-			<to-view-id>/instrument/new/file_spec.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>sample_file</from-outcome>
-			<to-view-id>/instrument/new/upload_sample_file.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>column_selection</from-outcome>
-			<to-view-id>/instrument/new/select_columns.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>run_types</from-outcome>
-			<to-view-id>/instrument/new/run_types.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
 			<from-outcome>instrument_list</from-outcome>
 			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>upload_files</from-outcome>
+			<to-view-id>/instrument/new/upload_files.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>

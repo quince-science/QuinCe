@@ -22,6 +22,16 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	public static final String NAV_CANCEL = "cancel";
 	
 	/**
+	 * Navigation to the Upload File page
+	 */
+	public static final String NAV_UPLOAD_FILES = "upload_files";
+	
+	/**
+	 * The name of the new instrument
+	 */
+	private String instrumentName;
+	
+	/**
 	 * Begin a new instrument definition
 	 * @return The navigation to the start page
 	 */
@@ -37,6 +47,14 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	public String cancel() {
 		clearAllData();
 		return NAV_CANCEL;
+	}
+	
+	/**
+	 * Navigate to the file upload step
+	 * @return Navigation to the file upload step
+	 */
+	public String goToUploadFiles() {
+		return NAV_UPLOAD_FILES;
 	}
 	
 	@Override
@@ -55,5 +73,21 @@ public class NewInstrumentBean extends FileUploadBean implements Serializable {
 	 */
 	private void clearAllData() {
 		
+	}
+	
+	/**
+	 * Get the name of the new instrument
+	 * @return The instrument name
+	 */
+	public String getInstrumentName() {
+		return instrumentName;
+	}
+	
+	/**
+	 * Set the name of the new instrument
+	 * @param instrumentName The instrument name
+	 */
+	public void setInstrumentName(String instrumentName) {
+		this.instrumentName = instrumentName;
 	}
 }

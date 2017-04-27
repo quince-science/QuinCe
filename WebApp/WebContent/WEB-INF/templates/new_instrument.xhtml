@@ -8,6 +8,7 @@
 	<ui:define name="localHead">
 		<h:outputScript name="script/newInstrument.js"/>
 		<h:outputStylesheet name="style/newInstrument.css"/>
+		<ui:insert name="instrumentHead"/>
 	</ui:define>
 	
 	
@@ -18,13 +19,22 @@
 					<p:commandButton value="Cancel" onclick="PF('cancelConfirm').show()"/>
 					
 					<p:confirmDialog widgetVar="cancelConfirm" header="Cancel New Instrument?" message="All progress in creating the new instrument will be lost.">
-						<p:commandButton value="Cancel New Instrument" action="#{newInstrumentBean.cancel}"/>
+						<p:commandButton value="Cancel New Instrument" ajax="false" action="#{newInstrumentBean.cancel}"/>
 						<p:commandButton value="Continue" onclick="PF('cancelConfirm').hide()"/>
 					</p:confirmDialog>
 				</div>
 			</h:form>
-
-			<ui:insert name="new_instrument_content"/>
+			<div id="progress">
+				<p:steps activeIndex="#{instrumentStep}">
+					<p:menuitem value="Name"/>
+					<p:menuitem value="Upload Files"/>
+					<p:menuitem value="Define Columns"/>
+					<p:menuitem value="Run Types"/>
+				</p:steps>
+			</div>
+			<div id="newInstrumentContent">
+				<ui:insert name="new_instrument_content"/>
+			</div>
 		</div>
 	</ui:define>
 </ui:composition>

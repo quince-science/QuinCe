@@ -5,3 +5,38 @@
 #cancel {
 	margin-top: 0px;
 }
+
+#progress {
+	margin-top: 20px;
+	margin-left: 50px;
+	margin-right: 50px;
+	margin-bottom: 25px;
+}
+
+#newInstrumentContent {
+	margin-left: 50px;
+	margin-right: 50px;
+}
+
+.ui-steps .ui-steps-item {
+    width: 25%;
+}
+
+#nameForm {
+	padding-top: 20px;
+	margin: auto;
+	text-align: center;
+	height: 70px;
+}
+
+.instrumentName {
+	width: 30%;
+	font-size: 1.5em;
+}
+
+.instrumentNameMessage {
+	width: 50%;
+	margin: 10px auto 0px auto !important;
+	height: 18px;
+}
+
