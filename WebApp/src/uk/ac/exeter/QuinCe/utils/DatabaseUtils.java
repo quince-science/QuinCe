@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.database;
+package uk.ac.exeter.QuinCe.utils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,8 +9,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
 /**
  * A utility class providing useful methods for dealing with

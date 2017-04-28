@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.database;
+package uk.ac.exeter.QuinCe.utils;
 
 /**
  * An exception class for any database-level exceptions.

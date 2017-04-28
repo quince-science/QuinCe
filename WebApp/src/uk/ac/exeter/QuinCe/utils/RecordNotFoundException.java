@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.database;
+package uk.ac.exeter.QuinCe.utils;
 
 public class RecordNotFoundException extends Exception {
 

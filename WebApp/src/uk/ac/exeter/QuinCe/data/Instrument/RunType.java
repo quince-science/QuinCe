@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Instrument;
 
 import java.io.Serializable;
 
-import uk.ac.exeter.QuinCe.database.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
 /**
  * Represents a single run type for an instrument

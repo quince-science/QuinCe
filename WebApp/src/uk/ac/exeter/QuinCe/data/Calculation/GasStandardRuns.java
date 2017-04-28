@@ -14,10 +14,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunType;
 import uk.ac.exeter.QuinCe.data.Instrument.Standards.GasStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardConcentration;
 import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardStub;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Represents a complete set of gas standard runs from a data file
