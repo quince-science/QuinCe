@@ -17,13 +17,13 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Calculation.DataReductionDB;
+import uk.ac.exeter.QuinCe.data.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunType;
 import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
-import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.FileJob;

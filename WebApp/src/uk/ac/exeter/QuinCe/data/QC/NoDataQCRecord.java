@@ -9,8 +9,8 @@ import uk.ac.exeter.QCRoutines.data.DataRecordException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
+import uk.ac.exeter.QuinCe.data.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 
 /**
  * A special instance of the QCRecord class, which does not contain any data

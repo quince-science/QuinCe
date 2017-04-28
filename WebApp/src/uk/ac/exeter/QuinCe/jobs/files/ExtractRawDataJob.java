@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Calculation.DataReductionDB;
+import uk.ac.exeter.QuinCe.data.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.FileInfo;
 import uk.ac.exeter.QuinCe.data.Files.RawDataFile;
@@ -22,8 +24,6 @@ import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
-import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;

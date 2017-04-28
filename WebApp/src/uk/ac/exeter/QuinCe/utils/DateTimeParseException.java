@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.data;
+package uk.ac.exeter.QuinCe.utils;
 
 /**
  * Exception thrown when a date/time string cannot be parsed

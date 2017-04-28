@@ -16,7 +16,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardConcentration;
 import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardStub;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 

@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.database.Calculation;
+package uk.ac.exeter.QuinCe.data.Calculation;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,9 +19,6 @@ import org.joda.time.DateTimeZone;
 
 import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
 import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QuinCe.data.DateTimeParseException;
-import uk.ac.exeter.QuinCe.data.Calculation.GasStandardMean;
-import uk.ac.exeter.QuinCe.data.Calculation.GasStandardRuns;
 import uk.ac.exeter.QuinCe.data.Files.RawDataValues;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -31,6 +28,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardStub;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.utils.DateTimeParseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
