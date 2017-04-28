@@ -25,7 +25,7 @@ public class StringUtils {
 	 * @return The converted list
 	 */
 	public static String listToDelimited(List<?> list) {
-		return listToDelimited(list, ";");
+		return listToDelimited(list, ";", null);
 	}
 	
 	/**
@@ -39,15 +39,28 @@ public class StringUtils {
 	 * @return The converted list
 	 */
 	public static String listToDelimited(List<?> list, String delimiter) {
+		return listToDelimited(list, delimiter, null);
+	}
+	
+	public static String listToDelimited(List<?> list, String delimiter, String surrounder) {
 		
 		String result = null;
 		
 		if (null != list) {
-			StringBuffer buildResult = new StringBuffer();
+			StringBuilder buildResult = new StringBuilder();
 			for (int i = 0; i < list.size(); i++) {
-				buildResult.append(list.get(i).toString());
+				
+				if (null != surrounder) {
+					buildResult.append(surrounder);
+					buildResult.append(list.get(i).toString().replace(surrounder, "\\" + surrounder));
+					buildResult.append(surrounder);
+				} else {
+					buildResult.append(list.get(i).toString());
+				}
+
 				if (i < (list.size() - 1)) {
 					buildResult.append(delimiter);
+
 				}
 			}
 			result = buildResult.toString();

@@ -9,18 +9,20 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QuinCe.data.FileInfo;
-import uk.ac.exeter.QuinCe.data.Instrument;
-import uk.ac.exeter.QuinCe.data.RunType;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.database.QC.QCDB;
-import uk.ac.exeter.QuinCe.database.files.DataFileDB;
-import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
+import uk.ac.exeter.QuinCe.data.Files.CommentSet;
+import uk.ac.exeter.QuinCe.data.Files.CommentSetEntry;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.FileDataInterrogator;
+import uk.ac.exeter.QuinCe.data.Files.FileInfo;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.RunType;
+import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.FileJob;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
@@ -193,6 +195,18 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @see <a href="https://datatables.net/examples/data_sources/server_side.html">DataTables Server-Side Processing</a>
 	 */
 	private String tableJsonData = null;
+	
+	/**
+	 * A Javascript array string containing the list of all row numbers in the current data file that can be
+	 * selected in the data table. Selectable rows can have their WOCE flag set by the user.
+	 * Unselectable rows are typically rows that have their QC flag set to FATAL, which means they
+	 * cannot be processed at all.
+	 * 
+	 * <p>
+	 * The rows are loaded during {@link #start} via {@link #loadSelectableRowNumbers}.
+	 * </p>
+	 */
+	private String selectableRowNumbers = null;
 
  	/**
  	 * An internal value for the DataTables library,
@@ -254,6 +268,17 @@ public class DataScreenBean extends BaseManagedBean {
 	private boolean dirty = false;
 	
 	/**
+	 * The set of comments for the WOCE dialog. Stored as a Javascript array of entries, with each entry containing
+	 * Comment, Count and Flag value
+	 */
+	private String woceCommentList = null;
+	
+	/**
+	 * The worst flag set on the selected rows
+	 */
+	private Flag worstSelectedFlag = Flag.GOOD;
+
+	/**
 	 * The bounds of the data. This is a list of values, of the form:
 	 * <ul>
 	 *   <li>Upper latitude</li>
@@ -268,6 +293,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 * These values are calculated by {@link FileDataInterrogator#getGeographicalBounds}
 	 */
 	private List<Double> dataBounds = null;
+
 	
 	/**
 	 * Required basic constructor. This does nothing: all the actual construction
@@ -287,6 +313,7 @@ public class DataScreenBean extends BaseManagedBean {
 	public String start() throws Exception {
 		clearData();
 		loadFileDetails();
+		loadSelectableRowNumbers();
 		
 		// Temporarily always show Bad flags
 		List<String> badFlags = new ArrayList<String>(1);
@@ -1772,8 +1799,8 @@ public class DataScreenBean extends BaseManagedBean {
 
 		return result;
 	}
-	
-	/**
+
+/**
 	 * Get the data bounds for the current data file
 	 * @return The data bounds
 	 * @see #dataBounds
@@ -1784,5 +1811,94 @@ public class DataScreenBean extends BaseManagedBean {
 		output.append(StringUtils.listToDelimited(dataBounds, ","));
 		output.append(']');
 		return output.toString();
+	}
+	
+	/**
+	 * Retrieve the list of selectable row numbers for this data file from the database.
+	 * @see #selectableRowNumbers
+	 */
+	private void loadSelectableRowNumbers() throws Exception {
+		selectableRowNumbers = FileDataInterrogator.getSelectableRowNumbers(ServletUtils.getDBDataSource(), fileId, getIncludeFlags());
+	}
+	
+	/**
+	 * Get the list of all selectable row numbers in the current data file as a javascript array string
+	 * @return The row numbers
+	 * @see #selectableRowNumbers
+	 */
+	public String getSelectableRowNumbers() {
+		return selectableRowNumbers;
+	}
+	
+	/**
+	 * Returns the set of comments for the WOCE dialog
+	 * @return The comments for the WOCE dialog
+	 */
+	public String getWoceCommentList() {
+		return woceCommentList;
+	}
+	
+	/**
+	 * Dummy method to allow the data screen form to submit properly.
+	 * We don't actually process the value.
+	 * @param commentList The comment list from the form
+	 */
+	public void setWoceCommentList(String commentList) {
+	}
+	
+	/**
+	 * Get the worst flag set on the selected rows
+	 * @return The worst flag on the selected rows
+	 */
+	public int getWorstSelectedFlag() {
+		return worstSelectedFlag.getFlagValue();
+	}
+	
+	/**
+	 * Dummy method to allow the data screen form to submit properly.
+	 * We don't actually process the value.
+	 * @param flag The comment list from the form
+	 */
+	public void setWorstSelectedFlag(int flag) {
+	}
+	
+	/**
+	 * Generate the list of comments for the WOCE dialog
+	 */
+	public void generateWoceCommentList() {
+
+		worstSelectedFlag = Flag.GOOD;
+		
+		StringBuilder list = new StringBuilder();
+		list.append('[');
+		
+		try {
+			CommentSet comments = FileDataInterrogator.getCommentsForRows(ServletUtils.getDBDataSource(), fileId, selectedRows);
+			for (CommentSetEntry entry : comments) {
+				list.append("[\"");
+				list.append(entry.getComment());
+				list.append("\",");
+				list.append(entry.getFlag().getFlagValue());
+				list.append(",");
+				list.append(entry.getCount());
+				list.append("],");
+				
+				if (entry.getFlag().moreSignificantThan(worstSelectedFlag)) {
+					worstSelectedFlag = entry.getFlag();
+				}
+			}
+			
+		} catch (Exception e) {
+			list.append("[\"Existing comments could not be retrieved\", -1, 4],");
+			worstSelectedFlag = Flag.BAD;
+		}
+		
+		// Remove the trailing comma from the last entry
+		if (list.charAt(list.length() - 1) == ',') {
+			list.deleteCharAt(list.length() - 1);
+		}
+		list.append(']');
+		
+		woceCommentList = list.toString();
 	}
 }

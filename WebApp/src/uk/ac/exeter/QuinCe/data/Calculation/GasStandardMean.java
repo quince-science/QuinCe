@@ -2,8 +2,8 @@ package uk.ac.exeter.QuinCe.data.Calculation;
 
 import java.util.Calendar;
 
-import uk.ac.exeter.QuinCe.data.RunType;
-import uk.ac.exeter.QuinCe.data.StandardConcentration;
+import uk.ac.exeter.QuinCe.data.Instrument.RunType;
+import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardConcentration;
 
 /**
  * Represents the mean of a gas standard during an instrument's
