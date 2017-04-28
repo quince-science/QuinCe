@@ -1,6 +1,4 @@
-package uk.ac.exeter.QuinCe.database.User;
-
-import uk.ac.exeter.QuinCe.data.User;
+package uk.ac.exeter.QuinCe.User;
 
 /**
  * An exception to indicate that an attempt to

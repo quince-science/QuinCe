@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.database.User;
+package uk.ac.exeter.QuinCe.User;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -11,7 +11,6 @@ import java.util.Arrays;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -137,7 +136,7 @@ public class UserDB {
 	 * @return A User object representing the user, or {@code null} if the user's record could not be found.
 	 * @throws MissingParamException If the supplied email is null
 	 * @throws SQLException
-	 * @see uk.ac.exeter.QuinCe.data.User
+	 * @see uk.ac.exeter.QuinCe.User.User
 	 */
 	public static User getUser(Connection conn, String email) throws DatabaseException, MissingParamException {
 		
@@ -176,7 +175,7 @@ public class UserDB {
 	 * @return A User object representing the user, or {@code null} if the user's record could not be found.
 	 * @throws MissingParamException If the supplied email is null
 	 * @throws SQLException
-	 * @see uk.ac.exeter.QuinCe.data.User
+	 * @see uk.ac.exeter.QuinCe.User.User
 	 */
 	public static User getUser(DataSource dataSource, long id) throws DatabaseException, MissingParamException {
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -208,7 +207,7 @@ public class UserDB {
 	 * @return A User object representing the user, or {@code null} if the user's record could not be found.
 	 * @throws MissingParamException If the supplied email is null
 	 * @throws SQLException
-	 * @see uk.ac.exeter.QuinCe.data.User
+	 * @see uk.ac.exeter.QuinCe.User.User
 	 */
 	public static User getUser(Connection conn, long id) throws DatabaseException, MissingParamException {
 		MissingParam.checkMissing(conn, "conn");
@@ -252,7 +251,7 @@ public class UserDB {
 	 * @throws MissingParamException If any of the parameters are null
 	 * @throws SQLException If there's an error storing the details in the database
 	 * @throws HashException If an error occurs while hashing the user's password 
-	 * @see uk.ac.exeter.QuinCe.data.User
+	 * @see uk.ac.exeter.QuinCe.User.User
 	 */
 	public static User createUser(DataSource dataSource, String email, char[] password, String givenName, String surname, boolean generateEmailVerificationCode) throws UserExistsException, DatabaseException, MissingParamException {
 		

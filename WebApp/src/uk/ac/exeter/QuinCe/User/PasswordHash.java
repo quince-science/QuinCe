@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.database.User;
+package uk.ac.exeter.QuinCe.User;
 
 import java.security.SecureRandom;
 import javax.crypto.spec.PBEKeySpec;

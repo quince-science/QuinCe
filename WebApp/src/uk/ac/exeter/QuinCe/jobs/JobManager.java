@@ -19,12 +19,12 @@ import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.data.User;
+import uk.ac.exeter.QuinCe.User.NoSuchUserException;
+import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.User.NoSuchUserException;
-import uk.ac.exeter.QuinCe.database.User.UserDB;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.files.FileJob;
 import uk.ac.exeter.QuinCe.utils.MissingParam;

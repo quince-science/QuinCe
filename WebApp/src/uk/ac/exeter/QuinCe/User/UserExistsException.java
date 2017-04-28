@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.database.User;
+package uk.ac.exeter.QuinCe.User;
 
 /**
  * An exception that indicates an attempt to add a user
