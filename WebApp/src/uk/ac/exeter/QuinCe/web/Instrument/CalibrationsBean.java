@@ -5,11 +5,11 @@ import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.CalibrationCoefficients;
 import uk.ac.exeter.QuinCe.data.CalibrationStub;
-import uk.ac.exeter.QuinCe.data.Instrument;
-import uk.ac.exeter.QuinCe.data.InstrumentStub;
+import uk.ac.exeter.QuinCe.data.Instrument.CalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
-import uk.ac.exeter.QuinCe.database.Instrument.CalibrationDB;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;

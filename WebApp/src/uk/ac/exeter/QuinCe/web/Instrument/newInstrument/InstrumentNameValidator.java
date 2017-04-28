@@ -8,7 +8,7 @@ import javax.faces.validator.ValidatorException;
 import javax.servlet.http.HttpSession;
 
 import uk.ac.exeter.QuinCe.data.User;
-import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.web.User.LoginBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 

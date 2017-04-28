@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.database.Instrument;
+package uk.ac.exeter.QuinCe.data.Instrument;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

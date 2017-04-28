@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.data;
+package uk.ac.exeter.QuinCe.data.Instrument;
 
 public class InstrumentException extends Exception {
 

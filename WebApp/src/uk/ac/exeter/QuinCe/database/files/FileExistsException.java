@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.database.files;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 
 /**
  * Exception class for handling attempts to

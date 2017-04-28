@@ -3,6 +3,8 @@ package uk.ac.exeter.QuinCe.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+
 /**
  * <p>Each sensor for an instrument must have calibration data associated with it.
  * Calibrations for each sensor should be made on a regular basis.</p>

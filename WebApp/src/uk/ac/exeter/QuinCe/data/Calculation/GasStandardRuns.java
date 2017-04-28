@@ -9,14 +9,14 @@ import javax.sql.DataSource;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
-import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.data.StandardConcentration;
 import uk.ac.exeter.QuinCe.data.StandardStub;
+import uk.ac.exeter.QuinCe.data.Instrument.GasStandardDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
-import uk.ac.exeter.QuinCe.database.Instrument.GasStandardDB;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
