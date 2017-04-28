@@ -71,8 +71,26 @@ public class NewInstrumentBean extends FileUploadBean {
 	}
 	
 	/**
-	 * Navigate to the file upload step
-	 * @return Navigation to the file upload step
+	 * Navigate to the files step.
+	 * 
+	 * <p>
+	 *   The page we navigate to depends on the current status of the instrument.
+	 * <p>
+	 * 
+	 * <ul>
+	 *   <li>
+	 *     If no files have been added, we create a new empty file and go to the upload page.
+	 *   </li>
+	 *   <li>
+	 *     If there are any files that have not yet been fully defined, we go to the
+	 *     upload page to finish its definition.
+	 *   </li>
+	 *   <li>
+	 *     If all existing files have been fully defined, we go to the variable assignment page.
+	 *   </li>
+	 * </ul>
+	 * 
+	 * @return Navigation to the files
 	 * @throws InstrumentFileExistsException If the default instrument file has already been added.
 	 */
 	public String goToFiles() throws InstrumentFileExistsException {
