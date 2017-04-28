@@ -2,14 +2,12 @@ package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 import java.util.TreeSet;
 
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFile;
-
 /**
  * Class to define a set of InstrumentFiles when creating an instrument
  * @author Steve Jones
  *
  */
-public class InstrumentFileSet extends TreeSet<InstrumentFile> {
+public class InstrumentFileSet extends TreeSet<InstrumentFileBuilder> {
 
 	/**
 	 * Simple constructor to create an empty set
@@ -28,7 +26,7 @@ public class InstrumentFileSet extends TreeSet<InstrumentFile> {
 		if (size() == 0) {
 			result = true;
 		} else {
-			for (InstrumentFile file : this) {
+			for (InstrumentFileBuilder file : this) {
 				if (!file.fileDefined()) {
 					result = true;
 					break;
@@ -44,10 +42,10 @@ public class InstrumentFileSet extends TreeSet<InstrumentFile> {
 	 * If there are no files in the set, or all the files have been defined, the method returns {@code null}
 	 * @return The first undefined file in the set
 	 */
-	protected InstrumentFile getFirstUndefinedFile() {
-		InstrumentFile result = null;
+	protected InstrumentFileBuilder getFirstUndefinedFile() {
+		InstrumentFileBuilder result = null;
 		
-		for (InstrumentFile file : this) {
+		for (InstrumentFileBuilder file : this) {
 			if (!file.fileDefined()) {
 				result = file;
 				break;

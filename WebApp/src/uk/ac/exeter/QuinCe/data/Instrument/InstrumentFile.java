@@ -9,22 +9,10 @@ package uk.ac.exeter.QuinCe.data.Instrument;
 public class InstrumentFile implements Comparable<InstrumentFile> {
 
 	/**
-	 * The default description for new files
-	 */
-	private static final String DEFAULT_DESCRIPTION = "Data File";
-	
-	/**
 	 * The name used to identify files of this type
 	 */
 	private String fileDescription;
 
-	/**
-	 * Create a new file with the default description
-	 */
-	public InstrumentFile() {
-		this.fileDescription = DEFAULT_DESCRIPTION;
-	}
-	
 	/**
 	 * Create a new file with the given description
 	 * @param fileDescription The file description
@@ -74,14 +62,5 @@ public class InstrumentFile implements Comparable<InstrumentFile> {
 		}
 		
 		return result;
-	}
-	
-	/**
-	 * Determines whether or not this instrument file has been fully defined.
-	 * This includes the existence of file data, specification of headers etc.
-	 * @return {@code true} if this file has been fully defined; {@code false} otherwise.
-	 */
-	public boolean fileDefined() {
-		return false;
 	}
 }

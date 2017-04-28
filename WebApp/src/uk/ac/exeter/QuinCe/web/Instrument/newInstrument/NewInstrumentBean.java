@@ -42,7 +42,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	/**
 	 * The sample file that is currently being edited
 	 */
-	private InstrumentFile currentInstrumentFile;
+	private InstrumentFileBuilder currentInstrumentFile;
 	
 	/**
 	 * Begin a new instrument definition
@@ -97,7 +97,7 @@ public class NewInstrumentBean extends FileUploadBean {
 		String result;
 		
 		if (instrumentFiles.size() == 0) {
-			currentInstrumentFile = new InstrumentFile();
+			currentInstrumentFile = new InstrumentFileBuilder();
 			addInstrumentFile(currentInstrumentFile);
 			
 			result = NAV_UPLOAD_FILE;
@@ -157,7 +157,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @param file The file to be added
 	 * @throws InstrumentFileExistsException If a file with the same description already exists
 	 */
-	private void addInstrumentFile(InstrumentFile file) throws InstrumentFileExistsException {
+	private void addInstrumentFile(InstrumentFileBuilder file) throws InstrumentFileExistsException {
 		boolean added = instrumentFiles.add(file);
 		if (!added) {
 			throw new InstrumentFileExistsException(file);
