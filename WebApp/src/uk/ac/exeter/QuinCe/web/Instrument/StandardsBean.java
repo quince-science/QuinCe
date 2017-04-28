@@ -3,11 +3,11 @@ package uk.ac.exeter.QuinCe.web.Instrument;
 import java.util.Date;
 import java.util.List;
 
-import uk.ac.exeter.QuinCe.data.StandardConcentration;
-import uk.ac.exeter.QuinCe.data.StandardStub;
-import uk.ac.exeter.QuinCe.data.Instrument.GasStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
+import uk.ac.exeter.QuinCe.data.Instrument.Standards.GasStandardDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardConcentration;
+import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardStub;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;

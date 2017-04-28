@@ -3,11 +3,11 @@ package uk.ac.exeter.QuinCe.web.Instrument;
 import java.util.Date;
 import java.util.List;
 
-import uk.ac.exeter.QuinCe.data.CalibrationCoefficients;
-import uk.ac.exeter.QuinCe.data.CalibrationStub;
-import uk.ac.exeter.QuinCe.data.Instrument.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationCoefficients;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationStub;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;

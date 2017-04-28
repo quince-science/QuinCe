@@ -10,10 +10,10 @@ import org.primefaces.context.RequestContext;
 
 import uk.ac.exeter.QuinCe.data.RawDataFile;
 import uk.ac.exeter.QuinCe.data.RawDataFileException;
-import uk.ac.exeter.QuinCe.data.Instrument.CalibrationDB;
-import uk.ac.exeter.QuinCe.data.Instrument.GasStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Standards.GasStandardDB;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;

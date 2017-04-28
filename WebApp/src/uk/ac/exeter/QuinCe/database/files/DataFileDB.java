@@ -20,7 +20,7 @@ import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.FileInfo;
 import uk.ac.exeter.QuinCe.data.RawDataFile;
 import uk.ac.exeter.QuinCe.data.RawDataFileException;
-import uk.ac.exeter.QuinCe.data.RunType;
+import uk.ac.exeter.QuinCe.data.Instrument.RunType;
 import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;

@@ -9,7 +9,6 @@ import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.DateTimeParseException;
 import uk.ac.exeter.QuinCe.data.RawDataFileException;
-import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;

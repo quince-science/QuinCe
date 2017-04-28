@@ -1,9 +1,10 @@
-package uk.ac.exeter.QuinCe.data;
+package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorCode;
 
 /**
  * <p>Each sensor for an instrument must have calibration data associated with it.

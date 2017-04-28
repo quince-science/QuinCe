@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.data;
+package uk.ac.exeter.QuinCe.data.Instrument;
 
 import java.io.Serializable;
 

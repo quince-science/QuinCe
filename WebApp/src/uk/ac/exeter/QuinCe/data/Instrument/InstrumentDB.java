@@ -12,7 +12,6 @@ import java.util.TreeSet;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.User.User;
-import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;

@@ -1,8 +1,6 @@
-package uk.ac.exeter.QuinCe.data;
+package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.util.Date;
-
-import uk.ac.exeter.QuinCe.data.Instrument.CalibrationDB;
 
 /**
  * <p>

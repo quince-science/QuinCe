@@ -1,9 +1,7 @@
-package uk.ac.exeter.QuinCe.data;
+package uk.ac.exeter.QuinCe.data.Instrument;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 
 /**
  * Handles the generation of sensor codes, converting the various

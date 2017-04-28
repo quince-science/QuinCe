@@ -9,11 +9,11 @@ import javax.sql.DataSource;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
-import uk.ac.exeter.QuinCe.data.RunType;
-import uk.ac.exeter.QuinCe.data.StandardConcentration;
-import uk.ac.exeter.QuinCe.data.StandardStub;
-import uk.ac.exeter.QuinCe.data.Instrument.GasStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.RunType;
+import uk.ac.exeter.QuinCe.data.Instrument.Standards.GasStandardDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardConcentration;
+import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardStub;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;

@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.data.Instrument;
+package uk.ac.exeter.QuinCe.data.Instrument.Standards;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,9 +14,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.data.RunType;
-import uk.ac.exeter.QuinCe.data.StandardConcentration;
-import uk.ac.exeter.QuinCe.data.StandardStub;
+import uk.ac.exeter.QuinCe.data.Instrument.RunType;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;

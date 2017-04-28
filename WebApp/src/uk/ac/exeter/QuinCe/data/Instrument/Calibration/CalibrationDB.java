@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.data.Instrument;
+package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,9 +12,10 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.data.CalibrationCoefficients;
-import uk.ac.exeter.QuinCe.data.CalibrationStub;
-import uk.ac.exeter.QuinCe.data.SensorCode;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorCode;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
