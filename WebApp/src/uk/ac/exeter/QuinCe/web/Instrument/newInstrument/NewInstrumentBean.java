@@ -1,6 +1,10 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFile;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 
 /**
@@ -121,9 +125,12 @@ public class NewInstrumentBean extends FileUploadBean {
 		return "newInstrumentForm";
 	}
 
+	/**
+	 * Store the uploaded data in the current instrument file
+	 */
 	@Override
 	public void processUploadedFile() {
-		// Do Nothing for a moment
+		currentInstrumentFile.setFileData(new String(getFile().getContents(), StandardCharsets.UTF_8));
 	}
 	
 	/**
@@ -168,7 +175,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Get the instrument file that is currently being worked on
 	 * @return The current instrument file
 	 */
-	public InstrumentFile getCurrentInstrumentFile() {
+	public InstrumentFileBuilder getCurrentInstrumentFile() {
 		return currentInstrumentFile;
 	}
 	

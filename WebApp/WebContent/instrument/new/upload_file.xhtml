@@ -8,7 +8,23 @@
 
 	<ui:define name="title">New Instrument</ui:define>
 	<ui:define name="instrumentHead">
-		<c:set var="instrumentStep" value="1" scope="request"/>		
+		<c:set var="instrumentStep" value="1" scope="request"/>
+		<script>
+			var hasFileData = #{newInstrumentBean.currentInstrumentFile.hasFileData};
+			
+			$(document).ready(function() {
+				if (hasFileData) {
+					$('#fileSpec').show();
+				} else {
+					$('#uploadFile').show();
+				}
+			});
+			
+			function initFileSpec() {
+				$('#uploadFile').hide();
+				$('#fileSpec').show();
+			}
+		</script>
 	</ui:define>
 	<ui:define name="new_instrument_content">
 		<h:form id="newInstrumentForm" metho="post" charset="utf8">
@@ -27,6 +43,16 @@
 					</p:inputText>
 					<p:message for="fileDescription" id="msgFileDescription" display="both"/>
 				</h:panelGrid>
+
+				<div id="uploadFile" class="hidden">
+					<p:outputLabel value="Select a file to upload"/>
+					<p:fileUpload fileUploadListener="#{newInstrumentBean.handleFileUpload}" mode="advanced" auto="true" oncomplete="initFileSpec()"/>
+				</div>
+				
+				<div id="fileSpec" class="hidden">
+					File specification
+				</div>
+
 			</div>
 			<!--  The cancel include has a 2 entries (1 is invisible) -->
 			<h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">

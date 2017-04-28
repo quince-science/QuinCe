@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
+import org.primefaces.model.UploadedFile;
+
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFile;
 
 /**
@@ -16,6 +18,11 @@ public class InstrumentFileBuilder extends InstrumentFile {
 	 * The default description for new files
 	 */
 	private static final String DEFAULT_DESCRIPTION = "Data File";
+	
+	/**
+	 * The contents of the uploaded data file
+	 */
+	private String fileData = null;
 	
 	/**
 	 * Create a new file with the default description
@@ -38,6 +45,14 @@ public class InstrumentFileBuilder extends InstrumentFile {
 	 * @return {@code true} if file data has been uploaded; {@code false} if it has not.
 	 */
 	public boolean getHasFileData() {
-		return false;
+		return (null != fileData);
+	}
+	
+	/**
+	 * Store the uploaded data for this file
+	 * @param fileData The file data
+	 */
+	public void setFileData(String fileData) {
+		this.fileData = fileData;
 	}
 }
