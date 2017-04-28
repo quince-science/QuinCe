@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
+package uk.ac.exeter.QuinCe.data.Instrument;
 
 /**
  * Holds a description of a sample data file uploaded during the
@@ -26,7 +26,7 @@ public class InstrumentFile implements Comparable<InstrumentFile> {
 	/**
 	 * Create a new file with the default description
 	 */
-	protected InstrumentFile() {
+	public InstrumentFile() {
 		this.uniqueId = System.currentTimeMillis();
 		this.fileDescription = DEFAULT_DESCRIPTION;
 	}
@@ -35,7 +35,7 @@ public class InstrumentFile implements Comparable<InstrumentFile> {
 	 * Create a new file with the given description
 	 * @param fileDescription The file description
 	 */
-	protected InstrumentFile(String fileDescription) {
+	public InstrumentFile(String fileDescription) {
 		this.uniqueId = System.currentTimeMillis();
 		this.fileDescription = fileDescription;
 	}

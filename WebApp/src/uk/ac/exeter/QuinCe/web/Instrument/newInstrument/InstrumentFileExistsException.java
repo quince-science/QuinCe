@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFile;
+
 /**
  * Exception for attempting to add an {@link InstrumentFile} where a file
  * with the same description has already been added.

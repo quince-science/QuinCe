@@ -2,6 +2,8 @@ package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 import java.util.TreeSet;
 
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFile;
+
 /**
  * Class to define a set of InstrumentFiles when creating an instrument
  * @author Steve Jones

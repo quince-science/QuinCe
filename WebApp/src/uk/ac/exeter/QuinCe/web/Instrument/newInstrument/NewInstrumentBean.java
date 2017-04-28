@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFile;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 
 /**

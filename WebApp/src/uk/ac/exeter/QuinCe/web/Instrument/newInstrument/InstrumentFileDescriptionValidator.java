@@ -7,6 +7,8 @@ import javax.faces.context.FacesContext;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFile;
+
 /**
  * Validator for instrument names. Ensures that the name contains
  * at least one character, and is unique for the current user
