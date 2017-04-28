@@ -36,7 +36,7 @@ public class InstrumentFileDescriptionValidator implements Validator {
 		NewInstrumentBean bean = (NewInstrumentBean) beanAttributeValue;
 		
 		for (InstrumentFile file : bean.getInstrumentFiles()) {
-			if (!file.equals(bean.getCurrentInstrumentFile())) {
+			if (file != bean.getCurrentInstrumentFile()) {
 				if (description.equalsIgnoreCase(file.getFileDescription())) {
 					throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "This description is already being used by another file", "This description is already being used by another file"));
 				}

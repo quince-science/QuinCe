@@ -14,11 +14,6 @@ public class InstrumentFile implements Comparable<InstrumentFile> {
 	private static final String DEFAULT_DESCRIPTION = "Data File";
 	
 	/**
-	 * A unique ID used to identify this file in the parent file set
-	 */
-	private long uniqueId;
-	
-	/**
 	 * The name used to identify files of this type
 	 */
 	private String fileDescription;
@@ -27,7 +22,6 @@ public class InstrumentFile implements Comparable<InstrumentFile> {
 	 * Create a new file with the default description
 	 */
 	public InstrumentFile() {
-		this.uniqueId = System.currentTimeMillis();
 		this.fileDescription = DEFAULT_DESCRIPTION;
 	}
 	
@@ -36,7 +30,6 @@ public class InstrumentFile implements Comparable<InstrumentFile> {
 	 * @param fileDescription The file description
 	 */
 	public InstrumentFile(String fileDescription) {
-		this.uniqueId = System.currentTimeMillis();
 		this.fileDescription = fileDescription;
 	}
 	
@@ -77,7 +70,7 @@ public class InstrumentFile implements Comparable<InstrumentFile> {
 			result = false;
 		} else {
 			InstrumentFile oFile = (InstrumentFile) o;
-			result = oFile.uniqueId == uniqueId;
+			result = oFile.fileDescription == fileDescription;
 		}
 		
 		return result;

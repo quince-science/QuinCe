@@ -79,9 +79,8 @@ public class NewInstrumentBean extends FileUploadBean {
 		String result;
 		
 		if (instrumentFiles.size() == 0) {
-			InstrumentFile newFile = new InstrumentFile();
-			addInstrumentFile(new InstrumentFile());
-			currentInstrumentFile = newFile;
+			currentInstrumentFile = new InstrumentFile();
+			addInstrumentFile(currentInstrumentFile);
 			
 			result = NAV_UPLOAD_FILE;
 		} else {
