@@ -3,7 +3,7 @@ package uk.ac.exeter.QuinCe.web.Instrument;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpSession;
 
-import uk.ac.exeter.QuinCe.data.InstrumentStub;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
 import uk.ac.exeter.QuinCe.web.validator.ExistingDateValidator;
 
 /**

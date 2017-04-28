@@ -3,6 +3,8 @@ package uk.ac.exeter.QuinCe.data;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+
 /**
  * Handles the generation of sensor codes, converting the various
  * available sensors into string codes that can be stored and processed

@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data;
 
 import java.util.Date;
 
-import uk.ac.exeter.QuinCe.database.Instrument.CalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.CalibrationDB;
 
 /**
  * <p>

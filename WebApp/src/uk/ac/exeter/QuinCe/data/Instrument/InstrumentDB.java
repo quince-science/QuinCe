@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.database.Instrument;
+package uk.ac.exeter.QuinCe.data.Instrument;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,8 +11,6 @@ import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.data.Instrument;
-import uk.ac.exeter.QuinCe.data.InstrumentStub;
 import uk.ac.exeter.QuinCe.data.RunType;
 import uk.ac.exeter.QuinCe.data.User;
 import uk.ac.exeter.QuinCe.database.DatabaseException;

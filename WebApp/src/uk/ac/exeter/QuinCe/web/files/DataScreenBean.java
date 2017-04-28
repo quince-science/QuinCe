@@ -10,11 +10,11 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.FileInfo;
-import uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.RunType;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.database.QC.QCDB;
 import uk.ac.exeter.QuinCe.database.files.CommentSet;
 import uk.ac.exeter.QuinCe.database.files.CommentSetEntry;
