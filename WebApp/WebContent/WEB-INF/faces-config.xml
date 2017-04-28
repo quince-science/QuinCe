@@ -106,6 +106,12 @@
 		<validator-id>instrumentNameValidator</validator-id>
 		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.newInstrument.InstrumentNameValidator</validator-class>
 	</validator>
+	<validator>
+		<description>Checks that the file description for an instrument file is unique and not empty</description>
+		<display-name>Instrument File Description Validator</display-name>
+		<validator-id>instrumentFileDescriptionValidator</validator-id>
+		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.newInstrument.InstrumentFileDescriptionValidator</validator-class>
+	</validator>
 	<navigation-rule>
 		<display-name>all_pages</display-name>
 		<from-view-id>*</from-view-id>
@@ -190,10 +196,6 @@
 		<display-name>NewInstrumentNavigation</display-name>
 		<from-view-id>/instrument/new/*</from-view-id>
 		<navigation-case>
-			<from-outcome>name</from-outcome>
-			<to-view-id>/instrument/new/instrument_name.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
 			<from-outcome>cancel</from-outcome>
 			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
 		</navigation-case>
@@ -202,8 +204,16 @@
 			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
-			<from-outcome>files</from-outcome>
-			<to-view-id>/instrument/new/files.xhtml</to-view-id>
+			<from-outcome>name</from-outcome>
+			<to-view-id>/instrument/new/instrument_name.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>upload_file</from-outcome>
+			<to-view-id>/instrument/new/upload_file.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>assign_variables</from-outcome>
+			<to-view-id>/instrument/new/assign_variables.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
