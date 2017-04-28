@@ -4,7 +4,7 @@ import java.util.Date;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import uk.ac.exeter.QuinCe.data.User;
+import uk.ac.exeter.QuinCe.User.User;
 
 /**
  * Basic class containing the summary of a job.

@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.web.User;
 
-import uk.ac.exeter.QuinCe.data.User;
-import uk.ac.exeter.QuinCe.database.User.UserDB;
+import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 

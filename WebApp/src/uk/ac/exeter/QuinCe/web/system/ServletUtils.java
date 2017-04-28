@@ -4,7 +4,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.database.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 
 /**
  * Utility functions for beans, filters, servlets etc.

@@ -11,14 +11,13 @@ import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.data.RunType;
-import uk.ac.exeter.QuinCe.data.User;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.DatabaseUtils;
-import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.files.DataFileDB;
+import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Database methods dealing with instruments

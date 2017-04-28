@@ -13,6 +13,6 @@ public class KeepAliveBean {
 	 * The method does nothing.
 	 */
 	public void sessionTouch() {
-		System.out.println("Touch");
+		// Do Nothing
 	}
 }

@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import uk.ac.exeter.QuinCe.data.User;
+import uk.ac.exeter.QuinCe.User.User;
 
 public abstract class PermissionsFilter implements Filter {
 
