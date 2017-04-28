@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.data;
+package uk.ac.exeter.QuinCe.data.QC;
 
 import java.util.ArrayList;
 import java.util.List;

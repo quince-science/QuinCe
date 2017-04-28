@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.database.QC;
+package uk.ac.exeter.QuinCe.data.QC;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,8 +19,6 @@ import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.RebuildCode;
-import uk.ac.exeter.QuinCe.data.NoDataQCRecord;
-import uk.ac.exeter.QuinCe.data.QCRecord;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.database.DatabaseException;
 import uk.ac.exeter.QuinCe.database.DatabaseUtils;
