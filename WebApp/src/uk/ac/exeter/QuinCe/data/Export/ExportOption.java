@@ -1,10 +1,10 @@
-package uk.ac.exeter.QuinCe.data;
+package uk.ac.exeter.QuinCe.data.Export;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
+import uk.ac.exeter.QuinCe.data.Files.FileDataInterrogator;
 
 /**
  * Class to hold details of a single export configuration

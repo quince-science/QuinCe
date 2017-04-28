@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.data;
+package uk.ac.exeter.QuinCe.data.Files;
 
 import java.util.List;
 import java.util.TreeSet;
@@ -6,7 +6,6 @@ import java.util.TreeSet;
 import javax.servlet.annotation.WebListener;
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.database.files.DataFileDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.utils.BackgroundTask;
 import uk.ac.exeter.QuinCe.utils.BackgroundTaskException;

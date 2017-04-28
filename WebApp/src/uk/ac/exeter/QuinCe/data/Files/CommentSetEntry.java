@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.database.files;
+package uk.ac.exeter.QuinCe.data.Files;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
 

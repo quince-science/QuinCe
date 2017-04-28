@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.database.files;
+package uk.ac.exeter.QuinCe.data.Files;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -21,9 +21,7 @@ import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.RebuildCode;
-import uk.ac.exeter.QuinCe.data.ExportOption;
-import uk.ac.exeter.QuinCe.data.RawDataFile;
-import uk.ac.exeter.QuinCe.data.RawDataFileException;
+import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.RunType;
 import uk.ac.exeter.QuinCe.database.DatabaseException;

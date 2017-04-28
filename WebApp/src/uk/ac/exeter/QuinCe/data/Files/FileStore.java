@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.database.files;
+package uk.ac.exeter.QuinCe.data.Files;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,9 +10,6 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.User.User;
-import uk.ac.exeter.QuinCe.data.FileInfo;
-import uk.ac.exeter.QuinCe.data.RawDataFile;
-import uk.ac.exeter.QuinCe.data.RawDataFileException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.database.DatabaseException;

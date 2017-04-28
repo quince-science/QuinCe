@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.database.files;
+package uk.ac.exeter.QuinCe.data.Files;
 
 import java.util.Iterator;
 import java.util.TreeSet;
