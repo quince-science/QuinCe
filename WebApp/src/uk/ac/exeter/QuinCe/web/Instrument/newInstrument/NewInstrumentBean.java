@@ -1,8 +1,5 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
@@ -46,7 +43,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	/**
 	 * The sample file that is currently being edited
 	 */
-	private InstrumentFileBuilder currentInstrumentFile;
+	private FileDefinitionBuilder currentInstrumentFile;
 	
 	/**
 	 * Begin a new instrument definition
@@ -101,7 +98,7 @@ public class NewInstrumentBean extends FileUploadBean {
 		String result;
 		
 		if (instrumentFiles.size() == 0) {
-			currentInstrumentFile = new InstrumentFileBuilder();
+			currentInstrumentFile = new FileDefinitionBuilder();
 			addInstrumentFile(currentInstrumentFile);
 			
 			result = NAV_UPLOAD_FILE;
@@ -164,7 +161,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @param file The file to be added
 	 * @throws InstrumentFileExistsException If a file with the same description already exists
 	 */
-	private void addInstrumentFile(InstrumentFileBuilder file) throws InstrumentFileExistsException {
+	private void addInstrumentFile(FileDefinitionBuilder file) throws InstrumentFileExistsException {
 		boolean added = instrumentFiles.add(file);
 		if (!added) {
 			throw new InstrumentFileExistsException(file);
@@ -175,7 +172,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Get the instrument file that is currently being worked on
 	 * @return The current instrument file
 	 */
-	public InstrumentFileBuilder getCurrentInstrumentFile() {
+	public FileDefinitionBuilder getCurrentInstrumentFile() {
 		return currentInstrumentFile;
 	}
 	

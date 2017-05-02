@@ -1,8 +1,6 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
-import org.primefaces.model.UploadedFile;
-
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFile;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 
 /**
  * This is a specialised instance of the InstrumentFile class
@@ -12,7 +10,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFile;
  * @author Steve Jones
  *
  */
-public class InstrumentFileBuilder extends InstrumentFile {
+public class FileDefinitionBuilder extends FileDefinition {
 
 	/**
 	 * The default description for new files
@@ -27,7 +25,7 @@ public class InstrumentFileBuilder extends InstrumentFile {
 	/**
 	 * Create a new file with the default description
 	 */
-	public InstrumentFileBuilder() {
+	public FileDefinitionBuilder() {
 		super(DEFAULT_DESCRIPTION);
 	}
 	

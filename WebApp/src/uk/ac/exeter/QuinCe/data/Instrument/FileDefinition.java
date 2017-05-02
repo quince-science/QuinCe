@@ -6,7 +6,7 @@ package uk.ac.exeter.QuinCe.data.Instrument;
  * @author Steve Jones
  *
  */
-public class InstrumentFile implements Comparable<InstrumentFile> {
+public class FileDefinition implements Comparable<FileDefinition> {
 
 	/**
 	 * The name used to identify files of this type
@@ -17,7 +17,7 @@ public class InstrumentFile implements Comparable<InstrumentFile> {
 	 * Create a new file with the given description
 	 * @param fileDescription The file description
 	 */
-	public InstrumentFile(String fileDescription) {
+	public FileDefinition(String fileDescription) {
 		this.fileDescription = fileDescription;
 	}
 	
@@ -41,7 +41,7 @@ public class InstrumentFile implements Comparable<InstrumentFile> {
 	 * Comparison is based on the file description. The comparison is case insensitive.
 	 */
 	@Override
-	public int compareTo(InstrumentFile o) {
+	public int compareTo(FileDefinition o) {
 		return fileDescription.toLowerCase().compareTo(o.fileDescription.toLowerCase());
 	}
 	
@@ -54,10 +54,10 @@ public class InstrumentFile implements Comparable<InstrumentFile> {
 		
 		if (null == o) {
 			result = false;
-		} else if (!(o instanceof InstrumentFile)) {
+		} else if (!(o instanceof FileDefinition)) {
 			result = false;
 		} else {
-			InstrumentFile oFile = (InstrumentFile) o;
+			FileDefinition oFile = (FileDefinition) o;
 			result = oFile.fileDescription == fileDescription;
 		}
 		

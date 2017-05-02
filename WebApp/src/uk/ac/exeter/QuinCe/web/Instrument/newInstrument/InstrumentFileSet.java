@@ -7,7 +7,7 @@ import java.util.TreeSet;
  * @author Steve Jones
  *
  */
-public class InstrumentFileSet extends TreeSet<InstrumentFileBuilder> {
+public class InstrumentFileSet extends TreeSet<FileDefinitionBuilder> {
 
 	/**
 	 * Simple constructor to create an empty set
@@ -26,7 +26,7 @@ public class InstrumentFileSet extends TreeSet<InstrumentFileBuilder> {
 		if (size() == 0) {
 			result = true;
 		} else {
-			for (InstrumentFileBuilder file : this) {
+			for (FileDefinitionBuilder file : this) {
 				if (!file.fileDefined()) {
 					result = true;
 					break;
@@ -42,10 +42,10 @@ public class InstrumentFileSet extends TreeSet<InstrumentFileBuilder> {
 	 * If there are no files in the set, or all the files have been defined, the method returns {@code null}
 	 * @return The first undefined file in the set
 	 */
-	protected InstrumentFileBuilder getFirstUndefinedFile() {
-		InstrumentFileBuilder result = null;
+	protected FileDefinitionBuilder getFirstUndefinedFile() {
+		FileDefinitionBuilder result = null;
 		
-		for (InstrumentFileBuilder file : this) {
+		for (FileDefinitionBuilder file : this) {
 			if (!file.fileDefined()) {
 				result = file;
 				break;

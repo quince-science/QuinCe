@@ -7,7 +7,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFile;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 
 /**
  * Validator for instrument names. Ensures that the name contains
@@ -35,7 +35,7 @@ public class InstrumentFileDescriptionValidator implements Validator {
 		
 		NewInstrumentBean bean = (NewInstrumentBean) beanAttributeValue;
 		
-		for (InstrumentFile file : bean.getInstrumentFiles()) {
+		for (FileDefinition file : bean.getInstrumentFiles()) {
 			if (file != bean.getCurrentInstrumentFile()) {
 				if (description.equalsIgnoreCase(file.getFileDescription())) {
 					throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "This description is already being used by another file", "This description is already being used by another file"));
