@@ -8,8 +8,24 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
+/**
+ * A cut-down Instrument object, containing just a name and
+ * database ID. These objects are returned from the results
+ * of several searches and queries, and provide the minimum
+ * information required to obtain the full details of an instrument.
+ * This is done for performance reasons, since there are many instances
+ * where only the instrument names are required for certain search results,
+ * after which a single instrument is examined in more detail. At this point
+ * the full instrument details can be loaded using {@link #getFullInstrument()}.
+ * 
+ * @author Steve Jones
+ *
+ */
 public class InstrumentStub implements Serializable {
 
+	/**
+	 * The Serial Version UID
+	 */
 	private static final long serialVersionUID = 5898379713476853550L;
 
 	/**

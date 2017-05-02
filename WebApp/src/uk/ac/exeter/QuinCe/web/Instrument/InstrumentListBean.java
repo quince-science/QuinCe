@@ -122,7 +122,7 @@ public class InstrumentListBean extends BaseManagedBean {
 	
 	/**
 	 * Sets the name of the instrument chosen from the instrument list
-	 * @param chosenInstrument The instrument name
+	 * @param chosenInstrumentName The instrument name
 	 */
 	public void setChosenInstrumentName(String chosenInstrumentName) {
 		this.chosenInstrumentName = chosenInstrumentName;
