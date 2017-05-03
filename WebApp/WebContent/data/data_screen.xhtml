@@ -80,6 +80,13 @@
 				<h:commandLink id="leftGetData" action="#{dataScreenBean.generateLeftPlotData}">
 					<f:ajax execute="leftColumns" render="leftData leftNames" onevent="drawLeftPlot"/>
 				</h:commandLink>
+				
+				<h:inputHidden id="leftMapColumn" value="#{dataScreenBean.leftMapColumn}"/>
+				<h:outputText id="leftMapData" value="#{dataScreenBean.leftMapData}"/>
+				<h:outputText id="leftMapName" value="#{dataScreenBean.leftMapName}"/>
+				<h:commandLink id="leftGetMapData" action="#{dataScreenBean.generateLeftMapData}">
+					<f:ajax execute="leftMapColumn" render="leftMapData leftMapName" onevent="drawLeftMap"/>
+				</h:commandLink>
 
 				<h:inputHidden id="rightColumns" value="#{dataScreenBean.rightPlotColumns}"/>
 				<h:outputText id="rightData" value="#{dataScreenBean.rightPlotData}"/>

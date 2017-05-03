@@ -119,6 +119,9 @@ var rightMapVar = 'map_intaketemp_intakeTempMean';
 var leftMap = null;
 var rightMap = null;
 
+var leftMapDataLayer = null;
+var rightMapDataLayer = null;
+
 var mapSource = new ol.source.Stamen({
 		layer: "terrain",
 		url: "https://stamen-tiles-{a-d}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png"
@@ -1472,6 +1475,53 @@ function initLeftMap() {
 	    		minZoom: 2
 	  		}),
 		});
+	}
+	
+	// Fill in the hidden form and submit it
+	$('#plotDataForm\\:leftMapColumn').val(getColumnName(leftMapVar));
+	$('#plotDataForm\\:leftGetMapData').click();
+}
+
+function drawLeftMap(data) {
+	var status = data.status;
+	
+	if (status == "success") {
+
+		if (null != leftMapDataLayer) {
+			leftMap.removeLayer(leftMapDataLayer);
+			leftMapDataLayer = null;
+		}
+		
+		var mapData = JSON.parse($('#plotDataForm\\:leftMapData').html());
+
+		var layerFeatures = new Array();
+
+		for (var i = 0; i < mapData.length; i++) {
+			var featureData = mapData[i];
+			
+			var feature = new ol.Feature({
+				geometry: new ol.geom.Point([featureData[0], featureData[1]]).transform(ol.proj.get("EPSG:4326"), mapSource.getProjection())
+			});
+			
+			feature.setStyle(new ol.style.Style({
+				image: new ol.style.Circle({
+					radius: 5,
+					fill: new ol.style.Fill({
+						color: [255, 0, 0]
+					})
+				})
+			}));
+			
+			layerFeatures.push(feature);
+		}
+		
+		leftMapDataLayer = new ol.layer.Vector({
+			source: new ol.source.Vector({
+				features: layerFeatures
+			})
+		})
+		
+		leftMap.addLayer(leftMapDataLayer);
 	}
 }
 

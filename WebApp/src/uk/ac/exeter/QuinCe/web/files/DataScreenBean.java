@@ -83,12 +83,14 @@ public class DataScreenBean extends BaseManagedBean {
 	 * </p>
 	 * 
 	 * <p>
-	 *   The first three Y axis columns are always the row number, QC and WOCE flag,
-	 *   which are hidden when the plot is rendered.
+	 *   The row number, QC and WOCE flag, are automatically added to this list, but
+	 *   are hidden when the plot is rendered.
 	 *   The row is used to cross-reference with the data table, and the flags
-	 *   are used to highlight values on the plots.
+	 *   are used to highlight values on the plot.
 	 * </p>
-	 * @see FileDataInterrogator 
+	 * 
+	 * @see FileDataInterrogator
+	 * @see #getPlotData(List) 
 	 */
 	private String leftPlotColumns = null;
 	
@@ -111,6 +113,32 @@ public class DataScreenBean extends BaseManagedBean {
 	private String leftPlotNames = null;
 
 	/**
+	 * The data column being used in the left map.
+
+	 * @see FileDataInterrogator
+	 * @see #getMapData(String) 
+	 */
+	private String leftMapColumn = null;
+	
+	/**
+	 * The data for the left map.
+	 * 
+	 * <p>
+	 *   The data is stored as a JSON string, which will be parsed by the Javascript on
+	 *   the user interface.
+	 * </p>
+	 * @see #generateLeftMapData()
+	 * @see #getMapData(String)
+	 */
+	private String leftMapData = null;
+	
+	/**
+	 * The human-readable names of the column shown in the left map.
+	 * @see #leftMapColumn
+	 */
+	private String leftMapName = null;
+
+	/**
 	 * The data columns being used in the right plot.
 	 * 
 	 * <p>
@@ -121,12 +149,14 @@ public class DataScreenBean extends BaseManagedBean {
 	 * </p>
 	 * 
 	 * <p>
-	 *   The first three Y axis columns are always the row number, QC and WOCE flag,
-	 *   which are hidden when the plot is rendered.
+	 *   The row number, QC and WOCE flag, are automatically added to this list, but
+	 *   are hidden when the plot is rendered.
 	 *   The row is used to cross-reference with the data table, and the flags
-	 *   are used to highlight values on the plots.
-	 * </p> 
-	 * @see FileDataInterrogator 
+	 *   are used to highlight values on the plot.
+	 * </p>
+	 * 
+	 * @see FileDataInterrogator
+	 * @see #getPlotData(List) 
 	 */
 	private String rightPlotColumns = null;
 	
@@ -442,6 +472,59 @@ public class DataScreenBean extends BaseManagedBean {
 		this.leftPlotNames = leftPlotNames;
 	}
 	
+	/**
+	 * Get the column to be displayed in the left map
+	 * @return The left map column
+	 */
+	public String getLeftMapColumn() {
+		return leftMapColumn;
+	}
+	
+	/**
+	 * Set the column to be displayed in the left map
+	 * @param leftMapColumn The left map column
+	 */
+	public void setLeftMapColumn(String leftMapColumn) {
+		this.leftMapColumn = leftMapColumn;
+	}
+	
+	/**
+	 * Get the data for the left map
+	 * @return The map data
+	 */
+	public String getLeftMapData() {
+		return leftMapData;
+	}
+	
+	/**
+	 * Set the data for the left map.
+	 * @param leftMapData The data for the left map
+	 * @see #leftMapData
+	 */
+	public void setLeftMapData(String leftMapData) {
+		this.leftMapData = leftMapData;
+	}
+	
+	/**
+	 * Get the human-readable name of the column being displayed
+	 * in the left map.
+	 * @return The human-readable column name
+	 * @see #leftMapName
+	 */
+	public String getLeftMapName(){
+		return leftMapName;
+	}
+
+	/**
+	 * Set the human-readable name of the column being displayed
+	 * in the left map.
+	 * @param leftMapName The column name
+	 * @see #leftMapName
+	 */
+	public void setLeftMapName(String leftMapName){
+		this.leftMapName = leftMapName;
+	}
+
 	/**
 	 * Get the columns to be displayed in the right plot.
 	 * @return The columns for the right plot
@@ -1226,13 +1309,22 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Generate the data for the left plot. See {@link #getPlotData(List)}.
+	 * Generate the data for the left plot.
 	 * @see #getPlotData(List)
 	 */
 	public void generateLeftPlotData() {
 		List<String> columns = StringUtils.delimitedToList(leftPlotColumns);
 		setLeftPlotData(getPlotData(columns));
 		setLeftPlotNames(makePlotNames(columns));
+	}
+	
+	/**
+	 * Generate the data for the left map.
+	 * @see #getMapData(String)
+	 */
+	public void generateLeftMapData() {
+		setLeftMapData(getMapData(leftMapColumn));
+		setLeftMapName(getPlotSeriesName(leftMapColumn));
 	}
 
 	/**
@@ -1273,6 +1365,44 @@ public class DataScreenBean extends BaseManagedBean {
 			
 			// And the Y axis columns
 			submittedColumnList.addAll(columns.subList(1, columns.size()));
+			
+			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, true, false);
+		} catch (Exception e) {
+			e.printStackTrace();
+			output = "***ERROR: " + e.getMessage();
+		}
+		
+		return output;
+	}
+	
+	/**
+	 * Retrieve the data for a map from the database as a JSON string.
+	 * @param column The list column to be displayed on the map
+	 * @return The map data
+	 */
+	private String getMapData(String column) {
+		String output;
+		
+		try {
+			DataSource dataSource = ServletUtils.getDBDataSource();
+			
+			// Add in the row number and flags as the first Y-axis columns. We need it for syncing the graphs and the table
+			// The list returned from delimitedToList does not allow inserting, so we have to do it the hard way.
+			List<String> submittedColumnList = new ArrayList<String>(6);
+			
+			// Position
+			submittedColumnList.add("longitude");
+			submittedColumnList.add("latitude");
+			
+			// Now the row number
+			submittedColumnList.add("row");
+			
+			// Add QC and WOCE flags
+			submittedColumnList.add("qcFlag");
+			submittedColumnList.add("woceFlag");
+			
+			// And the Y axis columns
+			submittedColumnList.add(column);
 			
 			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, true, false);
 		} catch (Exception e) {
