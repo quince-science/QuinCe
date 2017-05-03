@@ -119,6 +119,7 @@ var rightMapVar = 'map_intaketemp_intakeTempMean';
 var leftMap = null;
 var rightMap = null;
 
+var colorScale = new ColorScale([[0,'#2C7BB6'],[0.25,'#ABD9E9'],[0.5,'#FFFFBF'],[0.75,'#FDAE61'],[1,'#D7191C']]);
 var leftMapDataLayer = null;
 var rightMapDataLayer = null;
 
@@ -1491,8 +1492,24 @@ function drawLeftMap(data) {
 			leftMap.removeLayer(leftMapDataLayer);
 			leftMapDataLayer = null;
 		}
-		
+
 		var mapData = JSON.parse($('#plotDataForm\\:leftMapData').html());
+
+		var dataMin = 9000000;
+		var dataMax = -9000000;
+		
+		for (var i = 1; i < mapData.length; i++) {
+			if (mapData[i][5] < dataMin) {
+				dataMin = mapData[i][5];
+			}
+			
+			if (mapData[i][5] > dataMax) {
+				dataMax = mapData[i][5];
+			}
+		} 
+		
+		colorScale.setValueRange(dataMin, dataMax);
+		
 
 		var layerFeatures = new Array();
 
@@ -1507,7 +1524,7 @@ function drawLeftMap(data) {
 				image: new ol.style.Circle({
 					radius: 5,
 					fill: new ol.style.Fill({
-						color: [255, 0, 0]
+						color: colorScale.getColor(featureData[5])
 					})
 				})
 			}));
