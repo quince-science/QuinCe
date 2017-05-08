@@ -9,6 +9,11 @@ body {
   overflow-x: hidden;
 }
 
+pre {
+	font-family: 'Inconsolata', monospace;
+	margin: 0px;
+}
+
 .contentBox {
   max-width: 400px;
   margin: 40px auto 28px;

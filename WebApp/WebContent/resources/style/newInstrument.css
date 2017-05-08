@@ -1,3 +1,5 @@
+@import 'https://fonts.googleapis.com/css?family=Inconsolata:400';
+
 #content {
   margin-top: 10px !important;
 }
@@ -47,5 +49,23 @@
 }
 
 #uploadFormContent {
+	height: 600px;
+}
+
+#fileFormatSpec {
+	margin-top: 30px;
+	width: 95%;
 	height: 400px;
+}
+
+#fileFormatSpecContent {
+	display: grid;
+	grid-template-columns: auto 400px;
+}
+
+#fileContent {
+	overflow: scroll;
+	height: 400px;
+	margin-right: 40px;
+	border: 1px solid black;
 }

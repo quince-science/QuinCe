@@ -19,15 +19,16 @@
 					$('#uploadFile').show();
 				}
 			});
-			
-			function initFileSpec() {
-				$('#uploadFile').hide();
-				$('#fileSpec').show();
-			}
 		</script>
 	</ui:define>
 	<ui:define name="new_instrument_content">
-		<h:form id="newInstrumentForm" metho="post" charset="utf8">
+		<h:form id="newInstrumentForm" metho="post" charset="utf8" enctype="multipart/form-data">
+		
+			<h:inputHidden id="sampleFileContent" value="#{newInstrumentBean.currentInstrumentFile.fileData}"/>
+			<h:commandLink id="guessFileLayout" style="invisible" action="#{newInstrumentBean.currentInstrumentFile.guessFileLayout}">
+				<f:ajax render="headerType headerLineCount headerString separator columnHeaderRows sampleFileContent" onevent="updateFileContentDisplay"/>
+			</h:commandLink>
+		
 			<div id="uploadFormContent">		
 				<div class="instructions">
 					Please upload a sample file from your instrument.
@@ -46,15 +47,49 @@
 
 				<div id="uploadFile" class="hidden">
 					<p:outputLabel value="Select a file to upload"/>
-					<p:fileUpload fileUploadListener="#{newInstrumentBean.handleFileUpload}" mode="advanced" auto="true" oncomplete="initFileSpec()"/>
+					<p:fileUpload fileUploadListener="#{newInstrumentBean.handleFileUpload}" mode="advanced" auto="true" oncomplete="showProcessingMessage()"/>
 				</div>
 				
-				<div id="fileSpec" class="hidden">
-					File specification
+				<div id="processingFileMessage" class="hidden">
+					Processing file...
 				</div>
-
+				
+				<div id="fileFormatSpec" class="hidden">
+					<div id="fileFormatSpecContent">
+						<div id="fileContent"></div>
+						<div id="fileFormat">
+							<p:outputPanel id="headerPanel">
+								<p:selectOneRadio id="headerType" value="#{newInstrumentBean.currentInstrumentFile.headerType}" layout="custom">
+									<f:selectItem itemLabel="# Lines" itemValue="0"/>
+									<f:selectItem itemLabel="End Line" itemValue="1"/>
+								</p:selectOneRadio>
+								
+								<h:panelGrid columns="3" cellpadding="5">
+									<p:radioButton id="lineCountType" for="headerType" itemIndex="0"/>
+									<p:outputLabel for="lineCountType" value="# Lines"/>
+									<p:spinner id="headerLineCount" value="#{newInstrumentBean.currentInstrumentFile.headerLines}"/>
+									
+									<p:radioButton id="stringType" for="headerType" itemIndex="1"/>
+									<p:outputLabel for="stringType" value="End Lines"/>
+									<p:inputText id="headerString" value="#{newInstrumentBean.currentInstrumentFile.headerString}"/>
+								</h:panelGrid>
+							</p:outputPanel>
+							
+							<p:outputLabel for="separator" value="Separator"/>
+							<p:selectOneMenu id="separator" value="#{newInstrumentBean.currentInstrumentFile.separator}">
+								<f:selectItem itemLabel="Tab" itemValue="\t"/>
+								<f:selectItem itemLabel="Comma" itemValue=","/>
+								<f:selectItem itemLabel="Semi-colon" itemValue=";"/>
+								<f:selectItem itemLabel="Space" itemValue=" "/>
+							</p:selectOneMenu>
+							<br/>
+							<p:outputLabel for="columnHeaderRows" value="Column Header Rows"/>
+							<p:spinner id="columnHeaderRows" value="#{newInstrumentBean.currentInstrumentFile.columnHeaderRows}"/>
+						</div>
+					</div>
+				</div>
 			</div>
-			<!--  The cancel include has a 2 entries (1 is invisible) -->
+			<!--  The cancel include has two entries (one is invisible) -->
 			<h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
 				<ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml"/>
 				<p:commandButton value="Back" ajax="false" action="#{newInstrumentBean.goToName}" immediate="true"/>

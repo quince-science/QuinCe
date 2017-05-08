@@ -123,7 +123,8 @@ public class NewInstrumentBean extends FileUploadBean {
 	}
 
 	/**
-	 * Store the uploaded data in the current instrument file
+	 * Store the uploaded data in the current instrument file.
+	 * Detailed processing will be triggered by the source page calling {@link FileDefinitionBuilder#guessFileLayout}.
 	 */
 	@Override
 	public void processUploadedFile() {
