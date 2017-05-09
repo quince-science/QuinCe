@@ -1523,6 +1523,10 @@ function drawLeftMap(data) {
 			feature.setStyle(new ol.style.Style({
 				image: new ol.style.Circle({
 					radius: 5,
+					stroke: new ol.style.Stroke({
+						color: '#DDDDDD',
+						width: 1
+					}),
 					fill: new ol.style.Fill({
 						color: colorScale.getColor(featureData[5])
 					})
