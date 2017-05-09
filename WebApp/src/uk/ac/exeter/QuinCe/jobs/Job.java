@@ -14,7 +14,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Abstract class containing all the required parts for a backgorund job.
+ * Abstract class containing all the required parts for a background job.
  * All jobs created for QuinCe must extend this class.
  * 
  * @author Steve Jones
@@ -254,12 +254,10 @@ public abstract class Job {
 
 	/**
 	 * Set the finish state for the job that this thread is running.
-	 * 
-	 * <p>
-	 *   Must be one of {@link Job#FINISHED_STATUS} or {@link Job#KILLED_STATUS}.
-	 *   See {@link #finishState}.
+	 * Must be one of {@link Job#FINISHED_STATUS} or {@link Job#KILLED_STATUS}.
 	 * @param finishState The finish state of the job
 	 * @throws JobException If the supplied finish state is invalid
+	 * @see #finishState
 	 */
 	protected void setFinishState(String finishState) throws JobException {
 		
