@@ -28,26 +28,63 @@ function renderSampleFile() {
 	
 	var fileData = JSON.parse($('#newInstrumentForm\\:sampleFileContent').val());
 	var fileHtml = '';
-	for (var i = 0; i < fileData.length; i++) {
-		fileHtml += '<pre id="line' + (i + 1) + '">' + fileData[i] + '</pre>';
+	
+	var currentRow = 0;
+	
+	if (getHeaderMode() == 0) {
+		while (currentRow < PF('headerLines').value) {
+			fileHtml += getLineHtml(currentRow, fileData[currentRow], 'header');
+			currentRow++;
+		}
+	} else {
+		var headerEndFound = false;
+		while (!headerEndFound) {
+			fileHtml += getLineHtml(currentRow, fileData[currentRow], 'header');
+			if (fileData[currentRow] == PF('headerEndString').getJQ().val()) {
+				headerEndFound = true;
+			}
+			
+			currentRow++;
+		}
 	}
+		
+	var lastColHeadRow = currentRow + PF('colHeadRows').value;
+	while (currentRow < lastColHeadRow) {
+		fileHtml += getLineHtml(currentRow, fileData[currentRow], 'columnHeading');
+		currentRow++;
+	}
+	
+	while (currentRow < fileData.length) {
+		fileHtml += getLineHtml(currentRow, fileData[currentRow], null);
+		currentRow++;
+	}
+
 	$('#fileContent').html(fileHtml);
+}
+
+function getLineHtml(lineNumber, data, styleClass) {
+	var line = '<pre id="line' + (lineNumber + 1) + '"';
+	if (null != styleClass) {
+		line += ' class="' + styleClass + '"';
+	}
+	line += '>' + data + '</pre>';
+	
+	return line;
 }
 
 function updateHeaderFields() {
 	
-	switch (parseInt($('[id^=newInstrumentForm\\:headerType]:checked').val())) {
-	case 0: {
+	if (getHeaderMode() == 0) {
 		PF('headerEndString').disable();
 		enableSpinner(PF('headerLines'));
-		break;
-	}
-	case 1: {
+	} else {
 		disableSpinner(PF('headerLines'));
 		PF('headerEndString').enable();
-		break;
 	}
-	}
+}
+
+function getHeaderMode() {
+	return parseInt($('[id^=newInstrumentForm\\:headerType]:checked').val());
 }
 
 function disableSpinner(spinnerObject) {

@@ -70,3 +70,11 @@
 	border: 1px solid black;
 	background-color: #FFF;
 }
+
+.header {
+	color: #FF0000;
+}
+
+.columnHeading {
+	color: #0000FF;
+}
