@@ -1,8 +1,11 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
+import uk.ac.exeter.QuinCe.web.html.HtmlUtils;
 
 /**
  * Bean for collecting data about a new instrument
@@ -128,7 +131,15 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	@Override
 	public void processUploadedFile() {
-		currentInstrumentFile.setFileData(new String(getFile().getContents(), StandardCharsets.UTF_8));
+		String fileContent = new String(getFile().getContents(), StandardCharsets.UTF_8);
+		List<String> fileLines = Arrays.asList(fileContent.split("\n"));
+		
+		if (fileLines.size() > FileDefinitionBuilder.FILE_DATA_MAX_LINES) {
+			fileLines = fileLines.subList(0, FileDefinitionBuilder.FILE_DATA_MAX_LINES - 1);
+		}
+		
+		currentInstrumentFile.setFileDataArray(fileLines);
+		currentInstrumentFile.setFileData(HtmlUtils.makeJSONArray(fileLines));
 	}
 	
 	/**

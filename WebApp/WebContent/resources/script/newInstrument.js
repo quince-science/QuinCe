@@ -26,7 +26,7 @@ function updateFileContentDisplay(data) {
 // (upload.xhtml)
 function renderSampleFile() {
 	
-	var fileData = $('#newInstrumentForm\\:sampleFileContent').val().split('\n');
+	var fileData = JSON.parse($('#newInstrumentForm\\:sampleFileContent').val());
 	var fileHtml = '';
 	for (var i = 0; i < fileData.length; i++) {
 		fileHtml += '<pre id="line' + (i + 1) + '">' + fileData[i] + '</pre>';

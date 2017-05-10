@@ -1,6 +1,6 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,6 +17,11 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 public class FileDefinitionBuilder extends FileDefinition {
 
 	/**
+	 * The maximum number of lines from an uploaded file to be stored
+	 */
+	protected static final int FILE_DATA_MAX_LINES = 500;
+	
+	/**
 	 * The number of lines to search in order to determine
 	 * the file's column separator
 	 */
@@ -28,9 +33,14 @@ public class FileDefinitionBuilder extends FileDefinition {
 	private static final String DEFAULT_DESCRIPTION = "Data File";
 	
 	/**
-	 * The contents of the uploaded data file
+	 * The first 500 lines of the uploaded sample file, formatted as a JSON string
 	 */
 	private String fileData = null;
+	
+	/**
+	 * The first 500 lines of the uploaded sample file, as an array of Strings
+	 */
+	private List<String> fileDataArray = null;
 	
 	/**
 	 * Create a new file with the default description
@@ -57,7 +67,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	}
 	
 	/**
-	 * Store the uploaded data for this file
+	 * Store the uploaded data for this file in JSON format
 	 * @param fileData The file data
 	 */
 	public void setFileData(String fileData) {
@@ -65,7 +75,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	}
 	
 	/**
-	 * Get the contents of the uploaded sample data file
+	 * Get the contents of the uploaded sample data file as a JSON string
 	 * @return The file contents 
 	 */
 	public String getFileData() {
@@ -78,18 +88,15 @@ public class FileDefinitionBuilder extends FileDefinition {
 	public void guessFileLayout() {
 		
 		try {
-			// Split the file data into lines
-			String[] lines = fileData.split("\n");
-			
 			// Look at the last few lines. Find the most common separator character,
 			// and the maximum number of columns in each line
-			String separatorSearchString = String.join("\n", Arrays.copyOfRange(lines, lines.length - SEPARATOR_SEARCH_LINES, lines.length));
+			String separatorSearchString = String.join("\n", fileDataArray.subList(fileDataArray.size() - SEPARATOR_SEARCH_LINES, fileDataArray.size()));
 			setSeparator(getMostCommonSeparator(separatorSearchString));
 			
 			// Work out the likely number of columns in the file from the last few lines
 			int maxColumnCount = 0;
-			for (int i = lines.length - SEPARATOR_SEARCH_LINES; i < lines.length; i++) {
-				int separatorCount = countSeparatorInstances(getSeparator(), lines[i]);
+			for (int i = fileDataArray.size() - SEPARATOR_SEARCH_LINES; i < fileDataArray.size(); i++) {
+				int separatorCount = countSeparatorInstances(getSeparator(), fileDataArray.get(i));
 				if (separatorCount > maxColumnCount) {
 					maxColumnCount = separatorCount;
 				}
@@ -101,8 +108,8 @@ public class FileDefinitionBuilder extends FileDefinition {
 			// to be the header.
 			int currentRow = 0;
 			boolean columnsRowFound = false;
-			while (!columnsRowFound && currentRow < lines.length) {
-				if (countSeparatorInstances(getSeparator(), lines[currentRow]) == maxColumnCount) {
+			while (!columnsRowFound && currentRow < fileDataArray.size()) {
+				if (countSeparatorInstances(getSeparator(), fileDataArray.get(currentRow)) == maxColumnCount) {
 					columnsRowFound = true;
 				} else {
 					currentRow++;
@@ -111,15 +118,15 @@ public class FileDefinitionBuilder extends FileDefinition {
 			
 			setHeaderLines(currentRow);
 			if (currentRow > 0) {
-				setHeaderString(lines[currentRow - 1]);
+				setHeaderString(fileDataArray.get(currentRow - 1));
 			}
 			
 			// Finally, find the line row that's mostly numeric. This is the first proper data line.
 			// Any lines between the header and this are column header rows
 			boolean dataFound = false;
-			while (!dataFound && currentRow < lines.length) {
-				String numbers = lines[currentRow].replaceAll("[^0-9]", "");
-				if (numbers.length() > (lines[currentRow].length() / 2)) {
+			while (!dataFound && currentRow < fileDataArray.size()) {
+				String numbers = fileDataArray.get(currentRow).replaceAll("[^0-9]", "");
+				if (numbers.length() > (fileDataArray.get(currentRow).length() / 2)) {
 					dataFound = true;
 				}
 			}
@@ -143,7 +150,6 @@ public class FileDefinitionBuilder extends FileDefinition {
 		int mostCommonSeparatorCount = 0;
 		
 		for (String separator : VALID_SEPARATORS) {
-			
 			int matchCount = countSeparatorInstances(separator, searchString);
 			
 			if (matchCount > mostCommonSeparatorCount) {
@@ -179,5 +185,13 @@ public class FileDefinitionBuilder extends FileDefinition {
 		}
 		
 		return matchCount;
+	}
+	
+	/**
+	 * Store the file data as an array of Strings
+	 * @param fileDataArray The file data
+	 */
+	protected void setFileDataArray(List<String> fileDataArray) {
+		this.fileDataArray = fileDataArray;
 	}
 }
