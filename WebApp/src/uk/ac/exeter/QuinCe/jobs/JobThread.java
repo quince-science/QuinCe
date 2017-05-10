@@ -38,14 +38,8 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 	
 	/**
 	 * Sets up the job that this thread will run.
-	 * @param jobClass The class of the specific job type
-	 * @param parameters The parameters to be passed to the job
-	 * @param dbConnection A database connection for the job to use
-	 * @throws JobClassNotFoundException If the specified job class does not exist
-	 * @throws InvalidJobClassTypeException If the specified job class is not of the correct type
-	 * @throws JobException If a problem is encountered while building the job object
-	 * @throws InvalidJobParametersException If the parameters supplied to the job are invalid
-	 * @throws MissingParamException If any of the required parameters are null
+	 * @param job The job
+	 * @throws MissingParamException If any required parameters are missing
 	 */
 	public void setupJob(Job job) throws MissingParamException {
 		MissingParam.checkMissing(job, "job");
@@ -123,6 +117,9 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 		return Long.signum(getId() - o.getId());
 	}
 	
+	/**
+	 * Stop the job immediately, and set its status is {@link Job#KILLED_STATUS}.
+	 */
 	@Override
 	public void interrupt() {
 		// Do the standard thread interruption
