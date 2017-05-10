@@ -12,16 +12,32 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * A test job that runs in chunks of 10 seconds.
- * It doesn't actually do anything.
+ * It doesn't actually do anything, but simply updates its progress
+ * after each 10 second chunk.
  * @author Steve Jones
  *
  */
 public class TenSecondJob extends Job {
 
+	/**
+	 * The parameter key for the number of chunks
+	 */
 	public static final String CHUNK_KEY = "chunks";
 	
+	/**
+	 * The number of 10 second chunks in the job
+	 */
 	private int chunkCount = 1;
 	
+	/**
+	 * Constructs a job object, and validates the parameters passed to it
+	 * @param resourceManager The system resource manager
+	 * @param config The application properties
+	 * @param id The id of the job in the database
+	 * @param parameters The parameters for the job
+	 * @throws InvalidJobParametersException If the parameters are not valid for the job
+	 * @throws MissingParamException If any required parameters are missing
+	 */
 	public TenSecondJob(ResourceManager resourceManager, Properties config, long id, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException {
 		super(resourceManager, config, id, parameters);
 		chunkCount = Integer.parseInt(parameters.get(CHUNK_KEY));
