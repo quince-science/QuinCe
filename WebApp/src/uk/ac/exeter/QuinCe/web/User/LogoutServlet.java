@@ -9,8 +9,16 @@ import javax.servlet.http.HttpSession;
 
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
+/**
+ * Servlet for handling user logout
+ * @author Steve Jones
+ *
+ */
 public class LogoutServlet extends HttpServlet {
 
+	/**
+	 * The Serial Version UID
+	 */
 	private static final long serialVersionUID = 8157120031497347680L;
 
 	/**
@@ -33,11 +41,10 @@ public class LogoutServlet extends HttpServlet {
 	}
 	
 	/**
-	 * In case we get a POST request to logout - just do the get
+	 * Destroy the current session and go to the login page
 	 */
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		doGet(request, response);
 	}
-	
 }
