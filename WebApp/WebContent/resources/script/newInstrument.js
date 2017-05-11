@@ -15,11 +15,10 @@ function updateFileContentDisplay(data) {
 	
 	if (status == "success") {
 		$('#processingFileMessage').hide();
-		renderSampleFile();
 		$('#fileFormatSpec').show();
+		updateHeaderFields();
+		renderSampleFile();
 	}
-	
-	updateHeaderFields();
 }
 
 // Render the contents of the uploaded sample file
@@ -43,13 +42,16 @@ function renderSampleFile() {
 		}
 	} else {
 		var headerEndFound = false;
-		while (!headerEndFound) {
+		while (!headerEndFound && currentRow < fileData.length) {
 			fileHtml += getLineHtml(currentRow, fileData[currentRow], 'header');
 			if (fileData[currentRow] == PF('headerEndString').getJQ().val()) {
 				headerEndFound = true;
 			}
 			
 			currentRow++;
+			if (currentRow >= fileData.length) {
+				sampleFileError("Header end string not found");
+			}
 		}
 	}
 		

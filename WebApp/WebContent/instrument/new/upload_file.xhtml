@@ -60,7 +60,7 @@
 						<div id="fileFormat">
 							<p:panel header="File Header">
 								<p:outputPanel id="headerPanel">
-									<p:selectOneRadio id="headerType" widgetVar="headerTypeSelector" value="#{newInstrumentBean.currentInstrumentFile.headerType}" layout="custom" onchange="updateHeaderFields()">
+									<p:selectOneRadio id="headerType" widgetVar="headerTypeSelector" value="#{newInstrumentBean.currentInstrumentFile.headerType}" layout="custom" onchange="updateHeaderFields(); renderSampleFile()">
 										<f:selectItem itemValue="0"/>
 										<f:selectItem itemValue="1"/>
 									</p:selectOneRadio>
@@ -74,7 +74,9 @@
 										
 										<p:radioButton id="stringType" for="headerType" itemIndex="1"/>
 										<p:outputLabel for="stringType" value="End Line"/>
-										<p:inputText id="headerString" widgetVar="headerEndString" value="#{newInstrumentBean.currentInstrumentFile.headerString}"/>
+										<p:inputText id="headerString" widgetVar="headerEndString" value="#{newInstrumentBean.currentInstrumentFile.headerString}" onkeyup="renderSampleFile()">
+											<p:ajax/>
+										</p:inputText>
 									</h:panelGrid>
 								</p:outputPanel>
 							</p:panel>
