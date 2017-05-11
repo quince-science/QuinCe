@@ -26,15 +26,20 @@ function updateFileContentDisplay(data) {
 // (upload.xhtml)
 function renderSampleFile() {
 	
+	hideSampleFileErrors();
+	
 	var fileData = JSON.parse($('#newInstrumentForm\\:sampleFileContent').val());
 	var fileHtml = '';
 	
 	var currentRow = 0;
 	
 	if (getHeaderMode() == 0) {
-		while (currentRow < PF('headerLines').value) {
+		while (currentRow < PF('headerLines').value && currentRow < fileData.length) {
 			fileHtml += getLineHtml(currentRow, fileData[currentRow], 'header');
 			currentRow++;
+			if (currentRow >= fileData.length) {
+				sampleFileError("Header is too long");
+			}
 		}
 	} else {
 		var headerEndFound = false;
@@ -60,6 +65,15 @@ function renderSampleFile() {
 	}
 
 	$('#fileContent').html(fileHtml);
+}
+
+function hideSampleFileErrors() {
+	$('#sampleFileMessage').hide();
+}
+
+function sampleFileError(message) {
+	$('#sampleFileMessage').text(message);
+	$('#sampleFileMessage').show();
 }
 
 function getLineHtml(lineNumber, data, styleClass) {
