@@ -56,9 +56,12 @@ function renderSampleFile() {
 	}
 		
 	var lastColHeadRow = currentRow + PF('colHeadRows').value;
-	while (currentRow < lastColHeadRow) {
+	while (currentRow < lastColHeadRow && currentRow < fileData.length) {
 		fileHtml += getLineHtml(currentRow, fileData[currentRow], 'columnHeading');
 		currentRow++;
+		if (currentRow >= fileData.length) {
+			sampleFileError("Too many column headers");
+		}
 	}
 	
 	while (currentRow < fileData.length) {

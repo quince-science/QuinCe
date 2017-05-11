@@ -79,7 +79,7 @@
 
 							<p:panel header="Column Headings">
 								<p:outputLabel for="columnHeaderRows" value="Column Header Rows"/>
-								<p:spinner id="columnHeaderRows" widgetVar="colHeadRows" value="#{newInstrumentBean.currentInstrumentFile.columnHeaderRows}"/>
+								<p:spinner id="columnHeaderRows" widgetVar="colHeadRows" value="#{newInstrumentBean.currentInstrumentFile.columnHeaderRows}" min="0" max="500" onkeypress="return numberOnly(event)" onkeyup="setTimeout(function() {renderSampleFile()}, 100)" onchange="renderSampleFile()"/>
 							</p:panel>
 							
 							<p:panel header="Separator">
