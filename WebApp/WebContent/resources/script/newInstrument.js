@@ -115,3 +115,13 @@ function enableSpinner(spinnerObject) {
    spinnerObject.jq.removeClass("ui-state-disabled");
    spinnerObject.bindEvents()
 }
+
+function numberOnly(event) {
+	var charOK = true;
+	var charCode = (event.which) ? event.which : event.keyCode
+	if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+		charOK = false;
+	}
+
+	return charOK;
+}
