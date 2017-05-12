@@ -19,12 +19,4 @@ public class InvalidSeparatorException extends Exception {
 	public InvalidSeparatorException(String separator) {
 		super("Invalid separator '" + separator + "': Must be one of tab, comma, semi-colon or space");
 	}
-	
-	/**
-	 * Constructor for an invalid separator index
-	 * @param separatorIndex The invalid index
-	 */
-	public InvalidSeparatorException(int separatorIndex) {
-		super("Invalid separator index " + separatorIndex + "': Must be between 0 and 3");
-	}
 }

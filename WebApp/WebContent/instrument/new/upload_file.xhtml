@@ -26,7 +26,7 @@
 		
 			<h:inputHidden id="sampleFileContent" value="#{newInstrumentBean.currentInstrumentFile.fileData}"/>
 			<h:commandLink id="guessFileLayout" style="invisible" action="#{newInstrumentBean.currentInstrumentFile.guessFileLayout}">
-				<f:ajax render="headerType headerLineCount headerString separator columnHeaderRows sampleFileContent" onevent="updateFileContentDisplay"/>
+				<f:ajax render="headerType headerLineCount headerString separator columnHeaderRows columnCount sampleFileContent" onevent="updateFileContentDisplay"/>
 			</h:commandLink>
 		
 			<div id="uploadFormContent">		
@@ -84,12 +84,15 @@
 							
 							<p:panel header="Separator">
 								<p:outputLabel for="separator" value="Separator"/>
-								<p:selectOneMenu id="separator" value="#{newInstrumentBean.currentInstrumentFile.separator}">
-									<f:selectItem itemLabel="Tab" itemValue="\t"/>
-									<f:selectItem itemLabel="Comma" itemValue=","/>
-									<f:selectItem itemLabel="Semi-colon" itemValue=";"/>
-									<f:selectItem itemLabel="Space" itemValue=" "/>
+								<p:selectOneMenu id="separator" value="#{newInstrumentBean.currentInstrumentFile.separatorName}">
+									<p:ajax event="change" update="columnCount"/>
+									<f:selectItem itemLabel="Tab" itemValue="TAB"/>
+									<f:selectItem itemLabel="Comma" itemValue="COMMA"/>
+									<f:selectItem itemLabel="Semi-colon" itemValue="SEMICOLON"/>
+									<f:selectItem itemLabel="Space" itemValue="SPACE"/>
+									<p:ajax update="columnCount"/>
 								</p:selectOneMenu>
+								(<h:outputText id="columnCount" value="#{newInstrumentBean.currentInstrumentFile.columnCount}"/> columns)
 							</p:panel>
 							<div id="sampleFileMessage" class="errorBox">
 								Errors go here.

@@ -224,7 +224,16 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 * @see #getColumnCount(String)
 	 */
 	public int getColumnCount() {
-		return getColumnCount(getSeparator());
+		
+		int result;
+		
+		if (null == getSeparator() || null == fileData)
+			result = 0;
+		else {
+			result = getColumnCount(getSeparator());
+		}
+		
+		return result;
 	}
 	
 	/**

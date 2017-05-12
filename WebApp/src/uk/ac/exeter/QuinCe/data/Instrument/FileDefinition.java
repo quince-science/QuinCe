@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Holds a description of a sample data file uploaded during the
@@ -21,10 +22,15 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	public static final int HEADER_TYPE_STRING = 1;
 	
 	/**
-	 * The supported separators
+	 * The mapping of separator names to the separator characters
+	 */
+	private static Map<String, String> SEPARATOR_LOOKUP = null;
+
+	/**
+	 * The available separator characters
 	 */
 	protected static final String[] VALID_SEPARATORS = {"\t", ",", ";", " "};
-
+	
 	/**
 	 * Menu index for the tab separator
 	 */
@@ -75,6 +81,14 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * The column separator
 	 */
 	private String separator = ",";
+	
+	static {
+		SEPARATOR_LOOKUP = new HashMap<String, String>(4);
+		SEPARATOR_LOOKUP.put("TAB", "\t");
+		SEPARATOR_LOOKUP.put("COMMA", ",");
+		SEPARATOR_LOOKUP.put("SEMICOLON", ";");
+		SEPARATOR_LOOKUP.put("SPACE", " ");
+	}
 	
 	/**
 	 * Create a new file with the given description
@@ -178,7 +192,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	}
 
 	/**
-	 * Get the column separator
+	 * Get the file's column separator
 	 * @return The separator
 	 */
 	public String getSeparator() {
@@ -186,17 +200,31 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	}
 	
 	/**
-	 * Get the numerical index of the current separator
-	 * @return The separator index
+	 * Get the name for the file's column separator
+	 * @return The separator name
 	 */
-	public int getSeparatorIndex() {
-		return Arrays.asList(VALID_SEPARATORS).indexOf(separator);
+	public String getSeparatorName() {
+		
+		String result = null;
+		
+		for (Map.Entry<String, String> entry : SEPARATOR_LOOKUP.entrySet()) {
+			if (entry.getValue().equals(separator)) {
+				result = entry.getKey();
+				break;
+			}
+		}
+		
+		return result;
 	}
-
+	
 	/**
-	 * Set the column separator
+	 * Set the column separator. This can use either a separator name
+	 * or the separator character itself.
+	 * 
 	 * @param separator The separator
 	 * @throws InvalidSeparatorException If the supplied separator is not supported
+	 * @see #SEPARATOR_LOOKUP
+	 * @see #VALID_SEPARATORS
 	 */
 	public void setSeparator(String separator) throws InvalidSeparatorException {
 		validateSeparator(separator);
@@ -204,31 +232,15 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	}
 	
 	/**
-	 * Set the column separator using a numeric index.
-	 * @param index The separator index
-	 * @throws InvalidSeparatorException If the index is invalid
+	 * Set the file's column separator using the separator name
+	 * @param separatorName The separator name
+	 * @throws InvalidSeparatorException If the separator name is not recognised
 	 */
-	public void setSeparatorIndex(int index) throws InvalidSeparatorException {
-		switch (index) {
-		case 0: {
-			separator = "\t";
-			break;
-		}
-		case 1: {
-			separator = ",";
-			break;
-		}
-		case 2: {
-			separator = ";";
-			break;
-		}
-		case 3: {
-			separator = " ";
-			break;
-		}
-		default: {
-			throw new InvalidSeparatorException(index);
-		}
+	public void setSeparatorName(String separatorName) throws InvalidSeparatorException {
+		if (!SEPARATOR_LOOKUP.containsKey(separatorName)) {
+			throw new InvalidSeparatorException(separatorName);
+		} else {
+			this.separator = SEPARATOR_LOOKUP.get(separatorName);
 		}
 	}
 	
