@@ -148,6 +148,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 			
 			if (matchCount > mostCommonSeparatorCount) {
 				mostCommonSeparator = separator;
+				mostCommonSeparatorCount = matchCount;
 			}
 		}
 		

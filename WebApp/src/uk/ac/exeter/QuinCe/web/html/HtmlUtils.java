@@ -23,6 +23,7 @@ public class HtmlUtils {
 			output.append(lines.get(i)
 					.replace("\r", "")
 					.replace("\n", "")
+					.replace("\t", "\\t")
 					.replace("\\", "\\\\")
 					.replace("\"", "\\\""));
 			

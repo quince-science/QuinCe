@@ -86,7 +86,7 @@ function getLineHtml(lineNumber, data, styleClass) {
 	if (null != styleClass) {
 		line += ' class="' + styleClass + '"';
 	}
-	line += '>' + data + '</pre>';
+	line += '>' + data.replace(/\\t/gi, '\t') + '</pre>';
 	
 	return line;
 }
