@@ -84,24 +84,17 @@ public class FileDefinitionBuilder extends FileDefinition {
 	
 	/**
 	 * Guess the layout of the file from its contents
+	 * @see #getColumnCount()
 	 */
 	public void guessFileLayout() {
 		
 		try {
 			// Look at the last few lines. Find the most common separator character,
 			// and the maximum number of columns in each line
-			String separatorSearchString = String.join("\n", fileDataArray.subList(fileDataArray.size() - SEPARATOR_SEARCH_LINES, fileDataArray.size()));
-			setSeparator(getMostCommonSeparator(separatorSearchString));
+			setSeparator(getMostCommonSeparator());
 			
 			// Work out the likely number of columns in the file from the last few lines
-			int maxColumnCount = 0;
-			for (int i = fileDataArray.size() - SEPARATOR_SEARCH_LINES; i < fileDataArray.size(); i++) {
-				int separatorCount = countSeparatorInstances(getSeparator(), fileDataArray.get(i));
-				if (separatorCount > maxColumnCount) {
-					maxColumnCount = separatorCount;
-				}
-			}
-			
+			int columnCount = getColumnCount();
 			
 			// Now start at the beginning of the file, looking for rows containing the
 			// maximum column count. Start rows that don't contain this are considered
@@ -109,7 +102,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 			int currentRow = 0;
 			boolean columnsRowFound = false;
 			while (!columnsRowFound && currentRow < fileDataArray.size()) {
-				if (countSeparatorInstances(getSeparator(), fileDataArray.get(currentRow)) == maxColumnCount) {
+				if (countSeparatorInstances(getSeparator(), fileDataArray.get(currentRow)) == columnCount) {
 					columnsRowFound = true;
 				} else {
 					currentRow++;
@@ -142,15 +135,14 @@ public class FileDefinitionBuilder extends FileDefinition {
 	
 	/**
 	 * Search a string to find the most commonly occurring valid separator value
-	 * @param searchString The string to search
 	 * @return The most common separator in the string
 	 */
-	private String getMostCommonSeparator(String searchString) {
+	private String getMostCommonSeparator() {
 		String mostCommonSeparator = null;
 		int mostCommonSeparatorCount = 0;
 		
 		for (String separator : VALID_SEPARATORS) {
-			int matchCount = countSeparatorInstances(separator, searchString);
+			int matchCount = getColumnCount(separator);
 			
 			if (matchCount > mostCommonSeparatorCount) {
 				mostCommonSeparator = separator;
@@ -223,5 +215,42 @@ public class FileDefinitionBuilder extends FileDefinition {
 		}
 
 		return dest;
+	}
+
+	/**
+	 * Get the number of columns in the file.
+	 * 
+	 * @return The number of columns in the file
+	 * @see #getColumnCount(String)
+	 */
+	public int getColumnCount() {
+		return getColumnCount(getSeparator());
+	}
+	
+	/**
+	 * Get the number of columns in a file using the specified separator.
+	 * 
+	 * This states the hypothetical number of columns found in the file
+	 * if the specified separator is used.
+	 *
+	 * This counts is based on the number of separators found per line
+	 * in the last few lines of the file. The largest number of columns
+	 * is used, because some instruments report diagnostic information on shorter lines.
+	 * 
+	 * @param separator The separator
+	 * @return The number of columns
+	 * @see #SEPARATOR_SEARCH_LINES
+	 * @see #getMostCommonSeparator()
+	 */
+	private int getColumnCount(String separator) {
+		int maxColumnCount = 0;
+		for (int i = fileDataArray.size() - SEPARATOR_SEARCH_LINES; i < fileDataArray.size(); i++) {
+			int separatorCount = countSeparatorInstances(separator, fileDataArray.get(i));
+			if (separatorCount > maxColumnCount) {
+				maxColumnCount = separatorCount;
+			}
+		}
+		
+		return maxColumnCount;
 	}
 }
