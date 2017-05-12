@@ -121,6 +121,8 @@ public class FileDefinitionBuilder extends FileDefinition {
 				String numbers = fileDataArray.get(currentRow).replaceAll("[^0-9]", "");
 				if (numbers.length() > (fileDataArray.get(currentRow).length() / 2)) {
 					dataFound = true;
+				} else {
+					currentRow++;
 				}
 			}
 			
