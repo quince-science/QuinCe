@@ -106,7 +106,7 @@ public class NewInstrumentBean extends FileUploadBean {
 			result = NAV_UPLOAD_FILE;
 		} else {
 			if (null == currentInstrumentFile) {
-				currentInstrumentFile = instrumentFiles.first();
+				currentInstrumentFile = FileDefinitionBuilder.copy(instrumentFiles.first());
 			}
 			result = NAV_ASSIGN_VARIABLES; 
 		}
