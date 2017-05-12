@@ -102,7 +102,6 @@ public class NewInstrumentBean extends FileUploadBean {
 		
 		if (instrumentFiles.size() == 0) {
 			currentInstrumentFile = new FileDefinitionBuilder();
-			addInstrumentFile(currentInstrumentFile);
 			
 			result = NAV_UPLOAD_FILE;
 		} else {
@@ -168,18 +167,6 @@ public class NewInstrumentBean extends FileUploadBean {
 		this.instrumentName = instrumentName;
 	}
 
-	/** 
-	 * Add an instrument file to the collection
-	 * @param file The file to be added
-	 * @throws InstrumentFileExistsException If a file with the same description already exists
-	 */
-	private void addInstrumentFile(FileDefinitionBuilder file) throws InstrumentFileExistsException {
-		boolean added = instrumentFiles.add(file);
-		if (!added) {
-			throw new InstrumentFileExistsException(file);
-		}
-	}
-	
 	/**
 	 * Get the instrument file that is currently being worked on
 	 * @return The current instrument file

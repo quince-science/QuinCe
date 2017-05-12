@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,10 +44,18 @@ public class FileDefinitionBuilder extends FileDefinition {
 	private List<String> fileDataArray = null;
 	
 	/**
-	 * Create a new file with the default description
+	 * Create a new file definition with the default description
 	 */
 	public FileDefinitionBuilder() {
 		super(DEFAULT_DESCRIPTION);
+	}
+	
+	/**
+	 * Create a new file definition with a specified description
+	 * @param fileDescription The file description
+	 */
+	public FileDefinitionBuilder(String fileDescription) {
+		super(fileDescription);
 	}
 	
 	/**
@@ -194,4 +203,35 @@ public class FileDefinitionBuilder extends FileDefinition {
 	protected void setFileDataArray(List<String> fileDataArray) {
 		this.fileDataArray = fileDataArray;
 	}
+	
+	/**
+	 * Create a deep copy of a {@code FileDefinitionBuilder} object.
+	 * @param source The source object
+	 * @return The copied object
+	 */
+	public static FileDefinitionBuilder copy(FileDefinitionBuilder source) {
+		
+		FileDefinitionBuilder dest = new FileDefinitionBuilder(source.getFileDescription());
+
+		try {
+			dest.setHeaderType(source.getHeaderType());
+			dest.setHeaderLines(source.getHeaderLines());
+			dest.setHeaderString(source.getHeaderString());
+			dest.setColumnHeaderRows(source.getColumnHeaderRows());
+			dest.setSeparator(source.getSeparator());
+			dest.fileData = source.fileData;
+			
+			dest.fileDataArray = new ArrayList<String>(source.fileDataArray.size());
+			for (String sourceLine : source.fileDataArray) {
+				dest.fileDataArray.add(sourceLine);
+			}
+			
+		} catch (Exception e) {
+			// Since we're copying an existing object that must already be valid,
+			// we can safely swallow exceptions
+		}
+
+		return dest;
+	}
+	
 }

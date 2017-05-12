@@ -47,11 +47,27 @@ public class InstrumentFileSet extends TreeSet<FileDefinitionBuilder> {
 		
 		for (FileDefinitionBuilder file : this) {
 			if (!file.fileDefined()) {
-				result = file;
+				result = FileDefinitionBuilder.copy(file);
 				break;
 			}
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * Store a file definition in the file set, replacing
+	 * any existing versions of that definition
+	 * @param file The file definition
+	 */
+	protected void storeFile(FileDefinitionBuilder file) {
+		
+		// Remove the existing file if it exists
+		if (contains(file)) {
+			remove(file);
+		}
+		
+		// Add the passed in file
+		add(file);
 	}
 }
