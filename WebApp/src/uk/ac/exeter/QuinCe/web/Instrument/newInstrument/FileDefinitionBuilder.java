@@ -59,15 +59,6 @@ public class FileDefinitionBuilder extends FileDefinition {
 	}
 	
 	/**
-	 * Determines whether or not this instrument file has been fully defined.
-	 * This includes the existence of file data, specification of headers etc.
-	 * @return {@code true} if this file has been fully defined; {@code false} otherwise.
-	 */
-	public boolean fileDefined() {
-		return false;
-	}
-	
-	/**
 	 * Determines whether or not file data has been uploaded for this instrument file
 	 * @return {@code true} if file data has been uploaded; {@code false} if it has not.
 	 */
@@ -233,5 +224,4 @@ public class FileDefinitionBuilder extends FileDefinition {
 
 		return dest;
 	}
-	
 }
