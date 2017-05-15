@@ -55,10 +55,10 @@ public class InstrumentDB {
 			+ "air_flow_1_col, air_flow_2_col, air_flow_3_col, "
 			+ "water_flow_1_col, water_flow_2_col, water_flow_3_col, "
 			+ "atmospheric_pressure_col, xh2o_col, co2_col, raw_col_count, "
-			+ "pre_flushing_time, post_flushing_time) "
+			+ "pre_flushing_time, post_flushing_time, minimum_water_flow) "
 			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
 			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	/**
 	 * Statement for retrieving all the details of a specific instrument
@@ -83,7 +83,7 @@ public class InstrumentDB {
 			+ "air_flow_1_col, air_flow_2_col, air_flow_3_col, "
 			+ "water_flow_1_col, water_flow_2_col, water_flow_3_col, "
 			+ "atmospheric_pressure_col, xh2o_col, co2_col, raw_col_count, "
-			+ "pre_flushing_time, post_flushing_time "
+			+ "pre_flushing_time, post_flushing_time, minimum_water_flow "
 			+ "FROM instrument WHERE id = ? ORDER BY name";
 			
 	
@@ -190,7 +190,8 @@ public class InstrumentDB {
 			instrStmt.setInt(66, instrument.getRawFileColumnCount());
 			instrStmt.setInt(67, instrument.getPreFlushingTime());
 			instrStmt.setInt(68, instrument.getPostFlushingTime());
-
+			instrStmt.setInt(69, instrument.getMinimumWaterFlow());
+			
 			instrStmt.execute();
 			
 			generatedKeys = instrStmt.getGeneratedKeys();
@@ -403,6 +404,7 @@ public class InstrumentDB {
 				instrument.setRawFileColumnCount(record.getInt(66));
 				instrument.setPreFlushingTime(record.getInt(67));
 				instrument.setPostFlushingTime(record.getInt(68));
+				instrument.setMinimumWaterFlow(record.getInt(69));
 				
 				runTypeStmt = conn.prepareStatement(GET_RUN_TYPES_QUERY);
 				runTypeStmt.setLong(1, instrumentID);

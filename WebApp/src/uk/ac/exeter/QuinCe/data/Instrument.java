@@ -427,6 +427,11 @@ public class Instrument implements Serializable {
 	private boolean hasAtmosphericPressure = false;
 	
 	/**
+	 * The minimum allowed water flow for the instrument
+	 */
+	private int minimumWaterFlow = 0;
+	
+	/**
 	 * Indicates whether or not samples are dried before being measured
 	 */
 	private boolean samplesDried = false;
@@ -1187,6 +1192,22 @@ public class Instrument implements Serializable {
 	 */
 	public void setHasAtmosphericPressure(boolean hasAtmosphericPressure) {
 		this.hasAtmosphericPressure = hasAtmosphericPressure;
+	}
+	
+	/**
+	 * Get the instrument's minimum water flow rate
+	 * @return The minimum water flow rate
+	 */
+	public int getMinimumWaterFlow() {
+		return minimumWaterFlow;
+	}
+	
+	/**
+	 * Set the minimum water flow rate
+	 * @param minimumWaterFlow The minimum water flow
+	 */
+	public void setMinimumWaterFlow(int minimumWaterFlow) {
+		this.minimumWaterFlow = minimumWaterFlow;
 	}
 
 	/**
