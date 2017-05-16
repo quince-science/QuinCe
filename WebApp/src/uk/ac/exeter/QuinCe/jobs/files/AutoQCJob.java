@@ -138,7 +138,7 @@ public class AutoQCJob extends FileJob {
 			List<Routine> routines = RoutinesConfig.getInstance(parameters.get(PARAM_ROUTINES_CONFIG)).getRoutines();
 			
 			for (Routine routine : routines) {
-				routine.processRecords((List<DataRecord>) qcRecords);
+				routine.processRecords((List<DataRecord>) qcRecords, null);
 			}
 			
 			// Record the messages from the QC in the database
