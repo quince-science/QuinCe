@@ -138,7 +138,20 @@ public class AutoQCJob extends FileJob {
 			List<Routine> routines = RoutinesConfig.getInstance(parameters.get(PARAM_ROUTINES_CONFIG)).getRoutines();
 			
 			for (Routine routine : routines) {
-				routine.processRecords((List<DataRecord>) qcRecords, null);
+				Map<String, String> dynamicParameters = null;
+
+				List<String> requiredParameters = routine.getRequiredDynamicParameters();
+				if (requiredParameters.size() > 0) {
+					dynamicParameters = new HashMap<String, String>();
+					
+					for (String parameter : requiredParameters) {
+						if (parameter.equals("instrument.min_water_flow")) {
+							dynamicParameters.put(parameter, String.valueOf(instrument.getMinimumWaterFlow()));
+						}
+					}
+				}
+				
+				routine.processRecords((List<DataRecord>) qcRecords, dynamicParameters);
 			}
 			
 			// Record the messages from the QC in the database

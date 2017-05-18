@@ -42,7 +42,7 @@ public abstract class FileJob extends Job {
 	/**
 	 * The instrument to which the data file being processed belongs
 	 */
-	protected Instrument instrument = null;
+	protected Instrument instrument;
 	
 	/**
 	 * Construct a Job to run on a data file.
