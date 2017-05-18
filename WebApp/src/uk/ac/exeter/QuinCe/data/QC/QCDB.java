@@ -77,7 +77,7 @@ public class QCDB {
 			+ "r.salinity_1, r.salinity_2, r.salinity_3, r.eqt_1, r.eqt_2, r.eqt_3, r.eqp_1, r.eqp_2, r.eqp_3, "
 			+ "r.xh2o, r.atmospheric_pressure, r.co2, "
 			+ "d.mean_intake_temp, d.mean_salinity, d.mean_eqt, d.mean_eqp, d.true_xh2o, d.dried_co2, "
-			+ "d.calibrated_co2, d.pco2_te_dry, d.ph2o, d.pco2_te_wet, d.fco2_te, d.fco2, r.water_flow_1 "
+			+ "d.calibrated_co2, d.pco2_te_dry, d.ph2o, d.pco2_te_wet, d.fco2_te, d.fco2, r.water_flow_1, delta_temperature "
 			+ "FROM raw_data as r "
 			+ "INNER JOIN data_reduction as d ON r.data_file_id = d.data_file_id AND r.row = d.row "
 			+ "INNER JOIN qc as q ON d.data_file_id  = q.data_file_id AND d.row = q.row "
