@@ -694,7 +694,8 @@ public class FileInfo {
 	 * @return {@code true} if the file can be exported; {@code false} if it cannot
 	 */
 	public boolean isExportable() {
-		return !deleteFlag && currentJob == JOB_CODE_USER_QC && woceNeededCount == 0;
+		return true;
+		//return !deleteFlag && currentJob == JOB_CODE_USER_QC && woceNeededCount == 0;
 	}
 	
 	/**
