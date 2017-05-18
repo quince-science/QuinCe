@@ -5,7 +5,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpSession;
 
-import uk.ac.exeter.QuinCe.data.User;
+import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.User.LoginBean;
 

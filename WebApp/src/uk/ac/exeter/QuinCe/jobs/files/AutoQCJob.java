@@ -11,20 +11,21 @@ import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.routines.Routine;
-import uk.ac.exeter.QuinCe.data.FileInfo;
-import uk.ac.exeter.QuinCe.data.QCRecord;
-import uk.ac.exeter.QuinCe.data.User;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.DatabaseUtils;
-import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.QC.QCDB;
-import uk.ac.exeter.QuinCe.database.files.DataFileDB;
+import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.FileInfo;
+import uk.ac.exeter.QuinCe.data.QC.QCDB;
+import uk.ac.exeter.QuinCe.data.QC.QCRecord;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.jobs.NoSuchJobException;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -239,7 +240,7 @@ public class AutoQCJob extends FileJob {
 					JobManager.addJob(conn, owner, FileInfo.getJobClass(interruptedJobCode), interruptedJobParams);
 					DataFileDB.setCurrentJob(conn, fileId, interruptedJobCode);
 					conn.commit();
-				} catch (RecordNotFoundException e) {
+				} catch (NoSuchJobException e) {
 					// This means the file has been marked for deletion. No action is required.
 				}
 			} else {

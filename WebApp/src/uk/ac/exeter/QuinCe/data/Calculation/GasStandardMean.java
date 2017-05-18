@@ -2,8 +2,8 @@ package uk.ac.exeter.QuinCe.data.Calculation;
 
 import java.util.Calendar;
 
-import uk.ac.exeter.QuinCe.data.RunType;
-import uk.ac.exeter.QuinCe.data.StandardConcentration;
+import uk.ac.exeter.QuinCe.data.Instrument.RunType;
+import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardConcentration;
 
 /**
  * Represents the mean of a gas standard during an instrument's
@@ -22,10 +22,13 @@ import uk.ac.exeter.QuinCe.data.StandardConcentration;
  */
 public class GasStandardMean implements Comparable<GasStandardMean> {
 
+	/**
+	 * Code indicating that xH<sub>2</sub>O values should be retrieved from a gas standard run 
+	 */
 	protected static final int TYPE_XH2O = 0;
 	
 	/**
-	 * Code for retrieving the CO<sub>2</sub> values from a gas standard run
+	 * Code indicating that CO<sub>2</sub> values should be retrieved from a gas standard run 
 	 */
 	protected static final int TYPE_CO2 = 1;
 	
@@ -50,7 +53,7 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	private double meanConcentration;
 	
 	/**
-	 * The mean xH2O measured during the run
+	 * The mean xH<sub>2</sub>O measured during the run
 	 */
 	private double meanXh2o;
 	
@@ -102,6 +105,10 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 		return meanConcentration;
 	}
 
+	/**
+	 * Get the mean xH<sub>2</sub>O value for the gas standard run
+	 * @return The mean xH<sub>2</sub>O value
+	 */
 	public double getMeanXh2o() {
 		return meanXh2o;
 	}
@@ -137,11 +144,11 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	 * moisture of the gas standard run.
 	 * 
 	 * <p>
-	 *   The {@code valueType} must be one of {@link #TYPE_CO2} or {@link #TYPE_MOISTURE}.
+	 *   The {@code valueType} must be one of {@link #TYPE_CO2} or {@link #TYPE_XH2O}.
 	 *   If any other value is passed, the method's behaviour is undefined.
 	 * </p>
 	 * 
-	 * @param valueType Either {@link #TYPE_CO2} or {@link #TYPE_MOISTURE}
+	 * @param valueType Either {@link #TYPE_CO2} or {@link #TYPE_XH2O}
 	 * @return The mean value
 	 */
 	public double getMeanValue(int valueType) {

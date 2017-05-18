@@ -40,10 +40,13 @@ public class JobThreadPool {
 	private int maxThreads;
 	
 	/**
-	 * The pool of job threads
+	 * The pool of idle job threads
 	 */
 	private Stack<JobThread> threads = new Stack<JobThread>();
 	
+	/**
+	 * The set of threads that are currently busy running jobs
+	 */
 	private Collection<JobThread> allocatedThreads = new TreeSet<JobThread>();
 	
 	/**
@@ -154,11 +157,12 @@ public class JobThreadPool {
 	}
 	
 	/**
-	 * Initialise the job thread pool with the specified maximum number of threads
+	 * Initialise the job thread pool with the specified maximum number of threads.
 	 * Calling this method when the pool has already been initialised will replace the
 	 * existing instance.
 	 * 
 	 * @param maxThreads The maximum number of threads in the pool
+	 * @throws InvalidThreadCountException If the number of threads is zero or negative
 	 */
 	public static void initialise(int maxThreads) throws InvalidThreadCountException {
 		
@@ -171,6 +175,11 @@ public class JobThreadPool {
 		}
 	}
 	
+	/**
+	 * Retrieve the job thread pool
+	 * @return The job thread pool
+	 * @throws JobThreadPoolNotInitialisedException If the pool has not been initialised
+	 */
 	public static JobThreadPool getInstance() throws JobThreadPoolNotInitialisedException {
 		if (null == instance) {
 			throw new JobThreadPoolNotInitialisedException();
@@ -179,22 +188,43 @@ public class JobThreadPool {
 		return instance;
 	}
 	
+	/**
+	 * Destroy the thread pool
+	 */
 	public static void destroy() {
 		instance = null;
 	}
 	
+	/**
+	 * Get the number of idle threads in the pool
+	 * @return The number of idle threads in the pool
+	 */
 	public int getPoolThreadCount() {
 		return threads.size();
 	}
 	
+	/**
+	 * Get the maximum number of threads in the pool
+	 * @return The maximum number of threads in the pool
+	 */
 	public int getMaxThreads() {
 		return maxThreads;
 	}
 	
+	/**
+	 * Get the number of currently running threads
+	 * @return The number of running threads
+	 */
 	public int getRunningThreadsCount() {
 		return allocatedThreads.size();
 	}
 	
+	/**
+	 * Get the number of overflow threads. These are threads
+	 * that have been created for high priority jobs in excess
+	 * of the maximum thread count.
+	 * @return The number of overflow threads
+	 */
 	public int getOverflowThreadsCount() {
 		int overflowThreads = 0;
 		
