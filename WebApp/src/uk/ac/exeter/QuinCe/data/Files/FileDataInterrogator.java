@@ -297,49 +297,19 @@ public class FileDataInterrogator {
 			// searching the original file data
 			conn = dataSource.getConnection();
 			
-			StringBuffer databaseColumnList = new StringBuffer();
-			databaseColumnList.append(COLUMN_MAPPINGS.get("dateTime"));
-			databaseColumnList.append(',');
+			List<String> databaseColumnList = new ArrayList<String>();
+			databaseColumnList.add("dateTime");
 			
 			for (int col = 0; col < columns.size(); col++) {
 				if (!columns.get(col).equals(COLUMN_ORIGINAL_FILE)) {
 					String column = columns.get(col);
 					if (instrumentHasColumn(instrument, column)) {
-						databaseColumnList.append(COLUMN_MAPPINGS.get(column));
-						databaseColumnList.append(',');
+						databaseColumnList.add(column);
 					}
 				}
 			}
 			
-			// We always add a comma separator, so we remove the last character
-			// Normally we'd check as we built the string, but the optional 'original' field
-			// makes it awkward.
-			databaseColumnList.deleteCharAt(databaseColumnList.length() - 1);
-			StringBuffer co2Types = new StringBuffer();
-
-			if (co2Type == RunType.RUN_TYPE_BOTH) {
-				co2Types.append(RunType.RUN_TYPE_WATER);
-				co2Types.append(',');
-				co2Types.append(RunType.RUN_TYPE_ATMOSPHERIC);
-			} else {
-				co2Types.append(co2Type);
-			}
-			
-			StringBuffer flags = new StringBuffer();
-			for (int i = 0; i < includeFlags.size(); i++) {
-				flags.append(includeFlags.get(i));
-				if (i < includeFlags.size() - 1) {
-					flags.append(',');
-				}
-			}
-
-			String queryString = GET_COLUMN_DATA_QUERY.replaceAll("%%COLUMNS%%", databaseColumnList.toString());
-			queryString = queryString.replaceAll("%%CO2TYPES%%", co2Types.toString());
-			queryString = queryString.replaceAll("%%FLAGS%%", flags.toString());
-			
-			stmt = conn.prepareStatement(queryString);
-			stmt.setLong(1, fileId);
-			
+			stmt = makeFileDataStatement(conn, fileId, databaseColumnList, co2Type, includeFlags, start, length, false);
 			records = stmt.executeQuery();
 			
 			StringBuffer outputBuffer = new StringBuffer();
@@ -1137,7 +1107,7 @@ public class FileDataInterrogator {
 			if (length > 0) {
 				queryString += " LIMIT " + start + "," + length;
 			}
-
+			
 			stmt = conn.prepareStatement(queryString);
 			stmt.setLong(1, fileId);
 		} catch (SQLException e) {
