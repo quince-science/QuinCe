@@ -68,7 +68,7 @@
 									<h:panelGrid columns="3" cellpadding="5">
 										<p:radioButton id="lineCountType" for="headerType" itemIndex="0"/>
 										<p:outputLabel for="lineCountType" value="# Lines"/>
-										<p:spinner id="headerLineCount" widgetVar="headerLines" value="#{newInstrumentBean.currentInstrumentFile.headerLines}" min="0" max="500" onkeypress="return numberOnly(event)" onkeyup="setTimeout(function() {renderSampleFile()}, 100)" onchange="renderSampleFile()"/>
+										<p:spinner id="headerLineCount" widgetVar="headerLines" size="3" value="#{newInstrumentBean.currentInstrumentFile.headerLines}" min="0" max="500" onkeypress="return numberOnly(event)" onkeyup="setTimeout(function() {renderSampleFile()}, 100)" onchange="renderSampleFile()"/>
 										
 										<p:radioButton id="stringType" for="headerType" itemIndex="1"/>
 										<p:outputLabel for="stringType" value="End Line"/>
@@ -78,21 +78,31 @@
 							</p:panel>
 
 							<p:panel header="Column Headings">
-								<p:outputLabel for="columnHeaderRows" value="Column Header Rows"/>
-								<p:spinner id="columnHeaderRows" widgetVar="colHeadRows" value="#{newInstrumentBean.currentInstrumentFile.columnHeaderRows}" min="0" max="500" onkeypress="return numberOnly(event)" onkeyup="setTimeout(function() {renderSampleFile()}, 100)" onchange="renderSampleFile()"/>
+								<div class="flexSet nowrap">
+									<p:outputLabel for="columnHeaderRows" value="Column Header Rows:" styleClass="flexSetItem nowrap"/>
+									<p:spinner id="columnHeaderRows" widgetVar="colHeadRows" styleClass="flexSetItem" size="3" value="#{newInstrumentBean.currentInstrumentFile.columnHeaderRows}" min="0" max="500" onkeypress="return numberOnly(event)" onkeyup="setTimeout(function() {renderSampleFile()}, 100)" onchange="renderSampleFile()"/>
+								</div>
 							</p:panel>
 							
 							<p:panel header="Separator">
-								<p:outputLabel for="separator" value="Separator"/>
-								<p:selectOneMenu id="separator" value="#{newInstrumentBean.currentInstrumentFile.separatorName}">
-									<p:ajax event="change" update="columnCount"/>
-									<f:selectItem itemLabel="Tab" itemValue="TAB"/>
-									<f:selectItem itemLabel="Comma" itemValue="COMMA"/>
-									<f:selectItem itemLabel="Semi-colon" itemValue="SEMICOLON"/>
-									<f:selectItem itemLabel="Space" itemValue="SPACE"/>
-									<p:ajax update="columnCount"/>
-								</p:selectOneMenu>
-								(<h:outputText id="columnCount" value="#{newInstrumentBean.currentInstrumentFile.columnCount}"/> columns)
+								<div class="flexSet nowrap">
+									<div class="flexSetItem grow">
+										<p:outputLabel for="separator" value="Separator:"/>
+									</div>
+									<div class="flexSetItem">
+										<p:selectOneMenu id="separator" value="#{newInstrumentBean.currentInstrumentFile.separatorName}">
+											<p:ajax event="change" update="columnCount"/>
+											<f:selectItem itemLabel="Tab" itemValue="TAB"/>
+											<f:selectItem itemLabel="Comma" itemValue="COMMA"/>
+											<f:selectItem itemLabel="Semi-colon" itemValue="SEMICOLON"/>
+											<f:selectItem itemLabel="Space" itemValue="SPACE"/>
+											<p:ajax update="columnCount"/>
+										</p:selectOneMenu>
+									</div>
+									<div class="flexSetItem">
+										(<h:outputText id="columnCount" value="#{newInstrumentBean.currentInstrumentFile.columnCount}"/> columns)
+									</div>
+								</div>
 							</p:panel>
 							<div id="sampleFileMessage" class="errorBox">
 								Errors go here.

@@ -482,6 +482,10 @@ hr {
     margin-bottom: 25px;
 }
 
+.nowrap {
+	white-space: nowrap;
+}
+
 .error {
 	color: #ff0000;
 	font-weight: 700;
@@ -575,4 +579,29 @@ table.fileDates {
 	padding: 2px 5px;
 	border-radius: 6px;
 	display: none;
+}
+
+.flexSet {
+	display: flex;
+	align-items: center;
+}
+
+.flexSet .nowrap {
+	flex-wrap: nowrap;
+}
+
+.flexSetItem {
+	margin-right: 8px;
+}
+
+.flexSetItem:last-child {
+	margin-right: 0px;
+}
+
+.flexSetItemGrow {
+	flex-grow: 1000;
+}
+
+.flexSetItemShrink {
+	flex-shrink: 1000;
 }
