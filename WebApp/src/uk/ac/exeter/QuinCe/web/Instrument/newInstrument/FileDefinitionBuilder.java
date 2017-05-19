@@ -256,7 +256,12 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 */
 	private int getColumnCount(String separator) {
 		int maxColumnCount = 0;
-		for (int i = fileDataArray.size() - SEPARATOR_SEARCH_LINES; i < fileDataArray.size(); i++) {
+		
+		int firstSearchLine = fileDataArray.size() - SEPARATOR_SEARCH_LINES;
+		if (firstSearchLine < 0) {
+			firstSearchLine = 0;
+		}
+		for (int i = firstSearchLine; i < fileDataArray.size(); i++) {
 			int separatorCount = countSeparatorInstances(separator, fileDataArray.get(i));
 			if (separatorCount > maxColumnCount) {
 				maxColumnCount = separatorCount;
