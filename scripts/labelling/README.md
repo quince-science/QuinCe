@@ -15,9 +15,3 @@ listed above, you need an input directory containing the
 files exported from QuinCe, and an output directory where
 the generated files will end up.
 
-
-To run both scripts, in addition to the data directories
-listed above, you need an input directory containing the
-files exported from QuinCe, and an output directory where
-the generated files will end up.
-
