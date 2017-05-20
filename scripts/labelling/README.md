@@ -4,9 +4,9 @@ Scripts to add external data to files exported from QuinCe.
 `<VAR>_<YEAR>.nc`
 
 The configuration for the ECMWF downloads is:
-Time steps: 0,12,16,18
-Step: 0
-Resolution: 1°x1°
+* Time steps: 0,12,16,18
+* Step: 0
+* Resolution: 1°x1°
 
 `summary_and_plots.R` doesn't need anything special
 
