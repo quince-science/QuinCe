@@ -69,7 +69,7 @@
 										<p:radioButton id="lineCountType" for="headerType" itemIndex="0"/>
 										<p:outputLabel for="lineCountType" value="# Lines"/>
 										<p:spinner id="headerLineCount" widgetVar="headerLines" size="3" value="#{newInstrumentBean.currentInstrumentFile.headerLines}" min="0" max="500" onkeypress="return numberOnly(event)" onkeyup="setTimeout(function() {renderSampleFile()}, 100)" onchange="renderSampleFile()"/>
-										
+									
 										<p:radioButton id="stringType" for="headerType" itemIndex="1"/>
 										<p:outputLabel for="stringType" value="End Line"/>
 										<p:inputText id="headerString" widgetVar="headerEndString" value="#{newInstrumentBean.currentInstrumentFile.headerString}" onkeyup="renderSampleFile()"/>
@@ -108,7 +108,7 @@
 								Errors go here.
 							</div>
 							<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
-								<p:commandButton value="Discard File" ajax="true" action="#{newInstrumentBean.discardUploadedFile}" oncomplete="discardUploadedFile()" immediate="true"/>
+								<p:commandButton value="Discard File" ajax="true" action="#{newInstrumentBean.discardUploadedFile}" oncomplete="discardUploadedFile();" immediate="true"/>
 								<p:commandButton value="Use File" action="#{newInstrumentBean.acceptUploadedFile}" disabled="true"/>
 							</h:panelGrid>
 							

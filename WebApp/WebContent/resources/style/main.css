@@ -584,10 +584,15 @@ table.fileDates {
 .flexSet {
 	display: flex;
 	align-items: center;
+	margin-bottom: 5px;
 }
 
 .flexSet .nowrap {
 	flex-wrap: nowrap;
+}
+
+.flexSet:last-child {
+	margin-bottom: 0px;
 }
 
 .flexSetItem {
@@ -604,4 +609,9 @@ table.fileDates {
 
 .flexSetItemShrink {
 	flex-shrink: 1000;
+}
+
+/* PrimeFaces overrides */
+.ui-panel-content td {
+	vertical-align: middle;
 }
