@@ -71,6 +71,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @return Navigation to the name page
 	 */
 	public String goToName() {
+		clearFile();
 		return NAV_NAME;
 	}
 	
@@ -135,7 +136,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	private void clearAllData() {
 		instrumentName = null;
 		instrumentFiles = new InstrumentFileSet();
-		currentInstrumentFile = null;
+		clearFile();
 	}
 	
 	/**
