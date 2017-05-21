@@ -107,6 +107,11 @@
 							<div id="sampleFileMessage" class="errorBox">
 								Errors go here.
 							</div>
+							<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+								<p:commandButton value="Discard File" ajax="true" action="#{newInstrumentBean.discardUploadedFile}" oncomplete="discardUploadedFile()" immediate="true"/>
+								<p:commandButton value="Use File" action="#{newInstrumentBean.acceptUploadedFile}" disabled="true"/>
+							</h:panelGrid>
+							
 						</div>
 					</div>
 				</div>
@@ -115,7 +120,7 @@
 			<h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
 				<ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml"/>
 				<p:commandButton value="Back" ajax="false" action="#{newInstrumentBean.goToName}" immediate="true"/>
-				<p:commandButton value="Next" ajax="false" action="#{newInstrumentBean.goToFiles}"/>
+				<p:commandButton value="Next" widgetVar="nextButton" ajax="false" action="#{newInstrumentBean.goToFiles}" disabled="true"/>
 			</h:panelGrid>
 		</h:form>
 	</ui:define>

@@ -21,6 +21,12 @@ function updateFileContentDisplay(data) {
 	}
 }
 
+// Go back to showing the file upload selector
+function discardUploadedFile() {
+	$('#fileFormatSpec').hide();
+	$('#uploadFile').show();
+}
+
 // Render the contents of the uploaded sample file
 // (upload.xhtml)
 function renderSampleFile() {

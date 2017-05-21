@@ -118,7 +118,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	@Override
 	public void processUploadedFile() {
 		String fileContent = new String(getFile().getContents(), StandardCharsets.UTF_8);
-		List<String> fileLines = Arrays.asList(fileContent.split("\n"));
+		List<String> fileLines = Arrays.asList(fileContent.split("[\\r\\n]+"));
 		
 		if (fileLines.size() > FileDefinitionBuilder.FILE_DATA_MAX_LINES) {
 			fileLines = fileLines.subList(0, FileDefinitionBuilder.FILE_DATA_MAX_LINES - 1);
@@ -176,5 +176,30 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	public boolean getHasMultipleFiles() {
 		return (instrumentFiles.size() > 1);
+	}
+	
+	/**
+	 * Add the current instrument file to the file set (or update it)
+	 * and clear its status as 'current'. Then navigate to the
+	 * variable assignment page.
+	 * @return The navigation to the variable assignment page
+	 */
+	public String acceptUploadedFile() {
+		instrumentFiles.storeFile(currentInstrumentFile);
+		clearFile();
+		return NAV_ASSIGN_VARIABLES;
+	}
+
+	/**
+	 * Discard the current instrument file
+	 */
+	public void discardUploadedFile() {
+		clearFile();
+	}
+	
+	@Override
+	public void clearFile() {
+		currentInstrumentFile = new FileDefinitionBuilder();
+		super.clearFile();
 	}
 }
