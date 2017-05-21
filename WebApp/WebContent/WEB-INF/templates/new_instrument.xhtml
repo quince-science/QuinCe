@@ -15,7 +15,7 @@
 		<div id="content">
 			<div id="instrumentName"><ui:insert name="new_instrument_name"><h:outputText value="#{newInstrumentBean.instrumentName}"/></ui:insert></div>
 			<div id="progress">
-				<p:steps activeIndex="#{instrumentStep}">
+				<p:steps activeIndex="#{instrumentStep}" styleClass="custom">
 					<p:menuitem value="Name"/>
 					<p:menuitem value="Files"/>
 					<p:menuitem value="Run Types"/>

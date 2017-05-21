@@ -9,6 +9,10 @@ body {
   overflow-x: hidden;
 }
 
+a {
+	outline: none;
+}
+
 pre {
 	font-family: 'Inconsolata', monospace;
 	margin: 0px;
@@ -614,4 +618,24 @@ table.fileDates {
 /* PrimeFaces overrides */
 .ui-panel-content td {
 	vertical-align: middle;
+}
+
+.ui-steps.custom .ui-steps-item {
+	height: 30px;	
+}
+
+.ui-steps.custom .ui-menuitem-link {
+	padding: 5px 0px 0px 0px;
+}
+
+.ui-steps.custom .ui-steps-number {
+	display: none;
+}
+
+.ui-steps.custom .ui-state-highlight {
+	font-weight: 700;
+}
+
+.ui-steps.custom .ui-state-default {
+	font-weight: 700;
 }
