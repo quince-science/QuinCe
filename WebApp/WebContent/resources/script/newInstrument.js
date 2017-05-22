@@ -17,7 +17,6 @@ function updateFileContentDisplay(data) {
 		$('#processingFileMessage').hide();
 		$('#fileFormatSpec').show();
 		updateHeaderFields();
-		updateColumnCount();
 		renderSampleFile();
 	}
 }
@@ -31,11 +30,10 @@ function discardUploadedFile() {
 // Render the contents of the uploaded sample file
 // (upload.xhtml)
 function renderSampleFile() {
-	
-	hideSampleFileErrors();
-	
+		
 	var fileData = JSON.parse($('#newInstrumentForm\\:sampleFileContent').val());
 	var fileHtml = '';
+	var messageTriggered = false;
 	
 	var currentRow = 0;
 	
@@ -45,6 +43,7 @@ function renderSampleFile() {
 			currentRow++;
 			if (currentRow >= fileData.length) {
 				sampleFileError("Header is too long");
+				messageTriggered = true;
 			}
 		}
 	} else {
@@ -58,6 +57,7 @@ function renderSampleFile() {
 			currentRow++;
 			if (currentRow >= fileData.length) {
 				sampleFileError("Header end string not found");
+				messageTriggered = true;
 			}
 		}
 	}
@@ -68,6 +68,7 @@ function renderSampleFile() {
 		currentRow++;
 		if (currentRow >= fileData.length) {
 			sampleFileError("Too many column headers");
+			messageTriggered = true;
 		}
 	}
 	
@@ -75,16 +76,27 @@ function renderSampleFile() {
 		fileHtml += getLineHtml(currentRow, fileData[currentRow], null);
 		currentRow++;
 	}
+	
+	var columnCount = parseInt($('#newInstrumentForm\\:columnCount').val());
+	$('#newInstrumentForm\\:columnCountDisplay').html($('#newInstrumentForm\\:columnCount').val());
+	if (columnCount <= 1) {
+		sampleFileError('Cannot extract any columns with the selected separator');
+		messageTriggered = true;
+	}
 
 	$('#fileContent').html(fileHtml);
+	
+	if (!messageTriggered) {
+		hideSampleFileErrors();
+	}
 }
 
 function hideSampleFileErrors() {
 	$('#sampleFileMessage').hide();
 }
 
-function sampleFileError(message) {
-	$('#sampleFileMessage').text(message);
+function sampleFileError(messages) {
+	$('#sampleFileMessage').text(messages);
 	$('#sampleFileMessage').show();
 }
 
@@ -138,4 +150,5 @@ function numberOnly(event) {
 
 function updateColumnCount() {
 	$('#newInstrumentForm\\:columnCountDisplay').html($('#newInstrumentForm\\:columnCount').val());
+	renderSampleFile();
 }
