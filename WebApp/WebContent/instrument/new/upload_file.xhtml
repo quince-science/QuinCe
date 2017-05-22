@@ -15,6 +15,7 @@
 			$(document).ready(function() {
 				if (hasFileData) {
 					$('#fileSpec').show();
+					updateColumnCount();
 				} else {
 					$('#uploadFile').show();
 				}
@@ -91,22 +92,20 @@
 									</div>
 									<div class="flexSetItem">
 										<p:selectOneMenu id="separator" value="#{newInstrumentBean.currentInstrumentFile.separatorName}">
-											<p:ajax event="change" update="columnCount"/>
+											<p:ajax event="change" update="columnCount" oncomplete="updateColumnCount()"/>
 											<f:selectItem itemLabel="Tab" itemValue="TAB"/>
 											<f:selectItem itemLabel="Comma" itemValue="COMMA"/>
 											<f:selectItem itemLabel="Semi-colon" itemValue="SEMICOLON"/>
 											<f:selectItem itemLabel="Space" itemValue="SPACE"/>
-											<p:ajax update="columnCount"/>
 										</p:selectOneMenu>
 									</div>
 									<div class="flexSetItem">
-										(<h:outputText id="columnCount" value="#{newInstrumentBean.currentInstrumentFile.columnCount}"/> columns)
+										<h:inputHidden id="columnCount" value="#{newInstrumentBean.currentInstrumentFile.columnCount}"/>
+										(<h:outputText id="columnCountDisplay" value=""/> columns)
 									</div>
 								</div>
 							</p:panel>
-							<div id="sampleFileMessage" class="errorBox">
-								Errors go here.
-							</div>
+							<div id="sampleFileMessage" class="errorBox"></div>
 							<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
 								<p:commandButton value="Discard File" ajax="true" action="#{newInstrumentBean.discardUploadedFile}" oncomplete="discardUploadedFile();" immediate="true"/>
 								<p:commandButton value="Use File" action="#{newInstrumentBean.acceptUploadedFile}" disabled="true"/>

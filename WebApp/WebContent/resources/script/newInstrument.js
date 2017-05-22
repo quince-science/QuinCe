@@ -17,6 +17,7 @@ function updateFileContentDisplay(data) {
 		$('#processingFileMessage').hide();
 		$('#fileFormatSpec').show();
 		updateHeaderFields();
+		updateColumnCount();
 		renderSampleFile();
 	}
 }
@@ -133,4 +134,8 @@ function numberOnly(event) {
 	}
 
 	return charOK;
+}
+
+function updateColumnCount() {
+	$('#newInstrumentForm\\:columnCountDisplay').html($('#newInstrumentForm\\:columnCount').val());
 }

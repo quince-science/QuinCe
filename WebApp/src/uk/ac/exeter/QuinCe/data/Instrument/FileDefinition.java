@@ -227,7 +227,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * @see #VALID_SEPARATORS
 	 */
 	public void setSeparator(String separator) throws InvalidSeparatorException {
-		validateSeparator(separator);
+		if (!validateSeparator(separator)) {
+			throw new InvalidSeparatorException(separator);
+		}
 		this.separator = separator;
 	}
 	
@@ -247,22 +249,17 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	/**
 	 * Ensure that a separator is one of the supported options
 	 * @param separator The separator to be checked
-	 * @throws InvalidSeparatorException If the separator is invalid
+	 * @return {@code true} if the separator is supported; {@code false} if it is not
 	 */
-	private void validateSeparator(String separator) throws InvalidSeparatorException {
+	public static boolean validateSeparator(String separator) {
 		
-		boolean separatorValid = false;
+		boolean separatorValid = true;
 		
-		for (int i = 0; i < VALID_SEPARATORS.length; i++) {
-			if (VALID_SEPARATORS[i].equals(separator)) {
-				separatorValid = true;
-				break;
-			}
+		if (!SEPARATOR_LOOKUP.containsKey(separator) && !SEPARATOR_LOOKUP.containsValue(separator)) {
+			separatorValid = false;
 		}
 
-		if (!separatorValid) {
-			throw new InvalidSeparatorException(separator);
-		}
+		return separatorValid;
 	}
 	
 	/**

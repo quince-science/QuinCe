@@ -107,10 +107,16 @@
 		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.newInstrument.InstrumentNameValidator</validator-class>
 	</validator>
 	<validator>
-		<description>Checks that the file description for an instrument file is unique and not empty</description>
+		<description>Checks that the file description for an instrument file is unique and not empty. This should be used in instrument/new/upload_file.xhtml, but I&amp;apos;m doing it in Javascript for now because it&amp;apos;s easier to work with and I&amp;apos;m not in the mood to mess around with it.</description>
 		<display-name>Instrument File Description Validator</display-name>
 		<validator-id>instrumentFileDescriptionValidator</validator-id>
 		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.newInstrument.InstrumentFileDescriptionValidator</validator-class>
+	</validator>
+	<validator>
+		<description>Checks that a separator is valid for a data file</description>
+		<display-name>Separation Validator</display-name>
+		<validator-id>separatorValidator</validator-id>
+		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.newInstrument.SeparatorValidator</validator-class>
 	</validator>
 	<navigation-rule>
 		<display-name>all_pages</display-name>

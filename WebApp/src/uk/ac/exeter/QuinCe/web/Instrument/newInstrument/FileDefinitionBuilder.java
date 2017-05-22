@@ -254,7 +254,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 * @see #SEPARATOR_SEARCH_LINES
 	 * @see #getMostCommonSeparator()
 	 */
-	private int getColumnCount(String separator) {
+	 public int getColumnCount(String separator) {
 		int maxColumnCount = 0;
 		
 		int firstSearchLine = fileDataArray.size() - SEPARATOR_SEARCH_LINES;
