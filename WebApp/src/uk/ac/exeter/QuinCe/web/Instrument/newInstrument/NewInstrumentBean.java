@@ -185,7 +185,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * variable assignment page.
 	 * @return The navigation to the variable assignment page
 	 */
-	public String acceptUploadedFile() {
+	public String useFile() {
 		instrumentFiles.storeFile(currentInstrumentFile);
 		clearFile();
 		return NAV_ASSIGN_VARIABLES;

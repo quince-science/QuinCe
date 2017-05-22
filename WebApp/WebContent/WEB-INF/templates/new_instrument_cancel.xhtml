@@ -4,7 +4,7 @@
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-	<p:commandButton value="Cancel" onclick="PF('cancelConfirm').show()"/>
+	<p:button value="Cancel" onclick="PF('cancelConfirm').show();return false;"/>
 
 	<p:confirmDialog widgetVar="cancelConfirm" header="Cancel New Instrument?" message="All progress in creating the new instrument will be lost.">
 		<p:commandButton value="Cancel New Instrument" ajax="false" action="#{newInstrumentBean.cancel}" immediate="true"/>

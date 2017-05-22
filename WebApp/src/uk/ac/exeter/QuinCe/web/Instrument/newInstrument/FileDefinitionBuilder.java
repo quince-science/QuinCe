@@ -270,4 +270,13 @@ public class FileDefinitionBuilder extends FileDefinition {
 		
 		return maxColumnCount;
 	}
+
+	/**
+	 * Dummy set column method for bean requirements.
+	 * Doesn't actually do anything
+	 * @param columnCount The column count
+	 */
+	public void setColumnCount(int columnCount) {
+		// Do nothing
+	}
 }

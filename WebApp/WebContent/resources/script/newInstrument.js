@@ -88,6 +88,9 @@ function renderSampleFile() {
 	
 	if (!messageTriggered) {
 		hideSampleFileErrors();
+		PF('useFileButton').enable();
+	} else {
+		PF('useFileButton').disable();
 	}
 }
 
@@ -151,4 +154,8 @@ function numberOnly(event) {
 function updateColumnCount() {
 	$('#newInstrumentForm\\:columnCountDisplay').html($('#newInstrumentForm\\:columnCount').val());
 	renderSampleFile();
+}
+
+function useFile() {
+	$('#useFileForm\\:useFileLink').click()
 }
