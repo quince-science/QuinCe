@@ -87,7 +87,6 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 * @see #getColumnCount()
 	 */
 	public void guessFileLayout() {
-		
 		try {
 			// Look at the last few lines. Find the most common separator character,
 			// and the maximum number of columns in each line

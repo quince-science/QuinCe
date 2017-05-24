@@ -10,15 +10,11 @@ function showProcessingMessage() {
 // Once the file has been processed, display the file contents and
 // format controls
 // (upload_file.xhtml)
-function updateFileContentDisplay(data) {
-	var status = data.status;
-	
-	if (status == "success") {
-		$('#processingFileMessage').hide();
-		$('#fileFormatSpec').show();
-		updateHeaderFields();
-		renderSampleFile();
-	}
+function updateFileContentDisplay() {
+	$('#processingFileMessage').hide();
+	$('#fileFormatSpec').show();
+	updateHeaderFields();
+	renderSampleFile();
 }
 
 // Go back to showing the file upload selector
