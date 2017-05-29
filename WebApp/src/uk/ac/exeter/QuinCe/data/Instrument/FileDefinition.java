@@ -55,7 +55,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * The name used to identify files of this type
 	 */
 	private String fileDescription;
-
+	
 	/**
 	 * The method by which the header is defined.
 	 * One of {@link #HEADER_TYPE_LINE_COUNT} or {@link #HEADER_TYPE_STRING}
@@ -91,8 +91,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	}
 	
 	/**
-	 * Create a new file with the given description
+	 * Create a new file with the given description. A set of sensor
+	 * assignments must also be supplied.
+	 *
 	 * @param fileDescription The file description
+	 * @param sensorConfiguration The sensors configuration
 	 */
 	public FileDefinition(String fileDescription) {
 		this.fileDescription = fileDescription;

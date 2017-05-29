@@ -10,6 +10,11 @@ import java.util.TreeSet;
 public class InstrumentFileSet extends TreeSet<FileDefinitionBuilder> {
 
 	/**
+	 * The serial version UID
+	 */
+	private static final long serialVersionUID = -2644317280574565531L;
+
+	/**
 	 * Simple constructor to create an empty set
 	 */
 	protected InstrumentFileSet() {

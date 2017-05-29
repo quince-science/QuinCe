@@ -41,12 +41,12 @@ public class FileDefinitionBuilder extends FileDefinition {
 	/**
 	 * The first 500 lines of the uploaded sample file, as an array of Strings
 	 */
-	private List<String> fileDataArray = null;
+	private List<String> fileDataArray = null; 
 	
 	/**
 	 * Create a new file definition with the default description
 	 */
-	public FileDefinitionBuilder() {
+	protected FileDefinitionBuilder() {
 		super(DEFAULT_DESCRIPTION);
 	}
 	

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Various miscellaneous string utilities
+ * Miscellaneous string utilities
  * @author Steve Jones
  *
  */
@@ -206,6 +206,32 @@ public class StringUtils {
 			} else {
 				result.put(entrySplit[0], entrySplit[1]);
 			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Convert a case-insensitive Y/N value to a boolean
+	 * @param value The value
+	 * @return The boolean value
+	 * @throws StringFormatException If the supplied value is not Y or N
+	 */
+	public static boolean parseYNBoolean(String value) throws StringFormatException {
+		boolean result;
+		
+		switch(value.toUpperCase()) {
+		case "Y": {
+			result = true;
+			break;
+		}
+		case "N": {
+			result = false;
+			break;
+		}
+		default: {
+			throw new StringFormatException("Invalid boolean value", value);
+		}
 		}
 		
 		return result;

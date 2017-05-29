@@ -17,6 +17,7 @@ import uk.ac.exeter.QCRoutines.config.ConfigException;
 import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
 
@@ -36,6 +37,8 @@ public class ResourceManager implements ServletContextListener {
 	private Properties configuration;
 	
 	private ColumnConfig columnConfig;
+	
+	private SensorsConfiguration sensorsConfiguration;
 	
 	private static ResourceManager instance = null;
 	
@@ -94,6 +97,13 @@ public class ResourceManager implements ServletContextListener {
        		throw new RuntimeException("Could not initialise export configuration", e);
        	}
        	
+       	// Initialise the sensors configuration
+       	try {
+       		ExportConfig.init(configuration.getProperty("sensors.configfile"));
+       	} catch (ExportException e) {
+       		throw new RuntimeException("Could not sensors configuration", e);
+       	}
+       	
        	instance = this;
 }
 
@@ -112,6 +122,10 @@ public class ResourceManager implements ServletContextListener {
 
     public ColumnConfig getColumnConfig() {
     	return columnConfig;
+    }
+    
+    public SensorsConfiguration getSensorsConfiguration() {
+    	return sensorsConfiguration;
     }
     
     public static ResourceManager getInstance() {

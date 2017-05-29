@@ -8,4 +8,8 @@ public class InstrumentException extends Exception {
 		super(message);
 	}
 
+	public InstrumentException(String message, Throwable cause) {
+		super(message);
+	}
+
 }
