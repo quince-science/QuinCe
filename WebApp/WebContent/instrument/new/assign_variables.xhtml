@@ -8,12 +8,25 @@
 
 	<ui:define name="title">New Instrument</ui:define>
 	<ui:define name="instrumentHead">
-		<c:set var="instrumentStep" value="1" scope="request"/>		
+		<c:set var="instrumentStep" value="1" scope="request"/>	
+		<script>
+			$(document).ready(function() {
+				renderSensorAssignments();
+			});
+		</script>	
 	</ui:define>
 	<ui:define name="new_instrument_content">
 		<h:form id="newInstrumentForm" metho="post" charset="utf8">
 		
 			<h:inputHidden id="sensorAssignments" value="#{newInstrumentBean.sensorAssignments}"/>
+			
+			<p:fieldset id="assignmentsPanel" legend="Column Assignments" style="margin-bottom: 20px">
+				<div id="assignmentsList"></div>
+			</p:fieldset>
+			
+			<p:tabView value="#{newInstrumentBean.instrumentFiles}" var="iFile">
+				<p:tab title="#{iFile.fileDescription}">FILE!</p:tab>
+			</p:tabView>
 		
 			<!--  The cancel include has a 2 entries (1 is invisible) -->
 			<h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
