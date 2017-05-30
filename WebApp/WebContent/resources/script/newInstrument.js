@@ -1,3 +1,9 @@
+//************************************************
+//
+// UPLOAD FILE PAGE
+//
+//************************************************
+
 // After a sample file is uploaded, show the Processing message while
 // the file is processed
 // (upload_file.xhtml)
@@ -154,4 +160,32 @@ function updateColumnCount() {
 
 function useFile() {
 	$('#useFileForm\\:useFileLink').click()
+}
+
+//************************************************
+//
+// SENSOR ASSIGNMENTS PAGE
+//
+//************************************************
+function renderSensorAssignments() {
+	var html = '';
+	
+	var assignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
+	
+	for (var i = 0; i < assignments.length; i++) {
+		var assignment = assignments[i];
+		
+		html += '<div class="assignmentListEntry';
+		if (assignment['required']) {
+			html += ' assignmentRequired';
+		}
+		html += '"><div class="assignmentLabel">';
+		html += assignment['name'];
+		html += '</div><div class="assignmentCount">';
+		html += assignment['assignments'].length;
+		html += '</div>';
+		html += '</div>';
+	}
+	
+	$('#assignmentsList').html(html);
 }

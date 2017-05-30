@@ -293,4 +293,14 @@ public class NewInstrumentBean extends FileUploadBean {
 		
 		return json.toString();
 	}
+	
+	/**
+	 * Dummy method for setting sensor assignments. It doesn't
+	 * actually do anything, but it's needed for the JSF communications
+	 * to work.
+	 * @param assignments The assignments. They are ignored.
+	 */
+	public void setSensorAssignments(String assignments) {
+		// Do nothing
+	}
 }
