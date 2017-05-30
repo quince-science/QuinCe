@@ -20,7 +20,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	/**
 	 * The maximum number of lines from an uploaded file to be stored
 	 */
-	protected static final int FILE_DATA_MAX_LINES = 500;
+	protected static final int FILE_DATA_MAX_LINES = 250;
 	
 	/**
 	 * The number of lines to search in order to determine
@@ -34,12 +34,12 @@ public class FileDefinitionBuilder extends FileDefinition {
 	private static final String DEFAULT_DESCRIPTION = "Data File";
 	
 	/**
-	 * The first 500 lines of the uploaded sample file, formatted as a JSON string
+	 * The first {@link #FILE_DATA_MAX_LINES} lines of the uploaded sample file, formatted as a JSON string
 	 */
 	private String fileData = null;
 	
 	/**
-	 * The first 500 lines of the uploaded sample file, as an array of Strings
+	 * The first {@link #FILE_DATA_MAX_LINES} lines of the uploaded sample file, as an array of Strings
 	 */
 	private List<String> fileDataArray = null; 
 	
