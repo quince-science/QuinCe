@@ -8,7 +8,12 @@
 
 	<ui:define name="title">New Instrument</ui:define>
 	<ui:define name="instrumentHead">
-		<c:set var="instrumentStep" value="0" scope="request"/>		
+		<script>
+			$(document).ready(function (){
+				$('#newInstrumentForm\\:instrumentName').focus();
+			});
+		</script>
+		<c:set var="instrumentStep" value="0" scope="request"/>
 	</ui:define>
 	<ui:define name="new_instrument_name">New Instrument</ui:define>
 	<ui:define name="new_instrument_content">
