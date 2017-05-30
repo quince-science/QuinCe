@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Map of sensors to their assignments in an instrument's data files.
@@ -15,7 +16,7 @@ import java.util.List;
  * @author Steve Jones
  *
  */
-public class SensorAssignments extends LinkedHashMap<SensorType, Iterable<SensorAssignment>>{
+public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssignment>> {
 
 	/**
 	 * The serial version UID
@@ -30,5 +31,110 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Iterable<Sensor
 		for (SensorType type : sensorTypes) {
 			put(type, new HashSet<SensorAssignment>());
 		}
+	}
+	
+	/**
+	 * Determines whether or not a given sensor type must have a column assigned.
+	 * 
+	 * <p>
+	 *   This method checks the current sensor assignments, and determines whether
+	 *   or not a given sensor still needs to have an assignment made. This
+	 *   requires a number of checks:
+	 * </p>
+	 * 
+	 * <ul>
+	 *   <li>
+	 *     If a sensor has been assigned, then no further assignment is needed
+	 *   </li>
+	 *   <li>
+	 *     If the sensor is part of a required group, and none of the sensors
+	 *     in that group have had a sensor assigned, then an assignment is needed.
+	 *     If any of the sensors in the group have been assigned, then no
+	 *     assignment is needed for this sensor.
+	 *   </li>
+	 *   <li>
+	 *     If the sensor is not part of a required group, but its required 
+	 *     flag is set, then a sensor assignment is required.
+	 *   </li>
+	 *   <li>
+	 *     If another sensor type depends on this sensor type, then a
+	 *     sensor assignment is required
+	 *   </li>
+	 * </ul>
+	 * @param sensorType The sensor type to be checked
+	 * @return {@code true} if a column must be assigned to the sensor; {@code false}
+	 * if no assignment is needed.
+	 * @throws SensorAssignmentException If the specified sensor type does not exist
+	 */
+	public boolean isAssignmentRequired(SensorType sensorType) throws SensorAssignmentException {
+		boolean result = true;
+		
+		if (!containsKey(sensorType)) {
+			throw new SensorAssignmentException("The specified sensor was not found");
+		}
+		
+		// See if any assignments have already been made
+		Set<SensorAssignment> assignments = get(sensorType);
+		if (null != assignments && assignments.size() > 0) {
+			result = false;
+		} else {
+			
+			// Check the required group
+			String requiredGroup = sensorType.getRequiredGroup();
+			
+			if (null != requiredGroup && groupAssigned(requiredGroup)) {
+				result = false;
+			} else {
+				// If any other sensors depend on this one,
+				// of this sensor is required, then assignment is needed
+				result = (hasDependents(sensorType) || sensorType.isRequired());
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Determines whether or not a named Required Group has been assigned
+	 * within any of its member sensor types.
+	 * @param requiredGroup The Required Group
+	 * @return {@code true} if a sensor has been assigned; {@code false} if no sensor has been assigned.
+	 */
+	private boolean groupAssigned(String requiredGroup) {
+		boolean result = false;
+		
+		for (SensorType sensorType : keySet()) {
+			String sensorGroup = sensorType.getRequiredGroup();
+			if (null != sensorGroup && sensorGroup.equalsIgnoreCase(requiredGroup)) {
+				Set<SensorAssignment> assignments = get(sensorType);
+				if (null != assignments && assignments.size() > 0) {
+					result = true;
+					break;
+				}
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * Determines whether or not any of the sensor types in the
+	 * collection depends on the supplied sensor type
+	 * @param sensorType The sensor type that other sensors may depend on
+	 * @return {@code true} if any other sensor types depend on the supplied sensor type; {@code false} if there are no dependents
+	 */
+	private boolean hasDependents(SensorType sensorType) {
+		boolean result = false;
+		
+		for (SensorType testType : keySet()) {
+			if (!testType.equals(sensorType)) {
+				String dependsOn = testType.getDependsOn();
+				if (null != dependsOn && dependsOn.equalsIgnoreCase(sensorType.getName())) {
+					result = true;
+					break;
+				}
+			}
+		}
+		
+		return result;
 	}
 }

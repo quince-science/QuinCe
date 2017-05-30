@@ -13,7 +13,7 @@
 	<ui:define name="new_instrument_content">
 		<h:form id="newInstrumentForm" metho="post" charset="utf8">
 		
-			Give me variables.
+			<h:inputHidden id="sensorAssignments" value="#{newInstrumentBean.sensorAssignments}"/>
 		
 			<!--  The cancel include has a 2 entries (1 is invisible) -->
 			<h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">

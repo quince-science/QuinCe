@@ -17,6 +17,7 @@ import uk.ac.exeter.QCRoutines.config.ConfigException;
 import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
@@ -99,9 +100,9 @@ public class ResourceManager implements ServletContextListener {
        	
        	// Initialise the sensors configuration
        	try {
-       		ExportConfig.init(configuration.getProperty("sensors.configfile"));
-       	} catch (ExportException e) {
-       		throw new RuntimeException("Could not sensors configuration", e);
+       		sensorsConfiguration = new SensorsConfiguration(new File(configuration.getProperty("sensors.configfile")));
+       	} catch (SensorConfigurationException e) {
+       		throw new RuntimeException("Could not load sensors configuration", e);
        	}
        	
        	instance = this;

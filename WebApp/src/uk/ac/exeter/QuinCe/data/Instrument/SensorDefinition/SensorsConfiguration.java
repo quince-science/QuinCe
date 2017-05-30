@@ -74,7 +74,7 @@ public class SensorsConfiguration {
 	 * Get an empty map of sensor types ready to have columns assigned 
 	 * @return An empty sensor types/assignments map
 	 */
-	public SensorAssignments getSensorTypesMap() {
+	public SensorAssignments getNewSensorAssigments() {
 		return new SensorAssignments(sensorTypes);
 	}
 	
@@ -157,7 +157,7 @@ public class SensorsConfiguration {
 	private void checkDependsOnConfiguration() throws SensorConfigurationException {
 		for (SensorType type: sensorTypes) {
 			String dependsOn = type.getDependsOn();
-			if (!sensorTypeDefined(dependsOn)) {
+			if (null != dependsOn && !sensorTypeDefined(dependsOn)) {
 				throw new SensorConfigurationException("Sensor type '" + type.getName() + "' depends on '" + dependsOn + "', but that sensor type is not configured");
 			}
 		}

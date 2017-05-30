@@ -3,9 +3,15 @@ package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 import uk.ac.exeter.QuinCe.web.html.HtmlUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Bean for collecting data about a new instrument
@@ -42,6 +48,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * The set of sample files for the instrument definition
 	 */
 	private InstrumentFileSet instrumentFiles;
+	
+	/**
+	 * The assignments of sensors to data file columns
+	 */
+	private SensorAssignments sensorAssignments;
 	
 	/**
 	 * The sample file that is currently being edited
@@ -136,6 +147,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	private void clearAllData() {
 		instrumentName = null;
 		instrumentFiles = new InstrumentFileSet();
+		sensorAssignments = ResourceManager.getInstance().getSensorsConfiguration().getNewSensorAssigments();
 		clearFile();
 	}
 	
@@ -202,5 +214,83 @@ public class NewInstrumentBean extends FileUploadBean {
 	public void clearFile() {
 		currentInstrumentFile = new FileDefinitionBuilder();
 		super.clearFile();
+	}
+	
+	/**
+	 * Get the current set of sensor assignments as a JSON string.
+	 * 
+	 * <p>
+	 *   The format of the JSON is as follows:
+	 * </p>
+	 * <pre>
+	 * [
+	 *   {
+	 *     "name": "&lt;sensor type name&gt;",
+	 *     "required": &lt;true/false&gt;,
+	 *     "assignments": [
+	 *       "file": "&lt;data file name&gt;",
+	 *       "column": &lt;column index&gt;
+	 *     ]
+	 *   }
+	 * ]
+	 * </pre>
+	 * 
+	 * @return The sensor assignments
+	 * @throws SensorAssignmentException If the sensor assignments are internally invalid 
+	 */
+	public String getSensorAssignments() throws SensorAssignmentException {
+		StringBuilder json = new StringBuilder();
+		
+		// Start the array of objects
+		json.append('[');
+		
+		int count = 0;
+		for (SensorType sensorType : sensorAssignments.keySet()) {
+			json.append('{');
+			
+			// Sensor Type name
+			json.append("\"name\": \"");
+			json.append(sensorType.getName());
+			json.append("\",");
+			
+			// Is an assignment required?
+			json.append("\"required\":");
+			json.append(sensorAssignments.isAssignmentRequired(sensorType));
+			json.append(",");
+			
+			// The columns assigned to the sensor type
+			Set<SensorAssignment> assignments = sensorAssignments.get(sensorType);
+			
+			json.append("\"assignments\":[");
+			
+			if (null != assignments) {
+				int assignmentCount = 0;
+				for (SensorAssignment assignment : assignments) {
+					json.append("{\"file\":\"");
+					json.append(assignment.getDataFile());
+					json.append("\",\"column\";");
+					json.append(assignment.getColumn());
+					json.append('}');
+					
+					if (assignmentCount < assignments.size() - 1) {
+						json.append(',');
+					}
+				}
+			}
+			
+			json.append(']');
+			
+			// End the array, and add a comma if this isn't the last object
+			json.append('}');
+			if (count < sensorAssignments.size() - 1) {
+				json.append(',');
+			}
+			count++;
+		}
+		
+		// Finish the array
+		json.append(']');
+		
+		return json.toString();
 	}
 }

@@ -80,7 +80,7 @@ public class SensorType {
 	 * Get the name of this sensor type
 	 * @return The name of the sensor type
 	 */
-	protected String getName() {
+	public String getName() {
 		return name;
 	}
 	
@@ -93,6 +93,24 @@ public class SensorType {
 		return dependsOn;
 	}
 	
+	/**
+	 * Get the flag indicating whether or not this sensor
+	 * type is required.
+	 * @return The required flag
+	 */
+	public boolean isRequired() {
+		return required;
+	}
+	
+	/**
+	 * Get the name of the Required Group
+	 * that this sensor type belongs to
+	 * @return The Required Group
+	 */
+	public String getRequiredGroup() {
+		return requiredGroup;
+	}
+
 	/**
 	 * Equality is based on the sensor name only
 	 */
