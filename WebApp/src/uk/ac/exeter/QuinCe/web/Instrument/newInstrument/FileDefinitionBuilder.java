@@ -108,7 +108,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 			int currentRow = 0;
 			boolean columnsRowFound = false;
 			while (!columnsRowFound && currentRow < fileDataArray.size()) {
-				if (countSeparatorInstances(getSeparator(), fileDataArray.get(currentRow)) == getColumnCount()) {
+				if (countSeparatorInstances(getSeparator(), fileDataArray.get(currentRow)) + 1 == getColumnCount()) {
 					columnsRowFound = true;
 				} else {
 					currentRow++;
@@ -178,7 +178,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 			searchPattern = Pattern.compile(separator);
 		}
 		
-		Matcher matcher = searchPattern.matcher(searchString);
+		Matcher matcher = searchPattern.matcher(searchString.trim());
 		
 		int matchCount = 0;
 		while (matcher.find()) {
@@ -270,7 +270,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 		for (int i = firstSearchLine; i < fileDataArray.size(); i++) {
 			int separatorCount = countSeparatorInstances(separator, fileDataArray.get(i));
 			if (separatorCount > maxColumnCount) {
-				maxColumnCount = separatorCount;
+				maxColumnCount = separatorCount + 1;
 			}
 		}
 		
