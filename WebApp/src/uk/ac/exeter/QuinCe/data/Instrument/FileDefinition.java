@@ -1,7 +1,12 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Holds a description of a sample data file uploaded during the
@@ -81,6 +86,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * The column separator
 	 */
 	private String separator = ",";
+	
+	/**
+	 * The number of columns in the file
+	 */
+	private int columnCount = 0;
 	
 	static {
 		SEPARATOR_LOOKUP = new HashMap<String, String>(4);
@@ -301,5 +311,37 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	public void setStringHeaderType(String headerString) {
 		this.headerType = HEADER_TYPE_STRING;
 		this.headerString = headerString;
+	}
+	
+	/**
+	 * Set the column count
+	 * @param columnCount The column count
+	 */
+	public void setColumnCount(int columnCount) {
+		this.columnCount = columnCount;
+	}
+	
+	/**
+	 * Get the column count
+	 * @return The column count
+	 */
+	public int getColumnCount() {
+		return columnCount;
+	}
+	
+	/**
+	 * Convert a string from a data file into a list of column values
+	 * @param dataLine The data line
+	 * @return The column values
+	 */
+	public List<String> makeColumnValues(String dataLine) {
+		List<String> values = new ArrayList<String>();
+		
+		if (separator.equals(" ")) {
+			dataLine = dataLine.trim().replaceAll("  *", " ");
+		}
+		
+		values = Arrays.asList(dataLine.split(separator));
+		return StringUtils.trimList(values);
 	}
 }

@@ -208,61 +208,9 @@ ul input {
   clear: both;
 }
 
-table {
-  border-collapse: collapse;
-}
-
-th {
-  background: #8CD5ED;
-  text-align: left;
-  padding: 2px 5px 2px 5px;
-}
-
-th.right {
-	text-align: right;
-}
-
-tr.link {
-  cursor: pointer;
-}
-
-tr.fileList {
-  border-bottom: 1px solid black;
-}
-
-table .numericCol {
-  text-align: right;
-}
-
-table .centreCol {
-  text-align: center;
-}
-
-table .noWrap {
-  white-space: nowrap;
-}
-
-td {
-  padding: 3px 5px 3px 5px;
-  vertical-align: top;
-}
-
-td.columnBorder {
-    border-left: 1px solid #aaa;
-}
-
-td.columnBorder:first-of-type {
-    border-left: none;
-}
-
 .fullpage {
   width: 95%;
   margin: auto;
-}
-
-td.alert {
-  color: red;
-  font-weight: 700;
 }
 
 .statBarCol {

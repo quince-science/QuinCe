@@ -90,7 +90,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	
 	/**
 	 * Guess the layout of the file from its contents
-	 * @see #getColumnCount()
+	 * @see #calculateColumnCount()
 	 */
 	public void guessFileLayout() {
 		try {
@@ -99,7 +99,8 @@ public class FileDefinitionBuilder extends FileDefinition {
 			setSeparator(getMostCommonSeparator());
 			
 			// Work out the likely number of columns in the file from the last few lines
-			int columnCount = getColumnCount();
+			super.setColumnCount(calculateColumnCount());
+			
 			
 			// Now start at the beginning of the file, looking for rows containing the
 			// maximum column count. Start rows that don't contain this are considered
@@ -107,7 +108,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 			int currentRow = 0;
 			boolean columnsRowFound = false;
 			while (!columnsRowFound && currentRow < fileDataArray.size()) {
-				if (countSeparatorInstances(getSeparator(), fileDataArray.get(currentRow)) == columnCount) {
+				if (countSeparatorInstances(getSeparator(), fileDataArray.get(currentRow)) == getColumnCount()) {
 					columnsRowFound = true;
 				} else {
 					currentRow++;
@@ -149,7 +150,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 		int mostCommonSeparatorCount = 0;
 		
 		for (String separator : VALID_SEPARATORS) {
-			int matchCount = getColumnCount(separator);
+			int matchCount = calculateColumnCount(separator);
 			
 			if (matchCount > mostCommonSeparatorCount) {
 				mostCommonSeparator = separator;
@@ -229,16 +230,16 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 * Get the number of columns in the file.
 	 * 
 	 * @return The number of columns in the file
-	 * @see #getColumnCount(String)
+	 * @see #calculateColumnCount(String)
 	 */
-	public int getColumnCount() {
+	public int calculateColumnCount() {
 		
 		int result;
 		
 		if (null == getSeparator() || null == fileData)
 			result = 0;
 		else {
-			result = getColumnCount(getSeparator());
+			result = calculateColumnCount(getSeparator());
 		}
 		
 		return result;
@@ -259,7 +260,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 * @see #SEPARATOR_SEARCH_LINES
 	 * @see #getMostCommonSeparator()
 	 */
-	 public int getColumnCount(String separator) {
+	 public int calculateColumnCount(String separator) {
 		int maxColumnCount = 0;
 		
 		int firstSearchLine = fileDataArray.size() - SEPARATOR_SEARCH_LINES;
@@ -278,10 +279,150 @@ public class FileDefinitionBuilder extends FileDefinition {
 
 	/**
 	 * Dummy set column method for bean requirements.
-	 * Doesn't actually do anything
+	 * We don't allow external agencies to set this,
+	 * but it's needed for bean compatibility
 	 * @param columnCount The column count
 	 */
+	@Override
 	public void setColumnCount(int columnCount) {
 		// Do nothing
+	}
+	
+	/**
+	 * Get the set of column definitions for this file definition as a JSON array
+	 * <p>
+	 *   If the file has column header rows, the column names will
+	 *   be taken from the first of those rows. Otherwise, they will be
+	 *   Column 1, Column 2 etc.
+	 * </p>
+	 *   
+	 * @return The file columns
+	 */
+	public String getFileColumns() {
+
+		// TODO Only regenerate the columns when the file spec is changed. Don't do it
+		//      on demand like this.
+		List<String> columns = new ArrayList<String>();
+		 
+		if (getColumnHeaderRows() == 0) {
+			for (int i = 0; i < getColumnCount(); i++) {
+				columns.add("Column " + (i + 1));
+			}
+		} else {
+			String columnHeaders = fileDataArray.get(getFirstColumnHeaderRow());
+			columns = makeColumnValues(columnHeaders);
+		}
+		
+		StringBuilder result = new StringBuilder();
+		
+		result.append('[');
+		
+		for (int i = 0; i < columns.size(); i++) {
+			result.append('"');
+			result.append(columns.get(i).replaceAll("'", "\\'"));
+			result.append('"');
+			
+			if (i < columns.size() - 1) {
+				result.append(',');
+			}
+		}
+		
+		result.append(']');
+		
+		return result.toString();
+	}
+	
+	/**
+	 * Return the row number of the first column header row in the file
+	 * @return The first column header row, or -1 if the file does not have column headers
+	 */
+	public int getFirstColumnHeaderRow() {
+		int result = -1;
+		
+		if (getColumnHeaderRows() > 0) {
+			// The column headers are the first row
+			// after the file header. If we get the file header length,
+			// then the row index is the same because it's zero based.
+			// It's useful sometimes...
+			result = getHeaderLength();
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Get the number of rows in the file header
+	 * @return The number of rows in the file header
+	 */
+	public int getHeaderLength() {
+		int result = 0;
+		
+		switch (getHeaderType()) {
+		case HEADER_TYPE_LINE_COUNT: {
+			result = getHeaderLines();
+			break;
+		}
+		case HEADER_TYPE_STRING: {
+			
+			int row = 0;
+			boolean foundHeaderEnd = false;
+			while (!foundHeaderEnd && row < fileDataArray.size()) {
+				if (fileDataArray.get(row).equalsIgnoreCase(getHeaderString())) {
+					foundHeaderEnd = true;
+				} else {
+					row++;
+				}
+			}
+			
+			result = row;
+			break;
+		}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Get the data from the sample file as a JSON string
+	 * @return The file data
+	 */
+	public String getJsonData() {
+		
+		StringBuilder result = new StringBuilder();
+		
+		result.append('[');
+		
+		int firstDataRow = getHeaderLength() + getColumnHeaderRows();
+		for (int i = firstDataRow; i < fileDataArray.size(); i++) {
+			List<String> columnValues = makeColumnValues(fileDataArray.get(i));
+			
+			result.append('[');
+
+			for (int j = 0; j < getColumnCount(); j++) {
+				
+				result.append('"');
+				
+				// We can't guarantee that every column has data, so
+				// fill in empty strings for unused columns
+				if (j < columnValues.size()) {
+					result.append(columnValues.get(j).replaceAll("'", "\\'"));
+				}
+				
+				result.append('"');
+				if (j < getColumnCount() - 1) {
+					result.append(',');
+				}
+			}
+			
+			result.append(']');
+			if (i < fileDataArray.size() - 1) {
+				result.append(',');
+			}
+		}
+
+		
+		result.append(']');
+		
+		return result.toString();
 	}
 }

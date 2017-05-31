@@ -22,7 +22,7 @@ public class SeparatorValidator extends NewInstrumentValidator {
 
 		}
 		
-		if (bean.getCurrentInstrumentFile().getColumnCount(separator) <= 1) {
+		if (bean.getCurrentInstrumentFile().calculateColumnCount(separator) <= 1) {
 			throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "Cannot extract any columns using the specified separator", "Cannot extract any columns using the specified separator"));
 		}
 	}
