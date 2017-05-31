@@ -29,9 +29,9 @@ public class InstrumentFileSet extends ArrayList<FileDefinitionBuilder> {
 	protected void storeFile(FileDefinitionBuilder file) {
 		
 		// Remove the existing file if it exists
-		if (contains(file)) {
-			remove(file);
-		}
+		// Files are matched by their description only, so this
+		// will find any file with the same description as the one passed in
+		remove(file);
 		
 		// Add the passed in file
 		add(file);
