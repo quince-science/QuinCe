@@ -1,13 +1,13 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
-import java.util.TreeSet;
+import java.util.ArrayList;
 
 /**
  * Class to define a set of InstrumentFiles when creating an instrument
  * @author Steve Jones
  *
  */
-public class InstrumentFileSet extends TreeSet<FileDefinitionBuilder> {
+public class InstrumentFileSet extends ArrayList<FileDefinitionBuilder> {
 
 	/**
 	 * The serial version UID
