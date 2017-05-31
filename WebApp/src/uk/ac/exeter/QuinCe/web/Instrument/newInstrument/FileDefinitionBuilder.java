@@ -46,8 +46,14 @@ public class FileDefinitionBuilder extends FileDefinition {
 	/**
 	 * Create a new file definition with the default description
 	 */
-	protected FileDefinitionBuilder() {
+	protected FileDefinitionBuilder(InstrumentFileSet fileSet) {
 		super(DEFAULT_DESCRIPTION);
+
+		int counter = 1;
+		while (fileSet.containsFileDescription(getFileDescription())) {
+			counter++;
+			setFileDescription(DEFAULT_DESCRIPTION + " " + counter);
+		}
 	}
 	
 	/**

@@ -90,10 +90,9 @@ function renderSampleFile() {
 	
 	if (!messageTriggered) {
 		hideSampleFileErrors();
-		PF('useFileButton').enable();
-	} else {
-		PF('useFileButton').disable();
 	}
+	
+	updateUseFileButton();
 }
 
 function hideSampleFileErrors() {
@@ -156,6 +155,24 @@ function numberOnly(event) {
 function updateColumnCount() {
 	$('#newInstrumentForm\\:columnCountDisplay').html($('#newInstrumentForm\\:columnCount').val());
 	renderSampleFile();
+}
+
+function updateUseFileButton() {
+	var canUseFile = true;
+	
+	if ($('#newInstrumentForm\\:msgFileDescription').is(':visible')) {
+		canUseFile = false;
+	}
+	
+	if ($('#sampleFileMessage').is(':visible')) {
+		canUseFile = false;
+	}
+	
+	if (canUseFile) {
+		PF('useFileButton').enable();
+	} else {
+		PF('useFileButton').disable();
+	}
 }
 
 function useFile() {

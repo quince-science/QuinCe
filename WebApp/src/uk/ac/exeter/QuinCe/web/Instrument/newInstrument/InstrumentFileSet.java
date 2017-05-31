@@ -36,4 +36,23 @@ public class InstrumentFileSet extends ArrayList<FileDefinitionBuilder> {
 		// Add the passed in file
 		add(file);
 	}
+	
+	/**
+	 * Determine whether or not this file set contains a file
+	 * with the specified description
+	 * @param description The description to find
+	 * @return {@code true} if a file with the description exists; {@code false} otherwise
+	 */
+	public boolean containsFileDescription(String description) {
+		boolean found = false;
+		
+		for (FileDefinitionBuilder file : this) {
+			if (file.getFileDescription().equalsIgnoreCase(description)) {
+				found = true;
+				break;
+			}
+		}
+		
+		return found;
+	}
 }

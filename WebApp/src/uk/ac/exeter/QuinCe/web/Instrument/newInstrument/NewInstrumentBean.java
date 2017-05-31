@@ -105,7 +105,7 @@ public class NewInstrumentBean extends FileUploadBean {
 		String result;
 		
 		if (instrumentFiles.size() == 0) {
-			currentInstrumentFile = new FileDefinitionBuilder();
+			currentInstrumentFile = new FileDefinitionBuilder(instrumentFiles);
 			
 			result = NAV_UPLOAD_FILE;
 		} else {
@@ -123,7 +123,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @return The navigation to the file upload
 	 */
 	public String addFile() {
-		currentInstrumentFile = new FileDefinitionBuilder();
+		currentInstrumentFile = new FileDefinitionBuilder(instrumentFiles);
 		return NAV_UPLOAD_FILE;
 	}
 	
@@ -221,7 +221,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	
 	@Override
 	public void clearFile() {
-		currentInstrumentFile = new FileDefinitionBuilder();
+		currentInstrumentFile = new FileDefinitionBuilder(instrumentFiles);
 		super.clearFile();
 	}
 	

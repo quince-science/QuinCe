@@ -39,7 +39,7 @@
 					<p:inputText id="fileDescription" value="#{newInstrumentBean.currentInstrumentFile.fileDescription}" required="true" requiredMessage="You must enter a file description">
 						<f:validator validatorId="instrumentFileDescriptionValidator"/>
 						<f:attribute name="bean" value="#{newInstrumentBean}"/>
-						<p:ajax update="msgFileDescription" event="keyup"/>
+						<p:ajax update="msgFileDescription" event="keyup" oncomplete="updateUseFileButton()"/>
 					</p:inputText>
 					<p:message for="fileDescription" id="msgFileDescription" display="both"/>
 				</h:panelGrid>
