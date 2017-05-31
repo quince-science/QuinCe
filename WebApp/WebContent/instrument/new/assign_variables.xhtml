@@ -28,6 +28,10 @@
 				<p:tab title="#{iFile.fileDescription}">FILE!</p:tab>
 			</p:tabView>
 		
+			<h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+				<p:commandButton value="Add File" ajax="false" action="#{newInstrumentBean.addFile}" immediate="true"/>
+			</h:panelGrid>
+
 			<!--  The cancel include has a 2 entries (1 is invisible) -->
 			<h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
 				<ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml"/>

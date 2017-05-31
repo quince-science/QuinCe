@@ -118,6 +118,15 @@ public class NewInstrumentBean extends FileUploadBean {
 		return result;
 	}
 	
+	/**
+	 * Add a new file to the instrument
+	 * @return The navigation to the file upload
+	 */
+	public String addFile() {
+		currentInstrumentFile = new FileDefinitionBuilder();
+		return NAV_UPLOAD_FILE;
+	}
+	
 	@Override
 	protected String getFormName() {
 		return "newInstrumentForm";
