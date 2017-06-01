@@ -39,7 +39,7 @@
 					
 						var html = '';
 						
-						html += '<table id="' + tableId + '">';
+						html += '<table id="' + tableId + '" class="sampleData">';
 						html += '<thead>';
 						
 						var headers = JSON.parse('#{iFile.fileColumns}');
@@ -67,7 +67,14 @@
 						html += '</tbody></table>';
 						
 						$('#' + containerId).html(html);
-						$('#' + tableId).DataTable();
+						$('#' + tableId).DataTable({
+					    	ordering: false,
+					    	searching: false,
+					    	scrollY: '400px',
+							scrollX: true,
+							paging: false,
+							info: false
+						});
 						
 						tabCount++;
 					</script>

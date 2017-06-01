@@ -137,3 +137,15 @@
 	color: white;
 	width: 35px;
 }
+
+table.sampleData {
+	font-size: 0.75em;
+}
+
+th {
+	white-space: nowrap;
+}
+
+td {
+	white-space: nowrap;
+}
