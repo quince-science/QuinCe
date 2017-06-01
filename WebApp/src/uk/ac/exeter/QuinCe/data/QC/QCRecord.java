@@ -213,7 +213,12 @@ public class QCRecord extends DataRecord {
 	}
 	
 	public String getWoceComment() {
-		return woceComment;
+		String result = woceComment;
+		if (null == result) {
+			result = "<no comment entered>";
+		}
+		
+		return result;
 	}
 	
 	public void setWoceComment(String woceComment) {
