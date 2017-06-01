@@ -104,7 +104,7 @@
  }
  
 .assignmentListEntry {
-	--entry_color: #000000;
+	--entry_color: #2779AA;
 	display: flex;
 	border: 2px solid black;
 	border-radius: 5px;
