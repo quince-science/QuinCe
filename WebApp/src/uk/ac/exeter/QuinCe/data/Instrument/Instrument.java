@@ -20,6 +20,9 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  */
 public class Instrument implements Serializable {
 	
+	/**
+	 * The Serial Version UID
+	 */
 	private static final long serialVersionUID = 7282491666003300432L;
 
 	////////////// *** CONSTANTS *** ///////////////
@@ -471,8 +474,9 @@ public class Instrument implements Serializable {
 	////////// *** MAIN METHODS *** /////////////
 
 	/**
-	 * Basic constructor - does not take any parameters.
+	 * Basic constructor
 	 * All fields must be populated by the setter methods.
+	 * @param ownerID The database ID of the user who owns this instrument 
 	 */
 	public Instrument(long ownerID) {
 		
@@ -502,7 +506,10 @@ public class Instrument implements Serializable {
 		return result;
 	}
 	
-	public void validate() throws MissingParamException {
+	/**
+	 * Validate the data held in this object
+	 */
+	public void validate() {
 		// TODO Write it!
 	}
 	
@@ -717,8 +724,7 @@ public class Instrument implements Serializable {
 
 	/**
 	 * Create a date formatter for parsing dates from the file.
-	 * @throws RawDataFileException If the date format is not recognised
-	 * @throws InstrumentException 
+	 * @throws InstrumentException If the date format is not recognised
 	 */
 	private void makeDateFormatter() throws InstrumentException {
 		
@@ -750,8 +756,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Create a date formatter for parsing times from the file
-	 * @throws RawDataFileException If the time format is not recognised
-	 * @throws InstrumentException 
+	 * @throws InstrumentException If the time format is not recognised
 	 */
 	private void makeTimeFormatter() throws InstrumentException {
 	
@@ -815,7 +820,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the separator character
-	 * @param name The separator character
+	 * @param separatorChar The separator character
 	 */
 	public void setSeparatorChar(char separatorChar) {
 		this.separatorChar = separatorChar;
@@ -831,7 +836,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the first intake temperature sensor
-	 * @param name The name of the first intake temperature sensor
+	 * @param intakeTempName1 The name of the first intake temperature sensor
 	 */
 	public void setIntakeTempName1(String intakeTempName1) {
 		this.intakeTempName1 = intakeTempName1;
@@ -847,7 +852,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the second intake temperature sensor
-	 * @param name The name of the second intake temperature sensor
+	 * @param intakeTempName2 The name of the second intake temperature sensor
 	 */
 	public void setIntakeTempName2(String intakeTempName2) {
 		this.intakeTempName2 = intakeTempName2;
@@ -863,7 +868,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the third intake temperature sensor
-	 * @param name The name of the third intake temperature sensor
+	 * @param intakeTempName3 The name of the third intake temperature sensor
 	 */
 	public void setIntakeTempName3(String intakeTempName3) {
 		this.intakeTempName3 = intakeTempName3;
@@ -879,7 +884,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the first salinity sensor
-	 * @param name The name of the first salinity sensor
+	 * @param salinityName1 The name of the first salinity sensor
 	 */
 	public void setSalinityName1(String salinityName1) {
 		this.salinityName1 = salinityName1;
@@ -895,7 +900,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the second salinity sensor
-	 * @param name The name of the second salinity sensor
+	 * @param salinityName2 The name of the second salinity sensor
 	 */
 	public void setSalinityName2(String salinityName2) {
 		this.salinityName2 = salinityName2;
@@ -911,7 +916,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the third salinity sensor
-	 * @param name The name of the third salinity sensor
+	 * @param salinityName3 The name of the third salinity sensor
 	 */
 	public void setSalinityName3(String salinityName3) {
 		this.salinityName3 = salinityName3;
@@ -927,7 +932,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the first equilibrator temperature sensor
-	 * @param name The name of the first equilibrator temperature sensor
+	 * @param eqtName1 The name of the first equilibrator temperature sensor
 	 */
 	public void setEqtName1(String eqtName1) {
 		this.eqtName1 = eqtName1;
@@ -943,7 +948,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the second equilibrator temperature sensor
-	 * @param name The name of the second equilibrator temperature sensor
+	 * @param eqtName2 The name of the second equilibrator temperature sensor
 	 */
 	public void setEqtName2(String eqtName2) {
 		this.eqtName2 = eqtName2;
@@ -959,7 +964,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the third equilibrator temperature sensor
-	 * @param name The name of the third equilibrator temperature sensor
+	 * @param eqtName3 The name of the third equilibrator temperature sensor
 	 */
 	public void setEqtName3(String eqtName3) {
 		this.eqtName3 = eqtName3;
@@ -975,7 +980,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the first equilibrator pressure sensor
-	 * @param name The name of the first equilibrator pressure sensor
+	 * @param eqpName1 The name of the first equilibrator pressure sensor
 	 */
 	public void setEqpName1(String eqpName1) {
 		this.eqpName1 = eqpName1;
@@ -991,7 +996,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the second equilibrator pressure sensor
-	 * @param name The name of the second equilibrator pressure sensor
+	 * @param eqpName2 The name of the second equilibrator pressure sensor
 	 */
 	public void setEqpName2(String eqpName2) {
 		this.eqpName2 = eqpName2;
@@ -1007,7 +1012,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the third equilibrator pressure sensor
-	 * @param name The name of the third equilibrator pressure sensor
+	 * @param eqpName3 The name of the third equilibrator pressure sensor
 	 */
 	public void setEqpName3(String eqpName3) {
 		this.eqpName3 = eqpName3;
@@ -1023,7 +1028,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the first air flow sensor
-	 * @param name The name of the first air flow sensor
+	 * @param airFlowName1 The name of the first air flow sensor
 	 */
 	public void setAirFlowName1(String airFlowName1) {
 		this.airFlowName1 = airFlowName1;
@@ -1039,7 +1044,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the second air flow sensor
-	 * @param name The name of the second air flow sensor
+	 * @param airFlowName2 The name of the second air flow sensor
 	 */
 	public void setAirFlowName2(String airFlowName2) {
 		this.airFlowName2 = airFlowName2;
@@ -1055,7 +1060,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the third air flow sensor
-	 * @param name The name of the third air flow sensor
+	 * @param airFlowName3 The name of the third air flow sensor
 	 */
 	public void setAirFlowName3(String airFlowName3) {
 		this.airFlowName3 = airFlowName3;
@@ -1071,7 +1076,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the first water flow sensor
-	 * @param name The name of the first water flow sensor
+	 * @param waterFlowName1 The name of the first water flow sensor
 	 */
 	public void setWaterFlowName1(String waterFlowName1) {
 		this.waterFlowName1 = waterFlowName1;
@@ -1087,7 +1092,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the second water flow sensor
-	 * @param name The name of the second water flow sensor
+	 * @param waterFlowName2 The name of the second water flow sensor
 	 */
 	public void setWaterFlowName2(String waterFlowName2) {
 		this.waterFlowName2 = waterFlowName2;
@@ -1103,7 +1108,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Set the name of the third water flow sensor
-	 * @param name The name of the third water flow sensor
+	 * @param waterFlowName3 The name of the third water flow sensor
 	 */
 	public void setWaterFlowName3(String waterFlowName3) {
 		this.waterFlowName3 = waterFlowName3;
@@ -1228,8 +1233,8 @@ public class Instrument implements Serializable {
 	/**
 	 * Specify which column of the instrument's data file
 	 * contains the specified data
-	 * @param data The data type identifier
-	 * @param column
+	 * @param dataTypeIdentifier The data type identifier
+	 * @param column The column index
 	 */
 	public void setColumnAssignment(int dataTypeIdentifier, int column) {
 		columnAssignments[dataTypeIdentifier] = column;
@@ -1243,6 +1248,11 @@ public class Instrument implements Serializable {
 		return runTypes;
 	}
 	
+	/**
+	 * Retrieve the name of the run type from its ID
+	 * @param runTypeId The run type ID
+	 * @return The run type name
+	 */
 	public String getRunTypeName(long runTypeId) {
 		
 		String name = null;
@@ -1281,7 +1291,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Sets the ID of the owner of the instrument
-	 * @param databaseID The owner ID
+	 * @param ownerID The database ID of the instrument owner
 	 */
 	public void setOwnerId(long ownerID) {
 		this.ownerID = ownerID;
@@ -1297,7 +1307,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Sets the pre-flushing time
-	 * @param databaseID The pre-flushing time
+	 * @param preFlushingTime The pre-flushing time
 	 */
 	public void setPreFlushingTime(int preFlushingTime) {
 		this.preFlushingTime = preFlushingTime;
@@ -1313,7 +1323,7 @@ public class Instrument implements Serializable {
 	
 	/**
 	 * Sets the post-flushing time
-	 * @param databaseID The post-flushing time
+	 * @param postFlushingTime The post-flushing time
 	 */
 	public void setPostFlushingTime(int postFlushingTime) {
 		this.postFlushingTime = postFlushingTime;
@@ -1773,18 +1783,34 @@ public class Instrument implements Serializable {
 		return count;
 	}
 	
+	/**
+	 * Determines whether or not a custom date/time format is being used in this instrument's data files.
+	 * @return {@code true} if a custom format is being used; {@code false} if a pre-defined format is being used.
+	 */
 	public boolean getCustomDateTimeFormat() {
 		return customDateTimeFormat;
 	}
 	
+	/**
+	 * Sets a flag indicating whether or not a custom date/time format is being used in this instrument's data files.
+	 * @param customDateTimeFormat {@code true} if a custom format is being used; {@code false} if a pre-defined format is being used.
+	 */
 	public void setCustomDateTimeFormat(boolean customDateTimeFormat) {
 		this.customDateTimeFormat = customDateTimeFormat;
 	}
 	
+	/**
+	 * Retrieve the custom date/time format string being used in this instrument's data files.
+	 * @return The format string
+	 */
 	public String getCustomDateTimeFormatString() {
 		return customDateTimeFormatString;
 	}
 	
+	/**
+	 * Set the custom date/time format string being used in this instrument's data files.
+	 * @param customDateTimeFormatString The format string
+	 */
 	public void setCustomDateTimeFormatString(String customDateTimeFormatString) {
 		this.customDateTimeFormatString = customDateTimeFormatString;
 	}

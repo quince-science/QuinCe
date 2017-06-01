@@ -6,44 +6,86 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
- * JSF Managed Bean for handling user logins
+ * Bean for handling user logins
  * @author Steve Jones
  *
  */
 public class LoginBean extends BaseManagedBean {
 	
+	/**
+	 * The navigation to the sign-up page to create a new account
+	 */
 	public static final String SIGNUP_RESULT = "SignUp";
 	
+	/**
+	 * The result indicating that authentication failed
+	 */
 	public static final String AUTHENTICATION_FAILED_RESULT = "AuthenticationFailed";
 	
+	/**
+	 * The result indicating that authentication succeeded
+	 */
 	public static final String AUTHENTICATION_OK_RESULT = "AuthenticationSuccess";
 	
+	/**
+	 * The session attribute in which the user's details are stored
+	 */
 	public static final String USER_SESSION_ATTR = "User";
 	
+	/**
+	 * The entered email address
+	 */
 	private String emailAddress = null;
 	
+	/**
+	 * The entered password
+	 */
 	private String password = null;
 	
+	/**
+	 * Constructor - does nothing
+	 */
 	public LoginBean() {
 		// Do nothing
 	}
 	
+	/**
+	 * Get the entered email address
+	 * @return The email address
+	 */
 	public String getEmailAddress() {
 		return emailAddress;
 	}
 
+	/**
+	 * Set the entered email address
+	 * @param emailAddress The email address
+	 */
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
 	}
 
+	/**
+	 * Get the entered password
+	 * @return The password
+	 */
 	public String getPassword() {
 		return password;
 	}
 
+	/**
+	 * Set the entered password
+	 * @param password The password
+	 */
 	public void setPassword(String password) {
 		this.password = password;
 	}
 
+	/**
+	 * Authenticate the user.
+	 * @return The authentication result. One of {@link #AUTHENTICATION_OK_RESULT} or {@link #AUTHENTICATION_FAILED_RESULT}.
+	 * @see UserDB#authenticate(javax.sql.DataSource, String, char[])
+	 */
 	public String authenticate() {
 		
 		String result = AUTHENTICATION_FAILED_RESULT;
@@ -77,6 +119,10 @@ public class LoginBean extends BaseManagedBean {
 		return result;
 	}
 	
+	/**
+	 * Navigate to the sign-up page
+	 * @return The navigation to the sign-up page
+	 */
 	public String signUp() {
 		return SIGNUP_RESULT;
 	}

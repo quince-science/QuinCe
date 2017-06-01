@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.jobs.NoSuchJobException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -138,7 +139,7 @@ public class AutoQCJob extends FileJob {
 			List<Routine> routines = RoutinesConfig.getInstance(parameters.get(PARAM_ROUTINES_CONFIG)).getRoutines();
 			
 			for (Routine routine : routines) {
-				routine.processRecords((List<DataRecord>) qcRecords);
+				routine.processRecords((List<DataRecord>) qcRecords, null);
 			}
 			
 			// Record the messages from the QC in the database
@@ -226,7 +227,7 @@ public class AutoQCJob extends FileJob {
 					JobManager.addJob(conn, owner, FileInfo.getJobClass(interruptedJobCode), interruptedJobParams);
 					DataFileDB.setCurrentJob(conn, fileId, interruptedJobCode);
 					conn.commit();
-				} catch (RecordNotFoundException e) {
+				} catch (NoSuchJobException e) {
 					// This means the file has been marked for deletion. No action is required.
 				}
 			} else {

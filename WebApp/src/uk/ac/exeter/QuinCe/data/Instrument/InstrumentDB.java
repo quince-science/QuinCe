@@ -94,10 +94,15 @@ public class InstrumentDB {
 	 */
 	private static final String GET_INSTRUMENT_LIST_QUERY = "SELECT id, name FROM instrument WHERE owner = ? ORDER BY name ASC";
 	
+	/**
+	 * Query to retrieve all the run types for a given instrument
+	 */
 	private static final String GET_RUN_TYPES_QUERY = "SELECT id, run_name, run_type FROM run_types WHERE instrument_id = ?";
 	
 	/**
 	 * Add an instrument to the database
+	 * @param dataSource A data source
+	 * @param instrument The details of the instrument to be stored
 	 * @throws MissingParamException If any of the required data are missing
 	 * @throws DatabaseException If an error occurs while storing the instrument details
 	 */
@@ -232,10 +237,11 @@ public class InstrumentDB {
 	 * 
 	 * The list is ordered by the name of the instrument.
 	 * 
+	 * @param dataSource A data source
 	 * @param owner The owner whose instruments are to be listed
 	 * @return The list of instruments
-	 * @throws MissingParamException 
-	 * @throws DatabaseException 
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
 	 */
 	public static List<InstrumentStub> getInstrumentList(DataSource dataSource, User owner) throws MissingParamException, DatabaseException {
 		
@@ -268,6 +274,16 @@ public class InstrumentDB {
 		return instrumentList;
 	}
 
+	/**
+	 * Determines whether or not an instrument of a given name, owned by the specified user,
+	 * already exists in the database.
+	 * @param dataSource A data source
+	 * @param owner The owner whose instruments are to be checked
+	 * @param name The instrument name
+	 * @return {@code true} if an instrument of the specified name is already registered with the owner; {@code false} if no instrument of that name is registered.
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
 	public static boolean instrumentExists(DataSource dataSource, User owner, String name) throws MissingParamException, DatabaseException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(owner, "owner");
@@ -285,6 +301,15 @@ public class InstrumentDB {
 		return exists;
 	}
 	
+	/**
+	 * Retrieve an instrument's complete set of details from the database
+	 * @param dataSource A data source
+	 * @param instrumentID The instrument's database ID
+	 * @return The instrument details
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the specified instrument ID is not present in the database
+	 */
 	public static Instrument getInstrument(DataSource dataSource, long instrumentID) throws DatabaseException, MissingParamException, RecordNotFoundException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -305,7 +330,7 @@ public class InstrumentDB {
 	
 	/**
 	 * Returns a complete instrument object for the specified instrument ID
-	 * @param dataSource A data source
+	 * @param conn A database connection
 	 * @param instrumentID The instrument ID
 	 * @return The complete Instrument object
 	 * @throws MissingParamException If the data source is not supplied

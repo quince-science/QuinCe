@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -107,8 +108,12 @@ public class DatabaseUtils {
 	 * @see java.util.Calendar#getInstance(TimeZone, Locale)
 	 */
 	public static Calendar getUTCDateTime(ResultSet records, int columnIndex) throws SQLException {
-		Calendar result = DateTimeUtils.getUTCCalendarInstance();
-		result.setTimeInMillis(records.getTimestamp(columnIndex).getTime());
+		Calendar result = null;
+		Timestamp recordTime = records.getTimestamp(columnIndex);
+		if (null != recordTime) {
+			result = DateTimeUtils.getUTCCalendarInstance();
+			result.setTimeInMillis(recordTime.getTime());
+		}
 		return result;
 	}
 }
