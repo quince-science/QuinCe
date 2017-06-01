@@ -277,8 +277,10 @@ public class NewInstrumentBean extends FileUploadBean {
 				for (SensorAssignment assignment : assignments) {
 					json.append("{\"file\":\"");
 					json.append(assignment.getDataFile());
-					json.append("\",\"column\";");
+					json.append("\",\"column\":");
 					json.append(assignment.getColumn());
+					json.append("\",\"postCalibrated\":");
+					json.append(assignment.getPostCalibrated());
 					json.append('}');
 					
 					if (assignmentCount < assignments.size() - 1) {

@@ -18,13 +18,20 @@ public class SensorAssignment {
 	private int column;
 	
 	/**
+	 * Indicates whether or not values from this
+	 * sensor require post-calibration adjustments applied to them
+	 */
+	private boolean postCalibrated;
+	
+	/**
 	 * Simple constructor
 	 * @param dataFile The data file
 	 * @param column The column number
 	 */
-	public SensorAssignment(String dataFile, int column) {
+	public SensorAssignment(String dataFile, int column, boolean postCalibrated) {
 		this.dataFile = dataFile;
 		this.column = column;
+		this.postCalibrated = postCalibrated;
 	}
 	
 	/**
@@ -41,5 +48,14 @@ public class SensorAssignment {
 	 */
 	public int getColumn() {
 		return column;
+	}
+	
+	/**
+	 * Determine whether or not values from this
+	 * sensor require post-calibration adjustments applied to them
+	 * @return {@code true} if calibration adjustments are required; {@code false} if they are not
+	 */
+	public boolean getPostCalibrated() {
+		return postCalibrated;
 	}
 }
