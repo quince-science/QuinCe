@@ -39,12 +39,12 @@
 					
 						var html = '';
 						
-						html += '<table id="' + tableId + '" class="sampleData">';
+						html += '<table id="' + tableId + '" class="sampleData compact nowrap cell-border stripe">';
 						html += '<thead>';
 						
 						var headers = JSON.parse('#{iFile.fileColumns}');
 						for (var i = 0; i &lt; headers.length; i++) {
-							html += '<th>';
+							html += '<th class="ui-state-default">';
 							html += $('<div/>').text(headers[i]).html(); // Funky HTML escaping
 							html += '</th>';
 						}
