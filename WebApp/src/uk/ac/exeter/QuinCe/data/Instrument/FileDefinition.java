@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -92,6 +95,33 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 */
 	private int columnCount = 0;
 	
+	/**
+	 * Indicates whether or not the positions in this file
+	 * are the primary ones to use in calculations
+	 */
+	private boolean positionPrimary = false;
+	
+	/**
+	 * The longitude specification 
+	 */
+	private LongitudeSpecification longitudeSpecification = new LongitudeSpecification();
+	
+	/**
+	 * The latitude specification
+	 */
+	private LatitudeSpecification latitudeSpecification = new LatitudeSpecification();
+	
+	/**
+	 * The Date/Time specification
+	 */
+	private DateTimeSpecification dateTimeSpecification = new DateTimeSpecification();
+	
+	/**
+	 * The year in which the first measurement in the file was taken.
+	 * Used when the year is not included in the file's data
+	 */
+	private int fileYear = -1;
+	
 	static {
 		SEPARATOR_LOOKUP = new HashMap<String, String>(4);
 		SEPARATOR_LOOKUP.put("TAB", "\t");
@@ -101,11 +131,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	}
 	
 	/**
-	 * Create a new file with the given description. A set of sensor
-	 * assignments must also be supplied.
+	 * Create a new file with the given description.
 	 *
 	 * @param fileDescription The file description
-	 * @param sensorConfiguration The sensors configuration
 	 */
 	public FileDefinition(String fileDescription) {
 		this.fileDescription = fileDescription;
@@ -343,5 +371,47 @@ public class FileDefinition implements Comparable<FileDefinition> {
 		
 		values = Arrays.asList(dataLine.split(separator));
 		return StringUtils.trimList(values);
+	}
+
+	/**
+	 * Get the longitude specification
+	 * @return The longitude specification
+	 */
+	public LongitudeSpecification getLongitudeSpecification() {
+		return longitudeSpecification;
+	}
+
+	/**
+	 * Get the latitude specification
+	 * @return The latitude specification
+	 */
+	public LatitudeSpecification getLatitudeSpecification() {
+		return latitudeSpecification;
+	}
+
+	/**
+	 * Get the date/time specification
+	 * @return The date/time specification
+	 */
+	public DateTimeSpecification getDateTimeSpecification() {
+		return dateTimeSpecification;
+	}
+	
+	/**
+	 * Determine whether or not this file holds the
+	 * primary position information for the instrument.
+	 * @return {@code true} if this file contains the primary position information; {@code false} if it does not.
+	 */
+	public boolean getPositionPrimary() {
+		return positionPrimary;
+	}
+	
+	/**
+	 * Get the year in which the first measurement
+	 * in the file was taken.
+	 * @return The file year
+	 */
+	public int getFileYear() {
+		return fileYear;
 	}
 }

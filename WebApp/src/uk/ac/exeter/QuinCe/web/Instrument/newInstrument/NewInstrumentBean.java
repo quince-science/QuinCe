@@ -314,4 +314,57 @@ public class NewInstrumentBean extends FileUploadBean {
 	public void setSensorAssignments(String assignments) {
 		// Do nothing
 	}
+	
+	/**
+	 * Get the time and position column assignments for all
+	 * files related to this instrument.
+	 * 
+	 * <p>
+	 *   The assignments are encoded as a JSON string in
+	 *   the following format:
+	 * </p>
+	 * <pre>
+	 * [
+	 * ]
+	 * </pre>
+	 * @return The time and position assignments
+	 */
+	public String getTimePositionAssignments() {
+		StringBuilder json = new StringBuilder();
+		
+		json.append('[');
+		
+		for (int i = 0; i < instrumentFiles.size(); i++) {
+			FileDefinitionBuilder file = instrumentFiles.get(i);
+			
+			json.append('{');
+			json.append("\"primaryPosition\":");
+			json.append(file.getPositionPrimary());
+			json.append(",\"longitude\":");
+			json.append(file.getLongitudeSpecification().getJsonString());
+			json.append(",\"latitude\":");
+			json.append(file.getLatitudeSpecification().getJsonString());
+			json.append(",\"dateTime\":");
+			json.append(file.getDateTimeSpecification().getJsonString());
+			json.append('}');
+			
+			if (i < instrumentFiles.size() - 1) {
+				json.append(',');
+			}
+		}
+		
+		json.append(']');
+		
+		return json.toString();
+	}
+	
+	/**
+	 * Dummy method for setting time and postition assignments. It doesn't
+	 * actually do anything, but it's needed for the JSF communications
+	 * to work.
+	 * @param assignments The assignments. They are ignored.
+	 */
+	public void setTimePositionAssignments(String assignments) {
+		// Do nothing
+	}
 }

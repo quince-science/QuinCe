@@ -139,6 +139,16 @@
 }
 
 table.sampleData {
-	font-size: 0.75em;
+	font-size: 0.8em;
 	margin: 0px !important;
+}
+
+.fileTab {
+	display: flex;
+}
+
+.fileAssignments {
+	min-width: 400px;
+	flex-grow: 1000;
+	margin-right: 20px;
 }

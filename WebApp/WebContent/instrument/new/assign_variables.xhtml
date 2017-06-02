@@ -18,12 +18,16 @@
 			
 			// Global!
 			tabCount = 0;
+			
+			// The data tables in each tab
+			var tabTables = new Array();
 		</script>	
 	</ui:define>
 	<ui:define name="new_instrument_content">
 		<h:form id="newInstrumentForm" metho="post" charset="utf8">
 		
 			<h:inputHidden id="sensorAssignments" value="#{newInstrumentBean.sensorAssignments}"/>
+			<h:inputHidden id="timePositionAssignments" value="#{newInstrumentBean.timePositionAssignments}"/>
 			
 			<p:fieldset id="assignmentsPanel" legend="Column Assignments" style="margin-bottom: 20px">
 				<div id="assignmentsList"></div>
@@ -31,53 +35,64 @@
 			
 			<p:tabView value="#{newInstrumentBean.instrumentFiles}" var="iFile" widgetVar="fileTabs">
 				<p:tab title="#{iFile.fileDescription}">
-					<script>
-						var containerId = 'fileTableContainer-' + tabCount;
-						var tableId = 'fileTable-' + tabCount;
+					<div class="fileTab">
+						<div class="fileAssignments">
+							<p:fieldset legend="Date/Time" toggleable="true" style="margin-bottom: 20px;">
+								Date/time
+						    </p:fieldset>
+							<p:fieldset legend="Position" toggleable="true">
+								Position
+						    </p:fieldset>
+						</div>
 						
-						document.write('<div id="' + containerId + '"></div>');
-					
-						var html = '';
-						
-						html += '<table id="' + tableId + '" class="sampleData compact nowrap cell-border stripe">';
-						html += '<thead>';
-						
-						var headers = JSON.parse('#{iFile.fileColumns}');
-						for (var i = 0; i &lt; headers.length; i++) {
-							html += '<th class="ui-state-default">';
-							html += $('<div/>').text(headers[i]).html(); // Funky HTML escaping
-							html += '</th>';
-						}
-						
-						html += '</thead><tbody>';
-
-						var data = JSON.parse('#{iFile.jsonData}');
-						for (var i = 0; i &lt; data.length; i++) {
-							var row = data[i];
+						<script>
+							var containerId = 'fileTableContainer-' + tabCount;
+							var tableId = 'fileTable-' + tabCount;
 							
-							html += '<tr>';
-							for (var j = 0; j &lt; row.length; j++) {
-								html += '<td>';
-								html += $('<div/>').text(row[j]).html(); // Funky HTML escaping
-								html += '</td>';
-							} 
-							html += '</tr>';
-						}
-
-						html += '</tbody></table>';
+							document.write('<div id="' + containerId + '"></div>');
 						
-						$('#' + containerId).html(html);
-						$('#' + tableId).DataTable({
-					    	ordering: false,
-					    	searching: false,
-					    	scrollY: '400px',
-							scrollX: true,
-							paging: false,
-							info: false
-						});
-						
-						tabCount++;
-					</script>
+							var html = '';
+							
+							html += '<table id="' + tableId + '" class="sampleData compact nowrap cell-border stripe">';
+							html += '<thead>';
+							
+							var headers = JSON.parse('#{iFile.fileColumns}');
+							for (var i = 0; i &lt; headers.length; i++) {
+								html += '<th class="ui-state-default">';
+								html += $('<div/>').text(headers[i]).html(); // Funky HTML escaping
+								html += '</th>';
+							}
+							
+							html += '</thead><tbody>';
+	
+							var data = JSON.parse('#{iFile.jsonData}');
+							for (var i = 0; i &lt; data.length; i++) {
+								var row = data[i];
+								
+								html += '<tr>';
+								for (var j = 0; j &lt; row.length; j++) {
+									html += '<td>';
+									html += $('<div/>').text(row[j]).html(); // Funky HTML escaping
+									html += '</td>';
+								} 
+								html += '</tr>';
+							}
+	
+							html += '</tbody></table>';
+							
+							$('#' + containerId).html(html);
+							tabTables.push($('#' + tableId).DataTable({
+						    	ordering: false,
+						    	searching: false,
+						    	scrollY: '400px',
+								scrollX: true,
+								paging: false,
+								info: false
+							}));
+							
+							tabCount++;
+						</script>
+					</div>
 				</p:tab>
 			</p:tabView>
 		
