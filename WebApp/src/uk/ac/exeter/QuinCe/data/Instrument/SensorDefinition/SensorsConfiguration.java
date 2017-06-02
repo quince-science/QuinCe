@@ -47,7 +47,7 @@ public class SensorsConfiguration {
 	/**
 	 * The column specifying whether or not multiple sensors of this type are permitted
 	 */
-	private static final int COL_MULTIPLE = 4;
+	private static final int COL_DEPENDS_QUESTION = 4;
 	
 	/**
 	 * The set of sensors defined for the instrument with
@@ -82,7 +82,7 @@ public class SensorsConfiguration {
 	 * Build the map of sensor configurations from the supplied
 	 * configuration file. All map entries will contain {@code null}
 	 * to indicate that no assignments have been made.
-	 * @param configFile The configuration file
+	 * @param configFile The configuration ,57file
 	 * @throws SensorConfigurationException If the configuration is invalid
 	 */
 	private void buildSensorTypes(File configFile) throws SensorConfigurationException {
@@ -96,7 +96,7 @@ public class SensorsConfiguration {
 			
 			while (null != line) {
 				if (!StringUtils.isComment(line)) {
-					List<String> fields = StringUtils.trimList(Arrays.asList(line.split(",")));
+					List<String> fields = StringUtils.trimList(Arrays.asList(line.split(",", -1)));
 					
 					if (fields.size() != COL_COUNT) {
 						throw new SensorConfigurationException(lineCount, "Incorrect number of columns");
@@ -119,9 +119,9 @@ public class SensorsConfiguration {
 								dependsOn = null;
 							}
 							
-							boolean multipleAllowed = StringUtils.parseYNBoolean(fields.get(COL_MULTIPLE));
+							String dependsQuestion = fields.get(COL_DEPENDS_QUESTION);
 							
-							SensorType sensor = new SensorType(sensorName, required, requiredGroup, dependsOn, multipleAllowed);
+							SensorType sensor = new SensorType(sensorName, required, requiredGroup, dependsOn, dependsQuestion);
 							
 							sensorTypes.add(sensor);
 							

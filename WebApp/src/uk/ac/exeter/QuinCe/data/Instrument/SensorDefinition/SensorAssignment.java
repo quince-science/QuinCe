@@ -24,9 +24,16 @@ public class SensorAssignment {
 	private boolean postCalibrated;
 	
 	/**
+	 * The answer to the Depends Question
+	 * @see SensorType#getDependsQuestion
+	 */
+	private boolean dependsQuestionAnswer = false;
+	
+	/**
 	 * Simple constructor
 	 * @param dataFile The data file
 	 * @param column The column number
+	 * @param postCalibrated Specifies whether or not values should be calibrated by QuinCe
 	 */
 	public SensorAssignment(String dataFile, int column, boolean postCalibrated) {
 		this.dataFile = dataFile;
@@ -57,5 +64,23 @@ public class SensorAssignment {
 	 */
 	public boolean getPostCalibrated() {
 		return postCalibrated;
+	}
+	
+	/**
+	 * Set the answer to the Depends Question
+	 * @param dependsQuestionAnswer The answer
+	 * @see SensorType#getDependsQuestion()
+	 */
+	public void setDependsQuestionAnswer(boolean dependsQuestionAnswer) {
+		this.dependsQuestionAnswer = dependsQuestionAnswer;
+	}
+	
+	/**
+	 * Get the answer to the Depends Question
+	 * @return The answer
+	 * @see SensorType#getDependsQuestion()
+	 */
+	public boolean getDependsQuestionAnswer() {
+		return dependsQuestionAnswer;
 	}
 }

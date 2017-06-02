@@ -58,7 +58,8 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 	 *   </li>
 	 *   <li>
 	 *     If another sensor type depends on this sensor type, then a
-	 *     sensor assignment is required
+	 *     sensor assignment is required. This determination may be based on
+	 *     the answer to {@link SensorType#getDependsQuestion()}.
 	 *   </li>
 	 * </ul>
 	 * @param sensorType The sensor type to be checked
@@ -118,9 +119,13 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 	
 	/**
 	 * Determines whether or not any of the sensor types in the
-	 * collection depends on the supplied sensor type
+	 * collection depends on the supplied sensor type.
+	 * 
+	 * If the sensor type has a Depends Question, this is taken into account
+	 * 
 	 * @param sensorType The sensor type that other sensors may depend on
 	 * @return {@code true} if any other sensor types depend on the supplied sensor type; {@code false} if there are no dependents
+	 * @see SensorType#getDependsQuestion()
 	 */
 	private boolean hasDependents(SensorType sensorType) {
 		boolean result = false;
@@ -129,7 +134,20 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 			if (!testType.equals(sensorType)) {
 				String dependsOn = testType.getDependsOn();
 				if (null != dependsOn && dependsOn.equalsIgnoreCase(sensorType.getName())) {
-					result = true;
+					
+					// If there's no Depends Question, then we require the sensor
+					if (null == testType.getDependsQuestion()) {
+						result = true;
+					} else {
+						// See what the answer to the Depends Question is
+						for (SensorAssignment assignment : get(sensorType)) {
+							if (assignment.getDependsQuestionAnswer()) {
+								result = true;
+								break;
+							}
+						}
+					}
+					
 					break;
 				}
 			}

@@ -34,7 +34,7 @@ public class SensorType {
 	 *   of the {@link #required} flag.
 	 * </p>
 	 */
-	private String requiredGroup;
+	private String requiredGroup = null;
 	
 	/**
 	 * Specifies the name of another sensor that must also be present if
@@ -47,18 +47,15 @@ public class SensorType {
 	 *   the true pressure to be calculated.
 	 * </p>
 	 */
-	private String dependsOn;
+	private String dependsOn = null;
 	
 	/**
-	 * Indicates whether or not more than one sensor of this type can be
-	 * present in an instrument.
-	 * 
-	 * <p>
-	 *   In most cases multiple instances of a given sensor are allowed, but
-	 *   there are instances where only one sensor can be used.
-	 * </p>
+	 * Specifies a question to ask that determines whether the {@link #dependsOn} criterion
+	 * should be honoured. This question will yield a {@code boolean} result. If the result
+	 * is {@code true}, then the {@link #dependsOn} criterion will be enforced. If false, it will not.
+	 * If the question is empty or null, then the criterion will always be enforced.
 	 */
-	private boolean multipleAllowed;
+	private String dependsQuestion = null;
 	
 	/**
 	 * Simple constructor - sets all values
@@ -66,14 +63,21 @@ public class SensorType {
 	 * @param required Whether or not the sensor type is required
 	 * @param requiredGroup The Required Group that this sensor type belongs to
 	 * @param dependsOn The name of another sensor type that this sensor type depends on
-	 * @param multipleAllowed Whether more than one instance of this sensor type is permitted
+	 * @param dependsQuestion The question that determines whether the {@link #dependsOn} criterion will be honoured.
 	 */
-	protected SensorType(String name, boolean required, String requiredGroup, String dependsOn, boolean multipleAllowed) {
+	protected SensorType(String name, boolean required, String requiredGroup, String dependsOn, String dependsQuestion) {
 		this.name = name;
 		this.required = required;
-		this.requiredGroup = requiredGroup;
-		this.dependsOn = dependsOn;
-		this.multipleAllowed = multipleAllowed;
+		if (null != requiredGroup && requiredGroup.trim().length() > 0) {
+			this.requiredGroup = requiredGroup;
+		}
+		if (null != dependsOn && dependsOn.trim().length() > 0) {
+			this.dependsOn = dependsOn;
+		}
+		
+		if (null != dependsQuestion && dependsQuestion.trim().length() > 0) {
+			this.dependsQuestion = dependsQuestion;
+		}
 	}
 	
 	/**
@@ -109,6 +113,16 @@ public class SensorType {
 	 */
 	public String getRequiredGroup() {
 		return requiredGroup;
+	}
+	
+	/**
+	 * Gets the question that determines whether the {@link #dependsOn}
+	 * criterion will be honoured.
+	 * @return The question
+	 * @see {@link #dependsQuestion}
+	 */
+	public String getDependsQuestion() {
+		return dependsQuestion;
 	}
 
 	/**
