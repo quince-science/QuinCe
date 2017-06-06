@@ -9,19 +9,18 @@ import javax.sql.DataSource;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
-import uk.ac.exeter.QuinCe.data.Instrument;
-import uk.ac.exeter.QuinCe.data.RunType;
-import uk.ac.exeter.QuinCe.data.StandardConcentration;
-import uk.ac.exeter.QuinCe.data.StandardStub;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
-import uk.ac.exeter.QuinCe.database.Instrument.GasStandardDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.RunType;
+import uk.ac.exeter.QuinCe.data.Instrument.Standards.GasStandardDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardConcentration;
+import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardStub;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
- * Represents a complete set of gas standard runs from a data file
+ * Represents all the gas standard runs in a data file.
  * @author Steve Jones
  * @see GasStandardMean
  */
@@ -123,11 +122,11 @@ public class GasStandardRuns {
 	/**
 	 * Calculate an interpolated moisture or CO<sub>2</sub> value for a given
 	 * gas standard type. This performs the calculations for
-	 * {@link #getInterpolatedCo2(String, Calendar)} and {@link #getInterpolatedMoisture(String, Calendar)}.
+	 * {@link #getInterpolatedCo2(String, Calendar)} and {@link #getInterpolatedXh2o(String, Calendar)}.
 	 * 
 	 * @param runType The gas standard type
 	 * @param time The time to which the values should be interpolated
-	 * @param valueType The type of value to interpolate. Either {@link GasStandardMean#TYPE_CO2} or {@link GasStandardMean#TYPE_MOISTURE}.
+	 * @param valueType The type of value to interpolate. Either {@link GasStandardMean#TYPE_CO2} or {@link GasStandardMean#TYPE_XH2O}.
 	 * @return The interpolated value
 	 * @see RunType
 	 */

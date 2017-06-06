@@ -2,8 +2,8 @@ package uk.ac.exeter.QuinCe.web.Instrument;
 
 import java.util.List;
 
-import uk.ac.exeter.QuinCe.data.InstrumentStub;
-import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
@@ -122,7 +122,7 @@ public class InstrumentListBean extends BaseManagedBean {
 	
 	/**
 	 * Sets the name of the instrument chosen from the instrument list
-	 * @param chosenInstrument The instrument name
+	 * @param chosenInstrumentName The instrument name
 	 */
 	public void setChosenInstrumentName(String chosenInstrumentName) {
 		this.chosenInstrumentName = chosenInstrumentName;

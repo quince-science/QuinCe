@@ -12,19 +12,27 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import uk.ac.exeter.QuinCe.data.User;
+import uk.ac.exeter.QuinCe.User.User;
 
+/**
+ * A filter to determine whether a user has a given permission.
+ * 
+ * <p>
+ *   This is an abstract class. Implementing classes will determine
+ *   which permission they will check.
+ * </p>
+ * @author Steve Jones
+ *
+ */
 public abstract class PermissionsFilter implements Filter {
 
 	@Override
 	public void destroy() {
 		// Do nothing
-		
 	}
 
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain filterChain) throws IOException, ServletException {
-		
 		HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         HttpSession session = request.getSession(false);
@@ -44,9 +52,10 @@ public abstract class PermissionsFilter implements Filter {
 	}
 	
 	/**
-	 * Return the permissions bit for the permission to be checked.
-	 * @return The permissions bit
+	 * Determine whether or not the specified user has the permission
+	 * being checked by this filter.
+	 * @param user The user whose permissions must be checked
+	 * @return {@code true} if the user has the permission; {@code false} if they do not
 	 */
 	public abstract boolean hasPermission(User user);
-
 }

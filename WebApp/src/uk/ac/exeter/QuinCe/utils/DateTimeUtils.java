@@ -130,7 +130,12 @@ public class DateTimeUtils {
 	 * @return The formatted date/time
 	 */
 	public static String formatDateTime(Calendar dateTime) {
-		return formatDateTime(dateTime.getTime());
+		String result = null;
+		if (null != dateTime) {
+			result = formatDateTime(dateTime.getTime());
+		}
+		
+		return result;
 	}
 	
 	/**
