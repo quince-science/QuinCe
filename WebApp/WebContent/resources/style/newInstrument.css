@@ -143,6 +143,10 @@ table.sampleData {
 	margin: 0px !important;
 }
 
+.sampleDataTableContainer {
+	width: 900px;
+}
+
 .fileTab {
 	display: flex;
 }
