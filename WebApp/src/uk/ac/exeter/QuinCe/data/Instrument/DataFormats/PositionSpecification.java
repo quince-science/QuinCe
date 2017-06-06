@@ -152,6 +152,8 @@ public abstract class PositionSpecification {
 		json.append(format);
 		json.append(",\"valueColumn\":");
 		json.append(valueColumn);
+		json.append(",\"hemisphereRequired\":");
+		json.append(hemisphereRequired());
 		json.append(",\"hemisphereColumn\":");
 		json.append(hemisphereColumn);
 		json.append('}');

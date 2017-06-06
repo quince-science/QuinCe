@@ -184,7 +184,20 @@ function useFile() {
 // SENSOR ASSIGNMENTS PAGE
 //
 //************************************************
+function renderAssignments() {
+	var sensorsOK = renderSensorAssignments();
+	var timePositionOK = renderTimePositionAssignments();
+	
+	if (sensorsOK && timePositionOK) {
+		PF('next').enable();
+	} else {
+		PF('next').disable();
+	}
+}
+
 function renderSensorAssignments() {
+	var sensorsOK = true;
+	
 	var html = '';
 	
 	var assignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
@@ -195,6 +208,7 @@ function renderSensorAssignments() {
 		html += '<div class="assignmentListEntry';
 		if (assignment['required']) {
 			html += ' assignmentRequired';
+			sensorsOK = false;
 		}
 		html += '"><div class="assignmentLabel">';
 		html += assignment['name'];
@@ -205,4 +219,44 @@ function renderSensorAssignments() {
 	}
 	
 	$('#assignmentsList').html(html);
+	
+	return sensorsOK;
+}
+
+function renderTimePositionAssignments() {
+	
+	var timePositionOK = true;
+	
+	var assignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+	
+	for (var i = 0; i < assignments.length; i++) {
+		
+		var dateTimeColumns = $('#dateTimeColumns-' + i);
+		var dateTimeOK = false;
+		var dateTimeHtml = '';
+		dateTimeHtml += '<i>No columns assigned</i>';
+		dateTimeColumns.html(dateTimeHtml);
+		
+		if (dateTimeOK) {
+			dateTimeColumns.closest('.ui-fieldset').removeClass('invalidFileAssignment');
+		} else {
+			dateTimeColumns.closest('.ui-fieldset').addClass('invalidFileAssignment');
+			timePositionOK = false;
+		} 
+
+		var positionColumns = $('#positionColumns-' + i);
+		var positionOK = true;
+		var positionHtml = '';
+		positionHtml += '<i>No columns assigned</i>';
+		positionColumns.html(positionHtml);
+
+		if (positionOK) {
+			positionColumns.closest('.ui-fieldset').removeClass('invalidFileAssignment');
+		} else {
+			positionColumns.closest('.ui-fieldset').addClass('invalidFileAssignment');
+			timePositionOK = false;
+		} 
+	}
+	
+	return timePositionOK;
 }

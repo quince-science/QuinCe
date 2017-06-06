@@ -13,7 +13,7 @@
 		<h:outputStylesheet name="style/datatables.min.css"/>
 		<script>
 			$(document).ready(function() {
-				renderSensorAssignments();
+				renderAssignments();
 			});
 			
 			// Global!
@@ -38,10 +38,14 @@
 					<div class="fileTab">
 						<div class="fileAssignments">
 							<p:fieldset legend="Date/Time" toggleable="true" style="margin-bottom: 20px;">
-								Date/time
+								<script>
+									document.write('<div id="dateTimeColumns-' + tabCount + '"></div>');
+								</script>
 						    </p:fieldset>
 							<p:fieldset legend="Position" toggleable="true">
-								Position
+								<script>
+									document.write('<div id="positionColumns-' + tabCount + '"></div>');
+								</script>
 						    </p:fieldset>
 						</div>
 						
@@ -104,7 +108,7 @@
 			<h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
 				<ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml"/>
 				<p:commandButton value="Back" ajax="false" action="#{newInstrumentBean.goToName}" immediate="true"/>
-				<p:commandButton value="Next" ajax="false" action="#{newInstrumentBean.goToFiles}"/>
+				<p:commandButton id="nextButton" widgetVar="next" value="Next" ajax="false" action="#{newInstrumentBean.goToFiles}"/>
 			</h:panelGrid>
 		</h:form>
 	</ui:define>
