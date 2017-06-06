@@ -265,7 +265,12 @@ public class NewInstrumentBean extends FileUploadBean {
 			// Is an assignment required?
 			json.append("\"required\":");
 			json.append(sensorAssignments.isAssignmentRequired(sensorType));
-			json.append(",");
+			json.append(',');
+			
+			// Are many assignments allowed for this sensor?
+			json.append("\"many\":");
+			json.append(sensorType.canHaveMany());
+			json.append(',');
 			
 			// The columns assigned to the sensor type
 			Set<SensorAssignment> assignments = sensorAssignments.get(sensorType);

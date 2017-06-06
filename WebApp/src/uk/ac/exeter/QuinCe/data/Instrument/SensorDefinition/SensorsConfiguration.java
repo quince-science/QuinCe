@@ -22,7 +22,7 @@ public class SensorsConfiguration {
 	/**
 	 * The number of columns in the configuration file
 	 */
-	private static final int COL_COUNT = 5;
+	private static final int COL_COUNT = 6;
 	
 	/**
 	 * The column containing the sensor type name
@@ -48,6 +48,11 @@ public class SensorsConfiguration {
 	 * The column specifying whether or not multiple sensors of this type are permitted
 	 */
 	private static final int COL_DEPENDS_QUESTION = 4;
+	
+	/**
+	 * The column specifying whether multiple instances of the sensor are allowed
+	 */
+	private static final int COL_MANY = 5;
 	
 	/**
 	 * The set of sensors defined for the instrument with
@@ -121,7 +126,9 @@ public class SensorsConfiguration {
 							
 							String dependsQuestion = fields.get(COL_DEPENDS_QUESTION);
 							
-							SensorType sensor = new SensorType(sensorName, required, requiredGroup, dependsOn, dependsQuestion);
+							boolean many = StringUtils.parseYNBoolean(fields.get(COL_MANY));
+							
+							SensorType sensor = new SensorType(sensorName, required, requiredGroup, dependsOn, dependsQuestion, many);
 							
 							sensorTypes.add(sensor);
 							

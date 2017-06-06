@@ -58,14 +58,20 @@ public class SensorType {
 	private String dependsQuestion = null;
 	
 	/**
+	 * Indicates whether multiple instances of a sensor can be configured for an instrument
+	 */
+	private boolean many = true;
+	
+	/**
 	 * Simple constructor - sets all values
 	 * @param name The name of the sensor type
 	 * @param required Whether or not the sensor type is required
 	 * @param requiredGroup The Required Group that this sensor type belongs to
 	 * @param dependsOn The name of another sensor type that this sensor type depends on
 	 * @param dependsQuestion The question that determines whether the {@link #dependsOn} criterion will be honoured.
+	 * @param many Whether or not multiple instances of the sensor are allowed
 	 */
-	protected SensorType(String name, boolean required, String requiredGroup, String dependsOn, String dependsQuestion) {
+	protected SensorType(String name, boolean required, String requiredGroup, String dependsOn, String dependsQuestion, boolean many) {
 		this.name = name;
 		this.required = required;
 		if (null != requiredGroup && requiredGroup.trim().length() > 0) {
@@ -78,6 +84,8 @@ public class SensorType {
 		if (null != dependsQuestion && dependsQuestion.trim().length() > 0) {
 			this.dependsQuestion = dependsQuestion;
 		}
+		
+		this.many = many;
 	}
 	
 	/**
@@ -119,10 +127,18 @@ public class SensorType {
 	 * Gets the question that determines whether the {@link #dependsOn}
 	 * criterion will be honoured.
 	 * @return The question
-	 * @see {@link #dependsQuestion}
+	 * @see #dependsQuestion
 	 */
 	public String getDependsQuestion() {
 		return dependsQuestion;
+	}
+	
+	/**
+	 * Determine whether or not multiple instances of this sensor are allowed.
+	 * @return {@code true} if multiple instances are allowed; {@code false} if only one instance is allowed
+	 */
+	public boolean canHaveMany() {
+		return many;
 	}
 
 	/**
