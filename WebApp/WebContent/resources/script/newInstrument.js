@@ -271,9 +271,14 @@ function buildAssignmentMenu(file, column) {
 	}
 	
 	menuHtml += '<ul class="ui-menu-list ui-helper-reset">';
-	menuHtml += makeMenuItem('Date/Time');
-	menuHtml += makeMenuItem('Longitude');
-	menuHtml += makeMenuItem('Latitude');
+	menuHtml += makeMenuItem('DATETIMESUBMENU', 'Date/Time', file, column);
+	menuHtml += makeMenuItem('POS_longitude', 'Longitude', file, column);
+	menuHtml += makeMenuItem('POS_latitude', 'Latitude', file, column);
+	
+	var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
+	for (var i = 0; i < sensorAssignments.length; i++) {
+		menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'], file, column);
+	}
 	
 	menuHtml += '</ul>';
 	
@@ -286,8 +291,8 @@ function buildAssignmentMenu(file, column) {
 	);
 }
 
-function makeMenuItem(file, column, text) {
-	return '<li class="ui-menuitem ui-widget ui-corner-all"><a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text">' + text + '</a></li>';
+function makeMenuItem(item, label, file, column) {
+	return '<li class="ui-menuitem ui-widget ui-corner-all"><a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text" onclick="startAssign(\'' + item + '\',' + file + ',' + column + ')">' + label + '</a></li>';
 }
 
 function showAssignmentMenu(event, file, column) {
@@ -318,4 +323,8 @@ function positionAssignmentMenu(source) {
 
 function getColumnAssignment(file, column) {
 	return null;
+}
+
+function startAssign(item, file, column) {
+	console.log(item, file, column);
 }
