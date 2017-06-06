@@ -98,17 +98,18 @@
  * SENSOR ASSIGNMENT
  *
  */
- #assignmentsList {
- 	display: flex;
- 	flex-wrap: wrap;
- }
+#assignmentsList {
+	display: flex;
+	flex-wrap: wrap;
+}
  
- #assignmentMenu {
- 	position: absolute;
- 	left: 0px;
- 	right: 0px;
- 	width: 350px;
- }
+#assignmentMenu {
+	position: absolute;
+	left: 0px;
+	right: 0px;
+	font-size: 0.8em;
+	z-index: 1000;
+}
  
 .assignmentListEntry {
 	--entry_color: #2779AA;
@@ -166,4 +167,13 @@ table.sampleData {
 
 .invalidFileAssignment {
 	border: 2px solid red;
+}
+
+.assignmentCol {
+	cursor: pointer;
+}
+
+.assignmentMenuEntry {
+	margin-bottom: 2px;
+	cursor: pointer;
 }

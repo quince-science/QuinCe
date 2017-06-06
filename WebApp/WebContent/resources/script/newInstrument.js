@@ -270,17 +270,50 @@ function buildAssignmentMenu(file, column) {
 		// Add the current assignment here
 	}
 	
-	html += '<div id="menuDateTime">Date/Time</div>';
+	menuHtml += '<ul class="ui-menu-list ui-helper-reset">';
+	menuHtml += makeMenuItem('Date/Time');
+	menuHtml += makeMenuItem('Longitude');
+	menuHtml += makeMenuItem('Latitude');
 	
-	$('#assignmentsMenu').html(html);
+	menuHtml += '</ul>';
+	
+	$('#assignmentMenu').html(menuHtml);
+	
+	// item hover styles
+	$('#assignmentMenu').find('.ui-menuitem-link').hover(
+			function() {$(this).addClass('ui-state-hover')},
+			function() {$(this).removeClass('ui-state-hover')}
+	);
 }
 
-function showAssignmentMenu() {
+function makeMenuItem(file, column, text) {
+	return '<li class="ui-menuitem ui-widget ui-corner-all"><a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text">' + text + '</a></li>';
+}
+
+function showAssignmentMenu(event, file, column) {
+	event.stopPropagation();
+	buildAssignmentMenu(file, column);
+	positionAssignmentMenu(event.target);
 	$('#assignmentMenu').removeClass('ui-overlay-hidden').addClass('ui-overlay-visible');
 }
 
 function hideAssignmentMenu() {
 	$('#assignmentMenu').removeClass('ui-overlay-visible').addClass('ui-overlay-hidden');
+}
+
+function positionAssignmentMenu(source) {
+	
+	var tableContainer = $(source).closest('.sampleDataTableContainer');
+	var rightLimit = tableContainer.offset().left + tableContainer.width(); 
+	
+	var leftPos = $(source).offset().left;
+	if (leftPos + $('#assignmentMenu').width() > rightLimit) {
+		leftPos = rightLimit - $('#assignmentMenu').width();
+	}
+	
+	var topPos = $(source).offset().top + $(source).height();
+	
+	$('#assignmentMenu').css({'left': leftPos + 'px', 'top': topPos + 'px'});
 }
 
 function getColumnAssignment(file, column) {
