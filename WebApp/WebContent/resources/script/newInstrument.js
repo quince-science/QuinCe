@@ -260,3 +260,29 @@ function renderTimePositionAssignments() {
 	
 	return timePositionOK;
 }
+
+function buildAssignmentMenu(file, column) {
+	var columnAssignment = getColumnAssignment(file, column);
+	
+	var menuHtml = '';
+	
+	if (null != columnAssignment) {
+		// Add the current assignment here
+	}
+	
+	html += '<div id="menuDateTime">Date/Time</div>';
+	
+	$('#assignmentsMenu').html(html);
+}
+
+function showAssignmentMenu() {
+	$('#assignmentMenu').removeClass('ui-overlay-hidden').addClass('ui-overlay-visible');
+}
+
+function hideAssignmentMenu() {
+	$('#assignmentMenu').removeClass('ui-overlay-visible').addClass('ui-overlay-hidden');
+}
+
+function getColumnAssignment(file, column) {
+	return null;
+}

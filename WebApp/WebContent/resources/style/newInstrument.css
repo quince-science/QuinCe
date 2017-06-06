@@ -103,6 +103,13 @@
  	flex-wrap: wrap;
  }
  
+ #assignmentMenu {
+ 	position: absolute;
+ 	left: 0px;
+ 	right: 0px;
+ 	width: 350px;
+ }
+ 
 .assignmentListEntry {
 	--entry_color: #2779AA;
 	display: flex;
