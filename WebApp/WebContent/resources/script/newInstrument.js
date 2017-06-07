@@ -292,7 +292,7 @@ function buildAssignmentMenu(file, column) {
 }
 
 function makeMenuItem(item, label, file, column) {
-	return '<li class="ui-menuitem ui-widget ui-corner-all"><a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text" onclick="startAssign(\'' + item + '\',' + file + ',' + column + ')">' + label + '</a></li>';
+	return '<li class="ui-menuitem ui-widget ui-corner-all"><a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text assignmentMenuItem" onclick="startAssign(\'' + item + '\',' + file + ',' + column + ')">' + label + '</a></li>';
 }
 
 function showAssignmentMenu(event, file, column) {
