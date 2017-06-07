@@ -44,7 +44,7 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 	 * 
 	 * <ul>
 	 *   <li>
-	 *     If a sensor has been assigned, then no further assignment is needed
+	 *     If a primary sensor has been assigned, then no further assignment is needed
 	 *   </li>
 	 *   <li>
 	 *     If the sensor is part of a required group, and none of the sensors
@@ -74,12 +74,20 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 			throw new SensorAssignmentException("The specified sensor was not found");
 		}
 		
-		// See if any assignments have already been made
+		// See if any assignments have already been made.
+		// If they have, see if there's at least one primary sensor
 		Set<SensorAssignment> assignments = get(sensorType);
-		if (null != assignments && assignments.size() > 0) {
-			result = false;
-		} else {
-			
+		if (null != assignments) {
+			for (SensorAssignment assignment : assignments) {
+				if (assignment.isPrimary()) {
+					result = false;
+					break;
+				}
+			}
+		}
+		
+		// If we haven't found a primary sensor assignment...
+		if (result) {
 			// Check the required group
 			String requiredGroup = sensorType.getRequiredGroup();
 			

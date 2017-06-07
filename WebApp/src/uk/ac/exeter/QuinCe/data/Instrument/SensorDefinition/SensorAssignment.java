@@ -30,15 +30,21 @@ public class SensorAssignment {
 	private boolean dependsQuestionAnswer = false;
 	
 	/**
+	 * Indicates whether this is a primary or fallback sensor
+	 */
+	private boolean primary = true;
+	
+	/**
 	 * Simple constructor
 	 * @param dataFile The data file
 	 * @param column The column number
 	 * @param postCalibrated Specifies whether or not values should be calibrated by QuinCe
 	 */
-	public SensorAssignment(String dataFile, int column, boolean postCalibrated) {
+	public SensorAssignment(String dataFile, int column, boolean postCalibrated, boolean primary) {
 		this.dataFile = dataFile;
 		this.column = column;
 		this.postCalibrated = postCalibrated;
+		this.primary = primary;
 	}
 	
 	/**
@@ -82,5 +88,13 @@ public class SensorAssignment {
 	 */
 	public boolean getDependsQuestionAnswer() {
 		return dependsQuestionAnswer;
+	}
+	
+	/**
+	 * Determines whether or not this is a primary sensor
+	 * @return {@code true} if this is a primary sensor; {@code false} if it is a fallback sensor
+	 */
+	public boolean isPrimary() {
+		return primary;
 	}
 }

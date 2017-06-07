@@ -286,6 +286,8 @@ public class NewInstrumentBean extends FileUploadBean {
 					json.append(assignment.getColumn());
 					json.append("\",\"postCalibrated\":");
 					json.append(assignment.getPostCalibrated());
+					json.append("\",\"primary\":");
+					json.append(assignment.isPrimary());
 					json.append('}');
 					
 					if (assignmentCount < assignments.size() - 1) {
