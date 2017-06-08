@@ -16,7 +16,7 @@
 				renderAssignments();
 				
 				$('body').click(function () {
-					hideAssignmentMenu()
+					hideAssignmentMenu();
 				});
 			});
 			
@@ -25,6 +25,8 @@
 			
 			// The data tables in each tab
 			var tabTables = new Array();
+			
+			var filesAndColumns = #{newInstrumentBean.filesAndColumns};
 		</script>	
 	</ui:define>
 	<ui:define name="new_instrument_content">
@@ -32,8 +34,64 @@
 	
 		<h:form id="newInstrumentForm" metho="post" charset="utf8">
 		
-			<h:inputHidden id="sensorAssignments" value="#{newInstrumentBean.sensorAssignments}"/>
+			<h:inputHidden id="sensorAssignments" value="#{newInstrumentBean.sensorAssignments}" size="100"/>
 			<h:inputHidden id="timePositionAssignments" value="#{newInstrumentBean.timePositionAssignments}"/>
+			
+			<p:dialog header="Assign Column To Sensor" widgetVar="sensorAssignmentDialog" modal="true">
+				<h:inputHidden id="sensorAssignmentFile" value="#{newInstrumentBean.sensorAssignmentFile}"/>
+				<h:inputHidden id="sensorAssignmentColumn" value="#{newInstrumentBean.sensorAssignmentColumn}"/>
+				<h:inputHidden id="sensorAssignmentSensorType" value="#{newInstrumentBean.sensorAssignmentSensorType}"/>
+				
+				<div class="dialogSection">
+					<table>
+						<tr>
+							<td><p:outputLabel value="Assigning"/></td>
+							<td><div id="sensorAssignmentFileName" class="sensorDialogVarText"></div>, <div id="sensorAssignmentColumnName" class="sensorDialogVarText"></div></td>
+						</tr>
+						<tr>
+							<td><p:outputLabel value="To sensor"/></td>
+							<td><div id="sensorAssignmentSensorTypeText" class="sensorDialogVarText"></div></td>
+						</tr>
+					</table>
+				</div>
+				<div class="dialogSection">
+					<div>
+						<p:outputLabel value="Is this a primary or fallback sensor?"/> <i>??</i>
+					</div>
+					<div>
+						<p:selectOneRadio id="sensorAssignmentPrimary" value="#{newInstrumentBean.sensorAssignmentPrimary}">
+							<f:selectItem itemLabel="Primary" itemValue="true"/>
+							<f:selectItem itemLabel="Fallback" itemValue="false"/>
+						</p:selectOneRadio>
+					</div>
+				</div>
+				<div class="dialogSection">
+					<div>
+						<p:outputLabel value="Should calibration adjustments be applied to this sensor?"/> <i>??</i>
+					</div>
+					<div>
+						<p:selectOneRadio id="sensorAssignmentPostCalibrated" value="#{newInstrumentBean.sensorAssignmentPostCalibrated}">
+							<f:selectItem itemLabel="Yes" itemValue="true"/>
+							<f:selectItem itemLabel="No" itemValue="false"/>
+						</p:selectOneRadio>
+					</div>
+				</div>
+				<div id="sensorAssignmentDependsQuestionContainer" class="dialogSection">
+					<div id="sensorAssignmentDependsQuestion" class="ui-outputlabel ui-widget"></div>
+					<div>
+						<p:selectOneRadio id="sensorAssignmentDependsQuestionAnswer" value="#{newInstrumentBean.sensorAssignmentDependsQuestionAnswer}">
+							<f:selectItem itemLabel="Yes" itemValue="true"/>
+							<f:selectItem itemLabel="No" itemValue="false"/>
+						</p:selectOneRadio>
+					</div>
+				</div>
+				
+				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+					<p:commandButton value="Assign" action="#{newInstrumentBean.storeSensorAssignment}" process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer" update="sensorAssignments" oncomplete="sensorAssigned();"/>
+					<p:commandButton value="Cancel" ajax="false" onclick="PF('sensorAssignmentDialog').hide(); return false;"/>
+				</h:panelGrid>
+				
+			</p:dialog>
 			
 			<p:fieldset id="assignmentsPanel" legend="Column Assignments" style="margin-bottom: 20px">
 				<div id="assignmentsList"></div>

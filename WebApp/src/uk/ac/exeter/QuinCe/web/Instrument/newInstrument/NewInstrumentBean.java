@@ -60,6 +60,37 @@ public class NewInstrumentBean extends FileUploadBean {
 	private FileDefinitionBuilder currentInstrumentFile;
 	
 	/**
+	 * Sensor assignment - file index
+	 */
+	private String sensorAssignmentFile = null;
+	
+	/**
+	 * Sensor assignment - column index
+	 */
+	private int sensorAssignmentColumn = -1;
+	
+	/**
+	 * The name of the sensor being assigned
+	 */
+	private String sensorAssignmentSensorType = null;
+	
+	/**
+	 * Sensor assignment - must post-calibration be applied?
+	 */
+	private boolean sensorAssignmentPostCalibrated = false;
+	
+	/**
+	 * Sensor assignment - the answer to the Depends Question
+	 * @see SensorType#getDependsQuestion()
+	 */
+	private boolean sensorAssignmentDependsQuestionAnswer = false;
+	
+	/**
+	 * Sensor assignment - is this a primary or fallback sensor?
+	 */
+	private boolean sensorAssignmentPrimary = false;
+	
+	/**
 	 * Begin a new instrument definition
 	 * @return The navigation to the start page
 	 */
@@ -157,6 +188,14 @@ public class NewInstrumentBean extends FileUploadBean {
 		instrumentName = null;
 		instrumentFiles = new InstrumentFileSet();
 		sensorAssignments = ResourceManager.getInstance().getSensorsConfiguration().getNewSensorAssigments();
+		
+		sensorAssignmentFile = null;
+		sensorAssignmentColumn = -1;
+		sensorAssignmentSensorType = null;
+		sensorAssignmentPrimary = true;
+		sensorAssignmentPostCalibrated = false;
+		sensorAssignmentDependsQuestionAnswer = false;
+		
 		clearFile();
 	}
 	
@@ -272,6 +311,17 @@ public class NewInstrumentBean extends FileUploadBean {
 			json.append(sensorType.canHaveMany());
 			json.append(',');
 			
+			// The Depends Question
+			json.append("\"dependsQuestion\":");
+			if (null == sensorType.getDependsQuestion()) {
+				json.append("null");
+			} else {
+				json.append('"');
+				json.append(sensorType.getDependsQuestion());
+				json.append('"');
+			}
+			json.append(',');
+			
 			// The columns assigned to the sensor type
 			Set<SensorAssignment> assignments = sensorAssignments.get(sensorType);
 			
@@ -284,15 +334,17 @@ public class NewInstrumentBean extends FileUploadBean {
 					json.append(assignment.getDataFile());
 					json.append("\",\"column\":");
 					json.append(assignment.getColumn());
-					json.append("\",\"postCalibrated\":");
+					json.append(",\"postCalibrated\":");
 					json.append(assignment.getPostCalibrated());
-					json.append("\",\"primary\":");
+					json.append(",\"primary\":");
 					json.append(assignment.isPrimary());
 					json.append('}');
 					
 					if (assignmentCount < assignments.size() - 1) {
 						json.append(',');
 					}
+					
+					assignmentCount++;
 				}
 			}
 			
@@ -373,5 +425,139 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	public void setTimePositionAssignments(String assignments) {
 		// Do nothing
+	}
+	
+	/**
+	 * Get the list of registered file descriptions and their columns as a JSON string
+	 * @return The file names
+	 */
+	public String getFilesAndColumns() {
+		StringBuilder json = new StringBuilder();
+		
+		json.append('[');
+
+		for (int i = 0; i < instrumentFiles.size(); i++) {
+			json.append('{');
+			
+			json.append("'description':'");
+			json.append(instrumentFiles.get(i).getFileDescription());
+			json.append("','columns':");
+			json.append(instrumentFiles.get(i).getFileColumns());
+			json.append('}');
+
+			if (i < instrumentFiles.size() - 1) {
+				json.append(',');
+			}
+		}
+		
+		json.append(']');
+		return json.toString();
+	}
+
+	/**
+	 * Get the sensor assignment file
+	 * @return The file
+	 */
+	public String getSensorAssignmentFile() {
+		return sensorAssignmentFile;
+	}
+
+	/**
+	 * Set the sensor assignment file
+	 * @param sensorAssignmentFile The file
+	 */
+	public void setSensorAssignmentFile(String sensorAssignmentFile) {
+		this.sensorAssignmentFile = sensorAssignmentFile;
+	}
+
+	/**
+	 * Get the sensor assignment column index
+	 * @return The column index
+	 */
+	public int getSensorAssignmentColumn() {
+		return sensorAssignmentColumn;
+	}
+
+	/**
+	 * Set the sensor assignment column index
+	 * @param sensorAssignmentColumn The column index
+	 */
+	public void setSensorAssignmentColumn(int sensorAssignmentColumn) {
+		this.sensorAssignmentColumn = sensorAssignmentColumn;
+	}
+
+	/**
+	 * Get the name of the sensor type being assigned
+	 * @return The sensor type
+	 */
+	public String getSensorAssignmentSensorType() {
+		return sensorAssignmentSensorType;
+	}
+
+	/**
+	 * Set the name of the sensor type being assigned
+	 * @param sensorAssignmentSensorType The sensor type
+	 */
+	public void setSensorAssignmentSensorType(String sensorAssignmentSensorType) {
+		this.sensorAssignmentSensorType = sensorAssignmentSensorType;
+	}
+
+	/**
+	 * Get the sensor assignment post-calibration flag
+	 * @return The post-calibration flag
+	 */
+	public boolean getSensorAssignmentPostCalibrated() {
+		return sensorAssignmentPostCalibrated;
+	}
+
+	/**
+	 * Set the sensor assignment post-calibration flag
+	 * @param sensorAssignmentPostCalibrated The post-calibration flag
+	 */
+	public void setSensorAssignmentPostCalibrated(boolean sensorAssignmentPostCalibrated) {
+		this.sensorAssignmentPostCalibrated = sensorAssignmentPostCalibrated;
+	}
+
+	/**
+	 * Get the answer to the sensor assignment's Depends Question
+	 * @return The answer to the Depends Question
+	 * @see SensorType#getDependsQuestion()
+	 */
+	public boolean getSensorAssignmentDependsQuestionAnswer() {
+		return sensorAssignmentDependsQuestionAnswer;
+	}
+
+	/**
+	 * Set the answer to the sensor assignment's Depends Question
+	 * @param sensorAssignmentDependsQuestionAnswer The answer to the Depends Question
+	 * @see SensorType#getDependsQuestion()
+	 */
+	public void setSensorAssignmentDependsQuestionAnswer(boolean sensorAssignmentDependsQuestionAnswer) {
+		this.sensorAssignmentDependsQuestionAnswer = sensorAssignmentDependsQuestionAnswer;
+	}
+
+	/**
+	 * Get the flag indicating whether the assigned sensor is primary or fallback
+	 * @return The primary sensor flag
+	 */
+	public boolean getSensorAssignmentPrimary() {
+		return sensorAssignmentPrimary;
+	}
+
+	/**
+	 * Set the flag indicating whether the assigned sensor is primary or fallback
+	 * @param sensorAssignmentPrimary The primary sensor flag
+	 */
+	public void setSensorAssignmentPrimary(boolean sensorAssignmentPrimary) {
+		this.sensorAssignmentPrimary = sensorAssignmentPrimary;
+	}
+	
+	/**
+	 * Add a new assignment to the sensor assignments
+	 * @throws Exception If any errors occur
+	 */
+	public void storeSensorAssignment() throws Exception {
+		SensorAssignment assignment = new SensorAssignment(sensorAssignmentFile, sensorAssignmentColumn, sensorAssignmentPostCalibrated, sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer);
+		sensorAssignments.addAssignment(sensorAssignmentSensorType, assignment);
 	}
 }

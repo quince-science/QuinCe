@@ -563,6 +563,10 @@ table.fileDates {
 	flex-shrink: 1000;
 }
 
+.dialogSection {
+	margin-bottom: 15px;
+}
+
 /* PrimeFaces overrides */
 .ui-panel-content td {
 	vertical-align: middle;

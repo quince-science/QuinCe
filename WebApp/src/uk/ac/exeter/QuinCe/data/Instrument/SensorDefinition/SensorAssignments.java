@@ -163,4 +163,39 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 		
 		return result;
 	}
+	
+	/**
+	 * Add a sensor assignment using the name of a sensor
+	 * @param sensorName The sensor name
+	 * @param assignment The assignment details
+	 * @throws SensorTypeNotFoundException If the named sensor does not exist
+	 */
+	public void addAssignment(String sensorName, SensorAssignment assignment) throws SensorTypeNotFoundException {
+		Set<SensorAssignment> assignments = get(getSensorType(sensorName));
+		assignments.add(assignment);
+	}
+
+	/**
+	 * Get the {@link SensorType} object for a given sensor name
+	 * @param sensorName The sensor name
+	 * @return The SensorType object
+	 * @throws SensorTypeNotFoundException If the sensor type does not exist
+	 */
+	public SensorType getSensorType(String sensorName) throws SensorTypeNotFoundException {
+		
+		SensorType result = null;
+		
+		for (SensorType sensorType : keySet()) {
+			if (sensorType.getName().equals(sensorName)) {
+				result = sensorType;
+				break;
+			}
+		}
+		
+		if (null == result) {
+			throw new SensorTypeNotFoundException(sensorName);
+		}
+		
+		return result;
+	}
 }

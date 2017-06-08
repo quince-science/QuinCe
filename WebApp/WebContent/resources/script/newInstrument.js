@@ -202,6 +202,8 @@ function renderSensorAssignments() {
 	
 	var assignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
 	
+	console.log(assignments);
+	
 	for (var i = 0; i < assignments.length; i++) {
 		var assignment = assignments[i];
 		
@@ -326,5 +328,55 @@ function getColumnAssignment(file, column) {
 }
 
 function startAssign(item, file, column) {
-	console.log(item, file, column);
+	if (item == 'DATETIMESUBMENU') {
+		console.log('Date/Time submenu');
+	} else if (item.startsWith('DATETIME_')) {
+		console.log('Date/Time assignment');
+	} else if (item.startsWith('POS_')) {
+		console.log('Position assignment');
+	} else {
+		openAssignSensorDialog(item, file, column);
+	}
+}
+
+function openAssignSensorDialog(sensor, file, column) {
+	
+	$('#newInstrumentForm\\:sensorAssignmentFile').val(filesAndColumns[file]['description']);
+	$('#newInstrumentForm\\:sensorAssignmentColumn').val(column);
+	$('#newInstrumentForm\\:sensorAssignmentSensorType').val(sensor);
+	
+	$('#sensorAssignmentFileName').text(filesAndColumns[file]['description']);
+	$('#sensorAssignmentColumnName').text(filesAndColumns[file]['columns'][column]);
+	$('#sensorAssignmentSensorTypeText').text(sensor);
+	
+	var dependsQuestion = getDependsQuestion(sensor);
+	if (null == dependsQuestion) {
+		$('#sensorAssignmentDependsQuestionContainer').hide();
+	} else {
+		$('#sensorAssignmentDependsQuestion').text(dependsQuestion);
+		$('#sensorAssignmentDependsQuestionContainer').show();
+	}
+	
+	PF('sensorAssignmentDialog').show();
+}
+
+function getDependsQuestion(sensor) {
+	var question = null;
+	
+	var assignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
+
+	for (var i = 0; i < assignments.length; i++) {
+		var assignment = assignments[i];
+		if (assignment['name'] == sensor) {
+			question = assignment['dependsQuestion'];
+			break;
+		}
+	}
+	
+	return question;
+}
+
+function sensorAssigned() {
+	PF('sensorAssignmentDialog').hide();
+	renderSensorAssignments();
 }
