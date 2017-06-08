@@ -355,6 +355,12 @@ function openAssignSensorDialog(sensor, file, column) {
 		$('#sensorAssignmentDependsQuestionContainer').show();
 	}
 	
+	if (canHaveMany(sensor)) {
+		$('#sensorAssignmentPrimaryContainer').show();
+	} else {
+		$('#sensorAssignmentPrimaryContainer').hide();
+	}
+	
 	PF('sensorAssignmentDialog').show();
 }
 
@@ -372,6 +378,22 @@ function getDependsQuestion(sensor) {
 	}
 	
 	return question;
+}
+
+function canHaveMany(sensor) {
+	var many = true;
+	
+	var assignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
+
+	for (var i = 0; i < assignments.length; i++) {
+		var assignment = assignments[i];
+		if (assignment['name'] == sensor) {
+			many = assignment['many'];
+			break;
+		}
+	}
+	
+	return many;
 }
 
 function sensorAssigned() {
