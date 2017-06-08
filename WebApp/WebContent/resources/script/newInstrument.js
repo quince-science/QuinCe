@@ -361,7 +361,11 @@ function openAssignSensorDialog(sensor, file, column) {
 		$('#sensorAssignmentPrimaryContainer').hide();
 	}
 	
-	
+	if (canBePostCalibrated(sensor)) {
+		$('#sensorAssignmentPostCalibration').show();
+	} else {
+		$('#sensorAssignmentPostCalibration').hide();
+	}
 	
 	PF('sensorAssignmentDialog').show();
 }
@@ -382,8 +386,8 @@ function getDependsQuestion(sensor) {
 	return question;
 }
 
-// Primary/Fallback must be specified if (a) many sensors can
-// be assigned, and (b) they will be averaged
+//Primary/Fallback must be specified if (a) many sensors can
+//be assigned, and (b) they will be averaged
 function usePrimary(sensor) {
 	var result = true;
 	
@@ -393,6 +397,22 @@ function usePrimary(sensor) {
 		var assignment = assignments[i];
 		if (assignment['name'] == sensor) {
 			result = assignment['many'] && assignment['averaged'];
+			break;
+		}
+	}
+	
+	return result;
+}
+
+function canBePostCalibrated(sensor) {
+	var result = true;
+	
+	var assignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
+
+	for (var i = 0; i < assignments.length; i++) {
+		var assignment = assignments[i];
+		if (assignment['name'] == sensor) {
+			result = assignment['postCalibrated'];
 			break;
 		}
 	}

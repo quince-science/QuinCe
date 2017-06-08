@@ -68,6 +68,11 @@ public class SensorType {
 	private boolean averaged = true;
 	
 	/**
+	 * Indicates whether or not sensors can be post-calibrated by QuinCe
+	 */
+	private boolean postCalibrated = true;
+	
+	/**
 	 * Simple constructor - sets all values
 	 * @param name The name of the sensor type
 	 * @param required Whether or not the sensor type is required
@@ -76,7 +81,7 @@ public class SensorType {
 	 * @param dependsQuestion The question that determines whether the {@link #dependsOn} criterion will be honoured.
 	 * @param many Whether or not multiple instances of the sensor are allowed
 	 */
-	protected SensorType(String name, boolean required, String requiredGroup, String dependsOn, String dependsQuestion, boolean many, boolean averaged) {
+	protected SensorType(String name, boolean required, String requiredGroup, String dependsOn, String dependsQuestion, boolean many, boolean averaged, boolean postCalibrated) {
 		this.name = name;
 		this.required = required;
 		if (null != requiredGroup && requiredGroup.trim().length() > 0) {
@@ -92,6 +97,7 @@ public class SensorType {
 		
 		this.many = many;
 		this.averaged = averaged;
+		this.postCalibrated = postCalibrated;
 	}
 	
 	/**
@@ -171,9 +177,17 @@ public class SensorType {
 	
 	/**
 	 * Determines whether or not multiple sensor values will be averaged
-	 * @return {@code true} if the values will be averaged; {@code false} if they is not
+	 * @return {@code true} if the values will be averaged; {@code false} if they will not
 	 */
 	public boolean isAveraged() {
 		return averaged;
+	}
+	
+	/**
+	 * Determines whether or sensors of this type can be post-calibrated by QuinCe
+	 * @return {@code true} if the sensors can be post-calibrated; {@code false} if they cannot
+	 */
+	public boolean canBePostCalibrated() {
+		return postCalibrated;
 	}
 }

@@ -304,9 +304,14 @@ public class NewInstrumentBean extends FileUploadBean {
 			json.append(sensorType.canHaveMany());
 			json.append(',');
 			
-			// Are many assignments allowed for this sensor?
+			// Will multiple sensors be averaged?
 			json.append("\"averaged\":");
 			json.append(sensorType.isAveraged());
+			json.append(',');
+			
+			// Can sensors of this type be post-calibrated?
+			json.append("\"postCalibrated\":");
+			json.append(sensorType.canBePostCalibrated());
 			json.append(',');
 			
 			// The Depends Question

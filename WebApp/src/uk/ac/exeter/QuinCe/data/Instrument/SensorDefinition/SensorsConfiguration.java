@@ -22,7 +22,7 @@ public class SensorsConfiguration {
 	/**
 	 * The number of columns in the configuration file
 	 */
-	private static final int COL_COUNT = 7;
+	private static final int COL_COUNT = 8;
 	
 	/**
 	 * The column containing the sensor type name
@@ -58,6 +58,11 @@ public class SensorsConfiguration {
 	 * The column specifying whether multiple sensors will be averaged
 	 */
 	private static final int COL_AVERAGED = 6;
+	
+	/**
+	 * The column specifying whether a sensor can be post-calibrated by QuinCe
+	 */
+	private static final int COL_POST_CALIBRATED = 7;
 	
 	/**
 	 * The set of sensors defined for the instrument with
@@ -133,8 +138,9 @@ public class SensorsConfiguration {
 							
 							boolean many = StringUtils.parseYNBoolean(fields.get(COL_MANY));
 							boolean averaged = StringUtils.parseYNBoolean(fields.get(COL_AVERAGED));
+							boolean postCalibrated = StringUtils.parseYNBoolean(fields.get(COL_POST_CALIBRATED));
 							
-							SensorType sensor = new SensorType(sensorName, required, requiredGroup, dependsOn, dependsQuestion, many, averaged);
+							SensorType sensor = new SensorType(sensorName, required, requiredGroup, dependsOn, dependsQuestion, many, averaged, postCalibrated);
 							
 							sensorTypes.add(sensor);
 							
