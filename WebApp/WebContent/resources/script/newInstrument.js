@@ -202,8 +202,6 @@ function renderSensorAssignments() {
 	
 	var assignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
 	
-	console.log(assignments);
-	
 	for (var i = 0; i < assignments.length; i++) {
 		var assignment = assignments[i];
 		

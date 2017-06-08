@@ -188,14 +188,7 @@ public class NewInstrumentBean extends FileUploadBean {
 		instrumentName = null;
 		instrumentFiles = new InstrumentFileSet();
 		sensorAssignments = ResourceManager.getInstance().getSensorsConfiguration().getNewSensorAssigments();
-		
-		sensorAssignmentFile = null;
-		sensorAssignmentColumn = -1;
-		sensorAssignmentSensorType = null;
-		sensorAssignmentPrimary = true;
-		sensorAssignmentPostCalibrated = false;
-		sensorAssignmentDependsQuestionAnswer = false;
-		
+		resetSensorAssignmentValues();		
 		clearFile();
 	}
 	
@@ -559,5 +552,21 @@ public class NewInstrumentBean extends FileUploadBean {
 	public void storeSensorAssignment() throws Exception {
 		SensorAssignment assignment = new SensorAssignment(sensorAssignmentFile, sensorAssignmentColumn, sensorAssignmentPostCalibrated, sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer);
 		sensorAssignments.addAssignment(sensorAssignmentSensorType, assignment);
+		
+		// Reset the assign dialog values, because it's so damn hard to do in Javascript
+		resetSensorAssignmentValues();
+	}
+	
+	/**
+	 * Set the assignment dialog values to their defaults
+	 */
+	public void resetSensorAssignmentValues() {
+		sensorAssignmentFile = null;
+		sensorAssignmentColumn = -1;
+		sensorAssignmentSensorType = null;
+		sensorAssignmentPrimary = true;
+		sensorAssignmentPostCalibrated = false;
+		sensorAssignmentDependsQuestionAnswer = false;
+
 	}
 }

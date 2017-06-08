@@ -59,7 +59,7 @@
 						<p:outputLabel value="Is this a primary or fallback sensor?"/> <i>??</i>
 					</div>
 					<div>
-						<p:selectOneRadio id="sensorAssignmentPrimary" value="#{newInstrumentBean.sensorAssignmentPrimary}">
+						<p:selectOneRadio id="sensorAssignmentPrimary" widgetVar="primary" value="#{newInstrumentBean.sensorAssignmentPrimary}">
 							<f:selectItem itemLabel="Primary" itemValue="true"/>
 							<f:selectItem itemLabel="Fallback" itemValue="false"/>
 						</p:selectOneRadio>
@@ -77,7 +77,7 @@
 					</div>
 				</div>
 				<div id="sensorAssignmentDependsQuestionContainer" class="dialogSection">
-					<div id="sensorAssignmentDependsQuestion" class="ui-outputlabel ui-widget"></div>
+					<label id="sensorAssignmentDependsQuestion" class="ui-outputlabel ui-widget"></label>
 					<div>
 						<p:selectOneRadio id="sensorAssignmentDependsQuestionAnswer" value="#{newInstrumentBean.sensorAssignmentDependsQuestionAnswer}">
 							<f:selectItem itemLabel="Yes" itemValue="true"/>
@@ -87,8 +87,12 @@
 				</div>
 				
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
-					<p:commandButton value="Assign" action="#{newInstrumentBean.storeSensorAssignment}" process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer" update="sensorAssignments" oncomplete="sensorAssigned();"/>
-					<p:commandButton value="Cancel" ajax="false" onclick="PF('sensorAssignmentDialog').hide(); return false;"/>
+					<p:commandButton value="Assign" ajax="true" action="#{newInstrumentBean.storeSensorAssignment}"
+					  process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer"
+					  update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer sensorAssignments"
+					  oncomplete="sensorAssigned();"/>
+					<p:commandButton value="Cancel" ajax="true" action="#{newInstrumentBean.resetSensorAssignmentValues}" process="@none"
+					  update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer" oncomplete="PF('sensorAssignmentDialog').hide();"/>
 				</h:panelGrid>
 				
 			</p:dialog>
