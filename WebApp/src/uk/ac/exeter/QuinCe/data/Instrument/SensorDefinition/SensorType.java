@@ -63,6 +63,11 @@ public class SensorType {
 	private boolean many = true;
 	
 	/**
+	 * Indicates whether multiple sensor values will be averaged
+	 */
+	private boolean averaged = true;
+	
+	/**
 	 * Simple constructor - sets all values
 	 * @param name The name of the sensor type
 	 * @param required Whether or not the sensor type is required
@@ -71,7 +76,7 @@ public class SensorType {
 	 * @param dependsQuestion The question that determines whether the {@link #dependsOn} criterion will be honoured.
 	 * @param many Whether or not multiple instances of the sensor are allowed
 	 */
-	protected SensorType(String name, boolean required, String requiredGroup, String dependsOn, String dependsQuestion, boolean many) {
+	protected SensorType(String name, boolean required, String requiredGroup, String dependsOn, String dependsQuestion, boolean many, boolean averaged) {
 		this.name = name;
 		this.required = required;
 		if (null != requiredGroup && requiredGroup.trim().length() > 0) {
@@ -86,6 +91,7 @@ public class SensorType {
 		}
 		
 		this.many = many;
+		this.averaged = averaged;
 	}
 	
 	/**
@@ -160,6 +166,14 @@ public class SensorType {
 	 * @return {@code true} if there is a Depends Question; {@code false} if there is not
 	 */
 	public boolean hasDependsQuestion() {
-		return (dependsQuestion != null && dependsQuestion.trim().length() > 0);
+		return (dependsQuestion != null);
+	}
+	
+	/**
+	 * Determines whether or not multiple sensor values will be averaged
+	 * @return {@code true} if the values will be averaged; {@code false} if they is not
+	 */
+	public boolean isAveraged() {
+		return averaged;
 	}
 }

@@ -304,6 +304,11 @@ public class NewInstrumentBean extends FileUploadBean {
 			json.append(sensorType.canHaveMany());
 			json.append(',');
 			
+			// Are many assignments allowed for this sensor?
+			json.append("\"averaged\":");
+			json.append(sensorType.isAveraged());
+			json.append(',');
+			
 			// The Depends Question
 			json.append("\"dependsQuestion\":");
 			if (null == sensorType.getDependsQuestion()) {

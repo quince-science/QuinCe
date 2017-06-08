@@ -355,11 +355,13 @@ function openAssignSensorDialog(sensor, file, column) {
 		$('#sensorAssignmentDependsQuestionContainer').show();
 	}
 	
-	if (canHaveMany(sensor)) {
+	if (usePrimary(sensor)) {
 		$('#sensorAssignmentPrimaryContainer').show();
 	} else {
 		$('#sensorAssignmentPrimaryContainer').hide();
 	}
+	
+	
 	
 	PF('sensorAssignmentDialog').show();
 }
@@ -380,20 +382,22 @@ function getDependsQuestion(sensor) {
 	return question;
 }
 
-function canHaveMany(sensor) {
-	var many = true;
+// Primary/Fallback must be specified if (a) many sensors can
+// be assigned, and (b) they will be averaged
+function usePrimary(sensor) {
+	var result = true;
 	
 	var assignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
 
 	for (var i = 0; i < assignments.length; i++) {
 		var assignment = assignments[i];
 		if (assignment['name'] == sensor) {
-			many = assignment['many'];
+			result = assignment['many'] && assignment['averaged'];
 			break;
 		}
 	}
 	
-	return many;
+	return result;
 }
 
 function sensorAssigned() {
