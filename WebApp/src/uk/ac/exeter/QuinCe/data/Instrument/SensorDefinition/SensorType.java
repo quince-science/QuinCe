@@ -154,4 +154,12 @@ public class SensorType {
 		
 		return equal;
 	}
+	
+	/**
+	 * Determines whether or not this sensor type has a Depends Question
+	 * @return {@code true} if there is a Depends Question; {@code false} if there is not
+	 */
+	public boolean hasDependsQuestion() {
+		return (dependsQuestion != null && dependsQuestion.trim().length() > 0);
+	}
 }

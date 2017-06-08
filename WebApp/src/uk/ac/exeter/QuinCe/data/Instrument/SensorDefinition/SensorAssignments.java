@@ -68,39 +68,23 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 	 * @throws SensorAssignmentException If the specified sensor type does not exist
 	 */
 	public boolean isAssignmentRequired(SensorType sensorType) throws SensorAssignmentException {
-		boolean result = true;
+		boolean required = false;
 		
 		if (!containsKey(sensorType)) {
 			throw new SensorAssignmentException("The specified sensor was not found");
 		}
 		
-		// See if any assignments have already been made.
-		// If they have, see if there's at least one primary sensor
-		Set<SensorAssignment> assignments = get(sensorType);
-		if (null != assignments) {
-			for (SensorAssignment assignment : assignments) {
-				if (assignment.isPrimary()) {
-					result = false;
-					break;
+		if (!sensorAssigned(sensorType, true)) {
+			if (sensorType.isRequired()) {
+				if (!groupAssigned(sensorType.getRequiredGroup())) {
+					required = true;
 				}
+			} else if (hasDependent(sensorType)) {
+				required = true;
 			}
 		}
 		
-		// If we haven't found a primary sensor assignment...
-		if (result) {
-			// Check the required group
-			String requiredGroup = sensorType.getRequiredGroup();
-			
-			if (null != requiredGroup && groupAssigned(requiredGroup)) {
-				result = false;
-			} else {
-				// If any other sensors depend on this one,
-				// of this sensor is required, then assignment is needed
-				result = (hasDependents(sensorType) || sensorType.isRequired());
-			}
-		}
-		
-		return result;
+		return required;
 	}
 	
 	/**
@@ -112,13 +96,15 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 	private boolean groupAssigned(String requiredGroup) {
 		boolean result = false;
 		
-		for (SensorType sensorType : keySet()) {
-			String sensorGroup = sensorType.getRequiredGroup();
-			if (null != sensorGroup && sensorGroup.equalsIgnoreCase(requiredGroup)) {
-				Set<SensorAssignment> assignments = get(sensorType);
-				if (null != assignments && assignments.size() > 0) {
-					result = true;
-					break;
+		if (null != requiredGroup) {
+			for (SensorType sensorType : keySet()) {
+				String sensorGroup = sensorType.getRequiredGroup();
+				if (null != sensorGroup && sensorGroup.equalsIgnoreCase(requiredGroup)) {
+					Set<SensorAssignment> assignments = get(sensorType);
+					if (null != assignments && assignments.size() > 0) {
+						result = true;
+						break;
+					}
 				}
 			}
 		}
@@ -129,34 +115,63 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 	 * Determines whether or not any of the sensor types in the
 	 * collection depends on the supplied sensor type.
 	 * 
-	 * If the sensor type has a Depends Question, this is taken into account
+	 * If the sensor type has a Depends Question, this is taken into account.
+	 * 
+	 * The logic of this is quite nasty. Follow the code comments.
 	 * 
 	 * @param sensorType The sensor type that other sensors may depend on
 	 * @return {@code true} if any other sensor types depend on the supplied sensor type; {@code false} if there are no dependents
 	 * @see SensorType#getDependsQuestion()
 	 */
-	private boolean hasDependents(SensorType sensorType) {
+	private boolean hasDependent(SensorType sensorType) {
 		boolean result = false;
-		
+
 		for (SensorType testType : keySet()) {
-			if (!testType.equals(sensorType)) {
+			if (result) {
+				break;
+			// A sensor can't depend on itself
+			} else if (!testType.equals(sensorType)) {
+				
+				// See if the test sensor *may* depend on this sensor
+				boolean potentiallyDependent = false;
+				
 				String dependsOn = testType.getDependsOn();
-				if (null != dependsOn && dependsOn.equalsIgnoreCase(sensorType.getName())) {
+				
+				// If the dependsOn isn't null...
+				if (null != dependsOn) {
 					
-					// If there's no Depends Question, then we require the sensor
-					if (null == testType.getDependsQuestion()) {
+					// ...and it matches this sensor...
+					if (testType.getDependsOn().equalsIgnoreCase(sensorType.getName())) {
+						
+						// If the sensor is assigned then it might be dependent
+						if (sensorAssigned(testType, false)) {
+							potentiallyDependent = true;
+
+						// If the sensor is required, and IS NOT part of a required group, then it
+					    // might be dependent
+						} else if (testType.isRequired() && null == testType.getRequiredGroup()) {
+							potentiallyDependent = true;
+						}
+					}
+				}
+				
+				if (potentiallyDependent) {
+					
+					// If there is no Depends Question, then we have a dependency
+					if (!testType.hasDependsQuestion()) {
 						result = true;
 					} else {
-						// See what the answer to the Depends Question is
-						for (SensorAssignment assignment : get(sensorType)) {
-							if (assignment.getDependsQuestionAnswer()) {
-								result = true;
-								break;
+						// Check the assignments and the answers to the Depends Question
+						Set<SensorAssignment> testAssignments = get(testType);
+						if (null != testAssignments) {
+							for (SensorAssignment assignment : testAssignments) {
+								if (assignment.getDependsQuestionAnswer()) {
+									result = true;
+									break;
+								}
 							}
 						}
 					}
-					
-					break;
 				}
 			}
 		}
@@ -197,5 +212,38 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * Determines whether or not a sensor type has been assigned to a column in
+	 * a file. Setting the {@code primary} flag will restrict the checks to only
+	 * looking at primary assignments; if the sensor has only been assigned as a fallback,
+	 * then it won't count. Setting {@code primary} to {@code false} will accept any
+	 * assignment.
+	 * 
+	 * @param sensorType The sensor type
+	 * @param primaryOnly If the sensor must have been assigned as a primary sensor.
+	 * @return {@code true} if the sensor has been assigned; {@code false} if it has not
+	 */
+	private boolean sensorAssigned(SensorType sensorType, boolean primaryOnly) {
+	
+		boolean assigned = false;
+		
+		Set<SensorAssignment> assignments = get(sensorType);
+		if (null != assignments) {
+			if (!primaryOnly) {
+				assigned = (assignments.size() > 0);
+			} else {
+				for (SensorAssignment assignment : assignments) {
+					if (assignment.isPrimary()) {
+						assigned = true;
+						break;
+					}
+				}
+			}
+			
+		}
+		
+		return assigned;
 	}
 }
