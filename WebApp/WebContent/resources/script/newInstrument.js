@@ -227,38 +227,106 @@ function renderSensorAssignments() {
 }
 
 function renderTimePositionAssignments() {
-	
 	var timePositionOK = true;
-	
 	var assignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
 	
 	for (var i = 0; i < assignments.length; i++) {
+		var assignment = assignments[i];
 		
-		var dateTimeColumns = $('#dateTimeColumns-' + i);
-		var dateTimeOK = false;
-		var dateTimeHtml = '';
-		dateTimeHtml += '<i>No columns assigned</i>';
-		dateTimeColumns.html(dateTimeHtml);
+		// Date/Time panel
+		timeHtml = 'No columns assigned';
+		$('#dateTimeColumns-' + i).html(timeHtml);
+		timePositionOK = false;
 		
-		if (dateTimeOK) {
-			dateTimeColumns.closest('.ui-fieldset').removeClass('invalidFileAssignment');
+		
+		// Position panel
+		positionHtml = '';
+		if (assignment['longitude']['valueColumn'] == -1 && assignment['latitude']['valueColumn'] == -1) {
+			positionHtml += 'No columns assigned';
 		} else {
-			dateTimeColumns.closest('.ui-fieldset').addClass('invalidFileAssignment');
-			timePositionOK = false;
-		} 
-
-		var positionColumns = $('#positionColumns-' + i);
-		var positionOK = true;
-		var positionHtml = '';
-		positionHtml += '<i>No columns assigned</i>';
-		positionColumns.html(positionHtml);
-
-		if (positionOK) {
-			positionColumns.closest('.ui-fieldset').removeClass('invalidFileAssignment');
-		} else {
-			positionColumns.closest('.ui-fieldset').addClass('invalidFileAssignment');
-			timePositionOK = false;
-		} 
+			positionHtml += '<h4>Longitude</h4>';
+			positionHtml += '<table><tr><td><label class="ui-outputlabel ui-widget">Column:</label></td>';
+			if (assignment['longitude']['valueColumn'] == -1) {
+				positionHtml += '<td class="error">Not assigned</td>';
+				timePositionOK = false;
+			} else {
+				positionHtml += '<td>';
+				positionHtml += filesAndColumns[i]['columns'][assignment['longitude']['valueColumn']];
+				positionHtml += '</td></tr><tr><td><label class="ui-outputlabel ui-widget">Format:</label></td><td>';
+				
+				switch(assignment['longitude']['format']) {
+				case 0: {
+					positionHtml += '0° to 360°';
+					break;
+				}
+				case 1: {
+					positionHtml += '-180° to 180°';
+					break;
+				}
+				case 2: {
+					positionHtml += '0° to 180°';
+					break;
+				}
+				}
+				
+				positionHtml += '</td></tr>';
+				
+				if (assignment['longitude']['hemisphereRequired']) {
+					positionHtml += '<tr><td><label class="ui-outputlabel ui-widget">Hemisphere:</label></td>';
+					if (assignment['longitude']['hemisphereColumn'] == -1) {
+						positionHtml += '<td class="error">Not assigned</td>';
+						timePositionOK = false;
+					} else {
+						positionHtml += '<td>';
+						positionHtml += filesAndColumns[i]['columns'][assignment['longitude']['hemisphereColumn']];
+						positionHtml += '</td>';
+					}
+					positionHtml += '</tr>';
+				}
+			}
+			positionHtml += '</table>';
+			
+			positionHtml += '<h4>Latitude</h4>';
+			positionHtml += '<table><tr><td><label class="ui-outputlabel ui-widget">Column:</label></td>';
+			if (assignment['latitude']['valueColumn'] == -1) {
+				positionHtml += '<td class="error">Not assigned</td>';
+				timePositionOK = false;
+			} else {
+				positionHtml += '<td>';
+				positionHtml += filesAndColumns[i]['columns'][assignment['latitude']['valueColumn']];
+				positionHtml += '</td></tr><tr><td><label class="ui-outputlabel ui-widget">Format:</label></td><td>';
+				
+				switch(assignment['latitude']['format']) {
+				case 0: {
+					positionHtml += '-90° to 90°';
+					break;
+				}
+				case 1: {
+					positionHtml += '0° to 90°';
+					break;
+				}
+				}
+				
+				positionHtml += '</td></tr>';
+				
+				if (assignment['latitude']['hemisphereRequired']) {
+					positionHtml += '<tr><td><label class="ui-outputlabel ui-widget">Hemisphere:</label></td>';
+					if (assignment['latitude']['hemisphereColumn'] == -1) {
+						positionHtml += '<td class="error">Not assigned</td>';
+						timePositionOK = false;
+					} else {
+						positionHtml += '<td>';
+						positionHtml += filesAndColumns[i]['columns'][assignment['latitude']['hemisphereColumn']];
+						positionHtml += '</td>';
+					}
+					positionHtml += '</tr>';
+				}
+			}
+			positionHtml += '</table>';
+			
+		}
+		
+		$('#positionColumns-' + i).html(positionHtml);
 	}
 	
 	return timePositionOK;
@@ -341,6 +409,8 @@ function startAssign(item, file, column) {
 		console.log('Date/Time submenu');
 	} else if (item.startsWith('DATETIME_')) {
 		console.log('Date/Time assignment');
+	} else if (item == 'POS_longitude') {
+		openLongitudeDialog(file, column);
 	} else if (item.startsWith('POS_')) {
 		console.log('Position assignment');
 	} else {
@@ -434,4 +504,19 @@ function canBePostCalibrated(sensor) {
 function sensorAssigned() {
 	PF('sensorAssignmentDialog').hide();
 	renderSensorAssignments();
+}
+
+function timePositionAssigned(dialogName) {
+	PF(dialogName).hide();
+	renderTimePositionAssignments();
+}
+
+function openLongitudeDialog(file, column) {
+	$('#newInstrumentForm\\:longitudeFile').val(filesAndColumns[file]['description']);
+	$('#newInstrumentForm\\:longitudeColumn').val(column);
+
+	$('#longitudeAssignmentFile').text(filesAndColumns[file]['description']);
+	$('#longitudeAssignmentColumn').text(filesAndColumns[file]['columns'][column]);
+
+	PF('longitudeAssignmentDialog').show();
 }

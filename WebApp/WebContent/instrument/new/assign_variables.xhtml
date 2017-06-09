@@ -46,11 +46,11 @@
 					<table>
 						<tr>
 							<td><p:outputLabel value="Assigning"/></td>
-							<td><div id="sensorAssignmentFileName" class="sensorDialogVarText"></div>, <div id="sensorAssignmentColumnName" class="sensorDialogVarText"></div></td>
+							<td><div id="sensorAssignmentFileName" class="variableText"></div>, <div id="sensorAssignmentColumnName" class="variableText"></div></td>
 						</tr>
 						<tr>
 							<td><p:outputLabel value="To sensor"/></td>
-							<td><div id="sensorAssignmentSensorTypeText" class="sensorDialogVarText"></div></td>
+							<td><div id="sensorAssignmentSensorTypeText" class="variableText"></div></td>
 						</tr>
 					</table>
 				</div>
@@ -95,6 +95,42 @@
 					  update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer" oncomplete="PF('sensorAssignmentDialog').hide();"/>
 				</h:panelGrid>
 				
+			</p:dialog>
+			<p:dialog header="Assign Longitude" widgetVar="longitudeAssignmentDialog" modal="true">
+				<h:inputHidden id="longitudeFile" value="#{newInstrumentBean.longitudeFile}"/>
+				<h:inputHidden id="longitudeColumn" value="#{newInstrumentBean.longitudeColumn}"/>
+			
+				<table>
+					<tr>
+						<td><p:outputLabel value="Assigning"/></td>
+						<td><div id="longitudeAssignmentFile" class="variableText"></div>, <div id="longitudeAssignmentColumn" class="variableText"></div></td>
+					</tr>
+					<tr>
+						<td><p:outputLabel value="To sensor"/></td>
+						<td><div class="variableText">Longitude</div></td>
+					</tr>
+				</table>
+				<div class="dialogSection">
+					<table>
+						<tr>
+							<td><p:outputLabel value="Format:"/></td>
+							<td>
+								<p:selectOneMenu id="longitudeFormat" value="#{newInstrumentBean.longitudeFormat}">
+									<f:selectItem itemLabel="0° to 360°" itemValue="0"/>
+									<f:selectItem itemLabel="-180° to 180°" itemValue="1"/>
+									<f:selectItem itemLabel="0° to 180° (hemisphere specified separately)" itemValue="2"/>
+								</p:selectOneMenu>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+					<p:commandButton value="Assign" ajax="true" action="#{newInstrumentBean.assignLongitude}"
+					  process="longitudeFile longitudeColumn longitudeFormat"
+					  update="timePositionAssignments"
+					  oncomplete="timePositionAssigned('longitudeAssignmentDialog');"/>
+					<p:commandButton value="Cancel" onclick="PF('longitudeAssignmentDialog').hide(); return false;"/>
+				</h:panelGrid>
 			</p:dialog>
 			
 			<p:fieldset id="assignmentsPanel" legend="Column Assignments" style="margin-bottom: 20px">

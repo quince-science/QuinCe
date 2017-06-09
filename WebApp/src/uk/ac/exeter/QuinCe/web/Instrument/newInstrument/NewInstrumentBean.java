@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.InvalidPositionFormatException;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
@@ -89,6 +91,21 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Sensor assignment - is this a primary or fallback sensor?
 	 */
 	private boolean sensorAssignmentPrimary = false;
+	
+	/**
+	 * The file for which the longitude is being set
+	 */
+	private String longitudeFile = null;
+	
+	/**
+	 * The column index of the longitude
+	 */
+	private int longitudeColumn = -1;
+	
+	/**
+	 * The longitude format
+	 */
+	private int longitudeFormat = 0;
 	
 	/**
 	 * Begin a new instrument definition
@@ -188,7 +205,7 @@ public class NewInstrumentBean extends FileUploadBean {
 		instrumentName = null;
 		instrumentFiles = new InstrumentFileSet();
 		sensorAssignments = ResourceManager.getInstance().getSensorsConfiguration().getNewSensorAssigments();
-		resetSensorAssignmentValues();		
+		resetSensorAssignmentValues();
 		clearFile();
 	}
 	
@@ -421,7 +438,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	}
 	
 	/**
-	 * Dummy method for setting time and postition assignments. It doesn't
+	 * Dummy method for setting time and position assignments. It doesn't
 	 * actually do anything, but it's needed for the JSF communications
 	 * to work.
 	 * @param assignments The assignments. They are ignored.
@@ -578,5 +595,66 @@ public class NewInstrumentBean extends FileUploadBean {
 		sensorAssignmentPostCalibrated = false;
 		sensorAssignmentDependsQuestionAnswer = false;
 
+	}
+	
+	/**
+	 * Get the file for which the longitude is being set
+	 * @return The longitude file
+	 */
+	public String getLongitudeFile() {
+		return longitudeFile;
+	}
+	
+	/**
+	 * Set the file for which the longitude is being set
+	 * @param longitudeFile The longitude file
+	 */
+	public void setLongitudeFile(String longitudeFile) {
+		this.longitudeFile = longitudeFile;
+	}
+	
+	/**
+	 * Get the longitude column index
+	 * @return The longitude column index
+	 */
+	public int getLongitudeColumn() {
+		return longitudeColumn;
+	}
+	
+	/**
+	 * Set the longitude column index
+	 * @param longitudeColumn The longitude column index
+	 */
+	public void setLongitudeColumn(int longitudeColumn) {
+		this.longitudeColumn = longitudeColumn;
+	}
+	
+	/**
+	 * Get the longitude format
+	 * @return The longitude format
+	 */
+	public int getLongitudeFormat() {
+		return longitudeFormat;
+	}
+	
+	/**
+	 * Set the longitude format
+	 * @param longitudeFormat The longitude format
+	 */
+	public void setLongitudeFormat(int longitudeFormat) {
+		this.longitudeFormat = longitudeFormat;
+	}
+	
+	/**
+	 * Set the longitude column and format for a file
+	 * @throws InvalidPositionFormatException If the format is invalid
+	 */
+	public void assignLongitude() throws InvalidPositionFormatException {
+		FileDefinitionBuilder file = instrumentFiles.get(longitudeFile);
+		file.getLongitudeSpecification().setValueColumn(longitudeColumn);
+		file.getLongitudeSpecification().setFormat(longitudeFormat);
+		if (longitudeFormat != LongitudeSpecification.FORMAT_0_180) {
+			file.getLongitudeSpecification().setHemisphereColumn(-1);
+		}
 	}
 }

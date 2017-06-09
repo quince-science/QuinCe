@@ -55,4 +55,22 @@ public class InstrumentFileSet extends ArrayList<FileDefinitionBuilder> {
 		
 		return found;
 	}
+	
+	/**
+	 * Retrieve the file definition with the given description
+	 * @param description The file description
+	 * @return The file definition, or {@code null} if no matching description is found
+	 */
+	public FileDefinitionBuilder get(String description) {
+		FileDefinitionBuilder result = null;
+		
+		for (FileDefinitionBuilder file : this) {
+			if (file.getFileDescription().equalsIgnoreCase(description)) {
+				result = file;
+				break;
+			}
+		}
+		
+		return result;
+	}
 }

@@ -37,6 +37,16 @@ h1,h2 {
   justify-content: center;
 }
 
+h4 {
+	text-decoration: underline;
+	margin-top: 12px;
+	margin-bottom: 6px;
+}
+
+h4:first-child {
+	margin-top: 0px;
+}
+
 #logoTitle {
   display:flex;
   align-items: center;
@@ -565,6 +575,10 @@ table.fileDates {
 
 .dialogSection {
 	margin-bottom: 15px;
+}
+
+.variableText {
+	display: inline;
 }
 
 /* PrimeFaces overrides */
