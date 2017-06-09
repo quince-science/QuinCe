@@ -214,6 +214,9 @@ function renderSensorAssignments() {
 		html += assignment['name'];
 		html += '</div><div class="assignmentCount">';
 		html += assignment['assignments'].length;
+		if (!assignment['many']) {
+			html += '/1';
+		}
 		html += '</div>';
 		html += '</div>';
 	}
