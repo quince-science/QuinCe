@@ -277,7 +277,11 @@ function buildAssignmentMenu(file, column) {
 	
 	var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
 	for (var i = 0; i < sensorAssignments.length; i++) {
-		menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'], file, column);
+		if (!sensorAssignments[i]['many'] && sensorAssignments[i]['assignments'].length > 0) {
+			menuHtml += makeDisabledMenuItem(sensorAssignments[i]['name']);
+		} else {
+			menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'], file, column);
+		}
 	}
 	
 	menuHtml += '</ul>';
@@ -289,6 +293,10 @@ function buildAssignmentMenu(file, column) {
 			function() {$(this).addClass('ui-state-hover')},
 			function() {$(this).removeClass('ui-state-hover')}
 	);
+}
+
+function makeDisabledMenuItem(label) {
+	return '<li class="ui-menuitem ui-widget ui-corner-all assignmentMenuItem assignmentMenuItemDisabled">' + label + '</li>';
 }
 
 function makeMenuItem(item, label, file, column) {

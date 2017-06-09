@@ -115,6 +115,10 @@
 	padding: 1px !important;
 }
  
+.assignmentMenuItemDisabled {
+	text-decoration: line-through;
+}
+ 
 .assignmentListEntry {
 	--entry_color: #2779AA;
 	display: flex;
