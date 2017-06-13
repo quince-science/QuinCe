@@ -475,6 +475,15 @@ public class QCDB {
 		return getFlag(conn, GET_WOCE_FLAG_QUERY, fileId, row);
 	}
 	
+	/**
+	 * Accept the QC flags suggested by the automatic QC. Simply copies
+	 * the flags and message into the WOCE fields
+	 * @param dataSource A data source
+	 * @param fileId The data file's database ID
+	 * @param rows The rows for which the flags should be accepted, as a comma-separated list of row numbers
+	 * @throws ParameterException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
 	public static void acceptQCFlags(DataSource dataSource, long fileId, String rows) throws ParameterException, DatabaseException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
