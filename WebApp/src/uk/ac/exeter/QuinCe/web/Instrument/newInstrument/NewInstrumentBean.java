@@ -8,6 +8,7 @@ import java.util.Set;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.InvalidPositionFormatException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
@@ -124,6 +125,22 @@ public class NewInstrumentBean extends FileUploadBean {
 	private int latitudeFormat = 0;
 	
 	/**
+	 * The file for which the hemisphere is being set
+	 */
+	private String hemisphereFile = null;
+	
+	/**
+	 * The coordinate (longitude or latitude) for which the hemisphere
+	 * is being set
+	 */
+	private int hemisphereCoordinate = -1;
+	
+	/**
+	 * The column index of the hemisphere
+	 */
+	private int hemisphereColumn = -1;
+	
+	/**
 	 * Begin a new instrument definition
 	 * @return The navigation to the start page
 	 */
@@ -222,6 +239,7 @@ public class NewInstrumentBean extends FileUploadBean {
 		instrumentFiles = new InstrumentFileSet();
 		sensorAssignments = ResourceManager.getInstance().getSensorsConfiguration().getNewSensorAssigments();
 		resetSensorAssignmentValues();
+		resetPositionAssignmentValues();
 		clearFile();
 	}
 	
@@ -610,7 +628,6 @@ public class NewInstrumentBean extends FileUploadBean {
 		sensorAssignmentPrimary = true;
 		sensorAssignmentPostCalibrated = false;
 		sensorAssignmentDependsQuestionAnswer = false;
-
 	}
 	
 	/**
@@ -733,5 +750,85 @@ public class NewInstrumentBean extends FileUploadBean {
 		if (latitudeFormat != LatitudeSpecification.FORMAT_0_90) {
 			file.getLatitudeSpecification().setHemisphereColumn(-1);
 		}
+	}
+
+	/**
+	 * Get the file for which the hemisphere is being set
+	 * @return The hemisphere file
+	 */
+	public String getHemisphereFile() {
+		return hemisphereFile;
+	}
+	
+	/**
+	 * Set the file for which the hemisphere is being set
+	 * @param hemisphereFile The hemisphere file
+	 */
+	public void setHemisphereFile(String hemisphereFile) {
+		this.hemisphereFile = hemisphereFile;
+	}
+	
+	/**
+	 * Get the hemisphere column index
+	 * @return The hemisphere column index
+	 */
+	public int getHemisphereColumn() {
+		return hemisphereColumn;
+	}
+	
+	/**
+	 * Set the hemisphere column index
+	 * @param hemisphereColumn The hemisphere column index
+	 */
+	public void setHemisphereColumn(int hemisphereColumn) {
+		this.hemisphereColumn = hemisphereColumn;
+	}
+	
+	/**
+	 * Get the coordinate for which the hemisphere is being set
+	 * @return The hemipshere coordinate
+	 */
+	public int getHemisphereCoordinate() {
+		return hemisphereCoordinate;
+	}
+	
+	/**
+	 * Set the coordinate for which the hemisphere is being set
+	 * @param hemisphereCoordinate The hemipshere coordinate
+	 */
+	public void setHemisphereCoordinate(int hemisphereCoordinate) {
+		this.hemisphereCoordinate = hemisphereCoordinate;
+	}
+
+	/**
+	 * Assign the hemisphere column for a coordinate
+	 */
+	public void assignHemisphere() {
+		FileDefinitionBuilder file = instrumentFiles.get(hemisphereFile);
+		
+		PositionSpecification posSpec = null;
+		
+		if (hemisphereCoordinate == PositionSpecification.COORD_LONGITUDE) {
+			posSpec = file.getLongitudeSpecification();
+		} else {
+			posSpec = file.getLatitudeSpecification();
+		}
+		
+		posSpec.setHemisphereColumn(hemisphereColumn);
+	}
+	
+	/**
+	 * Clear all position assignment data
+	 */
+	private void resetPositionAssignmentValues() {
+		longitudeFile = null;
+		longitudeColumn = -1;
+		longitudeFormat = -1;
+		latitudeFile = null;
+		latitudeColumn = -1;
+		latitudeFormat = -1;
+		hemisphereFile = null;
+		hemisphereCoordinate = -1;
+		hemisphereColumn = -1;
 	}
 }

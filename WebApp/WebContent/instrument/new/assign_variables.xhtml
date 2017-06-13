@@ -169,6 +169,30 @@
 				</h:panelGrid>
 			</p:dialog>
 
+			<p:dialog header="Assign Hemisphere" widgetVar="hemisphereAssignmentDialog" modal="true">
+				<h:inputHidden id="hemisphereFile" value="#{newInstrumentBean.hemisphereFile}"/>
+				<h:inputHidden id="hemisphereCoordinate" value="#{newInstrumentBean.hemisphereCoordinate}"/>
+				<h:inputHidden id="hemisphereColumn" value="#{newInstrumentBean.hemisphereColumn}"/>
+			
+				<table>
+					<tr>
+						<td><p:outputLabel value="Assigning"/></td>
+						<td><div id="hemisphereAssignmentFile" class="variableText"></div>, <div id="hemisphereAssignmentColumn" class="variableText"></div></td>
+					</tr>
+					<tr>
+						<td><p:outputLabel value="To"/></td>
+						<td><div id="hemisphereAssignmentCoordinate" class="variableText"></div></td>
+					</tr>
+				</table>
+				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+					<p:commandButton value="Assign" ajax="true" action="#{newInstrumentBean.assignHemisphere}"
+					  process="hemisphereFile hemisphereCoordinate hemisphereColumn"
+					  update="timePositionAssignments"
+					  oncomplete="timePositionAssigned('hemisphereAssignmentDialog');"/>
+					<p:commandButton value="Cancel" onclick="PF('hemisphereAssignmentDialog').hide(); return false;"/>
+				</h:panelGrid>
+			</p:dialog>
+
 			<p:fieldset id="assignmentsPanel" legend="Column Assignments" style="margin-bottom: 20px">
 				<div id="assignmentsList"></div>
 			</p:fieldset>

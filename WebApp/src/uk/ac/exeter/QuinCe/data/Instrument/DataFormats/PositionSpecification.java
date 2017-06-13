@@ -10,6 +10,16 @@ package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
 public abstract class PositionSpecification {
 
 	/**
+	 * Indicates the longitude for setting the hemisphere column
+	 */
+	public static final int COORD_LONGITUDE = 0;
+	
+	/**
+	 * Indicates the latitude for setting the hemisphere column
+	 */
+	public static final int COORD_LATITUDE = 1;
+	
+	/**
 	 * Unknown position format value
 	 */
 	public static final int FORMAT_UNKNOWN = -1;

@@ -436,10 +436,12 @@ function startAssign(item, file, column) {
 		console.log('Date/Time assignment');
 	} else if (item == 'POS_longitude') {
 		openLongitudeDialog(file, column);
+	} else if (item == 'POS_longitude_hemisphere') {
+		openHemisphereDialog('longitude', file, column);
 	} else if (item == 'POS_latitude') {
 		openLatitudeDialog(file, column);
-	} else if (item.startsWith('POS_')) {
-		console.log('Position assignment');
+	} else if (item == 'POS_latitude_hemisphere') {
+		openHemisphereDialog('latitude', file, column);
 	} else {
 		openAssignSensorDialog(item, file, column);
 	}
@@ -569,4 +571,22 @@ function hemisphereRequired(fileIndex, direction) {
 	}
 	
 	return result;
+}
+
+function openHemisphereDialog(coordinate, file, column) {
+	$('#newInstrumentForm\\:hemisphereFile').val(filesAndColumns[file]['description']);
+	$('#hemisphereAssignmentFile').text(filesAndColumns[file]['description']);
+
+	$('#newInstrumentForm\\:hemisphereColumn').val(column);
+	$('#hemisphereAssignmentColumn').text(filesAndColumns[file]['columns'][column]);
+
+	if (coordinate == "longitude") {
+		$('#newInstrumentForm\\:hemisphereCoordinate').val(0);
+		$('#hemisphereAssignmentCoordinate').text('Longitude Hemisphere');
+	} else {
+		$('#newInstrumentForm\\:hemisphereCoordinate').val(1);
+		$('#hemisphereAssignmentCoordinate').text('Latitude Hemisphere');
+	}
+	
+	PF('hemisphereAssignmentDialog').show();
 }
