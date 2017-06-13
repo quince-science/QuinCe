@@ -228,6 +228,8 @@ function renderSensorAssignments() {
 
 function renderTimePositionAssignments() {
 	var timePositionOK = true;
+	var positionsAssigned = 0;
+	
 	var assignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
 	
 	for (var i = 0; i < assignments.length; i++) {
@@ -236,19 +238,23 @@ function renderTimePositionAssignments() {
 		// Date/Time panel
 		timeHtml = 'No columns assigned';
 		$('#dateTimeColumns-' + i).html(timeHtml);
+		$('#dateTimeColumns-' + i).closest("fieldset").addClass("invalidFileAssignment");
 		timePositionOK = false;
 		
 		
 		// Position panel
+		var positionOK = true;
 		positionHtml = '';
 		if (assignment['longitude']['valueColumn'] == -1 && assignment['latitude']['valueColumn'] == -1) {
 			positionHtml += 'No columns assigned';
 		} else {
+			positionsAssigned++;
+			
 			positionHtml += '<h4>Longitude</h4>';
 			positionHtml += '<table><tr><td><label class="ui-outputlabel ui-widget">Column:</label></td>';
 			if (assignment['longitude']['valueColumn'] == -1) {
 				positionHtml += '<td class="error">Not assigned</td>';
-				timePositionOK = false;
+				positionOK = false;
 			} else {
 				positionHtml += '<td>';
 				positionHtml += filesAndColumns[i]['columns'][assignment['longitude']['valueColumn']];
@@ -275,7 +281,7 @@ function renderTimePositionAssignments() {
 					positionHtml += '<tr><td><label class="ui-outputlabel ui-widget">Hemisphere:</label></td>';
 					if (assignment['longitude']['hemisphereColumn'] == -1) {
 						positionHtml += '<td class="error">Not assigned</td>';
-						timePositionOK = false;
+						positionOK = false;
 					} else {
 						positionHtml += '<td>';
 						positionHtml += filesAndColumns[i]['columns'][assignment['longitude']['hemisphereColumn']];
@@ -290,7 +296,7 @@ function renderTimePositionAssignments() {
 			positionHtml += '<table><tr><td><label class="ui-outputlabel ui-widget">Column:</label></td>';
 			if (assignment['latitude']['valueColumn'] == -1) {
 				positionHtml += '<td class="error">Not assigned</td>';
-				timePositionOK = false;
+				positionOK = false;
 			} else {
 				positionHtml += '<td>';
 				positionHtml += filesAndColumns[i]['columns'][assignment['latitude']['valueColumn']];
@@ -313,7 +319,7 @@ function renderTimePositionAssignments() {
 					positionHtml += '<tr><td><label class="ui-outputlabel ui-widget">Hemisphere:</label></td>';
 					if (assignment['latitude']['hemisphereColumn'] == -1) {
 						positionHtml += '<td class="error">Not assigned</td>';
-						timePositionOK = false;
+						positionOK = false;
 					} else {
 						positionHtml += '<td>';
 						positionHtml += filesAndColumns[i]['columns'][assignment['latitude']['hemisphereColumn']];
@@ -327,6 +333,18 @@ function renderTimePositionAssignments() {
 		}
 		
 		$('#positionColumns-' + i).html(positionHtml);
+		if (positionOK) {
+			$('#positionColumns-' + i).closest('fieldset').removeClass('invalidFileAssignment');
+		} else {
+			timePositionOK = false;
+			$('#positionColumns-' + i).closest('fieldset').addClass('invalidFileAssignment');
+		}
+	}
+	
+	if (positionsAssigned == 0) {
+		for (var i = 0; i < filesAndColumns.length; i++) {
+			$('#positionColumns-' + i).closest('fieldset').addClass('invalidFileAssignment');
+		}
 	}
 	
 	return timePositionOK;
@@ -344,7 +362,14 @@ function buildAssignmentMenu(file, column) {
 	menuHtml += '<ul class="ui-menu-list ui-helper-reset">';
 	menuHtml += makeMenuItem('DATETIMESUBMENU', 'Date/Time', file, column);
 	menuHtml += makeMenuItem('POS_longitude', 'Longitude', file, column);
+	if (hemisphereRequired(file, 'longitude')) {
+		menuHtml += makeMenuItem('POS_longitude_hemisphere', 'Longitude - Hemisphere', file, column);
+	}
+	
 	menuHtml += makeMenuItem('POS_latitude', 'Latitude', file, column);
+	if (hemisphereRequired(file, 'latitude')) {
+		menuHtml += makeMenuItem('POS_latitude_hemisphere', 'Latitude - Hemisphere', file, column);
+	}
 	
 	var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
 	for (var i = 0; i < sensorAssignments.length; i++) {
@@ -411,6 +436,8 @@ function startAssign(item, file, column) {
 		console.log('Date/Time assignment');
 	} else if (item == 'POS_longitude') {
 		openLongitudeDialog(file, column);
+	} else if (item == 'POS_latitude') {
+		openLatitudeDialog(file, column);
 	} else if (item.startsWith('POS_')) {
 		console.log('Position assignment');
 	} else {
@@ -519,4 +546,27 @@ function openLongitudeDialog(file, column) {
 	$('#longitudeAssignmentColumn').text(filesAndColumns[file]['columns'][column]);
 
 	PF('longitudeAssignmentDialog').show();
+}
+
+function openLatitudeDialog(file, column) {
+	$('#newInstrumentForm\\:latitudeFile').val(filesAndColumns[file]['description']);
+	$('#newInstrumentForm\\:latitudeColumn').val(column);
+
+	$('#latitudeAssignmentFile').text(filesAndColumns[file]['description']);
+	$('#latitudeAssignmentColumn').text(filesAndColumns[file]['columns'][column]);
+
+	PF('latitudeAssignmentDialog').show();
+}
+
+function hemisphereRequired(fileIndex, direction) {
+	var result = false;
+	
+	var assignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+	var assignment = assignments[fileIndex][direction];
+	
+	if (null != assignment) {
+		result = assignment['hemisphereRequired'];
+	}
+	
+	return result;
 }

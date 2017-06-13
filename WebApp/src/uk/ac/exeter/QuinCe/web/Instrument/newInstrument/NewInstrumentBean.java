@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.InvalidPositionFormatException;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
@@ -106,6 +107,21 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * The longitude format
 	 */
 	private int longitudeFormat = 0;
+	
+	/**
+	 * The file for which the latitude is being set
+	 */
+	private String latitudeFile = null;
+	
+	/**
+	 * The column index of the latitude
+	 */
+	private int latitudeColumn = -1;
+	
+	/**
+	 * The latitude format
+	 */
+	private int latitudeFormat = 0;
 	
 	/**
 	 * Begin a new instrument definition
@@ -655,6 +671,67 @@ public class NewInstrumentBean extends FileUploadBean {
 		file.getLongitudeSpecification().setFormat(longitudeFormat);
 		if (longitudeFormat != LongitudeSpecification.FORMAT_0_180) {
 			file.getLongitudeSpecification().setHemisphereColumn(-1);
+		}
+	}
+
+	/**
+	 * Get the file for which the latitude is being set
+	 * @return The latitude file
+	 */
+	public String getLatitudeFile() {
+		return latitudeFile;
+	}
+	
+	/**
+	 * Set the file for which the latitude is being set
+	 * @param latitudeFile The latitude file
+	 */
+	public void setLatitudeFile(String latitudeFile) {
+		this.latitudeFile = latitudeFile;
+	}
+	
+	/**
+	 * Get the latitude column index
+	 * @return The latitude column index
+	 */
+	public int getLatitudeColumn() {
+		return latitudeColumn;
+	}
+	
+	/**
+	 * Set the latitude column index
+	 * @param latitudeColumn The latitude column index
+	 */
+	public void setLatitudeColumn(int latitudeColumn) {
+		this.latitudeColumn = latitudeColumn;
+	}
+	
+	/**
+	 * Get the latitude format
+	 * @return The latitude format
+	 */
+	public int getLatitudeFormat() {
+		return latitudeFormat;
+	}
+	
+	/**
+	 * Set the latitude format
+	 * @param latitudeFormat The latitude format
+	 */
+	public void setLatitudeFormat(int latitudeFormat) {
+		this.latitudeFormat = latitudeFormat;
+	}
+	
+	/**
+	 * Set the latitude column and format for a file
+	 * @throws InvalidPositionFormatException If the format is invalid
+	 */
+	public void assignLatitude() throws InvalidPositionFormatException {
+		FileDefinitionBuilder file = instrumentFiles.get(latitudeFile);
+		file.getLatitudeSpecification().setValueColumn(latitudeColumn);
+		file.getLatitudeSpecification().setFormat(latitudeFormat);
+		if (latitudeFormat != LatitudeSpecification.FORMAT_0_90) {
+			file.getLatitudeSpecification().setHemisphereColumn(-1);
 		}
 	}
 }

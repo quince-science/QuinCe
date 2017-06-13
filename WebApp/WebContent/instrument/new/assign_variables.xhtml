@@ -133,6 +133,42 @@
 				</h:panelGrid>
 			</p:dialog>
 			
+			<p:dialog header="Assign Latitude" widgetVar="latitudeAssignmentDialog" modal="true">
+				<h:inputHidden id="latitudeFile" value="#{newInstrumentBean.latitudeFile}"/>
+				<h:inputHidden id="latitudeColumn" value="#{newInstrumentBean.latitudeColumn}"/>
+			
+				<table>
+					<tr>
+						<td><p:outputLabel value="Assigning"/></td>
+						<td><div id="latitudeAssignmentFile" class="variableText"></div>, <div id="latitudeAssignmentColumn" class="variableText"></div></td>
+					</tr>
+					<tr>
+						<td><p:outputLabel value="To sensor"/></td>
+						<td><div class="variableText">Latitude</div></td>
+					</tr>
+				</table>
+				<div class="dialogSection">
+					<table>
+						<tr>
+							<td><p:outputLabel value="Format:"/></td>
+							<td>
+								<p:selectOneMenu id="latitudeFormat" value="#{newInstrumentBean.latitudeFormat}">
+									<f:selectItem itemLabel="-90° to 90°" itemValue="0"/>
+									<f:selectItem itemLabel="0° to 90° (hemisphere specified separately)" itemValue="1"/>
+								</p:selectOneMenu>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+					<p:commandButton value="Assign" ajax="true" action="#{newInstrumentBean.assignLatitude}"
+					  process="latitudeFile latitudeColumn latitudeFormat"
+					  update="timePositionAssignments"
+					  oncomplete="timePositionAssigned('latitudeAssignmentDialog');"/>
+					<p:commandButton value="Cancel" onclick="PF('latitudeAssignmentDialog').hide(); return false;"/>
+				</h:panelGrid>
+			</p:dialog>
+
 			<p:fieldset id="assignmentsPanel" legend="Column Assignments" style="margin-bottom: 20px">
 				<div id="assignmentsList"></div>
 			</p:fieldset>
