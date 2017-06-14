@@ -153,6 +153,7 @@ public class ExtractRawDataJob extends FileJob {
 			}
 		} catch (Exception e) {
 			DatabaseUtils.rollBack(conn);
+			e.printStackTrace();
 			throw new JobFailedException(id, lineNumber, e);
 		} finally {
 			DatabaseUtils.closeConnection(conn);
