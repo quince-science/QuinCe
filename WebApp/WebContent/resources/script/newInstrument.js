@@ -360,7 +360,7 @@ function buildAssignmentMenu(file, column) {
 	}
 	
 	menuHtml += '<ul class="ui-menu-list ui-helper-reset">';
-	menuHtml += makeMenuItem('DATETIMESUBMENU', 'Date/Time', file, column);
+	menuHtml += makeParentMenuItem('DATETIMESUBMENU', 'Date/Time', file, column, 'dateTimeMenu');
 	menuHtml += makeMenuItem('POS_longitude', 'Longitude', file, column);
 	if (hemisphereRequired(file, 'longitude')) {
 		menuHtml += makeMenuItem('POS_longitude_hemisphere', 'Longitude - Hemisphere', file, column);
@@ -397,6 +397,10 @@ function makeDisabledMenuItem(label) {
 
 function makeMenuItem(item, label, file, column) {
 	return '<li class="ui-menuitem ui-widget ui-corner-all"><a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text assignmentMenuItem" onclick="startAssign(\'' + item + '\',' + file + ',' + column + ')">' + label + '</a></li>';
+}
+
+function makeParentMenuItem(item, label, file, column, subMenu) {
+	return '<li class="ui-menuitem ui-menuitem-link ui-widget ui-corner-all"><div style="float: right">▸</div><div>' + label + '</div></li>';
 }
 
 function showAssignmentMenu(event, file, column) {
