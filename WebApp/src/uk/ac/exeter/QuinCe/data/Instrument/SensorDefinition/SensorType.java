@@ -19,6 +19,12 @@ public class SensorType {
 	 * </p>
 	 */
 	private boolean required;
+
+	/**
+	 * Specifies whether or not sensors assigned to this sensor type
+	 * can be given names
+	 */
+	private boolean named;
 	
 	/**
 	 * The name of the group of sensors to which this sensor belongs.
@@ -76,14 +82,17 @@ public class SensorType {
 	 * Simple constructor - sets all values
 	 * @param name The name of the sensor type
 	 * @param required Whether or not the sensor type is required
+	 * @param named Whether or not sensors can be named
 	 * @param requiredGroup The Required Group that this sensor type belongs to
 	 * @param dependsOn The name of another sensor type that this sensor type depends on
 	 * @param dependsQuestion The question that determines whether the {@link #dependsOn} criterion will be honoured.
 	 * @param many Whether or not multiple instances of the sensor are allowed
 	 */
-	protected SensorType(String name, boolean required, String requiredGroup, String dependsOn, String dependsQuestion, boolean many, boolean averaged, boolean postCalibrated) {
+	protected SensorType(String name, boolean required, boolean named, String requiredGroup, String dependsOn, String dependsQuestion, boolean many, boolean averaged, boolean postCalibrated) {
 		this.name = name;
 		this.required = required;
+		this.named = named;
+		
 		if (null != requiredGroup && requiredGroup.trim().length() > 0) {
 			this.requiredGroup = requiredGroup;
 		}
@@ -124,6 +133,14 @@ public class SensorType {
 	 */
 	public boolean isRequired() {
 		return required;
+	}
+	
+	/**
+	 * Determine whether or not sensors assigned to this type can be named
+	 * @return {@code true} if the sensor can be named; {@code false} otherwise
+	 */
+	public boolean canBeNamed() {
+		return named;
 	}
 	
 	/**

@@ -22,7 +22,7 @@ public class SensorsConfiguration {
 	/**
 	 * The number of columns in the configuration file
 	 */
-	private static final int COL_COUNT = 8;
+	private static final int COL_COUNT = 9;
 	
 	/**
 	 * The column containing the sensor type name
@@ -35,34 +35,39 @@ public class SensorsConfiguration {
 	private static final int COL_REQUIRED = 1;
 	
 	/**
+	 * The column that indicates whether a sensor can be named
+	 */
+	private static final int COL_NAMED = 2;
+	
+	/**
 	 * The column containing the Required Group for the sensor
 	 */
-	private static final int COL_REQUIRED_GROUP = 2;
+	private static final int COL_REQUIRED_GROUP = 3;
 	
 	/**
 	 * The column naming another sensor type that this sensor relies on
 	 */
-	private static final int COL_DEPENDS_ON = 3;
+	private static final int COL_DEPENDS_ON = 4;
 	
 	/**
 	 * The column specifying whether or not multiple sensors of this type are permitted
 	 */
-	private static final int COL_DEPENDS_QUESTION = 4;
+	private static final int COL_DEPENDS_QUESTION = 5;
 	
 	/**
 	 * The column specifying whether multiple instances of the sensor are allowed
 	 */
-	private static final int COL_MANY = 5;
+	private static final int COL_MANY = 6;
 	
 	/**
 	 * The column specifying whether multiple sensors will be averaged
 	 */
-	private static final int COL_AVERAGED = 6;
+	private static final int COL_AVERAGED = 7;
 	
 	/**
 	 * The column specifying whether a sensor can be post-calibrated by QuinCe
 	 */
-	private static final int COL_POST_CALIBRATED = 7;
+	private static final int COL_POST_CALIBRATED = 8;
 	
 	/**
 	 * The set of sensors defined for the instrument with
@@ -123,6 +128,7 @@ public class SensorsConfiguration {
 							}
 							
 							boolean required = StringUtils.parseYNBoolean(fields.get(COL_REQUIRED));
+							boolean named = StringUtils.parseYNBoolean(fields.get(COL_NAMED));
 							
 							String requiredGroup = fields.get(COL_REQUIRED_GROUP);
 							if (requiredGroup.length() == 0) {
@@ -140,7 +146,7 @@ public class SensorsConfiguration {
 							boolean averaged = StringUtils.parseYNBoolean(fields.get(COL_AVERAGED));
 							boolean postCalibrated = StringUtils.parseYNBoolean(fields.get(COL_POST_CALIBRATED));
 							
-							SensorType sensor = new SensorType(sensorName, required, requiredGroup, dependsOn, dependsQuestion, many, averaged, postCalibrated);
+							SensorType sensor = new SensorType(sensorName, required, named, requiredGroup, dependsOn, dependsQuestion, many, averaged, postCalibrated);
 							
 							sensorTypes.add(sensor);
 							

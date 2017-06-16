@@ -461,6 +461,12 @@ function openAssignSensorDialog(sensor, file, column) {
 	$('#sensorAssignmentColumnName').text(filesAndColumns[file]['columns'][column]);
 	$('#sensorAssignmentSensorTypeText').text(sensor);
 	
+	if (canBeNamed(sensor)) {
+		$('#sensorAssignmentNameContainer').show();
+	} else {
+		$('#sensorAssignmentNameContainer').hide();
+	}
+	
 	var dependsQuestion = getDependsQuestion(sensor);
 	if (null == dependsQuestion) {
 		$('#sensorAssignmentDependsQuestionContainer').hide();
@@ -527,6 +533,22 @@ function canBePostCalibrated(sensor) {
 		var assignment = assignments[i];
 		if (assignment['name'] == sensor) {
 			result = assignment['postCalibrated'];
+			break;
+		}
+	}
+	
+	return result;
+}
+
+function canBeNamed(sensor) {
+	var result = true;
+	
+	var assignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
+
+	for (var i = 0; i < assignments.length; i++) {
+		var assignment = assignments[i];
+		if (assignment['name'] == sensor) {
+			result = assignment['named'];
 			break;
 		}
 	}
