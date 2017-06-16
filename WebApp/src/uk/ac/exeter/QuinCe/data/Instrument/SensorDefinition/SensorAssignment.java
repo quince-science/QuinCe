@@ -18,6 +18,11 @@ public class SensorAssignment {
 	private int column;
 	
 	/**
+	 * The name of the sensor
+	 */
+	private String sensorName;
+	
+	/**
 	 * Indicates whether or not values from this
 	 * sensor require post-calibration adjustments applied to them
 	 */
@@ -38,13 +43,15 @@ public class SensorAssignment {
 	 * Simple constructor
 	 * @param dataFile The data file
 	 * @param column The column number
+	 * @param sensorName The name of the sensor
 	 * @param postCalibrated Specifies whether or not values should be calibrated by QuinCe
 	 * @param primary Specifies whether this is a primary or fallback sensor
 	 * @param dependsQuestionAnswer The answer to the Depends Question
 	 */
-	public SensorAssignment(String dataFile, int column, boolean postCalibrated, boolean primary, boolean dependsQuestionAnswer) {
+	public SensorAssignment(String dataFile, int column, String sensorName, boolean postCalibrated, boolean primary, boolean dependsQuestionAnswer) {
 		this.dataFile = dataFile;
 		this.column = column;
+		this.sensorName = sensorName;
 		this.postCalibrated = postCalibrated;
 		this.primary = primary;
 		this.dependsQuestionAnswer = dependsQuestionAnswer;
@@ -64,6 +71,14 @@ public class SensorAssignment {
 	 */
 	public int getColumn() {
 		return column;
+	}
+	
+	/**
+	 * Get the name of the sensor
+	 * @return The sensor name
+	 */
+	public String getSensorName() {
+		return sensorName;
 	}
 	
 	/**

@@ -74,6 +74,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	private int sensorAssignmentColumn = -1;
 	
 	/**
+	 * Sensor assignment - column index
+	 */
+	private String sensorAssignmentName = null;
+	
+	/**
 	 * The name of the sensor being assigned
 	 */
 	private String sensorAssignmentSensorType = null;
@@ -388,6 +393,8 @@ public class NewInstrumentBean extends FileUploadBean {
 					json.append(assignment.getDataFile());
 					json.append("\",\"column\":");
 					json.append(assignment.getColumn());
+					json.append("{\"sensorName\":\"");
+					json.append(assignment.getSensorName());
 					json.append(",\"postCalibrated\":");
 					json.append(assignment.getPostCalibrated());
 					json.append(",\"primary\":");
@@ -541,6 +548,22 @@ public class NewInstrumentBean extends FileUploadBean {
 	}
 
 	/**
+	 * Get the name of the assigned sensor
+	 * @return The sensor name
+	 */
+	public String getSensorAssignmentName() {
+		return sensorAssignmentName;
+	}
+
+	/**
+	 * Set the name of the assigned sensor
+	 * @param sensorAssignmentName The sensor name
+	 */
+	public void setSensorAssignmentName(String sensorAssignmentName) {
+		this.sensorAssignmentFile = sensorAssignmentName;
+	}
+
+	/**
 	 * Get the name of the sensor type being assigned
 	 * @return The sensor type
 	 */
@@ -611,7 +634,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @throws Exception If any errors occur
 	 */
 	public void storeSensorAssignment() throws Exception {
-		SensorAssignment assignment = new SensorAssignment(sensorAssignmentFile, sensorAssignmentColumn, sensorAssignmentPostCalibrated, sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer);
+		SensorAssignment assignment = new SensorAssignment(sensorAssignmentFile, sensorAssignmentColumn, sensorAssignmentName, sensorAssignmentPostCalibrated, sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer);
 		sensorAssignments.addAssignment(sensorAssignmentSensorType, assignment);
 		
 		// Reset the assign dialog values, because it's so damn hard to do in Javascript
