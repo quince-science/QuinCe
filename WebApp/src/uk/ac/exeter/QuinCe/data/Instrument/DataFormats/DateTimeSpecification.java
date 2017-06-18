@@ -115,8 +115,9 @@ public class DateTimeSpecification {
 	 * </p>
 	 * 
 	 * @return The JSON string
+	 * @throws DateTimeSpecificationException If an error occurs while building the string
 	 */
-	public String getJsonString() {
+	public String getJsonString() throws DateTimeSpecificationException {
 		StringBuilder json = new StringBuilder();
 		
 		json.append('{');
@@ -126,7 +127,7 @@ public class DateTimeSpecification {
 			DateTimeColumnAssignment assignment = assignments.get(entries.get(i));
 			
 			json.append('"');
-			json.append(entries.get(i));
+			json.append(getAssignmentName(entries.get(i)));
 			json.append("\":{\"column\":");
 			json.append(assignment.getColumn());
 			json.append(",\"properties\":");
@@ -268,6 +269,68 @@ public class DateTimeSpecification {
 		
 		for (int bit : bits) {
 			result = result | 1 << bit;
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Get the name for a specified date/time assignment index
+	 * @param index The index
+	 * @return The name
+	 * @throws DateTimeSpecificationException If the index is not recognised
+	 */
+	private String getAssignmentName(int index) throws DateTimeSpecificationException {
+		String result = null;
+	
+		switch (index) {
+		case 0: {
+			result = "Date/Time";
+			break;
+		}
+		case 1: {
+			result = "Julian Day/Time";
+			break;
+		}
+		case 2: {
+			result = "Date";
+			break;
+		}
+		case 3: {
+			result = "Julian Day";
+			break;
+		}
+		case 4: {
+			result = "Year";
+			break;
+		}
+		case 5: {
+			result = "Month";
+			break;
+		}
+		case 6: {
+			result = "Day";
+			break;
+		}
+		case 7: {
+			result = "Time";
+			break;
+		}
+		case 8: {
+			result = "Hour";
+			break;
+		}
+		case 9: {
+			result = "Minute";
+			break;
+		}
+		case 10: {
+			result = "Second";
+			break;
+		}
+		default: {
+			throw new DateTimeSpecificationException("Unrecognised specification index " + index);
+		}
 		}
 		
 		return result;

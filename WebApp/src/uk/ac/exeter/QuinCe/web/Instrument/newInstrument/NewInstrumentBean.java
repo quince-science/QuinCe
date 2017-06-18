@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.InvalidPositionFormatException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
@@ -453,8 +454,9 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * ]
 	 * </pre>
 	 * @return The time and position assignments
+	 * @throws DateTimeSpecificationException If an error occurs while generating the date/time string
 	 */
-	public String getTimePositionAssignments() {
+	public String getTimePositionAssignments() throws DateTimeSpecificationException {
 		StringBuilder json = new StringBuilder();
 		
 		json.append('[');
