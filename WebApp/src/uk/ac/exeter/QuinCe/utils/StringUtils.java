@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Miscellaneous string utilities
@@ -235,5 +236,41 @@ public class StringUtils {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * Convert a Properties object into a JSON string
+	 * @param properties The properties
+	 * @return The JSON string
+	 */
+	public static String getPropertiesAsJson(Properties properties) {
+		
+		
+		StringBuilder result = new StringBuilder();
+		if (null == properties) {
+			result.append("null");
+		} else {
+		
+			result.append('{');
+
+			int propCount = 0;
+			for (String prop : properties.stringPropertyNames()) {
+				propCount++;
+				result.append('"');
+				result.append(prop);
+				result.append("\":\"");
+				result.append(properties.getProperty(prop));
+				result.append('"');
+				
+				if (propCount < properties.size()) {
+					result.append(',');
+				}
+			}
+			
+			
+			result.append('}');
+		}
+		
+		return result.toString();
 	}
 }

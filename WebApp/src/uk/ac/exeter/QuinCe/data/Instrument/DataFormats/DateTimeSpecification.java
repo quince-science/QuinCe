@@ -1,6 +1,11 @@
 package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
 
-import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Defines how the date and time are stored in a data file
@@ -9,178 +14,262 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
  */
 public class DateTimeSpecification {
 
-		/**
-		 * Date and time in a single field
-		 */
-		public static final int FORMAT_SINGLE_FIELD = 0;
-		
-		/**
-		 * Date in a single field, time in multiple fields
-		 */
-		public static final int FORMAT_SINGLE_DATE_MULTIPLE_TIME = 1;
-		
-		/**
-		 * Date in multiple fields, time in single field
-		 */
-		public static final int FORMAT_MULTIPLE_DATE_SINGLE_TIME = 2;
-		
-		/**
-		 * Date and time in multiple fields
-		 */
-		public static final int FORMAT_MULTIPLE_DATE_MULTIPLE_TIME = 3;
+	/**
+	 * Key for combined date and time string
+	 */
+	public static final int DATE_TIME = 0;
+	
+	/**
+	 * Key for Julian day with decimal time
+	 */
+	public static final int JDAY_TIME = 1;
 
-		/**
-		 * Decimal Julian day
-		 */
-		public static final int FORMAT_JULIAN_DAY = 4;
+	/**
+	 * Key for date string
+	 */
+	public static final int DATE = 2;
+	
+	/**
+	 * Key for Julian day without time
+	 */
+	public static final int JDAY = 3;
+	
+	/**
+	 * Key for year
+	 */
+	public static final int YEAR = 4;
+	
+	/**
+	 * Key for year
+	 */
+	public static final int MONTH = 5;
+	
+	/**
+	 * Key for year
+	 */
+	public static final int DAY = 6;
+	
+	/**
+	 * Key for time string
+	 */
+	public static final int TIME = 7;
+	
+	/**
+	 * Key for hour
+	 */
+	public static final int HOUR = 8;
+	
+	/**
+	 * Key for month
+	 */
+	public static final int MINUTE = 9;
+	
+	/**
+	 * Key for second
+	 */
+	public static final int SECOND = 10;
+	
+	/**
+	 * The largest assignment index
+	 */
+	private static final int MAX_INDEX = 10;
+	
+	/**
+	 * The column assignments
+	 */
+	private Map<Integer, DateTimeColumnAssignment> assignments;
+	
+	/**
+	 * Constructs an empty specification
+	 */
+	public DateTimeSpecification() {
+		assignments = new TreeMap<Integer, DateTimeColumnAssignment>();
 		
-		/**
-		 * The format used in this specification
-		 */
-		private int format = FORMAT_SINGLE_FIELD;
+		assignments.put(DATE_TIME, new DateTimeColumnAssignment());
+		assignments.put(JDAY_TIME, new DateTimeColumnAssignment());
+		assignments.put(DATE, new DateTimeColumnAssignment());
+		assignments.put(JDAY, new DateTimeColumnAssignment());
+		assignments.put(YEAR, new DateTimeColumnAssignment());
+		assignments.put(MONTH, new DateTimeColumnAssignment());
+		assignments.put(DAY, new DateTimeColumnAssignment());
+		assignments.put(TIME, new DateTimeColumnAssignment());
+		assignments.put(HOUR, new DateTimeColumnAssignment());
+		assignments.put(MINUTE, new DateTimeColumnAssignment());
+		assignments.put(SECOND, new DateTimeColumnAssignment());
+	}
+	
+	/**
+	 * Get the JSON representation of this specification.
+	 * 
+	 * <p>
+	 *   The JSON string is as follows:
+	 * </p>
+	 * <pre>
+	 *   {
+	 *   }
+	 * </pre>
+	 * <p>
+	 *   The format will be the integer value corresponding
+	 *   to the chosen format. The JSON processor will need
+	 *   to know how to translate these.
+	 * </p>
+	 * 
+	 * @return The JSON string
+	 */
+	public String getJsonString() {
+		StringBuilder json = new StringBuilder();
 		
-		/**
-		 * The format string for a single date/time field
-		 */
-		private String dateTimeFormat = "";
+		json.append('{');
 		
-		/**
-		 * The format string for a single date field
-		 */
-		private String dateFormat = "";
-		
-		/**
-		 * The format string for a single time field
-		 */
-		private String timeFormat = "";
-		
-		/**
-		 * The index for the single date/time column
-		 */
-		private int dateTimeColumn = -1;
-		
-		/**
-		 * The index for the single date column
-		 */
-		private int dateColumn = -1;
-		
-		/**
-		 * The index for the single time column
-		 */
-		private int timeColumn = -1;
-		
-		/**
-		 * The index of the Julian day column
-		 */
-		private int julianDayColumn = -1;
-		
-		/**
-		 * Indicates whether the data file contains
-		 * the year to go with the Julian day. If not,
-		 * the year must be specified for each data file.
-		 * @see FileDefinition#getFileYear()
-		 */
-		private boolean hasYearColumn = false;
-		
-		/**
-		 * The index of the year column
-		 */
-		private int yearColumn = -1;
-		
-		/**
-		 * The index of the month column
-		 */
-		private int monthColumn = -1;
-		
-		/**
-		 * The index of the day column
-		 */
-		private int dayColumn = -1;
-		
-		/**
-		 * The index of the hour column
-		 */
-		private int hourColumn = -1;
-		
-		/**
-		 * The index of the minute column
-		 */
-		private int minuteColumn = -1;
-		
-		/**
-		 * The index of the second column
-		 */
-		private int secondColumn = -1;
-		
-		/**
-		 * Get the JSON representation of this specification.
-		 * 
-		 * <p>
-		 *   The JSON string is as follows:
-		 * </p>
-		 * <pre>
-		 *   {
-		 *     "format": <format>,
-		 *     "dateTimeFormat": "<date/time format string>",
-		 *     "dateFormat": "<date format string>",
-		 *     "timeFormat": "<time format string>",
-		 *     "dateTimeColumn": <dateTime column index>,
-		 *     "dateColumn": <date column index>,
-		 *     "timeColumn": <time column index>,
-		 *     "julianDayColumn": <Julian day column index>,
-		 *     "yearColumn": <year column>,
-		 *     "monthColumn": <month column>,
-		 *     "dayColumn": <day column>,
-		 *     "hourColumn": <hour column>,
-		 *     "minuteColumn": <minute column>,
-		 *     "secondColumn": <second column>
-		 *   }
-		 * </pre>
-		 * <p>
-		 *   The format will be the integer value corresponding
-		 *   to the chosen format. The JSON processor will need
-		 *   to know how to translate these.
-		 * </p>
-		 * 
-		 * @return The JSON string
-		 */
-		public String getJsonString() {
-			StringBuilder json = new StringBuilder();
+		List<Integer> entries = getAvailableEntries();
+		for (int i = 0; i < entries.size(); i++) {
+			DateTimeColumnAssignment assignment = assignments.get(entries.get(i));
 			
-			json.append('{');
-			
-			json.append("\"format\":");
-			json.append(format);
-			json.append(",\"dateTimeFormat\":\"");
-			json.append(dateTimeFormat);
-			json.append("\",\"dateFormat\":\"");
-			json.append(dateFormat);
-			json.append("\",\"timeFormat\":\"");
-			json.append(timeFormat);
-			json.append("\",\"dateTimeColumn\":");
-			json.append(dateTimeColumn);
-			json.append(",\"dateColumn\":");
-			json.append(dateColumn);
-			json.append(",\"timeColumn\":");
-			json.append(timeColumn);
-			json.append(",\"julianDayColumn\":");
-			json.append(julianDayColumn);
-			json.append(",\"hasYearColumn\":");
-			json.append(hasYearColumn);
-			json.append(",\"yearColumn\":");
-			json.append(yearColumn);
-			json.append(",\"monthColumn\":");
-			json.append(monthColumn);
-			json.append(",\"dayColumn\":");
-			json.append(dayColumn);
-			json.append(",\"hourColumn\":");
-			json.append(hourColumn);
-			json.append(",\"minuteColumn\":");
-			json.append(minuteColumn);
-			json.append(",\"secondColumn\":");
-			json.append(secondColumn);
+			json.append('"');
+			json.append(entries.get(i));
+			json.append("\":{\"column\":");
+			json.append(assignment.getColumn());
+			json.append(",\"properties\":");
+			json.append(StringUtils.getPropertiesAsJson(assignment.getProperties()));
 			json.append('}');
 			
-			return json.toString();
+			if (i < entries.size() - 1) {
+				json.append(',');
+			}
 		}
+		
+		json.append('}');
+		
+		return json.toString();
+	}
+	
+	/**
+	 * As column assignments are filled in, some options become
+	 * unavailable as they are incompatible with the populated
+	 * ones. This method returns the keys that have either been
+	 * assigned or still can be assigned.
+	 * @return The available entries
+	 */
+	private List<Integer> getAvailableEntries() {
+		
+		// A bit mask for available assignments. Start with nothing available,
+		// and build from there.
+		Integer availableMask = 0;
+		
+		// If the assignments are internally consistent, then we can take a few shortcuts
+		
+		boolean dateProcessed = false;
+		boolean timeProcessed = false;
+		
+		// The Date/Time string is complete in itself
+		if (isAssigned(DATE_TIME)) {
+			availableMask = setMaskBits(availableMask, DATE_TIME);
+			dateProcessed = true;
+			timeProcessed = true;
+		}
+		
+		// DATE string requires no other date columns
+		if (!dateProcessed) {
+			if (isAssigned(DATE)) {
+				availableMask = setMaskBits(availableMask, DATE);
+				dateProcessed = true;
+			}
+		}
+		
+		// Julian day with time requires no other date or time parameters.
+		// If the year is in the file though, we need it
+		if (!dateProcessed && isAssigned(JDAY_TIME)) {
+			availableMask = setMaskBits(availableMask, JDAY_TIME);
+			if (Boolean.parseBoolean(assignments.get(JDAY_TIME).getProperty(DateTimeColumnAssignment.YEAR_IN_FILE_PROPERTY))) {
+				availableMask = setMaskBits(availableMask, YEAR);
+			}
+			
+			dateProcessed = true;
+			timeProcessed = true;
+		}
+		
+		// Julian day alone requires no other date parameters other than optionally the year
+		if (!dateProcessed && isAssigned(JDAY)) {
+			availableMask = setMaskBits(availableMask, JDAY);
+			if (Boolean.parseBoolean(assignments.get(JDAY).getProperty(DateTimeColumnAssignment.YEAR_IN_FILE_PROPERTY))) {
+				availableMask = setMaskBits(availableMask, YEAR);
+			}
+			
+			dateProcessed = true;
+		}
+		
+		// If the MONTH or DAY are set, then those and YEAR are available
+		if (!dateProcessed && (isAssigned(MONTH) || isAssigned(DAY))) {
+			availableMask = setMaskBits(availableMask, YEAR, MONTH, DAY);
+			dateProcessed = true;
+		}
+		
+		// If only the YEAR is assigned, then anything except Date/Time is allowed
+		if (!dateProcessed && isAssigned(YEAR)) {
+			availableMask = setMaskBits(availableMask, JDAY_TIME, JDAY, YEAR, MONTH, DAY);
+			dateProcessed = true;
+		}
+		
+		// Otherwise all date values are available
+		if (!dateProcessed) {
+			availableMask = setMaskBits(availableMask, DATE, JDAY_TIME, JDAY, YEAR, MONTH, DAY);
+			dateProcessed = true;
+		}
+		
+		// TIME string requires no other values
+		if (!timeProcessed && isAssigned(TIME)) {
+			availableMask = setMaskBits(availableMask, TIME);
+			timeProcessed = true;
+		}
+		
+		// If any of HOUR, MINUTE, SECOND are assigned, they are available and no others 
+		if (!timeProcessed && (isAssigned(HOUR) || isAssigned(MINUTE) || isAssigned(SECOND))) {
+			availableMask = setMaskBits(availableMask, HOUR, MINUTE, SECOND);
+			timeProcessed = true;
+		}
+		
+		// All times are available
+		if (!timeProcessed) {
+			availableMask = setMaskBits(availableMask, TIME, HOUR, MINUTE, SECOND);
+		}
+		
+		// Now we know which assignments are available,
+		// put their indices in a list
+		List<Integer> result = new ArrayList<Integer>();
+		
+		for (int i = 0; i <= MAX_INDEX; i++) {
+			if ((availableMask & 1 << i) > 0) {
+				result.add(i);
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Determine whether a column has been assigned to the specified
+	 * index.
+	 * @param assignmentIndex The index
+	 * @return {@code true} if a column has been assigned; {@code false} if it is not
+	 * @see DateTimeColumnAssignment#isAssigned()
+	 */
+	private boolean isAssigned(int assignmentIndex) {
+		return assignments.get(assignmentIndex).isAssigned();
+	}
+	
+	/**
+	 * Set the specified bits on a mask
+	 * @param mask The mask
+	 * @param bits The bits to set
+	 * @return The updated mask
+	 */
+	private int setMaskBits(Integer mask, int... bits) {
+		int result = mask;
+		
+		for (int bit : bits) {
+			result = result | 1 << bit;
+		}
+		
+		return result;
+	}
 }
