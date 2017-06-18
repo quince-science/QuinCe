@@ -16,7 +16,7 @@
 				renderAssignments();
 				
 				$('body').click(function () {
-					hideAssignmentMenu();
+					hideMainAssignmentMenu();
 				});
 			});
 			
@@ -30,7 +30,8 @@
 		</script>	
 	</ui:define>
 	<ui:define name="new_instrument_content">
-		<div id="assignmentMenu" class="ui-menu ui-widget ui-widget-content ui-corner-all ui-helper-clearfix ui-shadow ui-overlay-hidden" role="menu"></div>
+		<div id="mainAssignmentMenu" class="ui-menu ui-widget ui-widget-content ui-corner-all ui-helper-clearfix ui-shadow ui-overlay-hidden" role="menu"></div>
+		<div id="dateTimeMenu" class="ui-menu ui-widget ui-widget-content ui-corner-all ui-helper-clearfix ui-shadow ui-overlay-hidden" role="menu"></div>
 	
 		<h:form id="newInstrumentForm" metho="post" charset="utf8">
 		
@@ -234,7 +235,7 @@
 							
 							var headers = JSON.parse('#{iFile.fileColumns}');
 							for (var i = 0; i &lt; headers.length; i++) {
-								html += '<th class="ui-state-default assignmentCol" onclick="showAssignmentMenu(event, ' + tabCount + ', ' + i + ')">';
+								html += '<th class="ui-state-default assignmentCol" onclick="showMainAssignmentMenu(event, ' + tabCount + ', ' + i + ')">';
 								html += $('<div/>').text(headers[i]).html(); // Funky HTML escaping
 								html += '</th>';
 							}

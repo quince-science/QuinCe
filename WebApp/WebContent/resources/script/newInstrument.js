@@ -350,7 +350,7 @@ function renderTimePositionAssignments() {
 	return timePositionOK;
 }
 
-function buildAssignmentMenu(file, column) {
+function buildMainAssignmentMenu(file, column) {
 	var columnAssignment = getColumnAssignment(file, column);
 	
 	var menuHtml = '';
@@ -382,10 +382,37 @@ function buildAssignmentMenu(file, column) {
 	
 	menuHtml += '</ul>';
 	
-	$('#assignmentMenu').html(menuHtml);
+	$('#mainAssignmentMenu').html(menuHtml);
 	
 	// item hover styles
-	$('#assignmentMenu').find('.ui-menuitem-link').hover(
+	$('#mainAssignmentMenu').find('.ui-menuitem-link').hover(
+			function() {$(this).addClass('ui-state-hover')},
+			function() {$(this).removeClass('ui-state-hover')}
+	);
+}
+
+function buildDateTimeAssignmentMenu(file, column) {
+
+	var timeAssignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val())[file]['dateTime'];
+
+	var menuHtml = '<ul class="ui-menu-list ui-helper-reset">';
+
+	for (var i = 0; i < timeAssignments.length; i++) {
+		var assignment = timeAssignments[i];
+		
+		if (assignment['column'] == -1) {
+			menuHtml += makeMenuItem('DATETIME_' + assignment['name'], assignment['name'], file, column);
+		} else {
+			menuHtml += makeDisabledMenuItem(assignment['name']);
+		}
+	}
+	
+	menuHtml += '</ul>';
+
+	$('#dateTimeMenu').html(menuHtml);
+	
+	// item hover styles
+	$('#dateTimeMenu').find('.ui-menuitem-link').hover(
 			function() {$(this).addClass('ui-state-hover')},
 			function() {$(this).removeClass('ui-state-hover')}
 	);
@@ -400,33 +427,47 @@ function makeMenuItem(item, label, file, column) {
 }
 
 function makeParentMenuItem(item, label, file, column, subMenu) {
-	return '<li class="ui-menuitem ui-menuitem-link ui-widget ui-corner-all"><div style="float: right">▸</div><div>' + label + '</div></li>';
+	return '<li id="' + item + '_menuItem" class="ui-menuitem ui-menuitem-link ui-widget ui-corner-all"><div style="float: right">▸</div><a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text assignmentMenuItem" onclick="startAssign(\'' + item + '\',' + file + ',' + column + ')">' + label + '</a></li></li>';
 }
 
-function showAssignmentMenu(event, file, column) {
+function showMainAssignmentMenu(event, file, column) {
 	event.stopPropagation();
-	buildAssignmentMenu(file, column);
-	positionAssignmentMenu(event.target);
-	$('#assignmentMenu').removeClass('ui-overlay-hidden').addClass('ui-overlay-visible');
+	buildMainAssignmentMenu(file, column);
+	positionMainAssignmentMenu(event.target);
+	$('#mainAssignmentMenu').removeClass('ui-overlay-hidden').addClass('ui-overlay-visible');
 }
 
-function hideAssignmentMenu() {
-	$('#assignmentMenu').removeClass('ui-overlay-visible').addClass('ui-overlay-hidden');
+function hideMainAssignmentMenu() {
+	$('#mainAssignmentMenu').removeClass('ui-overlay-visible').addClass('ui-overlay-hidden');
 }
 
-function positionAssignmentMenu(source) {
+function positionMainAssignmentMenu(source) {
 	
 	var tableContainer = $(source).closest('.sampleDataTableContainer');
 	var rightLimit = tableContainer.offset().left + tableContainer.width(); 
 	
 	var leftPos = $(source).offset().left;
-	if (leftPos + $('#assignmentMenu').width() > rightLimit) {
-		leftPos = rightLimit - $('#assignmentMenu').width();
+	if (leftPos + $('#mainAssignmentMenu').width() > rightLimit) {
+		leftPos = rightLimit - $('#mainAssignmentMenu').width();
 	}
 	
 	var topPos = $(source).offset().top + $(source).height();
 	
-	$('#assignmentMenu').css({'left': leftPos + 'px', 'top': topPos + 'px'});
+	$('#mainAssignmentMenu').css({'left': leftPos + 'px', 'top': topPos + 'px'});
+}
+
+function positionDateTimeAssignmentMenu() {
+	var parentMenuItem = $('#DATETIMESUBMENU_menuItem')[0];
+	var parentMenu = $('#mainAssignmentMenu');
+	
+	var leftPos = parseFloat(parentMenu.css('left')) + parentMenu.width() + 10;
+	if (leftPos + $('#dateTimeMenu').width() > $(window).width()) {
+		leftPos = parseFloat(parentMenu.css('left')) - $('#dateTimeMenu').width() - 10;
+	}
+	
+	var topPos = parseFloat(parentMenu.css('top'));
+	
+	$('#dateTimeMenu').css({'left': leftPos + 'px', 'top': topPos + 'px'});
 }
 
 function getColumnAssignment(file, column) {
@@ -435,7 +476,7 @@ function getColumnAssignment(file, column) {
 
 function startAssign(item, file, column) {
 	if (item == 'DATETIMESUBMENU') {
-		console.log('Date/Time submenu');
+		showDateTimeSubmenu(file, column);
 	} else if (item.startsWith('DATETIME_')) {
 		console.log('Date/Time assignment');
 	} else if (item == 'POS_longitude') {
@@ -615,4 +656,11 @@ function openHemisphereDialog(coordinate, file, column) {
 	}
 	
 	PF('hemisphereAssignmentDialog').show();
+}
+
+function showDateTimeSubmenu(file, column) {
+	event.stopPropagation();
+	buildDateTimeAssignmentMenu(file, column);
+	positionDateTimeAssignmentMenu();
+	$('#dateTimeMenu').removeClass('ui-overlay-hidden').addClass('ui-overlay-visible');
 }

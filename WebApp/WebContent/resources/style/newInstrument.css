@@ -103,7 +103,15 @@
 	flex-wrap: wrap;
 }
  
-#assignmentMenu {
+#mainAssignmentMenu {
+	position: absolute;
+	left: 0px;
+	right: 0px;
+	font-size: 0.8em;
+	z-index: 1000;
+}
+
+#dateTimeMenu {
 	position: absolute;
 	left: 0px;
 	right: 0px;

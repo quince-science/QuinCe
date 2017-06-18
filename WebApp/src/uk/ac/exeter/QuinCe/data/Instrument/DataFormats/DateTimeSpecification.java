@@ -120,26 +120,26 @@ public class DateTimeSpecification {
 	public String getJsonString() throws DateTimeSpecificationException {
 		StringBuilder json = new StringBuilder();
 		
-		json.append('{');
+		json.append('[');
 		
 		List<Integer> entries = getAvailableEntries();
 		for (int i = 0; i < entries.size(); i++) {
 			DateTimeColumnAssignment assignment = assignments.get(entries.get(i));
 			
-			json.append('"');
+			json.append("{\"name\":\"");
 			json.append(getAssignmentName(entries.get(i)));
-			json.append("\":{\"column\":");
+			json.append("\",\"column\":");
 			json.append(assignment.getColumn());
 			json.append(",\"properties\":");
 			json.append(StringUtils.getPropertiesAsJson(assignment.getProperties()));
-			json.append('}');
+			json.append("}");
 			
 			if (i < entries.size() - 1) {
 				json.append(',');
 			}
 		}
 		
-		json.append('}');
+		json.append(']');
 		
 		return json.toString();
 	}
@@ -158,80 +158,85 @@ public class DateTimeSpecification {
 		Integer availableMask = 0;
 		
 		// If the assignments are internally consistent, then we can take a few shortcuts
-		
-		boolean dateProcessed = false;
-		boolean timeProcessed = false;
-		
-		// The Date/Time string is complete in itself
-		if (isAssigned(DATE_TIME)) {
+		if (nothingAssigned()) {
+			availableMask = setMaskBits(availableMask, DATE_TIME, JDAY_TIME, DATE, JDAY, YEAR, MONTH, DAY, TIME, HOUR, MINUTE, SECOND);
+		} else if (isAssigned(DATE_TIME)) {
 			availableMask = setMaskBits(availableMask, DATE_TIME);
-			dateProcessed = true;
-			timeProcessed = true;
-		}
-		
-		// DATE string requires no other date columns
-		if (!dateProcessed) {
-			if (isAssigned(DATE)) {
-				availableMask = setMaskBits(availableMask, DATE);
+		} else {
+			boolean dateProcessed = false;
+			boolean timeProcessed = false;
+			
+			// The Date/Time string is complete in itself
+			if (isAssigned(DATE_TIME)) {
+				availableMask = setMaskBits(availableMask, DATE_TIME);
+				dateProcessed = true;
+				timeProcessed = true;
+			}
+			
+			// DATE string requires no other date columns
+			if (!dateProcessed) {
+				if (isAssigned(DATE)) {
+					availableMask = setMaskBits(availableMask, DATE);
+					dateProcessed = true;
+				}
+			}
+			
+			// Julian day with time requires no other date or time parameters.
+			// If the year is in the file though, we need it
+			if (!dateProcessed && isAssigned(JDAY_TIME)) {
+				availableMask = setMaskBits(availableMask, JDAY_TIME);
+				if (Boolean.parseBoolean(assignments.get(JDAY_TIME).getProperty(DateTimeColumnAssignment.YEAR_IN_FILE_PROPERTY))) {
+					availableMask = setMaskBits(availableMask, YEAR);
+				}
+				
+				dateProcessed = true;
+				timeProcessed = true;
+			}
+			
+			// Julian day alone requires no other date parameters other than optionally the year
+			if (!dateProcessed && isAssigned(JDAY)) {
+				availableMask = setMaskBits(availableMask, JDAY);
+				if (Boolean.parseBoolean(assignments.get(JDAY).getProperty(DateTimeColumnAssignment.YEAR_IN_FILE_PROPERTY))) {
+					availableMask = setMaskBits(availableMask, YEAR);
+				}
+				
 				dateProcessed = true;
 			}
-		}
-		
-		// Julian day with time requires no other date or time parameters.
-		// If the year is in the file though, we need it
-		if (!dateProcessed && isAssigned(JDAY_TIME)) {
-			availableMask = setMaskBits(availableMask, JDAY_TIME);
-			if (Boolean.parseBoolean(assignments.get(JDAY_TIME).getProperty(DateTimeColumnAssignment.YEAR_IN_FILE_PROPERTY))) {
-				availableMask = setMaskBits(availableMask, YEAR);
+			
+			// If the MONTH or DAY are set, then those and YEAR are available
+			if (!dateProcessed && (isAssigned(MONTH) || isAssigned(DAY))) {
+				availableMask = setMaskBits(availableMask, YEAR, MONTH, DAY);
+				dateProcessed = true;
 			}
 			
-			dateProcessed = true;
-			timeProcessed = true;
-		}
-		
-		// Julian day alone requires no other date parameters other than optionally the year
-		if (!dateProcessed && isAssigned(JDAY)) {
-			availableMask = setMaskBits(availableMask, JDAY);
-			if (Boolean.parseBoolean(assignments.get(JDAY).getProperty(DateTimeColumnAssignment.YEAR_IN_FILE_PROPERTY))) {
-				availableMask = setMaskBits(availableMask, YEAR);
+			// If only the YEAR is assigned, then anything except Date/Time is allowed
+			if (!dateProcessed && isAssigned(YEAR)) {
+				availableMask = setMaskBits(availableMask, JDAY_TIME, JDAY, YEAR, MONTH, DAY);
+				dateProcessed = true;
 			}
 			
-			dateProcessed = true;
-		}
-		
-		// If the MONTH or DAY are set, then those and YEAR are available
-		if (!dateProcessed && (isAssigned(MONTH) || isAssigned(DAY))) {
-			availableMask = setMaskBits(availableMask, YEAR, MONTH, DAY);
-			dateProcessed = true;
-		}
-		
-		// If only the YEAR is assigned, then anything except Date/Time is allowed
-		if (!dateProcessed && isAssigned(YEAR)) {
-			availableMask = setMaskBits(availableMask, JDAY_TIME, JDAY, YEAR, MONTH, DAY);
-			dateProcessed = true;
-		}
-		
-		// Otherwise all date values are available
-		if (!dateProcessed) {
-			availableMask = setMaskBits(availableMask, DATE, JDAY_TIME, JDAY, YEAR, MONTH, DAY);
-			dateProcessed = true;
-		}
-		
-		// TIME string requires no other values
-		if (!timeProcessed && isAssigned(TIME)) {
-			availableMask = setMaskBits(availableMask, TIME);
-			timeProcessed = true;
-		}
-		
-		// If any of HOUR, MINUTE, SECOND are assigned, they are available and no others 
-		if (!timeProcessed && (isAssigned(HOUR) || isAssigned(MINUTE) || isAssigned(SECOND))) {
-			availableMask = setMaskBits(availableMask, HOUR, MINUTE, SECOND);
-			timeProcessed = true;
-		}
-		
-		// All times are available
-		if (!timeProcessed) {
-			availableMask = setMaskBits(availableMask, TIME, HOUR, MINUTE, SECOND);
+			// Otherwise all date values are available
+			if (!dateProcessed) {
+				availableMask = setMaskBits(availableMask, DATE, JDAY_TIME, JDAY, YEAR, MONTH, DAY);
+				dateProcessed = true;
+			}
+			
+			// TIME string requires no other values
+			if (!timeProcessed && isAssigned(TIME)) {
+				availableMask = setMaskBits(availableMask, TIME);
+				timeProcessed = true;
+			}
+			
+			// If any of HOUR, MINUTE, SECOND are assigned, they are available and no others 
+			if (!timeProcessed && (isAssigned(HOUR) || isAssigned(MINUTE) || isAssigned(SECOND))) {
+				availableMask = setMaskBits(availableMask, HOUR, MINUTE, SECOND);
+				timeProcessed = true;
+			}
+			
+			// All times are available
+			if (!timeProcessed) {
+				availableMask = setMaskBits(availableMask, TIME, HOUR, MINUTE, SECOND);
+			}
 		}
 		
 		// Now we know which assignments are available,
@@ -256,6 +261,24 @@ public class DateTimeSpecification {
 	 */
 	private boolean isAssigned(int assignmentIndex) {
 		return assignments.get(assignmentIndex).isAssigned();
+	}
+	
+	/**
+	 * Determine whether no date/time entries have been assigned
+	 * @return {@code true} if no assignments have been made; {@code false} if it one or more assignments have been made
+	 * @see DateTimeColumnAssignment#isAssigned()
+	 */
+	private boolean nothingAssigned() {
+		boolean result = true;
+		
+		for (int i = 0; i <= MAX_INDEX; i++) {
+			if (isAssigned(i)) {
+				result = false;
+				break;
+			}
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -285,11 +308,11 @@ public class DateTimeSpecification {
 	
 		switch (index) {
 		case 0: {
-			result = "Date/Time";
+			result = "Combined Date and Time";
 			break;
 		}
 		case 1: {
-			result = "Julian Day/Time";
+			result = "Julian Day with Time";
 			break;
 		}
 		case 2: {
