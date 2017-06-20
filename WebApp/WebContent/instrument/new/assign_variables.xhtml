@@ -17,6 +17,7 @@
 				
 				$('body').click(function () {
 					hideMainAssignmentMenu();
+					hideDateTimeMenu();
 				});
 			});
 			
@@ -202,6 +203,88 @@
 				</h:panelGrid>
 			</p:dialog>
 
+			<p:dialog header="Assign Date/Time" widgetVar="dateTimeAssignmentDialog" modal="true">
+				<h:inputHidden id="dateTimeFile" value="#{newInstrumentBean.dateTimeFile}"/>
+				<h:inputHidden id="dateTimeColumn" value="#{newInstrumentBean.dateTimeColumn}"/>
+				<h:inputHidden id="dateTimeVariable" value="#{newInstrumentBean.dateTimeVariable}"/>
+			
+				<table>
+					<tr>
+						<td><p:outputLabel value="Assigning"/></td>
+						<td><div id="dateTimeAssignmentFile" class="variableText"></div>, <div id="dateTimeAssignmentColumn" class="variableText"></div></td>
+					</tr>
+					<tr>
+						<td><p:outputLabel value="To"/></td>
+						<td><div id="dateTimeAssignmentVariable" class="variableText"></div></td>
+					</tr>
+				</table>
+				<div id="dateTimeFormatContainer" class="dialogSection">
+					<table>
+						<tr>
+							<td><p:outputLabel value="Format:"/></td>
+							<td>
+								<p:selectOneMenu id="dateTimeFormat" value="#{newInstrumentBean.dateTimeFormat}">
+									<f:selectItem itemLabel="YYYY-MM-DD HH:MM:SS" itemValue="YYYY-MM-DD HH:MM:SS"/>
+									<f:selectItem itemLabel="YYYY-MM-DD HHMMSS" itemValue="YYYY-MM-DD HHMMSS"/>
+									<f:selectItem itemLabel="YYYYMMDD HH:MM:SS" itemValue="YYYYMMDD HH:MM:SS"/>
+									<f:selectItem itemLabel="YYYYMMDD HHMMSS" itemValue="YYYYMMDD HHMMSS"/>
+									<f:selectItem itemLabel="MM/DD/YYYY HH:MM:SS" itemValue="MM/DD/YYYY HH:MM:SS"/>
+									<f:selectItem itemLabel="MM/DD/YYYY HHMMSS" itemValue="MM/DD/YYYY HHMMSS"/>
+									<f:selectItem itemLabel="DD/MM/YYYY HH:MM:SS" itemValue="DD/MM/YYYY HH:MM:SS"/>
+									<f:selectItem itemLabel="DD/MM/YYYY HHMMSS" itemValue="DD/MM/YYYY HHMMSS"/>
+								</p:selectOneMenu>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div id="dateFormatContainer" class="dialogSection">
+					<table>
+						<tr>
+							<td><p:outputLabel value="Format:"/></td>
+							<td>
+								<p:selectOneMenu id="dateFormat" value="#{newInstrumentBean.dateFormat}">
+									<f:selectItem itemLabel="YYYY-MM-DD" itemValue="YYYY-MM-DD"/>
+									<f:selectItem itemLabel="YYYYMMDD" itemValue="YYYYMMDD"/>
+									<f:selectItem itemLabel="MM/DD/YYYY" itemValue="MM/DD/YYYY"/>
+									<f:selectItem itemLabel="DD/MM/YYYY" itemValue="DD/MM/YYYY"/>
+								</p:selectOneMenu>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div id="timeFormatContainer" class="dialogSection">
+					<table>
+						<tr>
+							<td><p:outputLabel value="Format:"/></td>
+							<td>
+								<p:selectOneMenu id="timeFormat" value="#{newInstrumentBean.timeFormat}">
+									<f:selectItem itemLabel="HH:MM:SS" itemValue="HH:MM:SS"/>
+									<f:selectItem itemLabel="HHMMSS" itemValue="HHMMSS"/>
+								</p:selectOneMenu>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div id="yearInFileContainer" class="dialogSection">
+					<div>
+						<p:outputLabel value="Is the year specified as a column in this file?"/> <i>??</i>
+					</div>
+					<div>
+						<p:selectOneRadio id="yearInFile" value="#{newInstrumentBean.yearInFile}">
+							<f:selectItem itemLabel="Yes" itemValue="true"/>
+							<f:selectItem itemLabel="No" itemValue="false"/>
+						</p:selectOneRadio>
+					</div>
+				</div>
+				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+					<p:commandButton value="Assign" ajax="true" action="#{newInstrumentBean.assignDateTime}"
+					  process="dateTimeFile dateTimeColumn dateTimeVariable dateTimeFormat dateFormat timeFormat yearInFile"
+					  update="timePositionAssignments"
+					  oncomplete="timePositionAssigned('dateTimeAssignmentDialog');"/>
+					<p:commandButton value="Cancel" onclick="PF('dateTimeAssignmentDialog').hide(); return false;"/>
+				</h:panelGrid>
+			</p:dialog>
+			
 			<p:fieldset id="assignmentsPanel" legend="Column Assignments" style="margin-bottom: 20px">
 				<div id="assignmentsList"></div>
 			</p:fieldset>

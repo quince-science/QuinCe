@@ -147,6 +147,42 @@ public class NewInstrumentBean extends FileUploadBean {
 	private int hemisphereColumn = -1;
 	
 	/**
+	 * The file for which the date/time is being set
+	 */
+	private String dateTimeFile = null;
+	
+	/**
+	 * The column index for the date/time field
+	 */
+	private int dateTimeColumn = -1;
+	
+	/**
+	 * The date/time variable being set
+	 */
+	private String dateTimeVariable = null;
+	
+	/**
+	 * The format of the date/time string
+	 */
+	private String dateTimeFormat = null;
+	
+	/**
+	 * The format of the date string
+	 */
+	private String dateFormat = null;
+	
+	/**
+	 * The format of the time string
+	 */
+	private String timeFormat = null;
+	
+	/**
+	 * Indicates whether the year is stored in the file
+	 * (for Julian Date fields)
+	 */
+	private boolean yearInFile = true;
+	
+	/**
 	 * Begin a new instrument definition
 	 * @return The navigation to the start page
 	 */
@@ -860,5 +896,124 @@ public class NewInstrumentBean extends FileUploadBean {
 		hemisphereFile = null;
 		hemisphereCoordinate = -1;
 		hemisphereColumn = -1;
+	}
+
+	/**
+	 * Get the file for which a date/time variable is being assigned
+	 * @return The file
+	 */
+	public String getDateTimeFile() {
+		return dateTimeFile;
+	}
+
+	/**
+	 * Set the file for which a date/time variable is being assigned
+	 * @param dateTimeFile The file
+	 */
+	public void setDateTimeFile(String dateTimeFile) {
+		this.dateTimeFile = dateTimeFile;
+	}
+
+	/**
+	 * Get the column index that is being assigned to a date/time variable
+	 * @return The column index
+	 */
+	public int getDateTimeColumn() {
+		return dateTimeColumn;
+	}
+
+	/**
+	 * Set the column index that is being assigned to a date/time variable
+	 * @param dateTimeColumn The column index
+	 */
+	public void setDateTimeColumn(int dateTimeColumn) {
+		this.dateTimeColumn = dateTimeColumn;
+	}
+
+	/**
+	 * Get the name of the date/time variable being assigned
+	 * @return The variable name
+	 */
+	public String getDateTimeVariable() {
+		return dateTimeVariable;
+	}
+
+	/**
+	 * Set the name of the date/time variable being assigned
+	 * @param dateTimeVariable The variable name
+	 */
+	public void setDateTimeVariable(String dateTimeVariable) {
+		this.dateTimeVariable = dateTimeVariable;
+	}
+
+	/**
+	 * Get the format of the date/time string
+	 * @return The format
+	 */
+	public String getDateTimeFormat() {
+		return dateTimeFormat;
+	}
+
+	/**
+	 * Set the format of the date/time string
+	 * @param dateTimeFormat The format
+	 */
+	public void setDateTimeFormat(String dateTimeFormat) {
+		this.dateTimeFormat = dateTimeFormat;
+	}
+
+	/**
+	 * Get the format of the date string
+	 * @return The format
+	 */
+	public String getDateFormat() {
+		return dateFormat;
+	}
+
+	/**
+	 * Set the format of the date string
+	 * @param dateFormat The format
+	 */
+	public void setDateFormat(String dateFormat) {
+		this.dateFormat = dateFormat;
+	}
+
+	/**
+	 * Get the format of the time string
+	 * @return The format
+	 */
+	public String getTimeFormat() {
+		return timeFormat;
+	}
+
+	/**
+	 * Set the format of the time string
+	 * @param timeFormat The format
+	 */
+	public void setTimeFormat(String timeFormat) {
+		this.timeFormat = timeFormat;
+	}
+
+	/**
+	 * Determine whether the year is stored in the file
+	 * @return {@code true} if the year is stored in the file; {@code false} if it is not
+	 */
+	public boolean getYearInFile() {
+		return yearInFile;
+	}
+
+	/**
+	 * Set whether the year is stored in the file
+	 * @param yearInFile {@code true} if the year is stored in the file; {@code false} if it is not
+	 */
+	public void setYearInFile(boolean yearInFile) {
+		this.yearInFile = yearInFile;
+	}
+	
+	/**
+	 * Assign a date/time variable
+	 */
+	public void assignDateTime() {
+		System.out.println("Assigning goes here");
 	}
 }

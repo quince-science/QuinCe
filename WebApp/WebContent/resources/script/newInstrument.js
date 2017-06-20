@@ -441,6 +441,10 @@ function hideMainAssignmentMenu() {
 	$('#mainAssignmentMenu').removeClass('ui-overlay-visible').addClass('ui-overlay-hidden');
 }
 
+function hideDateTimeMenu() {
+	$('#dateTimeMenu').removeClass('ui-overlay-visible').addClass('ui-overlay-hidden');
+}
+
 function positionMainAssignmentMenu(source) {
 	
 	var tableContainer = $(source).closest('.sampleDataTableContainer');
@@ -478,7 +482,7 @@ function startAssign(item, file, column) {
 	if (item == 'DATETIMESUBMENU') {
 		showDateTimeSubmenu(file, column);
 	} else if (item.startsWith('DATETIME_')) {
-		console.log('Date/Time assignment');
+		openDateTimeDialog(item, file, column);
 	} else if (item == 'POS_longitude') {
 		openLongitudeDialog(file, column);
 	} else if (item == 'POS_longitude_hemisphere') {
@@ -663,4 +667,43 @@ function showDateTimeSubmenu(file, column) {
 	buildDateTimeAssignmentMenu(file, column);
 	positionDateTimeAssignmentMenu();
 	$('#dateTimeMenu').removeClass('ui-overlay-hidden').addClass('ui-overlay-visible');
+}
+
+function openDateTimeDialog(item, file, column) {
+	$('#newInstrumentForm\\:dateTimeFile').val(file);
+	$('#newInstrumentForm\\:dateTimeColumn').val(column);
+
+	var variableName = item.substring(9, item.length);
+	$('#newInstrumentForm\\:dateTimeVariable').val(variableName);
+	
+	$('#dateTimeAssignmentFile').text(filesAndColumns[file]['description']);
+	$('#dateTimeAssignmentColumn').text(filesAndColumns[file]['columns'][column]);
+	$('#dateTimeAssignmentVariable').text(variableName);
+	
+	$('#dateTimeFormatContainer').hide();
+	$('#dateFormatContainer').hide();
+	$('#timeFormatContainer').hide();
+	$('#yearInFileContainer').hide();
+	
+	switch (variableName) {
+	case "Combined Date and Time": {
+		$('#dateTimeFormatContainer').show();
+		break;
+	}
+	case "Julian Day with Time":
+	case "Julian Day": {
+		$('#yearInFileContainer').show();
+		break;
+	}
+	case "Date": {
+		$('#dateFormatContainer').show();
+		break;
+	}
+	case "Time": {
+		$('#timeFormatContainer').hide();
+		break;
+	}
+	}
+	
+	PF('dateTimeAssignmentDialog').show();
 }
