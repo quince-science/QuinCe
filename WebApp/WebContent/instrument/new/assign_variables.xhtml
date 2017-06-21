@@ -137,7 +137,7 @@
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
 					<p:commandButton value="Assign" ajax="true" action="#{newInstrumentBean.assignLongitude}"
 					  process="longitudeFile longitudeColumn longitudeFormat"
-					  update="timePositionAssignments"
+					  update="longitudeFile longitudeColumn longitudeFormat timePositionAssignments"
 					  oncomplete="timePositionAssigned('longitudeAssignmentDialog');"/>
 					<p:commandButton value="Cancel" onclick="PF('longitudeAssignmentDialog').hide(); return false;"/>
 				</h:panelGrid>
@@ -173,7 +173,7 @@
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
 					<p:commandButton value="Assign" ajax="true" action="#{newInstrumentBean.assignLatitude}"
 					  process="latitudeFile latitudeColumn latitudeFormat"
-					  update="timePositionAssignments"
+					  update="latitudeFile latitudeColumn latitudeFormat timePositionAssignments"
 					  oncomplete="timePositionAssigned('latitudeAssignmentDialog');"/>
 					<p:commandButton value="Cancel" onclick="PF('latitudeAssignmentDialog').hide(); return false;"/>
 				</h:panelGrid>
@@ -197,7 +197,7 @@
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
 					<p:commandButton value="Assign" ajax="true" action="#{newInstrumentBean.assignHemisphere}"
 					  process="hemisphereFile hemisphereCoordinate hemisphereColumn"
-					  update="timePositionAssignments"
+					  update="hemisphereFile hemisphereCoordinate hemisphereColumn timePositionAssignments"
 					  oncomplete="timePositionAssigned('hemisphereAssignmentDialog');"/>
 					<p:commandButton value="Cancel" onclick="PF('hemisphereAssignmentDialog').hide(); return false;"/>
 				</h:panelGrid>
@@ -279,7 +279,7 @@
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
 					<p:commandButton value="Assign" ajax="true" action="#{newInstrumentBean.assignDateTime}"
 					  process="dateTimeFile dateTimeColumn dateTimeVariable dateTimeFormat dateFormat timeFormat yearInFile"
-					  update="timePositionAssignments"
+					  update="dateTimeFile dateTimeColumn dateTimeVariable dateTimeFormat dateFormat timeFormat yearInFile timePositionAssignments"
 					  oncomplete="timePositionAssigned('dateTimeAssignmentDialog');"/>
 					<p:commandButton value="Cancel" onclick="PF('dateTimeAssignmentDialog').hide(); return false;"/>
 				</h:panelGrid>

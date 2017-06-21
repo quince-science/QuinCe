@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.InvalidPositionFormatException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
@@ -149,7 +150,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	/**
 	 * The file for which the date/time is being set
 	 */
-	private String dateTimeFile = null;
+	private int dateTimeFile = -1;
 	
 	/**
 	 * The column index for the date/time field
@@ -282,6 +283,7 @@ public class NewInstrumentBean extends FileUploadBean {
 		sensorAssignments = ResourceManager.getInstance().getSensorsConfiguration().getNewSensorAssigments();
 		resetSensorAssignmentValues();
 		resetPositionAssignmentValues();
+		resetDateTimeAssignmentValues();
 		clearFile();
 	}
 	
@@ -755,6 +757,8 @@ public class NewInstrumentBean extends FileUploadBean {
 		if (longitudeFormat != LongitudeSpecification.FORMAT_0_180) {
 			file.getLongitudeSpecification().setHemisphereColumn(-1);
 		}
+		
+		resetPositionAssignmentValues();
 	}
 
 	/**
@@ -816,6 +820,8 @@ public class NewInstrumentBean extends FileUploadBean {
 		if (latitudeFormat != LatitudeSpecification.FORMAT_0_90) {
 			file.getLatitudeSpecification().setHemisphereColumn(-1);
 		}
+		
+		resetPositionAssignmentValues();
 	}
 
 	/**
@@ -881,6 +887,7 @@ public class NewInstrumentBean extends FileUploadBean {
 		}
 		
 		posSpec.setHemisphereColumn(hemisphereColumn);
+		resetPositionAssignmentValues();
 	}
 	
 	/**
@@ -897,12 +904,23 @@ public class NewInstrumentBean extends FileUploadBean {
 		hemisphereCoordinate = -1;
 		hemisphereColumn = -1;
 	}
+	
+	/**
+	 * Clear all date/time assignment data
+	 */
+	private void resetDateTimeAssignmentValues() {
+		dateTimeFile = -1;
+		dateTimeColumn = -1;
+		dateTimeVariable = null;
+		dateFormat = null;
+		yearInFile = true;
+	}
 
 	/**
 	 * Get the file for which a date/time variable is being assigned
 	 * @return The file
 	 */
-	public String getDateTimeFile() {
+	public int getDateTimeFile() {
 		return dateTimeFile;
 	}
 
@@ -910,7 +928,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Set the file for which a date/time variable is being assigned
 	 * @param dateTimeFile The file
 	 */
-	public void setDateTimeFile(String dateTimeFile) {
+	public void setDateTimeFile(int dateTimeFile) {
 		this.dateTimeFile = dateTimeFile;
 	}
 
@@ -1012,8 +1030,37 @@ public class NewInstrumentBean extends FileUploadBean {
 	
 	/**
 	 * Assign a date/time variable
+	 * @throws DateTimeSpecificationException If the assignment cannot be made
 	 */
-	public void assignDateTime() {
-		System.out.println("Assigning goes here");
+	public void assignDateTime() throws DateTimeSpecificationException {
+		DateTimeSpecification dateTimeSpec = instrumentFiles.get(dateTimeFile).getDateTimeSpecification();
+		
+		int assignmentIndex = DateTimeSpecification.getAssignmentIndex(dateTimeVariable);
+		
+		switch (assignmentIndex) {
+		case DateTimeSpecification.DATE_TIME: {
+			dateTimeSpec.assign(dateTimeVariable, dateTimeColumn, dateTimeFormat);
+			break;
+		}
+		case DateTimeSpecification.DATE: {
+			dateTimeSpec.assign(dateTimeVariable, dateTimeColumn, dateFormat);
+			break;
+		}
+		case DateTimeSpecification.TIME: {
+			dateTimeSpec.assign(dateTimeVariable, dateTimeColumn, timeFormat);
+			break;
+		}
+		case DateTimeSpecification.JDAY_TIME:
+		case DateTimeSpecification.JDAY: {
+			dateTimeSpec.assign(dateTimeVariable, dateTimeColumn, yearInFile);
+			break;
+		}
+		default: {
+			dateTimeSpec.assign(dateTimeVariable, dateTimeColumn, null, true);
+			break;
+		}
+		}
+		
+		resetDateTimeAssignmentValues();
 	}
 }

@@ -26,7 +26,7 @@ public class DateTimeColumnAssignment {
 	 * For use with JDate assignments. The value stored must be
 	 * parseable by {@link Boolean#parseBoolean(String)}.
 	 */
-	public static final String YEAR_IN_FILE_PROPERTY = "yearInFile";
+	private static final String YEAR_IN_FILE_PROPERTY = "yearInFile";
 	
 	/**
 	 * Value to indicate that no column has been assigned
@@ -60,11 +60,27 @@ public class DateTimeColumnAssignment {
 	}
 	
 	/**
+	 * Set the assigned column index
+	 * @param column The column index
+	 */
+	public void setColumn(int column) {
+		this.column = column;
+	}
+	
+	/**
 	 * Get the date format as a string
 	 * @return The date format string
 	 */
 	public String getDateFormatString() {
 		return properties.getProperty(FORMAT_PROPERTY);
+	}
+	
+	/**
+	 * Set the format string
+	 * @param format The format string
+	 */
+	public void setDateFormatString(String format) {
+		properties.setProperty(FORMAT_PROPERTY, format);
 	}
 	
 	/**
@@ -76,12 +92,11 @@ public class DateTimeColumnAssignment {
 	}
 	
 	/**
-	 * Get a property value
-	 * @param key The property key
-	 * @return The parameter value
+	 * Get the properties of this assignment
+	 * @return The assignment properties
 	 */
-	public String getProperty(String key) {
-		return properties.getProperty(key);
+	protected Properties getProperties() {
+		return properties;
 	}
 	
 	/**
@@ -94,10 +109,18 @@ public class DateTimeColumnAssignment {
 	}
 	
 	/**
-	 * Retrieve all the properties for this assignment
-	 * @return The assignment properties
+	 * Determine whether the year is stored in the file
+	 * @return {@code true} if the year is stored in the file; {@code false} if it is not
 	 */
-	protected Properties getProperties() {
-		return properties;
+	public boolean getYearInFile() {
+		return Boolean.parseBoolean(properties.getProperty(YEAR_IN_FILE_PROPERTY));
+	}
+	
+	/**
+	 * Specify whether or not the year is stored in the file
+	 * @param yearInFile The flag
+	 */
+	public void setYearInFile(boolean yearInFile) {
+		properties.setProperty(YEAR_IN_FILE_PROPERTY, String.valueOf(yearInFile));
 	}
 }
