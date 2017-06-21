@@ -186,9 +186,10 @@ function useFile() {
 //************************************************
 function renderAssignments() {
 	var sensorsOK = renderSensorAssignments();
-	var timePositionOK = renderTimePositionAssignments();
+	var positionOK = renderPositionAssignments();
+	var timeOK = renderDateTimeAssignments();
 	
-	if (sensorsOK && timePositionOK) {
+	if (sensorsOK && positionOK && timeOK) {
 		PF('next').enable();
 	} else {
 		PF('next').disable();
@@ -226,8 +227,69 @@ function renderSensorAssignments() {
 	return sensorsOK;
 }
 
-function renderTimePositionAssignments() {
-	var timePositionOK = true;
+function renderDateTimeAssignments() {
+	var allTimesOK = true;
+	
+	var assignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+	
+	// Loop through the files
+	for (var i = 0; i < assignments.length; i++) {
+		var assignment = assignments[i];
+
+		var timeOK = true;
+		var fieldsAssigned = false;
+		var timeHtml = '';
+	
+		var dateTimeAssignments = assignment['dateTime'];
+		
+		
+		timeHtml += '<table>';
+		
+		for (var j = 0; j < dateTimeAssignments.length; j++) {
+			var dtAssignment = dateTimeAssignments[j];
+			
+			timeHtml += '<tr><td>';
+			timeHtml += dtAssignment['name'];
+			timeHtml += ':</td>';
+			
+			if (dtAssignment['column'] == -1) {
+				timeHtml += '<td class="error">Not assigned</td>';
+			} else {
+				timeHtml += '<td>';
+				timeHtml += filesAndColumns[i]['columns'][dtAssignment['column']];
+				timeHtml += '</td>';
+			}
+			
+			timeHtml += '</tr>';
+			
+			if (dtAssignment['column'] != -1) {
+				fieldsAssigned = true;
+			}
+		}
+		
+		timeHtml += '</table>';
+		
+	
+		if (!fieldsAssigned) {
+			timeHtml = 'No columns assigned';
+			timeOK = false;
+		}
+
+		$('#dateTimeColumns-'+ i).html(timeHtml);
+
+		if (timeOK) {
+			$('#dateTimeColumns-' + i).closest("fieldset").removeClass("invalidFileAssignment");
+		} else {
+			$('#dateTimeColumns-' + i).closest("fieldset").addClass("invalidFileAssignment");
+			allTimesOK = false;
+		}
+	}
+		
+	return timeOK;
+}
+
+function renderPositionAssignments() {
+	var positionOK = true;
 	var positionsAssigned = 0;
 	
 	var assignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
@@ -235,15 +297,6 @@ function renderTimePositionAssignments() {
 	for (var i = 0; i < assignments.length; i++) {
 		var assignment = assignments[i];
 		
-		// Date/Time panel
-		timeHtml = 'No columns assigned';
-		$('#dateTimeColumns-' + i).html(timeHtml);
-		$('#dateTimeColumns-' + i).closest("fieldset").addClass("invalidFileAssignment");
-		timePositionOK = false;
-		
-		
-		// Position panel
-		var positionOK = true;
 		positionHtml = '';
 		if (assignment['longitude']['valueColumn'] == -1 && assignment['latitude']['valueColumn'] == -1) {
 			positionHtml += 'No columns assigned';
@@ -347,7 +400,7 @@ function renderTimePositionAssignments() {
 		}
 	}
 	
-	return timePositionOK;
+	return positionOK;
 }
 
 function buildMainAssignmentMenu(file, column) {
@@ -608,7 +661,7 @@ function sensorAssigned() {
 
 function timePositionAssigned(dialogName) {
 	PF(dialogName).hide();
-	renderTimePositionAssignments();
+	renderAssignments();
 }
 
 function openLongitudeDialog(file, column) {

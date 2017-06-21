@@ -20,32 +20,32 @@ public class DateTimeSpecification {
 	public static final int DATE_TIME = 0;
 	
 	/**
-	 * Key for Julian day with decimal time
-	 */
-	public static final int JDAY_TIME = 1;
-
-	/**
 	 * Key for date string
 	 */
-	public static final int DATE = 2;
+	public static final int DATE = 1;
 	
+	/**
+	 * Key for year
+	 */
+	public static final int YEAR = 2;
+	
+	/**
+	 * Key for Julian day with decimal time
+	 */
+	public static final int JDAY_TIME = 3;
+
 	/**
 	 * Key for Julian day without time
 	 */
-	public static final int JDAY = 3;
+	public static final int JDAY = 4;
 	
 	/**
-	 * Key for year
-	 */
-	public static final int YEAR = 4;
-	
-	/**
-	 * Key for year
+	 * Key for month
 	 */
 	public static final int MONTH = 5;
 	
 	/**
-	 * Key for year
+	 * Key for day
 	 */
 	public static final int DAY = 6;
 	
@@ -126,7 +126,9 @@ public class DateTimeSpecification {
 		for (int i = 0; i < entries.size(); i++) {
 			DateTimeColumnAssignment assignment = assignments.get(entries.get(i));
 			
-			json.append("{\"name\":\"");
+			json.append("{\"id\":");
+			json.append(i);
+			json.append(",\"name\":\"");
 			json.append(getAssignmentName(entries.get(i)));
 			json.append("\",\"column\":");
 			json.append(assignment.getColumn());
