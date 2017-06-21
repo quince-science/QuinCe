@@ -78,7 +78,13 @@ public class SensorAssignment {
 	 * @return The sensor name
 	 */
 	public String getSensorName() {
-		return sensorName;
+		String result = "";
+		
+		if (null != sensorName) {
+			result = sensorName;
+		}
+		
+		return result;
 	}
 	
 	/**

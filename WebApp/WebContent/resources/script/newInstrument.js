@@ -248,12 +248,13 @@ function renderDateTimeAssignments() {
 		for (var j = 0; j < dateTimeAssignments.length; j++) {
 			var dtAssignment = dateTimeAssignments[j];
 			
-			timeHtml += '<tr><td>';
+			timeHtml += '<tr><td><label class="ui-outputlabel ui-widget">';
 			timeHtml += dtAssignment['name'];
-			timeHtml += ':</td>';
+			timeHtml += ':</label></td>';
 			
 			if (dtAssignment['column'] == -1) {
 				timeHtml += '<td class="error">Not assigned</td>';
+				timeOK = false;
 			} else {
 				timeHtml += '<td>';
 				timeHtml += filesAndColumns[i]['columns'][dtAssignment['column']];

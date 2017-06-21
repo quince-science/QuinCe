@@ -437,9 +437,9 @@ public class NewInstrumentBean extends FileUploadBean {
 					json.append(assignment.getDataFile());
 					json.append("\",\"column\":");
 					json.append(assignment.getColumn());
-					json.append("{\"sensorName\":\"");
+					json.append(",\"sensorName\":\"");
 					json.append(assignment.getSensorName());
-					json.append(",\"postCalibrated\":");
+					json.append("\",\"postCalibrated\":");
 					json.append(assignment.getPostCalibrated());
 					json.append(",\"primary\":");
 					json.append(assignment.isPrimary());
