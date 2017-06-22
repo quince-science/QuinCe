@@ -26,7 +26,7 @@
 		<h:form id="newInstrumentForm" method="post" charset="utf8" enctype="multipart/form-data">
 		
 			<h:inputHidden id="sampleFileContent" value="#{newInstrumentBean.currentInstrumentFile.filePreview}"/>
-			<p:commandLink id="guessFileLayout" ajax="true" process="@this" update="headerType headerLineCount headerString separator columnHeaderRows columnCount sampleFileContent" action="#{newInstrumentBean.currentInstrumentFile.guessFileLayout}" oncomplete="updateFileContentDisplay()"/>
+			<p:commandLink id="guessFileLayout" ajax="true" process="@this" update="headerType headerLineCount headerEndString separator columnHeaderRows columnCount sampleFileContent" action="#{newInstrumentBean.currentInstrumentFile.guessFileLayout}" oncomplete="updateFileContentDisplay()"/>
 		
 			<div id="uploadFormContent">		
 				<div class="instructions">
@@ -71,7 +71,7 @@
 									
 										<p:radioButton id="stringType" for="headerType" itemIndex="1"/>
 										<p:outputLabel for="stringType" value="End Line"/>
-										<p:inputText id="headerString" widgetVar="headerEndString" value="#{newInstrumentBean.currentInstrumentFile.headerString}" onkeyup="renderSampleFile()"/>
+										<p:inputText id="headerEndString" widgetVar="headerEndString" value="#{newInstrumentBean.currentInstrumentFile.headerEndString}" onkeyup="renderSampleFile()"/>
 									</h:panelGrid>
 								</p:outputPanel>
 							</p:panel>
