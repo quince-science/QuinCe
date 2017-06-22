@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -20,59 +21,84 @@ public class DateTimeSpecification {
 	public static final int DATE_TIME = 0;
 	
 	/**
+	 * Name for combined date and time string
+	 */
+	public static final String DATE_TIME_NAME = "Combined Date and Time";
+	
+	/**
+	 * Key for Julian day/time since start date of file
+	 */
+	public static final int JDAY_TIME_FROM_START = 1;
+	
+	/**
+	 * Name for date string
+	 */
+	public static final String JDAY_TIME_FROM_START_NAME = "Julian Day/Time from start of file";
+	
+	/**
 	 * Key for date string
 	 */
-	public static final int DATE = 1;
+	public static final int DATE = 2;
+	
+	/**
+	 * Name for date string
+	 */
+	public static final String DATE_NAME = "Date";
 	
 	/**
 	 * Key for year
 	 */
-	public static final int YEAR = 2;
+	public static final int YEAR = 3;
+	
+	/**
+	 * Name for year
+	 */
+	public static final String YEAR_NAME = "Year";
 	
 	/**
 	 * Key for Julian day with decimal time
 	 */
-	public static final int JDAY_TIME = 3;
+	public static final int JDAY_TIME = 4;
 
 	/**
 	 * Key for Julian day without time
 	 */
-	public static final int JDAY = 4;
+	public static final int JDAY = 5;
 	
 	/**
 	 * Key for month
 	 */
-	public static final int MONTH = 5;
+	public static final int MONTH = 6;
 	
 	/**
 	 * Key for day
 	 */
-	public static final int DAY = 6;
+	public static final int DAY = 7;
 	
 	/**
 	 * Key for time string
 	 */
-	public static final int TIME = 7;
+	public static final int TIME = 8;
 	
 	/**
 	 * Key for hour
 	 */
-	public static final int HOUR = 8;
+	public static final int HOUR = 9;
 	
 	/**
 	 * Key for month
 	 */
-	public static final int MINUTE = 9;
+	public static final int MINUTE = 10;
 	
 	/**
 	 * Key for second
 	 */
-	public static final int SECOND = 10;
+	public static final int SECOND = 11;
 	
 	/**
 	 * The largest assignment index
 	 */
-	private static final int MAX_INDEX = 10;
+	private static final int MAX_INDEX = 11;
 	
 	/**
 	 * The column assignments
@@ -80,14 +106,20 @@ public class DateTimeSpecification {
 	private Map<Integer, DateTimeColumnAssignment> assignments;
 	
 	/**
+	 * The parent file definition
+	 */
+	private FileDefinition parentDefinition;
+	
+	/**
 	 * Constructs an empty specification
 	 */
-	public DateTimeSpecification() {
+	public DateTimeSpecification(FileDefinition parentDefinition) {
 		assignments = new TreeMap<Integer, DateTimeColumnAssignment>();
 		
 		assignments.put(DATE_TIME, new DateTimeColumnAssignment());
-		assignments.put(JDAY_TIME, new DateTimeColumnAssignment());
 		assignments.put(DATE, new DateTimeColumnAssignment());
+		assignments.put(JDAY_TIME_FROM_START, new DateTimeColumnAssignment());
+		assignments.put(JDAY_TIME, new DateTimeColumnAssignment());
 		assignments.put(JDAY, new DateTimeColumnAssignment());
 		assignments.put(YEAR, new DateTimeColumnAssignment());
 		assignments.put(MONTH, new DateTimeColumnAssignment());
@@ -96,6 +128,8 @@ public class DateTimeSpecification {
 		assignments.put(HOUR, new DateTimeColumnAssignment());
 		assignments.put(MINUTE, new DateTimeColumnAssignment());
 		assignments.put(SECOND, new DateTimeColumnAssignment());
+
+		this.parentDefinition = parentDefinition;
 	}
 	
 	/**
@@ -161,7 +195,10 @@ public class DateTimeSpecification {
 		
 		// If the assignments are internally consistent, then we can take a few shortcuts
 		if (nothingAssigned()) {
-			availableMask = setMaskBits(availableMask, DATE_TIME, JDAY_TIME, DATE, JDAY, YEAR, MONTH, DAY, TIME, HOUR, MINUTE, SECOND);
+			availableMask = setMaskBits(availableMask, DATE_TIME, DATE, YEAR, JDAY_TIME, JDAY, MONTH, DAY, TIME, HOUR, MINUTE, SECOND);
+			if (parentDefinition.hasHeader()) {
+				availableMask = setMaskBits(availableMask, JDAY_TIME_FROM_START);
+			}
 		} else if (isAssigned(DATE_TIME)) {
 			availableMask = setMaskBits(availableMask, DATE_TIME);
 		} else {
@@ -171,6 +208,13 @@ public class DateTimeSpecification {
 			// The Date/Time string is complete in itself
 			if (isAssigned(DATE_TIME)) {
 				availableMask = setMaskBits(availableMask, DATE_TIME);
+				dateProcessed = true;
+				timeProcessed = true;
+			}
+			
+			// Julian day/time from start of file requires no other entries
+			if (!dateProcessed && isAssigned(JDAY_TIME_FROM_START)) {
+				availableMask = setMaskBits(availableMask, JDAY_TIME_FROM_START);
 				dateProcessed = true;
 				timeProcessed = true;
 			}
@@ -309,20 +353,24 @@ public class DateTimeSpecification {
 			result = "Combined Date and Time";
 			break;
 		}
-		case JDAY_TIME: {
-			result = "Julian Day with Time";
+		case JDAY_TIME_FROM_START: {
+			result = "Julian Day/Time from start of file";
 			break;
 		}
 		case DATE: {
 			result = "Date";
 			break;
 		}
-		case JDAY: {
-			result = "Julian Day";
-			break;
-		}
 		case YEAR: {
 			result = "Year";
+			break;
+		}
+		case JDAY_TIME: {
+			result = "Julian Day with Time";
+			break;
+		}
+		case JDAY: {
+			result = "Julian Day";
 			break;
 		}
 		case MONTH: {
@@ -371,20 +419,24 @@ public class DateTimeSpecification {
 			result = DATE_TIME;
 			break;
 		}
-		case "Julian Day with Time": {
-			result = JDAY_TIME;
+		case "Julian Day/Time from start of file": {
+			result = JDAY_TIME_FROM_START;
 			break;
 		}
 		case "Date": {
 			result = DATE;
 			break;
 		}
-		case "Julian Day": {
-			result = JDAY;
-			break;
-		}
 		case "Year": {
 			result = YEAR;
+			break;
+		}
+		case "Julian Day with Time": {
+			result = JDAY_TIME;
+			break;
+		}
+		case "Julian Day": {
+			result = JDAY;
 			break;
 		}
 		case "Month": {

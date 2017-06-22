@@ -424,4 +424,52 @@ public class FileDefinitionBuilder extends FileDefinition {
 		
 		return result.toString();
 	}
+	
+	/**
+	 * Get the file header. If there is no header,
+	 * returns an empty list.
+	 * @return The lines of the file header
+	 */
+	public List<String> getFileHeader() {
+		List<String> result;
+		
+		int headerLines = getHeaderLength();
+		if (headerLines == 0) {
+			result = new ArrayList<String>();
+		} else {
+			result = fileContents.subList(0, headerLines + 1);
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Get the header line that contains the given prefix and suffix.
+	 * A line will match if it contains the prefix, followed by a
+	 * number of characters, followed by the suffix.
+	 * <p>
+	 *   If multiple lines match the prefix and suffix, the first line
+	 *   will be returned.
+	 * </p>
+	 * @param prefix The prefix
+	 * @param suffix The suffix
+	 * @return The matching line
+	 */
+	public String getHeaderLine(String prefix, String suffix) {
+		
+		String matchedLine = null;
+		
+		for (String line : getFileHeader()) {
+			int prefixPos = line.indexOf(prefix);
+			if (prefixPos > -1) {
+				int suffixPos = line.indexOf(suffix, (prefixPos + prefix.length()));
+				if (suffixPos > -1) {
+					matchedLine = line;
+					break;
+				}
+			}
+		}
+		
+		return matchedLine;
+	}
 }

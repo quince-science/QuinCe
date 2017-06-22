@@ -105,7 +105,7 @@
 							</p:panel>
 							<div id="sampleFileMessage" class="errorBox"></div>
 							<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
-								<p:commandButton id="discardFile" value="Discard File" ajax="true" action="#{newInstrumentBean.discardUploadedFile}" process="@this" update="headerType headerLineCount headerString separator columnHeaderRows columnCount sampleFileContent" oncomplete="discardUploadedFile();return false;" immediate="true"/>
+								<p:commandButton id="discardFile" value="Discard File" ajax="true" action="#{newInstrumentBean.discardUploadedFile}" process="@this" update="headerType headerLineCount headerEndString separator columnHeaderRows columnCount sampleFileContent" oncomplete="discardUploadedFile();return false;" immediate="true"/>
 								<p:button id="useFile" widgetVar="useFileButton" value="Use File" onclick="useFile(); return false;" disabled="true"/>
 							</h:panelGrid>
 						</div>

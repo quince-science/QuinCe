@@ -104,17 +104,17 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	/**
 	 * The longitude specification 
 	 */
-	private LongitudeSpecification longitudeSpecification = new LongitudeSpecification();
+	private LongitudeSpecification longitudeSpecification;
 	
 	/**
 	 * The latitude specification
 	 */
-	private LatitudeSpecification latitudeSpecification = new LatitudeSpecification();
+	private LatitudeSpecification latitudeSpecification;
 	
 	/**
 	 * The Date/Time specification
 	 */
-	private DateTimeSpecification dateTimeSpecification = new DateTimeSpecification();
+	private DateTimeSpecification dateTimeSpecification;
 	
 	/**
 	 * The year in which the first measurement in the file was taken.
@@ -137,6 +137,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 */
 	public FileDefinition(String fileDescription) {
 		this.fileDescription = fileDescription;
+		this.longitudeSpecification = new LongitudeSpecification();
+		this.latitudeSpecification = new LatitudeSpecification();
+		this.dateTimeSpecification = new DateTimeSpecification(this);
 	}
 	
 	/**
@@ -413,5 +416,16 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 */
 	public int getFileYear() {
 		return fileYear;
+	}
+	
+	/**
+	 * Determine whether or not the file has a header.
+	 * 
+	 * The header has either with a specified number of header lines or
+	 * a header end string.
+	 * @return {@code true} if the file has a header; {@code false} if it does not.
+	 */
+	public boolean hasHeader() {
+		return (headerLines > 0 || null != headerEndString);
 	}
 }

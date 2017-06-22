@@ -581,6 +581,11 @@ table.fileDates {
 	display: inline;
 }
 
+.codeLine {
+	margin: 5px 0px 5px 10px;
+	font-family: 'Inconsolata', monospace;
+}
+
 /* PrimeFaces overrides */
 .ui-panel-content td {
 	vertical-align: middle;

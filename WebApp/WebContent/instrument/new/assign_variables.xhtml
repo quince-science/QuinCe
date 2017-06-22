@@ -265,6 +265,52 @@
 						</tr>
 					</table>
 				</div>
+				<div id="jdayFromStartContainer" class="dialogSection">
+					<h:inputHidden id="startTimeLine" value="#{newInstrumentBean.startTimeLine}"/>
+					<h:inputHidden id="startTimeDate" value="#{newInstrumentBean.startTimeDate}"/>
+					
+					<p:outputLabel value="Please enter the details of how to find the start time in the file header"/>
+					<table>
+						<tr>
+							<td><p:outputLabel value="Prefix:"/></td>
+							<td>
+								<p:inputText id="startTimePrefix" size="20" value="#{newInstrumentBean.startTimePrefix}">
+									<p:ajax process="dateTimeFile startTimePrefix startTimeSuffix startTimeFormat" update="startTimeLine startTimeDate" listener="#{newInstrumentBean.extractStartTime}" event="keyup" oncomplete="updateStartTime();"/>
+								</p:inputText>
+							</td>
+						</tr>
+						<tr>
+							<td><p:outputLabel value="Suffix:"/></td>
+							<td>
+								<p:inputText id="startTimeSuffix" size="20" value="#{newInstrumentBean.startTimeSuffix}">
+									<p:ajax process="dateTimeFile startTimePrefix startTimeSuffix startTimeFormat" update="startTimeLine startTimeDate" listener="#{newInstrumentBean.extractStartTime}" event="keyup" oncomplete="updateStartTime();"/>
+								</p:inputText>
+									
+							</td>
+						</tr>
+						<tr>
+							<td><p:outputLabel value="Format:"/></td>
+							<td>
+								<p:selectOneMenu id="startTimeFormat" value="#{newInstrumentBean.startTimeFormat}">
+									<f:selectItem itemLabel="MMM DD YYYY HH:MM:SS" itemValue="MMM DD YYYY HH:MM:SS"/>
+									<f:selectItem itemLabel="YYYY-MM-DD HH:MM:SS" itemValue="YYYY-MM-DD HH:MM:SS"/>
+									<f:selectItem itemLabel="YYYY-MM-DD HHMMSS" itemValue="YYYY-MM-DD HHMMSS"/>
+									<f:selectItem itemLabel="YYYYMMDD HH:MM:SS" itemValue="YYYYMMDD HH:MM:SS"/>
+									<f:selectItem itemLabel="YYYYMMDD HHMMSS" itemValue="YYYYMMDD HHMMSS"/>
+									<f:selectItem itemLabel="MM/DD/YYYY HH:MM:SS" itemValue="MM/DD/YYYY HH:MM:SS"/>
+									<f:selectItem itemLabel="MM/DD/YYYY HHMMSS" itemValue="MM/DD/YYYY HHMMSS"/>
+									<f:selectItem itemLabel="DD/MM/YYYY HH:MM:SS" itemValue="DD/MM/YYYY HH:MM:SS"/>
+									<f:selectItem itemLabel="DD/MM/YYYY HHMMSS" itemValue="DD/MM/YYYY HHMMSS"/>
+									<p:ajax process="dateTimeFile startTimePrefix startTimeSuffix startTimeFormat" update="startTimeLine startTimeDate" listener="#{newInstrumentBean.extractStartTime}" event="change" oncomplete="updateStartTime();"/>
+								</p:selectOneMenu>
+							</td>
+						</tr>
+					</table>
+					<p:outputLabel value="Line extracted from header:"/>
+					<div id="startTimeExtractedLine" class="codeLine"></div>
+					<p:outputLabel value="Date extracted from header:"/>
+					<div id="startTimeExtractedDate" class="codeLine"></div>
+				</div>
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
 					<p:commandButton value="Assign" ajax="true" action="#{newInstrumentBean.assignDateTime}"
 					  process="dateTimeFile dateTimeColumn dateTimeVariable dateTimeFormat dateFormat timeFormat"

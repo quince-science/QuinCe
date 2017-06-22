@@ -737,10 +737,15 @@ function openDateTimeDialog(item, file, column) {
 	$('#dateTimeFormatContainer').hide();
 	$('#dateFormatContainer').hide();
 	$('#timeFormatContainer').hide();
+	$('#jdayFromStartContainer').hide();
 	
 	switch (variableName) {
 	case "Combined Date and Time": {
 		$('#dateTimeFormatContainer').show();
+		break;
+	}
+	case "Julian Day/Time from start of file": {
+		$('#jdayFromStartContainer').show();
 		break;
 	}
 	case "Date": {
@@ -748,10 +753,22 @@ function openDateTimeDialog(item, file, column) {
 		break;
 	}
 	case "Time": {
-		$('#timeFormatContainer').hide();
+		$('#timeFormatContainer').show();
 		break;
 	}
 	}
 	
 	PF('dateTimeAssignmentDialog').show();
+}
+
+function updateStartTime() {
+	var line = $('#newInstrumentForm\\:startTimeLine').val();
+	
+	if (line == "") {
+		$('#startTimeExtractedLine').text("No matching line found in header");
+		$('#startTimeExtractedLine').addClass("error");
+	} else {
+		$('#startTimeExtractedLine').text(line);
+		$('#startTimeExtractedLine').removeClass("error");
+	}
 }

@@ -177,6 +177,32 @@ public class NewInstrumentBean extends FileUploadBean {
 	private String timeFormat = null;
 	
 	/**
+	 * The prefix for the start time in the file header
+	 */
+	private String startTimePrefix = "start_time =";
+	
+	/**
+	 * The suffix for the start time in the file header
+	 */
+	private String startTimeSuffix = "[";
+	
+	/**
+	 * The format for the start time in the file header
+	 */
+	private String startTimeFormat = "MMM DD YYYY HH:MM:SS";
+	
+	/**
+	 * The start time line extracted from the file header. This is a JSON string
+	 * that contains details of how to format the line.
+	 */
+	private String startTimeLine = null;
+	
+	/**
+	 * The start time extracted from the file header
+	 */
+	private String startTimeDate = null;
+	
+	/**
 	 * Begin a new instrument definition
 	 * @return The navigation to the start page
 	 */
@@ -901,6 +927,9 @@ public class NewInstrumentBean extends FileUploadBean {
 		dateTimeColumn = -1;
 		dateTimeVariable = null;
 		dateFormat = null;
+		startTimePrefix = "start_time = ";
+		startTimeSuffix = "[";
+		startTimeFormat = "MMM DD YYYY HH:MM:SS";
 	}
 
 	/**
@@ -1028,5 +1057,95 @@ public class NewInstrumentBean extends FileUploadBean {
 		}
 		
 		resetDateTimeAssignmentValues();
+	}
+
+	/**
+	 * Get the start time prefix
+	 * @return The start time prefix
+	 */
+	public String getStartTimePrefix() {
+		return startTimePrefix;
+	}
+
+	/**
+	 * Set the start time prefix
+	 * @param startTimePrefix The start time prefix
+	 */
+	public void setStartTimePrefix(String startTimePrefix) {
+		this.startTimePrefix = startTimePrefix;
+	}
+
+	/**
+	 * Get the start time suffix
+	 * @return The start time suffix
+	 */
+	public String getStartTimeSuffix() {
+		return startTimeSuffix;
+	}
+
+	/**
+	 * Set the start time suffix
+	 * @param startTimeSuffix The start time suffix
+	 */
+	public void setStartTimeSuffix(String startTimeSuffix) {
+		this.startTimeSuffix = startTimeSuffix;
+	}
+
+	/**
+	 * Get the start time format
+	 * @return The start time format
+	 */
+	public String getStartTimeFormat() {
+		return startTimeFormat;
+	}
+
+	/**
+	 * Set the start time format
+	 * @param startTimeFormat The start time format
+	 */
+	public void setStartTimeFormat(String startTimeFormat) {
+		this.startTimeFormat = startTimeFormat;
+	}
+
+	/**
+	 * Get the start time line extracted from the header
+	 * @return The start time line
+	 */
+	public String getStartTimeLine() {
+		return startTimeLine;
+	}
+	
+	/**
+	 * Dummy method for setting start time line - does nothing
+	 * @param startTimeLine The start time line (ignored)
+	 */
+	public void setStartTimeLine(String startTimeLine) {
+		// Do nothing
+	}
+	
+	/**
+	 * Get the start time extracted from the header
+	 * @return The start time
+	 */
+	public String getStartTimeDate() {
+		return startTimeDate;
+	}
+	
+	/**
+	 * Dummy method for setting start time date - does nothing
+	 * @param startTimeDate The start time date (ignored)
+	 */
+	public void setStartTimeDate(String startTimeDate) {
+		// Do nothing
+	}
+	
+	/**
+	 * Extract the start time from a file header
+	 */
+	public void extractStartTime() {
+		System.out.println("Extracting");
+		FileDefinitionBuilder fileDefinition = instrumentFiles.get(dateTimeFile);
+		startTimeLine = fileDefinition.getHeaderLine(startTimePrefix, startTimeSuffix);
+		System.out.println(startTimeLine);
 	}
 }
