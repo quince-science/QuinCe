@@ -737,16 +737,10 @@ function openDateTimeDialog(item, file, column) {
 	$('#dateTimeFormatContainer').hide();
 	$('#dateFormatContainer').hide();
 	$('#timeFormatContainer').hide();
-	$('#yearInFileContainer').hide();
 	
 	switch (variableName) {
 	case "Combined Date and Time": {
 		$('#dateTimeFormatContainer').show();
-		break;
-	}
-	case "Julian Day with Time":
-	case "Julian Day": {
-		$('#yearInFileContainer').show();
 		break;
 	}
 	case "Date": {

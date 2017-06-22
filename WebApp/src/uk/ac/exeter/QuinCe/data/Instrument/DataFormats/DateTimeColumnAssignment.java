@@ -22,13 +22,6 @@ public class DateTimeColumnAssignment {
 	private static final String FORMAT_PROPERTY = "formatString";
 	
 	/**
-	 * Property indicating that the year is stored in the file.
-	 * For use with JDate assignments. The value stored must be
-	 * parseable by {@link Boolean#parseBoolean(String)}.
-	 */
-	private static final String YEAR_IN_FILE_PROPERTY = "yearInFile";
-	
-	/**
 	 * Value to indicate that no column has been assigned
 	 */
 	public static final int NOT_ASSIGNED = -1;
@@ -106,21 +99,5 @@ public class DateTimeColumnAssignment {
 	 */
 	public boolean isAssigned() {
 		return column != NOT_ASSIGNED;
-	}
-	
-	/**
-	 * Determine whether the year is stored in the file
-	 * @return {@code true} if the year is stored in the file; {@code false} if it is not
-	 */
-	public boolean getYearInFile() {
-		return Boolean.parseBoolean(properties.getProperty(YEAR_IN_FILE_PROPERTY));
-	}
-	
-	/**
-	 * Specify whether or not the year is stored in the file
-	 * @param yearInFile The flag
-	 */
-	public void setYearInFile(boolean yearInFile) {
-		properties.setProperty(YEAR_IN_FILE_PROPERTY, String.valueOf(yearInFile));
 	}
 }

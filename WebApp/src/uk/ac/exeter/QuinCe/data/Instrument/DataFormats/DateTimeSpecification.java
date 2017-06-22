@@ -183,24 +183,20 @@ public class DateTimeSpecification {
 				}
 			}
 			
-			// Julian day with time requires no other date or time parameters.
+			// Julian day with time requires the date
 			// If the year is in the file though, we need it
 			if (!dateProcessed && isAssigned(JDAY_TIME)) {
 				availableMask = setMaskBits(availableMask, JDAY_TIME);
-				if (assignments.get(JDAY_TIME).getYearInFile()) {
-					availableMask = setMaskBits(availableMask, YEAR);
-				}
+				availableMask = setMaskBits(availableMask, YEAR);
 				
 				dateProcessed = true;
 				timeProcessed = true;
 			}
 			
-			// Julian day alone requires no other date parameters other than optionally the year
+			// Julian day alone requires the year
 			if (!dateProcessed && isAssigned(JDAY)) {
 				availableMask = setMaskBits(availableMask, JDAY);
-				if (assignments.get(JDAY).getYearInFile()) {
-					availableMask = setMaskBits(availableMask, YEAR);
-				}
+				availableMask = setMaskBits(availableMask, YEAR);
 				
 				dateProcessed = true;
 			}
@@ -428,32 +424,10 @@ public class DateTimeSpecification {
 	 * @param variable The variable name
 	 * @param column The column index
 	 * @param format The format (can be null for fields that don't need it)
+	 * @param yearInFile Whether the year is specified in the file (for Julian day variables)
 	 * @throws DateTimeSpecificationException Is the assignment cannot be made
 	 */
 	public void assign(String variable, int column, String format) throws DateTimeSpecificationException {
-		assign(variable, column, format, true);
-	}
-	
-	/**
-	 * Assign a column to a date/time variable
-	 * @param variable The variable name
-	 * @param column The column index
-	 * @param yearInFile Whether the year is specified in the file (for Julian day variables)
-	 * @throws DateTimeSpecificationException Is the assignment cannot be made
-	 */
-	public void assign(String variable, int column, boolean yearInFile) throws DateTimeSpecificationException {
-		assign(variable, column, null, yearInFile);
-	}
-	
-	/**
-	 * Assign a column to a date/time variable
-	 * @param variable The variable name
-	 * @param column The column index
-	 * @param format The format (can be null for fields that don't need it)
-	 * @param yearInFile Whether the year is specified in the file (for Julian day variables)
-	 * @throws DateTimeSpecificationException Is the assignment cannot be made
-	 */
-	public void assign(String variable, int column, String format, boolean yearInFile) throws DateTimeSpecificationException {
 		int assignmentIndex = getAssignmentIndex(variable);
 		
 		DateTimeColumnAssignment assignment = assignments.get(assignmentIndex);
@@ -461,10 +435,6 @@ public class DateTimeSpecification {
 		
 		if (assignmentIndex == DATE_TIME || assignmentIndex == DATE || assignmentIndex == TIME) {
 			assignment.setDateFormatString(format);
-		}
-	
-		if (assignmentIndex == JDAY_TIME || assignmentIndex == JDAY) {
-			assignment.setYearInFile(yearInFile);
 		}
 	}
 }

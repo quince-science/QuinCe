@@ -178,12 +178,6 @@ public class NewInstrumentBean extends FileUploadBean {
 	private String timeFormat = null;
 	
 	/**
-	 * Indicates whether the year is stored in the file
-	 * (for Julian Date fields)
-	 */
-	private boolean yearInFile = true;
-	
-	/**
 	 * Begin a new instrument definition
 	 * @return The navigation to the start page
 	 */
@@ -913,7 +907,6 @@ public class NewInstrumentBean extends FileUploadBean {
 		dateTimeColumn = -1;
 		dateTimeVariable = null;
 		dateFormat = null;
-		yearInFile = true;
 	}
 
 	/**
@@ -1013,22 +1006,6 @@ public class NewInstrumentBean extends FileUploadBean {
 	}
 
 	/**
-	 * Determine whether the year is stored in the file
-	 * @return {@code true} if the year is stored in the file; {@code false} if it is not
-	 */
-	public boolean getYearInFile() {
-		return yearInFile;
-	}
-
-	/**
-	 * Set whether the year is stored in the file
-	 * @param yearInFile {@code true} if the year is stored in the file; {@code false} if it is not
-	 */
-	public void setYearInFile(boolean yearInFile) {
-		this.yearInFile = yearInFile;
-	}
-	
-	/**
 	 * Assign a date/time variable
 	 * @throws DateTimeSpecificationException If the assignment cannot be made
 	 */
@@ -1050,13 +1027,8 @@ public class NewInstrumentBean extends FileUploadBean {
 			dateTimeSpec.assign(dateTimeVariable, dateTimeColumn, timeFormat);
 			break;
 		}
-		case DateTimeSpecification.JDAY_TIME:
-		case DateTimeSpecification.JDAY: {
-			dateTimeSpec.assign(dateTimeVariable, dateTimeColumn, yearInFile);
-			break;
-		}
 		default: {
-			dateTimeSpec.assign(dateTimeVariable, dateTimeColumn, null, true);
+			dateTimeSpec.assign(dateTimeVariable, dateTimeColumn, null);
 			break;
 		}
 		}
