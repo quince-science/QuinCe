@@ -16,7 +16,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentExce
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
-import uk.ac.exeter.QuinCe.web.html.HtmlUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -259,12 +258,7 @@ public class NewInstrumentBean extends FileUploadBean {
 		String fileContent = new String(getFile().getContents(), StandardCharsets.UTF_8);
 		List<String> fileLines = Arrays.asList(fileContent.split("[\\r\\n]+"));
 		
-		if (fileLines.size() > FileDefinitionBuilder.FILE_DATA_MAX_LINES) {
-			fileLines = fileLines.subList(0, FileDefinitionBuilder.FILE_DATA_MAX_LINES - 1);
-		}
-		
-		currentInstrumentFile.setFileDataArray(fileLines);
-		currentInstrumentFile.setFileData(HtmlUtils.makeJSONArray(fileLines));
+		currentInstrumentFile.setFileContents(fileLines);
 	}
 	
 	/**

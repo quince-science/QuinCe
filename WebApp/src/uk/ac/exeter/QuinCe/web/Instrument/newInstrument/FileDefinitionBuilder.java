@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.web.html.HtmlUtils;
 
 /**
  * This is a specialised instance of the InstrumentFile class
@@ -20,7 +21,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	/**
 	 * The maximum number of lines from an uploaded file to be stored
 	 */
-	protected static final int FILE_DATA_MAX_LINES = 250;
+	protected static final int MAX_DISPLAY_LINES = 250;
 	
 	/**
 	 * The number of lines to search in order to determine
@@ -34,14 +35,9 @@ public class FileDefinitionBuilder extends FileDefinition {
 	private static final String DEFAULT_DESCRIPTION = "Data File";
 	
 	/**
-	 * The first {@link #FILE_DATA_MAX_LINES} lines of the uploaded sample file, formatted as a JSON string
+	 * The contents of the uploaded sample file, as an array of Strings
 	 */
-	private String fileData = null;
-	
-	/**
-	 * The first {@link #FILE_DATA_MAX_LINES} lines of the uploaded sample file, as an array of Strings
-	 */
-	private List<String> fileDataArray = null; 
+	private List<String> fileContents = null; 
 	
 	/**
 	 * Create a new file definition with the default description
@@ -69,23 +65,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 * @return {@code true} if file data has been uploaded; {@code false} if it has not.
 	 */
 	public boolean getHasFileData() {
-		return (null != fileData);
-	}
-	
-	/**
-	 * Store the uploaded data for this file in JSON format
-	 * @param fileData The file data
-	 */
-	public void setFileData(String fileData) {
-		this.fileData = fileData;
-	}
-	
-	/**
-	 * Get the contents of the uploaded sample data file as a JSON string
-	 * @return The file contents 
-	 */
-	public String getFileData() {
-		return fileData;
+		return (null != fileContents);
 	}
 	
 	/**
@@ -107,8 +87,8 @@ public class FileDefinitionBuilder extends FileDefinition {
 			// to be the header.
 			int currentRow = 0;
 			boolean columnsRowFound = false;
-			while (!columnsRowFound && currentRow < fileDataArray.size()) {
-				if (countSeparatorInstances(getSeparator(), fileDataArray.get(currentRow)) + 1 == getColumnCount()) {
+			while (!columnsRowFound && currentRow < fileContents.size()) {
+				if (countSeparatorInstances(getSeparator(), fileContents.get(currentRow)) + 1 == getColumnCount()) {
 					columnsRowFound = true;
 				} else {
 					currentRow++;
@@ -117,15 +97,15 @@ public class FileDefinitionBuilder extends FileDefinition {
 			
 			setHeaderLines(currentRow);
 			if (currentRow > 0) {
-				setHeaderString(fileDataArray.get(currentRow - 1));
+				setHeaderString(fileContents.get(currentRow - 1));
 			}
 			
 			// Finally, find the line row that's mostly numeric. This is the first proper data line.
 			// Any lines between the header and this are column header rows
 			boolean dataFound = false;
-			while (!dataFound && currentRow < fileDataArray.size()) {
-				String numbers = fileDataArray.get(currentRow).replaceAll("[^0-9]", "");
-				if (numbers.length() > (fileDataArray.get(currentRow).length() / 2)) {
+			while (!dataFound && currentRow < fileContents.size()) {
+				String numbers = fileContents.get(currentRow).replaceAll("[^0-9]", "");
+				if (numbers.length() > (fileContents.get(currentRow).length() / 2)) {
 					dataFound = true;
 				} else {
 					currentRow++;
@@ -139,6 +119,21 @@ public class FileDefinitionBuilder extends FileDefinition {
 			// any action because it will be left up to the user to specify the format
 			// manually.
 		}
+	}
+	
+	/**
+	 * Get the {@link #MAX_DISPLAY_LINES} of the file data as a JSON string,
+	 * to be used in previewing the file contents
+	 * @return The file preview data
+	 */
+	public String getFilePreview() {
+		String result = null;
+		
+		if (null != fileContents) {
+			result = HtmlUtils.makeJSONArray(fileContents.subList(0, MAX_DISPLAY_LINES - 1));
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -190,10 +185,10 @@ public class FileDefinitionBuilder extends FileDefinition {
 	
 	/**
 	 * Store the file data as an array of Strings
-	 * @param fileDataArray The file data
+	 * @param fileContents The file data
 	 */
-	protected void setFileDataArray(List<String> fileDataArray) {
-		this.fileDataArray = fileDataArray;
+	protected void setFileContents(List<String> fileContents) {
+		this.fileContents = fileContents;
 	}
 	
 	/**
@@ -211,11 +206,10 @@ public class FileDefinitionBuilder extends FileDefinition {
 			dest.setHeaderString(source.getHeaderString());
 			dest.setColumnHeaderRows(source.getColumnHeaderRows());
 			dest.setSeparator(source.getSeparator());
-			dest.fileData = source.fileData;
 			
-			dest.fileDataArray = new ArrayList<String>(source.fileDataArray.size());
-			for (String sourceLine : source.fileDataArray) {
-				dest.fileDataArray.add(sourceLine);
+			dest.fileContents = new ArrayList<String>(source.fileContents.size());
+			for (String sourceLine : source.fileContents) {
+				dest.fileContents.add(sourceLine);
 			}
 			
 		} catch (Exception e) {
@@ -236,7 +230,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 		
 		int result;
 		
-		if (null == getSeparator() || null == fileData)
+		if (null == getSeparator() || null == fileContents)
 			result = 0;
 		else {
 			result = calculateColumnCount(getSeparator());
@@ -263,12 +257,12 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 public int calculateColumnCount(String separator) {
 		int maxColumnCount = 0;
 		
-		int firstSearchLine = fileDataArray.size() - SEPARATOR_SEARCH_LINES;
+		int firstSearchLine = fileContents.size() - SEPARATOR_SEARCH_LINES;
 		if (firstSearchLine < 0) {
 			firstSearchLine = 0;
 		}
-		for (int i = firstSearchLine; i < fileDataArray.size(); i++) {
-			int separatorCount = countSeparatorInstances(separator, fileDataArray.get(i));
+		for (int i = firstSearchLine; i < fileContents.size(); i++) {
+			int separatorCount = countSeparatorInstances(separator, fileContents.get(i));
 			if (separatorCount > maxColumnCount) {
 				maxColumnCount = separatorCount + 1;
 			}
@@ -309,7 +303,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 				columns.add("Column " + (i + 1));
 			}
 		} else {
-			String columnHeaders = fileDataArray.get(getFirstColumnHeaderRow());
+			String columnHeaders = fileContents.get(getFirstColumnHeaderRow());
 			columns = makeColumnValues(columnHeaders);
 		}
 		
@@ -366,8 +360,8 @@ public class FileDefinitionBuilder extends FileDefinition {
 			
 			int row = 0;
 			boolean foundHeaderEnd = false;
-			while (!foundHeaderEnd && row < fileDataArray.size()) {
-				if (fileDataArray.get(row).equalsIgnoreCase(getHeaderString())) {
+			while (!foundHeaderEnd && row < fileContents.size()) {
+				if (fileContents.get(row).equalsIgnoreCase(getHeaderString())) {
 					foundHeaderEnd = true;
 				} else {
 					row++;
@@ -393,8 +387,13 @@ public class FileDefinitionBuilder extends FileDefinition {
 		result.append('[');
 		
 		int firstDataRow = getHeaderLength() + getColumnHeaderRows();
-		for (int i = firstDataRow; i < fileDataArray.size(); i++) {
-			List<String> columnValues = makeColumnValues(fileDataArray.get(i));
+		int lastRow = firstDataRow + MAX_DISPLAY_LINES;
+		if (lastRow > fileContents.size()) {
+			lastRow = fileContents.size();
+		}
+		
+		for (int i = firstDataRow; i < lastRow; i++) {
+			List<String> columnValues = makeColumnValues(fileContents.get(i));
 			
 			result.append('[');
 
@@ -415,7 +414,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 			}
 			
 			result.append(']');
-			if (i < fileDataArray.size() - 1) {
+			if (i < lastRow - 1) {
 				result.append(',');
 			}
 		}

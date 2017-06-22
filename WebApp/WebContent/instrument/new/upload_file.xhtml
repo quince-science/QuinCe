@@ -25,7 +25,7 @@
 	<ui:define name="new_instrument_content">
 		<h:form id="newInstrumentForm" method="post" charset="utf8" enctype="multipart/form-data">
 		
-			<h:inputHidden id="sampleFileContent" value="#{newInstrumentBean.currentInstrumentFile.fileData}"/>
+			<h:inputHidden id="sampleFileContent" value="#{newInstrumentBean.currentInstrumentFile.filePreview}"/>
 			<p:commandLink id="guessFileLayout" ajax="true" process="@this" update="headerType headerLineCount headerString separator columnHeaderRows columnCount sampleFileContent" action="#{newInstrumentBean.currentInstrumentFile.guessFileLayout}" oncomplete="updateFileContentDisplay()"/>
 		
 			<div id="uploadFormContent">		
