@@ -78,7 +78,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	/**
 	 * The string that indicates the end of the header
 	 */
-	private String headerString = null;
+	private String headerEndString = null;
 	
 	/**
 	 * The number of rows containing column headers
@@ -204,16 +204,16 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * This is only valid if {@link #headerType} is set to {@link #HEADER_TYPE_STRING}.
 	 * @return The string that defines the last line of the header.
 	 */
-	public String getHeaderString() {
-		return headerString;
+	public String getHeaderEndString() {
+		return headerEndString;
 	}
 
 	/**
 	 * Set the string that defines the last line of the header.
-	 * @param headerString The string that defines the last line of the header.
+	 * @param headerEndString The string that defines the last line of the header.
 	 */
-	public void setHeaderString(String headerString) {
-		this.headerString = headerString;
+	public void setHeaderEndString(String headerEndString) {
+		this.headerEndString = headerEndString;
 	}
 
 	/**
@@ -338,7 +338,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 */
 	public void setStringHeaderType(String headerString) {
 		this.headerType = HEADER_TYPE_STRING;
-		this.headerString = headerString;
+		this.headerEndString = headerString;
 	}
 	
 	/**

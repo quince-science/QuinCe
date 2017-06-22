@@ -97,7 +97,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 			
 			setHeaderLines(currentRow);
 			if (currentRow > 0) {
-				setHeaderString(fileContents.get(currentRow - 1));
+				setHeaderEndString(fileContents.get(currentRow - 1));
 			}
 			
 			// Finally, find the line row that's mostly numeric. This is the first proper data line.
@@ -203,7 +203,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 		try {
 			dest.setHeaderType(source.getHeaderType());
 			dest.setHeaderLines(source.getHeaderLines());
-			dest.setHeaderString(source.getHeaderString());
+			dest.setHeaderEndString(source.getHeaderEndString());
 			dest.setColumnHeaderRows(source.getColumnHeaderRows());
 			dest.setSeparator(source.getSeparator());
 			
@@ -361,7 +361,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 			int row = 0;
 			boolean foundHeaderEnd = false;
 			while (!foundHeaderEnd && row < fileContents.size()) {
-				if (fileContents.get(row).equalsIgnoreCase(getHeaderString())) {
+				if (fileContents.get(row).equalsIgnoreCase(getHeaderEndString())) {
 					foundHeaderEnd = true;
 				} else {
 					row++;
