@@ -112,22 +112,23 @@ public class DateTimeSpecification {
 	
 	/**
 	 * Constructs an empty specification
+	 * @param parentDefinition The file definition that this spec belongs to
 	 */
 	public DateTimeSpecification(FileDefinition parentDefinition) {
 		assignments = new TreeMap<Integer, DateTimeColumnAssignment>();
 		
-		assignments.put(DATE_TIME, new DateTimeColumnAssignment());
-		assignments.put(DATE, new DateTimeColumnAssignment());
-		assignments.put(JDAY_TIME_FROM_START, new DateTimeColumnAssignment());
-		assignments.put(JDAY_TIME, new DateTimeColumnAssignment());
-		assignments.put(JDAY, new DateTimeColumnAssignment());
-		assignments.put(YEAR, new DateTimeColumnAssignment());
-		assignments.put(MONTH, new DateTimeColumnAssignment());
-		assignments.put(DAY, new DateTimeColumnAssignment());
-		assignments.put(TIME, new DateTimeColumnAssignment());
-		assignments.put(HOUR, new DateTimeColumnAssignment());
-		assignments.put(MINUTE, new DateTimeColumnAssignment());
-		assignments.put(SECOND, new DateTimeColumnAssignment());
+		assignments.put(DATE_TIME, new DateTimeColumnAssignment(DATE_TIME));
+		assignments.put(DATE, new DateTimeColumnAssignment(DATE));
+		assignments.put(JDAY_TIME_FROM_START, new DateTimeColumnAssignment(JDAY_TIME_FROM_START));
+		assignments.put(JDAY_TIME, new DateTimeColumnAssignment(JDAY_TIME));
+		assignments.put(JDAY, new DateTimeColumnAssignment(JDAY));
+		assignments.put(YEAR, new DateTimeColumnAssignment(YEAR));
+		assignments.put(MONTH, new DateTimeColumnAssignment(MONTH));
+		assignments.put(DAY, new DateTimeColumnAssignment(DAY));
+		assignments.put(TIME, new DateTimeColumnAssignment(TIME));
+		assignments.put(HOUR, new DateTimeColumnAssignment(HOUR));
+		assignments.put(MINUTE, new DateTimeColumnAssignment(MINUTE));
+		assignments.put(SECOND, new DateTimeColumnAssignment(SECOND));
 
 		this.parentDefinition = parentDefinition;
 	}
@@ -476,11 +477,13 @@ public class DateTimeSpecification {
 	 * @param variable The variable name
 	 * @param column The column index
 	 * @param format The format (can be null for fields that don't need it)
-	 * @param yearInFile Whether the year is specified in the file (for Julian day variables)
 	 * @throws DateTimeSpecificationException Is the assignment cannot be made
 	 */
 	public void assign(String variable, int column, String format) throws DateTimeSpecificationException {
 		int assignmentIndex = getAssignmentIndex(variable);
+		if (assignmentIndex == JDAY_TIME_FROM_START) {
+			throw new DateTimeSpecificationException("Cannot use assign with " + variable + "; use assignJDayTimeFromStart");
+		}
 		
 		DateTimeColumnAssignment assignment = assignments.get(assignmentIndex);
 		assignment.setColumn(column);
@@ -488,5 +491,21 @@ public class DateTimeSpecification {
 		if (assignmentIndex == DATE_TIME || assignmentIndex == DATE || assignmentIndex == TIME) {
 			assignment.setDateFormatString(format);
 		}
+	}
+	
+	/**
+	 * Assign a column to the {@link #JDAY_TIME_FROM_START} assignment
+	 * @param column The column index
+	 * @param headerPrefix The header prefix
+	 * @param headerSuffix The header suffix
+	 * @param format The date format
+	 * @throws DateTimeSpecificationException If the assignment cannot be made
+	 */
+	public void assignJDayTimeFromStart(int column, String headerPrefix, String headerSuffix, String format) throws DateTimeSpecificationException {
+		DateTimeColumnAssignment assignment = assignments.get(JDAY_TIME_FROM_START);
+		assignment.setColumn(column);
+		assignment.setDateFormatString(format);
+		assignment.setPrefix(headerPrefix);
+		assignment.setSuffix(headerSuffix);
 	}
 }

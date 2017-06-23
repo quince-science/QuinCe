@@ -1,6 +1,9 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 import java.nio.charset.StandardCharsets;
+import java.time.DateTimeException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -45,6 +48,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Navigation to the Assign Variables page
 	 */
 	private static final String NAV_ASSIGN_VARIABLES = "assign_variables";
+	
+	/**
+	 * Date/Time formatter for previewing extracted dates
+	 */
+	private static final DateTimeFormatter PREVIEW_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-DD HH:mm:ss");
 	
 	/**
 	 * The name of the new instrument
@@ -1052,6 +1060,10 @@ public class NewInstrumentBean extends FileUploadBean {
 			dateTimeSpec.assign(dateTimeVariable, dateTimeColumn, timeFormat);
 			break;
 		}
+		case DateTimeSpecification.JDAY_TIME_FROM_START: {
+			dateTimeSpec.assignJDayTimeFromStart(dateTimeColumn, startTimePrefix, startTimeSuffix, startTimeFormat);
+			break;
+		}
 		default: {
 			dateTimeSpec.assign(dateTimeVariable, dateTimeColumn, null);
 			break;
@@ -1151,8 +1163,17 @@ public class NewInstrumentBean extends FileUploadBean {
 		HighlightedString headerLine = fileDefinition.getHeaderLine(startTimePrefix, startTimeSuffix);
 		if (null == headerLine) {
 			startTimeLine = null;
+			startTimeDate = null;
 		} else {
 			startTimeLine = headerLine.getJson();
+			
+			try {
+				String headerDateString = headerLine.getHighlightedPortion();
+				LocalDateTime headerDate = LocalDateTime.parse(headerDateString, DateTimeFormatter.ofPattern(startTimeFormat));
+				startTimeDate = PREVIEW_DATE_TIME_FORMATTER.format(headerDate);
+			} catch (DateTimeException e) {
+				startTimeDate = null;
+			}
 		}
 	}
 }

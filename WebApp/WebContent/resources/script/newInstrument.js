@@ -738,6 +738,7 @@ function openDateTimeDialog(item, file, column) {
 	$('#dateFormatContainer').hide();
 	$('#timeFormatContainer').hide();
 	$('#jdayFromStartContainer').hide();
+	PF('jdayFromStartAssign').disable();
 	
 	switch (variableName) {
 	case "Combined Date and Time": {
@@ -764,7 +765,6 @@ function openDateTimeDialog(item, file, column) {
 
 function updateStartTime() {
 	var lineJson = $('#newInstrumentForm\\:startTimeLine').val();
-	console.log(lineJson);
 	
 	if (null == lineJson || lineJson == "") {
 		$('#startTimeExtractedLine').text("No matching line found in header");
@@ -790,5 +790,18 @@ function updateStartTime() {
 			$('#startTimeExtractedLine').html(lineHtml);
 			$('#startTimeExtractedLine').removeClass("error");
 		}
+	}
+	
+	var extractedDate = $('#newInstrumentForm\\:startTimeDate').val();
+	if (null == extractedDate || extractedDate == "") {
+		$('#startTimeExtractedDate').text("Could not extract date from header line");
+		$('#startTimeExtractedDate').addClass("error");
+		$('#startTimeExtractedDate').removeClass("highlight");
+		PF('jdayFromStartAssign').disable();
+	} else {
+		$('#startTimeExtractedDate').text(extractedDate);
+		$('#startTimeExtractedDate').removeClass("error");
+		$('#startTimeExtractedDate').addClass("highlight");
+		PF('jdayFromStartAssign').enable();
 	}
 }

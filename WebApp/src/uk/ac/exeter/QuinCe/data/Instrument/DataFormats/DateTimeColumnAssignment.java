@@ -22,9 +22,24 @@ public class DateTimeColumnAssignment {
 	private static final String FORMAT_PROPERTY = "formatString";
 	
 	/**
+	 * Properties key for the header prefix
+	 */
+	private static final String PREFIX_PROPERTY = "prefix";
+	
+	/**
+	 * Properties key for the header suffix
+	 */
+	private static final String SUFFIX_PROPERTY = "suffix";
+	
+	/**
 	 * Value to indicate that no column has been assigned
 	 */
 	public static final int NOT_ASSIGNED = -1;
+	
+	/**
+	 * The assignment index for this assignment
+	 */
+	private int assignmentIndex;
 	
 	/**
 	 * The column index
@@ -39,7 +54,8 @@ public class DateTimeColumnAssignment {
 	/**
 	 * Create an empty assignment
 	 */
-	protected DateTimeColumnAssignment() {
+	protected DateTimeColumnAssignment(int assignmentIndex) {
+		this.assignmentIndex = assignmentIndex;
 		this.column = NOT_ASSIGNED;
 		this.properties = new Properties();
 	}
@@ -71,9 +87,21 @@ public class DateTimeColumnAssignment {
 	/**
 	 * Set the format string
 	 * @param format The format string
+	 * @throws DateTimeSpecificationException If an attempt is made to set a format for an assignment that doesn't need one 
 	 */
-	public void setDateFormatString(String format) {
-		properties.setProperty(FORMAT_PROPERTY, format);
+	public void setDateFormatString(String format) throws DateTimeSpecificationException {
+		switch (assignmentIndex) {
+		case DateTimeSpecification.DATE_TIME:
+		case DateTimeSpecification.DATE:
+		case DateTimeSpecification.TIME:
+		case DateTimeSpecification.JDAY_TIME_FROM_START: {
+			properties.setProperty(FORMAT_PROPERTY, format);
+			break;
+		}
+		default: {
+			throw new DateTimeSpecificationException("Cannot set date format for spec field " + assignmentIndex);
+		}
+		}
 	}
 	
 	/**
@@ -99,5 +127,31 @@ public class DateTimeColumnAssignment {
 	 */
 	public boolean isAssigned() {
 		return column != NOT_ASSIGNED;
+	}
+	
+	/**
+	 * Set the header prefix for the {@link DateTimeSpecification#JDAY_TIME_FROM_START} assignment
+	 * @param prefix The prefix
+	 * @throws DateTimeSpecificationException If an attempt is made to set a prefix for a different assignment
+	 */
+	public void setPrefix(String prefix) throws DateTimeSpecificationException {
+		if (assignmentIndex != DateTimeSpecification.JDAY_TIME_FROM_START) {
+			throw new DateTimeSpecificationException("Cannot set header prefix for spec field " + assignmentIndex);
+		}
+		
+		properties.setProperty(PREFIX_PROPERTY, prefix);
+	}
+	
+	/**
+	 * Set the header suffix for the {@link DateTimeSpecification#JDAY_TIME_FROM_START} assignment
+	 * @param suffix The suffix
+	 * @throws DateTimeSpecificationException If an attempt is made to set a suffix for a different assignment
+	 */
+	public void setSuffix(String suffix) throws DateTimeSpecificationException {
+		if (assignmentIndex != DateTimeSpecification.JDAY_TIME_FROM_START) {
+			throw new DateTimeSpecificationException("Cannot set header suffix for spec field " + assignmentIndex);
+		}
+		
+		properties.setProperty(SUFFIX_PROPERTY, suffix);
 	}
 }

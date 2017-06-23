@@ -77,4 +77,12 @@ public class HighlightedString {
 		
 		return json.toString();
 	}
+	
+	/**
+	 * Get the highlighted portion of the string
+	 * @return The highlighted portion of the string
+	 */
+	public String getHighlightedPortion(){
+		return string.substring(highlightStart, highlightEnd);
+	}
 }
