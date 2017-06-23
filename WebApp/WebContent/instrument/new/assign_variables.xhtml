@@ -274,7 +274,7 @@
 						<tr>
 							<td><p:outputLabel value="Prefix:"/></td>
 							<td>
-								<p:inputText id="startTimePrefix" size="20" value="#{newInstrumentBean.startTimePrefix}">
+								<p:inputText id="startTimePrefix" size="20" value="#{newInstrumentBean.startTimePrefix}" autocomplete="off">
 									<p:ajax process="dateTimeFile startTimePrefix startTimeSuffix startTimeFormat" update="startTimeLine startTimeDate" listener="#{newInstrumentBean.extractStartTime}" event="keyup" oncomplete="updateStartTime();"/>
 								</p:inputText>
 							</td>
@@ -282,7 +282,7 @@
 						<tr>
 							<td><p:outputLabel value="Suffix:"/></td>
 							<td>
-								<p:inputText id="startTimeSuffix" size="20" value="#{newInstrumentBean.startTimeSuffix}">
+								<p:inputText id="startTimeSuffix" size="20" value="#{newInstrumentBean.startTimeSuffix}" autocomplete="off">
 									<p:ajax process="dateTimeFile startTimePrefix startTimeSuffix startTimeFormat" update="startTimeLine startTimeDate" listener="#{newInstrumentBean.extractStartTime}" event="keyup" oncomplete="updateStartTime();"/>
 								</p:inputText>
 									

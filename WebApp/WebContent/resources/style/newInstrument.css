@@ -193,3 +193,8 @@ table.sampleData {
 	margin-bottom: 2px;
 	cursor: pointer;
 }
+
+.highlight {
+	color: #00AAFF;
+}
+

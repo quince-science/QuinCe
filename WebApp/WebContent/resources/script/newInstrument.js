@@ -746,6 +746,7 @@ function openDateTimeDialog(item, file, column) {
 	}
 	case "Julian Day/Time from start of file": {
 		$('#jdayFromStartContainer').show();
+		updateStartTime();
 		break;
 	}
 	case "Date": {
@@ -762,13 +763,32 @@ function openDateTimeDialog(item, file, column) {
 }
 
 function updateStartTime() {
-	var line = $('#newInstrumentForm\\:startTimeLine').val();
+	var lineJson = $('#newInstrumentForm\\:startTimeLine').val();
+	console.log(lineJson);
 	
-	if (line == "") {
+	if (null == lineJson || lineJson == "") {
 		$('#startTimeExtractedLine').text("No matching line found in header");
 		$('#startTimeExtractedLine').addClass("error");
 	} else {
-		$('#startTimeExtractedLine').text(line);
-		$('#startTimeExtractedLine').removeClass("error");
+		var line = JSON.parse(lineJson);
+		if (line['string'] == "") {
+			$('#startTimeExtractedLine').text("No matching line found in header");
+			$('#startTimeExtractedLine').addClass("error");
+		} else {
+			var lineHtml = "";
+			
+			if (line['highlightStart'] > 0) {
+				lineHtml += line['string'].substring(0, line['highlightStart']);
+			}
+			
+			lineHtml += '<span class="highlight">';
+			lineHtml += line['string'].substring(line['highlightStart'], line['highlightEnd']);
+			lineHtml += '</span>';
+			
+			lineHtml += line['string'].substring(line['highlightEnd'], line['string'].length);
+			
+			$('#startTimeExtractedLine').html(lineHtml);
+			$('#startTimeExtractedLine').removeClass("error");
+		}
 	}
 }

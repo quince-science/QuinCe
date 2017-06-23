@@ -15,6 +15,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.HighlightedString;
+import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -179,12 +181,12 @@ public class NewInstrumentBean extends FileUploadBean {
 	/**
 	 * The prefix for the start time in the file header
 	 */
-	private String startTimePrefix = "start_time =";
+	private String startTimePrefix = null;
 	
 	/**
 	 * The suffix for the start time in the file header
 	 */
-	private String startTimeSuffix = "[";
+	private String startTimeSuffix = null;
 	
 	/**
 	 * The format for the start time in the file header
@@ -927,8 +929,8 @@ public class NewInstrumentBean extends FileUploadBean {
 		dateTimeColumn = -1;
 		dateTimeVariable = null;
 		dateFormat = null;
-		startTimePrefix = "start_time = ";
-		startTimeSuffix = "[";
+		startTimePrefix = null;
+		startTimeSuffix = null;
 		startTimeFormat = "MMM DD YYYY HH:MM:SS";
 	}
 
@@ -1141,11 +1143,16 @@ public class NewInstrumentBean extends FileUploadBean {
 	
 	/**
 	 * Extract the start time from a file header
+	 * @throws HighlightedStringException If the highlighted string cannot be created
 	 */
-	public void extractStartTime() {
-		System.out.println("Extracting");
+	public void extractStartTime() throws HighlightedStringException {
 		FileDefinitionBuilder fileDefinition = instrumentFiles.get(dateTimeFile);
-		startTimeLine = fileDefinition.getHeaderLine(startTimePrefix, startTimeSuffix);
-		System.out.println(startTimeLine);
+		
+		HighlightedString headerLine = fileDefinition.getHeaderLine(startTimePrefix, startTimeSuffix);
+		if (null == headerLine) {
+			startTimeLine = null;
+		} else {
+			startTimeLine = headerLine.getJson();
+		}
 	}
 }

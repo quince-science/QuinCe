@@ -6,6 +6,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.utils.HighlightedString;
+import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.web.html.HtmlUtils;
 
 /**
@@ -437,7 +439,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 		if (headerLines == 0) {
 			result = new ArrayList<String>();
 		} else {
-			result = fileContents.subList(0, headerLines + 1);
+			result = fileContents.subList(0, headerLines);
 		}
 		
 		return result;
@@ -448,25 +450,41 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 * A line will match if it contains the prefix, followed by a
 	 * number of characters, followed by the suffix.
 	 * <p>
+	 *   The matching line will be returned as a {@link HighlightedString},
+	 *   with the portion between the prefix and suffix highlighted.
+	 * </p>
+	 * <p>
 	 *   If multiple lines match the prefix and suffix, the first line
 	 *   will be returned.
 	 * </p>
 	 * @param prefix The prefix
 	 * @param suffix The suffix
 	 * @return The matching line
+	 * @throws HighlightedStringException If an error occurs while building the highlighted string
 	 */
-	public String getHeaderLine(String prefix, String suffix) {
+	public HighlightedString getHeaderLine(String prefix, String suffix) throws HighlightedStringException {
 		
-		String matchedLine = null;
+		HighlightedString matchedLine = null;
 		
 		for (String line : getFileHeader()) {
-			int prefixPos = line.indexOf(prefix);
+			int prefixPos;
+			if (prefix.length() == 0) {
+				prefixPos = 0;
+			} else {
+				prefixPos = line.indexOf(prefix);
+			}
+			
 			if (prefixPos > -1) {
-				int suffixPos = line.indexOf(suffix, (prefixPos + prefix.length()));
-				if (suffixPos > -1) {
-					matchedLine = line;
-					break;
+				int suffixPos = line.length();
+				if (suffix.length() > 0) {
+					suffixPos = line.indexOf(suffix, (prefixPos + prefix.length()));
+					if (suffixPos == -1) {
+						suffixPos = line.length();
+					}
 				}
+					
+				matchedLine = new HighlightedString(line, prefixPos + prefix.length(), suffixPos);
+				break;
 			}
 		}
 		
