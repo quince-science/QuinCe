@@ -1463,6 +1463,12 @@ function updateMap(target) {
 function initLeftMap() {
 	
 	if (leftMap == null) {
+		var initialView = new ol.View({
+    		center: ol.proj.fromLonLat([bounds[4], bounds[5]]),
+    		zoom: 4,
+    		minZoom: 2
+  		});
+
 		leftMap = new ol.Map({
 	 		target: 'mapLeft',
 	 		layers: [
@@ -1470,12 +1476,11 @@ function initLeftMap() {
 	        		source: mapSource
 	    		}),
 	  		],
-	  		view: new ol.View({
-	    		center: ol.proj.fromLonLat([10, 45]),
-	    		zoom: 4,
-	    		minZoom: 2
-	  		}),
+	  		view: initialView
 		});
+		
+		var extent = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
+		initialView.fit(extent, leftMap.getSize());
 	}
 	
 	// Fill in the hidden form and submit it
@@ -1548,6 +1553,12 @@ function drawLeftMap(data) {
 
 function initRightMap() {
 	if (rightMap == null) {
+		var initialView = new ol.View({
+    		center: ol.proj.fromLonLat([bounds[4], bounds[5]]),
+    		zoom: 4,
+    		minZoom: 2
+  		});
+
 		rightMap = new ol.Map({
 	 		target: 'mapRight',
 	 		layers: [
@@ -1555,11 +1566,10 @@ function initRightMap() {
 	        		source: mapSource
 	    		}),
 	  		],
-	  		view: new ol.View({
-	    		center: ol.proj.fromLonLat([10, 45]),
-	    		zoom: 4,
-	    		minZoom: 2
-	  		}),
+	  		view: initialView
 		});
+		
+		var extent = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
+		initialView.fit(extent, rightMap.getSize());
 	}
 }

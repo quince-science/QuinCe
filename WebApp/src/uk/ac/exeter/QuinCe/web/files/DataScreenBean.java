@@ -323,7 +323,6 @@ public class DataScreenBean extends BaseManagedBean {
 	 * These values are calculated by {@link FileDataInterrogator#getGeographicalBounds}
 	 */
 	private List<Double> dataBounds = null;
-
 	
 	/**
 	 * Required basic constructor. This does nothing: all the actual construction
@@ -1403,6 +1402,8 @@ public class DataScreenBean extends BaseManagedBean {
 			
 			// And the Y axis columns
 			submittedColumnList.add(column);
+			
+			int maxPoints = Integer.parseInt(ServletUtils.getAppConfig().getProperty("map.max_points"));
 			
 			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, true, false);
 		} catch (Exception e) {

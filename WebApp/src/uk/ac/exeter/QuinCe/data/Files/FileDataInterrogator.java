@@ -1438,10 +1438,10 @@ public class FileDataInterrogator {
 				
 				List<Double> midPoint = rhumbMidPoint(leftLongitude, bottomLatitude, rightLongitude, topLatitude);
 				
-				result.add(topLatitude);
-				result.add(rightLongitude);
-				result.add(bottomLatitude);
 				result.add(leftLongitude);
+				result.add(bottomLatitude);
+				result.add(rightLongitude);
+				result.add(topLatitude);
 				result.add(midPoint.get(0));
 				result.add(midPoint.get(1));
 			}
