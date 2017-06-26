@@ -97,6 +97,13 @@
 					<f:ajax execute="rightColumns" render="rightData rightNames" onevent="drawRightPlot"/>
 				</h:commandLink>
 				
+				<h:inputHidden id="rightMapColumn" value="#{dataScreenBean.rightMapColumn}"/>
+				<h:outputText id="rightMapData" value="#{dataScreenBean.rightMapData}"/>
+				<h:outputText id="rightMapName" value="#{dataScreenBean.rightMapName}"/>
+				<h:commandLink id="rightGetMapData" action="#{dataScreenBean.generateRightMapData}">
+					<f:ajax execute="rightMapColumn" render="rightMapData rightMapName" onevent="drawRightMap"/>
+				</h:commandLink>
+				
 				<h:inputHidden value="#{dataScreenBean.tableJsonData}" id="tableJsonData"/>		
 				<h:inputHidden value="#{dataScreenBean.recordCount}" id="recordCount"/>		
   				<h:inputHidden value="#{dataScreenBean.tableDataDraw}" id="tableDataDraw"/>		

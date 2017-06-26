@@ -1572,4 +1572,71 @@ function initRightMap() {
 		var extent = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
 		initialView.fit(extent, rightMap.getSize());
 	}
+	
+	// Fill in the hidden form and submit it
+	$('#plotDataForm\\:rightMapColumn').val(getColumnName(rightMapVar));
+	$('#plotDataForm\\:rightGetMapData').click();
+}
+
+function drawRightMap(data) {
+	var status = data.status;
+	
+	if (status == "success") {
+
+		if (null != rightMapDataLayer) {
+			rightMap.removeLayer(rightMapDataLayer);
+			rightMapDataLayer = null;
+		}
+
+		var mapData = JSON.parse($('#plotDataForm\\:rightMapData').html());
+
+		var dataMin = 9000000;
+		var dataMax = -9000000;
+		
+		for (var i = 1; i < mapData.length; i++) {
+			if (mapData[i][5] < dataMin) {
+				dataMin = mapData[i][5];
+			}
+			
+			if (mapData[i][5] > dataMax) {
+				dataMax = mapData[i][5];
+			}
+		} 
+		
+		colorScale.setValueRange(dataMin, dataMax);
+		
+
+		var layerFeatures = new Array();
+
+		for (var i = 0; i < mapData.length; i++) {
+			var featureData = mapData[i];
+			
+			var feature = new ol.Feature({
+				geometry: new ol.geom.Point([featureData[0], featureData[1]]).transform(ol.proj.get("EPSG:4326"), mapSource.getProjection())
+			});
+			
+			feature.setStyle(new ol.style.Style({
+				image: new ol.style.Circle({
+					radius: 5,
+					stroke: new ol.style.Stroke({
+						color: '#DDDDDD',
+						width: 1
+					}),
+					fill: new ol.style.Fill({
+						color: colorScale.getColor(featureData[5])
+					})
+				})
+			}));
+			
+			layerFeatures.push(feature);
+		}
+		
+		rightMapDataLayer = new ol.layer.Vector({
+			source: new ol.source.Vector({
+				features: layerFeatures
+			})
+		})
+		
+		rightMap.addLayer(rightMapDataLayer);
+	}
 }

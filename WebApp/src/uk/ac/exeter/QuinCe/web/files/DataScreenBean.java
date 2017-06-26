@@ -179,6 +179,32 @@ public class DataScreenBean extends BaseManagedBean {
 	private String rightPlotNames = null;
 
 	/**
+	 * The data column being used in the right map.
+
+	 * @see FileDataInterrogator
+	 * @see #getMapData(String) 
+	 */
+	private String rightMapColumn = null;
+	
+	/**
+	 * The data for the right map.
+	 * 
+	 * <p>
+	 *   The data is stored as a JSON string, which will be parsed by the Javascript on
+	 *   the user interface.
+	 * </p>
+	 * @see #generaterightMapData()
+	 * @see #getMapData(String)
+	 */
+	private String rightMapData = null;
+	
+	/**
+	 * The human-readable names of the column shown in the right map.
+	 * @see #rightMapColumn
+	 */
+	private String rightMapName = null;
+
+	/**
 	 * The type of CO<sub>2</sub> measurements being viewed.
 	 * Can only be one of {@link RunType#RUN_TYPE_WATER} or {@link RunType#RUN_TYPE_ATMOSPHERIC}.
 	 * The behaviour of the application if this is set to any other value is undefined.
@@ -472,56 +498,56 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Get the column to be displayed in the left map
-	 * @return The left map column
+	 * Get the column to be displayed in the right map
+	 * @return The right map column
 	 */
-	public String getLeftMapColumn() {
-		return leftMapColumn;
+	public String getRightMapColumn() {
+		return rightMapColumn;
 	}
 	
 	/**
-	 * Set the column to be displayed in the left map
-	 * @param leftMapColumn The left map column
+	 * Set the column to be displayed in the right map
+	 * @param rightMapColumn The right map column
 	 */
-	public void setLeftMapColumn(String leftMapColumn) {
-		this.leftMapColumn = leftMapColumn;
+	public void setRightMapColumn(String rightMapColumn) {
+		this.rightMapColumn = rightMapColumn;
 	}
 	
 	/**
-	 * Get the data for the left map
+	 * Get the data for the right map
 	 * @return The map data
 	 */
-	public String getLeftMapData() {
-		return leftMapData;
+	public String getRightMapData() {
+		return rightMapData;
 	}
 	
 	/**
-	 * Set the data for the left map.
-	 * @param leftMapData The data for the left map
-	 * @see #leftMapData
+	 * Set the data for the right map.
+	 * @param rightMapData The data for the right map
+	 * @see #rightMapData
 	 */
-	public void setLeftMapData(String leftMapData) {
-		this.leftMapData = leftMapData;
+	public void setRightMapData(String rightMapData) {
+		this.rightMapData = rightMapData;
 	}
 	
 	/**
 	 * Get the human-readable name of the column being displayed
-	 * in the left map.
+	 * in the right map.
 	 * @return The human-readable column name
-	 * @see #leftMapName
+	 * @see #rightMapName
 	 */
-	public String getLeftMapName(){
-		return leftMapName;
+	public String getRightMapName(){
+		return rightMapName;
 	}
 
 	/**
 	 * Set the human-readable name of the column being displayed
-	 * in the left map.
-	 * @param leftMapName The column name
-	 * @see #leftMapName
+	 * in the right map.
+	 * @param rightMapName The column name
+	 * @see #rightMapName
 	 */
-	public void setLeftMapName(String leftMapName){
-		this.leftMapName = leftMapName;
+	public void setRightMapName(String rightMapName){
+		this.rightMapName = rightMapName;
 	}
 
 	/**
@@ -580,6 +606,59 @@ public class DataScreenBean extends BaseManagedBean {
 		this.rightPlotNames = rightPlotNames;
 	}
 	
+	/**
+	 * Get the column to be displayed in the left map
+	 * @return The left map column
+	 */
+	public String getLeftMapColumn() {
+		return leftMapColumn;
+	}
+	
+	/**
+	 * Set the column to be displayed in the left map
+	 * @param leftMapColumn The left map column
+	 */
+	public void setLeftMapColumn(String leftMapColumn) {
+		this.leftMapColumn = leftMapColumn;
+	}
+	
+	/**
+	 * Get the data for the left map
+	 * @return The map data
+	 */
+	public String getLeftMapData() {
+		return leftMapData;
+	}
+	
+	/**
+	 * Set the data for the left map.
+	 * @param leftMapData The data for the left map
+	 * @see #leftMapData
+	 */
+	public void setLeftMapData(String leftMapData) {
+		this.leftMapData = leftMapData;
+	}
+	
+	/**
+	 * Get the human-readable name of the column being displayed
+	 * in the left map.
+	 * @return The human-readable column name
+	 * @see #leftMapName
+	 */
+	public String getLeftMapName(){
+		return leftMapName;
+	}
+
+	/**
+	 * Set the human-readable name of the column being displayed
+	 * in the left map.
+	 * @param leftMapName The column name
+	 * @see #leftMapName
+	 */
+	public void setLeftMapName(String leftMapName){
+		this.leftMapName = leftMapName;
+	}
+
 	/**
 	 * Return the type of CO<sub>2</sub> measurement being viewed
 	 * @return The CO<sub>2</sub> measurement type
@@ -1336,6 +1415,15 @@ public class DataScreenBean extends BaseManagedBean {
 		setRightPlotNames(makePlotNames(columns));
 	}
 	
+	/**
+	 * Generate the data for the right map.
+	 * @see #getMapData(String)
+	 */
+	public void generateRightMapData() {
+		setRightMapData(getMapData(rightMapColumn));
+		setRightMapName(getPlotSeriesName(rightMapColumn));
+	}
+
 	/**
 	 * Retrieve the data for a plot from the database as a JSON string.
 	 * @param columns The list of columns for the plot. The first column will be for the X axis, and the subsequent columns will be display on the Y axis.
