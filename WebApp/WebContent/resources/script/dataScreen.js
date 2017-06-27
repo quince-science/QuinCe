@@ -120,9 +120,17 @@ var leftMap = null;
 var rightMap = null;
 
 var leftColorScale = new ColorScale([[0,'#2C7BB6'],[0.25,'#ABD9E9'],[0.5,'#FFFFBF'],[0.75,'#FDAE61'],[1,'#D7191C']]);
+leftColorScale.setFont('Noto Sans', 11);
+
 var rightColorScale = new ColorScale([[0,'#2C7BB6'],[0.25,'#ABD9E9'],[0.5,'#FFFFBF'],[0.75,'#FDAE61'],[1,'#D7191C']]);
+rightColorScale.setFont('Noto Sans', 11);
+
 var leftMapDataLayer = null;
 var rightMapDataLayer = null;
+
+var scaleOptions = new Array();
+scaleOptions['outliers'] = 'b';
+scaleOptions['outlierSize'] = 5;
 
 var mapSource = new ol.source.Stamen({
 		layer: "terrain",
@@ -1317,6 +1325,7 @@ function showLeftMap() {
 	$('#plotLeft').hide();
 	$('#plotControlsLeft').hide();
 	$('#mapLeft').show();
+	$('#mapScaleControlContainerLeft').show();
 	$('#mapControlsLeft').show();
 	initLeftMap();
 	resizeContent();
@@ -1325,6 +1334,7 @@ function showLeftMap() {
 
 function showLeftPlot() {
 	$('#mapLeft').hide();
+	$('#mapScaleControlContainerLeft').hide();
 	$('#mapControlsLeft').hide();
 	$('#plotLeft').show();
 	$('#plotControlsLeft').show();
@@ -1336,6 +1346,7 @@ function showRightMap() {
 	$('#plotRight').hide();
 	$('#plotControlsRight').hide();
 	$('#mapRight').show();
+	$('#mapScaleControlContainerRight').show();
 	$('#mapControlsRight').show();
 	initRightMap();
 	resizeContent();
@@ -1344,6 +1355,7 @@ function showRightMap() {
 
 function showRightPlot() {
 	$('#mapRight').hide();
+	$('#mapScaleControlContainerRight').hide();
 	$('#mapControlsRight').hide();
 	$('#plotRight').show();
 	$('#plotControlsRight').show();
@@ -1548,6 +1560,7 @@ function drawLeftMap(data) {
 		})
 		
 		leftMap.addLayer(leftMapDataLayer);
+		leftColorScale.drawScale($('#mapScaleLeft'), scaleOptions);
 	}
 }
 
@@ -1638,5 +1651,14 @@ function drawRightMap(data) {
 		})
 		
 		rightMap.addLayer(rightMapDataLayer);
+		rightColorScale.drawScale($('#mapScaleRight'), scaleOptions);
 	}
+}
+
+function toggleLeftScale() {
+	$('#mapScaleLeft').toggle(100);
+}
+
+function toggleRightScale() {
+	$('#mapScaleRight').toggle(100);
 }

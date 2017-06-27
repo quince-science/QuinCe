@@ -172,3 +172,23 @@ body.fullPage {
 tr.selected {
 	background-color: #FFFF00 !important;
 }
+
+.mapScale {
+	width: 350px;
+	height: 50px;
+	position: absolute;
+	bottom: 50px;
+	right: 50px;
+	background-color: white;
+}
+
+.mapScaleControlContainer {
+	position: absolute;
+	bottom: 50px;
+	right: 25px;
+	width: 23px;
+}
+
+.ol-control button {
+	min-width: 0px;
+}
