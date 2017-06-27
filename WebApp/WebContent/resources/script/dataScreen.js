@@ -119,7 +119,8 @@ var rightMapVar = 'map_intaketemp_intakeTempMean';
 var leftMap = null;
 var rightMap = null;
 
-var colorScale = new ColorScale([[0,'#2C7BB6'],[0.25,'#ABD9E9'],[0.5,'#FFFFBF'],[0.75,'#FDAE61'],[1,'#D7191C']]);
+var leftColorScale = new ColorScale([[0,'#2C7BB6'],[0.25,'#ABD9E9'],[0.5,'#FFFFBF'],[0.75,'#FDAE61'],[1,'#D7191C']]);
+var rightColorScale = new ColorScale([[0,'#2C7BB6'],[0.25,'#ABD9E9'],[0.5,'#FFFFBF'],[0.75,'#FDAE61'],[1,'#D7191C']]);
 var leftMapDataLayer = null;
 var rightMapDataLayer = null;
 
@@ -1513,8 +1514,7 @@ function drawLeftMap(data) {
 			}
 		} 
 		
-		colorScale.setValueRange(dataMin, dataMax);
-		
+		leftColorScale.setValueRange(dataMin, dataMax);
 
 		var layerFeatures = new Array();
 
@@ -1533,7 +1533,7 @@ function drawLeftMap(data) {
 						width: 1
 					}),
 					fill: new ol.style.Fill({
-						color: colorScale.getColor(featureData[5])
+						color: leftColorScale.getColor(featureData[5])
 					})
 				})
 			}));
@@ -1603,7 +1603,7 @@ function drawRightMap(data) {
 			}
 		} 
 		
-		colorScale.setValueRange(dataMin, dataMax);
+		rightColorScale.setValueRange(dataMin, dataMax);
 		
 
 		var layerFeatures = new Array();
@@ -1623,7 +1623,7 @@ function drawRightMap(data) {
 						width: 1
 					}),
 					fill: new ol.style.Fill({
-						color: colorScale.getColor(featureData[5])
+						color: rightColorScale.getColor(featureData[5])
 					})
 				})
 			}));
