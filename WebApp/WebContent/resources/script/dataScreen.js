@@ -1337,6 +1337,7 @@ function showLeftMap() {
 function showLeftPlot() {
 	$('#mapLeft').hide();
 	$('#mapScaleControlContainerLeft').hide();
+	$('#mapScaleLeft').hide();
 	$('#mapControlsLeft').hide();
 	$('#plotLeft').show();
 	$('#plotControlsLeft').show();
@@ -1358,6 +1359,7 @@ function showRightMap() {
 function showRightPlot() {
 	$('#mapRight').hide();
 	$('#mapScaleControlContainerRight').hide();
+	$('#mapScaleRight').hide();
 	$('#mapControlsRight').hide();
 	$('#plotRight').show();
 	$('#plotControlsRight').show();
