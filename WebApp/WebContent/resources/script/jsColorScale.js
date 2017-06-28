@@ -134,14 +134,18 @@ function ColorScale(scaleArray) {
 
 		svg += '</svg>';
 
+		var lowValue = (Math.round(this.percentToRangeValue(0) * (10 ** options['decimalPlaces'])) / 10 ** options['decimalPlaces']).toFixed(2);
+		var midValue = (Math.round(this.percentToRangeValue(50) * (10 ** options['decimalPlaces'])) / 10 ** options['decimalPlaces']).toFixed(2);
+		var highValue = (Math.round(this.percentToRangeValue(100) * (10 ** options['decimalPlaces'])) / 10 ** options['decimalPlaces']).toFixed(2);
+
 		svg += '<rect fill="#000000" x="' + (outlierSize + 1) + '%" y="80%" width="0.25%" height="30%"/>';
-		svg += '<text fill="#000000" x="' + (outlierSize + 1.5) + '%" y="100%" font-family="' + this.font + '" font-size="' + this.fontSize + '">' + this.percentToRangeValue(0) + '</text>';
+		svg += '<text fill="#000000" x="' + (outlierSize + 1.5) + '%" y="100%" font-family="' + this.font + '" font-size="' + this.fontSize + '">' + lowValue + '</text>';
 
 		svg += '<rect fill="#000000" x="49.825%" y="80%" width="0.25%" height="30%"/>';
-		svg += '<text fill="#000000" x="50.25%" y="100%" font-family="' + this.font + '" font-size="' + this.fontSize + '">' + this.percentToRangeValue(50) + '</text>';
+		svg += '<text fill="#000000" x="50.25%" y="100%" font-family="' + this.font + '" font-size="' + this.fontSize + '">' + midValue + '</text>';
 
 		svg += '<rect fill="#000000" x="' + (100 - (outlierSize + 1.25)) + '%" y="80%" width="0.25%" height="30%"/>';
-		svg += '<text fill="#000000" x="' + (100 - (outlierSize + 1.5)) + '%" y="100%"  font-family="' + this.font + '" font-size="' + this.fontSize + '" text-anchor="end">' + this.percentToRangeValue(100) + '</text>';
+		svg += '<text fill="#000000" x="' + (100 - (outlierSize + 1.5)) + '%" y="100%"  font-family="' + this.font + '" font-size="' + this.fontSize + '" text-anchor="end">' + highValue + '</text>';
 
 		svg += '</svg>';
 

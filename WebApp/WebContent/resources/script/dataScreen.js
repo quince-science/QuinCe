@@ -128,9 +128,11 @@ rightColorScale.setFont('Noto Sans', 11);
 var leftMapDataLayer = null;
 var rightMapDataLayer = null;
 
-var scaleOptions = new Array();
-scaleOptions['outliers'] = 'b';
-scaleOptions['outlierSize'] = 5;
+var scaleOptions = {
+	outliers: 'b',
+	outlierSize: 5,
+	decimalPlaces: 2
+};
 
 var mapSource = new ol.source.Stamen({
 		layer: "terrain",
