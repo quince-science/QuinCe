@@ -131,7 +131,7 @@ var rightMapDataLayer = null;
 var scaleOptions = {
 	outliers: 'b',
 	outlierSize: 5,
-	decimalPlaces: 2
+	decimalPlaces: 3
 };
 
 var mapSource = new ol.source.Stamen({
@@ -1515,20 +1515,8 @@ function drawLeftMap(data) {
 
 		var mapData = JSON.parse($('#plotDataForm\\:leftMapData').html());
 
-		var dataMin = 9000000;
-		var dataMax = -9000000;
-		
-		for (var i = 1; i < mapData.length; i++) {
-			if (mapData[i][5] < dataMin) {
-				dataMin = mapData[i][5];
-			}
-			
-			if (mapData[i][5] > dataMax) {
-				dataMax = mapData[i][5];
-			}
-		} 
-		
-		leftColorScale.setValueRange(dataMin, dataMax);
+		var scaleLimits = getScaleLimits(mapData);
+		leftColorScale.setValueRange(scaleLimits[0], scaleLimits[1]);
 
 		var layerFeatures = new Array();
 
@@ -1593,6 +1581,50 @@ function initRightMap() {
 	$('#plotDataForm\\:rightGetMapData').click();
 }
 
+function getScaleLimits(mapData) {
+	var useBadScale = true;
+	var badScaleMin = Number.MAX_SAFE_INTEGER;
+	var badScaleMax = Number.MIN_SAFE_INTEGER;
+	var goodScaleMin = Number.MAX_SAFE_INTEGER;
+	var goodScaleMax = Number.MIN_SAFE_INTEGER;
+
+	for (var i = 1; i < mapData.length; i++) {
+
+		var value = mapData[i][5];
+		var flag = mapData[i][3];
+		
+		if (flag == 2 || flag == 3) {
+			useBadScale = false;
+			if (value < goodScaleMin) {
+				goodScaleMin = value;
+			}
+			
+			if (value > goodScaleMax) {
+				goodScaleMax = value;
+			}
+		}
+		
+		if (useBadScale) {
+			if (value < badScaleMin) {
+				badScaleMin = value;
+			}
+			
+			if (value > badScaleMax) {
+				badScaleMax = value;
+			}
+		}
+	}
+	
+	var result = new Array();
+	if (useBadScale) {
+		result = [badScaleMin, badScaleMax];
+	} else {
+		result = [goodScaleMin, goodScaleMax];
+	}
+	
+	return result;
+}
+
 function drawRightMap(data) {
 	var status = data.status;
 	
@@ -1605,21 +1637,8 @@ function drawRightMap(data) {
 
 		var mapData = JSON.parse($('#plotDataForm\\:rightMapData').html());
 
-		var dataMin = 9000000;
-		var dataMax = -9000000;
-		
-		for (var i = 1; i < mapData.length; i++) {
-			if (mapData[i][5] < dataMin) {
-				dataMin = mapData[i][5];
-			}
-			
-			if (mapData[i][5] > dataMax) {
-				dataMax = mapData[i][5];
-			}
-		} 
-		
-		rightColorScale.setValueRange(dataMin, dataMax);
-		
+		var scaleLimits = getScaleLimits(mapData);
+		rightColorScale.setValueRange(scaleLimits[0], scaleLimits[1]);
 
 		var layerFeatures = new Array();
 
