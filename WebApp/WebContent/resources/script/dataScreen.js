@@ -1498,7 +1498,11 @@ function initLeftMap() {
 		
 		var extent = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
 		initialView.fit(extent, leftMap.getSize());
+		
+		leftMap.on('moveend', getLeftMapData);
 	}
+	
+	
 	
 	getLeftMapData();
 }
@@ -1506,7 +1510,7 @@ function initLeftMap() {
 function getLeftMapData() {
 	// Fill in the hidden form and submit it
 	$('#plotDataForm\\:leftMapColumn').val(getColumnName(leftMapVar));
-	var extent = ol.proj.transformExtent(leftMap.getView().calculateExtent(), getView.getProjection(), "EPSG:4326");
+	var extent = ol.proj.transformExtent(leftMap.getView().calculateExtent(), leftMap.getView().getProjection(), "EPSG:4326");
 	$('#plotDataForm\\:leftMapBounds').val(extent);
 	$('#plotDataForm\\:leftGetMapData').click();	
 }
@@ -1590,7 +1594,7 @@ function initRightMap() {
 function getRightMapData() {
 	// Fill in the hidden form and submit it
 	$('#plotDataForm\\:rightMapColumn').val(getColumnName(rightMapVar));
-	var extent = ol.proj.transformExtent(rightMap.getView().calculateExtent(), getView.getProjection(), "EPSG:4326");
+	var extent = ol.proj.transformExtent(rightMap.getView().calculateExtent(), rightMap.getView().getProjection(), "EPSG:4326");
 	$('#plotDataForm\\:rightMapBounds').val(extent);
 	$('#plotDataForm\\:rightGetMapData').click();	
 }

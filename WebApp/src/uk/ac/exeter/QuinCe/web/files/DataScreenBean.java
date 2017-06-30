@@ -124,7 +124,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 * The bounds of the left map display.
 	 * This is a list of [minx, miny, maxx, maxy]
 	 */
-	private List<Integer> leftMapBounds = null;
+	private List<Double> leftMapBounds = null;
 	
 	/**
 	 * The data for the left map.
@@ -196,7 +196,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 * The bounds of the right map display.
 	 * This is a list of [minx, miny, maxx, maxy]
 	 */
-	private List<Integer> rightMapBounds = null;
+	private List<Double> rightMapBounds = null;
 	
 	/**
 	 * The data for the right map.
@@ -526,6 +526,23 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	/**
+	 * Get the current bounds of the right map viewport
+	 * @return The right map bounds
+	 */
+	public String getRightMapBounds() {
+		return StringUtils.listToDelimited(rightMapBounds, ",");
+	}
+	
+	/**
+	 * Set the current bounds of the right map viewport.
+	 * Converts a csv list to a Java list
+	 * @param rightMapBounds The right map bounds
+	 */
+	public void setRightMapBounds(String rightMapBounds) {
+		this.rightMapBounds = StringUtils.delimitedToDoubleList(rightMapBounds);
+	}
+	
+	/**
 	 * Get the data for the right map
 	 * @return The map data
 	 */
@@ -638,16 +655,17 @@ public class DataScreenBean extends BaseManagedBean {
 	 * Get the current bounds of the left map viewport
 	 * @return The left map bounds
 	 */
-	public List<Integer> getLeftMapBounds() {
-		return leftMapBounds;
+	public String getLeftMapBounds() {
+		return StringUtils.listToDelimited(leftMapBounds, ",");
 	}
 	
 	/**
-	 * Set the current bounds of the left map viewport
+	 * Set the current bounds of the left map viewport.
+	 * Converts a CSV list to a proper Java list
 	 * @param leftMapBounds The left map bounds
 	 */
-	public void setLeftMapBounds(List<Integer> leftMapBounds) {
-		this.leftMapBounds = leftMapBounds;
+	public void setLeftMapBounds(String leftMapBounds) {
+		this.leftMapBounds = StringUtils.delimitedToDoubleList(leftMapBounds);
 	}
 	
 	/**
@@ -1495,7 +1513,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @param column The list column to be displayed on the map
 	 * @return The map data
 	 */
-	private String getMapData(String column, List<Integer> bounds) {
+	private String getMapData(String column, List<Double> bounds) {
 		String output;
 		
 		try {

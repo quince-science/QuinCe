@@ -49,7 +49,8 @@ public class FileDataInterrogator {
 	/**
 	 * A special column identifier indicating that the record count should be included.
 	 * This equates to the {@code COUNT(*)} SQL directive. If the rest of the requested
-	 * columns are not compatible with this in the final SQL query {@link #GET_COLUMN_DATA_QUERY},
+	 * columns are not compatible with this in the final SQL query
+	 * {@link #makeFileDataStatement(Connection, long, List, int, List, List, int, int, boolean)},
 	 * the final output of the request is undefined, although it is likely that a {@link DatabaseException}
 	 * will be thrown.
 	 */
@@ -60,38 +61,6 @@ public class FileDataInterrogator {
 	 * These are set fixed in the code.
 	 */
 	private static Map<String, String> COLUMN_MAPPINGS = null;
-	
-	/**
-	 * The template SQL query for retrieving data from the database.
-	 * 
-	 * <p>
-	 *   This contains tags delimited by {@code %%} that are substituted for the required
-	 *   values by the method that will ultimately invoke the query. These are:
-	 * </p>
-	 * <ul>
-	 *   <li>
-	 *     {@code COLUMNS}: The columns to be read from the database. This is a comma-separated list (as required
-	 *     by SQL syntax) of values from the {@link #COLUMN_MAPPINGS} lookup, or the special values
-	 *     {@link #COLUMN_ORIGINAL_FILE} or {@link #COLUMN_RECORD_COUNT}.
-	 *   </li>
-	 *   <li>
-	 *     {@code CO2TYPES}: The type of CO<sub>2</sub> measurements to include in the output.
-	 *     Can contain {@link RunType#RUN_TYPE_WATER}, {@link RunType#RUN_TYPE_ATMOSPHERIC}, or
-	 *     both (separated by a comma). If other values are included, the data resulting from
-	 *     the query will contain unpredictable results.
-	 *   </li>
-	 *   <li>
-	 *     {@code ORDER}: The sort order for the resulting data. This can be any value that's available in the
-	 *     {@link #COLUMN_MAPPINGS} lookup table. To sort by the order of records as they are in the original
-	 *     file, use {@code raw_data.row}.
-	 *   </li>
-	 * </ul> 
-	 */
-	private static final String GET_COLUMN_DATA_QUERY = "SELECT %%COLUMNS%% FROM raw_data "
-					+ " INNER JOIN data_reduction ON raw_data.data_file_id = data_reduction.data_file_id AND raw_data.row = data_reduction.row"
-					+ " INNER JOIN qc ON raw_data.data_file_id = qc.data_file_id AND raw_data.row = qc.row"
-					+ " WHERE raw_data.data_file_id = ? AND raw_data.co2_type IN (%%CO2TYPES%%) AND qc.woce_flag IN (%%FLAGS%%)"
-					+ " ORDER BY %%ORDER%% ASC";
 	
 	/**
 	 * Query to retrieve the list of selectable row numbers for a given data file.
@@ -108,6 +77,9 @@ public class FileDataInterrogator {
 	 */
 	private static final String GET_COMMENTS_QUERY = "SELECT qc_message, woce_message, woce_flag FROM qc WHERE data_file_id = ? AND row IN (%%ROWS%%)";
 	
+	/**
+	 * Query to get the geographical bounds of the data in a data file
+	 */
 	private static final String GET_GEOGRAPHICAL_BOUNDS_QUERY = "SELECT MAX(latitude), MAX(longitude), MIN(latitude), MIN(longitude) FROM raw_data WHERE data_file_id = ? AND row IN (SELECT row FROM qc WHERE data_file_id = ?)";
 
 	static {
@@ -191,7 +163,7 @@ public class FileDataInterrogator {
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RawDataFileException If the original data file cannot be accessed
-	 * @see #GET_COLUMN_DATA_QUERY
+	 * @see #makeFileDataStatement(Connection, long, List, int, List, List, int, int, boolean)
 	 * @see RunType
 	 * @see Flag
 	 */
@@ -257,7 +229,7 @@ public class FileDataInterrogator {
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RawDataFileException If the original data file cannot be accessed
-	 * @see #GET_COLUMN_DATA_QUERY
+	 * @see #makeFileDataStatement(Connection, long, List, int, List, List, int, int, boolean)
 	 * @see RunType
 	 * @see Flag
 	 */
@@ -311,7 +283,7 @@ public class FileDataInterrogator {
 				}
 			}
 			
-			stmt = makeFileDataStatement(conn, fileId, databaseColumnList, co2Type, includeFlags, start, length, false);
+			stmt = makeFileDataStatement(conn, fileId, databaseColumnList, co2Type, null, includeFlags, start, length, false);
 			records = stmt.executeQuery();
 			
 			StringBuffer outputBuffer = new StringBuffer();
@@ -486,7 +458,6 @@ public class FileDataInterrogator {
 	 * @param records The record data
 	 * @param columnIndex The index of the desired column in the record data
 	 * @param columnName The column name
-	 * @param asString Indicates that numeric values should be surrounded by double quotes
 	 * @return The formatted field
 	 * @throws SQLException If the field value cannot be extracted from the result set
 	 * @throws MessageException If the QC message cannot be reconstructed
@@ -591,10 +562,11 @@ public class FileDataInterrogator {
 	 * @param length The number of rows to retrieve
 	 * @param sortByFirstColumn If any of the parameters are missing
 	 * @param valuesAsStrings If a database error occurs
+	 * @param includeRowId If the row number should be included as a table ID in the output
 	 * @return The requested data
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws MessageException If the QC message cannot be reconstructed
-	 * @see #GET_COLUMN_DATA_QUERY
+	 * @see #makeFileDataStatement(Connection, long, List, int, List, List, int, int, boolean)
 	 * @see RunType
 	 * @see Flag
 	 */
@@ -618,7 +590,7 @@ public class FileDataInterrogator {
 
 		try {
 			conn = dataSource.getConnection();
-			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, start, length, sortByFirstColumn);
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, null, includeFlags, start, length, sortByFirstColumn);
 			
 			records = stmt.executeQuery();
 			ResultSetMetaData rsmd = records.getMetaData();
@@ -686,7 +658,24 @@ public class FileDataInterrogator {
 		return output;
 	}
 	
-	public static String getJsonDataArray(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> bounds, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings, boolean limitPoints) throws MissingParamException, MessageException {
+	/**
+	 * Retrieve file data from the database, formatted as a JSON array
+	 * @param dataSource A data source
+	 * @param fileId The file's database ID
+	 * @param co2Type The CO2 type to retrieve
+	 * @param columns The data columns to retrieve
+	 * @param bounds The geographical bounds of the query (can be null to retrieve all data)
+	 * @param includeFlags The list of QC flags. Only records with these flags will be retrieved
+	 * @param start The first record to be retrieved. If {@code -1}, all records will be retrieved
+	 * @param length The number of records to be retrieved. Ignored if {@code start} is {@code -1};
+	 * @param sortByFirstColumn If {@code true}, the records will be sorted by the first column in {@code columns}. Otherwise they will be sorted by row number.
+	 * @param valuesAsStrings Indicates if all values should be returned as strings
+	 * @param limitPoints If {@code true}, the returned records will be sampled such that only the configured number of max_points will be returned.
+	 * @return The JSON data array
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws MessageException If processing of QC messages fails
+	 */
+	public static String getJsonDataArray(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Double> bounds, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings, boolean limitPoints) throws MissingParamException, MessageException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(columns, "columns");
@@ -706,7 +695,7 @@ public class FileDataInterrogator {
 
 		try {
 			conn = dataSource.getConnection();
-			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, start, length, sortByFirstColumn);
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, bounds, includeFlags, start, length, sortByFirstColumn);
 			
 			records = stmt.executeQuery();
 			ResultSetMetaData rsmd = records.getMetaData();
@@ -812,7 +801,7 @@ public class FileDataInterrogator {
 			columns.add(COLUMN_RECORD_COUNT);
 			
 			conn = dataSource.getConnection();
-			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, -1, -1, false);
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, null, includeFlags, -1, -1, false);
 			
 			records = stmt.executeQuery();
 
@@ -1100,10 +1089,9 @@ public class FileDataInterrogator {
 	 * @see #getCSVData(DataSource, Properties, long, Instrument, List, String, int, List, int, int)
 	 * @see #getCSVData(DataSource, Properties, long, Instrument, ExportOption)
 	 * @see #getCSVData(DataSource, Properties, long, Instrument, List, int, List)
-	 * @see #getJsonData(DataSource, long, int, List, List, int, int, boolean, boolean)
 	 * @see #getRecordCount(DataSource, long, int, List)
 	 */
-	private static PreparedStatement makeFileDataStatement(Connection conn, long fileId, List<String> columns, int co2Type, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn) throws SQLException {
+	private static PreparedStatement makeFileDataStatement(Connection conn, long fileId, List<String> columns, int co2Type, List<Double> bounds, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn) throws SQLException {
 		
 		PreparedStatement stmt = null;
 
@@ -1112,22 +1100,49 @@ public class FileDataInterrogator {
 			String co2Types = makeCo2Types(co2Type);
 			String flags = makeFlags(includeFlags);
 
-			String queryString = GET_COLUMN_DATA_QUERY.replaceAll("%%COLUMNS%%", databaseColumnList);
-			queryString = queryString.replaceAll("%%CO2TYPES%%", co2Types);
-			queryString = queryString.replaceAll("%%FLAGS%%", flags);
+			StringBuilder query = new StringBuilder();
+			query.append("SELECT ");
+			query.append(databaseColumnList);
+			query.append(" FROM raw_data");
+			query.append(" INNER JOIN data_reduction ON raw_data.data_file_id = data_reduction.data_file_id AND raw_data.row = data_reduction.row");
+			query.append(" INNER JOIN qc ON raw_data.data_file_id = qc.data_file_id AND raw_data.row = qc.row");
+			query.append(" WHERE raw_data.data_file_id = ");
+			query.append(fileId);
+			query.append(" AND raw_data.co2_type IN (");
+			query.append(co2Types);
+			query.append(')');
+			
+			if (null != bounds) {
+				query.append(" AND raw_data.longitude >= ");
+				query.append(bounds.get(0));
+				query.append(" AND raw_data.longitude <= ");
+				query.append(bounds.get(2));
+				query.append(" AND raw_data.latitude >= ");
+				query.append(bounds.get(1));
+				query.append(" AND raw_data.latitude <= ");
+				query.append(bounds.get(3));
+			}
+			
+			query.append(" AND qc.woce_flag IN (");
+			query.append(flags);
+			query.append(") ORDER BY ");
 			
 			if (!sortByFirstColumn) {
-				queryString = queryString.replaceAll("%%ORDER%%", "raw_data.row");
+				query.append("raw_data.row");
 			} else {
-				queryString = queryString.replaceAll("%%ORDER%%", COLUMN_MAPPINGS.get(columns.get(0)));
+				query.append(COLUMN_MAPPINGS.get(columns.get(0)));
 			}
 			
+			query.append(" ASC");
+
 			if (length > 0) {
-				queryString += " LIMIT " + start + "," + length;
+				query.append(" LIMIT ");
+				query.append(start);
+				query.append(',');
+				query.append(length);
 			}
 			
-			stmt = conn.prepareStatement(queryString, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			stmt.setLong(1, fileId);
+			stmt = conn.prepareStatement(query.toString(), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			DatabaseUtils.closeStatements(stmt);
 			throw e;
@@ -1477,12 +1492,12 @@ public class FileDataInterrogator {
 	/**
 	 * Calculate the mid-point of four co-ordinates. We use the
 	 * rhumb line calculation because the data will be viewed on a rectangular projection
-	 * @param lon1
-	 * @param lat1
-	 * @param lon2
-	 * @param lat2
+	 * @param lon1 Longitude of first point
+	 * @param lat1 Latitude of first point
+	 * @param lon2 Longitude of second point
+	 * @param lat2 Latitude of second point
 	 * @return The mid-point of the coordinates
-	 * @see http://www.movable-type.co.uk/scripts/latlong.html
+	 * @see "http://www.movable-type.co.uk/scripts/latlong.html"
 	 */
 	private static List<Double> rhumbMidPoint(double lon1, double lat1, double lon2, double lat2) {
 		
