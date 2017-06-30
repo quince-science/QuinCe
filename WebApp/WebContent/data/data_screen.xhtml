@@ -84,10 +84,11 @@
 				</h:commandLink>
 				
 				<h:inputHidden id="leftMapColumn" value="#{dataScreenBean.leftMapColumn}"/>
+				<h:inputHidden id="leftMapBounds" value="#{dataScreenBean.leftMapBounds}"/>
 				<h:outputText id="leftMapData" value="#{dataScreenBean.leftMapData}"/>
 				<h:outputText id="leftMapName" value="#{dataScreenBean.leftMapName}"/>
 				<h:commandLink id="leftGetMapData" action="#{dataScreenBean.generateLeftMapData}">
-					<f:ajax execute="leftMapColumn" render="leftMapData leftMapName" onevent="drawLeftMap"/>
+					<f:ajax execute="leftMapColumn leftMapBounds" render="leftMapData leftMapName" onevent="drawLeftMap"/>
 				</h:commandLink>
 
 				<h:inputHidden id="rightColumns" value="#{dataScreenBean.rightPlotColumns}"/>
@@ -98,10 +99,11 @@
 				</h:commandLink>
 				
 				<h:inputHidden id="rightMapColumn" value="#{dataScreenBean.rightMapColumn}"/>
+				<h:inputHidden id="rightMapBounds" value="#{dataScreenBean.rightMapBounds}"/>
 				<h:outputText id="rightMapData" value="#{dataScreenBean.rightMapData}"/>
 				<h:outputText id="rightMapName" value="#{dataScreenBean.rightMapName}"/>
 				<h:commandLink id="rightGetMapData" action="#{dataScreenBean.generateRightMapData}">
-					<f:ajax execute="rightMapColumn" render="rightMapData rightMapName" onevent="drawRightMap"/>
+					<f:ajax execute="rightMapColumn rightMapBounds" render="rightMapData rightMapName" onevent="drawRightMap"/>
 				</h:commandLink>
 				
 				<h:inputHidden value="#{dataScreenBean.tableJsonData}" id="tableJsonData"/>		

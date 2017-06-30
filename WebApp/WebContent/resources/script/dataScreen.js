@@ -1500,9 +1500,15 @@ function initLeftMap() {
 		initialView.fit(extent, leftMap.getSize());
 	}
 	
+	getLeftMapData();
+}
+
+function getLeftMapData() {
 	// Fill in the hidden form and submit it
 	$('#plotDataForm\\:leftMapColumn').val(getColumnName(leftMapVar));
-	$('#plotDataForm\\:leftGetMapData').click();
+	var extent = ol.proj.transformExtent(leftMap.getView().calculateExtent(), getView.getProjection(), "EPSG:4326");
+	$('#plotDataForm\\:leftMapBounds').val(extent);
+	$('#plotDataForm\\:leftGetMapData').click();	
 }
 
 function drawLeftMap(data) {
@@ -1578,9 +1584,15 @@ function initRightMap() {
 		initialView.fit(extent, rightMap.getSize());
 	}
 	
+	getRightMapData();
+}
+
+function getRightMapData() {
 	// Fill in the hidden form and submit it
 	$('#plotDataForm\\:rightMapColumn').val(getColumnName(rightMapVar));
-	$('#plotDataForm\\:rightGetMapData').click();
+	var extent = ol.proj.transformExtent(rightMap.getView().calculateExtent(), getView.getProjection(), "EPSG:4326");
+	$('#plotDataForm\\:rightMapBounds').val(extent);
+	$('#plotDataForm\\:rightGetMapData').click();	
 }
 
 function getScaleLimits(mapData) {
