@@ -120,6 +120,7 @@ body.fullPage {
     padding: 5px;
     text-align: center;
     background-image: linear-gradient(to top, #B8B8B8 0%, #CFCFCF 4%, #E3E3E3 68%, #FAFAFA 100%);
+    cursor: pointer;
 }
 
 #woceSelectMenu {
