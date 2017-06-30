@@ -116,9 +116,15 @@ public class DataScreenBean extends BaseManagedBean {
 	 * The data column being used in the left map.
 
 	 * @see FileDataInterrogator
-	 * @see #getMapData(String) 
+	 * @see #getMapData(String, List) 
 	 */
 	private String leftMapColumn = null;
+	
+	/**
+	 * The bounds of the left map display.
+	 * This is a list of [minx, miny, maxx, maxy]
+	 */
+	private List<Integer> leftMapBounds = null;
 	
 	/**
 	 * The data for the left map.
@@ -128,7 +134,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 *   the user interface.
 	 * </p>
 	 * @see #generateLeftMapData()
-	 * @see #getMapData(String)
+	 * @see #getMapData(String, List)
 	 */
 	private String leftMapData = null;
 	
@@ -182,9 +188,15 @@ public class DataScreenBean extends BaseManagedBean {
 	 * The data column being used in the right map.
 
 	 * @see FileDataInterrogator
-	 * @see #getMapData(String) 
+	 * @see #getMapData(String, List)
 	 */
 	private String rightMapColumn = null;
+	
+	/**
+	 * The bounds of the right map display.
+	 * This is a list of [minx, miny, maxx, maxy]
+	 */
+	private List<Integer> rightMapBounds = null;
 	
 	/**
 	 * The data for the right map.
@@ -193,8 +205,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 *   The data is stored as a JSON string, which will be parsed by the Javascript on
 	 *   the user interface.
 	 * </p>
-	 * @see #generaterightMapData()
-	 * @see #getMapData(String)
+	 * @see #generateRightMapData()
+	 * @see #getMapData(String, List)
 	 */
 	private String rightMapData = null;
 	
@@ -620,6 +632,22 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	public void setLeftMapColumn(String leftMapColumn) {
 		this.leftMapColumn = leftMapColumn;
+	}
+	
+	/**
+	 * Get the current bounds of the left map viewport
+	 * @return The left map bounds
+	 */
+	public List<Integer> getLeftMapBounds() {
+		return leftMapBounds;
+	}
+	
+	/**
+	 * Set the current bounds of the left map viewport
+	 * @param leftMapBounds The left map bounds
+	 */
+	public void setLeftMapBounds(List<Integer> leftMapBounds) {
+		this.leftMapBounds = leftMapBounds;
 	}
 	
 	/**
@@ -1398,10 +1426,10 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	/**
 	 * Generate the data for the left map.
-	 * @see #getMapData(String)
+	 * @see #getMapData(String, List)
 	 */
 	public void generateLeftMapData() {
-		setLeftMapData(getMapData(leftMapColumn));
+		setLeftMapData(getMapData(leftMapColumn, leftMapBounds));
 		setLeftMapName(getPlotSeriesName(leftMapColumn));
 	}
 
@@ -1417,10 +1445,10 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	/**
 	 * Generate the data for the right map.
-	 * @see #getMapData(String)
+	 * @see #getMapData(String, List)
 	 */
 	public void generateRightMapData() {
-		setRightMapData(getMapData(rightMapColumn));
+		setRightMapData(getMapData(rightMapColumn, rightMapBounds));
 		setRightMapName(getPlotSeriesName(rightMapColumn));
 	}
 
@@ -1453,7 +1481,7 @@ public class DataScreenBean extends BaseManagedBean {
 			// And the Y axis columns
 			submittedColumnList.addAll(columns.subList(1, columns.size()));
 			
-			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, true, false, false);
+			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, null, getIncludeFlags(), 1, 0, true, false, false);
 		} catch (Exception e) {
 			e.printStackTrace();
 			output = "***ERROR: " + e.getMessage();
@@ -1467,7 +1495,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @param column The list column to be displayed on the map
 	 * @return The map data
 	 */
-	private String getMapData(String column) {
+	private String getMapData(String column, List<Integer> bounds) {
 		String output;
 		
 		try {
@@ -1490,10 +1518,8 @@ public class DataScreenBean extends BaseManagedBean {
 			
 			// And the Y axis columns
 			submittedColumnList.add(column);
-			
-			int maxPoints = Integer.parseInt(ServletUtils.getAppConfig().getProperty("map.max_points"));
-			
-			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, true, false, true);
+						
+			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, bounds, getIncludeFlags(), 1, 0, true, false, true);
 		} catch (Exception e) {
 			e.printStackTrace();
 			output = "***ERROR: " + e.getMessage();

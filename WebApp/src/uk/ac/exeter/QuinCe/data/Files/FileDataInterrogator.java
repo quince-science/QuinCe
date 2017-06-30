@@ -686,7 +686,7 @@ public class FileDataInterrogator {
 		return output;
 	}
 	
-	public static String getJsonDataArray(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings, boolean limitPoints) throws MissingParamException, MessageException {
+	public static String getJsonDataArray(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> bounds, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings, boolean limitPoints) throws MissingParamException, MessageException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(columns, "columns");
@@ -732,7 +732,6 @@ public class FileDataInterrogator {
 					everyNthRecord = 1;
 				}
 			}
-			
 			
 			while (records.relative(everyNthRecord)) {
 				
