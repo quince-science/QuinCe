@@ -406,7 +406,8 @@ function renderPositionAssignments() {
 
 function buildMainAssignmentMenu(file, column) {
 	var columnAssignment = getColumnAssignment(file, column);
-	
+	var timePositionAssignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+
 	var menuHtml = '';
 	
 	if (null != columnAssignment) {
@@ -415,14 +416,34 @@ function buildMainAssignmentMenu(file, column) {
 	
 	menuHtml += '<ul class="ui-menu-list ui-helper-reset">';
 	menuHtml += makeParentMenuItem('DATETIMESUBMENU', 'Date/Time', file, column, 'dateTimeMenu');
-	menuHtml += makeMenuItem('POS_longitude', 'Longitude', file, column);
-	if (hemisphereRequired(file, 'longitude')) {
-		menuHtml += makeMenuItem('POS_longitude_hemisphere', 'Longitude - Hemisphere', file, column);
+	
+	if (timePositionAssignments[file]['longitude']['valueColumn'] != -1) {
+		menuHtml += makeDisabledMenuItem('Longitude');
+	} else {
+		menuHtml += makeMenuItem('POS_longitude', 'Longitude', file, column);
 	}
 	
-	menuHtml += makeMenuItem('POS_latitude', 'Latitude', file, column);
+
+	if (hemisphereRequired(file, 'longitude')) {
+		if (timePositionAssignments[file]['longitude']['hemisphereColumn'] != -1) {
+			menuHtml += makeDisabledMenuItem('Longitude - Hemisphere');
+		} else {
+			menuHtml += makeMenuItem('POS_longitude_hemisphere', 'Longitude - Hemisphere', file, column);
+		}
+	}
+	
+	if (timePositionAssignments[file]['latitude']['valueColumn'] != -1) {
+		menuHtml += makeDisabledMenuItem('Latitude');
+	} else {
+		menuHtml += makeMenuItem('POS_latitude', 'Latitude', file, column);
+	}
+		
 	if (hemisphereRequired(file, 'latitude')) {
-		menuHtml += makeMenuItem('POS_latitude_hemisphere', 'Latitude - Hemisphere', file, column);
+		if (timePositionAssignments[file]['latitude']['hemisphereColumn'] != -1) {
+			menuHtml += makeDisabledMenuItem('Latitude - Hemisphere');
+		} else {
+			menuHtml += makeMenuItem('POS_latitude_hemisphere', 'Latitude - Hemisphere', file, column);
+		}
 	}
 	
 	var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
