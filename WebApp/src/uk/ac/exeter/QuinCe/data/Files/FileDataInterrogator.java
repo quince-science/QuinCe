@@ -31,6 +31,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * An API to retrieve all kinds of data for a data file from the database.
@@ -685,7 +686,7 @@ public class FileDataInterrogator {
 		return output;
 	}
 	
-	public static String getJsonDataArray(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings) throws MissingParamException, MessageException {
+	public static String getJsonDataArray(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings, boolean limitPoints) throws MissingParamException, MessageException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(columns, "columns");
@@ -713,10 +714,27 @@ public class FileDataInterrogator {
 
 			StringBuilder outputBuffer = new StringBuilder();
 			outputBuffer.append('[');
+
+			int recordCount = 0;
+			try {
+			    records.last();
+			    recordCount = records.getRow();
+			    records.beforeFirst();
+			} catch (SQLException e) {
+				recordCount = 0;
+			}
+
+			int everyNthRecord = 1;
+			if (limitPoints) {
+				int maxPoints = Integer.parseInt(ResourceManager.getInstance().getConfig().getProperty("map.max_points"));
+				everyNthRecord = recordCount / maxPoints;
+				if (everyNthRecord < 1) {
+					everyNthRecord = 1;
+				}
+			}
 			
-			boolean hasRecords = false;
-			while (records.next()) {
-				hasRecords = true;
+			
+			while (records.relative(everyNthRecord)) {
 				
 				outputBuffer.append('[');
 				for (int col = 1; col <= columnCount; col++) {
@@ -744,7 +762,7 @@ public class FileDataInterrogator {
 			}
 			
 			// Remove the trailing comma from the last record
-			if (hasRecords) {
+			if (recordCount > 1) {
 				outputBuffer.deleteCharAt(outputBuffer.length() - 1);
 			}
 			outputBuffer.append(']');
@@ -1109,7 +1127,7 @@ public class FileDataInterrogator {
 				queryString += " LIMIT " + start + "," + length;
 			}
 			
-			stmt = conn.prepareStatement(queryString);
+			stmt = conn.prepareStatement(queryString, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			stmt.setLong(1, fileId);
 		} catch (SQLException e) {
 			DatabaseUtils.closeStatements(stmt);

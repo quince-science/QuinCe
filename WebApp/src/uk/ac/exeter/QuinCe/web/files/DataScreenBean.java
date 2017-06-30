@@ -1453,7 +1453,7 @@ public class DataScreenBean extends BaseManagedBean {
 			// And the Y axis columns
 			submittedColumnList.addAll(columns.subList(1, columns.size()));
 			
-			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, true, false);
+			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, true, false, false);
 		} catch (Exception e) {
 			e.printStackTrace();
 			output = "***ERROR: " + e.getMessage();
@@ -1493,7 +1493,7 @@ public class DataScreenBean extends BaseManagedBean {
 			
 			int maxPoints = Integer.parseInt(ServletUtils.getAppConfig().getProperty("map.max_points"));
 			
-			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, true, false);
+			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, true, false, true);
 		} catch (Exception e) {
 			e.printStackTrace();
 			output = "***ERROR: " + e.getMessage();
