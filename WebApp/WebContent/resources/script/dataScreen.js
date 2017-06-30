@@ -1329,7 +1329,9 @@ function showLeftMap() {
 	$('#mapLeft').show();
 	$('#mapScaleControlContainerLeft').show();
 	$('#mapControlsLeft').show();
-	initLeftMap();
+	if (null == leftMap) {
+		initLeftMap();
+	}
 	resizeContent();
 	return false;
 }
@@ -1351,7 +1353,9 @@ function showRightMap() {
 	$('#mapRight').show();
 	$('#mapScaleControlContainerRight').show();
 	$('#mapControlsRight').show();
-	initRightMap();
+	if (null == rightMap) {
+		initRightMap();
+	}
 	resizeContent();
 	return false;
 }
@@ -1501,9 +1505,7 @@ function initLeftMap() {
 		
 		leftMap.on('moveend', getLeftMapData);
 	}
-	
-	
-	
+
 	getLeftMapData();
 }
 
@@ -1586,6 +1588,8 @@ function initRightMap() {
 		
 		var extent = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
 		initialView.fit(extent, rightMap.getSize());
+
+		rightMap.on('moveend', getRightMapData);
 	}
 	
 	getRightMapData();
