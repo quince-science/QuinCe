@@ -1,0 +1,72 @@
+package uk.ac.exeter.QuinCe.data.Instrument;
+
+import java.util.ArrayList;
+
+/**
+ * Methods to handle and process a set of file definitions for an instrument
+ * @author Steve Jones
+ *
+ */
+public class InstrumentFileSet extends ArrayList<FileDefinition> {
+
+	/**
+	 * The serial version UID
+	 */
+	private static final long serialVersionUID = -998081927701592751L;
+
+	/**
+	 * Simple constructor to create an empty set
+	 */
+	protected InstrumentFileSet() {
+		super();
+	}
+	
+	@Override
+	public boolean add(FileDefinition file) {
+		// Remove the existing file if it exists
+		// Files are matched by their description only, so this
+		// will find any file with the same description as the one passed in
+		remove(file);
+		
+		// Add the passed in file
+		return super.add(file);
+	}
+	
+	/**
+	 * Determine whether or not the file set contains a file definition
+	 * with the specified description
+	 * @param description The file description
+	 * @return {@code true} if a file with the specified description is present; {@code false} otherwise
+	 */
+	public boolean containsFileDescription(String description) {
+		boolean found = false;
+		
+		for (FileDefinition file : this) {
+			if (file.getFileDescription().equalsIgnoreCase(description)) {
+				found = true;
+				break;
+			}
+		}
+		
+		return found;
+	}
+	
+	/**
+	 * Retrieve the file definition with the specified description.
+	 * If no definition is found, the method returns {@code null}
+	 * @param description The file description
+	 * @return The file definition
+	 */
+	public FileDefinition get(String description) {
+		FileDefinition result = null;
+		
+		for (FileDefinition file : this) {
+			if (file.getFileDescription().equalsIgnoreCase(description)) {
+				result = file;
+				break;
+			}
+		}
+		
+		return result;
+	}
+}

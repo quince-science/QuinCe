@@ -62,7 +62,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	/**
 	 * The set of sample files for the instrument definition
 	 */
-	private InstrumentFileSet instrumentFiles;
+	private NewInstrumentFileSet instrumentFiles;
 	
 	/**
 	 * The assignments of sensors to data file columns
@@ -159,7 +159,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	/**
 	 * The file for which the date/time is being set
 	 */
-	private int dateTimeFile = -1;
+	private String dateTimeFile = null;
 	
 	/**
 	 * The column index for the date/time field
@@ -263,7 +263,7 @@ public class NewInstrumentBean extends FileUploadBean {
 			result = NAV_UPLOAD_FILE;
 		} else {
 			if (null == currentInstrumentFile) {
-				currentInstrumentFile = FileDefinitionBuilder.copy(instrumentFiles.get(0));
+				currentInstrumentFile = FileDefinitionBuilder.copy((FileDefinitionBuilder) instrumentFiles.get(0));
 			}
 			result = NAV_ASSIGN_VARIABLES; 
 		}
@@ -303,7 +303,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	private void clearAllData() {
 		instrumentName = null;
-		instrumentFiles = new InstrumentFileSet();
+		instrumentFiles = new NewInstrumentFileSet();
 		sensorAssignments = ResourceManager.getInstance().getSensorsConfiguration().getNewSensorAssigments();
 		resetSensorAssignmentValues();
 		resetPositionAssignmentValues();
@@ -339,7 +339,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Retrieve the full set of instrument files
 	 * @return The instrument files
 	 */
-	public InstrumentFileSet getInstrumentFiles() {
+	public NewInstrumentFileSet getInstrumentFiles() {
 		return instrumentFiles;
 	}
 	
@@ -358,7 +358,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @return The navigation to the variable assignment page
 	 */
 	public String useFile() {
-		instrumentFiles.storeFile(currentInstrumentFile);
+		instrumentFiles.add(currentInstrumentFile);
 		clearFile();
 		return NAV_ASSIGN_VARIABLES;
 	}
@@ -504,50 +504,6 @@ public class NewInstrumentBean extends FileUploadBean {
 	}
 	
 	/**
-	 * Get the time and position column assignments for all
-	 * files related to this instrument.
-	 * 
-	 * <p>
-	 *   The assignments are encoded as a JSON string in
-	 *   the following format:
-	 * </p>
-	 * <pre>
-	 * [
-	 * ]
-	 * </pre>
-	 * @return The time and position assignments
-	 * @throws DateTimeSpecificationException If an error occurs while generating the date/time string
-	 */
-	public String getTimePositionAssignments() throws DateTimeSpecificationException {
-		StringBuilder json = new StringBuilder();
-		
-		json.append('[');
-		
-		for (int i = 0; i < instrumentFiles.size(); i++) {
-			FileDefinitionBuilder file = instrumentFiles.get(i);
-			
-			json.append('{');
-			json.append("\"primaryPosition\":");
-			json.append(file.getPositionPrimary());
-			json.append(",\"longitude\":");
-			json.append(file.getLongitudeSpecification().getJsonString());
-			json.append(",\"latitude\":");
-			json.append(file.getLatitudeSpecification().getJsonString());
-			json.append(",\"dateTime\":");
-			json.append(file.getDateTimeSpecification().getJsonString());
-			json.append('}');
-			
-			if (i < instrumentFiles.size() - 1) {
-				json.append(',');
-			}
-		}
-		
-		json.append(']');
-		
-		return json.toString();
-	}
-	
-	/**
 	 * Dummy method for setting time and position assignments. It doesn't
 	 * actually do anything, but it's needed for the JSF communications
 	 * to work.
@@ -557,33 +513,6 @@ public class NewInstrumentBean extends FileUploadBean {
 		// Do nothing
 	}
 	
-	/**
-	 * Get the list of registered file descriptions and their columns as a JSON string
-	 * @return The file names
-	 */
-	public String getFilesAndColumns() {
-		StringBuilder json = new StringBuilder();
-		
-		json.append('[');
-
-		for (int i = 0; i < instrumentFiles.size(); i++) {
-			json.append('{');
-			
-			json.append("'description':'");
-			json.append(instrumentFiles.get(i).getFileDescription());
-			json.append("','columns':");
-			json.append(instrumentFiles.get(i).getFileColumns());
-			json.append('}');
-
-			if (i < instrumentFiles.size() - 1) {
-				json.append(',');
-			}
-		}
-		
-		json.append(']');
-		return json.toString();
-	}
-
 	/**
 	 * Get the sensor assignment file
 	 * @return The file
@@ -775,7 +704,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @throws InvalidPositionFormatException If the format is invalid
 	 */
 	public void assignLongitude() throws InvalidPositionFormatException {
-		FileDefinitionBuilder file = instrumentFiles.get(longitudeFile);
+		FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles.get(longitudeFile);
 		file.getLongitudeSpecification().setValueColumn(longitudeColumn);
 		file.getLongitudeSpecification().setFormat(longitudeFormat);
 		if (longitudeFormat != LongitudeSpecification.FORMAT_0_180) {
@@ -838,7 +767,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @throws InvalidPositionFormatException If the format is invalid
 	 */
 	public void assignLatitude() throws InvalidPositionFormatException {
-		FileDefinitionBuilder file = instrumentFiles.get(latitudeFile);
+		FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles.get(latitudeFile);
 		file.getLatitudeSpecification().setValueColumn(latitudeColumn);
 		file.getLatitudeSpecification().setFormat(latitudeFormat);
 		if (latitudeFormat != LatitudeSpecification.FORMAT_0_90) {
@@ -900,7 +829,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Assign the hemisphere column for a coordinate
 	 */
 	public void assignHemisphere() {
-		FileDefinitionBuilder file = instrumentFiles.get(hemisphereFile);
+		FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles.get(hemisphereFile);
 		
 		PositionSpecification posSpec = null;
 		
@@ -933,7 +862,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Clear all date/time assignment data
 	 */
 	private void resetDateTimeAssignmentValues() {
-		dateTimeFile = -1;
+		dateTimeFile = null;
 		dateTimeColumn = -1;
 		dateTimeVariable = null;
 		dateFormat = null;
@@ -946,7 +875,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Get the file for which a date/time variable is being assigned
 	 * @return The file
 	 */
-	public int getDateTimeFile() {
+	public String getDateTimeFile() {
 		return dateTimeFile;
 	}
 
@@ -954,7 +883,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Set the file for which a date/time variable is being assigned
 	 * @param dateTimeFile The file
 	 */
-	public void setDateTimeFile(int dateTimeFile) {
+	public void setDateTimeFile(String dateTimeFile) {
 		this.dateTimeFile = dateTimeFile;
 	}
 
@@ -1158,7 +1087,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @throws HighlightedStringException If the highlighted string cannot be created
 	 */
 	public void extractStartTime() throws HighlightedStringException {
-		FileDefinitionBuilder fileDefinition = instrumentFiles.get(dateTimeFile);
+		FileDefinitionBuilder fileDefinition = (FileDefinitionBuilder) instrumentFiles.get(dateTimeFile);
 		
 		HighlightedString headerLine = fileDefinition.getHeaderLine(startTimePrefix, startTimeSuffix);
 		if (null == headerLine) {
@@ -1175,5 +1104,25 @@ public class NewInstrumentBean extends FileUploadBean {
 				startTimeDate = null;
 			}
 		}
+	}
+	
+	/**
+	 * Get the list of registered file descriptions and their columns as a JSON string
+	 * @return The file names
+	 * @see NewInstrumentFileSet#getFilesAndColumns()
+	 */
+	public String getFilesAndColumns() {
+		return instrumentFiles.getFilesAndColumns();
+	}
+	
+	/**
+	 * Get the time and position column assignments for all
+	 * files related to this instrument.
+	 * @return The time and position assignments
+	 * @throws DateTimeSpecificationException If an error occurs while generating the date/time string
+	 * @see NewInstrumentFileSet#getTimePositionAssignments()
+	 */
+	public String getTimePositionAssignments() throws DateTimeSpecificationException {
+		return instrumentFiles.getTimePositionAssignments();
 	}
 }

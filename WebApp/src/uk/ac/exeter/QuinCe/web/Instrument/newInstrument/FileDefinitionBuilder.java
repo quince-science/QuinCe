@@ -44,7 +44,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	/**
 	 * Create a new file definition with the default description
 	 */
-	protected FileDefinitionBuilder(InstrumentFileSet fileSet) {
+	protected FileDefinitionBuilder(NewInstrumentFileSet fileSet) {
 		super(DEFAULT_DESCRIPTION);
 
 		int counter = 1;

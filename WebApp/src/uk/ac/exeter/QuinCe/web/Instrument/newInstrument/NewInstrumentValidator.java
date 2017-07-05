@@ -7,8 +7,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
-import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
-
 /**
  * Base validator for validation of entries in a new instrument.
  * Extracts the bean and passes it to the concrete validation method
@@ -37,12 +35,8 @@ public abstract class NewInstrumentValidator implements Validator {
 		
 		doValidation(bean, value);
 		
-		for (FileDefinition file : bean.getInstrumentFiles()) {
-			if (file != bean.getCurrentInstrumentFile()) {
-				if (description.equalsIgnoreCase(file.getFileDescription())) {
-					throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "This description is already being used by another file", "This description is already being used by another file"));
-				}
-			}
+		if (bean.getInstrumentFiles().containsFileDescription(description)) {
+			throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "This description is already being used by another file", "This description is already being used by another file"));
 		}
 	}
 
