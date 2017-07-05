@@ -1,6 +1,9 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 /**
  * Methods to handle and process a set of file definitions for an instrument
@@ -15,6 +18,12 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 	private static final long serialVersionUID = -998081927701592751L;
 
 	/**
+	 * Specifies the file that contains the primary position data
+	 * for the instrument
+	 */
+	private String primaryPositionFile = null;
+	
+	/**
 	 * Simple constructor to create an empty set
 	 */
 	protected InstrumentFileSet() {
@@ -23,13 +32,19 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 	
 	@Override
 	public boolean add(FileDefinition file) {
-		// Remove the existing file if it exists
-		// Files are matched by their description only, so this
-		// will find any file with the same description as the one passed in
-		remove(file);
+		boolean result = false;
+		
+		int currentPosition = indexOf(file);
+		
+		if (currentPosition == -1) {
+			result = super.add(file);
+		} else {
+			set(currentPosition, file);
+			result = true;
+		}
 		
 		// Add the passed in file
-		return super.add(file);
+		return result;
 	}
 	
 	/**
@@ -65,6 +80,98 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 				result = file;
 				break;
 			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Set the file that contains the primary position data for the instrument
+	 * @param fileDescription The file description of the file
+	 * @throws FileSetException If a file with the specified file description does not exist
+	 */
+	public void setPrimaryPositionFile(String fileDescription) throws FileSetException {
+		if (!contains(fileDescription)) {
+			throw new FileSetException("The file '" + fileDescription + "' does not exist");
+		}
+		
+		this.primaryPositionFile = fileDescription;
+	}
+	
+	/**
+	 * Get the description of the file that contains the primary position
+	 * data for the instrument
+	 * @return The file definition
+	 */
+	public String getPrimaryPositionFile() {
+		return primaryPositionFile;
+	}
+	
+	@Override
+	public void clear() {
+		super.clear();
+		primaryPositionFile = null;
+	}
+	
+	@Override
+	public FileDefinition remove(int index) {
+		FileDefinition existing = get(index);
+		if (null != existing && primaryPositionFile.equalsIgnoreCase(existing.getFileDescription())) {
+			primaryPositionFile = null;
+		}
+		
+		return super.remove(index);
+	}
+	
+	@Override
+	public boolean remove(Object file) {
+		
+		if (file instanceof FileDefinition) {
+			if (primaryPositionFile.equalsIgnoreCase(((FileDefinition) file).getFileDescription())) {
+				primaryPositionFile = null;
+			}
+		}
+		
+		return super.remove(file);
+	}
+	
+	@Override
+	public boolean removeAll(Collection<?> files) {
+		boolean result = false;
+		
+		for (Object file : files) {
+			if (remove(file)) {
+				result = true;
+			}
+		}
+		
+		return result;
+	}
+	
+	@Override
+	public boolean removeIf(Predicate<? super FileDefinition> filter) {
+		// Not implemented
+		return false;
+	}
+	
+	@Override
+	protected void removeRange(int fromIndex, int toIndex) {
+		for (int i = fromIndex; i < toIndex; i++) {
+			remove(i);
+		}
+	}
+	
+	@Override
+	public void replaceAll(UnaryOperator<FileDefinition> operator) {
+		// Do nothing
+	}
+	
+	@Override
+	public boolean retainAll(Collection<?> c) {
+		boolean result = super.retainAll(c);
+		
+		if (result && null != primaryPositionFile && !containsFileDescription(primaryPositionFile)) {
+			primaryPositionFile = null;
 		}
 		
 		return result;
