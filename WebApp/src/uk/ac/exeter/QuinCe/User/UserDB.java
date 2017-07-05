@@ -403,7 +403,7 @@ public class UserDB {
 		MissingParam.checkMissing(user, "user");
 
 		if (null == getUser(dataSource, user.getEmailAddress())) {
-			throw new NoSuchUserException();
+			throw new NoSuchUserException(user);
 		}
 		
 		Connection conn = null;
@@ -444,7 +444,7 @@ public class UserDB {
 		MissingParam.checkMissing(user, "user");
 
 		if (null == getUser(dataSource, user.getEmailAddress())) {
-			throw new NoSuchUserException();
+			throw new NoSuchUserException(user);
 		}
 		
 		Connection conn = null;
