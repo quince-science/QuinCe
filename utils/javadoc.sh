@@ -5,7 +5,7 @@ jarsDir=$2
 output=$3
 
 
-sourcePath="$(dirname ${BASH_SOURCE[0]})/WebApp/src:$qcRoutinesSource"
+sourcePath="$(dirname ${BASH_SOURCE[0]})/../WebApp/src:$qcRoutinesSource"
 
 javadoc -sourcepath "$sourcePath" -d "$output" -subpackages uk.ac.exeter.QuinCe:uk.ac.exeter.QCRoutines \
         -source 1.8 -private -windowtitle "QuinCe Javadoc" -doctitle "QuinCe Javadoc" \
