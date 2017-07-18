@@ -10,18 +10,30 @@ import uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
+/**
+ * Managed bean for sending email verification codes to users
+ * @author Steve Jones
+ *
+ */
 public class SendEmailCodeBean extends BaseManagedBean {
 	
+	/**
+	 * Basic constructor
+	 */
 	public SendEmailCodeBean() {
 		// Do Nothing
 	}
 
+	/**
+	 * The email address to which the verification code should be sent
+	 */
 	private String email = null;
 	
 	/**
 	 * Sends an email verification code to a user (based on email address)
 	 * If the email address is not supplied or invalid, simply returns to the login
 	 * screen.
+	 * @return The routing result for the web application
 	 */
 	public String sendCode() {
 		
@@ -62,6 +74,10 @@ public class SendEmailCodeBean extends BaseManagedBean {
 		return result;
 	}
 	
+	/**
+	 * Set the email address
+	 * @param email The email address
+	 */
 	public void setEmail(String email) {
 		this.email = email;
 	}
