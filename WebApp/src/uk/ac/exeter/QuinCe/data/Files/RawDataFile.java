@@ -56,6 +56,9 @@ public class RawDataFile {
 	@Deprecated
 	private Calendar startDate = null;
 	
+	/**
+	 * The date/time of all records in the file
+	 */
 	@Deprecated
 	private List<Calendar> dates = null;
 	
@@ -64,13 +67,18 @@ public class RawDataFile {
 	 */
 	private int recordCount = 0;
 	
+	/**
+	 * The file header as a nested list of strings. The outer list
+	 * holds each header line, while the inner list holds the line contents
+	 * as a list of field values as the line is split by the file separator.
+	 */
 	private List<List<String>> headerLines = null;
 	
 	/**
 	 * Initialises a new object, assuming the character set is UTF-8.
 	 * @param instrument The instrument to which the file belongs
 	 * @param fileName The file's name
-	 * @param contents The file data
+	 * @param data The file data
 	 */
 	public RawDataFile(Instrument instrument, String fileName, byte[] data) {
 		this.instrument = instrument;
@@ -81,9 +89,9 @@ public class RawDataFile {
 	
 	/**
 	 * Initialises a new object with a specified character set
-	 * @param instrumentID The instrument to which the file belongs
+	 * @param instrument The instrument to which the file belongs
 	 * @param fileName The file's name
-	 * @param contents The file data
+	 * @param data The file data
 	 * @param charSet The character set of the data file
 	 */
 	public RawDataFile(Instrument instrument, String fileName, byte[] data, Charset charSet) {
@@ -93,6 +101,15 @@ public class RawDataFile {
 		this.charSet = charSet;
 	}
 	
+	/**
+	 * Initialise a new empty file with data optionally retrieved from the file store
+	 * @param instrument The instrument to which the file belongs
+	 * @param fileName The file's name
+	 * @param data The array to contain the file's data
+	 * @param fromStore If {@code true}, the file data is loaded from the file store into the data array.
+	 * @throws IOException If an I/O error occurs while reading the file data from disk
+	 * @throws RawDataFileException If any other other error occurs while retrieving the file data
+	 */
 	public RawDataFile(Instrument instrument, String fileName, byte[] data, boolean fromStore) throws IOException, RawDataFileException {
 		this.instrument = instrument;
 		this.fileName = fileName;
@@ -106,7 +123,7 @@ public class RawDataFile {
 	/**
 	 * Shortcut method to extract the file contents without storing any messages
 	 * @throws RawDataFileException If the file cannot be extracted
-	 * @throws IOException If there is an error reading the data
+	 * @throws IOException If an I/O error occurs while reading the file data from disk
 	 */
 	private void readData() throws RawDataFileException, IOException {
 		readData(null);
@@ -114,8 +131,8 @@ public class RawDataFile {
 
 	/**
 	 * Extract the file contents when retrieved from the file store
-	 * @throws IOException
-	 * @throws RawDataFileException
+	 * @throws IOException If an I/O error occurs while reading the file data from disk
+	 * @throws RawDataFileException If any other other error occurs while retrieving the file data
 	 */
 	private void readDataFromStore() throws IOException, RawDataFileException {
 		/*
@@ -205,7 +222,7 @@ public class RawDataFile {
 	 * Extract the contents of the file ready to be processed
 	 * @param messages A list to contain any error messages. Can be null.
 	 * @throws RawDataFileException If the file cannot be extracted
-	 * @throws IOException If there is an error reading the data
+	 * @throws IOException If an I/O error occurs while reading the file data from disk
 	 */
 	private void readData(List<String> messages) throws RawDataFileException, IOException {
 		/*
@@ -270,8 +287,10 @@ public class RawDataFile {
 	/**
 	 * Returns a list of the dates of every non-ignored line in
 	 * the data file (i.e. lines that are either measurements or gas standards).
+	 * @param messages The set of messages being used in processing the file. Any new messages will be added to the list
 	 * @return The list of dates
-	 * @throws IOException 
+	 * @throws IOException If an I/O error occurs while reading the file data from disk
+	 * @throws RawDataFileException If any other other error occurs while retrieving the file data
 	 */
 	@Deprecated
 	public List<Calendar> getDates(List<String> messages) throws RawDataFileException, IOException {
@@ -283,6 +302,12 @@ public class RawDataFile {
 		return dates;
 	}
 	
+	/**
+	 * Construct the list of date/times for each record in the data file
+	 * @param messages The set of messages to add any messages raised during the list construction
+	 * @throws IOException If an I/O error occurs while reading the file data from disk
+	 * @throws RawDataFileException If any other other error occurs while retrieving the file data
+	 */
 	private void createDatesList(List<String> messages) throws RawDataFileException, IOException {
 		/*
 		
@@ -340,9 +365,10 @@ public class RawDataFile {
 	/**
 	 * Get the contents of the file as a CSV string - one record per line.
 	 * Commas within fields are escaped.
+	 * @param includeHeader Indicates whether or not the file header should be incuded
 	 * @return The contents of the file as a CSV string
-	 * @throws RawDataFileException If the contents cannot be extracted
-	 * @throws IOException If an error occurs while processing the file content
+	 * @throws RawDataFileException If the file contents cannot be extracted
+	 * @throws IOException If an I/O error occurs while reading the file data from disk
 	 */
 	public String getContentsAsString(boolean includeHeader) throws RawDataFileException, IOException {
 		
@@ -421,6 +447,13 @@ public class RawDataFile {
 		return recordCount;
 	}
 	
+	/**
+	 * Get the list of data fields from a given line in the file
+	 * @param lineNumber The line number
+	 * @return The data fields
+	 * @throws RawDataFileException If the file contents cannot be extracted
+	 * @throws IOException If an I/O error occurs while reading the file data from disk
+	 */
 	public List<String> getLineData(int lineNumber) throws RawDataFileException, IOException {
 		if (null == contents) {
 			readData();
@@ -429,6 +462,13 @@ public class RawDataFile {
 		return contents.get(lineNumber);
 	}
 	
+	/**
+	 * Get the specified line from the file in its original form
+	 * @param lineNumber The line number
+	 * @return The line
+	 * @throws RawDataFileException If the file contents cannot be extracted
+	 * @throws IOException If an I/O error occurs while reading the file data from disk
+	 */
 	public String getOriginalLine(int lineNumber) throws RawDataFileException, IOException {
 		return null;
 		/*
@@ -447,6 +487,15 @@ public class RawDataFile {
 		*/
 	}
 	
+	/**
+	 * Get the line number of a record that has a specific date/time. If there is
+	 * no line with the specified date/time, an exception is thrown
+	 * @param date The date/time
+	 * @param start Start at the specified line
+	 * @return The matching line number
+	 * @throws RawDataFileException If the file cannot be read from the file store, or no line exists with the specified date
+	 * @throws IOException If an error occurs while processing the file content
+	 */
 	@Deprecated
 	public int findLineByDate(Calendar date, int start) throws RawDataFileException, IOException {
 
@@ -469,6 +518,12 @@ public class RawDataFile {
 		return currentLine;
 	}
 	
+	/**
+	 * Get the file header, with each line divided into fields
+	 * @return The file header
+	 * @throws RawDataFileException If the file cannot be read from the file store, or no line exists with the specified date
+	 * @throws IOException If an error occurs while processing the file content
+	 */
 	public List<List<String>> getHeaderLines() throws RawDataFileException, IOException {
 		if (null == headerLines) {
 			readData(null);
