@@ -21,22 +21,44 @@ import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
 
 /**
- * Utility class for handling pools
+ * Utility class for handling resources required by the web application.
+ * The Resource Manager is a singleton object, which is created during
+ * initialisation of the web application
  * @author Steve Jones
  *
  */
 public class ResourceManager implements ServletContextListener {
 
+	/**
+	 * The name of the QC Routines configuration for routines run when files
+	 * are first uploaded
+	 */
 	public static final String INITIAL_CHECK_ROUTINES_CONFIG = "InitialCheck";
 	
+	/**
+	 * The name of the QC routines configuration for routines run during
+	 * full automatic QC (after data reduction)
+	 */
 	public static final String QC_ROUTINES_CONFIG = "QC";
 
+	/**
+	 * The application's data source
+	 */
 	private DataSource dbDataSource;
 	
+	/**
+	 * The application's configuration
+	 */
 	private Properties configuration;
 	
+	/**
+	 * The column configuration used by the QC routines
+	 */
 	private ColumnConfig columnConfig;
 	
+	/**
+	 * The singleton instance of the resource manage
+	 */
 	private static ResourceManager instance = null;
 	
 	@Override
@@ -102,18 +124,34 @@ public class ResourceManager implements ServletContextListener {
         // NOOP.
     }
 
+    /**
+     * Retrieve the application's data source
+     * @return The data source
+     */
     public DataSource getDBDataSource() {
         return dbDataSource;
     }
     
+    /**
+     * Retrieve the application configuration
+     * @return The application configuration
+     */
     public Properties getConfig() {
         return configuration;
     }
 
+    /**
+     * Retrieve the column configuration for the QC routines
+     * @return The column configuration
+     */
     public ColumnConfig getColumnConfig() {
     	return columnConfig;
     }
     
+    /**
+     * Retrieve the singleton instance of the Resource Manager
+     * @return
+     */
     public static ResourceManager getInstance() {
         return instance;
     }
