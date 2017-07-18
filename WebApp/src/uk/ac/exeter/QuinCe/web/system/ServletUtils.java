@@ -4,8 +4,6 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
-
 /**
  * Utility functions for beans, filters, servlets etc.
  * @author Steve Jones
@@ -13,6 +11,11 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
  */
 public class ServletUtils {
 
+	/**
+	 * Get the application's resource mananger
+	 * @return The resource manager
+	 * @throws ResourceException If the resource manager cannot be retrieved
+	 */
 	public static ResourceManager getResourceManager() throws ResourceException {
 		try {
 			return ResourceManager.getInstance();
@@ -24,7 +27,7 @@ public class ServletUtils {
 	/**
 	 * Retrieve a database connection from the pool
 	 * @return A database connection
-	 * @throws DatabaseException If there is an error connecting to the database
+	 * @throws ResourceException If there is an error connecting to the database
 	 */
 	public static DataSource getDBDataSource() throws ResourceException {
 		try {

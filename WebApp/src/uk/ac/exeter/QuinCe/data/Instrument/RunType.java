@@ -12,6 +12,9 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 @Deprecated
 public class RunType implements Comparable<RunType>, Serializable {
 
+	/**
+	 * The serial version UID
+	 */
 	private static final long serialVersionUID = -3429047807578653646L;
 
 	/**
@@ -34,6 +37,9 @@ public class RunType implements Comparable<RunType>, Serializable {
 	 */
 	public static final int RUN_TYPE_STANDARD = 2;
 	
+	/**
+	 * For searches etc, indicates that both atmospheric and water run types should be matched
+	 */
 	public static final int RUN_TYPE_BOTH = 3;
 	
 	/**
@@ -59,6 +65,7 @@ public class RunType implements Comparable<RunType>, Serializable {
 	
 	/**
 	 * Constructor for all details
+	 * @param id The database ID of the run type
 	 * @param instrumentID The ID of the instrument to which the RunType belongs
 	 * @param name The name of the run type
 	 * @param runType The type of the run type
