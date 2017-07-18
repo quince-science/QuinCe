@@ -10,47 +10,83 @@ import java.util.Random;
 
 
 /**
- * 
- * Password Hashing With PBKDF2 (<a href="http://crackstation.net/hashing-security.htm">http://crackstation.net/hashing-security.htm</a>}).
- * Copyright (c) 2013, Taylor Hornby
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, 
- * this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation 
- * and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
- * POSSIBILITY OF SUCH DAMAGE.
+ * <p>
+ *   Password Hashing With PBKDF2 (<a href="http://crackstation.net/hashing-security.htm">http://crackstation.net/hashing-security.htm</a>).
+ *   Copyright (c) 2013, Taylor Hornby
+ *   All rights reserved.
+ * </p>
+ * <p>
+ *   Redistribution and use in source and binary forms, with or without 
+ *   modification, are permitted provided that the following conditions are met:
+ * </p>
+ * <ol>
+ *   <li>
+ *     Redistributions of source code must retain the above copyright notice, 
+ *     this list of conditions and the following disclaimer.
+ *   </li>
+ *   <li>
+ *     Redistributions in binary form must reproduce the above copyright notice,
+ * 	   this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *   </li>
+ * </ol>
+ * <p>
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ *   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ *   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
+ *   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ *   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ *   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ *   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ *   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ *   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *   POSSIBILITY OF SUCH DAMAGE.
+ * </p>
  * 
  * @author: havoc AT defuse.ca
  * @author: Steve Jones
  */
 public class PasswordHash
 {
-    public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
+    /**
+     * The algorithm to use for the hashes. CHANGING THIS WILL BREAK
+     * EXISTING HASHES.
+     */
+	public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
 
-    // The following constants may be changed without breaking existing hashes.
+    /**
+     * The size of the salt in bytes. Can be changed without breaking existing hashes. 
+     */
     public static final int SALT_BYTE_SIZE = 20;
+    
+    /**
+     * The size of the hash in bytes. Can be changed without breaking existing hashes.
+     */
     public static final int HASH_BYTE_SIZE = 45;
+    
+    /**
+     * The number of iterations to use in the hashing algorithm.
+     * Can be changed without breaking existing hashes.
+     */
     public static final int PBKDF2_ITERATIONS = 1000;
 
+    /**
+     * The index of the iteration count in password validation parameters.
+     * @see #validatePassword(char[], String)
+     */
     public static final int ITERATION_INDEX = 0;
+
+    /**
+     * The index of the salt in password validation parameters.
+     * @see #validatePassword(char[], String)
+     */
     public static final int SALT_INDEX = 1;
+
+    /**
+     * The index of the algorithm in password validation parameters.
+     * @see #validatePassword(char[], String)
+     */
     public static final int PBKDF2_INDEX = 2;
     
 	/**
@@ -64,6 +100,8 @@ public class PasswordHash
      *
      * @param   password    the password to hash
      * @return              a salted PBKDF2 hash of the password
+     * @throws NoSuchAlgorithmException If the chosen hashing algorithm does not exist
+     * @throws InvalidKeySpecException If the key specification is invalid
      */
     public static String createHash(String password)
         throws NoSuchAlgorithmException, InvalidKeySpecException
@@ -76,6 +114,8 @@ public class PasswordHash
      *
      * @param   password    the password to hash
      * @return              a salted PBKDF2 hash of the password
+     * @throws NoSuchAlgorithmException If the chosen hashing algorithm does not exist
+     * @throws InvalidKeySpecException If the key specification is invalid
      */
     public static String createHash(char[] password)
         throws NoSuchAlgorithmException, InvalidKeySpecException
@@ -97,6 +137,8 @@ public class PasswordHash
      * @param   password        the password to check
      * @param   correctHash     the hash of the valid password
      * @return                  true if the password is correct, false if not
+     * @throws NoSuchAlgorithmException If the chosen hashing algorithm does not exist
+     * @throws InvalidKeySpecException If the key specification is invalid
      */
     public static boolean validatePassword(String password, String correctHash)
         throws NoSuchAlgorithmException, InvalidKeySpecException
@@ -110,6 +152,8 @@ public class PasswordHash
      * @param   password        the password to check
      * @param   correctHash     the hash of the valid password
      * @return                  true if the password is correct, false if not
+     * @throws NoSuchAlgorithmException If the chosen hashing algorithm does not exist
+     * @throws InvalidKeySpecException If the key specification is invalid
      */
     public static boolean validatePassword(char[] password, String correctHash)
         throws NoSuchAlgorithmException, InvalidKeySpecException
@@ -258,7 +302,8 @@ public class PasswordHash
 	 * This means you get 5 times the characters for the same number of entropy bits. This is the fastest way
 	 * to generate purely random alphanumeric strings.
 	 * 
-     * @return The generated salt
+     * @param size The length of the string
+     * @return The generated string
      */
     public static byte[] generateRandomString(int size) {
     	SecureRandom srand = new SecureRandom();
