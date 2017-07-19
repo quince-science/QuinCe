@@ -43,9 +43,10 @@ public class FileDefinitionBuilder extends FileDefinition {
 	
 	/**
 	 * Create a new file definition with the default description
+ 	 * @param fileSet The file set that will contain this file definition
 	 */
 	protected FileDefinitionBuilder(NewInstrumentFileSet fileSet) {
-		super(DEFAULT_DESCRIPTION);
+		super(DEFAULT_DESCRIPTION, fileSet);
 
 		int counter = 1;
 		while (fileSet.containsFileDescription(getFileDescription())) {
@@ -57,9 +58,10 @@ public class FileDefinitionBuilder extends FileDefinition {
 	/**
 	 * Create a new file definition with a specified description
 	 * @param fileDescription The file description
+	 * @param fileSet The file set that will contain this file definition
 	 */
-	public FileDefinitionBuilder(String fileDescription) {
-		super(fileDescription);
+	public FileDefinitionBuilder(String fileDescription, NewInstrumentFileSet fileSet) {
+		super(fileDescription, fileSet);
 	}
 	
 	/**
@@ -200,7 +202,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 */
 	public static FileDefinitionBuilder copy(FileDefinitionBuilder source) {
 		
-		FileDefinitionBuilder dest = new FileDefinitionBuilder(source.getFileDescription());
+		FileDefinitionBuilder dest = new FileDefinitionBuilder(source.getFileDescription(), (NewInstrumentFileSet) source.getFileSet());
 
 		try {
 			dest.setHeaderType(source.getHeaderType());

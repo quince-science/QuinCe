@@ -99,7 +99,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * Indicates whether or not the positions in this file
 	 * are the primary ones to use in calculations
 	 */
-	private boolean positionPrimary = false;
+	protected boolean positionPrimary = false;
 	
 	/**
 	 * The longitude specification 
@@ -117,10 +117,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	private DateTimeSpecification dateTimeSpecification;
 	
 	/**
-	 * The year in which the first measurement in the file was taken.
-	 * Used when the year is not included in the file's data
+	 * The file set of which this definition is a member
 	 */
-	private int fileYear = -1;
+	private InstrumentFileSet fileSet;
 	
 	static {
 		SEPARATOR_LOOKUP = new HashMap<String, String>(4);
@@ -134,12 +133,14 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * Create a new file with the given description.
 	 *
 	 * @param fileDescription The file description
+	 * @param fileSet The file set of which this definition is a member
 	 */
-	public FileDefinition(String fileDescription) {
+	public FileDefinition(String fileDescription, InstrumentFileSet fileSet) {
 		this.fileDescription = fileDescription;
 		this.longitudeSpecification = new LongitudeSpecification();
 		this.latitudeSpecification = new LatitudeSpecification();
 		this.dateTimeSpecification = new DateTimeSpecification(this);
+		this.fileSet = fileSet;
 	}
 	
 	/**
@@ -410,12 +411,18 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	}
 	
 	/**
-	 * Get the year in which the first measurement
-	 * in the file was taken.
-	 * @return The file year
+	 * Set whether or not this file holds the
+	 * primary position information for the instrument.
+	 * @param positionPrimary {@code true} if this file contains the primary position information; {@code false} if it does not.
+	 * @throws FileSetException If this file is somehow not in the parent InstrumentFileSet.
+	 * @see InstrumentFileSet#setPrimaryPositionFile(String)
 	 */
-	public int getFileYear() {
-		return fileYear;
+	public void setPositionPrimary(boolean positionPrimary) throws FileSetException {
+		if (positionPrimary) {
+			fileSet.setPrimaryPositionFile(fileDescription);
+		} else {
+			fileSet.setPrimaryPositionFile(null);
+		}
 	}
 	
 	/**
@@ -427,5 +434,13 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 */
 	public boolean hasHeader() {
 		return (headerLines > 0 || null != headerEndString);
+	}
+	
+	/**
+	 * Get the file set of which this definition is a member
+	 * @return The parent file set
+	 */
+	public InstrumentFileSet getFileSet() {
+		return fileSet;
 	}
 }
