@@ -1,9 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
 
 /**
  * Methods to handle and process a set of file definitions for an instrument
@@ -96,7 +93,7 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 			fileToSet = fileDescription.trim();
 		}
 		
-		if (null != fileToSet && !contains(fileDescription)) {
+		if (null != fileToSet && !containsFileDescription(fileDescription)) {
 			throw new FileSetException("The file '" + fileDescription + "' does not exist");
 		}
 		

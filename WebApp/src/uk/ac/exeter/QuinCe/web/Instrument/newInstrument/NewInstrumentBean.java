@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import uk.ac.exeter.QuinCe.data.Instrument.FileSetException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.InvalidPositionFormatException;
@@ -211,6 +212,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * The start time extracted from the file header
 	 */
 	private String startTimeDate = null;
+	
+	/**
+	 * The file that contains the primary position information
+	 */
+	private String primaryPositionFile = null;
 	
 	/**
 	 * Begin a new instrument definition
@@ -1118,11 +1124,37 @@ public class NewInstrumentBean extends FileUploadBean {
 	/**
 	 * Get the time and position column assignments for all
 	 * files related to this instrument.
+	 * Required because {@link NewInstrumentFileSet} is a list, so
+	 * JSF can't access named properties.
 	 * @return The time and position assignments
 	 * @throws DateTimeSpecificationException If an error occurs while generating the date/time string
 	 * @see NewInstrumentFileSet#getTimePositionAssignments()
 	 */
 	public String getTimePositionAssignments() throws DateTimeSpecificationException {
 		return instrumentFiles.getTimePositionAssignments();
+	}
+	
+	/**
+	 * Get the file that contains the primary position data for the instrument.
+	 * @return The primary position file
+	 */
+	public String getPrimaryPositionFile() {
+		return primaryPositionFile;
+	}
+	
+	/**
+	 * Set the file that contains the primary position data for the instrument.
+	 * @param primaryPositionFile The primary position file
+	 */
+	public void setPrimaryPositionFile(String primaryPositionFile) {
+		this.primaryPositionFile = primaryPositionFile;
+	}
+	
+	/**
+	 * Assign the primary position file to the instrument file set
+	 * @throws FileSetException If the specified file does not exist in the file set
+	 */
+	public void assignPrimaryPositionFile() throws FileSetException {
+		instrumentFiles.setPrimaryPositionFile(primaryPositionFile);
 	}
 }

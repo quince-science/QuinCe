@@ -384,6 +384,19 @@ function renderPositionAssignments() {
 			}
 			positionHtml += '</table>';
 			
+			positionHtml += '<h4>Primary Position File</h4>';
+			positionHtml += 'Primary position file? <b>';
+			if (assignment['primaryPosition']) {
+				positionHtml += 'YES';
+			} else {
+				positionHtml += 'NO';
+			}
+			positionHtml += '</b><br/>';
+			
+			if (!assignment['primaryPosition']) {
+				positionHtml += '<button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="setPrimaryPositionFile(' + i + '); return false;">';
+				positionHtml += '<span class="ui-button-text ui-c">Set As Primary Position File</span></button>';
+			}
 		}
 		
 		$('#positionColumns-' + i).html(positionHtml);
@@ -402,6 +415,11 @@ function renderPositionAssignments() {
 	}
 	
 	return positionOK;
+}
+
+function setPrimaryPositionFile(fileIndex) {
+	$('#newInstrumentForm\\:primaryPositionFile').val(filesAndColumns[fileIndex]['description']);
+	$('#newInstrumentForm\\:setPrimaryPositionFileLink').click();
 }
 
 function buildMainAssignmentMenu(file, column) {
