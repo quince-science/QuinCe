@@ -59,7 +59,9 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
 			count++;
 			
 			json.append('{');
-			json.append("\"longitude\":");
+			json.append("\"primaryPosition\":");
+			json.append(file.getPositionPrimary());
+			json.append(",\"longitude\":");
 			json.append(file.getLongitudeSpecification().getJsonString());
 			json.append(",\"latitude\":");
 			json.append(file.getLatitudeSpecification().getJsonString());
