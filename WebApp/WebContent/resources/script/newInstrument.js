@@ -844,3 +844,43 @@ function updateStartTime() {
 		PF('jdayFromStartAssign').enable();
 	}
 }
+
+function checkSensorName() {
+	var nameOK = true;
+	
+	var enteredName = $('#newInstrumentForm\\:sensorAssignmentName').val().trim();
+	if (enteredName == "") {
+		nameOK = false;
+	}
+	
+	if (nameOK) {
+		var sensorType = $('#newInstrumentForm\\:sensorAssignmentSensorType').val();
+		var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
+		
+		var currentSensorAssignments = null; 
+		
+		for (var i = 0; i < sensorAssignments.length; i++) {
+			if (sensorAssignments[i]['name'] == sensorType) {
+				currentSensorAssignments = sensorAssignments[i]['assignments'];
+				break;
+			}
+		}
+		
+		if (null != currentSensorAssignments && currentSensorAssignments.length > 0) {
+			for (var i = 0; i < currentSensorAssignments.length; i++) {
+				if (currentSensorAssignments[i]['sensorName'] == enteredName) {
+					nameOK = false;
+					break;
+				}
+			}
+		}
+	}
+	
+	if (!nameOK) {
+		$('#sensorNameMessage').show();
+		PF('sensorAssignmentAssignButton').disable();
+	} else {
+		$('#sensorNameMessage').hide();
+		PF('sensorAssignmentAssignButton').enable();
+	}
+}

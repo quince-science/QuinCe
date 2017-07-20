@@ -64,7 +64,11 @@
 					<table>
 						<tr>
 							<td><p:outputLabel value="Sensor Name:"/></td>
-							<td><p:inputText id="sensorAssignmentName" widgetVar="sensorName" value="#{newInstrumentBean.sensorAssignmentName}" size="20"/></td>
+							<td><p:inputText id="sensorAssignmentName" widgetVar="sensorName" value="#{newInstrumentBean.sensorAssignmentName}" size="20" onkeyup="checkSensorName()"/></td>
+						</tr>
+						<tr>
+							<td></td>
+							<td><div id="sensorNameMessage" class="errorBox">You must provide a unique sensor name</div></td>
 						</tr>
 					</table>
 				</div>
@@ -101,7 +105,7 @@
 				</div>
 				
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
-					<p:commandButton value="Assign" ajax="true" action="#{newInstrumentBean.storeSensorAssignment}"
+					<p:commandButton widgetVar="sensorAssignmentAssignButton" value="Assign" ajax="true" action="#{newInstrumentBean.storeSensorAssignment}"
 					  process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer"
 					  update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer sensorAssignments"
 					  oncomplete="sensorAssigned();"/>
