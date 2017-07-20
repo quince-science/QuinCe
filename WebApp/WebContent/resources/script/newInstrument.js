@@ -601,6 +601,7 @@ function openAssignSensorDialog(sensor, file, column) {
 	
 	if (canBeNamed(sensor)) {
 		$('#sensorAssignmentNameContainer').show();
+		$('#newInstrumentForm\\:sensorAssignmentName').val(filesAndColumns[file]['columns'][column]);
 	} else {
 		$('#sensorAssignmentNameContainer').hide();
 	}
@@ -625,6 +626,7 @@ function openAssignSensorDialog(sensor, file, column) {
 		$('#sensorAssignmentPostCalibration').hide();
 	}
 	
+	PF('sensorAssignmentAssignButton').enable();
 	PF('sensorAssignmentDialog').show();
 }
 
