@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.InvalidSeparatorException;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.web.html.HtmlUtils;
@@ -491,5 +492,11 @@ public class FileDefinitionBuilder extends FileDefinition {
 		}
 		
 		return matchedLine;
+	}
+	
+	@Override
+	public void setSeparatorName(String separatorName) throws InvalidSeparatorException {
+		super.setSeparatorName(separatorName);
+		super.setColumnCount(calculateColumnCount());
 	}
 }
