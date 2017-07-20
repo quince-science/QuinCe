@@ -189,6 +189,11 @@ table.sampleData {
 	cursor: pointer;
 }
 
+.assignmentColAssigned {
+	opacity:.35;filter:Alpha(Opacity=35);background-image:none; /* Copied from PrimeFaces theme */
+	cursor: pointer;
+}
+
 .assignmentMenuEntry {
 	margin-bottom: 2px;
 	cursor: pointer;

@@ -36,7 +36,7 @@
 	
 		<h:form id="newInstrumentForm" metho="post" charset="utf8">
 		
-			<h:inputHidden id="sensorAssignments" value="#{newInstrumentBean.sensorAssignments}" size="100"/>
+			<h:inputHidden id="sensorAssignments" value="#{newInstrumentBean.sensorAssignments}"/>
 			<h:inputHidden id="timePositionAssignments" value="#{newInstrumentBean.timePositionAssignments}"/>
 
 			<h:inputHidden id="primaryPositionFile" value="#{newInstrumentBean.primaryPositionFile}"/>
@@ -361,7 +361,7 @@
 							
 							var headers = JSON.parse('#{iFile.fileColumns}');
 							for (var i = 0; i &lt; headers.length; i++) {
-								html += '<th class="ui-state-default assignmentCol" onclick="showMainAssignmentMenu(event, ' + tabCount + ', ' + i + ')">';
+								html += '<th id="colHead_' + tabCount + '_' + i + '" class="ui-state-default assignmentCol" onclick="showMainAssignmentMenu(event, ' + tabCount + ', ' + i + ')">';
 								html += $('<div/>').text(headers[i]).html(); // Funky HTML escaping
 								html += '</th>';
 							}

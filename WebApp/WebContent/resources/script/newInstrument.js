@@ -224,7 +224,71 @@ function renderSensorAssignments() {
 	
 	$('#assignmentsList').html(html);
 	
+	updateTableHeaders();
+	
 	return sensorsOK;
+}
+
+function updateTableHeaders() {
+	// Reset all headers
+	for (var i = 0; i < filesAndColumns.length; i++) {
+		for (var j = 0; j < filesAndColumns[i]['columns'].length; j++) {
+			$('#colHead_' + i + '_' + j).removeClass('assignmentColAssigned');
+		}
+	}
+
+	// Sensor assignments
+	var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
+	
+	for (var i = 0; i < sensorAssignments.length; i++) {
+		var assignments = sensorAssignments[i]['assignments'];
+		for (var j = 0; j < assignments.length; j++) {
+			var assignment = assignments[j];
+			var fileIndex = getFileIndex(assignment['file']);
+			var columnIndex = assignment['column'];
+			$('#colHead_' + fileIndex + '_' + columnIndex).addClass('assignmentColAssigned');
+		}
+	}
+	
+	var timePositionAssignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+	
+	for (var i = 0; i < timePositionAssignments.length; i++) {
+		
+		// Date/Time
+		var dateTime = timePositionAssignments[i]['dateTime'];
+		for (var j = 0; j < dateTime.length; j++) {
+			$('#colHead_' + i + '_' + dateTime[j]['column']).addClass('assignmentColAssigned');
+		}
+		
+		var latitude = timePositionAssignments[i]['latitude'];
+		if (latitude['valueColumn'] > -1) {
+			$('#colHead_' + i + '_' + latitude['valueColumn']).addClass('assignmentColAssigned');
+		}
+		if (latitude['hemisphereColumn'] > -1) {
+			$('#colHead_' + i + '_' + latitude['hemisphereColumn']).addClass('assignmentColAssigned');
+		}
+		
+		var longitude = timePositionAssignments[i]['longitude'];
+		if (longitude['valueColumn'] > -1) {
+			$('#colHead_' + i + '_' + longitude['valueColumn']).addClass('assignmentColAssigned');
+		}
+		if (longitude['hemisphereColumn'] > -1) {
+			$('#colHead_' + i + '_' + longitude['hemisphereColumn']).addClass('assignmentColAssigned');
+		}
+	}
+}
+
+function getFileIndex(fileName) {
+	var index = -1;
+	
+	for (var i = 0; i < filesAndColumns.length; i++) {
+		if (filesAndColumns[i]['description'] == fileName) {
+			index = i;
+			break;
+		}
+	}
+	
+	return index;
 }
 
 function renderDateTimeAssignments() {
@@ -286,6 +350,8 @@ function renderDateTimeAssignments() {
 		}
 	}
 		
+	updateTableHeaders();
+	
 	return timeOK;
 }
 
@@ -413,6 +479,8 @@ function renderPositionAssignments() {
 			$('#positionColumns-' + i).closest('fieldset').addClass('invalidFileAssignment');
 		}
 	}
+	
+	updateTableHeaders();
 	
 	return positionOK;
 }
