@@ -564,7 +564,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @param sensorAssignmentName The sensor name
 	 */
 	public void setSensorAssignmentName(String sensorAssignmentName) {
-		this.sensorAssignmentFile = sensorAssignmentName;
+		this.sensorAssignmentName = sensorAssignmentName;
 	}
 
 	/**
