@@ -921,6 +921,9 @@ function showDateTimeSubmenu(file, column) {
 function openDateTimeDialog(item, file, column) {
 	$('#newInstrumentForm\\:dateTimeFile').val(filesAndColumns[file]['description']);
 	$('#newInstrumentForm\\:dateTimeColumn').val(column);
+	$('#newInstrumentForm\\:startTimePrefix').val('');
+	$('#newInstrumentForm\\:startTimeSuffix').val('');
+	
 
 	var variableName = item.substring(9, item.length);
 	$('#newInstrumentForm\\:dateTimeVariable').val(variableName);
