@@ -8,6 +8,7 @@ import javax.servlet.http.HttpSession;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.User.LoginBean;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Several Managed Beans are used in the QuinCe application. This abstract class provides a
@@ -140,5 +141,14 @@ public abstract class BaseManagedBean {
 	 */
 	protected String getFormName() {
 		return "DEFAULT_FORM";
+	}
+	
+	/**
+	 * Get the URL stub for the application
+	 * @return The application URL stub
+	 */
+	public String getUrlStub() {
+		// TODO This can probably be replaced with something like FacesContext.getCurrentInstance().getExternalContext().getRe‌​questContextPath()
+		return ResourceManager.getInstance().getConfig().getProperty("app.urlstub");
 	}
 }

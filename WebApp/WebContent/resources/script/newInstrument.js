@@ -507,7 +507,7 @@ function buildMainAssignmentMenu(file, column) {
 		menuHtml += '<li class="ui-menuitem ui-widget ui-corner-all">';
 		menuHtml += '<a href="#" onclick="unAssign(\'' + file + '\', \'' + column + '\')" class="assignmentMenuEntry">';
 		menuHtml += '<div class="assignmentMenuEntryIcon">';
-		menuHtml += '<img src="/QuinCe/resources/image/x-red.svg" width="16" height="16"/></div>'
+		menuHtml += '<img src="' + urlStub + '/resources/image/x-red.svg" width="16" height="16"/></div>'
 		menuHtml += '<div class="assignmentMenuEntryText">' + columnAssignment + '</div>';
 		menuHtml += '</a></li>';
 	} else {
@@ -923,7 +923,6 @@ function openDateTimeDialog(item, file, column) {
 	$('#dateFormatContainer').hide();
 	$('#timeFormatContainer').hide();
 	$('#jdayFromStartContainer').hide();
-	
 	
 	switch (variableName) {
 	case "Combined Date and Time": {
