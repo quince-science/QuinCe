@@ -322,6 +322,8 @@ function renderDateTimeAssignments() {
 			} else {
 				timeHtml += '<td>';
 				timeHtml += filesAndColumns[i]['columns'][dtAssignment['column']];
+				timeHtml += '<a href="#" onclick="unAssign(' + i + ', ' + dtAssignment['column'] + ')">';
+				timeHtml += '<img src="' + urlStub + '/resources/image/x-red.svg" width="14" height="14" class="otherAssignmentIcon"/></a>'
 				timeHtml += '</td>';
 			}
 			
@@ -378,6 +380,8 @@ function renderPositionAssignments() {
 			} else {
 				positionHtml += '<td>';
 				positionHtml += filesAndColumns[i]['columns'][assignment['longitude']['valueColumn']];
+				positionHtml += '<a href="#" onclick="unAssign(' + i + ', ' + assignment['longitude']['valueColumn'] + ')">';
+				positionHtml += '<img src="' + urlStub + '/resources/image/x-red.svg" width="14" height="14" class="otherAssignmentIcon"/></a>'
 				positionHtml += '</td></tr><tr><td><label class="ui-outputlabel ui-widget">Format:</label></td><td>';
 				
 				switch(assignment['longitude']['format']) {
@@ -405,6 +409,8 @@ function renderPositionAssignments() {
 					} else {
 						positionHtml += '<td>';
 						positionHtml += filesAndColumns[i]['columns'][assignment['longitude']['hemisphereColumn']];
+						positionHtml += '<a href="#" onclick="unAssign(' + i + ', ' + assignment['longitude']['hemisphereColumn'] + ')">';
+						positionHtml += '<img src="' + urlStub + '/resources/image/x-red.svg" width="14" height="14" class="otherAssignmentIcon"/></a>'
 						positionHtml += '</td>';
 					}
 					positionHtml += '</tr>';
@@ -420,6 +426,8 @@ function renderPositionAssignments() {
 			} else {
 				positionHtml += '<td>';
 				positionHtml += filesAndColumns[i]['columns'][assignment['latitude']['valueColumn']];
+				positionHtml += '<a href="#" onclick="unAssign(' + i + ', ' + assignment['latitude']['valueColumn'] + ')">';
+				positionHtml += '<img src="' + urlStub + '/resources/image/x-red.svg" width="14" height="14" class="otherAssignmentIcon"/></a>'
 				positionHtml += '</td></tr><tr><td><label class="ui-outputlabel ui-widget">Format:</label></td><td>';
 				
 				switch(assignment['latitude']['format']) {
@@ -443,6 +451,8 @@ function renderPositionAssignments() {
 					} else {
 						positionHtml += '<td>';
 						positionHtml += filesAndColumns[i]['columns'][assignment['latitude']['hemisphereColumn']];
+						positionHtml += '<a href="#" onclick="unAssign(' + i + ', ' + assignment['latitude']['hemisphereColumn'] + ')">';
+						positionHtml += '<img src="' + urlStub + '/resources/image/x-red.svg" width="14" height="14" class="otherAssignmentIcon"/></a>'
 						positionHtml += '</td>';
 					}
 					positionHtml += '</tr>';
