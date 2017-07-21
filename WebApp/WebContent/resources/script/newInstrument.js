@@ -360,6 +360,7 @@ function renderDateTimeAssignments() {
 function renderPositionAssignments() {
 	var positionOK = true;
 	var positionsAssigned = 0;
+	var primaryPositionFileAssigned = false;
 	
 	var assignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
 	
@@ -464,6 +465,7 @@ function renderPositionAssignments() {
 			positionHtml += 'Primary position file? <b>';
 			if (assignment['primaryPosition']) {
 				positionHtml += 'YES';
+				primaryPositionFileAssigned = true;
 			} else {
 				positionHtml += 'NO';
 			}
@@ -484,7 +486,7 @@ function renderPositionAssignments() {
 		}
 	}
 	
-	if (positionsAssigned == 0) {
+	if (positionsAssigned == 0 || !primaryPositionFileAssigned) {
 		for (var i = 0; i < filesAndColumns.length; i++) {
 			$('#positionColumns-' + i).closest('fieldset').addClass('invalidFileAssignment');
 		}
