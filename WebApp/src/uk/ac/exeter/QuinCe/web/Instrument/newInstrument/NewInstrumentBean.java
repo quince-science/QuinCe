@@ -1213,31 +1213,8 @@ public class NewInstrumentBean extends FileUploadBean {
 			unassigned = sensorAssignments.removeAssignment(fileDefinition.getFileDescription(), unassignColumn);
 			
 			if (!unassigned) {
-				LatitudeSpecification latSpec = fileDefinition.getLatitudeSpecification();
-				if (latSpec.getValueColumn() == unassignColumn) {
-					latSpec.clearValueColumn();
-					unassigned = true;
-				} else if (latSpec.getHemisphereColumn() == unassignColumn) {
-					latSpec.clearHemisphereColumn();
-					unassigned= true;
-				}
-			}
-			
-			if (!unassigned) {
-				LongitudeSpecification lonSpec = fileDefinition.getLongitudeSpecification();
-				if (lonSpec.getValueColumn() == unassignColumn) {
-					lonSpec.clearValueColumn();
-					unassigned = true;
-				} else if (lonSpec.getHemisphereColumn() == unassignColumn) {
-					lonSpec.clearHemisphereColumn();
-					unassigned= true;
-				}
-			}
-			
-			if (!unassigned) {
-				DateTimeSpecification dateTime = fileDefinition.getDateTimeSpecification();
-				unassigned = dateTime.removeAssignment(unassignColumn);
-			}
+				unassigned = fileDefinition.removeAssignment(unassignColumn);
+			}			
 		}
 	}
 }

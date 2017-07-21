@@ -443,4 +443,51 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	public InstrumentFileSet getFileSet() {
 		return fileSet;
 	}
+	
+	/**
+	 * Remove a column assignment from the date/time or position
+	 * specification. If there is no assignment for the column,
+	 * no action is taken.
+	 * @param column The column to be unassigned
+	 * @return {@code true} if an assignment was found and removed; {@code false} if not.
+	 */
+	public boolean removeAssignment(int column) {
+	
+		boolean unassigned = false;
+		
+		if (latitudeSpecification.getValueColumn() == column) {
+			latitudeSpecification.clearValueColumn();
+			unassigned = true;
+		} else if (latitudeSpecification.getHemisphereColumn() == column) {
+			latitudeSpecification.clearHemisphereColumn();
+			unassigned= true;
+		}
+	
+		if (!unassigned) {
+			if (longitudeSpecification.getValueColumn() == column) {
+				longitudeSpecification.clearValueColumn();
+				unassigned = true;
+			} else if (longitudeSpecification.getHemisphereColumn() == column) {
+				longitudeSpecification.clearHemisphereColumn();
+				unassigned= true;
+			}
+		}
+		
+		if (unassigned) {
+			if (positionPrimary) {
+				if (latitudeSpecification.getValueColumn() == -1 &&
+						latitudeSpecification.getHemisphereColumn() == -1 &&
+						longitudeSpecification.getValueColumn() == -1 &&
+						longitudeSpecification.getHemisphereColumn() == -1) {
+					
+					positionPrimary = false;
+				}
+			}
+		} else {
+			DateTimeSpecification dateTime = getDateTimeSpecification();
+			unassigned = dateTime.removeAssignment(column);
+		}
+
+		return unassigned;
+	}
 }
