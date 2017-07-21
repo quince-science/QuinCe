@@ -987,12 +987,12 @@ function updateStartTime() {
 		$('#startTimeExtractedDate').text("Could not extract date from header line");
 		$('#startTimeExtractedDate').addClass("error");
 		$('#startTimeExtractedDate').removeClass("highlight");
-		PF('jdayFromStartAssign').disable();
+		PF('dateTimeAssign').disable();
 	} else {
 		$('#startTimeExtractedDate').text(extractedDate);
 		$('#startTimeExtractedDate').removeClass("error");
 		$('#startTimeExtractedDate').addClass("highlight");
-		PF('jdayFromStartAssign').enable();
+		PF('dateTimeAssign').enable();
 	}
 }
 

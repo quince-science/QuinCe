@@ -68,7 +68,7 @@ public class HighlightedString {
 		StringBuilder json = new StringBuilder();
 		
 		json.append("{\"string\":\"");
-		json.append(string);
+		json.append(string.replaceAll(" ", "∙").replaceAll("\t", "⇥"));
 		json.append("\",\"highlightStart\":");
 		json.append(highlightStart);
 		json.append(",\"highlightEnd\":");
