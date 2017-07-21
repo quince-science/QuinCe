@@ -923,7 +923,7 @@ function openDateTimeDialog(item, file, column) {
 	$('#dateFormatContainer').hide();
 	$('#timeFormatContainer').hide();
 	$('#jdayFromStartContainer').hide();
-	PF('jdayFromStartAssign').disable();
+	
 	
 	switch (variableName) {
 	case "Combined Date and Time": {
@@ -943,6 +943,12 @@ function openDateTimeDialog(item, file, column) {
 		$('#timeFormatContainer').show();
 		break;
 	}
+	}
+
+	if (variableName == 'Julian Day/Time from start of file') {
+		PF('dateTimeAssign').disable();
+	} else {
+		PF('dateTimeAssign').enable();
 	}
 	
 	PF('dateTimeAssignmentDialog').show();

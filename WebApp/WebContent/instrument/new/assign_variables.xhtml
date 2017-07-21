@@ -325,7 +325,7 @@
 					<div id="startTimeExtractedDate" class="codeLine"></div>
 				</div>
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
-					<p:commandButton widgetVar="jdayFromStartAssign" value="Assign" ajax="true" action="#{newInstrumentBean.assignDateTime}"
+					<p:commandButton widgetVar="dateTimeAssign" value="Assign" ajax="true" action="#{newInstrumentBean.assignDateTime}"
 					  process="dateTimeFile dateTimeColumn dateTimeVariable dateTimeFormat dateFormat timeFormat"
 					  update="dateTimeFile dateTimeColumn dateTimeVariable dateTimeFormat dateFormat timeFormat timePositionAssignments"
 					  oncomplete="timePositionAssigned('dateTimeAssignmentDialog');"/>
