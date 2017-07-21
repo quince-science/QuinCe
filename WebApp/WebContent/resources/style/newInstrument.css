@@ -119,14 +119,6 @@
 	z-index: 1000;
 }
 
-.assignmentMenuItem {
-	padding: 1px !important;
-}
- 
-.assignmentMenuItemDisabled {
-	text-decoration: line-through;
-}
- 
 .assignmentListEntry {
 	--entry_color: #2779AA;
 	display: flex;
@@ -195,10 +187,22 @@ table.sampleData {
 }
 
 .assignmentMenuEntry {
-	margin-bottom: 2px;
-	cursor: pointer;
+	display: flex !important;
+	align-items: center;
 }
 
+.assignmentMenuEntryText {
+	flex-grow: 1000;
+}
+
+.assignmentMenuEntryTextDisabled {
+	text-decoration: line-through;
+}
+
+.assignmentMenuEntryIcon {
+	padding-right: 3px;
+}
+ 
 .highlight {
 	color: #00AAFF;
 }
