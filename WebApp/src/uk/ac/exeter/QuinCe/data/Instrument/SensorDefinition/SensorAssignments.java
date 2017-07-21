@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -245,5 +246,33 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 		}
 		
 		return assigned;
+	}
+	
+	/**
+	 * De-assign a file/column from this set of assignments. The assignment doesn't have
+	 * to exist; the method will return a {@code boolean} indicating whether or not
+	 * a matching assignment was found and removed.
+	 * @param fileDescription The file description
+	 * @param columnIndex The column index
+	 * @return {@code true} if an assignment was removed; {@code false} if not
+	 */
+	public boolean removeAssignment(String fileDescription, int columnIndex) {
+		
+		boolean assignmentRemoved = false;
+		
+		for (Map.Entry<SensorType, Set<SensorAssignment>> entry : entrySet()) {
+			
+			Set<SensorAssignment> assignments = entry.getValue();
+			for (SensorAssignment assignment : assignments) {
+				if (assignment.getDataFile().equalsIgnoreCase(fileDescription) && assignment.getColumn() == columnIndex) {
+					assignments.remove(assignment);
+					assignmentRemoved = true;
+					break;
+				}
+			}
+			
+		}
+		
+		return assignmentRemoved;
 	}
 }

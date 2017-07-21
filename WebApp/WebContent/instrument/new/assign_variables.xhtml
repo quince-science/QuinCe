@@ -42,6 +42,11 @@
 			<h:inputHidden id="primaryPositionFile" value="#{newInstrumentBean.primaryPositionFile}"/>
 			<p:commandLink id="setPrimaryPositionFileLink" style="invisible" ajax="true" action="#{newInstrumentBean.assignPrimaryPositionFile}"
 					process="primaryPositionFile" update="timePositionAssignments" oncomplete="renderPositionAssignments();"/>
+					
+			<h:inputHidden id="unassignFile" value="#{newInstrumentBean.unassignFile}"/>
+			<h:inputHidden id="unassignColumn" value="#{newInstrumentBean.unassignColumn}"/>
+			<p:commandLink id="unassignVariableLink" style="invisible" ajax="true" action="#{newInstrumentBean.unassignVariable}"
+					process="unassignFile unassignColumn" update="sensorAssignments timePositionAssignments" oncomplete="renderAssignments()"/>
 
 			<p:dialog header="Assign Column To Sensor" widgetVar="sensorAssignmentDialog" modal="true">
 				<h:inputHidden id="sensorAssignmentFile" value="#{newInstrumentBean.sensorAssignmentFile}"/>

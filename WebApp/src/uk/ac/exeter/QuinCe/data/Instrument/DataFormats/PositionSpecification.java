@@ -169,4 +169,18 @@ public abstract class PositionSpecification {
 		json.append('}');
 		return json.toString();
 	}
+	
+	/**
+	 * Reset the value column
+	 */
+	public void clearValueColumn() {
+		valueColumn = -1;
+	}
+	
+	/**
+	 * Reset the hemisphere column
+	 */
+	public void clearHemisphereColumn() {
+		hemisphereColumn = -1;
+	}
 }

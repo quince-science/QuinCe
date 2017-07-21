@@ -490,58 +490,70 @@ function setPrimaryPositionFile(fileIndex) {
 	$('#newInstrumentForm\\:setPrimaryPositionFileLink').click();
 }
 
+function unAssign(file, column) {
+	$('#newInstrumentForm\\:unassignFile').val(file);
+	$('#newInstrumentForm\\:unassignColumn').val(column);
+	$('#newInstrumentForm\\:unassignVariableLink').click();
+}
+
 function buildMainAssignmentMenu(file, column) {
 	var columnAssignment = getColumnAssignment(file, column);
 	var timePositionAssignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
 
 	var menuHtml = '';
+	menuHtml += '<ul class="ui-menu-list ui-helper-reset">';
 	
 	if (null != columnAssignment) {
-		// Add the current assignment here
-	}
-	
-	menuHtml += '<ul class="ui-menu-list ui-helper-reset">';
-	menuHtml += makeParentMenuItem('DATETIMESUBMENU', 'Date/Time', file, column, 'dateTimeMenu');
-	
-	if (timePositionAssignments[file]['longitude']['valueColumn'] != -1) {
-		menuHtml += makeDisabledMenuItem('Longitude');
+		menuHtml += '<li class="ui-menuitem ui-widget ui-corner-all">';
+		menuHtml += '<a href="#" onclick="unAssign(\'' + file + '\', \'' + column + '\')" class="assignmentMenuEntry">';
+		menuHtml += '<div class="assignmentMenuEntryIcon">';
+		menuHtml += '<img src="/QuinCe/resources/image/x-red.svg" width="16" height="16"/></div>'
+		menuHtml += '<div class="assignmentMenuEntryText">' + columnAssignment + '</div>';
+		menuHtml += '</a></li>';
 	} else {
-		menuHtml += makeMenuItem('POS_longitude', 'Longitude', file, column);
-	}
-	
-
-	if (hemisphereRequired(file, 'longitude')) {
-		if (timePositionAssignments[file]['longitude']['hemisphereColumn'] != -1) {
-			menuHtml += makeDisabledMenuItem('Longitude - Hemisphere');
-		} else {
-			menuHtml += makeMenuItem('POS_longitude_hemisphere', 'Longitude - Hemisphere', file, column);
-		}
-	}
-	
-	if (timePositionAssignments[file]['latitude']['valueColumn'] != -1) {
-		menuHtml += makeDisabledMenuItem('Latitude');
-	} else {
-		menuHtml += makeMenuItem('POS_latitude', 'Latitude', file, column);
-	}
+		menuHtml += makeParentMenuItem('DATETIMESUBMENU', 'Date/Time', file, column, 'dateTimeMenu');
 		
-	if (hemisphereRequired(file, 'latitude')) {
-		if (timePositionAssignments[file]['latitude']['hemisphereColumn'] != -1) {
-			menuHtml += makeDisabledMenuItem('Latitude - Hemisphere');
+		if (timePositionAssignments[file]['longitude']['valueColumn'] != -1) {
+			menuHtml += makeDisabledMenuItem('Longitude');
 		} else {
-			menuHtml += makeMenuItem('POS_latitude_hemisphere', 'Latitude - Hemisphere', file, column);
+			menuHtml += makeMenuItem('POS_longitude', 'Longitude', file, column);
 		}
+		
+
+		if (hemisphereRequired(file, 'longitude')) {
+			if (timePositionAssignments[file]['longitude']['hemisphereColumn'] != -1) {
+				menuHtml += makeDisabledMenuItem('Longitude - Hemisphere');
+			} else {
+				menuHtml += makeMenuItem('POS_longitude_hemisphere', 'Longitude - Hemisphere', file, column);
+			}
+		}
+		
+		if (timePositionAssignments[file]['latitude']['valueColumn'] != -1) {
+			menuHtml += makeDisabledMenuItem('Latitude');
+		} else {
+			menuHtml += makeMenuItem('POS_latitude', 'Latitude', file, column);
+		}
+			
+		if (hemisphereRequired(file, 'latitude')) {
+			if (timePositionAssignments[file]['latitude']['hemisphereColumn'] != -1) {
+				menuHtml += makeDisabledMenuItem('Latitude - Hemisphere');
+			} else {
+				menuHtml += makeMenuItem('POS_latitude_hemisphere', 'Latitude - Hemisphere', file, column);
+			}
+		}
+		
+		var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
+		for (var i = 0; i < sensorAssignments.length; i++) {
+			if (!sensorAssignments[i]['many'] && sensorAssignments[i]['assignments'].length > 0) {
+				menuHtml += makeDisabledMenuItem(sensorAssignments[i]['name']);
+			} else {
+				menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'], file, column);
+			}
+		}
+		
+		menuHtml += '</ul>';
 	}
 	
-	var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
-	for (var i = 0; i < sensorAssignments.length; i++) {
-		if (!sensorAssignments[i]['many'] && sensorAssignments[i]['assignments'].length > 0) {
-			menuHtml += makeDisabledMenuItem(sensorAssignments[i]['name']);
-		} else {
-			menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'], file, column);
-		}
-	}
-	
-	menuHtml += '</ul>';
 	
 	$('#mainAssignmentMenu').html(menuHtml);
 	
@@ -580,15 +592,30 @@ function buildDateTimeAssignmentMenu(file, column) {
 }
 
 function makeDisabledMenuItem(label) {
-	return '<li class="ui-menuitem ui-widget ui-corner-all assignmentMenuItem assignmentMenuItemDisabled">' + label + '</li>';
+	var menuItem = '<li class="ui-menuitem ui-widget ui-corner-all assignmentMenuEntry">';
+	menuItem += '<div class="ui-menuitem-link ui-widget ui-corner-all ui-menuitem-text assignmentMenuEntryText assignmentMenuEntryTextDisabled">';
+	menuItem += label;
+	menuItem += '</div></li>';
+	
+	return menuItem;
 }
 
 function makeMenuItem(item, label, file, column) {
-	return '<li class="ui-menuitem ui-widget ui-corner-all"><a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text assignmentMenuItem" onclick="startAssign(\'' + item + '\',' + file + ',' + column + ')">' + label + '</a></li>';
+	var menuItem = '<li class="ui-menuitem ui-widget ui-corner-all assignmentMenuEntry">';
+	menuItem += '<div class="assignmentMenuEntryText">'; 
+	menuItem += '<a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text" onclick="startAssign(\'' + item + '\',' + file + ',' + column + ')">' + label + '</a>';
+	menuItem += '</div></li>';
+	
+	return menuItem;
 }
 
 function makeParentMenuItem(item, label, file, column, subMenu) {
-	return '<li id="' + item + '_menuItem" class="ui-menuitem ui-menuitem-link ui-widget ui-corner-all"><div style="float: right">▸</div><a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text assignmentMenuItem" onclick="startAssign(\'' + item + '\',' + file + ',' + column + ')">' + label + '</a></li></li>';
+	var menuItem = '<li id="' + item + '_menuItem" class="ui-menuitem ui-widget ui-corner-all assignmentMenuEntry">';
+	menuItem += '<div class="assignmentMenuEntryText">';
+	menuItem += '<a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text" onclick="startAssign(\'' + item + '\',' + file + ',' + column + ')">' + label + '</a>';
+	menuItem += '</div><div>▸</div></li>';
+	
+	return menuItem;
 }
 
 function showMainAssignmentMenu(event, file, column) {
@@ -635,8 +662,57 @@ function positionDateTimeAssignmentMenu() {
 	$('#dateTimeMenu').css({'left': leftPos + 'px', 'top': topPos + 'px'});
 }
 
-function getColumnAssignment(file, column) {
-	return null;
+function getColumnAssignment(fileIndex, column) {
+	var assigned = null;
+	
+	var fileName = filesAndColumns[fileIndex]['description'];
+	
+	var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
+	for (var i = 0; null == assigned && i < sensorAssignments.length; i++) {
+		var assignments = sensorAssignments[i]['assignments'];
+		
+		for (var j = 0; j < assignments.length; j++) {
+			var assignment = assignments[j];
+			if (assignment['file'] == fileName && assignment['column'] == column) {
+				assigned = sensorAssignments[i]['name'];
+				break;
+			}
+		}
+	}
+	
+	if (null == assigned) {
+		var timePositionAssignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+		
+		assignments = timePositionAssignments[fileIndex];
+		
+		var dateTimes = assignments['dateTime'];
+		for (var i = 0; i < dateTimes.length; i++) {
+			var dateTime = dateTimes[i];
+			if (dateTime['column'] == column) {
+				assigned = dateTime['name'];
+				break;
+			}
+		}
+		
+		if (null == assigned) {
+			
+		}
+		
+		for (var i = 0; i < timePositionAssignments.length; i++) {
+			
+			if (assignments['latitude']['valueColumn'] == column) {
+				assigned = 'Latitude';
+			} else if (assignments['latitude']['hemisphereColumn'] == column) {
+				assigned = 'Latitue Hemisphere';
+			} else if (assignments['longitude']['valueColumn'] == column) {
+				assigned = 'Longitude';
+			} else if (assignments['longitude']['hemisphereColumn'] == column) {
+				assigned = 'Longitude Hemisphere';
+			}
+		}
+	}
+	
+	return assigned;
 }
 
 function startAssign(item, file, column) {

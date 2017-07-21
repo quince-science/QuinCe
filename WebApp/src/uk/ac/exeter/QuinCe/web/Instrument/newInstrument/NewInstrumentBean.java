@@ -219,6 +219,16 @@ public class NewInstrumentBean extends FileUploadBean {
 	private String primaryPositionFile = null;
 	
 	/**
+	 * The index of the file to be unassigned
+	 */
+	private int unassignFile = -1;
+	
+	/**
+	 * The index of the column to be unassigned
+	 */
+	private int unassignColumn = -1;
+	
+	/**
 	 * Begin a new instrument definition
 	 * @return The navigation to the start page
 	 */
@@ -1156,5 +1166,78 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	public void assignPrimaryPositionFile() throws FileSetException {
 		instrumentFiles.setPrimaryPositionFile(primaryPositionFile);
+	}
+
+	/**
+	 * Get the index of the file to unassign
+	 * @return The file index
+	 */
+	public int getUnassignFile() {
+		return unassignFile;
+	}
+
+	/**
+	 * Set the index of the file to unassign
+	 * @param unassignFile The file index
+	 */
+	public void setUnassignFile(int unassignFile) {
+		this.unassignFile = unassignFile;
+	}
+
+	/**
+	 * Get the index of the column to unassign
+	 * @return The column index
+	 */
+	public int getUnassignColumn() {
+		return unassignColumn;
+	}
+
+	/**
+	 * Set the index of the column to unassign
+	 * @param unassignColumn The column index
+	 */
+	public void setUnassignColumn(int unassignColumn) {
+		this.unassignColumn = unassignColumn;
+	}
+	
+	/**
+	 * Remove a variable assignment
+	 */
+	public void unassignVariable() {
+		
+		boolean unassigned = false;
+
+		FileDefinitionBuilder fileDefinition = (FileDefinitionBuilder) instrumentFiles.get(unassignFile);
+		
+		if (null != fileDefinition) {
+			unassigned = sensorAssignments.removeAssignment(fileDefinition.getFileDescription(), unassignColumn);
+			
+			if (!unassigned) {
+				LatitudeSpecification latSpec = fileDefinition.getLatitudeSpecification();
+				if (latSpec.getValueColumn() == unassignColumn) {
+					latSpec.clearValueColumn();
+					unassigned = true;
+				} else if (latSpec.getHemisphereColumn() == unassignColumn) {
+					latSpec.clearHemisphereColumn();
+					unassigned= true;
+				}
+			}
+			
+			if (!unassigned) {
+				LongitudeSpecification lonSpec = fileDefinition.getLongitudeSpecification();
+				if (lonSpec.getValueColumn() == unassignColumn) {
+					lonSpec.clearValueColumn();
+					unassigned = true;
+				} else if (lonSpec.getHemisphereColumn() == unassignColumn) {
+					lonSpec.clearHemisphereColumn();
+					unassigned= true;
+				}
+			}
+			
+			if (!unassigned) {
+				DateTimeSpecification dateTime = fileDefinition.getDateTimeSpecification();
+				unassigned = dateTime.removeAssignment(unassignColumn);
+			}
+		}
 	}
 }

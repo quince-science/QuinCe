@@ -154,4 +154,11 @@ public class DateTimeColumnAssignment {
 		
 		properties.setProperty(SUFFIX_PROPERTY, suffix);
 	}
+	
+	/**
+	 * Reset the assigned column
+	 */
+	public void clearAssignment() {
+		column = NOT_ASSIGNED;
+	}
 }

@@ -508,4 +508,25 @@ public class DateTimeSpecification {
 		assignment.setPrefix(headerPrefix);
 		assignment.setSuffix(headerSuffix);
 	}
+	
+	/**
+	 * Remove a column from any of the assignments
+	 * @param column The index of the column to be unassigned
+	 * @return {@code true} if the column index was found and removed; {@code false} if not.
+	 */
+	public boolean removeAssignment(int column) {
+		
+		boolean assignmentRemoved = false;
+		
+		for (Map.Entry<Integer, DateTimeColumnAssignment> entry : assignments.entrySet()) {
+			DateTimeColumnAssignment assignment = entry.getValue();
+			if (assignment.getColumn() == column) {
+				assignment.clearAssignment();
+				assignmentRemoved = true;
+			}
+		}
+		
+		return assignmentRemoved;
+		
+	}
 }
