@@ -1107,3 +1107,14 @@ function checkSensorName() {
 		PF('sensorAssignmentAssignButton').enable();
 	}
 }
+
+function hideMenusAndDialogs(event) {
+	event.stopPropagation();
+	PF('sensorAssignmentDialog').hide();
+	PF('longitudeAssignmentDialog').hide();
+	PF('latitudeAssignmentDialog').hide();
+	PF('hemisphereAssignmentDialog').hide();
+	PF('dateTimeAssignmentDialog').hide();
+	hideMainAssignmentMenu();
+	hideDateTimeMenu();
+}

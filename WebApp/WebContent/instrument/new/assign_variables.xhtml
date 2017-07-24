@@ -19,8 +19,16 @@
 					hideMainAssignmentMenu();
 					hideDateTimeMenu();
 				});
+				
 			});
 			
+			// Escape key
+			$(document).keyup(function(e) {
+			    if (e.keyCode == 27) {
+					hideMenusAndDialogs(e);
+			    }
+			});
+
 			// Global!
 			tabCount = 0;
 			
