@@ -1259,4 +1259,16 @@ public class NewInstrumentBean extends FileUploadBean {
 		
 		return result;
 	}
+	
+	public String backFromFileUpload() {
+		String result;
+		
+		if (instrumentFiles.size() == 0) {
+			result = NAV_NAME;
+		} else {
+			result = NAV_ASSIGN_VARIABLES;
+		}
+		
+		return result;
+	}
 }
