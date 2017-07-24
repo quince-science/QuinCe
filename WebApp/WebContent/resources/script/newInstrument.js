@@ -213,7 +213,7 @@ function renderSensorAssignments() {
 		}
 		html += '"><div class="assignmentLabel">';
 		html += assignment['name'];
-		html += '</div><div class="assignmentCount">';
+		html += '</div><div class="assignmentCount" onclick="showAssignedColumnsMenu(\'' + assignment['name'] + '\', event)">';
 		html += assignment['assignments'].length;
 		if (!assignment['many']) {
 			html += '/1';
@@ -508,6 +508,68 @@ function unAssign(file, column) {
 	$('#newInstrumentForm\\:unassignVariableLink').click();
 }
 
+function showAssignedColumnsMenu(sensorName, event) {
+	event.stopPropagation();
+	var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
+	var assignments = null;
+	
+	for (var i = 0; i < sensorAssignments.length; i++) {
+		if (sensorAssignments[i]['name'] == sensorName) {
+			assignments = sensorAssignments[i]['assignments'];
+			break;
+		}
+	}
+
+	if (null != assignments && assignments.length > 0) {
+		
+		var menuHtml = '';
+		menuHtml += '<ul class="ui-menu-list ui-helper-reset">';
+		
+		for (var i = 0; i < assignments.length; i++) {
+			var assignment = assignments[i];
+			var menuText = assignment['file'] + ', ' + getColumnName(assignment['file'], assignment['column']);
+			menuHtml += makeUnassignMenuItem(getFileIndex(assignment['file']), assignment['column'], menuText);
+		}
+		
+		menuHtml += '</ul>';
+
+		$('#mainAssignmentMenu').html(menuHtml);
+		
+		// item hover styles
+		$('#mainAssignmentMenu').find('.ui-menuitem-link').hover(
+				function() {$(this).addClass('ui-state-hover')},
+				function() {$(this).removeClass('ui-state-hover')}
+		);
+
+		positionMainAssignmentMenu(event.target, '.assignmentListEntry');
+		$('#mainAssignmentMenu').removeClass('ui-overlay-hidden').addClass('ui-overlay-visible');
+	}
+}
+
+function getColumnName(fileName, columnIndex) {
+	var result = null;
+	
+	for (var i = 0; i < filesAndColumns.length; i++) {
+		if (filesAndColumns[i]['description'] == fileName) {
+			result = filesAndColumns[i]['columns'][columnIndex];
+			break;
+		}
+	}
+	
+	return result;
+}
+
+function makeUnassignMenuItem(file, column, itemText) {
+	var menuHtml = '<li class="ui-menuitem ui-widget ui-corner-all">';
+	menuHtml += '<a href="#" onclick="unAssign(\'' + file + '\', \'' + column + '\')" class="ui-menuitem-link ui-corner-all ui-menuitem-text assignmentMenuEntry">';
+	menuHtml += '<div class="assignmentMenuEntryIcon">';
+	menuHtml += '<img src="' + urlStub + '/resources/image/x-red.svg" width="16" height="16"/></div>'
+	menuHtml += '<div class="assignmentMenuEntryText">' + itemText + '</div>';
+	menuHtml += '</a></li>';
+	
+	return menuHtml;
+}
+
 function buildMainAssignmentMenu(file, column) {
 	var columnAssignment = getColumnAssignment(file, column);
 	var timePositionAssignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
@@ -516,12 +578,7 @@ function buildMainAssignmentMenu(file, column) {
 	menuHtml += '<ul class="ui-menu-list ui-helper-reset">';
 	
 	if (null != columnAssignment) {
-		menuHtml += '<li class="ui-menuitem ui-widget ui-corner-all">';
-		menuHtml += '<a href="#" onclick="unAssign(\'' + file + '\', \'' + column + '\')" class="assignmentMenuEntry">';
-		menuHtml += '<div class="assignmentMenuEntryIcon">';
-		menuHtml += '<img src="' + urlStub + '/resources/image/x-red.svg" width="16" height="16"/></div>'
-		menuHtml += '<div class="assignmentMenuEntryText">' + columnAssignment + '</div>';
-		menuHtml += '</a></li>';
+		menuHtml += makeUnassignMenuItem(file, column, columnAssignment);
 	} else {
 		menuHtml += makeParentMenuItem('DATETIMESUBMENU', 'Date/Time', file, column, 'dateTimeMenu');
 		
@@ -633,7 +690,7 @@ function makeParentMenuItem(item, label, file, column, subMenu) {
 function showMainAssignmentMenu(event, file, column) {
 	event.stopPropagation();
 	buildMainAssignmentMenu(file, column);
-	positionMainAssignmentMenu(event.target);
+	positionMainAssignmentMenu(event.target, '.sampleDataTableContainer');
 	$('#mainAssignmentMenu').removeClass('ui-overlay-hidden').addClass('ui-overlay-visible');
 }
 
@@ -645,9 +702,9 @@ function hideDateTimeMenu() {
 	$('#dateTimeMenu').removeClass('ui-overlay-visible').addClass('ui-overlay-hidden');
 }
 
-function positionMainAssignmentMenu(source) {
+function positionMainAssignmentMenu(source, containerClass) {
 	
-	var tableContainer = $(source).closest('.sampleDataTableContainer');
+	var tableContainer = $(source).closest(containerClass);
 	var rightLimit = tableContainer.offset().left + tableContainer.width(); 
 	
 	var leftPos = $(source).offset().left;
