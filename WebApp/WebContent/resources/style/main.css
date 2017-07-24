@@ -610,3 +610,22 @@ table.fileDates {
 .ui-steps.custom .ui-state-default {
 	font-weight: 700;
 }
+
+.ui-tabs .ui-tabs-nav li a {
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+	padding-left: 0.5em;
+	padding-right: 0em;
+}
+
+.ui-tabs .ui-tabs-nav li a:first-of-type {
+	padding-left: 1em;
+}
+
+.ui-tabs .ui-tabs-nav li a:last-of-type {
+	padding-right: 1em;
+}
+
+.ui-tabs .ui-tabs-nav li a.clickable {
+	cursor: pointer;
+}

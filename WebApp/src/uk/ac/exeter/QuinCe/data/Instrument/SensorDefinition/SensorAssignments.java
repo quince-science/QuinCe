@@ -275,4 +275,20 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 		
 		return assignmentRemoved;
 	}
+	
+	/**
+	 * Remove all assignments from a given file
+	 * @param fileDescription The file description
+	 */
+	public void removeFileAssignments(String fileDescription) {
+		for (Map.Entry<SensorType, Set<SensorAssignment>> entry : entrySet()) {
+			
+			Set<SensorAssignment> assignments = entry.getValue();
+			for (SensorAssignment assignment : assignments) {
+				if (assignment.getDataFile().equalsIgnoreCase(fileDescription)) {
+					assignments.remove(assignment);
+				}
+			}
+		}
+	}
 }

@@ -1118,3 +1118,10 @@ function hideMenusAndDialogs(event) {
 	hideMainAssignmentMenu();
 	hideDateTimeMenu();
 }
+
+function removeFile(fileName) {
+	console.log(fileName);
+	$('#newInstrumentForm\\:removeFileName').val(fileName);
+	PF('removeFileConfirm').show();
+	return false;
+}

@@ -229,6 +229,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	private int unassignColumn = -1;
 	
 	/**
+	 * The name of the file to be removed
+	 */
+	private String removeFileName = null;
+	
+	/**
 	 * Begin a new instrument definition
 	 * @return The navigation to the start page
 	 */
@@ -1216,5 +1221,42 @@ public class NewInstrumentBean extends FileUploadBean {
 				unassigned = fileDefinition.removeAssignment(unassignColumn);
 			}			
 		}
+	}
+
+	/**
+	 * Get the name of the file to be removed
+	 * @return The file name
+	 */
+	public String getRemoveFileName() {
+		return removeFileName;
+	}
+
+	/**
+	 * Set the name of the file to be removed
+	 * @param removeFileName The file name
+	 */
+	public void setRemoveFileName(String removeFileName) {
+		this.removeFileName = removeFileName;
+	}
+	
+	/**
+	 * Remove a file from the instrument
+	 * @return Navigation to either the upload page (if all files have been removed), or the assignment page
+	 */
+	public String removeFile() {
+		String result;
+		
+		if (null != removeFileName) {
+			instrumentFiles.remove(removeFileName);
+			sensorAssignments.removeFileAssignments(removeFileName);	
+		}
+		
+		if (instrumentFiles.size() == 0) {
+			result = NAV_UPLOAD_FILE;
+		} else {
+			result = NAV_ASSIGN_VARIABLES;
+		}
+		
+		return result;
 	}
 }

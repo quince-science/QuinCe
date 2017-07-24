@@ -45,7 +45,6 @@
 		<div id="dateTimeMenu" class="ui-menu ui-widget ui-widget-content ui-corner-all ui-helper-clearfix ui-shadow ui-overlay-hidden" role="menu"></div>
 	
 		<h:form id="newInstrumentForm" metho="post" charset="utf8">
-		
 			<h:inputHidden id="sensorAssignments" value="#{newInstrumentBean.sensorAssignments}"/>
 			<h:inputHidden id="timePositionAssignments" value="#{newInstrumentBean.timePositionAssignments}"/>
 
@@ -57,6 +56,12 @@
 			<h:inputHidden id="unassignColumn" value="#{newInstrumentBean.unassignColumn}"/>
 			<p:commandLink id="unassignVariableLink" style="invisible" ajax="true" action="#{newInstrumentBean.unassignVariable}"
 					process="unassignFile unassignColumn" update="sensorAssignments timePositionAssignments" oncomplete="renderAssignments()"/>
+					
+			<h:inputHidden id="removeFileName" value="#{newInstrumentBean.removeFileName}"/>
+			<p:confirmDialog widgetVar="removeFileConfirm" message="Remove file and all associated assignments?">
+				<p:commandButton value="Remove File" ajax="false" action="#{newInstrumentBean.removeFile}"/>
+				<p:commandButton value="Continue" onclick="PF('removeFileConfirm').hide()"/>
+			</p:confirmDialog>
 
 			<p:dialog header="Assign Column To Sensor" widgetVar="sensorAssignmentDialog" modal="true">
 				<h:inputHidden id="sensorAssignmentFile" value="#{newInstrumentBean.sensorAssignmentFile}"/>
@@ -348,7 +353,13 @@
 			</p:fieldset>
 			
 			<p:tabView value="#{newInstrumentBean.instrumentFiles}" var="iFile" widgetVar="fileTabs">
-				<p:tab title="#{iFile.fileDescription}">
+				<p:tab>
+					<f:facet name="title">
+						#{iFile.fileDescription}
+						<a href="#" onclick="removeFile('#{iFile.fileDescription}')" class="clickable">
+							<h:graphicImage url="/resources/image/x-red.svg" width="16" height="16"/>
+						</a>
+					</f:facet>
 					<div class="fileTab">
 						<div class="fileAssignments">
 							<p:fieldset legend="Date/Time" toggleable="true" style="margin-bottom: 20px;">

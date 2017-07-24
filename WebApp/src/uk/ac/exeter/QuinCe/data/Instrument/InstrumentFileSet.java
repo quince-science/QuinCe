@@ -132,4 +132,26 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 		
 		return primaryPositionFile;
 	}
+	
+	@Override
+	public boolean remove(Object o) {
+		boolean removed = false;
+		
+		if (o instanceof FileDefinition) {
+			removed = super.remove(o);
+		} else if (o instanceof String) {
+			int fileToRemove = -1;
+			
+			for (int i = 0; i < size(); i++) {
+				if (get(i).getFileDescription().equalsIgnoreCase((String) o)) {
+					fileToRemove = i;
+					break;
+				}
+			}
+			
+			remove(fileToRemove);
+		}
+		
+		return removed;
+	}
 }
