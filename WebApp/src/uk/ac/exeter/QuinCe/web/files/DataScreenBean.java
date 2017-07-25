@@ -127,6 +127,16 @@ public class DataScreenBean extends BaseManagedBean {
 	private List<Double> leftMapBounds = null;
 	
 	/**
+	 * The scale limits for the left map
+	 */
+	private List<Double> leftMapScaleLimits = null;
+	
+	/**
+	 * Indicates whether or not the scale for the left map should be updated
+	 */
+	private boolean leftMapUpdateScale = false;
+	
+	/**
 	 * The data for the left map.
 	 * 
 	 * <p>
@@ -197,6 +207,16 @@ public class DataScreenBean extends BaseManagedBean {
 	 * This is a list of [minx, miny, maxx, maxy]
 	 */
 	private List<Double> rightMapBounds = null;
+	
+	/**
+	 * The scale limits for the right map
+	 */
+	private List<Double> rightMapScaleLimits = null;
+	
+	/**
+	 * Indicates whether or not the scale for the right map should be updated
+	 */
+	private boolean rightMapUpdateScale = false;
 	
 	/**
 	 * The data for the right map.
@@ -543,6 +563,38 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	/**
+	 * Get the scale limits for the right map
+	 * @return The scale limits
+	 */
+	public String getRightMapScaleLimits() {
+		return '[' + StringUtils.listToDelimited(rightMapScaleLimits, ",") + ']';
+	}
+	
+	/**
+	 * Set the scale limits for the right map
+	 * @param rightMapScaleLimits The scale limits
+	 */
+	public void setRightMapScaleLimits(String rightMapScaleLimits) {
+		this.rightMapScaleLimits = StringUtils.delimitedToDoubleList(rightMapScaleLimits);
+	}
+	
+	/**
+	 * Determine whether the right map's scale limits need to be updated
+	 * @return {@code true} if the scale is to be updated; {@code false} otherwise.
+	 */
+	public boolean getRightMapUpdateScale() {
+		return rightMapUpdateScale;
+	}
+	
+	/**
+	 * Set whether the right map's scale limits need to be updated
+	 * @param rightMapUpdateScale {@code true} if the scale is to be updated; {@code false} otherwise.
+	 */
+	public void setRightMapUpdateScale(boolean rightMapUpdateScale) {
+		this.rightMapUpdateScale = rightMapUpdateScale;
+	}
+	
+	/**
 	 * Get the data for the right map
 	 * @return The map data
 	 */
@@ -668,6 +720,39 @@ public class DataScreenBean extends BaseManagedBean {
 		this.leftMapBounds = StringUtils.delimitedToDoubleList(leftMapBounds);
 	}
 	
+	
+	/**
+	 * Get the scale limits for the left map
+	 * @return The scale limits
+	 */
+	public String getLeftMapScaleLimits() {
+		return '[' + StringUtils.listToDelimited(leftMapScaleLimits, ",") + ']';
+	}
+	
+	/**
+	 * Set the scale limits for the left map
+	 * @param leftMapScaleLimits The scale limits
+	 */
+	public void setLeftMapScaleLimits(String leftMapScaleLimits) {
+		this.leftMapScaleLimits = StringUtils.delimitedToDoubleList(leftMapScaleLimits);
+	}
+	
+	/**
+	 * Determine whether the left map's scale limits need to be updated
+	 * @return {@code true} if the scale is to be updated; {@code false} otherwise.
+	 */
+	public boolean getLeftMapUpdateScale() {
+		return leftMapUpdateScale;
+	}
+	
+	/**
+	 * Set whether the left map's scale limits need to be updated
+	 * @param leftMapUpdateScale {@code true} if the scale is to be updated; {@code false} otherwise.
+	 */
+	public void setLeftMapUpdateScale(boolean leftMapUpdateScale) {
+		this.leftMapUpdateScale = leftMapUpdateScale;
+	}
+
 	/**
 	 * Get the data for the left map
 	 * @return The map data
@@ -1447,6 +1532,10 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @see #getMapData(String, List)
 	 */
 	public void generateLeftMapData() {
+		if (leftMapUpdateScale) {
+			leftMapScaleLimits = getMapScaleLimits(leftMapColumn);
+		}
+		
 		setLeftMapData(getMapData(leftMapColumn, leftMapBounds));
 		setLeftMapName(getPlotSeriesName(leftMapColumn));
 	}
@@ -1466,9 +1555,37 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @see #getMapData(String, List)
 	 */
 	public void generateRightMapData() {
+		if (rightMapUpdateScale) {
+			rightMapScaleLimits = getMapScaleLimits(rightMapColumn);
+		}
+		
 		setRightMapData(getMapData(rightMapColumn, rightMapBounds));
 		setRightMapName(getPlotSeriesName(rightMapColumn));
 	}
+	
+	/**
+	 * Get the value range for a column being shown on a map
+	 * @param column The column
+	 * @return The value range
+	 */
+	public List<Double> getMapScaleLimits(String column) {
+		List<Double> result = null;
+		
+		try {
+			result = FileDataInterrogator.getValueRange(ServletUtils.getDBDataSource(), fileId, column, co2Type);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		if (null == result) {
+			result = new ArrayList<Double>(2);
+			result.add(0.0);
+			result.add(0.0);
+		}
+		
+		return result;
+	}
+	
 
 	/**
 	 * Retrieve the data for a plot from the database as a JSON string.

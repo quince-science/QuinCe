@@ -1506,6 +1506,7 @@ function initLeftMap() {
 		leftMap.on('moveend', getLeftMapData);
 	}
 
+	$('#plotDataForm\\:leftMapUpdateScale').val(true);
 	getLeftMapData();
 }
 
@@ -1529,7 +1530,7 @@ function drawLeftMap(data) {
 
 		var mapData = JSON.parse($('#plotDataForm\\:leftMapData').html());
 
-		var scaleLimits = getScaleLimits(mapData);
+		var scaleLimits = JSON.parse($('#plotDataForm\\:leftMapScaleLimits').val());
 		leftColorScale.setValueRange(scaleLimits[0], scaleLimits[1]);
 
 		var layerFeatures = new Array();
@@ -1565,6 +1566,7 @@ function drawLeftMap(data) {
 		
 		leftMap.addLayer(leftMapDataLayer);
 		leftColorScale.drawScale($('#mapScaleLeft'), scaleOptions);
+		$('#plotDataForm\\:leftMapUpdateScale').val(false);
 	}
 }
 
@@ -1592,6 +1594,7 @@ function initRightMap() {
 		rightMap.on('moveend', getRightMapData);
 	}
 	
+	$('#plotDataForm\\:rightMapUpdateScale').val(true);
 	getRightMapData();
 }
 
@@ -1601,50 +1604,6 @@ function getRightMapData() {
 	var extent = ol.proj.transformExtent(rightMap.getView().calculateExtent(), rightMap.getView().getProjection(), "EPSG:4326");
 	$('#plotDataForm\\:rightMapBounds').val(extent);
 	$('#plotDataForm\\:rightGetMapData').click();	
-}
-
-function getScaleLimits(mapData) {
-	var useBadScale = true;
-	var badScaleMin = Number.MAX_SAFE_INTEGER;
-	var badScaleMax = Number.MIN_SAFE_INTEGER;
-	var goodScaleMin = Number.MAX_SAFE_INTEGER;
-	var goodScaleMax = Number.MIN_SAFE_INTEGER;
-
-	for (var i = 1; i < mapData.length; i++) {
-
-		var value = mapData[i][5];
-		var flag = mapData[i][3];
-		
-		if (flag == 2 || flag == 3) {
-			useBadScale = false;
-			if (value < goodScaleMin) {
-				goodScaleMin = value;
-			}
-			
-			if (value > goodScaleMax) {
-				goodScaleMax = value;
-			}
-		}
-		
-		if (useBadScale) {
-			if (value < badScaleMin) {
-				badScaleMin = value;
-			}
-			
-			if (value > badScaleMax) {
-				badScaleMax = value;
-			}
-		}
-	}
-	
-	var result = new Array();
-	if (useBadScale) {
-		result = [badScaleMin, badScaleMax];
-	} else {
-		result = [goodScaleMin, goodScaleMax];
-	}
-	
-	return result;
 }
 
 function drawRightMap(data) {
@@ -1659,7 +1618,7 @@ function drawRightMap(data) {
 
 		var mapData = JSON.parse($('#plotDataForm\\:rightMapData').html());
 
-		var scaleLimits = getScaleLimits(mapData);
+		var scaleLimits = JSON.parse($('#plotDataForm\\:rightMapScaleLimits').val());
 		rightColorScale.setValueRange(scaleLimits[0], scaleLimits[1]);
 
 		var layerFeatures = new Array();
@@ -1695,6 +1654,7 @@ function drawRightMap(data) {
 		
 		rightMap.addLayer(rightMapDataLayer);
 		rightColorScale.drawScale($('#mapScaleRight'), scaleOptions);
+		$('#plotDataForm\\:rightMapUpdateScale').val(false);
 	}
 }
 

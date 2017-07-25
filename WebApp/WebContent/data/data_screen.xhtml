@@ -85,10 +85,12 @@
 				
 				<h:inputHidden id="leftMapColumn" value="#{dataScreenBean.leftMapColumn}"/>
 				<h:inputHidden id="leftMapBounds" value="#{dataScreenBean.leftMapBounds}"/>
+				<h:inputHidden id="leftMapScaleLimits" value="#{dataScreenBean.leftMapScaleLimits}"/>
+				<h:inputHidden id="leftMapUpdateScale" value="#{dataScreenBean.leftMapUpdateScale}"/>
 				<h:outputText id="leftMapData" value="#{dataScreenBean.leftMapData}"/>
 				<h:outputText id="leftMapName" value="#{dataScreenBean.leftMapName}"/>
 				<h:commandLink id="leftGetMapData" action="#{dataScreenBean.generateLeftMapData}">
-					<f:ajax execute="leftMapColumn leftMapBounds" render="leftMapData leftMapName" onevent="drawLeftMap"/>
+					<f:ajax execute="leftMapColumn leftMapBounds leftMapUpdateScale" render="leftMapData leftMapName leftMapScaleLimits" onevent="drawLeftMap"/>
 				</h:commandLink>
 
 				<h:inputHidden id="rightColumns" value="#{dataScreenBean.rightPlotColumns}"/>
@@ -100,10 +102,12 @@
 				
 				<h:inputHidden id="rightMapColumn" value="#{dataScreenBean.rightMapColumn}"/>
 				<h:inputHidden id="rightMapBounds" value="#{dataScreenBean.rightMapBounds}"/>
+				<h:inputHidden id="rightMapScaleLimits" value="#{dataScreen.rightMapScaleLimits}"/>
+				<h:inputHidden id="rightMapUpdateScale" value="#{dataScreen.rightMapUpdateScale}"/>
 				<h:outputText id="rightMapData" value="#{dataScreenBean.rightMapData}"/>
 				<h:outputText id="rightMapName" value="#{dataScreenBean.rightMapName}"/>
 				<h:commandLink id="rightGetMapData" action="#{dataScreenBean.generateRightMapData}">
-					<f:ajax execute="rightMapColumn rightMapBounds" render="rightMapData rightMapName" onevent="drawRightMap"/>
+					<f:ajax execute="rightMapColumn rightMapBounds rightMapUpdateScale" render="rightMapData rightMapName rightMapScaleLimits" onevent="drawRightMap"/>
 				</h:commandLink>
 				
 				<h:inputHidden value="#{dataScreenBean.tableJsonData}" id="tableJsonData"/>		

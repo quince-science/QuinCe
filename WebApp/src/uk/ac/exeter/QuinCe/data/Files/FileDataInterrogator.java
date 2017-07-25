@@ -16,6 +16,8 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.math3.stat.descriptive.rank.Percentile;
+
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
 import uk.ac.exeter.QCRoutines.messages.Message;
@@ -1072,6 +1074,86 @@ public class FileDataInterrogator {
 		
 		return output.toString();
 	}
+	
+	/**
+	 * Get the value range of a given column in a data file. Only values with
+	 * WOCE flags of {@link Flag#ASSUMED_GOOD}, {@link Flag#GOOD} or {@link Flag#QUESTIONABLE}
+	 * are included, and the returned range is encompasses the 5th and 95th percentiles of the values.
+	 * These prevent extreme values from giving an excessively large (and therefore meaningless) range.
+	 * 
+	 * @param dataSource A data source
+	 * @param fileId The database ID of the data file
+	 * @param column The column
+	 * @param co2Type The type of observations to be matched. One of {@link RunType#RUN_TYPE_WATER}, {@link RunType#RUN_TYPE_ATMOSPHERIC}, or {@link RunType#RUN_TYPE_BOTH}.
+	 * @return The minimum and maximum values for the column
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public static List<Double> getValueRange(DataSource dataSource, long fileId, String column, int co2Type) throws DatabaseException {
+		double min = 0;
+		double max = 0;
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet results = null;
+		
+		try {
+			List<String> columnList = new ArrayList<String>(0);
+			columnList.add(column);
+			String databaseColumn = makeDatabaseColumnList(columnList);
+	
+			String co2Types = makeCo2Types(co2Type);
+	
+			StringBuilder query = new StringBuilder();
+			query.append("SELECT ");
+			query.append(databaseColumn);
+			query.append(" FROM raw_data");
+			query.append(" INNER JOIN data_reduction ON raw_data.data_file_id = data_reduction.data_file_id AND raw_data.row = data_reduction.row");
+			query.append(" INNER JOIN qc ON raw_data.data_file_id = qc.data_file_id AND raw_data.row = qc.row");
+			query.append(" WHERE raw_data.data_file_id = ");
+			query.append(fileId);
+			query.append(" AND raw_data.co2_type IN (");
+			query.append(co2Types);
+			query.append(") AND qc.woce_flag IN (");
+			query.append(Flag.VALUE_ASSUMED_GOOD);
+			query.append(',');
+			query.append(Flag.VALUE_GOOD);
+			query.append(',');
+			query.append(Flag.VALUE_QUESTIONABLE);
+			query.append(")");
+			
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(query.toString());
+			results = stmt.executeQuery();
+			
+			List<Double> values = new ArrayList<Double>();
+			
+			while(results.next()) {
+				values.add(results.getDouble(1));
+			}
+
+			Percentile percentile = new Percentile();
+			
+			double[] array = values.stream().mapToDouble(d -> d).toArray();
+
+			min = percentile.evaluate(array, 5);
+			max = percentile.evaluate(array, 95);
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Excpeption while getting scale bounds", e);
+		} finally {
+			DatabaseUtils.closeResultSets(results);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		
+		
+		List<Double> result = new ArrayList<Double>(2);
+		result.add(min);
+		result.add(max);
+		
+		return result;
+	}
 
 	/**
 	 * Create the SQL statement to retrieve the required data from a data file.
@@ -1532,5 +1614,4 @@ public class FileDataInterrogator {
 		
 		return result;
 	}
-
 }
