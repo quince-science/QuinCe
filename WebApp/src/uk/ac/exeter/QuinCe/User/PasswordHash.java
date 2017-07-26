@@ -286,21 +286,26 @@ public class PasswordHash
     
     /**
      * Generate a random string.
-     *
-     * Taken from <a href="http://stackoverflow.com/questions/7111651/how-to-generate-a-secure-random-alphanumeric-string-in-java-efficiently">StackOverflow</a>.
-     * 
-     * Notes:
-     * 
-     * Every call to SecureRandom.nextInt() uses up 32 bits of pure randomness, entropy bits,
-     * which gets produced at a very slow rate (see wiki article). You only need 6 entropy bits
-     * to get a fully random alphanumeric character 2^6 = 64 > (26 + 26 + 10).
-     * 
-     * So what you can do is seed Random with 64 bits of entropy bits. Every call to Random.nextInt(62)
-     * will consume 6 bits of entropy, so you can generate 10 alphanumeric characters that are "fully random"
-     * before you run out of entropy bits (64/10 > log2(62)).
-	 * 
-	 * This means you get 5 times the characters for the same number of entropy bits. This is the fastest way
-	 * to generate purely random alphanumeric strings.
+     * <p>
+     *   Taken from <a href="http://stackoverflow.com/questions/7111651/how-to-generate-a-secure-random-alphanumeric-string-in-java-efficiently">StackOverflow</a>.
+     * </p>
+     * <p>
+     * <b>Notes:</b>
+     * </p>
+     * <p>
+     *   Every call to {@link SecureRandom#nextInt()} uses up 32 bits of pure randomness, entropy bits,
+     *   which gets produced at a very slow rate (see wiki article). You only need 6 entropy bits
+     *   to get a fully random alphanumeric character {@code 2^6 = 64 > (26 + 26 + 10)}.
+     * </p>
+     * <p>
+     *   So what you can do is seed Random with 64 bits of entropy bits. Every call to {@code Random.nextInt(62)}
+     *   will consume 6 bits of entropy, so you can generate 10 alphanumeric characters that are "fully random"
+     *   before you run out of entropy bits {@code (64/10 > log2(62))}.
+	 * </p>
+	 * <p>
+	 *   This means you get 5 times the characters for the same number of entropy bits. This is the fastest way
+	 *   to generate purely random alphanumeric strings.
+	 * </p>
 	 * 
      * @param size The length of the string
      * @return The generated string

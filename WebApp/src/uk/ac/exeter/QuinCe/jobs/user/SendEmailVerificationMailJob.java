@@ -24,7 +24,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class SendEmailVerificationMailJob extends Job {
 
 	/**
-	 * The ket for the email address in the job parameters
+	 * The key for the email address in the job parameters
 	 */
 	public static final String EMAIL_KEY = "emailAddress";
 	
