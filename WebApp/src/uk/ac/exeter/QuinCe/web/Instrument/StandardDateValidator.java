@@ -1,5 +1,11 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+/**
+ * Checks dates of new gas standards to ensure that no standard
+ * with that date already exists.
+ * @author Steve Jones
+ *
+ */
 public class StandardDateValidator extends InstrumentDateValidator {
 	
 	@Override

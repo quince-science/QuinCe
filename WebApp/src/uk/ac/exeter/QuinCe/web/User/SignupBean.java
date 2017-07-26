@@ -10,7 +10,6 @@ import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.User.UserExistsException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob;
-import uk.ac.exeter.QuinCe.utils.StringFormatException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
@@ -21,59 +20,120 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  */
 public class SignupBean extends BaseManagedBean {
 	
+	/**
+	 * Navigation result for when a user already exists
+	 */
 	public static final String USER_EXISTS_RESULT = "UserExists";
 	
+	/**
+	 * The user's email address
+	 */
 	private String emailAddress = null;
 	
+	/**
+	 * The user's given name
+	 */
 	private String givenName = null;
 	
+	/**
+	 * The user's surname
+	 */
 	private String surname = null;
 	
+	/**
+	 * The first entered password
+	 */
 	private String password1 = null;
 	
+	/**
+	 * The repeated password
+	 */
 	private String password2 = null;
 	
+	/**
+	 * Empty constructor
+	 */
 	public SignupBean() {
 		// Do nothing
 	}
 
+	/**
+	 * Get the email address
+	 * @return The email address
+	 */
 	public String getEmailAddress() {
 		return emailAddress;
 	}
 
+	/**
+	 * Set the email address
+	 * @param emailAddress The email address
+	 */
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress.trim();
 	}
 
+	/**
+	 * Get the user's given name
+	 * @return The given name
+	 */
 	public String getGivenName() {
 		return givenName;
 	}
 
+	/**
+	 * Set the user's given name
+	 * @param givenName The given name
+	 */
 	public void setGivenName(String givenName) {
 		this.givenName = givenName.trim();
 	}
 
+	/**
+	 * Get the user's surname
+	 * @return The surname
+	 */
 	public String getSurname() {
 		return surname;
 	}
 
+	/**
+	 * Set the user's surname
+	 * @param surname The surname
+	 */
 	public void setSurname(String surname) {
 		this.surname = surname.trim();
 	}
 
+	/**
+	 * Get the first password
+	 * @return The first password
+	 */
 	public String getPassword1() {
 		return password1;
 	}
 
+	/**
+	 * Set the first password
+	 * @param password1 The first password
+	 */
 	public void setPassword1(String password1) {
 		// Note that passwords aren't trimmed
 		this.password1 = password1;
 	}
 
+	/**
+	 * Get the second password
+	 * @return The second password
+	 */
 	public String getPassword2() {
 		return password2;
 	}
 
+	/**
+	 * Set the second password
+	 * @param password2 The second password
+	 */
 	public void setPassword2(String password2) {
 		// Note that passwords aren't trimmed
 		this.password2 = password2;
@@ -82,10 +142,8 @@ public class SignupBean extends BaseManagedBean {
 	/**
 	 * The main signup action method
 	 * @return Result string
-	 * @throws StringFormatException 
-	 * @throws SecurityException 
 	 */
-	public String signUp() throws SecurityException, StringFormatException {
+	public String signUp() {
 		
 		String result = SUCCESS_RESULT;
 		

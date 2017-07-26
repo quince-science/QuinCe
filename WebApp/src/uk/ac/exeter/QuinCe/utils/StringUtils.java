@@ -42,6 +42,14 @@ public class StringUtils {
 		return listToDelimited(list, delimiter, null);
 	}
 	
+	/**
+	 * Convert a list to a delimited string. Each value can optionally be surrounded
+	 * with a character.
+	 * @param list The list
+	 * @param delimiter The delimiter
+	 * @param surrounder The string to surround each value
+	 * @return The delimited string
+	 */
 	public static String listToDelimited(List<?> list, String delimiter, String surrounder) {
 		
 		String result = null;
@@ -156,6 +164,11 @@ public class StringUtils {
 		return result;
 	}
 	
+	/**
+	 * Determines whether or not a String value contains a number
+	 * @param value The String value
+	 * @return {@code true} if the String value is numeric; {@code false} if it is not
+	 */
 	public static boolean isNumeric(String value) {
 		boolean result = true;
 		
@@ -175,6 +188,19 @@ public class StringUtils {
 		return result;
 	}
 	
+	/**
+	 * Convert a String-to-String lookup map into a String.
+	 * <p>
+	 *   Each map entry is converted to a {@code key=value} pair.
+	 *   Each entry is separated by a semi-colon.
+	 * </p>
+	 * <p>
+	 *   <b>Note:</b> There is no handling of {@code =} or {@code ;}
+	 *   in the keys or values.
+	 * </p>
+	 * @param map The Map to be converted
+	 * @return The String representation of the Map
+	 */
 	public static String mapToDelimited(Map<String, String> map) {
 		
 		StringBuilder result = new StringBuilder();
@@ -194,6 +220,13 @@ public class StringUtils {
 		return result.toString();
 	}
 	
+	/**
+	 * Convert a semi-colon-delimited list of {@code key=value} pairs
+	 * into a Map.
+	 * @param values The String
+	 * @return The Map
+	 * @throws StringFormatException If the String is not formatted correctly
+	 */
 	public static Map<String,String> delimitedToMap(String values) throws StringFormatException {
 		
 		Map<String, String> result = new HashMap<String, String>();
