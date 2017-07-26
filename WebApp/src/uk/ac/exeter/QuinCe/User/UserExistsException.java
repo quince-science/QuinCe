@@ -8,6 +8,9 @@ package uk.ac.exeter.QuinCe.User;
  */
 public class UserExistsException extends Exception {
 	
+	/**
+	 *  The serial version UID
+	 */
 	private static final long serialVersionUID = -3238441043465843608L;
 
 	/**

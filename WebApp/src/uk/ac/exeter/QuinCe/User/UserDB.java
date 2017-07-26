@@ -63,6 +63,9 @@ public class UserDB {
 	 */
 	private static final String CHANGE_PASSWORD_STATEMENT = "UPDATE user SET salt = ?, password = ? WHERE id = ?";
 	
+	/**
+	 * SQL statement to remove an email verification code
+	 */
 	private static final String CLEAR_EMAIL_CODE_STATEMENT = "UPDATE user SET email_code = NULL, email_code_time = NULL WHERE email = ?";
 	
 	/**
@@ -324,7 +327,7 @@ public class UserDB {
 	 * 
 	 * The user's password is salted and hashed.
 	 * 
-	 * @param conn The database connection
+	 * @param dataSource A data source
 	 * @param email The user's email address
 	 * @param password The password entered by the user
 	 * @param givenName The user's given name
@@ -333,8 +336,7 @@ public class UserDB {
 	 * @return A new User object representing the user
 	 * @throws UserExistsException If a user with the specified email address already exists in the database
 	 * @throws MissingParamException If any of the parameters are null
-	 * @throws SQLException If there's an error storing the details in the database
-	 * @throws HashException If an error occurs while hashing the user's password 
+	 * @throws DatabaseException If a database error occurs
 	 * @see uk.ac.exeter.QuinCe.User.User
 	 */
 	public static User createUser(DataSource dataSource, String email, char[] password, String givenName, String surname, boolean generateEmailVerificationCode) throws UserExistsException, DatabaseException, MissingParamException {
@@ -391,7 +393,7 @@ public class UserDB {
 	/**
 	 * Generate an email verification code and store it in the database.
 	 * The code will be added to the passed in User object.
-	 * @param conn A database connection
+	 * @param dataSource A data source
 	 * @param user The user who requires the code
 	 * @throws NoSuchUserException If the user doesn't exist
 	 * @throws DatabaseException If an error occurs while updating the database
@@ -432,8 +434,8 @@ public class UserDB {
 	/**
 	 * Generate a password reset code code and store it in the database.
 	 * The code will be added to the passed in User object.
-	 * @param conn
-	 * @param user
+	 * @param dataSource A data source
+	 * @param user The user
 	 * @throws NoSuchUserException If the user doesn't exist
 	 * @throws DatabaseException If an error occurs while updating the database
 	 * @throws MissingParamException If the supplied user object is null
@@ -476,10 +478,11 @@ public class UserDB {
 	 * of which test caused the failure is given. If the email verification
 	 * code is set, authentication will also fail. This will be indicated.
 	 * 
-	 * @param conn A database connection
+	 * @param dataSource A data source
 	 * @param email The user's email address
 	 * @param password The password supplied by the user
 	 * @return One of AUTHENTICATE_OK, AUTHENTICATE_FAILED, or AUTHENTICATE_EMAIL_CODE_SET
+	 * @throws MissingParamException If any of the parameters are null
 	 * @throws DatabaseException If an error occurs while retrieving the user's details
 	 */
 	public static int authenticate(DataSource dataSource, String email, char[] password) throws MissingParamException, DatabaseException {
@@ -529,7 +532,7 @@ public class UserDB {
 	/**
 	 * Changes a user's password. The user's old password must be
 	 * authenticated before the new one is stored.
-	 * @param conn A database connection
+	 * @param dataSource A data source
 	 * @param user The user whose password is to be changed
 	 * @param oldPassword The user's old password
 	 * @param newPassword The user's new password
@@ -580,11 +583,12 @@ public class UserDB {
 	
 	/**
 	 * Check a user's email verification code against the supplied code
-	 * @param conn A database connection
+	 * @param dataSource A data source
 	 * @param email The user's email address
 	 * @param code The code to be checked
 	 * @return An integer value indicating whether the code matched, didn't match, or the timestamp has expired.
-	 * @throws DatabaseException
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MissingParamException If any parameters are missing
 	 */
 	public static int checkEmailVerificationCode(DataSource dataSource, String email, String code) throws DatabaseException, MissingParamException {
 
@@ -610,7 +614,7 @@ public class UserDB {
 	 * the specified user exists.
 	 * @param dataSource A data source
 	 * @param email The user's email address
-	 * @throws MissingDataException If any parameters are missing
+	 * @throws MissingParamException If any parameters are missing
 	 * @throws DatabaseException If an error occurs while updating the database
 	 */
 	public static void clearEmailVerificationCode(DataSource dataSource, String email) throws MissingParamException, DatabaseException {
@@ -635,11 +639,12 @@ public class UserDB {
 	
 	/**
 	 * Check a user's password reset code against the supplied code
-	 * @param conn A database connection
+	 * @param dataSource A data source
 	 * @param email The user's email address
 	 * @param code The code to be checked
 	 * @return An integer value indicating whether the code matched, didn't match, or the timestamp has expired.
-	 * @throws DatabaseException
+	 * @throws MissingParamException If any parameters are missing
+	 * @throws DatabaseException If an error occurs while updating the database
 	 */
 	public static int checkPasswordResetCode(DataSource dataSource, String email, String code) throws DatabaseException, MissingParamException {
 
@@ -695,8 +700,8 @@ public class UserDB {
 	 * The salt is randomly generated and appended to the password before hashing.
 	 * @param password The password
 	 * @return An object containing the salt and hashed password+salt.
-	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidKeySpecException
+	 * @throws NoSuchAlgorithmException If the hashing algorithm is not supported
+	 * @throws InvalidKeySpecException If the key specification is invalid
 	 */
 	private static SaltAndHashedPassword generateHashedPassword(char[] password) throws NoSuchAlgorithmException, InvalidKeySpecException {
 		SaltAndHashedPassword result = new SaltAndHashedPassword();
@@ -712,7 +717,15 @@ public class UserDB {
 	 * They are always generated together, so they belong together.
 	 */
 	private static class SaltAndHashedPassword {
+		
+		/**
+		 * The salt
+		 */
 		private byte[] salt;
+		
+		/**
+		 * The hashed password
+		 */
 		private byte[] hashedPassword;
 	}
 }

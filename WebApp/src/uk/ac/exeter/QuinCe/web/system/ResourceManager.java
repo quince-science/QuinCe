@@ -182,7 +182,7 @@ public class ResourceManager implements ServletContextListener {
     
     /**
      * Retrieve the singleton instance of the Resource Manager
-     * @return
+     * @return The resource manager
      */
     public static ResourceManager getInstance() {
         return instance;
