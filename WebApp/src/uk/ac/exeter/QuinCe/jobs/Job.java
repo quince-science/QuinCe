@@ -146,6 +146,7 @@ public abstract class Job {
 	 * @throws BadProgressException If the progress is not between 0 and 100
 	 * @throws NoSuchJobException If the job is not in the database
 	 * @throws DatabaseException If an error occurs while updating the database
+	 * @throws MissingParamException If any required parameters are missing in internal calls
 	 */
 	protected void setProgress(double progress) throws MissingParamException, BadProgressException, NoSuchJobException, DatabaseException {
 		Connection conn = null;
@@ -162,6 +163,7 @@ public abstract class Job {
 	/**
 	 * Log the fact that the job has been started in the appropriate locations.
 	 * Initially this is just in the job manager, but it can be extended by other classes
+	 * @param threadName The thread name
 	 * @throws MissingParamException If any of the parameters to the underlying commands are missing
 	 * @throws DatabaseException If an error occurs while updating the database
 	 * @throws NoSuchJobException If the job has disappeared.
