@@ -21,63 +21,6 @@ function ColorScale(scaleArray) {
 		this.fontSize = size;
 	}
 
-	this.oldDrawScale = function(scaleContainer, options) {
-		
-		var container = $(scaleContainer);
-		var canvasElement = $('<canvas>', {style: "width: 100%; height: 100%;"});
-
-		var canvas = canvasElement[0];
-
-
-
-		var ctx = canvas.getContext('2d');
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-		this.barStart = 0;
-		if (options['outliers'] == 'l' || options['outliers'] == 'b') {
-			this.barStart = parseInt(options['outlierSize']) + 10;
-		}
-
-		this.barEnd = canvas.width;
-		if (options['outliers'] == 'r' || options['outliers'] == 'b') {
-			this.barEnd = canvas.width - (parseInt(options['outlierSize']) + 10);
-		}
-
-		this.barWidth = this.barEnd - this.barStart;
-
-		for (var i = this.barStart; i <= this.barEnd - 1; i++) {
-			var point1 = i;
-			var point2 = i + 1;
-
-			ctx.fillStyle = this.getColor((point1 - this.barStart) / this.barWidth);
-			ctx.fillRect(point1, 0, point2, canvas.height);
-		}
-		ctx.clearRect(this.barEnd + 1, 0, canvas.width, canvas.height);
-
-		if (options['outliers'] == 'l' || options['outliers'] == 'b') {
-			ctx.beginPath();
-			ctx.moveTo(0, (canvas.height / 2));
-			ctx.lineTo(options['outlierSize'], canvas.height);
-			ctx.lineTo(options['outlierSize'], 0);
-			ctx.lineTo(0, (canvas.height / 2));
-			ctx.fillStyle = scaleArray[0][1];
-			ctx.fill();
-		}
-
-		if (options['outliers'] == 'r' || options['outliers'] == 'b') {
-			ctx.beginPath();
-			ctx.moveTo(canvas.width, (canvas.height / 2));
-			ctx.lineTo((canvas.width - options['outlierSize']), canvas.height);
-			ctx.lineTo((canvas.width - options['outlierSize']), 0);
-			ctx.lineTo(canvas.width, (canvas.height / 2));
-			ctx.fillStyle = scaleArray[scaleArray.length - 1][1];
-			ctx.fill();
-		}
-
-		container.html(canvasElement);
-  	}
-
-
 	this.drawScale = function(scaleContainer, options) {		
 		var container = $(scaleContainer);
 
@@ -85,7 +28,9 @@ function ColorScale(scaleArray) {
 
 		var svg = '<svg width="100%" height="100%">';
 
-		svg += '<linearGradient id="scaleGradient">';
+		var gradientId = 'scaleGradient' + window.performance.now();
+		
+		svg += '<linearGradient id="' + gradientId + '">';
 		for (var i = 0; i < scaleArray.length; i++) {
 			var percentage = (this.scaleArray[i][0] - this.scaleMinIndex) / (this.scaleMaxIndex - this.scaleMinIndex) * 100;
 			svg += '<stop offset="' + percentage + '%" stop-color="' + this.scaleArray[i][1] + '"/>';
@@ -130,13 +75,13 @@ function ColorScale(scaleArray) {
 		}
 		}
 
-		svg += '<rect fill="url(#scaleGradient)" x="' + barStart + '%" y="0%" width="' + barWidth + '%" height="100%"/>';
+		svg += '<rect fill="url(#' + gradientId + ')" x="' + barStart + '%" y="0%" width="' + barWidth + '%" height="100%"/>';
 
 		svg += '</svg>';
 
-		var lowValue = (Math.round(this.percentToRangeValue(0) * (10 ** options['decimalPlaces'])) / 10 ** options['decimalPlaces']).toFixed(2);
-		var midValue = (Math.round(this.percentToRangeValue(50) * (10 ** options['decimalPlaces'])) / 10 ** options['decimalPlaces']).toFixed(2);
-		var highValue = (Math.round(this.percentToRangeValue(100) * (10 ** options['decimalPlaces'])) / 10 ** options['decimalPlaces']).toFixed(2);
+		var lowValue = (Math.round(this.percentToRangeValue(0) * (Math.pow(10, options['decimalPlaces']))) / Math.pow(10, options['decimalPlaces'])).toFixed(2);
+		var midValue = (Math.round(this.percentToRangeValue(50) * (Math.pow(10, options['decimalPlaces']))) / Math.pow(10, options['decimalPlaces'])).toFixed(2);
+		var highValue = (Math.round(this.percentToRangeValue(100) * (Math.pow(10, options['decimalPlaces']))) / Math.pow(10, options['decimalPlaces'])).toFixed(2);
 
 		svg += '<rect fill="#000000" x="' + (outlierSize + 1) + '%" y="80%" width="0.25%" height="30%"/>';
 		svg += '<text fill="#000000" x="' + (outlierSize + 1.5) + '%" y="100%" font-family="' + this.font + '" font-size="' + this.fontSize + '">' + lowValue + '</text>';
