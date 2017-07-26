@@ -283,6 +283,19 @@ public class StringUtils {
 		return result;
 	}
 	
+	/**
+	 * Convert a String-to-String lookup map into a String.
+	 * <p>
+	 *   Each map entry is converted to a {@code key=value} pair.
+	 *   Each entry is separated by a semi-colon.
+	 * </p>
+	 * <p>
+	 *   <b>Note:</b> There is no handling of {@code =} or {@code ;}
+	 *   in the keys or values.
+	 * </p>
+	 * @param map The Map to be converted
+	 * @return The String representation of the Map
+	 */
 	public static String mapToDelimited(Map<String, String> map) {
 		
 		StringBuilder result = new StringBuilder();
@@ -302,6 +315,13 @@ public class StringUtils {
 		return result.toString();
 	}
 	
+	/**
+	 * Convert a semi-colon-delimited list of {@code key=value} pairs
+	 * into a Map.
+	 * @param values The String
+	 * @return The Map
+	 * @throws StringFormatException If the String is not formatted correctly
+	 */
 	public static Map<String,String> delimitedToMap(String values) throws StringFormatException {
 		
 		Map<String, String> result = new HashMap<String, String>();

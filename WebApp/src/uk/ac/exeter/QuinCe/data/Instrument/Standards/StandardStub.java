@@ -29,6 +29,7 @@ public class StandardStub {
 	/**
 	 * Simple constructor for the two fields
 	 * @param id The database ID
+	 * @param instrumentId The ID of the instrument to which this standard belongs
 	 * @param deployedDate The standard date
 	 */
 	@Deprecated
