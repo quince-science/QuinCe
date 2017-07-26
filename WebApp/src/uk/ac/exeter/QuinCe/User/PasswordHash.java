@@ -196,6 +196,8 @@ public class PasswordHash
      * @param   iterations  the iteration count (slowness factor)
      * @param   bytes       the length of the hash to compute in bytes
      * @return              the PBDKF2 hash of the password
+	 * @throws NoSuchAlgorithmException If the hashing algorithm is not supported
+	 * @throws InvalidKeySpecException If the key specification is invalid
      */
     protected static byte[] pbkdf2(char[] password, byte[] salt, int iterations, int bytes)
         throws NoSuchAlgorithmException, InvalidKeySpecException

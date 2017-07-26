@@ -1580,9 +1580,11 @@ public class DataScreenBean extends BaseManagedBean {
 	
 	/**
 	 * Retrieve the list of selectable row numbers for this data file from the database.
+	 * @throws ResourceException If the required application resources cannot be accessed
+	 * @throws DatabaseException If a database error occurs
 	 * @see #selectableRowNumbers
 	 */
-	private void loadSelectableRowNumbers() throws Exception {
+	private void loadSelectableRowNumbers() throws DatabaseException, ResourceException {
 		selectableRowNumbers = FileDataInterrogator.getSelectableRowNumbers(ServletUtils.getDBDataSource(), fileId, getIncludeFlags());
 	}
 	

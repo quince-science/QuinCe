@@ -358,6 +358,7 @@ public class JobManager {
 	 * @throws UnrecognisedStatusException If the supplied status is invalid
 	 * @throws NoSuchJobException If the specified job does not exist
 	 * @throws DatabaseException If an error occurs while updating the database
+	 * @throws MissingParamException If any required parameters are missing
 	 */
 	private static void setStatus(Connection conn, long jobID, String status) throws MissingParamException, UnrecognisedStatusException, DatabaseException, NoSuchJobException {
 		MissingParam.checkMissing(conn, "conn");
@@ -625,6 +626,7 @@ public class JobManager {
 	 * @param jobID The job ID
 	 * @return {@code true} if the job exists; {@code false} otherwise
 	 * @throws DatabaseException If an error occurs while searching the database
+	 * @throws MissingParamException If any required parameters are missing
 	 */
 	private static boolean jobExists(Connection conn, long jobID) throws MissingParamException, DatabaseException {
 
