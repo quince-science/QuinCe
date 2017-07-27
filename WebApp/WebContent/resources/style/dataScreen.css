@@ -177,15 +177,22 @@ tr.selected {
 	width: 350px;
 	height: 50px;
 	position: absolute;
-	bottom: 50px;
-	right: 50px;
+	bottom: 40px;
+	right: 35px;
 	background-color: white;
 }
 
 .mapScaleControlContainer {
 	position: absolute;
-	bottom: 50px;
-	right: 25px;
+	bottom: 40px;
+	right: 8px;
+	width: 23px;
+}
+
+.mapZoomControlContainer {
+	position: absolute;
+	top: 50px;
+	right: 8px;
 	width: 23px;
 }
 

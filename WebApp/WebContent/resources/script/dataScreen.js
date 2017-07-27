@@ -128,6 +128,9 @@ rightColorScale.setFont('Noto Sans', 11);
 var leftMapDataLayer = null;
 var rightMapDataLayer = null;
 
+var leftMapExtent = null;
+var rightMapExtent = null;
+
 var scaleOptions = {
 	outliers: 'b',
 	outlierSize: 5,
@@ -1328,6 +1331,7 @@ function showLeftMap() {
 	$('#plotControlsLeft').hide();
 	$('#mapLeft').show();
 	$('#mapScaleControlContainerLeft').show();
+	$('#mapZoomControlContainerLeft').show();
 	$('#mapControlsLeft').show();
 	if (null == leftMap) {
 		initLeftMap();
@@ -1339,6 +1343,7 @@ function showLeftMap() {
 function showLeftPlot() {
 	$('#mapLeft').hide();
 	$('#mapScaleControlContainerLeft').hide();
+	$('#mapZoomControlContainerLeft').hide();
 	$('#mapScaleLeft').hide();
 	$('#mapControlsLeft').hide();
 	$('#plotLeft').show();
@@ -1352,6 +1357,7 @@ function showRightMap() {
 	$('#plotControlsRight').hide();
 	$('#mapRight').show();
 	$('#mapScaleControlContainerRight').show();
+	$('#mapZoomControlContainerRight').show();
 	$('#mapControlsRight').show();
 	if (null == rightMap) {
 		initRightMap();
@@ -1363,6 +1369,7 @@ function showRightMap() {
 function showRightPlot() {
 	$('#mapRight').hide();
 	$('#mapScaleControlContainerRight').hide();
+	$('#mapZoomControlContainerRight').hide();
 	$('#mapScaleRight').hide();
 	$('#mapControlsRight').hide();
 	$('#plotRight').show();
@@ -1500,8 +1507,8 @@ function initLeftMap() {
 	  		view: initialView
 		});
 		
-		var extent = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
-		initialView.fit(extent, leftMap.getSize());
+		leftMapExtent = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
+		leftMapResetZoom();
 		
 		leftMap.on('moveend', getLeftMapData);
 	}
@@ -1516,6 +1523,10 @@ function getLeftMapData() {
 	var extent = ol.proj.transformExtent(leftMap.getView().calculateExtent(), leftMap.getView().getProjection(), "EPSG:4326");
 	$('#plotDataForm\\:leftMapBounds').val(extent);
 	$('#plotDataForm\\:leftGetMapData').click();	
+}
+
+function leftMapResetZoom() {
+	leftMap.getView().fit(leftMapExtent, leftMap.getSize());
 }
 
 function drawLeftMap(data) {
@@ -1588,8 +1599,8 @@ function initRightMap() {
 	  		view: initialView
 		});
 		
-		var extent = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
-		initialView.fit(extent, rightMap.getSize());
+		rightMapExtent = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
+		rightMapResetZoom();
 
 		rightMap.on('moveend', getRightMapData);
 	}
@@ -1604,6 +1615,10 @@ function getRightMapData() {
 	var extent = ol.proj.transformExtent(rightMap.getView().calculateExtent(), rightMap.getView().getProjection(), "EPSG:4326");
 	$('#plotDataForm\\:rightMapBounds').val(extent);
 	$('#plotDataForm\\:rightGetMapData').click();	
+}
+
+function rightMapResetZoom() {
+	rightMap.getView().fit(rightMapExtent, rightMap.getSize());
 }
 
 function drawRightMap(data) {
