@@ -24,16 +24,6 @@ body.fullPage {
 	width: 100%;
 }
 
-#plotLeft {
-	width: 100%;
-	overflow: hidden;
-}
-
-#plotRight {
-	width: 100%;
-	overflow: hidden;
-}
-
 #data {
 	width: 100%;
 	overflow: hidden;
@@ -72,6 +62,8 @@ body.fullPage {
 .plotContent {
 	padding-top: 5px;
 	overflow: hidden;
+	width: 100%;
+	height: 100%;
 }
 
 #plotContainerLeft {
@@ -120,6 +112,7 @@ body.fullPage {
     padding: 5px;
     text-align: center;
     background-image: linear-gradient(to top, #B8B8B8 0%, #CFCFCF 4%, #E3E3E3 68%, #FAFAFA 100%);
+    cursor: pointer;
 }
 
 #woceSelectMenu {
@@ -179,4 +172,39 @@ body.fullPage {
 
 tr.selected {
 	background-color: #FFFF00 !important;
+}
+
+.mapScale {
+	width: 350px;
+	height: 50px;
+	position: absolute;
+	bottom: 40px;
+	right: 35px;
+	background-color: white;
+}
+
+.mapScaleControlContainer {
+	position: absolute;
+	bottom: 40px;
+	right: 8px;
+	width: 23px;
+}
+
+.mapZoomControlContainer {
+	position: absolute;
+	top: 12px;
+	right: 8px;
+	width: 23px;
+}
+
+.mapValue {
+	position: absolute;
+	left: 0px;
+	bottom: 33px;
+	z-index: 100;
+	background-color: #E1E1E1;
+}
+
+.ol-control button {
+	min-width: 0px;
 }

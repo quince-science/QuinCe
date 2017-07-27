@@ -18,11 +18,15 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * 
  * The table does not support colspan or rowspan functionality.
  * 
+ *
+ * 
  * @author Steve Jones
  *
  */
 public class TableData {
 
+	//TODO Replace this with JSON sent to the front end, rendered with Javascript
+	
 	/**
 	 * The String representation of the table
 	 */

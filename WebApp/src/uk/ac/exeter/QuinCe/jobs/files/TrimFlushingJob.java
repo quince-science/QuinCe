@@ -28,12 +28,32 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+/**
+ * Job to remove measurements from data during an instrument's
+ * flushing periods
+ * 
+ * @author Steve Jones
+ *
+ */
 public class TrimFlushingJob extends FileJob {
 	
+	/**
+	 * Initialise the job object so it is ready to run
+	 * 
+	 * @param resourceManager The system resource manager
+	 * @param config The application configuration
+	 * @param jobId The id of the job in the database
+	 * @param parameters The job parameters, containing the file ID
+	 * @throws InvalidJobParametersException If the parameters are not valid for the job
+	 * @throws MissingParamException If any of the parameters are invalid
+	 * @throws RecordNotFoundException If the job record cannot be found in the database
+	 * @throws DatabaseException If a database error occurs
+	 */
 	public TrimFlushingJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(resourceManager, config, jobId, parameters);
 	}
 
+	@Override
 	public void executeFileJob(JobThread thread) throws JobFailedException {
 		
 		// Note that this job ignores interrupt calls!
@@ -108,6 +128,16 @@ public class TrimFlushingJob extends FileJob {
 		}
 	}
 	
+	/**
+	 * Mark all post-flushing records in a run as {@link Flag#IGNORED}.
+	 * @param conn A database connection
+	 * @param records The records being processed to remove flushing records
+	 * @param finalIndex The last valid index of the current run being processed
+	 * @param postFlushLimit The last date/time of the current flushing period
+	 * @param runTypeId The current run type
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MessageException If any internal calls have missing parameters
+	 */
 	private void processPostFlushing(Connection conn, List<TrimFlushingRecord> records, int finalIndex, DateTime postFlushLimit, long runTypeId) throws DatabaseException, MessageException {
 
 		boolean finished = false;
@@ -138,6 +168,13 @@ public class TrimFlushingJob extends FileJob {
 		}
 	}
 	
+	/**
+	 * Clear any records currently marked as Flushing records,
+	 * ready for them to be re-marked. Used to recover from
+	 * an interrupted/killed job.
+	 * @param conn A database connection
+	 * @throws DatabaseException If a database error occurs
+	 */
 	private void reset(Connection conn) throws DatabaseException {
 		RawDataDB.clearGasStandardIgnoreFlags(conn, fileId);
 		QCDB.resetQCFlagsByWoceFlag(conn, fileId, Flag.IGNORED, FlushingQCMessage.MESSAGE_TEXT);

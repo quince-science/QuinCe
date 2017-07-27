@@ -14,6 +14,9 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  */
 public class User {
 
+	/**
+	 * Permission bit for job managers
+	 */
 	public static final int BIT_JOB_MANAGER = 1;
 	
 	/**
@@ -71,6 +74,8 @@ public class User {
 	 * @param emailAddress The user's email address
 	 * @param givenName The user's given name
 	 * @param surname The user's surname
+	 * @param permissions The permissions for the user
+	 * @throws MissingParamException If any required parameters are missing
 	 */
 	public User(int databaseID, String emailAddress, String givenName, String surname, int permissions) throws MissingParamException {
 		
@@ -122,9 +127,9 @@ public class User {
 	/**
 	 * Set the email verification code
 	 * @param code The email verification code
+	 * @param time The time at which the code was generated
 	 */
-	public void setEmailVerificationCode(String code, Timestamp time) throws MissingParamException {
-
+	public void setEmailVerificationCode(String code, Timestamp time) {
 		emailVerificationCode = code;
 		emailVerificationCodeTime = time;
 	}
@@ -132,8 +137,9 @@ public class User {
 	/**
 	 * Set the password reset code
 	 * @param code The password reset code
+	 * @param time The time at which the code was generated
 	 */
-	public void setPasswordResetCode(String code, Timestamp time) throws MissingParamException {
+	public void setPasswordResetCode(String code, Timestamp time) {
 		passwordResetCode = code;
 		passwordResetCodeTime = time;
 	}

@@ -10,6 +10,11 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
+/**
+ * Holds a single instance of a gas standard
+ * @author Steve Jones
+ *
+ */
 public class StandardConcentration {
 
 	/**
@@ -26,7 +31,7 @@ public class StandardConcentration {
 	
 	/**
 	 * Creates a concentrations object with the specified standard name.
-	 * @param sensorCode The standard name
+	 * @param standardName The standard name
 	 */
 	public StandardConcentration(String standardName) {
 		this.standardName = standardName;

@@ -8,11 +8,10 @@
 	<h:head>
 		<title>#{dataScreenBean.fileDetails.fileName} - QuinCe</title>
 	    <link href="http://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700,700italic" rel="stylesheet" type="text/css"/>
-		<h:outputStylesheet name="style/main.css"/>
-		<h:outputScript name="script/dataScreen.js"/>
-		<h:outputStylesheet name="style/dataScreen.css"/>
-		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
+		<h:outputScript name="script/ol.js"/>
+		<h:outputStylesheet name="style/ol.css"/>
 		<h:outputScript name="script/jquery-ui.min.js"/>
+		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
 		<h:outputStylesheet name="style/jquery-ui.min.css"/>
 		<h:outputScript name="script/jquery-dateFormat.min.js"/>
 		<h:outputScript name="script/jquery.splitter.js"/>
@@ -21,6 +20,10 @@
 		<h:outputStylesheet name="style/dygraph.css"/>
 		<h:outputScript name="script/datatables.min.js"/>
 		<h:outputStylesheet name="style/datatables.min.css"/>
+		<h:outputStylesheet name="style/main.css"/>
+		<h:outputScript name="script/jsColorScale.js"/>
+		<h:outputStylesheet name="style/dataScreen.css"/>
+		<h:outputScript name="script/dataScreen.js"/>
 		
 		<script type="text/javascript">
 			var intakeTempCount = #{dataScreenBean.instrument.intakeTempCount};
@@ -49,6 +52,7 @@
 			var waterFlow3Name = '#{dataScreenBean.instrument.waterFlowName3}';
 			var columnHeadings = #{dataScreenBean.tableHeadings};
 			var selectableRows = #{dataScreenBean.selectableRowNumbers};
+			var bounds = #{dataScreenBean.dataBounds};
 			
 			// The viewing mode for the table
 			var tableMode = 'basic';
@@ -63,6 +67,13 @@
 				<button class="smallButton" onclick="return hidePlotPopup();">Cancel</button>
 			</div>
 		</div>
+		<div id="mapFieldList" class="popupMenu">
+			<h:outputText value="#{dataScreenBean.mapPopupEntries}" escape="false"/>
+			<div id="buttonWrapper">
+				<button class="smallButton" onclick="return saveMapSelection();">OK</button>
+				<button class="smallButton" onclick="return hideMapPopup();">Cancel</button>
+			</div>
+		</div>
 		<div id="hiddenData">
 			<h:form id="plotDataForm" method="post" accept-charset="utf8">
 				<h:inputHidden id="leftColumns" value="#{dataScreenBean.leftPlotColumns}"/>
@@ -71,12 +82,32 @@
 				<h:commandLink id="leftGetData" action="#{dataScreenBean.generateLeftPlotData}">
 					<f:ajax execute="leftColumns" render="leftData leftNames" onevent="drawLeftPlot"/>
 				</h:commandLink>
+				
+				<h:inputHidden id="leftMapColumn" value="#{dataScreenBean.leftMapColumn}"/>
+				<h:inputHidden id="leftMapBounds" value="#{dataScreenBean.leftMapBounds}"/>
+				<h:inputHidden id="leftMapScaleLimits" value="#{dataScreenBean.leftMapScaleLimits}"/>
+				<h:inputHidden id="leftMapUpdateScale" value="#{dataScreenBean.leftMapUpdateScale}"/>
+				<h:outputText id="leftMapData" value="#{dataScreenBean.leftMapData}"/>
+				<h:outputText id="leftMapName" value="#{dataScreenBean.leftMapName}"/>
+				<h:commandLink id="leftGetMapData" action="#{dataScreenBean.generateLeftMapData}">
+					<f:ajax execute="leftMapColumn leftMapBounds leftMapUpdateScale" render="leftMapData leftMapName leftMapScaleLimits" onevent="drawLeftMap"/>
+				</h:commandLink>
 
 				<h:inputHidden id="rightColumns" value="#{dataScreenBean.rightPlotColumns}"/>
 				<h:outputText id="rightData" value="#{dataScreenBean.rightPlotData}"/>
 				<h:outputText id="rightNames" value="#{dataScreenBean.rightPlotNames}"/>
 				<h:commandLink id="rightGetData" action="#{dataScreenBean.generateRightPlotData}">
 					<f:ajax execute="rightColumns" render="rightData rightNames" onevent="drawRightPlot"/>
+				</h:commandLink>
+				
+				<h:inputHidden id="rightMapColumn" value="#{dataScreenBean.rightMapColumn}"/>
+				<h:inputHidden id="rightMapBounds" value="#{dataScreenBean.rightMapBounds}"/>
+				<h:inputHidden id="rightMapScaleLimits" value="#{dataScreenBean.rightMapScaleLimits}"/>
+				<h:inputHidden id="rightMapUpdateScale" value="#{dataScreenBean.rightMapUpdateScale}"/>
+				<h:outputText id="rightMapData" value="#{dataScreenBean.rightMapData}"/>
+				<h:outputText id="rightMapName" value="#{dataScreenBean.rightMapName}"/>
+				<h:commandLink id="rightGetMapData" action="#{dataScreenBean.generateRightMapData}">
+					<f:ajax execute="rightMapColumn rightMapBounds rightMapUpdateScale" render="rightMapData rightMapName rightMapScaleLimits" onevent="drawRightMap"/>
 				</h:commandLink>
 				
 				<h:inputHidden value="#{dataScreenBean.tableJsonData}" id="tableJsonData"/>		
@@ -148,23 +179,52 @@
     		<div id="dataScreenContent">
 	    		<div id="plots">
 		    		<div id="plotContainerLeft">
-						<div id="plotLeftContent" class="plotContent"></div>
+						<div id="plotLeft" class="plotContent"></div>
+						<div id="mapLeft" class="plotContent hidden"></div>
+						<div id="mapScaleControlContainerLeft" class="ol-unselectable ol-control mapScaleControlContainer hidden">
+							<button type="button" onclick="toggleLeftScale();">S</button>
+						</div>
+						<div id="mapZoomControlContainerLeft" class="ol-unselectable ol-control mapZoomControlContainer hidden">
+							<button type="button" onclick="leftMapResetZoom();">Z</button>
+						</div>
+						<div id="leftMapValue" class="mapValue hidden"></div>
+						<div id="mapScaleLeft" class="mapScale hidden"></div>
 						<div id="plotLeftLabels" class="plotLabels"></div>
-		    			<div id="controlsLeft" class="controls">
+		    			<div id="plotControlsLeft" class="controls">
 		    				<button id="leftXAxis" class="smallButton" onclick="return showPlotPopup(event, 'LX', true);">X Axis…</button>
 		    				<button id="leftYAxis" class="smallButton" onclick="return showPlotPopup(event, 'LY', false);">Y Axis…</button>
 		    				<button id="leftUpdate" class="smallButton" onclick="return updatePlot('left');">Update</button>
 		    				<button id="leftZoomOut" class="smallButton" onclick="return zoomOut(leftGraph);">Zoom Out</button>
+		    				<button id="leftMapSwitch" class="smallButton" onclick="return showLeftMap();">Map</button>
+		    			</div>
+		    			<div id="mapControlsLeft" class="controls hidden">
+		    				<button id="leftMapVar" class="smallButton" onclick="return showMapPopup(event, 'L');">Variable…</button>
+		    				<button id="leftPlotSwitch" class="smallButton" onclick="return showLeftPlot();">Plot</button>
 		    			</div>
 		    		</div>
 		    		<div id="plotContainerRight">
-						<div id="plotRightContent" class="plotContent"></div>
+						<div id="plotRight" class="plotContent"></div>
+						<div id="mapRight" class="plotContent hidden"></div>
+						<div id="mapRight" class="plotContent hidden"></div>
+						<div id="mapScaleControlContainerRight" class="ol-unselectable ol-control mapScaleControlContainer hidden">
+							<button type="button" onclick="toggleRightScale();">S</button>
+						</div>
+						<div id="mapZoomControlContainerRight" class="ol-unselectable ol-control mapZoomControlContainer hidden">
+							<button type="button" onclick="rightMapResetZoom();">Z</button>
+						</div>
+						<div id="rightMapValue" class="mapValue hidden"></div>
+						<div id="mapScaleRight" class="mapScale hidden"></div>
 						<div id="plotRightLabels" class="plotLabels"></div>
-		    			<div id="controlsRight" class="controls">
+		    			<div id="plotControlsRight" class="controls">
 		    				<button id="rightXAxis" class="smallButton" onclick="return showPlotPopup(event, 'RX', true);">X Axis…</button>
 		    				<button id="rightYAxis" class="smallButton" onclick="return showPlotPopup(event, 'RY', false);">Y Axis…</button>
 		    				<button id="rightUpdate" class="smallButton" onclick="return updatePlot('right');">Update</button>
 		    				<button id="rightZoomOut" class="smallButton" onclick="return zoomOut(rightGraph);">Zoom Out</button>
+		    				<button id="rightMapSwitch" class="smallButton" onclick="return showRightMap();">Map</button>
+		    			</div>
+		    			<div id="mapControlsRight" class="controls hidden">
+		    				<button id="rightMapVar" class="smallButton" onclick="return showMapPopup(event, 'R');">Variable…</button>
+		    				<button id="rightPlotSwitch" class="smallButton" onclick="return showRightPlot();">Plot</button>
 		    			</div>
 		    		</div>
 	    		</div>
@@ -174,7 +234,7 @@
 	    				<table width="100%">
 	    					<tr>
 	    						<td>
-						      		<p:selectOneButton value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="renderTableColumns()">
+						      		<p:selectOneButton id="tableModeSelector" value="#{dataScreenBean.tableMode}" widgetVar="tableModeSelector" onchange="renderTableColumns()">
 						      			<f:selectItem itemLabel="Basic" itemValue="basic"/>
 						      			<f:selectItem itemLabel="Water + Flow" itemValue="water"/>
 						      			<f:selectItem itemLabel="Equilibrator" itemValue="equilibrator"/>

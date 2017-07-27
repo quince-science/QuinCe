@@ -11,6 +11,7 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
@@ -94,11 +95,16 @@ public class FileListBean extends BaseManagedBean {
 	
 	/**
 	 * Update the file list content from the database
-	 * @see DataFileDB#getUserFiles(DataSource, uk.ac.exeter.QuinCe.data.User)
+	 * @see DataFileDB#getUserFiles(DataSource, User)
 	 */
 	public void updateFileList() {
 		try {
-			fileList = DataFileDB.getUserFiles(ServletUtils.getDBDataSource(), getUser());
+			User user = getUser();
+			if (null != user) {
+				fileList = DataFileDB.getUserFiles(ServletUtils.getDBDataSource(), user);
+			} else {
+				fileList = null;
+			}
 		} catch (Exception e) {
 			fileList = null;
 		}

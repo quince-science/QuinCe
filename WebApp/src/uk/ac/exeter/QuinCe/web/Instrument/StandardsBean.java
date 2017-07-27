@@ -54,11 +54,8 @@ public class StandardsBean extends BaseManagedBean {
 	
 	/**
 	 * Clear the bean's data
-	 * @throws ResourceException 
-	 * @throws DatabaseException 
-	 * @throws MissingParamException 
 	 */
-	private void clearData() throws MissingParamException, DatabaseException, ResourceException {
+	private void clearData() {
 		deployedDate = null;
 		chosenStandard = DatabaseUtils.NO_DATABASE_RECORD;
 		concentrations = null;
@@ -145,6 +142,10 @@ public class StandardsBean extends BaseManagedBean {
 		return PAGE_STANDARD_EDITOR;
 	}
 	
+	/**
+	 * Remove the currently selected standard from the system
+	 * @return Navigation back to the standards list
+	 */
 	public String deleteStandard() {
 		try {
 			GasStandardDB.deleteStandard(ServletUtils.getDBDataSource(), chosenStandard);
@@ -194,9 +195,9 @@ public class StandardsBean extends BaseManagedBean {
 	/**
 	 * Returns the list of standards
 	 * @return The list of standards
-	 * @throws ResourceException 
-	 * @throws DatabaseException 
-	 * @throws MissingParamException 
+	 * @throws ResourceException If application resources cannot be accessed
+	 * @throws DatabaseException  If a database error occurs
+	 * @throws MissingParamException If parameters are missing from internal calls
 	 */
 	public List<StandardStub> getStandardsList() throws MissingParamException, DatabaseException, ResourceException {
 		return GasStandardDB.getStandardList(ServletUtils.getDBDataSource(), getCurrentInstrumentID());
