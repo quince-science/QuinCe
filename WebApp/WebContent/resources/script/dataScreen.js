@@ -944,7 +944,6 @@ function scrollToTableRow(milliseconds) {
 	}
 }
 
-
 function makeHighlights(plotData) {
 	
 	var highlights = [];
@@ -1332,6 +1331,7 @@ function showLeftMap() {
 	$('#mapLeft').show();
 	$('#mapScaleControlContainerLeft').show();
 	$('#mapZoomControlContainerLeft').show();
+	$('#leftMapValue').show();
 	$('#mapControlsLeft').show();
 	if (null == leftMap) {
 		initLeftMap();
@@ -1344,6 +1344,7 @@ function showLeftPlot() {
 	$('#mapLeft').hide();
 	$('#mapScaleControlContainerLeft').hide();
 	$('#mapZoomControlContainerLeft').hide();
+	$('#leftMapValue').hide();
 	$('#mapScaleLeft').hide();
 	$('#mapControlsLeft').hide();
 	$('#plotLeft').show();
@@ -1358,6 +1359,7 @@ function showRightMap() {
 	$('#mapRight').show();
 	$('#mapScaleControlContainerRight').show();
 	$('#mapZoomControlContainerRight').show();
+	$('#rightMapValue').show();
 	$('#mapControlsRight').show();
 	if (null == rightMap) {
 		initRightMap();
@@ -1370,6 +1372,7 @@ function showRightPlot() {
 	$('#mapRight').hide();
 	$('#mapScaleControlContainerRight').hide();
 	$('#mapZoomControlContainerRight').hide();
+	$('#rightMapValue').hide();
 	$('#mapScaleRight').hide();
 	$('#mapControlsRight').hide();
 	$('#plotRight').show();
@@ -1511,10 +1514,76 @@ function initLeftMap() {
 		leftMapResetZoom();
 		
 		leftMap.on('moveend', getLeftMapData);
+		leftMap.on('pointermove', function(event) {
+			displayLeftMapFeatureInfo(leftMap.getEventPixel(event.originalEvent));
+		});
+		leftMap.on('click', function(event) {
+			leftMapClick(leftMap.getEventPixel(event.originalEvent));
+		});
 	}
 
 	$('#plotDataForm\\:leftMapUpdateScale').val(true);
 	getLeftMapData();
+}
+
+function displayLeftMapFeatureInfo(pixel) {
+	var feature = leftMap.forEachFeatureAtPixel(pixel, function(feature) {
+		return feature;
+	});
+	
+	var featureInfo = '';
+	
+	if (feature) {
+		featureInfo += '<b>Position:</b> '
+		featureInfo += feature['data'][0];
+		featureInfo += ' ';
+		featureInfo += feature['data'][1];
+		featureInfo += ' ';
+		featureInfo += ' <b>Value:</b> '
+		featureInfo += feature['data'][6];
+	}
+	
+	$('#leftMapValue').html(featureInfo);
+}
+
+function displayRightMapFeatureInfo(pixel) {
+	var feature = rightMap.forEachFeatureAtPixel(pixel, function(feature) {
+		return feature;
+	});
+	
+	var featureInfo = '';
+	
+	if (feature) {
+		featureInfo += '<b>Position:</b> '
+		featureInfo += feature['data'][0];
+		featureInfo += ' ';
+		featureInfo += feature['data'][1];
+		featureInfo += ' ';
+		featureInfo += ' <b>Value:</b> '
+		featureInfo += feature['data'][6];
+	}
+	
+	$('#rightMapValue').html(featureInfo);
+}
+
+function leftMapClick(pixel) {
+	var feature = leftMap.forEachFeatureAtPixel(pixel, function(feature) {
+		return feature;
+	});
+	
+	if (feature) {
+		scrollToTableRow(feature['data'][2]);
+	}
+}
+
+function rightMapClick(pixel) {
+	var feature = rightMap.forEachFeatureAtPixel(pixel, function(feature) {
+		return feature;
+	});
+	
+	if (feature) {
+		scrollToTableRow(feature['data'][2]);
+	}
 }
 
 function getLeftMapData() {
@@ -1561,10 +1630,13 @@ function drawLeftMap(data) {
 						width: 1
 					}),
 					fill: new ol.style.Fill({
-						color: leftColorScale.getColor(featureData[5])
+						color: leftColorScale.getColor(featureData[6])
 					})
 				})
 			}));
+			
+			feature['data'] = featureData;
+			feature['tableRow'] = i;
 			
 			layerFeatures.push(feature);
 		}
@@ -1603,6 +1675,12 @@ function initRightMap() {
 		rightMapResetZoom();
 
 		rightMap.on('moveend', getRightMapData);
+		rightMap.on('pointermove', function(event) {
+			displayRightMapFeatureInfo(rightMap.getEventPixel(event.originalEvent));
+		});
+		rightMap.on('click', function(event) {
+			rightMapClick(rightMap.getEventPixel(event.originalEvent));
+		});
 	}
 	
 	$('#plotDataForm\\:rightMapUpdateScale').val(true);
@@ -1653,11 +1731,14 @@ function drawRightMap(data) {
 						width: 1
 					}),
 					fill: new ol.style.Fill({
-						color: rightColorScale.getColor(featureData[5])
+						color: rightColorScale.getColor(featureData[6])
 					})
 				})
 			}));
-			
+
+			feature['data'] = featureData;
+			feature['tableRow'] = i;
+
 			layerFeatures.push(feature);
 		}
 		

@@ -191,9 +191,17 @@ tr.selected {
 
 .mapZoomControlContainer {
 	position: absolute;
-	top: 50px;
+	top: 12px;
 	right: 8px;
 	width: 23px;
+}
+
+.mapValue {
+	position: absolute;
+	left: 0px;
+	bottom: 33px;
+	z-index: 100;
+	background-color: #E1E1E1;
 }
 
 .ol-control button {

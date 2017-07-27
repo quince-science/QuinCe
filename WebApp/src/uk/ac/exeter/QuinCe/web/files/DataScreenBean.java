@@ -1644,6 +1644,9 @@ public class DataScreenBean extends BaseManagedBean {
 			submittedColumnList.add("longitude");
 			submittedColumnList.add("latitude");
 			
+			// The date/time
+			submittedColumnList.add("dateTime");
+			
 			// Now the row number
 			submittedColumnList.add("row");
 			
