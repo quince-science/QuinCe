@@ -120,6 +120,27 @@ public class StringUtils {
 	}
 	
 	/**
+	 * Convert a delimited list of doubles into a list of integers
+	 * @param values The list
+	 * @return The list as doubles
+	 */
+	public static List<Double> delimitedToDoubleList(String values) {
+		
+		List<Double> result = null;
+		
+		if (values != null) {
+			List<String> stringList = delimitedToList(values.replaceAll(",", ";"));
+			result = new ArrayList<Double>(stringList.size());
+
+			for (String item: stringList) {
+				result.add(Double.parseDouble(item));
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
 	 * Extract the stack trace from an Exception (or other
 	 * Throwable) as a String.
 	 * @param e The error
