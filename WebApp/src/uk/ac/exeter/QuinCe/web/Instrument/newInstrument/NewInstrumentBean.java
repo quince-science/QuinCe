@@ -1260,6 +1260,12 @@ public class NewInstrumentBean extends FileUploadBean {
 		return result;
 	}
 	
+	/**
+	 * Handle the Back button pressed on the File Upload page.
+	 * Navigates to the variable assignments page if files have
+	 * been uploaded, or to the instrument name.
+	 * @return The navigation
+	 */
 	public String backFromFileUpload() {
 		String result;
 		
