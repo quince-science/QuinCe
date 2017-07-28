@@ -1001,8 +1001,8 @@ function openDateTimeDialog(item, file, column) {
 		$('#dateTimeFormatContainer').show();
 		break;
 	}
-	case "Julian Day/Time from start of file": {
-		$('#jdayFromStartContainer').show();
+	case "Hours from start of file": {
+		$('#hoursFromStartContainer').show();
 		updateStartTime();
 		break;
 	}
@@ -1016,7 +1016,7 @@ function openDateTimeDialog(item, file, column) {
 	}
 	}
 
-	if (variableName == 'Julian Day/Time from start of file') {
+	if (variableName == 'Hours from start of file') {
 		PF('dateTimeAssign').disable();
 	} else {
 		PF('dateTimeAssign').enable();

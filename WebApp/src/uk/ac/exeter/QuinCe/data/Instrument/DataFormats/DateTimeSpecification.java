@@ -26,14 +26,14 @@ public class DateTimeSpecification {
 	public static final String DATE_TIME_NAME = "Combined Date and Time";
 	
 	/**
-	 * Key for Julian day/time since start date of file
+	 * Key for hours since start date of file
 	 */
-	public static final int JDAY_TIME_FROM_START = 1;
+	public static final int HOURS_FROM_START = 1;
 	
 	/**
 	 * Name for date string
 	 */
-	public static final String JDAY_TIME_FROM_START_NAME = "Julian Day/Time from start of file";
+	public static final String HOURS_FROM_START_NAME = "Hours from start of file";
 	
 	/**
 	 * Key for date string
@@ -59,6 +59,11 @@ public class DateTimeSpecification {
 	 * Key for Julian day with decimal time
 	 */
 	public static final int JDAY_TIME = 4;
+	
+	/**
+	 * Name for Julian day with time
+	 */
+	public static final String JDAY_TIME_NAME = "Julian Day with Time";
 
 	/**
 	 * Key for Julian day without time
@@ -66,9 +71,19 @@ public class DateTimeSpecification {
 	public static final int JDAY = 5;
 	
 	/**
+	 * Name for Julian Day
+	 */
+	public static final String JDAY_NAME = "Julian Day";
+	
+	/**
 	 * Key for month
 	 */
 	public static final int MONTH = 6;
+	
+	/**
+	 * Name for month
+	 */
+	public static final String MONTH_NAME = "Month";
 	
 	/**
 	 * Key for day
@@ -76,9 +91,19 @@ public class DateTimeSpecification {
 	public static final int DAY = 7;
 	
 	/**
+	 * Name for day
+	 */
+	public static final String DAY_NAME = "Day";
+	
+	/**
 	 * Key for time string
 	 */
 	public static final int TIME = 8;
+	
+	/**
+	 * Name for time string
+	 */
+	public static final String TIME_NAME = "Time";
 	
 	/**
 	 * Key for hour
@@ -86,14 +111,29 @@ public class DateTimeSpecification {
 	public static final int HOUR = 9;
 	
 	/**
-	 * Key for month
+	 * Name for hour
+	 */
+	public static final String HOUR_NAME = "Hour";
+	
+	/**
+	 * Key for minute
 	 */
 	public static final int MINUTE = 10;
+	
+	/**
+	 * Name for minute
+	 */
+	public static final String MINUTE_NAME = "Minute";
 	
 	/**
 	 * Key for second
 	 */
 	public static final int SECOND = 11;
+	
+	/**
+	 * Name for second
+	 */
+	public static final String SECOND_NAME = "Second";
 	
 	/**
 	 * The largest assignment index
@@ -119,7 +159,7 @@ public class DateTimeSpecification {
 		
 		assignments.put(DATE_TIME, new DateTimeColumnAssignment(DATE_TIME));
 		assignments.put(DATE, new DateTimeColumnAssignment(DATE));
-		assignments.put(JDAY_TIME_FROM_START, new DateTimeColumnAssignment(JDAY_TIME_FROM_START));
+		assignments.put(HOURS_FROM_START, new DateTimeColumnAssignment(HOURS_FROM_START));
 		assignments.put(JDAY_TIME, new DateTimeColumnAssignment(JDAY_TIME));
 		assignments.put(JDAY, new DateTimeColumnAssignment(JDAY));
 		assignments.put(YEAR, new DateTimeColumnAssignment(YEAR));
@@ -198,7 +238,7 @@ public class DateTimeSpecification {
 		if (nothingAssigned()) {
 			availableMask = setMaskBits(availableMask, DATE_TIME, DATE, YEAR, JDAY_TIME, JDAY, MONTH, DAY, TIME, HOUR, MINUTE, SECOND);
 			if (parentDefinition.hasHeader()) {
-				availableMask = setMaskBits(availableMask, JDAY_TIME_FROM_START);
+				availableMask = setMaskBits(availableMask, HOURS_FROM_START);
 			}
 		} else if (isAssigned(DATE_TIME)) {
 			availableMask = setMaskBits(availableMask, DATE_TIME);
@@ -214,8 +254,8 @@ public class DateTimeSpecification {
 			}
 			
 			// Julian day/time from start of file requires no other entries
-			if (!dateProcessed && isAssigned(JDAY_TIME_FROM_START)) {
-				availableMask = setMaskBits(availableMask, JDAY_TIME_FROM_START);
+			if (!dateProcessed && isAssigned(HOURS_FROM_START)) {
+				availableMask = setMaskBits(availableMask, HOURS_FROM_START);
 				dateProcessed = true;
 				timeProcessed = true;
 			}
@@ -351,51 +391,51 @@ public class DateTimeSpecification {
 	
 		switch (index) {
 		case DATE_TIME: {
-			result = "Combined Date and Time";
+			result = DATE_TIME_NAME;
 			break;
 		}
-		case JDAY_TIME_FROM_START: {
-			result = "Julian Day/Time from start of file";
+		case HOURS_FROM_START: {
+			result = HOURS_FROM_START_NAME;
 			break;
 		}
 		case DATE: {
-			result = "Date";
+			result = DATE_NAME;
 			break;
 		}
 		case YEAR: {
-			result = "Year";
+			result = YEAR_NAME;
 			break;
 		}
 		case JDAY_TIME: {
-			result = "Julian Day with Time";
+			result = JDAY_TIME_NAME;
 			break;
 		}
 		case JDAY: {
-			result = "Julian Day";
+			result = JDAY_NAME;
 			break;
 		}
 		case MONTH: {
-			result = "Month";
+			result = MONTH_NAME;
 			break;
 		}
 		case DAY: {
-			result = "Day";
+			result = DAY_NAME;
 			break;
 		}
 		case TIME: {
-			result = "Time";
+			result = TIME_NAME;
 			break;
 		}
 		case HOUR: {
-			result = "Hour";
+			result = HOUR_NAME;
 			break;
 		}
 		case MINUTE: {
-			result = "Minute";
+			result = MINUTE_NAME;
 			break;
 		}
 		case SECOND: {
-			result = "Second";
+			result = SECOND_NAME;
 			break;
 		}
 		default: {
@@ -416,51 +456,51 @@ public class DateTimeSpecification {
 		int result = -1;
 	
 		switch (name) {
-		case "Combined Date and Time": {
+		case DATE_TIME_NAME: {
 			result = DATE_TIME;
 			break;
 		}
-		case "Julian Day/Time from start of file": {
-			result = JDAY_TIME_FROM_START;
+		case HOURS_FROM_START_NAME: {
+			result = HOURS_FROM_START;
 			break;
 		}
-		case "Date": {
+		case DATE_NAME: {
 			result = DATE;
 			break;
 		}
-		case "Year": {
+		case YEAR_NAME: {
 			result = YEAR;
 			break;
 		}
-		case "Julian Day with Time": {
+		case JDAY_TIME_NAME: {
 			result = JDAY_TIME;
 			break;
 		}
-		case "Julian Day": {
+		case JDAY_NAME: {
 			result = JDAY;
 			break;
 		}
-		case "Month": {
+		case MONTH_NAME: {
 			result = MONTH;
 			break;
 		}
-		case "Day": {
+		case DAY_NAME: {
 			result = DAY;
 			break;
 		}
-		case "Time": {
+		case TIME_NAME: {
 			result = TIME;
 			break;
 		}
-		case  "Hour": {
+		case  HOUR_NAME: {
 			result = HOUR;
 			break;
 		}
-		case "Minute": {
+		case MINUTE_NAME: {
 			result = MINUTE;
 			break;
 		}
-		case "Second": {
+		case SECOND_NAME: {
 			result = SECOND;
 			break;
 		}
@@ -481,8 +521,8 @@ public class DateTimeSpecification {
 	 */
 	public void assign(String variable, int column, String format) throws DateTimeSpecificationException {
 		int assignmentIndex = getAssignmentIndex(variable);
-		if (assignmentIndex == JDAY_TIME_FROM_START) {
-			throw new DateTimeSpecificationException("Cannot use assign with " + variable + "; use assignJDayTimeFromStart");
+		if (assignmentIndex == HOURS_FROM_START) {
+			throw new DateTimeSpecificationException("Cannot use assign with " + variable + "; use assignHoursFromStart");
 		}
 		
 		DateTimeColumnAssignment assignment = assignments.get(assignmentIndex);
@@ -494,15 +534,15 @@ public class DateTimeSpecification {
 	}
 	
 	/**
-	 * Assign a column to the {@link #JDAY_TIME_FROM_START} assignment
+	 * Assign a column to the {@link #HOURS_FROM_START} assignment
 	 * @param column The column index
 	 * @param headerPrefix The header prefix
 	 * @param headerSuffix The header suffix
 	 * @param format The date format
 	 * @throws DateTimeSpecificationException If the assignment cannot be made
 	 */
-	public void assignJDayTimeFromStart(int column, String headerPrefix, String headerSuffix, String format) throws DateTimeSpecificationException {
-		DateTimeColumnAssignment assignment = assignments.get(JDAY_TIME_FROM_START);
+	public void assignHoursFromStart(int column, String headerPrefix, String headerSuffix, String format) throws DateTimeSpecificationException {
+		DateTimeColumnAssignment assignment = assignments.get(HOURS_FROM_START);
 		assignment.setColumn(column);
 		assignment.setDateFormatString(format);
 		assignment.setPrefix(headerPrefix);

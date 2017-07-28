@@ -1010,8 +1010,8 @@ public class NewInstrumentBean extends FileUploadBean {
 			dateTimeSpec.assign(dateTimeVariable, dateTimeColumn, timeFormat);
 			break;
 		}
-		case DateTimeSpecification.JDAY_TIME_FROM_START: {
-			dateTimeSpec.assignJDayTimeFromStart(dateTimeColumn, startTimePrefix, startTimeSuffix, startTimeFormat);
+		case DateTimeSpecification.HOURS_FROM_START: {
+			dateTimeSpec.assignHoursFromStart(dateTimeColumn, startTimePrefix, startTimeSuffix, startTimeFormat);
 			break;
 		}
 		default: {
