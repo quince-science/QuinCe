@@ -94,7 +94,7 @@ public class DateTimeColumnAssignment {
 		case DateTimeSpecification.DATE_TIME:
 		case DateTimeSpecification.DATE:
 		case DateTimeSpecification.TIME:
-		case DateTimeSpecification.JDAY_TIME_FROM_START: {
+		case DateTimeSpecification.HOURS_FROM_START: {
 			properties.setProperty(FORMAT_PROPERTY, format);
 			break;
 		}
@@ -130,12 +130,12 @@ public class DateTimeColumnAssignment {
 	}
 	
 	/**
-	 * Set the header prefix for the {@link DateTimeSpecification#JDAY_TIME_FROM_START} assignment
+	 * Set the header prefix for the {@link DateTimeSpecification#HOURS_FROM_START} assignment
 	 * @param prefix The prefix
 	 * @throws DateTimeSpecificationException If an attempt is made to set a prefix for a different assignment
 	 */
 	public void setPrefix(String prefix) throws DateTimeSpecificationException {
-		if (assignmentIndex != DateTimeSpecification.JDAY_TIME_FROM_START) {
+		if (assignmentIndex != DateTimeSpecification.HOURS_FROM_START) {
 			throw new DateTimeSpecificationException("Cannot set header prefix for spec field " + assignmentIndex);
 		}
 		
@@ -143,12 +143,12 @@ public class DateTimeColumnAssignment {
 	}
 	
 	/**
-	 * Set the header suffix for the {@link DateTimeSpecification#JDAY_TIME_FROM_START} assignment
+	 * Set the header suffix for the {@link DateTimeSpecification#HOURS_FROM_START} assignment
 	 * @param suffix The suffix
 	 * @throws DateTimeSpecificationException If an attempt is made to set a suffix for a different assignment
 	 */
 	public void setSuffix(String suffix) throws DateTimeSpecificationException {
-		if (assignmentIndex != DateTimeSpecification.JDAY_TIME_FROM_START) {
+		if (assignmentIndex != DateTimeSpecification.HOURS_FROM_START) {
 			throw new DateTimeSpecificationException("Cannot set header suffix for spec field " + assignmentIndex);
 		}
 		

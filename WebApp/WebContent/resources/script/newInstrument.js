@@ -911,7 +911,7 @@ function canBeNamed(sensor) {
 
 function sensorAssigned() {
 	PF('sensorAssignmentDialog').hide();
-	renderSensorAssignments();
+	renderAssignments();
 }
 
 function timePositionAssigned(dialogName) {
@@ -994,7 +994,7 @@ function openDateTimeDialog(item, file, column) {
 	$('#dateTimeFormatContainer').hide();
 	$('#dateFormatContainer').hide();
 	$('#timeFormatContainer').hide();
-	$('#jdayFromStartContainer').hide();
+	$('#hoursFromStartContainer').hide();
 	
 	switch (variableName) {
 	case "Combined Date and Time": {
