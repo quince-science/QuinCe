@@ -186,10 +186,6 @@
 			<to-view-id>/instrument/new/instrument_name.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
-			<from-outcome>names</from-outcome>
-			<to-view-id>/instrument/new/names.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
 			<from-outcome>calibrations</from-outcome>
 			<to-view-id>/instrument/calibrations.xhtml</to-view-id>
 		</navigation-case>
