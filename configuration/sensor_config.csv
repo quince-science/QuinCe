@@ -1,16 +1,16 @@
 # This file lists the sensors etc that are needed for a particular
 # configuration of QuinCe.
 
-# Sensor Name,Required?,RequiredGroup,DependsOn,Many?
-Intake Temperature,Y,,,Y
-Salinity,Y,,,Y
-Equilibrator Temperature,Y,,,Y
-Equilibrator Pressure (absolute),Y,EqP,,Y
-Equilibrator Pressure (differential),Y,EqP,Atmospheric Pressure,Y
-Atmospheric Pressure,N,,,Y
-xH2O,Y,,,Y
-CO2,Y,,,N
-Other Temperature,N,,,Y
-Other Pressure,N,,,Y
-Air Flow,N,,,Y
-Water Flow,N,,,Y
+# Sensor Name,Required?,Named?,RequiredGroup,DependsOn,DependsQuestion,Many?,Averaged?,Can Be Post-Calibrated?
+Intake Temperature,Y,Y,,,,Y,Y,Y
+Salinity,Y,Y,,,,Y,Y,Y
+Equilibrator Temperature,Y,Y,,,,Y,Y,Y
+Equilibrator Pressure (absolute),Y,Y,EqP,,,Y,Y,Y
+Equilibrator Pressure (differential),Y,Y,EqP,Atmospheric Pressure,,Y,Y,Y
+Atmospheric Pressure,N,Y,,,,Y,Y,Y
+xH₂O,N,Y,,,,Y,Y,Y
+CO₂,Y,Y,,xH₂O,Do values from the CO₂ require moisture adjustment?,Y,Y,N
+Other Temperature,N,Y,,,,Y,N,Y
+Other Pressure,N,Y,,,,Y,N,Y
+Air Flow,N,Y,,,,Y,N,Y
+Water Flow,N,Y,,,,Y,N,Y

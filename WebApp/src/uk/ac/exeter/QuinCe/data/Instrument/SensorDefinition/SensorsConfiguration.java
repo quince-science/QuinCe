@@ -70,6 +70,11 @@ public class SensorsConfiguration {
 	private static final int COL_POST_CALIBRATED = 8;
 	
 	/**
+	 * The Run Type sensor type. This is included for all instruments automatically.
+	 */
+	private static final SensorType RUN_TYPE_SENSOR_TYPE = new SensorType("Run Type", true, false, null, null, null, false, false, false);
+	
+	/**
 	 * The set of sensors defined for the instrument with
 	 * the data file columns assigned to them
 	 */
@@ -109,6 +114,10 @@ public class SensorsConfiguration {
 		
 		sensorTypes = new ArrayList<SensorType>();
 		BufferedReader reader = null; 
+		
+		// Run Type is always included
+		sensorTypes.add(RUN_TYPE_SENSOR_TYPE);
+		
 		try {
 			reader = new BufferedReader(new FileReader(configFile));
 			String line = reader.readLine();
