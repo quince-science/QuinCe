@@ -42,10 +42,10 @@
 					run type with a measurement category.
 				</div>
 
-				<table>
+				<table class="form">
 				<ui:repeat value="#{newInstrumentBean.runTypes}" var="runType">
 					<tr>
-						<td><label>#{runType}</label></td>
+						<td class="labels">#{runType}</td>
 						<td>
 							<p:selectOneMenu widgetVar="#{runType}-menu" onchange="setRunTypeCategory('#{runType}', event.target.value)">
 								<f:selectItems value="#{newInstrumentBean.runTypeCategories}" var="category" itemValue="#{category.code}" itemLabel="#{category.name}"/>
