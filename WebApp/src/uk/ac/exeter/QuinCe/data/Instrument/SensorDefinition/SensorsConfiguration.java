@@ -70,9 +70,14 @@ public class SensorsConfiguration {
 	private static final int COL_POST_CALIBRATED = 8;
 	
 	/**
+	 * The name for the Run Type sensor type
+	 */
+	public static final String RUN_TYPE_SENSOR_NAME = "Run Type";
+	
+	/**
 	 * The Run Type sensor type. This is included for all instruments automatically.
 	 */
-	private static final SensorType RUN_TYPE_SENSOR_TYPE = new SensorType("Run Type", true, false, null, null, null, false, false, false);
+	public static final SensorType RUN_TYPE_SENSOR_TYPE = new SensorType(RUN_TYPE_SENSOR_NAME, true, false, null, null, null, false, false, false);
 	
 	/**
 	 * The set of sensors defined for the instrument with

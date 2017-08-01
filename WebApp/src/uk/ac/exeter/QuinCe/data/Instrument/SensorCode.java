@@ -23,6 +23,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class SensorCode implements Comparable<SensorCode> {
 
 	/**

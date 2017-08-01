@@ -17,6 +17,8 @@ import uk.ac.exeter.QCRoutines.config.ConfigException;
 import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
@@ -40,6 +42,8 @@ public class ResourceManager implements ServletContextListener {
 	private ColumnConfig columnConfig;
 	
 	private SensorsConfiguration sensorsConfiguration;
+	
+	private RunTypeCategoryConfiguration runTypeCategoryConfiguration;
 	
 	private static ResourceManager instance = null;
 	
@@ -105,8 +109,15 @@ public class ResourceManager implements ServletContextListener {
        		throw new RuntimeException("Could not load sensors configuration", e);
        	}
        	
+       	// Initialise run type category configuration
+       	try {
+       		runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(new File(configuration.getProperty("runtypes.configfile")));
+       	} catch (RunTypeCategoryException e) {
+       		throw new RuntimeException("Could not load sensors configuration", e);
+       	}
+       	
        	instance = this;
-}
+	}
 
     @Override
     public void contextDestroyed(ServletContextEvent event) {
@@ -127,6 +138,10 @@ public class ResourceManager implements ServletContextListener {
     
     public SensorsConfiguration getSensorsConfiguration() {
     	return sensorsConfiguration;
+    }
+    
+    public RunTypeCategoryConfiguration getRunTypeCategoryConfiguration() {
+    	return runTypeCategoryConfiguration;
     }
     
     public static ResourceManager getInstance() {

@@ -194,6 +194,8 @@ function renderAssignments() {
 	} else {
 		PF('next').disable();
 	}
+
+	PF('next').enable();
 }
 
 function renderSensorAssignments() {
@@ -1124,4 +1126,15 @@ function removeFile(fileName) {
 	$('#newInstrumentForm\\:removeFileName').val(fileName);
 	PF('removeFileConfirm').show();
 	return false;
+}
+
+/*******************************************************
+*
+* RUN TYPES PAGE
+*
+*******************************************************/
+function setRunTypeCategory(runType, category) {
+	$('#newInstrumentForm\\:assignCategoryRunType').val(runType);
+	$('#newInstrumentForm\\:assignCategoryCode').val(category);
+	$('#newInstrumentForm\\:assignCategoryLink').click();
 }

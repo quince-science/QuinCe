@@ -176,6 +176,22 @@ public class StringUtils {
 		return result;
 	}
 	
+	public static boolean isInteger(String value) {
+		boolean result = true;
+		
+		if (null == value) {
+			result = false;
+		} else {
+			try {
+				new Integer(value);
+			} catch (NumberFormatException e) {
+				result = false;
+			}
+		}
+		
+		return result;
+	}
+	
 	public static String mapToDelimited(Map<String, String> map) {
 		
 		StringBuilder result = new StringBuilder();

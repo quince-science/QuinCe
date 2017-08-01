@@ -217,6 +217,10 @@
 			<from-outcome>assign_variables</from-outcome>
 			<to-view-id>/instrument/new/assign_variables.xhtml</to-view-id>
 		</navigation-case>
+		<navigation-case>
+			<from-outcome>run_types</from-outcome>
+			<to-view-id>/instrument/new/run_types.xhtml</to-view-id>
+		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
 		<display-name>CalibrationsList</display-name>

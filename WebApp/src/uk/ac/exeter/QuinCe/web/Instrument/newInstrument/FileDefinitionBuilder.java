@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -85,7 +86,6 @@ public class FileDefinitionBuilder extends FileDefinition {
 			
 			// Work out the likely number of columns in the file from the last few lines
 			super.setColumnCount(calculateColumnCount());
-			
 			
 			// Now start at the beginning of the file, looking for rows containing the
 			// maximum column count. Start rows that don't contain this are considered
@@ -498,5 +498,22 @@ public class FileDefinitionBuilder extends FileDefinition {
 	public void setSeparatorName(String separatorName) throws InvalidSeparatorException {
 		super.setSeparatorName(separatorName);
 		super.setColumnCount(calculateColumnCount());
+	}
+	
+	/**
+	 * Get the unique values from a column
+	 * @param column The column index
+	 * @return The unique values
+	 */
+	protected TreeSet<String> getUniqueColumnValues(int column) {
+		
+		TreeSet<String> values = new TreeSet<String>();
+		
+		for (int i = getColumnHeaderRows(); i < fileContents.size(); i++) {
+			List<String> columns = makeColumnValues(fileContents.get(i));
+			values.add(columns.get(column));
+		}
+		
+		return values;
 	}
 }

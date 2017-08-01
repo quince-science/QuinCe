@@ -4,9 +4,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileSetException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
@@ -15,14 +17,19 @@ import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.InvalidPositionFormatExce
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
+import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
+import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Bean for collecting data about a new instrument
@@ -49,6 +56,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Navigation to the Assign Variables page
 	 */
 	private static final String NAV_ASSIGN_VARIABLES = "assign_variables";
+	
+	/**
+	 * Navigation to the run types selection page
+	 */
+	private static final String NAV_RUN_TYPES = "run_types";
 	
 	/**
 	 * Date/Time formatter for previewing extracted dates
@@ -232,6 +244,22 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * The name of the file to be removed
 	 */
 	private String removeFileName = null;
+	
+	/**
+	 * The list of run type values for the instrument
+	 */
+	private TreeMap<String, RunTypeCategory> runTypes = null;
+	
+	/**
+	 * The run type name to be assigned to a Run Type Category
+	 */
+	private String runTypeAssignName = null;
+	
+	/**
+	 * The code of the Run Type Category that the
+	 * run type is being assigned to
+	 */
+	private String runTypeAssignCode = null;
 	
 	/**
 	 * Begin a new instrument definition
@@ -1276,5 +1304,100 @@ public class NewInstrumentBean extends FileUploadBean {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * Initialise the run types selection data and
+	 * navigate to the page.
+	 * @return The navigation to the run types selection page
+	 */
+	public String goToRunTypes() {
+		
+		if (null == runTypes) {
+			setupRunTypes();
+		}
+		
+		return NAV_RUN_TYPES;
+	}
+	
+	/**
+	 * Get all the unique entries in the assigned Run Type column
+	 * @return The run types
+	 */
+	public List<String> getRunTypes() {
+		return new ArrayList<String>(runTypes.keySet());
+	}
+	
+	/**
+	 * Build the mapping of run types to run type categories.
+	 * The mappings are all null and will be filled in by the user.
+	 */
+	public void setupRunTypes() {
+		runTypes = new TreeMap<String, RunTypeCategory>();
+		
+		
+		for (SensorAssignment assignment :  sensorAssignments.get(SensorsConfiguration.RUN_TYPE_SENSOR_TYPE)) {
+			FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles.get(assignment.getDataFile());
+			
+			for (String runType : file.getUniqueColumnValues(assignment.getColumn())) {
+				runTypes.put(runType, null);
+			}
+		}
+	}
+
+	/**
+	 * Get the list of available run type categories
+	 * @return The run type categories
+	 * @throws ResourceException If the Resource Manager cannot be accessed
+	 */
+	public List<RunTypeCategory> getRunTypeCategories() throws ResourceException {
+		return ServletUtils.getResourceManager().getRunTypeCategoryConfiguration().getCategories(true);
+	}
+
+	/**
+	 * Get the run type to be assigned to a Run Type Category
+	 * @return The run type
+	 */
+	public String getRunTypeAssignName() {
+		return runTypeAssignName;
+	}
+
+	/**
+	 * Set the run type to be assigned to a Run Type Category
+	 * @param runTypeAssignName The run type
+	 */
+	public void setRunTypeAssignName(String runTypeAssignName) {
+		this.runTypeAssignName = runTypeAssignName;
+	}
+
+	/**
+	 * Get the code of the Run Type Category that a run type is being assigned to
+	 * @return The Run Type Category code
+	 */
+	public String getRunTypeAssignCode() {
+		return runTypeAssignCode;
+	}
+
+	/**
+	 * Set the code of the Run Type Category that a run type is being assigned to
+	 * @param runTypeAssignCode The Run Type Category code
+	 */
+	public void setRunTypeAssignCode(String runTypeAssignCode) {
+		this.runTypeAssignCode = runTypeAssignCode;
+	}
+
+	/**
+	 * Assign a run type to a Run Type Category
+	 * @throws ResourceException If the Resource Manager cannot be accessed
+	 * @throws NoSuchCategoryException If the chosen category does not exist
+	 */
+	public void assignRunTypeCategory() throws NoSuchCategoryException, ResourceException {
+		RunTypeCategory category = null;
+		
+		if (null != runTypeAssignCode && runTypeAssignCode.length() > 0) {
+			category = ServletUtils.getResourceManager().getRunTypeCategoryConfiguration().getCategory(runTypeAssignCode);
+		}
+		
+		runTypes.put(runTypeAssignName, category);
 	}
 }
