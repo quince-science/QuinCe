@@ -1138,3 +1138,46 @@ function setRunTypeCategory(runType, category) {
 	$('#newInstrumentForm\\:assignCategoryCode').val(category);
 	$('#newInstrumentForm\\:assignCategoryLink').click();
 }
+
+function renderAssignedCategories() {
+	var categoriesOK = true;
+	
+	var html = '';
+	
+	var assignments = JSON.parse($('#newInstrumentForm\\:assignedCategories').val());
+	
+	for (var i = 0; i < assignments.length; i++) {
+		var assignment = assignments[i];
+		
+		html += '<div class="assignmentListEntry';
+		if (assignment[1] < assignment[2]) {
+			html += ' assignmentRequired';
+			categoriesOK = false;
+		}
+		html += '"><div class="assignmentLabel">';
+		html += assignment[0];
+		html += '</div><div class="assignmentCount">';
+		html += assignment[1];
+		if (assignment[2] > 0) {
+			html += '/';
+			html += assignment[2];
+		}
+		html += '</div>';
+		html += '</div>';
+	}
+	
+	$('#categoriesList').html(html);
+	
+	if (categoriesOK) {
+		PF('next').enable();
+	} else {
+		PF('next').disable();
+	}
+}
+
+function populateRunTypeMenus() {
+	var runTypeAssignments = JSON.parse($('#newInstrumentForm\\:assignedRunTypes').val());
+	for (var i = 0; i < runTypeAssignments.length; i++) {
+		PF(runTypeAssignments[i][0] + '-menu').selectValue(runTypeAssignments[i][1]);
+	}
+}

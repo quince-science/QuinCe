@@ -11,6 +11,6 @@
 # MinCount: The minimum number of run types required in this category
 #
 #Code,Name,Type,MinCount
-MCO2,Marine CO₂,0,0
-ACO2,Atmospheric CO₂,0,1
+MCO2,Marine CO₂,0,1
+ACO2,Atmospheric CO₂,0,0
 STD,Gas Standard,1,3

@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -365,6 +366,7 @@ public class NewInstrumentBean extends FileUploadBean {
 		resetSensorAssignmentValues();
 		resetPositionAssignmentValues();
 		resetDateTimeAssignmentValues();
+		clearRunTypeAssignments();
 		clearFile();
 	}
 	
@@ -1343,12 +1345,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	public void setupRunTypes() {
 		runTypes = new TreeMap<String, RunTypeCategory>();
 		
-		
 		for (SensorAssignment assignment :  sensorAssignments.get(SensorsConfiguration.RUN_TYPE_SENSOR_TYPE)) {
 			FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles.get(assignment.getDataFile());
 			
 			for (String runType : file.getUniqueColumnValues(assignment.getColumn())) {
-				runTypes.put(runType, null);
+				runTypes.put(runType, RunTypeCategory.IGNORED_CATEGORY);
 			}
 		}
 	}
@@ -1396,16 +1397,115 @@ public class NewInstrumentBean extends FileUploadBean {
 
 	/**
 	 * Assign a run type to a Run Type Category
-	 * @throws ResourceException If the Resource Manager cannot be accessed
 	 * @throws NoSuchCategoryException If the chosen category does not exist
 	 */
-	public void assignRunTypeCategory() throws NoSuchCategoryException, ResourceException {
+	public void assignRunTypeCategory() throws NoSuchCategoryException {
 		RunTypeCategory category = null;
 		
 		if (null != runTypeAssignCode && runTypeAssignCode.length() > 0) {
-			category = ServletUtils.getResourceManager().getRunTypeCategoryConfiguration().getCategory(runTypeAssignCode);
+			category = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategory(runTypeAssignCode);
 		}
 		
 		runTypes.put(runTypeAssignName, category);
+	}
+	
+	/**
+	 * Get the details of the Run Type Category assignments as a JSON string
+	 * @return The Run Type Category assignments
+	 */
+	public String getCategoryAssignments() {
+		List<RunTypeCategory> categories = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategories(false);
+		TreeMap<RunTypeCategory, Integer> assignedCategories = new TreeMap<RunTypeCategory, Integer>();
+		
+		for (RunTypeCategory category : categories) {
+			assignedCategories.put(category, 0);
+		}
+		
+		for (Map.Entry<String, RunTypeCategory> runType : runTypes.entrySet()) {
+			RunTypeCategory category = runType.getValue();
+			if (null != category && !category.equals(RunTypeCategory.IGNORED_CATEGORY)) {
+				assignedCategories.put(category, assignedCategories.get(category) + 1);
+			}
+		}
+		
+		StringBuilder result = new StringBuilder();
+		
+		result.append('[');
+		
+		int counter = 0;
+		for (Map.Entry<RunTypeCategory, Integer> entry : assignedCategories.entrySet()) {
+			counter++;
+			
+			result.append("[\"");
+			result.append(entry.getKey().getName());
+			result.append("\",");
+			result.append(entry.getValue());
+			result.append(',');
+			result.append(entry.getKey().getMinCount());
+			result.append(']');
+			
+			if (counter < assignedCategories.size()) {
+				result.append(',');
+			}
+		}
+		
+		result.append(']');
+		
+		return result.toString();
+	}
+	
+	/**
+	 * Dummy set method to go with {@link #getCategoryAssignments()}. Does nothing.
+	 * @param dummy Dummy string
+	 */
+	public void setCategoryAssignments(String dummy) {
+		// Do nothing
+	}
+
+	/**
+	 * Get the run type assignments as a JSON string
+	 * @return The run type assignments
+	 */
+	public String getRunTypeAssignments() {
+		StringBuilder result = new StringBuilder();
+		
+		result.append('[');
+		
+		int counter = 0;
+		for (Map.Entry<String, RunTypeCategory> entry : runTypes.entrySet()) {
+			counter++;
+			
+			result.append("[\"");
+			result.append(entry.getKey());
+			result.append("\",\"");
+			result.append(entry.getValue().getCode());
+			result.append("\"]");
+			
+			if (counter < runTypes.size()) {
+				result.append(',');
+			}
+		}
+		
+		result.append(']');
+		
+		return result.toString();
+	}
+	
+	/**
+	 * Dummy set method to go with {@link #getRunTypeAssignments()}. Does nothing.
+	 * @param dummy Dummy string
+	 */
+	public void setRunTypeAssignments(String dummy) {
+		// Do nothing
+	}
+
+
+	/**
+	 * Reset all data regarding run type assignments
+	 */
+	private void clearRunTypeAssignments() {
+		runTypes = null;
+		runTypeAssignName = null;
+		runTypeAssignCode = null;
 	}
 }

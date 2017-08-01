@@ -145,13 +145,16 @@ public class RunTypeCategoryConfiguration {
 		
 		RunTypeCategory result = null;
 		
-		for (RunTypeCategory category : categories) {
-			if (category.getCode().equalsIgnoreCase(categoryCode)) {
-				result = category;
-				break;
+		if (categoryCode.equalsIgnoreCase(RunTypeCategory.IGNORED_CATEGORY.getCode())) {
+			result = RunTypeCategory.IGNORED_CATEGORY;
+		} else {
+			for (RunTypeCategory category : categories) {
+				if (category.getCode().equalsIgnoreCase(categoryCode)) {
+					result = category;
+					break;
+				}
 			}
 		}
-		
 		return result;
 	}
 }

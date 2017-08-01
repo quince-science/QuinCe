@@ -8,3 +8,5 @@ column_config.csv:           Configuration of columns and flags used by the QC r
 extract_routines_config.csv: Configuration of the initial data check routines
 qc_routines_config.csv:      Configuration of the QC routines
 export_config.csv:           Configuration of file export formats
+run_types_config.csv:        Configuration of instrument run types
+sensor_config.csv            Configuration of required sensor types

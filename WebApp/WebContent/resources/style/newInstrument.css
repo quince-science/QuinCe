@@ -98,7 +98,7 @@
  * SENSOR ASSIGNMENT
  *
  */
-#assignmentsList {
+.assignmentsList {
 	display: flex;
 	flex-wrap: wrap;
 }
@@ -211,4 +211,3 @@ table.sampleData {
 .highlight {
 	color: #00AAFF;
 }
-
