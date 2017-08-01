@@ -43,6 +43,12 @@
 				</ui:repeat>		
 				</table>
 			</p:fieldset>
+			<!--  The cancel include has a 2 entries (1 is invisible) -->
+			<h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
+				<ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml"/>
+				<p:commandButton value="Back" ajax="false" action="#{newInstrumentBean.goToAssignVariables}" immediate="true"/>
+				<p:commandButton id="nextButton" widgetVar="next" value="Next" ajax="false" action="#{newInstrumentBean.goToRunTypes}"/>
+			</h:panelGrid>
 		</h:form>
 	</ui:define>
 </ui:composition>	

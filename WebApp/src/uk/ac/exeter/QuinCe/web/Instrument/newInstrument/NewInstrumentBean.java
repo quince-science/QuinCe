@@ -321,6 +321,14 @@ public class NewInstrumentBean extends FileUploadBean {
 	}
 	
 	/**
+	 * Direct navigation to the Assign Variables page
+	 * @return Navigation to the Assign Variables page
+	 */
+	public String goToAssignVariables() {
+		return NAV_ASSIGN_VARIABLES;
+	}
+	
+	/**
 	 * Add a new file to the instrument
 	 * @return The navigation to the file upload
 	 */
