@@ -694,6 +694,11 @@ public class NewInstrumentBean extends FileUploadBean {
 		SensorAssignment assignment = new SensorAssignment(sensorAssignmentFile, sensorAssignmentColumn, sensorAssignmentName, sensorAssignmentPostCalibrated, sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer);
 		sensorAssignments.addAssignment(sensorAssignmentSensorType, assignment);
 		
+		// If the Run Type has been reassigned, reset the run type configuration
+		if (sensorAssignmentSensorType.equals(SensorsConfiguration.RUN_TYPE_SENSOR_NAME)) {
+			clearRunTypeAssignments();
+		}
+
 		// Reset the assign dialog values, because it's so damn hard to do in Javascript
 		resetSensorAssignmentValues();
 	}
