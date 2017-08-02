@@ -64,6 +64,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	private static final String NAV_RUN_TYPES = "run_types";
 	
 	/**
+	 * Navigation to the other info page
+	 */
+	private static final String NAV_OTHER_INFO = "other_info";
+	
+	/**
 	 * Date/Time formatter for previewing extracted dates
 	 */
 	private static final DateTimeFormatter PREVIEW_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-DD HH:mm:ss");
@@ -1333,6 +1338,14 @@ public class NewInstrumentBean extends FileUploadBean {
 		}
 		
 		return NAV_RUN_TYPES;
+	}
+	
+	/**
+	 * Go to the Other Info page
+	 * @return The navigation to the Other Info page
+	 */
+	public String goToOtherInfo() {
+		return NAV_OTHER_INFO;
 	}
 	
 	/**
