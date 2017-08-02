@@ -198,10 +198,6 @@
 		<display-name>NewInstrumentNavigation</display-name>
 		<from-view-id>/instrument/new/*</from-view-id>
 		<navigation-case>
-			<from-outcome>cancel</from-outcome>
-			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
 			<from-outcome>instrument_list</from-outcome>
 			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
 		</navigation-case>

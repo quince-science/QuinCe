@@ -46,7 +46,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	/**
 	 * Navigation when cancelling definition of a new instrument
 	 */
-	private static final String NAV_CANCEL = "cancel";
+	private static final String NAV_INSTRUMENT_LIST = "instrument_list";
 	
 	/**
 	 * Navigation to the Upload File page
@@ -268,6 +268,16 @@ public class NewInstrumentBean extends FileUploadBean {
 	private String runTypeAssignCode = null;
 	
 	/**
+	 * The pre-flushing time
+	 */
+	private int preFlushingTime = 0;
+	
+	/**
+	 * The post-flushing time
+	 */
+	private int postFlushingTime = 0;
+	
+	/**
 	 * Begin a new instrument definition
 	 * @return The navigation to the start page
 	 */
@@ -282,7 +292,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	public String cancel() {
 		clearAllData();
-		return NAV_CANCEL;
+		return NAV_INSTRUMENT_LIST;
 	}
 	
 	/**
@@ -1525,5 +1535,45 @@ public class NewInstrumentBean extends FileUploadBean {
 		runTypes = null;
 		runTypeAssignName = null;
 		runTypeAssignCode = null;
+	}
+
+	/**
+	 * Get the pre-flushing time
+	 * @return The pre-flushing time
+	 */
+	public int getPreFlushingTime() {
+		return preFlushingTime;
+	}
+
+	/**
+	 * Get the pre-flushing time
+	 * @param preFlushingTime The pre-flushing time
+	 */
+	public void setPreFlushingTime(int preFlushingTime) {
+		this.preFlushingTime = preFlushingTime;
+	}
+
+	/**
+	 * Get the post-flushing time
+	 * @return The post-flushing time
+	 */
+	public int getPostFlushingTime() {
+		return postFlushingTime;
+	}
+
+	/**
+	 * Get the post-flushing time
+	 * @param postFlushingTime The post-flushing time
+	 */
+	public void setPostFlushingTime(int postFlushingTime) {
+		this.postFlushingTime = postFlushingTime;
+	}
+	
+	/**
+	 * Store the instrument
+	 * @return Navigation to the instrument list
+	 */
+	public String saveInstrument() {
+		return NAV_INSTRUMENT_LIST; 
 	}
 }
