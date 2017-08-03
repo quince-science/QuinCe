@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileSetException;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.InvalidPositionFormatException;
@@ -1574,6 +1575,9 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @return Navigation to the instrument list
 	 */
 	public String saveInstrument() {
+		
+		Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles, sensorAssignments, runTypes, preFlushingTime, postFlushingTime); 
+		
 		return NAV_INSTRUMENT_LIST; 
 	}
 }

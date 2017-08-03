@@ -81,6 +81,10 @@ public class CalibrationCoefficients implements Comparable<SensorCode> {
 	public static List<CalibrationCoefficients> initCalibrationCoefficients(Instrument instrument) {
 		List<CalibrationCoefficients> result = new ArrayList<CalibrationCoefficients>();
 		
+		// TODO Rewrite
+		
+		/*
+		
 		if (instrument.hasIntakeTemp1()) {
 			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_INTAKE_TEMP, 1, instrument)));
 		}
@@ -128,6 +132,8 @@ public class CalibrationCoefficients implements Comparable<SensorCode> {
 		if (instrument.hasEqp3()) {
 			result.add(new CalibrationCoefficients(new SensorCode(SensorCode.TYPE_EQP, 3, instrument)));
 		}
+		
+		*/
 		
 		return result;
 	}

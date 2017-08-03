@@ -260,6 +260,9 @@ public class FileDataInterrogator {
 	 * @see Flag
 	 */
 	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns, String separator, int co2Type, List<Integer> includeFlags, int start, int length) throws MissingParamException, DatabaseException, RawDataFileException {
+		return null;
+		/*
+		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(instrument, "instrument");
@@ -491,6 +494,8 @@ public class FileDataInterrogator {
 		}
 		
 		return output;
+		
+		*/
 	}
 
 	/**
@@ -853,6 +858,11 @@ public class FileDataInterrogator {
 	 * @return The human-readable column name
 	 */
 	private static String getColumnHeading(String columnName, Instrument instrument) {
+		
+		return null;
+		
+		/*
+		
 		String result;
 		
 		switch (columnName) {
@@ -1047,6 +1057,8 @@ public class FileDataInterrogator {
 		}
 		
 		return result;
+		
+		*/
 	}
 	
 	/**
@@ -1225,7 +1237,7 @@ public class FileDataInterrogator {
 	 */
 	private static boolean instrumentHasColumn(Instrument instrument, String column) {
 		boolean result = true;
-		
+		/*
 		switch (column) {
 		case "intakeTemp1": {
 			result = instrument.hasIntakeTemp1();
@@ -1300,7 +1312,7 @@ public class FileDataInterrogator {
 			break;
 		}
 		}
-
+		*/
 		return result;
 	}
 	

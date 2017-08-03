@@ -721,7 +721,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @throws ResourceException If the application resources cannot be accessed
 	 */
 	public String getPlotPopupEntries() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
-		
+		return null;
+		/*
 		Instrument instrument = InstrumentDB.getInstrument(ServletUtils.getDBDataSource(), fileDetails.getInstrumentId());
 		
 		StringBuffer output = new StringBuffer();
@@ -885,6 +886,9 @@ public class DataScreenBean extends BaseManagedBean {
 
 			output.append("</table></td></tr>");
 		}
+		*/
+		
+		
 		
 		// Atmospheric Pressure
 		/*
@@ -895,6 +899,9 @@ public class DataScreenBean extends BaseManagedBean {
 		output.append("</td><td>Atmospheric Pressure</td></tr>");
 		*/
 		
+		
+		
+		/*
 		// xH2O
 		output.append("<tr><td colspan=\"2\" class=\"minorHeading\">xH<sub>2</sub>O:</td></tr>");
 		output.append("<tr><td></td><td><table>");
@@ -935,6 +942,8 @@ public class DataScreenBean extends BaseManagedBean {
 		output.append("</tr></table>");
 		
 		return output.toString();
+		
+		*/
 	}
 	
 	/**
@@ -1048,7 +1057,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 * The data is stored in {@link #tableJsonData}.
 	 */
 	public void generateTableData() {
-
+		/*
 		try {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			
@@ -1169,6 +1178,7 @@ public class DataScreenBean extends BaseManagedBean {
 			e.printStackTrace();
 			setTableJsonData("***ERROR: " + e.getMessage());
 		}
+		*/
 	}
 	
 	/**
@@ -1176,7 +1186,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @return The list of column headings
 	 */
 	public String getTableHeadings() {
-
+		return null;
+		/*
 		StringBuffer output = new StringBuffer('[');
 		
 		output.append("['Date/Time', 'Row', 'Longitude', 'Latitude', ");
@@ -1307,6 +1318,7 @@ public class DataScreenBean extends BaseManagedBean {
 				+ "'pCO₂ TE Wet', 'fCO₂ TE', 'fCO₂ Final', 'QC Flag', 'QC Message', 'WOCE Flag', 'WOCE Message']");
 		
 		return output.toString();
+		*/
 	}
 
 	/**
@@ -1377,7 +1389,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @see FileDataInterrogator
 	 */
 	private String makePlotNames(List<String> columns) {
-
+		return null;
+		/*
 		List<String> output = new ArrayList<String>(columns.size());
 		
 		// The first column is the X axis
@@ -1395,6 +1408,7 @@ public class DataScreenBean extends BaseManagedBean {
 		}
 		
 		return StringUtils.listToDelimited(output);
+		*/
 	}
 
 	/**
@@ -1404,7 +1418,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @return The human-readable name
 	 */
 	private String getPlotSeriesName(String series) {
-		
+		return null;
+		/*
 		String result;
 		
 		switch (series) {
@@ -1558,6 +1573,7 @@ public class DataScreenBean extends BaseManagedBean {
 		}
 
 		return result;
+		*/
 	}
 	
 	/**

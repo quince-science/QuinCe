@@ -50,12 +50,15 @@ public class GasStandardRuns {
 	public GasStandardRuns(long fileId, Instrument instrument) {
 		this.fileId = fileId;
 		groupedStandardMeans = new HashMap<String,TreeSet<GasStandardMean>>();
+		
+		/*
+		
 		for (RunType runType : instrument.getRunTypes()) {
 			if (instrument.isStandardRunType(runType.getName())) {
 				groupedStandardMeans.put(runType.getName(), new TreeSet<GasStandardMean>());
 			}
 		}
-		
+		*/
 		allStandardMeans = new TreeSet<GasStandardMean>();
 	}
 	

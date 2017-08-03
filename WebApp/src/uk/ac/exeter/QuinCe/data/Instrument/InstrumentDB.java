@@ -103,6 +103,7 @@ public class InstrumentDB {
 	 */
 	public static void addInstrument(DataSource dataSource, Instrument instrument) throws MissingParamException, DatabaseException {
 		
+		/*
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(instrument, "instrument");
 		instrument.validate();
@@ -223,6 +224,8 @@ public class InstrumentDB {
 			DatabaseUtils.closeStatements(instrStmt);
 			DatabaseUtils.closeConnection(conn);
 		}
+		
+		*/
 	}
 	
 	/**
@@ -313,7 +316,9 @@ public class InstrumentDB {
 	 * @throws RecordNotFoundException If the specified instrument cannot be found
 	 */
 	public static Instrument getInstrument(Connection conn, long instrumentID) throws MissingParamException, DatabaseException, RecordNotFoundException {
-
+		return null;
+		/*
+		
 		MissingParam.checkMissing(conn, "conn");
 		
 		PreparedStatement instrStmt = null;
@@ -411,6 +416,8 @@ public class InstrumentDB {
 				instrument.setRunTypes(runTypes);
 			}
 			
+			
+			
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while retrieving instrument details", e);
 		} finally {
@@ -419,6 +426,8 @@ public class InstrumentDB {
 		}
 		
 		return instrument;
+		
+		*/
 	}
 	
 	/**

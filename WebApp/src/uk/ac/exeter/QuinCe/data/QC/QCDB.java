@@ -310,6 +310,11 @@ public class QCDB {
 	}
 
 	public static void createQCRecord(Connection conn, long fileId, int row, Instrument instrument) throws DatabaseException {
+
+		// TODO Rewrite
+		
+		/*
+		
 		PreparedStatement stmt = null;
 		
 		try {
@@ -340,6 +345,8 @@ public class QCDB {
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
 		}
+		
+		*/
 		
 	}
 	

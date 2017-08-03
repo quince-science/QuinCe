@@ -75,6 +75,9 @@ public class DataReductionJob extends FileJob {
 	
 	@Override
 	protected void executeFileJob(JobThread thread) throws JobFailedException {
+
+		/*
+		
 		Connection conn = null;
 		
 		try {
@@ -262,6 +265,8 @@ public class DataReductionJob extends FileJob {
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}
+		
+		*/
 	}
 	
 	/**
@@ -275,7 +280,7 @@ public class DataReductionJob extends FileJob {
 			throw new JobFailedException(id, e);
 		}
 	}
-	
+
 	/**
 	 * <p>Calculates the mean intake temperature for a single measurement from all intake temperature sensors.</p>
 	 * 
@@ -290,6 +295,10 @@ public class DataReductionJob extends FileJob {
 	 * @throws MessageException If an error occurs while creating a QC message
 	 */
 	private double calcMeanIntakeTemp(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
+	
+		return 0;
+		
+		/*
 		
 		double total = 0;
 		int count = 0;
@@ -345,6 +354,8 @@ public class DataReductionJob extends FileJob {
 		}
 		
 		return result;
+		
+		*/
 	}
 
 	/**
@@ -362,6 +373,9 @@ public class DataReductionJob extends FileJob {
 	 */
 	private double calcMeanSalinity(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
 		
+		return 0;
+		
+		/*
 		double total = 0;
 		int count = 0;
 		List<Message> qcMessages = new ArrayList<Message>();
@@ -416,6 +430,7 @@ public class DataReductionJob extends FileJob {
 		}
 		
 		return result;
+		*/
 	}
 
 	/**
@@ -432,7 +447,8 @@ public class DataReductionJob extends FileJob {
 	 * @throws MessageException If an error occurs while creating a QC message
 	 */
 	private double calcMeanEqt(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
-		
+		return 0;
+		/*
 		double total = 0;
 		int count = 0;
 		List<Message> qcMessages = new ArrayList<Message>();
@@ -487,6 +503,8 @@ public class DataReductionJob extends FileJob {
 		}
 		
 		return result;
+		
+		*/
 	}
 
 	/**
@@ -503,7 +521,8 @@ public class DataReductionJob extends FileJob {
 	 * @throws MessageException If an error occurs while creating a QC message
 	 */
 	private double calcMeanEqp(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
-		
+		return 0;
+		/*
 		double total = 0;
 		int count = 0;
 		List<Message> qcMessages = new ArrayList<Message>();
@@ -558,6 +577,8 @@ public class DataReductionJob extends FileJob {
 		}
 		
 		return result;
+		
+		*/
 	}
 
 	/**

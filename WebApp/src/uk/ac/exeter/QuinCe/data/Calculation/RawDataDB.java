@@ -121,16 +121,22 @@ public class RawDataDB {
 	}
 	
 	public static void storeRawData(Connection conn, Instrument instrument, long fileId, int lineNumber, List<String> line) throws InstrumentException, DateTimeParseException, SQLException {
+		
+		/*
+		
 		String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
 		if (instrument.isMeasurementRunType(runType)) {
 			storeMeasurement(conn, instrument, fileId, lineNumber, line);
 		} else if (instrument.isStandardRunType(runType)) {
 			storeStandard(conn, instrument, fileId, lineNumber, line);
 		}
+		
+		*/
 	}
 	
 	private static void storeStandard(Connection conn, Instrument instrument, long fileId, int lineNumber, List<String> line) throws InstrumentException, DateTimeParseException, SQLException {
 		
+		/*
 		PreparedStatement stmt = null;
 		
 		try {
@@ -176,10 +182,12 @@ public class RawDataDB {
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
 		}
+		
+		*/
 	}
 	
 	private static void storeMeasurement(Connection conn, Instrument instrument, long fileId, int lineNumber, List<String> line) throws SQLException, InstrumentException, DateTimeParseException {
-		
+		/*
 		PreparedStatement stmt = null;
 		
 		try {
@@ -363,10 +371,14 @@ public class RawDataDB {
 		}
 		
 		return result;
+		
+		*/
 	}
 	
 	public static List<RawDataValues> getRawData(Connection conn, long fileId, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
+		return null;
+		/*
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(instrument, "instrument");
@@ -434,9 +446,14 @@ public class RawDataDB {
 		}
 		
 		return rawData;
+		*/
 	}
 	
 	public static GasStandardRuns getGasStandardRuns(DataSource dataSource, long fileId, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		
+		return null;
+		
+		/*
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(instrument, "instrument");
@@ -530,6 +547,8 @@ public class RawDataDB {
 		}
 		
 		return result;
+		
+		*/
 	}
 	
 	public static List<TrimFlushingRecord> getTrimFlushingRecords(Connection conn, long fileId) throws DatabaseException {

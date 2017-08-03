@@ -115,7 +115,7 @@ public class RawDataFile {
 	 * @throws RawDataFileException
 	 */
 	private void readDataFromStore() throws IOException, RawDataFileException {
-		
+		/*
 		boolean fileOK = true;
 		int badLine = -1;
 		String errorMessage = null;
@@ -193,6 +193,8 @@ public class RawDataFile {
 			contents = null;
 			throw new RawDataFileException(badLine, errorMessage);
 		}
+		
+		*/
 	}
 	
 	
@@ -203,7 +205,7 @@ public class RawDataFile {
 	 * @throws IOException If there is an error reading the data
 	 */
 	private void readData(List<String> messages) throws RawDataFileException, IOException {
-		
+		/*
 		boolean fileOK = true;
 		int firstBadLine = -1;
 		String firstBadMessage = null;
@@ -259,6 +261,7 @@ public class RawDataFile {
 			contents = null;
 			throw new RawDataFileException(firstBadLine, firstBadMessage);
 		}
+		*/
 	}
 	
 	/**
@@ -277,6 +280,8 @@ public class RawDataFile {
 	}
 	
 	private void createDatesList(List<String> messages) throws RawDataFileException, IOException {
+		/*
+		
 		boolean datesOK = true;
 		int firstBadDate = -1;
 		String firstBadMessage = null;
@@ -307,6 +312,8 @@ public class RawDataFile {
 		if (!datesOK) {
 			throw new RawDataFileException(firstBadDate, firstBadMessage);
 		}
+		
+		*/
 	}
 	
 	/**
@@ -377,8 +384,11 @@ public class RawDataFile {
 	 * @throws DateTimeParseException  If the date or time cannot be parsed from the line
 	 */
 	private Calendar getDateFromLine(int lineNumber) throws DateTimeParseException, InstrumentException {
+		return null;
+		/*
 		List<String> line = contents.get(lineNumber);
 		return instrument.getDateFromLine(line);
+		*/
 	}
 	
 	/**
@@ -414,7 +424,8 @@ public class RawDataFile {
 	}
 	
 	public String getOriginalLine(int lineNumber) throws RawDataFileException, IOException {
-		
+		return null;
+		/*
 		List<String> fields = getLineData(lineNumber);
 		
 		StringBuffer result = new StringBuffer();
@@ -427,6 +438,7 @@ public class RawDataFile {
 		}
 		
 		return result.toString();
+		*/
 	}
 	
 	public int findLineByDate(Calendar date, int start) throws RawDataFileException, IOException {

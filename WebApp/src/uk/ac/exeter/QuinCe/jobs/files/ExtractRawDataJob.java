@@ -75,6 +75,8 @@ public class ExtractRawDataJob extends FileJob {
 	@Override
 	protected void executeFileJob(JobThread thread) throws JobFailedException {
 		
+		/*
+		
 		reset();
 		Connection conn = null;
 		int lineNumber = 0;
@@ -157,6 +159,8 @@ public class ExtractRawDataJob extends FileJob {
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}
+		
+		*/
 	}
 	
 	/**
@@ -167,7 +171,7 @@ public class ExtractRawDataJob extends FileJob {
 	 * @param coefficients The calibration coefficients to be applied
 	 */
 	private void applyCalibrations(List<String> line, Instrument instrument, List<CalibrationCoefficients> coefficients) {
-		
+		/*
 		if (instrument.hasIntakeTemp1()) {
 			SensorCode code = new SensorCode(SensorCode.TYPE_INTAKE_TEMP, 1, instrument);
 			applyCoefficients(line, instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_1), code, coefficients);
@@ -227,6 +231,8 @@ public class ExtractRawDataJob extends FileJob {
 			SensorCode code = new SensorCode(SensorCode.TYPE_EQP, 3, instrument);
 			applyCoefficients(line, instrument.getColumnAssignment(Instrument.COL_EQP_3), code, coefficients);
 		}
+		
+		*/
 	}
 	
 	/**
