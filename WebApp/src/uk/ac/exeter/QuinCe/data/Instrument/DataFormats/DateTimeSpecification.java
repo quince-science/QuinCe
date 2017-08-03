@@ -192,6 +192,7 @@ public class DateTimeSpecification {
 	 * @return The JSON string
 	 * @throws DateTimeSpecificationException If an error occurs while building the string
 	 */
+	//TODO Make JSON string in comment
 	public String getJsonString() throws DateTimeSpecificationException {
 		StringBuilder json = new StringBuilder();
 		

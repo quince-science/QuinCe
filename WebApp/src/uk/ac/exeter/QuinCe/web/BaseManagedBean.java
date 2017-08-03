@@ -4,6 +4,7 @@ import javax.faces.application.ConfigurableNavigationHandler;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpSession;
+import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -150,5 +151,13 @@ public abstract class BaseManagedBean {
 	public String getUrlStub() {
 		// TODO This can probably be replaced with something like FacesContext.getCurrentInstance().getExternalContext().getRe‌​questContextPath()
 		return ResourceManager.getInstance().getConfig().getProperty("app.urlstub");
+	}
+	
+	/**
+	 * Get a data source
+	 * @return The data source
+	 */
+	protected DataSource getDataSource() {
+		return ResourceManager.getInstance().getDBDataSource();
 	}
 }

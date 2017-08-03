@@ -13,6 +13,8 @@ import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileSetException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.InvalidPositionFormatException;
@@ -26,8 +28,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentExce
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -277,6 +281,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * The post-flushing time
 	 */
 	private int postFlushingTime = 0;
+	
+	/**
+	 * The minimum water flow
+	 */
+	private int minimumWaterFlow = -1;
 	
 	/**
 	 * Begin a new instrument definition
@@ -1571,12 +1580,32 @@ public class NewInstrumentBean extends FileUploadBean {
 	}
 	
 	/**
+	 * Get the minimum water flow
+	 * @return The minimum water flow
+	 */
+	public int getMinimumWaterFlow() {
+		return minimumWaterFlow;
+	}
+	
+	/**
+	 * Set the minimum water flow
+	 * @param minimumWaterFlow The minimum water flow
+	 */
+	public void getMinimumWaterFlow(int minimumWaterFlow) {
+		this.minimumWaterFlow = minimumWaterFlow;
+	}
+
+	/**
 	 * Store the instrument
 	 * @return Navigation to the instrument list
+	 * @throws InstrumentException If the instrument object is invalid
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
 	 */
-	public String saveInstrument() {
+	public String saveInstrument() throws MissingParamException, InstrumentException, DatabaseException {
 		
-		Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles, sensorAssignments, runTypes, preFlushingTime, postFlushingTime); 
+		Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles, sensorAssignments, runTypes, preFlushingTime, postFlushingTime, minimumWaterFlow); 
+		InstrumentDB.storeInstrument(getDataSource(), instrument);
 		
 		return NAV_INSTRUMENT_LIST; 
 	}

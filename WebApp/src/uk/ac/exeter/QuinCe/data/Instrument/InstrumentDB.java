@@ -96,137 +96,40 @@ public class InstrumentDB {
 	
 	private static final String GET_RUN_TYPES_QUERY = "SELECT id, run_name, run_type FROM run_types WHERE instrument_id = ?";
 	
-	/**
-	 * Add an instrument to the database
-	 * @throws MissingParamException If any of the required data are missing
-	 * @throws DatabaseException If an error occurs while storing the instrument details
-	 */
-	public static void addInstrument(DataSource dataSource, Instrument instrument) throws MissingParamException, DatabaseException {
+
+	public static void storeInstrument(DataSource dataSource, Instrument instrument) throws MissingParamException, InstrumentException, DatabaseException {
 		
-		/*
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(instrument, "instrument");
+		
+		// Validate the instrument. Will throw an exception
 		instrument.validate();
 		
-		TreeSet<RunType> runTypes = instrument.getRunTypes();
-		
 		Connection conn = null;
-		PreparedStatement instrStmt = null;
-		ResultSet generatedKeys = null;
-		List<PreparedStatement> runTypeStmts = new ArrayList<PreparedStatement>(runTypes.size());
-
+		
 		try {
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
 			
-			instrStmt = conn.prepareStatement(CREATE_INSTRUMENT_STATEMENT, Statement.RETURN_GENERATED_KEYS);
-			instrStmt.setLong(1, instrument.getOwnerId());
-			instrStmt.setString(2, instrument.getName());
-			instrStmt.setString(3, instrument.getIntakeTempName1());
-			instrStmt.setString(4, instrument.getIntakeTempName2());
-			instrStmt.setString(5, instrument.getIntakeTempName3());
-			instrStmt.setString(6, instrument.getSalinityName1());
-			instrStmt.setString(7, instrument.getSalinityName2());
-			instrStmt.setString(8, instrument.getSalinityName3());
-			instrStmt.setString(9, instrument.getEqtName1());
-			instrStmt.setString(10, instrument.getEqtName2());
-			instrStmt.setString(11, instrument.getEqtName3());
-			instrStmt.setString(12, instrument.getEqpName1());
-			instrStmt.setString(13, instrument.getEqpName2());
-			instrStmt.setString(14, instrument.getEqpName3());
-			instrStmt.setString(15, instrument.getAirFlowName1());
-			instrStmt.setString(16, instrument.getAirFlowName2());
-			instrStmt.setString(17, instrument.getAirFlowName3());
-			instrStmt.setString(18, instrument.getWaterFlowName1());
-			instrStmt.setString(19, instrument.getWaterFlowName2());
-			instrStmt.setString(20, instrument.getWaterFlowName3());
-			instrStmt.setString(21, String.valueOf(instrument.getSeparatorChar()));
-			instrStmt.setInt(22, instrument.getDateFormat());
-			instrStmt.setInt(23, instrument.getTimeFormat());
-			instrStmt.setBoolean(24, instrument.getCustomDateTimeFormat());
-			instrStmt.setString(25, instrument.getCustomDateTimeFormatString());
-			instrStmt.setInt(26, instrument.getLatFormat());
-			instrStmt.setInt(27, instrument.getLonFormat());
-			instrStmt.setInt(28, instrument.getHeaderLines());
-			instrStmt.setBoolean(29, instrument.getHasAtmosphericPressure());
-			instrStmt.setBoolean(30, instrument.getSamplesDried());
-			instrStmt.setInt(31, instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
-			instrStmt.setInt(32, instrument.getColumnAssignment(Instrument.COL_DATE));
-			instrStmt.setInt(33, instrument.getColumnAssignment(Instrument.COL_YEAR));
-			instrStmt.setInt(34, instrument.getColumnAssignment(Instrument.COL_MONTH));
-			instrStmt.setInt(35, instrument.getColumnAssignment(Instrument.COL_DAY));
-			instrStmt.setInt(36, instrument.getColumnAssignment(Instrument.COL_TIME));
-			instrStmt.setInt(37, instrument.getColumnAssignment(Instrument.COL_HOUR));
-			instrStmt.setInt(38, instrument.getColumnAssignment(Instrument.COL_MINUTE));
-			instrStmt.setInt(39, instrument.getColumnAssignment(Instrument.COL_SECOND));
-			instrStmt.setInt(40, instrument.getColumnAssignment(Instrument.COL_CUSTOM_DATETIME_FORMAT));
-			instrStmt.setInt(41, instrument.getColumnAssignment(Instrument.COL_LATITUDE));
-			instrStmt.setInt(42, instrument.getColumnAssignment(Instrument.COL_NORTH_SOUTH));
-			instrStmt.setInt(43, instrument.getColumnAssignment(Instrument.COL_LONGITUDE));
-			instrStmt.setInt(44, instrument.getColumnAssignment(Instrument.COL_EAST_WEST));
-			instrStmt.setInt(45, instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_1));
-			instrStmt.setInt(46, instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_2));
-			instrStmt.setInt(47, instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_3));
-			instrStmt.setInt(48, instrument.getColumnAssignment(Instrument.COL_SALINITY_1));
-			instrStmt.setInt(49, instrument.getColumnAssignment(Instrument.COL_SALINITY_2));
-			instrStmt.setInt(50, instrument.getColumnAssignment(Instrument.COL_SALINITY_3));
-			instrStmt.setInt(51, instrument.getColumnAssignment(Instrument.COL_EQT_1));
-			instrStmt.setInt(52, instrument.getColumnAssignment(Instrument.COL_EQT_2));
-			instrStmt.setInt(53, instrument.getColumnAssignment(Instrument.COL_EQT_3));
-			instrStmt.setInt(54, instrument.getColumnAssignment(Instrument.COL_EQP_1));
-			instrStmt.setInt(55, instrument.getColumnAssignment(Instrument.COL_EQP_2));
-			instrStmt.setInt(56, instrument.getColumnAssignment(Instrument.COL_EQP_3));
-			instrStmt.setInt(57, instrument.getColumnAssignment(Instrument.COL_AIR_FLOW_1));
-			instrStmt.setInt(58, instrument.getColumnAssignment(Instrument.COL_AIR_FLOW_2));
-			instrStmt.setInt(59, instrument.getColumnAssignment(Instrument.COL_AIR_FLOW_3));
-			instrStmt.setInt(60, instrument.getColumnAssignment(Instrument.COL_WATER_FLOW_1));
-			instrStmt.setInt(61, instrument.getColumnAssignment(Instrument.COL_WATER_FLOW_2));
-			instrStmt.setInt(62, instrument.getColumnAssignment(Instrument.COL_WATER_FLOW_3));
-			instrStmt.setInt(63, instrument.getColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE));
-			instrStmt.setInt(64, instrument.getColumnAssignment(Instrument.COL_XH2O));
-			instrStmt.setInt(65, instrument.getColumnAssignment(Instrument.COL_CO2));
-			instrStmt.setInt(66, instrument.getRawFileColumnCount());
-			instrStmt.setInt(67, instrument.getPreFlushingTime());
-			instrStmt.setInt(68, instrument.getPostFlushingTime());
-
-			instrStmt.execute();
 			
-			generatedKeys = instrStmt.getGeneratedKeys();
-			if (generatedKeys.next()) {
-				instrument.setDatabaseId(generatedKeys.getLong(1));
-
-				for (RunType runType : runTypes) {
-					PreparedStatement stmt = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
-					stmt.setLong(1, instrument.getDatabaseId());
-					stmt.setString(2, runType.getName());
-					stmt.setInt(3, runType.getRunType());
-					
-					stmt.execute();
-					
-					runTypeStmts.add(stmt);
-					
-					// Add the instrument id to the run type  object
-					runType.setInstrumentID(instrument.getDatabaseId());
-				}
-			} else {
-				throw new DatabaseException("Parent instrument record not created");
-			}
 			
 			conn.commit();
-			
 		} catch (SQLException e) {
+			boolean rollbackOK = true;
 			
-			DatabaseUtils.rollBack(conn);
-			throw new DatabaseException("Error while storing new instrument records", e);
+			try {
+				conn.rollback();
+			} catch (SQLException e2) {
+				rollbackOK = false;
+			}
+			
+			throw new DatabaseException("Exception while storing instrument", e, rollbackOK);
 		} finally {
-			DatabaseUtils.closeResultSets(generatedKeys);
-			DatabaseUtils.closeStatements(runTypeStmts);
-			DatabaseUtils.closeStatements(instrStmt);
 			DatabaseUtils.closeConnection(conn);
 		}
-		
-		*/
 	}
+	
+	
 	
 	/**
 	 * Returns a list of instruments owned by a given user.
@@ -237,8 +140,8 @@ public class InstrumentDB {
 	 * 
 	 * @param owner The owner whose instruments are to be listed
 	 * @return The list of instruments
-	 * @throws MissingParamException 
-	 * @throws DatabaseException 
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurred
 	 */
 	public static List<InstrumentStub> getInstrumentList(DataSource dataSource, User owner) throws MissingParamException, DatabaseException {
 		

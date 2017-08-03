@@ -75,59 +75,39 @@ different data comes from different places.
 Columns indices for the date/time and position are stored in this table, since they are universal
 for all instrument types. Other column details are stored in the child `file_columns` table.
 
-Field                    Type           Description
---------------------     ------------   --------------------------------------------------------------------------------------
-id*                      Integer        ID
-instrument_id            F_KEY          The ID of the instrument that this data file belongs to
-primary_file             Boolean        Indicates whether or not this is the primary data file for the instrument. This is
-                                        decided by QuinCe and is implementation-specific.
-date_format              Integer        The date format used in the instrument's data files
-time_format              Integer        The time format used in the instrument's data files
-date_col                 Integer        Date column (all parts in one column)
-year_col                 Integer        Year column
-month_col                Integer        Month column
-day_col                  Integer        Day column
-time_col                 Integer        Time column (all parts in one column)
-hour_col                 Integer        Hour column
-minute_col               Integer        Minute column
-second_col               Integer        Second column
-has_position             Boolean        Indicates whether or not this file contains position information
-lon_format               Integer        The longitude format used in the instrument's data files
-lat_format               Integer        The latitude format used in the instrument's data files
-latitude_col             Integer        Latitude column
-north_south_col          Integer        Latitude direction (N/S) column
-longitude_col            Integer        Longitude column
-east_west_col            Integer        Longitude direction (E/W) column
-run_type_col             Integer        The column in which run type indentifiers are stored
+All files must contain date/time information, while position information is optional. The date/time columns
+will only be partially populated, depending on the format of the file. The layout of the file can be inferred from
+the columns that are populated, and individual formats (where required) are stored in the properties column. These
+properties are formatted as `name=value;name=value;...`
 
-#### `date_format`
-The `date_format` field will have one of the following values:
-
-Value    Format
------    --------------------------
-0        Separate columns for year, month and day
-1        YYYYMMDD
-2        DD/MM/YY
-3        DD/MM/YYYY
-4        MM/DD/YY
-5        MM/DD/YYYY
-
-#### `time_format`
-The `time_format` field will have one of the following values:
-
-Value    Format
------    --------------------------
-0        Separate fields for hour, minute and second
-1        HHMMSS
-2        HH:MM:SS
-
-#### `lat_format`
-The `lat_format` field will have one of the following values:
-
-Value    Format
------    --------------------------
-0        -90 to 90
-1        0 to 90, with N/S in a separate column
+Field                        Type           Description
+--------------------         ------------   --------------------------------------------------------------------------------------
+id*                          Integer        ID
+instrument_id                F_KEY          ID of the instrument that this data file belongs to
+primary_position_file        Boolean        Indicates whether or not this file contains the primary position
+										    data for the instrument.
+lon_format                   Integer        Format of the longitude
+lon_value_col                Integer        Column where the longitude value is stored
+lon_hemisphere_col           Integer        Column where the longitude hemisphere is stored 
+lat_format                   Integer        Format of the latitude
+lat_value_col                Integer        Column where the latitude value is stored
+lat_hemisphere_col           Integer        Column where the latitude hemisphere is stored 
+date_time_col                Integer        Column where a combined date/time string is stored
+date_time_props              String         Properties for the `date_time` column
+date_col                     Integer        Column where a date string is stored
+date_props                   String         Properties for the `date` column
+hours_from_start_col         Integer        Column where the time as Hours from Start of File value is stored
+hours_from_start_props       String         Properties for the `hours_from_start` column
+jday_time_col                Integer        Column where the combined Julian Day/Decimal Time value is stored
+jday_col                     Integer        Column where the Julian Day is stored
+year_col                     Integer        Column where the year is stored
+month_col                    Integer        Column where the month is stored
+day_col                      Integer        Column where the day is stored
+time_col                     Integer        Column where the time string is stored
+time_props                   String         Properties for the `time` column
+hour_col                     Integer        Column where the hour is stored
+minute_col                   Integer        Column where the minute is stored
+second_col                   Integer        Column where the second is stored
 
 #### `lon_format`
 The `lon_format` field will have one of the following values:
@@ -138,6 +118,13 @@ Value    Format
 1        -180 to 180
 2        0 to 180, with E/W in a separate column
 
+#### `lat_format`
+The `lat_format` field will have one of the following values:
+
+Value    Format
+-----    --------------------------
+0        -90 to 90
+1        0 to 90, with N/S in a separate column
 
 ## `file_columns`
 This table will contains details of the columns present in a given

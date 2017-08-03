@@ -57,6 +57,11 @@ public class Instrument {
 	private int postFlushingTime = 0;
 	
 	/**
+	 * The minimum water flow
+	 */
+	private int minimumWaterFlow = -1;
+	
+	/**
 	 * Constructor for a complete instrument with no database ID
 	 * @param owner The instrument's owner
 	 * @param name The instrument name
@@ -65,8 +70,9 @@ public class Instrument {
 	 * @param runTypes The run types
 	 * @param preFlushingTime The pre-flushing time
 	 * @param postFlushingTime The post-flushing time
+	 * @param minimumWaterFlow The minimum water flow
 	 */
-	public Instrument(User owner, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, TreeMap<String, RunTypeCategory> runTypes, int preFlushingTime, int postFlushingTime) {
+	public Instrument(User owner, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, TreeMap<String, RunTypeCategory> runTypes, int preFlushingTime, int postFlushingTime, int minimumWaterFlow) {
 		this.ownerId = owner.getDatabaseID();
 		this.name = name;
 		this.fileDefinitions = fileDefinitions;
@@ -74,13 +80,15 @@ public class Instrument {
 		this.runTypes = runTypes;
 		this.preFlushingTime = preFlushingTime;
 		this.postFlushingTime = postFlushingTime;
+		this.minimumWaterFlow = minimumWaterFlow;
 	}
 	
 	
 	/**
-	 * Validate that all required information for the Instrument is present 
+	 * Validate that all required information for the Instrument is present
+	 * @throws InstrumentException If the instrument is not valid
 	 */
-	public void validate() {
+	public void validate() throws InstrumentException {
 		// TODO Write it!
 	}
 	
@@ -146,5 +154,21 @@ public class Instrument {
 	 */
 	public void setPostFlushingTime(int postFlushingTime) {
 		this.postFlushingTime = postFlushingTime;
+	}
+	
+	/**
+	 * Get the minimum water flow
+	 * @return The minimum water flow
+	 */
+	public int getMinimumWaterFlow() {
+		return minimumWaterFlow;
+	}
+	
+	/**
+	 * Set the minimum water flow
+	 * @param minimumWaterFlow The minimum water flow
+	 */
+	public void getMinimumWaterFlow(int minimumWaterFlow) {
+		this.minimumWaterFlow = minimumWaterFlow;
 	}
 }
