@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
@@ -1591,7 +1592,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Set the minimum water flow
 	 * @param minimumWaterFlow The minimum water flow
 	 */
-	public void getMinimumWaterFlow(int minimumWaterFlow) {
+	public void setMinimumWaterFlow(int minimumWaterFlow) {
 		this.minimumWaterFlow = minimumWaterFlow;
 	}
 
@@ -1601,11 +1602,17 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @throws InstrumentException If the instrument object is invalid
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
+	 * @throws IOException If certain data cannot be converted for storage in the database
 	 */
-	public String saveInstrument() throws MissingParamException, InstrumentException, DatabaseException {
+	public String saveInstrument() throws MissingParamException, InstrumentException, DatabaseException, IOException {
 		
-		Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles, sensorAssignments, runTypes, preFlushingTime, postFlushingTime, minimumWaterFlow); 
-		InstrumentDB.storeInstrument(getDataSource(), instrument);
+		try {
+			Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles, sensorAssignments, runTypes, preFlushingTime, postFlushingTime, minimumWaterFlow); 
+			InstrumentDB.storeInstrument(getDataSource(), instrument);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 		
 		return NAV_INSTRUMENT_LIST; 
 	}

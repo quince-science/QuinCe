@@ -116,7 +116,7 @@ public class DateTimeColumnAssignment {
 	 * Get the properties of this assignment
 	 * @return The assignment properties
 	 */
-	protected Properties getProperties() {
+	public Properties getProperties() {
 		return properties;
 	}
 	

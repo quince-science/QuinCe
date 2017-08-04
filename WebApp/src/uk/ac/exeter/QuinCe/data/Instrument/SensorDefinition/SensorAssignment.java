@@ -18,6 +18,11 @@ public class SensorAssignment {
 	private int column;
 	
 	/**
+	 * The column in which the data will be stored in the database	
+	 */
+	private int databaseColumn = -1;
+	
+	/**
 	 * The name of the sensor
 	 */
 	private String sensorName;
@@ -120,5 +125,21 @@ public class SensorAssignment {
 	 */
 	public boolean isPrimary() {
 		return primary;
+	}
+	
+	/**
+	 * Get the column index where this sensor's data will be stored in the database
+	 * @return The database column index
+	 */
+	public int getDatabaseColumn() {
+		return databaseColumn;
+	}
+	
+	/**
+	 * Set the column index where this sensor's data will be stored in the database
+	 * @param databaseColumn The database column index
+	 */
+	public void setDatabaseColumn(int databaseColumn) {
+		this.databaseColumn = databaseColumn;
 	}
 }

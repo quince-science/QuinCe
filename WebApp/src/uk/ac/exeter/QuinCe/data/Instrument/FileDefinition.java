@@ -67,6 +67,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	/**
 	 * The method by which the header is defined.
 	 * One of {@link #HEADER_TYPE_LINE_COUNT} or {@link #HEADER_TYPE_STRING}
+	 * 
+	 * <p>
+	 *   For an empty header, use {@link #HEADER_TYPE_LINE_COUNT} and set
+	 *   {@link #headerLines} to zero.
+	 * </p>
 	 */
 	private int headerType = HEADER_TYPE_LINE_COUNT;
 	

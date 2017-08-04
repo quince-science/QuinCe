@@ -36,7 +36,7 @@ public class LongitudeSpecification extends PositionSpecification {
 	}
 
 	@Override
-	protected boolean hemisphereRequired() {
+	public boolean hemisphereRequired() {
 		return (getFormat() == FORMAT_0_180);
 	}
 }

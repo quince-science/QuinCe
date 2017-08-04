@@ -84,6 +84,13 @@ Field                        Type           Description
 --------------------         ------------   --------------------------------------------------------------------------------------
 id*                          Integer        ID
 instrument_id                F_KEY          ID of the instrument that this data file belongs to
+description                  String         File description
+column_separator             String         Column separator
+header_type					 Integer        How the header is defined (number of lines or the last line string)
+header_lines                 Integer        Number of lines in the file header
+header_end_string            String         The line that indicates the end of the file header
+column_header_rows           Integer        The number of column header rows in the file
+column_count                 Integer        Number of colums in the file
 primary_position_file        Boolean        Indicates whether or not this file contains the primary position
 										    data for the instrument.
 lon_format                   Integer        Format of the longitude

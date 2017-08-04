@@ -157,6 +157,14 @@ public class Instrument {
 	}
 	
 	/**
+	 * Get the instrument's file definitions
+	 * @return The file definitions
+	 */
+	public InstrumentFileSet getFileDefinitions() {
+		return fileDefinitions;
+	}
+	
+	/**
 	 * Get the minimum water flow
 	 * @return The minimum water flow
 	 */
@@ -168,7 +176,7 @@ public class Instrument {
 	 * Set the minimum water flow
 	 * @param minimumWaterFlow The minimum water flow
 	 */
-	public void getMinimumWaterFlow(int minimumWaterFlow) {
+	public void setMinimumWaterFlow(int minimumWaterFlow) {
 		this.minimumWaterFlow = minimumWaterFlow;
 	}
 }

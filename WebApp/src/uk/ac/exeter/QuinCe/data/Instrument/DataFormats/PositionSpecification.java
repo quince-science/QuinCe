@@ -81,7 +81,7 @@ public abstract class PositionSpecification {
 	 * this specification's format
 	 * @return {@code true} if a hemisphere column is required; {@code false} if it is not
 	 */
-	protected abstract boolean hemisphereRequired();
+	public abstract boolean hemisphereRequired();
 	
 	/**
 	 * Determines whether or not this specification is complete,

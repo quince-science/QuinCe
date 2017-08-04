@@ -343,8 +343,17 @@ public class DateTimeSpecification {
 	 * @return {@code true} if a column has been assigned; {@code false} if it is not
 	 * @see DateTimeColumnAssignment#isAssigned()
 	 */
-	private boolean isAssigned(int assignmentIndex) {
+	public boolean isAssigned(int assignmentIndex) {
 		return assignments.get(assignmentIndex).isAssigned();
+	}
+	
+	/**
+	 * Get the assignment for a given date/time field
+	 * @param assignmentIndex The date/time field index
+	 * @return The assignment
+	 */
+	public DateTimeColumnAssignment getAssignment(int assignmentIndex) {
+		return assignments.get(assignmentIndex);
 	}
 	
 	/**
