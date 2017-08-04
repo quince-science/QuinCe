@@ -148,12 +148,8 @@ public class InstrumentDB {
 						
 						
 					}
-					
 				}
-				
-				
 			}
-
 			
 			conn.commit();
 		} catch (SQLException e) {
@@ -234,13 +230,13 @@ public class InstrumentDB {
 	}
 	
 	private static void addPositionAssignment(PreparedStatement stmt, PositionSpecification posSpec, int formatIndex, int valueIndex, int hemisphereIndex) throws SQLException {
-		stmt.setInt(formatIndex, posSpec.getFormat()); // lat_format
-		stmt.setInt(valueIndex, posSpec.getValueColumn()); // lat_value_col
+		stmt.setInt(formatIndex, posSpec.getFormat()); // pos_format
+		stmt.setInt(valueIndex, posSpec.getValueColumn()); // pos_value_col
 		
 		if (posSpec.hemisphereRequired()) {
-			stmt.setInt(hemisphereIndex, posSpec.getHemisphereColumn()); // lat_hemisphere_col
+			stmt.setInt(hemisphereIndex, posSpec.getHemisphereColumn()); // pos_hemisphere_col
 		} else {
-			stmt.setNull(hemisphereIndex, Types.INTEGER); // lat_hemisphere_col
+			stmt.setInt(hemisphereIndex, -1); // pos_hemisphere_col
 		}
 	}
 	
