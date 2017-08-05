@@ -13,4 +13,5 @@ CO₂,Y,Y,,xH₂O,Do values from the CO₂ require moisture adjustment?,Y,Y,N
 Other Temperature,N,Y,,,,Y,N,Y
 Other Pressure,N,Y,,,,Y,N,Y
 Air Flow,N,Y,,,,Y,N,Y
-Water Flow,N,Y,,,,Y,N,Y
+Water Flow,N,Y,,,,Y,N,N
+Pump Speed,N,Y,,,,Y,N,N
