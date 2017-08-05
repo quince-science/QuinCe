@@ -28,7 +28,7 @@ public class DatabaseUtils {
 	 * Close a set of {@link java.sql.ResultSet} objects, ignoring any errors
 	 * @param results The ResultSets
 	 */
-	public static void closeResultSets(ResultSet... results) {
+	public static void closeResultSets(List<ResultSet> results) {
 		for (ResultSet result : results) {
 			if (null != result) {
 				try {
@@ -38,6 +38,14 @@ public class DatabaseUtils {
 				}
 			}
 		}			
+	}
+	
+	/**
+	 * Close a set of {@link java.sql.ResultSet} objects, ignoring any errors
+	 * @param results The ResultSets
+	 */
+	public static void closeResultSets(ResultSet... results) {
+		closeResultSets(Arrays.asList(results));
 	}
 	
 	/**

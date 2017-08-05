@@ -45,6 +45,11 @@ public class SensorAssignment {
 	private boolean primary = true;
 	
 	/**
+	 * The String that indicates a missing value
+	 */
+	private String missingValue = null;
+	
+	/**
 	 * Simple constructor
 	 * @param dataFile The data file
 	 * @param column The column number
@@ -52,14 +57,16 @@ public class SensorAssignment {
 	 * @param postCalibrated Specifies whether or not values should be calibrated by QuinCe
 	 * @param primary Specifies whether this is a primary or fallback sensor
 	 * @param dependsQuestionAnswer The answer to the Depends Question
+	 * @param missingValue The missing value String
 	 */
-	public SensorAssignment(String dataFile, int column, String sensorName, boolean postCalibrated, boolean primary, boolean dependsQuestionAnswer) {
+	public SensorAssignment(String dataFile, int column, String sensorName, boolean postCalibrated, boolean primary, boolean dependsQuestionAnswer, String missingValue) {
 		this.dataFile = dataFile;
 		this.column = column;
 		this.sensorName = sensorName;
 		this.postCalibrated = postCalibrated;
 		this.primary = primary;
 		this.dependsQuestionAnswer = dependsQuestionAnswer;
+		this.missingValue = missingValue;
 	}
 	
 	/**
@@ -141,5 +148,21 @@ public class SensorAssignment {
 	 */
 	public void setDatabaseColumn(int databaseColumn) {
 		this.databaseColumn = databaseColumn;
+	}
+	
+	/**
+	 * Get the missing value String
+	 * @return The missing value String
+	 */
+	public String getMissingValue() {
+		return missingValue;
+	}
+	
+	/**
+	 * Set the missing value String
+	 * @param missingValue The missing value String
+	 */
+	public void setMissingValue(String missingValue) {
+		this.missingValue = missingValue;
 	}
 }

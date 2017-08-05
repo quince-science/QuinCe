@@ -9,20 +9,23 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-import java.util.TreeSet;
+import java.util.Set;
+import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
-import javafx.animation.KeyValue.Type;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
-import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
-import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -43,8 +46,8 @@ public class InstrumentDB {
 	 */
 	private static final String CREATE_INSTRUMENT_STATEMENT = "INSERT INTO instrument ("
 			+ "owner, name," // 2
-			+ "pre_flushing_time, post_flushing_time, minimum_water_flow) " // 5
-			+ "VALUES (?, ?, ?, ?, ?)";
+			+ "pre_flushing_time, post_flushing_time, minimum_water_flow" // 5
+			+ ") VALUES (?, ?, ?, ?, ?)";
 	
 	/**
 	 * Statement for inserting a file definition record
@@ -58,10 +61,24 @@ public class InstrumentDB {
 			+ "date_time_col, date_time_props, date_col, date_props, " // 19
 			+ "hours_from_start_col, hours_from_start_props, " // 21
 			+ "jday_time_col, jday_col, year_col, month_col, day_col, " // 26
-			+ "time_col, time_props, hour_col, minute_col, second_col) " // 31
-			+ "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "time_col, time_props, hour_col, minute_col, second_col" // 31
+			+ ") VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
+	/**
+	 * Statement for inserting a file column definition record
+	 */
+	private static final String CREATE_FILE_COLUMN_STATEMENT = "INSERT INTO file_columns ("
+			+ "file_definition_id, file_column, primary, sensor_type, " // 4
+			+ "sensor_name, value_column, depends_question_answer, " // 7
+			+ "missing_value, post_calibrated" // 9
+			+ ") VALUES (?, ?, ?, ?, ?, ?)";
 	
+	/**
+	 * Statement for inserting run types
+	 */
+	private static final String CREATE_RUN_TYPE_STATEMENT = "INSERT INTO run_types ("
+			+ "instrument_id, run_name, category_code" // 3
+			+ ") VALUES (?, ?, ?)";
 	
 	/**
 	 * Statement for retrieving all the details of a specific instrument
@@ -91,11 +108,6 @@ public class InstrumentDB {
 			
 	
 	/**
-	 * Statement for inserting run types
-	 */
-	private static final String CREATE_RUN_TYPE_STATEMENT = "INSERT INTO run_types (instrument_id, run_name, run_type) VALUES (?, ?, ?)";
-	
-	/**
 	 * Query for retrieving the list of instruments owned by a particular user
 	 */
 	private static final String GET_INSTRUMENT_LIST_QUERY = "SELECT id, name FROM instrument WHERE owner = ? ORDER BY name ASC";
@@ -109,7 +121,7 @@ public class InstrumentDB {
 		MissingParam.checkMissing(instrument, "instrument");
 		
 		// Validate the instrument. Will throw an exception
-		instrument.validate();
+		instrument.validate(false);
 		
 		Connection conn = null;
 		PreparedStatement instrumentStatement = null;
@@ -128,26 +140,64 @@ public class InstrumentDB {
 			if (!instrumentKey.next()) {
 				throw new DatabaseException("Instrument record was not created in the database");
 			} else {
+				// Store the database IDs for all the file definitions
+				Map<String, Long> fileDefinitionIds = new HashMap<String, Long>(instrument.getFileDefinitions().size());
+				
 				long instrumentId = instrumentKey.getLong(1);
 				instrument.setDatabaseId(instrumentId);
 				
 				// Now store the file definitions
 				for (FileDefinition file : instrument.getFileDefinitions()) {
-					System.out.println(CREATE_FILE_DEFINITION_STATEMENT);
 					PreparedStatement fileStatement = makeCreateFileDefinitionStatement(conn, file, instrumentId);
 					subStatements.add(fileStatement);
+					
 					fileStatement.execute();
 					ResultSet fileKey = fileStatement.getGeneratedKeys();
+					fileDefinitionKeys.add(fileKey);
+					
 					if (!fileKey.next()) {
 						throw new DatabaseException("File Definition record was created in the database");
 					} else {
-						long fileDefinitionId = fileKey.getLong(1);
-						
-						// Sensor assignments
-						
-						
-						
+						fileDefinitionIds.put(file.getFileDescription(), fileKey.getLong(1));
 					}
+				}
+				
+				// Sensor assignments
+				int databaseColumn = -1;
+				
+				for (Map.Entry<SensorType, Set<SensorAssignment>> sensorAssignmentsEntry : instrument.getSensorAssignments().entrySet()) {
+					
+					SensorType sensorType = sensorAssignmentsEntry.getKey();
+					
+					for (SensorAssignment assignment : sensorAssignmentsEntry.getValue()) {
+						databaseColumn++;
+						assignment.setDatabaseColumn(databaseColumn);
+						
+						PreparedStatement fileColumnStatement = conn.prepareStatement(CREATE_FILE_COLUMN_STATEMENT);
+						fileColumnStatement.setLong(1, fileDefinitionIds.get(assignment.getDataFile()));
+						fileColumnStatement.setInt(2, assignment.getColumn());
+						fileColumnStatement.setBoolean(3, assignment.isPrimary());
+						fileColumnStatement.setString(4, sensorType.getName());
+						fileColumnStatement.setString(5, assignment.getSensorName());
+						fileColumnStatement.setInt(6, databaseColumn);
+						fileColumnStatement.setBoolean(7, assignment.getDependsQuestionAnswer());
+						fileColumnStatement.setString(8, assignment.getMissingValue());
+						fileColumnStatement.setBoolean(9, assignment.getPostCalibrated());
+						
+						fileColumnStatement.execute();
+						subStatements.add(fileColumnStatement);						
+					}
+				}
+				
+				// Run Types
+				for (Map.Entry<String, RunTypeCategory> entry : instrument.getRunTypes().entrySet()) {
+					PreparedStatement runTypeStatement = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
+					runTypeStatement.setLong(1, instrumentId);
+					runTypeStatement.setString(2, entry.getKey());
+					runTypeStatement.setString(3, entry.getValue().getCode());
+					
+					runTypeStatement.execute();
+					subStatements.add(runTypeStatement);
 				}
 			}
 			
@@ -163,6 +213,7 @@ public class InstrumentDB {
 			
 			throw new DatabaseException("Exception while storing instrument", e, rollbackOK);
 		} finally {
+			DatabaseUtils.closeResultSets(fileDefinitionKeys);
 			DatabaseUtils.closeStatements(subStatements);
 			DatabaseUtils.closeResultSets(instrumentKey);
 			DatabaseUtils.closeStatements(instrumentStatement);
@@ -188,6 +239,15 @@ public class InstrumentDB {
 		return stmt;
 	}
 	
+	/**
+	 * Create a statement for adding a file definition to the database
+	 * @param conn A database connection
+	 * @param file The file definition
+	 * @param instrumentId The database ID of the instrument to which the file belongs
+	 * @return The statement
+	 * @throws SQLException If the statement cannot be built
+	 * @throws IOException If any Properties objects cannot be serialized into Strings for storage
+	 */
 	private static PreparedStatement makeCreateFileDefinitionStatement(Connection conn, FileDefinition file, long instrumentId) throws SQLException, IOException {
 		
 		PreparedStatement stmt = conn.prepareStatement(CREATE_FILE_DEFINITION_STATEMENT, Statement.RETURN_GENERATED_KEYS);
@@ -229,6 +289,15 @@ public class InstrumentDB {
 		return stmt;
 	}
 	
+	/**
+	 * Add a position assignment fields to a statement for inserting a file definition
+	 * @param stmt The file definition statement
+	 * @param posSpec The position specification
+	 * @param formatIndex The index in the statement of the format field
+	 * @param valueIndex The index in the statement of the value field
+	 * @param hemisphereIndex The index in the statement of the hemisphere field
+	 * @throws SQLException If adding the assignment fails
+	 */
 	private static void addPositionAssignment(PreparedStatement stmt, PositionSpecification posSpec, int formatIndex, int valueIndex, int hemisphereIndex) throws SQLException {
 		stmt.setInt(formatIndex, posSpec.getFormat()); // pos_format
 		stmt.setInt(valueIndex, posSpec.getValueColumn()); // pos_value_col

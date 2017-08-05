@@ -140,11 +140,14 @@ file definition
 Field                    Type           Description
 --------------------     ------------   -----------------------------------------------------------------
 file_definition_id*      F_KEY          The ID of the file definition
-sensor_type              String         The name of the sensor type, as identified in the `sensor_config.csv` file
-column_name              String         The name of this column as it will be displayed in QuinCe
-column_index*            Integer        The column where this sensor's value can be found in the data file
+file_column*             Integer        Column where this sensor's value can be found in the data file
+sensor_type              String         Name of the sensor type, as identified in the `sensor_config.csv` file
+sensor_name              String         Name of this column as it will be displayed in QuinCe
+primary                  Boolean        Indicates whether or not this is a primary sensor
+value_column             Integer        Position at which this value will be stored in the `voyage_data` table
+depends_question_answer  Boolean        Answer to the Depends Question (see `SensorType` class)
 missing_value            String         Value that indicates a missing value (`NaN`, `-999` etc.)
-value_index              Integer        The position at which this value will be stored in the `voyage_data` table
+post_calibrated          Boolean        Indicates whether values need to be calibrated by QuinCe
 
 ## `run_types`
 Each instrument will have a number of run types, for measurements, gas standards etc.
@@ -159,8 +162,8 @@ Field                    Type           Description
 --------------------     ------------   -----------------------------------------------------------------
 id*                      Integer        ID
 instrument_id            F_KEY          Instrument ID
-run_name                 String         The value from the `run_type` column in the Columns table
-type                     String         The run type code
+name                     String         The value from the `run_type` column in the Columns table
+category_code            String         The run type category code
 
 ## `standard_deployment`
 Each standard is supplied at a value, which may vary between

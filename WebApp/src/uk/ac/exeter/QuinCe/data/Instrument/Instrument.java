@@ -86,9 +86,11 @@ public class Instrument {
 	
 	/**
 	 * Validate that all required information for the Instrument is present
+	 * @param checkDatabaseColumns Specifies whether or not database columns
+	 *                             have been assigned and should be checked
 	 * @throws InstrumentException If the instrument is not valid
 	 */
-	public void validate() throws InstrumentException {
+	public void validate(boolean checkDatabaseColumns) throws InstrumentException {
 		// TODO Write it!
 	}
 	
@@ -179,4 +181,21 @@ public class Instrument {
 	public void setMinimumWaterFlow(int minimumWaterFlow) {
 		this.minimumWaterFlow = minimumWaterFlow;
 	}
+	
+	/**
+	 * Get the sensor assignments
+	 * @return The sensor assignments
+	 */
+	public SensorAssignments getSensorAssignments() {
+		return sensorAssignments;
+	}
+	
+	/**
+	 * Get the run types
+	 * @return The run types
+	 */
+	public TreeMap<String, RunTypeCategory> getRunTypes() {
+		return runTypes;
+	}
+
 }

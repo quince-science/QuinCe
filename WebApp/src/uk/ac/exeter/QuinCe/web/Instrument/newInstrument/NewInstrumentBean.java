@@ -136,6 +136,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	private boolean sensorAssignmentPrimary = false;
 	
 	/**
+	 * Sensor assignment - the 'missing' value
+	 */
+	private String sensorAssignmentMissingValue = null;
+	
+	/**
 	 * The file for which the longitude is being set
 	 */
 	private String longitudeFile = null;
@@ -713,11 +718,27 @@ public class NewInstrumentBean extends FileUploadBean {
 	}
 	
 	/**
+	 * Get the 'missing value' value for the current sensor assignment
+	 * @return The missing value
+	 */
+	public String getSensorAssignmentMissingValue() {
+		return sensorAssignmentMissingValue;
+	}
+	
+	/**
+	 * Set the 'missing value' value for the current sensor assignment
+	 * @param sensorAssignmentMissinngValue The missing value
+	 */
+	public void setSensorAssignmentMissingValue(String sensorAssignmentMissinngValue) {
+		this.sensorAssignmentMissingValue = sensorAssignmentMissinngValue;
+	}
+	
+	/**
 	 * Add a new assignment to the sensor assignments
 	 * @throws Exception If any errors occur
 	 */
 	public void storeSensorAssignment() throws Exception {
-		SensorAssignment assignment = new SensorAssignment(sensorAssignmentFile, sensorAssignmentColumn, sensorAssignmentName, sensorAssignmentPostCalibrated, sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer);
+		SensorAssignment assignment = new SensorAssignment(sensorAssignmentFile, sensorAssignmentColumn, sensorAssignmentName, sensorAssignmentPostCalibrated, sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer, sensorAssignmentMissingValue);
 		sensorAssignments.addAssignment(sensorAssignmentSensorType, assignment);
 		
 		// If the Run Type has been reassigned, reset the run type configuration
