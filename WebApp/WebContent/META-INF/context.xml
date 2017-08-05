@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version='1.0' encoding='UTF-8' ?>
 <Context reloadable="true">
   <!-- 
     maxActive: Maximum number of dB connections in pool. Set to -1 for no limit.
@@ -9,5 +9,5 @@
   <Resource name="jdbc/QuinCeDB" auth="Container" type="javax.sql.DataSource"
      maxTotal="100" maxIdle="30" maxWaitMillis="10000" removeAbandoned="true"
      username="quince_dev" password="quince_dev" driverClassName="com.mysql.jdbc.Driver"
-     url="jdbc:mysql://localhost:3306/quince_dev_2" />
+     url="jdbc:mysql://localhost:3306/quince_dev_2?useUnicode=true&amp;characterEncoding=utf-8" />
 </Context>
