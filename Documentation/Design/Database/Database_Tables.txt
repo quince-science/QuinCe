@@ -143,7 +143,7 @@ file_definition_id*      F_KEY          The ID of the file definition
 file_column*             Integer        Column where this sensor's value can be found in the data file
 sensor_type              String         Name of the sensor type, as identified in the `sensor_config.csv` file
 sensor_name              String         Name of this column as it will be displayed in QuinCe
-primary                  Boolean        Indicates whether or not this is a primary sensor
+primary_sensor           Boolean        Indicates whether or not this is a primary sensor
 value_column             Integer        Position at which this value will be stored in the `voyage_data` table
 depends_question_answer  Boolean        Answer to the Depends Question (see `SensorType` class)
 missing_value            String         Value that indicates a missing value (`NaN`, `-999` etc.)

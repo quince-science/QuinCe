@@ -68,10 +68,10 @@ public class InstrumentDB {
 	 * Statement for inserting a file column definition record
 	 */
 	private static final String CREATE_FILE_COLUMN_STATEMENT = "INSERT INTO file_columns ("
-			+ "file_definition_id, file_column, primary, sensor_type, " // 4
+			+ "file_definition_id, file_column, primary_sensor, sensor_type, " // 4
 			+ "sensor_name, value_column, depends_question_answer, " // 7
 			+ "missing_value, post_calibrated" // 9
-			+ ") VALUES (?, ?, ?, ?, ?, ?)";
+			+ ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	/**
 	 * Statement for inserting run types

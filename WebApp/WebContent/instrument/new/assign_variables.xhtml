@@ -124,6 +124,15 @@
 					</div>
 				</div>
 				
+				<div class="dialogSection">
+					<table>
+						<tr>
+							<td><p:outputLabel value="'Missing' Value"/></td>
+							<td><p:inputText id="sensorAssignmentMissingValue" value="#{newInstrumentBean.sensorAssignmentMissingValue}"/></td>
+						</tr>
+					</table>
+				</div>
+				
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
 					<p:commandButton widgetVar="sensorAssignmentAssignButton" value="Assign" ajax="true" action="#{newInstrumentBean.storeSensorAssignment}"
 					  process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer"

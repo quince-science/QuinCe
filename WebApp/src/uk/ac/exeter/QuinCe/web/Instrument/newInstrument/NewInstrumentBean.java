@@ -760,6 +760,7 @@ public class NewInstrumentBean extends FileUploadBean {
 		sensorAssignmentPrimary = true;
 		sensorAssignmentPostCalibrated = false;
 		sensorAssignmentDependsQuestionAnswer = false;
+		sensorAssignmentMissingValue = null;
 	}
 	
 	/**
