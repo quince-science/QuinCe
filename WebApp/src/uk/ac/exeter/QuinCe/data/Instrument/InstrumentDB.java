@@ -67,7 +67,7 @@ public class InstrumentDB {
 	/**
 	 * Statement for inserting a file column definition record
 	 */
-	private static final String CREATE_FILE_COLUMN_STATEMENT = "INSERT INTO file_columns ("
+	private static final String CREATE_FILE_COLUMN_STATEMENT = "INSERT INTO file_column ("
 			+ "file_definition_id, file_column, primary_sensor, sensor_type, " // 4
 			+ "sensor_name, value_column, depends_question_answer, " // 7
 			+ "missing_value, post_calibrated" // 9
@@ -76,7 +76,7 @@ public class InstrumentDB {
 	/**
 	 * Statement for inserting run types
 	 */
-	private static final String CREATE_RUN_TYPE_STATEMENT = "INSERT INTO run_types ("
+	private static final String CREATE_RUN_TYPE_STATEMENT = "INSERT INTO run_type ("
 			+ "instrument_id, run_name, category_code" // 3
 			+ ") VALUES (?, ?, ?)";
 	

@@ -133,7 +133,7 @@ Value    Format
 0        -90 to 90
 1        0 to 90, with N/S in a separate column
 
-## `file_columns`
+## `file_column`
 This table will contains details of the columns present in a given
 file definition
 
@@ -149,7 +149,7 @@ depends_question_answer  Boolean        Answer to the Depends Question (see `Sen
 missing_value            String         Value that indicates a missing value (`NaN`, `-999` etc.)
 post_calibrated          Boolean        Indicates whether values need to be calibrated by QuinCe
 
-## `run_types`
+## `run_type`
 Each instrument will have a number of run types, for measurements, gas standards etc.
 
 This table will hold details of which values in the
