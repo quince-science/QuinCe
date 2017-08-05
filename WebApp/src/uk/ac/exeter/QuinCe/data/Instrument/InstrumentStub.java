@@ -1,16 +1,18 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
-import java.io.Serializable;
-
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
-public class InstrumentStub implements Serializable {
-
-	private static final long serialVersionUID = 5898379713476853550L;
+/**
+ * A stub object for an instrument, containing only information
+ * useful for display in a list of instruments.
+ * @author Steve Jones
+ *
+ */
+public class InstrumentStub {
 
 	/**
 	 * The instrument's database ID
@@ -23,13 +25,21 @@ public class InstrumentStub implements Serializable {
 	private String name;
 	
 	/**
+	 * Indicates whether or not the instrument has sensors that require
+	 * calibration within QuinCe
+	 */
+	private boolean calibratableSensors;
+	
+	/**
 	 * Simple constructor
 	 * @param id The instrument's database ID
 	 * @param name The instrument's name
+	 * @param calibratableSensors Indicates the presence of sensors requiring calibration
 	 */
-	public InstrumentStub(long id, String name) {
+	public InstrumentStub(long id, String name, boolean calibratableSensors) {
 		this.id = id;
 		this.name = name;
+		this.calibratableSensors = calibratableSensors;
 	}
 
 	/**
@@ -59,5 +69,14 @@ public class InstrumentStub implements Serializable {
 	 */
 	public String getName() {
 		return name;
+	}
+	
+	/**
+	 * Determine whether or not the instrument has sensors that require
+	 * calibration within QuinCe
+	 * @return {@code true} if the instrument has sensors that need calibrating; {@code false if not}.
+	 */
+	public boolean getCalibratableSensors() {
+		return calibratableSensors;
 	}
 }

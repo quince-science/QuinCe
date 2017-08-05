@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.faces.bean.ManagedProperty;
+
 import uk.ac.exeter.QuinCe.data.Instrument.FileSetException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -34,6 +36,7 @@ import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
+import uk.ac.exeter.QuinCe.web.Instrument.InstrumentListBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
@@ -78,6 +81,12 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Date/Time formatter for previewing extracted dates
 	 */
 	private static final DateTimeFormatter PREVIEW_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-DD HH:mm:ss");
+	
+	/**
+	 * The Instrument List Bean
+	 */
+	@ManagedProperty("#{instrumentListBean}")
+	private InstrumentListBean instrumentListBean = null;
 	
 	/**
 	 * The name of the new instrument
@@ -1631,6 +1640,9 @@ public class NewInstrumentBean extends FileUploadBean {
 		try {
 			Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles, sensorAssignments, runTypes, preFlushingTime, postFlushingTime, minimumWaterFlow); 
 			InstrumentDB.storeInstrument(getDataSource(), instrument);
+			
+			// Reinitialise the instrument list bean to update the instrument list
+			instrumentListBean.init();
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
@@ -1638,4 +1650,13 @@ public class NewInstrumentBean extends FileUploadBean {
 		
 		return NAV_INSTRUMENT_LIST; 
 	}
+	
+	/**
+	 * Set up the reference to the Instrument List Bean
+	 * @param instrumentListBean The instrument list bean
+	 */
+    public void setInstrumentListBean(InstrumentListBean instrumentListBean) {
+        this.instrumentListBean = instrumentListBean;
+    }
+
 }

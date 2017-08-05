@@ -13,7 +13,21 @@
 	
 	<ui:define name="content">
 		<h:form id="instrumentListForm" method="post" accept-charset="utf8">
-			The list of instruments goes here.
+			<p:dataTable id="instruments" var="instrument" value="#{instrumentListBean.instrumentList}" styleClass="pageTable">
+				<p:column>
+					<f:facet name="header">Instrument Name</f:facet>
+					<b><h:outputText value="#{instrument.name}"/></b>
+				</p:column>
+				<p:column styleClass="centeredCell">
+					<f:facet name="header">Sensor Calibrations</f:facet>
+					<p:button rendered="#{instrument.calibratableSensors}" value="View Calibrations" styleClass="inlineButton" onclick="goToCalibrations(#{instrument.id})"/>
+					<h:outputText rendered="#{!instrument.calibratableSensors}" value="No sensors require calibration"/>
+				</p:column>
+				<p:column styleClass="centeredCell">
+					<f:facet name="header">Gas Standard Deployments</f:facet>
+					<p:button value="View Deployments" styleClass="inlineButton" onclick="goToStandards(#{instrument.id})"/>
+				</p:column>
+			</p:dataTable>
 		
 			<h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
 				<p:commandButton value="Add New Instrument" ajax="false" action="#{newInstrumentBean.start}"/>

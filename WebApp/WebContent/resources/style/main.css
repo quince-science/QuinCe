@@ -125,6 +125,10 @@ input[type="submit"][disabled="disabled"] {
     cursor: default;
 }
 
+.inlineButton {
+	margin-top: 0px;
+}
+
 input[type="submit"]:last-of-type, button:last-of-type {
     margin-right: 0px;
 }
@@ -584,6 +588,16 @@ table.fileDates {
 .codeLine {
 	margin: 5px 0px 5px 10px;
 	font-family: 'Inconsolata', monospace;
+}
+
+.pageTable {
+	width: 75%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.centeredCell {
+	text-align: center
 }
 
 /* PrimeFaces overrides */

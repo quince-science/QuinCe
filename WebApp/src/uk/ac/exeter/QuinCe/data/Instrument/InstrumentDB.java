@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
@@ -110,11 +109,22 @@ public class InstrumentDB {
 	/**
 	 * Query for retrieving the list of instruments owned by a particular user
 	 */
-	private static final String GET_INSTRUMENT_LIST_QUERY = "SELECT id, name FROM instrument WHERE owner = ? ORDER BY name ASC";
-	
-	private static final String GET_RUN_TYPES_QUERY = "SELECT id, run_name, run_type FROM run_types WHERE instrument_id = ?";
-	
+	private static final String GET_INSTRUMENT_LIST_QUERY = "SELECT i.id, i.name, SUM(c.post_calibrated) "
+			+ "FROM instrument AS i "
+			+ "INNER JOIN file_definition AS d ON i.id = d.instrument_id "
+			+ "INNER JOIN file_column AS c ON d.id = c.file_definition_id "
+			+ "WHERE i.owner = ? "
+			+ "GROUP BY i.id";
 
+	/**
+	 * Store a new instrument in the database
+	 * @param dataSource A data source
+	 * @param instrument The instrument
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws InstrumentException If the Instrument object is invalid
+	 * @throws DatabaseException If a database error occurs
+	 * @throws IOException If any of the data cannot be converted for storage in the database
+	 */
 	public static void storeInstrument(DataSource dataSource, Instrument instrument) throws MissingParamException, InstrumentException, DatabaseException, IOException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -352,11 +362,12 @@ public class InstrumentDB {
 	
 	/**
 	 * Returns a list of instruments owned by a given user.
-	 * The list contains InstrumentStub objects, which just contain
-	 * each instrument's ID and name.
+	 * The list contains {@link InstrumentStub} objects, which just contain
+	 * the details required for lists of instruments in the UI.
 	 * 
 	 * The list is ordered by the name of the instrument.
 	 * 
+	 * @param dataSource A data source
 	 * @param owner The owner whose instruments are to be listed
 	 * @return The list of instruments
 	 * @throws MissingParamException If any required parameters are missing
@@ -379,7 +390,8 @@ public class InstrumentDB {
 			
 			instruments = stmt.executeQuery();
 			while (instruments.next()) {
-				InstrumentStub record = new InstrumentStub(instruments.getLong(1), instruments.getString(2));
+				boolean hasCalibratableSensors = (instruments.getInt(3) > 0);
+				InstrumentStub record = new InstrumentStub(instruments.getLong(1), instruments.getString(2), hasCalibratableSensors);
 				instrumentList.add(record);
 			}
 		} catch (SQLException e) {
@@ -393,6 +405,15 @@ public class InstrumentDB {
 		return instrumentList;
 	}
 
+	/**
+	 * Determine whether an instrument with a given name and owner exists
+	 * @param dataSource A data source
+	 * @param owner The owner
+	 * @param name The instrument name
+	 * @return {@code true} if the instrument exists; {@code false} if it does not
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
 	public static boolean instrumentExists(DataSource dataSource, User owner, String name) throws MissingParamException, DatabaseException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(owner, "owner");
@@ -410,6 +431,15 @@ public class InstrumentDB {
 		return exists;
 	}
 	
+	/**
+	 * Retrieve a complete {@link Instrument} from the database
+	 * @param dataSource A data source
+	 * @param instrumentID The instrument's database ID
+	 * @return The instrument object
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws RecordNotFoundException If the instrument ID does not exist
+	 */
 	public static Instrument getInstrument(DataSource dataSource, long instrumentID) throws DatabaseException, MissingParamException, RecordNotFoundException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -430,7 +460,7 @@ public class InstrumentDB {
 	
 	/**
 	 * Returns a complete instrument object for the specified instrument ID
-	 * @param dataSource A data source
+	 * @param conn A database connetion
 	 * @param instrumentID The instrument ID
 	 * @return The complete Instrument object
 	 * @throws MissingParamException If the data source is not supplied
