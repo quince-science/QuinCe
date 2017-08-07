@@ -194,8 +194,6 @@ function renderAssignments() {
 	} else {
 		PF('next').disable();
 	}
-
-	PF('next').enable();
 }
 
 function renderSensorAssignments() {
