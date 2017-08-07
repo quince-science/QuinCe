@@ -82,7 +82,7 @@ public class QCDB {
 			+ "INNER JOIN data_reduction as d ON r.data_file_id = d.data_file_id AND r.row = d.row "
 			+ "INNER JOIN qc as q ON d.data_file_id  = q.data_file_id AND d.row = q.row "
 			+ "WHERE r.data_file_id = ? AND "
-			+ "q.woce_flag NOT IN (" + Flag.VALUE_QUESTIONABLE + ", " + Flag.VALUE_IGNORED + ", " + Flag.VALUE_BAD + ", " + Flag.VALUE_FATAL + ") "
+			+ "q.woce_flag IN (" + Flag.VALUE_ASSUMED_GOOD + ", " + Flag.VALUE_NEEDED + ") "
 			+ "ORDER BY r.row ASC";
 	
 	private static final String GET_NO_DATA_QC_RECORDS_STATEMENT = "SELECT row, "
