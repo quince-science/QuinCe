@@ -119,10 +119,10 @@ var rightMapVar = 'map_intaketemp_intakeTempMean';
 var leftMap = null;
 var rightMap = null;
 
-var leftColorScale = new ColorScale([[0,'#2C7BB6'],[0.25,'#ABD9E9'],[0.5,'#FFFFBF'],[0.75,'#FDAE61'],[1,'#D7191C']]);
+var leftColorScale = new ColorScale([[0,'#FFFFD4'],[0.25,'#FED98E'],[0.5,'#FE9929'],[0.75,'#D95F0E'],[1,'#993404']]);
 leftColorScale.setFont('Noto Sans', 11);
 
-var rightColorScale = new ColorScale([[0,'#2C7BB6'],[0.25,'#ABD9E9'],[0.5,'#FFFFBF'],[0.75,'#FDAE61'],[1,'#D7191C']]);
+var rightColorScale = new ColorScale([[0,'#FFFFD4'],[0.25,'#FED98E'],[0.5,'#FE9929'],[0.75,'#D95F0E'],[1,'#993404']]);
 rightColorScale.setFont('Noto Sans', 11);
 
 var leftMapDataLayer = null;
@@ -1625,10 +1625,6 @@ function drawLeftMap(data) {
 			feature.setStyle(new ol.style.Style({
 				image: new ol.style.Circle({
 					radius: 5,
-					stroke: new ol.style.Stroke({
-						color: '#DDDDDD',
-						width: 1
-					}),
 					fill: new ol.style.Fill({
 						color: leftColorScale.getColor(featureData[6])
 					})
