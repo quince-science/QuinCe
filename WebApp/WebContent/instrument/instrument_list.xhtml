@@ -21,7 +21,7 @@
 				<p:column styleClass="centeredCell">
 					<f:facet name="header">Sensor Calibrations</f:facet>
 					<p:button rendered="#{instrument.calibratableSensors}" value="View Calibrations" styleClass="inlineButton" onclick="goToCalibrations(#{instrument.id})"/>
-					<h:outputText rendered="#{!instrument.calibratableSensors}" value="No sensors require calibration"/>
+					<h:outputText styleClass="note" rendered="#{!instrument.calibratableSensors}" value="No sensors require calibration"/>
 				</p:column>
 				<p:column styleClass="centeredCell">
 					<f:facet name="header">Gas Standard Deployments</f:facet>

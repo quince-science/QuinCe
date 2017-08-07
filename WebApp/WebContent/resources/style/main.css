@@ -1,4 +1,4 @@
-@import 'https://fonts.googleapis.com/css?family=Noto Sans:400,700';
+@import 'https://fonts.googleapis.com/css?family=Noto Sans:400,400i,700';
 
 body {
   font-family: 'Noto Sans', sans-serif;
@@ -598,6 +598,11 @@ table.fileDates {
 
 .centeredCell {
 	text-align: center
+}
+
+.note {
+	color: #888888;
+	font-style: italic;
 }
 
 /* PrimeFaces overrides */
