@@ -43,8 +43,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * </p>
  * 
  * <p>
- *   Records that have already had their WOCE flag to {@link Flag#FATAL}, {@link Flag#BAD} or {@link Flag#IGNORED}
- *   are excluded from the QC checks.
+ *   Records that have already had their WOCE flag set are excluded from the QC checks.
  * </p>
  * 
  * <p>
