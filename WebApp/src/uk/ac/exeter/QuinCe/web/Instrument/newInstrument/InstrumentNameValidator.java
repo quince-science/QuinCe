@@ -9,7 +9,10 @@ import javax.servlet.http.HttpSession;
 
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.User.LoginBean;
+import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
@@ -33,7 +36,7 @@ public class InstrumentNameValidator implements Validator {
 			if (InstrumentDB.instrumentExists(ServletUtils.getDBDataSource(), user, name)) {
 				throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "An instrument with that name already exists", "An instrument with that name already exists"));
 			}
-		} catch (Exception e) {
+		} catch (MissingParamException | DatabaseException | ResourceException e) {
 			throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_FATAL, "Unable to check instrument at this time. Please try again later.", "Unable to check instrument at this time. Please try again later."));
 		}
 	}
