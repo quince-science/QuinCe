@@ -197,7 +197,7 @@ table.sampleData {
 }
 
 .assignmentMenuEntryTextDisabled {
-	text-decoration: line-through;
+	text-decoration: line-through !important;
 }
 
 .assignmentMenuEntryIcon {
