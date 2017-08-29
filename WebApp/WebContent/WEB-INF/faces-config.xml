@@ -76,18 +76,12 @@
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.KeepAliveBean</managed-bean-class>
 		<managed-bean-scope>session</managed-bean-scope>
 	</managed-bean>
-	<validator>
-		<description>Ensures that sensor calibration dates are unique</description>
-		<display-name>Calibration Date Validator</display-name>
-		<validator-id>calibrationDateValidator</validator-id>
-		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.CalibrationDateValidator</validator-class>
-	</validator>
-	<validator>
-		<description>Ensures that gas standard dates are unique</description>
-		<display-name>Gas Standard Date Validator</display-name>
-		<validator-id>standardDateValidator</validator-id>
-		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.StandardDateValidator</validator-class>
-	</validator>
+	<managed-bean>
+		<description>Handles gas standard deployments</description>
+		<managed-bean-name>gasStandardsBean</managed-bean-name>
+		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.GasStandardsBean</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+	</managed-bean>
 	<validator>
 		<description>Ensures that instrument names are not empty, and are unique to the user</description>
 		<display-name>Instrument Name Validator</display-name>
@@ -174,11 +168,7 @@
 			<to-view-id>/instrument/new/instrument_name.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
-			<from-outcome>calibrations</from-outcome>
-			<to-view-id>/instrument/calibrations.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>standards</from-outcome>
+			<from-outcome>gasStandards</from-outcome>
 			<to-view-id>/instrument/standards.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
@@ -211,35 +201,15 @@
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
-		<display-name>CalibrationsList</display-name>
-		<from-view-id>/instrument/calibrations.xhtml</from-view-id>
+		<display-name>GasStandardsList</display-name>
+		<from-view-id>/instrument/gas_standards.xhtml</from-view-id>
 		<navigation-case>
 			<from-outcome>instrument_list</from-outcome>
 			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
-			<from-outcome>calibrations</from-outcome>
-			<to-view-id>/instrument/calibrations.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>calibrationEditor</from-outcome>
-			<to-view-id>/instrument/calibration_edit.xhtml</to-view-id>
-		</navigation-case>
-	</navigation-rule>
-	<navigation-rule>
-		<display-name>StandardsList</display-name>
-		<from-view-id>/instrument/standards.xhtml</from-view-id>
-		<navigation-case>
-			<from-outcome>instrument_list</from-outcome>
-			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>standards</from-outcome>
-			<to-view-id>/instrument/standards.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>standardEditor</from-outcome>
-			<to-view-id>/instrument/standard_edit.xhtml</to-view-id>
+			<from-outcome>gas_standards</from-outcome>
+			<to-view-id>/instrument/gas_standards.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>

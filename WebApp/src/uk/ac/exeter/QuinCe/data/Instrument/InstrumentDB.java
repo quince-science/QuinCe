@@ -117,6 +117,12 @@ public class InstrumentDB {
 			+ "GROUP BY i.id";
 
 	/**
+	 * Query to get all the run types of a given run type category
+	 */
+	private static final String GET_RUN_TYPES_QUERY = "SELECT run_name FROM run_type WHERE "
+			+ "instrument_id = ? AND category_code = ? ORDER BY run_name ASC";
+	
+	/**
 	 * Store a new instrument in the database
 	 * @param dataSource A data source
 	 * @param instrument The instrument
@@ -599,5 +605,72 @@ public class InstrumentDB {
 		
 		long instrumentId = DataFileDB.getInstrumentId(dataSource, fileId);
 		return getInstrument(dataSource, instrumentId);
+	}
+
+	/**
+	 * Get the names of all run types of a given run type category in a given instrument
+	 * @param dataSource A data source
+	 * @param instrumentId The instrument's database ID
+	 * @param categoryCode The run type category code
+	 * @return The list of run types
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public static List<String> getRunTypes(DataSource dataSource, long instrumentId, String categoryCode) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		List<String> runTypes = null;
+		
+		Connection conn = null;
+		try {
+			
+			conn = dataSource.getConnection();
+			runTypes = getRunTypes(conn, instrumentId, categoryCode);
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while getting run types", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+
+		return runTypes;
+	}
+
+	/**
+	 * Get the names of all run types of a given run type category in a given instrument
+	 * @param conn A database connection
+	 * @param instrumentId The instrument's database ID
+	 * @param categoryCode The run type category code
+	 * @return The list of run types
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public static List<String> getRunTypes(Connection conn, long instrumentId, String categoryCode) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkPositive(instrumentId, "instrumentId");
+		MissingParam.checkMissing(categoryCode, "categoryCode");
+		
+		List<String> runTypes = new ArrayList<String>();
+		
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			stmt = conn.prepareStatement(GET_RUN_TYPES_QUERY);
+			stmt.setLong(1, instrumentId);
+			stmt.setString(2, categoryCode);
+			
+			records = stmt.executeQuery();
+			while (records.next()) {
+				runTypes.add(records.getString(1));
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while getting run types", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+		}
+
+		return runTypes;
 	}
 }

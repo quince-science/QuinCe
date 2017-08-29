@@ -9,10 +9,22 @@
 	<ui:define name="title">Instruments</ui:define>
 	<ui:define name="localHead">
 		<c:set var="mainMenuActiveIndex" value="2" scope="request"/>
+		<script>
+			function goToStandards(id, name) {
+				$('#instrumentListForm\\:instrumentId').val(id);
+				$('#instrumentListForm\\:instrumentName').val(name);
+				$('#instrumentListForm\\:showStandardsLink').click();
+				return false;
+			}
+		</script>
 	</ui:define>
 	
 	<ui:define name="content">
 		<h:form id="instrumentListForm" method="post" accept-charset="utf8">
+			<h:inputHidden id="instrumentId" value="#{gasStandardsBean.instrumentId}"/>
+			<h:inputHidden id="instrumentName" value="#{gasStandardsBean.instrumentName}"/>
+			<p:commandLink id="showStandardsLink" ajax="false" action="#{gasStandardsBean.start}"/>
+		
 			<p:dataTable id="instruments" var="instrument" value="#{instrumentListBean.instrumentList}" styleClass="pageTable">
 				<p:column>
 					<f:facet name="header">Instrument Name</f:facet>
@@ -20,12 +32,12 @@
 				</p:column>
 				<p:column styleClass="centeredCell">
 					<f:facet name="header">Sensor Calibrations</f:facet>
-					<p:button rendered="#{instrument.calibratableSensors}" value="View Calibrations" styleClass="inlineButton" onclick="goToCalibrations(#{instrument.id})"/>
+					<p:button rendered="#{instrument.calibratableSensors}" value="View Calibrations" styleClass="inlineButton" onclick="return goToCalibrations(#{instrument.id})"/>
 					<h:outputText styleClass="note" rendered="#{!instrument.calibratableSensors}" value="No sensors require calibration"/>
 				</p:column>
 				<p:column styleClass="centeredCell">
 					<f:facet name="header">Gas Standard Deployments</f:facet>
-					<p:button value="View Deployments" styleClass="inlineButton" onclick="goToStandards(#{instrument.id})"/>
+					<p:button value="View Deployments" styleClass="inlineButton" onclick="return goToStandards(#{instrument.id}, '#{instrument.name}')"/>
 				</p:column>
 			</p:dataTable>
 		
@@ -34,6 +46,4 @@
 			</h:panelGrid>
 		</h:form>
 	</ui:define>
-	
-
 </ui:composition>
