@@ -41,18 +41,6 @@
 		<managed-bean-scope>session</managed-bean-scope>
 	</managed-bean>
 	<managed-bean>
-		<description>Handles viewing and editing of sensor calibrations</description>
-		<managed-bean-name>calibrationsBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.CalibrationsBean</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
-		<description>Handles viewing and editing of gas standards</description>
-		<managed-bean-name>standardsBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.StandardsBean</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
 		<description>Handles editing of the user profile</description>
 		<managed-bean-name>userProfileBean</managed-bean-name>
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.User.UserProfileBean</managed-bean-class>
