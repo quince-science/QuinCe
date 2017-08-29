@@ -13,8 +13,6 @@ import uk.ac.exeter.QuinCe.data.Files.RawDataFile;
 import uk.ac.exeter.QuinCe.data.Files.RawDataFileException;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
-import uk.ac.exeter.QuinCe.data.Instrument.Standards.GasStandardDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -135,7 +133,7 @@ public class UploadDataFileBean extends FileUploadBean {
 	private boolean buildDatesTable(Calendar firstDate, Calendar lastDate, TableData table, List<String> messages) throws MissingParamException, DatabaseException, ResourceException, TableException {
 
 		boolean result = true;
-		
+		/*
 		List<Calendar> calibrationsInFile = CalibrationDB.getCalibrationDatesBetween(ServletUtils.getDBDataSource(), instrument, firstDate, lastDate);
 		Calendar calibrationBeforeFile = CalibrationDB.getCalibrationDateBefore(ServletUtils.getDBDataSource(), instrument, firstDate);
 		
@@ -259,7 +257,7 @@ public class UploadDataFileBean extends FileUploadBean {
 			messages.add("There are no gas standards available to calibrate this data file");
 			result = false;
 		}
-		
+		*/
 		return result;
 	}
 	
