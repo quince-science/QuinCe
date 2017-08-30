@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -52,23 +53,18 @@ public class GasStandardDB extends CalibrationDB {
 		instance = null;
 	}
 	
-	/**
-	 * Get the list of gas standard names for a given instrument
-	 * @param dataSource A data source
-	 * @param instrumentId The instrument's database ID
-	 * @return The standard names
-	 * @throws MissingParamException If any required parameters are missing
-	 * @throws DatabaseException If a database error occurs
-	 * @throws RecordNotFoundException If no gas standard run types are found
-	 */
-	public List<String> getStandardNames(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+	@Override
+	public List<String> getTargets(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		List<String> standardNames = InstrumentDB.getRunTypes(dataSource, instrumentId, GAS_STANDARD_RUNTYPE);
 		if (standardNames.size() == 0) {
 			throw new RecordNotFoundException("No gas standard names found for instrument " + instrumentId);
 		}
-		
-		return standardNames;
+
+		return Collections.unmodifiableList(standardNames);
 	}
 	
-
+	@Override
+	public String getCalibrationType() {
+		return GasStandard.GAS_STANDARD_CALIBRATION_TYPE;
+	}
 }

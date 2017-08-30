@@ -11,6 +11,11 @@ import java.util.List;
 public class GasStandard extends Calibration {
 
 	/**
+	 * The calibration type for gas standards
+	 */
+	public static final String GAS_STANDARD_CALIBRATION_TYPE = "GAS_STANDARD";
+	
+	/**
 	 * Contains the label for the concentration value
 	 * (constructed in the {@code static} block)
 	 */
@@ -22,26 +27,37 @@ public class GasStandard extends Calibration {
 	}
 	
 	/**
-	 * Create an empty gas standard
+	 * Create an empty gas standard placeholder that isn't
+	 * bound to a particular standard
 	 * @param instrumentId The instrument ID
 	 */
 	public GasStandard(long instrumentId) {
-		super(instrumentId);
+		super(instrumentId, GAS_STANDARD_CALIBRATION_TYPE);
+	}
+	
+	/**
+	 * Creates an empty gas standard for a specified standard
+	 * @param instrumentid The instrument ID
+	 * @param standard The standard
+	 */
+	protected GasStandard(long instrumentid, String standard) {
+		super(instrumentid, GAS_STANDARD_CALIBRATION_TYPE, standard);
 	}
 
 	@Override
-	public List<String> getValueNames() {
+	public List<String> getCoefficientNames() {
 		return valueNames;
 	}
 
 	@Override
-	protected String getType() {
-		return "GAS_STANDARD";
-	}
-	
-	@Override
-	public String getHumanReadableValues() {
-		return String.valueOf(values.get(0));
+	public String getHumanReadableCoefficients() {
+		String result = "No concentration has been set";
+		
+		if (null != coefficients) {
+			result = String.valueOf(coefficients.get(0)); 
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -49,7 +65,11 @@ public class GasStandard extends Calibration {
 	 * @return The concentration
 	 */
 	public double getConcentration() {
-		return values.get(0);
+		if (null == coefficients) {
+			initialiseCoefficients();
+		}
+		
+		return coefficients.get(0);
 	}
 	
 	/**
@@ -57,6 +77,10 @@ public class GasStandard extends Calibration {
 	 * @param concentration The concentration
 	 */
 	public void setConcentration(double concentration) {
-		values.set(0, concentration);
+		if (null == coefficients) {
+			initialiseCoefficients();
+		}
+		
+		coefficients.set(0, concentration);
 	}
 }

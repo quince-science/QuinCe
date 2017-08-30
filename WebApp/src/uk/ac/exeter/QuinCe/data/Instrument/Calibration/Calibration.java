@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,6 +34,11 @@ public abstract class Calibration {
 	private long instrumentId;
 	
 	/**
+	 * The calibration type
+	 */
+	protected String type = null;
+	
+	/**
 	 * The date and time of the deployment. Some calibrations do not have a time,
 	 * in which case the time portion will be set to midnight.
 	 * @see #hasTime
@@ -50,37 +54,46 @@ public abstract class Calibration {
 	/**
 	 * The values for the calibration. The list must contain
 	 * the same number of entries as the list of value names
-	 * returned by {@link #getValueNames()}.
-	 * @see #getValueNames()
+	 * returned by {@link #getCoefficientNames()}.
+	 * @see #getCoefficientNames()
 	 */
-	protected List<Double> values = null;
+	protected List<Double> coefficients = null;
 	
 	/**
 	 * Create an empty calibration for an instrument 
 	 * @param instrumentId The instrument's database ID
 	 */
-	public Calibration(long instrumentId) {
+	protected Calibration(long instrumentId, String type) {
 		this.instrumentId = instrumentId;
-		
-		// Initialise the list of values
-		values = new ArrayList<Double>(getValueNames().size());
-		for (int i = 0; i < getValueNames().size(); i++) {
-			values.add(0.0);
-		}
+		this.type = type;
+	}
+	
+	/**
+	 * Create an empty calibration for a specified target
+	 * @param instrumentId The instrument ID
+	 * @param type The calibration type
+	 * @param target The target
+	 */
+	protected Calibration(long instrumentId, String type, String target) {
+		this.instrumentId = instrumentId;
+		this.type = type;
+		this.target = target;
 	}
 	
 	/**
 	 * Get the human-readable names of the values to be stored for the calibration
 	 * @return The value names
 	 */
-	public abstract List<String> getValueNames();
+	public abstract List<String> getCoefficientNames();
 	
 	/**
 	 * Get the type of the calibration. This is provided
 	 * by each of the concrete implementations of the class
 	 * @return The calibration type
 	 */
-	protected abstract String getType();
+	public String getType() {
+		return type;
+	}
 	
 	/**
 	 * Indicates whether or not the {@code deploymentDate} should
@@ -96,7 +109,7 @@ public abstract class Calibration {
 	 * Get the calibration values as a human-readable string
 	 * @return The calibration values string
 	 */
-	public abstract String getHumanReadableValues();
+	public abstract String getHumanReadableCoefficients();
 	
 	/**
 	 * Get the calibration target
@@ -142,6 +155,10 @@ public abstract class Calibration {
 				this.deploymentDate = this.deploymentDate.with(LocalTime.MIDNIGHT);
 			}
 		}
+		
+		if (null == coefficients) {
+			initialiseCoefficients();
+		}
 	}
 	
 	/**
@@ -156,8 +173,8 @@ public abstract class Calibration {
 	 * Get the calibration values as a semicolon-delimited list
 	 * @return The calibration values
 	 */
-	public String getValuesAsDelimitedList() {
-		return StringUtils.listToDelimited(values, ";");
+	public String getCoefficientsAsDelimitedList() {
+		return StringUtils.listToDelimited(coefficients, ";");
 	}
 	
 	/**
@@ -172,5 +189,28 @@ public abstract class Calibration {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * Initialise the coefficients for this calibration with zero values
+	 */
+	protected void initialiseCoefficients() {
+		coefficients = new ArrayList<Double>(getCoefficientNames().size());
+		for (int i = 0; i < getCoefficientNames().size(); i++) {
+			coefficients.add(0.0);
+		}
+	}
+	
+	/**
+	 * Set the coefficients for this calibration
+	 * @param coefficients The coefficients
+	 * @throws CalibrationException If an incorrect number of coefficients is supplied
+	 */
+	public void setCoefficients(List<Double> coefficients) throws CalibrationException {
+		if (coefficients.size() != getCoefficientNames().size()) {
+			throw new CalibrationException("Incorrect number of coefficients: expected " + getCoefficientNames().size() + ", got " + coefficients.size());
+		}
+		
+		this.coefficients = coefficients;
 	}
 }

@@ -1,7 +1,5 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
-import java.util.List;
-
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.GasStandard;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.GasStandardDB;
@@ -42,11 +40,6 @@ public class GasStandardsBean extends CalibrationBean {
 	}
 	
 	@Override
-	public List<String> getTargets() throws Exception {
-		return db.getStandardNames(getDataSource(), instrumentId);
-	}
-	
-	@Override
 	protected void createEnteredCalibration() {
 		enteredStandard = new GasStandard(instrumentId);
 	}
@@ -59,5 +52,10 @@ public class GasStandardsBean extends CalibrationBean {
 	@Override
 	protected CalibrationDB getDbInstance() {
 		return db;
+	}
+	
+	@Override
+	protected String getCalibrationType() {
+		return GasStandard.GAS_STANDARD_CALIBRATION_TYPE;
 	}
 }

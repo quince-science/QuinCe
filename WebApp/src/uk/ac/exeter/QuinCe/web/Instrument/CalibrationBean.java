@@ -4,7 +4,10 @@ import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 /**
@@ -23,6 +26,11 @@ public abstract class CalibrationBean extends BaseManagedBean {
 	 * The name of the current instrument
 	 */
 	private String instrumentName;
+	
+	/**
+	 * List of the most recent calibrations for each target
+	 */
+	private List<Calibration> currentCalibrations;
 	
 	/**
 	 * Empty constructor
@@ -54,7 +62,12 @@ public abstract class CalibrationBean extends BaseManagedBean {
 		}
 		
 		if (ok) {
-			createEnteredCalibration();
+			try {
+				createEnteredCalibration();
+				loadCurrentCalibrations();
+			} catch (Exception e) {
+				nav = internalError(e);
+			}
 		}
 
 		return nav;
@@ -115,7 +128,9 @@ public abstract class CalibrationBean extends BaseManagedBean {
 	 * @return The targets
 	 * @throws Exception If the list of targets cannot be retrieved
 	 */
-	public abstract List<String> getTargets() throws Exception;
+	public List<String> getTargets() throws Exception {
+		return getDbInstance().getTargets(getDataSource(), instrumentId);
+	};
 	
 	/**
 	 * Store the entered calibration in the database
@@ -126,6 +141,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 		
 		try {
 			storeEnteredCalibration();
+			loadCurrentCalibrations();
 			createEnteredCalibration();
 		} catch (Exception e) {
 			nav = internalError(e);
@@ -148,4 +164,37 @@ public abstract class CalibrationBean extends BaseManagedBean {
 	 * @return The database interaction instance
 	 */
 	protected abstract CalibrationDB getDbInstance();
+	
+	/**
+	 * Load the most recent calibrations from the database
+	 * @throws RecordNotFoundException If any required database records are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws CalibrationException If the calibrations are internally inconsistent
+	 * @throws MissingParamException If any internal calls are missing required parameters
+	 */
+	private void loadCurrentCalibrations() throws MissingParamException, CalibrationException, DatabaseException, RecordNotFoundException {
+		currentCalibrations = getDbInstance().getCurrentCalibrations(getDataSource(), instrumentId);
+	}
+	
+	/**
+	 * Get the current calibrations
+	 * @return The current calibrations
+	 * @throws RecordNotFoundException If any required database records are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws CalibrationException If the calibrations are internally inconsistent
+	 * @throws MissingParamException If any internal calls are missing required parameters
+	 */
+	public List<Calibration> getCurrentCalibrations() throws MissingParamException, CalibrationException, DatabaseException, RecordNotFoundException {
+		if (null == currentCalibrations) {
+			loadCurrentCalibrations();
+		}
+		
+		return currentCalibrations;
+	}
+	
+	/**
+	 * Get the calibration type for the calibrations being edited
+	 * @return The calibration type
+	 */
+	protected abstract String getCalibrationType();
 }

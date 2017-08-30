@@ -40,7 +40,7 @@
 					<p:button value="Cancel" onclick="return hideDeploymentDialog();"/>
 				</h:panelGrid>
 			</p:dialog>
-		
+			
 			<div class="pageTitle">
 				Gas Standards - #{gasStandardsBean.instrumentName} 
 			</div>
@@ -50,6 +50,19 @@
 			<h:panelGrid columns="1" styleClass="buttonPanel">
 				<p:button value="Add Deployment" onclick="showDeploymentDialog(); return false;"/> 
 			</h:panelGrid>
+
+			<p:dataTable var="calibration" value="#{gasStandardsBean.currentCalibrations}">
+				<p:column headerText="Gas Standard">
+					<h:outputText value="#{calibration.target}"/>
+				</p:column>
+				<p:column headerText="Deployment Date">
+					<h:outputText value="#{calibration.deploymentDateAsDate}"/>
+				</p:column>
+				<p:column headerText="Concentration">
+					<h:outputText value="#{calibration.concentration}"/>
+				</p:column>
+			</p:dataTable>
+			
 		</h:form>
 	</ui:define>
 </ui:composition>
