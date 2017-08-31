@@ -1,9 +1,9 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,7 +43,7 @@ public abstract class Calibration {
 	 * in which case the time portion will be set to midnight.
 	 * @see #hasTime
 	 */
-	private LocalDateTime deploymentDate = null;
+	private ZonedDateTime deploymentDate = null;
 	
 	/**
 	 * The part of the instrument to which this calibration applies.
@@ -58,6 +58,16 @@ public abstract class Calibration {
 	 * @see #getCoefficientNames()
 	 */
 	protected List<Double> coefficients = null;
+	
+	/**
+	 * The formatter for dates
+	 */
+	private static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	
+	/**
+	 * The formatter for date/times
+	 */
+	private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	
 	/**
 	 * Create an empty calibration for an instrument 
@@ -135,8 +145,7 @@ public abstract class Calibration {
 		Date result = null;
 
 		if (null != deploymentDate) {
-			ZonedDateTime zoned = deploymentDate.atZone(ZoneOffset.UTC);
-			result = new Date(zoned.toInstant().toEpochMilli());
+			result = new Date(deploymentDate.toInstant().toEpochMilli());
 		}
 		
 		return result;
@@ -150,7 +159,7 @@ public abstract class Calibration {
 		if (null == deploymentDate) {
 			this.deploymentDate = null;
 		} else {
-			this.deploymentDate = LocalDateTime.ofInstant(deploymentDate.toInstant(), ZoneOffset.UTC);
+			this.deploymentDate = ZonedDateTime.ofInstant(deploymentDate.toInstant(), ZoneOffset.UTC);
 			if (!hasTime()) {
 				this.deploymentDate = this.deploymentDate.with(LocalTime.MIDNIGHT);
 			}
@@ -185,7 +194,27 @@ public abstract class Calibration {
 		long result = Long.MIN_VALUE;
 		
 		if (null != deploymentDate) {
-			result = deploymentDate.atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
+			result = deploymentDate.toInstant().toEpochMilli();
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Get the deployment date as a formatted string
+	 * @return The deployment date string
+	 */
+	public String getDeploymentDateAsString() {
+		String result;
+		
+		if (null == deploymentDate || null == coefficients) {
+			result = "Not set";
+		} else {
+			if (hasTime()) {
+				result = deploymentDate.format(dateTimeFormatter);
+			} else {
+				result = deploymentDate.format(dateFormatter);
+			}
 		}
 		
 		return result;
