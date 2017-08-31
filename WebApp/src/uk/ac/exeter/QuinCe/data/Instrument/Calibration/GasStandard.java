@@ -50,8 +50,8 @@ public class GasStandard extends Calibration {
 	}
 
 	@Override
-	public String getHumanReadableCoefficients() {
-		String result = "No concentration has been set";
+	public String buildHumanReadableCoefficients() {
+		String result = "Not set";
 		
 		if (null != coefficients) {
 			result = String.valueOf(coefficients.get(0)); 

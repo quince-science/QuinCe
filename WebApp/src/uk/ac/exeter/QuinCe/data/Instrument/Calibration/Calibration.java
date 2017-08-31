@@ -116,10 +116,37 @@ public abstract class Calibration {
 	}
 	
 	/**
-	 * Get the calibration values as a human-readable string
+	 * Get the calibration values as a human-readable string.
+	 * 
+	 * <p>
+	 *   If either the deployment date or coefficients are
+	 *   {@code null}, the method assumes that the coefficients
+	 *   are not set and returns a default {@code "Not set"} value.
+	 * </p>
 	 * @return The calibration values string
 	 */
-	public abstract String getHumanReadableCoefficients();
+	public String getHumanReadableCoefficients() {
+		String result;
+		
+		if (null == deploymentDate) {
+			result = "Not set";
+		} else {
+			if (null == coefficients) {
+				result = "Not set";
+			} else {
+				result = buildHumanReadableCoefficients();
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Build the human-readable coefficients string for
+	 * {@link #getHumanReadableCoefficients()}.
+	 * @return The human-readable coefficients
+	 */
+	protected abstract String buildHumanReadableCoefficients();
 	
 	/**
 	 * Get the calibration target
