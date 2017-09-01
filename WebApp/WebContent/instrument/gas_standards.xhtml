@@ -51,7 +51,7 @@
 			<div class="sectionTitle">
 				Current Deployments
 			</div>
-			<p:dataTable var="calibration" value="#{gasStandardsBean.currentCalibrations}">
+			<p:dataTable styleClass="pageTable" var="calibration" value="#{gasStandardsBean.currentCalibrations}">
 				<p:column headerText="Gas Standard">
 					<h:outputText value="#{calibration.target}"/>
 				</p:column>
