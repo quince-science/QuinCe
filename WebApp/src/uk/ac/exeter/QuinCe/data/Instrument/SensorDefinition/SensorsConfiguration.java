@@ -68,16 +68,12 @@ public class SensorsConfiguration {
 	 * The column specifying whether a sensor can be post-calibrated by QuinCe
 	 */
 	private static final int COL_POST_CALIBRATED = 8;
-	
+
 	/**
-	 * The name for the Run Type sensor type
+	 * The column specifying whether a sensor is a core sensor, and thus
+	 * requires a Run Type column to be specified in the file
 	 */
-	public static final String RUN_TYPE_SENSOR_NAME = "Run Type";
-	
-	/**
-	 * The Run Type sensor type. This is included for all instruments automatically.
-	 */
-	public static final SensorType RUN_TYPE_SENSOR_TYPE = new SensorType(RUN_TYPE_SENSOR_NAME, true, false, null, null, null, false, false, false);
+	private static final int COL_CORE = 9;
 	
 	/**
 	 * The set of sensors defined for the instrument with
@@ -112,16 +108,13 @@ public class SensorsConfiguration {
 	 * Build the map of sensor configurations from the supplied
 	 * configuration file. All map entries will contain {@code null}
 	 * to indicate that no assignments have been made.
-	 * @param configFile The configuration ,57file
+	 * @param configFile The configuration file
 	 * @throws SensorConfigurationException If the configuration is invalid
 	 */
 	private void buildSensorTypes(File configFile) throws SensorConfigurationException {
 		
 		sensorTypes = new ArrayList<SensorType>();
 		BufferedReader reader = null; 
-		
-		// Run Type is always included
-		sensorTypes.add(RUN_TYPE_SENSOR_TYPE);
 		
 		try {
 			reader = new BufferedReader(new FileReader(configFile));
@@ -159,8 +152,9 @@ public class SensorsConfiguration {
 							boolean many = StringUtils.parseYNBoolean(fields.get(COL_MANY));
 							boolean averaged = StringUtils.parseYNBoolean(fields.get(COL_AVERAGED));
 							boolean postCalibrated = StringUtils.parseYNBoolean(fields.get(COL_POST_CALIBRATED));
+							boolean coreSensor = StringUtils.parseYNBoolean(fields.get(COL_CORE));
 							
-							SensorType sensor = new SensorType(sensorName, required, named, requiredGroup, dependsOn, dependsQuestion, many, averaged, postCalibrated);
+							SensorType sensor = new SensorType(sensorName, required, named, requiredGroup, dependsOn, dependsQuestion, many, averaged, postCalibrated, coreSensor);
 							
 							sensorTypes.add(sensor);
 							

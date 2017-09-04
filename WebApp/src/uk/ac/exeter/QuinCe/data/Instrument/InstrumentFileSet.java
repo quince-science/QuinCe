@@ -140,6 +140,7 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 		if (o instanceof FileDefinition) {
 			removed = super.remove(o);
 		} else if (o instanceof String) {
+			// Allow removal by file description
 			int fileToRemove = -1;
 			
 			for (int i = 0; i < size(); i++) {

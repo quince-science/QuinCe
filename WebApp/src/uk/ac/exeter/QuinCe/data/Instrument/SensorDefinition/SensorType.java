@@ -79,6 +79,12 @@ public class SensorType {
 	private boolean postCalibrated = true;
 	
 	/**
+	 * Indicates whether or not this is a core sensor (if so, a Run Type must
+	 * be assigned from the same file).
+	 */
+	private boolean coreSensor = false;
+	
+	/**
 	 * Simple constructor - sets all values
 	 * @param name The name of the sensor type
 	 * @param required Whether or not the sensor type is required
@@ -88,7 +94,7 @@ public class SensorType {
 	 * @param dependsQuestion The question that determines whether the {@link #dependsOn} criterion will be honoured.
 	 * @param many Whether or not multiple instances of the sensor are allowed
 	 */
-	protected SensorType(String name, boolean required, boolean named, String requiredGroup, String dependsOn, String dependsQuestion, boolean many, boolean averaged, boolean postCalibrated) {
+	protected SensorType(String name, boolean required, boolean named, String requiredGroup, String dependsOn, String dependsQuestion, boolean many, boolean averaged, boolean postCalibrated, boolean coreSensor) {
 		this.name = name;
 		this.required = required;
 		this.named = named;
@@ -107,6 +113,7 @@ public class SensorType {
 		this.many = many;
 		this.averaged = averaged;
 		this.postCalibrated = postCalibrated;
+		this.coreSensor = coreSensor;
 	}
 	
 	/**
@@ -201,10 +208,19 @@ public class SensorType {
 	}
 	
 	/**
-	 * Determines whether or sensors of this type can be post-calibrated by QuinCe
+	 * Determines whether sensors of this type can be post-calibrated by QuinCe
 	 * @return {@code true} if the sensors can be post-calibrated; {@code false} if they cannot
 	 */
 	public boolean canBePostCalibrated() {
 		return postCalibrated;
+	}
+	
+	/**
+	 * Determines whether sensors of this type are Core sensors, meaning that a Run Type
+	 * must be present in the same file.
+	 * @return {@code true} if this is a core sensor; {@code false} if it is not
+	 */
+	public boolean isCoreSensor() {
+		return coreSensor;
 	}
 }
