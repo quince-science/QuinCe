@@ -1248,10 +1248,10 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * JSF can't access named properties.
 	 * @return The time and position assignments
 	 * @throws DateTimeSpecificationException If an error occurs while generating the date/time string
-	 * @see NewInstrumentFileSet#getTimePositionAssignments()
+	 * @see NewInstrumentFileSet#getFileSpecificAssignments()
 	 */
-	public String getTimePositionAssignments() throws DateTimeSpecificationException {
-		return instrumentFiles.getTimePositionAssignments();
+	public String getFileSpecificAssignments() throws DateTimeSpecificationException {
+		return instrumentFiles.getFileSpecificAssignments(sensorAssignments);
 	}
 	
 	/**

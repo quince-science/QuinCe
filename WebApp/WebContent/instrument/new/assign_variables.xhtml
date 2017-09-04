@@ -46,16 +46,16 @@
 	
 		<h:form id="newInstrumentForm" metho="post" charset="utf8">
 			<h:inputHidden id="sensorAssignments" value="#{newInstrumentBean.sensorAssignments}"/>
-			<h:inputHidden id="timePositionAssignments" value="#{newInstrumentBean.timePositionAssignments}"/>
+			<h:inputHidden id="fileSpecificAssignments" value="#{newInstrumentBean.fileSpecificAssignments}"/>
 
 			<h:inputHidden id="primaryPositionFile" value="#{newInstrumentBean.primaryPositionFile}"/>
 			<p:commandLink id="setPrimaryPositionFileLink" style="invisible" ajax="true" action="#{newInstrumentBean.assignPrimaryPositionFile}"
-					process="primaryPositionFile" update="timePositionAssignments" oncomplete="renderPositionAssignments();"/>
+					process="primaryPositionFile" update="fileSpecificAssignments" oncomplete="renderPositionAssignments();"/>
 					
 			<h:inputHidden id="unassignFile" value="#{newInstrumentBean.unassignFile}"/>
 			<h:inputHidden id="unassignColumn" value="#{newInstrumentBean.unassignColumn}"/>
 			<p:commandLink id="unassignVariableLink" style="invisible" ajax="true" action="#{newInstrumentBean.unassignVariable}"
-					process="unassignFile unassignColumn" update="sensorAssignments timePositionAssignments" oncomplete="renderAssignments()"/>
+					process="unassignFile unassignColumn" update="sensorAssignments fileSpecificAssignments" oncomplete="renderAssignments()"/>
 					
 			<h:inputHidden id="removeFileName" value="#{newInstrumentBean.removeFileName}"/>
 			<p:confirmDialog widgetVar="removeFileConfirm" message="Remove file and all associated assignments?">
@@ -136,7 +136,7 @@
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
 					<p:commandButton widgetVar="sensorAssignmentAssignButton" value="Assign" ajax="true" action="#{newInstrumentBean.storeSensorAssignment}"
 					  process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer"
-					  update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer sensorAssignments"
+					  update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer sensorAssignments fileSpecificAssignments"
 					  oncomplete="sensorAssigned();"/>
 					<p:commandButton value="Cancel" ajax="true" action="#{newInstrumentBean.resetSensorAssignmentValues}" process="@none"
 					  update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer" oncomplete="PF('sensorAssignmentDialog').hide();"/>
@@ -174,7 +174,7 @@
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
 					<p:commandButton value="Assign" ajax="true" action="#{newInstrumentBean.assignLongitude}"
 					  process="longitudeFile longitudeColumn longitudeFormat"
-					  update="longitudeFile longitudeColumn longitudeFormat timePositionAssignments"
+					  update="longitudeFile longitudeColumn longitudeFormat fileSpecificAssignments"
 					  oncomplete="timePositionAssigned('longitudeAssignmentDialog');"/>
 					<p:commandButton value="Cancel" onclick="PF('longitudeAssignmentDialog').hide(); return false;"/>
 				</h:panelGrid>
@@ -210,7 +210,7 @@
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
 					<p:commandButton value="Assign" ajax="true" action="#{newInstrumentBean.assignLatitude}"
 					  process="latitudeFile latitudeColumn latitudeFormat"
-					  update="latitudeFile latitudeColumn latitudeFormat timePositionAssignments"
+					  update="latitudeFile latitudeColumn latitudeFormat fileSpecificAssignments"
 					  oncomplete="timePositionAssigned('latitudeAssignmentDialog');"/>
 					<p:commandButton value="Cancel" onclick="PF('latitudeAssignmentDialog').hide(); return false;"/>
 				</h:panelGrid>
@@ -234,7 +234,7 @@
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
 					<p:commandButton value="Assign" ajax="true" action="#{newInstrumentBean.assignHemisphere}"
 					  process="hemisphereFile hemisphereCoordinate hemisphereColumn"
-					  update="hemisphereFile hemisphereCoordinate hemisphereColumn timePositionAssignments"
+					  update="hemisphereFile hemisphereCoordinate hemisphereColumn fileSpecificAssignments"
 					  oncomplete="timePositionAssigned('hemisphereAssignmentDialog');"/>
 					<p:commandButton value="Cancel" onclick="PF('hemisphereAssignmentDialog').hide(); return false;"/>
 				</h:panelGrid>
@@ -351,7 +351,7 @@
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
 					<p:commandButton widgetVar="dateTimeAssign" value="Assign" ajax="true" action="#{newInstrumentBean.assignDateTime}"
 					  process="dateTimeFile dateTimeColumn dateTimeVariable dateTimeFormat dateFormat timeFormat"
-					  update="dateTimeFile dateTimeColumn dateTimeVariable dateTimeFormat dateFormat timeFormat timePositionAssignments"
+					  update="dateTimeFile dateTimeColumn dateTimeVariable dateTimeFormat dateFormat timeFormat fileSpecificAssignments"
 					  oncomplete="timePositionAssigned('dateTimeAssignmentDialog');"/>
 					<p:commandButton value="Cancel" onclick="PF('dateTimeAssignmentDialog').hide(); return false;"/>
 				</h:panelGrid>

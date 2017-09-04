@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 
 /**
  * Class to define a set of InstrumentFiles when creating an instrument
@@ -49,7 +50,7 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
 	 * @return The time and position assignments
 	 * @throws DateTimeSpecificationException If an error occurs while generating the date/time string
 	 */
-	public String getTimePositionAssignments() throws DateTimeSpecificationException {
+	public String getFileSpecificAssignments(SensorAssignments sensorAssignments) throws DateTimeSpecificationException {
 		StringBuilder json = new StringBuilder();
 		
 		json.append('[');
@@ -67,6 +68,10 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
 			json.append(file.getLatitudeSpecification().getJsonString());
 			json.append(",\"dateTime\":");
 			json.append(file.getDateTimeSpecification().getJsonString());
+			json.append(",\"runTypeColRequired\":");
+			json.append(file.requiresRunTypeColumn(sensorAssignments));
+			json.append(",\"runTypeCol\":");
+			json.append(file.getRunTypeColumn());
 			json.append('}');
 			
 			if (count < size()) {

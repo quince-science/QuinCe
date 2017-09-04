@@ -250,17 +250,17 @@ function updateTableHeaders() {
 		}
 	}
 	
-	var timePositionAssignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+	var fileSpecificAssignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
 	
-	for (var i = 0; i < timePositionAssignments.length; i++) {
+	for (var i = 0; i < fileSpecificAssignments.length; i++) {
 		
 		// Date/Time
-		var dateTime = timePositionAssignments[i]['dateTime'];
+		var dateTime = fileSpecificAssignments[i]['dateTime'];
 		for (var j = 0; j < dateTime.length; j++) {
 			$('#colHead_' + i + '_' + dateTime[j]['column']).addClass('assignmentColAssigned');
 		}
 		
-		var latitude = timePositionAssignments[i]['latitude'];
+		var latitude = fileSpecificAssignments[i]['latitude'];
 		if (latitude['valueColumn'] > -1) {
 			$('#colHead_' + i + '_' + latitude['valueColumn']).addClass('assignmentColAssigned');
 		}
@@ -268,7 +268,7 @@ function updateTableHeaders() {
 			$('#colHead_' + i + '_' + latitude['hemisphereColumn']).addClass('assignmentColAssigned');
 		}
 		
-		var longitude = timePositionAssignments[i]['longitude'];
+		var longitude = fileSpecificAssignments[i]['longitude'];
 		if (longitude['valueColumn'] > -1) {
 			$('#colHead_' + i + '_' + longitude['valueColumn']).addClass('assignmentColAssigned');
 		}
@@ -294,7 +294,7 @@ function getFileIndex(fileName) {
 function renderDateTimeAssignments() {
 	var allTimesOK = true;
 	
-	var assignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+	var assignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
 	
 	// Loop through the files
 	for (var i = 0; i < assignments.length; i++) {
@@ -362,7 +362,7 @@ function renderPositionAssignments() {
 	var positionsAssigned = 0;
 	var primaryPositionFileAssigned = false;
 	
-	var assignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+	var assignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
 	
 	for (var i = 0; i < assignments.length; i++) {
 		var assignment = assignments[i];
@@ -572,7 +572,7 @@ function makeUnassignMenuItem(file, column, itemText) {
 
 function buildMainAssignmentMenu(file, column) {
 	var columnAssignment = getColumnAssignment(file, column);
-	var timePositionAssignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+	var fileSpecificAssignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
 
 	var menuHtml = '';
 	menuHtml += '<ul class="ui-menu-list ui-helper-reset">';
@@ -582,7 +582,7 @@ function buildMainAssignmentMenu(file, column) {
 	} else {
 		menuHtml += makeParentMenuItem('DATETIMESUBMENU', 'Date/Time', file, column, 'dateTimeMenu');
 		
-		if (timePositionAssignments[file]['longitude']['valueColumn'] != -1) {
+		if (fileSpecificAssignments[file]['longitude']['valueColumn'] != -1) {
 			menuHtml += makeDisabledMenuItem('Longitude');
 		} else {
 			menuHtml += makeMenuItem('POS_longitude', 'Longitude', file, column);
@@ -590,21 +590,21 @@ function buildMainAssignmentMenu(file, column) {
 		
 
 		if (hemisphereRequired(file, 'longitude')) {
-			if (timePositionAssignments[file]['longitude']['hemisphereColumn'] != -1) {
+			if (fileSpecificAssignments[file]['longitude']['hemisphereColumn'] != -1) {
 				menuHtml += makeDisabledMenuItem('Longitude - Hemisphere');
 			} else {
 				menuHtml += makeMenuItem('POS_longitude_hemisphere', 'Longitude - Hemisphere', file, column);
 			}
 		}
 		
-		if (timePositionAssignments[file]['latitude']['valueColumn'] != -1) {
+		if (fileSpecificAssignments[file]['latitude']['valueColumn'] != -1) {
 			menuHtml += makeDisabledMenuItem('Latitude');
 		} else {
 			menuHtml += makeMenuItem('POS_latitude', 'Latitude', file, column);
 		}
 			
 		if (hemisphereRequired(file, 'latitude')) {
-			if (timePositionAssignments[file]['latitude']['hemisphereColumn'] != -1) {
+			if (fileSpecificAssignments[file]['latitude']['hemisphereColumn'] != -1) {
 				menuHtml += makeDisabledMenuItem('Latitude - Hemisphere');
 			} else {
 				menuHtml += makeMenuItem('POS_latitude_hemisphere', 'Latitude - Hemisphere', file, column);
@@ -635,7 +635,7 @@ function buildMainAssignmentMenu(file, column) {
 
 function buildDateTimeAssignmentMenu(file, column) {
 
-	var timeAssignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val())[file]['dateTime'];
+	var timeAssignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val())[file]['dateTime'];
 
 	var menuHtml = '<ul class="ui-menu-list ui-helper-reset">';
 
@@ -750,9 +750,9 @@ function getColumnAssignment(fileIndex, column) {
 	}
 	
 	if (null == assigned) {
-		var timePositionAssignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+		var fileSpecificAssignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
 		
-		assignments = timePositionAssignments[fileIndex];
+		assignments = fileSpecificAssignments[fileIndex];
 		
 		var dateTimes = assignments['dateTime'];
 		for (var i = 0; i < dateTimes.length; i++) {
@@ -767,7 +767,7 @@ function getColumnAssignment(fileIndex, column) {
 			
 		}
 		
-		for (var i = 0; i < timePositionAssignments.length; i++) {
+		for (var i = 0; i < fileSpecificAssignments.length; i++) {
 			
 			if (assignments['latitude']['valueColumn'] == column) {
 				assigned = 'Latitude';
@@ -942,7 +942,7 @@ function openLatitudeDialog(file, column) {
 function hemisphereRequired(fileIndex, direction) {
 	var result = false;
 	
-	var assignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+	var assignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
 	var assignment = assignments[fileIndex][direction];
 	
 	if (null != assignment) {
