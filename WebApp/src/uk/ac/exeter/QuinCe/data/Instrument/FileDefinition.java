@@ -9,6 +9,8 @@ import java.util.Map;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -120,6 +122,13 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * The Date/Time specification
 	 */
 	private DateTimeSpecification dateTimeSpecification;
+	
+	/**
+	 * The column containing the run type. Only required if this file
+	 * contains a Core Sensor
+	 * @see SensorType#isCoreSensor()
+	 */
+	private int runTypeColumn = -1;
 	
 	/**
 	 * The file set of which this definition is a member
@@ -494,5 +503,35 @@ public class FileDefinition implements Comparable<FileDefinition> {
 		}
 
 		return unassigned;
+	}
+	
+	/**
+	 * Get the column containing the Run Type
+	 * @return The Run Type column
+	 */
+	public int getRunTypeColumn() {
+		return runTypeColumn;
+	}
+	
+	/**
+	 * Set the index of the column containing the run type
+	 * @param runTypeColumn The Run Type column
+	 */
+	public void setRunTypeColumn(int runTypeColumn) {
+		this.runTypeColumn = runTypeColumn;
+	}
+	
+	/**
+	 * Determines whether or not this file requires a Run Type column.
+	 * 
+	 * <p>
+	 *   If this file has had a Core Sensor assigned to it, then a Run Type
+	 *   column is also required. Otherwise, the column is not required.
+	 * </p>
+	 * @param sensorAssignments The sensor assignments for the current instrument
+	 * @return {@code true} if a Run Type column is required; {@code false} otherwise.
+	 */
+	public boolean requiresRunTypeColumn(SensorAssignments sensorAssignments) {
+		return sensorAssignments.coreSensorAssigned(fileDescription);
 	}
 }

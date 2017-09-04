@@ -751,9 +751,14 @@ public class NewInstrumentBean extends FileUploadBean {
 		sensorAssignments.addAssignment(sensorAssignmentSensorType, assignment);
 		
 		// If the Run Type has been reassigned, reset the run type configuration
+		
+		// TODO Reinstate
+		
+		/*
 		if (sensorAssignmentSensorType.equals(SensorsConfiguration.RUN_TYPE_SENSOR_NAME)) {
 			clearRunTypeAssignments();
 		}
+		*/
 
 		// Reset the assign dialog values, because it's so damn hard to do in Javascript
 		resetSensorAssignmentValues();
@@ -1415,6 +1420,10 @@ public class NewInstrumentBean extends FileUploadBean {
 	public void setupRunTypes() {
 		runTypes = new TreeMap<String, RunTypeCategory>();
 		
+		// TODO Reinstate
+		
+		/*
+		
 		for (SensorAssignment assignment :  sensorAssignments.get(SensorsConfiguration.RUN_TYPE_SENSOR_TYPE)) {
 			FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles.get(assignment.getDataFile());
 			
@@ -1422,6 +1431,8 @@ public class NewInstrumentBean extends FileUploadBean {
 				runTypes.put(runType, RunTypeCategory.IGNORED_CATEGORY);
 			}
 		}
+		
+		*/
 	}
 
 	/**

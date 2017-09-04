@@ -22,7 +22,7 @@ public class SensorsConfiguration {
 	/**
 	 * The number of columns in the configuration file
 	 */
-	private static final int COL_COUNT = 9;
+	private static final int COL_COUNT = 10;
 	
 	/**
 	 * The column containing the sensor type name
