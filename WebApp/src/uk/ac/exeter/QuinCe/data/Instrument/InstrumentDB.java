@@ -55,13 +55,13 @@ public class InstrumentDB {
 			+ "instrument_id, description, column_separator, " // 3
 			+ "header_type, header_lines, header_end_string, " // 6
 			+ "column_header_rows, column_count, " // 8
-			+ "primary_position_file, lon_format, lon_value_col, lon_hemisphere_col, " // 12
-			+ "lat_format, lat_value_col, lat_hemisphere_col, " // 15
-			+ "date_time_col, date_time_props, date_col, date_props, " // 19
-			+ "hours_from_start_col, hours_from_start_props, " // 21
-			+ "jday_time_col, jday_col, year_col, month_col, day_col, " // 26
-			+ "time_col, time_props, hour_col, minute_col, second_col" // 31
-			+ ") VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "lon_format, lon_value_col, lon_hemisphere_col, " // 11
+			+ "lat_format, lat_value_col, lat_hemisphere_col, " // 14
+			+ "date_time_col, date_time_props, date_col, date_props, " // 18
+			+ "hours_from_start_col, hours_from_start_props, " // 20
+			+ "jday_time_col, jday_col, year_col, month_col, day_col, " // 25
+			+ "time_col, time_props, hour_col, minute_col, second_col" // 30
+			+ ") VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	/**
 	 * Statement for inserting a file column definition record
@@ -277,7 +277,6 @@ public class InstrumentDB {
 		
 		stmt.setInt(7, file.getColumnHeaderRows()); // column_header_rows
 		stmt.setInt(8, file.getColumnCount()); // column_count
-		stmt.setBoolean(9, file.getPositionPrimary()); // primary_position_file
 		
 		addPositionAssignment(stmt, file.getLongitudeSpecification(), 10, 11, 12); // longitude
 		addPositionAssignment(stmt, file.getLatitudeSpecification(), 13, 14, 15); // latitude

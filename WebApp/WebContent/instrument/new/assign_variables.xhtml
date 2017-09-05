@@ -48,10 +48,6 @@
 			<h:inputHidden id="sensorAssignments" value="#{newInstrumentBean.sensorAssignments}"/>
 			<h:inputHidden id="fileSpecificAssignments" value="#{newInstrumentBean.fileSpecificAssignments}"/>
 
-			<h:inputHidden id="primaryPositionFile" value="#{newInstrumentBean.primaryPositionFile}"/>
-			<p:commandLink id="setPrimaryPositionFileLink" style="invisible" ajax="true" action="#{newInstrumentBean.assignPrimaryPositionFile}"
-					process="primaryPositionFile" update="fileSpecificAssignments" oncomplete="renderPositionAssignments();"/>
-					
 			<h:inputHidden id="runTypeFile" value="#{newInstrumentBean.runTypeFile}"/>
 			<h:inputHidden id="runTypeColumn" value="#{newInstrumentBean.runTypeColumn}"/>
 			<p:commandLink id="runTypeLink" style="invisible" ajax="true" action="#{newInstrumentBean.assignRunType}"

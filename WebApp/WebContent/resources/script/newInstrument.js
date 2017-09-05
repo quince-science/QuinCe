@@ -365,7 +365,6 @@ function renderDateTimeAssignments() {
 function renderPositionAssignments() {
 	var positionOK = true;
 	var positionsAssigned = 0;
-	var primaryPositionFileAssigned = false;
 	
 	var assignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
 	
@@ -465,21 +464,6 @@ function renderPositionAssignments() {
 				}
 			}
 			positionHtml += '</table>';
-			
-			positionHtml += '<h4>Primary Position File</h4>';
-			positionHtml += 'Primary position file? <b>';
-			if (assignment['primaryPosition']) {
-				positionHtml += 'YES';
-				primaryPositionFileAssigned = true;
-			} else {
-				positionHtml += 'NO';
-			}
-			positionHtml += '</b><br/>';
-			
-			if (!assignment['primaryPosition']) {
-				positionHtml += '<button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="setPrimaryPositionFile(' + i + '); return false;">';
-				positionHtml += '<span class="ui-button-text ui-c">Set As Primary Position File</span></button>';
-			}
 		}
 		
 		$('#positionColumns-' + i).html(positionHtml);
@@ -491,7 +475,7 @@ function renderPositionAssignments() {
 		}
 	}
 	
-	if (positionsAssigned == 0 || !primaryPositionFileAssigned) {
+	if (positionsAssigned == 0) {
 		for (var i = 0; i < filesAndColumns.length; i++) {
 			$('#positionColumns-' + i).closest('fieldset').addClass('invalidFileAssignment');
 		}
@@ -549,11 +533,6 @@ function renderOtherColumns() {
 	}
 	
 	return columnsOK;
-}
-
-function setPrimaryPositionFile(fileIndex) {
-	$('#newInstrumentForm\\:primaryPositionFile').val(filesAndColumns[fileIndex]['description']);
-	$('#newInstrumentForm\\:setPrimaryPositionFileLink').click();
 }
 
 function unAssign(file, column) {

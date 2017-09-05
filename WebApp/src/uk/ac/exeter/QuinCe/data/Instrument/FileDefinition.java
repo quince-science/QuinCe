@@ -108,12 +108,6 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	private int columnCount = 0;
 	
 	/**
-	 * Indicates whether or not the positions in this file
-	 * are the primary ones to use in calculations
-	 */
-	protected boolean positionPrimary = false;
-	
-	/**
 	 * The longitude specification 
 	 */
 	private LongitudeSpecification longitudeSpecification;
@@ -421,30 +415,6 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	}
 	
 	/**
-	 * Determine whether or not this file holds the
-	 * primary position information for the instrument.
-	 * @return {@code true} if this file contains the primary position information; {@code false} if it does not.
-	 */
-	public boolean getPositionPrimary() {
-		return positionPrimary;
-	}
-	
-	/**
-	 * Set whether or not this file holds the
-	 * primary position information for the instrument.
-	 * @param positionPrimary {@code true} if this file contains the primary position information; {@code false} if it does not.
-	 * @throws FileSetException If this file is somehow not in the parent InstrumentFileSet.
-	 * @see InstrumentFileSet#setPrimaryPositionFile(String)
-	 */
-	public void setPositionPrimary(boolean positionPrimary) throws FileSetException {
-		if (positionPrimary) {
-			fileSet.setPrimaryPositionFile(fileDescription);
-		} else {
-			fileSet.setPrimaryPositionFile(null);
-		}
-	}
-	
-	/**
 	 * Determine whether or not the file has a header.
 	 * 
 	 * The header has either with a specified number of header lines or
@@ -492,17 +462,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 			}
 		}
 		
-		if (unassigned) {
-			if (positionPrimary) {
-				if (latitudeSpecification.getValueColumn() == -1 &&
-						latitudeSpecification.getHemisphereColumn() == -1 &&
-						longitudeSpecification.getValueColumn() == -1 &&
-						longitudeSpecification.getHemisphereColumn() == -1) {
-					
-					positionPrimary = false;
-				}
-			}
-		} else {
+		if (!unassigned) {
 			DateTimeSpecification dateTime = getDateTimeSpecification();
 			unassigned = dateTime.removeAssignment(column);
 		}

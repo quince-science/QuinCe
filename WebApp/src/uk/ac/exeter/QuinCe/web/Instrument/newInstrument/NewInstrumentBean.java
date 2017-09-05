@@ -252,11 +252,6 @@ public class NewInstrumentBean extends FileUploadBean {
 	private String startTimeDate = null;
 	
 	/**
-	 * The file that contains the primary position information
-	 */
-	private String primaryPositionFile = null;
-	
-	/**
 	 * The index of the file to be unassigned
 	 */
 	private int unassignFile = -1;
@@ -1269,30 +1264,6 @@ public class NewInstrumentBean extends FileUploadBean {
 		return instrumentFiles.getFileSpecificAssignments(sensorAssignments);
 	}
 	
-	/**
-	 * Get the file that contains the primary position data for the instrument.
-	 * @return The primary position file
-	 */
-	public String getPrimaryPositionFile() {
-		return primaryPositionFile;
-	}
-	
-	/**
-	 * Set the file that contains the primary position data for the instrument.
-	 * @param primaryPositionFile The primary position file
-	 */
-	public void setPrimaryPositionFile(String primaryPositionFile) {
-		this.primaryPositionFile = primaryPositionFile;
-	}
-	
-	/**
-	 * Assign the primary position file to the instrument file set
-	 * @throws FileSetException If the specified file does not exist in the file set
-	 */
-	public void assignPrimaryPositionFile() throws FileSetException {
-		instrumentFiles.setPrimaryPositionFile(primaryPositionFile);
-	}
-
 	/**
 	 * Get the index of the file to unassign
 	 * @return The file index
