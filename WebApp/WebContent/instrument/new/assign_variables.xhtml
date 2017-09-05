@@ -52,6 +52,11 @@
 			<p:commandLink id="setPrimaryPositionFileLink" style="invisible" ajax="true" action="#{newInstrumentBean.assignPrimaryPositionFile}"
 					process="primaryPositionFile" update="fileSpecificAssignments" oncomplete="renderPositionAssignments();"/>
 					
+			<h:inputHidden id="runTypeFile" value="#{newInstrumentBean.runTypeFile}"/>
+			<h:inputHidden id="runTypeColumn" value="#{newInstrumentBean.runTypeColumn}"/>
+			<p:commandLink id="runTypeLink" style="invisible" ajax="true" action="#{newInstrumentBean.assignRunType}"
+					process="runTypeFile runTypeColumn" update="fileSpecificAssignments" oncomplete="renderAssignments()"/>
+					
 			<h:inputHidden id="unassignFile" value="#{newInstrumentBean.unassignFile}"/>
 			<h:inputHidden id="unassignColumn" value="#{newInstrumentBean.unassignColumn}"/>
 			<p:commandLink id="unassignVariableLink" style="invisible" ajax="true" action="#{newInstrumentBean.unassignVariable}"
@@ -376,11 +381,16 @@
 									document.write('<div id="dateTimeColumns-' + tabCount + '"></div>');
 								</script>
 						    </p:fieldset>
-							<p:fieldset legend="Position" toggleable="true">
+							<p:fieldset legend="Position" toggleable="true" style="margin-bottom: 20px;">
 								<script>
 									document.write('<div id="positionColumns-' + tabCount + '"></div>');
 								</script>
 						    </p:fieldset>
+							<p:fieldset legend="Other Required Columns" toggleable="true">
+								<script>
+									document.write('<div id="otherRequiredColumns-' + tabCount + '"></div>');
+								</script>
+							</p:fieldset>
 						</div>
 						
 						<script>

@@ -32,7 +32,7 @@ function discardUploadedFile() {
 // Render the contents of the uploaded sample file
 // (upload.xhtml)
 function renderSampleFile() {
-		
+
 	var fileData = JSON.parse($('#newInstrumentForm\\:sampleFileContent').val());
 	var fileHtml = '';
 	var messageTriggered = false;
@@ -187,9 +187,10 @@ function useFile() {
 function renderAssignments() {
 	var sensorsOK = renderSensorAssignments();
 	var positionOK = renderPositionAssignments();
+	var otherColumnsOK = renderOtherColumns();
 	var timeOK = renderDateTimeAssignments();
 	
-	if (sensorsOK && positionOK && timeOK) {
+	if (sensorsOK && positionOK && otherColumnsOK && timeOK) {
 		PF('next').enable();
 	} else {
 		PF('next').disable();
@@ -274,6 +275,10 @@ function updateTableHeaders() {
 		}
 		if (longitude['hemisphereColumn'] > -1) {
 			$('#colHead_' + i + '_' + longitude['hemisphereColumn']).addClass('assignmentColAssigned');
+		}
+		
+		if (fileSpecificAssignments[i]['runTypeCol'] > -1) {
+			$('#colHead_' + i + '_' + fileSpecificAssignments[i]['runTypeCol']).addClass('assignmentColAssigned');
 		}
 	}
 }
@@ -497,6 +502,55 @@ function renderPositionAssignments() {
 	return positionOK;
 }
 
+function renderOtherColumns() {
+	var columnsOK = true;
+
+	var assignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
+	
+	for (var i = 0; i < assignments.length; i++) {
+
+		var otherColumnsRequired = false;
+		var columnsHtml = '';
+		
+		var assignment = assignments[i];
+		
+		if (assignment['runTypeColRequired']) {
+			otherColumnsRequired = true;
+			
+			columnsHtml += '<table><tr><td>';
+			columnsHtml += '<label class="ui-outputlabel ui-widget">Run Type:</label>';
+			columnsHtml += '</td><td>';
+			
+			if (assignment['runTypeCol'] == -1) {
+				columnsOK = false;
+				columnsHtml += 'Column not assigned'; 
+			} else {
+				columnsHtml += filesAndColumns[i]['columns'][assignment['runTypeCol']];
+			}
+			
+			columnsHtml += '</td></tr></table>'
+		}
+		
+		$('#otherRequiredColumns-' + i).html(columnsHtml);
+
+		if (!otherColumnsRequired) {
+			$('#otherRequiredColumns-' + i).closest('fieldset').hide();
+		} else {
+			if (columnsOK) {
+				$('#otherRequiredColumns-' + i).closest('fieldset').removeClass('invalidFileAssignment');
+			} else {
+				timePositionOK = false;
+				$('#otherRequiredColumns-' + i).closest('fieldset').addClass('invalidFileAssignment');
+			}
+			
+			$('#otherRequiredColumns-' + i).closest('fieldset').show();
+		}
+		
+	}
+	
+	return columnsOK;
+}
+
 function setPrimaryPositionFile(fileIndex) {
 	$('#newInstrumentForm\\:primaryPositionFile').val(filesAndColumns[fileIndex]['description']);
 	$('#newInstrumentForm\\:setPrimaryPositionFileLink').click();
@@ -611,9 +665,34 @@ function buildMainAssignmentMenu(file, column) {
 			}
 		}
 		
+		if (fileSpecificAssignments[file]['runTypeColRequired']) {
+			if (fileSpecificAssignments[file]['runTypeCol'] > -1) {
+				menuHtml += makeDisabledMenuItem('Run Type');
+			} else {
+				menuHtml += makeMenuItem('OTHER_runType', 'Run Type', file, column);
+			}
+		}
+		
 		var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
 		for (var i = 0; i < sensorAssignments.length; i++) {
-			if (!sensorAssignments[i]['many'] && sensorAssignments[i]['assignments'].length > 0) {
+			
+			var entry = sensorAssignments[i];
+			var menuDisabled = false;
+			
+			// Core sensors can only have one column assigned in each file.
+			// Check the assignments individually to see if the assigned file is this one
+			if (entry['core']) {
+				for (var j = 0; j < entry['assignments'].length && !menuDisabled; j++) {
+					var fileIndex = getFileIndex(entry['assignments'][j]['file']);
+					if (fileIndex == file) {
+						menuDisabled = true;
+					}
+				}
+			} else if (!sensorAssignments[i]['many'] && sensorAssignments[i]['assignments'].length > 0) {
+				menuDisabled = true;
+			}
+				
+			if (menuDisabled) {	
 				menuHtml += makeDisabledMenuItem(sensorAssignments[i]['name']);
 			} else {
 				menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'], file, column);
@@ -763,10 +842,6 @@ function getColumnAssignment(fileIndex, column) {
 			}
 		}
 		
-		if (null == assigned) {
-			
-		}
-		
 		for (var i = 0; i < fileSpecificAssignments.length; i++) {
 			
 			if (assignments['latitude']['valueColumn'] == column) {
@@ -778,6 +853,10 @@ function getColumnAssignment(fileIndex, column) {
 			} else if (assignments['longitude']['hemisphereColumn'] == column) {
 				assigned = 'Longitude Hemisphere';
 			}
+		}
+		
+		if (assignments['runTypeCol'] == column) {
+			assigned = 'Run Type';
 		}
 	}
 	
@@ -797,9 +876,17 @@ function startAssign(item, file, column) {
 		openLatitudeDialog(file, column);
 	} else if (item == 'POS_latitude_hemisphere') {
 		openHemisphereDialog('latitude', file, column);
+	} else if (item == 'OTHER_runType') {
+		assignRunType(file, column);
 	} else {
 		openAssignSensorDialog(item, file, column);
 	}
+}
+
+function assignRunType(file, column) {
+	$('#newInstrumentForm\\:runTypeFile').val(filesAndColumns[file]['description']);
+	$('#newInstrumentForm\\:runTypeColumn').val(column);
+	$('#newInstrumentForm\\:runTypeLink').click();
 }
 
 function openAssignSensorDialog(sensor, file, column) {
@@ -1120,7 +1207,6 @@ function hideMenusAndDialogs(event) {
 }
 
 function removeFile(fileName) {
-	console.log(fileName);
 	$('#newInstrumentForm\\:removeFileName').val(fileName);
 	PF('removeFileConfirm').show();
 	return false;

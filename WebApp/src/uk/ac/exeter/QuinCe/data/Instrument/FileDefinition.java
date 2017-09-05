@@ -22,6 +22,11 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 public class FileDefinition implements Comparable<FileDefinition> {
 
 	/**
+	 * The name of the Run Type column
+	 */
+	public static final String RUN_TYPE_COL_NAME = "Run Type";
+	
+	/**
 	 * Inidicates that the file header is defined by a number of lines
 	 */
 	public static final int HEADER_TYPE_LINE_COUNT = 0;

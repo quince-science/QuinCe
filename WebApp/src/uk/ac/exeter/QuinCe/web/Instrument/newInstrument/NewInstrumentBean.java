@@ -303,6 +303,16 @@ public class NewInstrumentBean extends FileUploadBean {
 	private int minimumWaterFlow = -1;
 	
 	/**
+	 * The name of the file for which a Run Type column is being defined
+	 */
+	private String runTypeFile = null;
+	
+	/**
+	 * The column index being assigned for Run Type
+	 */
+	private int runTypeColumn = -1;
+	
+	/**
 	 * Begin a new instrument definition
 	 * @return The navigation to the start page
 	 */
@@ -520,6 +530,11 @@ public class NewInstrumentBean extends FileUploadBean {
 			// Is an assignment required?
 			json.append("\"named\":");
 			json.append(sensorType.canBeNamed());
+			json.append(',');
+			
+			// Is this a core sensor?
+			json.append("\"core\":");
+			json.append(sensorType.isCoreSensor());
 			json.append(',');
 			
 			// Are many assignments allowed for this sensor?
@@ -1320,11 +1335,21 @@ public class NewInstrumentBean extends FileUploadBean {
 		FileDefinitionBuilder fileDefinition = (FileDefinitionBuilder) instrumentFiles.get(unassignFile);
 		
 		if (null != fileDefinition) {
-			unassigned = sensorAssignments.removeAssignment(fileDefinition.getFileDescription(), unassignColumn);
 			
-			if (!unassigned) {
-				unassigned = fileDefinition.removeAssignment(unassignColumn);
-			}			
+			if (fileDefinition.getRunTypeColumn() == unassignColumn) {
+				fileDefinition.setRunTypeColumn(-1);
+			} else {
+				unassigned = sensorAssignments.removeAssignment(fileDefinition.getFileDescription(), unassignColumn);
+				
+				if (!unassigned) {
+					unassigned = fileDefinition.removeAssignment(unassignColumn);
+				}
+				
+				// If the run type column is no longer required, unassign it
+				if (!fileDefinition.requiresRunTypeColumn(sensorAssignments)) {
+					fileDefinition.setRunTypeColumn(-1);
+				}
+			}
 		}
 	}
 
@@ -1670,4 +1695,42 @@ public class NewInstrumentBean extends FileUploadBean {
         this.instrumentListBean = instrumentListBean;
     }
 
+    /**
+     * Get the file for which a Run Type column is being assigned
+     * @return The Run Type file
+     */
+    public String getRunTypeFile() {
+    	return runTypeFile;
+    }
+    
+    /**
+     * Set the file for which a Run Type column is being assigned
+     * @param runTypeFile The Run Type file
+     */
+    public void setRunTypeFile(String runTypeFile) {
+    	this.runTypeFile = runTypeFile;
+    }
+    
+    /**
+     * Get the index of the Run Type column being assigned
+     * @return The Run Type column index
+     */
+    public int getRunTypeColumn() {
+    	return runTypeColumn;
+    }
+    
+    /**
+     * Set the index of the Run Type column being assigned
+     * @param runTypeColumn The Run Type column index
+     */
+    public void setRunTypeColumn(int runTypeColumn) {
+    	this.runTypeColumn = runTypeColumn;
+    }
+    
+    /**
+     * Set the Run Type column for a file
+     */
+    public void assignRunType() {
+    	instrumentFiles.get(runTypeFile).setRunTypeColumn(runTypeColumn);
+    }
 }
