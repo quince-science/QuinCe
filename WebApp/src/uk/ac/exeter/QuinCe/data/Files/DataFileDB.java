@@ -69,7 +69,7 @@ public class DataFileDB {
 	 * @see #getUserFiles(DataSource, User)
 	 */
 	private static final String GET_USER_FILES_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched, f.delete_flag FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
-			+ " WHERE f.delete_flag = 0 AND i.owner = ? ORDER BY f.last_touched DESC";
+			+ " WHERE f.delete_flag = 0 ORDER BY f.last_touched DESC";
 	
 	/**
 	 * Statement to delete the details of a data file
@@ -335,7 +335,6 @@ public class DataFileDB {
 		try {
 			conn = dataSource.getConnection();
 			stmt = conn.prepareStatement(GET_USER_FILES_QUERY);
-			stmt.setLong(1, user.getDatabaseID());
 			
 			records = stmt.executeQuery();
 			while (records.next()) {
