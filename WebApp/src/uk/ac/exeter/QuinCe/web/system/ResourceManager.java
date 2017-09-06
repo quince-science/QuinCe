@@ -60,7 +60,7 @@ public class ResourceManager implements ServletContextListener {
         
         // Initialise the job thread pool
        	try {
-			JobThreadPool.initialise(3);
+			JobThreadPool.initialise(1);
 		} catch (InvalidThreadCountException e) {
 			// Do nothing for now
 		}
