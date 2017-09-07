@@ -1,9 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
-import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.User.User;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
@@ -42,11 +40,6 @@ public class Instrument {
 	private SensorAssignments sensorAssignments = null;
 	
 	/**
-	 * The run types for the instrument
-	 */
-	private TreeMap<String, RunTypeCategory> runTypes = null;
-	
-	/**
 	 * The flushing time at the start of each run
 	 */
 	private int preFlushingTime = 0;
@@ -72,12 +65,11 @@ public class Instrument {
 	 * @param postFlushingTime The post-flushing time
 	 * @param minimumWaterFlow The minimum water flow
 	 */
-	public Instrument(User owner, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, TreeMap<String, RunTypeCategory> runTypes, int preFlushingTime, int postFlushingTime, int minimumWaterFlow) {
+	public Instrument(User owner, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, int preFlushingTime, int postFlushingTime, int minimumWaterFlow) {
 		this.ownerId = owner.getDatabaseID();
 		this.name = name;
 		this.fileDefinitions = fileDefinitions;
 		this.sensorAssignments = sensorAssignments;
-		this.runTypes = runTypes;
 		this.preFlushingTime = preFlushingTime;
 		this.postFlushingTime = postFlushingTime;
 		this.minimumWaterFlow = minimumWaterFlow;
@@ -189,13 +181,4 @@ public class Instrument {
 	public SensorAssignments getSensorAssignments() {
 		return sensorAssignments;
 	}
-	
-	/**
-	 * Get the run types
-	 * @return The run types
-	 */
-	public TreeMap<String, RunTypeCategory> getRunTypes() {
-		return runTypes;
-	}
-
 }

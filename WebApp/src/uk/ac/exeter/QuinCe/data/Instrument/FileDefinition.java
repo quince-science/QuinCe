@@ -5,10 +5,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -128,6 +130,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * @see SensorType#isCoreSensor()
 	 */
 	private int runTypeColumn = -1;
+	
+	/**
+	 * The list of run type values for the instrument
+	 */
+	protected TreeMap<String, RunTypeCategory> runTypes = null;
 	
 	/**
 	 * The file set of which this definition is a member
@@ -479,11 +486,33 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	}
 	
 	/**
+	 * Get the assigned run types for this file. If the
+	 * {@link #runTypeColumn} is {@code -1}, this will return
+	 * {@code null}.
+	 * @return The run types
+	 */
+	public TreeMap<String, RunTypeCategory> getRunTypes() {
+		return runTypes;
+	}
+	
+	/**
 	 * Set the index of the column containing the run type
 	 * @param runTypeColumn The Run Type column
 	 */
 	public void setRunTypeColumn(int runTypeColumn) {
 		this.runTypeColumn = runTypeColumn;
+		initialiseRunTypes();
+	}
+	
+	/**
+	 * Initialise the run types data structure
+	 */
+	public void initialiseRunTypes() {
+		if (runTypeColumn == -1) {
+			runTypes = null;
+		} else {
+			runTypes = new TreeMap<String, RunTypeCategory>();
+		}
 	}
 	
 	/**
@@ -498,5 +527,14 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 */
 	public boolean requiresRunTypeColumn(SensorAssignments sensorAssignments) {
 		return sensorAssignments.coreSensorAssigned(fileDescription);
+	}
+	
+	/**
+	 * Set the run type category for a given run type
+	 * @param runType The run type
+	 * @param category The run type category
+	 */
+	public void setRunTypeCategory(String runType, RunTypeCategory category) {
+		runTypes.put(runType, category);
 	}
 }

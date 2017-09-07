@@ -76,7 +76,7 @@ public class InstrumentDB {
 	 * Statement for inserting run types
 	 */
 	private static final String CREATE_RUN_TYPE_STATEMENT = "INSERT INTO run_type ("
-			+ "instrument_id, run_name, category_code" // 3
+			+ "file_id, run_name, category_code" // 3
 			+ ") VALUES (?, ?, ?)";
 	
 	/**
@@ -166,9 +166,21 @@ public class InstrumentDB {
 					fileDefinitionKeys.add(fileKey);
 					
 					if (!fileKey.next()) {
-						throw new DatabaseException("File Definition record was created in the database");
+						throw new DatabaseException("File Definition record was not created in the database");
 					} else {
-						fileDefinitionIds.put(file.getFileDescription(), fileKey.getLong(1));
+						long fileId = fileKey.getLong(1); 
+						fileDefinitionIds.put(file.getFileDescription(), fileId);
+
+						// Run Types
+						for (Map.Entry<String, RunTypeCategory> entry : file.getRunTypes().entrySet()) {
+							PreparedStatement runTypeStatement = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
+							runTypeStatement.setLong(1, fileId);
+							runTypeStatement.setString(2, entry.getKey());
+							runTypeStatement.setString(3, entry.getValue().getCode());
+							
+							runTypeStatement.execute();
+							subStatements.add(runTypeStatement);
+						}
 					}
 				}
 				
@@ -197,17 +209,6 @@ public class InstrumentDB {
 						fileColumnStatement.execute();
 						subStatements.add(fileColumnStatement);						
 					}
-				}
-				
-				// Run Types
-				for (Map.Entry<String, RunTypeCategory> entry : instrument.getRunTypes().entrySet()) {
-					PreparedStatement runTypeStatement = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
-					runTypeStatement.setLong(1, instrumentId);
-					runTypeStatement.setString(2, entry.getKey());
-					runTypeStatement.setString(3, entry.getValue().getCode());
-					
-					runTypeStatement.execute();
-					subStatements.add(runTypeStatement);
 				}
 			}
 			

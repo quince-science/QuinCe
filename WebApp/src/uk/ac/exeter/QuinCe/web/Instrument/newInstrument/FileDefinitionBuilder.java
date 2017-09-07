@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InvalidSeparatorException;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.web.html.HtmlUtils;
@@ -515,5 +516,16 @@ public class FileDefinitionBuilder extends FileDefinition {
 		}
 		
 		return values;
+	}
+	
+	@Override
+	public void setRunTypeColumn(int runTypeColumn) {
+		super.setRunTypeColumn(runTypeColumn);
+		
+		if (runTypeColumn != -1) {
+			for (String runType : getUniqueColumnValues(runTypeColumn)) {
+				runTypes.put(runType, RunTypeCategory.IGNORED_CATEGORY);
+			}
+		}
 	}
 }

@@ -34,7 +34,6 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 			result = true;
 		}
 		
-		// Add the passed in file
 		return result;
 	}
 	
