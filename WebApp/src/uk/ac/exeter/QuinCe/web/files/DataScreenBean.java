@@ -315,6 +315,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	public String end() throws Exception {
 		
+		/*
 		if (dirty) {
 			Map<String, String> parameters = new HashMap<String, String>(1);
 			parameters.put(FileJob.FILE_ID_KEY, String.valueOf(fileId));
@@ -325,6 +326,7 @@ public class DataScreenBean extends BaseManagedBean {
 			JobManager.addJob(conn, getUser(), FileInfo.getJobClass(FileInfo.JOB_CODE_REDUCTION), parameters);
 			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
 		}
+		*/
 		
 		clearData();
 		return PAGE_END;
