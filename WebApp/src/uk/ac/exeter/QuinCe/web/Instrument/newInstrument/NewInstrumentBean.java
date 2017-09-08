@@ -15,7 +15,6 @@ import java.util.TreeMap;
 import javax.faces.bean.ManagedProperty;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
-import uk.ac.exeter.QuinCe.data.Instrument.FileSetException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -31,7 +30,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
@@ -761,16 +759,6 @@ public class NewInstrumentBean extends FileUploadBean {
 		SensorAssignment assignment = new SensorAssignment(sensorAssignmentFile, sensorAssignmentColumn, sensorAssignmentName, sensorAssignmentPostCalibrated, sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer, sensorAssignmentMissingValue);
 		sensorAssignments.addAssignment(sensorAssignmentSensorType, assignment);
 		
-		// If the Run Type has been reassigned, reset the run type configuration
-		
-		// TODO Reinstate
-		
-		/*
-		if (sensorAssignmentSensorType.equals(SensorsConfiguration.RUN_TYPE_SENSOR_NAME)) {
-			clearRunTypeAssignments();
-		}
-		*/
-
 		// Reset the assign dialog values, because it's so damn hard to do in Javascript
 		resetSensorAssignmentValues();
 	}
@@ -1259,10 +1247,19 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * JSF can't access named properties.
 	 * @return The time and position assignments
 	 * @throws DateTimeSpecificationException If an error occurs while generating the date/time string
-	 * @see NewInstrumentFileSet#getFileSpecificAssignments()
+	 * @see NewInstrumentFileSet#getFileSpecificAssignments(SensorAssignments)
 	 */
 	public String getFileSpecificAssignments() throws DateTimeSpecificationException {
 		return instrumentFiles.getFileSpecificAssignments(sensorAssignments);
+	}
+	
+	/**
+	 * Dummy method for setting fileSpecificAssignments. Does nothing.
+	 * @see #getFileSpecificAssignments()
+	 * @param dummy Ignored value
+	 */
+	public void setFileSpecificAssignments(String dummy) {
+		// Do nothing
 	}
 	
 	/**
@@ -1544,26 +1541,26 @@ public class NewInstrumentBean extends FileUploadBean {
 				TreeMap<String, RunTypeCategory> runTypes = file.getRunTypes();
 				StringBuilder fileAssignments = new StringBuilder();
 				
-				result.append("{\"file:'");
-				result.append(file.getFileDescription());
-				result.append("',\"assignments\":[");
+				fileAssignments.append("{\"file\":'");
+				fileAssignments.append(file.getFileDescription());
+				fileAssignments.append("',\"assignments\":[");
 
 				int entryCounter = 0;
 				for (Map.Entry<String, RunTypeCategory> entry : runTypes.entrySet()) {
 					entryCounter++;
 					
-					result.append("{\"runType\":'");
-					result.append(entry.getKey());
-					result.append("',\"category\":'");
-					result.append(entry.getValue().getName());
-					result.append('}');
+					fileAssignments.append("{\"runType\":'");
+					fileAssignments.append(entry.getKey());
+					fileAssignments.append("',\"category\":'");
+					fileAssignments.append(entry.getValue().getName());
+					fileAssignments.append('}');
 					
 					if (entryCounter < runTypes.size()) {
-						result.append(',');
+						fileAssignments.append(',');
 					}
 				}
 				
-				result.append("}");
+				fileAssignments.append("]");
 				
 				runTypeAssignments.add(fileAssignments.toString());
 			}
@@ -1721,5 +1718,6 @@ public class NewInstrumentBean extends FileUploadBean {
      */
     public void assignRunType() {
     	instrumentFiles.get(runTypeFile).setRunTypeColumn(runTypeColumn);
+    	clearRunTypeAssignments();
     }
 }
