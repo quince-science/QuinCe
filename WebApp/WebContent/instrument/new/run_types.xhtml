@@ -11,12 +11,6 @@
 		<c:set var="instrumentStep" value="2" scope="request"/>
 		<script>
 			$(document).ready(function() {
-				
-				setTimeout(function() {
-					renderAssignedCategories();
-					populateRunTypeMenus();
-					
-				}, 500);
 			});
 		</script>
 	</ui:define>
@@ -38,12 +32,29 @@
 			
 			<p:fieldset id="runTypesPanel" legend="Assign Run Types" style="margin-bottom: 20px">
 				<div class="instructions">
-					Below is a list of all values found in the Run Types column. Please associate each
+					Below is a list of values from the Run Type columns in each file. Please associate each
 					run type with a measurement category.
 				</div>
 
 				<div id="runTypeFiles">
-				
+					<ui:repeat value="#{newInstrumentBean.instrumentFiles}" var="file">
+						<div class="runTypeFile">
+							<p:fieldset legend="#{file.fileDescription}">
+								<table class="form">
+		  							<ui:repeat value="#{file.runTypeValues}" var="runType">
+		    							<tr>
+		      								<td class="labels">#{runType}</td>
+		      								<td>
+		        								<p:selectOneMenu widgetVar="#{file.fileDescription}-#{runType}-menu" onchange="setRunTypeCategory('#{runType}', event.target.value)">
+		          									<f:selectItems value="#{newInstrumentBean.runTypeCategories}" var="category" itemValue="#{category.code}" itemLabel="#{category.name}"/>
+		        								</p:selectOneMenu>
+		      								</td>
+										</tr>
+									</ui:repeat>
+								</table>
+							</p:fieldset>
+						</div>
+					</ui:repeat>
 				</div>
 			</p:fieldset>
 			<!--  The cancel include has a 2 entries (1 is invisible) -->

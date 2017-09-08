@@ -524,7 +524,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 		
 		if (runTypeColumn != -1) {
 			for (String runType : getUniqueColumnValues(runTypeColumn)) {
-				runTypes.put(runType, RunTypeCategory.IGNORED_CATEGORY);
+				setRunTypeCategory(runType, RunTypeCategory.IGNORED_CATEGORY);
 			}
 		}
 	}

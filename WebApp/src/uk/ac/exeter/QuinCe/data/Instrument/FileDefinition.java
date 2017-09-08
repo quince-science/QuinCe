@@ -496,6 +496,21 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	}
 	
 	/**
+	 * Get the list of run type values in this file
+	 * @return The run type values
+	 */
+	public List<String> getRunTypeValues() {
+		List<String> values = null;
+		
+		if (null != runTypes) {
+			values = new ArrayList<String>(runTypes.size());
+			values.addAll(runTypes.keySet());
+		}
+
+		return values;
+	}
+	
+	/**
 	 * Set the index of the column containing the run type
 	 * @param runTypeColumn The Run Type column
 	 */

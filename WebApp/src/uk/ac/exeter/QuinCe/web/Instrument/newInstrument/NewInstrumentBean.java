@@ -1541,9 +1541,9 @@ public class NewInstrumentBean extends FileUploadBean {
 				TreeMap<String, RunTypeCategory> runTypes = file.getRunTypes();
 				StringBuilder fileAssignments = new StringBuilder();
 				
-				fileAssignments.append("{\"file\":'");
+				fileAssignments.append("{\"file\":\"");
 				fileAssignments.append(file.getFileDescription());
-				fileAssignments.append("',\"assignments\":[");
+				fileAssignments.append("\",\"assignments\":[");
 
 				int entryCounter = 0;
 				for (Map.Entry<String, RunTypeCategory> entry : runTypes.entrySet()) {
@@ -1551,16 +1551,16 @@ public class NewInstrumentBean extends FileUploadBean {
 					
 					fileAssignments.append("{\"runType\":'");
 					fileAssignments.append(entry.getKey());
-					fileAssignments.append("',\"category\":'");
+					fileAssignments.append("',\"category\":\"");
 					fileAssignments.append(entry.getValue().getName());
-					fileAssignments.append('}');
+					fileAssignments.append("\"}");
 					
 					if (entryCounter < runTypes.size()) {
 						fileAssignments.append(',');
 					}
 				}
 				
-				fileAssignments.append("]");
+				fileAssignments.append("]}");
 				
 				runTypeAssignments.add(fileAssignments.toString());
 			}
@@ -1595,10 +1595,6 @@ public class NewInstrumentBean extends FileUploadBean {
 	private void clearRunTypeAssignments() {
 		runTypeAssignName = null;
 		runTypeAssignCode = null;
-		
-		for (FileDefinition file : instrumentFiles) {
-			file.initialiseRunTypes();
-		}
 	}
 
 	/**
@@ -1717,7 +1713,7 @@ public class NewInstrumentBean extends FileUploadBean {
      * Set the Run Type column for a file
      */
     public void assignRunType() {
-    	instrumentFiles.get(runTypeFile).setRunTypeColumn(runTypeColumn);
-    	clearRunTypeAssignments();
+    	FileDefinition file = instrumentFiles.get(runTypeFile);
+    	file.setRunTypeColumn(runTypeColumn);
     }
 }
