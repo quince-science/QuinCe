@@ -279,22 +279,22 @@ public class InstrumentDB {
 		stmt.setInt(7, file.getColumnHeaderRows()); // column_header_rows
 		stmt.setInt(8, file.getColumnCount()); // column_count
 		
-		addPositionAssignment(stmt, file.getLongitudeSpecification(), 10, 11, 12); // longitude
-		addPositionAssignment(stmt, file.getLatitudeSpecification(), 13, 14, 15); // latitude
+		addPositionAssignment(stmt, file.getLongitudeSpecification(), 9, 10, 11); // longitude
+		addPositionAssignment(stmt, file.getLatitudeSpecification(), 12, 13, 14); // latitude
 		
 		DateTimeSpecification dateTimeSpec = file.getDateTimeSpecification();
-		addDateTimeAssignment(stmt, 16, 17, DateTimeSpecification.DATE_TIME, dateTimeSpec); // date_time_col
-		addDateTimeAssignment(stmt, 18, 19, DateTimeSpecification.DATE, dateTimeSpec); // date
-		addDateTimeAssignment(stmt, 20, 21, DateTimeSpecification.HOURS_FROM_START, dateTimeSpec); // hours_from_start
-		addDateTimeAssignment(stmt, 22, -1, DateTimeSpecification.JDAY_TIME, dateTimeSpec); // jday_time_col
-		addDateTimeAssignment(stmt, 23, -1, DateTimeSpecification.JDAY, dateTimeSpec); // jday_col
-		addDateTimeAssignment(stmt, 24, -1, DateTimeSpecification.YEAR, dateTimeSpec); // year_col
-		addDateTimeAssignment(stmt, 25, -1, DateTimeSpecification.MONTH, dateTimeSpec); // jmonth_col
-		addDateTimeAssignment(stmt, 26, -1, DateTimeSpecification.DAY, dateTimeSpec); // jday_col
-		addDateTimeAssignment(stmt, 27, 28, DateTimeSpecification.TIME, dateTimeSpec); // time_col
-		addDateTimeAssignment(stmt, 29, -1, DateTimeSpecification.HOUR, dateTimeSpec); // hour_col
-		addDateTimeAssignment(stmt, 30, -1, DateTimeSpecification.MINUTE, dateTimeSpec); // minute_col
-		addDateTimeAssignment(stmt, 31, -1, DateTimeSpecification.SECOND, dateTimeSpec); // second_col
+		addDateTimeAssignment(stmt, 15, 16, DateTimeSpecification.DATE_TIME, dateTimeSpec); // date_time_col
+		addDateTimeAssignment(stmt, 17, 18, DateTimeSpecification.DATE, dateTimeSpec); // date
+		addDateTimeAssignment(stmt, 19, 20, DateTimeSpecification.HOURS_FROM_START, dateTimeSpec); // hours_from_start
+		addDateTimeAssignment(stmt, 21, -1, DateTimeSpecification.JDAY_TIME, dateTimeSpec); // jday_time_col
+		addDateTimeAssignment(stmt, 22, -1, DateTimeSpecification.JDAY, dateTimeSpec); // jday_col
+		addDateTimeAssignment(stmt, 23, -1, DateTimeSpecification.YEAR, dateTimeSpec); // year_col
+		addDateTimeAssignment(stmt, 24, -1, DateTimeSpecification.MONTH, dateTimeSpec); // jmonth_col
+		addDateTimeAssignment(stmt, 25, -1, DateTimeSpecification.DAY, dateTimeSpec); // jday_col
+		addDateTimeAssignment(stmt, 26, 27, DateTimeSpecification.TIME, dateTimeSpec); // time_col
+		addDateTimeAssignment(stmt, 28, -1, DateTimeSpecification.HOUR, dateTimeSpec); // hour_col
+		addDateTimeAssignment(stmt, 29, -1, DateTimeSpecification.MINUTE, dateTimeSpec); // minute_col
+		addDateTimeAssignment(stmt, 30, -1, DateTimeSpecification.SECOND, dateTimeSpec); // second_col
 		
 		return stmt;
 	}
