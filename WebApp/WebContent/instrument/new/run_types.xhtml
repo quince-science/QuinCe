@@ -11,6 +11,10 @@
 		<c:set var="instrumentStep" value="2" scope="request"/>
 		<script>
 			$(document).ready(function() {
+				setTimeout(function() {
+					  renderAssignedCategories();
+					  populateRunTypeMenus();
+					}, 500);
 			});
 		</script>
 	</ui:define>
@@ -20,10 +24,11 @@
 			<h:inputHidden id="assignedCategories" value="#{newInstrumentBean.categoryAssignments}"/>
 			<h:inputHidden id="assignedRunTypes" value="#{newInstrumentBean.runTypeAssignments}"/>
 		
+			<h:inputHidden id="assignCategoryFile" value="#{newInstrumentBean.runTypeAssignFile}"/>
 			<h:inputHidden id="assignCategoryRunType" value="#{newInstrumentBean.runTypeAssignName}"/>
 			<h:inputHidden id="assignCategoryCode" value="#{newInstrumentBean.runTypeAssignCode}"/>
 			<p:commandLink id="assignCategoryLink" style="invisible" ajax="true" action="#{newInstrumentBean.assignRunTypeCategory}"
-				process="assignCategoryRunType assignCategoryCode" update="assignedCategories" oncomplete="renderAssignedCategories();"/>
+				process="assignCategoryFile assignCategoryRunType assignCategoryCode" update="assignedCategories" oncomplete="renderAssignedCategories();"/>
 			
 			
 			<p:fieldset id="categoriesPanel" legend="Run Type Categories" style="margin-bottom: 20px">
@@ -45,7 +50,7 @@
 		    							<tr>
 		      								<td class="labels">#{runType}</td>
 		      								<td>
-		        								<p:selectOneMenu widgetVar="#{file.fileDescription}-#{runType}-menu" onchange="setRunTypeCategory('#{runType}', event.target.value)">
+		        								<p:selectOneMenu widgetVar="#{file.fileDescription}-#{runType}-menu" onchange="setRunTypeCategory('#{file.fileDescription}', '#{runType}', event.target.value)">
 		          									<f:selectItems value="#{newInstrumentBean.runTypeCategories}" var="category" itemValue="#{category.code}" itemLabel="#{category.name}"/>
 		        								</p:selectOneMenu>
 		      								</td>

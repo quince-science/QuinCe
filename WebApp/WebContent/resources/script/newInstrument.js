@@ -1196,7 +1196,8 @@ function removeFile(fileName) {
 * RUN TYPES PAGE
 *
 *******************************************************/
-function setRunTypeCategory(runType, category) {
+function setRunTypeCategory(file, runType, category) {
+	$('#newInstrumentForm\\:assignCategoryFile').val(file);
 	$('#newInstrumentForm\\:assignCategoryRunType').val(runType);
 	$('#newInstrumentForm\\:assignCategoryCode').val(category);
 	$('#newInstrumentForm\\:assignCategoryLink').click();
@@ -1241,6 +1242,11 @@ function renderAssignedCategories() {
 function populateRunTypeMenus() {
 	var runTypeAssignments = JSON.parse($('#newInstrumentForm\\:assignedRunTypes').val());
 	for (var i = 0; i < runTypeAssignments.length; i++) {
-		PF(runTypeAssignments[i][0] + '-menu').selectValue(runTypeAssignments[i][1]);
+		var file = runTypeAssignments[i];
+		
+		for (var j = 0; j < file['assignments'].length; j++) {
+			console.log(file["file"] + "-" + file["assignments"][j]["runType"] + "-menu", file["assignments"][j]["category"]);
+			PF(file["file"] + "-" + file["assignments"][j]["runType"] + "-menu").selectValue(file["assignments"][j]["category"]);
+		}
 	}
 }

@@ -1549,10 +1549,10 @@ public class NewInstrumentBean extends FileUploadBean {
 				for (Map.Entry<String, RunTypeCategory> entry : runTypes.entrySet()) {
 					entryCounter++;
 					
-					fileAssignments.append("{\"runType\":'");
+					fileAssignments.append("{\"runType\":\"");
 					fileAssignments.append(entry.getKey());
-					fileAssignments.append("',\"category\":\"");
-					fileAssignments.append(entry.getValue().getName());
+					fileAssignments.append("\",\"category\":\"");
+					fileAssignments.append(entry.getValue().getCode());
 					fileAssignments.append("\"}");
 					
 					if (entryCounter < runTypes.size()) {
