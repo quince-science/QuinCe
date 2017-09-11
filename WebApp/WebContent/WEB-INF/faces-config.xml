@@ -5,12 +5,6 @@
     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd"
     version="2.2">
 	<managed-bean>
-		<description>Handles user login</description>
-		<managed-bean-name>loginBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.User.LoginBean</managed-bean-class>
-		<managed-bean-scope>request</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
 		<description>Processes user signup</description>
 		<managed-bean-name>signupBean</managed-bean-name>
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.User.SignupBean</managed-bean-class>
@@ -27,18 +21,6 @@
 		<managed-bean-name>sendEmailCodeBean</managed-bean-name>
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.User.SendEmailCodeBean</managed-bean-class>
 		<managed-bean-scope>request</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
-		<description>New Instrument</description>
-		<managed-bean-name>newInstrumentBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.newInstrument.NewInstrumentBean</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
-		<description>Small bean for producing lists of instruments</description>
-		<managed-bean-name>instrumentListBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.InstrumentListBean</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
 	</managed-bean>
 	<managed-bean>
 		<description>Handles viewing and editing of sensor calibrations</description>

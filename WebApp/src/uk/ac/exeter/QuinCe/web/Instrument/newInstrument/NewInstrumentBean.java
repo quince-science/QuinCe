@@ -12,7 +12,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
+import javax.faces.bean.SessionScoped;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -44,6 +46,8 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  * Bean for collecting data about a new instrument
  * @author Steve Jones
  */
+@ManagedBean
+@SessionScoped
 public class NewInstrumentBean extends FileUploadBean {
 
 	/**
@@ -85,7 +89,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * The Instrument List Bean
 	 */
 	@ManagedProperty("#{instrumentListBean}")
-	private InstrumentListBean instrumentListBean = null;
+	private InstrumentListBean instrumentListBean;
 	
 	/**
 	 * The name of the new instrument
