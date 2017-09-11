@@ -91,8 +91,6 @@ header_lines                 Integer        Number of lines in the file header
 header_end_string            String         The line that indicates the end of the file header
 column_header_rows           Integer        The number of column header rows in the file
 column_count                 Integer        Number of colums in the file
-primary_position_file        Boolean        Indicates whether or not this file contains the primary position
-										    data for the instrument.
 lon_format                   Integer        Format of the longitude
 lon_value_col                Integer        Column where the longitude value is stored
 lon_hemisphere_col           Integer        Column where the longitude hemisphere is stored 
@@ -160,9 +158,8 @@ file. This file defines a code for each run type that will be stored in the `run
 
 Field                    Type           Description
 --------------------     ------------   -----------------------------------------------------------------
-id*                      Integer        ID
-instrument_id            F_KEY          Instrument ID
-name                     String         The value from the `run_type` column in the Columns table
+file_id*                 F_KEY          Instrument ID
+name*                    String         The value from the `run_type` column in the Columns table
 category_code            String         The run type category code
 
 ## `calibration`

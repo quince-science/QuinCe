@@ -3,6 +3,8 @@ package uk.ac.exeter.QuinCe.web.Instrument;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
 
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
@@ -19,6 +21,8 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  * @author Steve Jones
  *
  */
+@ManagedBean
+@SessionScoped
 public class InstrumentListBean extends BaseManagedBean {
 
 	/**

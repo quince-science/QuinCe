@@ -5,10 +5,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -19,6 +23,11 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  */
 public class FileDefinition implements Comparable<FileDefinition> {
 
+	/**
+	 * The name of the Run Type column
+	 */
+	public static final String RUN_TYPE_COL_NAME = "Run Type";
+	
 	/**
 	 * Inidicates that the file header is defined by a number of lines
 	 */
@@ -101,12 +110,6 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	private int columnCount = 0;
 	
 	/**
-	 * Indicates whether or not the positions in this file
-	 * are the primary ones to use in calculations
-	 */
-	protected boolean positionPrimary = false;
-	
-	/**
 	 * The longitude specification 
 	 */
 	private LongitudeSpecification longitudeSpecification;
@@ -120,6 +123,18 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * The Date/Time specification
 	 */
 	private DateTimeSpecification dateTimeSpecification;
+	
+	/**
+	 * The column containing the run type. Only required if this file
+	 * contains a Core Sensor
+	 * @see SensorType#isCoreSensor()
+	 */
+	private int runTypeColumn = -1;
+	
+	/**
+	 * The list of run type values for the instrument
+	 */
+	protected TreeMap<String, RunTypeCategory> runTypes = null;
 	
 	/**
 	 * The file set of which this definition is a member
@@ -407,30 +422,6 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	}
 	
 	/**
-	 * Determine whether or not this file holds the
-	 * primary position information for the instrument.
-	 * @return {@code true} if this file contains the primary position information; {@code false} if it does not.
-	 */
-	public boolean getPositionPrimary() {
-		return positionPrimary;
-	}
-	
-	/**
-	 * Set whether or not this file holds the
-	 * primary position information for the instrument.
-	 * @param positionPrimary {@code true} if this file contains the primary position information; {@code false} if it does not.
-	 * @throws FileSetException If this file is somehow not in the parent InstrumentFileSet.
-	 * @see InstrumentFileSet#setPrimaryPositionFile(String)
-	 */
-	public void setPositionPrimary(boolean positionPrimary) throws FileSetException {
-		if (positionPrimary) {
-			fileSet.setPrimaryPositionFile(fileDescription);
-		} else {
-			fileSet.setPrimaryPositionFile(null);
-		}
-	}
-	
-	/**
 	 * Determine whether or not the file has a header.
 	 * 
 	 * The header has either with a specified number of header lines or
@@ -478,21 +469,87 @@ public class FileDefinition implements Comparable<FileDefinition> {
 			}
 		}
 		
-		if (unassigned) {
-			if (positionPrimary) {
-				if (latitudeSpecification.getValueColumn() == -1 &&
-						latitudeSpecification.getHemisphereColumn() == -1 &&
-						longitudeSpecification.getValueColumn() == -1 &&
-						longitudeSpecification.getHemisphereColumn() == -1) {
-					
-					positionPrimary = false;
-				}
-			}
-		} else {
+		if (!unassigned) {
 			DateTimeSpecification dateTime = getDateTimeSpecification();
 			unassigned = dateTime.removeAssignment(column);
 		}
 
 		return unassigned;
+	}
+	
+	/**
+	 * Get the column containing the Run Type
+	 * @return The Run Type column
+	 */
+	public int getRunTypeColumn() {
+		return runTypeColumn;
+	}
+	
+	/**
+	 * Get the assigned run types for this file. If the
+	 * {@link #runTypeColumn} is {@code -1}, this will return
+	 * {@code null}.
+	 * @return The run types
+	 */
+	public TreeMap<String, RunTypeCategory> getRunTypes() {
+		return runTypes;
+	}
+	
+	/**
+	 * Get the list of run type values in this file
+	 * @return The run type values
+	 */
+	public List<String> getRunTypeValues() {
+		List<String> values = null;
+		
+		if (null != runTypes) {
+			values = new ArrayList<String>(runTypes.size());
+			values.addAll(runTypes.keySet());
+		}
+
+		return values;
+	}
+	
+	/**
+	 * Set the index of the column containing the run type
+	 * @param runTypeColumn The Run Type column
+	 */
+	public void setRunTypeColumn(int runTypeColumn) {
+		this.runTypeColumn = runTypeColumn;
+		initialiseRunTypes();
+	}
+	
+	/**
+	 * Initialise the run types data structure
+	 */
+	public void initialiseRunTypes() {
+		if (runTypeColumn == -1) {
+			runTypes = null;
+		} else {
+			runTypes = new TreeMap<String, RunTypeCategory>();
+		}
+	}
+	
+	/**
+	 * Determines whether or not this file requires a Run Type column.
+	 * 
+	 * <p>
+	 *   If this file has had a Core Sensor assigned to it, then a Run Type
+	 *   column is also required. Otherwise, the column is not required.
+	 * </p>
+	 * @param sensorAssignments The sensor assignments for the current instrument
+	 * @return {@code true} if a Run Type column is required; {@code false} otherwise.
+	 */
+	public boolean requiresRunTypeColumn(SensorAssignments sensorAssignments) {
+		return sensorAssignments.coreSensorAssigned(fileDescription);
+	}
+	
+	/**
+	 * Set the run type category for a given run type
+	 * @param runType The run type
+	 * @param category The run type category
+	 */
+	public void setRunTypeCategory(String runType, RunTypeCategory category) {
+		runTypes.put(runType, category);
 	}
 }

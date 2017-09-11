@@ -1,5 +1,8 @@
 package uk.ac.exeter.QuinCe.web.User;
 
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.RequestScoped;
+
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
@@ -10,6 +13,8 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  * @author Steve Jones
  *
  */
+@ManagedBean
+@RequestScoped
 public class LoginBean extends BaseManagedBean {
 	
 	public static final String SIGNUP_RESULT = "SignUp";

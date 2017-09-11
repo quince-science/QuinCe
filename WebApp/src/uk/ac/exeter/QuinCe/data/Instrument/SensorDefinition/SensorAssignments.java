@@ -291,4 +291,26 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 			}
 		}
 	}
+	
+	/**
+	 * Determines whether or not a Core Sensor has been assigned within a given file
+	 * @param file The file to be checked
+	 * @return {@code true} if the file has had a core sensor assigned; {@code false} if it has not
+	 */
+	public boolean coreSensorAssigned(String file) {
+		boolean result = false;
+		
+		for (SensorType sensorType : keySet()) {
+			if (sensorType.isCoreSensor()) {
+				for (SensorAssignment assignment : get(sensorType)) {
+					if (assignment.getDataFile().equals(file)) {
+						result = true;
+						break;
+					}
+				}
+			}
+		}
+		
+		return result;
+	}
 }

@@ -32,7 +32,7 @@ function discardUploadedFile() {
 // Render the contents of the uploaded sample file
 // (upload.xhtml)
 function renderSampleFile() {
-		
+
 	var fileData = JSON.parse($('#newInstrumentForm\\:sampleFileContent').val());
 	var fileHtml = '';
 	var messageTriggered = false;
@@ -187,9 +187,10 @@ function useFile() {
 function renderAssignments() {
 	var sensorsOK = renderSensorAssignments();
 	var positionOK = renderPositionAssignments();
+	var otherColumnsOK = renderOtherColumns();
 	var timeOK = renderDateTimeAssignments();
 	
-	if (sensorsOK && positionOK && timeOK) {
+	if (sensorsOK && positionOK && otherColumnsOK && timeOK) {
 		PF('next').enable();
 	} else {
 		PF('next').disable();
@@ -250,17 +251,17 @@ function updateTableHeaders() {
 		}
 	}
 	
-	var timePositionAssignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+	var fileSpecificAssignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
 	
-	for (var i = 0; i < timePositionAssignments.length; i++) {
+	for (var i = 0; i < fileSpecificAssignments.length; i++) {
 		
 		// Date/Time
-		var dateTime = timePositionAssignments[i]['dateTime'];
+		var dateTime = fileSpecificAssignments[i]['dateTime'];
 		for (var j = 0; j < dateTime.length; j++) {
 			$('#colHead_' + i + '_' + dateTime[j]['column']).addClass('assignmentColAssigned');
 		}
 		
-		var latitude = timePositionAssignments[i]['latitude'];
+		var latitude = fileSpecificAssignments[i]['latitude'];
 		if (latitude['valueColumn'] > -1) {
 			$('#colHead_' + i + '_' + latitude['valueColumn']).addClass('assignmentColAssigned');
 		}
@@ -268,12 +269,16 @@ function updateTableHeaders() {
 			$('#colHead_' + i + '_' + latitude['hemisphereColumn']).addClass('assignmentColAssigned');
 		}
 		
-		var longitude = timePositionAssignments[i]['longitude'];
+		var longitude = fileSpecificAssignments[i]['longitude'];
 		if (longitude['valueColumn'] > -1) {
 			$('#colHead_' + i + '_' + longitude['valueColumn']).addClass('assignmentColAssigned');
 		}
 		if (longitude['hemisphereColumn'] > -1) {
 			$('#colHead_' + i + '_' + longitude['hemisphereColumn']).addClass('assignmentColAssigned');
+		}
+		
+		if (fileSpecificAssignments[i]['runTypeCol'] > -1) {
+			$('#colHead_' + i + '_' + fileSpecificAssignments[i]['runTypeCol']).addClass('assignmentColAssigned');
 		}
 	}
 }
@@ -294,7 +299,7 @@ function getFileIndex(fileName) {
 function renderDateTimeAssignments() {
 	var allTimesOK = true;
 	
-	var assignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+	var assignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
 	
 	// Loop through the files
 	for (var i = 0; i < assignments.length; i++) {
@@ -360,9 +365,8 @@ function renderDateTimeAssignments() {
 function renderPositionAssignments() {
 	var positionOK = true;
 	var positionsAssigned = 0;
-	var primaryPositionFileAssigned = false;
 	
-	var assignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+	var assignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
 	
 	for (var i = 0; i < assignments.length; i++) {
 		var assignment = assignments[i];
@@ -460,21 +464,6 @@ function renderPositionAssignments() {
 				}
 			}
 			positionHtml += '</table>';
-			
-			positionHtml += '<h4>Primary Position File</h4>';
-			positionHtml += 'Primary position file? <b>';
-			if (assignment['primaryPosition']) {
-				positionHtml += 'YES';
-				primaryPositionFileAssigned = true;
-			} else {
-				positionHtml += 'NO';
-			}
-			positionHtml += '</b><br/>';
-			
-			if (!assignment['primaryPosition']) {
-				positionHtml += '<button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="setPrimaryPositionFile(' + i + '); return false;">';
-				positionHtml += '<span class="ui-button-text ui-c">Set As Primary Position File</span></button>';
-			}
 		}
 		
 		$('#positionColumns-' + i).html(positionHtml);
@@ -486,7 +475,7 @@ function renderPositionAssignments() {
 		}
 	}
 	
-	if (positionsAssigned == 0 || !primaryPositionFileAssigned) {
+	if (positionsAssigned == 0) {
 		for (var i = 0; i < filesAndColumns.length; i++) {
 			$('#positionColumns-' + i).closest('fieldset').addClass('invalidFileAssignment');
 		}
@@ -497,9 +486,53 @@ function renderPositionAssignments() {
 	return positionOK;
 }
 
-function setPrimaryPositionFile(fileIndex) {
-	$('#newInstrumentForm\\:primaryPositionFile').val(filesAndColumns[fileIndex]['description']);
-	$('#newInstrumentForm\\:setPrimaryPositionFileLink').click();
+function renderOtherColumns() {
+	var columnsOK = true;
+
+	var assignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
+	
+	for (var i = 0; i < assignments.length; i++) {
+
+		var otherColumnsRequired = false;
+		var columnsHtml = '';
+		
+		var assignment = assignments[i];
+		
+		if (assignment['runTypeColRequired']) {
+			otherColumnsRequired = true;
+			
+			columnsHtml += '<table><tr><td>';
+			columnsHtml += '<label class="ui-outputlabel ui-widget">Run Type:</label>';
+			columnsHtml += '</td><td>';
+			
+			if (assignment['runTypeCol'] == -1) {
+				columnsOK = false;
+				columnsHtml += 'Column not assigned'; 
+			} else {
+				columnsHtml += filesAndColumns[i]['columns'][assignment['runTypeCol']];
+			}
+			
+			columnsHtml += '</td></tr></table>'
+		}
+		
+		$('#otherRequiredColumns-' + i).html(columnsHtml);
+
+		if (!otherColumnsRequired) {
+			$('#otherRequiredColumns-' + i).closest('fieldset').hide();
+		} else {
+			if (columnsOK) {
+				$('#otherRequiredColumns-' + i).closest('fieldset').removeClass('invalidFileAssignment');
+			} else {
+				timePositionOK = false;
+				$('#otherRequiredColumns-' + i).closest('fieldset').addClass('invalidFileAssignment');
+			}
+			
+			$('#otherRequiredColumns-' + i).closest('fieldset').show();
+		}
+		
+	}
+	
+	return columnsOK;
 }
 
 function unAssign(file, column) {
@@ -572,7 +605,7 @@ function makeUnassignMenuItem(file, column, itemText) {
 
 function buildMainAssignmentMenu(file, column) {
 	var columnAssignment = getColumnAssignment(file, column);
-	var timePositionAssignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+	var fileSpecificAssignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
 
 	var menuHtml = '';
 	menuHtml += '<ul class="ui-menu-list ui-helper-reset">';
@@ -582,7 +615,7 @@ function buildMainAssignmentMenu(file, column) {
 	} else {
 		menuHtml += makeParentMenuItem('DATETIMESUBMENU', 'Date/Time', file, column, 'dateTimeMenu');
 		
-		if (timePositionAssignments[file]['longitude']['valueColumn'] != -1) {
+		if (fileSpecificAssignments[file]['longitude']['valueColumn'] != -1) {
 			menuHtml += makeDisabledMenuItem('Longitude');
 		} else {
 			menuHtml += makeMenuItem('POS_longitude', 'Longitude', file, column);
@@ -590,30 +623,55 @@ function buildMainAssignmentMenu(file, column) {
 		
 
 		if (hemisphereRequired(file, 'longitude')) {
-			if (timePositionAssignments[file]['longitude']['hemisphereColumn'] != -1) {
+			if (fileSpecificAssignments[file]['longitude']['hemisphereColumn'] != -1) {
 				menuHtml += makeDisabledMenuItem('Longitude - Hemisphere');
 			} else {
 				menuHtml += makeMenuItem('POS_longitude_hemisphere', 'Longitude - Hemisphere', file, column);
 			}
 		}
 		
-		if (timePositionAssignments[file]['latitude']['valueColumn'] != -1) {
+		if (fileSpecificAssignments[file]['latitude']['valueColumn'] != -1) {
 			menuHtml += makeDisabledMenuItem('Latitude');
 		} else {
 			menuHtml += makeMenuItem('POS_latitude', 'Latitude', file, column);
 		}
 			
 		if (hemisphereRequired(file, 'latitude')) {
-			if (timePositionAssignments[file]['latitude']['hemisphereColumn'] != -1) {
+			if (fileSpecificAssignments[file]['latitude']['hemisphereColumn'] != -1) {
 				menuHtml += makeDisabledMenuItem('Latitude - Hemisphere');
 			} else {
 				menuHtml += makeMenuItem('POS_latitude_hemisphere', 'Latitude - Hemisphere', file, column);
 			}
 		}
 		
+		if (fileSpecificAssignments[file]['runTypeColRequired']) {
+			if (fileSpecificAssignments[file]['runTypeCol'] > -1) {
+				menuHtml += makeDisabledMenuItem('Run Type');
+			} else {
+				menuHtml += makeMenuItem('OTHER_runType', 'Run Type', file, column);
+			}
+		}
+		
 		var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
 		for (var i = 0; i < sensorAssignments.length; i++) {
-			if (!sensorAssignments[i]['many'] && sensorAssignments[i]['assignments'].length > 0) {
+			
+			var entry = sensorAssignments[i];
+			var menuDisabled = false;
+			
+			// Core sensors can only have one column assigned in each file.
+			// Check the assignments individually to see if the assigned file is this one
+			if (entry['core']) {
+				for (var j = 0; j < entry['assignments'].length && !menuDisabled; j++) {
+					var fileIndex = getFileIndex(entry['assignments'][j]['file']);
+					if (fileIndex == file) {
+						menuDisabled = true;
+					}
+				}
+			} else if (!sensorAssignments[i]['many'] && sensorAssignments[i]['assignments'].length > 0) {
+				menuDisabled = true;
+			}
+				
+			if (menuDisabled) {	
 				menuHtml += makeDisabledMenuItem(sensorAssignments[i]['name']);
 			} else {
 				menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'], file, column);
@@ -635,7 +693,7 @@ function buildMainAssignmentMenu(file, column) {
 
 function buildDateTimeAssignmentMenu(file, column) {
 
-	var timeAssignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val())[file]['dateTime'];
+	var timeAssignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val())[file]['dateTime'];
 
 	var menuHtml = '<ul class="ui-menu-list ui-helper-reset">';
 
@@ -750,9 +808,9 @@ function getColumnAssignment(fileIndex, column) {
 	}
 	
 	if (null == assigned) {
-		var timePositionAssignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+		var fileSpecificAssignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
 		
-		assignments = timePositionAssignments[fileIndex];
+		assignments = fileSpecificAssignments[fileIndex];
 		
 		var dateTimes = assignments['dateTime'];
 		for (var i = 0; i < dateTimes.length; i++) {
@@ -763,11 +821,7 @@ function getColumnAssignment(fileIndex, column) {
 			}
 		}
 		
-		if (null == assigned) {
-			
-		}
-		
-		for (var i = 0; i < timePositionAssignments.length; i++) {
+		for (var i = 0; i < fileSpecificAssignments.length; i++) {
 			
 			if (assignments['latitude']['valueColumn'] == column) {
 				assigned = 'Latitude';
@@ -778,6 +832,10 @@ function getColumnAssignment(fileIndex, column) {
 			} else if (assignments['longitude']['hemisphereColumn'] == column) {
 				assigned = 'Longitude Hemisphere';
 			}
+		}
+		
+		if (assignments['runTypeCol'] == column) {
+			assigned = 'Run Type';
 		}
 	}
 	
@@ -797,9 +855,17 @@ function startAssign(item, file, column) {
 		openLatitudeDialog(file, column);
 	} else if (item == 'POS_latitude_hemisphere') {
 		openHemisphereDialog('latitude', file, column);
+	} else if (item == 'OTHER_runType') {
+		assignRunType(file, column);
 	} else {
 		openAssignSensorDialog(item, file, column);
 	}
+}
+
+function assignRunType(file, column) {
+	$('#newInstrumentForm\\:runTypeFile').val(filesAndColumns[file]['description']);
+	$('#newInstrumentForm\\:runTypeColumn').val(column);
+	$('#newInstrumentForm\\:runTypeLink').click();
 }
 
 function openAssignSensorDialog(sensor, file, column) {
@@ -942,7 +1008,7 @@ function openLatitudeDialog(file, column) {
 function hemisphereRequired(fileIndex, direction) {
 	var result = false;
 	
-	var assignments = JSON.parse($('#newInstrumentForm\\:timePositionAssignments').val());
+	var assignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
 	var assignment = assignments[fileIndex][direction];
 	
 	if (null != assignment) {
@@ -1120,7 +1186,6 @@ function hideMenusAndDialogs(event) {
 }
 
 function removeFile(fileName) {
-	console.log(fileName);
 	$('#newInstrumentForm\\:removeFileName').val(fileName);
 	PF('removeFileConfirm').show();
 	return false;
@@ -1131,7 +1196,8 @@ function removeFile(fileName) {
 * RUN TYPES PAGE
 *
 *******************************************************/
-function setRunTypeCategory(runType, category) {
+function setRunTypeCategory(file, runType, category) {
+	$('#newInstrumentForm\\:assignCategoryFile').val(file);
 	$('#newInstrumentForm\\:assignCategoryRunType').val(runType);
 	$('#newInstrumentForm\\:assignCategoryCode').val(category);
 	$('#newInstrumentForm\\:assignCategoryLink').click();
@@ -1176,6 +1242,11 @@ function renderAssignedCategories() {
 function populateRunTypeMenus() {
 	var runTypeAssignments = JSON.parse($('#newInstrumentForm\\:assignedRunTypes').val());
 	for (var i = 0; i < runTypeAssignments.length; i++) {
-		PF(runTypeAssignments[i][0] + '-menu').selectValue(runTypeAssignments[i][1]);
+		var file = runTypeAssignments[i];
+		
+		for (var j = 0; j < file['assignments'].length; j++) {
+			console.log(file["file"] + "-" + file["assignments"][j]["runType"] + "-menu", file["assignments"][j]["category"]);
+			PF(file["file"] + "-" + file["assignments"][j]["runType"] + "-menu").selectValue(file["assignments"][j]["category"]);
+		}
 	}
 }

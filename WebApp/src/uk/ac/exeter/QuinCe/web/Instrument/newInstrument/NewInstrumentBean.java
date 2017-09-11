@@ -12,9 +12,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
+import javax.faces.bean.SessionScoped;
 
-import uk.ac.exeter.QuinCe.data.Instrument.FileSetException;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -30,7 +32,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
@@ -45,6 +46,8 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  * Bean for collecting data about a new instrument
  * @author Steve Jones
  */
+@ManagedBean
+@SessionScoped
 public class NewInstrumentBean extends FileUploadBean {
 
 	/**
@@ -86,7 +89,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * The Instrument List Bean
 	 */
 	@ManagedProperty("#{instrumentListBean}")
-	private InstrumentListBean instrumentListBean = null;
+	private InstrumentListBean instrumentListBean;
 	
 	/**
 	 * The name of the new instrument
@@ -252,11 +255,6 @@ public class NewInstrumentBean extends FileUploadBean {
 	private String startTimeDate = null;
 	
 	/**
-	 * The file that contains the primary position information
-	 */
-	private String primaryPositionFile = null;
-	
-	/**
 	 * The index of the file to be unassigned
 	 */
 	private int unassignFile = -1;
@@ -272,9 +270,9 @@ public class NewInstrumentBean extends FileUploadBean {
 	private String removeFileName = null;
 	
 	/**
-	 * The list of run type values for the instrument
+	 * The file for which a run type is being assigned
 	 */
-	private TreeMap<String, RunTypeCategory> runTypes = null;
+	private String runTypeAssignFile = null;
 	
 	/**
 	 * The run type name to be assigned to a Run Type Category
@@ -301,6 +299,16 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * The minimum water flow
 	 */
 	private int minimumWaterFlow = -1;
+	
+	/**
+	 * The name of the file for which a Run Type column is being defined
+	 */
+	private String runTypeFile = null;
+	
+	/**
+	 * The column index being assigned for Run Type
+	 */
+	private int runTypeColumn = -1;
 	
 	/**
 	 * Begin a new instrument definition
@@ -520,6 +528,11 @@ public class NewInstrumentBean extends FileUploadBean {
 			// Is an assignment required?
 			json.append("\"named\":");
 			json.append(sensorType.canBeNamed());
+			json.append(',');
+			
+			// Is this a core sensor?
+			json.append("\"core\":");
+			json.append(sensorType.isCoreSensor());
 			json.append(',');
 			
 			// Are many assignments allowed for this sensor?
@@ -750,11 +763,6 @@ public class NewInstrumentBean extends FileUploadBean {
 		SensorAssignment assignment = new SensorAssignment(sensorAssignmentFile, sensorAssignmentColumn, sensorAssignmentName, sensorAssignmentPostCalibrated, sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer, sensorAssignmentMissingValue);
 		sensorAssignments.addAssignment(sensorAssignmentSensorType, assignment);
 		
-		// If the Run Type has been reassigned, reset the run type configuration
-		if (sensorAssignmentSensorType.equals(SensorsConfiguration.RUN_TYPE_SENSOR_NAME)) {
-			clearRunTypeAssignments();
-		}
-
 		// Reset the assign dialog values, because it's so damn hard to do in Javascript
 		resetSensorAssignmentValues();
 	}
@@ -1243,36 +1251,21 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * JSF can't access named properties.
 	 * @return The time and position assignments
 	 * @throws DateTimeSpecificationException If an error occurs while generating the date/time string
-	 * @see NewInstrumentFileSet#getTimePositionAssignments()
+	 * @see NewInstrumentFileSet#getFileSpecificAssignments(SensorAssignments)
 	 */
-	public String getTimePositionAssignments() throws DateTimeSpecificationException {
-		return instrumentFiles.getTimePositionAssignments();
+	public String getFileSpecificAssignments() throws DateTimeSpecificationException {
+		return instrumentFiles.getFileSpecificAssignments(sensorAssignments);
 	}
 	
 	/**
-	 * Get the file that contains the primary position data for the instrument.
-	 * @return The primary position file
+	 * Dummy method for setting fileSpecificAssignments. Does nothing.
+	 * @see #getFileSpecificAssignments()
+	 * @param dummy Ignored value
 	 */
-	public String getPrimaryPositionFile() {
-		return primaryPositionFile;
+	public void setFileSpecificAssignments(String dummy) {
+		// Do nothing
 	}
 	
-	/**
-	 * Set the file that contains the primary position data for the instrument.
-	 * @param primaryPositionFile The primary position file
-	 */
-	public void setPrimaryPositionFile(String primaryPositionFile) {
-		this.primaryPositionFile = primaryPositionFile;
-	}
-	
-	/**
-	 * Assign the primary position file to the instrument file set
-	 * @throws FileSetException If the specified file does not exist in the file set
-	 */
-	public void assignPrimaryPositionFile() throws FileSetException {
-		instrumentFiles.setPrimaryPositionFile(primaryPositionFile);
-	}
-
 	/**
 	 * Get the index of the file to unassign
 	 * @return The file index
@@ -1315,11 +1308,21 @@ public class NewInstrumentBean extends FileUploadBean {
 		FileDefinitionBuilder fileDefinition = (FileDefinitionBuilder) instrumentFiles.get(unassignFile);
 		
 		if (null != fileDefinition) {
-			unassigned = sensorAssignments.removeAssignment(fileDefinition.getFileDescription(), unassignColumn);
 			
-			if (!unassigned) {
-				unassigned = fileDefinition.removeAssignment(unassignColumn);
-			}			
+			if (fileDefinition.getRunTypeColumn() == unassignColumn) {
+				fileDefinition.setRunTypeColumn(-1);
+			} else {
+				unassigned = sensorAssignments.removeAssignment(fileDefinition.getFileDescription(), unassignColumn);
+				
+				if (!unassigned) {
+					unassigned = fileDefinition.removeAssignment(unassignColumn);
+				}
+				
+				// If the run type column is no longer required, unassign it
+				if (!fileDefinition.requiresRunTypeColumn(sensorAssignments)) {
+					fileDefinition.setRunTypeColumn(-1);
+				}
+			}
 		}
 	}
 
@@ -1384,11 +1387,6 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @return The navigation to the run types selection page
 	 */
 	public String goToRunTypes() {
-		
-		if (null == runTypes) {
-			setupRunTypes();
-		}
-		
 		return NAV_RUN_TYPES;
 	}
 	
@@ -1401,36 +1399,28 @@ public class NewInstrumentBean extends FileUploadBean {
 	}
 	
 	/**
-	 * Get all the unique entries in the assigned Run Type column
-	 * @return The run types
-	 */
-	public List<String> getRunTypes() {
-		return new ArrayList<String>(runTypes.keySet());
-	}
-	
-	/**
-	 * Build the mapping of run types to run type categories.
-	 * The mappings are all null and will be filled in by the user.
-	 */
-	public void setupRunTypes() {
-		runTypes = new TreeMap<String, RunTypeCategory>();
-		
-		for (SensorAssignment assignment :  sensorAssignments.get(SensorsConfiguration.RUN_TYPE_SENSOR_TYPE)) {
-			FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles.get(assignment.getDataFile());
-			
-			for (String runType : file.getUniqueColumnValues(assignment.getColumn())) {
-				runTypes.put(runType, RunTypeCategory.IGNORED_CATEGORY);
-			}
-		}
-	}
-
-	/**
 	 * Get the list of available run type categories
 	 * @return The run type categories
 	 * @throws ResourceException If the Resource Manager cannot be accessed
 	 */
 	public List<RunTypeCategory> getRunTypeCategories() throws ResourceException {
 		return ServletUtils.getResourceManager().getRunTypeCategoryConfiguration().getCategories(true);
+	}
+
+	/**
+	 * Get the file to which a run type is being assigned
+	 * @return The file
+	 */
+	public String getRunTypeAssignFile() {
+		return runTypeAssignFile;
+	}
+
+	/**
+	 * Set the file to which a run type is being assigned
+	 * @param runTypeAssignFile The file
+	 */
+	public void setRunTypeAssignFile(String runTypeAssignFile) {
+		this.runTypeAssignFile = runTypeAssignFile;
 	}
 
 	/**
@@ -1470,13 +1460,14 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @throws NoSuchCategoryException If the chosen category does not exist
 	 */
 	public void assignRunTypeCategory() throws NoSuchCategoryException {
-		RunTypeCategory category = null;
+		FileDefinition file = instrumentFiles.get(runTypeAssignFile);
 		
+		RunTypeCategory category = null;
 		if (null != runTypeAssignCode && runTypeAssignCode.length() > 0) {
 			category = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategory(runTypeAssignCode);
 		}
 		
-		runTypes.put(runTypeAssignName, category);
+		file.setRunTypeCategory(runTypeAssignName, category);
 	}
 	
 	/**
@@ -1484,6 +1475,8 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * @return The Run Type Category assignments
 	 */
 	public String getCategoryAssignments() {
+
+		// Set up the category list
 		List<RunTypeCategory> categories = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategories(false);
 		TreeMap<RunTypeCategory, Integer> assignedCategories = new TreeMap<RunTypeCategory, Integer>();
 		
@@ -1491,13 +1484,19 @@ public class NewInstrumentBean extends FileUploadBean {
 			assignedCategories.put(category, 0);
 		}
 		
-		for (Map.Entry<String, RunTypeCategory> runType : runTypes.entrySet()) {
-			RunTypeCategory category = runType.getValue();
-			if (null != category && !category.equals(RunTypeCategory.IGNORED_CATEGORY)) {
-				assignedCategories.put(category, assignedCategories.get(category) + 1);
+		// Find all the assigned categories from each file
+		for (FileDefinition file : instrumentFiles) {
+			TreeMap<String, RunTypeCategory> fileRunTypes = file.getRunTypes();
+			if (null != fileRunTypes) {
+				for (RunTypeCategory category : fileRunTypes.values()) {
+					if (!category.equals(RunTypeCategory.IGNORED_CATEGORY)) {
+						assignedCategories.put(category, assignedCategories.get(category) + 1); 
+					}
+				}
 			}
 		}
 		
+		// Make the JSON output
 		StringBuilder result = new StringBuilder();
 		
 		result.append('[');
@@ -1538,20 +1537,45 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	public String getRunTypeAssignments() {
 		StringBuilder result = new StringBuilder();
+
+		List<String> runTypeAssignments = new ArrayList<String>();
 		
-		result.append('[');
+		for (FileDefinition file : instrumentFiles) {
+			if (file.getRunTypeColumn() != -1) {
+				TreeMap<String, RunTypeCategory> runTypes = file.getRunTypes();
+				StringBuilder fileAssignments = new StringBuilder();
+				
+				fileAssignments.append("{\"file\":\"");
+				fileAssignments.append(file.getFileDescription());
+				fileAssignments.append("\",\"assignments\":[");
+
+				int entryCounter = 0;
+				for (Map.Entry<String, RunTypeCategory> entry : runTypes.entrySet()) {
+					entryCounter++;
+					
+					fileAssignments.append("{\"runType\":\"");
+					fileAssignments.append(entry.getKey());
+					fileAssignments.append("\",\"category\":\"");
+					fileAssignments.append(entry.getValue().getCode());
+					fileAssignments.append("\"}");
+					
+					if (entryCounter < runTypes.size()) {
+						fileAssignments.append(',');
+					}
+				}
+				
+				fileAssignments.append("]}");
+				
+				runTypeAssignments.add(fileAssignments.toString());
+			}
+		}
 		
-		int counter = 0;
-		for (Map.Entry<String, RunTypeCategory> entry : runTypes.entrySet()) {
-			counter++;
-			
-			result.append("[\"");
-			result.append(entry.getKey());
-			result.append("\",\"");
-			result.append(entry.getValue().getCode());
-			result.append("\"]");
-			
-			if (counter < runTypes.size()) {
+		
+		result.append("[");
+		
+		for (int i = 0; i < runTypeAssignments.size(); i++) {
+			result.append(runTypeAssignments.get(i));
+			if (i < runTypeAssignments.size() - 1) {
 				result.append(',');
 			}
 		}
@@ -1569,12 +1593,10 @@ public class NewInstrumentBean extends FileUploadBean {
 		// Do nothing
 	}
 
-
 	/**
 	 * Reset all data regarding run type assignments
 	 */
 	private void clearRunTypeAssignments() {
-		runTypes = null;
 		runTypeAssignName = null;
 		runTypeAssignCode = null;
 	}
@@ -1638,7 +1660,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	public String saveInstrument() throws MissingParamException, InstrumentException, DatabaseException, IOException {
 		
 		try {
-			Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles, sensorAssignments, runTypes, preFlushingTime, postFlushingTime, minimumWaterFlow); 
+			Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles, sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow); 
 			InstrumentDB.storeInstrument(getDataSource(), instrument);
 			
 			// Reinitialise the instrument list bean to update the instrument list
@@ -1659,4 +1681,43 @@ public class NewInstrumentBean extends FileUploadBean {
         this.instrumentListBean = instrumentListBean;
     }
 
+    /**
+     * Get the file for which a Run Type column is being assigned
+     * @return The Run Type file
+     */
+    public String getRunTypeFile() {
+    	return runTypeFile;
+    }
+    
+    /**
+     * Set the file for which a Run Type column is being assigned
+     * @param runTypeFile The Run Type file
+     */
+    public void setRunTypeFile(String runTypeFile) {
+    	this.runTypeFile = runTypeFile;
+    }
+    
+    /**
+     * Get the index of the Run Type column being assigned
+     * @return The Run Type column index
+     */
+    public int getRunTypeColumn() {
+    	return runTypeColumn;
+    }
+    
+    /**
+     * Set the index of the Run Type column being assigned
+     * @param runTypeColumn The Run Type column index
+     */
+    public void setRunTypeColumn(int runTypeColumn) {
+    	this.runTypeColumn = runTypeColumn;
+    }
+    
+    /**
+     * Set the Run Type column for a file
+     */
+    public void assignRunType() {
+    	FileDefinition file = instrumentFiles.get(runTypeFile);
+    	file.setRunTypeColumn(runTypeColumn);
+    }
 }

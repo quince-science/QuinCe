@@ -203,3 +203,8 @@ table.sampleData {
 .highlight {
 	color: #00AAFF;
 }
+
+#runTypeFiles {
+	display: flex;
+	flex-wrap: wrap;
+}
