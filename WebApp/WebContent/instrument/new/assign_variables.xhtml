@@ -136,11 +136,11 @@
 				
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
 					<p:commandButton widgetVar="sensorAssignmentAssignButton" value="Assign" ajax="true" action="#{newInstrumentBean.storeSensorAssignment}"
-					  process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer"
-					  update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer sensorAssignments fileSpecificAssignments"
+					  process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue"
+					  update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue sensorAssignments fileSpecificAssignments"
 					  oncomplete="sensorAssigned();"/>
 					<p:commandButton value="Cancel" ajax="true" action="#{newInstrumentBean.resetSensorAssignmentValues}" process="@none"
-					  update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer" oncomplete="PF('sensorAssignmentDialog').hide();"/>
+					  update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue" oncomplete="PF('sensorAssignmentDialog').hide();"/>
 				</h:panelGrid>
 				
 			</p:dialog>
