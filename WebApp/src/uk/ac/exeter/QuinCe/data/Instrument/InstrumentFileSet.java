@@ -34,7 +34,6 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 			result = true;
 		}
 		
-		// Add the passed in file
 		return result;
 	}
 	
@@ -75,64 +74,7 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 		
 		return result;
 	}
-	
-	/**
-	 * Set the file that contains the primary position data for the instrument
-	 * @param fileDescription The file description of the file
-	 * @throws FileSetException If a file with the specified file description does not exist
-	 */
-	public void setPrimaryPositionFile(String fileDescription) throws FileSetException {
 
-		String fileToSet;
-		
-		if (null == fileDescription) {
-			fileToSet = null;
-		} else if (fileDescription.trim().length() == 0) {
-			fileToSet = null;
-		} else {
-			fileToSet = fileDescription.trim();
-		}
-		
-		if (null != fileToSet && !containsFileDescription(fileDescription)) {
-			throw new FileSetException("The file '" + fileDescription + "' does not exist");
-		}
-		
-		if (null == fileToSet) {
-			for (int i = 0; i < size(); i++) {
-				get(i).positionPrimary = false;
-			}
-		} else {
-			for (int i = 0; i < size(); i++) {
-				FileDefinition file = get(i);
-				if (file.getFileDescription().equalsIgnoreCase(fileToSet)) {
-					file.positionPrimary = true;
-				} else {
-					file.positionPrimary = false;
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Get the description of the file that contains the primary position
-	 * data for the instrument
-	 * @return The file definition
-	 */
-	public String getPrimaryPositionFile() {
-		String primaryPositionFile = null;
-		
-		for (int i = 0; i < size(); i++) {
-			FileDefinition file = get(i);
-			
-			if (file.positionPrimary) {
-				primaryPositionFile = file.getFileDescription();
-				break;
-			}
-		}
-		
-		return primaryPositionFile;
-	}
-	
 	@Override
 	public boolean remove(Object o) {
 		boolean removed = false;
@@ -140,6 +82,7 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 		if (o instanceof FileDefinition) {
 			removed = super.remove(o);
 		} else if (o instanceof String) {
+			// Allow removal by file description
 			int fileToRemove = -1;
 			
 			for (int i = 0; i < size(); i++) {
