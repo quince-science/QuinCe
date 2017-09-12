@@ -18,6 +18,11 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 public class GasStandardDB extends CalibrationDB {
 
 	/**
+	 * The calibration type for gas standards
+	 */
+	public static final String GAS_STANDARD_CALIBRATION_TYPE = "GAS_STANDARD";
+	
+	/**
 	 * The singleton instance of the class
 	 */
 	private static GasStandardDB instance = null;
@@ -65,6 +70,6 @@ public class GasStandardDB extends CalibrationDB {
 	
 	@Override
 	public String getCalibrationType() {
-		return GasStandard.GAS_STANDARD_CALIBRATION_TYPE;
+		return GAS_STANDARD_CALIBRATION_TYPE;
 	}
 }

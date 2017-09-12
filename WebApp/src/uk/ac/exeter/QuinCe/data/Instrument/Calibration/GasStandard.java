@@ -11,11 +11,6 @@ import java.util.List;
 public class GasStandard extends Calibration {
 
 	/**
-	 * The calibration type for gas standards
-	 */
-	public static final String GAS_STANDARD_CALIBRATION_TYPE = "GAS_STANDARD";
-	
-	/**
 	 * Contains the label for the concentration value
 	 * (constructed in the {@code static} block)
 	 */
@@ -32,7 +27,7 @@ public class GasStandard extends Calibration {
 	 * @param instrumentId The instrument ID
 	 */
 	public GasStandard(long instrumentId) {
-		super(instrumentId, GAS_STANDARD_CALIBRATION_TYPE);
+		super(instrumentId, GasStandardDB.GAS_STANDARD_CALIBRATION_TYPE);
 	}
 	
 	/**
@@ -41,7 +36,7 @@ public class GasStandard extends Calibration {
 	 * @param standard The standard
 	 */
 	protected GasStandard(long instrumentid, String standard) {
-		super(instrumentid, GAS_STANDARD_CALIBRATION_TYPE, standard);
+		super(instrumentid, GasStandardDB.GAS_STANDARD_CALIBRATION_TYPE, standard);
 	}
 
 	@Override

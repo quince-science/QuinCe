@@ -146,7 +146,7 @@ public abstract class CalibrationDB {
 	}
 	
 	/**
-	 * Get the list of calibration possible targets for a given instrument
+	 * Get the list of possible calibration targets for a given instrument
 	 * @param dataSource A data source
 	 * @param instrumentId The instrument's database ID
 	 * @return The targets

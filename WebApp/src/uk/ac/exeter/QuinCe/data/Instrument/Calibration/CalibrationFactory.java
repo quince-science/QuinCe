@@ -28,7 +28,7 @@ public class CalibrationFactory {
 		Calibration result;
 		
 		switch (type) {
-		case GasStandard.GAS_STANDARD_CALIBRATION_TYPE: {
+		case GasStandardDB.GAS_STANDARD_CALIBRATION_TYPE: {
 			try {
 				result = makeGasStandard(dataSource, instrumentId, target);
 			} catch (CalibrationException e) {
@@ -67,7 +67,7 @@ public class CalibrationFactory {
 		} else {
 			List<String> standardNames = GasStandardDB.getInstance().getTargets(dataSource, instrumentId);
 			if (!standardNames.contains(target)) {
-				throw new UnknownCalibrationTargetException(instrumentId, GasStandard.GAS_STANDARD_CALIBRATION_TYPE, target);
+				throw new UnknownCalibrationTargetException(instrumentId, GasStandardDB.GAS_STANDARD_CALIBRATION_TYPE, target);
 			}
 			
 			result = new GasStandard(instrumentId, target);

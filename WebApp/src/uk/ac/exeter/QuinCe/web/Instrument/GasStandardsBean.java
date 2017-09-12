@@ -56,6 +56,6 @@ public class GasStandardsBean extends CalibrationBean {
 	
 	@Override
 	protected String getCalibrationType() {
-		return GasStandard.GAS_STANDARD_CALIBRATION_TYPE;
+		return GasStandardDB.GAS_STANDARD_CALIBRATION_TYPE;
 	}
 }
