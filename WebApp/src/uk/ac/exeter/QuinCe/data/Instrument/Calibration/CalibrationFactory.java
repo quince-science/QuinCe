@@ -1,12 +1,8 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
+import java.lang.reflect.Constructor;
+import java.util.Date;
 import java.util.List;
-
-import javax.sql.DataSource;
-
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Factory for creating {@link Calibration} objects
@@ -16,21 +12,29 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 public class CalibrationFactory {
 
 	/**
-	 * Create a calibration for a specified calibration target
-	 * @param dataSource A data source
-	 * @param instrumentId The instrument ID
-	 * @param type The calibration type
-	 * @param target The calibration target
-	 * @return The new calibration
-	 * @throws CalibrationException If the calibration cannot be created
+	 * The package containing calibration classes
 	 */
-	public static Calibration createCalibration(DataSource dataSource, long instrumentId, String type, String target) throws CalibrationException {
+	private static final String CALIBRATION_PACKAGE = "uk.ac.exeter.QuinCe.data.Instrument.Calibration";
+	
+	/**
+	 * Create a calibration object. The specific type of the calibration object is dependent on
+	 * the paramters passed in.
+	 * 
+	 * @param calibrationType The high-level calibration type
+	 * @param calibrationClass The class of the desired calibration object
+	 * @param instrumentId The instrument to which the calibration applies
+	 * @param deploymentDate The deployment date (may be null)
+	 * @param target The target (sensor, gas standard etc) of the calibration
+	 * @param coefficients The calibration coefficients
+	 * @return The Calibration object
+	 */
+	public static Calibration createCalibration(String calibrationType, String calibrationClass, long instrumentId, Date deploymentDate, String target, List<Double> coefficients) {
 		Calibration result;
 		
-		switch (type) {
+		switch (calibrationType) {
 		case GasStandardDB.GAS_STANDARD_CALIBRATION_TYPE: {
 			try {
-				result = makeGasStandard(dataSource, instrumentId, target);
+				result = new GasStandard(instrumentId, target, deploymentDate, coefficients);
 			} catch (CalibrationException e) {
 				throw e;
 			} catch (Exception e) {
@@ -38,39 +42,25 @@ public class CalibrationFactory {
 			}
 			break;
 		}
-		default: {
-			throw new UnrecognisedCalibrationTypeException(type);
-		}
-		}
-		
-		
-		return result;
-	}
-	
-	/**
-	 * Create a Gas Standard calibration object
-	 * @param dataSource A data source
-	 * @param instrumentId The instrument ID
-	 * @param target The calibration target
-	 * @return The new Gas Standard object
-	 * @throws MissingParamException If any parameters to internal calls are missing
-	 * @throws DatabaseException If a database error occurs
-	 * @throws RecordNotFoundException If the instrument cannot be found
-	 * @throws UnknownCalibrationTargetException If the specified target does not exist for the instrument
-	 */
-	private static GasStandard makeGasStandard(DataSource dataSource, long instrumentId, String target) throws MissingParamException, DatabaseException, RecordNotFoundException, UnknownCalibrationTargetException {
-		
-		GasStandard result;
-		
-		if (null == target) {
-			result = new GasStandard(instrumentId);
-		} else {
-			List<String> standardNames = GasStandardDB.getInstance().getTargets(dataSource, instrumentId);
-			if (!standardNames.contains(target)) {
-				throw new UnknownCalibrationTargetException(instrumentId, GasStandardDB.GAS_STANDARD_CALIBRATION_TYPE, target);
+		case SensorCalibrationDB.SENSOR_CALIBRATION_TYPE: {
+			
+			try {
+				String fullClass = CALIBRATION_PACKAGE + "." + calibrationClass;
+				Class<?> clazz = Class.forName(fullClass);
+				
+				Constructor<?> constructor = clazz.getConstructor(long.class, String.class, Date.class, List.class);
+				result = (Calibration) constructor.newInstance(instrumentId, target, deploymentDate, coefficients);
+			} catch (CalibrationException e) {
+				throw e;
+			} catch (Exception e) {
+				throw new CalibrationException(e); 
 			}
 			
-			result = new GasStandard(instrumentId, target);
+			break;
+		}
+		default: {
+			throw new UnrecognisedCalibrationTypeException(calibrationType);
+		}
 		}
 		
 		return result;

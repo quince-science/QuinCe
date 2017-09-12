@@ -179,6 +179,7 @@ type*                    String         Calibration type
 target*                  String         Name of the target of this calibration
 deployment_date*         DateTime       Date/time of calibration. Stored as a milliseconds value.
 values                   String         The values for the calibration. See above.
+class                    String         The Java class of the calibration
 
 
 # Data Files

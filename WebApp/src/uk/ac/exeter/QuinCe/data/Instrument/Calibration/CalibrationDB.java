@@ -4,10 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
@@ -15,6 +13,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.ParameterException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
@@ -30,15 +29,15 @@ public abstract class CalibrationDB {
 	 * @see #addCalibration(DataSource, Calibration)
 	 */
 	private static final String ADD_CALIBRATION_STATEMENT = "INSERT INTO calibration "
-			+ "(instrument_id, type, target, deployment_date, coefficients) "
-			+ "VALUES (?, ?, ?, ?, ?)";
+			+ "(instrument_id, type, target, deployment_date, coefficients, class) "
+			+ "VALUES (?, ?, ?, ?, ?, ?)";
 	
 	/**
 	 * Query for finding recent calibrations.
 	 * @see #getCurrentCalibrations(DataSource, long)
 	 */
 	private static final String GET_RECENT_CALIBRATIONS_QUERY = "SELECT "
-			+ "target, deployment_date, coefficients FROM calibration WHERE "
+			+ "target, deployment_date, coefficients, class FROM calibration WHERE "
 			+ "instrument_id = ? AND type = ? ORDER BY deployment_date DESC";
 			
 	
@@ -55,12 +54,17 @@ public abstract class CalibrationDB {
 	 * Add a new calibration to the database
 	 * @param dataSource A data source
 	 * @param calibration The calibration
-	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
+	 * @throws ParameterException If any required parameters are missing or the calibration is invalid
 	 */
-	public void addCalibration(DataSource dataSource, Calibration calibration) throws MissingParamException, DatabaseException {
+	public void addCalibration(DataSource dataSource, Calibration calibration) throws DatabaseException, ParameterException {
 		 MissingParam.checkMissing(dataSource, "dataSource");
 		 MissingParam.checkMissing(calibration, "calibration");
+		 MissingParam.checkMissing(calibration.getDeploymentDateAsDate(), "calibration deployment date");
+
+		 if (!calibration.validate()) {
+			 throw new ParameterException("Calibration coefficients", "Coefficients are invalid");
+		 }
 		 
 		 Connection conn = null;
 		 PreparedStatement stmt = null;
@@ -73,6 +77,7 @@ public abstract class CalibrationDB {
 			 stmt.setString(3, calibration.getTarget());
 			 stmt.setLong(4, calibration.getDeploymentDateAsMillis());
 			 stmt.setString(5, calibration.getCoefficientsAsDelimitedList());
+			 stmt.setString(6, calibration.getClass().getSimpleName());
 			 
 			 stmt.execute();
 		 } catch (SQLException e) {
@@ -93,16 +98,9 @@ public abstract class CalibrationDB {
 	 * @throws RecordNotFoundException If any required records are missing
 	 * @throws MissingParamException If any internal calls are missing required parameters
 	 */
-	public List<Calibration> getCurrentCalibrations(DataSource dataSource, long instrumentId) throws CalibrationException, DatabaseException, MissingParamException, RecordNotFoundException {
+	public CalibrationSet getCurrentCalibrations(DataSource dataSource, long instrumentId) throws CalibrationException, DatabaseException, MissingParamException, RecordNotFoundException {
 		
-		List<String> targets = getTargets(dataSource, instrumentId);
-		
-		List<Calibration> result = new ArrayList<Calibration>(targets.size());
-		for (String target : targets) {
-			result.add(CalibrationFactory.createCalibration(dataSource, instrumentId, getCalibrationType(), target));
-		}
-		
-		TreeSet<String> foundTargets = new TreeSet<String>();
+		CalibrationSet result = new CalibrationSet(instrumentId, getCalibrationType(), getTargets(dataSource, instrumentId));
 		
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -115,22 +113,16 @@ public abstract class CalibrationDB {
 			stmt.setString(2, getCalibrationType());
 			
 			records = stmt.executeQuery();
-			while (foundTargets.size() < targets.size() && records.next()) {
+			while (!result.isComplete() && records.next()) {
 				String target = records.getString(1);
-				int targetIndex = targets.indexOf(target);
-				if (targetIndex == -1) {
-					throw new UnknownCalibrationTargetException(instrumentId, getCalibrationType(), target);
-				}
-				
-				if (!foundTargets.contains(target)) {
-					Date calibrationDate = new Date(records.getLong(2));
+
+				if (!result.containsTarget(target)) {
+					Date deploymentDate = new Date(records.getLong(2));
 					List<Double> coefficients = StringUtils.delimitedToDoubleList(records.getString(3));
+					String calibrationClass = records.getString(4);
 					
-					Calibration currentCalibration = result.get(targetIndex);
-					currentCalibration.setDeploymentDateAsDate(calibrationDate);
-					currentCalibration.setCoefficients(coefficients);
-					
-					foundTargets.add(target);
+					Calibration calibration = CalibrationFactory.createCalibration(getCalibrationType(), calibrationClass, instrumentId, deploymentDate, target, coefficients);
+					result.add(calibration);
 				}
 			}
 			

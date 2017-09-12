@@ -5,6 +5,7 @@ import java.util.List;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -30,7 +31,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 	/**
 	 * List of the most recent calibrations for each target
 	 */
-	private List<Calibration> currentCalibrations;
+	private CalibrationSet currentCalibrations;
 	
 	/**
 	 * Empty constructor
@@ -189,7 +190,10 @@ public abstract class CalibrationBean extends BaseManagedBean {
 			loadCurrentCalibrations();
 		}
 		
-		return currentCalibrations;
+		System.out.println(currentCalibrations.size());
+		System.out.println(currentCalibrations.asList().size());
+		
+		return currentCalibrations.asList();
 	}
 	
 	/**

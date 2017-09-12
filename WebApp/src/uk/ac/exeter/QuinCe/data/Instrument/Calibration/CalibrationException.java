@@ -5,7 +5,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
  * @author Steve Jones
  *
  */
-public class CalibrationException extends Exception {
+public class CalibrationException extends RuntimeException {
 
 	/**
 	 * The serial version UID

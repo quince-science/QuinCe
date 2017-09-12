@@ -80,33 +80,6 @@ public class InstrumentDB {
 			+ ") VALUES (?, ?, ?)";
 	
 	/**
-	 * Statement for retrieving all the details of a specific instrument
-	 */
-	private static final String GET_INSTRUMENT_QUERY = "SELECT owner, name, "
-			+ "intake_temp_1_name, intake_temp_2_name, intake_temp_3_name, "
-			+ "salinity_1_name, salinity_2_name, salinity_3_name, "
-			+ "eqt_1_name, eqt_2_name, eqt_3_name, "
-			+ "eqp_1_name, eqp_2_name, eqp_3_name, "
-			+ "air_flow_1_name, air_flow_2_name, air_flow_3_name, "
-			+ "water_flow_1_name, water_flow_2_name, water_flow_3_name, "
-			+ "separator_char, date_format, time_format, " 
-			+ "custom_datetime_format, custom_datetime_format_string, "
-			+ "lat_format, lon_format, header_lines, has_atmospheric_pressure, samples_dried, "
-			+ "run_type_col, date_col, year_col, month_col, day_col, "
-			+ "time_col, hour_col, minute_col, second_col, custom_datetime_col, "
-			+ "latitude_col, north_south_col, longitude_col, east_west_col, "
-			+ "intake_temp_1_col, intake_temp_2_col, intake_temp_3_col, "
-			+ "salinity_1_col, salinity_2_col, salinity_3_col, "
-			+ "eqt_1_col, eqt_2_col, eqt_3_col, "
-			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
-			+ "air_flow_1_col, air_flow_2_col, air_flow_3_col, "
-			+ "water_flow_1_col, water_flow_2_col, water_flow_3_col, "
-			+ "atmospheric_pressure_col, xh2o_col, co2_col, raw_col_count, "
-			+ "pre_flushing_time, post_flushing_time "
-			+ "FROM instrument WHERE id = ? ORDER BY name";
-			
-	
-	/**
 	 * Query for retrieving the list of instruments owned by a particular user
 	 */
 	private static final String GET_INSTRUMENT_LIST_QUERY = "SELECT i.id, i.name, SUM(c.post_calibrated) "
@@ -119,8 +92,16 @@ public class InstrumentDB {
 	/**
 	 * Query to get all the run types of a given run type category
 	 */
-	private static final String GET_RUN_TYPES_QUERY = "SELECT run_name FROM run_type WHERE "
-			+ "instrument_id = ? AND category_code = ? ORDER BY run_name ASC";
+	private static final String GET_RUN_TYPES_QUERY = "SELECT CONCAT(f.description, ': ', r.run_name) AS run_type "
+			+ "FROM file_definition AS f INNER JOIN run_type AS r ON f.id = r.file_id "
+			+ "WHERE f.instrument_id = ? AND category_code = ? ORDER BY run_type";
+	
+	/**
+	 * Query to get the list of sensors that require calibration for a given instrument
+	 */
+	private static final String GET_CALIBRATABLE_SENSORS_QUERY = "SELECT CONCAT(f.description, ': ', c.sensor_name) AS sensor"
+			+ "FROM file_definition AS f INNER JOIN file_column AS c ON c.file_definition_id = f.id "
+			+ "WHERE f.instrument_id = ? AND c.post_calibrated = true ORDER BY sensor";
 	
 	/**
 	 * Store a new instrument in the database
@@ -475,117 +456,7 @@ public class InstrumentDB {
 	 */
 	public static Instrument getInstrument(Connection conn, long instrumentID) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		return null;
-		/*
-		
-		MissingParam.checkMissing(conn, "conn");
-		
-		PreparedStatement instrStmt = null;
-		ResultSet record = null;
-		PreparedStatement runTypeStmt = null;
-		ResultSet runTypeRecords = null;
-		Instrument instrument = null;
-		TreeSet<RunType> runTypes = new TreeSet<RunType>();
-		
-		try {
-			instrStmt = conn.prepareStatement(GET_INSTRUMENT_QUERY);
-			instrStmt.setLong(1, instrumentID);
-			
-			record = instrStmt.executeQuery();
-			if (!record.next()) {
-				throw new RecordNotFoundException("Instrument with id " + instrumentID + " does not exist");
-			} else {
-				instrument = new Instrument(record.getLong(1));
-				instrument.setDatabaseId(instrumentID);
-				instrument.setName(record.getString(2));
-				instrument.setIntakeTempName1(record.getString(3));
-				instrument.setIntakeTempName2(record.getString(4));
-				instrument.setIntakeTempName3(record.getString(5));
-				instrument.setSalinityName1(record.getString(6));
-				instrument.setSalinityName2(record.getString(7));
-				instrument.setSalinityName3(record.getString(8));
-				instrument.setEqtName1(record.getString(9));
-				instrument.setEqtName2(record.getString(10));
-				instrument.setEqtName3(record.getString(11));
-				instrument.setEqpName1(record.getString(12));
-				instrument.setEqpName2(record.getString(13));
-				instrument.setEqpName3(record.getString(14));
-				instrument.setAirFlowName1(record.getString(15));
-				instrument.setAirFlowName2(record.getString(16));
-				instrument.setAirFlowName3(record.getString(17));
-				instrument.setWaterFlowName1(record.getString(18));
-				instrument.setWaterFlowName2(record.getString(19));
-				instrument.setWaterFlowName3(record.getString(20));
-				instrument.setSeparatorChar(record.getString(21).toCharArray()[0]);
-				instrument.setDateFormat(record.getInt(22));
-				instrument.setTimeFormat(record.getInt(23));
-				instrument.setCustomDateTimeFormat(record.getBoolean(24));
-				instrument.setCustomDateTimeFormatString(record.getString(25));
-				instrument.setLatFormat(record.getInt(26));
-				instrument.setLonFormat(record.getInt(27));
-				instrument.setHeaderLines(record.getInt(28));
-				instrument.setHasAtmosphericPressure(record.getBoolean(29));
-				instrument.setSamplesDried(record.getBoolean(30));
-				instrument.setColumnAssignment(Instrument.COL_RUN_TYPE, record.getInt(31));
-				instrument.setColumnAssignment(Instrument.COL_DATE, record.getInt(32));
-				instrument.setColumnAssignment(Instrument.COL_YEAR, record.getInt(33));
-				instrument.setColumnAssignment(Instrument.COL_MONTH, record.getInt(34));
-				instrument.setColumnAssignment(Instrument.COL_DAY, record.getInt(35));
-				instrument.setColumnAssignment(Instrument.COL_TIME, record.getInt(36));
-				instrument.setColumnAssignment(Instrument.COL_HOUR, record.getInt(37));
-				instrument.setColumnAssignment(Instrument.COL_MINUTE, record.getInt(38));
-				instrument.setColumnAssignment(Instrument.COL_SECOND, record.getInt(39));
-				instrument.setColumnAssignment(Instrument.COL_CUSTOM_DATETIME_FORMAT, record.getInt(40));
-				instrument.setColumnAssignment(Instrument.COL_LATITUDE, record.getInt(41));
-				instrument.setColumnAssignment(Instrument.COL_NORTH_SOUTH, record.getInt(42));
-				instrument.setColumnAssignment(Instrument.COL_LONGITUDE, record.getInt(43));
-				instrument.setColumnAssignment(Instrument.COL_EAST_WEST, record.getInt(44));
-				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_1, record.getInt(45));
-				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_2, record.getInt(46));
-				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_3, record.getInt(47));
-				instrument.setColumnAssignment(Instrument.COL_SALINITY_1, record.getInt(48));
-				instrument.setColumnAssignment(Instrument.COL_SALINITY_2, record.getInt(49));
-				instrument.setColumnAssignment(Instrument.COL_SALINITY_3, record.getInt(50));
-				instrument.setColumnAssignment(Instrument.COL_EQT_1, record.getInt(51));
-				instrument.setColumnAssignment(Instrument.COL_EQT_2, record.getInt(52));
-				instrument.setColumnAssignment(Instrument.COL_EQT_3, record.getInt(53));
-				instrument.setColumnAssignment(Instrument.COL_EQP_1, record.getInt(54));
-				instrument.setColumnAssignment(Instrument.COL_EQP_2, record.getInt(55));
-				instrument.setColumnAssignment(Instrument.COL_EQP_3, record.getInt(56));
-				instrument.setColumnAssignment(Instrument.COL_AIR_FLOW_1, record.getInt(57));
-				instrument.setColumnAssignment(Instrument.COL_AIR_FLOW_2, record.getInt(58));
-				instrument.setColumnAssignment(Instrument.COL_AIR_FLOW_3, record.getInt(59));
-				instrument.setColumnAssignment(Instrument.COL_WATER_FLOW_1, record.getInt(60));
-				instrument.setColumnAssignment(Instrument.COL_WATER_FLOW_2, record.getInt(61));
-				instrument.setColumnAssignment(Instrument.COL_WATER_FLOW_3, record.getInt(62));
-				instrument.setColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE, record.getInt(63));
-				instrument.setColumnAssignment(Instrument.COL_XH2O, record.getInt(64));
-				instrument.setColumnAssignment(Instrument.COL_CO2, record.getInt(65));
-				instrument.setRawFileColumnCount(record.getInt(66));
-				instrument.setPreFlushingTime(record.getInt(67));
-				instrument.setPostFlushingTime(record.getInt(68));
-				
-				runTypeStmt = conn.prepareStatement(GET_RUN_TYPES_QUERY);
-				runTypeStmt.setLong(1, instrumentID);
-				runTypeRecords = runTypeStmt.executeQuery();
-				while (runTypeRecords.next()) {
-					runTypes.add(new RunType(runTypeRecords.getLong(1), instrumentID, runTypeRecords.getString(2), runTypeRecords.getInt(3)));
-				}
-				
-				instrument.setRunTypes(runTypes);
-			}
-			
-			
-			
-		} catch (SQLException e) {
-			throw new DatabaseException("Error while retrieving instrument details", e);
-		} finally {
-			DatabaseUtils.closeResultSets(record, runTypeRecords);
-			DatabaseUtils.closeStatements(instrStmt, runTypeStmt);
-		}
-		
-		return instrument;
-		
-		*/
+		// TODO Reinstate
 	}
 	
 	/**
@@ -672,5 +543,50 @@ public class InstrumentDB {
 		}
 
 		return runTypes;
+	}
+	
+	/**
+	 * Get a list of all the sensors on a particular instrument that require calibration.
+	 * 
+	 * <p>
+	 *   Each sensor will be listed in the form of
+	 *   {@code <file>: <sensorName>}
+	 * </p>
+	 * 
+	 * @param dataSource A data source
+	 * @param instrumentId The instrument ID
+	 * @return The list of calibratable sensors
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public static List<String> getCalibratableSensors(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException {
+		
+		List<String> result = new ArrayList<String>();
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_CALIBRATABLE_SENSORS_QUERY);
+			stmt.setLong(1, instrumentId);
+			
+			records = stmt.executeQuery();
+			while (records.next()) {
+				result.add(records.getString(1));
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while getting run types", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		
+		return result;
 	}
 }

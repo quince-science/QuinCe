@@ -23,10 +23,15 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  *   distinguished by a {@code type} field
  * </p>
  * 
+ * <p>
+ *   Comparison operations on this class compare the instrument ID,
+ *   type and target in that order.
+ * </p>
+ * 
  * @author Steve Jones
  *
  */
-public abstract class Calibration {
+public abstract class Calibration implements Comparable<Calibration> {
 
 	/**
 	 * The instrument to which this calibration belongs 
@@ -268,5 +273,49 @@ public abstract class Calibration {
 		}
 		
 		this.coefficients = coefficients;
+	}
+	
+	/**
+	 * Check to ensure that this calibration is valid.
+	 * 
+	 * <p>
+	 *   To pass validation, both a {@link #deploymentDate} and {@link #coefficients} must be
+	 *   present, and the coefficients must be valid.
+	 * </p>
+	 * 
+	 * @return {@code true} if the calibration is valid; {@code false} if it is not
+	 * @see #coefficientsValid()
+	 */
+	public boolean validate() {
+		boolean valid = true;
+		
+		if (null == deploymentDate || null == coefficients) {
+			valid = false;
+		} else {
+			valid = coefficientsValid();
+		}
+		
+		return valid;
+	}
+	
+	/**
+	 * Determine whether the calibration coefficients are valid
+	 * @return {@code true} if the coefficients are valid; {@code false} if they are not
+	 */
+	public abstract boolean coefficientsValid();
+	
+	@Override
+	public int compareTo(Calibration o) {
+		int result = (int) (this.instrumentId - o.instrumentId);
+		
+		if (result == 0) {
+			result = this.type.compareTo(o.type);
+		}
+		
+		if (result == 0) {
+			result = this.target.compareTo(o.target);
+		}
+		
+		return result;
 	}
 }
