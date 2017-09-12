@@ -190,9 +190,6 @@ public abstract class CalibrationBean extends BaseManagedBean {
 			loadCurrentCalibrations();
 		}
 		
-		System.out.println(currentCalibrations.size());
-		System.out.println(currentCalibrations.asList().size());
-		
 		return currentCalibrations.asList();
 	}
 	
