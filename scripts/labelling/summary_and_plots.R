@@ -54,6 +54,7 @@ for (file_loop in 1:length(input_files)) {
 	tryCatch(plot(dates, data[["Intake.Temperature"]], main="Intake Temperature"), error=function(e) {})
 	tryCatch(plot(data[["Intake.Temperature"]], data[["ECMWF.SST"]], main="Intake Temperature vs SST"), error=function(e) {})
 	tryCatch(plot(dates, data[["Salinity"]], main="Salinity"), error=function(e) {})
+	tryCatch(plot(dates, data[["Equilibrator.Temperature"]], main="Equilibrator Temp"), error=function(e) {})
 	tryCatch(plot(dates, data[["Delta.Temperature"]], main="Delta T"), error=function(e) {})
 	tryCatch(plot(data[["Intake.Temperature"]], data[["Equilibrator.Temperature"]], main="Intake Temp vs Equ Temp"), error=function(e) {})
 	tryCatch(plot(dates, data[["Equilibrator.Pressure"]], main="Equilibrator Pressure"), error=function(e) {})
