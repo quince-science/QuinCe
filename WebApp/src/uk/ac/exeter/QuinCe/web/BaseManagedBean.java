@@ -7,6 +7,7 @@ import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.User.UserPreferences;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.User.LoginBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -126,6 +127,15 @@ public abstract class BaseManagedBean {
 	 */
 	public User getUser() {
 		return (User) getSession().getAttribute(LoginBean.USER_SESSION_ATTR);
+	}
+	
+	public UserPreferences getUserPrefs() {
+		UserPreferences result = (UserPreferences) getSession().getAttribute(LoginBean.USER_PREFS_ATTR);
+		if (null == result) {
+			result = new UserPreferences(getUser().getDatabaseID());
+		}
+		
+		return result;
 	}
 	
 	/**

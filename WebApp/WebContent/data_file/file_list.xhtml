@@ -13,6 +13,9 @@
 	
 	<ui:define name="content">
 		The list of data files goes here.
+		<ui:repeat value="#{dataFilesBean.instruments}" var="instrument">
+			#{instrument.name}
+		</ui:repeat>
 	</ui:define>
 	
 	

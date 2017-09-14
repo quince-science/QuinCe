@@ -33,7 +33,7 @@ public class UserPreferences extends Properties {
 	 * Construct an empty preferences object for a user
 	 * @param userId The user ID
 	 */
-	protected UserPreferences(long userId) {
+	public UserPreferences(long userId) {
 		super();
 		this.userId = userId;
 	}
