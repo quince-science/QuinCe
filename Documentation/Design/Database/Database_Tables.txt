@@ -35,6 +35,7 @@ email_code_time          DateTime       The time that the email verification cod
 password_code            String         Code for resetting password
 password_code_time       DateTime       The time that the password reset code was generated
 permissions              Integer        A field for defining user permissions. Defined as a bitmask.
+preferences              String         The user's preferences
 
 #### Permissions
 The permissions that can be applied to a user are as follows:

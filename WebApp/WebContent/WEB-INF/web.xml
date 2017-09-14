@@ -93,5 +93,8 @@
 	    <listener-class>uk.ac.exeter.QuinCe.web.system.ResourceManager</listener-class>
 	</listener>
  
+    <listener>
+		<listener-class>uk.ac.exeter.QuinCe.web.User.UserSessionListener</listener-class>
+	</listener>
 
 </web-app>
