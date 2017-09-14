@@ -88,7 +88,6 @@ public class User {
 		MissingParam.checkMissing(givenName, "givenName");
 		MissingParam.checkMissing(surname, "surname");
 		MissingParam.checkZeroPositive(permissions, "permissions");
-		MissingParam.checkMissing(preferences, "preferences");
 		
 		this.databaseId = databaseId;
 		this.emailAddress = emailAddress;
