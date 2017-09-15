@@ -2,13 +2,12 @@ package uk.ac.exeter.QuinCe.web.files;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 
 /**
@@ -30,14 +29,29 @@ public class DataFilesBean extends FileUploadBean {
 	}
 
 	/**
+	 * Initialise the bean
+	 */
+	@PostConstruct
+	public void initialise() {
+		// Load the instruments list. Set the current instrument if it isn't already set.
+		try {
+			instruments = InstrumentDB.getInstrumentList(getDataSource(), getUser());
+			if (getCurrentInstrument() == -1 && instruments.size() > 0) {
+				setCurrentInstrument(instruments.get(0).getId());
+			}
+		} catch (Exception e) {
+			// Fail quietly, but print the log
+			e.printStackTrace();
+		}
+	}
+	
+	/**
 	 * Get the list of instruments owned by the user
 	 * @return The list of instruments
-	 * @throws MissingParamException If any internal calls are missing required parameters
-	 * @throws DatabaseException If a database error occurs
 	 */
-	public List<InstrumentStub> getInstruments() throws MissingParamException, DatabaseException {
+	public List<InstrumentStub> getInstruments() {
 		if (null == instruments) {
-			instruments = InstrumentDB.getInstrumentList(getDataSource(), getUser());
+			initialise();
 		}
 		
 		return instruments;

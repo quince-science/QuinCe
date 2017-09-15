@@ -309,6 +309,8 @@ public class UserDB {
 			stmt = conn.prepareStatement(STORE_PREFERENCES_STATEMENT);
 			stmt.setString(1, preferences.writeToString());
 			stmt.setLong(2, preferences.getUserId());
+			
+			stmt.execute();
 		} catch (SQLException e) {
 			throw new DatabaseException("Error storing user preferences", e);
 		} finally {

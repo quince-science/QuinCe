@@ -12,10 +12,18 @@
 	</ui:define>
 	
 	<ui:define name="content">
-		The list of data files goes here.
-		<ui:repeat value="#{dataFilesBean.instruments}" var="instrument">
-			#{instrument.name}
-		</ui:repeat>
+		<h:form id="fileListForm" method="post" charset="utf8">
+			<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
+				<p:outputLabel for="instrument" value="Select Instrument:"/>
+				<p:selectOneMenu id="instrument" value="#{dataFilesBean.currentInstrument}">
+					<f:selectItems value="#{dataFilesBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
+					<p:ajax event="change" update=""/>
+				</p:selectOneMenu>
+			</h:panelGrid>
+			<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
+				<p:commandButton value="Upload New File" ajax="false" action="#{dataFilesBean.beginUpload}"/>
+			</h:panelGrid>			
+		</h:form>
 	</ui:define>
 	
 	

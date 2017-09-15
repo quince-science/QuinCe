@@ -114,7 +114,7 @@ public class InstrumentDB {
 			+ "INNER JOIN file_definition AS d ON i.id = d.instrument_id "
 			+ "INNER JOIN file_column AS c ON d.id = c.file_definition_id "
 			+ "WHERE i.owner = ? "
-			+ "GROUP BY i.id ";
+			+ "GROUP BY i.id ORDER BY i.name ASC";
 
 	/**
 	 * Store a new instrument in the database
