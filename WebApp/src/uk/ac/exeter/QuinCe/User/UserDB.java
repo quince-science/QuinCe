@@ -388,10 +388,6 @@ public class UserDB {
 		return newUser;
 	}
 	
-	public static void savePreferences(String userId, UserPreferences preferences) {
-		
-	}
-	
 	/**
 	 * Generate an email verification code and store it in the database.
 	 * The code will be added to the passed in User object.
