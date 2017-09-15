@@ -34,7 +34,9 @@ public class TrimFlushingJob extends FileJob {
 	}
 
 	public void executeFileJob(JobThread thread) throws JobFailedException {
+		// TODO Reinstate
 		
+		/*
 		// Note that this job ignores interrupt calls!
 		
 		Connection conn = null;
@@ -105,6 +107,7 @@ public class TrimFlushingJob extends FileJob {
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}
+		*/
 	}
 	
 	private void processPostFlushing(Connection conn, List<TrimFlushingRecord> records, int finalIndex, DateTime postFlushLimit, long runTypeId) throws DatabaseException, MessageException {

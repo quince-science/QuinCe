@@ -1,11 +1,13 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+
 /**
  * Exception for named sensor types that can't be found
  * @author Steve Jones
  *
  */
-public class SensorTypeNotFoundException extends Exception {
+public class SensorTypeNotFoundException extends InstrumentException {
 
 	/**
 	 * The serial version UID 

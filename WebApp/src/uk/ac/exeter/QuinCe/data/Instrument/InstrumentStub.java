@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -49,9 +51,10 @@ public class InstrumentStub {
 	 * @throws DatabaseException If an error occurs while retrieving the data from the database
 	 * @throws RecordNotFoundException If the instrument record cannot be found in the database
 	 * @throws ResourceException If the data source cannot be retrieved
+	 * @throws InstrumentException If any instrument details are invalid
 	 */
-	public Instrument getFullInstrument() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
-		return InstrumentDB.getInstrument(ServletUtils.getDBDataSource(), id);
+	public Instrument getFullInstrument() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException, InstrumentException {
+		return InstrumentDB.getInstrument(ServletUtils.getDBDataSource(), id, ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
 	}
 	
 	///////// *** GETTERS AND SETTERS *** ///////////

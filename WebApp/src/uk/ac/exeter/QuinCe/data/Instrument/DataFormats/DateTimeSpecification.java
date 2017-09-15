@@ -3,9 +3,9 @@ package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 
-import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -146,15 +146,15 @@ public class DateTimeSpecification {
 	private Map<Integer, DateTimeColumnAssignment> assignments;
 	
 	/**
-	 * The parent file definition
+	 * Indicates whether or not the file containing this specification has a header
 	 */
-	private FileDefinition parentDefinition;
+	private boolean fileHasHeader;
 	
 	/**
 	 * Constructs an empty specification
-	 * @param parentDefinition The file definition that this spec belongs to
+	 * @param fileHasHeader Indicates whether or not the file containing this specification has a header
 	 */
-	public DateTimeSpecification(FileDefinition parentDefinition) {
+	public DateTimeSpecification(boolean fileHasHeader) {
 		assignments = new TreeMap<Integer, DateTimeColumnAssignment>();
 		
 		assignments.put(DATE_TIME, new DateTimeColumnAssignment(DATE_TIME));
@@ -170,7 +170,55 @@ public class DateTimeSpecification {
 		assignments.put(MINUTE, new DateTimeColumnAssignment(MINUTE));
 		assignments.put(SECOND, new DateTimeColumnAssignment(SECOND));
 
-		this.parentDefinition = parentDefinition;
+		this.fileHasHeader = fileHasHeader;
+	}
+	
+	/**
+	 * Constructor for a complete specification to be built from raw values
+	 * @param fileHasHeader Indicates whether or not the file containing this specification has a header
+	 * @param dateTimeCol The column where the date/time will be stored
+	 * @param dateTimeProps The properties for the date/time column
+	 * @param dateCol The column where the date will be stored
+	 * @param dateProps The properties for the date column
+	 * @param hoursFromStartCol The column where the hours-from-start-of-file will be stored
+	 * @param hoursFromStartProps The properties for the hours-from-start-of-file column
+	 * @param jdayTimeCol The column where the Julian day/time will be stored
+	 * @param jdayCol The column where the Julian day will be stored
+	 * @param yearCol The column where the year will be stored
+	 * @param monthCol The column where the month will be stored
+	 * @param dayCol The column where the day will be stored
+	 * @param timeCol The column where the time will be stored
+	 * @param timeProps The properties for the time column
+	 * @param hourCol The column where the hour will be stored
+	 * @param minuteCol The column where the minute will be stored
+	 * @param secondCol The column where the second will be stored
+	 * @throws DateTimeSpecificationException If the specification is incomplete
+	 */
+	public DateTimeSpecification(boolean fileHasHeader, int dateTimeCol, Properties dateTimeProps, int dateCol, Properties dateProps,
+			int hoursFromStartCol, Properties hoursFromStartProps, int jdayTimeCol, int jdayCol, int yearCol,
+			int monthCol, int dayCol, int timeCol, Properties timeProps, int hourCol, int minuteCol, int secondCol) throws DateTimeSpecificationException {
+		
+		assignments = new TreeMap<Integer, DateTimeColumnAssignment>();
+		
+		assignments.put(DATE_TIME, new DateTimeColumnAssignment(DATE_TIME, dateTimeCol, dateTimeProps));
+		assignments.put(DATE, new DateTimeColumnAssignment(DATE, dateCol, dateProps));
+		assignments.put(HOURS_FROM_START, new DateTimeColumnAssignment(HOURS_FROM_START, hoursFromStartCol, hoursFromStartProps));
+		assignments.put(JDAY_TIME, new DateTimeColumnAssignment(JDAY_TIME, jdayTimeCol, null));
+		assignments.put(JDAY, new DateTimeColumnAssignment(JDAY, jdayCol, null));
+		assignments.put(YEAR, new DateTimeColumnAssignment(YEAR, yearCol, null));
+		assignments.put(MONTH, new DateTimeColumnAssignment(MONTH, monthCol, null));
+		assignments.put(DAY, new DateTimeColumnAssignment(DAY, dayCol, null));
+		assignments.put(TIME, new DateTimeColumnAssignment(TIME, timeCol, timeProps));
+		assignments.put(HOUR, new DateTimeColumnAssignment(HOUR, hourCol, null));
+		assignments.put(MINUTE, new DateTimeColumnAssignment(MINUTE, minuteCol, null));
+		assignments.put(SECOND, new DateTimeColumnAssignment(SECOND, secondCol, null));
+		
+		
+		this.fileHasHeader = fileHasHeader;
+		
+		if (!assignmentComplete()) {
+			throw new DateTimeSpecificationException("Specification is not complete");
+		}
 	}
 	
 	/**
@@ -223,6 +271,15 @@ public class DateTimeSpecification {
 	}
 	
 	/**
+	 * Determine whether or not this specification has had both
+	 * date and time fully assigned
+	 * @return {@code true} if the date and time have been assigned; {@code false} if assignments are still required
+	 */
+	public boolean assignmentComplete() {
+		return getAvailableEntries().size() == 0;
+	}
+	
+	/**
 	 * As column assignments are filled in, some options become
 	 * unavailable as they are incompatible with the populated
 	 * ones. This method returns the keys that have either been
@@ -238,7 +295,7 @@ public class DateTimeSpecification {
 		// If the assignments are internally consistent, then we can take a few shortcuts
 		if (nothingAssigned()) {
 			availableMask = setMaskBits(availableMask, DATE_TIME, DATE, YEAR, JDAY_TIME, JDAY, MONTH, DAY, TIME, HOUR, MINUTE, SECOND);
-			if (parentDefinition.hasHeader()) {
+			if (fileHasHeader) {
 				availableMask = setMaskBits(availableMask, HOURS_FROM_START);
 			}
 		} else if (isAssigned(DATE_TIME)) {
@@ -578,5 +635,13 @@ public class DateTimeSpecification {
 		
 		return assignmentRemoved;
 		
+	}
+	
+	/**
+	 * Specify whether or not the parent file has a header
+	 * @param fileHasHeader Flag indicating whether or not the parent file has a header
+	 */
+	public void setFileHasHeader(boolean fileHasHeader) {
+		this.fileHasHeader = fileHasHeader;
 	}
 }

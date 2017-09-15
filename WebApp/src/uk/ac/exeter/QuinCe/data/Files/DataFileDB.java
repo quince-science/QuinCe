@@ -19,6 +19,7 @@ import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Calculation.DataReductionDB;
 import uk.ac.exeter.QuinCe.data.Calculation.RawDataDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunType;
 import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.Job;
@@ -30,6 +31,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.web.system.ResourceException;
 
 /**
  * Methods for handling raw data files.
@@ -536,9 +538,11 @@ public class DataFileDB {
 	 * @throws DatabaseException If an error occurs while retrieving the file details or contents
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws RawDataFileException If the data file cannot be parsed
+	 * @throws ResourceException If the application configuration cannot be retrieved
+	 * @throws InstrumentException If any instrument details are invalid
 	 * @see FileStore#getFile(DataSource, Properties, FileInfo)
 	 */
-	public static RawDataFile getRawDataFile(DataSource dataSource, Properties appConfig, long fileId) throws MissingParamException, DatabaseException, RawDataFileException {
+	public static RawDataFile getRawDataFile(DataSource dataSource, Properties appConfig, long fileId) throws MissingParamException, DatabaseException, RawDataFileException, InstrumentException, ResourceException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(appConfig, "appConfig");

@@ -69,6 +69,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	public static final int SEPARATOR_INDEX_SPACE = 3;
 	
 	/**
+	 * The database ID of this file definition
+	 */
+	private long databaseId;
+	
+	/**
 	 * The name used to identify files of this type
 	 */
 	private String fileDescription;
@@ -159,8 +164,50 @@ public class FileDefinition implements Comparable<FileDefinition> {
 		this.fileDescription = fileDescription;
 		this.longitudeSpecification = new LongitudeSpecification();
 		this.latitudeSpecification = new LatitudeSpecification();
-		this.dateTimeSpecification = new DateTimeSpecification(this);
+		this.dateTimeSpecification = new DateTimeSpecification(false);
 		this.fileSet = fileSet;
+	}
+	
+	/**
+	 * Construct a complete file definition
+	 * @param databaseId The definition's database ID
+	 * @param description The file description
+	 * @param separator The column separator
+	 * @param headerType The header type
+	 * @param headerLines The number of header lines
+	 * @param headerEndString The string used to identify the end of the header
+	 * @param columnHeaderRows The number of column header rows
+	 * @param columnCount The column count
+	 * @param lonSpec The longitude specification
+	 * @param latSpec The latitude specification
+	 * @param dateTimeSpec The date/time specification
+	 */
+	public FileDefinition(long databaseId, String description, String separator, int headerType, int headerLines, String headerEndString,
+			int columnHeaderRows, int columnCount, LongitudeSpecification lonSpec, LatitudeSpecification latSpec, DateTimeSpecification dateTimeSpec, InstrumentFileSet fileSet) {
+		
+		// TODO checks
+		
+		this.databaseId = databaseId;
+		this.fileDescription = description;
+		this.separator = separator;
+		this.headerType = headerType;
+		this.headerLines = headerLines;
+		this.headerEndString = headerEndString;
+		this.columnHeaderRows = columnHeaderRows;
+		this.columnCount = columnCount;
+		this.longitudeSpecification = lonSpec;
+		this.latitudeSpecification = latSpec;
+		this.dateTimeSpecification = dateTimeSpec;
+		
+		this.fileSet = fileSet;
+	}
+	
+	/**
+	 * Get the database ID of this file definition
+	 * @return The database ID
+	 */
+	protected long getDatabaseId() {
+		return databaseId;
 	}
 	
 	/**
@@ -221,6 +268,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 */
 	public void setHeaderLines(int headerLines) {
 		this.headerLines = headerLines;
+		dateTimeSpecification.setFileHasHeader(headerLines > 0);
 	}
 
 	/**

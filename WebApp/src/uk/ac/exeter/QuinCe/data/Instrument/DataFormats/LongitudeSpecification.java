@@ -29,6 +29,17 @@ public class LongitudeSpecification extends PositionSpecification {
 	public LongitudeSpecification() {
 		super();
 	}
+	
+	/**
+	 * Constructor for a complete specification
+	 * @param format The format
+	 * @param valueColumn The value column
+	 * @param hemisphereColumn The hemisphere column
+	 * @throws PositionException If the specification is incomplete or invalid
+	 */
+	public LongitudeSpecification(int format, int valueColumn, int hemisphereColumn) throws PositionException {
+		super(format, valueColumn, hemisphereColumn);
+	}
 
 	@Override
 	public boolean formatValid(int format) {

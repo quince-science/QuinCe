@@ -238,7 +238,11 @@
 	</navigation-rule>
 	<navigation-rule>
 		<display-name>FileList</display-name>
-		<from-view-id>/data/file_list.xhtml</from-view-id>
+		<from-view-id>/data_file/file_list.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>upload</from-outcome>
+			<to-view-id>/data_file/upload.xhtml</to-view-id>
+		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
 		<display-name>DataScreen</display-name>

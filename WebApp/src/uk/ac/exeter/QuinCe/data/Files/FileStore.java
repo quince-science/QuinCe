@@ -12,10 +12,13 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.web.system.ResourceException;
+import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Class to handle storage, retrieval and management of data file on disk.
@@ -99,11 +102,12 @@ public class FileStore {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RawDataFileException If there is a fault in processing the data file
 	 * @throws RecordNotFoundException If any required database records cannot be found
+	 * @throws ResourceException If the application configuration cannot be retrieved
+	 * @throws InstrumentException If any instrument details are invalid
 	 * @see DataFileDB#getRawDataFile(DataSource, Properties, long)
 	 */
-	protected static RawDataFile getFile(DataSource dataSource, Properties config, FileInfo fileInfo) throws IOException, MissingParamException, DatabaseException, RawDataFileException, RecordNotFoundException {
-		
-		Instrument instrument = InstrumentDB.getInstrument(dataSource, fileInfo.getInstrumentId());
+	protected static RawDataFile getFile(DataSource dataSource, Properties config, FileInfo fileInfo) throws IOException, MissingParamException, DatabaseException, RawDataFileException, RecordNotFoundException, InstrumentException, ResourceException {
+		Instrument instrument = InstrumentDB.getInstrument(dataSource, fileInfo.getInstrumentId(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
 		File readFile = getFileObject(config.getProperty("filestore"), fileInfo.getInstrumentId(), fileInfo.getFileName());
 
 		FileInputStream inputStream = null;

@@ -605,6 +605,13 @@ table.fileDates {
 	font-style: italic;
 }
 
+.pageTitle {
+	margin: auto;
+	text-align: center;
+	font-size: 2em;
+	font-weight: 700;
+}
+
 /* PrimeFaces overrides */
 .ui-panel-content td {
 	vertical-align: middle;

@@ -47,6 +47,22 @@ public abstract class PositionSpecification {
 		hemisphereColumn = -1;
 		format = FORMAT_UNKNOWN;
 	}
+
+	/**
+	 * Constructor for a complete specification
+	 * @param format The format
+	 * @param valueColumn The value column
+	 * @param hemisphereColumn The hemisphere column
+	 * @throws PositionException If the specification is incomplete or invalid
+	 */
+	protected PositionSpecification(int format, int valueColumn, int hemisphereColumn) throws PositionException {
+		setFormat(format);
+		this.valueColumn = valueColumn;
+		this.hemisphereColumn = hemisphereColumn;
+		if (!specificationComplete()) {
+			throw new PositionException("Specification is not complete");
+		}
+	}
 	
 	/**
 	 * Get the position format

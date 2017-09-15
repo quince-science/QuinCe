@@ -2,8 +2,6 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.util.Date;
 
-import uk.ac.exeter.QuinCe.data.Instrument.CalibrationDB;
-
 /**
  * <p>
  *   A read-only stub object for a single set of sensor calibrations for an instrument.

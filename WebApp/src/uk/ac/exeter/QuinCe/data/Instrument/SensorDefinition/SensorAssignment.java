@@ -70,6 +70,28 @@ public class SensorAssignment {
 	}
 	
 	/**
+	 * Simple constructor
+	 * @param dataFile The data file
+	 * @param fileColumn The column number in the file
+	 * @param databaseColumn The column where the sensor's data will be stored in the database
+	 * @param sensorName The name of the sensor
+	 * @param postCalibrated Specifies whether or not values should be calibrated by QuinCe
+	 * @param primary Specifies whether this is a primary or fallback sensor
+	 * @param dependsQuestionAnswer The answer to the Depends Question
+	 * @param missingValue The missing value String
+	 */
+	public SensorAssignment(String dataFile, int fileColumn, int databaseColumn, String sensorName, boolean postCalibrated, boolean primary, boolean dependsQuestionAnswer, String missingValue) {
+		this.dataFile = dataFile;
+		this.column = fileColumn;
+		this.databaseColumn = databaseColumn;
+		this.sensorName = sensorName;
+		this.postCalibrated = postCalibrated;
+		this.primary = primary;
+		this.dependsQuestionAnswer = dependsQuestionAnswer;
+		this.missingValue = missingValue;
+	}
+	
+	/**
 	 * Get the data file
 	 * @return The data file
 	 */

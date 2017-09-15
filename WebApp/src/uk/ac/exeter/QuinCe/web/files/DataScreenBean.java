@@ -16,6 +16,7 @@ import uk.ac.exeter.QuinCe.data.Files.FileDataInterrogator;
 import uk.ac.exeter.QuinCe.data.Files.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunType;
 import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
@@ -705,11 +706,12 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws ResourceException If the application resources cannot be accessed
 	 * @throws RecordNotFoundException If the selected data file (or any of its related records) cannot be found
+	 * @throws InstrumentException If any instrument details are invalid
 	 */
-	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException {
+	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException, InstrumentException {
 		fileDetails = DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), fileId);
 		DataFileDB.touchFile(ServletUtils.getDBDataSource(), fileId);
-		instrument = InstrumentDB.getInstrumentByFileId(ServletUtils.getDBDataSource(), fileId);
+		instrument = InstrumentDB.getInstrumentByFileId(ServletUtils.getDBDataSource(), fileId, ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
 	}
 	
 	/**

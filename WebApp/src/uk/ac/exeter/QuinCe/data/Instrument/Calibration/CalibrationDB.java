@@ -22,6 +22,8 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.web.system.ResourceException;
+import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * This class provides database calls related to instrument calibrations.
@@ -283,9 +285,11 @@ public class CalibrationDB {
 	 * @throws MissingParamException If any of the parameters are {@code null}
 	 * @throws RecordNotFoundException If the specified calibration does not exist in the database
 	 * @throws DatabaseException If a database error occurs
+	 * @throws ResourceException If the application configuration cannot be retrieved
+	 * @throws InstrumentException If any instrument details are invalid
 	 * @see #GET_COEFFICIENTS_QUERY
 	 */
-	public static List<CalibrationCoefficients> getCalibrationCoefficients(DataSource dataSource, CalibrationStub calibration) throws MissingParamException, RecordNotFoundException, DatabaseException {
+	public static List<CalibrationCoefficients> getCalibrationCoefficients(DataSource dataSource, CalibrationStub calibration) throws MissingParamException, RecordNotFoundException, DatabaseException, InstrumentException, ResourceException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(calibration, "calibration");
@@ -298,7 +302,7 @@ public class CalibrationDB {
 		try {
 
 			// Get the parent instrument details
-			Instrument instrument = InstrumentDB.getInstrument(dataSource, calibration.getInstrumentId());
+			Instrument instrument = InstrumentDB.getInstrument(dataSource, calibration.getInstrumentId(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
 			
 			conn = dataSource.getConnection();
 			stmt = conn.prepareStatement(GET_COEFFICIENTS_QUERY);

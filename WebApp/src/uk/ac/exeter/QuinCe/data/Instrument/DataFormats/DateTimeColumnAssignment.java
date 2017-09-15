@@ -53,11 +53,28 @@ public class DateTimeColumnAssignment {
 	
 	/**
 	 * Create an empty assignment
+	 * @param assignmentIndex The assignment index
 	 */
 	protected DateTimeColumnAssignment(int assignmentIndex) {
 		this.assignmentIndex = assignmentIndex;
 		this.column = NOT_ASSIGNED;
 		this.properties = new Properties();
+	}
+	
+	/**
+	 * Construct a complete assignment
+	 * @param assignmentIndex The assignment index
+	 * @param column The column where the value will be stored
+	 * @param props The properties for the assignment
+	 */
+	protected DateTimeColumnAssignment(int assignmentIndex, int column, Properties props) {
+		this.assignmentIndex = assignmentIndex;
+		this.column = column;
+		if (null == props) {
+			this.properties = new Properties();
+		} else {
+			this.properties = props;
+		}
 	}
 	
 	/**

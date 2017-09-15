@@ -21,15 +21,23 @@ import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Database methods dealing with instruments
@@ -80,33 +88,6 @@ public class InstrumentDB {
 			+ ") VALUES (?, ?, ?)";
 	
 	/**
-	 * Statement for retrieving all the details of a specific instrument
-	 */
-	private static final String GET_INSTRUMENT_QUERY = "SELECT owner, name, "
-			+ "intake_temp_1_name, intake_temp_2_name, intake_temp_3_name, "
-			+ "salinity_1_name, salinity_2_name, salinity_3_name, "
-			+ "eqt_1_name, eqt_2_name, eqt_3_name, "
-			+ "eqp_1_name, eqp_2_name, eqp_3_name, "
-			+ "air_flow_1_name, air_flow_2_name, air_flow_3_name, "
-			+ "water_flow_1_name, water_flow_2_name, water_flow_3_name, "
-			+ "separator_char, date_format, time_format, " 
-			+ "custom_datetime_format, custom_datetime_format_string, "
-			+ "lat_format, lon_format, header_lines, has_atmospheric_pressure, samples_dried, "
-			+ "run_type_col, date_col, year_col, month_col, day_col, "
-			+ "time_col, hour_col, minute_col, second_col, custom_datetime_col, "
-			+ "latitude_col, north_south_col, longitude_col, east_west_col, "
-			+ "intake_temp_1_col, intake_temp_2_col, intake_temp_3_col, "
-			+ "salinity_1_col, salinity_2_col, salinity_3_col, "
-			+ "eqt_1_col, eqt_2_col, eqt_3_col, "
-			+ "eqp_1_col, eqp_2_col, eqp_3_col, "
-			+ "air_flow_1_col, air_flow_2_col, air_flow_3_col, "
-			+ "water_flow_1_col, water_flow_2_col, water_flow_3_col, "
-			+ "atmospheric_pressure_col, xh2o_col, co2_col, raw_col_count, "
-			+ "pre_flushing_time, post_flushing_time "
-			+ "FROM instrument WHERE id = ? ORDER BY name";
-			
-	
-	/**
 	 * Query for retrieving the list of instruments owned by a particular user
 	 */
 	private static final String GET_INSTRUMENT_LIST_QUERY = "SELECT i.id, i.name, SUM(c.post_calibrated) "
@@ -115,6 +96,52 @@ public class InstrumentDB {
 			+ "INNER JOIN file_column AS c ON d.id = c.file_definition_id "
 			+ "WHERE i.owner = ? "
 			+ "GROUP BY i.id ORDER BY i.name ASC";
+	
+	/**
+	 * Query for retrieving the stub for a specific instrument
+	 */
+	private static final String GET_INSTRUMENT_STUB_QUERY = "SELECT i.name, SUM(c.post_calibrated) "
+			+ "FROM instrument AS i "
+			+ "INNER JOIN file_definition AS d ON i.id = d.instrument_id "
+			+ "INNER JOIN file_column AS c ON d.id = c.file_definition_id "
+			+ "WHERE i.id = ? "
+			+ "GROUP BY i.id";
+	
+	/**
+	 * SQL query to get an instrument's base record
+	 */
+	private static final String GET_INSTRUMENT_QUERY = "SELECT "
+			+ "name, owner, " // 2
+			+ "pre_flushing_time, post_flushing_time, minimum_water_flow " // 5
+			+ "FROM instrument WHERE id = ?";
+	
+	/**
+	 * SQL query to get the file definitions for an instrument
+	 */
+	private static final String GET_FILE_DEFINITIONS_QUERY = "SELECT "
+		    + "id, description, column_separator, " // 3
+			+ "header_type, header_lines, header_end_string, column_header_rows, " // 7
+			+ "column_count, lon_format, lon_value_col, lon_hemisphere_col, " // 11
+			+ "lat_format, lat_value_col, lat_hemisphere_col, " // 14
+			+ "date_time_col, date_time_props, date_col, date_props, hours_from_start_col, hours_from_start_props, " // 20
+			+ "jday_time_col, jday_col, year_col, month_col, day_col, " // 25
+			+ "time_col, time_props, hour_col, minute_col, second_col " // 30
+			+ "FROM file_definition WHERE instrument_id = ? ORDER BY description";
+	
+	/**
+	 * SQL query to get the file column assignments for a file
+	 */
+	private static final String GET_FILE_COLUMNS_QUERY = "SELECT "
+			+ "file_column, primary_sensor, sensor_type, sensor_name, value_column, " // 5
+			+ "depends_question_answer, missing_value, post_calibrated " // 8
+		    + "FROM file_column WHERE file_definition_id = ?";
+	
+	/**
+	 * SQL query to get the run types defined for a given file
+	 */
+	private static final String GET_RUN_TYPES_QUERY = "SELECT "
+			+ "run_name, category_code "
+			+ "FROM run_type WHERE file_id = ?";
 
 	/**
 	 * Store a new instrument in the database
@@ -404,6 +431,44 @@ public class InstrumentDB {
 		
 		return instrumentList;
 	}
+	
+	/**
+	 * Get an stub object for a specified instrument
+	 * @param dataSource A data source
+	 * @param instrumentId The instrument's database ID
+	 * @return The instrument stub
+	 * @throws RecordNotFoundException If the instrument does not exist
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public static InstrumentStub getInstrumentStub(DataSource dataSource, long instrumentId) throws RecordNotFoundException, DatabaseException {
+		InstrumentStub result = null;
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet record = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_INSTRUMENT_STUB_QUERY);
+			stmt.setLong(1, instrumentId);
+			
+			record = stmt.executeQuery();
+			if (!record.next()) {
+				throw new RecordNotFoundException("Instrument not found", "instrument", instrumentId);
+			} else {
+				boolean hasCalibratableSensors = (record.getInt(2) > 0);
+				result = new InstrumentStub(instrumentId, record.getString(1), hasCalibratableSensors);
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving instrument list", e);
+		} finally {
+			DatabaseUtils.closeResultSets(record);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
+	}
 
 	/**
 	 * Determine whether an instrument with a given name and owner exists
@@ -435,12 +500,15 @@ public class InstrumentDB {
 	 * Retrieve a complete {@link Instrument} from the database
 	 * @param dataSource A data source
 	 * @param instrumentID The instrument's database ID
+	 * @param sensorConfiguration The sensors configuration
+	 * @param runTypeConfiguration The run type category configuration
 	 * @return The instrument object
 	 * @throws DatabaseException If a database error occurs
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws RecordNotFoundException If the instrument ID does not exist
+	 * @throws InstrumentException If any instrument values are invalid
 	 */
-	public static Instrument getInstrument(DataSource dataSource, long instrumentID) throws DatabaseException, MissingParamException, RecordNotFoundException {
+	public static Instrument getInstrument(DataSource dataSource, long instrumentID, SensorsConfiguration sensorConfiguration, RunTypeCategoryConfiguration runTypeConfiguration) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(instrumentID, "instrumentID");
@@ -449,7 +517,7 @@ public class InstrumentDB {
 		
 		try {
 			conn = dataSource.getConnection();
-			return getInstrument(conn, instrumentID);
+			return getInstrument(conn, instrumentID, sensorConfiguration, runTypeConfiguration);
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while updating record counts", e);
 		} finally {
@@ -460,126 +528,289 @@ public class InstrumentDB {
 	
 	/**
 	 * Returns a complete instrument object for the specified instrument ID
-	 * @param conn A database connetion
-	 * @param instrumentID The instrument ID
+	 * @param conn A database connection
+	 * @param instrumentId The instrument ID
+	 * @param sensorConfiguration The sensors configuration
+	 * @param runTypeConfiguration The run type category configuration
 	 * @return The complete Instrument object
 	 * @throws MissingParamException If the data source is not supplied
 	 * @throws DatabaseException If an error occurs while retrieving the instrument details
 	 * @throws RecordNotFoundException If the specified instrument cannot be found
+	 * @throws InstrumentException If any instrument values are invalid
 	 */
-	public static Instrument getInstrument(Connection conn, long instrumentID) throws MissingParamException, DatabaseException, RecordNotFoundException {
-		return null;
-		/*
+	public static Instrument getInstrument(Connection conn, long instrumentId, SensorsConfiguration sensorConfiguration, RunTypeCategoryConfiguration runTypeConfiguration) throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException {
 		
 		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 		
-		PreparedStatement instrStmt = null;
-		ResultSet record = null;
-		PreparedStatement runTypeStmt = null;
-		ResultSet runTypeRecords = null;
 		Instrument instrument = null;
-		TreeSet<RunType> runTypes = new TreeSet<RunType>();
+
+		List<PreparedStatement> stmts = new ArrayList<PreparedStatement>();
+		List<ResultSet> resultSets = new ArrayList<ResultSet>();
 		
 		try {
-			instrStmt = conn.prepareStatement(GET_INSTRUMENT_QUERY);
-			instrStmt.setLong(1, instrumentID);
+			// Data fields
+			String name;
+			long owner;
+			int preFlushingTime;
+			int postFlushingTime;
+			int minimumWaterFlow;
+			InstrumentFileSet files;
+			SensorAssignments sensorAssignments;
 			
-			record = instrStmt.executeQuery();
-			if (!record.next()) {
-				throw new RecordNotFoundException("Instrument with id " + instrumentID + " does not exist");
+			
+			// Get the raw instrument data
+			PreparedStatement instrStmt = conn.prepareStatement(GET_INSTRUMENT_QUERY);
+			stmts.add(instrStmt);
+			
+			ResultSet instrumentRecord = instrStmt.executeQuery();
+			resultSets.add(instrumentRecord);
+			
+			if (!instrumentRecord.next()) {
+				throw new RecordNotFoundException("Instrument record not found", "instrument", instrumentId);
 			} else {
-				instrument = new Instrument(record.getLong(1));
-				instrument.setDatabaseId(instrumentID);
-				instrument.setName(record.getString(2));
-				instrument.setIntakeTempName1(record.getString(3));
-				instrument.setIntakeTempName2(record.getString(4));
-				instrument.setIntakeTempName3(record.getString(5));
-				instrument.setSalinityName1(record.getString(6));
-				instrument.setSalinityName2(record.getString(7));
-				instrument.setSalinityName3(record.getString(8));
-				instrument.setEqtName1(record.getString(9));
-				instrument.setEqtName2(record.getString(10));
-				instrument.setEqtName3(record.getString(11));
-				instrument.setEqpName1(record.getString(12));
-				instrument.setEqpName2(record.getString(13));
-				instrument.setEqpName3(record.getString(14));
-				instrument.setAirFlowName1(record.getString(15));
-				instrument.setAirFlowName2(record.getString(16));
-				instrument.setAirFlowName3(record.getString(17));
-				instrument.setWaterFlowName1(record.getString(18));
-				instrument.setWaterFlowName2(record.getString(19));
-				instrument.setWaterFlowName3(record.getString(20));
-				instrument.setSeparatorChar(record.getString(21).toCharArray()[0]);
-				instrument.setDateFormat(record.getInt(22));
-				instrument.setTimeFormat(record.getInt(23));
-				instrument.setCustomDateTimeFormat(record.getBoolean(24));
-				instrument.setCustomDateTimeFormatString(record.getString(25));
-				instrument.setLatFormat(record.getInt(26));
-				instrument.setLonFormat(record.getInt(27));
-				instrument.setHeaderLines(record.getInt(28));
-				instrument.setHasAtmosphericPressure(record.getBoolean(29));
-				instrument.setSamplesDried(record.getBoolean(30));
-				instrument.setColumnAssignment(Instrument.COL_RUN_TYPE, record.getInt(31));
-				instrument.setColumnAssignment(Instrument.COL_DATE, record.getInt(32));
-				instrument.setColumnAssignment(Instrument.COL_YEAR, record.getInt(33));
-				instrument.setColumnAssignment(Instrument.COL_MONTH, record.getInt(34));
-				instrument.setColumnAssignment(Instrument.COL_DAY, record.getInt(35));
-				instrument.setColumnAssignment(Instrument.COL_TIME, record.getInt(36));
-				instrument.setColumnAssignment(Instrument.COL_HOUR, record.getInt(37));
-				instrument.setColumnAssignment(Instrument.COL_MINUTE, record.getInt(38));
-				instrument.setColumnAssignment(Instrument.COL_SECOND, record.getInt(39));
-				instrument.setColumnAssignment(Instrument.COL_CUSTOM_DATETIME_FORMAT, record.getInt(40));
-				instrument.setColumnAssignment(Instrument.COL_LATITUDE, record.getInt(41));
-				instrument.setColumnAssignment(Instrument.COL_NORTH_SOUTH, record.getInt(42));
-				instrument.setColumnAssignment(Instrument.COL_LONGITUDE, record.getInt(43));
-				instrument.setColumnAssignment(Instrument.COL_EAST_WEST, record.getInt(44));
-				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_1, record.getInt(45));
-				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_2, record.getInt(46));
-				instrument.setColumnAssignment(Instrument.COL_INTAKE_TEMP_3, record.getInt(47));
-				instrument.setColumnAssignment(Instrument.COL_SALINITY_1, record.getInt(48));
-				instrument.setColumnAssignment(Instrument.COL_SALINITY_2, record.getInt(49));
-				instrument.setColumnAssignment(Instrument.COL_SALINITY_3, record.getInt(50));
-				instrument.setColumnAssignment(Instrument.COL_EQT_1, record.getInt(51));
-				instrument.setColumnAssignment(Instrument.COL_EQT_2, record.getInt(52));
-				instrument.setColumnAssignment(Instrument.COL_EQT_3, record.getInt(53));
-				instrument.setColumnAssignment(Instrument.COL_EQP_1, record.getInt(54));
-				instrument.setColumnAssignment(Instrument.COL_EQP_2, record.getInt(55));
-				instrument.setColumnAssignment(Instrument.COL_EQP_3, record.getInt(56));
-				instrument.setColumnAssignment(Instrument.COL_AIR_FLOW_1, record.getInt(57));
-				instrument.setColumnAssignment(Instrument.COL_AIR_FLOW_2, record.getInt(58));
-				instrument.setColumnAssignment(Instrument.COL_AIR_FLOW_3, record.getInt(59));
-				instrument.setColumnAssignment(Instrument.COL_WATER_FLOW_1, record.getInt(60));
-				instrument.setColumnAssignment(Instrument.COL_WATER_FLOW_2, record.getInt(61));
-				instrument.setColumnAssignment(Instrument.COL_WATER_FLOW_3, record.getInt(62));
-				instrument.setColumnAssignment(Instrument.COL_ATMOSPHERIC_PRESSURE, record.getInt(63));
-				instrument.setColumnAssignment(Instrument.COL_XH2O, record.getInt(64));
-				instrument.setColumnAssignment(Instrument.COL_CO2, record.getInt(65));
-				instrument.setRawFileColumnCount(record.getInt(66));
-				instrument.setPreFlushingTime(record.getInt(67));
-				instrument.setPostFlushingTime(record.getInt(68));
+				// Read in the instrument details
+				name = instrumentRecord.getString(1);
+				owner = instrumentRecord.getLong(2);
+				preFlushingTime = instrumentRecord.getInt(3);
+				postFlushingTime = instrumentRecord.getInt(4);
+				minimumWaterFlow = instrumentRecord.getInt(5);
 				
-				runTypeStmt = conn.prepareStatement(GET_RUN_TYPES_QUERY);
-				runTypeStmt.setLong(1, instrumentID);
-				runTypeRecords = runTypeStmt.executeQuery();
-				while (runTypeRecords.next()) {
-					runTypes.add(new RunType(runTypeRecords.getLong(1), instrumentID, runTypeRecords.getString(2), runTypeRecords.getInt(3)));
-				}
 				
-				instrument.setRunTypes(runTypes);
+				// Now get the file definitions
+				files = getFileDefinitions(conn, instrumentId);
+				
+				// Now the sensor assignments
+				sensorAssignments = getSensorAssignments(conn, files, sensorConfiguration, runTypeConfiguration);
+				
+				instrument = new Instrument(instrumentId, owner, name, files, sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow);
 			}
 			
-			
-			
 		} catch (SQLException e) {
-			throw new DatabaseException("Error while retrieving instrument details", e);
+			
 		} finally {
-			DatabaseUtils.closeResultSets(record, runTypeRecords);
-			DatabaseUtils.closeStatements(instrStmt, runTypeStmt);
+			DatabaseUtils.closeResultSets(resultSets);
+			DatabaseUtils.closeStatements(stmts);
 		}
 		
 		return instrument;
+	}
+	
+	/**
+	 * Get the file definitions for an instrument
+	 * @param conn A database connection
+	 * @param instrumentId The instrument's ID
+	 * @return The file definitions
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If no file definitions are stored for the instrument
+	 */
+	private static InstrumentFileSet getFileDefinitions(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 		
-		*/
+		InstrumentFileSet fileSet = new InstrumentFileSet();
+		
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			
+			stmt = conn.prepareStatement(GET_FILE_DEFINITIONS_QUERY);
+			stmt.setLong(1, instrumentId);
+			
+			records = stmt.executeQuery();
+			
+			while (records.next()) {
+				
+				long id = records.getLong(1);
+				String description = records.getString(2);
+				String separator = records.getString(3);
+				int headerType = records.getInt(4);
+				int headerLines = records.getInt(5);
+				String headerEndString = records.getString(6);
+				int columnHeaderRows = records.getInt(7);
+				int columnCount = records.getInt(8);
+				
+				LongitudeSpecification lonSpec = buildLongitudeSpecification(records);
+				LatitudeSpecification latSpec = buildLatitudeSpecification(records);
+				DateTimeSpecification dateTimeSpec = buildDateTimeSpecification(records);
+				
+				fileSet.add(new FileDefinition(id, description, separator, headerType, headerLines, headerEndString, columnHeaderRows, columnCount, lonSpec, latSpec, dateTimeSpec, fileSet));
+			}
+			
+		} catch (SQLException|IOException|PositionException|DateTimeSpecificationException e) {
+			throw new DatabaseException("Error reading file definitions", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+		}
+		
+		if (fileSet.size() == 0) {
+			throw new RecordNotFoundException("No file definitions found for instrument " + instrumentId);
+		}
+		return fileSet;
+	}
+	
+	/**
+	 * Construct a {@link LongitudeSpecification} object from a database record
+	 * @param record The database record
+	 * @return The specification
+	 * @throws SQLException If a database error occurs
+	 * @throws PositionException If the specification is invalid
+	 * @see #GET_FILE_DEFINITIONS_QUERY
+	 */
+	private static LongitudeSpecification buildLongitudeSpecification(ResultSet record) throws SQLException, PositionException {
+		int format = record.getInt(9);
+		int valueColumn = record.getInt(10);
+		int hemisphereColumn = record.getInt(11);
+		
+		return new LongitudeSpecification(format, valueColumn, hemisphereColumn);
+	}
+	
+	/**
+	 * Construct a {@link LatitudeSpecification} object from a database record
+	 * @param record The database record
+	 * @return The specification
+	 * @throws SQLException If a database error occurs
+	 * @throws PositionException If the specification is invalid
+	 * @see #GET_FILE_DEFINITIONS_QUERY
+	 */
+	private static LatitudeSpecification buildLatitudeSpecification(ResultSet record) throws SQLException, PositionException {
+		int format = record.getInt(12);
+		int valueColumn = record.getInt(13);
+		int hemisphereColumn = record.getInt(14);
+		
+		return new LatitudeSpecification(format, valueColumn, hemisphereColumn);
+	}
+	
+	/**
+	 * Construct a {@link DateTimeSpecification} object from a database record
+	 * @param record The database record
+	 * @return The specification
+	 * @throws SQLException If a database error occurs
+	 * @throws IOException If a Properties string cannot be parsed
+	 * @throws DateTimeSpecificationException If the specification is invalid
+	 * @see #GET_FILE_DEFINITIONS_QUERY
+	 */
+	private static DateTimeSpecification buildDateTimeSpecification(ResultSet record) throws SQLException, IOException, DateTimeSpecificationException {
+		int headerLines = record.getInt(5);
+		
+		int dateTimeCol = record.getInt(15);
+		Properties dateTimeProps = StringUtils.propertiesFromString(record.getString(16));
+		int dateCol = record.getInt(17);
+		Properties dateProps = StringUtils.propertiesFromString(record.getString(18));
+		int hoursFromStartCol = record.getInt(19);
+		Properties hoursFromStartProps = StringUtils.propertiesFromString(record.getString(20));
+		int jdayTimeCol = record.getInt(21);
+		int jdayCol = record.getInt(22);
+		int yearCol = record.getInt(23);
+		int monthCol = record.getInt(24);
+		int dayCol = record.getInt(25);
+		int timeCol = record.getInt(26);
+		Properties timeProps = StringUtils.propertiesFromString(record.getString(27));
+		int hourCol = record.getInt(28);
+		int minuteCol = record.getInt(29);
+		int secondCol = record.getInt(30);
+		
+		return new DateTimeSpecification(headerLines > 0, dateTimeCol, dateTimeProps, dateCol, dateProps, hoursFromStartCol, hoursFromStartProps,
+				jdayTimeCol, jdayCol, yearCol, monthCol, dayCol, timeCol, timeProps, hourCol, minuteCol, secondCol);
+	}
+	
+	/**
+	 * Get the sensor and file column configuration for an instrument
+	 * @param conn A database connection
+	 * @param files The instrument's files
+	 * @param sensorConfiguration The sensor configuration
+	 * @param runTypeConfiguration The run type configuration
+	 * @return The assignments for the instrument
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If any required records are not found
+	 * @throws InstrumentException If any instrument values are invalid
+	 */
+	private static SensorAssignments getSensorAssignments(Connection conn, InstrumentFileSet files, SensorsConfiguration sensorConfiguration, RunTypeCategoryConfiguration 
+			runTypeConfiguration) throws DatabaseException, RecordNotFoundException, InstrumentException {
+		SensorAssignments assignments = sensorConfiguration.getNewSensorAssigments();
+		
+		List<PreparedStatement> stmts = new ArrayList<PreparedStatement>();
+		List<ResultSet> records = new ArrayList<ResultSet>();
+		
+		try {
+			for (FileDefinition file : files) {
+				
+				PreparedStatement stmt = conn.prepareStatement(GET_FILE_COLUMNS_QUERY);
+				stmts.add(stmt);
+				stmt.setLong(1, file.getDatabaseId());
+				
+				ResultSet columns = stmt.executeQuery();
+				records.add(columns);
+				int columnsRead = 0;
+				while (columns.next()) {
+					columnsRead++;
+					
+					int fileColumn = columns.getInt(1);
+					boolean primarySensor = columns.getBoolean(2);
+					String sensorType = columns.getString(3);
+					String sensorName = columns.getString(4);
+					int valueColumn = columns.getInt(5);
+					boolean dependsQuestionAnswer = columns.getBoolean(6);
+					String missingValue = columns.getString(7);
+					boolean postCalibrated = columns.getBoolean(8);
+					
+					if (sensorType.equals(FileDefinition.RUN_TYPE_COL_NAME)) {
+						file.setRunTypeColumn(fileColumn);
+						getRunTypes(conn, file, runTypeConfiguration);
+					} else {
+						assignments.addAssignment(sensorName, new SensorAssignment(file.getFileDescription(), fileColumn, valueColumn, sensorName, postCalibrated, primarySensor, dependsQuestionAnswer, missingValue));
+					}
+				}
+				
+				if (columnsRead == 0) {
+					throw new RecordNotFoundException("No file columns found", "file_column", file.getDatabaseId());
+				}
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving file columns", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmts);
+		}
+		
+		return assignments;
+	}
+	
+	/**
+	 * Load the run types for a file from the database
+	 * @param conn A database connection
+	 * @param file The file whose run types are to be retrieved
+	 * @param runTypeConfig The run types configuration
+	 * @throws DatabaseException If a database error occurs
+	 * @throws InstrumentException If a stored run type category is not configured
+	 */
+	private static void getRunTypes(Connection conn, FileDefinition file, RunTypeCategoryConfiguration runTypeConfig) throws DatabaseException, InstrumentException {
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			stmt = conn.prepareStatement(GET_RUN_TYPES_QUERY);
+			stmt.setLong(1, file.getDatabaseId());
+			
+			records = stmt.executeQuery();
+			while (records.next()) {
+				String runType = records.getString(1);
+				String categoryCode = records.getString(2);
+				
+				file.setRunTypeCategory(runType, runTypeConfig.getCategory(categoryCode));
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving run types", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+		}
+		
+		
 	}
 	
 	/**
@@ -587,17 +818,20 @@ public class InstrumentDB {
 	 * identified by its database ID
 	 * @param dataSource A data source
 	 * @param fileId The data file ID
+	 * @param sensorConfiguration The sensors configuration
+	 * @param runTypeConfiguration The run type category configuration
 	 * @return The instrument object
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws DatabaseException If an unexpected database error occurs
 	 * @throws RecordNotFoundException If the file ID is not in the database
+	 * @throws InstrumentException If any instrument details are invalid
 	 */
-	public static Instrument getInstrumentByFileId(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+	public static Instrument getInstrumentByFileId(DataSource dataSource, long fileId, SensorsConfiguration sensorConfiguration, RunTypeCategoryConfiguration runTypeConfiguration) throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(fileId, "fileId");
 		
 		long instrumentId = DataFileDB.getInstrumentId(dataSource, fileId);
-		return getInstrument(dataSource, instrumentId);
+		return getInstrument(dataSource, instrumentId, sensorConfiguration, runTypeConfiguration);
 	}
 }

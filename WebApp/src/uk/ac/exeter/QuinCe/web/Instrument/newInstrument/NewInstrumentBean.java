@@ -1,12 +1,10 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -397,9 +395,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	@Override
 	public void processUploadedFile() {
-		String fileContent = new String(getFile().getContents(), StandardCharsets.UTF_8);
-		List<String> fileLines = Arrays.asList(fileContent.split("[\\r\\n]+"));
-		
+		extractFileLines();
 		currentInstrumentFile.setFileContents(fileLines);
 	}
 	
