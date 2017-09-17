@@ -15,7 +15,8 @@
 
 	<ui:define name="content">
 		<h:form id="uploadForm" method="post" charset="utf8">
-			<p:commandLink id="extractFileLink" ajax="true" process="@this" update="" action="#{dataFilesBean.extractFile}" oncomplete="alert('Done')"/>
+			<p:commandLink id="extractFileLink" style="invisible" ajax="true" action="#{dataFilesBean.extractFile}"
+				process="extractFileLink" update="filename fileDefinition" oncomplete="showFileDetails();"/>
 			
 			<div class="pageTable">
 				<div id="uploadFile">
@@ -26,8 +27,17 @@
 				<div id="processingFileMessage" class="hidden">
 					Processing file...
 				</div>
+				
+				<div id="fileDetails" class="hidden">
+					<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
+						<p:outputLabel value="Filename:"/>
+						<h:outputText id="filename" value="#{dataFilesBean.filename}"/>
+						
+						<p:outputLabel value="File Type:"/>
+						<h:outputText id="fileDefinition" value="#{dataFilesBean.fileDefinition}"/>
+					</h:panelGrid>
+				</div>
 			</div>
-			
 		</h:form>
 	</ui:define>
 </ui:composition>

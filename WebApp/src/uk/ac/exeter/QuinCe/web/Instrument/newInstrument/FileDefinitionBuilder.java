@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
 import uk.ac.exeter.QuinCe.data.Instrument.InvalidSeparatorException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
@@ -48,7 +49,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 * Create a new file definition with the default description
  	 * @param fileSet The file set that will contain this file definition
 	 */
-	protected FileDefinitionBuilder(NewInstrumentFileSet fileSet) {
+	public FileDefinitionBuilder(InstrumentFileSet fileSet) {
 		super(DEFAULT_DESCRIPTION, fileSet);
 
 		int counter = 1;
@@ -63,7 +64,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 * @param fileDescription The file description
 	 * @param fileSet The file set that will contain this file definition
 	 */
-	public FileDefinitionBuilder(String fileDescription, NewInstrumentFileSet fileSet) {
+	public FileDefinitionBuilder(String fileDescription, InstrumentFileSet fileSet) {
 		super(fileDescription, fileSet);
 	}
 	
@@ -193,7 +194,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 * Store the file data as an array of Strings
 	 * @param fileContents The file data
 	 */
-	protected void setFileContents(List<String> fileContents) {
+	public void setFileContents(List<String> fileContents) {
 		this.fileContents = fileContents;
 	}
 	

@@ -541,7 +541,7 @@ public class InstrumentDB {
 	public static Instrument getInstrument(Connection conn, long instrumentId, SensorsConfiguration sensorConfiguration, RunTypeCategoryConfiguration runTypeConfiguration) throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException {
 		
 		MissingParam.checkMissing(conn, "conn");
-		MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+		MissingParam.checkPositive(instrumentId, "instrumentId");
 		
 		Instrument instrument = null;
 
@@ -561,6 +561,7 @@ public class InstrumentDB {
 			
 			// Get the raw instrument data
 			PreparedStatement instrStmt = conn.prepareStatement(GET_INSTRUMENT_QUERY);
+			instrStmt.setLong(1, instrumentId);
 			stmts.add(instrStmt);
 			
 			ResultSet instrumentRecord = instrStmt.executeQuery();
@@ -587,7 +588,7 @@ public class InstrumentDB {
 			}
 			
 		} catch (SQLException e) {
-			
+			throw new DatabaseException("Error retrieving instrument", e);
 		} finally {
 			DatabaseUtils.closeResultSets(resultSets);
 			DatabaseUtils.closeStatements(stmts);
@@ -661,11 +662,16 @@ public class InstrumentDB {
 	 * @see #GET_FILE_DEFINITIONS_QUERY
 	 */
 	private static LongitudeSpecification buildLongitudeSpecification(ResultSet record) throws SQLException, PositionException {
+		LongitudeSpecification spec = null;
+		
 		int format = record.getInt(9);
 		int valueColumn = record.getInt(10);
 		int hemisphereColumn = record.getInt(11);
 		
-		return new LongitudeSpecification(format, valueColumn, hemisphereColumn);
+		if (format != -1) {
+			spec = new LongitudeSpecification(format, valueColumn, hemisphereColumn);
+		}
+		return spec;
 	}
 	
 	/**
@@ -677,11 +683,17 @@ public class InstrumentDB {
 	 * @see #GET_FILE_DEFINITIONS_QUERY
 	 */
 	private static LatitudeSpecification buildLatitudeSpecification(ResultSet record) throws SQLException, PositionException {
+		LatitudeSpecification spec = null;
+		
 		int format = record.getInt(12);
 		int valueColumn = record.getInt(13);
 		int hemisphereColumn = record.getInt(14);
 		
-		return new LatitudeSpecification(format, valueColumn, hemisphereColumn);
+		if (format != -1) {
+			spec = new LatitudeSpecification(format, valueColumn, hemisphereColumn); 
+		}
+		
+		return spec;
 	}
 	
 	/**
@@ -761,7 +773,7 @@ public class InstrumentDB {
 						file.setRunTypeColumn(fileColumn);
 						getRunTypes(conn, file, runTypeConfiguration);
 					} else {
-						assignments.addAssignment(sensorName, new SensorAssignment(file.getFileDescription(), fileColumn, valueColumn, sensorName, postCalibrated, primarySensor, dependsQuestionAnswer, missingValue));
+						assignments.addAssignment(sensorType, new SensorAssignment(file.getFileDescription(), fileColumn, valueColumn, sensorName, postCalibrated, primarySensor, dependsQuestionAnswer, missingValue));
 					}
 				}
 				

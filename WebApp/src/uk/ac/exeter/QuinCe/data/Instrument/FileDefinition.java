@@ -181,6 +181,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * @param lonSpec The longitude specification
 	 * @param latSpec The latitude specification
 	 * @param dateTimeSpec The date/time specification
+	 * @param fileSet The parent file set
 	 */
 	public FileDefinition(long databaseId, String description, String separator, int headerType, int headerLines, String headerEndString,
 			int columnHeaderRows, int columnCount, LongitudeSpecification lonSpec, LatitudeSpecification latSpec, DateTimeSpecification dateTimeSpec, InstrumentFileSet fileSet) {
@@ -599,5 +600,45 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 */
 	public void setRunTypeCategory(String runType, RunTypeCategory category) {
 		runTypes.put(runType, category);
+	}
+	
+	/**
+	 * Compare the layout of this file definition to
+	 * a supplied definition to see if they are identical.
+	 * @param compare The definition to be compared
+	 * @return {@code true} if the layouts match; {@code false} otherwise.
+	 */
+	public boolean matchesLayout(FileDefinition compare) {
+		boolean matches = true;
+		
+		if (headerType != compare.headerType) {
+			matches = false;
+		}
+		
+		if (matches && headerType == HEADER_TYPE_LINE_COUNT && headerLines != compare.headerLines) {
+			matches = false;
+		}
+		
+		if (matches) {
+			if (null == headerEndString) {
+				if (null != compare.headerEndString) {
+					matches = false;
+				}
+			} else if (null == compare.headerEndString || !headerEndString.equals(compare.headerEndString)) {
+				matches = false;
+			}
+		}
+					
+		if (matches) {
+			if (columnHeaderRows != compare.columnHeaderRows) {
+				matches = false;
+			} else if (!separator.equals(compare.separator)) {
+					matches = false;
+			} else if (columnCount != compare.columnCount) {
+				matches = false;
+			}
+		}
+		
+		return matches;
 	}
 }

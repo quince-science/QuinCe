@@ -3,3 +3,8 @@ function showProcessingMessage() {
 	$('#processingFileMessage').show();
 	$('#uploadForm\\:extractFileLink').click();
 }
+
+function showFileDetails() {
+	$('#processingFileMessage').hide();
+	$('#fileDetails').show();
+}

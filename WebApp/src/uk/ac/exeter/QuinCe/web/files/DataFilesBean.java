@@ -6,15 +6,12 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
-import uk.ac.exeter.QuinCe.web.system.ResourceException;
+import uk.ac.exeter.QuinCe.web.Instrument.newInstrument.FileDefinitionBuilder;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
@@ -40,10 +37,19 @@ public class DataFilesBean extends FileUploadBean {
 	 */
 	private Instrument currentFullInstrument = null;
 	
+	/**
+	 * The file definition to use for the uploaded file
+	 */
+	private FileDefinition fileDefinition = null;
+	
+	/**
+	 * The file definitions that match the uploaded file
+	 */
+	private List<FileDefinition> matchedFileDefinitions = null;
+	
 	@Override
 	public void processUploadedFile() {
-		// We don't immediately do anything in this bean, so we can return messages
-		// to the user a quickly as possible
+		extractFileLines();
 	}
 
 	/**
@@ -123,17 +129,53 @@ public class DataFilesBean extends FileUploadBean {
 	
 	/**
 	 * Extract and process the uploaded file's contents
-	 * @throws RecordNotFoundException If any records are missing from the database
-	 * @throws DatabaseException If a database error occurs
-	 * @throws MissingParamException If any required parameters are missing
-	 * @throws ResourceException If the application configuration cannot be retrieved
-	 * @throws InstrumentException If any instrument details are invalid
 	 */
-	public void extractFile() throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException, ResourceException {
-		extractFileLines();
-		if (null == currentFullInstrument) {
-			currentFullInstrument = InstrumentDB.getInstrument(getDataSource(), getCurrentInstrument(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
+	public void extractFile() {
+		try {
+			if (null == currentFullInstrument) {
+				currentFullInstrument = InstrumentDB.getInstrument(getDataSource(), getCurrentInstrument(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
+			}
+			
+			FileDefinitionBuilder guessedFileLayout = new FileDefinitionBuilder(currentFullInstrument.getFileDefinitions());
+			guessedFileLayout.setFileContents(fileLines);
+			guessedFileLayout.guessFileLayout();
+			
+			matchedFileDefinitions = currentFullInstrument.getFileDefinitions().getMatchingFileDefinition(guessedFileLayout);
+			if (matchedFileDefinitions.size() > 0) {
+				fileDefinition = matchedFileDefinitions.get(0);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Get the name of the matched file definition
+	 * @return The file definition name
+	 */
+	public String getFileDefinition() {
+		String result = null;
+		
+		if (null != fileDefinition) {
+			result = fileDefinition.getFileDescription();
 		}
 		
+		return result;
+	}
+	
+	/**
+	 * Set the file definition for the uploaded file
+	 * @param fileDescription The file description
+	 */
+	public void setFileDefinition(String fileDescription) {
+		this.fileDefinition = currentFullInstrument.getFileDefinitions().get(fileDescription);
+	}
+	
+	/**
+	 * Get the list of file definitions that match the uploaded file
+	 * @return The matched file definitions
+	 */
+	public List<FileDefinition> getMatchedFileDefinitions() {
+		return matchedFileDefinitions;
 	}
 }

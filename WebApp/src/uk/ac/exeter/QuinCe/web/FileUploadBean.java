@@ -71,4 +71,18 @@ public abstract class FileUploadBean extends BaseManagedBean {
 		String fileContent = new String(getFile().getContents(), StandardCharsets.UTF_8);
 		fileLines = Arrays.asList(fileContent.split("[\\r\\n]+"));
     }
+    
+    /**
+     * Get the name of the uploaded file
+     * @return The filename
+     */
+    public String getFilename() {
+    	String result = null;
+    	
+    	if (null != file) {
+    		result = file.getFileName();
+    	}
+    	
+    	return result;
+    }
 }

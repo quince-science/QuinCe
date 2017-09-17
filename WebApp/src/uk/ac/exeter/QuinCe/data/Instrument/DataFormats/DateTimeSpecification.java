@@ -276,7 +276,26 @@ public class DateTimeSpecification {
 	 * @return {@code true} if the date and time have been assigned; {@code false} if assignments are still required
 	 */
 	public boolean assignmentComplete() {
-		return getAvailableEntries().size() == 0;
+		boolean dateAssigned = false;
+		boolean timeAssigned = false;
+		
+		if (isAssigned(DATE_TIME) || isAssigned(JDAY_TIME) || isAssigned(HOURS_FROM_START)) {
+			dateAssigned = true;
+			timeAssigned = true;
+		} else {
+			if (isAssigned(DATE) || isAssigned(JDAY) ||
+					(isAssigned(YEAR) && isAssigned(MONTH) && isAssigned(DAY))) {
+				dateAssigned = true;
+			}
+			
+			if (!timeAssigned) {
+				if (isAssigned(TIME) || (isAssigned(HOUR) && isAssigned(MINUTE) && isAssigned(SECOND))) {
+					timeAssigned = true;
+				}
+			}
+		}
+		
+		return (dateAssigned && timeAssigned);
 	}
 	
 	/**
