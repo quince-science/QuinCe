@@ -611,15 +611,14 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	public boolean matchesLayout(FileDefinition compare) {
 		boolean matches = true;
 		
-		if (headerType != compare.headerType) {
-			matches = false;
+		switch (headerType) {
+		case HEADER_TYPE_LINE_COUNT: {
+			if (headerLines != compare.headerLines) {
+				matches = false;
+				break;
+			}
 		}
-		
-		if (matches && headerType == HEADER_TYPE_LINE_COUNT && headerLines != compare.headerLines) {
-			matches = false;
-		}
-		
-		if (matches) {
+		case HEADER_TYPE_STRING: {
 			if (null == headerEndString) {
 				if (null != compare.headerEndString) {
 					matches = false;
@@ -627,8 +626,10 @@ public class FileDefinition implements Comparable<FileDefinition> {
 			} else if (null == compare.headerEndString || !headerEndString.equals(compare.headerEndString)) {
 				matches = false;
 			}
+			break;
 		}
-					
+		}
+							
 		if (matches) {
 			if (columnHeaderRows != compare.columnHeaderRows) {
 				matches = false;
