@@ -65,6 +65,9 @@ public class DataFilesBean extends FileUploadBean {
 			}
 			
 			currentFullInstrument = null;
+			
+			matchedFileDefinitions = null;
+			fileDefinition = null;
 		} catch (Exception e) {
 			// Fail quietly, but print the log
 			e.printStackTrace();
@@ -131,6 +134,9 @@ public class DataFilesBean extends FileUploadBean {
 	 * Extract and process the uploaded file's contents
 	 */
 	public void extractFile() {
+		matchedFileDefinitions = null;
+		fileDefinition = null;
+		
 		try {
 			if (null == currentFullInstrument) {
 				currentFullInstrument = InstrumentDB.getInstrument(getDataSource(), getCurrentInstrument(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
