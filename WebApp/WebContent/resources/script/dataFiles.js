@@ -1,10 +1,16 @@
 function showProcessingMessage() {
 	$('#uploadFile').hide();
-	$('#processingFileMessage').show();
 	$('#uploadForm\\:extractFileLink').click();
 }
 
 function showFileDetails() {
+	
 	$('#processingFileMessage').hide();
-	$('#fileDetails').show();
+
+	var matchedFile = $('#uploadForm\\:fileDefinition').html();
+	if (matchedFile == '') {
+		$('#uploadFile').show();
+	} else {
+		$('#fileDetails').show();
+	}
 }

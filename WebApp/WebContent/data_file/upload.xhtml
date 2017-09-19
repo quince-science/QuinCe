@@ -16,10 +16,11 @@
 	<ui:define name="content">
 		<h:form id="uploadForm" method="post" charset="utf8">
 			<p:commandLink id="extractFileLink" style="invisible" ajax="true" action="#{dataFilesBean.extractFile}"
-				process="extractFileLink" update="filename fileDefinition" oncomplete="showFileDetails();"/>
+				process="extractFileLink" update="filename fileDefinition messages" oncomplete="showFileDetails();"/>
 			
 			<div class="pageTable">
 				<div id="uploadFile">
+					<p:messages id="messages"/>
 					<p:outputLabel value="Select a file to upload"/>
 					<p:fileUpload fileUploadListener="#{dataFilesBean.handleFileUpload}" mode="advanced" auto="true" oncomplete="showProcessingMessage()"/>
 				</div>
@@ -38,6 +39,9 @@
 					</h:panelGrid>
 				</div>
 			</div>
+			<h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
+				<p:commandButton value="Back to File List" ajax="false" action="#{dataFilesBean.goToFileList}"/>
+			</h:panelGrid>			
 		</h:form>
 	</ui:define>
 </ui:composition>

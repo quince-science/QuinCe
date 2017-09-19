@@ -28,6 +28,11 @@ public class DataFilesBean extends FileUploadBean {
 	public static final String NAV_UPLOAD = "upload";
 	
 	/**
+	 * Navigation to the file upload page
+	 */
+	public static final String NAV_FILE_LIST = "file_list";
+	
+	/**
 	 * The instruments owned by the user
 	 */
 	private List<InstrumentStub> instruments;
@@ -147,9 +152,15 @@ public class DataFilesBean extends FileUploadBean {
 			guessedFileLayout.guessFileLayout();
 			
 			matchedFileDefinitions = currentFullInstrument.getFileDefinitions().getMatchingFileDefinition(guessedFileLayout);
-			if (matchedFileDefinitions.size() > 0) {
+			
+			if (matchedFileDefinitions.size() == 0) {
+				fileDefinition = null;
+				setMessage(null, "The format of the uploaded file was not recognised. Please upload a different file.");
+			} else {
 				fileDefinition = matchedFileDefinitions.get(0);
 			}
+			// TODO Handle multiple matched definitions
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -183,5 +194,13 @@ public class DataFilesBean extends FileUploadBean {
 	 */
 	public List<FileDefinition> getMatchedFileDefinitions() {
 		return matchedFileDefinitions;
+	}
+	
+	/**
+	 * Return to the file list
+	 * @return Navigation to the file list
+	 */
+	public String goToFileList() {
+		return NAV_FILE_LIST;
 	}
 }
