@@ -32,10 +32,10 @@
 				<div id="fileDetails" class="hidden">
 					<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
 						<p:outputLabel value="Filename:"/>
-						<h:outputText id="filename" value="#{dataFilesBean.filename}"/>
+						<h:outputText id="filename" value="#{dataFilesBean.dataFile.filename}"/>
 						
 						<p:outputLabel value="File Type:"/>
-						<h:outputText id="fileDefinition" value="#{dataFilesBean.fileDefinition}"/>
+						<h:outputText id="fileDefinition" value="#{dataFilesBean.dataFile.fileDescription}"/>
 					</h:panelGrid>
 				</div>
 			</div>

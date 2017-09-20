@@ -85,4 +85,9 @@ public class HighlightedString {
 	public String getHighlightedPortion(){
 		return string.substring(highlightStart, highlightEnd);
 	}
+	
+	@Override
+	public String toString() {
+		return string;
+	}
 }

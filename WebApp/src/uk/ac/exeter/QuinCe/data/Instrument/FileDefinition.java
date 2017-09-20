@@ -13,6 +13,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.HighlightedString;
+import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -435,7 +437,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * @param dataLine The data line
 	 * @return The column values
 	 */
-	public List<String> makeColumnValues(String dataLine) {
+	public List<String> extractFields(String dataLine) {
 		List<String> values = new ArrayList<String>();
 		
 		if (separator.equals(" ")) {
@@ -642,4 +644,137 @@ public class FileDefinition implements Comparable<FileDefinition> {
 		
 		return matches;
 	}
+
+	/**
+	 * Get the header line from a file that contains the given prefix and suffix.
+	 * A line will match if it contains the prefix, followed by a
+	 * number of characters, followed by the suffix.
+	 * <p>
+	 *   The matching line will be returned as a {@link HighlightedString},
+	 *   with the portion between the prefix and suffix highlighted.
+	 * </p>
+	 * <p>
+	 *   If multiple lines match the prefix and suffix, the first line
+	 *   will be returned.
+	 * </p>
+	 * @param fileContents The file contents
+	 * @param prefix The prefix
+	 * @param suffix The suffix
+	 * @return The matching line
+	 * @throws HighlightedStringException If an error occurs while building the highlighted string
+	 */
+	public HighlightedString getHeaderLine(List<String> fileContents, String prefix, String suffix) throws HighlightedStringException {
+		
+		HighlightedString matchedLine = null;
+		
+		for (String line : getFileHeader(fileContents)) {
+			int prefixPos;
+			if (prefix.length() == 0) {
+				prefixPos = 0;
+			} else {
+				prefixPos = line.indexOf(prefix);
+			}
+			
+			if (prefixPos > -1) {
+				int suffixPos = line.length();
+				if (suffix.length() > 0) {
+					suffixPos = line.indexOf(suffix, (prefixPos + prefix.length()));
+					if (suffixPos == -1) {
+						suffixPos = line.length();
+					}
+				}
+					
+				matchedLine = new HighlightedString(line, prefixPos + prefix.length(), suffixPos);
+				break;
+			}
+		}
+		
+		return matchedLine;
+	}
+
+	/**
+	 * Get the number of rows in a file header
+	 * @param fileContents The file contents
+	 * @return The number of rows in the file header
+	 */
+	public int getHeaderLength(List<String> fileContents) {
+		int result = 0;
+		
+		switch (getHeaderType()) {
+		case HEADER_TYPE_LINE_COUNT: {
+			result = getHeaderLines();
+			break;
+		}
+		case HEADER_TYPE_STRING: {
+			
+			int row = 0;
+			boolean foundHeaderEnd = false;
+			while (!foundHeaderEnd && row < fileContents.size()) {
+				if (fileContents.get(row).equalsIgnoreCase(getHeaderEndString())) {
+					foundHeaderEnd = true;
+				} else {
+					row++;
+				}
+			}
+			
+			result = row;
+			break;
+		}
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Get the file header from a file. If there is no header,
+	 * returns an empty list.
+	 * @param fileContents The file contents
+	 * @return The lines of the file header
+	 */
+	public List<String> getFileHeader(List<String> fileContents) {
+		List<String> result;
+		
+		int headerLines = getHeaderLength(fileContents);
+		if (headerLines == 0) {
+			result = new ArrayList<String>();
+		} else {
+			result = fileContents.subList(0, headerLines);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Determine whether or not this file contains Run Types
+	 * @return {@code true} if the file contains Run Types; {@code false} if not
+	 */
+	public boolean hasRunTypes() {
+		return (runTypeColumn > -1);
+	}
+
+	/**
+	 * Get the run type from a data line
+	 * @param line The line
+	 * @return The run type
+	 * @throws FileDefinitionException If this file does not contain run types, the run type is not present, or the run type is not recognised
+	 */
+	public RunTypeCategory getRunType(String line) throws FileDefinitionException {
+		RunTypeCategory result = null;
+		
+		if (!hasRunTypes()) {
+			throw new FileDefinitionException("File does not contain run types");
+		} else {
+			String runTypeValue = extractFields(line).get(runTypeColumn);
+			if (null != runTypeValue && runTypeValue.length() > 0) {
+				if (!runTypes.containsKey(runTypeValue)) {
+					throw new FileDefinitionException("Unrecognised run type '" + runTypeValue + "'");
+				} else {
+					result = runTypes.get(runTypeValue);
+				}
+			}
+		}
+		
+		return result;
+	}
 }
+

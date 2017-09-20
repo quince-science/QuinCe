@@ -5,7 +5,7 @@ package uk.ac.exeter.QuinCe.data.Instrument;
  * @author Steve Jones
  *
  */
-public class InvalidHeaderTypeException extends Exception {
+public class InvalidHeaderTypeException extends FileDefinitionException {
 
 	/**
 	 * The Serial Version UID

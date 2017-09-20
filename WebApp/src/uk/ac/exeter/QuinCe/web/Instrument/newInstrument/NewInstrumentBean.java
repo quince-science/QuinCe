@@ -1214,7 +1214,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	public void extractStartTime() throws HighlightedStringException {
 		FileDefinitionBuilder fileDefinition = (FileDefinitionBuilder) instrumentFiles.get(dateTimeFile);
 		
-		HighlightedString headerLine = fileDefinition.getHeaderLine(startTimePrefix, startTimeSuffix);
+		HighlightedString headerLine = fileDefinition.getHeaderLine(fileLines, startTimePrefix, startTimeSuffix);
 		if (null == headerLine) {
 			startTimeLine = null;
 			startTimeDate = null;

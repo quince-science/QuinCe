@@ -6,7 +6,9 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
+import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
@@ -43,9 +45,9 @@ public class DataFilesBean extends FileUploadBean {
 	private Instrument currentFullInstrument = null;
 	
 	/**
-	 * The file definition to use for the uploaded file
+	 * The data file object
 	 */
-	private FileDefinition fileDefinition = null;
+	private DataFile dataFile = null;
 	
 	/**
 	 * The file definitions that match the uploaded file
@@ -72,7 +74,7 @@ public class DataFilesBean extends FileUploadBean {
 			currentFullInstrument = null;
 			
 			matchedFileDefinitions = null;
-			fileDefinition = null;
+			dataFile = null;
 		} catch (Exception e) {
 			// Fail quietly, but print the log
 			e.printStackTrace();
@@ -140,7 +142,7 @@ public class DataFilesBean extends FileUploadBean {
 	 */
 	public void extractFile() {
 		matchedFileDefinitions = null;
-		fileDefinition = null;
+		dataFile = null;
 		
 		try {
 			if (null == currentFullInstrument) {
@@ -152,6 +154,7 @@ public class DataFilesBean extends FileUploadBean {
 			guessedFileLayout.guessFileLayout();
 			
 			matchedFileDefinitions = currentFullInstrument.getFileDefinitions().getMatchingFileDefinition(guessedFileLayout);
+			FileDefinition fileDefinition = null;
 			
 			if (matchedFileDefinitions.size() == 0) {
 				fileDefinition = null;
@@ -160,9 +163,15 @@ public class DataFilesBean extends FileUploadBean {
 				fileDefinition = matchedFileDefinitions.get(0);
 			}
 			// TODO Handle multiple matched definitions
+
+
+			dataFile = new DataFile(fileDefinition, getFilename(), fileLines);
+			
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+			dataFile = null;
+			setMessage(null, "The file could not be processed: " + e.getMessage());
 		}
 	}
 	
@@ -170,22 +179,17 @@ public class DataFilesBean extends FileUploadBean {
 	 * Get the name of the matched file definition
 	 * @return The file definition name
 	 */
-	public String getFileDefinition() {
-		String result = null;
-		
-		if (null != fileDefinition) {
-			result = fileDefinition.getFileDescription();
-		}
-		
-		return result;
+	public DataFile getDataFile() {
+		return dataFile;
 	}
 	
 	/**
 	 * Set the file definition for the uploaded file
 	 * @param fileDescription The file description
+	 * @throws FileDefinitionException If the file definition does not match the file contents
 	 */
-	public void setFileDefinition(String fileDescription) {
-		this.fileDefinition = currentFullInstrument.getFileDefinitions().get(fileDescription);
+	public void setFileDefinition(String fileDescription) throws FileDefinitionException {
+		dataFile.setFileDefinition(currentFullInstrument.getFileDefinitions().get(fileDescription));
 	}
 	
 	/**
