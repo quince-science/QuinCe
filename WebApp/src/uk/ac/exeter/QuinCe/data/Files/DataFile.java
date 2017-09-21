@@ -111,7 +111,6 @@ public class DataFile {
 	 * @throws DataFileException If the end of the file is reached without finding the end of the header
 	 */
 	public int getFirstDataLine() throws DataFileException {
-		// The lines are zero-based, so just returning the header length will be correct
 		return fileDefinition.getHeaderLength(contents);
 	}
 	
@@ -121,6 +120,15 @@ public class DataFile {
 	 */
 	public int getLineCount() {
 		return contents.size();
+	}
+	
+	/**
+	 * Get the number of records in the file
+	 * @return The record count
+	 * @throws DataFileException If the record count cannot be calculated
+	 */
+	public int getRecordCount() throws DataFileException {
+		return contents.size() - getFirstDataLine();
 	}
 
 	/**
@@ -227,6 +235,37 @@ public class DataFile {
 	}
 	
 	/**
+	 * Get the messages generated for this file as a JSON string
+	 * @return The messages in JSON format
+	 */
+	public String getMessagesJson() {
+		StringBuilder json = new StringBuilder();
+		
+		json.append('[');
+		
+		int count = 0;
+		for (DataFileMessage message : messages) {
+			json.append('"');
+			json.append(message.toString());
+			json.append('"');
+			
+			if (count < messages.size() - 1) {
+				json.append(',');
+			}
+
+			count++;
+		}
+		
+		json.append(']');
+		
+		return json.toString();
+	}
+	
+	public void setMessagesJson(String dummy) {
+		// A dummy method for bean compatibility
+	}
+	
+	/**
 	 * Get the number of messages that have been generated
 	 * for this file
 	 * @return The message count
@@ -303,7 +342,7 @@ public class DataFile {
 		Double result = null;
 		
 		if (null != field && field.trim().length() > 0) {
-			if (null != missingValue && !field.equals(missingValue)) {
+			if (null == missingValue || !field.equals(missingValue)) {
 				try {
 					result = Double.parseDouble(field);
 				} catch (NumberFormatException e) {
@@ -331,7 +370,7 @@ public class DataFile {
 		Integer result = null;
 		
 		if (null != field && field.trim().length() > 0) {
-			if (null != missingValue && !field.equals(missingValue)) {
+			if (null == missingValue || !field.equals(missingValue)) {
 				try {
 					result = Integer.parseInt(field);
 				} catch (NumberFormatException e) {
@@ -360,7 +399,7 @@ public class DataFile {
 		if (null != field) {
 			result = field.trim();
 
-			if (null != missingValue && !field.equals(missingValue)) {
+			if (null == missingValue || !field.equals(missingValue)) {
 				result = null;
 			}
 		}

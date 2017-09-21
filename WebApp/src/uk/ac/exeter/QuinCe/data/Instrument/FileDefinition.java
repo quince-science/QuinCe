@@ -712,9 +712,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 			while (!foundHeaderEnd && row < fileContents.size()) {
 				if (fileContents.get(row).equalsIgnoreCase(getHeaderEndString())) {
 					foundHeaderEnd = true;
-				} else {
-					row++;
 				}
+				
+				row++;
 			}
 			
 			result = row;

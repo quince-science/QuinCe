@@ -239,7 +239,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	/**
 	 * The format for the start time in the file header
 	 */
-	private String startTimeFormat = "MMM DD YYYY HH:MM:SS";
+	private String startTimeFormat = "MMM dd YYYY HH:MM:SS";
 	
 	/**
 	 * The start time line extracted from the file header. This is a JSON string
@@ -993,7 +993,7 @@ public class NewInstrumentBean extends FileUploadBean {
 		dateFormat = null;
 		startTimePrefix = null;
 		startTimeSuffix = null;
-		startTimeFormat = "MMM DD YYYY HH:MM:SS";
+		startTimeFormat = "MMM dd YYYY HH:MM:SS";
 	}
 
 	/**

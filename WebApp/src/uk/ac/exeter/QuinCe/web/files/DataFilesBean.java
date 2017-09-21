@@ -134,6 +134,7 @@ public class DataFilesBean extends FileUploadBean {
 	 * @return Navigation to the upload page
 	 */
 	public String beginUpload() {
+		initialise();
 		return NAV_UPLOAD;
 	}
 	
@@ -167,6 +168,9 @@ public class DataFilesBean extends FileUploadBean {
 
 			dataFile = new DataFile(fileDefinition, getFilename(), fileLines);
 			
+			if (dataFile.getMessageCount() > 0) {
+				setMessage(null, "The supplied data file could not be extracted (see messages below). Please fix these problems and upload the file again.");
+			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
