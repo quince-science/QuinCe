@@ -92,7 +92,7 @@ public class InstrumentDB {
 	/**
 	 * Query for retrieving the list of instruments owned by a particular user
 	 */
-	private static final String GET_INSTRUMENT_LIST_QUERY = "SELECT id, name FROM instrument WHERE owner = ? ORDER BY name ASC";
+	private static final String GET_INSTRUMENT_LIST_QUERY = "SELECT id, name FROM instrument ORDER BY name ASC";
 	
 	/**
 	 * Query to retrieve all the run types for a given instrument
@@ -257,7 +257,6 @@ public class InstrumentDB {
 		try {
 			conn = dataSource.getConnection();
 			stmt = conn.prepareStatement(GET_INSTRUMENT_LIST_QUERY);
-			stmt.setLong(1, owner.getDatabaseID());
 			
 			instruments = stmt.executeQuery();
 			while (instruments.next()) {
