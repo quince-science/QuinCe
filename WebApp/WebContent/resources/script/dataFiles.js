@@ -8,7 +8,7 @@ function showFileDetails() {
 	
 	$('#processingFileMessage').hide();
 
-	var matchedFile = $('#uploadForm\\:fileDefinition').html();
+	var matchedFile = $('#uploadForm\\:fileType').html();
 	
 	if (matchedFile == '') {
 		$('#uploadFile').show();

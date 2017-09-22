@@ -235,41 +235,6 @@ public class DataFile {
 	}
 	
 	/**
-	 * Get the messages generated for this file as a JSON string
-	 * @return The messages in JSON format
-	 */
-	public String getMessagesJson() {
-		StringBuilder json = new StringBuilder();
-		
-		json.append('[');
-		
-		int count = 0;
-		for (DataFileMessage message : messages) {
-			json.append('"');
-			json.append(message.toString());
-			json.append('"');
-			
-			if (count < messages.size() - 1) {
-				json.append(',');
-			}
-
-			count++;
-		}
-		
-		json.append(']');
-		
-		return json.toString();
-	}
-	
-	/**
-	 * Dummy method for setting the JSON messages. Does nothing
-	 * @param dummy Ignored parameter
-	 */
-	public void setMessagesJson(String dummy) {
-		// A dummy method for bean compatibility
-	}
-	
-	/**
 	 * Get the number of messages that have been generated
 	 * for this file
 	 * @return The message count

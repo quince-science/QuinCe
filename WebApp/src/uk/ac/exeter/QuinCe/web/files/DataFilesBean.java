@@ -1,12 +1,16 @@
 package uk.ac.exeter.QuinCe.web.files;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
+import uk.ac.exeter.QuinCe.data.Files.DataFileException;
+import uk.ac.exeter.QuinCe.data.Files.DataFileMessage;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -71,6 +75,8 @@ public class DataFilesBean extends FileUploadBean {
 				setCurrentInstrument(instruments.get(0).getId());
 			}
 			
+			// TODO We don't need to reset the instrument every time -
+			// TODO only if the user switches instrument in the menu
 			currentFullInstrument = null;
 			
 			matchedFileDefinitions = null;
@@ -181,14 +187,6 @@ public class DataFilesBean extends FileUploadBean {
 	}
 	
 	/**
-	 * Get the name of the matched file definition
-	 * @return The file definition name
-	 */
-	public DataFile getDataFile() {
-		return dataFile;
-	}
-	
-	/**
 	 * Set the file definition for the uploaded file
 	 * @param fileDescription The file description
 	 * @throws FileDefinitionException If the file definition does not match the file contents
@@ -211,5 +209,134 @@ public class DataFilesBean extends FileUploadBean {
 	 */
 	public String goToFileList() {
 		return NAV_FILE_LIST;
+	}
+	
+	/**
+	 * Get the messages generated for this file as a JSON string
+	 * @return The messages in JSON format
+	 */
+	public String getFileMessages() {
+		StringBuilder json = new StringBuilder();
+		
+		json.append('[');
+
+		if (null != dataFile) {
+			
+			TreeSet<DataFileMessage> messages = dataFile.getMessages();
+		
+			int count = 0;
+			for (DataFileMessage message : messages) {
+				json.append('"');
+				json.append(message.toString());
+				json.append('"');
+				
+				if (count < messages.size() - 1) {
+					json.append(',');
+				}
+	
+				count++;
+			}
+		}
+		
+		json.append(']');
+		
+		return json.toString();
+	}
+	
+	/**
+	 * Get the file format description
+	 * @return The file format description
+	 */
+	public String getFileType() {
+		String result = null;
+		
+		if (null != dataFile) {
+			result = dataFile.getFileDescription();
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Get the date of the first record in the file
+	 * @return The start date
+	 */
+	public LocalDateTime getFileStartDate() {
+		LocalDateTime result = null;
+		
+		if (dataFile != null) {
+			result = dataFile.getStartDate();
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Get the date of the last record in the file
+	 * @return The end date
+	 */
+	public LocalDateTime getFileEndDate() {
+		LocalDateTime result = null;
+		
+		if (dataFile != null) {
+			result = dataFile.getEndDate();
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Get the number of records in the file
+	 * @return The record count
+	 * @throws DataFileException If the count cannot be calculated
+	 */
+	public int getFileRecordCount() throws DataFileException {
+		int result = -1;
+		
+		if (dataFile != null) {
+			result = dataFile.getRecordCount();
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Dummy method for (not) setting file messages
+	 * @param dummy Parameter
+	 */
+	public void setFileMessages(String dummy) {
+		// Do nothing
+	}
+	
+	/**
+	 * Dummy method for (not) setting file messages
+	 * @param dummy Parameter
+	 */
+	public void setFileType(String dummy) {
+		// Do nothing
+	}
+	
+	/**
+	 * Dummy method for (not) setting file messages
+	 * @param dummy Parameter
+	 */
+	public void setFileStartDate(LocalDateTime dummy) {
+		// Do nothing
+	}
+	
+	/**
+	 * Dummy method for (not) setting file messages
+	 * @param dummy Parameter
+	 */
+	public void setFileEndDate(LocalDateTime dummy) {
+		// Do nothing
+	}
+	
+	/**
+	 * Dummy method for (not) setting file messages
+	 * @param dummy Parameter
+	 */
+	public void setFileRecordCount(String dummy) {
+		// Do nothing
 	}
 }

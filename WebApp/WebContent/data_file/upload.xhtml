@@ -18,11 +18,9 @@
 			<p:commandLink id="extractFileLink" style="invisible" ajax="true" action="#{dataFilesBean.extractFile}"
 				process="extractFileLink" update="filename fileType startDate endDate recordCount fileMessages messages" oncomplete="showFileDetails();"/>
 				
+			<h:inputHidden id="fileMessages" value="#{dataFilesBean.fileMessages}"/>
 			
 			<div class="pageTable">
-			<h:inputHidden id="fileMessages" value="#{dataFilesBean.dataFile.messagesJson}"/>
-
-
 				<div id="uploadFile">
 					<p:messages id="messages"/>
 					<div id="messages" class="error listBox hidden"></div>
@@ -38,19 +36,19 @@
 				<div id="fileDetails" class="hidden">
 					<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
 						<p:outputLabel value="Filename:"/>
-						<h:outputText id="filename" value="#{dataFilesBean.dataFile.filename}"/>
+						<h:outputText id="filename" value="#{dataFilesBean.filename}"/>
 						
 						<p:outputLabel value="File Type:"/>
-						<h:outputText id="fileType" value="#{dataFilesBean.dataFile.fileDescription}"/>
+						<h:outputText id="fileType" value="#{dataFilesBean.fileType}"/>
 						
 						<p:outputLabel value="Start Date:"/>
-						<h:outputText id="startDate" value="#{dataFilesBean.dataFile.startDate}"/>
+						<h:outputText id="startDate" value="#{dataFilesBean.fileStartDate}"/>
 						
 						<p:outputLabel value="End Date:"/>
-						<h:outputText id="endDate" value="#{dataFilesBean.dataFile.endDate}"/>
+						<h:outputText id="endDate" value="#{dataFilesBean.fileEndDate}"/>
 						
 						<p:outputLabel value="Number of records:"/>
-						<h:outputText id="recordCount" value="#{dataFilesBean.dataFile.recordCount}">
+						<h:outputText id="recordCount" value="#{dataFilesBean.fileRecordCount}">
 						</h:outputText>
 					</h:panelGrid>
 				</div>
