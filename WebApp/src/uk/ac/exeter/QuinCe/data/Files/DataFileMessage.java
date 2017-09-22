@@ -36,7 +36,7 @@ public class DataFileMessage implements Comparable<DataFileMessage> {
 	 * @param message The message text
 	 */
 	public DataFileMessage(int line, String message) {
-		this.line = line;
+		this.line = line + 1; // Human-readable line numbers in messages!
 		this.message = message;
 	}
 	
