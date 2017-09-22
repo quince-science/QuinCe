@@ -382,7 +382,7 @@ public class DataFile {
 		if (null != field) {
 			result = field.trim();
 
-			if (null == missingValue || !field.equals(missingValue)) {
+			if (null != missingValue && !field.equals(missingValue)) {
 				result = null;
 			}
 		}
