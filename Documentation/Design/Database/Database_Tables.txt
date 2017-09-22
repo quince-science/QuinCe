@@ -205,6 +205,19 @@ with the `calibration_date` will form the primary key for the table.
 This section describes the tables used to hold data as it is processed to calculate and
 QC the CO~2~ measurements.
 
+## `data_file`
+This table holds details of the raw data files held in the system.
+Sections of these files will be used to construct voyages/deployments
+
+Field                    Type           Description
+--------------------     ------------   -------------------------------------------------------------------------
+id*                      Integer        Data file ID
+file_definition_id       F_KEY          File definition describing the format of the file
+filename                 String         Original filename
+start_date               DateTime       Date/Time of the first record in the file
+end_date                 DateTime       Date/Time of the last record in the file
+record_count             Integer        Number of records in the file
+
 ## `voyage`
 This table will define a voyage. Itwill not contain any data,
 but its contents will be used to determine which data should be
