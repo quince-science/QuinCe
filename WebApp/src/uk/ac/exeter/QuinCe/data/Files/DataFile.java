@@ -179,7 +179,7 @@ public class DataFile {
 				String line = contents.get(lineNumber);
 				
 				try {
-					LocalDateTime dateTime = fileDefinition.getDateTimeSpecification().getDateTime(null, fileDefinition.extractFields(line));
+					LocalDateTime dateTime = fileDefinition.getDateTimeSpecification().getDateTime(headerDate, fileDefinition.extractFields(line));
 					if (null != lastDateTime) {
 						if (dateTime.compareTo(lastDateTime) <= 0) {
 							addMessage(lineNumber, "Date/Time is not monotonic");
@@ -261,6 +261,10 @@ public class DataFile {
 		return json.toString();
 	}
 	
+	/**
+	 * Dummy method for setting the JSON messages. Does nothing
+	 * @param dummy Ignored parameter
+	 */
 	public void setMessagesJson(String dummy) {
 		// A dummy method for bean compatibility
 	}
@@ -336,9 +340,9 @@ public class DataFile {
 	 * @param field The field
 	 * @param missingValue The 'missing' value for the field
 	 * @return The numeric field value
-	 * @throws DataFileException If the field value is not numeric
+	 * @throws ValueNotNumericException If the field value is not numeric
 	 */
-	public static Double extractDoubleFieldValue(String field, String missingValue) throws DataFileException {
+	public static Double extractDoubleFieldValue(String field, String missingValue) throws ValueNotNumericException {
 		Double result = null;
 		
 		if (null != field && field.trim().length() > 0) {
@@ -346,7 +350,7 @@ public class DataFile {
 				try {
 					result = Double.parseDouble(field);
 				} catch (NumberFormatException e) {
-					throw new DataFileException("Value is not numeric");
+					throw new ValueNotNumericException();
 				}
 			}
 		}
@@ -364,9 +368,9 @@ public class DataFile {
 	 * @param field The field
 	 * @param missingValue The 'missing' value for the field
 	 * @return The numeric field value
-	 * @throws DataFileException If the field value is not numeric
+	 * @throws ValueNotNumericException If the field value is not numeric
 	 */
-	public static Integer extractIntFieldValue(String field, String missingValue) throws DataFileException {
+	public static Integer extractIntFieldValue(String field, String missingValue) throws ValueNotNumericException {
 		Integer result = null;
 		
 		if (null != field && field.trim().length() > 0) {
@@ -374,7 +378,7 @@ public class DataFile {
 				try {
 					result = Integer.parseInt(field);
 				} catch (NumberFormatException e) {
-					throw new DataFileException("Value is not numeric");
+					throw new ValueNotNumericException();
 				}
 			}
 		}

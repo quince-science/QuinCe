@@ -165,11 +165,12 @@ public class DataFilesBean extends FileUploadBean {
 			}
 			// TODO Handle multiple matched definitions
 
-
-			dataFile = new DataFile(fileDefinition, getFilename(), fileLines);
-			
-			if (dataFile.getMessageCount() > 0) {
-				setMessage(null, "The supplied data file could not be extracted (see messages below). Please fix these problems and upload the file again.");
+			if (null != fileDefinition) {
+				dataFile = new DataFile(fileDefinition, getFilename(), fileLines);
+				
+				if (dataFile.getMessageCount() > 0) {
+					setMessage(null, "The supplied data file could not be extracted (see messages below). Please fix these problems and upload the file again.");
+				}
 			}
 			
 		} catch (Exception e) {

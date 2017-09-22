@@ -16,7 +16,7 @@
 	<ui:define name="content">
 		<h:form id="uploadForm" method="post" charset="utf8">
 			<p:commandLink id="extractFileLink" style="invisible" ajax="true" action="#{dataFilesBean.extractFile}"
-				process="extractFileLink" update="filename fileDefinition startDate endDate recordCount fileMessages messages" oncomplete="showFileDetails();"/>
+				process="extractFileLink" update="filename fileType startDate endDate recordCount fileMessages messages" oncomplete="showFileDetails();"/>
 				
 			<h:inputHidden id="fileMessages" value="#{dataFilesBean.dataFile.messagesJson}"/>
 			
@@ -39,7 +39,7 @@
 						<h:outputText id="filename" value="#{dataFilesBean.dataFile.filename}"/>
 						
 						<p:outputLabel value="File Type:"/>
-						<h:outputText id="fileDefinition" value="#{dataFilesBean.dataFile.fileDescription}"/>
+						<h:outputText id="fileType" value="#{dataFilesBean.dataFile.fileDescription}"/>
 						
 						<p:outputLabel value="Start Date:"/>
 						<h:outputText id="startDate" value="#{dataFilesBean.dataFile.startDate}"/>

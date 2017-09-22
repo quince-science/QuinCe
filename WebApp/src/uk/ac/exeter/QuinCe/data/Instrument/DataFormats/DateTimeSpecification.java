@@ -13,6 +13,7 @@ import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
+import uk.ac.exeter.QuinCe.data.Files.ValueNotNumericException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -726,7 +727,14 @@ public class DateTimeSpecification {
 	private LocalDateTime getHoursFromStartDate(LocalDateTime headerDate, List<String> line) throws DataFileException {
 		
 		DateTimeColumnAssignment assignment = getAssignment(HOURS_FROM_START);
-		Double hours = DataFile.extractDoubleFieldValue(line.get(assignment.getColumn()), null);
+		Double hours;
+		
+		try {
+			hours = DataFile.extractDoubleFieldValue(line.get(assignment.getColumn()), null);
+		} catch (ValueNotNumericException e) {
+			throw new DataFileException("Hours column is not numeric");
+		}
+		
 		if (null == hours) {
 			throw new DataFileException("Hours column is empty");
 		}
@@ -781,7 +789,14 @@ public class DateTimeSpecification {
 		int yearField = getAssignment(YEAR).getColumn();
 		int jdayTimeField = getAssignment(JDAY_TIME).getColumn();
 		
-		Integer year = DataFile.extractIntFieldValue(line.get(yearField), null);
+		Integer year;
+		
+		try {
+			year = DataFile.extractIntFieldValue(line.get(yearField), null);
+		} catch (ValueNotNumericException e) {
+			throw new DataFileException("Year column is not numeric");
+		}
+			
 		if (null == year) {
 			throw new DataFileException("Year column is empty");
 		}
@@ -842,12 +857,20 @@ public class DateTimeSpecification {
 		int yearField = getAssignment(YEAR).getColumn();
 		int jdayField = getAssignment(JDAY).getColumn();
 
-		Integer year = DataFile.extractIntFieldValue(line.get(yearField), null);
+		Integer year;
+		Integer jday;
+		
+		try {
+			year = DataFile.extractIntFieldValue(line.get(yearField), null);
+			jday = DataFile.extractIntFieldValue(line.get(jdayField), null);
+		} catch (ValueNotNumericException e) {
+			throw new DataFileException("One or more date values is not numeric");
+		}
+		
 		if (null == year) {
 			throw new DataFileException("Year column is empty");
 		}
 
-		Integer jday = DataFile.extractIntFieldValue(line.get(jdayField), null);
 		if (null == jday) {
 			throw new DataFileException("Julian day column is empty");
 		}
@@ -873,17 +896,26 @@ public class DateTimeSpecification {
 		int monthField = getAssignment(MONTH).getColumn();
 		int dayField = getAssignment(DAY).getColumn();
 
-		Integer year = DataFile.extractIntFieldValue(line.get(yearField), null);
+		Integer year;
+		Integer month;
+		Integer day;
+		
+		try {
+			year = DataFile.extractIntFieldValue(line.get(yearField), null);
+			month = DataFile.extractIntFieldValue(line.get(monthField), null);
+			day = DataFile.extractIntFieldValue(line.get(dayField), null);
+		} catch (ValueNotNumericException e) {
+			throw new DataFileException("One or more date values is not numeric");
+		}
+		
 		if (null == year) {
 			throw new DataFileException("Year column is empty");
 		}
 
-		Integer month = DataFile.extractIntFieldValue(line.get(monthField), null);
 		if (null == month) {
 			throw new DataFileException("Month column is empty");
 		}
 
-		Integer day = DataFile.extractIntFieldValue(line.get(dayField), null);
 		if (null == day) {
 			throw new DataFileException("Day column is empty");
 		}
@@ -934,17 +966,26 @@ public class DateTimeSpecification {
 		int minuteField = getAssignment(MINUTE).getColumn();
 		int secondField = getAssignment(SECOND).getColumn();
 
-		Integer hour = DataFile.extractIntFieldValue(line.get(hourField), null);
+		Integer hour;
+		Integer minute;
+		Integer second;
+		
+		try {
+			hour = DataFile.extractIntFieldValue(line.get(hourField), null);
+			minute = DataFile.extractIntFieldValue(line.get(minuteField), null);
+			second = DataFile.extractIntFieldValue(line.get(secondField), null);
+		} catch (ValueNotNumericException e) {
+			throw new DataFileException("One or more time values are not numeric");
+		}
+		
 		if (null == hour) {
 			throw new DataFileException("Hour column is empty");
 		}
 
-		Integer minute = DataFile.extractIntFieldValue(line.get(minuteField), null);
 		if (null == minute) {
 			throw new DataFileException("Minute column is empty");
 		}
 
-		Integer second = DataFile.extractIntFieldValue(line.get(secondField), null);
 		if (null == second) {
 			throw new DataFileException("Second column is empty");
 		}
