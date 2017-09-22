@@ -18,11 +18,14 @@
 			<p:commandLink id="extractFileLink" style="invisible" ajax="true" action="#{dataFilesBean.extractFile}"
 				process="extractFileLink" update="filename fileType startDate endDate recordCount fileMessages messages" oncomplete="showFileDetails();"/>
 				
-			<h:inputHidden id="fileMessages" value="#{dataFilesBean.dataFile.messagesJson}"/>
 			
 			<div class="pageTable">
+			<h:inputHidden id="fileMessages" value="#{dataFilesBean.dataFile.messagesJson}"/>
+
+
 				<div id="uploadFile">
 					<p:messages id="messages"/>
+					<div id="messages" class="error listBox hidden"></div>
 					<p:outputLabel value="Select a file to upload"/>
 					<p:fileUpload fileUploadListener="#{dataFilesBean.handleFileUpload}" mode="advanced" auto="true" oncomplete="showProcessingMessage()"/>
 				</div>
@@ -31,7 +34,6 @@
 					Processing file...
 				</div>
 				
-				<div id="messages" class="error listBox hidden"></div>
 				
 				<div id="fileDetails" class="hidden">
 					<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
