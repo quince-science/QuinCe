@@ -10,6 +10,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -22,6 +23,11 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  */
 public class DataFile {
 
+	/**
+	 * The database ID of this file
+	 */
+	private long databaseId = DatabaseUtils.NO_DATABASE_RECORD;
+	
 	/**
 	 * The file format definition
 	 */
@@ -388,5 +394,29 @@ public class DataFile {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * Get the file's database ID
+	 * @return The database ID
+	 */
+	public long getDatabaseId() {
+		return databaseId;
+	}
+	
+	/**
+	 * Set the file's database ID
+	 * @param databaseId The ID
+	 */
+	protected void setDatabaseId(long databaseId) {
+		this.databaseId = databaseId;
+	}
+	
+	/**
+	 * Get the file definition object
+	 * @return The file definition
+	 */
+	protected FileDefinition getFileDefinition() {
+		return fileDefinition;
 	}
 }
