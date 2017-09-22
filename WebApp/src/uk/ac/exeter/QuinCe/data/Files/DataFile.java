@@ -304,20 +304,34 @@ public class DataFile {
 	
 	/**
 	 * Get the date of the first record in the file
-	 * @return The date
-	 * @throws DataFileException If the first record cannot be accessed, or any 
+	 * @return The date, or null if the date cannot be retrieved
 	 */
-	public LocalDateTime getStartDate() throws DataFileException {
-		return getDate(getFirstDataLine());
+	public LocalDateTime getStartDate() {
+		LocalDateTime result = null;
+		
+		try {
+			result = getDate(getFirstDataLine());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return result;
 	}
 	
 	/**
 	 * Get the date of the last record in the file
-	 * @return The date
-	 * @throws DataFileException If any date/time fields are empty
+	 * @return The date, or null if the date cannot be retrieved
 	 */
-	public LocalDateTime getEndDate() throws DataFileException {
-		return getDate(contents.size() - 1);
+	public LocalDateTime getEndDate() {
+		LocalDateTime result = null;
+		
+		try {
+			result = getDate(contents.size() - 1);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return result;
 	}
 	
 	/**
