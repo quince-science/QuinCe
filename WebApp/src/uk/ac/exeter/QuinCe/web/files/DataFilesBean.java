@@ -159,7 +159,7 @@ public class DataFilesBean extends FileUploadBean {
 			
 			if (matchedFileDefinitions.size() == 0) {
 				fileDefinition = null;
-				setMessage(null, "The format of the uploaded file was not recognised. Please upload a different file.");
+				setMessage(null, "The format of " + getFilename() + " was not recognised. Please upload a different file.");
 			} else {
 				fileDefinition = matchedFileDefinitions.get(0);
 			}
@@ -169,7 +169,7 @@ public class DataFilesBean extends FileUploadBean {
 				dataFile = new DataFile(fileDefinition, getFilename(), fileLines);
 				
 				if (dataFile.getMessageCount() > 0) {
-					setMessage(null, "The supplied data file could not be extracted (see messages below). Please fix these problems and upload the file again.");
+					setMessage(null, getFilename() + " could not be processed (see messages below). Please fix these problems and upload the file again.");
 				}
 			}
 			
