@@ -262,14 +262,18 @@
 							<td><p:outputLabel value="Format:"/></td>
 							<td>
 								<p:selectOneMenu id="dateTimeFormat" value="#{newInstrumentBean.dateTimeFormat}">
-									<f:selectItem itemLabel="YYYY-MM-DD hh:mm:ss" itemValue="yyyy-MM-DD HH:mm:ss"/>
-									<f:selectItem itemLabel="YYYY-MM-DD hhmmss" itemValue="yyyy-MM-DD HHmmss"/>
-									<f:selectItem itemLabel="YYYYMMDD hh:mm:ss" itemValue="yyyyMMDD HH:mm:ss"/>
-									<f:selectItem itemLabel="YYYYMMDD hhmmss" itemValue="yyyyMMDD HHmmss"/>
-									<f:selectItem itemLabel="MM/DD/YYYY hh:mm:ss" itemValue="MM/DD/yyyy HH:mm:ss"/>
-									<f:selectItem itemLabel="MM/DD/YYYY hhmmss" itemValue="MM/DD/yyyy HHmmss"/>
-									<f:selectItem itemLabel="DD/MM/YYYY hh:mm:ss" itemValue="DD/MM/yyyy HH:mm:ss"/>
-									<f:selectItem itemLabel="DD/MM/YYYY hhmmss" itemValue="DD/MM/yyyy HHmmss"/>
+									<f:selectItem itemLabel="YYYY-MM-DD hh:mm:ss" itemValue="yyyy-MM-dd HH:mm:ss"/>
+									<f:selectItem itemLabel="YYYY-MM-DD hhmmss" itemValue="yyyy-MM-dd HHmmss"/>
+									<f:selectItem itemLabel="YYYYMMDD hh:mm:ss" itemValue="yyyyMMdd HH:mm:ss"/>
+									<f:selectItem itemLabel="YYYYMMDD hhmmss" itemValue="yyyyMMdd HHmmss"/>
+									<f:selectItem itemLabel="MM/DD/YYYY hh:mm:ss" itemValue="MM/dd/yyyy HH:mm:ss"/>
+									<f:selectItem itemLabel="MM/DD/YYYY hhmmss" itemValue="MM/dd/yyyy HHmmss"/>
+									<f:selectItem itemLabel="MM/DD/YY hh:mm:ss" itemValue="MM/dd/yy HH:mm:ss"/>
+									<f:selectItem itemLabel="MM/DD/YY hhmmss" itemValue="MM/dd/yy HHmmss"/>
+									<f:selectItem itemLabel="DD/MM/YYYY hh:mm:ss" itemValue="dd/MM/yyyy HH:mm:ss"/>
+									<f:selectItem itemLabel="DD/MM/YYYY hhmmss" itemValue="dd/MM/yyyy HHmmss"/>
+									<f:selectItem itemLabel="DD/MM/YY hh:mm:ss" itemValue="dd/MM/yy HH:mm:ss"/>
+									<f:selectItem itemLabel="DD/MM/YY hhmmss" itemValue="dd/MM/yy HHmmss"/>
 								</p:selectOneMenu>
 							</td>
 						</tr>
@@ -281,10 +285,12 @@
 							<td><p:outputLabel value="Format:"/></td>
 							<td>
 								<p:selectOneMenu id="dateFormat" value="#{newInstrumentBean.dateFormat}">
-									<f:selectItem itemLabel="YYYY-MM-DD" itemValue="yyyy-MM-DD"/>
-									<f:selectItem itemLabel="YYYYMMDD" itemValue="yyyyMMDD"/>
-									<f:selectItem itemLabel="MM/DD/YYYY" itemValue="MM/DD/yyyy"/>
-									<f:selectItem itemLabel="DD/MM/YYYY" itemValue="DD/MM/yyyy"/>
+									<f:selectItem itemLabel="YYYY-MM-DD" itemValue="yyyy-MM-dd"/>
+									<f:selectItem itemLabel="YYYYMMDD" itemValue="yyyyMMdd"/>
+									<f:selectItem itemLabel="MM/DD/YYYY" itemValue="MM/dd/yyyy"/>
+									<f:selectItem itemLabel="DD/MM/YYYY" itemValue="dd/MM/yyyy"/>
+									<f:selectItem itemLabel="MM/DD/YY" itemValue="MM/dd/yy"/>
+									<f:selectItem itemLabel="DD/MM/YY" itemValue="dd/MM/yy"/>
 								</p:selectOneMenu>
 							</td>
 						</tr>
