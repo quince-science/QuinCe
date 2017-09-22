@@ -111,7 +111,7 @@ public class DataFile {
 	 * @throws DataFileException If the end of the file is reached without finding the end of the header
 	 */
 	public int getFirstDataLine() throws DataFileException {
-		return fileDefinition.getHeaderLength(contents);
+		return fileDefinition.getHeaderLength(contents) + fileDefinition.getColumnHeaderRows();
 	}
 	
 	/**
