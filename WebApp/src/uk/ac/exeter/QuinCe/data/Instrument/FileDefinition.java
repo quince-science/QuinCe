@@ -209,7 +209,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * Get the database ID of this file definition
 	 * @return The database ID
 	 */
-	protected long getDatabaseId() {
+	public long getDatabaseId() {
 		return databaseId;
 	}
 	

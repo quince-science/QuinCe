@@ -4,6 +4,7 @@ import java.util.Calendar;
 
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 
+@Deprecated
 public class RawDataFileException extends Exception {
 	
 	private static final long serialVersionUID = -4488468987912051593L;

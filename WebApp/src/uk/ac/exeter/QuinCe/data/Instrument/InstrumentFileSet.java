@@ -75,6 +75,25 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 		
 		return result;
 	}
+	
+	/**
+	 * Retrieve the file definition with the specified database ID.
+	 * If no definition is found, the method returns {@code null}
+	 * @param definitionId The database ID
+	 * @return The file definition
+	 */
+	public FileDefinition get(long definitionId) {
+		FileDefinition result = null;
+		
+		for (FileDefinition file : this) {
+			if (file.getDatabaseId() == definitionId) {
+				result = file;
+				break;
+			}
+		}
+		
+		return result;
+	}
 
 	@Override
 	public boolean remove(Object o) {

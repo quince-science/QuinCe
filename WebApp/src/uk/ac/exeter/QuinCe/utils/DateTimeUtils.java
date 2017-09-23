@@ -1,6 +1,9 @@
 package uk.ac.exeter.QuinCe.utils;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -45,6 +48,11 @@ public class DateTimeUtils {
 	 */
 	private static DateTimeFormatter sqlDateTimeFormatter = null;
 
+	static {
+		dateTimeFormatter = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+		dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+	}
+	
 	/**
 	 * Determines whether or not the current time is within a
 	 * given number of hours of the current time 
@@ -102,11 +110,6 @@ public class DateTimeUtils {
 	 * @return The formatted date
 	 */
 	public static String formatDate(Calendar date) {
-		if (null == dateFormatter) {
-			dateFormatter = new SimpleDateFormat("YYYY-MM-dd");
-			dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-		}
-		
 		return dateFormatter.format(date.getTime());
 	}
 	
@@ -116,11 +119,15 @@ public class DateTimeUtils {
 	 * @return The formatted date/time
 	 */
 	public static String formatDateTime(Date dateTime) {
-		if (null == dateTimeFormatter) {
-			dateTimeFormatter = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
-			dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-		}
-		
+		return dateTimeFormatter.format(dateTime);
+	}
+	
+	/**
+	 * Format a date/time to YYYY-MM-dd HH:mm:ss format
+	 * @param dateTime The date/time
+	 * @return The formatted date/time
+	 */
+	public static String formatDateTime(LocalDateTime dateTime) {
 		return dateTimeFormatter.format(dateTime);
 	}
 	
@@ -194,5 +201,26 @@ public class DateTimeUtils {
 		}
 		
 		return result;
+	}
+
+	
+	/**
+	 * Convert a UTC {@link LocalDateTime} to a {@code long}
+	 * milliseconds value for storage in the database
+	 * @param date The date
+	 * @return The long value
+	 */
+	public static long dateToLong(LocalDateTime date) {
+		return date.toInstant(ZoneOffset.UTC).toEpochMilli();
+	}
+	
+	/**
+	 * Convert a {@code long} milliseconds from the database
+	 * into a UTC {@link LocalDateTime}.
+	 * @param milliseconds The milliseconds value
+	 * @return The {@code LocalDateTime} object
+	 */
+	public static LocalDateTime longToDate(long milliseconds) {
+		return LocalDateTime.ofInstant(Instant.ofEpochMilli(milliseconds) , ZoneOffset.UTC);
 	}
 }

@@ -11,6 +11,7 @@ import uk.ac.exeter.QCRoutines.messages.Flag;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class CommentSet implements Iterable<CommentSetEntry> {
 
 	/**

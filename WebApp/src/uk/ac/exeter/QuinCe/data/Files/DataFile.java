@@ -1,15 +1,20 @@
 package uk.ac.exeter.QuinCe.data.Files;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
+
+import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -39,6 +44,26 @@ public class DataFile {
 	private String filename;
 	
 	/**
+	 * The date/time of the first record in the file
+	 */
+	private LocalDateTime startDate = null;
+	
+	/**
+	 * The date/time of the last record in the file
+	 */
+	private LocalDateTime endDate = null;
+	
+	/**
+	 * The number of records in the file
+	 */
+	private int recordCount = -1;
+	
+	/**
+	 * The time that this file was last accessed
+	 */
+	private LocalDateTime lastTouched = null;
+	
+	/**
 	 * The file contents
 	 */
 	private List<String> contents;
@@ -52,15 +77,21 @@ public class DataFile {
 	 * The date in the file header
 	 */
 	private LocalDateTime headerDate = null;
+	
+	/**
+	 * The location of the file store
+	 */
+	private String fileStore;
 
 	/**
 	 * Create a DataFile with the specified definition and contents
+	 * @param fileStore The location of the file store
 	 * @param fileDefinition The file format definition
 	 * @param filename The file name
 	 * @param contents The file contents
 	 * @throws MissingParamException If any fields are null
 	 */
-	public DataFile(FileDefinition fileDefinition, String filename, List<String> contents) throws MissingParamException {
+	public DataFile(String fileStore, FileDefinition fileDefinition, String filename, List<String> contents) throws MissingParamException {
 		MissingParam.checkMissing(fileDefinition, "fileDefinition");
 		MissingParam.checkMissing(filename, "fileName");
 		MissingParam.checkMissing(contents, "contents");
@@ -68,16 +99,50 @@ public class DataFile {
 		this.fileDefinition = fileDefinition;
 		this.filename = filename;
 		this.contents = contents;
+		this.lastTouched = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
 		
 		messages = new TreeSet<DataFileMessage>();
+		boolean fileOK = false;
 		
-		boolean fileOK = extractHeaderDate();
+		try {
+			fileOK = extractHeaderDate();
+		} catch (Exception e) {
+			// Since we were provided with the file contents,
+			// we won't be loading them so we can't get an exception here.
+		}
 
 		if (fileOK) {
-			validate();
+			try {
+				validate();
+			} catch (Exception e) {
+				// Since we were provided with the file contents,
+				// we won't be loading them so we can't get an exception here.
+			}
 		}
 	}
 	
+	/**
+	 * Constructor for the basic details of a file. The contents will
+	 * be loaded on demand if required.
+	 * @param fileStore The file store location
+	 * @param id The file's database ID
+	 * @param fileDefinition The file definition for the file
+	 * @param filename The filename
+	 * @param startDate The date/time of the first record in the file
+	 * @param endDate The date/time of the last record in the file
+	 * @param recordCount The number of records in the file
+	 * @param lastTouched The date/time that the file was last accessed
+	 */
+	public DataFile(String fileStore, long id, FileDefinition fileDefinition, String filename, LocalDateTime startDate, LocalDateTime endDate, int recordCount, LocalDateTime lastTouched) {
+		this.fileStore = fileStore;
+		this.databaseId = id;
+		this.fileDefinition = fileDefinition;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.recordCount = recordCount;
+		this.lastTouched = lastTouched;
+	}
+
 	/**
 	 * Get the file format description
 	 * @return The file format description
@@ -117,6 +182,7 @@ public class DataFile {
 	 * @throws DataFileException If the end of the file is reached without finding the end of the header
 	 */
 	public int getFirstDataLine() throws DataFileException {
+		loadContents();
 		return fileDefinition.getHeaderLength(contents) + fileDefinition.getColumnHeaderRows();
 	}
 	
@@ -134,7 +200,12 @@ public class DataFile {
 	 * @throws DataFileException If the record count cannot be calculated
 	 */
 	public int getRecordCount() throws DataFileException {
-		return contents.size() - getFirstDataLine();
+		if (-1 == recordCount) {
+			loadContents();
+			recordCount = contents.size() - getFirstDataLine();
+		}
+		
+		return recordCount;
 	}
 
 	/**
@@ -162,8 +233,11 @@ public class DataFile {
 	 * Validate the file contents.
 	 * Creates a set of {@code DataFileMessage}
 	 * objects, which can be retrieved using {@code getMessages()}.
+	 * @throws DataFileException If the file contents could not be loaded
 	 */
-	public void validate() {
+	public void validate() throws DataFileException {
+		
+		loadContents();
 		
 		// Check that there is actually data in the file
 		int firstDataLine = -1;
@@ -253,8 +327,12 @@ public class DataFile {
 	 * Get the start date from the file header. This is only applicable
 	 * if the date format is {@link DateTimeSpecification#HOURS_FROM_START}.
 	 * @return The start date from the file header
+	 * @throws DataFileException If the file contents could not be loaded
 	 */
-	private boolean extractHeaderDate() {
+	private boolean extractHeaderDate() throws DataFileException {
+		
+		loadContents();
+		
 		boolean result = true;
 		
 		DateTimeSpecification dateTimeSpec = fileDefinition.getDateTimeSpecification();
@@ -278,31 +356,34 @@ public class DataFile {
 	 * @return The date, or null if the date cannot be retrieved
 	 */
 	public LocalDateTime getStartDate() {
-		LocalDateTime result = null;
-		
-		try {
-			result = getDate(getFirstDataLine());
-		} catch (Exception e) {
-			e.printStackTrace();
+		if (null == startDate) {
+			try {
+				startDate = getDate(getFirstDataLine());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		
-		return result;
+		return startDate;
 	}
 	
 	/**
 	 * Get the date of the last record in the file
 	 * @return The date, or null if the date cannot be retrieved
+	 * @throws DataFileException If the file contents could not be loaded
 	 */
-	public LocalDateTime getEndDate() {
-		LocalDateTime result = null;
-		
-		try {
-			result = getDate(contents.size() - 1);
-		} catch (Exception e) {
-			e.printStackTrace();
+	public LocalDateTime getEndDate() throws DataFileException {
+		if (null == endDate) {
+			loadContents();
+			
+			try {
+				endDate = getDate(contents.size() - 1);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		
-		return result;
+		return endDate;
 	}
 	
 	/**
@@ -312,6 +393,7 @@ public class DataFile {
 	 * @throws DataFileException If any date/time fields are empty
 	 */
 	public LocalDateTime getDate(int line) throws DataFileException {
+		loadContents();
 		return fileDefinition.getDateTimeSpecification().getDateTime(headerDate, fileDefinition.extractFields(contents.get(line)));
 	}
 	
@@ -418,5 +500,65 @@ public class DataFile {
 	 */
 	protected FileDefinition getFileDefinition() {
 		return fileDefinition;
+	}
+	
+	/**
+	 * Get the contents of the file as a single string
+	 * @return The file contents
+	 * @throws DataFileException If the file contents cannot be retrieved
+	 */
+	public String getContents() throws DataFileException {
+		loadContents();
+		
+		StringBuilder result = new StringBuilder();
+		
+		for (int i = 0; i < contents.size(); i++) {
+			result.append(contents.get(i));
+			
+			if (i < contents.size() - 1) {
+				result.append('\n');
+			}
+		}
+		
+		return result.toString();
+	}
+	
+	/**
+	 * Set the contents of the data file
+	 * @param contents The contents
+	 */
+	protected void setContents(String contents) {
+		this.contents = Arrays.asList(contents.split("\n"));
+	}
+	
+	/**
+	 * Load the contents of the data file from disk
+	 * @throws DataFileException If the file contents could not be loaded
+	 */
+	private void loadContents() throws DataFileException {
+		try {
+			FileStore.loadFileContents(fileStore, this);					
+		} catch (Exception e) {
+			throw new DataFileException("Error while loading file contents", e);
+		}
+	}
+	
+	/**
+	 * Get the time that this file was last accessed
+	 * @return The last access time
+	 */
+	public LocalDateTime getLastTouched() {
+		return lastTouched;
+	}
+	
+	/**
+	 * 
+	 * @param dataSource A data source
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public void touch(DataSource dataSource) throws MissingParamException, DatabaseException {
+		this.lastTouched = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+		DataFileDB.touchFile(dataSource, this.databaseId);
 	}
 }

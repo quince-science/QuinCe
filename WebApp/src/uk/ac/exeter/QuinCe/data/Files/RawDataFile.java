@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class RawDataFile {
 
 	/**

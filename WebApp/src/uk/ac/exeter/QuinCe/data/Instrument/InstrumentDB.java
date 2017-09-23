@@ -606,7 +606,7 @@ public class InstrumentDB {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If no file definitions are stored for the instrument
 	 */
-	private static InstrumentFileSet getFileDefinitions(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+	public static InstrumentFileSet getFileDefinitions(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 		
