@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web;
 
+import java.util.Properties;
+
 import javax.faces.application.ConfigurableNavigationHandler;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -169,5 +171,13 @@ public abstract class BaseManagedBean {
 	 */
 	protected DataSource getDataSource() {
 		return ResourceManager.getInstance().getDBDataSource();
+	}
+	
+	/**
+	 * Get the application configuration
+	 * @return The application configuration
+	 */
+	protected Properties getAppConfig() {
+		return ResourceManager.getInstance().getConfig();
 	}
 }

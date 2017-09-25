@@ -20,10 +20,10 @@ function showFileDetails() {
 			$('#messages').show();
 		} else {
 			$('#fileDetails').show();
+			$('#uploadForm\\:fileButtons').show();
 		}
 	}
 }
-
 
 function renderMessages(messages) {
 	var html = '<ul>';

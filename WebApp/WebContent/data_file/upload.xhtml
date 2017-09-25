@@ -53,6 +53,10 @@
 					</h:panelGrid>
 				</div>
 			</div>
+			<h:panelGrid id="fileButtons" columns="2" cellpadding="5" class="buttonPanel hidden">
+				<p:commandButton id="discardFileButton" value="Discard File" ajax="false" action="#{dataFilesBean.beginUpload}"/>
+				<p:commandButton id="useFile" value="Store File" ajax="false" action="#{dataFilesBean.storeFile}"/>
+			</h:panelGrid>			
 			<h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
 				<p:commandButton value="Back to File List" ajax="false" action="#{dataFilesBean.goToFileList}"/>
 			</h:panelGrid>			

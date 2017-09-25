@@ -532,14 +532,16 @@ public class DataFile {
 	}
 	
 	/**
-	 * Load the contents of the data file from disk
+	 * Load the contents of the data file from disk, if they are not already loaded
 	 * @throws DataFileException If the file contents could not be loaded
 	 */
 	private void loadContents() throws DataFileException {
-		try {
-			FileStore.loadFileContents(fileStore, this);					
-		} catch (Exception e) {
-			throw new DataFileException("Error while loading file contents", e);
+		if (null == contents) {
+			try {
+				FileStore.loadFileContents(fileStore, this);					
+			} catch (Exception e) {
+				throw new DataFileException("Error while loading file contents", e);
+			}
 		}
 	}
 	

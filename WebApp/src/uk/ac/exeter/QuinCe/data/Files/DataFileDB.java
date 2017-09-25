@@ -166,6 +166,35 @@ public class DataFileDB {
 	/**
 	 * Determine whether a file of a given type already exists covering at
 	 * least part of the specified date range
+	 * @param dataSource A data source
+	 * @param fileDefinitionId The file definition database ID
+	 * @param startDate The start of the range
+	 * @param endDate The end of the range
+	 * @return {@code true} if a file overlapping the date range exists; {@code false} otherwise
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public static boolean fileExistsWithDates(DataSource dataSource, long fileDefinitionId, LocalDateTime startDate, LocalDateTime endDate) throws MissingParamException, DatabaseException {
+		
+		boolean result;
+		
+		Connection conn = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			result = fileExistsWithDates(conn, fileDefinitionId, startDate, endDate);
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while finding existing files", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Determine whether a file of a given type already exists covering at
+	 * least part of the specified date range
 	 * @param conn A database connection
 	 * @param fileDefinitionId The file definition database ID
 	 * @param startDate The start of the range

@@ -9,13 +9,17 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Files.DataFileMessage;
+import uk.ac.exeter.QuinCe.data.Files.FileExistsException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 import uk.ac.exeter.QuinCe.web.Instrument.newInstrument.FileDefinitionBuilder;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
@@ -172,10 +176,14 @@ public class DataFilesBean extends FileUploadBean {
 			// TODO Handle multiple matched definitions
 
 			if (null != fileDefinition) {
-				dataFile = new DataFile(fileDefinition, getFilename(), fileLines);
+				dataFile = new DataFile(getAppConfig().getProperty("filestore"), fileDefinition, getFilename(), fileLines);
 				
 				if (dataFile.getMessageCount() > 0) {
 					setMessage(null, getFilename() + " could not be processed (see messages below). Please fix these problems and upload the file again.");
+				}
+				
+				if (DataFileDB.fileExistsWithDates(getDataSource(), fileDefinition.getDatabaseId(), dataFile.getStartDate(), dataFile.getEndDate())) {
+					setMessage(null, "A file already exists that covers overlaps with this file");
 				}
 			}
 			
@@ -274,8 +282,9 @@ public class DataFilesBean extends FileUploadBean {
 	/**
 	 * Get the date of the last record in the file
 	 * @return The end date
+	 * @throws DataFileException If the end date cannot be retrieved
 	 */
-	public LocalDateTime getFileEndDate() {
+	public LocalDateTime getFileEndDate() throws DataFileException {
 		LocalDateTime result = null;
 		
 		if (dataFile != null) {
@@ -338,5 +347,17 @@ public class DataFilesBean extends FileUploadBean {
 	 */
 	public void setFileRecordCount(String dummy) {
 		// Do nothing
+	}
+	
+	/**
+	 * Store the uploaded file
+	 * @return Navigation to the file list
+	 * @throws MissingParamException If any internal calls are missing required parameters
+	 * @throws FileExistsException If the file already exists
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public String storeFile() throws MissingParamException, FileExistsException, DatabaseException {
+		DataFileDB.storeFile(getDataSource(), getAppConfig(), dataFile);
+		return NAV_FILE_LIST;
 	}
 }
