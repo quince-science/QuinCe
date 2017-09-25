@@ -55,15 +55,15 @@ public class DataFileDB {
 	 * @see #storeFile(DataSource, Properties, DataFile)
 	 */
 	private static final String ADD_FILE_STATEMENT = "INSERT INTO data_file "
-	    + "(file_definition_id, filename, start_date, end_date, record_count, last_touched) "
-		+ "VALUES (?, ?, ?, ?, ?, ?)";
+	    + "(file_definition_id, filename, start_date, end_date, record_count) "
+		+ "VALUES (?, ?, ?, ?, ?)";
 
 	/**
 	 * Query to find all the data files owned by a given user
 	 * @see #getUserFiles(DataSource, User)
 	 */
 	private static final String GET_USER_FILES_QUERY = "SELECT "
-		+ "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, f.record_count, f.last_touched, i.id"
+		+ "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, f.record_count, i.id"
 		+ "FROM data_file AS f "
 		+ "INNER JOIN file_definition AS d ON f.file_definition_id = d.id"
 		+ "INNER JOIN instrument AS i ON d.instrument_id = i.id "
@@ -81,14 +81,8 @@ public class DataFileDB {
 	 * @see #makeFileInfo(ResultSet, Connection)
 	 * @see #fileExists(Connection, long)
 	 */
-	private static final String FIND_FILE_BY_ID_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.last_touched, f.delete_flag FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
+	private static final String FIND_FILE_BY_ID_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.delete_flag FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
 			+ " WHERE f.id = ?";
-	
-	/**
-	 * Statement to set the given data file's {@code last_touched} value to the current time
-	 * @see #touchFile(DataSource, long)
-	 */
-	private static final String TOUCH_FILE_STATEMENT = "UPDATE data_file SET last_touched = NOW() WHERE id = ?";
 	
 	/**
 	 * Query to determine if a file exists covering two dates
@@ -392,12 +386,11 @@ public class DataFileDB {
 			LocalDateTime startDate = DateTimeUtils.longToDate(record.getLong(4));
 			LocalDateTime endDate = DateTimeUtils.longToDate(record.getLong(5));
 			int recordCount = record.getInt(6);
-			LocalDateTime lastTouched = DateTimeUtils.longToDate(record.getLong(7));
 			long instrumentId = record.getLong(8);
 			
 			InstrumentFileSet files = InstrumentDB.getFileDefinitions(conn, instrumentId); 
 			
-			result = new DataFile(fileStore, id, files.get(fileDefinitionId), filename, startDate, endDate, recordCount, lastTouched);
+			result = new DataFile(fileStore, id, files.get(fileDefinitionId), filename, startDate, endDate, recordCount);
 		} catch (SQLException e) {
 			throw e;
 		} catch (Exception e) {
@@ -543,35 +536,6 @@ public class DataFileDB {
 	@Deprecated
 	public static void updateFlagCounts(Connection conn, FileInfo fileInfo) throws DatabaseException, RecordNotFoundException, MissingParamException {
 		// TODO remove
-	}
-	
-	/**
-	 * Set the 'Last Touched' property of the specified file to the current date and time.
-	 * 
-	 * @param dataSource A data source
-	 * @param fileId The database ID of the data file
-	 * @throws MissingParamException If any parameters are missing
-	 * @throws DatabaseException If a database error occurs
-	 * @see #TOUCH_FILE_STATEMENT
-	 */
-	public static void touchFile(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException {
-		MissingParam.checkMissing(dataSource, "dataSource");
-		MissingParam.checkPositive(fileId, "fileId");
-		
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		
-		try {
-			conn = dataSource.getConnection();
-			stmt = conn.prepareStatement(TOUCH_FILE_STATEMENT);
-			stmt.setLong(1, fileId);
-			stmt.execute();
-		} catch (SQLException e) {
-			throw new DatabaseException("Error while touching file", e);
-		} finally {
-			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
-		}
 	}
 	
 	/**

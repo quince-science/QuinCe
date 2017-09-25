@@ -710,7 +710,6 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException, InstrumentException {
 		fileDetails = DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), fileId);
-		DataFileDB.touchFile(ServletUtils.getDBDataSource(), fileId);
 		instrument = InstrumentDB.getInstrumentByFileId(ServletUtils.getDBDataSource(), fileId, ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
 	}
 	

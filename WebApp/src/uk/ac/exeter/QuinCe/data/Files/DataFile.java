@@ -59,11 +59,6 @@ public class DataFile {
 	private int recordCount = -1;
 	
 	/**
-	 * The time that this file was last accessed
-	 */
-	private LocalDateTime lastTouched = null;
-	
-	/**
 	 * The file contents
 	 */
 	private List<String> contents;
@@ -99,7 +94,6 @@ public class DataFile {
 		this.fileDefinition = fileDefinition;
 		this.filename = filename;
 		this.contents = contents;
-		this.lastTouched = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
 		
 		messages = new TreeSet<DataFileMessage>();
 		boolean fileOK = false;
@@ -131,16 +125,14 @@ public class DataFile {
 	 * @param startDate The date/time of the first record in the file
 	 * @param endDate The date/time of the last record in the file
 	 * @param recordCount The number of records in the file
-	 * @param lastTouched The date/time that the file was last accessed
 	 */
-	public DataFile(String fileStore, long id, FileDefinition fileDefinition, String filename, LocalDateTime startDate, LocalDateTime endDate, int recordCount, LocalDateTime lastTouched) {
+	public DataFile(String fileStore, long id, FileDefinition fileDefinition, String filename, LocalDateTime startDate, LocalDateTime endDate, int recordCount) {
 		this.fileStore = fileStore;
 		this.databaseId = id;
 		this.fileDefinition = fileDefinition;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.recordCount = recordCount;
-		this.lastTouched = lastTouched;
 	}
 
 	/**
@@ -543,24 +535,5 @@ public class DataFile {
 				throw new DataFileException("Error while loading file contents", e);
 			}
 		}
-	}
-	
-	/**
-	 * Get the time that this file was last accessed
-	 * @return The last access time
-	 */
-	public LocalDateTime getLastTouched() {
-		return lastTouched;
-	}
-	
-	/**
-	 * 
-	 * @param dataSource A data source
-	 * @throws MissingParamException If any required parameters are missing
-	 * @throws DatabaseException If a database error occurs
-	 */
-	public void touch(DataSource dataSource) throws MissingParamException, DatabaseException {
-		this.lastTouched = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
-		DataFileDB.touchFile(dataSource, this.databaseId);
 	}
 }

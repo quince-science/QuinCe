@@ -232,6 +232,7 @@ start                    DateTime       The start date and time of the voyage
 end                      DateTime       The end date and time of the voyage
 status                   Integer        The current processing state of the voyage
 properties               String         Miscellaneous properties related to the voyage
+last_touched             DateTime       Date/Time that the file was last used
 
 #### `status`
 As a voyage's data is processed, it will go through a number of stages. The actions that can be performed
