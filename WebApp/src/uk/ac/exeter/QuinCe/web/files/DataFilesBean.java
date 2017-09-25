@@ -17,11 +17,14 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 import uk.ac.exeter.QuinCe.web.Instrument.newInstrument.FileDefinitionBuilder;
+import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
@@ -136,7 +139,6 @@ public class DataFilesBean extends FileUploadBean {
 			getUserPrefs().setLastInstrument(currentInstrument);
 			currentFullInstrument = null;
 		}
-		
 	}
 	
 	/**
@@ -363,5 +365,21 @@ public class DataFilesBean extends FileUploadBean {
 	public String storeFile() throws MissingParamException, FileExistsException, DatabaseException {
 		DataFileDB.storeFile(getDataSource(), getAppConfig(), dataFile);
 		return NAV_FILE_LIST;
+	}
+	
+	/**
+	 * Get the files to be displayed in the file list 
+	 * @return The files
+	 * @throws DatabaseException If the file list cannot be retrieved
+	 * @throws ResourceException If the app resources cannot be accessed
+	 * @throws InstrumentException If the instrument data is invalid
+	 * @throws RecordNotFoundException If the instrument cannot be found
+	 * @throws MissingParamException If any internal calls have missing parameters
+	 */
+	public List<DataFile> getListFiles() throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException, ResourceException {
+		if (null == currentFullInstrument) {
+			currentFullInstrument = InstrumentDB.getInstrument(getDataSource(), getCurrentInstrument(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
+		}
+		return DataFileDB.getUserFiles(getDataSource(), getAppConfig(), getUser(), currentFullInstrument.getDatabaseId());
 	}
 }

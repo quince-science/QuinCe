@@ -63,11 +63,22 @@ public class DataFileDB {
 	 * @see #getUserFiles(DataSource, User)
 	 */
 	private static final String GET_USER_FILES_QUERY = "SELECT "
-		+ "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, f.record_count, i.id"
+		+ "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, f.record_count, i.id "
 		+ "FROM data_file AS f "
-		+ "INNER JOIN file_definition AS d ON f.file_definition_id = d.id"
+		+ "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
 		+ "INNER JOIN instrument AS i ON d.instrument_id = i.id "
 		+ "WHERE i.owner = ?";
+	
+	/**
+	 * Query to find all the data files owned by a given user
+	 * @see #getUserFiles(DataSource, User)
+	 */
+	private static final String GET_USER_FILES_BY_INSTRUMENT_QUERY = "SELECT "
+		+ "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, f.record_count, i.id "
+		+ "FROM data_file AS f "
+		+ "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
+		+ "INNER JOIN instrument AS i ON d.instrument_id = i.id "
+		+ "WHERE i.owner = ? AND d.instrument_id = ?";
 	
 	/**
 	 * Statement to delete the details of a data file
@@ -329,16 +340,19 @@ public class DataFileDB {
 	}
 	
 	/**
-	 * Returns a list of all the files owned by a specific user
+	 * Returns a list of all the files owned by a specific user. The list
+	 * can optionally be restricted by an instrument ID.
 	 * @param dataSource A data source 
 	 * @param appConfig The application configuration
 	 * @param user The user
+	 * @param instrumentId The instrument ID used to filter the list (optional)
 	 * @return The list of files
 	 * @throws DatabaseException If an error occurs during the search
 	 * @see #GET_USER_FILES_QUERY
-	 * @see #makeFileInfo(ResultSet, Connection)
+	 * @see #GET_USER_FILES_BY_INSTRUMENT_QUERY
+	 * @see #makeDataFile(ResultSet, String, Connection)
 	 */
-	public static List<DataFile> getUserFiles(DataSource dataSource, Properties appConfig, User user) throws DatabaseException {
+	public static List<DataFile> getUserFiles(DataSource dataSource, Properties appConfig, User user, Long instrumentId) throws DatabaseException {
 		
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -347,8 +361,18 @@ public class DataFileDB {
 		
 		try {
 			conn = dataSource.getConnection();
-			stmt = conn.prepareStatement(GET_USER_FILES_QUERY);
+			
+			if (null != instrumentId) {
+				stmt = conn.prepareStatement(GET_USER_FILES_BY_INSTRUMENT_QUERY);
+			} else {
+				stmt = conn.prepareStatement(GET_USER_FILES_QUERY);
+			}
+			
 			stmt.setLong(1, user.getDatabaseID());
+			
+			if (null != instrumentId) {
+				stmt.setLong(2, instrumentId);
+			}
 			
 			records = stmt.executeQuery();
 			while (records.next()) {
@@ -386,7 +410,7 @@ public class DataFileDB {
 			LocalDateTime startDate = DateTimeUtils.longToDate(record.getLong(4));
 			LocalDateTime endDate = DateTimeUtils.longToDate(record.getLong(5));
 			int recordCount = record.getInt(6);
-			long instrumentId = record.getLong(8);
+			long instrumentId = record.getLong(7);
 			
 			InstrumentFileSet files = InstrumentDB.getFileDefinitions(conn, instrumentId); 
 			

@@ -1,20 +1,15 @@
 package uk.ac.exeter.QuinCe.data.Files;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
-
-import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -130,6 +125,7 @@ public class DataFile {
 		this.fileStore = fileStore;
 		this.databaseId = id;
 		this.fileDefinition = fileDefinition;
+		this.filename = filename;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.recordCount = recordCount;
@@ -490,7 +486,7 @@ public class DataFile {
 	 * Get the file definition object
 	 * @return The file definition
 	 */
-	protected FileDefinition getFileDefinition() {
+	public FileDefinition getFileDefinition() {
 		return fileDefinition;
 	}
 	
