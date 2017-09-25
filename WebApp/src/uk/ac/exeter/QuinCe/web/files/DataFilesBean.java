@@ -183,7 +183,11 @@ public class DataFilesBean extends FileUploadBean {
 				}
 				
 				if (DataFileDB.fileExistsWithDates(getDataSource(), fileDefinition.getDatabaseId(), dataFile.getStartDate(), dataFile.getEndDate())) {
-					setMessage(null, "A file already exists that covers overlaps with this file");
+					// TODO This is what the front end uses to detect that the file was not processed successfully.
+					//This can be improved when overlapping files are implemented instead of being rejected.
+					fileDefinition = null;
+					dataFile = null;
+					setMessage(null, "A file already exists that covers overlaps with this file. Please upload a different file.");
 				}
 			}
 			
