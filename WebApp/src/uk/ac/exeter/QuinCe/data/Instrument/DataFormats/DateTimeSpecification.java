@@ -840,7 +840,7 @@ public class DateTimeSpecification {
 			try {
 				result = LocalDate.parse(fieldValue, assignment.getFormatter());
 			} catch (DateTimeParseException e) {
-				throw new DataFileException("Invalid date value '" + fieldValue + "'");
+				throw new DataFileException("Invalid date value '" + fieldValue + "': " + e.getMessage());
 			}
 		}
 		
