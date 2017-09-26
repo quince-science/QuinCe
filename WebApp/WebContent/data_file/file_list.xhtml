@@ -17,7 +17,7 @@
 				<p:outputLabel for="instrument" value="Select Instrument:"/>
 				<p:selectOneMenu id="instrument" value="#{dataFilesBean.currentInstrument}">
 					<f:selectItems value="#{dataFilesBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
-					<p:ajax event="change" update=""/>
+					<p:ajax event="change" update="files"/>
 				</p:selectOneMenu>
 			</h:panelGrid>
 			
