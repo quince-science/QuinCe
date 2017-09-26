@@ -1,6 +1,7 @@
 function showProcessingMessage() {
 	$('#uploadFile').hide();
 	$('#messages').hide();
+	$('#processingFileMessage').show();
 	$('#uploadForm\\:extractFileLink').click();
 }
 
