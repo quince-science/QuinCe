@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web;
 
+import java.util.Properties;
+
 import javax.faces.application.ConfigurableNavigationHandler;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -7,6 +9,7 @@ import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.User.UserPreferences;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.User.LoginBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -128,6 +131,15 @@ public abstract class BaseManagedBean {
 		return (User) getSession().getAttribute(LoginBean.USER_SESSION_ATTR);
 	}
 	
+	public UserPreferences getUserPrefs() {
+		UserPreferences result = (UserPreferences) getSession().getAttribute(LoginBean.USER_PREFS_ATTR);
+		if (null == result) {
+			result = new UserPreferences(getUser().getDatabaseID());
+		}
+		
+		return result;
+	}
+	
 	/**
 	 * Accessing components requires the name of the form
 	 * that they are in as well as their own name. Most beans will only have one form,
@@ -159,5 +171,13 @@ public abstract class BaseManagedBean {
 	 */
 	protected DataSource getDataSource() {
 		return ResourceManager.getInstance().getDBDataSource();
+	}
+	
+	/**
+	 * Get the application configuration
+	 * @return The application configuration
+	 */
+	protected Properties getAppConfig() {
+		return ResourceManager.getInstance().getConfig();
 	}
 }

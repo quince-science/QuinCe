@@ -9,13 +9,8 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.User.User;
-import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Class to handle storage, retrieval and management of data file on disk.
@@ -33,34 +28,30 @@ public class FileStore {
 	 * Store a file in the file store.
 	 * This will overwrite any existing file.
 	 * 
-	 * @param config The application configuration
-	 * @param instrumentID The instrument ID
+	 * @param fileStore The location of the file store
 	 * @param dataFile The data file
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws FileStoreException If an error occurs while storing the file
-	 * @see DataFileDB#storeFile(DataSource, Properties, User, long, RawDataFile)
+	 * @see DataFileDB#storeFile(DataSource, Properties, DataFile)
 	 */
-	protected static void storeFile(Properties config, long instrumentID, RawDataFile dataFile) throws MissingParamException, FileStoreException {
+	protected static void storeFile(String fileStore, DataFile dataFile) throws MissingParamException, FileStoreException {
 		
-		MissingParam.checkMissing(config, "config");
-		MissingParam.checkPositive(instrumentID, "instrumentID");
+		MissingParam.checkMissing(fileStore, "fileStore");
 		MissingParam.checkMissing(dataFile, "dataFile");
 		
 		FileWriter fileWriter = null;
 		File file = null;
 
 		try {
-
-			checkInstrumentDirectory(config.getProperty("filestore"), instrumentID);
+			checkInstrumentDirectory(fileStore, dataFile.getFileDefinition().getDatabaseId());
 			
-			file = getFileObject(config.getProperty("filestore"), instrumentID, dataFile.getFileName());
-			
+			file = getFileObject(fileStore, dataFile);
 			if (file.exists()) {
 				file.delete();
 			}
 			
 			fileWriter = new FileWriter(file);
-			fileWriter.write(dataFile.getContentsAsString(true));
+			fileWriter.write(dataFile.getContents());
 			fileWriter.close();
 			
 		} catch (Exception e) {
@@ -74,37 +65,29 @@ public class FileStore {
 	
 	/**
 	 * Deletes a file from the file store
-	 * @param config The application configuration
-	 * @param fileDetails The file details
+	 * @param fileStore The location of the file store
+	 * @param dataFile The data file
 	 * @throws MissingParamException If any of the parameters are missing
-	 * @see DataFileDB#deleteFile(DataSource, Properties, FileInfo)
+	 * @see DataFileDB#deleteFile(DataSource, Properties, DataFile)
 	 */
-	protected static void deleteFile(Properties config, FileInfo fileDetails) throws MissingParamException {
+	protected static void deleteFile(String fileStore, DataFile dataFile) throws MissingParamException {
 		
-		MissingParam.checkMissing(config, "config");
-		MissingParam.checkMissing(fileDetails, "fileDetails");
+		MissingParam.checkMissing(fileStore, "fileStore");
+		MissingParam.checkMissing(dataFile, "dataFile");
 		
-		File fileToDelete = getFileObject(config.getProperty("filestore"), fileDetails.getInstrumentId(), fileDetails.getFileName());
+		File fileToDelete = getFileObject(fileStore, dataFile);
 		deleteFile(fileToDelete);
 	}
 	
 	/**
 	 * Retrieve a file from the file store
-	 * @param dataSource A data source
-	 * @param config The application configuration
-	 * @param fileInfo The details of the file to load
-	 * @return The data file
+	 * @param fileStore The location of the file store
+	 * @param dataFile The file whose contents are to be loaded
 	 * @throws IOException If a disk I/O error occurs
 	 * @throws MissingParamException If any required parameters are missing
-	 * @throws DatabaseException If a database error occurs
-	 * @throws RawDataFileException If there is a fault in processing the data file
-	 * @throws RecordNotFoundException If any required database records cannot be found
-	 * @see DataFileDB#getRawDataFile(DataSource, Properties, long)
 	 */
-	protected static RawDataFile getFile(DataSource dataSource, Properties config, FileInfo fileInfo) throws IOException, MissingParamException, DatabaseException, RawDataFileException, RecordNotFoundException {
-		
-		Instrument instrument = InstrumentDB.getInstrument(dataSource, fileInfo.getInstrumentId());
-		File readFile = getFileObject(config.getProperty("filestore"), fileInfo.getInstrumentId(), fileInfo.getFileName());
+	protected static void loadFileContents(String fileStore, DataFile dataFile) throws IOException, MissingParamException {
+		File readFile = getFileObject(fileStore, dataFile);
 
 		FileInputStream inputStream = null;
 		try {
@@ -115,8 +98,9 @@ public class FileStore {
 			if (bytesRead < fileLength) {
 				throw new IOException("Too few bytes read from file " + readFile.getAbsolutePath() + ": got " + bytesRead + ", expected " + fileLength);
 			}
-			return new RawDataFile(instrument, fileInfo.getFileName(), fileData, true);
-		} catch (IOException|RawDataFileException e) {
+			
+			dataFile.setContents(new String(fileData));
+		} catch (IOException e) {
 			throw e;
 		} finally {
 			if (null != inputStream) {
@@ -128,16 +112,16 @@ public class FileStore {
 	/**
 	 * Ensure that the directory for a given instrument's files exists
 	 * @param fileStorePath The root path of the file store
-	 * @param instrumentID The instrument ID
+	 * @param fileDefinitionId The instrument ID
 	 * @throws FileStoreException If the directory doesn't exist and can't be created
 	 */
-	private static void checkInstrumentDirectory(String fileStorePath, long instrumentID) throws FileStoreException {
+	private static void checkInstrumentDirectory(String fileStorePath, long fileDefinitionId) throws FileStoreException {
 		
-		File file = new File(getInstrumentDirectory(fileStorePath, instrumentID));
+		File file = new File(getStorageDirectory(fileStorePath, fileDefinitionId));
 		if (!file.exists()) {
 			boolean dirMade = file.mkdirs();
 			if (!dirMade) {
-				throw new FileStoreException("Unable to create directory for instrument ID " + instrumentID);
+				throw new FileStoreException("Unable to create directory for file definition ID " + fileDefinitionId);
 			}
 		} else if (!file.isDirectory()) {
 			throw new FileStoreException("The path to the instrument directory is not a directory!");
@@ -147,22 +131,22 @@ public class FileStore {
 	/**
 	 * Returns the path to the directory where a given instrument's files are stored
 	 * @param fileStorePath The root of the file store
-	 * @param instrumentID The instrument ID
+	 * @param fileDefinitionId The file definition database ID
 	 * @return The directory path
 	 */
-	private static String getInstrumentDirectory(String fileStorePath, long instrumentID) {
-		return fileStorePath + File.separator + instrumentID;
+	private static String getStorageDirectory(String fileStorePath, long fileDefinitionId) {
+		return fileStorePath + File.separator + fileDefinitionId;
 	}
 	
 	/**
-	 * Get the Java File object for a stored data file
+	 * Get the Java File object for a data file
 	 * @param fileStorePath The path to the data file within the file store
-	 * @param instrumentId The database ID of the instrument to which the file belongs
-	 * @param fileName The filename of the data file
+	 * @param dataFile The data file
 	 * @return The Java File object
 	 */
-	private static File getFileObject(String fileStorePath, long instrumentId, String fileName) {
-		return new File(getInstrumentDirectory(fileStorePath, instrumentId) + File.separator + fileName);
+	private static File getFileObject(String fileStorePath, DataFile dataFile) {
+		return new File(getStorageDirectory(fileStorePath, dataFile.getFileDefinition().getDatabaseId())
+				+ File.separator + dataFile.getDatabaseId());
 	}
 	
 	/**

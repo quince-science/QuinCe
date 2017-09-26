@@ -13,6 +13,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.HighlightedString;
+import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -67,6 +69,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * Menu index for the space separator
 	 */
 	public static final int SEPARATOR_INDEX_SPACE = 3;
+	
+	/**
+	 * The database ID of this file definition
+	 */
+	private long databaseId;
 	
 	/**
 	 * The name used to identify files of this type
@@ -159,8 +166,51 @@ public class FileDefinition implements Comparable<FileDefinition> {
 		this.fileDescription = fileDescription;
 		this.longitudeSpecification = new LongitudeSpecification();
 		this.latitudeSpecification = new LatitudeSpecification();
-		this.dateTimeSpecification = new DateTimeSpecification(this);
+		this.dateTimeSpecification = new DateTimeSpecification(false);
 		this.fileSet = fileSet;
+	}
+	
+	/**
+	 * Construct a complete file definition
+	 * @param databaseId The definition's database ID
+	 * @param description The file description
+	 * @param separator The column separator
+	 * @param headerType The header type
+	 * @param headerLines The number of header lines
+	 * @param headerEndString The string used to identify the end of the header
+	 * @param columnHeaderRows The number of column header rows
+	 * @param columnCount The column count
+	 * @param lonSpec The longitude specification
+	 * @param latSpec The latitude specification
+	 * @param dateTimeSpec The date/time specification
+	 * @param fileSet The parent file set
+	 */
+	public FileDefinition(long databaseId, String description, String separator, int headerType, int headerLines, String headerEndString,
+			int columnHeaderRows, int columnCount, LongitudeSpecification lonSpec, LatitudeSpecification latSpec, DateTimeSpecification dateTimeSpec, InstrumentFileSet fileSet) {
+		
+		// TODO checks
+		
+		this.databaseId = databaseId;
+		this.fileDescription = description;
+		this.separator = separator;
+		this.headerType = headerType;
+		this.headerLines = headerLines;
+		this.headerEndString = headerEndString;
+		this.columnHeaderRows = columnHeaderRows;
+		this.columnCount = columnCount;
+		this.longitudeSpecification = lonSpec;
+		this.latitudeSpecification = latSpec;
+		this.dateTimeSpecification = dateTimeSpec;
+		
+		this.fileSet = fileSet;
+	}
+	
+	/**
+	 * Get the database ID of this file definition
+	 * @return The database ID
+	 */
+	public long getDatabaseId() {
+		return databaseId;
 	}
 	
 	/**
@@ -221,6 +271,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 */
 	public void setHeaderLines(int headerLines) {
 		this.headerLines = headerLines;
+		dateTimeSpecification.setFileHasHeader(headerLines > 0);
 	}
 
 	/**
@@ -386,7 +437,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * @param dataLine The data line
 	 * @return The column values
 	 */
-	public List<String> makeColumnValues(String dataLine) {
+	public List<String> extractFields(String dataLine) {
 		List<String> values = new ArrayList<String>();
 		
 		if (separator.equals(" ")) {
@@ -552,4 +603,178 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	public void setRunTypeCategory(String runType, RunTypeCategory category) {
 		runTypes.put(runType, category);
 	}
+	
+	/**
+	 * Compare the layout of this file definition to
+	 * a supplied definition to see if they are identical.
+	 * @param compare The definition to be compared
+	 * @return {@code true} if the layouts match; {@code false} otherwise.
+	 */
+	public boolean matchesLayout(FileDefinition compare) {
+		boolean matches = true;
+		
+		switch (headerType) {
+		case HEADER_TYPE_LINE_COUNT: {
+			if (headerLines != compare.headerLines) {
+				matches = false;
+				break;
+			}
+		}
+		case HEADER_TYPE_STRING: {
+			if (null == headerEndString) {
+				if (null != compare.headerEndString) {
+					matches = false;
+				}
+			} else if (null == compare.headerEndString || !headerEndString.equals(compare.headerEndString)) {
+				matches = false;
+			}
+			break;
+		}
+		}
+							
+		if (matches) {
+			if (columnHeaderRows != compare.columnHeaderRows) {
+				matches = false;
+			} else if (!separator.equals(compare.separator)) {
+					matches = false;
+			} else if (columnCount != compare.columnCount) {
+				matches = false;
+			}
+		}
+		
+		return matches;
+	}
+
+	/**
+	 * Get the header line from a file that contains the given prefix and suffix.
+	 * A line will match if it contains the prefix, followed by a
+	 * number of characters, followed by the suffix.
+	 * <p>
+	 *   The matching line will be returned as a {@link HighlightedString},
+	 *   with the portion between the prefix and suffix highlighted.
+	 * </p>
+	 * <p>
+	 *   If multiple lines match the prefix and suffix, the first line
+	 *   will be returned.
+	 * </p>
+	 * @param fileContents The file contents
+	 * @param prefix The prefix
+	 * @param suffix The suffix
+	 * @return The matching line
+	 * @throws HighlightedStringException If an error occurs while building the highlighted string
+	 */
+	public HighlightedString getHeaderLine(List<String> fileContents, String prefix, String suffix) throws HighlightedStringException {
+		
+		HighlightedString matchedLine = null;
+		
+		for (String line : getFileHeader(fileContents)) {
+			int prefixPos;
+			if (prefix.length() == 0) {
+				prefixPos = 0;
+			} else {
+				prefixPos = line.indexOf(prefix);
+			}
+			
+			if (prefixPos > -1) {
+				int suffixPos = line.length();
+				if (suffix.length() > 0) {
+					suffixPos = line.indexOf(suffix, (prefixPos + prefix.length()));
+					if (suffixPos == -1) {
+						suffixPos = line.length();
+					}
+				}
+					
+				matchedLine = new HighlightedString(line, prefixPos + prefix.length(), suffixPos);
+				break;
+			}
+		}
+		
+		return matchedLine;
+	}
+
+	/**
+	 * Get the number of rows in a file header
+	 * @param fileContents The file contents
+	 * @return The number of rows in the file header
+	 */
+	public int getHeaderLength(List<String> fileContents) {
+		int result = 0;
+		
+		switch (getHeaderType()) {
+		case HEADER_TYPE_LINE_COUNT: {
+			result = getHeaderLines();
+			break;
+		}
+		case HEADER_TYPE_STRING: {
+			
+			int row = 0;
+			boolean foundHeaderEnd = false;
+			while (!foundHeaderEnd && row < fileContents.size()) {
+				if (fileContents.get(row).equalsIgnoreCase(getHeaderEndString())) {
+					foundHeaderEnd = true;
+				}
+				
+				row++;
+			}
+			
+			result = row;
+			break;
+		}
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Get the file header from a file. If there is no header,
+	 * returns an empty list.
+	 * @param fileContents The file contents
+	 * @return The lines of the file header
+	 */
+	public List<String> getFileHeader(List<String> fileContents) {
+		List<String> result;
+		
+		int headerLines = getHeaderLength(fileContents);
+		if (headerLines == 0) {
+			result = new ArrayList<String>();
+		} else {
+			result = fileContents.subList(0, headerLines);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Determine whether or not this file contains Run Types
+	 * @return {@code true} if the file contains Run Types; {@code false} if not
+	 */
+	public boolean hasRunTypes() {
+		return (runTypeColumn > -1);
+	}
+
+	/**
+	 * Get the run type from a data line
+	 * @param line The line
+	 * @return The run type
+	 * @throws FileDefinitionException If this file does not contain run types, the run type is not present, or the run type is not recognised
+	 */
+	public RunTypeCategory getRunType(String line) throws FileDefinitionException {
+		RunTypeCategory result = null;
+		
+		if (!hasRunTypes()) {
+			throw new FileDefinitionException("File does not contain run types");
+		} else {
+			String runTypeValue = extractFields(line).get(runTypeColumn);
+			if (null != runTypeValue && runTypeValue.length() > 0) {
+				if (!runTypes.containsKey(runTypeValue)) {
+					throw new FileDefinitionException("Unrecognised run type '" + runTypeValue + "'");
+				} else {
+					result = runTypes.get(runTypeValue);
+				}
+			}
+		}
+		
+		return result;
+	}
 }
+

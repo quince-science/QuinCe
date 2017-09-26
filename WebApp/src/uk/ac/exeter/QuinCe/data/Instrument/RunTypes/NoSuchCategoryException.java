@@ -5,7 +5,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
  * @author Steve Jones
  *
  */
-public class NoSuchCategoryException extends Exception {
+public class NoSuchCategoryException extends RunTypeCategoryException {
 	
 	/**
 	 * The serial version UID

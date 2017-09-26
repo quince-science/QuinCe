@@ -31,12 +31,12 @@ public class UserDB {
 	/**
 	 * SQL statement to search for a user by email address
 	 */
-	private static final String USER_SEARCH_BY_EMAIL_STATEMENT = "SELECT id,email,firstname,surname,email_code,email_code_time,password_code,password_code_time,permissions FROM user WHERE email = ?";
+	private static final String USER_SEARCH_BY_EMAIL_STATEMENT = "SELECT id,email,firstname,surname,email_code,email_code_time,password_code,password_code_time,permissions,preferences FROM user WHERE email = ?";
 	
 	/**
 	 * SQL statement to search for a user by email address
 	 */
-	private static final String USER_SEARCH_BY_ID_STATEMENT = "SELECT id,email,firstname,surname,email_code,email_code_time,password_code,password_code_time,permissions FROM user WHERE id = ?";
+	private static final String USER_SEARCH_BY_ID_STATEMENT = "SELECT id,email,firstname,surname,email_code,email_code_time,password_code,password_code_time,permissions,preferences FROM user WHERE id = ?";
 	
 	/**
 	 * SQL statement to create a new user record
@@ -64,6 +64,18 @@ public class UserDB {
 	private static final String CHANGE_PASSWORD_STATEMENT = "UPDATE user SET salt = ?, password = ? WHERE id = ?";
 	
 	private static final String CLEAR_EMAIL_CODE_STATEMENT = "UPDATE user SET email_code = NULL, email_code_time = NULL WHERE email = ?";
+	
+	/**
+	 * Statement to store a user's preferences
+	 */
+	private static final String STORE_PREFERENCES_STATEMENT = "UPDATE user SET preferences = ? "
+			+ "WHERE id = ?";
+	
+	/**
+	 * Statement to retrieve a user's preferences
+	 */
+	private static final String GET_PREFERENCES_STATEMENT = "SELECT preferences FROM user "
+			+ "WHERE id = ?";
 	
 	/**
 	 * The length of the string to be used for email verification and password reset codes
@@ -107,6 +119,15 @@ public class UserDB {
 	 */
 	public static final int CODE_EXPIRY_HOURS = 24;
 	
+	/**
+	 * Get a user's details from their email address. If the user doesn't exist,
+	 * {@code null} is returned
+	 * @param dataSource A data source
+	 * @param email The email address
+	 * @return The user object
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MissingParamException If any required parameters are missing
+	 */
 	public static User getUser(DataSource dataSource, String email) throws DatabaseException, MissingParamException {
 		
 		Connection conn = null;
@@ -131,11 +152,11 @@ public class UserDB {
 	 * 
 	 * If the user can't be found, this method returns {@code null}.
 	 * 
-	 * @param conn The database connection to be used
+	 * @param conn A database connection
 	 * @param email The user's email address.
 	 * @return A User object representing the user, or {@code null} if the user's record could not be found.
 	 * @throws MissingParamException If the supplied email is null
-	 * @throws SQLException
+	 * @throws DatabaseException If a database error occurs
 	 * @see uk.ac.exeter.QuinCe.User.User
 	 */
 	public static User getUser(Connection conn, String email) throws DatabaseException, MissingParamException {
@@ -144,21 +165,23 @@ public class UserDB {
 		MissingParam.checkMissing(email, "email");
 		
 		PreparedStatement stmt = null;
+		ResultSet record = null;
 		User foundUser = null;
 		
 		try {
 			stmt = conn.prepareStatement(USER_SEARCH_BY_EMAIL_STATEMENT);
 			stmt.setString(1, email);
-			ResultSet result = stmt.executeQuery();
+			record = stmt.executeQuery();
 			
-			if (result.first()) {
-				foundUser = new User(result.getInt(1), result.getString(2), result.getString(3), result.getString(4), result.getInt(9));
-				foundUser.setEmailVerificationCode(result.getString(5), result.getTimestamp(6));
-				foundUser.setPasswordResetCode(result.getString(7), result.getTimestamp(8));
+			if (record.first()) {
+				foundUser = new User(record.getInt(1), record.getString(2), record.getString(3), record.getString(4), record.getInt(9), record.getString(10));
+				foundUser.setEmailVerificationCode(record.getString(5), record.getTimestamp(6));
+				foundUser.setPasswordResetCode(record.getString(7), record.getTimestamp(8));
 			}
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while searching for the user", e);
 		} finally {
+			DatabaseUtils.closeResultSets(record);
 			DatabaseUtils.closeStatements(stmt);
 		}
 		
@@ -174,7 +197,7 @@ public class UserDB {
 	 * @param id The user's database ID
 	 * @return A User object representing the user, or {@code null} if the user's record could not be found.
 	 * @throws MissingParamException If the supplied email is null
-	 * @throws SQLException
+	 * @throws DatabaseException If a database error occurs
 	 * @see uk.ac.exeter.QuinCe.User.User
 	 */
 	public static User getUser(DataSource dataSource, long id) throws DatabaseException, MissingParamException {
@@ -202,37 +225,98 @@ public class UserDB {
 	 * 
 	 * If the user can't be found, this method returns {@code null}.
 	 * 
-	 * @param conn The database connection to be used
+	 * @param conn A database connection
 	 * @param id The user's database ID
 	 * @return A User object representing the user, or {@code null} if the user's record could not be found.
 	 * @throws MissingParamException If the supplied email is null
-	 * @throws SQLException
+	 * @throws DatabaseException If a database error occurs
 	 * @see uk.ac.exeter.QuinCe.User.User
 	 */
 	public static User getUser(Connection conn, long id) throws DatabaseException, MissingParamException {
-		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkMissing(conn, "dataSource");
 		MissingParam.checkPositive(id, "id");
 		
 		PreparedStatement stmt = null;
+		ResultSet record = null;
 		User foundUser = null;
 		
 		try {
 			stmt = conn.prepareStatement(USER_SEARCH_BY_ID_STATEMENT);
 			stmt.setLong(1, id);
-			ResultSet result = stmt.executeQuery();
+			record = stmt.executeQuery();
 			
-			if (result.first()) {
-				foundUser = new User(result.getInt(1), result.getString(2), result.getString(3), result.getString(4), result.getInt(9));
-				foundUser.setEmailVerificationCode(result.getString(5), result.getTimestamp(6));
-				foundUser.setPasswordResetCode(result.getString(7), result.getTimestamp(8));
+			if (record.first()) {
+				foundUser = new User(record.getInt(1), record.getString(2), record.getString(3), record.getString(4), record.getInt(9), record.getString(10));
+				foundUser.setEmailVerificationCode(record.getString(5), record.getTimestamp(6));
+				foundUser.setPasswordResetCode(record.getString(7), record.getTimestamp(8));
 			}
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while searching for the user", e);
 		} finally {
+			DatabaseUtils.closeResultSets(record);
 			DatabaseUtils.closeStatements(stmt);
 		}
 		
 		return foundUser;
+	}
+	
+	public static UserPreferences getPreferences(DataSource dataSource, long userId) throws MissingParamException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkZeroPositive(userId, "userId");
+		
+		UserPreferences result = null;
+
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet record = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_PREFERENCES_STATEMENT);
+			stmt.setLong(1, userId);
+			
+			record = stmt.executeQuery();
+			if (record.next()) {
+				result = new UserPreferences(userId, record.getString(1));
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error reading user preferences", e);
+		} finally {
+			DatabaseUtils.closeResultSets(record);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Store a user's preferences
+	 * @param dataSource A data source
+	 * @param preferences The preferences to be stored
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public static void savePreferences(DataSource dataSource, UserPreferences preferences) throws MissingParamException, DatabaseException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(preferences, "preferences");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(STORE_PREFERENCES_STATEMENT);
+			stmt.setString(1, preferences.writeToString());
+			stmt.setLong(2, preferences.getUserId());
+			
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("Error storing user preferences", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
 	}
 
 	/**

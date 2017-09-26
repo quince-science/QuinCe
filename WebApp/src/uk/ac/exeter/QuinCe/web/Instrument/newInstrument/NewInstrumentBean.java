@@ -1,12 +1,10 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -241,7 +239,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	/**
 	 * The format for the start time in the file header
 	 */
-	private String startTimeFormat = "MMM DD YYYY HH:MM:SS";
+	private String startTimeFormat = "MMM dd YYYY HH:MM:SS";
 	
 	/**
 	 * The start time line extracted from the file header. This is a JSON string
@@ -397,9 +395,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	@Override
 	public void processUploadedFile() {
-		String fileContent = new String(getFile().getContents(), StandardCharsets.UTF_8);
-		List<String> fileLines = Arrays.asList(fileContent.split("[\\r\\n]+"));
-		
+		extractFileLines();
 		currentInstrumentFile.setFileContents(fileLines);
 	}
 	
@@ -997,7 +993,7 @@ public class NewInstrumentBean extends FileUploadBean {
 		dateFormat = null;
 		startTimePrefix = null;
 		startTimeSuffix = null;
-		startTimeFormat = "MMM DD YYYY HH:MM:SS";
+		startTimeFormat = "MMM dd YYYY HH:MM:SS";
 	}
 
 	/**
@@ -1218,7 +1214,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	public void extractStartTime() throws HighlightedStringException {
 		FileDefinitionBuilder fileDefinition = (FileDefinitionBuilder) instrumentFiles.get(dateTimeFile);
 		
-		HighlightedString headerLine = fileDefinition.getHeaderLine(startTimePrefix, startTimeSuffix);
+		HighlightedString headerLine = fileDefinition.getHeaderLine(fileLines, startTimePrefix, startTimeSuffix);
 		if (null == headerLine) {
 			startTimeLine = null;
 			startTimeDate = null;

@@ -41,18 +41,6 @@
 		<managed-bean-scope>view</managed-bean-scope>
 	</managed-bean>
 	<managed-bean>
-		<description>Handles the File List page</description>
-		<managed-bean-name>fileListBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.files.FileListBean</managed-bean-class>
-		<managed-bean-scope>request</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
-		<description>Handles upload of data files</description>
-		<managed-bean-name>uploadDataFileBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.files.UploadDataFileBean</managed-bean-class>
-		<managed-bean-scope>view</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
 		<description>Holds all data required by the Data Screen, where the user performs QC.</description>
 		<managed-bean-name>dataScreenBean</managed-bean-name>
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.files.DataScreenBean</managed-bean-class>
@@ -213,31 +201,15 @@
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
-		<display-name>FileList</display-name>
-		<from-view-id>/data/file_list.xhtml</from-view-id>
+		<display-name>DataFiles</display-name>
+		<from-view-id>/data_file/*</from-view-id>
 		<navigation-case>
-			<from-outcome>upload_file</from-outcome>
-			<to-view-id>/data/upload_file.xhtml</to-view-id>
+			<from-outcome>upload</from-outcome>
+			<to-view-id>/data_file/upload.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
 			<from-outcome>file_list</from-outcome>
-			<to-view-id>/data/file_list.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>data_screen</from-outcome>
-			<to-view-id>/data/data_screen.xhtml</to-view-id>
-        </navigation-case>
-        <navigation-case>
-			<from-outcome>export</from-outcome>
-			<to-view-id>/data/export.xhtml</to-view-id>
-		</navigation-case>
-	</navigation-rule>
-	<navigation-rule>
-		<display-name>UploadDataFile</display-name>
-		<from-view-id>/data/upload_file.xhtml</from-view-id>
-		<navigation-case>
-			<from-outcome>file_list</from-outcome>
-			<to-view-id>/data/file_list.xhtml</to-view-id>
+			<to-view-id>/data_file/file_list.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>

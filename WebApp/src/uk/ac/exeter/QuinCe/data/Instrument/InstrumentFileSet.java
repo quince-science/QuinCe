@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Methods to handle and process a set of file definitions for an instrument
@@ -74,6 +75,25 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 		
 		return result;
 	}
+	
+	/**
+	 * Retrieve the file definition with the specified database ID.
+	 * If no definition is found, the method returns {@code null}
+	 * @param definitionId The database ID
+	 * @return The file definition
+	 */
+	public FileDefinition get(long definitionId) {
+		FileDefinition result = null;
+		
+		for (FileDefinition file : this) {
+			if (file.getDatabaseId() == definitionId) {
+				result = file;
+				break;
+			}
+		}
+		
+		return result;
+	}
 
 	@Override
 	public boolean remove(Object o) {
@@ -96,5 +116,25 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 		}
 		
 		return removed;
+	}
+	
+	/**
+	 * Find file definitions that match the layout of the
+	 * supplied file definition.
+	 * 
+	 * @param fileToMatch The file definition to be matched
+	 * @return The matching file definitions
+	 */
+	public List<FileDefinition> getMatchingFileDefinition(FileDefinition fileToMatch) {
+		List<FileDefinition> result = new ArrayList<FileDefinition>();
+		
+		for (FileDefinition file : this) {
+			if (file.matchesLayout(fileToMatch)) {
+				result.add(file);
+				break;
+			}
+		}
+		
+		return result;
 	}
 }

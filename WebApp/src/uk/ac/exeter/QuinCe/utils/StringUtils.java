@@ -1,6 +1,8 @@
 package uk.ac.exeter.QuinCe.utils;
 
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -309,5 +311,24 @@ public class StringUtils {
 		}
 		
 		return result.toString();
+	}
+	
+	/**
+	 * Create a {@link Properties} object from a string
+	 * @param propsString The properties String
+	 * @return The Properties object
+	 * @throws IOException If the string cannot be parsed
+	 */
+	public static Properties propertiesFromString(String propsString) throws IOException {
+		Properties result = null;
+
+		if (null != propsString && propsString.length() > 0) {
+			StringReader reader = new StringReader(propsString);
+			Properties props = new Properties();
+			props.load(reader);
+			return props;
+		}
+
+		return result;
 	}
 }

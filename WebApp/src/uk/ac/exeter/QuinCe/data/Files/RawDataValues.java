@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Files;
 
 import java.util.Calendar;
 
+@Deprecated
 public class RawDataValues {
 
 	private long dataFileId;

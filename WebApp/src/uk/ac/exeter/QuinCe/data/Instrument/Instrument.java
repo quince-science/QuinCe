@@ -55,12 +55,34 @@ public class Instrument {
 	private int minimumWaterFlow = -1;
 	
 	/**
+	 * Constructor for a complete instrument that's already in the database
+	 * @param databaseId The instrument's database ID
+	 * @param ownerId The instrument owner's database ID
+	 * @param name The instrument name
+	 * @param fileDefinitions The file format definitions
+	 * @param sensorAssignments The sensor assignments
+	 * @param runTypes The run types
+	 * @param preFlushingTime The pre-flushing time
+	 * @param postFlushingTime The post-flushing time
+	 * @param minimumWaterFlow The minimum water flow
+	 */
+	public Instrument(long databaseId, long ownerId, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, int preFlushingTime, int postFlushingTime, int minimumWaterFlow) {
+		this.databaseID = databaseId;
+		this.ownerId = ownerId;
+		this.name = name;
+		this.fileDefinitions = fileDefinitions;
+		this.sensorAssignments = sensorAssignments;
+		this.preFlushingTime = preFlushingTime;
+		this.postFlushingTime = postFlushingTime;
+		this.minimumWaterFlow = minimumWaterFlow;
+	}
+	
+	/**
 	 * Constructor for a complete instrument with no database ID
 	 * @param owner The instrument's owner
 	 * @param name The instrument name
 	 * @param fileDefinitions The file format definitions
 	 * @param sensorAssignments The sensor assignments
-	 * @param runTypes The run types
 	 * @param preFlushingTime The pre-flushing time
 	 * @param postFlushingTime The post-flushing time
 	 * @param minimumWaterFlow The minimum water flow
@@ -74,7 +96,6 @@ public class Instrument {
 		this.postFlushingTime = postFlushingTime;
 		this.minimumWaterFlow = minimumWaterFlow;
 	}
-	
 	
 	/**
 	 * Validate that all required information for the Instrument is present

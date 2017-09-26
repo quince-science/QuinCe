@@ -7,10 +7,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
 import uk.ac.exeter.QuinCe.data.Instrument.InvalidSeparatorException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
-import uk.ac.exeter.QuinCe.utils.HighlightedString;
-import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.web.html.HtmlUtils;
 
 /**
@@ -48,7 +47,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 * Create a new file definition with the default description
  	 * @param fileSet The file set that will contain this file definition
 	 */
-	protected FileDefinitionBuilder(NewInstrumentFileSet fileSet) {
+	public FileDefinitionBuilder(InstrumentFileSet fileSet) {
 		super(DEFAULT_DESCRIPTION, fileSet);
 
 		int counter = 1;
@@ -63,7 +62,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 * @param fileDescription The file description
 	 * @param fileSet The file set that will contain this file definition
 	 */
-	public FileDefinitionBuilder(String fileDescription, NewInstrumentFileSet fileSet) {
+	public FileDefinitionBuilder(String fileDescription, InstrumentFileSet fileSet) {
 		super(fileDescription, fileSet);
 	}
 	
@@ -193,7 +192,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 * Store the file data as an array of Strings
 	 * @param fileContents The file data
 	 */
-	protected void setFileContents(List<String> fileContents) {
+	public void setFileContents(List<String> fileContents) {
 		this.fileContents = fileContents;
 	}
 	
@@ -310,7 +309,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 			}
 		} else {
 			String columnHeaders = fileContents.get(getFirstColumnHeaderRow());
-			columns = makeColumnValues(columnHeaders);
+			columns = extractFields(columnHeaders);
 		}
 		
 		StringBuilder result = new StringBuilder();
@@ -351,38 +350,6 @@ public class FileDefinitionBuilder extends FileDefinition {
 	}
 	
 	/**
-	 * Get the number of rows in the file header
-	 * @return The number of rows in the file header
-	 */
-	public int getHeaderLength() {
-		int result = 0;
-		
-		switch (getHeaderType()) {
-		case HEADER_TYPE_LINE_COUNT: {
-			result = getHeaderLines();
-			break;
-		}
-		case HEADER_TYPE_STRING: {
-			
-			int row = 0;
-			boolean foundHeaderEnd = false;
-			while (!foundHeaderEnd && row < fileContents.size()) {
-				if (fileContents.get(row).equalsIgnoreCase(getHeaderEndString())) {
-					foundHeaderEnd = true;
-				} else {
-					row++;
-				}
-			}
-			
-			result = row;
-			break;
-		}
-		}
-		
-		return result;
-	}
-	
-	/**
 	 * Get the data from the sample file as a JSON string
 	 * @return The file data
 	 */
@@ -399,7 +366,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 		}
 		
 		for (int i = firstDataRow; i < lastRow; i++) {
-			List<String> columnValues = makeColumnValues(fileContents.get(i));
+			List<String> columnValues = extractFields(fileContents.get(i));
 			
 			result.append('[');
 
@@ -431,70 +398,6 @@ public class FileDefinitionBuilder extends FileDefinition {
 		return result.toString();
 	}
 	
-	/**
-	 * Get the file header. If there is no header,
-	 * returns an empty list.
-	 * @return The lines of the file header
-	 */
-	public List<String> getFileHeader() {
-		List<String> result;
-		
-		int headerLines = getHeaderLength();
-		if (headerLines == 0) {
-			result = new ArrayList<String>();
-		} else {
-			result = fileContents.subList(0, headerLines);
-		}
-		
-		return result;
-	}
-
-	/**
-	 * Get the header line that contains the given prefix and suffix.
-	 * A line will match if it contains the prefix, followed by a
-	 * number of characters, followed by the suffix.
-	 * <p>
-	 *   The matching line will be returned as a {@link HighlightedString},
-	 *   with the portion between the prefix and suffix highlighted.
-	 * </p>
-	 * <p>
-	 *   If multiple lines match the prefix and suffix, the first line
-	 *   will be returned.
-	 * </p>
-	 * @param prefix The prefix
-	 * @param suffix The suffix
-	 * @return The matching line
-	 * @throws HighlightedStringException If an error occurs while building the highlighted string
-	 */
-	public HighlightedString getHeaderLine(String prefix, String suffix) throws HighlightedStringException {
-		
-		HighlightedString matchedLine = null;
-		
-		for (String line : getFileHeader()) {
-			int prefixPos;
-			if (prefix.length() == 0) {
-				prefixPos = 0;
-			} else {
-				prefixPos = line.indexOf(prefix);
-			}
-			
-			if (prefixPos > -1) {
-				int suffixPos = line.length();
-				if (suffix.length() > 0) {
-					suffixPos = line.indexOf(suffix, (prefixPos + prefix.length()));
-					if (suffixPos == -1) {
-						suffixPos = line.length();
-					}
-				}
-					
-				matchedLine = new HighlightedString(line, prefixPos + prefix.length(), suffixPos);
-				break;
-			}
-		}
-		
-		return matchedLine;
-	}
-	
 	@Override
 	public void setSeparatorName(String separatorName) throws InvalidSeparatorException {
 		super.setSeparatorName(separatorName);
@@ -511,7 +414,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 		TreeSet<String> values = new TreeSet<String>();
 		
 		for (int i = getColumnHeaderRows(); i < fileContents.size(); i++) {
-			List<String> columns = makeColumnValues(fileContents.get(i));
+			List<String> columns = extractFields(fileContents.get(i));
 			values.add(columns.get(column));
 		}
 		
@@ -527,5 +430,13 @@ public class FileDefinitionBuilder extends FileDefinition {
 				setRunTypeCategory(runType, RunTypeCategory.IGNORED_CATEGORY);
 			}
 		}
+	}
+	
+	/**
+	 * Shortcut method to get the length of the header
+	 * @return The header length
+	 */
+	private int getHeaderLength() {
+		return getHeaderLength(fileContents);
 	}
 }

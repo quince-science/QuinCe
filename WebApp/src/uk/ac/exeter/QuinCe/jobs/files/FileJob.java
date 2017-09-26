@@ -77,12 +77,15 @@ public abstract class FileJob extends Job {
 		}
 
 		try {
+			// TODO Reinstate
+			/*
 			fileId = Long.parseLong(parameters.get(FILE_ID_KEY));
 			instrument = InstrumentDB.getInstrumentByFileId(dataSource, fileId);
 
 			if (!DataFileDB.fileExists(dataSource, fileId)) {
 				throw new InvalidJobParametersException("The data file " + fileId + " does not exist");
 			}
+			*/
 		} catch (Exception e) {
 			throw new InvalidJobParametersException("An unexpected error occurred: " + e.getMessage());
 		}
