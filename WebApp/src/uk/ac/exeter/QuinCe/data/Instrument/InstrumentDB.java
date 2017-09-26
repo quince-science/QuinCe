@@ -84,7 +84,7 @@ public class InstrumentDB {
 	 * Statement for inserting run types
 	 */
 	private static final String CREATE_RUN_TYPE_STATEMENT = "INSERT INTO run_type ("
-			+ "file_id, run_name, category_code" // 3
+			+ "file_definition_id, run_name, category_code" // 3
 			+ ") VALUES (?, ?, ?)";
 	
 	/**
@@ -141,7 +141,7 @@ public class InstrumentDB {
 	 */
 	private static final String GET_RUN_TYPES_QUERY = "SELECT "
 			+ "run_name, category_code "
-			+ "FROM run_type WHERE file_id = ?";
+			+ "FROM run_type WHERE file_definition_id = ?";
 
 	/**
 	 * Store a new instrument in the database

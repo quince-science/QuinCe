@@ -159,7 +159,7 @@ file. This file defines a code for each run type that will be stored in the `run
 
 Field                    Type           Description
 --------------------     ------------   -----------------------------------------------------------------
-file_id*                 F_KEY          Instrument ID
+file_definition_id*      F_KEY          File Definition ID
 name*                    String         The value from the `run_type` column in the Columns table
 category_code            String         The run type category code
 
