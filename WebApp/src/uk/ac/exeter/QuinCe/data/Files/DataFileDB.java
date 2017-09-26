@@ -139,7 +139,6 @@ public class DataFileDB {
 			stmt.setLong(3, DateTimeUtils.dateToLong(dataFile.getStartDate()));
 			stmt.setLong(4, DateTimeUtils.dateToLong(dataFile.getEndDate()));
 			stmt.setInt(5, dataFile.getRecordCount());
-			stmt.setLong(6, System.currentTimeMillis());
 			
 			stmt.execute();
 			
