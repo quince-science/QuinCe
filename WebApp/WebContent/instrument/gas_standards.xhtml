@@ -25,7 +25,10 @@
 				<div class="dialogSection">
 					<h:panelGrid columns="2" styleClass="buttonPanel">
 						<p:outputLabel for="deploymentDate" value="Deployment Date:"/>
-						<p:calendar id="deploymentDate" value="#{gasStandardsBean.enteredCalibration.deploymentDateAsDate}" maxLength="10" size="10" pattern="yyyy/MM/dd" navigator="true"/>
+						<p:calendar id="deploymentDate" value="#{gasStandardsBean.enteredCalibration.deploymentDate}" maxLength="10" size="10" pattern="yyyy-MM-dd" navigator="true">
+							<f:converter converterId="localDateTimeConverter"/>
+							<f:attribute name="dateOnly" value="true" />
+						</p:calendar>
 
 						<p:outputLabel for="standard" value="Standard:"/>
 						<p:selectOneMenu id="standard" value="#{gasStandardsBean.enteredCalibration.target}">
@@ -56,7 +59,9 @@
 					<h:outputText value="#{calibration.target}"/>
 				</p:column>
 				<p:column headerText="Deployment Date">
-					<h:outputText value="#{calibration.deploymentDateAsString}"/>
+					<h:outputText value="#{calibration.deploymentDate}">
+						<f:attribute name="dateOnly" value="true" />
+					</h:outputText>
 				</p:column>
 				<p:column headerText="Concentration">
 					<h:outputText value="#{calibration.humanReadableCoefficients}"/>

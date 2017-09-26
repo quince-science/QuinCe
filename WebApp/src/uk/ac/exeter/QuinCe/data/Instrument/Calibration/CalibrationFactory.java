@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.lang.reflect.Constructor;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -18,7 +18,7 @@ public class CalibrationFactory {
 	
 	/**
 	 * Create a calibration object. The specific type of the calibration object is dependent on
-	 * the paramters passed in.
+	 * the parameters passed in.
 	 * 
 	 * @param calibrationType The high-level calibration type
 	 * @param calibrationClass The class of the desired calibration object
@@ -28,7 +28,7 @@ public class CalibrationFactory {
 	 * @param coefficients The calibration coefficients
 	 * @return The Calibration object
 	 */
-	public static Calibration createCalibration(String calibrationType, String calibrationClass, long instrumentId, Date deploymentDate, String target, List<Double> coefficients) {
+	public static Calibration createCalibration(String calibrationType, String calibrationClass, long instrumentId, LocalDateTime deploymentDate, String target, List<Double> coefficients) {
 		Calibration result;
 		
 		switch (calibrationType) {
@@ -48,7 +48,7 @@ public class CalibrationFactory {
 				String fullClass = CALIBRATION_PACKAGE + "." + calibrationClass;
 				Class<?> clazz = Class.forName(fullClass);
 				
-				Constructor<?> constructor = clazz.getConstructor(long.class, String.class, Date.class, List.class);
+				Constructor<?> constructor = clazz.getConstructor(long.class, String.class, LocalDateTime.class, List.class);
 				result = (Calibration) constructor.newInstance(instrumentId, target, deploymentDate, coefficients);
 			} catch (CalibrationException e) {
 				throw e;

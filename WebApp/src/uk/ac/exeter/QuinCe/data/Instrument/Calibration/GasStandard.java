@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.utils.ParameterException;
@@ -50,11 +50,11 @@ public class GasStandard extends Calibration {
 	 * @param coefficients The standard concentration
 	 * @throws ParameterException If the calibration details are invalid
 	 */
-	protected GasStandard(long instrumentId, String target, Date deploymentDate, List<Double> coefficients) throws ParameterException {
+	protected GasStandard(long instrumentId, String target, LocalDateTime deploymentDate, List<Double> coefficients) throws ParameterException {
 		super(instrumentId, GasStandardDB.GAS_STANDARD_CALIBRATION_TYPE, target);
 		
 		if (null != target) {
-			setDeploymentDateAsDate(deploymentDate);
+			setDeploymentDate(deploymentDate);
 			setCoefficients(coefficients);
 			if (!validate()) {
 				throw new ParameterException("Deployment date/coefficients", "Calibration deployment is invalid");

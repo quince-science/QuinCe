@@ -1,9 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
-import java.time.LocalTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -48,7 +45,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 	 * in which case the time portion will be set to midnight.
 	 * @see #hasTime
 	 */
-	private ZonedDateTime deploymentDate = null;
+	private LocalDateTime deploymentDate = null;
 	
 	/**
 	 * The part of the instrument to which this calibration applies.
@@ -63,16 +60,6 @@ public abstract class Calibration implements Comparable<Calibration> {
 	 * @see #getCoefficientNames()
 	 */
 	protected List<Double> coefficients = null;
-	
-	/**
-	 * The formatter for dates
-	 */
-	private static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-	
-	/**
-	 * The formatter for date/times
-	 */
-	private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	
 	/**
 	 * Create an empty calibration for an instrument 
@@ -173,29 +160,16 @@ public abstract class Calibration implements Comparable<Calibration> {
 	 * Get the deployment date as a {@link Date} object
 	 * @return The deployment date
 	 */
-	public Date getDeploymentDateAsDate() {
-		Date result = null;
-
-		if (null != deploymentDate) {
-			result = new Date(deploymentDate.toInstant().toEpochMilli());
-		}
-		
-		return result;
+	public LocalDateTime getDeploymentDate() {
+		return deploymentDate;
 	}
 	
 	/**
-	 * Set the deployment date using a {@link Date} object
+	 * Set the deployment date
 	 * @param deploymentDate The deployment date
 	 */
-	public void setDeploymentDateAsDate(Date deploymentDate) {
-		if (null == deploymentDate) {
-			this.deploymentDate = null;
-		} else {
-			this.deploymentDate = ZonedDateTime.ofInstant(deploymentDate.toInstant(), ZoneOffset.UTC);
-			if (!hasTime()) {
-				this.deploymentDate = this.deploymentDate.with(LocalTime.MIDNIGHT);
-			}
-		}
+	public void setDeploymentDate(LocalDateTime deploymentDate) {
+		this.deploymentDate = deploymentDate;
 		
 		if (null == coefficients) {
 			initialiseCoefficients();
@@ -216,40 +190,6 @@ public abstract class Calibration implements Comparable<Calibration> {
 	 */
 	public String getCoefficientsAsDelimitedList() {
 		return StringUtils.listToDelimited(coefficients, ";");
-	}
-	
-	/**
-	 * Get the deployment date as milliseconds since the epoch
-	 * @return The deployment date in milliseconds
-	 */
-	public long getDeploymentDateAsMillis() {
-		long result = Long.MIN_VALUE;
-		
-		if (null != deploymentDate) {
-			result = deploymentDate.toInstant().toEpochMilli();
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * Get the deployment date as a formatted string
-	 * @return The deployment date string
-	 */
-	public String getDeploymentDateAsString() {
-		String result;
-		
-		if (null == deploymentDate || null == coefficients) {
-			result = "Not set";
-		} else {
-			if (hasTime()) {
-				result = deploymentDate.format(dateTimeFormatter);
-			} else {
-				result = deploymentDate.format(dateFormatter);
-			}
-		}
-		
-		return result;
 	}
 	
 	/**

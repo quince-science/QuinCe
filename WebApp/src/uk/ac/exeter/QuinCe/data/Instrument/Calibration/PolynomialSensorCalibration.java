@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -50,7 +50,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 	 * @param coefficients The calibration coefficients
 	 * @throws CalibrationException If the calibration details are invalid
 	 */
-	protected PolynomialSensorCalibration(long instrumentId, String target, Date deploymentDate, List<Double> coefficients) throws CalibrationException {
+	protected PolynomialSensorCalibration(long instrumentId, String target, LocalDateTime deploymentDate, List<Double> coefficients) throws CalibrationException {
 		super(instrumentId, target, deploymentDate, coefficients);
 	}
 

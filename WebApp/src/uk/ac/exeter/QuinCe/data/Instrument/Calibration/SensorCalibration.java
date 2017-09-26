@@ -1,6 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -28,9 +28,9 @@ public abstract class SensorCalibration extends Calibration {
 	 * @param coefficients The calibration coefficients
 	 * @throws CalibrationException If the calibration details are invalid
 	 */
-	protected SensorCalibration(long instrumentId, String target, Date deploymentDate, List<Double> coefficients) throws CalibrationException {
+	protected SensorCalibration(long instrumentId, String target, LocalDateTime deploymentDate, List<Double> coefficients) throws CalibrationException {
 		super(instrumentId, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE, target);
-		setDeploymentDateAsDate(deploymentDate);
+		setDeploymentDate(deploymentDate);
 		setCoefficients(coefficients);
 		if (!validate()) {
 			throw new CalibrationException("Sensor calibration parameters are invalid");

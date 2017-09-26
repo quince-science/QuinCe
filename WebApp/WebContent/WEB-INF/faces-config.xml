@@ -4,6 +4,17 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd"
     version="2.2">
+	<converter>
+		<description>Converts strings to LocalDateTime objects</description>
+		<display-name>LocalDateTimeConverter</display-name>
+		<converter-id>localDateTimeConverter</converter-id>
+		<converter-class>uk.ac.exeter.QuinCe.web.system.LocalDateTimeConverter</converter-class>
+		<attribute>
+			<attribute-name>dateOnly</attribute-name>
+			<attribute-class>java.lang.Boolean</attribute-class>
+			<default-value>false</default-value>
+		</attribute>
+	</converter>
 	<managed-bean>
 		<description>Processes user signup</description>
 		<managed-bean-name>signupBean</managed-bean-name>

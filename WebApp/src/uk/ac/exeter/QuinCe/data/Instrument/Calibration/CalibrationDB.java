@@ -4,13 +4,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.ParameterException;
@@ -60,7 +61,7 @@ public abstract class CalibrationDB {
 	public void addCalibration(DataSource dataSource, Calibration calibration) throws DatabaseException, ParameterException {
 		 MissingParam.checkMissing(dataSource, "dataSource");
 		 MissingParam.checkMissing(calibration, "calibration");
-		 MissingParam.checkMissing(calibration.getDeploymentDateAsDate(), "calibration deployment date");
+		 MissingParam.checkMissing(calibration.getDeploymentDate(), "calibration deployment date");
 
 		 if (!calibration.validate()) {
 			 throw new ParameterException("Calibration coefficients", "Coefficients are invalid");
@@ -75,7 +76,7 @@ public abstract class CalibrationDB {
 			 stmt.setLong(1, calibration.getInstrumentId());
 			 stmt.setString(2, calibration.getType());
 			 stmt.setString(3, calibration.getTarget());
-			 stmt.setLong(4, calibration.getDeploymentDateAsMillis());
+			 stmt.setLong(4, DateTimeUtils.dateToLong(calibration.getDeploymentDate()));
 			 stmt.setString(5, calibration.getCoefficientsAsDelimitedList());
 			 stmt.setString(6, calibration.getClass().getSimpleName());
 			 
@@ -117,7 +118,7 @@ public abstract class CalibrationDB {
 				String target = records.getString(1);
 
 				if (!result.containsTarget(target)) {
-					Date deploymentDate = new Date(records.getLong(2));
+					LocalDateTime deploymentDate = DateTimeUtils.longToDate(records.getLong(2));
 					List<Double> coefficients = StringUtils.delimitedToDoubleList(records.getString(3));
 					String calibrationClass = records.getString(4);
 					
