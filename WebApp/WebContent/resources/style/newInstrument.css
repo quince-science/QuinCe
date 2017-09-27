@@ -30,13 +30,6 @@
     width: 25%;
 }
 
-#instrumentName {
-	margin: auto;
-	text-align: center;
-	font-size: 2em;
-	font-weight: 700;
-}
-
 #nameForm {
 	padding-top: 20px;
 	margin: auto;

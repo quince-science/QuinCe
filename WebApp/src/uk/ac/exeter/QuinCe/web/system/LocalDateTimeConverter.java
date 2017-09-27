@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.web.system;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -24,6 +25,11 @@ public class LocalDateTimeConverter implements Converter {
 	private static final String FORMAT = "yyyy-MM-dd HH:mm:ss";
 	
 	/**
+	 * The attribute name for the flag that indicates a date-only value
+	 */
+	private static final String DATE_ONLY_ATTR = "dateOnly";
+	
+	/**
 	 * The formatter
 	 */
 	private static DateTimeFormatter formatter = null;
@@ -33,13 +39,21 @@ public class LocalDateTimeConverter implements Converter {
 	}
 	
 	@Override
-	public Object getAsObject(FacesContext arg0, UIComponent arg1, String arg2) throws ConverterException {
-
+	public Object getAsObject(FacesContext context, UIComponent component, String value) throws ConverterException {
 		LocalDateTime result = null;
-		
-		if (null != arg2) {
+
+		if (null != value) {
 			try {
-				result = LocalDateTime.parse(arg2, formatter);
+				Map<String, Object> attributes = component.getAttributes();
+				Object dateOnly = attributes.get(DATE_ONLY_ATTR);
+				
+				String valueToConvert = value;
+				
+				if (null != dateOnly && (Boolean.parseBoolean((String) attributes.get(DATE_ONLY_ATTR)))) {
+					valueToConvert = valueToConvert + " 00:00:00";
+				}
+
+				result = LocalDateTime.parse(valueToConvert, formatter);
 			} catch (DateTimeException e) {
 				throw new ConverterException(e);
 			}
@@ -49,12 +63,19 @@ public class LocalDateTimeConverter implements Converter {
 	}
 
 	@Override
-	public String getAsString(FacesContext arg0, UIComponent arg1, Object arg2) throws ConverterException {
+	public String getAsString(FacesContext context, UIComponent component, Object value) throws ConverterException {
 		String result = null;
 		
-		if (null != arg2) {
+		if (null != value) {
 			try {
-				result = ((LocalDateTime) arg2).format(formatter);
+				Map<String, Object> attributes = component.getAttributes();
+				Object dateOnly = attributes.get(DATE_ONLY_ATTR);
+				
+				result = ((LocalDateTime) value).format(formatter); 
+				
+				if (null != dateOnly && (Boolean.parseBoolean((String) attributes.get(DATE_ONLY_ATTR)))) {
+					result = result.substring(0, 10);
+				}
 			} catch (DateTimeException e) {
 				throw new ConverterException(e);
 			}

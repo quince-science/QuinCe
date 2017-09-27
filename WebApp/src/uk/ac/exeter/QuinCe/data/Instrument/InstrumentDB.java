@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,12 +82,19 @@ public class InstrumentDB {
 			+ ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	/**
+	 * Query to get all the run types of a given run type category
+	 */
+	private static final String GET_RUN_TYPES_QUERY = "SELECT CONCAT(f.description, ': ', r.run_name) AS run_type "
+			+ "FROM file_definition AS f INNER JOIN run_type AS r ON f.id = r.file_definition_id "
+			+ "WHERE f.instrument_id = ? AND category_code = ? ORDER BY run_type";
+	
+	/**
 	 * Statement for inserting run types
 	 */
 	private static final String CREATE_RUN_TYPE_STATEMENT = "INSERT INTO run_type ("
 			+ "file_definition_id, run_name, category_code" // 3
 			+ ") VALUES (?, ?, ?)";
-	
+
 	/**
 	 * Query for retrieving the list of instruments owned by a particular user
 	 */
@@ -137,12 +145,12 @@ public class InstrumentDB {
 		    + "FROM file_column WHERE file_definition_id = ?";
 	
 	/**
-	 * SQL query to get the run types defined for a given file
+	 * Query to get the list of sensors that require calibration for a given instrument
 	 */
-	private static final String GET_RUN_TYPES_QUERY = "SELECT "
-			+ "run_name, category_code "
-			+ "FROM run_type WHERE file_definition_id = ?";
-
+	private static final String GET_CALIBRATABLE_SENSORS_QUERY = "SELECT CONCAT(f.description, ': ', c.sensor_name) AS sensor "
+			+ "FROM file_definition AS f INNER JOIN file_column AS c ON c.file_definition_id = f.id "
+			+ "WHERE f.instrument_id = ? AND c.post_calibrated = true ORDER BY sensor";
+	
 	/**
 	 * Store a new instrument in the database
 	 * @param dataSource A data source
@@ -673,7 +681,7 @@ public class InstrumentDB {
 		}
 		return spec;
 	}
-	
+
 	/**
 	 * Construct a {@link LatitudeSpecification} object from a database record
 	 * @param record The database record
@@ -791,6 +799,118 @@ public class InstrumentDB {
 		return assignments;
 	}
 	
+	/**
+	 * Get the names of all run types of a given run type category in a given instrument
+	 * @param dataSource A data source
+	 * @param instrumentId The instrument's database ID
+	 * @param categoryCode The run type category code
+	 * @return The list of run types
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public static List<String> getRunTypes(DataSource dataSource, long instrumentId, String categoryCode) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		List<String> runTypes = null;
+		
+		Connection conn = null;
+		try {
+			
+			conn = dataSource.getConnection();
+			runTypes = getRunTypes(conn, instrumentId, categoryCode);
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while getting run types", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+
+		return runTypes;
+	}
+
+	/**
+	 * Get the names of all run types of a given run type category in a given instrument
+	 * @param conn A database connection
+	 * @param instrumentId The instrument's database ID
+	 * @param categoryCode The run type category code
+	 * @return The list of run types
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public static List<String> getRunTypes(Connection conn, long instrumentId, String categoryCode) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkPositive(instrumentId, "instrumentId");
+		MissingParam.checkMissing(categoryCode, "categoryCode");
+		
+		List<String> runTypes = new ArrayList<String>();
+		
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			stmt = conn.prepareStatement(GET_RUN_TYPES_QUERY);
+			stmt.setLong(1, instrumentId);
+			stmt.setString(2, categoryCode);
+			
+			records = stmt.executeQuery();
+			while (records.next()) {
+				runTypes.add(records.getString(1));
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while getting run types", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+		}
+
+		return runTypes;
+	}
+	
+	/**
+	 * Get a list of all the sensors on a particular instrument that require calibration.
+	 * 
+	 * <p>
+	 *   Each sensor will be listed in the form of
+	 *   {@code <file>: <sensorName>}
+	 * </p>
+	 * 
+	 * @param dataSource A data source
+	 * @param instrumentId The instrument ID
+	 * @return The list of calibratable sensors
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public static List<String> getCalibratableSensors(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException {
+		
+		List<String> result = new ArrayList<String>();
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_CALIBRATABLE_SENSORS_QUERY);
+			stmt.setLong(1, instrumentId);
+			
+			records = stmt.executeQuery();
+			while (records.next()) {
+				result.add(records.getString(1));
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while getting run types", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		
+		return Collections.unmodifiableList(result);
+	}
+
 	/**
 	 * Load the run types for a file from the database
 	 * @param conn A database connection

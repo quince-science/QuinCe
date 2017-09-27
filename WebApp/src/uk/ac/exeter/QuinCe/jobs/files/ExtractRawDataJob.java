@@ -17,9 +17,6 @@ import uk.ac.exeter.QuinCe.data.Files.RawDataFile;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorCode;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationCoefficients;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationStub;
 import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -170,8 +167,8 @@ public class ExtractRawDataJob extends FileJob {
 	 * @param instrument The instrument with which the data is associated
 	 * @param coefficients The calibration coefficients to be applied
 	 */
+	/*
 	private void applyCalibrations(List<String> line, Instrument instrument, List<CalibrationCoefficients> coefficients) {
-		/*
 		if (instrument.hasIntakeTemp1()) {
 			SensorCode code = new SensorCode(SensorCode.TYPE_INTAKE_TEMP, 1, instrument);
 			applyCoefficients(line, instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_1), code, coefficients);
@@ -231,9 +228,8 @@ public class ExtractRawDataJob extends FileJob {
 			SensorCode code = new SensorCode(SensorCode.TYPE_EQP, 3, instrument);
 			applyCoefficients(line, instrument.getColumnAssignment(Instrument.COL_EQP_3), code, coefficients);
 		}
-		
-		*/
 	}
+	*/
 	
 	/**
 	 * Apply a set of calibration coefficients to a specific sensor
@@ -243,6 +239,7 @@ public class ExtractRawDataJob extends FileJob {
 	 * @param sensorCode The sensor code for the sensor
 	 * @param coefficients The calibration coefficients
 	 */
+	/*
 	private void applyCoefficients(List<String> line, int sensorColumn, SensorCode sensorCode, List<CalibrationCoefficients> coefficients) {
 		
 		CalibrationCoefficients calibration = CalibrationCoefficients.findSensorCoefficients(coefficients, sensorCode);
@@ -257,6 +254,7 @@ public class ExtractRawDataJob extends FileJob {
 							
 		line.set(sensorColumn, String.valueOf(calibratedValue));
 	}
+	*/
 	
 	/**
 	 * Reset the data for the data file configured for this job.

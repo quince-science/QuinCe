@@ -439,6 +439,21 @@ tr.header {
     font-weight: 700;
 }
 
+.pageTitle {
+	margin: auto;
+	text-align: center;
+	font-size: 2em;
+	font-weight: 700;
+}
+
+.sectionTitle {
+	margin: auto;
+	margin-top: 15px;
+	text-align: center;
+	font-size: 1.5em;
+	font-weight: 700;
+}
+
 .smallHeader {
     font-weight: 700;
     font-size: 15px;

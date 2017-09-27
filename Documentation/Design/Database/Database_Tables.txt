@@ -163,43 +163,25 @@ file_definition_id*      F_KEY          File Definition ID
 name*                    String         The value from the `run_type` column in the Columns table
 category_code            String         The run type category code
 
-## `standard_deployment`
-Each standard is supplied at a value, which may vary between
-cylinders (in the example of gas standards). This table will store records of when each standard is deployed.
-
-Field                    Type           Description
---------------------     ------------   -------------------------------------------------------------------------
-standard_id*             F_KEY          The ID of the `run_type` that this deployment relates to
-deployment_date*         Date           The date on which the standard was deployed
-value                    Float          The value of the standard
-
-The `standard_id` and `deployment_date` will jointly act as the primary key for the table.
-
 ## `calibration`
-Each sensor in an instrument must be periodically calibrated. In some instruments,
-this calibration is not applied to the raw data, and so the adjustments must be made
-within QuinCe.
+Each calibration (gas standard, sensor calibration etc.) is stored in this table.
 
-It is also possible that some values are reported in millivolts or similar, and must
-be converted to the true units of the parameter being measured. The calibrations table
-can be dual-purposed for this eventuality.
+The `type` field indicates the type of calibration, and the `target` field specifies the individual item
+being calibrated (the specific gas standard or sensor).
 
-Each calibration will be defined as a polynomial curve with up to five harmonics.
+A calibration may consist of multiple values (e.g. the equation coefficients for a sensor calibration).
+These values will be stored in a text field as a semi-colon separated list of values. The application
+code will perform the conversion during the read/write phases.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-sensor_file*             F_KEY          The ID of the file in which this sensor is defined
-sensor_column*           F_KEY          The column in which this sensor's data is found in the specified file
-caibration_date*         Date           The date of the calibration
-intercept                Float          The intercept of the calibration curve
-x                        Float          Slope
-x2                       Float          Second harmonic
-x3                       Float          Third harmonic
-x4                       Float          Fourth harmonic
-x5                       Float          Fifth harmonic
+instrument_id*           F_KEY          Instrument ID
+type*                    String         Calibration type
+target*                  String         Name of the target of this calibration
+deployment_date*         DateTime       Date/time of calibration. Stored as a milliseconds value.
+values                   String         The values for the calibration. See above.
+class                    String         The Java class of the calibration
 
-The `sensor_file` and `sensor_column` together will identify the specific sensor being calibrated. These combined
-with the `calibration_date` will form the primary key for the table.
 
 # Data Files
 This section describes the tables used to hold data as it is processed to calculate and
