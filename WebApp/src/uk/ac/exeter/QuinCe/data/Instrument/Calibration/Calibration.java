@@ -189,6 +189,9 @@ public abstract class Calibration implements Comparable<Calibration> {
 	 * @return The calibration values
 	 */
 	public String getCoefficientsAsDelimitedList() {
+		if (null == coefficients) {
+			initialiseCoefficients();
+		}
 		return StringUtils.listToDelimited(coefficients, ";");
 	}
 	
@@ -200,6 +203,17 @@ public abstract class Calibration implements Comparable<Calibration> {
 		for (int i = 0; i < getCoefficientNames().size(); i++) {
 			coefficients.add(0.0);
 		}
+	}
+	
+	/**
+	 * Get the coefficients for this calibration
+	 * @return The coefficients
+	 */
+	public List<Double> getCoefficients() {
+		if (null == coefficients) {
+			initialiseCoefficients();
+		}
+		return coefficients;
 	}
 	
 	/**

@@ -21,6 +21,14 @@ public abstract class SensorCalibration extends Calibration {
 	}
 	
 	/**
+	 * Basic constructor with no target set
+	 * @param instrumentId The instrument that the calibration is for
+	 */
+	protected SensorCalibration(long instrumentId) {
+		super(instrumentId, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE);
+	}
+	
+	/**
 	 * Construct a complete sensor calibration object.
 	 * @param instrumentId The instrument ID
 	 * @param target The target sensor

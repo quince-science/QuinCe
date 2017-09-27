@@ -1,0 +1,76 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	template="/WEB-INF/templates/app_page.xhtml">
+
+	<ui:define name="title">Sensor Calibrations - #{gasStandardsBean.instrumentName}</ui:define>
+	<ui:define name="localHead">
+		<script>
+			function showCalibrationDialog() {
+				PF('calibrationDialog').show();
+			}
+
+			function hideCalibrationDialog() {
+				PF('calibrationDialog').hide();
+			}
+		</script>
+	</ui:define>
+	
+	<ui:define name="content">
+		<h:form id="standardsForm" metho="post" charset="utf8">
+			<p:dialog header="Add Calibration" widgetVar="calibrationDialog" modal="true">
+				<div class="dialogSection">
+					<h:panelGrid columns="2" styleClass="buttonPanel">
+						<p:outputLabel for="deploymentDate" value="Calibration Date:"/>
+						<p:calendar id="deploymentDate" value="#{sensorCalibrationsBean.enteredCalibration.deploymentDate}" maxLength="19" size="19" pattern="yyyy-MM-dd HH:mm:ss" navigator="true">
+							<f:converter converterId="localDateTimeConverter"/>
+						</p:calendar>
+
+						<p:outputLabel for="standard" value="Sensor:"/>
+						<p:selectOneMenu id="standard" value="#{sensorCalibrationsBean.enteredCalibration.target}">
+							<f:selectItems value="#{sensorCalibrationsBean.targets}"/>
+						</p:selectOneMenu>
+					</h:panelGrid>
+					<table class="form">
+						<ui:repeat value="#{sensorCalibrationsBean.enteredCalibration.coefficients}" var="coefficient" varStatus="loop">
+							<tr>
+								<td><p:outputLabel value="#{sensorCalibrationsBean.enteredCalibration.coefficientNames[loop.index]}"/></td>
+								<td><p:inputNumber value="#{coefficient}" size="12" decimalPlaces="8"/></td>
+							</tr>
+						</ui:repeat>
+					</table>
+				</div>
+				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+					<p:commandButton widgetVar="addDeploymentButton" value="Add" ajax="false" action="#{sensorCalibrationsBean.addCalibration}"/>
+					<p:button value="Cancel" onclick="return hideCalibrationDialog();"/>
+				</h:panelGrid>
+			</p:dialog>
+			
+			<div class="pageTitle">
+				Sensor Calibrations - #{sensorCalibrationsBean.instrumentName} 
+			</div>
+			<h:panelGrid columns="1" styleClass="buttonPanel">
+				<p:button value="Add Calibration" onclick="showCalibrationDialog(); return false;"/> 
+			</h:panelGrid>
+
+			<div class="sectionTitle">
+				Current Calibrations
+			</div>
+			<p:dataTable styleClass="pageTable" var="calibration" value="#{sensorCalibrationsBean.currentCalibrations}">
+				<p:column headerText="Sensor">
+					<h:outputText value="#{calibration.target}"/>
+				</p:column>
+				<p:column headerText="Calibration Date">
+					<h:outputText value="#{calibration.deploymentDate}"/>
+				</p:column>
+				<p:column headerText="Calibration Equation">
+					<h:outputText value="#{calibration.humanReadableCoefficients}"/>
+				</p:column>
+			</p:dataTable>
+			
+		</h:form>
+	</ui:define>
+</ui:composition>

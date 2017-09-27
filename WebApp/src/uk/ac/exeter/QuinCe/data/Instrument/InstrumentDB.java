@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,7 +147,7 @@ public class InstrumentDB {
 	/**
 	 * Query to get the list of sensors that require calibration for a given instrument
 	 */
-	private static final String GET_CALIBRATABLE_SENSORS_QUERY = "SELECT CONCAT(f.description, ': ', c.sensor_name) AS sensor"
+	private static final String GET_CALIBRATABLE_SENSORS_QUERY = "SELECT CONCAT(f.description, ': ', c.sensor_name) AS sensor "
 			+ "FROM file_definition AS f INNER JOIN file_column AS c ON c.file_definition_id = f.id "
 			+ "WHERE f.instrument_id = ? AND c.post_calibrated = true ORDER BY sensor";
 	
@@ -907,7 +908,7 @@ public class InstrumentDB {
 		}
 		
 		
-		return result;
+		return Collections.unmodifiableList(result);
 	}
 
 	/**

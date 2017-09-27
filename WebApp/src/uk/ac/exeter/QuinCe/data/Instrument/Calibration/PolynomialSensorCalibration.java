@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.utils.ParameterException;
+
 /**
  * A calibration that applies up to a fifth-order
  * polynomial adjustment
@@ -43,6 +45,14 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 	}
 
 	/**
+	 * Create a calibration object with no target set
+	 * @param instrumentId The instrument to which the calibration target belongs
+	 */
+	public PolynomialSensorCalibration(long instrumentId) {
+		super(instrumentId);
+	}
+
+	/**
 	 * Construct a complete sensor calibration object.
 	 * @param instrumentId The instrument ID
 	 * @param target The target sensor
@@ -50,7 +60,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 	 * @param coefficients The calibration coefficients
 	 * @throws CalibrationException If the calibration details are invalid
 	 */
-	protected PolynomialSensorCalibration(long instrumentId, String target, LocalDateTime deploymentDate, List<Double> coefficients) throws CalibrationException {
+	public PolynomialSensorCalibration(long instrumentId, String target, LocalDateTime deploymentDate, List<Double> coefficients) throws ParameterException {
 		super(instrumentId, target, deploymentDate, coefficients);
 	}
 
@@ -102,5 +112,17 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 	@Override
 	public boolean coefficientsValid() {
 		return (null != coefficients && coefficients.size() == 6);
+	}
+	
+	@Override
+	protected void initialiseCoefficients() {
+		coefficients = new ArrayList<Double>(getCoefficientNames().size());
+		for (int i = 0; i < getCoefficientNames().size(); i++) {
+			if (getCoefficientNames().get(i).equals("x")) {
+				coefficients.add(1.0);
+			} else {
+				coefficients.add(0.0);
+			}
+		}
 	}
 }
