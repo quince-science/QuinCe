@@ -28,9 +28,11 @@ public class UserSessionListener implements HttpSessionListener {
 		HttpSession session = event.getSession();
 		
 		// Save the user preferences
-		UserPreferences prefs = (UserPreferences) session.getAttribute(LoginBean.USER_PREFS_ATTR);
 		try {
-			UserDB.savePreferences(ServletUtils.getDBDataSource(), prefs);
+			UserPreferences prefs = (UserPreferences) session.getAttribute(LoginBean.USER_PREFS_ATTR);
+			if (null != prefs) {
+				UserDB.savePreferences(ServletUtils.getDBDataSource(), prefs);
+			}
 		} catch (MissingParamException | DatabaseException | ResourceException e) {
 			/*
 			 * Just log the error
