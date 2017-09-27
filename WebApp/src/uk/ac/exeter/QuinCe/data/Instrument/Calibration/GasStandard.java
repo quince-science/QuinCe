@@ -72,7 +72,7 @@ public class GasStandard extends Calibration {
 		String result = "Not set";
 		
 		if (null != coefficients) {
-			result = String.valueOf(coefficients.get(0)); 
+			result = String.valueOf(coefficients.get(0).getValue()); 
 		}
 		
 		return result;
@@ -87,7 +87,7 @@ public class GasStandard extends Calibration {
 			initialiseCoefficients();
 		}
 		
-		return coefficients.get(0);
+		return coefficients.get(0).getValue();
 	}
 	
 	/**
@@ -99,7 +99,7 @@ public class GasStandard extends Calibration {
 			initialiseCoefficients();
 		}
 		
-		coefficients.set(0, concentration);
+		coefficients.set(0, new CalibrationCoefficient(getCoefficientNames().get(0), concentration));
 	}
 
 	@Override

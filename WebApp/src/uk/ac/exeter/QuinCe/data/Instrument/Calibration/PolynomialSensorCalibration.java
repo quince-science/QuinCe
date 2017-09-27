@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import uk.ac.exeter.QuinCe.utils.ParameterException;
-
 /**
  * A calibration that applies up to a fifth-order
  * polynomial adjustment
@@ -60,7 +58,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 	 * @param coefficients The calibration coefficients
 	 * @throws CalibrationException If the calibration details are invalid
 	 */
-	public PolynomialSensorCalibration(long instrumentId, String target, LocalDateTime deploymentDate, List<Double> coefficients) throws ParameterException {
+	public PolynomialSensorCalibration(long instrumentId, String target, LocalDateTime deploymentDate, List<Double> coefficients) {
 		super(instrumentId, target, deploymentDate, coefficients);
 	}
 
@@ -74,8 +72,8 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 		
 		StringBuilder result = new StringBuilder();
 		
-		for (int i = 0; i < valueNames.size(); i++) {
-			appendCoefficient(result, coefficients.get(i), valueNames.get(i));
+		for (CalibrationCoefficient coefficient : coefficients) {
+			appendCoefficient(result, coefficient);
 		}
 		
 		return result.toString();		
@@ -84,25 +82,27 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 	/**
 	 * Add a coefficient to the human readable coefficients string
 	 * @param string The string being constructed
-	 * @param coefficient The coefficient value
-	 * @param name The coefficient name
+	 * @param coefficient The coefficient
 	 */
-	private void appendCoefficient(StringBuilder string, double coefficient, String name) {
+	private void appendCoefficient(StringBuilder string, CalibrationCoefficient coefficient) {
 		
-		if (string.length() == 0 && coefficient != 0) {
-			string.append(coefficient);
+		String name = coefficient.getName();
+		double value = coefficient.getValue();
+		
+		if (string.length() == 0 && value != 0) {
+			string.append(value);
 			
 			if (!name.equals(INTERCEPT_NAME)) {
 				string.append(name);
 			}
-		} else if (coefficient != 0) {
-			if (coefficient > 0) {
+		} else if (value != 0) {
+			if (value > 0) {
 				string.append(" + ");
-			} else if (coefficient < 0) {
+			} else if (value < 0) {
 				string.append(" - ");
 			}
 			
-			string.append(Math.abs(coefficient));
+			string.append(Math.abs(value));
 			if (!name.equals(INTERCEPT_NAME)) {
 				string.append(name);
 			}
@@ -116,12 +116,14 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 	
 	@Override
 	protected void initialiseCoefficients() {
-		coefficients = new ArrayList<Double>(getCoefficientNames().size());
-		for (int i = 0; i < getCoefficientNames().size(); i++) {
-			if (getCoefficientNames().get(i).equals("x")) {
-				coefficients.add(1.0);
+		coefficients = new ArrayList<CalibrationCoefficient>(getCoefficientNames().size());
+
+		for (String name : getCoefficientNames()) {
+
+			if (name.equals("x")) {
+				coefficients.add(new CalibrationCoefficient(name, 1.0));
 			} else {
-				coefficients.add(0.0);
+				coefficients.add(new CalibrationCoefficient(name));
 			}
 		}
 	}

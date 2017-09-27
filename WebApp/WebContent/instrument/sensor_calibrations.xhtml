@@ -20,7 +20,7 @@
 	</ui:define>
 	
 	<ui:define name="content">
-		<h:form id="standardsForm" metho="post" charset="utf8">
+		<h:form id="standardsForm" method="post" charset="utf8">
 			<p:dialog header="Add Calibration" widgetVar="calibrationDialog" modal="true">
 				<div class="dialogSection">
 					<h:panelGrid columns="2" styleClass="buttonPanel">
@@ -35,10 +35,10 @@
 						</p:selectOneMenu>
 					</h:panelGrid>
 					<table class="form">
-						<ui:repeat value="#{sensorCalibrationsBean.enteredCalibration.coefficients}" var="coefficient" varStatus="loop">
+						<ui:repeat value="#{sensorCalibrationsBean.enteredCalibration.coefficients}" var="coefficient">
 							<tr>
-								<td><p:outputLabel value="#{sensorCalibrationsBean.enteredCalibration.coefficientNames[loop.index]}"/></td>
-								<td><p:inputNumber value="#{coefficient}" size="12" decimalPlaces="8"/></td>
+								<td><p:outputLabel value="#{coefficient.name}"/></td>
+								<td><p:inputNumber value="#{coefficient.value}" size="12" decimalPlaces="8"/></td>
 							</tr>
 						</ui:repeat>
 					</table>

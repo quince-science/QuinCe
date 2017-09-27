@@ -59,7 +59,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 	 * returned by {@link #getCoefficientNames()}.
 	 * @see #getCoefficientNames()
 	 */
-	protected List<Double> coefficients = null;
+	protected List<CalibrationCoefficient> coefficients = null;
 	
 	/**
 	 * Create an empty calibration for an instrument 
@@ -192,16 +192,25 @@ public abstract class Calibration implements Comparable<Calibration> {
 		if (null == coefficients) {
 			initialiseCoefficients();
 		}
-		return StringUtils.listToDelimited(coefficients, ";");
+
+		
+		List<Double> values = new ArrayList<Double>(coefficients.size());
+		
+		for (CalibrationCoefficient coefficient : coefficients) {
+			values.add(coefficient.getValue());
+		}
+
+		return StringUtils.listToDelimited(values, ";");
 	}
 	
 	/**
 	 * Initialise the coefficients for this calibration with zero values
 	 */
 	protected void initialiseCoefficients() {
-		coefficients = new ArrayList<Double>(getCoefficientNames().size());
-		for (int i = 0; i < getCoefficientNames().size(); i++) {
-			coefficients.add(0.0);
+		coefficients = new ArrayList<CalibrationCoefficient>(getCoefficientNames().size());
+		
+		for (String name : getCoefficientNames()) {
+			coefficients.add(new CalibrationCoefficient(name));
 		}
 	}
 	
@@ -209,7 +218,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 	 * Get the coefficients for this calibration
 	 * @return The coefficients
 	 */
-	public List<Double> getCoefficients() {
+	public List<CalibrationCoefficient> getCoefficients() {
 		if (null == coefficients) {
 			initialiseCoefficients();
 		}
@@ -222,11 +231,18 @@ public abstract class Calibration implements Comparable<Calibration> {
 	 * @throws CalibrationException If an incorrect number of coefficients is supplied
 	 */
 	public void setCoefficients(List<Double> coefficients) throws CalibrationException {
+		
 		if (coefficients.size() != getCoefficientNames().size()) {
 			throw new CalibrationException("Incorrect number of coefficients: expected " + getCoefficientNames().size() + ", got " + coefficients.size());
 		}
-		
-		this.coefficients = coefficients;
+
+		this.coefficients = new ArrayList<CalibrationCoefficient>(getCoefficientNames().size());
+
+		int count = -1;
+		for (String name : getCoefficientNames()) {
+			count++;
+			this.coefficients.add(new CalibrationCoefficient(name, coefficients.get(count)));
+		}
 	}
 	
 	/**
