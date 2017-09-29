@@ -21,7 +21,7 @@
 				</p:selectOneMenu>
 			</h:panelGrid>
 			
-			<p:dataTable id="files" value="#{dataFilesBean.listFiles}" var="file" styleClass="pageTable">
+			<p:dataTable id="files" value="#{dataFilesBean.listFiles}" var="file" styleClass="pageTable" scrollable="true" scrollHeight="450">
 				<p:column>
 					<f:facet name="header">
 						<h:outputText value="Filename"/>
