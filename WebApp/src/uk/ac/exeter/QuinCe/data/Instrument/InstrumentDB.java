@@ -89,6 +89,13 @@ public class InstrumentDB {
 			+ "WHERE f.instrument_id = ? AND category_code = ? ORDER BY run_type";
 	
 	/**
+	 * Query to get all the run types used in a given file definition
+	 */
+	private static final String GET_FILE_RUN_TYPES_QUERY = "SELECT "
+			+ "run_name, category_code "
+			+ "FROM run_type WHERE file_definition_id = ?";
+	
+	/**
 	 * Statement for inserting run types
 	 */
 	private static final String CREATE_RUN_TYPE_STATEMENT = "INSERT INTO run_type ("
@@ -779,7 +786,7 @@ public class InstrumentDB {
 					
 					if (sensorType.equals(FileDefinition.RUN_TYPE_COL_NAME)) {
 						file.setRunTypeColumn(fileColumn);
-						getRunTypes(conn, file, runTypeConfiguration);
+						getFileRunTypes(conn, file, runTypeConfiguration);
 					} else {
 						assignments.addAssignment(sensorType, new SensorAssignment(file.getFileDescription(), fileColumn, valueColumn, sensorName, postCalibrated, primarySensor, dependsQuestionAnswer, missingValue));
 					}
@@ -919,12 +926,12 @@ public class InstrumentDB {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws InstrumentException If a stored run type category is not configured
 	 */
-	private static void getRunTypes(Connection conn, FileDefinition file, RunTypeCategoryConfiguration runTypeConfig) throws DatabaseException, InstrumentException {
+	private static void getFileRunTypes(Connection conn, FileDefinition file, RunTypeCategoryConfiguration runTypeConfig) throws DatabaseException, InstrumentException {
 		PreparedStatement stmt = null;
 		ResultSet records = null;
 		
 		try {
-			stmt = conn.prepareStatement(GET_RUN_TYPES_QUERY);
+			stmt = conn.prepareStatement(GET_FILE_RUN_TYPES_QUERY);
 			stmt.setLong(1, file.getDatabaseId());
 			
 			records = stmt.executeQuery();
