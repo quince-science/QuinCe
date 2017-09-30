@@ -7,8 +7,8 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -128,6 +128,8 @@ public abstract class Job {
 	
 	/**
 	 * Performs the job tasks
+	 * @param thread The thread that will be running the job
+	 * @throws JobFailedException If an error occurs during the job
 	 */
 	protected abstract void execute(JobThread thread) throws JobFailedException;
 	

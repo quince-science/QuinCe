@@ -3,26 +3,35 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.util.Map;
 import java.util.Properties;
 
-import uk.ac.exeter.QuinCe.data.Instrument;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.database.files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * A version of the Job class specifically for jobs operating on data files.
+ * 
+ * <p>
+ *   Before the job is run, the file is checked to see if it has been marked for deletion.
+ *   It is up to the concrete implementation of a {@code FileJob} to decide if it wants to
+ *   check the file again during processing.
+ * </p>
  * 
  * @author Steve Jones
  * @see Job
  */
 public abstract class FileJob extends Job {
 	
+	/**
+	 * The parameter key that holds the data file's database ID
+	 */
 	public static final String FILE_ID_KEY = "FILE_ID";
 	
 	/**
@@ -68,12 +77,15 @@ public abstract class FileJob extends Job {
 		}
 
 		try {
+			// TODO Reinstate
+			/*
 			fileId = Long.parseLong(parameters.get(FILE_ID_KEY));
 			instrument = InstrumentDB.getInstrumentByFileId(dataSource, fileId);
 
 			if (!DataFileDB.fileExists(dataSource, fileId)) {
 				throw new InvalidJobParametersException("The data file " + fileId + " does not exist");
 			}
+			*/
 		} catch (Exception e) {
 			throw new InvalidJobParametersException("An unexpected error occurred: " + e.getMessage());
 		}
@@ -94,6 +106,11 @@ public abstract class FileJob extends Job {
 			throw new JobFailedException(id, "Error while performing checks for file job", e);
 		}
 	}
-	
+
+	/**
+	 * Perform the file job tasks
+	 * @param thread The thread that will be running the job
+	 * @throws JobFailedException If an error occurs during the job
+	 */
 	protected abstract void executeFileJob(JobThread thread) throws JobFailedException;
 }

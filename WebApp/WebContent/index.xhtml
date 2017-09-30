@@ -1,36 +1,42 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-	template="/templates/basic_page.xhtml">
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/templates/basic_page.xhtml">
 
+	<ui:define name="localHead">
+		<script>
+			$(document).ready(function (){
+				$('#loginform\\:email').focus();
+			});
+		</script>	
+	</ui:define>
+	<ui:define name="pageTitle"></ui:define>
 	<ui:define name="content">
 	    <div style="text-align: right">
 	    	<h:link outcome="/credits.xhtml">Credits</h:link>
 	    </div>
-	    <div id="contentbox">
+	    <div class="contentBox">
 		    <div id="logoTitle">
-		    	<h:graphicImage value="/resources/image/quince.png" style="margin-right: 20px;"/>
+		    	<h:graphicImage id="logo" alt="logo" value="/resources/image/quince.png" style="margin-right: 20px;"/>
 		    	<span style="font-size: 38px">Q</span>uin<span style="font-size: 38px">C</span>e
 		    </div>
-		    <h:messages layout="table" class="errors"/>
+		    <p:messages id="messages" autoUpdate="true" />
 		    <div class="errors">
 			    <h:outputText value="Your session has expired. Please log in again." rendered="#{sessionScope.SESSION_EXPIRED != null}"/>
 		    </div>
 		    <h:form id="loginform" method="post" accept-charset="utf8">
-		      <ul>
-		        <li>
-		          <label for="email" class="separateline">Email Address</label>
-		          <h:inputText value="#{loginBean.emailAddress}"/>
-		        </li>
-		        <li>
-		          <label for="password" class="separateline">Password</label>
-		          <h:inputSecret value="#{loginBean.password}"/>
-		        </li>
-		        <li class="buttonWrapper">
-		          <h:commandButton value="Log In" action="#{loginBean.authenticate}"/>
-		          <h:commandButton value="Sign Up" action="#{loginBean.signUp}"/>
-		        </li>
-		      </ul>
+			<h:panelGrid columns="2" styleClass="inputForm" columnClasses="inputLabels,inputInputs" cellpadding="5">
+		          <h:outputLabel for="email" value="Email Address"/>
+		          <p:inputText id="email" value="#{loginBean.emailAddress}" styleClass="inputFormInput"/>
+
+		          <h:outputLabel for="password" value="Password"/>
+		          <p:password id="password" value="#{loginBean.password}" styleClass="inputFormInput"/>
+		        </h:panelGrid>
+			<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+				<p:commandButton value="Log In" action="#{loginBean.authenticate}"/>
+				<p:commandButton value="Sign Up" action="#{loginBean.signUp}"/>
+			</h:panelGrid>
 		    </h:form>
 	    </div>
 	</ui:define>

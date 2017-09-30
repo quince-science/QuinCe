@@ -9,16 +9,12 @@ import javax.sql.DataSource;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
-import uk.ac.exeter.QuinCe.data.Instrument;
-import uk.ac.exeter.QuinCe.data.RunType;
-import uk.ac.exeter.QuinCe.data.StandardConcentration;
-import uk.ac.exeter.QuinCe.data.StandardStub;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
-import uk.ac.exeter.QuinCe.database.Instrument.GasStandardDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.RunType;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Represents a complete set of gas standard runs from a data file
@@ -51,12 +47,15 @@ public class GasStandardRuns {
 	public GasStandardRuns(long fileId, Instrument instrument) {
 		this.fileId = fileId;
 		groupedStandardMeans = new HashMap<String,TreeSet<GasStandardMean>>();
+		
+		/*
+		
 		for (RunType runType : instrument.getRunTypes()) {
 			if (instrument.isStandardRunType(runType.getName())) {
 				groupedStandardMeans.put(runType.getName(), new TreeSet<GasStandardMean>());
 			}
 		}
-		
+		*/
 		allStandardMeans = new TreeSet<GasStandardMean>();
 	}
 	
@@ -73,9 +72,11 @@ public class GasStandardRuns {
 	 * @param standardMean The gas standard results
 	 */
 	public void addStandardMean(GasStandardMean standardMean) {
+		/*
 		TreeSet<GasStandardMean> runMeans = groupedStandardMeans.get(standardMean.getRunName());		
 		runMeans.add(standardMean);
 		allStandardMeans.add(standardMean);
+		*/
 	}
 	
 	/**
@@ -248,7 +249,7 @@ public class GasStandardRuns {
 	public SimpleRegression getStandardsRegression(DataSource dataSource, long instrumentId, Calendar time) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
 		SimpleRegression result = new SimpleRegression(true);
-		
+		/*
 		StandardStub actualStandard = GasStandardDB.getStandardBefore(dataSource, instrumentId, time);
 		Map<String, StandardConcentration> actualConcentrations = GasStandardDB.getConcentrationsMap(dataSource, actualStandard);
 		
@@ -264,7 +265,7 @@ public class GasStandardRuns {
 				result.addData(measuredStandard, actualConcentration);
 			}
 		}
-		
+		*/
 		return result;
 	}
 }

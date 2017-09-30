@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.web.User;
 
 import com.mysql.jdbc.StringUtils;
 
-import uk.ac.exeter.QuinCe.database.User.UserDB;
+import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 

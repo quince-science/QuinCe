@@ -1,0 +1,30 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/templates/basic_page.xhtml">
+
+	<ui:define name="title">New Instrument</ui:define>
+	<ui:define name="localHead">
+		<h:outputScript name="script/newInstrument.js"/>
+		<h:outputStylesheet name="style/newInstrument.css"/>
+		<ui:insert name="instrumentHead"/>
+	</ui:define>
+	
+	<ui:define name="content">
+		<div id="content">
+			<div class="pageTitle"><ui:insert name="new_instrument_name"><h:outputText value="#{newInstrumentBean.instrumentName}"/></ui:insert></div>
+			<div id="progress">
+				<p:steps activeIndex="#{instrumentStep}" styleClass="custom">
+					<p:menuitem value="Name"/>
+					<p:menuitem value="Files and Columns"/>
+					<p:menuitem value="Run Types"/>
+					<p:menuitem value="Other Info"/>
+				</p:steps>
+			</div>
+			<div id="newInstrumentContent">
+				<ui:insert name="new_instrument_content"/>
+			</div>
+		</div>
+	</ui:define>
+</ui:composition>

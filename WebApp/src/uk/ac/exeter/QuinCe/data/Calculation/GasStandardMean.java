@@ -2,8 +2,7 @@ package uk.ac.exeter.QuinCe.data.Calculation;
 
 import java.util.Calendar;
 
-import uk.ac.exeter.QuinCe.data.RunType;
-import uk.ac.exeter.QuinCe.data.StandardConcentration;
+import uk.ac.exeter.QuinCe.data.Instrument.RunType;
 
 /**
  * Represents the mean of a gas standard during an instrument's
@@ -32,7 +31,7 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	/**
 	 * The true concentration of the gas standard bottle
 	 */
-	private StandardConcentration standardConcentration;
+	//private StandardConcentration standardConcentration;
 	
 	/**
 	 * The start time of the gas standard run
@@ -62,6 +61,7 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	 * @param meanConcentration The mean concentration measured during the run
 	 * @param meanXh2o The mean xH2O measured during the run
 	 */
+	/*
 	public GasStandardMean(StandardConcentration standardConcentration, Calendar startTime, Calendar endTime, double meanConcentration, double meanXh2o) {
 		this.standardConcentration = standardConcentration;
 		this.startTime = startTime;
@@ -69,14 +69,17 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 		this.meanConcentration = meanConcentration;
 		this.meanXh2o = meanXh2o;
 	}
+	*/
 
 	/**
 	 * Get the standard concentration record related to this gas standard run
 	 * @return The standard concentration
 	 */
+	/*
 	public StandardConcentration getStandardConcentration() {
 		return standardConcentration;
 	}
+	*/
 
 	/**
 	 * Get the start time of the gas standard run
@@ -128,9 +131,11 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	 * @return The gas standard name
 	 * @see RunType
 	 */
+	/*
 	public String getRunName() {
 		return standardConcentration.getStandardName();
 	}
+	*/
 	
 	/**
 	 * Get either the mean CO<sub>2</sub> concentration or mean

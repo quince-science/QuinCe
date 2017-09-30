@@ -1,0 +1,39 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	template="/WEB-INF/templates/new_instrument.xhtml">
+
+	<ui:define name="title">New Instrument</ui:define>
+	<ui:define name="instrumentHead">
+		<c:set var="instrumentStep" value="3" scope="request"/>
+	</ui:define>
+	<ui:define name="new_instrument_content">
+		<h:form id="newInstrumentForm" metho="post" charset="utf8">
+		
+			<table class="form">
+				<tr>
+					<td class="labels">Pre-flushing time (seconds)</td>
+					<td><p:inputNumber name="preFlushing" value="#{newInstrumentBean.preFlushingTime}" decimalPlaces="0"/></td>
+				</tr>
+				<tr>
+					<td class="labels">Post-flushing time (seconds)</td>
+					<td><p:inputNumber name="postFlushing" value="#{newInstrumentBean.postFlushingTime}" decimalPlaces="0"/></td>
+				</tr>
+				<tr>
+					<td class="labels">Minimum water flow rate (-1 = no value)</td>
+					<td><p:inputNumber name="postFlushing" value="#{newInstrumentBean.minimumWaterFlow}" decimalPlaces="0"/></td>
+				</tr>
+			</table>
+		
+			<!--  The cancel include has a 2 entries (1 is invisible) -->
+			<h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
+				<ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml"/>
+				<p:commandButton value="Back" ajax="false" action="#{newInstrumentBean.goToRunTypes}" immediate="true"/>
+				<p:commandButton id="nextButton" widgetVar="next" value="Next" ajax="false" action="#{newInstrumentBean.saveInstrument}"/>
+			</h:panelGrid>
+		</h:form>
+	</ui:define>
+</ui:composition>	

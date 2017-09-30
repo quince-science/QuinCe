@@ -8,27 +8,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import uk.ac.exeter.QuinCe.data.CalibrationCoefficients;
-import uk.ac.exeter.QuinCe.data.CalibrationStub;
-import uk.ac.exeter.QuinCe.data.FileInfo;
-import uk.ac.exeter.QuinCe.data.Instrument;
-import uk.ac.exeter.QuinCe.data.RawDataFile;
-import uk.ac.exeter.QuinCe.data.SensorCode;
-import uk.ac.exeter.QuinCe.data.User;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.DatabaseUtils;
-import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
-import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
-import uk.ac.exeter.QuinCe.database.Instrument.CalibrationDB;
-import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.database.QC.QCDB;
-import uk.ac.exeter.QuinCe.database.files.DataFileDB;
+import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Calculation.DataReductionDB;
+import uk.ac.exeter.QuinCe.data.Calculation.RawDataDB;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.FileInfo;
+import uk.ac.exeter.QuinCe.data.Files.RawDataFile;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorCode;
+import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -70,10 +67,12 @@ public class ExtractRawDataJob extends FileJob {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Performs the raw data extraction.
 	 */
 	@Override
 	protected void executeFileJob(JobThread thread) throws JobFailedException {
+		
+		/*
 		
 		reset();
 		Connection conn = null;
@@ -157,6 +156,8 @@ public class ExtractRawDataJob extends FileJob {
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}
+		
+		*/
 	}
 	
 	/**
@@ -166,8 +167,8 @@ public class ExtractRawDataJob extends FileJob {
 	 * @param instrument The instrument with which the data is associated
 	 * @param coefficients The calibration coefficients to be applied
 	 */
+	/*
 	private void applyCalibrations(List<String> line, Instrument instrument, List<CalibrationCoefficients> coefficients) {
-		
 		if (instrument.hasIntakeTemp1()) {
 			SensorCode code = new SensorCode(SensorCode.TYPE_INTAKE_TEMP, 1, instrument);
 			applyCoefficients(line, instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_1), code, coefficients);
@@ -228,6 +229,7 @@ public class ExtractRawDataJob extends FileJob {
 			applyCoefficients(line, instrument.getColumnAssignment(Instrument.COL_EQP_3), code, coefficients);
 		}
 	}
+	*/
 	
 	/**
 	 * Apply a set of calibration coefficients to a specific sensor
@@ -237,6 +239,7 @@ public class ExtractRawDataJob extends FileJob {
 	 * @param sensorCode The sensor code for the sensor
 	 * @param coefficients The calibration coefficients
 	 */
+	/*
 	private void applyCoefficients(List<String> line, int sensorColumn, SensorCode sensorCode, List<CalibrationCoefficients> coefficients) {
 		
 		CalibrationCoefficients calibration = CalibrationCoefficients.findSensorCoefficients(coefficients, sensorCode);
@@ -251,6 +254,7 @@ public class ExtractRawDataJob extends FileJob {
 							
 		line.set(sensorColumn, String.valueOf(calibratedValue));
 	}
+	*/
 	
 	/**
 	 * Reset the data for the data file configured for this job.

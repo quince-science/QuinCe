@@ -14,6 +14,7 @@
 		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
 		<h:outputScript name="script/jquery-ui.min.js"/>
 		<h:outputStylesheet name="style/jquery-ui.min.css"/>
+		<h:outputScript name="script/jquery-dateFormat.min.js"/>
 		<h:outputScript name="script/jquery.splitter.js"/>
     	<h:outputStylesheet name="style/jquery.splitter.css"/>
 		<h:outputScript name="script/dygraph.min.js"/>
@@ -47,12 +48,14 @@
 			var waterFlow2Name = '#{dataScreenBean.instrument.waterFlowName2}';
 			var waterFlow3Name = '#{dataScreenBean.instrument.waterFlowName3}';
 			var columnHeadings = #{dataScreenBean.tableHeadings};
+			var selectableRows = #{dataScreenBean.selectableRowNumbers};
 			
 			// The viewing mode for the table
 			var tableMode = 'basic';
 		</script>
 	</h:head>
 	<h:body class="fullPage">
+		<ui:include src="/WEB-INF/templates/keep_alive.xhtml"/>
 		<div id="plotFieldList" class="popupMenu">
 			<h:outputText value="#{dataScreenBean.plotPopupEntries}" escape="false"/>
 			<div id="buttonWrapper">
@@ -91,8 +94,13 @@
 		</div>
 		<h:form id="dataScreenForm" method="post" accept-charset="utf8">
 			<h:inputHidden id="selectedRows" value="#{dataScreenBean.selectedRows}"/>
+			<h:inputHidden id="woceCommentList" value="#{dataScreenBean.woceCommentList}"/>
+			<h:inputHidden id="worstSelectedFlag" value="#{dataScreenBean.worstSelectedFlag}"/>
 			<h:commandLink id="acceptQCFlags" action="#{dataScreenBean.acceptQCFlags}">
 				<f:ajax execute="selectedRows" render="@none" onevent="qcFlagsAccepted"/>
+			</h:commandLink>
+			<h:commandLink id="generateWoceComments" action="#{dataScreenBean.generateWoceCommentList}">
+				<f:ajax execute="selectedRows" render="woceCommentList worstSelectedFlag" onevent="showWoceCommentDialog"/>
 			</h:commandLink>
 			
 			<h:inputHidden id="woceFlag" value="#{dataScreenBean.woceFlag}"/>
@@ -112,7 +120,7 @@
 		          	</ul>
 		        </div>
 		        <div style="clear: both">Comment:</div>
-	           	<h:inputTextarea id="woceComment" value="#{dataScreenBean.woceComment}"/>
+	           	<h:inputTextarea id="woceComment" value="#{dataScreenBean.woceComment}" style="width: 95%; height: 150px;"/>
 	           	<div class="buttonWrapper">
 		           	<button name="woceCommentDialogSave" class="woceCommentDialogButton" onclick="saveWoceComment(); return false;">Save</button>
 		            <button name="woceCommentDialogCancel" class="woceCommentDialogButton" onclick="cancelWoceComment(); return false;">Cancel</button>
@@ -178,7 +186,7 @@
 						      		Selected rows: <span id="selectedRowsCount">0</span>
 						      		<button id="clearSelectionButton" class="smallButton tightButton" onclick="clearSelection(); return false;">x</button>
 						      		<button id="acceptFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="acceptQCFlags(); return false;">Use QC Flags</button>
-						      		<button id="overrideFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="showWoceCommentDialog(); return false;">Override QC Flags</button>
+						      		<button id="overrideFlagsButton" class="smallButton disabledButton" disabled="disabled" onclick="startWoceComment(); return false;">Override QC Flags</button>
 						      		|
 			      			        <h:commandButton id="finishButton" class="smallButton" value="Finish" action="#{dataScreenBean.end}"/>
 	    						</td>

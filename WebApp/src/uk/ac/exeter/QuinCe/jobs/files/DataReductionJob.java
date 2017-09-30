@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
@@ -15,26 +17,26 @@ import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.MissingValueMessage;
-import uk.ac.exeter.QuinCe.data.FileInfo;
-import uk.ac.exeter.QuinCe.data.Instrument;
-import uk.ac.exeter.QuinCe.data.NoDataQCRecord;
-import uk.ac.exeter.QuinCe.data.RawDataValues;
-import uk.ac.exeter.QuinCe.data.RunType;
-import uk.ac.exeter.QuinCe.data.User;
+import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Calculation.DataReductionDB;
 import uk.ac.exeter.QuinCe.data.Calculation.GasStandardRuns;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.DatabaseUtils;
-import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
-import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
-import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.database.QC.QCDB;
-import uk.ac.exeter.QuinCe.database.files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Calculation.RawDataDB;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.FileInfo;
+import uk.ac.exeter.QuinCe.data.Files.RawDataValues;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.RunType;
+import uk.ac.exeter.QuinCe.data.QC.NoDataQCRecord;
+import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -73,6 +75,9 @@ public class DataReductionJob extends FileJob {
 	
 	@Override
 	protected void executeFileJob(JobThread thread) throws JobFailedException {
+
+		/*
+		
 		Connection conn = null;
 		
 		try {
@@ -260,6 +265,8 @@ public class DataReductionJob extends FileJob {
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}
+		
+		*/
 	}
 	
 	/**
@@ -273,7 +280,7 @@ public class DataReductionJob extends FileJob {
 			throw new JobFailedException(id, e);
 		}
 	}
-	
+
 	/**
 	 * <p>Calculates the mean intake temperature for a single measurement from all intake temperature sensors.</p>
 	 * 
@@ -288,6 +295,10 @@ public class DataReductionJob extends FileJob {
 	 * @throws MessageException If an error occurs while creating a QC message
 	 */
 	private double calcMeanIntakeTemp(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
+	
+		return 0;
+		
+		/*
 		
 		double total = 0;
 		int count = 0;
@@ -343,6 +354,8 @@ public class DataReductionJob extends FileJob {
 		}
 		
 		return result;
+		
+		*/
 	}
 
 	/**
@@ -360,6 +373,9 @@ public class DataReductionJob extends FileJob {
 	 */
 	private double calcMeanSalinity(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
 		
+		return 0;
+		
+		/*
 		double total = 0;
 		int count = 0;
 		List<Message> qcMessages = new ArrayList<Message>();
@@ -414,6 +430,7 @@ public class DataReductionJob extends FileJob {
 		}
 		
 		return result;
+		*/
 	}
 
 	/**
@@ -430,7 +447,8 @@ public class DataReductionJob extends FileJob {
 	 * @throws MessageException If an error occurs while creating a QC message
 	 */
 	private double calcMeanEqt(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
-		
+		return 0;
+		/*
 		double total = 0;
 		int count = 0;
 		List<Message> qcMessages = new ArrayList<Message>();
@@ -485,6 +503,8 @@ public class DataReductionJob extends FileJob {
 		}
 		
 		return result;
+		
+		*/
 	}
 
 	/**
@@ -501,7 +521,8 @@ public class DataReductionJob extends FileJob {
 	 * @throws MessageException If an error occurs while creating a QC message
 	 */
 	private double calcMeanEqp(RawDataValues values, Instrument instrument, NoDataQCRecord qcRecord) throws NoSuchColumnException, MessageException {
-		
+		return 0;
+		/*
 		double total = 0;
 		int count = 0;
 		List<Message> qcMessages = new ArrayList<Message>();
@@ -556,6 +577,8 @@ public class DataReductionJob extends FileJob {
 		}
 		
 		return result;
+		
+		*/
 	}
 
 	/**
@@ -564,7 +587,7 @@ public class DataReductionJob extends FileJob {
 	 * <p>The calibration is performed by retrieving the gas standard runs immediately before
 	 * and after the measurement, which implicitly include the adjustment of the measured CO<sub>2</sub>
 	 * in the gas standard run to the true value of the standard
-	 * (see {@link GasStandardRuns#getStandardsRegression(javax.sql.DataSource, long, Calendar)}).
+	 * (see {@link GasStandardRuns#getStandardsRegression(DataSource, long, Calendar)}).
 	 * If only one standard is available (e.g. at the beginning or end of a data file), the single
 	 * available standard is used.
 	 * 

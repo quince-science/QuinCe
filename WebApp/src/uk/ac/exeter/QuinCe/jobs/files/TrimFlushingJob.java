@@ -9,22 +9,22 @@ import org.joda.time.DateTime;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
-import uk.ac.exeter.QuinCe.data.FileInfo;
-import uk.ac.exeter.QuinCe.data.Instrument;
-import uk.ac.exeter.QuinCe.data.User;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.DatabaseUtils;
-import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
-import uk.ac.exeter.QuinCe.database.Calculation.TrimFlushingRecord;
-import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.database.QC.QCDB;
-import uk.ac.exeter.QuinCe.database.files.DataFileDB;
+import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Calculation.RawDataDB;
+import uk.ac.exeter.QuinCe.data.Calculation.TrimFlushingRecord;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.FileInfo;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class TrimFlushingJob extends FileJob {
@@ -34,7 +34,9 @@ public class TrimFlushingJob extends FileJob {
 	}
 
 	public void executeFileJob(JobThread thread) throws JobFailedException {
+		// TODO Reinstate
 		
+		/*
 		// Note that this job ignores interrupt calls!
 		
 		Connection conn = null;
@@ -105,6 +107,7 @@ public class TrimFlushingJob extends FileJob {
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}
+		*/
 	}
 	
 	private void processPostFlushing(Connection conn, List<TrimFlushingRecord> records, int finalIndex, DateTime postFlushLimit, long runTypeId) throws DatabaseException, MessageException {

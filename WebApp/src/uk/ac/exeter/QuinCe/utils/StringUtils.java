@@ -1,15 +1,18 @@
 package uk.ac.exeter.QuinCe.utils;
 
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
- * Various miscellaneous string utilities
+ * Miscellaneous string utilities
  * @author Steve Jones
  *
  */
@@ -25,7 +28,7 @@ public class StringUtils {
 	 * @return The converted list
 	 */
 	public static String listToDelimited(List<?> list) {
-		return listToDelimited(list, ";");
+		return listToDelimited(list, ";", null);
 	}
 	
 	/**
@@ -39,15 +42,28 @@ public class StringUtils {
 	 * @return The converted list
 	 */
 	public static String listToDelimited(List<?> list, String delimiter) {
+		return listToDelimited(list, delimiter, null);
+	}
+	
+	public static String listToDelimited(List<?> list, String delimiter, String surrounder) {
 		
 		String result = null;
 		
 		if (null != list) {
-			StringBuffer buildResult = new StringBuffer();
+			StringBuilder buildResult = new StringBuilder();
 			for (int i = 0; i < list.size(); i++) {
-				buildResult.append(list.get(i).toString());
+				
+				if (null != surrounder) {
+					buildResult.append(surrounder);
+					buildResult.append(list.get(i).toString().replace(surrounder, "\\" + surrounder));
+					buildResult.append(surrounder);
+				} else {
+					buildResult.append(list.get(i).toString());
+				}
+
 				if (i < (list.size() - 1)) {
 					buildResult.append(delimiter);
+
 				}
 			}
 			result = buildResult.toString();
@@ -92,6 +108,27 @@ public class StringUtils {
 
 			for (String item: stringList) {
 				result.add(Integer.parseInt(item));
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Convert a delimited list of double into a list of doubles
+	 * @param values The list
+	 * @return The list as integers
+	 */
+	public static List<Double> delimitedToDoubleList(String values) {
+		
+		List<Double> result = null;
+		
+		if (values != null) {
+			List<String> stringList = delimitedToList(values);
+			result = new ArrayList<Double>(stringList.size());
+
+			for (String item: stringList) {
+				result.add(Double.parseDouble(item));
 			}
 		}
 		
@@ -162,6 +199,22 @@ public class StringUtils {
 		return result;
 	}
 	
+	public static boolean isInteger(String value) {
+		boolean result = true;
+		
+		if (null == value) {
+			result = false;
+		} else {
+			try {
+				new Integer(value);
+			} catch (NumberFormatException e) {
+				result = false;
+			}
+		}
+		
+		return result;
+	}
+	
 	public static String mapToDelimited(Map<String, String> map) {
 		
 		StringBuilder result = new StringBuilder();
@@ -195,6 +248,87 @@ public class StringUtils {
 			}
 		}
 		
+		return result;
+	}
+	
+	/**
+	 * Convert a case-insensitive Y/N value to a boolean
+	 * @param value The value
+	 * @return The boolean value
+	 * @throws StringFormatException If the supplied value is not Y or N
+	 */
+	public static boolean parseYNBoolean(String value) throws StringFormatException {
+		boolean result;
+		
+		switch(value.toUpperCase()) {
+		case "Y": {
+			result = true;
+			break;
+		}
+		case "N": {
+			result = false;
+			break;
+		}
+		default: {
+			throw new StringFormatException("Invalid boolean value", value);
+		}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Convert a Properties object into a JSON string
+	 * @param properties The properties
+	 * @return The JSON string
+	 */
+	public static String getPropertiesAsJson(Properties properties) {
+		
+		
+		StringBuilder result = new StringBuilder();
+		if (null == properties) {
+			result.append("null");
+		} else {
+		
+			result.append('{');
+
+			int propCount = 0;
+			for (String prop : properties.stringPropertyNames()) {
+				propCount++;
+				result.append('"');
+				result.append(prop);
+				result.append("\":\"");
+				result.append(properties.getProperty(prop));
+				result.append('"');
+				
+				if (propCount < properties.size()) {
+					result.append(',');
+				}
+			}
+			
+			
+			result.append('}');
+		}
+		
+		return result.toString();
+	}
+	
+	/**
+	 * Create a {@link Properties} object from a string
+	 * @param propsString The properties String
+	 * @return The Properties object
+	 * @throws IOException If the string cannot be parsed
+	 */
+	public static Properties propertiesFromString(String propsString) throws IOException {
+		Properties result = null;
+
+		if (null != propsString && propsString.length() > 0) {
+			StringReader reader = new StringReader(propsString);
+			Properties props = new Properties();
+			props.load(reader);
+			return props;
+		}
+
 		return result;
 	}
 }

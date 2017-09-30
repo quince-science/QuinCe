@@ -2,12 +2,19 @@
 
 # Version History
 
-Version      Date           Description
----------    ------------   ------------------------------------------------------
-alpha1       2017-03-16     2017-03-16
+Version      Date                     Description
+---------    ----------------------   ------------------------------------------------------
+alpha1       2017-03-16               2017-03-16
+xx           xx                       Redesign of database to handle instruments with multiple data files, and processing data by crossing instead of by data file.
 
 # Introduction
 This document specifies the database tables that are used in the QuinCe project.
+
+Field names followed by stars indicate primary keys. Multiple fields are sometimes combined to produce
+a compound primary key.
+
+The field type F_KEY indicates a lookup to a value in another table. The table in question will be
+made clear in the field description.
 
 # Users
 This section defines tables related to users and the different parts
@@ -18,7 +25,7 @@ Defines a user account
 
 Field                    Type           Description
 --------------------     ------------   ---------------------------------------------------
-email                    String         The user's email address - used as the username
+email*                   String         The user's email address - used as the username
 salt                     Binary         The salt used for the password
 password                 Binary         Password field (salted and hashed)
 first_name               String         The user's first/given name
@@ -28,6 +35,7 @@ email_code_time          DateTime       The time that the email verification cod
 password_code            String         Code for resetting password
 password_code_time       DateTime       The time that the password reset code was generated
 permissions              Integer        A field for defining user permissions. Defined as a bitmask.
+preferences              String         The user's preferences
 
 #### Permissions
 The permissions that can be applied to a user are as follows:
@@ -51,102 +59,61 @@ files. Entries are supplied for all the possible formatting options. Those that
 aren't needed will be left empty.
 
 Field                    Type           Description
---------------------     ------------   -----------------------------------------------------------------
-id                       Integer        ID
+--------------------     ------------   --------------------------------------------------------------------------------------
+id*                      Integer        ID
 owner                    F_KEY          The ID of the user who owns this instrument
 name                     String         The name of the instrument
-intake_temp_1_name       String         The name of the first intake temperature sensor
-intake_temp_2_name       String         The name of the second intake temperature sensor
-intake_temp_3_name       String         The name of the third intake temperature sensor
-salinity_1_name          String         The name of the first salinity sensor
-salinity_2_name          String         The name of the second salinity sensor
-salinity_3_name          String         The name of the third salinity sensor
-eqt_1_name               String         The name of the first equilibrator temperature sensor
-eqt_2_name               String         The name of the second equilibrator temperature sensor
-eqt_3_name               String         The name of the third equilibrator temperature sensor
-eqp_1_name               String         The name of the first equilibrator pressure sensor
-eqp_2_name               String         The name of the second equilibrator pressure sensor
-eqp_3_name               String         The name of the third equilibrator pressure sensor
-air_flow_1_name          String         The name of the first air flow sensor
-air_flow_2_name          String         The name of the second air flow sensor
-air_flow_3_name          String         The name of the third air flow sensor
-water_flow_1_name        String         The name of the first water flow sensor
-water_flow_2_name        String         The name of the second water flow sensor
-water_flow_3_name        String         The name of the third water flow sensor
-separator_char           String         The character that separates fields in the instrument's data files
-date_format              Integer        The date format used in the instrument's data files
-time_format              Integer        The time format used in the instrument's data files
-lat_format               Integer        The latitude format used in the instrument's data files
-lon_format               Integer        The longitude format used in the instrument's data files
-header_lines             Integer        The number of header lines in the instrument's data files
-has_atmospheric_pressure Boolean        Indicates whether or not the instrument records atmospheric pressure
-samples_dried            Boolean        Indicates whether or not samples are dried before being analysed
-run_type_col             Integer        Run type
-date_col                 Integer        Date (all parts in one column)
-year_col                 Integer        Year
-month_col                Integer        Month
-day_col                  Integer        Day
-time_col                 Integer        Time (all parts in one column)
-hour_col                 Integer        Hour
-minute_col               Integer        Minute
-second_col               Integer        Second
-latitude_col             Integer        Latitude
-north_south_col          Integer        Latitude direction (N/S)
-longitude_col            Integer        Longitude
-east_west_col            Integer        Longitude direction (E/W)
-intake_temp_1_col        Integer        Intake temperature 1
-intake_temp_2_col        Integer        Intake temperature 2
-intake_temp_3_col        Integer        Intake temperature 3
-salinity_1_col           Integer        Salinity 1
-salinity_2_col           Integer        Salinity 2
-salinity_3_col           Integer        Salinity 3
-eqt_1_col                Integer        Equilibrator temperature 1
-eqt_2_col                Integer        Equilibrator temperature 2
-eqt_3_col                Integer        Equilibrator temperature 3
-eqp_1_col                Integer        Equilibrator pressure 1
-eqp_2_col                Integer        Equilibrator pressure 2
-eqp_3_col                Integer        Equilibrator pressure 3
-air_flow_1_col           Integer        Air flow 1
-air_flow_2_col           Integer        Air flow 2
-air_flow_3_col           Integer        Air flow 3
-water_flow_1_col         Integer        Water flow 1
-water_flow_2_col         Integer        Water flow 2
-water_flow_3_col         Integer        Water flow 3
-atmospheric_pressure_col Integer        Atmospheric pressure
-xh2o_col                 Integer        xH~2~O
-co2_col                  Integer        CO~2~
-raw_col_count            Integer        The total number of columns in the instrument's data files
-pre_flushing_time        Integer        The number of seconds to discard at the start of each run type
-post_flushing_time       Integer        The number of seconds to discard at the end of each run type
+pre_flushing_time        Integer        The number of seconds' worth of measurements to discard at the start of each run type
+post_flushing_time       Integer        The number of seconds' worth of measurements to discard at the end of each run type
 
-#### `date_format`
-The `date_format` field will have one of the following values:
+## `file_definition`
+This table defines the layout of data files used with a given instrument. This definition will be
+set up by the user when they define their instrument.
 
-Value    Format
------    --------------------------
-0        Separate columns for year, month and day
-1        YYYYMMDD
-2        DD/MM/YY
-3        DD/MM/YYYY
-4        MM/DD/YY
-5        MM/DD/YYYY
+An instrument may have only one data file, or it may have multiple files if
+different data comes from different places.
 
-#### `time_format`
-The `time_format` field will have one of the following values:
+Columns indices for the date/time and position are stored in this table, since they are universal
+for all instrument types. Other column details are stored in the child `file_columns` table.
 
-Value    Format
------    --------------------------
-0        Separate fields for hour, minute and second
-1        HHMMSS
-2        HH:MM:SS
+All files must contain date/time information, while position information is optional. The date/time columns
+will only be partially populated, depending on the format of the file. The layout of the file can be inferred from
+the columns that are populated, and individual formats (where required) are stored in the properties column. These
+properties are formatted as `name=value;name=value;...`
 
-#### `lat_format`
-The `lat_format` field will have one of the following values:
-
-Value    Format
------    --------------------------
-0        -90 to 90
-1        0 to 90, with N/S in a separate column
+Field                        Type           Description
+--------------------         ------------   --------------------------------------------------------------------------------------
+id*                          Integer        ID
+instrument_id                F_KEY          ID of the instrument that this data file belongs to
+description                  String         File description
+column_separator             String         Column separator
+header_type					 Integer        How the header is defined (number of lines or the last line string)
+header_lines                 Integer        Number of lines in the file header
+header_end_string            String         The line that indicates the end of the file header
+column_header_rows           Integer        The number of column header rows in the file
+column_count                 Integer        Number of colums in the file
+lon_format                   Integer        Format of the longitude
+lon_value_col                Integer        Column where the longitude value is stored
+lon_hemisphere_col           Integer        Column where the longitude hemisphere is stored 
+lat_format                   Integer        Format of the latitude
+lat_value_col                Integer        Column where the latitude value is stored
+lat_hemisphere_col           Integer        Column where the latitude hemisphere is stored 
+date_time_col                Integer        Column where a combined date/time string is stored
+date_time_props              String         Properties for the `date_time` column
+date_col                     Integer        Column where a date string is stored
+date_props                   String         Properties for the `date` column
+hours_from_start_col         Integer        Column where the time as Hours from Start of File value is stored
+hours_from_start_props       String         Properties for the `hours_from_start` column
+jday_time_col                Integer        Column where the combined Julian Day/Decimal Time value is stored
+jday_col                     Integer        Column where the Julian Day is stored
+year_col                     Integer        Column where the year is stored
+month_col                    Integer        Column where the month is stored
+day_col                      Integer        Column where the day is stored
+time_col                     Integer        Column where the time string is stored
+time_props                   String         Properties for the `time` column
+hour_col                     Integer        Column where the hour is stored
+minute_col                   Integer        Column where the minute is stored
+second_col                   Integer        Column where the second is stored
 
 #### `lon_format`
 The `lon_format` field will have one of the following values:
@@ -157,245 +124,146 @@ Value    Format
 1        -180 to 180
 2        0 to 180, with E/W in a separate column
 
-### `run_types`
-Each instrument will have a number of run types. QuinCe has only two types: CO~2~ and gas standards.
-This table will hold details of which values in the
-`run_type` column (as defined in the `columns` table) correspond to which run types.
+#### `lat_format`
+The `lat_format` field will have one of the following values:
+
+Value    Format
+-----    --------------------------
+0        -90 to 90
+1        0 to 90, with N/S in a separate column
+
+## `file_column`
+This table will contains details of the columns present in a given
+file definition
 
 Field                    Type           Description
 --------------------     ------------   -----------------------------------------------------------------
-id                       Integer        ID
-instrument_id            F_KEY          Instrument ID
-run_name                 String         The value from the `run_type` column in the Columns table
-type                     Integer        The run type
+file_definition_id*      F_KEY          The ID of the file definition
+file_column*             Integer        Column where this sensor's value can be found in the data file
+sensor_type              String         Name of the sensor type, as identified in the `sensor_config.csv` file
+sensor_name              String         Name of this column as it will be displayed in QuinCe
+primary_sensor           Boolean        Indicates whether or not this is a primary sensor
+value_column             Integer        Position at which this value will be stored in the `voyage_data` table
+depends_question_answer  Boolean        Answer to the Depends Question (see `SensorType` class)
+missing_value            String         Value that indicates a missing value (`NaN`, `-999` etc.)
+post_calibrated          Boolean        Indicates whether values need to be calibrated by QuinCe
 
-##### `type`
-The `type` column will contain one of the following values:
+## `run_type`
+Each instrument will have a number of run types, for measurements, gas standards etc.
 
-Value    Run type
------    --------------------------
--1       Not used
-0        Sea water CO~2~
-1        Atmospheric CO~2~
-2        Gas standard
+This table will hold details of which values in the
+`run_type` column (as defined in the `file_definition` table) correspond to which run types.
 
-## `gas_standard_deployment`
-Each gas standard is supplied at a specific concentration, which may vary between
-cylinders. This table will store records of when gas standards were deployed,
-and the concentrations for each standard are stored in the child `gas_standard_concentration`
-table.
+The run types will be specific to each application, and will be defined in the `run_types_config.csv`
+file. This file defines a code for each run type that will be stored in the `run_type` column.
+
+Field                    Type           Description
+--------------------     ------------   -----------------------------------------------------------------
+file_definition_id*      F_KEY          File Definition ID
+name*                    String         The value from the `run_type` column in the Columns table
+category_code            String         The run type category code
+
+## `calibration`
+Each calibration (gas standard, sensor calibration etc.) is stored in this table.
+
+The `type` field indicates the type of calibration, and the `target` field specifies the individual item
+being calibrated (the specific gas standard or sensor).
+
+A calibration may consist of multiple values (e.g. the equation coefficients for a sensor calibration).
+These values will be stored in a text field as a semi-colon separated list of values. The application
+code will perform the conversion during the read/write phases.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-concentration_id         Integer        ID
-instrument_id            F_KEY          Instrument ID
-deployed_date            Date           The date on which the standard was deployed
+instrument_id*           F_KEY          Instrument ID
+type*                    String         Calibration type
+target*                  String         Name of the target of this calibration
+deployment_date*         DateTime       Date/time of calibration. Stored as a milliseconds value.
+values                   String         The values for the calibration. See above.
+class                    String         The Java class of the calibration
 
-## `gas_standard_concentration`
-
-
-Field                    Type           Description
---------------------     ------------   -------------------------------------------------------------------------
-concentration_id         F_KEY          The parent gas standard deployment record
-standard_name            String         The name of the standard (from the `run_types` table)
-concentration            Float          The concentration of the standard
-
-
-## `sensor_calibration`
-This table will store the sensor calibrations for the instrument. It holds the
-name overall details of the calibration session, and the `calibration_coefficients`
-table below stores the actual calibration values
-Each calibration will be defined as a polynomial curve with up to five harmonics.
-
-Field                    Type           Description
---------------------     ------------   -------------------------------------------------------------------------
-id                       Integer        ID
-instrument_id            F_KEY          Instrument ID
-caibration_date          Date           The date of the calibration
-
-## `calibration_coefficients`
-This table stores the individual calibration coefficients for a single sensor.
-It will contain one record for each sensor on the instrument for each record in
-the parent `sensor_calibration` table.
-
-Field                    Type           Description
---------------------     ------------   -------------------------------------------------------------------------
-calibration_id           F_KEY          Instrument ID
-sensor                   String         The sensor identifier
-intercept                Float          The intercept of the calibration curve
-x                        Float          Slope
-x2                       Float          Second harmonic
-x3                       Float          Third harmonic
-x4                       Float          Fourth harmonic
-x5                       Float          Fifth harmonic
-
-#### `sensor`
-The `sensor` field will identify the sensor that the calibration is for.
-It will be of the form `<sensortype>_<sensornumber>` (there can be up to three sensors of each type).
-
-`sensor_type` will be one of:
-
-Digit      Value
------      -----
-0          Intake temperature
-1          Salinity
-2          Equilibrator temperature
-3          Equilibrator pressure
-
-The second digit will be in the range 1-3. Therefore a `sensor` field value of
-`3_2` indicates the second equilibrator pressure sensor.
 
 # Data Files
-For each data file that's uploaded, there are a number of pieces of information
-that are required alongside it. This section describes all the tables required
-to hold these details.
+This section describes the tables used to hold data as it is processed to calculate and
+QC the CO~2~ measurements.
 
 ## `data_file`
-This table is a simple list of all the data files held in the system.
+This table holds details of the raw data files held in the system.
+Sections of these files will be used to construct voyages/deployments
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-instrument_id            F_KEY          The instrument ID
-filename                 String         The filename of the uploaded file. Must be unique for a given instrument
-start_date               Date           The date of the first record in the file
-record_count             Integer        The number of records in the file
-current_job              Integer        The current activity being performed on the file. See below.
-last_touched             DateTime       The date when the file was last touched. Files held beyond a given length of time will be automatically deleted.
-delete_flag              Integer        A flag that is set when a file is marked for deletion
+id*                      Integer        Data file ID
+file_definition_id       F_KEY          File definition describing the format of the file
+filename                 String         Original filename
+start_date               DateTime       Date/Time of the first record in the file
+end_date                 DateTime       Date/Time of the last record in the file
+record_count             Integer        Number of records in the file
+last_touched             DateTime       Date/Time that the file was last used
 
-#### `current_job`
-When a file is uploaded, it is processed in a number of stages, which are indicated by an integer value.
-These stages are:
-
-Value                Meaning
------------------    -----------------------------------------------------------------------------------------
-0                    The contents of the file are extracted into the database ready for processing.
-1                    The system will load any additional data required for calculations from its own archives.
-2                    The data reduction calculations are performed
-3                    The automatic QC checks are performed
-4                    The user will perform manual QC
-
-## `raw_data`
-This table will contain the records from the data file corresponding to the CO~2~ runs (both sea water and
-atmospheric). It will contain the raw data directly from the uploaded file, ready to be processed. Sensor values
-will be adjusted according to their calibrations, but CO~2~ values will remain in their raw state.
+## `voyage`
+This table will define a voyage. Itwill not contain any data,
+but its contents will be used to determine which data should be
+extracted from uploaded data files to be made part of the voyage.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-data_file_id             F_KEY          File ID
-row                      Integer        Row number (from the original data file)
-run_type_id              F_KEY          The ID of the run type in the `run_types` table
-co2_type                 Integer        The type of CO~2~ measurement
-date_time                DateTime       Date and time
-longitude                Float          Longitude
-latitude                 Float          Latitude
-intake_temp_1            Float          Intake temperature 1
-intake_temp_2            Float          Intake temperature 2
-intake_temp_3            Float          Intake temperature 3
-salinity_1               Float          Salinity 1
-salinity_2               Float          Salinity 2
-salinity_3               Float          Salinity 3
-eqt_1                    Float          Equilibrator temperature 1
-eqt_2                    Float          Equilibrator temperature 2
-eqt_3                    Float          Equilibrator temperature 3
-eqp_1                    Float          Equilibrator pressure 1
-eqp_2                    Float          Equilibrator pressure 2
-eqp_3                    Float          Equilibrator pressure 3
-air_flow_1               Float          Air flow 1
-air_flow_2               Float          Air flow 2
-air_flow_3               Float          Air flow 3
-water_flow_1             Float          Water flow 1
-water_flow_2             Float          Water flow 2
-water_flow_3             Float          Water flow 3
-xh2o                     Float          xH~2~O
-atmospheric_pressure     Float          Atmospheric pressure
-co2                      Float          The CO~2~ measurement
+id*                      Integer        The voyage ID
+instrument_id            F_KEY          The instrument for which this voyage is defined
+start                    DateTime       The start date and time of the voyage
+end                      DateTime       The end date and time of the voyage
+status                   Integer        The current processing state of the voyage
+properties               String         Miscellaneous properties related to the voyage
+last_touched             DateTime       Date/Time that the file was last used
 
-##### `type`
-The `co2_type` column will contain one of the following values:
+#### `status`
+As a voyage's data is processed, it will go through a number of stages. The actions that can be performed
+for a voyage will vary at each stage. Stages are likely to include:
 
-Value    Run type
------    --------------------------
-0        Sea water CO~2~
-1        Atmospheric CO~2~
+* Data extraction
+* Initial data check
+* Data reduction
+* Automatic QC
+* User QC
 
-## `gas_standards_data`
-This file stores details of the gas standard measurements from the data files.
-These will primarily be used in the data reduction routines to calibrate the actual
-sea water measurements, but they will be recorded here so they can be examined by
-the user.
+## `voyage_data`
+After a voyage is defined, the relevant data will be extracted from the data files and stored in this table.
+The data reduction and QC performed by QuinCe will be based on this data.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-data_file_id             F_KEY          File ID
-row                      Integer        Row number (from the original data file)
-date_time                DateTime       Date and time
-run_type_id              F_KEY          The ID of the gas standard in the `run_types` table
-air_flow_1               Float          Air flow 1
-air_flow_2               Float          Air flow 2
-air_flow_3               Float          Air flow 3
-xh2o                     Float          xH~2~O
-concentration            Float          The concentration measured
-qc_flag                  Integer        A QC flag for the gas standards data. Used to disable the use of a standard during data reduction
-qc_message               String         A message describing the reason for the QC flag
+voyage_id*               F_KEY          The voyage to which this data relates
+time*                    DateTime       The date/time of the record
+longitude                Float          The longitude at which the measurement was taken
+latitude                 Float          The latitude at which the measurement was taken
+run_type                 F_KEY          The run type for this measurement
+value0
+.
+.
+value255                 Float          Fields to contain data values. The values stored will vary between instruments
+qc_flag                  Integer        The QC flag assigned to the data during initial data checks
+qc_comment               String         Reasons for the `qc_flag` being set to its value
 
-## `data_reduction`
-This table will contain the results of the data reduction, along with all the values used
-during calculation. It will include the mean sensor values, any other input values, and
-any data imported from external sources (such as atmospheric pressure). Values stored in this
-table will have had calibrations applied from both sensors and gas standards.
-
-The table will also include intermediate values calculated
-during the data reduction, so the user can trace the calculation to help locate the source of
-certain issues.
+## `calculation_data`
+This table will hold the results of calculations performed on the `voyage_data`, including
+any intermediate results that are required. It will also hold the results of the automatic and
+user QC process.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-data_file_id             F_KEY          File ID
-row                      Integer        Row number (from the original data file)
-co2_type                 Integer        The type of CO~2~ measurement
-mean_intake_temp         Float          The intake temperature, as a mean of all the sensor measurements.
-mean_salinity            Float          The salinity, as a mean of all the sensor measurements.
-mean_eqt                 Float          The equilibrator temperature, as a mean of all the sensor measurements.
-delta_temperature        Float          The difference between the mean intake temperature and the mean equilibrator temperature
-mean_eqp                 Float          The equilibrator pressure, as a mean of all the sensor measurements.
-atmospheric_pressure     Float          The atmospheric pressure, either from the instrument or imported
-true_xh2o                Float          The true xH~2~O, after correction to the gas standards
-dried_co2                Float          The mathematically dried CO~2~ value
-calibrated_co2           Float          The CO~2~ value calibrated to the gas standards
-pco2_te_dry              Float          Dry pCO~2~ at equilibrator temperature
-ph2o                     Float          The correction factor to 100% humidity
-pco2_te_wet              Float          Wet pCO~2~ at equilibrator temperature
-fco2_te                  Float          fCO~2~ at equilibrator temperature
-fco2                     Float          The final fCO~2~ value
-
-
-## `qc`
-This table will contain details of the Quality Control carried out by both the automated routines
-and the scientist. It will allow individual sensors to be disabled for individual measurements
-(if one of a set is poor), and record flags and comments for all measurements.
-
-Field                    Type           Description
---------------------     ------------   -------------------------------------------------------------------------
-data_file_id             F_KEY          File ID
-row                      Integer        Row number (from the original data file)
-intake_temp_1_used       Boolean        Indicates whether the first intake temperature sensor is used
-intake_temp_2_used       Boolean        Indicates whether the second intake temperature sensor is used
-intake_temp_3_used       Boolean        Indicates whether the third intake temperature sensor is used
-salinity_1_used          Boolean        Indicates whether the first salinity sensor is used
-salinity_2_used          Boolean        Indicates whether the second salinity sensor is used
-salinity_3_used          Boolean        Indicates whether the third salinity sensor is used
-eqt_1_used               Boolean        Indicates whether the first equilibrator pressure sensor is used
-eqt_2_used               Boolean        Indicates whether the second equilibrator pressure sensor is used
-eqt_3_used               Boolean        Indicates whether the third equilibrator pressure sensor is used
-eqp_1_used               Boolean        Indicates whether the first equilibrator pressure sensor is used
-eqp_2_used               Boolean        Indicates whether the second equilibrator pressure sensor is used
-eqp_3_used               Boolean        Indicates whether the third equilibrator pressure sensor is used
+voyage_id*               F_KEY          The voyage to which this data relates
+time*                    DateTime       The date/time of the record
+longitude                Float          The longitude at which the measurement was taken
+latitude                 Float          The latitude at which the measurement was taken
+run_type                 F_KEY          The run type for the measurement
+value0
+.
+.
+value255                 Float          Calculation values. These will vary according to the type of calculation being performed.
 qc_flag                  Integer        The QC flag assigned by the automatic QC routines
 qc_message               String         The message(s) from the automatic QC routines
 woce_flag                Integer        The WOCE flag assigned by the user
 woce_comment             String         The WOCE comment
-woce_fatal               Boolean        Indicates whether or not a WOCE Bad flag is Fatal
 
 
 # Jobs
@@ -403,12 +271,11 @@ The majority of the data processing performed by QuinCe will be done by backgrou
 which will be managed within the database.
 
 ## `job`
-
 Each background task will have a row in this table.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-job_id                   Integer        Job ID
+job_id*                  Integer        Job ID
 owner                    F_KEY          The user id of the owner of the job
 submitted                DateTime       The date and time on which the job was submitted
 class                    String         The class name of the job to be run

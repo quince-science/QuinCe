@@ -4,7 +4,7 @@
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
-	template="/templates/app_page.xhtml">
+	template="/WEB-INF/templates/app_page.xhtml">
 
 	<ui:define name="localHead">
 	    <script type="text/javascript">  
@@ -136,8 +136,6 @@
 			            <h:outputText class="questionable" value="#{file.qcQuestionableCount}"/>
 						/
 			            <h:outputText class="good" value="${file.qcGoodCount}"/>
-						/
-			            <h:outputText class="ignore" value="#{file.ignoredCount}"/>
 					</p:column>
 					<p:column>
 						<f:facet name="header">WOCE Stats</f:facet>
@@ -149,8 +147,6 @@
 			            <h:outputText class="good" value="${file.woceGoodCount + file.woceAssumedGoodCount}"/>
 			            /
 			            <h:outputText class="needsFlagging" value="#{file.woceNeededCount}"/>
-			            /
-			            <h:outputText class="ignore" value="#{file.ignoredCount}"/>
 					</p:column>
 					<p:column>
 						<f:facet name="header">Actions</f:facet>

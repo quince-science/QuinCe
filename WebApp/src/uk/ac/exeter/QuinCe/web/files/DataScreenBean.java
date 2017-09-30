@@ -9,18 +9,21 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QuinCe.data.FileInfo;
-import uk.ac.exeter.QuinCe.data.Instrument;
-import uk.ac.exeter.QuinCe.data.RunType;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.database.QC.QCDB;
-import uk.ac.exeter.QuinCe.database.files.DataFileDB;
-import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
+import uk.ac.exeter.QuinCe.data.Files.CommentSet;
+import uk.ac.exeter.QuinCe.data.Files.CommentSetEntry;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.FileDataInterrogator;
+import uk.ac.exeter.QuinCe.data.Files.FileInfo;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.RunType;
+import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.FileJob;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
@@ -34,20 +37,29 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  */
 public class DataScreenBean extends BaseManagedBean {
 
+	/**
+	 * The navigation result returned after the bean is initialised
+	 * @see #start()
+	 */
 	public static final String PAGE_START = "data_screen";
 	
 	/**
-	 * Navigation result to display the file list
+	 * Navigation result returned after the user leaves the QC pages
+	 * @see #end()
 	 */
 	public static final String PAGE_END = "file_list";
 	
 	/**
 	 * Indicator for HTML controls for the plot configuration popup
+	 * @see #makeCheckbox(String, String, String, String)
+	 * @see #makePlotCheckbox(String, String, String)
 	 */
 	private static final String POPUP_PLOT = "plot";
 	
 	/**
 	 * Indicator for HTML controls for the map configuration popup
+	 * @see #makeCheckbox(String, String, String, String)
+	 * @see #makeMapCheckbox(String, String, String)
 	 */
 	private static final String POPUP_MAP = "map";
 	
@@ -65,11 +77,19 @@ public class DataScreenBean extends BaseManagedBean {
 	 * The data columns being used in the left plot.
 	 * 
 	 * <p>
-	 *   The columns are stored as a semi-colon separated list. The first
+	 *   The columns are stored as a semi-colon separated list of internal column names. The first
 	 *   column is the X axis, and all subsequent columns will be displayed on the Y axis.
 	 *   The Javascript on the user interface will be responsible for ensuring that
 	 *   the columns are set appropriately; the bean will not perform any checks.
 	 * </p>
+	 * 
+	 * <p>
+	 *   The first three Y axis columns are always the row number, QC and WOCE flag,
+	 *   which are hidden when the plot is rendered.
+	 *   The row is used to cross-reference with the data table, and the flags
+	 *   are used to highlight values on the plots.
+	 * </p>
+	 * @see FileDataInterrogator 
 	 */
 	private String leftPlotColumns = null;
 	
@@ -85,17 +105,29 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	private String leftPlotData = null;
 	
+	/**
+	 * The human-readable names of the columns shown in the left plot.
+	 * @see #leftPlotColumns
+	 */
 	private String leftPlotNames = null;
 
 	/**
 	 * The data columns being used in the right plot.
 	 * 
 	 * <p>
-	 *   The columns are stored as a semi-colon separated list. The first
+	 *   The columns are stored as a semi-colon separated list of internal column names. The first
 	 *   column is the X axis, and all subsequent columns will be displayed on the Y axis.
 	 *   The Javascript on the user interface will be responsible for ensuring that
 	 *   the columns are set appropriately; the bean will not perform any checks.
 	 * </p>
+	 * 
+	 * <p>
+	 *   The first three Y axis columns are always the row number, QC and WOCE flag,
+	 *   which are hidden when the plot is rendered.
+	 *   The row is used to cross-reference with the data table, and the flags
+	 *   are used to highlight values on the plots.
+	 * </p> 
+	 * @see FileDataInterrogator 
 	 */
 	private String rightPlotColumns = null;
 	
@@ -111,6 +143,10 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	private String rightPlotData = null;
 	
+	/**
+	 * The names of the columns shown in the right plot.
+	 * @see #rightPlotColumns
+	 */
 	private String rightPlotNames = null;
 
 	/**
@@ -146,16 +182,66 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	private String tableMode = "basic";
 	
+	/**
+	 * The data for the current view of the data table.
+	 * 
+	 * <p>
+	 *   The table data is loaded on demand as the user scrolls around, to
+	 *   eliminate the delay and memory requirements of loading a complete
+	 *   voayge's data in one go. When the user scrolls to a particular row,
+	 *   the data for that row and a set of rows before and after it is loaded.
+	 * </p>
+	 * 
+	 * @see #generateTableData()
+	 * @see <a href="https://datatables.net/examples/data_sources/server_side.html">DataTables Server-Side Processing</a>
+	 */
 	private String tableJsonData = null;
+	
+	/**
+	 * A Javascript array string containing the list of all row numbers in the current data file that can be
+	 * selected in the data table. Selectable rows can have their WOCE flag set by the user.
+	 * Unselectable rows are typically rows that have their QC flag set to FATAL, which means they
+	 * cannot be processed at all.
+	 * 
+	 * <p>
+	 * The rows are loaded during {@link #start} via {@link #loadSelectableRowNumbers}.
+	 * </p>
+	 */
+	private String selectableRowNumbers = null;
 
+ 	/**
+ 	 * An internal value for the DataTables library,
+ 	 * used when drawing retrieving table data from the server
+	 * @see <a href="https://datatables.net/examples/data_sources/server_side.html">DataTables Server-Side Processing</a>
+ 	 */
 	private int tableDataDraw;		
 
+	/**
+	 * The first row of the table data view to be loaded for DataTables
+	 * @see <a href="https://datatables.net/examples/data_sources/server_side.html">DataTables Server-Side Processing</a>
+	 */
 	private int tableDataStart;		
 
+	/**
+	 * The number of rows to be loaded for DataTables
+	 * @see <a href="https://datatables.net/examples/data_sources/server_side.html">DataTables Server-Side Processing</a>
+	 */
 	private int tableDataLength;		
 
+	/**
+	 * The total number of records in the data set. A negative value indicates that the record count is not known and
+	 *   needs to be retrieved from the server.
+	 * 
+	 * <p>
+	 *   Note that this is the number
+	 *   of atmospheric or ocean records, depending on what is being displayed.
+	 * </p>
+	 */
 	private int recordCount = -1;	
 
+	/**
+	 * The row numbers that have been selected by the user. Stored as a comma-separated list.
+	 */
 	private String selectedRows = null;
 	
 	/**
@@ -170,9 +256,28 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	private int woceFlag = Flag.VALUE_NEEDED;
 	
+	/**
+	 * The instrument to which the data file belongs
+	 */
 	private Instrument instrument;
 
+	/**
+	 * Indicates whether or not any WOCE flags have been changed.
+	 * If they have, the data file will be resubmitted for data reduction
+	 * when the user leaves the data screen.
+	 */
 	private boolean dirty = false;
+	
+	/**
+	 * The set of comments for the WOCE dialog. Stored as a Javascript array of entries, with each entry containing
+	 * Comment, Count and Flag value
+	 */
+	private String woceCommentList = null;
+	
+	/**
+	 * The worst flag set on the selected rows
+	 */
+	private Flag worstSelectedFlag = Flag.GOOD;
 	
 	/**
 	 * Required basic constructor. This does nothing: all the actual construction
@@ -187,10 +292,12 @@ public class DataScreenBean extends BaseManagedBean {
 	 * Any data from previous data files is removed first.
 	 * @return The navigation to the QC screen
 	 * @throws Exception If any errors occur
+	 * @see #PAGE_START
 	 */
 	public String start() throws Exception {
 		clearData();
 		loadFileDetails();
+		loadSelectableRowNumbers();
 		
 		// Temporarily always show Bad flags
 		List<String> badFlags = new ArrayList<String>(1);
@@ -200,6 +307,13 @@ public class DataScreenBean extends BaseManagedBean {
 		return PAGE_START;
 	}
 	
+	/**
+	 * Finishes the user's session on the QC page. If anything has been changed,
+	 * the file is resubmitted for data reduction.
+	 * @return The navigation to the file list
+	 * @throws Exception If any errors occur during processing
+	 * @see #end()
+	 */
 	public String end() throws Exception {
 		
 		if (dirty) {
@@ -292,14 +406,31 @@ public class DataScreenBean extends BaseManagedBean {
 		this.leftPlotData = leftPlotData;
 	}
 	
+	/**
+	 * Get the human-readable names of the columns being displayed
+	 * in the left plot.
+	 * @return The columns names
+	 * @see #leftPlotNames
+	 */
 	public String getLeftPlotNames() {
 		return leftPlotNames;
 	}
 	
+	/**
+	 * Set the human-readable names of the columns being displayed
+	 * in the left plot.
+	 * @param leftPlotNames The column names
+	 * @see #leftPlotNames
+	 */
 	public void setLeftPlotNames(String leftPlotNames){
 		this.leftPlotNames = leftPlotNames;
 	}
 	
+	/**
+	 * Get the columns to be displayed in the right plot.
+	 * @return The columns for the right plot
+	 * @see #rightPlotColumns
+	 */
 	public String getRightPlotColumns() {
 		return rightPlotColumns;
 	}
@@ -331,14 +462,31 @@ public class DataScreenBean extends BaseManagedBean {
 		this.rightPlotData = rightPlotData;
 	}
 	
+	/**
+	 * Get the human-readable names of the columns being displayed
+	 * in the right plot.
+	 * @return The columns names
+	 * @see #rightPlotNames
+	 */
 	public String getRightPlotNames() {
 		return rightPlotNames;
 	}
 	
+	/**
+	 * Set the human-readable names of the columns being displayed
+	 * in the right plot.
+	 * @param rightPlotNames The column names
+	 * @see #rightPlotNames
+	 */
 	public void setRightPlotNames(String rightPlotNames){
 		this.rightPlotNames = rightPlotNames;
 	}
 	
+	/**
+	 * Return the type of CO<sub>2</sub> measurement being viewed
+	 * @return The CO<sub>2</sub> measurement type
+	 * @see #co2Type
+	 */
 	public int getCo2Type() {
 		return co2Type;
 	}
@@ -347,8 +495,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 * Get the type of CO<sub>2</sub> measurement to be displayed.
 	 * Must be one of {@link RunType#RUN_TYPE_WATER} or {@link RunType#RUN_TYPE_ATMOSPHERIC}.
 	 * The behaviour of the user interface is undefined if this is set to anything else.
-	 * 
 	 * @param co2Type The type of measurement
+	 * @see #co2Type
 	 */
 	public void setCo2Type(int co2Type) {
 		this.co2Type = co2Type;
@@ -395,46 +543,113 @@ public class DataScreenBean extends BaseManagedBean {
 		this.tableMode = tableMode;
 	}
 	
+	/**
+	 * Get the data for the current view in the data table
+	 * @return The table data
+	 * @see #tableJsonData
+	 */
 	public String getTableJsonData() {
  		return tableJsonData;		
  	}
 	
+	/**
+	 * Set the data for the current view in the data table
+	 * @param tableJsonData The table data
+	 * @see #tableJsonData
+	 */
  	public void setTableJsonData(String tableJsonData) {
  		this.tableJsonData = tableJsonData;
  	}		
  
+ 	/**
+ 	 * Get the current value for the DataTables internal {@code draw} parameter
+ 	 * @return The DataTables {@code draw} parameter
+ 	 * @see #tableDataDraw
+ 	 */
  	public int getTableDataDraw() {		
 		return tableDataDraw;		
 	}		
 			
+ 	/**
+ 	 * Set the value for the DataTables internal {@code draw} parameter
+ 	 * @param tableDataDraw The DataTables {@code draw} parameter
+ 	 * @see #tableDataDraw
+ 	 */
 	public void setTableDataDraw(int tableDataDraw) {		
 		this.tableDataDraw = tableDataDraw;		
 	}		
-			
+
+	/**
+	 * Get the first row of the current view in the data table
+	 * @return The first row of the view
+	 * @see #tableDataStart
+	 */
 	public int getTableDataStart() {		
 		return tableDataStart;		
 	}		
-			
+
+	/**
+	 * Set the first row of the view in the data table
+	 * @param tableDataStart The first row of the view
+	 * @see #tableDataStart
+	 */
 	public void setTableDataStart(int tableDataStart) {		
 		this.tableDataStart = tableDataStart;		
 	}		
-			
+	
+	/**
+	 * Get the number of rows in the current view in the data table
+	 * @return The number of rows in the view
+	 * @see #tableDataLength
+	 */
 	public int getTableDataLength() {		
 		return tableDataLength;		
 	}		
-			
+
+	/**
+	 * Set the number of rows in the current view in the data file
+	 * @param tableDataLength The number of rows in the view
+	 * @see #tableDataLength
+	 */
 	public void setTableDataLength(int tableDataLength) {		
 		this.tableDataLength = tableDataLength;		
 	}		
-			
+
+	/**
+	 * Get the total number of rows in the data file. If the number of rows is not
+	 * known, the result will be negative.
+	 * 
+	 * <p>
+	 *   Note that this is the number
+	 *   of atmospheric or ocean records, depending on what is being displayed.
+	 * </p>
+	 * 
+	 * @return The number of records
+	 */
 	public int getRecordCount() {		
 		return recordCount;		
 	}
-  			  	
+ 
+	/**
+	 * Set the total number of records in the data file. If the number of records
+	 * is not known, set a negative value.
+	 * 
+	 * <p>
+	 *   Note that this is the number
+	 *   of atmospheric or ocean records, depending on what is being displayed.
+	 * </p>
+	 * 
+	 * @param recordCount The number of records
+	 */
 	public void setRecordCount(int recordCount) {
 		this.recordCount = recordCount;
   	}
  
+	/**
+	 * Get the set of rows that have been selected by the user.
+	 * The rows are returned as an unsorted comma-separated list.
+	 * @return The selected rows
+	 */
 	public String getSelectedRows() {
 		return selectedRows;
 	}
@@ -491,11 +706,11 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws ResourceException If the application resources cannot be accessed
 	 * @throws RecordNotFoundException If the selected data file (or any of its related records) cannot be found
+	 * @throws InstrumentException If any instrument details are invalid
 	 */
-	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException {
+	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException, InstrumentException {
 		fileDetails = DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), fileId);
-		DataFileDB.touchFile(ServletUtils.getDBDataSource(), fileId);
-		instrument = InstrumentDB.getInstrumentByFileId(ServletUtils.getDBDataSource(), fileId);
+		instrument = InstrumentDB.getInstrumentByFileId(ServletUtils.getDBDataSource(), fileId, ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
 	}
 	
 	/**
@@ -507,7 +722,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @throws ResourceException If the application resources cannot be accessed
 	 */
 	public String getPlotPopupEntries() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
-		
+		return null;
+		/*
 		Instrument instrument = InstrumentDB.getInstrument(ServletUtils.getDBDataSource(), fileDetails.getInstrumentId());
 		
 		StringBuffer output = new StringBuffer();
@@ -671,6 +887,9 @@ public class DataScreenBean extends BaseManagedBean {
 
 			output.append("</table></td></tr>");
 		}
+		*/
+		
+		
 		
 		// Atmospheric Pressure
 		/*
@@ -681,6 +900,9 @@ public class DataScreenBean extends BaseManagedBean {
 		output.append("</td><td>Atmospheric Pressure</td></tr>");
 		*/
 		
+		
+		
+		/*
 		// xH2O
 		output.append("<tr><td colspan=\"2\" class=\"minorHeading\">xH<sub>2</sub>O:</td></tr>");
 		output.append("<tr><td></td><td><table>");
@@ -721,6 +943,8 @@ public class DataScreenBean extends BaseManagedBean {
 		output.append("</tr></table>");
 		
 		return output.toString();
+		
+		*/
 	}
 	
 	/**
@@ -831,10 +1055,10 @@ public class DataScreenBean extends BaseManagedBean {
 
 	/**
 	 * Retrieve the data for the table from the database as a JSON string.
-	 * The data is stored in {@link #tableData}.
+	 * The data is stored in {@link #tableJsonData}.
 	 */
 	public void generateTableData() {
-
+		/*
 		try {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			
@@ -955,6 +1179,7 @@ public class DataScreenBean extends BaseManagedBean {
 			e.printStackTrace();
 			setTableJsonData("***ERROR: " + e.getMessage());
 		}
+		*/
 	}
 	
 	/**
@@ -962,7 +1187,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @return The list of column headings
 	 */
 	public String getTableHeadings() {
-
+		return null;
+		/*
 		StringBuffer output = new StringBuffer('[');
 		
 		output.append("['Date/Time', 'Row', 'Longitude', 'Latitude', ");
@@ -1093,6 +1319,7 @@ public class DataScreenBean extends BaseManagedBean {
 				+ "'pCO₂ TE Wet', 'fCO₂ TE', 'fCO₂ Final', 'QC Flag', 'QC Message', 'WOCE Flag', 'WOCE Message']");
 		
 		return output.toString();
+		*/
 	}
 
 	/**
@@ -1155,13 +1382,16 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * 
-	 * @param columns
-	 * @return
+	 * Generate the list of human-readable column names for a given set of
+	 * internal column names
+	 * @param columns The internal column names
+	 * @return The human-readable column names
 	 * @see #getPlotData(List)
+	 * @see FileDataInterrogator
 	 */
 	private String makePlotNames(List<String> columns) {
-
+		return null;
+		/*
 		List<String> output = new ArrayList<String>(columns.size());
 		
 		// The first column is the X axis
@@ -1179,11 +1409,18 @@ public class DataScreenBean extends BaseManagedBean {
 		}
 		
 		return StringUtils.listToDelimited(output);
+		*/
 	}
 
-
+	/**
+	 * Get the complete human-readable name for a series in a plot.
+	 * Sensors are given their user-entered name if they are defined.
+	 * @param series The series name
+	 * @return The human-readable name
+	 */
 	private String getPlotSeriesName(String series) {
-		
+		return null;
+		/*
 		String result;
 		
 		switch (series) {
@@ -1337,5 +1574,95 @@ public class DataScreenBean extends BaseManagedBean {
 		}
 
 		return result;
+		*/
+	}
+	
+	/**
+	 * Retrieve the list of selectable row numbers for this data file from the database.
+	 * @see #selectableRowNumbers
+	 */
+	private void loadSelectableRowNumbers() throws Exception {
+		selectableRowNumbers = FileDataInterrogator.getSelectableRowNumbers(ServletUtils.getDBDataSource(), fileId, getIncludeFlags());
+	}
+	
+	/**
+	 * Get the list of all selectable row numbers in the current data file as a javascript array string
+	 * @return The row numbers
+	 * @see #selectableRowNumbers
+	 */
+	public String getSelectableRowNumbers() {
+		return selectableRowNumbers;
+	}
+	
+	/**
+	 * Returns the set of comments for the WOCE dialog
+	 * @return The comments for the WOCE dialog
+	 */
+	public String getWoceCommentList() {
+		return woceCommentList;
+	}
+	
+	/**
+	 * Dummy method to allow the data screen form to submit properly.
+	 * We don't actually process the value.
+	 * @param commentList The comment list from the form
+	 */
+	public void setWoceCommentList(String commentList) {
+	}
+	
+	/**
+	 * Get the worst flag set on the selected rows
+	 * @return The worst flag on the selected rows
+	 */
+	public int getWorstSelectedFlag() {
+		return worstSelectedFlag.getFlagValue();
+	}
+	
+	/**
+	 * Dummy method to allow the data screen form to submit properly.
+	 * We don't actually process the value.
+	 * @param flag The comment list from the form
+	 */
+	public void setWorstSelectedFlag(int flag) {
+	}
+	
+	/**
+	 * Generate the list of comments for the WOCE dialog
+	 */
+	public void generateWoceCommentList() {
+
+		worstSelectedFlag = Flag.GOOD;
+		
+		StringBuilder list = new StringBuilder();
+		list.append('[');
+		
+		try {
+			CommentSet comments = FileDataInterrogator.getCommentsForRows(ServletUtils.getDBDataSource(), fileId, selectedRows);
+			for (CommentSetEntry entry : comments) {
+				list.append("[\"");
+				list.append(entry.getComment());
+				list.append("\",");
+				list.append(entry.getFlag().getFlagValue());
+				list.append(",");
+				list.append(entry.getCount());
+				list.append("],");
+				
+				if (entry.getFlag().moreSignificantThan(worstSelectedFlag)) {
+					worstSelectedFlag = entry.getFlag();
+				}
+			}
+			
+		} catch (Exception e) {
+			list.append("[\"Existing comments could not be retrieved\", -1, 4],");
+			worstSelectedFlag = Flag.BAD;
+		}
+		
+		// Remove the trailing comma from the last entry
+		if (list.charAt(list.length() - 1) == ',') {
+			list.deleteCharAt(list.length() - 1);
+		}
+		list.append(']');
+		
+		woceCommentList = list.toString();
 	}
 }

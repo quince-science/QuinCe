@@ -1,44 +1,36 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-	template="/templates/basic_page.xhtml">
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/templates/basic_page.xhtml">
 
 	<ui:define name="title">Sign Up</ui:define>
 
 	<ui:define name="content">
-	    <div id="contentbox">
+	    <div class="contentBox wideContentBox">
 	      <h1>Sign Up</h1>
 	      <h:form id="signupForm" method="post" accept-charset="utf8">
-	        <ul>
-	          <li>
-	            <h:outputLabel id="emailAddressLabel" for="emailAddress" class="separateline" value="Email Address*"/>
-	            <h:inputText id="emailAddress" value="#{signupBean.emailAddress}" required="true" requiredMessage="Email address is required"/>
-	            <h:message id="emailAddressMessage" for="emailAddress" errorClass="error"/>
-	          </li>
-	          <li>
-	          	<h:outputLabel id="givenNameLabel" for="givenName" class="separateline" value="First/Given Name*"/>
-	          	<h:inputText id="givenName" value="#{signupBean.givenName}" required="true" requiredMessage="First/Given name is required"/>
-	            <h:message id="givenNameMessage" for="givenName" errorClass="error"/>
-	          </li>
-	          <li>
-	          	<h:outputLabel id="surnameLabel" for="surname" class="separateline" value="Surname/Family Name*"/>
-	          	<h:inputText id="surname" value="#{signupBean.surname}" required="true" requiredMessage="Surname/Family name is required"/>
-	            <h:message id="surnameMessage" for="surname" errorClass="error"/>
-	          </li>
-	          <li>
-	            <h:outputLabel id="password1Label" for="password1" class="separateline" value="Password*"/>
-	            <h:inputSecret id="password1" value="#{signupBean.password1}" required="true" requiredMessage="Password is required"/>
-	            <h:message id="password1Message" for="password1" errorClass="error"/>
-	          </li>
-	          <li>
-	            <h:outputLabel id="password2Label" for="password2" class="separateline" value="Confirm Password*"/>
-	            <h:inputSecret id="password2" value="#{signupBean.password2}" required="true" requiredMessage="Password is required"/>
-	            <h:message id="password2Message" for="password2" errorClass="error"/>
-	          </li>
-	          <li class="buttonWrapper">
-	            <h:commandButton id="signupButton" value="Sign Up" action="#{signupBean.signUp}"/>
-	          </li>
-	        </ul>
+	          <p:messages id="messages" autoUpdate="true" />
+	      
+	      	  <h:panelGrid columns="2" styleClass="inputForm" columnClasses="inputLabels,inputInputs" cellpadding="5">
+	            <h:outputLabel id="emailAddressLabel" for="emailAddress" value="Email Address*"/>
+	            <p:inputText id="emailAddress" value="#{signupBean.emailAddress}" required="true" requiredMessage="Email address is required" styleClass="inputFormInput"/>
+
+	          	<h:outputLabel id="givenNameLabel" for="givenName" value="First/Given Name*"/>
+	          	<p:inputText id="givenName" value="#{signupBean.givenName}" required="true" requiredMessage="First/Given name is required" styleClass="inputFormInput"/>
+
+	          	<h:outputLabel id="surnameLabel" for="surname" value="Surname/Family Name*"/>
+	          	<p:inputText id="surname" value="#{signupBean.surname}" required="true" requiredMessage="Surname/Family name is required" styleClass="inputFormInput"/>
+
+	            <h:outputLabel id="password1Label" for="password1" value="Password*"/>
+	            <p:password id="password1" value="#{signupBean.password1}" required="true" requiredMessage="Password is required" styleClass="inputFormInput"/>
+
+	            <h:outputLabel for="password2" value="Confirm Password*"/>
+	            <p:password id="password2" value="#{signupBean.password2}" required="true" requiredMessage="Password is required" styleClass="inputFormInput"/>
+		      </h:panelGrid>
+			  <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+	            <p:commandButton id="signupButton" value="Sign Up" action="#{signupBean.signUp}"/>
+			  </h:panelGrid>
 	      </h:form>
 	    </div>
 	</ui:define>
