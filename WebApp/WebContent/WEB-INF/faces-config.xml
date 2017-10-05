@@ -108,7 +108,7 @@
 		</navigation-case>
 		<navigation-case>
 			<from-outcome>AuthenticationSuccess</from-outcome>
-			<to-view-id>/voyage/voyage_list.xhtml</to-view-id>
+			<to-view-id>/dataset/dataset_list.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
