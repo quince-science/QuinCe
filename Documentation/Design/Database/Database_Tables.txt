@@ -16,6 +16,12 @@ a compound primary key.
 The field type F_KEY indicates a lookup to a value in another table. The table in question will be
 made clear in the field description.
 
+## A note on dates and times
+
+To remove complications related to time zones, all dates and times related to data will be stored in the database
+as milliseconds since the epoch in UTC.
+
+
 # Users
 This section defines tables related to users and the different parts
 of the system they are linked to.
@@ -199,22 +205,21 @@ filename                 String         Original filename
 start_date               DateTime       Date/Time of the first record in the file
 end_date                 DateTime       Date/Time of the last record in the file
 record_count             Integer        Number of records in the file
-last_touched             DateTime       Date/Time that the file was last used
 
-## `voyage`
-This table will define a voyage. Itwill not contain any data,
+## `dataset`
+This table will define a data set. It will not contain any data,
 but its contents will be used to determine which data should be
-extracted from uploaded data files to be made part of the voyage.
+extracted from uploaded data files to be made part of the data set.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-id*                      Integer        The voyage ID
-instrument_id            F_KEY          The instrument for which this voyage is defined
-start                    DateTime       The start date and time of the voyage
-end                      DateTime       The end date and time of the voyage
-status                   Integer        The current processing state of the voyage
-properties               String         Miscellaneous properties related to the voyage
-last_touched             DateTime       Date/Time that the file was last used
+id*                      Integer        Data set ID
+instrument_id            F_KEY          The instrument for which this data set is defined
+start                    DateTime       The start date and time of the data set
+end                      DateTime       The end date and time of the data set
+status                   Integer        The current processing state of the data set
+properties               String         Miscellaneous properties related to the data set
+last_touched             DateTime       Date/Time that the data set was last used
 
 #### `status`
 As a voyage's data is processed, it will go through a number of stages. The actions that can be performed
@@ -226,13 +231,13 @@ for a voyage will vary at each stage. Stages are likely to include:
 * Automatic QC
 * User QC
 
-## `voyage_data`
+## `dataset_data`
 After a voyage is defined, the relevant data will be extracted from the data files and stored in this table.
 The data reduction and QC performed by QuinCe will be based on this data.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-voyage_id*               F_KEY          The voyage to which this data relates
+dataset_id*              F_KEY          The data set to which this data relates
 time*                    DateTime       The date/time of the record
 longitude                Float          The longitude at which the measurement was taken
 latitude                 Float          The latitude at which the measurement was taken
