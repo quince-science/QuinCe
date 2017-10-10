@@ -6,13 +6,23 @@
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	template="/WEB-INF/templates/menu_page.xhtml">
 	
-	<ui:define name="title">Voyages/Deployments</ui:define>
+	<ui:define name="title">Data Sets</ui:define>
 	<ui:define name="localHead">
 		<c:set var="mainMenuActiveIndex" value="0" scope="request"/>
 	</ui:define>
 	
 	<ui:define name="content">
-		The list of data sets goes here.
+		<h:form id="fileListForm" method="post" charset="utf8">
+			<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
+				<p:outputLabel for="instrument" value="Select Instrument:"/>
+				<p:selectOneMenu id="instrument" value="#{dataFilesBean.currentInstrument}">
+					<f:selectItems value="#{dataFilesBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
+				</p:selectOneMenu>
+			</h:panelGrid>
+			<h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
+				<p:commandButton value="Create New Data Set" ajax="false" action="#{dataSetsBean.startNewDataset}"/>
+			</h:panelGrid>			
+		</h:form>
 	</ui:define>
 	
 

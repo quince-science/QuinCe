@@ -224,6 +224,18 @@
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
+		<display-name>DataSets</display-name>
+		<from-view-id>/dataset/*</from-view-id>
+		<navigation-case>
+			<from-outcome>new_dataset</from-outcome>
+			<to-view-id>/dataset/new_dataset.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>dataset_list</from-outcome>
+			<to-view-id>/dataset/dataset_list.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
 		<display-name>DataScreen</display-name>
 		<from-view-id>/data/data_screen.xhtml</from-view-id>
 		<navigation-case>
