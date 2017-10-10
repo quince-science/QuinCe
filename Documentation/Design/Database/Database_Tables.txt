@@ -215,6 +215,7 @@ Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
 id*                      Integer        Data set ID
 instrument_id            F_KEY          The instrument for which this data set is defined
+name                     String         Data set name
 start                    DateTime       The start date and time of the data set
 end                      DateTime       The end date and time of the data set
 status                   Integer        The current processing state of the data set
