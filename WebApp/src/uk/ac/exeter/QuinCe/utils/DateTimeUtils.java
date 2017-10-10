@@ -72,6 +72,7 @@ public class DateTimeUtils {
 	 * @param date The {@link Calendar} object to be set to midnight
 	 * @return A copy of the {@link Calendar} object with the time set to midnight
 	 */
+	@Deprecated
 	public static Calendar setMidnight(Calendar date) {
 		Calendar result = (Calendar) date.clone();
 		result.set(Calendar.HOUR_OF_DAY, 0);
@@ -87,6 +88,7 @@ public class DateTimeUtils {
 	 * @param lastDate The second date
 	 * @return The number of days' difference
 	 */
+	@Deprecated
 	public static int getDaysBetween(Calendar firstDate, Calendar lastDate) {
 		long diffMillis = lastDate.getTimeInMillis() - firstDate.getTimeInMillis();
 		return (int) Math.floorDiv(diffMillis, MILLIS_PER_DAY);
@@ -99,6 +101,7 @@ public class DateTimeUtils {
 	 * @param lastDate The last date
 	 * @return The number of seconds between the dates.
 	 */
+	@Deprecated
 	public static int getSecondsBetween(Calendar firstDate, Calendar lastDate) {
 		long diffMillis = lastDate.getTimeInMillis() - firstDate.getTimeInMillis();
 		return (int) Math.floorDiv(diffMillis, 1000);
@@ -109,6 +112,7 @@ public class DateTimeUtils {
 	 * @param date The date
 	 * @return The formatted date
 	 */
+	@Deprecated
 	public static String formatDate(Calendar date) {
 		return dateFormatter.format(date.getTime());
 	}
@@ -118,6 +122,7 @@ public class DateTimeUtils {
 	 * @param dateTime The date/time
 	 * @return The formatted date/time
 	 */
+	@Deprecated
 	public static String formatDateTime(Date dateTime) {
 		return dateTimeFormatter.format(dateTime);
 	}
@@ -136,6 +141,7 @@ public class DateTimeUtils {
 	 * @param dateTime The date/time
 	 * @return The formatted date/time
 	 */
+	@Deprecated
 	public static String formatDateTime(Calendar dateTime) {
 		return formatDateTime(dateTime.getTime());
 	}
@@ -147,6 +153,7 @@ public class DateTimeUtils {
 	 * @param date2 The second date
 	 * @return {@code true} if the dates are equal; {@code false} if they are different.
 	 */
+	@Deprecated
 	public static boolean datesEqual(Calendar date1, Calendar date2) {
 		
 		boolean equal = true;
@@ -177,6 +184,7 @@ public class DateTimeUtils {
 	 * @return A {@link Calendar} object with the time zone set to UTC.
 	 * @see Calendar#getInstance(TimeZone, Locale)
 	 */
+	@Deprecated
 	public static Calendar getUTCCalendarInstance() {
 		return Calendar.getInstance(new SimpleTimeZone(0, "UTC"), Locale.ENGLISH);
 	}
@@ -187,6 +195,7 @@ public class DateTimeUtils {
 	 * @return The {@link DateTime} object
 	 * @throws InvalidDateTimeStringException If the date/time string cannot be parsed.
 	 */
+	@Deprecated
 	public static DateTime makeDateTimeFromSql(String dateTime) throws InvalidDateTimeStringException {
 		if (null == sqlDateTimeFormatter) {
 			sqlDateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.S");

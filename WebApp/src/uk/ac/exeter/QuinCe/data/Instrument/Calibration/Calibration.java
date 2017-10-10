@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -157,7 +156,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 	}
 	
 	/**
-	 * Get the deployment date as a {@link Date} object
+	 * Get the deployment date as a {@link LocalDateTime} object
 	 * @return The deployment date
 	 */
 	public LocalDateTime getDeploymentDate() {

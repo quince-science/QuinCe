@@ -36,11 +36,13 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	/**
 	 * The start time of the gas standard run
 	 */
+	@Deprecated
 	private Calendar startTime;
 	
 	/**
 	 * The end time of the gas standard run
 	 */
+	@Deprecated
 	private Calendar endTime;
 	
 	/**
@@ -85,6 +87,7 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	 * Get the start time of the gas standard run
 	 * @return The start time
 	 */
+	@Deprecated
 	public Calendar getStartTime() {
 		return startTime;
 	}
@@ -93,6 +96,7 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	 * Get the end time of the gas standard run
 	 * @return The end time
 	 */
+	@Deprecated
 	public Calendar getEndTime() {
 		return endTime;
 	}
@@ -113,6 +117,7 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	 * Get the time at the mid point of the gas standard run
 	 * @return The mid point time
 	 */
+	@Deprecated
 	public Calendar getMidTime() {
 		int midLength = (int) (endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 2;
 		Calendar result = (Calendar) startTime.clone();

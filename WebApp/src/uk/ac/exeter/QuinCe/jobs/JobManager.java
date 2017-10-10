@@ -789,6 +789,7 @@ public class JobManager {
 		return result;	
 	}
 	
+	@Deprecated
 	public static List<JobSummary> getJobList(DataSource dataSource) throws DatabaseException, MissingParamException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");

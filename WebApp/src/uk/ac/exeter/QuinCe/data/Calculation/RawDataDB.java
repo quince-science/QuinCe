@@ -372,6 +372,7 @@ public class RawDataDB {
 		*/
 	}
 	
+	@Deprecated
 	public static List<RawDataValues> getRawData(Connection conn, long fileId, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
 		return null;
@@ -446,6 +447,7 @@ public class RawDataDB {
 		*/
 	}
 	
+	@Deprecated
 	public static GasStandardRuns getGasStandardRuns(DataSource dataSource, long fileId, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
 		return null;
@@ -560,6 +562,7 @@ public class RawDataDB {
 		return trimFlushingRecords;
 	}
 	
+	@Deprecated
 	private static List<TrimFlushingRecord> getTableTrimFlushingRecords(Connection conn, long fileId, String query, int recordType) throws DatabaseException {
 		
 		List<TrimFlushingRecord> tableTrimFlushingRecords = new ArrayList<TrimFlushingRecord>();

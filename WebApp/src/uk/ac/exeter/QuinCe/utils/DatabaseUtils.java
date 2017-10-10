@@ -114,6 +114,7 @@ public class DatabaseUtils {
 	 * @throws SQLException If an error occurs while reading from the database record
 	 * @see java.util.Calendar#getInstance(TimeZone, Locale)
 	 */
+	@Deprecated
 	public static Calendar getUTCDateTime(ResultSet records, int columnIndex) throws SQLException {
 		Calendar result = DateTimeUtils.getUTCCalendarInstance();
 		result.setTimeInMillis(records.getTimestamp(columnIndex).getTime());

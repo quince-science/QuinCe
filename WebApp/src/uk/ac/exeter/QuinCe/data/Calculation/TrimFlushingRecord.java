@@ -20,12 +20,14 @@ public class TrimFlushingRecord implements Comparable<TrimFlushingRecord> {
 	
 	private int row;
 	
+	@Deprecated
 	private DateTime dateTime;
 	
 	private long runTypeId;
 	
 	private boolean ignore = false;
 	
+	@Deprecated
 	public TrimFlushingRecord(int recordType, int row, DateTime dateTime, long runTypeId) {
 		this.recordType = recordType;
 		this.row = row;
@@ -37,6 +39,7 @@ public class TrimFlushingRecord implements Comparable<TrimFlushingRecord> {
 		return runTypeId == runType;
 	}
 	
+	@Deprecated
 	public boolean checkPreFlushing(DateTime preFlushLimit) {
 		boolean result = false;
 		
@@ -48,6 +51,7 @@ public class TrimFlushingRecord implements Comparable<TrimFlushingRecord> {
 		return result;
 	}
 		
+	@Deprecated
 	public boolean checkPostFlushing(DateTime postFlushLimit) {
 		boolean result = false;
 		
@@ -67,6 +71,7 @@ public class TrimFlushingRecord implements Comparable<TrimFlushingRecord> {
 		return recordType;
 	}
 	
+	@Deprecated
 	public DateTime getDateTime() {
 		return dateTime;
 	}
