@@ -43,6 +43,11 @@ public class DateTimeUtils {
 	private static SimpleDateFormat dateTimeFormatter = null;
 	
 	/**
+	 * A formatter for generating JSON format dates
+	 */
+	private static java.time.format.DateTimeFormatter jsonFormatter = null;
+	
+	/**
 	 * A formatter for parsing date/time strings returned by SQL queries.
 	 * The format is {@code yyyy-MM-dd HH:mm:ss.S}.
 	 */
@@ -51,6 +56,7 @@ public class DateTimeUtils {
 	static {
 		dateTimeFormatter = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
 		dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+		jsonFormatter = java.time.format.DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
 	}
 	
 	/**
@@ -222,5 +228,9 @@ public class DateTimeUtils {
 	 */
 	public static LocalDateTime longToDate(long milliseconds) {
 		return LocalDateTime.ofInstant(Instant.ofEpochMilli(milliseconds) , ZoneOffset.UTC);
+	}
+	
+	public static String toJsonDate(LocalDateTime date) {
+		return jsonFormatter.format(date);
 	}
 }

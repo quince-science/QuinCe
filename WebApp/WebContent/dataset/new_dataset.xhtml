@@ -9,12 +9,28 @@
 	<ui:define name="title">New Dataset</ui:define>
 	<ui:define name="localHead">
 		<h:outputScript name="script/dataSets.js"/>
+		<h:outputScript name="script/vis-timeline-graph2d.min.js"/>
+		<h:outputStylesheet name="style/vis-timeline-graph2d.min.css"/>
 	</ui:define>
 	
 	<ui:define name="pageTitle">#{dataSetsBean.currentInstrumentName} - New Data Set</ui:define>
 
 	<ui:define name="content">
 		<h:form id="uploadForm" method="post" charset="utf8">
+		
+			<div id="timelineContainer"></div>
+			<script>
+				var groups = JSON.parse('#{dataSetsBean.fileDefinitionsJson}');
+				var filesAndDataSets =  new vis.DataSet(JSON.parse('#{dataSetsBean.filesJson}'));
+				
+				var timelineOptions = {
+					stack: false,
+					showCurrentTime: false
+				};
+				
+				var timeline = new vis.Timeline(timelineContainer, filesAndDataSets, groups, timelineOptions);
+			</script>			
+		
 			<h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
 				<p:commandButton value="Back to Data Sets List" ajax="false" action="#{dataSetsBean.goToList}"/>
 			</h:panelGrid>			
