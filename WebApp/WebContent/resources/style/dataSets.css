@@ -1,0 +1,17 @@
+#timelineContainer {
+	background-color: #FFFFFF;
+}
+
+.vis-label {
+	font-weight: 700;
+}
+
+.vis-item {
+	background-color: #D7EBF9;
+	border-color: #AED0EA;
+}
+
+.timelineDataSet {
+	font-weight: 700;
+	background-color: #FFFF00 !important;
+}

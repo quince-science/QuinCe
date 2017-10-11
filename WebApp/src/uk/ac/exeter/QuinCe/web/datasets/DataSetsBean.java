@@ -44,19 +44,14 @@ public class DataSetsBean extends BaseManagedBean {
 	private List<DataSet> dataSets;
 	
 	/**
-	 * The data files for the instrument in JSON format
-	 */
-	private String filesJson;
-	
-	/**
 	 * The file definitions for the current instrument in JSON format for the timeline
 	 */
 	private String fileDefinitionsJson;
 
 	/**
-	 * The data sets for the current instrument in JSON format
+	 * The data sets and data files for the current instrument in JSON format
 	 */
-	private String dataSetsJson;
+	private String timelineEntriesJson;
 		
 	/**
 	 * Initialise/Reset the bean
@@ -80,8 +75,8 @@ public class DataSetsBean extends BaseManagedBean {
 	 */
 	public String startNewDataset() {
 		initialise();
-		filesJson = null;
 		fileDefinitionsJson = null;
+		timelineEntriesJson = null;
 
 		return NAV_NEW_DATASET;
 	}
@@ -109,20 +104,6 @@ public class DataSetsBean extends BaseManagedBean {
 	 */
 	private void loadDataSets() throws MissingParamException, DatabaseException {
 		dataSets = DataSetDB.getDataSets(getDataSource(), currentFullInstrument.getDatabaseId());
-		buildDataSetsJson();
-	}
-	
-	/**
-	 * Get the data set details for the instrument in JSON format
-	 * for the timeline
-	 * @return The data sets JSON
-	 */
-	public String getDataSetsJson() {
-		if (null == dataSetsJson) {
-			buildDataSetsJson();
-		}
-		
-		return dataSetsJson;
 	}
 	
 	/**
@@ -130,12 +111,12 @@ public class DataSetsBean extends BaseManagedBean {
 	 * for the timeline
 	 * @return The data files JSON
 	 */
-	public String getFilesJson() {
-		if (null == filesJson) {
-			buildFilesJson();
+	public String getTimelineEntriesJson() {
+		if (null == timelineEntriesJson) {
+			buildTimelineJson();
 		}
 		
-		return filesJson;
+		return timelineEntriesJson;
 	}
 	
 	/**
@@ -144,28 +125,17 @@ public class DataSetsBean extends BaseManagedBean {
 	 * @return The file definitions JSON
 	 */
 	public String getFileDefinitionsJson() {
-		if (null == filesJson) {
-			buildFilesJson();
+		if (null == timelineEntriesJson) {
+			buildTimelineJson();
 		}
 		
 		return fileDefinitionsJson;
 	}
 	
 	/**
-	 * Build the timeline JSON string for the data sets
-	 */
-	private void buildDataSetsJson() {
-		if (null == dataSets) {
-			initialise();
-		}
-		
-		dataSetsJson = "[]";
-	}
-	
-	/**
 	 * Build the timeline JSON string for the data files
 	 */
-	private void buildFilesJson() {
+	private void buildTimelineJson() {
 		try {
 			if (null == currentFullInstrument) {
 				currentFullInstrument = InstrumentDB.getInstrument(getDataSource(), getCurrentInstrument(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
@@ -179,6 +149,9 @@ public class DataSetsBean extends BaseManagedBean {
 			
 			fdJson.append('[');
 
+			// Add a fake definition for the data sets, so they can be seen on the timeline
+			fdJson.append("{\"id\":-1000,\"content\":\"File Type:\",\"order\":-1000},");
+			
 			for (int i = 0; i < currentFullInstrument.getFileDefinitions().size(); i++) {
 				FileDefinition definition = currentFullInstrument.getFileDefinitions().get(i);
 				
@@ -188,9 +161,9 @@ public class DataSetsBean extends BaseManagedBean {
 				fdJson.append('{');
 				fdJson.append("\"id\":");
 				fdJson.append(i);
-				fdJson.append(", \"content\":\"");
+				fdJson.append(",\"content\":\"");
 				fdJson.append(definition.getFileDescription());
-				fdJson.append("\", \"order\":");
+				fdJson.append("\",\"order\":");
 				fdJson.append(i);
 				fdJson.append('}');
 				
@@ -199,42 +172,64 @@ public class DataSetsBean extends BaseManagedBean {
 				}
 			}
 			
-			
 			fdJson.append(']');
 			
 			fileDefinitionsJson = fdJson.toString();
-			
-			
+
 			// Now the actual files
 			List<DataFile> dataFiles = DataFileDB.getUserFiles(getDataSource(), getAppConfig(), getUser(), currentFullInstrument.getDatabaseId());
 
-			StringBuilder fJson = new StringBuilder();
-			fJson.append('[');
+			StringBuilder entriesJson = new StringBuilder();
+			entriesJson.append('[');
 			
 			for (int i = 0; i < dataFiles.size(); i++) {
 				DataFile file = dataFiles.get(i);
 				
-				fJson.append('{');
-				fJson.append("\"type\":\"range\", \"group\":");
-				fJson.append(definitionIds.get(file.getFileDefinition().getFileDescription()));
-				fJson.append(",\"start\":\"");
-				fJson.append(DateTimeUtils.toJsonDate(file.getStartDate()));
-				fJson.append("\",\"end\":\"");
-				fJson.append(DateTimeUtils.toJsonDate(file.getEndDate()));
-				fJson.append("\",\"content\":\"");
-				fJson.append(file.getFilename());
-				fJson.append("\",\"title\":\"");
-				fJson.append(file.getFilename());
-				fJson.append("\"}");
+				entriesJson.append('{');
+				entriesJson.append("\"type\":\"range\", \"group\":");
+				entriesJson.append(definitionIds.get(file.getFileDefinition().getFileDescription()));
+				entriesJson.append(",\"start\":\"");
+				entriesJson.append(DateTimeUtils.toJsonDate(file.getStartDate()));
+				entriesJson.append("\",\"end\":\"");
+				entriesJson.append(DateTimeUtils.toJsonDate(file.getEndDate()));
+				entriesJson.append("\",\"content\":\"");
+				entriesJson.append(file.getFilename());
+				entriesJson.append("\",\"title\":\"");
+				entriesJson.append(file.getFilename());
+				entriesJson.append("\"}");
 				
 				if (i < dataFiles.size() - 1) {
-					fJson.append(',');
+					entriesJson.append(',');
 				}
 			}
 			
-			fJson.append(']');
+			if (dataSets.size() > 0) {
+				entriesJson.append(',');
+
+				for (int i = 0; i < dataSets.size(); i++) {
+					DataSet dataSet = dataSets.get(i);
+					
+					entriesJson.append('{');
+					entriesJson.append("\"type\":\"background\",");
+					entriesJson.append("\"start\":\"");
+					entriesJson.append(DateTimeUtils.toJsonDate(dataSet.getStart()));
+					entriesJson.append("\",\"end\":\"");
+					entriesJson.append(DateTimeUtils.toJsonDate(dataSet.getEnd()));
+					entriesJson.append("\",\"content\":\"");
+					entriesJson.append(dataSet.getName());
+					entriesJson.append("\",\"title\":\"");
+					entriesJson.append(dataSet.getName());
+					entriesJson.append("\",\"className\":\"timelineDataSet\"}");
+
+					if (i < dataSets.size() - 1) {
+						entriesJson.append(',');
+					}
+				}
+			}
 			
-			filesJson = fJson.toString();
+			entriesJson.append(']');
+			
+			timelineEntriesJson = entriesJson.toString();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
