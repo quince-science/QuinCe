@@ -19,11 +19,40 @@
 					<f:selectItems value="#{dataFilesBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
 				</p:selectOneMenu>
 			</h:panelGrid>
+
+			<p:dataTable id="datasets" value="#{dataSetsBean.dataSets}" var="dataset" styleClass="pageTable" scrollable="true" scrollHeight="450">
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Name"/>
+					</f:facet>
+					<h:outputText value="#{dataset.name}"/>
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Start Date"/>
+					</f:facet>
+					<h:outputText value="#{dataset.start}"/>
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="End Date"/>
+					</f:facet>
+					<h:outputText value="#{dataset.end}"/>
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Status"/>
+					</f:facet>
+					<h:outputText value="#{dataset.statusName}"/>
+				</p:column>
+			</p:dataTable>
+			
+			
 			<h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
 				<p:commandButton value="Create New Data Set" ajax="false" action="#{dataSetsBean.startNewDataset}"/>
 			</h:panelGrid>			
 		</h:form>
 	</ui:define>
-	
+
 
 </ui:composition>
