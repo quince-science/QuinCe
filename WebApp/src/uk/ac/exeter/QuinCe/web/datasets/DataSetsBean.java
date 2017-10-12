@@ -52,6 +52,11 @@ public class DataSetsBean extends BaseManagedBean {
 	 * The data sets and data files for the current instrument in JSON format
 	 */
 	private String timelineEntriesJson;
+	
+	/**
+	 * The data set being created
+	 */
+	private DataSet newDataSet;
 		
 	/**
 	 * Initialise/Reset the bean
@@ -75,6 +80,7 @@ public class DataSetsBean extends BaseManagedBean {
 	 */
 	public String startNewDataset() {
 		initialise();
+		newDataSet = new DataSet(currentFullInstrument.getDatabaseId());
 		fileDefinitionsJson = null;
 		timelineEntriesJson = null;
 
@@ -233,5 +239,13 @@ public class DataSetsBean extends BaseManagedBean {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * Get the new data set
+	 * @return
+	 */
+	public DataSet getNewDataSet() {
+		return newDataSet;
 	}
 }

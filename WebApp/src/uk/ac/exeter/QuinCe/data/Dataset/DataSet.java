@@ -86,6 +86,14 @@ public class DataSet {
 	}
 	
 	/**
+	 * Constructor for a new, empty data set
+	 * @param instrumentId The database ID of the instrument to which the data set belongs
+	 */
+	public DataSet(long instrumentId) {
+		this.instrumentId = instrumentId;
+	}
+	
+	/**
 	 * Get the data set's status
 	 * @return The status
 	 */
