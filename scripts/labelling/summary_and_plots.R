@@ -16,10 +16,12 @@ for (file_loop in 1:length(input_files)) {
 	# Get the message counts
 	message_names <- vector(mode="character", length=0)
 	message_counts <- vector(mode="numeric", length=0)
+	message_rows <- 0
 
 	for (row in 1:nrow(data)) {
 		messages <- as.character(data[["Automatic.QC.Message"]][row])
 		if (nchar(messages) > 0) {
+			message_rows <- message_rows + 1
 			message_list <- unlist(strsplit(messages, ";"))
 
 			for (m in 1:length(message_list)) {
@@ -43,6 +45,8 @@ for (file_loop in 1:length(input_files)) {
 	cat("SUMMARY FOR FILE ", input_files[file_loop], "\n\n\n", sep="")
 	cat("QC Messages\n")
 	cat("===========\n")
+	cat("Total rows with messages:", message_rows,"\n\n")
+
 	for (i in 1:length(message_names)) {
 		cat(message_names[i], ": ", message_counts[i], " (", format(round(message_counts[i] / nrow(data) * 100, 2), nsmall=2), "%)\n", sep="")
 	}
