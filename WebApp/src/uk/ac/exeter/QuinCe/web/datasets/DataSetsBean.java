@@ -14,6 +14,7 @@ import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -247,5 +248,29 @@ public class DataSetsBean extends BaseManagedBean {
 	 */
 	public DataSet getNewDataSet() {
 		return newDataSet;
+	}
+	
+	/**
+	 * Get the names of all data sets for the instrument as a JSON string
+	 * @return The data set names
+	 */
+	public String getDataSetNamesJson() {
+		StringBuilder json = new StringBuilder();
+		
+		json.append('[');
+		
+		for (int i = 0; i < dataSets.size(); i++) {
+			json.append('"');
+			json.append(dataSets.get(i).getName());
+			json.append('"');
+			
+			if (i < dataSets.size() - 1) {
+				json.append(',');
+			}
+		}
+		
+		json.append(']');
+
+		return json.toString();
 	}
 }

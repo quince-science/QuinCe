@@ -23,21 +23,25 @@
 				<script>
 					var groups = JSON.parse('#{dataSetsBean.fileDefinitionsJson}');
 					var filesAndDataSets =  new vis.DataSet(JSON.parse('#{dataSetsBean.timelineEntriesJson}'));
+					var dataSetNames = JSON.parse('#{dataSetsBean.dataSetNamesJson}');
 					
 					var timeline = new vis.Timeline(timelineContainer, filesAndDataSets, groups, TIMELINE_OPTIONS);
 				</script>
 				
 				<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
+					<p:outputLabel for="dataSetName" value="Data Set Name:"/>
+					<p:inputText id="dataSetName" widgetVar="pDataSetName" value="#{dataSetsBean.newDataSet.name}" onkeyup="processNewDataSet();"/>
 					<p:outputLabel for="startDate" value="Start Date"/>
 					<p:outputLabel for="endDate" value="End Date"/>
-					<p:calendar id="startDate" widgetVar="pStartDate" value="#{dataSetsBean.newDataSet.start}" mode="popup" maxLength="19" size="19" pattern="yyyy-MM-dd HH:mm:ss" navigator="true" onchange="drawNewDataSet();">
+					<p:calendar id="startDate" widgetVar="pStartDate" value="#{dataSetsBean.newDataSet.start}" mode="popup" maxLength="19" size="19" pattern="yyyy-MM-dd HH:mm:ss" navigator="true" onchange="processNewDataSet();">
 						<f:converter converterId="localDateTimeConverter"/>
 					</p:calendar>
-					<p:calendar id="endDate" widgetVar="pEndDate" value="#{dataSetsBean.newDataSet.end}" mode="popup" maxLength="19" size="19" pattern="yyyy-MM-dd HH:mm:ss" navigator="true" onchange="drawNewDataSet();">
+					<p:calendar id="endDate" widgetVar="pEndDate" value="#{dataSetsBean.newDataSet.end}" mode="popup" maxLength="19" size="19" pattern="yyyy-MM-dd HH:mm:ss" navigator="true" onchange="processNewDataSet();">
 						<f:converter converterId="localDateTimeConverter"/>
 					</p:calendar>
 				</h:panelGrid>
-				<p:messages/>
+				<div id="errorList" class="errors hidden"></div>
+
 			</div>
 		
 			<h:panelGrid columns="1" cellpadding="5" class="buttonPanel">

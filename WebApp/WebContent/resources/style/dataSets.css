@@ -13,10 +13,16 @@
 
 .timelineDataSet {
 	font-weight: 700;
+	background-color: #226EA0 !important;
+	color: #FFFFFF !important;
+}
+
+.goodNewDataSet {
+	font-weight: 700;
 	background-color: #FFEF96 !important;
 }
 
-.newDataSet {
+.badNewDataSet {
 	font-weight: 700;
 	background-color: #F0D9D9 !important;
 }
