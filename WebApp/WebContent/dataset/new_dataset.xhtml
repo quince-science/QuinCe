@@ -26,6 +26,7 @@
 					var dataSetNames = JSON.parse('#{dataSetsBean.dataSetNamesJson}');
 					
 					var timeline = new vis.Timeline(timelineContainer, filesAndDataSets, groups, TIMELINE_OPTIONS);
+					PF('pAddButton').disable();
 				</script>
 				
 				<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
@@ -41,11 +42,10 @@
 					</p:calendar>
 				</h:panelGrid>
 				<div id="errorList" class="errors hidden"></div>
-
 			</div>
-		
-			<h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
-				<p:commandButton value="Back to Data Sets List" ajax="false" action="#{dataSetsBean.goToList}" immediate="true"/>
+			<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
+				<p:commandButton id="addButton" widgetVar="pAddButton" value="Add Data Set" ajax="false" action="#{dataSetsBean.addDataSet}"/>
+				<p:commandButton value="Cancel" ajax="false" action="#{dataSetsBean.goToList}" immediate="true"/>
 			</h:panelGrid>			
 		</h:form>
 	</ui:define>

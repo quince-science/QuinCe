@@ -86,9 +86,11 @@ function validateNewDataSet() {
 	if (null != errorString) {
 		$('#errorList').html(errorString);
 		$('#errorList').show();
+		PF('pAddButton').disable();
 		result = false;
 	} else {
 		$('#errorList').hide();
+		PF('pAddButton').enable();
 		result = true;
 	}
 	

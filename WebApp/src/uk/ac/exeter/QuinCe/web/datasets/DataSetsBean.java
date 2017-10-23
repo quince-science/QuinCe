@@ -14,7 +14,8 @@ import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -244,7 +245,7 @@ public class DataSetsBean extends BaseManagedBean {
 	
 	/**
 	 * Get the new data set
-	 * @return
+	 * @return The new data set
 	 */
 	public DataSet getNewDataSet() {
 		return newDataSet;
@@ -272,5 +273,27 @@ public class DataSetsBean extends BaseManagedBean {
 		json.append(']');
 
 		return json.toString();
+	}
+	
+	/**
+	 * Store the newly defined data set
+	 * @return Navigation to the data set list
+	 */
+	public String addDataSet() {
+		
+		try {
+			DataSetDB.addDataSet(getDataSource(), newDataSet);
+			
+			Map<String, String> params = new HashMap<String, String>();
+			params.put(ExtractDataSetJob.ID_PARAM, String.valueOf(newDataSet.getId()));
+			
+			JobManager.addJob(getDataSource(), getUser(), ExtractDataSetJob.class.getCanonicalName(), params);
+			
+			loadDataSets();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return NAV_DATASET_LIST;
 	}
 }

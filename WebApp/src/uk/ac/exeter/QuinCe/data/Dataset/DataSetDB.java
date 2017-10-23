@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,12 @@ public class DataSetDB {
 			+ "id, instrument_id, name, start, end, status, properties, last_touched "
 		    + "FROM dataset WHERE instrument_id = ? ORDER BY start ASC";
 	
+	/**
+	 * Statement to add a new data set into the database
+	 */
+	private static final String ADD_DATASET_STATEMENT = "INSERT INTO dataset "
+			+ "(instrument_id, name, start, end, status, properties, last_touched) "
+			+ "VALUES (?, ?, ?, ?, ?, ?, ?)";
 	
 	/**
 	 * Get the list of data sets defined for a given instrument
@@ -92,5 +99,39 @@ public class DataSetDB {
 		LocalDateTime lastTouched = DateTimeUtils.longToDate(record.getLong(8));
 		
 		return new DataSet(id, instrumentId, name, start, end, status, properties, lastTouched);
+	}
+	
+	public static void addDataSet(DataSource dataSource, DataSet dataSet) throws DatabaseException {
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet addedKeys = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(ADD_DATASET_STATEMENT, PreparedStatement.RETURN_GENERATED_KEYS);
+			
+			stmt.setLong(1, dataSet.getInstrumentId());
+			stmt.setString(2, dataSet.getName());
+			stmt.setLong(3, DateTimeUtils.dateToLong(dataSet.getStart()));
+			stmt.setLong(4, DateTimeUtils.dateToLong(dataSet.getEnd()));
+			stmt.setLong(5, dataSet.getStatus());
+			stmt.setNull(6, Types.VARCHAR);
+			stmt.setLong(7, DateTimeUtils.dateToLong(LocalDateTime.now()));
+			
+			stmt.execute();
+			
+			// Add the database ID to the database object
+			addedKeys = stmt.getGeneratedKeys();
+			addedKeys.next();
+			dataSet.setId(addedKeys.getLong(1));
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while adding data set", e);
+		} finally {
+			DatabaseUtils.closeResultSets(addedKeys);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
 	}
 }
