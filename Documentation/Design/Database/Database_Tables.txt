@@ -233,7 +233,7 @@ for a voyage will vary at each stage. Stages are likely to include:
 * User QC
 
 ## `dataset_data`
-After a voyage is defined, the relevant data will be extracted from the data files and stored in this table.
+After a data set is defined, the relevant data will be extracted from the data files and stored in this table.
 The data reduction and QC performed by QuinCe will be based on this data.
 
 Field                    Type           Description
