@@ -53,8 +53,10 @@ public class RawDataFile {
 	/**
 	 * The date of the first CO2 line in the file
 	 */
+	@Deprecated
 	private Calendar startDate = null;
 	
+	@Deprecated
 	private List<Calendar> dates = null;
 	
 	/**
@@ -271,6 +273,7 @@ public class RawDataFile {
 	 * @return The list of dates
 	 * @throws IOException 
 	 */
+	@Deprecated
 	public List<Calendar> getDates(List<String> messages) throws RawDataFileException, IOException {
 		
 		if (null == dates) {
@@ -384,6 +387,7 @@ public class RawDataFile {
 	 * @throws InstrumentException If the date/time format is not recognised
 	 * @throws DateTimeParseException  If the date or time cannot be parsed from the line
 	 */
+	@Deprecated
 	private Calendar getDateFromLine(int lineNumber) throws DateTimeParseException, InstrumentException {
 		return null;
 		/*
@@ -404,6 +408,7 @@ public class RawDataFile {
 	 * Returns the first measurement date in the file
 	 * @return The start date
 	 */
+	@Deprecated
 	public Calendar getStartDate() {
 		return startDate;
 	}
@@ -442,6 +447,7 @@ public class RawDataFile {
 		*/
 	}
 	
+	@Deprecated
 	public int findLineByDate(Calendar date, int start) throws RawDataFileException, IOException {
 
 		if (null == dates) {

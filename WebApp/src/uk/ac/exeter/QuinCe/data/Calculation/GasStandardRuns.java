@@ -96,6 +96,7 @@ public class GasStandardRuns {
 	 * @return The interpolated moisture value
 	 * @see RunType
 	 */
+	@Deprecated
 	public double getInterpolatedXh2o(String runType, Calendar time) {
 		return getInterpolatedValue(runType, time, GasStandardMean.TYPE_XH2O);
 	}
@@ -117,6 +118,7 @@ public class GasStandardRuns {
 	 * @return The interpolated CO<sub>2</sub> value
 	 * @see RunType
 	 */
+	@Deprecated
 	public double getInterpolatedCo2(String runType, Calendar time) {
 		return getInterpolatedValue(runType, time, GasStandardMean.TYPE_CO2);
 	}
@@ -132,6 +134,7 @@ public class GasStandardRuns {
 	 * @return The interpolated value
 	 * @see RunType
 	 */
+	@Deprecated
 	private double getInterpolatedValue(String runType, Calendar time, int valueType) {
 		GasStandardMean previous = getStandardBefore(runType, time);
 		GasStandardMean next = getStandardAfter(runType, time);
@@ -165,6 +168,7 @@ public class GasStandardRuns {
 	 * @param time The target time
 	 * @return The standard before the specified time, or {@code null} if there is no standard
 	 */
+	@Deprecated
 	private GasStandardMean getStandardBefore(String runType, Calendar time) {
 		
 		TreeSet<GasStandardMean> searchSet = getSearchSet(runType);
@@ -191,6 +195,7 @@ public class GasStandardRuns {
 	 * @param time The target time
 	 * @return The standard after the specified time, or {@code null} if there is no standard
 	 */
+	@Deprecated
 	private GasStandardMean getStandardAfter(String runType, Calendar time) {
 		
 		TreeSet<GasStandardMean> searchSet = getSearchSet(runType);
@@ -246,6 +251,7 @@ public class GasStandardRuns {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If any required database records are missing
 	 */
+	@Deprecated
 	public SimpleRegression getStandardsRegression(DataSource dataSource, long instrumentId, Calendar time) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
 		SimpleRegression result = new SimpleRegression(true);

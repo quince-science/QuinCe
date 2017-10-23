@@ -17,6 +17,7 @@ public class RawDataFileException extends Exception {
 		super("Line " + line + ": " + message, cause);
 	}
 
+	@Deprecated
 	public RawDataFileException(Calendar date) {
 		super("Cannot find line with date: " + DateTimeUtils.formatDateTime(date));
 	}
