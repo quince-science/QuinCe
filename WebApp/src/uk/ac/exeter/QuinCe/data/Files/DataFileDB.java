@@ -14,6 +14,9 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
 import uk.ac.exeter.QuinCe.jobs.Job;
@@ -23,6 +26,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Methods for handling raw data files.
@@ -102,6 +106,18 @@ public class DataFileDB {
 			+ "WHERE file_definition_id = ? AND "
 			+ "(start_date BETWEEN ? AND ? OR "
 			+ "end_date BETWEEN ? AND ?)";
+	
+	/**
+	 * Query to find files for a given definition that covers part of a given date range
+	 * @see #getFiles(DataSource, FileDefinition, LocalDateTime, LocalDateTime)
+	 */
+	private static final String GET_FILES_BY_TYPE_DATE_QUERY = "SELECT "
+			+ "id, file_definition_id, filename, start_date, end_date, record_count "
+			+ "FROM data_file WHERE "
+			+ "file_definition_id = ? AND "
+			+ "(start_date <= ? AND end_date > ? OR "
+			+ "start_date < ? AND end_date >= ?) "
+			+ "ORDER BY start_date ASC";
 	
 	/**
 	 * Store a file in the database and in the file store
@@ -403,21 +419,42 @@ public class DataFileDB {
 		DataFile result = null;
 		
 		try {
-			long id = record.getLong(1);
 			long fileDefinitionId = record.getLong(2);
-			String filename = record.getString(3);
-			LocalDateTime startDate = DateTimeUtils.longToDate(record.getLong(4));
-			LocalDateTime endDate = DateTimeUtils.longToDate(record.getLong(5));
-			int recordCount = record.getInt(6);
 			long instrumentId = record.getLong(7);
 			
 			InstrumentFileSet files = InstrumentDB.getFileDefinitions(conn, instrumentId); 
 			
-			result = new DataFile(fileStore, id, files.get(fileDefinitionId), filename, startDate, endDate, recordCount);
+			result = makeDataFile(record, fileStore, files.get(fileDefinitionId));
 		} catch (SQLException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new DatabaseException("Error retrieving file definition details", e);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Build a {@link DataFile} object from a database record
+	 * @param record The record
+	 * @param fileStore The file store location
+	 * @param fileDefinition The file definition for the file
+	 * @return The DataFile object
+	 * @throws SQLException If the data cannot be extracted from the record
+	 */
+	private static DataFile makeDataFile(ResultSet record, String fileStore, FileDefinition fileDefinition) throws SQLException {
+		DataFile result = null;
+		
+		try {
+			long id = record.getLong(1);
+			String filename = record.getString(3);
+			LocalDateTime startDate = DateTimeUtils.longToDate(record.getLong(4));
+			LocalDateTime endDate = DateTimeUtils.longToDate(record.getLong(5));
+			int recordCount = record.getInt(6);
+			
+			result = new DataFile(fileStore, id, fileDefinition, filename, startDate, endDate, recordCount);
+		} catch (SQLException e) {
+			throw e;
 		}
 		
 		return result;
@@ -624,5 +661,58 @@ public class DataFileDB {
 	public static List<Long> getFilesWithDeleteFlag(DataSource dataSource) throws MissingParamException, DatabaseException {
 		// TODO Remove
 		return null;
+	}
+	
+	/**
+	 * Get the data files for a given file definition that are covered by the supplied date range
+	 * @param dataSource A data source
+	 * @param fileDefinition The file definition
+	 * @param start The start date
+	 * @param end The end date
+	 * @return The matched files
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws RecordNotFoundException If no files are found
+	 */
+	public static List<DataFile> getFiles(DataSource dataSource, FileDefinition fileDefinition, LocalDateTime start, LocalDateTime end) throws DatabaseException, MissingParamException, RecordNotFoundException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(fileDefinition, "fileDefinition");
+		MissingParam.checkMissing(start, "start");
+		MissingParam.checkMissing(end, "end");
+
+		List<DataFile> files = new ArrayList<DataFile>();
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_FILES_BY_TYPE_DATE_QUERY);
+			stmt.setLong(1, fileDefinition.getDatabaseId());
+			stmt.setLong(2, DateTimeUtils.dateToLong(end));
+			stmt.setLong(3, DateTimeUtils.dateToLong(start));
+			stmt.setLong(4, DateTimeUtils.dateToLong(end));
+			stmt.setLong(5, DateTimeUtils.dateToLong(start));
+			
+			records = stmt.executeQuery();
+			
+			while (records.next()) {
+				files.add(makeDataFile(records, ResourceManager.getInstance().getConfig().getProperty("filestore"), fileDefinition));
+			}
+			
+			if (files.size() == 0) {
+				throw new RecordNotFoundException("No files found");
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while getting data files", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return files;
 	}
 }

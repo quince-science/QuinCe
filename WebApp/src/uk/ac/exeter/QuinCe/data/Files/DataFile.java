@@ -314,7 +314,7 @@ public class DataFile {
 	/**
 	 * Get the start date from the file header. This is only applicable
 	 * if the date format is {@link DateTimeSpecification#HOURS_FROM_START}.
-	 * @return The start date from the file header
+	 * @return {@code true} if the header date is successfully extracted; {@code false} if the date cannot be extracted
 	 * @throws DataFileException If the file contents could not be loaded
 	 */
 	private boolean extractHeaderDate() throws DataFileException {
@@ -526,7 +526,11 @@ public class DataFile {
 	private void loadContents() throws DataFileException {
 		if (null == contents) {
 			try {
-				FileStore.loadFileContents(fileStore, this);					
+				FileStore.loadFileContents(fileStore, this);
+				
+				if (!extractHeaderDate()) {
+					throw new Exception("Could not extract file header date");
+				}
 			} catch (Exception e) {
 				throw new DataFileException("Error while loading file contents", e);
 			}
