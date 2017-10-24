@@ -17,6 +17,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Methods for manipulating data sets in the database
@@ -27,6 +28,7 @@ public class DataSetDB {
 
 	/**
 	 * Query to get the defined data sets for a given instrument
+	 * @see #getDataSets(DataSource, long)
 	 */
 	private static final String GET_DATASETS_QUERY = "SELECT "
 			+ "id, instrument_id, name, start, end, status, properties, last_touched "
@@ -34,10 +36,26 @@ public class DataSetDB {
 	
 	/**
 	 * Statement to add a new data set into the database
+	 * @see #addDataSet(DataSource, DataSet)
 	 */
 	private static final String ADD_DATASET_STATEMENT = "INSERT INTO dataset "
 			+ "(instrument_id, name, start, end, status, properties, last_touched) "
 			+ "VALUES (?, ?, ?, ?, ?, ?, ?)";
+	
+	/**
+	 * Query to get a single data set by its ID
+	 * @see #getDataSet(DataSource, long)
+	 */
+	private static final String GET_DATASET_QUERY = "SELECT "
+			+ "id, instrument_id, name, start, end, status, properties, last_touched "
+			+ "FROM dataset WHERE id = ?";
+	
+	/**
+	 * Statement to set a data set's status
+	 * @see #setDatasetStatus(DataSource, DataSet, int)
+	 */
+	private static final String SET_STATUS_STATEMENT = "UPDATE dataset "
+			+ "SET status = ? WHERE id = ?";
 	
 	/**
 	 * Get the list of data sets defined for a given instrument
@@ -101,7 +119,22 @@ public class DataSetDB {
 		return new DataSet(id, instrumentId, name, start, end, status, properties, lastTouched);
 	}
 	
-	public static void addDataSet(DataSource dataSource, DataSet dataSet) throws DatabaseException {
+	/**
+	 * Store a new data set in the database.
+	 * 
+	 * The created data set's ID is stored in the provided {@link DataSet} object
+	 * @param dataSource A data source
+	 * @param dataSet The data set to be stored
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MissingParamException If any required parameters are missing
+	 */
+	public static void addDataSet(DataSource dataSource, DataSet dataSet) throws DatabaseException, MissingParamException {
+		
+		// TODO Validate the data set
+		// TODO Make sure it's not a duplicate of an existing data set
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(dataSet, "dataSet");
 		
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -130,6 +163,90 @@ public class DataSetDB {
 			throw new DatabaseException("Error while adding data set", e);
 		} finally {
 			DatabaseUtils.closeResultSets(addedKeys);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	/**
+	 * Get a data set using its database ID
+	 * @param dataSource A data source
+	 * @param id The data set's id
+	 * @return The data set
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws RecordNotFoundException If the data set does not exist
+	 */
+	public static DataSet getDataSet(DataSource dataSource, long id) throws DatabaseException, MissingParamException, RecordNotFoundException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkZeroPositive(id, "id");
+		
+		DataSet result = null;
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet record = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(GET_DATASET_QUERY);
+			stmt.setLong(1, id);
+			
+			record = stmt.executeQuery();
+			
+			if (!record.next()) {
+				throw new RecordNotFoundException("Data set does not exist", "dataset", id);
+			} else {
+				result = dataSetFromRecord(record);
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving data sets", e);
+		} finally {
+			DatabaseUtils.closeResultSets(record);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Set the status of a {@link DataSet}.
+	 * @param dataSource A data source
+	 * @param dataSet The data set
+	 * @param status The new status
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws InvalidDataSetStatusException If the status is invalid
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public static void setDatasetStatus(DataSource dataSource, DataSet dataSet, int status) throws MissingParamException, InvalidDataSetStatusException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(dataSet, "dataSet");
+		
+		if (!DataSet.validateStatus(status)) {
+			throw new InvalidDataSetStatusException(status);
+		}
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(SET_STATUS_STATEMENT);
+			
+			stmt.setInt(1, status);
+			stmt.setLong(2, dataSet.getId());
+			
+			stmt.execute();
+			
+			dataSet.setStatus(status);
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while setting data set status", e);
+		} finally {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(conn);
 		}

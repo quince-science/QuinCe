@@ -3,6 +3,9 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.util.Map;
 import java.util.Properties;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -25,6 +28,11 @@ public class ExtractDataSetJob extends Job {
 	public static final String ID_PARAM = "id";
 	
 	/**
+	 * The data set being processed by the job
+	 */
+	private DataSet dataSet = null;
+	
+	/**
 	 * Initialise the job object so it is ready to run
 	 * 
 	 * @param resourceManager The system resource manager
@@ -42,14 +50,35 @@ public class ExtractDataSetJob extends Job {
 
 	@Override
 	protected void execute(JobThread thread) throws JobFailedException {
-		// TODO Auto-generated method stub
-		
+		try {
+			// Get the data set from the database
+			dataSet = DataSetDB.getDataSet(dataSource, Long.parseLong(parameters.get(ID_PARAM)));
+			
+			// Reset the data set and all associated data
+			reset();
+			
+			// Set processing status
+			DataSetDB.setDatasetStatus(dataSource, dataSet, DataSet.STATUS_DATA_EXTRACTION);
+			
+		} catch (Exception e) {
+			throw new JobFailedException(id, e);
+		}
 	}
 
 	@Override
 	protected void validateParameters() throws InvalidJobParametersException {
 		// TODO Auto-generated method stub
-		
 	}
 
+	/**
+	 * Reset the data set processing.
+	 * 
+	 * Delete all related records and reset the status
+	 * @throws MissingParamException If any of the parameters are invalid
+	 * @throws InvalidDataSetStatusException If the method sets an invalid data set status
+	 * @throws DatabaseException If a database error occurs
+	 */
+	private void reset() throws MissingParamException, InvalidDataSetStatusException, DatabaseException {
+		DataSetDB.setDatasetStatus(dataSource, dataSet, DataSet.STATUS_WAITING);
+	}
 }
