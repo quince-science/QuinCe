@@ -1,6 +1,9 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -11,6 +14,26 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
  *
  */
 public class Instrument {
+
+	/**
+	 * Averaging mode for no averaging
+	 */
+	public static final int AVG_MODE_NONE = 0;
+	
+	/**
+	 * Human readable string for the no-averaging mode
+	 */
+	public static final String AVG_MODE_NONE_NAME = "None";
+	
+	/**
+	 * Averaging mode for averaging every minute
+	 */
+	public static final int AVG_MODE_MINUTE = 1;
+	
+	/**
+	 * Human-readable string for the every-minute averaging mode
+	 */
+	public static final String AVG_MODE_MINUTE_NAME = "Every minute";
 	
 	////////////// *** FIELDS *** ///////////////
 	
@@ -55,18 +78,23 @@ public class Instrument {
 	private int minimumWaterFlow = -1;
 	
 	/**
+	 * The averaging mode
+	 */
+	private int averagingMode = AVG_MODE_NONE;
+	
+	/**
 	 * Constructor for a complete instrument that's already in the database
 	 * @param databaseId The instrument's database ID
 	 * @param ownerId The instrument owner's database ID
 	 * @param name The instrument name
 	 * @param fileDefinitions The file format definitions
 	 * @param sensorAssignments The sensor assignments
-	 * @param runTypes The run types
 	 * @param preFlushingTime The pre-flushing time
 	 * @param postFlushingTime The post-flushing time
 	 * @param minimumWaterFlow The minimum water flow
+	 * @param averagingMode The averaging mode
 	 */
-	public Instrument(long databaseId, long ownerId, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, int preFlushingTime, int postFlushingTime, int minimumWaterFlow) {
+	public Instrument(long databaseId, long ownerId, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, int preFlushingTime, int postFlushingTime, int minimumWaterFlow, int averagingMode) {
 		this.databaseID = databaseId;
 		this.ownerId = ownerId;
 		this.name = name;
@@ -75,6 +103,9 @@ public class Instrument {
 		this.preFlushingTime = preFlushingTime;
 		this.postFlushingTime = postFlushingTime;
 		this.minimumWaterFlow = minimumWaterFlow;
+		this.averagingMode = averagingMode;
+		
+		//TODO Validate averaging mode
 	}
 	
 	/**
@@ -86,8 +117,9 @@ public class Instrument {
 	 * @param preFlushingTime The pre-flushing time
 	 * @param postFlushingTime The post-flushing time
 	 * @param minimumWaterFlow The minimum water flow
+	 * @param averagingMode The averaging mode
 	 */
-	public Instrument(User owner, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, int preFlushingTime, int postFlushingTime, int minimumWaterFlow) {
+	public Instrument(User owner, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, int preFlushingTime, int postFlushingTime, int minimumWaterFlow, int averagingMode) {
 		this.ownerId = owner.getDatabaseID();
 		this.name = name;
 		this.fileDefinitions = fileDefinitions;
@@ -95,6 +127,9 @@ public class Instrument {
 		this.preFlushingTime = preFlushingTime;
 		this.postFlushingTime = postFlushingTime;
 		this.minimumWaterFlow = minimumWaterFlow;
+		this.averagingMode = averagingMode;
+
+		//TODO Validate averaging mode
 	}
 	
 	/**
@@ -201,5 +236,26 @@ public class Instrument {
 	 */
 	public SensorAssignments getSensorAssignments() {
 		return sensorAssignments;
+	}
+	
+	/**
+	 * Get the averaging mode
+	 * @return The averaging mode
+	 */
+	public int getAveragingMode() {
+		return averagingMode;
+	}
+	
+	/**
+	 * Get the available averaging modes as a map
+	 * @return The averaging modes
+	 */
+	public static Map<String, Integer> averagingModes() {
+		LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
+		
+		map.put(AVG_MODE_NONE_NAME, AVG_MODE_NONE);
+		map.put(AVG_MODE_MINUTE_NAME, AVG_MODE_MINUTE);
+		
+		return map;
 	}
 }
