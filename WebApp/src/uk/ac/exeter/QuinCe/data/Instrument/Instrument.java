@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
@@ -15,26 +16,6 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
  */
 public class Instrument {
 
-	/**
-	 * Averaging mode for no averaging
-	 */
-	public static final int AVG_MODE_NONE = 0;
-	
-	/**
-	 * Human readable string for the no-averaging mode
-	 */
-	public static final String AVG_MODE_NONE_NAME = "None";
-	
-	/**
-	 * Averaging mode for averaging every minute
-	 */
-	public static final int AVG_MODE_MINUTE = 1;
-	
-	/**
-	 * Human-readable string for the every-minute averaging mode
-	 */
-	public static final String AVG_MODE_MINUTE_NAME = "Every minute";
-	
 	////////////// *** FIELDS *** ///////////////
 	
 	/**
@@ -80,7 +61,7 @@ public class Instrument {
 	/**
 	 * The averaging mode
 	 */
-	private int averagingMode = AVG_MODE_NONE;
+	private int averagingMode = DataSetRawData.AVG_MODE_NONE;
 	
 	/**
 	 * Constructor for a complete instrument that's already in the database
@@ -244,18 +225,5 @@ public class Instrument {
 	 */
 	public int getAveragingMode() {
 		return averagingMode;
-	}
-	
-	/**
-	 * Get the available averaging modes as a map
-	 * @return The averaging modes
-	 */
-	public static Map<String, Integer> averagingModes() {
-		LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
-		
-		map.put(AVG_MODE_NONE_NAME, AVG_MODE_NONE);
-		map.put(AVG_MODE_MINUTE_NAME, AVG_MODE_MINUTE);
-		
-		return map;
 	}
 }

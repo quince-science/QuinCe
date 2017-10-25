@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -24,6 +25,26 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  */
 public class DataSetRawData {
 
+	/**
+	 * Averaging mode for no averaging
+	 */
+	public static final int AVG_MODE_NONE = 0;
+	
+	/**
+	 * Human readable string for the no-averaging mode
+	 */
+	public static final String AVG_MODE_NONE_NAME = "None";
+	
+	/**
+	 * Averaging mode for averaging every minute
+	 */
+	public static final int AVG_MODE_MINUTE = 1;
+	
+	/**
+	 * Human-readable string for the every-minute averaging mode
+	 */
+	public static final String AVG_MODE_MINUTE_NAME = "Every minute";
+	
 	/**
 	 * The data set to which this data belongs
 	 */
@@ -90,5 +111,18 @@ public class DataSetRawData {
 		
 		// Store the extracted data
 		data.put(fileDefinition, fileData);
+	}
+	
+	/**
+	 * Get the available averaging modes as a map
+	 * @return The averaging modes
+	 */
+	public static Map<String, Integer> averagingModes() {
+		LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
+		
+		map.put(AVG_MODE_NONE_NAME, AVG_MODE_NONE);
+		map.put(AVG_MODE_MINUTE_NAME, AVG_MODE_MINUTE);
+		
+		return map;
 	}
 }
