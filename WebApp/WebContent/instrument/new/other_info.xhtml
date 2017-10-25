@@ -16,15 +16,23 @@
 			<table class="form">
 				<tr>
 					<td class="labels">Pre-flushing time (seconds)</td>
-					<td><p:inputNumber name="preFlushing" value="#{newInstrumentBean.preFlushingTime}" decimalPlaces="0"/></td>
+					<td><p:inputNumber id="preFlushing" value="#{newInstrumentBean.preFlushingTime}" decimalPlaces="0"/></td>
 				</tr>
 				<tr>
 					<td class="labels">Post-flushing time (seconds)</td>
-					<td><p:inputNumber name="postFlushing" value="#{newInstrumentBean.postFlushingTime}" decimalPlaces="0"/></td>
+					<td><p:inputNumber id="postFlushing" value="#{newInstrumentBean.postFlushingTime}" decimalPlaces="0"/></td>
 				</tr>
 				<tr>
 					<td class="labels">Minimum water flow rate (-1 = no value)</td>
-					<td><p:inputNumber name="postFlushing" value="#{newInstrumentBean.minimumWaterFlow}" decimalPlaces="0"/></td>
+					<td><p:inputNumber id="minimumWaterFlow" value="#{newInstrumentBean.minimumWaterFlow}" decimalPlaces="0"/></td>
+				</tr>
+				<tr>
+					<td class="labels">Averaging Mode</td>
+					<td>
+						<p:selectOneMenu id="averagingMode" value="#{newInstrumentBean.averagingMode}">
+							<f:selectItems value="#{newInstrumentBean.averagingModes}"/>
+						</p:selectOneMenu>
+					</td>
 				</tr>
 			</table>
 		

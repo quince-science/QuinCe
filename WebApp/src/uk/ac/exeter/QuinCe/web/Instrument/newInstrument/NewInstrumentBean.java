@@ -299,6 +299,11 @@ public class NewInstrumentBean extends FileUploadBean {
 	private int minimumWaterFlow = -1;
 	
 	/**
+	 * The averaging mode
+	 */
+	private int averagingMode = Instrument.AVG_MODE_NONE;
+	
+	/**
 	 * The name of the file for which a Run Type column is being defined
 	 */
 	private String runTypeFile = null;
@@ -1646,6 +1651,22 @@ public class NewInstrumentBean extends FileUploadBean {
 	}
 
 	/**
+	 * Get the averaging mode
+	 * @return The averaging mode
+	 */
+	public int getAveragingMode() {
+		return averagingMode;
+	}
+	
+	/**
+	 * Set the averaging mode
+	 * @param averagingMode The averaging mode
+	 */
+	public void setAveragingMode(int averagingMode) {
+		this.averagingMode = averagingMode;
+	}
+
+	/**
 	 * Store the instrument
 	 * @return Navigation to the instrument list
 	 * @throws InstrumentException If the instrument object is invalid
@@ -1656,7 +1677,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	public String saveInstrument() throws MissingParamException, InstrumentException, DatabaseException, IOException {
 		
 		try {
-			Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles, sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow); 
+			Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles, sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow, averagingMode); 
 			InstrumentDB.storeInstrument(getDataSource(), instrument);
 			
 			// Reinitialise the instrument list bean to update the instrument list
@@ -1715,5 +1736,13 @@ public class NewInstrumentBean extends FileUploadBean {
     public void assignRunType() {
     	FileDefinition file = instrumentFiles.get(runTypeFile);
     	file.setRunTypeColumn(runTypeColumn);
+    }
+    
+    /**
+     * Get the available averaging modes
+     * @return The averaging modes
+     */
+    public Map<String, Integer> getAveragingModes() {
+    	return Instrument.averagingModes();
     }
 }
