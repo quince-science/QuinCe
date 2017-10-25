@@ -6,9 +6,9 @@
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	template="/WEB-INF/templates/menu_page.xhtml">
 	
-	<ui:define name="title">Files</ui:define>
+	<ui:define name="title">Data Sets</ui:define>
 	<ui:define name="localHead">
-		<c:set var="mainMenuActiveIndex" value="1" scope="request"/>
+		<c:set var="mainMenuActiveIndex" value="0" scope="request"/>
 	</ui:define>
 	
 	<ui:define name="content">
@@ -17,47 +17,41 @@
 				<p:outputLabel for="instrument" value="Select Instrument:"/>
 				<p:selectOneMenu id="instrument" value="#{dataFilesBean.currentInstrument}">
 					<f:selectItems value="#{dataFilesBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
-					<p:ajax event="change" update="files"/>
 				</p:selectOneMenu>
 			</h:panelGrid>
-			
-			<p:dataTable id="files" value="#{dataFilesBean.listFiles}" var="file" styleClass="pageTable" scrollable="true" scrollHeight="450">
+
+			<p:dataTable id="datasets" value="#{dataSetsBean.dataSets}" var="dataset" styleClass="pageTable" scrollable="true" scrollHeight="450">
 				<p:column>
 					<f:facet name="header">
-						<h:outputText value="Filename"/>
+						<h:outputText value="Name"/>
 					</f:facet>
-					<h:outputText value="#{file.filename}"/>
-				</p:column>
-				<p:column>
-					<f:facet name="header">
-						<h:outputText value="File Type"/>
-					</f:facet>
-					<h:outputText value="#{file.fileDefinition.fileDescription}"/>
+					<h:outputText value="#{dataset.name}"/>
 				</p:column>
 				<p:column>
 					<f:facet name="header">
 						<h:outputText value="Start Date"/>
 					</f:facet>
-					<h:outputText value="#{file.startDate}"/>
+					<h:outputText value="#{dataset.start}"/>
 				</p:column>
 				<p:column>
 					<f:facet name="header">
 						<h:outputText value="End Date"/>
 					</f:facet>
-					<h:outputText value="#{file.endDate}"/>
+					<h:outputText value="#{dataset.end}"/>
 				</p:column>
 				<p:column>
 					<f:facet name="header">
-						<h:outputText value="Records"/>
+						<h:outputText value="Status"/>
 					</f:facet>
-					<h:outputText value="#{file.recordCount}"/>
+					<h:outputText value="#{dataset.statusName}"/>
 				</p:column>
 			</p:dataTable>
+			
 			<h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
-				<p:commandButton value="Upload New File" ajax="false" action="#{dataFilesBean.beginUpload}"/>
+				<p:commandButton value="Create New Data Set" ajax="false" action="#{dataSetsBean.startNewDataset}"/>
 			</h:panelGrid>			
 		</h:form>
 	</ui:define>
-	
-	
+
+
 </ui:composition>

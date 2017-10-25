@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web;
 
+import java.util.List;
 import java.util.Properties;
 
 import javax.faces.application.ConfigurableNavigationHandler;
@@ -10,6 +11,9 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserPreferences;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.User.LoginBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -40,6 +44,16 @@ public abstract class BaseManagedBean {
 	 * This will be used in the {@code faces-config.xml} file to determine the next navigation destination. 
 	 */
 	public static final String VALIDATION_FAILED_RESULT = "ValidationFailed";
+	
+	/**
+	 * The instruments owned by the user
+	 */
+	private List<InstrumentStub> instruments;
+	
+	/**
+	 * The complete record of the current full instrument
+	 */
+	protected Instrument currentFullInstrument = null;
 	
 	/**
 	 * Set a message that can be displayed to the user on a form
@@ -180,4 +194,72 @@ public abstract class BaseManagedBean {
 	protected Properties getAppConfig() {
 		return ResourceManager.getInstance().getConfig();
 	}
+	
+	/**
+	 * Initialise/reset the bean
+	 */
+	protected void initialiseInstruments() {
+		// Load the instruments list. Set the current instrument if it isn't already set.
+		try {
+			instruments = InstrumentDB.getInstrumentList(getDataSource(), getUser());
+			if (getCurrentInstrument() == -1 && instruments.size() > 0) {
+				setCurrentInstrument(instruments.get(0).getId());
+			}
+			
+			// TODO We don't need to reset the instrument every time -
+			// TODO only if the user switches instrument in the menu
+			currentFullInstrument = null;
+		} catch (Exception e) {
+			// Fail quietly, but print the log
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Get the list of instruments owned by the user
+	 * @return The list of instruments
+	 */
+	public List<InstrumentStub> getInstruments() {
+		if (null == instruments) {
+			initialiseInstruments();
+		}
+		
+		return instruments;
+	}
+	
+	/**
+	 * Get the instrument that the user is currently viewing
+	 * @return The current instrument
+	 */
+	public long getCurrentInstrument() {
+		return getUserPrefs().getLastInstrument();
+	}
+	
+	/**
+	 * Get the name of the current instrument
+	 * @return The instrument name
+	 */
+	public String getCurrentInstrumentName() {
+		String result = null;
+		for (InstrumentStub instrument : instruments) {
+			if (instrument.getId() == getCurrentInstrument()) {
+				result = instrument.getName();
+				break;
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Set the current instrument
+	 * @param currentInstrument The current instrument
+	 */
+	public void setCurrentInstrument(long currentInstrument) {
+		if (getUserPrefs().getLastInstrument() != currentInstrument) {
+			getUserPrefs().setLastInstrument(currentInstrument);
+			currentFullInstrument = null;
+		}
+	}
+	
 }

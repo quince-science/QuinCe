@@ -2,8 +2,6 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;

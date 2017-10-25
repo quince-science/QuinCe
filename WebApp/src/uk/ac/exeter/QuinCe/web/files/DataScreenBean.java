@@ -35,6 +35,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class DataScreenBean extends BaseManagedBean {
 
 	/**

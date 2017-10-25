@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class TableData {
 
 	/**
@@ -105,6 +106,7 @@ public class TableData {
 	 * @param date The date
 	 * @param className The CSS class name
 	 */
+	@Deprecated
 	public void addColumn(Calendar date, String className) {
 		if (null == date) {
 			addEmptyColumn();
@@ -117,6 +119,7 @@ public class TableData {
 	 * Add a date to the table with no CSS class
 	 * @param date The date
 	 */
+	@Deprecated
 	public void addColumn(Calendar date) {
 		if (null == date) {
 			addEmptyColumn();

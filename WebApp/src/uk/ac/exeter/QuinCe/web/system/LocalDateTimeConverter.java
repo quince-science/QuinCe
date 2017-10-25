@@ -55,6 +55,7 @@ public class LocalDateTimeConverter implements Converter {
 
 				result = LocalDateTime.parse(valueToConvert, formatter);
 			} catch (DateTimeException e) {
+				e.printStackTrace();
 				throw new ConverterException(e);
 			}
 		}
@@ -77,6 +78,7 @@ public class LocalDateTimeConverter implements Converter {
 					result = result.substring(0, 10);
 				}
 			} catch (DateTimeException e) {
+				e.printStackTrace();
 				throw new ConverterException(e);
 			}
 		}

@@ -15,10 +15,8 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileMessage;
 import uk.ac.exeter.QuinCe.data.Files.FileExistsException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
-import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -46,16 +44,6 @@ public class DataFilesBean extends FileUploadBean {
 	public static final String NAV_FILE_LIST = "file_list";
 	
 	/**
-	 * The instruments owned by the user
-	 */
-	private List<InstrumentStub> instruments;
-	
-	/**
-	 * The complete record of the current full instrument
-	 */
-	private Instrument currentFullInstrument = null;
-	
-	/**
 	 * The data file object
 	 */
 	private DataFile dataFile = null;
@@ -75,70 +63,9 @@ public class DataFilesBean extends FileUploadBean {
 	 */
 	@PostConstruct
 	public void initialise() {
-		// Load the instruments list. Set the current instrument if it isn't already set.
-		try {
-			instruments = InstrumentDB.getInstrumentList(getDataSource(), getUser());
-			if (getCurrentInstrument() == -1 && instruments.size() > 0) {
-				setCurrentInstrument(instruments.get(0).getId());
-			}
-			
-			// TODO We don't need to reset the instrument every time -
-			// TODO only if the user switches instrument in the menu
-			currentFullInstrument = null;
-			
-			matchedFileDefinitions = null;
-			dataFile = null;
-		} catch (Exception e) {
-			// Fail quietly, but print the log
-			e.printStackTrace();
-		}
-	}
-	
-	/**
-	 * Get the list of instruments owned by the user
-	 * @return The list of instruments
-	 */
-	public List<InstrumentStub> getInstruments() {
-		if (null == instruments) {
-			initialise();
-		}
-		
-		return instruments;
-	}
-	
-	/**
-	 * Get the instrument that the user is currently viewing
-	 * @return The current instrument
-	 */
-	public long getCurrentInstrument() {
-		return getUserPrefs().getLastInstrument();
-	}
-	
-	/**
-	 * Get the name of the current instrument
-	 * @return The instrument name
-	 */
-	public String getCurrentInstrumentName() {
-		String result = null;
-		for (InstrumentStub instrument : instruments) {
-			if (instrument.getId() == getCurrentInstrument()) {
-				result = instrument.getName();
-				break;
-			}
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * Set the current instrument
-	 * @param currentInstrument The current instrument
-	 */
-	public void setCurrentInstrument(long currentInstrument) {
-		if (getUserPrefs().getLastInstrument() != currentInstrument) {
-			getUserPrefs().setLastInstrument(currentInstrument);
-			currentFullInstrument = null;
-		}
+		initialiseInstruments();
+		matchedFileDefinitions = null;
+		dataFile = null;
 	}
 	
 	/**

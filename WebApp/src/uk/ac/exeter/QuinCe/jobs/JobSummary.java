@@ -23,14 +23,17 @@ public class JobSummary {
 	
 	private String status;
 	
+	@Deprecated
 	private Date started;
 	
+	@Deprecated
 	private Date ended;
 	
 	private double progress;
 	
 	private String stackTrace;
 
+	@Deprecated
 	public JobSummary(long id, User owner, String className, Date submitted, String status, Date started, Date ended, double progress, String stackTrace) {
 		this.id = id;
 		this.owner = owner;
@@ -57,6 +60,7 @@ public class JobSummary {
 		return classSplit[classSplit.length - 1];
 	}
 	
+	@Deprecated
 	public Date getSubmitted() {
 		return submitted;
 	}
@@ -65,10 +69,12 @@ public class JobSummary {
 		return status;
 	}
 
+	@Deprecated
 	public Date getStarted() {
 		return started;
 	}
 
+	@Deprecated
 	public Date getEnded() {
 		return ended;
 	}

@@ -16,8 +16,8 @@
 		<h:outputStylesheet name="style/main.css"/>
 
 		<p:tabMenu id="applicationMenu" activeIndex="#{mainMenuActiveIndex}">
-			<p:menuitem value="Voyages/Deployments" outcome="/voyage/voyage_list.xhtml"></p:menuitem>
-			<p:menuitem value="Data Files" outcome="/data_file/file_list.xhtml"></p:menuitem>
+			<p:menuitem value="Data Sets" outcome="/dataset/dataset_list.xhtml"></p:menuitem>
+			<p:menuitem value="Files" outcome="/data_file/file_list.xhtml"></p:menuitem>
 			<p:menuitem value="Instruments" outcome="/instrument/instrument_list.xhtml"></p:menuitem>
 			<p:menuitem value="Account" outcome="/user/account.xhtml"></p:menuitem>
 			<p:menuitem value="Jobs" outcome="/job/job_list.xhtml" rendered="#{User.jobManager}"></p:menuitem>
