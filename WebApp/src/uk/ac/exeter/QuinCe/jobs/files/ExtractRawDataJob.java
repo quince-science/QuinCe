@@ -46,6 +46,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class ExtractRawDataJob extends FileJob {
 
 	/**
