@@ -65,7 +65,7 @@ public class RunType implements Comparable<RunType>, Serializable {
 	public RunType(long id, long instrumentID, String name, int runType) {
 		this.databaseId = id;
 		this.instrumentID = instrumentID;
-		this.name = name;
+		this.name = name.trim();
 		this.runType = runType;
 	}
 	
@@ -78,7 +78,7 @@ public class RunType implements Comparable<RunType>, Serializable {
 	public RunType(String name, int runType) {
 		this.databaseId = DatabaseUtils.NO_DATABASE_RECORD;
 		this.instrumentID = DatabaseUtils.NO_DATABASE_RECORD;
-		this.name = name;
+		this.name = name.trim();
 		this.runType = runType;
 	}
 	
