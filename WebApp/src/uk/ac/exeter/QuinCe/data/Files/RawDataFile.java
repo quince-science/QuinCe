@@ -172,7 +172,7 @@ public class RawDataFile {
 					
 					contents.add((List<String>) lineList);
 					
-					String runType = lineList.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+					String runType = lineList.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE)).trim();
 					
 					if (instrument.isMeasurementRunType(runType)) {
 						recordCount++;
@@ -237,7 +237,7 @@ public class RawDataFile {
 					List<String> lineList = Arrays.asList(splitLine);
 					contents.add((List<String>) lineList);
 					
-					String runType = lineList.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+					String runType = lineList.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE)).trim();
 					
 					
 					if (instrument.isMeasurementRunType(runType)) {
@@ -288,7 +288,7 @@ public class RawDataFile {
 		
 		for (int i = 0; i < contents.size(); i++) {
 			try {
-				String runType = contents.get(i).get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+				String runType = contents.get(i).get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE)).trim();
 				if (!instrument.isIgnoredRunType(runType)) {
 					dates.add(getDateFromLine(i));
 				}

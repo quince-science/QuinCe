@@ -569,7 +569,7 @@ public class Instrument implements Serializable {
 		boolean result = true;
 		
 		for (RunType type : runTypes) {
-			if (type.getName().equals(runType)) {
+			if (type.getName().trim().equals(runType)) {
 				result = type.isIgnoredRunType();
 				break;
 			}

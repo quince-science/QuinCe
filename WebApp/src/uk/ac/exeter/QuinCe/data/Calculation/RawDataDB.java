@@ -121,7 +121,7 @@ public class RawDataDB {
 	}
 	
 	public static void storeRawData(Connection conn, Instrument instrument, long fileId, int lineNumber, List<String> line) throws InstrumentException, DateTimeParseException, SQLException {
-		String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+		String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE)).trim();
 		if (instrument.isMeasurementRunType(runType)) {
 			storeMeasurement(conn, instrument, fileId, lineNumber, line);
 		} else if (instrument.isStandardRunType(runType)) {
@@ -138,7 +138,7 @@ public class RawDataDB {
 			stmt.setLong(1, fileId);
 			stmt.setInt(2, lineNumber);
 			stmt.setTimestamp(3, new Timestamp(instrument.getDateFromLine(line).getTimeInMillis()));
-			stmt.setLong(4, instrument.getRunTypeId(line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE))));
+			stmt.setLong(4, instrument.getRunTypeId(line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE)).trim()));
 			
 			if (instrument.hasAirFlow1()) {
 				stmt.setDouble(5, parseDouble(line.get(instrument.getColumnAssignment(Instrument.COL_AIR_FLOW_1))));
@@ -187,10 +187,10 @@ public class RawDataDB {
 			stmt.setLong(1, fileId);
 			stmt.setInt(2, lineNumber);
 			
-			stmt.setLong(3, instrument.getRunTypeId(line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE))));
+			stmt.setLong(3, instrument.getRunTypeId(line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE)).trim()));
 
 			
-			String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+			String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE)).trim();
 			stmt.setInt(4, instrument.getRunTypeCode(runType));
 			
 			stmt.setTimestamp(5, new Timestamp(instrument.getDateFromLine(line).getTimeInMillis()));

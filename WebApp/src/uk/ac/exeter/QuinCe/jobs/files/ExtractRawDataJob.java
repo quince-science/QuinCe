@@ -103,7 +103,7 @@ public class ExtractRawDataJob extends FileJob {
 				
 				lineNumber++;
 				
-				String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+				String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE)).trim();
 				if (instrument.isMeasurementRunType(runType) || instrument.isStandardRunType(runType)) {
 				
 					// Check that we're still using the right calibration
