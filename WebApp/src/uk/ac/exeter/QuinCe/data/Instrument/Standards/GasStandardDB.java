@@ -296,7 +296,7 @@ public class GasStandardDB {
 			records = stmt.executeQuery();
 			
 			while (records.next()) {
-				StandardConcentration concentration = new StandardConcentration(records.getString(1));
+				StandardConcentration concentration = new StandardConcentration(records.getString(1).trim());
 				concentration.setConcentration(records.getDouble(2));	
 				concentrations.add(concentration);
 			}
@@ -343,9 +343,9 @@ public class GasStandardDB {
 			records = stmt.executeQuery();
 			
 			while (records.next()) {
-				StandardConcentration concentration = new StandardConcentration(records.getString(1));
+				StandardConcentration concentration = new StandardConcentration(records.getString(1).trim());
 				concentration.setConcentration(records.getDouble(2));	
-				concentrations.put(records.getString(1), concentration);
+				concentrations.put(records.getString(1).trim(), concentration);
 			}
 			
 			if (concentrations.size() == 0) {
@@ -541,7 +541,7 @@ public class GasStandardDB {
 			records = stmt.executeQuery();
 			
 			while (records.next()) {
-				result.add(records.getString(1));
+				result.add(records.getString(1).trim());
 			}
 			
 			if (result.size() == 0) {

@@ -29,7 +29,7 @@ public class StandardConcentration {
 	 * @param sensorCode The standard name
 	 */
 	public StandardConcentration(String standardName) {
-		this.standardName = standardName;
+		this.standardName = standardName.trim();
 	}
 	
 	/**

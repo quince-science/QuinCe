@@ -1279,7 +1279,7 @@ public class Instrument implements Serializable {
 		String name = null;
 		for (RunType type : runTypes) {
 			if (type.getDatabaseId() == runTypeId) {
-				name = type.getName();
+				name = type.getName().trim();
 				break;
 			}
 		}
