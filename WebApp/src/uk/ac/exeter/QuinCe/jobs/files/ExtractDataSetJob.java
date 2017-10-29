@@ -6,6 +6,7 @@ import java.util.Properties;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -71,7 +72,11 @@ public class ExtractDataSetJob extends Job {
 			// Get related data
 			instrument = InstrumentDB.getInstrument(dataSource, dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
 			
-			DataSetRawData rawData = new DataSetRawData(dataSource, dataSet, instrument);
+			DataSetRawData rawData = DataSetRawDataFactory.getDataSetRawData(dataSource, dataSet, instrument);
+			
+			while (rawData.nextRecord()) {
+				
+			}
 			
 		} catch (Exception e) {
 			throw new JobFailedException(id, e);

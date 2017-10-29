@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
@@ -23,7 +22,7 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  * @author Steve Jones
  *
  */
-public class DataSetRawData {
+public abstract class DataSetRawData {
 
 	/**
 	 * Averaging mode for no averaging
@@ -51,9 +50,25 @@ public class DataSetRawData {
 	private DataSet dataSet;
 	
 	/**
+	 * The file definitions for the data set
+	 */
+	private List<FileDefinition> fileDefinitions;
+	
+	/**
 	 * The data extracted from the data files that are encompassed by the data set
 	 */
-	private Map<FileDefinition, List<DataFileLine>> data;
+	protected List<List<DataFileLine>> data;
+	
+	/**
+	 * The rows from each file that are currently being processed.
+	 * These rows are discovered using #nextRecord
+	 */
+	protected List<List<Integer>> selectedRows = null;
+	
+	/**
+	 * Current position pointers for each file definition
+	 */
+	protected List<Integer> rowPositions = null;
 	
 	/**
 	 * Constructor - loads and extracts the data for the data set
@@ -68,21 +83,23 @@ public class DataSetRawData {
 	public DataSetRawData(DataSource dataSource, DataSet dataSet, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException, DataFileException {
 		
 		this.dataSet = dataSet;
-		data = new TreeMap<FileDefinition, List<DataFileLine>>();
+		fileDefinitions = new ArrayList<FileDefinition>();
+		data = new ArrayList<List<DataFileLine>>();
 		
 		for (FileDefinition fileDefinition : instrument.getFileDefinitions()) {
+			fileDefinitions.add(fileDefinition);
+			
 			List<DataFile> dataFiles = DataFileDB.getFiles(dataSource, fileDefinition, dataSet.getStart(), dataSet.getEnd());
-			extractDefinitionData(fileDefinition, dataFiles);
+			data.add(extractData(dataFiles));
 		}
 	}
 	
 	/**
-	 * Extract the rows from the data files that are encompassed by the data set
-	 * @param fileDefinition The file definition
+	 * Extract the rows from the data files that are encompassed by a data set
 	 * @param dataFiles The data files for the definition
 	 * @throws DataFileException If the data cannot be extracted from the file
 	 */
-	private void extractDefinitionData(FileDefinition fileDefinition, List<DataFile> dataFiles) throws DataFileException {
+	private List<DataFileLine> extractData(List<DataFile> dataFiles) throws DataFileException {
 		
 		// The data from the files
 		ArrayList<DataFileLine> fileData = new ArrayList<DataFileLine>();
@@ -109,8 +126,7 @@ public class DataSetRawData {
 			}
 		}
 		
-		// Store the extracted data
-		data.put(fileDefinition, fileData);
+		return fileData;
 	}
 	
 	/**
@@ -118,11 +134,159 @@ public class DataSetRawData {
 	 * @return The averaging modes
 	 */
 	public static Map<String, Integer> averagingModes() {
+		// TODO Move this to a static block
 		LinkedHashMap<String, Integer> map = new LinkedHashMap<String, Integer>();
 		
 		map.put(AVG_MODE_NONE_NAME, AVG_MODE_NONE);
 		map.put(AVG_MODE_MINUTE_NAME, AVG_MODE_MINUTE);
 		
 		return map;
+	}
+	
+	/**
+	 * Navigate to the next record in the data set.
+	 * 
+	 * <p>
+	 *   This will collect all rows that are relevant under the averaging scheme
+	 *   for the data set
+	 * </p>
+	 * 
+	 * @return {@code true} if a new record is discovered; {@code false} if there are no more records in the data set
+	 * @throws DataSetException If an error occurs during record selection
+	 */
+	public boolean nextRecord() throws DataSetException {
+		
+		boolean found = false;
+		
+		while (!allRowsMatch()) {
+			int currentFile = 0;
+
+			if (!selectNextRow(currentFile)) {
+				// We've gone off the end of this file, so we can't select a record
+				// across all files
+				break;
+			} else {
+				// If the rows aren't equal, then reset and continue from here
+				if (!selectedRowsMatch(currentFile)) {
+					resetOtherFiles(currentFile);
+				}
+				
+				// Select the next file
+				currentFile++;
+				if (currentFile == fileDefinitions.size()) {
+					currentFile = 0;
+				}
+			}
+		}
+		
+		return found;
+	}
+	
+	/**
+	 * Determine whether or not matching lines have been found
+	 * for all files in the data set
+	 * @return {@code true} if all files have matching lines; {@code false} otherwise
+	 */
+	private boolean allRowsMatch() throws DataSetException {
+		boolean match = true;
+		
+		for (int i = 0; match && i < selectedRows.size(); i++) {
+			if (null == selectedRows.get(i)) {
+				match = false;
+			}
+		}
+
+		if (match) {
+			match = selectedRowsMatch(0);
+		}
+		
+		return match;
+	}
+	
+	/**
+	 * Clear the selected rows from all files except the specified one
+	 * @param file The source file that should not be cleared
+	 */
+	private void resetOtherFiles(int file) {
+		for (int i = 0; i < selectedRows.size(); i++) {
+			if (i != file) {
+				selectedRows.set(i, null);
+			}
+		}
+	}
+	
+	/**
+	 * Determine whether all the files that have selected rows
+	 * match the selected rows in the specified file. Files that
+	 * do not have rows assigned are not checked.
+	 * 
+	 * @param file The file to compare
+	 * @return {@code true} if the all the assigned files match; {@code false} otherwise
+	 * @throws DataSetException If an error occurs during the checks
+	 */
+	private boolean selectedRowsMatch(int file) throws DataSetException {
+		boolean match = true;
+		
+		for (int i = 0; match && i < selectedRows.size(); i++) {
+			if (i != file) {
+				match = rowSelectionsMatch(file, i);
+			}
+		}
+		
+		return match;
+	}
+	
+	/**
+	 * Compare the selected rows for two files to see if they match
+	 * @param file1 The first file
+	 * @param file2 The second file
+	 * @return {@code true} if the selected rows match; {@code false} if they do not
+	 * @throws DataSetException If an error occurs during the examination
+	 */
+	protected abstract boolean rowSelectionsMatch(int file1, int file2) throws DataSetException;
+	
+	/**
+	 * Select the next row(s) in the specified file
+	 * @param fileIndex The file index
+	 * @return {@code true} if the next row is found; {@code false} if the end of the file has been reached
+	 * @throws DataSetException If an error occurs during row selection
+	 */
+	protected abstract boolean selectNextRow(int fileIndex) throws DataSetException;
+
+	/**
+	 * Get a selected line from a file other than the specified file.
+	 * 
+	 * The file from which the line is taken is not defined. If no other
+	 * files have selected lines, the method returns {@code null}.
+	 * @return A selected line from another file
+	 */
+	protected DataFileLine getOtherSelectedLine(int fileIndex) {
+		
+		DataFileLine line = null;
+		
+		for (int i = 0; i < selectedRows.size(); i++) {
+			if (i != fileIndex) {
+				List<Integer> rows = selectedRows.get(i);
+				if (null != rows) {
+					line = data.get(i).get(rows.get(0));
+					break;
+				}
+			}
+		}
+		
+		return line;
+	}
+	
+	/**
+	 * Reset the line processing back to the start of the files
+	 */
+	public void reset() {
+		selectedRows = new ArrayList<List<Integer>>(fileDefinitions.size());
+		rowPositions = new ArrayList<Integer>(fileDefinitions.size());
+
+		for (int i = 0; i < fileDefinitions.size(); i++) {
+			selectedRows.add(null);
+			rowPositions.add(-1);
+		}
 	}
 }

@@ -244,12 +244,13 @@ time*                    DateTime       The date/time of the record
 longitude                Float          The longitude at which the measurement was taken
 latitude                 Float          The latitude at which the measurement was taken
 run_type                 F_KEY          The run type for this measurement
-value0
-.
-.
-value255                 Float          Fields to contain data values. The values stored will vary between instruments
-qc_flag                  Integer        The QC flag assigned to the data during initial data checks
-qc_comment               String         Reasons for the `qc_flag` being set to its value
+sensor_type_value**      Double         Values extracted from the data files      
+
+**One `sensor_type_value` field will be creted in the table for each sensor defined in the
+Sensors Configuration for the application (this implies that the database schema must be
+custom-built for each application). It will be filled in according from data extracted
+from the files in the `dataset`, with any averaging, fallbacks, missing values etc. applied.
+
 
 ## `calculation_data`
 This table will hold the results of calculations performed on the `voyage_data`, including

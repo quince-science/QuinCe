@@ -223,4 +223,18 @@ public class SensorType {
 	public boolean isCoreSensor() {
 		return coreSensor;
 	}
+	
+	/**
+	 * Get the database field name for this sensor type
+	 * 
+	 * <p>
+	 *   The database fied name is the sensor type's name
+	 *   converted to lower case and with spaces replaced by
+	 *   underscores.
+	 * </p>
+	 * @return
+	 */
+	public String getDatabaseFieldName() {
+		return name.replaceAll(" ", "_").toLowerCase();
+	}
 }

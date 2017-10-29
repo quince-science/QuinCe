@@ -386,6 +386,25 @@ public class DataFile {
 	}
 	
 	/**
+	 * Get the run type for a given line. Returns {@code null} if this file does not contain run types
+	 * @param line The line
+	 * @return The run type for the line
+	 * @throws DataFileException If the data cannot be extracted
+	 * @throws FileDefinitionException If the run types are invalid
+	 */
+	public RunTypeCategory getRunType(int line) throws DataFileException, FileDefinitionException {
+		RunTypeCategory runType = null;
+		int runTypeColumn = fileDefinition.getRunTypeColumn();
+		
+		if (runTypeColumn > -1) {
+			loadContents();
+			runType = fileDefinition.getRunType(contents.get(line));
+		}
+
+		return runType;
+	}
+	
+	/**
 	 * Get a {@link Double} value from a field.
 	 * <p>
 	 *   Returns {@code null} if the field string is empty, or the field

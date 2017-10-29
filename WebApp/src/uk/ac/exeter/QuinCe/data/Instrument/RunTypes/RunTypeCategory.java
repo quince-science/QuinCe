@@ -110,4 +110,12 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
 	public int compareTo(RunTypeCategory o) {
 		return code.compareTo(o.code);
 	}
+	
+	/**
+	 * Determine whether or not this run type is for measurements
+	 * @return {@code true} if this is a measurement type; {@code false} otherwise
+	 */
+	public boolean isMeasurementType() {
+		return type == TYPE_MEASUREMENT;
+	}
 }
