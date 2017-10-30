@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -88,7 +89,6 @@ public abstract class DataSetRawData {
 		selectedRows = new ArrayList<List<Integer>>();
 		rowPositions = new ArrayList<Integer>();
 		
-		
 		for (FileDefinition fileDefinition : instrument.getFileDefinitions()) {
 			fileDefinitions.add(fileDefinition);
 			
@@ -163,10 +163,42 @@ public abstract class DataSetRawData {
 	public boolean nextRecord() throws DataSetException {
 		
 		boolean found = false;
-		clearSelectedRows();
 		
+		// If there is a previous selection, find the file with
+		// the smallest increment to the next row, and start searching from there. This
+		// ensures we maximise the number of records from the file.
+		//
+		// Only records from files with Run Types (i.e. those containing the base fundamental measurements)
+		// are checked, otherwise the same fundamental measurement will be used multiple times.
+		boolean begin = true;
 		int currentFile = 0;
-		while (!allRowsMatch()) {
+		
+		try {
+			long smallestIncrement = Long.MAX_VALUE;
+			int smallestIncrementFile = 0;
+			for (int i = 0; i < fileDefinitions.size(); i++) {
+				if (fileDefinitions.get(i).hasRunTypes()) {
+					int currentRow = rowPositions.get(i);
+					
+					if (currentRow != -1 && currentRow + 1 < data.get(i).size()) {
+						DataFileLine currentLine = data.get(i).get(currentRow);
+						DataFileLine nextLine = data.get(i).get(currentRow + 1);
+						
+						long increment = ChronoUnit.SECONDS.between(currentLine.getDate(), nextLine.getDate());
+						if (increment < smallestIncrement) {
+							smallestIncrement = increment;
+							smallestIncrementFile = i;
+						}
+					}
+				}
+			}
+			
+			currentFile = smallestIncrementFile;
+		} catch (Exception e) {
+			throw new DataSetException(e);
+		}
+		
+		while (begin || !allRowsMatch()) {
 
 			if (!selectNextRow(currentFile)) {
 				// We've gone off the end of this file, so we can't select a record
@@ -184,23 +216,12 @@ public abstract class DataSetRawData {
 					currentFile = 0;
 				}
 			}
+			
+			begin = false;
 		}
 		
 		if (allRowsMatch()) {
 			found = true;
-
-			try {
-				StringBuilder message = new StringBuilder();
-				for (int i = 0; i < fileDefinitions.size(); i++) {
-					message.append(selectedRows.get(i).get(0));
-					message.append(' ');
-					message.append(data.get(i).get(selectedRows.get(i).get(0)).getDate());
-					message.append(';');
-				}
-				System.out.println(message.toString());
-			} catch (Exception e) {
-				throw new DataSetException(e);
-			}
 		}
 		
 		return found;
@@ -311,16 +332,6 @@ public abstract class DataSetRawData {
 		for (int i = 0; i < fileDefinitions.size(); i++) {
 			selectedRows.add(null);
 			rowPositions.add(-1);
-		}
-	}
-	
-	/**
-	 * Clear the selected rows data
-	 */
-	private void clearSelectedRows() {
-		selectedRows = new ArrayList<List<Integer>>(fileDefinitions.size());
-		for (int i = 0; i < fileDefinitions.size(); i++) {
-			selectedRows.add(null);
 		}
 	}
 }
