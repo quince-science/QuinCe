@@ -80,17 +80,23 @@ public abstract class DataSetRawData {
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DataFileException If the data cannot be extracted from the files
 	 */
-	public DataSetRawData(DataSource dataSource, DataSet dataSet, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException, DataFileException {
+	protected DataSetRawData(DataSource dataSource, DataSet dataSet, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException, DataFileException {
 		
 		this.dataSet = dataSet;
 		fileDefinitions = new ArrayList<FileDefinition>();
 		data = new ArrayList<List<DataFileLine>>();
+		selectedRows = new ArrayList<List<Integer>>();
+		rowPositions = new ArrayList<Integer>();
+		
 		
 		for (FileDefinition fileDefinition : instrument.getFileDefinitions()) {
 			fileDefinitions.add(fileDefinition);
 			
 			List<DataFile> dataFiles = DataFileDB.getFiles(dataSource, fileDefinition, dataSet.getStart(), dataSet.getEnd());
 			data.add(extractData(dataFiles));
+			
+			selectedRows.add(null);
+			rowPositions.add(-1);
 		}
 	}
 	
@@ -158,8 +164,8 @@ public abstract class DataSetRawData {
 		
 		boolean found = false;
 		
+		int currentFile = 0;
 		while (!allRowsMatch()) {
-			int currentFile = 0;
 
 			if (!selectNextRow(currentFile)) {
 				// We've gone off the end of this file, so we can't select a record
@@ -177,6 +183,19 @@ public abstract class DataSetRawData {
 					currentFile = 0;
 				}
 			}
+		}
+		
+		try {
+			StringBuilder message = new StringBuilder();
+			for (int i = 0; i < fileDefinitions.size(); i++) {
+				message.append(selectedRows.get(i).get(0));
+				message.append(' ');
+				message.append(data.get(i).get(selectedRows.get(i).get(0)).getDate());
+				message.append(';');
+				System.out.println(message.toString());
+			}
+		} catch (Exception e) {
+			throw new DataSetException(e);
 		}
 		
 		return found;
