@@ -13,6 +13,7 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Files.DataFileLine;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -163,6 +164,7 @@ public abstract class DataSetRawData {
 	public boolean nextRecord() throws DataSetException {
 		
 		boolean found = false;
+		clearSelectedRows();
 		
 		int currentFile = 0;
 		while (!allRowsMatch()) {
@@ -185,17 +187,21 @@ public abstract class DataSetRawData {
 			}
 		}
 		
-		try {
-			StringBuilder message = new StringBuilder();
-			for (int i = 0; i < fileDefinitions.size(); i++) {
-				message.append(selectedRows.get(i).get(0));
-				message.append(' ');
-				message.append(data.get(i).get(selectedRows.get(i).get(0)).getDate());
-				message.append(';');
+		if (allRowsMatch()) {
+			found = true;
+
+			try {
+				StringBuilder message = new StringBuilder();
+				for (int i = 0; i < fileDefinitions.size(); i++) {
+					message.append(selectedRows.get(i).get(0));
+					message.append(' ');
+					message.append(data.get(i).get(selectedRows.get(i).get(0)).getDate());
+					message.append(';');
+				}
 				System.out.println(message.toString());
+			} catch (Exception e) {
+				throw new DataSetException(e);
 			}
-		} catch (Exception e) {
-			throw new DataSetException(e);
 		}
 		
 		return found;
@@ -306,6 +312,16 @@ public abstract class DataSetRawData {
 		for (int i = 0; i < fileDefinitions.size(); i++) {
 			selectedRows.add(null);
 			rowPositions.add(-1);
+		}
+	}
+	
+	/**
+	 * Clear the selected rows data
+	 */
+	private void clearSelectedRows() {
+		selectedRows = new ArrayList<List<Integer>>(fileDefinitions.size());
+		for (int i = 0; i < fileDefinitions.size(); i++) {
+			selectedRows.add(null);
 		}
 	}
 }

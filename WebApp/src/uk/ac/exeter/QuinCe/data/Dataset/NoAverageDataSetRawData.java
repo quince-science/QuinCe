@@ -93,56 +93,57 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 					}
 					
 					DataFileLine line = data.get(fileIndex).get(currentRow);
-					LocalDateTime lineDate = line.getDate();
-					
-					long lineDifference = Math.abs(ChronoUnit.SECONDS.between(lineDate, otherDate));
-					
-					if (lineDifference == 0) {
-						// We can't get any closer, so use this line
-						selected = true;
-						selectedRow = currentRow;
-					} else if (lineDate.isBefore(otherDate)) {
+					if (!line.isIgnored()) {
+						LocalDateTime lineDate = line.getDate();
 						
-						// If we've already selected a row, this must by definition
-						// be closer to the target. Store it and see if there's any closer lines
-						if (selectedRow != -1) {
+						long lineDifference = Math.abs(ChronoUnit.SECONDS.between(lineDate, otherDate));
+						
+						if (lineDifference == 0) {
+							// We can't get any closer, so use this line
+							selected = true;
 							selectedRow = currentRow;
-							selectedRowDifference = lineDifference;
-							currentRow++;
-						} else if (lineDifference > MAX_DIFFERENCE) {
-							// If this line is before the other line but outside the limit, keep looking
-							currentRow++;
-						} else {
-							// We are within the limit, but they may be other
-							// lines that are closer. Select this row, and try the next one.
-							selectedRow = currentRow;
-							selectedRowDifference = lineDifference;
-							currentRow++;
-						}
-						
-					} else { // The line is after the target
-						
-						// If a line has been selected, it must be before the
-						// target date. See if this line is closer
-						if (selectedRow != -1) {
-							if (lineDifference < selectedRowDifference) {
-								// This line is closer, so use it
+						} else if (lineDate.isBefore(otherDate)) {
+							
+							// If we've already selected a row, this must by definition
+							// be closer to the target. Store it and see if there's any closer lines
+							if (selectedRow != -1) {
 								selectedRow = currentRow;
-								selected = true;
+								selectedRowDifference = lineDifference;
+								currentRow++;
+							} else if (lineDifference > MAX_DIFFERENCE) {
+								// If this line is before the other line but outside the limit, keep looking
+								currentRow++;
 							} else {
-								// Use the previously found row
-								selected = true;
-							}
-						} else {
-							// If we're within the target, then use this line
-							// There cannot be a closer one
-							if (lineDifference <= MAX_DIFFERENCE) {
+								// We are within the limit, but they may be other
+								// lines that are closer. Select this row, and try the next one.
 								selectedRow = currentRow;
-								selected = true;
+								selectedRowDifference = lineDifference;
+								currentRow++;
+							}
+							
+						} else { // The line is after the target
+							
+							// If a line has been selected, it must be before the
+							// target date. See if this line is closer
+							if (selectedRow != -1) {
+								if (lineDifference < selectedRowDifference) {
+									// This line is closer, so use it
+									selectedRow = currentRow;
+									selected = true;
+								} else {
+									// Use the previously found row
+									selected = true;
+								}
+							} else {
+								// If we're within the target, then use this line
+								// There cannot be a closer one
+								if (lineDifference <= MAX_DIFFERENCE) {
+									selectedRow = currentRow;
+									selected = true;
+								}
 							}
 						}
 					}
-					
 				}
 			}
 			
@@ -151,6 +152,8 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 				rowSelection.add(selectedRow);
 				selectedRows.set(fileIndex, rowSelection);
 				rowPositions.set(fileIndex, selectedRow);
+				
+				System.out.println(fileIndex + ":" + selectedRow);
 			} else {
 				selectedRows.set(fileIndex, null);
 				rowPositions.set(fileIndex, Integer.MAX_VALUE);

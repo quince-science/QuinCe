@@ -118,4 +118,17 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
 	public boolean isMeasurementType() {
 		return type == TYPE_MEASUREMENT;
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		
+		boolean equals = false;
+		
+		if (o instanceof RunTypeCategory) {
+			equals = ((RunTypeCategory) o).code.equals(code);
+		}
+		
+		return equals;
+	}
+	
 }

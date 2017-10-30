@@ -43,14 +43,19 @@ public class DataFileLine {
 	}
 	
 	/**
-	 * Determines whether or not this line contains a measurement
-	 * @return {@code true} if the line contains a measurement; {@code false} otherwise
+	 * Determines whether or not this line should be ignored based on its Run Type.
+	 * 
+	 * <p>
+	 *   If the file does not have Run Types, lines should never be ignored.
+	 * </p>
+	 * 
+	 * @return {@code true} if the line should be ignored; {@code false} if it should be used
 	 * @throws DataFileException If the data cannot be extracted from the file
 	 * @throws FileDefinitionException If the run type is invalid
 	 */
-	public boolean isMeasurement() throws DataFileException, FileDefinitionException {
+	public boolean isIgnored() throws DataFileException, FileDefinitionException {
 		
-		boolean measurement = true;
+		boolean ignored = false;
 		
 		FileDefinition fileDefinition = file.getFileDefinition();
 		
@@ -58,9 +63,9 @@ public class DataFileLine {
 		// for a measurement. So we only check files that have them.
 		if (fileDefinition.hasRunTypes()) {
 			RunTypeCategory runType = file.getRunType(line);
-			measurement = runType.isMeasurementType();
+			ignored = runType.equals(RunTypeCategory.IGNORED_CATEGORY);
 		}
 			
-		return measurement;
+		return ignored;
 	}
 }
