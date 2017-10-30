@@ -162,21 +162,6 @@ public abstract class DataSetRawData {
 	 */
 	public boolean nextRecord() throws DataSetException {
 		
-		for (int i = 0; i < fileDefinitions.size(); i++) {
-			if (null != selectedRows.get(i)) {
-				DataFileLine line = data.get(i).get(selectedRows.get(i).get(0));
-				
-				try {
-					System.out.print(i + " " + line.getFilename() + " " + line.getLine() + " " + line.getDate() + ";");
-				} catch (DataFileException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		System.out.print("\n");
-		
 		boolean found = false;
 		clearSelectedRows();
 		

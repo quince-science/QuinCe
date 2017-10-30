@@ -80,8 +80,6 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 				
 				while (!selected) {
 					selectedRow++;
-					System.out.println("NO OTHER LINE " + fileIndex + " " + selectedRow);
-
 					 if (selectedRow >= data.get(fileIndex).size()) {
 						 break;
 					 } else {
@@ -94,9 +92,7 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 			} else {
 				LocalDateTime otherDate = otherLine.getDate();
 				long selectedRowDifference = Long.MAX_VALUE;
-
 				int currentRow = rowPositions.get(fileIndex) + 1;
-				System.out.println("IS OTHER LINE " + fileIndex + " " + currentRow);
 
 				while (!selected) {
 					if (currentRow >= data.get(fileIndex).size()) {
@@ -162,9 +158,6 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 				List<Integer> rowSelection = new ArrayList<Integer>(1);
 				rowSelection.add(selectedRow);
 				selectedRows.set(fileIndex, rowSelection);
-				
-				DataFileLine line = data.get(fileIndex).get(selectedRow);
-				System.out.println(fileIndex + ":" + line.getLine() + ":" + line.getDate());
 			} else {
 				selectedRows.set(fileIndex, null);
 			}
