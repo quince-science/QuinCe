@@ -34,6 +34,22 @@ public class DataFileLine {
 	}
 	
 	/**
+	 * Get the name of the file that the line is in
+	 * @return The file name
+	 */
+	public String getFilename() {
+		return file.getFilename();
+	}
+	
+	/**
+	 * Get the line number
+	 * @return The line number
+	 */
+	public int getLine() {
+		return line;
+	}
+	
+	/**
 	 * Get the date of the line
 	 * @return The date
 	 * @throws DataFileException If the date cannot be extracted

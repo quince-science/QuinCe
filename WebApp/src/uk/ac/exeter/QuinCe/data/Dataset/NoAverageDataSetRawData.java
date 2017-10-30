@@ -76,24 +76,38 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 			// If there are no selected rows in other files, simply select
 			// the next row here.
 			if (null == otherLine) {
-				selectedRow = rowPositions.get(fileIndex) + 1;
-				if (selectedRow < data.get(fileIndex).size()) {
-					selected = true;
+				selectedRow = rowPositions.get(fileIndex);
+				
+				while (!selected) {
+					selectedRow++;
+					System.out.println("NO OTHER LINE " + fileIndex + " " + selectedRow);
+
+					 if (selectedRow >= data.get(fileIndex).size()) {
+						 break;
+					 } else {
+						 DataFileLine line = data.get(fileIndex).get(selectedRow);
+						 if (!line.isIgnored()) {
+							 selected = true;
+						 }
+					 }
 				}
 			} else {
 				LocalDateTime otherDate = otherLine.getDate();
 				long selectedRowDifference = Long.MAX_VALUE;
 
 				int currentRow = rowPositions.get(fileIndex) + 1;
+				System.out.println("IS OTHER LINE " + fileIndex + " " + currentRow);
 
 				while (!selected) {
-					if (currentRow == data.get(fileIndex).size()) {
+					if (currentRow >= data.get(fileIndex).size()) {
 						// We've gone off the end of the file, so stop
 						break;
 					}
 					
 					DataFileLine line = data.get(fileIndex).get(currentRow);
-					if (!line.isIgnored()) {
+					if (line.isIgnored()) {
+						currentRow++;
+					} else {
 						LocalDateTime lineDate = line.getDate();
 						
 						long lineDifference = Math.abs(ChronoUnit.SECONDS.between(lineDate, otherDate));
@@ -135,12 +149,9 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 									selected = true;
 								}
 							} else {
-								// If we're within the target, then use this line
-								// There cannot be a closer one
-								if (lineDifference <= MAX_DIFFERENCE) {
-									selectedRow = currentRow;
-									selected = true;
-								}
+								// Select this row
+								selectedRow = currentRow;
+								selected = true;
 							}
 						}
 					}
@@ -151,13 +162,14 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 				List<Integer> rowSelection = new ArrayList<Integer>(1);
 				rowSelection.add(selectedRow);
 				selectedRows.set(fileIndex, rowSelection);
-				rowPositions.set(fileIndex, selectedRow);
 				
-				System.out.println(fileIndex + ":" + selectedRow);
+				DataFileLine line = data.get(fileIndex).get(selectedRow);
+				System.out.println(fileIndex + ":" + line.getLine() + ":" + line.getDate());
 			} else {
 				selectedRows.set(fileIndex, null);
-				rowPositions.set(fileIndex, Integer.MAX_VALUE);
 			}
+
+			rowPositions.set(fileIndex, selectedRow);
 		} catch (Exception e) {
 			throw new DataSetException(e);
 		}

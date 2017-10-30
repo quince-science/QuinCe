@@ -13,7 +13,6 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Files.DataFileLine;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -162,6 +161,21 @@ public abstract class DataSetRawData {
 	 * @throws DataSetException If an error occurs during record selection
 	 */
 	public boolean nextRecord() throws DataSetException {
+		
+		for (int i = 0; i < fileDefinitions.size(); i++) {
+			if (null != selectedRows.get(i)) {
+				DataFileLine line = data.get(i).get(selectedRows.get(i).get(0));
+				
+				try {
+					System.out.print(i + " " + line.getFilename() + " " + line.getLine() + " " + line.getDate() + ";");
+				} catch (DataFileException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		System.out.print("\n");
 		
 		boolean found = false;
 		clearSelectedRows();
