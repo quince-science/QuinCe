@@ -775,6 +775,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	public void resetSensorAssignmentValues() {
 		sensorAssignmentFile = null;
 		sensorAssignmentColumn = -1;
+		sensorAssignmentName = null;
 		sensorAssignmentSensorType = null;
 		sensorAssignmentPrimary = true;
 		sensorAssignmentPostCalibrated = false;
