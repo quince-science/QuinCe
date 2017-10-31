@@ -246,7 +246,8 @@ public class SensorType {
 	 * <p>
 	 *   The database field name is the sensor type's name
 	 *   converted to lower case and with spaces replaced by
-	 *   underscores.
+	 *   underscores. Brackets and other odd characeters that
+	 *   upset MySQL are removed.
 	 * </p>
 	 *
 	 * <p>
@@ -260,7 +261,7 @@ public class SensorType {
 	public String getDatabaseFieldName() {
 		String result = null;
 		if (usedInCalculation) {
-			result = name.replaceAll(" ", "_").toLowerCase();
+			result = name.replaceAll(" ", "_").replaceAll("[\\(\\)]", "").toLowerCase();
 		}
 
 		return result;

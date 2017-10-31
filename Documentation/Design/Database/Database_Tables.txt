@@ -244,7 +244,8 @@ time*                    DateTime       The date/time of the record
 longitude                Float          The longitude at which the measurement was taken
 latitude                 Float          The latitude at which the measurement was taken
 run_type                 F_KEY          The run type for this measurement
-sensor_type_value**      Double         Values extracted from the data files      
+diagnostic_values        String         A serialized Java `Properties` object containing values from the diagnostic sensors
+sensor_type_value**      Double         Values extracted from the data files
 
 **One `sensor_type_value` field will be creted in the table for each sensor defined in the
 Sensors Configuration for the application (this implies that the database schema must be
