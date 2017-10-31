@@ -1,17 +1,17 @@
 # This file lists the sensors etc that are needed for a particular
 # configuration of QuinCe.
 
-# Sensor Name,Required?,Named?,RequiredGroup,DependsOn,DependsQuestion,Many?,Averaged?,Can Be Post-Calibrated?,Core?
-Intake Temperature,Y,Y,,,,Y,Y,Y,N
-Salinity,Y,Y,,,,Y,Y,Y,N
-Equilibrator Temperature,Y,Y,,,,Y,Y,Y,N
-Equilibrator Pressure (absolute),Y,Y,EqP,,,Y,Y,Y,N
-Equilibrator Pressure (differential),Y,Y,EqP,Atmospheric Pressure,,Y,Y,Y,N
-Atmospheric Pressure,N,Y,,,,Y,Y,Y,N
-xH₂O,N,Y,,,,Y,Y,Y,N
-CO₂,Y,Y,,xH₂O,Do values from the CO₂ require moisture adjustment?,Y,Y,N,Y
-Other Temperature,N,Y,,,,Y,N,Y,N
-Other Pressure,N,Y,,,,Y,N,Y,N
-Air Flow,N,Y,,,,Y,N,Y,N
-Water Flow,N,Y,,,,Y,N,N,N
-Pump Speed,N,Y,,,,Y,N,N,N
+# Sensor Name,Required?,Named?,RequiredGroup,DependsOn,DependsQuestion,Many?,Averaged?,Can Be Post-Calibrated?,Core?,Used In Calculation?
+Intake Temperature,Y,Y,,,,Y,Y,Y,N,Y
+Salinity,Y,Y,,,,Y,Y,Y,N,Y
+Equilibrator Temperature,Y,Y,,,,Y,Y,Y,N,Y
+Equilibrator Pressure (absolute),Y,Y,EqP,,,Y,Y,Y,N,Y
+Equilibrator Pressure (differential),Y,Y,EqP,Atmospheric Pressure,,Y,Y,Y,N,Y
+Atmospheric Pressure,N,Y,,,,Y,Y,Y,N,Y
+xH₂O,N,Y,,,,Y,Y,Y,N,Y
+CO₂,Y,Y,,xH₂O,Do values from the CO₂ require moisture adjustment?,Y,Y,N,Y,Y
+Other Temperature,N,Y,,,,Y,N,Y,N,N
+Other Pressure,N,Y,,,,Y,N,Y,N,N
+Air Flow,N,Y,,,,Y,N,Y,N,N
+Water Flow,N,Y,,,,Y,N,N,N,N
+Pump Speed,N,Y,,,,Y,N,N,N,N

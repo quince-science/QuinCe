@@ -22,7 +22,7 @@ public class SensorsConfiguration {
 	/**
 	 * The number of columns in the configuration file
 	 */
-	private static final int COL_COUNT = 10;
+	private static final int COL_COUNT = 11;
 	
 	/**
 	 * The column containing the sensor type name
@@ -74,6 +74,12 @@ public class SensorsConfiguration {
 	 * requires a Run Type column to be specified in the file
 	 */
 	private static final int COL_CORE = 9;
+	
+	/**
+	 * The column specifying whether a sensor is a core sensor, and thus
+	 * requires a Run Type column to be specified in the file
+	 */
+	private static final int COL_USED_IN_CALCULATION = 10;
 	
 	/**
 	 * The set of sensors defined for the instrument with
@@ -153,8 +159,9 @@ public class SensorsConfiguration {
 							boolean averaged = StringUtils.parseYNBoolean(fields.get(COL_AVERAGED));
 							boolean postCalibrated = StringUtils.parseYNBoolean(fields.get(COL_POST_CALIBRATED));
 							boolean coreSensor = StringUtils.parseYNBoolean(fields.get(COL_CORE));
+							boolean usedInCalculation = StringUtils.parseYNBoolean(fields.get(COL_USED_IN_CALCULATION));
 							
-							SensorType sensor = new SensorType(sensorName, required, named, requiredGroup, dependsOn, dependsQuestion, many, averaged, postCalibrated, coreSensor);
+							SensorType sensor = new SensorType(sensorName, required, named, requiredGroup, dependsOn, dependsQuestion, many, averaged, postCalibrated, coreSensor, usedInCalculation);
 							
 							sensorTypes.add(sensor);
 							

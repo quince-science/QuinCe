@@ -85,6 +85,12 @@ public class SensorType {
 	private boolean coreSensor = false;
 	
 	/**
+	 * Indicates whether or not this sensor is used in calculations.
+	 * Other sensors are for diagnostic purposes only
+	 */
+	private boolean usedInCalculation = true;
+	
+	/**
 	 * Simple constructor - sets all values
 	 * @param name The name of the sensor type
 	 * @param required Whether or not the sensor type is required
@@ -94,7 +100,7 @@ public class SensorType {
 	 * @param dependsQuestion The question that determines whether the {@link #dependsOn} criterion will be honoured.
 	 * @param many Whether or not multiple instances of the sensor are allowed
 	 */
-	protected SensorType(String name, boolean required, boolean named, String requiredGroup, String dependsOn, String dependsQuestion, boolean many, boolean averaged, boolean postCalibrated, boolean coreSensor) {
+	protected SensorType(String name, boolean required, boolean named, String requiredGroup, String dependsOn, String dependsQuestion, boolean many, boolean averaged, boolean postCalibrated, boolean coreSensor, boolean usedInCaclulation) {
 		this.name = name;
 		this.required = required;
 		this.named = named;
@@ -114,6 +120,7 @@ public class SensorType {
 		this.averaged = averaged;
 		this.postCalibrated = postCalibrated;
 		this.coreSensor = coreSensor;
+		this.usedInCalculation = usedInCaclulation;
 	}
 	
 	/**
@@ -222,5 +229,14 @@ public class SensorType {
 	 */
 	public boolean isCoreSensor() {
 		return coreSensor;
+	}
+	
+	/**
+	 * Determines whether or not sensors of this type are used in calculations,
+	 * or used only for diagnostic purposes
+	 * @return {@code true} if the sensors are used in calculations; {@code false} otherwise.
+	 */
+	public boolean isUsedInCalculation() {
+		return usedInCalculation;
 	}
 }
