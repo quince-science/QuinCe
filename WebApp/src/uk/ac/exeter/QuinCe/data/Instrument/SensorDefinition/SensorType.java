@@ -232,7 +232,7 @@ public class SensorType {
 	 *   converted to lower case and with spaces replaced by
 	 *   underscores.
 	 * </p>
-	 * @return
+	 * @return The database field name
 	 */
 	public String getDatabaseFieldName() {
 		return name.replaceAll(" ", "_").toLowerCase();
