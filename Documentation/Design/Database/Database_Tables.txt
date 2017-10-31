@@ -241,9 +241,9 @@ Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
 dataset_id*              F_KEY          The data set to which this data relates
 time*                    DateTime       The date/time of the record
-longitude                Float          The longitude at which the measurement was taken
-latitude                 Float          The latitude at which the measurement was taken
-run_type                 F_KEY          The run type for this measurement
+longitude                Float          The longitude at which the record was taken
+latitude                 Float          The latitude at which the record was taken
+run_type                 String         The run type for this record
 diagnostic_values        String         A serialized Java `Properties` object containing values from the diagnostic sensors
 sensor_type_value**      Double         Values extracted from the data files
 
