@@ -125,10 +125,15 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
 		boolean equals = false;
 		
 		if (o instanceof RunTypeCategory) {
-			equals = ((RunTypeCategory) o).code.equals(code);
+			RunTypeCategory oRunTypeCategory = (RunTypeCategory) o;
+			equals = oRunTypeCategory.code.equals(code) && oRunTypeCategory.name.equals(name);
 		}
 		
 		return equals;
 	}
 	
+	@Override
+	public String toString() {
+		return code + ":" + name;
+	}
 }

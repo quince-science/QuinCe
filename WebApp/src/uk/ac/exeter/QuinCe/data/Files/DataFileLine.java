@@ -84,4 +84,14 @@ public class DataFileLine {
 			
 		return ignored;
 	}
+	
+	/**
+	 * Get the line's Run Type
+	 * @return The Run Type
+	 * @throws DataFileException If the Run Type cannot be extracted from the line
+	 * @throws FileDefinitionException If the Run Types are invalid for this file
+	 */
+	public RunTypeCategory getRunType() throws DataFileException, FileDefinitionException {
+		return file.getRunType(line);
+	}
 }

@@ -79,6 +79,7 @@ public class ExtractDataSetJob extends Job {
 			}
 			
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new JobFailedException(id, e);
 		}
 	}

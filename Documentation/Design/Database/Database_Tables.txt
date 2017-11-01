@@ -239,6 +239,7 @@ The data reduction and QC performed by QuinCe will be based on this data.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
+id                       Integer        Primary Key
 dataset_id*              F_KEY          The data set to which this data relates
 time*                    DateTime       The date/time of the record
 longitude                Float          The longitude at which the record was taken

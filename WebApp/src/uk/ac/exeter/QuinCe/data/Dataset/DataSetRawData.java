@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -8,13 +9,19 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.mutable.MutableInt;
+
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Files.DataFileLine;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.ExtendedMutableInt;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
@@ -25,6 +32,26 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  */
 public abstract class DataSetRawData {
 
+	/**
+	 * Line index indicating the we've navigated past the end of the file
+	 */
+	protected static final int EOF_VALUE = -1;
+	
+	/**
+	 * Line index indicating that file processing has not started
+	 */
+	protected static final int NOT_STARTED_VALUE = -2;
+	
+	/**
+	 * Line index indicating that we've navigated past the end of the file
+	 */
+	protected static final ExtendedMutableInt EOF = new ExtendedMutableInt(EOF_VALUE);
+	
+	/**
+	 * Line index indicating that we haven't started processing the file
+	 */
+	protected static final ExtendedMutableInt NOT_STARTED = new ExtendedMutableInt(NOT_STARTED_VALUE);
+	
 	/**
 	 * Averaging mode for no averaging
 	 */
@@ -51,6 +78,11 @@ public abstract class DataSetRawData {
 	private DataSet dataSet;
 	
 	/**
+	 * The instrument to which the data set belongs
+	 */
+	private Instrument instrument;
+	
+	/**
 	 * The file definitions for the data set
 	 */
 	private List<FileDefinition> fileDefinitions;
@@ -69,7 +101,7 @@ public abstract class DataSetRawData {
 	/**
 	 * Current position pointers for each file definition
 	 */
-	protected List<Integer> rowPositions = null;
+	protected List<Integer> linePositions = null;
 	
 	/**
 	 * Constructor - loads and extracts the data for the data set
@@ -84,10 +116,12 @@ public abstract class DataSetRawData {
 	protected DataSetRawData(DataSource dataSource, DataSet dataSet, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException, DataFileException {
 		
 		this.dataSet = dataSet;
+		this.instrument = instrument;
+
 		fileDefinitions = new ArrayList<FileDefinition>();
 		data = new ArrayList<List<DataFileLine>>();
 		selectedRows = new ArrayList<List<Integer>>();
-		rowPositions = new ArrayList<Integer>();
+		linePositions = new ArrayList<Integer>();
 		
 		for (FileDefinition fileDefinition : instrument.getFileDefinitions()) {
 			fileDefinitions.add(fileDefinition);
@@ -96,7 +130,7 @@ public abstract class DataSetRawData {
 			data.add(extractData(dataFiles));
 			
 			selectedRows.add(null);
-			rowPositions.add(-1);
+			linePositions.add(NOT_STARTED_VALUE);
 		}
 	}
 	
@@ -178,11 +212,11 @@ public abstract class DataSetRawData {
 			int smallestIncrementFile = 0;
 			for (int i = 0; i < fileDefinitions.size(); i++) {
 				if (fileDefinitions.get(i).hasRunTypes()) {
-					int currentRow = rowPositions.get(i);
+					int currentRow = linePositions.get(i);
 					
-					if (currentRow != -1 && currentRow + 1 < data.get(i).size()) {
-						DataFileLine currentLine = data.get(i).get(currentRow);
-						DataFileLine nextLine = data.get(i).get(currentRow + 1);
+					if (currentRow != NOT_STARTED_VALUE && currentRow + 1 < getFileSize(i)) {
+						DataFileLine currentLine = getLine(i, currentRow);
+						DataFileLine nextLine = getLine(i, currentRow + 1);
 						
 						long increment = ChronoUnit.SECONDS.between(currentLine.getDate(), nextLine.getDate());
 						if (increment < smallestIncrement) {
@@ -222,6 +256,21 @@ public abstract class DataSetRawData {
 		
 		if (allRowsMatch()) {
 			found = true;
+
+			/*
+			try {
+				StringBuilder message = new StringBuilder();
+				for (int i = 0; i < fileDefinitions.size(); i++) {
+					message.append(selectedRows.get(i).get(0));
+					message.append(' ');
+					message.append(getLine(i, selectedRows.get(i).get(0)).getDate());
+					message.append(';');
+				}
+				System.out.println(message.toString());
+			} catch (Exception e) {
+				throw new DataSetException(e);
+			}
+			*/
 		}
 		
 		return found;
@@ -274,7 +323,7 @@ public abstract class DataSetRawData {
 		
 		for (int i = 0; match && i < selectedRows.size(); i++) {
 			if (i != file) {
-				match = rowSelectionsMatch(file, i);
+				match = lineSelectionsMatch(file, i);
 			}
 		}
 		
@@ -288,7 +337,7 @@ public abstract class DataSetRawData {
 	 * @return {@code true} if the selected rows match; {@code false} if they do not
 	 * @throws DataSetException If an error occurs during the examination
 	 */
-	protected abstract boolean rowSelectionsMatch(int file1, int file2) throws DataSetException;
+	protected abstract boolean lineSelectionsMatch(int file1, int file2) throws DataSetException;
 	
 	/**
 	 * Select the next row(s) in the specified file
@@ -311,9 +360,9 @@ public abstract class DataSetRawData {
 		
 		for (int i = 0; i < selectedRows.size(); i++) {
 			if (i != fileIndex) {
-				List<Integer> rows = selectedRows.get(i);
-				if (null != rows) {
-					line = data.get(i).get(rows.get(0));
+				List<Integer> lines = selectedRows.get(i);
+				if (null != lines) {
+					line = getLine(i, lines.get(0));
 					break;
 				}
 			}
@@ -327,11 +376,273 @@ public abstract class DataSetRawData {
 	 */
 	public void reset() {
 		selectedRows = new ArrayList<List<Integer>>(fileDefinitions.size());
-		rowPositions = new ArrayList<Integer>(fileDefinitions.size());
+		linePositions = new ArrayList<Integer>(fileDefinitions.size());
 
 		for (int i = 0; i < fileDefinitions.size(); i++) {
 			selectedRows.add(null);
-			rowPositions.add(-1);
+			linePositions.add(NOT_STARTED_VALUE);
 		}
+	}
+	
+	/**
+	 * Find the next usable line in the specified file, starting at the stored line position
+	 * for that file. See {@link #getNextLine(int, int)} for full details.
+
+	 * @param fileIndex The file whose next line is to be located
+	 * @return The next line index
+	 * @throws FileDefinitionException If the Run Types for the file are invalid
+	 * @throws DataFileException If data cannot be extracted from the data lines
+	 * @see #getNextLine(int, int)
+	 */
+	protected int getNextLine(int fileIndex) throws DataFileException, FileDefinitionException {
+		return getNextLine(fileIndex, linePositions.get(fileIndex));
+	}
+	
+	/**
+	 * Find the next usable line in the specified file, starting at the specified line.
+	 * 
+	 * <p>
+	 *   For files with Run Types, the method skips ignored run types and lines
+	 *   within the pre- and post- flushing times of the instrument. For files
+	 *   without Run Types, every line is returned.
+	 * </p>
+	 * 
+	 * @param fileIndex The file whose next line is to be located
+	 * @param startLine The starting point for the search
+	 * @return The next line index
+	 * @throws FileDefinitionException If the Run Types for the file are invalid
+	 * @throws DataFileException If data cannot be extracted from the data lines
+	 */
+	protected int getNextLine(int fileIndex, int startLine) throws DataFileException, FileDefinitionException {
+		
+		// TODO This could probably be better written as a state machine
+		
+		ExtendedMutableInt result = EOF;
+		boolean finished = false;
+		
+		int fileLastLine = getFileSize(fileIndex) - 1;
+		
+		FileDefinition fileDefinition = fileDefinitions.get(fileIndex);
+		ExtendedMutableInt currentLineIndex = new ExtendedMutableInt(startLine);
+		
+		// If the file does not have Run Types, return the next line
+		if (!fileDefinition.hasRunTypes()) {
+			
+			if (currentLineIndex.equals(NOT_STARTED)) {
+				result = new ExtendedMutableInt(0);
+			} else {
+				result = currentLineIndex.incrementedClone();
+				if (result.greaterThan(fileLastLine)) {
+					result = EOF;
+				}
+			}
+			finished = true;
+		} else {
+			// Get the Run Type of the current line
+			RunTypeCategory currentRunType = null;
+			if (!currentLineIndex.equals(NOT_STARTED)) {
+				currentRunType = getLine(fileIndex, currentLineIndex).getRunType();
+			}
+			
+			// Get the next line index
+			ExtendedMutableInt nextLineIndex;
+			if (currentLineIndex.equals(NOT_STARTED)) {
+				nextLineIndex = new ExtendedMutableInt(0);
+			} else {
+				nextLineIndex = currentLineIndex.incrementedClone();
+			}
+
+			if (nextLineIndex.greaterThan(fileLastLine)) {
+				result = EOF;
+				finished = true;
+			} else {
+				RunTypeCategory nextRunType = getLine(fileIndex, nextLineIndex).getRunType();
+				
+				if (nextRunType.equals(currentRunType)) {
+					// Check to see if we're in the post-flushing period
+					// If we aren't, we have found the next line
+					// If we are, the method will skip us ahead to the next
+					// line with a different Run Type, and we can continue from there
+					// in the next if block below
+					if (!inPostFlushingPeriod(fileIndex, nextRunType, nextLineIndex)) {
+						result = nextLineIndex;
+						finished = true;
+					}
+				}
+				
+				if (!finished) {
+
+					// Get the new Run Type
+					nextRunType = getLine(fileIndex, nextLineIndex).getRunType();
+					
+					// We're in a new Run Type. Skip any Ignored lines
+					while (!finished && getLine(fileIndex, nextLineIndex).isIgnored()) {
+						nextLineIndex.increment();
+						if (nextLineIndex.greaterThan(fileLastLine)) {
+							result = EOF;
+							finished = true;
+						}
+					}
+					
+					// Assuming we didn't fall off the end of the file...
+					if (!finished) {
+						RunTypeCategory newRunType = getLine(fileIndex, nextLineIndex).getRunType();
+						
+						// We are at the start of a new run type. Skip over the pre-flushing stage
+						boolean preFlushingTimeProcessed = false;
+						
+						while (!preFlushingTimeProcessed) {
+							if (skipPreFlushingTime(fileIndex, newRunType, nextLineIndex)) {
+								result = nextLineIndex;
+								finished = true;
+								preFlushingTimeProcessed = true;
+							} else {
+								while (getLine(fileIndex, nextLineIndex).isIgnored()) {
+									nextLineIndex.increment();
+									if (nextLineIndex.greaterThan(getFileSize(fileIndex))) {
+										result = EOF;
+										finished = true;
+										preFlushingTimeProcessed = true;
+									}
+								}
+								
+								newRunType = getLine(fileIndex, nextLineIndex).getRunType();
+							}
+						}
+					}
+				}
+			}					
+		}
+
+		return result.getValue();
+	}
+	
+	/**
+	 * Determine whether or not the specified line is within the post-flushing period for the instrument
+	 * @param fileIndex The file
+	 * @param runType The current Run Type
+	 * @param line The line being examined
+	 * @return {@code true} if the line is within the post-flushing period; {@code false} if it is not
+	 * @throws DataFileException If the line data cannot be processed
+	 * @throws FileDefinitionException If an invalid Run Type is detected
+	 */
+	private boolean inPostFlushingPeriod(int fileIndex, RunTypeCategory runType, ExtendedMutableInt line) throws DataFileException, FileDefinitionException {
+		
+		boolean inPostFlushing = false;
+		
+		if (instrument.getPostFlushingTime() == 0) {
+			inPostFlushing = false;
+		} else {
+			
+			LocalDateTime lineDate = getLine(fileIndex, line).getDate();
+			
+			boolean finished = false;
+			int previousLineIndex = line.getValue();
+			LocalDateTime previousDate = lineDate;
+			
+			while (!finished) {
+				
+				int nextLineIndex = previousLineIndex + 1;
+				if (nextLineIndex > getFileSize(fileIndex)) {
+					inPostFlushing = (DateTimeUtils.secondsBetween(lineDate, previousDate) <= instrument.getPostFlushingTime());
+					finished = true;
+				} else {
+					DataFileLine nextLine = getLine(fileIndex, nextLineIndex);
+					LocalDateTime nextDate = nextLine.getDate();
+					
+					if (!nextLine.getRunType().equals(runType)) {
+						inPostFlushing = (DateTimeUtils.secondsBetween(lineDate, previousDate) <= instrument.getPostFlushingTime());
+						finished = true;
+					} else if (DateTimeUtils.secondsBetween(lineDate, nextDate) > instrument.getPostFlushingTime()) {
+						inPostFlushing = false;
+						finished = true;
+					} else {
+						previousLineIndex = nextLineIndex;
+						previousDate = nextDate;
+					}
+				}
+			}
+		}
+		
+		return inPostFlushing;
+	}
+	
+	/**
+	 * Skip the pre-flushing period for the current run type.
+	 * 
+	 * <p>
+	 *   After the method is run, {@code firstLine} will point to the first record
+	 *   after the flushing period, i.e. the first line that can be used. If the Run
+	 *   Type changes before the pre-flushing time expires, {@code firstLine} will point
+	 *   to the first line of the new Run Type.
+	 * </p>
+	 * 
+	 * <p>
+	 *   This method assumes that the passed in index is the first line of that
+	 *   run type.
+	 * </p>
+	 * 
+	 * @param fileIndex The file being processed
+	 * @param runType The run type being processed
+	 * @param lineIndex The index of the first line in the run type.
+	 * @throws DataFileException If the file data cannot be processed
+	 * @return {@code true} if the flushing time expires before the Run Type changes; {@code false} if a new Run Type is encountered
+	 * @throws FileDefinitionException If an invalid Run Type is found
+	 */
+	private boolean skipPreFlushingTime(int fileIndex, RunTypeCategory runType, ExtendedMutableInt lineIndex) throws DataFileException, FileDefinitionException {
+		
+		boolean withinRunType = true;
+		
+		if (instrument.getPreFlushingTime() > 0) {
+			LocalDateTime lastTime = getLine(fileIndex, lineIndex).getDate(); 
+			
+			lineIndex.increment();
+			LocalDateTime currentTime = getLine(fileIndex, lineIndex).getDate();
+			while (DateTimeUtils.secondsBetween(lastTime, currentTime) < instrument.getPreFlushingTime()) {
+				lineIndex.increment();
+				if (lineIndex.greaterThan(getFileSize(fileIndex))) {
+					lineIndex.setValue(EOF.getValue());
+					break;
+				} else {
+					DataFileLine newLine = getLine(fileIndex, lineIndex);
+					currentTime = newLine.getDate();
+					if (!newLine.getRunType().equals(runType)) {
+						withinRunType = false;
+						break;
+					}
+				}
+			}
+		}
+		
+		return withinRunType;
+	}
+	
+	/**
+	 * Convenience method to get a line from a file
+	 * @param fileIndex The file
+	 * @param line The line index
+	 * @return The line
+	 */
+	protected DataFileLine getLine(int fileIndex, int line) {
+		return data.get(fileIndex).get(line);
+	}
+	
+	/**
+	 * Convenience method to get a line from a file
+	 * @param fileIndex The file
+	 * @param line The line index
+	 * @return The line
+	 */
+	protected DataFileLine getLine(int fileIndex, MutableInt line) {
+		return getLine(fileIndex, line.getValue());
+	}
+	
+	/**
+	 * Convenience method to get number of lines in a file
+	 * @param fileIndex The file
+	 * @return The file's size
+	 */
+	protected int getFileSize(int fileIndex) {
+		return data.get(fileIndex).size();
 	}
 }

@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -239,7 +240,22 @@ public class DateTimeUtils {
 		return LocalDateTime.ofInstant(Instant.ofEpochMilli(milliseconds) , ZoneOffset.UTC);
 	}
 	
+	/**
+	 * Generate a JSON-formatted date string for a given date
+	 * @param date The date
+	 * @return The JSON string
+	 */
 	public static String toJsonDate(LocalDateTime date) {
 		return jsonFormatter.format(date);
+	}
+	
+	/**
+	 * Calculate the time between two dates, in seconds
+	 * @param date1 The first date
+	 * @param date2 The second date
+	 * @return The number of seconds between the dates
+	 */
+	public static long secondsBetween(LocalDateTime date1, LocalDateTime date2) {
+		return ChronoUnit.SECONDS.between(date1, date2);
 	}
 }

@@ -43,7 +43,7 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 	}
 
 	@Override
-	protected boolean rowSelectionsMatch(int file1, int file2) throws DataSetException {
+	protected boolean lineSelectionsMatch(int file1, int file2) throws DataSetException {
 		
 		boolean match = false;
 		
@@ -52,8 +52,8 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 			List<Integer> file2Rows = selectedRows.get(file2);
 			
 			if (null != file1Rows && null != file2Rows) {
-				LocalDateTime file1Date = data.get(file1).get(file1Rows.get(0)).getDate();
-				LocalDateTime file2Date = data.get(file2).get(file2Rows.get(0)).getDate();
+				LocalDateTime file1Date = getLine(file1, file1Rows.get(0)).getDate();
+				LocalDateTime file2Date = getLine(file2, file2Rows.get(0)).getDate();
 				
 				match = Math.abs(ChronoUnit.SECONDS.between(file1Date, file2Date)) <= MAX_DIFFERENCE;
 			}
@@ -70,20 +70,20 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 		boolean selected = false;
 
 		try {
-			int selectedRow = -1;
+			int selectedLine = -1;
 			DataFileLine otherLine = getOtherSelectedLine(fileIndex);
 			
 			// If there are no selected rows in other files, simply select
 			// the next row here.
 			if (null == otherLine) {
-				selectedRow = rowPositions.get(fileIndex);
+				selectedLine = linePositions.get(fileIndex);
 				
 				while (!selected) {
-					selectedRow++;
-					 if (selectedRow >= data.get(fileIndex).size()) {
+					selectedLine = getNextLine(fileIndex);
+					 if (selectedLine == EOF_VALUE) {
 						 break;
 					 } else {
-						 DataFileLine line = data.get(fileIndex).get(selectedRow);
+						 DataFileLine line = getLine(fileIndex, selectedLine);
 						 if (!line.isIgnored()) {
 							 selected = true;
 						 }
@@ -92,17 +92,17 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 			} else {
 				LocalDateTime otherDate = otherLine.getDate();
 				long selectedRowDifference = Long.MAX_VALUE;
-				int currentRow = rowPositions.get(fileIndex) + 1;
+				int currentLine = getNextLine(fileIndex);
 
 				while (!selected) {
-					if (currentRow >= data.get(fileIndex).size()) {
+					if (currentLine >= getFileSize(fileIndex) || currentLine == EOF_VALUE) {
 						// We've gone off the end of the file, so stop
 						break;
 					}
 					
-					DataFileLine line = data.get(fileIndex).get(currentRow);
+					DataFileLine line = getLine(fileIndex, currentLine);
 					if (line.isIgnored()) {
-						currentRow++;
+						currentLine = getNextLine(fileIndex);
 					} else {
 						LocalDateTime lineDate = line.getDate();
 						
@@ -111,34 +111,34 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 						if (lineDifference == 0) {
 							// We can't get any closer, so use this line
 							selected = true;
-							selectedRow = currentRow;
+							selectedLine = currentLine;
 						} else if (lineDate.isBefore(otherDate)) {
 							
 							// If we've already selected a row, this must by definition
 							// be closer to the target. Store it and see if there's any closer lines
-							if (selectedRow != -1) {
-								selectedRow = currentRow;
+							if (selectedLine != EOF_VALUE) {
+								selectedLine = currentLine;
 								selectedRowDifference = lineDifference;
-								currentRow++;
+								currentLine = getNextLine(fileIndex, currentLine);
 							} else if (lineDifference > MAX_DIFFERENCE) {
 								// If this line is before the other line but outside the limit, keep looking
-								currentRow++;
+								currentLine = getNextLine(fileIndex, currentLine);
 							} else {
 								// We are within the limit, but they may be other
 								// lines that are closer. Select this row, and try the next one.
-								selectedRow = currentRow;
+								selectedLine = currentLine;
 								selectedRowDifference = lineDifference;
-								currentRow++;
+								currentLine = getNextLine(fileIndex, currentLine);
 							}
 							
 						} else { // The line is after the target
 							
 							// If a line has been selected, it must be before the
 							// target date. See if this line is closer
-							if (selectedRow != -1) {
+							if (selectedLine != -1) {
 								if (lineDifference < selectedRowDifference) {
 									// This line is closer, so use it
-									selectedRow = currentRow;
+									selectedLine = currentLine;
 									selected = true;
 								} else {
 									// Use the previously found row
@@ -146,7 +146,7 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 								}
 							} else {
 								// Select this row
-								selectedRow = currentRow;
+								selectedLine = currentLine;
 								selected = true;
 							}
 						}
@@ -156,13 +156,13 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 			
 			if (selected) {
 				List<Integer> rowSelection = new ArrayList<Integer>(1);
-				rowSelection.add(selectedRow);
+				rowSelection.add(selectedLine);
 				selectedRows.set(fileIndex, rowSelection);
 			} else {
 				selectedRows.set(fileIndex, null);
 			}
 
-			rowPositions.set(fileIndex, selectedRow);
+			linePositions.set(fileIndex, selectedLine);
 		} catch (Exception e) {
 			throw new DataSetException(e);
 		}
