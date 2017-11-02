@@ -49,6 +49,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  * @see <a href="http://www.sciencedirect.com/science/article/pii/S0967064508004268">Recommendations for autonomous underway pCO<sub>2</sub> measuring systems and data-reduction routines</a> 
  */
+@Deprecated
 public class DataReductionJob extends FileJob {
 
 	/**
