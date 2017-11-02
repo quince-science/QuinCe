@@ -10,6 +10,7 @@ import org.joda.time.DateTime;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class TrimFlushingRecord implements Comparable<TrimFlushingRecord> {
 
 	public static final int RAW_DATA = 0;

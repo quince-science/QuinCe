@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  * @author Steve Jones
  * @see GasStandardMean
  */
+@Deprecated
 public class GasStandardRuns {
 
 	/**

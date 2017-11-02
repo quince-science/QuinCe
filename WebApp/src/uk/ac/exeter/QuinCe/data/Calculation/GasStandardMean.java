@@ -19,6 +19,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunType;
  * @author Steve Jones
  * @see GasStandardRuns
  */
+@Deprecated
 public class GasStandardMean implements Comparable<GasStandardMean> {
 
 	protected static final int TYPE_XH2O = 0;
