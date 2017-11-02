@@ -10,6 +10,7 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Files.DataFileLine;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -168,6 +169,26 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 		}
 		
 		return selected;
+	}
+
+	@Override
+	protected LocalDateTime getSelectedTime() throws DataFileException {
+		return getLine(getCoreFileIndex(), selectedRows.get(getCoreFileIndex()).get(0)).getDate();
+	}
+
+	@Override
+	protected double getSelectedLongitude() throws DataFileException, PositionException {
+		return getLine(getCoreFileIndex(), selectedRows.get(getCoreFileIndex()).get(0)).getLongitude();
+	}
+
+	@Override
+	protected double getSelectedLatitude() throws DataFileException, PositionException {
+		return getLine(getCoreFileIndex(), selectedRows.get(getCoreFileIndex()).get(0)).getLatitude();
+	}
+
+	@Override
+	protected Double calculateValue(List<Double> rowValues) {
+		return rowValues.get(0);
 	}
 
 }

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 
 /**
@@ -93,5 +94,37 @@ public class DataFileLine {
 	 */
 	public RunTypeCategory getRunType() throws DataFileException, FileDefinitionException {
 		return file.getRunType(line);
+	}
+	
+	/**
+	 * Get the longitude of the line
+	 * @return The longitude
+	 * @throws DataFileException If the file contents cannot be extracted
+	 * @throws PositionException If the latitude is invalid
+	 */
+	public double getLongitude() throws DataFileException, PositionException {
+		return file.getLongitude(line);
+	}
+	
+	/**
+	 * Get the latitude of the line
+	 * @return The latitude
+	 * @throws DataFileException If the file contents cannot be extracted
+	 * @throws PositionException If the latitude is invalid
+	 */
+	public double getLatitude() throws DataFileException, PositionException {
+		return file.getLatitude(line);
+	}
+	
+	/**
+	 * Get a value from a field. If the value is missing (i.e.
+	 * it equals the {@code missingValue}), returns {@code null}.
+	 * @param field The field
+	 * @param missingValue The missing value
+	 * @return The value
+	 * @throws DataFileException If the value cannot be extracted
+	 */
+	public Double getFieldValue(int field, String missingValue) throws DataFileException {
+		return file.getDoubleValue(line, field, missingValue);
 	}
 }

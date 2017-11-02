@@ -11,6 +11,8 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 
+import com.sun.org.apache.xalan.internal.xsltc.runtime.BasisLibrary;
+
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
@@ -18,7 +20,10 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileLine;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExtendedMutableInt;
@@ -193,8 +198,9 @@ public abstract class DataSetRawData {
 	 * 
 	 * @return {@code true} if a new record is discovered; {@code false} if there are no more records in the data set
 	 * @throws DataSetException If an error occurs during record selection
+	 * @throws DataFileException If any data cannot be extracted
 	 */
-	public boolean nextRecord() throws DataSetException {
+	public DataSetRawDataRecord getNextRecord() throws DataSetException, DataFileException {
 		
 		boolean found = false;
 		
@@ -273,7 +279,12 @@ public abstract class DataSetRawData {
 			*/
 		}
 		
-		return found;
+		DataSetRawDataRecord record = null;
+		if (found) {
+			record = createRecord();
+		}
+		
+		return record;
 	}
 	
 	/**
@@ -416,6 +427,8 @@ public abstract class DataSetRawData {
 	protected int getNextLine(int fileIndex, int startLine) throws DataFileException, FileDefinitionException {
 		
 		// TODO This could probably be better written as a state machine
+		
+		// TODO Validate date, longitude, latitude for each line. If invalid, record in the data set and move on.
 		
 		ExtendedMutableInt result = EOF;
 		boolean finished = false;
@@ -644,5 +657,119 @@ public abstract class DataSetRawData {
 	 */
 	protected int getFileSize(int fileIndex) {
 		return data.get(fileIndex).size();
+	}
+	
+	/**
+	 * Create a new record object from the currently selected lines
+	 * @return The new record
+	 * @throws DataFileException If data cannot be extracted
+	 */
+	private DataSetRawDataRecord createRecord() throws DataFileException {
+		
+		DataSetRawDataRecord record;
+		
+		try {
+			record = new DataSetRawDataRecord(dataSet, getSelectedTime(), getSelectedLatitude(), getSelectedLongitude());
+
+			
+			
+		} catch (Exception e) {
+			throw new DataFileException(e);
+		}
+		
+		return record;
+	}
+	
+	/**
+	 * Get the date/time for the currently selected line(s)
+	 * @return The date/time
+	 * @throws DataFileException If the date/time cannot be extracted
+	 */
+	protected abstract LocalDateTime getSelectedTime() throws DataFileException;
+	
+	/**
+	 * Get the longitude for the currently selected line(s)
+	 * @return The longitude
+	 * @throws DataFileException If the file contents cannot be extracted
+	 * @throws PositionException If the latitude is invalid
+	 */
+	protected abstract double getSelectedLongitude() throws DataFileException, PositionException;
+	
+	/**
+	 * Get the latitude for the currently selected line(s)
+	 * @return The latitude
+	 * @throws DataFileException If the file contents cannot be extracted
+	 * @throws PositionException If the latitude is invalid
+	 */
+	protected abstract double getSelectedLatitude() throws DataFileException, PositionException;
+	
+	/**
+	 * Get the primary file definition that will be used as the basis for times
+	 * and positions in extracted data. This is the first definition that contains
+	 * Run Types, and therefore the core measurement for the system.
+	 * 
+	 * @return The index of the first primary file
+	 */
+	protected int getCoreFileIndex() {
+		int result = -1;
+		
+		for (int i = 0; i < fileDefinitions.size(); i++) {
+			if (fileDefinitions.get(i).hasRunTypes()) {
+				result = i;
+				break;
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Calculate the sensor value for a particular sensor assignment.
+	 * 
+	 * This will be calculated from all the currently selected lines,
+	 * with missing values ignored as needed
+	 * 
+	 * @param assignment The sensor assignment
+	 * @return The sensor value
+	 * @throws DataFileException If any field values cannot be extracted
+	 */
+	public Double getSensorValue(SensorAssignment assignment) throws DataFileException {
+	
+		int fileIndex = getFileDefinition(assignment.getDataFile());
+		List<Integer> rows = selectedRows.get(fileIndex); 
+		
+		List<Double> rowValues = new ArrayList<Double>();
+		for (int row : rows) {
+			DataFileLine line = data.get(fileIndex).get(row);
+			rowValues.add(line.getFieldValue(assignment.getColumn(), assignment.getMissingValue()));
+		}
+		
+		return calculateValue(rowValues);
+	}
+
+	/**
+	 * Calculate the final value from a set of values extracted from
+	 * the currently selected rows.
+	 * @param rowValues The row values
+	 * @return The final calculated value
+	 */
+	protected abstract Double calculateValue(List<Double> rowValues);
+	
+	/**
+	 * Get the index of the file definition with the specified name
+	 * @param fileName The file definition name
+	 * @return The file definition index
+	 */
+	private int getFileDefinition(String fileName) {
+		int result = -1;
+		
+		for (int i = 0; i < fileDefinitions.size(); i++) {
+			if (fileDefinitions.get(i).getFileDescription().equals(fileName)) {
+				result = i;
+				break;
+			}
+		}
+		
+		return result;
 	}
 }

@@ -1,15 +1,21 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -74,8 +80,56 @@ public class ExtractDataSetJob extends Job {
 			
 			DataSetRawData rawData = DataSetRawDataFactory.getDataSetRawData(dataSource, dataSet, instrument);
 			
-			while (rawData.nextRecord()) {
+			DataSetRawDataRecord record = rawData.getNextRecord();
+			while (null != record) {
+
+				for (Map.Entry<SensorType, Set<SensorAssignment>> entry : instrument.getSensorAssignments().entrySet()) {
+					
+					SensorType sensorType = entry.getKey();
+					Set<SensorAssignment> assignments = entry.getValue();
+					
+					if (sensorType.isUsedInCalculation()) {
+						
+						double primarySensorTotal = 0.0;
+						int primarySensorCount = 0;
+						
+						double fallbackSensorTotal = 0.0;
+						int fallbackSensorCount = 0;
+						
+						for (SensorAssignment assignment : assignments) {
+							Double sensorValue = rawData.getSensorValue(assignment);
+							if (null != sensorValue) {
+								if (assignment.isPrimary()) {
+									primarySensorTotal += sensorValue;
+									primarySensorCount++;
+								} else {
+									fallbackSensorTotal+= sensorValue;
+									fallbackSensorCount++;
+								}
+							}
+						}
+						
+						Double finalSensorValue = null;
+						
+						if (primarySensorCount > 0) {
+							finalSensorValue = new Double(primarySensorTotal / primarySensorCount);
+						} else if (fallbackSensorCount > 0) {
+							finalSensorValue = new Double(fallbackSensorTotal / fallbackSensorCount);
+						}
+
+						record.setValue(sensorType.getName(), finalSensorValue);
+					} else {
+						for (SensorAssignment assignment : assignments) {
+							record.setDiagnosticValue(assignment.getSensorName(), rawData.getSensorValue(assignment));
+						}
+					}
+					
+				}
 				
+				
+				
+				// Read the next record
+				record = rawData.getNextRecord();
 			}
 			
 		} catch (Exception e) {

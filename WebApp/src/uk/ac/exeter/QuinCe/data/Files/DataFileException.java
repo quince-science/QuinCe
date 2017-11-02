@@ -22,6 +22,14 @@ public class DataFileException extends Exception {
 	
 	/**
 	 * Constructor for an error with an underlying cause
+	 * @param cause The cause
+	 */
+	public DataFileException(Throwable cause) {
+		super(cause);
+	}
+	
+	/**
+	 * Constructor for an error with an underlying cause
 	 * @param message The error message
 	 * @param cause The cause
 	 */

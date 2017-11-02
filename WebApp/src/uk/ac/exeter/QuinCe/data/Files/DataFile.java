@@ -9,6 +9,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
@@ -403,6 +404,30 @@ public class DataFile {
 
 		return runType;
 	}
+
+	/**
+	 * Get the longitude for a given line
+	 * @param line The line
+	 * @return The longitude
+	 * @throws DataFileException If the file contents cannot be extracted
+	 * @throws PositionException If the longitude is invalid
+	 */
+	public double getLongitude(int line) throws DataFileException, PositionException {
+		loadContents();
+		return fileDefinition.getLongitudeSpecification().getValue(fileDefinition.extractFields(contents.get(line)));
+	}
+	
+	/**
+	 * Get the latitude for a given line
+	 * @param line The line
+	 * @return The longitude
+	 * @throws DataFileException If the file contents cannot be extracted
+	 * @throws PositionException If the latitude is invalid
+	 */
+	public double getLatitude(int line) throws DataFileException, PositionException {
+		loadContents();
+		return fileDefinition.getLatitudeSpecification().getValue(fileDefinition.extractFields(contents.get(line)));
+	}
 	
 	/**
 	 * Get a {@link Double} value from a field.
@@ -554,5 +579,20 @@ public class DataFile {
 				throw new DataFileException("Error while loading file contents", e);
 			}
 		}
+	}
+	
+	/**
+	 * Get a value from a field as a Double. If the extracted
+	 * value equals the {@code missingValue}, the method returns {@code null}.
+	 * @param line The line
+	 * @param field The field index
+	 * @param missingValue The string indicating a missing value
+	 * @return The value
+	 * @throws DataFileException If the data cannot be extracted
+	 */
+	public Double getDoubleValue(int line, int field, String missingValue) throws DataFileException {
+		loadContents();
+		String fieldValue = fileDefinition.extractFields(contents.get(line)).get(field);
+		return extractDoubleFieldValue(fieldValue, missingValue);
 	}
 }

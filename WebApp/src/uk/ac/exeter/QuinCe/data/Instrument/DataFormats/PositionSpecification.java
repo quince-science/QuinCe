@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
 
+import java.util.List;
+
 /**
  * Abstract class for position specifications. Longitudinal and latitudinal
  * positions share much similar functionality.
@@ -27,17 +29,17 @@ public abstract class PositionSpecification {
 	/**
 	 * The index of the column containing the position value
 	 */
-	private int valueColumn;
+	protected int valueColumn;
 	
 	/**
 	 * The index of the column containing the hemisphere
 	 */
-	private int hemisphereColumn;
+	protected int hemisphereColumn;
 	
 	/**
 	 * The position format
 	 */
-	private int format;
+	protected int format;
 	
 	/**
 	 * Creates an empty position specification
@@ -199,4 +201,12 @@ public abstract class PositionSpecification {
 	public void clearHemisphereColumn() {
 		hemisphereColumn = -1;
 	}
+	
+	/**
+	 *  Get the position value from a given line
+	 * @param line The line
+	 * @return The position value
+	 * @throws PositionException If the position cannot be extracted, or is invalid
+	 */
+	public abstract double getValue(List<String> line) throws PositionException;
 }
