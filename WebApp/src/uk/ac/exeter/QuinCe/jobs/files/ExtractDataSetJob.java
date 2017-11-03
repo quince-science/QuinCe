@@ -1,13 +1,11 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;

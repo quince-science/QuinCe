@@ -11,8 +11,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 
-import com.sun.org.apache.xalan.internal.xsltc.runtime.BasisLibrary;
-
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
@@ -23,7 +21,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExtendedMutableInt;
@@ -669,7 +666,7 @@ public abstract class DataSetRawData {
 		DataSetRawDataRecord record;
 		
 		try {
-			record = new DataSetRawDataRecord(dataSet, getSelectedTime(), getSelectedLatitude(), getSelectedLongitude());
+			record = new DataSetRawDataRecord(dataSet, getSelectedTime(), getSelectedLatitude(), getSelectedLongitude(), getSelectedRunType());
 
 			
 			
@@ -702,6 +699,18 @@ public abstract class DataSetRawData {
 	 * @throws PositionException If the latitude is invalid
 	 */
 	protected abstract double getSelectedLatitude() throws DataFileException, PositionException;
+
+	/**
+	 * Get the Run Type of the currently selected row(s)
+	 * @return The Run Type
+	 * @throws DataFileException If the run type cannot be extracted
+	 * @throws FileDefinitionException If the run type is invalid
+	 */
+	private RunTypeCategory getSelectedRunType() throws DataFileException, FileDefinitionException {
+		int fileIndex = getCoreFileIndex();
+		int currentRow = selectedRows.get(fileIndex).get(0);
+		return data.get(fileIndex).get(currentRow).getRunType();
+	}
 	
 	/**
 	 * Get the primary file definition that will be used as the basis for times
@@ -715,6 +724,23 @@ public abstract class DataSetRawData {
 		
 		for (int i = 0; i < fileDefinitions.size(); i++) {
 			if (fileDefinitions.get(i).hasRunTypes()) {
+				result = i;
+				break;
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Get the file definition containing position data
+	 * @return The index of the file containing position data
+	 */
+	protected int getPositionFileIndex() {
+		int result = -1;
+		
+		for (int i = 0; i < fileDefinitions.size(); i++) {
+			if (null != fileDefinitions.get(i).getLatitudeSpecification()) {
 				result = i;
 				break;
 			}

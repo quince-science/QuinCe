@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+
 /**
  * Class to hold data for a single record extracted from raw data
  * @author Steve Jones
@@ -32,6 +34,11 @@ public class DataSetRawDataRecord {
 	private double latitude;
 	
 	/**
+	 * The Run Type of the record
+	 */
+	private RunTypeCategory runType;
+	
+	/**
 	 * Map holding the field values used in calculations
 	 */
 	private Map<String, Double> fieldValues;
@@ -48,11 +55,12 @@ public class DataSetRawDataRecord {
 	 * @param longitude The longitude
 	 * @param latitude The latitude
 	 */
-	public DataSetRawDataRecord(DataSet dataSet, LocalDateTime date, double longitude, double latitude) {
+	public DataSetRawDataRecord(DataSet dataSet, LocalDateTime date, double longitude, double latitude, RunTypeCategory runType) {
 		this.dataSet = dataSet;
 		this.date = date;
 		this.longitude = longitude;
 		this.latitude = latitude;
+		this.runType = runType;
 		
 		fieldValues = new HashMap<String, Double>();
 		diagnosticValues = new HashMap<String, Double>();

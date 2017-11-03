@@ -254,6 +254,22 @@ Sensors Configuration for the application (this implies that the database schema
 custom-built for each application). It will be filled in according from data extracted
 from the files in the `dataset`, with any averaging, fallbacks, missing values etc. applied.
 
+## _`calibration_data`_
+This table will hold data used for calibration. For many systems these will be identified by the Run Type
+in the raw data file; for others, calibration values will be entered manually. Note that this is different to
+the sensor calibrations stored in the `calibration` table.
+
+The exact data stored in this table will depend on the type of data being processed.
+
+Field                    Type           Description
+--------------------     ------------   -------------------------------------------------------------------------
+id*                      Integer        Primary Key
+dataset_id               F_KEY          The data set to which this calibration data relates
+time*                    DateTime       The date/time when the calibration data was recorded
+calibration_value**      Double         The calibration value
+
+**One `calibration_value` field will exist for each type of calibration data that can be used.
+
 
 ## _`calculation_data`_
 Each calculation defined for the application (e.g. pCO<sub>2</sub> or pH) will have its own table in the application.
@@ -268,6 +284,8 @@ auto_qc_flag             Integer        The QC flag assigned by the automatic QC
 auto_qc_message          String         The message(s) from the automatic QC routines
 woce_flag                Integer        The WOCE flag assigned by the user
 woce_comment             String         The WOCE comment
+
+The actual calculation fields will depend on the type of data being processed.
 
 
 # Jobs

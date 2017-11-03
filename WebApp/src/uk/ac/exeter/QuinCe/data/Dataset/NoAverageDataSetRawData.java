@@ -178,12 +178,12 @@ public class NoAverageDataSetRawData extends DataSetRawData {
 
 	@Override
 	protected double getSelectedLongitude() throws DataFileException, PositionException {
-		return getLine(getCoreFileIndex(), selectedRows.get(getCoreFileIndex()).get(0)).getLongitude();
+		return getLine(getPositionFileIndex(), selectedRows.get(getPositionFileIndex()).get(0)).getLongitude();
 	}
 
 	@Override
 	protected double getSelectedLatitude() throws DataFileException, PositionException {
-		return getLine(getCoreFileIndex(), selectedRows.get(getCoreFileIndex()).get(0)).getLatitude();
+		return getLine(getPositionFileIndex(), selectedRows.get(getPositionFileIndex()).get(0)).getLatitude();
 	}
 
 	@Override
