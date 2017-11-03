@@ -54,6 +54,7 @@ public class DataSetRawDataRecord {
 	 * @param date The date of the record
 	 * @param longitude The longitude
 	 * @param latitude The latitude
+	 * @param runType The Run Type
 	 */
 	public DataSetRawDataRecord(DataSet dataSet, LocalDateTime date, double longitude, double latitude, RunTypeCategory runType) {
 		this.dataSet = dataSet;
