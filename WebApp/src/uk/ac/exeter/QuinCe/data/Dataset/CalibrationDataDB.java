@@ -63,8 +63,10 @@ public class CalibrationDataDB {
 			statement.setLong(1, record.getDatasetId());
 			statement.setLong(2, DateTimeUtils.dateToLong(record.getDate()));
 			statement.setString(3, record.getRunType());
+			statement.setBoolean(4, true);
+			statement.setNull(5, Types.VARCHAR);
 			
-			int currentField = 3;
+			int currentField = 5;
 			SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
 			for (SensorType sensorType : sensorConfig.getSensorTypes()) {
 				if (sensorType.isCalibratedUsingData()) {
@@ -101,6 +103,8 @@ public class CalibrationDataDB {
 		fieldNames.add("dataset_id");
 		fieldNames.add("date");
 		fieldNames.add("run_type");
+		fieldNames.add("use_record");
+		fieldNames.add("use_message");
 
 		SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
 		for (SensorType sensorType : sensorConfig.getSensorTypes()) {
