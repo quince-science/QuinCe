@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.utils.FileUtils;
@@ -22,7 +23,7 @@ public class SensorsConfiguration {
 	/**
 	 * The number of columns in the configuration file
 	 */
-	private static final int COL_COUNT = 10;
+	private static final int COL_COUNT = 12;
 	
 	/**
 	 * The column containing the sensor type name
@@ -76,6 +77,18 @@ public class SensorsConfiguration {
 	private static final int COL_CORE = 9;
 	
 	/**
+	 * The column specifying whether a sensor is a core sensor, and thus
+	 * requires a Run Type column to be specified in the file
+	 */
+	private static final int COL_USED_IN_CALCULATION = 10;
+	
+	/**
+	 * The column specifying whether a sensor's values are calibrated
+	 * using data
+	 */
+	private static final int COL_CALIBRATED_USING_DATA = 11;
+	
+	/**
 	 * The set of sensors defined for the instrument with
 	 * the data file columns assigned to them
 	 */
@@ -94,6 +107,14 @@ public class SensorsConfiguration {
 		}
 		
 		buildSensorTypes(configFile);
+	}
+	
+	/**
+	 * Get the list of sensor types in this configuration
+	 * @return The sensor types
+	 */
+	public List<SensorType> getSensorTypes() {
+		return Collections.unmodifiableList(sensorTypes);
 	}
 	
 	/**
@@ -153,8 +174,10 @@ public class SensorsConfiguration {
 							boolean averaged = StringUtils.parseYNBoolean(fields.get(COL_AVERAGED));
 							boolean postCalibrated = StringUtils.parseYNBoolean(fields.get(COL_POST_CALIBRATED));
 							boolean coreSensor = StringUtils.parseYNBoolean(fields.get(COL_CORE));
+							boolean usedInCalculation = StringUtils.parseYNBoolean(fields.get(COL_USED_IN_CALCULATION));
+							boolean calibratedUsingData = StringUtils.parseYNBoolean(fields.get(COL_CALIBRATED_USING_DATA));
 							
-							SensorType sensor = new SensorType(sensorName, required, named, requiredGroup, dependsOn, dependsQuestion, many, averaged, postCalibrated, coreSensor);
+							SensorType sensor = new SensorType(sensorName, required, named, requiredGroup, dependsOn, dependsQuestion, many, averaged, postCalibrated, coreSensor, usedInCalculation, calibratedUsingData);
 							
 							sensorTypes.add(sensor);
 							

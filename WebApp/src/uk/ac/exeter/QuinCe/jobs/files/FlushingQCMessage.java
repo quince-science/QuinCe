@@ -14,6 +14,7 @@ import uk.ac.exeter.QCRoutines.messages.MessageException;
  * @author Steve Jones
  * @see Message
  */
+@Deprecated
 public class FlushingQCMessage extends Message {
 
 	/**

@@ -7,6 +7,7 @@ import java.util.Date;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class StandardStub {
 
 	/**

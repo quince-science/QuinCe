@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
 
+import java.util.List;
+
 /**
  * Handles all formats of longitudes, and the corresponding column assignments within a data file
  * @author Steve Jones
@@ -48,6 +50,75 @@ public class LongitudeSpecification extends PositionSpecification {
 
 	@Override
 	public boolean hemisphereRequired() {
-		return (getFormat() == FORMAT_0_180);
+		return (format == FORMAT_0_180);
+	}
+	
+	@Override
+	public double getValue(List<String> line) throws PositionException {
+		
+		double value;
+		
+		try {
+			value = Double.parseDouble(line.get(getValueColumn()));
+		
+			switch (format) {
+			case FORMAT_0_360: {
+				if (value > 180) {
+					value = (360 - value) * -1;
+				}
+				break;
+			}
+			case FORMAT_MINUS180_180: {
+				// No need to do anything!
+				break;
+			}
+			case FORMAT_0_180: {
+				String hemisphere = line.get(getHemisphereColumn());
+				value = value * hemisphereMultiplier(hemisphere);
+			}
+			default: {
+				throw new InvalidPositionFormatException(format);
+			}
+			}
+		} catch (NumberFormatException e) {
+			throw new PositionException("Invalid longitude value " + line.get(getValueColumn()));
+		}
+		
+		if (value < -180 || value > 180) {
+			throw new PositionException("Invalid longitude value " + value);
+		}
+		
+		return value;
+	}
+	
+	/**
+	 * Calculate the longitude multiplier for a longitude value. East = 1, West = -1
+	 * @param hemisphere The hemisphere
+	 * @return The multiplier
+	 * @throws PositionException If the hemisphere value is invalid
+	 */
+	private double hemisphereMultiplier(String hemisphere) throws PositionException {
+		double multiplier = 1.0;
+		
+		if (null == hemisphere) {
+			throw new PositionException("Missing hemisphere value");
+		}
+		
+		switch (hemisphere.toLowerCase()) {
+		case "e":
+		case "east": {
+			multiplier = 1.0;
+			break;
+		}
+		case "w":
+		case "west": {
+			multiplier = -1.0;
+		}
+		default: {
+			throw new PositionException("Invalid hemisphere value " + hemisphere);
+		}
+		}
+		
+		return multiplier;
 	}
 }

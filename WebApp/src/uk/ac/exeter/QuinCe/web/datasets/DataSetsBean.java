@@ -102,6 +102,11 @@ public class DataSetsBean extends BaseManagedBean {
 	 * @return The data sets
 	 */
 	public List<DataSet> getDataSets() {
+		try {
+			loadDataSets();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return dataSets;
 	}
 	

@@ -16,7 +16,17 @@ public class DataSet {
 	/**
 	 * The numeric value for the data extraction status
 	 */
-	public static final int STATUS_DATA_EXTRACTION_VALUE = 0;
+	public static final int STATUS_WAITING = 0;
+	
+	/**
+	 * The string for the data extraction status
+	 */
+	public static final String STATUS_WAITING_NAME = "Waiting";
+	
+	/**
+	 * The numeric value for the data extraction status
+	 */
+	public static final int STATUS_DATA_EXTRACTION = 1;
 	
 	/**
 	 * The string for the data extraction status
@@ -61,7 +71,7 @@ public class DataSet {
 	/**
 	 * The data set's status
 	 */
-	private int status = STATUS_DATA_EXTRACTION_VALUE;
+	private int status = STATUS_WAITING;
 	
 	/**
 	 * Constructor for all fields
@@ -118,7 +128,11 @@ public class DataSet {
 		String result;
 		
 		switch (statusValue) {
-		case STATUS_DATA_EXTRACTION_VALUE: {
+		case STATUS_WAITING: {
+			result =STATUS_WAITING_NAME;
+			break;
+		}
+		case STATUS_DATA_EXTRACTION: {
 			result = STATUS_DATA_EXTRACTION_NAME;
 			break;
 		}
@@ -220,8 +234,13 @@ public class DataSet {
 	/**
 	 * Set the data set's status
 	 * @param status The status
+	 * @throws InvalidDataSetStatusException If the status is invalid
 	 */
-	protected void setStatus(int status) {
+	protected void setStatus(int status) throws InvalidDataSetStatusException {
+		if (!validateStatus(status)) {
+			throw new InvalidDataSetStatusException(status);
+		}
+		
 		this.status = status;
 	}
 	
@@ -253,5 +272,14 @@ public class DataSet {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * Determine whether or not a given status value is valid
+	 * @param status The status to be checked
+	 * @return {@code true} if the status is valid; {@code false} if it is not
+	 */
+	public static boolean validateStatus(int status) {
+		return (status == STATUS_WAITING || status == STATUS_DATA_EXTRACTION);
 	}
 }

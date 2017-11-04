@@ -758,8 +758,8 @@ public class FileDefinition implements Comparable<FileDefinition> {
 	 * @return The run type
 	 * @throws FileDefinitionException If this file does not contain run types, the run type is not present, or the run type is not recognised
 	 */
-	public RunTypeCategory getRunType(String line) throws FileDefinitionException {
-		RunTypeCategory result = null;
+	public String getRunType(String line) throws FileDefinitionException {
+		String result = null;
 		
 		if (!hasRunTypes()) {
 			throw new FileDefinitionException("File does not contain run types");
@@ -769,12 +769,22 @@ public class FileDefinition implements Comparable<FileDefinition> {
 				if (!runTypes.containsKey(runTypeValue)) {
 					throw new FileDefinitionException("Unrecognised run type '" + runTypeValue + "'");
 				} else {
-					result = runTypes.get(runTypeValue);
+					result = runTypeValue;
 				}
 			}
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * Get the Run Type Category of the Run Type on the given line
+	 * @param line The line
+	 * @return The Run Type Category
+	 * @throws FileDefinitionException If the Run Type is not recognised
+	 */
+	public RunTypeCategory getRunTypeCategory(String line) throws FileDefinitionException {
+		return runTypes.get(getRunType(line));
 	}
 }
 

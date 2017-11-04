@@ -14,6 +14,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -301,7 +302,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	/**
 	 * The averaging mode
 	 */
-	private int averagingMode = Instrument.AVG_MODE_NONE;
+	private int averagingMode = DataSetRawData.AVG_MODE_NONE;
 	
 	/**
 	 * The name of the file for which a Run Type column is being defined
@@ -774,6 +775,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	public void resetSensorAssignmentValues() {
 		sensorAssignmentFile = null;
 		sensorAssignmentColumn = -1;
+		sensorAssignmentName = null;
 		sensorAssignmentSensorType = null;
 		sensorAssignmentPrimary = true;
 		sensorAssignmentPostCalibrated = false;
@@ -1743,6 +1745,6 @@ public class NewInstrumentBean extends FileUploadBean {
      * @return The averaging modes
      */
     public Map<String, Integer> getAveragingModes() {
-    	return Instrument.averagingModes();
+    	return DataSetRawData.averagingModes();
     }
 }

@@ -9,6 +9,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
@@ -261,7 +262,7 @@ public class DataFile {
 				
 				if (fileDefinition.hasRunTypes()) {
 					try {
-						RunTypeCategory runType = fileDefinition.getRunType(line);
+						RunTypeCategory runType = fileDefinition.getRunTypeCategory(line);
 						if (runType.equals(RunTypeCategory.IGNORED_CATEGORY)) {
 							checkColumnCount = false;
 						}
@@ -314,7 +315,7 @@ public class DataFile {
 	/**
 	 * Get the start date from the file header. This is only applicable
 	 * if the date format is {@link DateTimeSpecification#HOURS_FROM_START}.
-	 * @return The start date from the file header
+	 * @return {@code true} if the header date is successfully extracted; {@code false} if the date cannot be extracted
 	 * @throws DataFileException If the file contents could not be loaded
 	 */
 	private boolean extractHeaderDate() throws DataFileException {
@@ -383,6 +384,68 @@ public class DataFile {
 	public LocalDateTime getDate(int line) throws DataFileException {
 		loadContents();
 		return fileDefinition.getDateTimeSpecification().getDateTime(headerDate, fileDefinition.extractFields(contents.get(line)));
+	}
+	
+	/**
+	 * Get the run type for a given line. Returns {@code null} if this file does not contain run types
+	 * @param line The line
+	 * @return The run type for the line
+	 * @throws DataFileException If the data cannot be extracted
+	 * @throws FileDefinitionException If the run types are invalid
+	 */
+	public String getRunType(int line) throws DataFileException, FileDefinitionException {
+		String runType = null;
+		int runTypeColumn = fileDefinition.getRunTypeColumn();
+		
+		if (runTypeColumn > -1) {
+			loadContents();
+			runType = fileDefinition.getRunType(contents.get(line));
+		}
+
+		return runType;
+	}
+
+	/**
+	 * Get the run type for a given line. Returns {@code null} if this file does not contain run types
+	 * @param line The line
+	 * @return The run type for the line
+	 * @throws DataFileException If the data cannot be extracted
+	 * @throws FileDefinitionException If the run types are invalid
+	 */
+	public RunTypeCategory getRunTypeCategory(int line) throws DataFileException, FileDefinitionException {
+		RunTypeCategory runType = null;
+		int runTypeColumn = fileDefinition.getRunTypeColumn();
+		
+		if (runTypeColumn > -1) {
+			loadContents();
+			runType = fileDefinition.getRunTypeCategory(contents.get(line));
+		}
+
+		return runType;
+	}
+
+	/**
+	 * Get the longitude for a given line
+	 * @param line The line
+	 * @return The longitude
+	 * @throws DataFileException If the file contents cannot be extracted
+	 * @throws PositionException If the longitude is invalid
+	 */
+	public double getLongitude(int line) throws DataFileException, PositionException {
+		loadContents();
+		return fileDefinition.getLongitudeSpecification().getValue(fileDefinition.extractFields(contents.get(line)));
+	}
+	
+	/**
+	 * Get the latitude for a given line
+	 * @param line The line
+	 * @return The longitude
+	 * @throws DataFileException If the file contents cannot be extracted
+	 * @throws PositionException If the latitude is invalid
+	 */
+	public double getLatitude(int line) throws DataFileException, PositionException {
+		loadContents();
+		return fileDefinition.getLatitudeSpecification().getValue(fileDefinition.extractFields(contents.get(line)));
 	}
 	
 	/**
@@ -526,10 +589,29 @@ public class DataFile {
 	private void loadContents() throws DataFileException {
 		if (null == contents) {
 			try {
-				FileStore.loadFileContents(fileStore, this);					
+				FileStore.loadFileContents(fileStore, this);
+				
+				if (!extractHeaderDate()) {
+					throw new Exception("Could not extract file header date");
+				}
 			} catch (Exception e) {
 				throw new DataFileException("Error while loading file contents", e);
 			}
 		}
+	}
+	
+	/**
+	 * Get a value from a field as a Double. If the extracted
+	 * value equals the {@code missingValue}, the method returns {@code null}.
+	 * @param line The line
+	 * @param field The field index
+	 * @param missingValue The string indicating a missing value
+	 * @return The value
+	 * @throws DataFileException If the data cannot be extracted
+	 */
+	public Double getDoubleValue(int line, int field, String missingValue) throws DataFileException {
+		loadContents();
+		String fieldValue = fileDefinition.extractFields(contents.get(line)).get(field);
+		return extractDoubleFieldValue(fieldValue, missingValue);
 	}
 }

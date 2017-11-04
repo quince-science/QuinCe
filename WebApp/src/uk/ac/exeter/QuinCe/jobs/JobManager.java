@@ -1039,6 +1039,13 @@ public class JobManager {
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
 		}
+
+		// Start the next job in the queue
+		try {
+			startNextJob(ResourceManager.getInstance(), ResourceManager.getInstance().getConfig());
+		} catch (Exception e) {
+			// Don't sweat it
+		}
 	}
 	
 	public static void requeueJobs(DataSource dataSource, List<Long> jobIds) throws MissingParamException, DatabaseException {

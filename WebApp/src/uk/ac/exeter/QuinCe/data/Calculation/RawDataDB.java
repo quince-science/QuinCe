@@ -31,6 +31,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
+@Deprecated
 public class RawDataDB {
 	
 	public static final double MISSING_VALUE = RoutinesConfig.NO_VALUE;

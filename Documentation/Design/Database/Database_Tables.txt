@@ -228,10 +228,11 @@ As a voyage's data is processed, it will go through a number of stages. The acti
 for a voyage will vary at each stage. Stages are likely to include:
 
 * Data extraction
-* Initial data check
-* Data reduction
-* Automatic QC
-* User QC
+* Automatic initial data check
+* Pre-calculation user QC
+* Calculation
+* Automatic post-calculation QC
+* User post-calculation QC
 
 ## `dataset_data`
 After a data set is defined, the relevant data will be extracted from the data files and stored in this table.
@@ -239,38 +240,54 @@ The data reduction and QC performed by QuinCe will be based on this data.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-dataset_id*              F_KEY          The data set to which this data relates
+id*                      Integer        Primary Key
+dataset_id               F_KEY          The data set to which this data relates
 time*                    DateTime       The date/time of the record
-longitude                Float          The longitude at which the measurement was taken
-latitude                 Float          The latitude at which the measurement was taken
-run_type                 F_KEY          The run type for this measurement
-value0
-.
-.
-value255                 Float          Fields to contain data values. The values stored will vary between instruments
-qc_flag                  Integer        The QC flag assigned to the data during initial data checks
-qc_comment               String         Reasons for the `qc_flag` being set to its value
+longitude                Float          The longitude at which the record was taken
+latitude                 Float          The latitude at which the record was taken
+run_type                 String         The run type for this record
+diagnostic_values        String         A serialized Java `Properties` object containing values from the diagnostic sensors
+sensor_type_value**      Double         Values extracted from the data files
 
-## `calculation_data`
-This table will hold the results of calculations performed on the `voyage_data`, including
-any intermediate results that are required. It will also hold the results of the automatic and
-user QC process.
+**One `sensor_type_value` field will be creted in the table for each sensor defined in the
+Sensors Configuration for the application (this implies that the database schema must be
+custom-built for each application). It will be filled in according from data extracted
+from the files in the `dataset`, with any averaging, fallbacks, missing values etc. applied.
+
+## _`calibration_data`_
+This table will hold data used for calibration. For many systems these will be identified by the Run Type
+in the raw data file; for others, calibration values will be entered manually. Note that this is different to
+the sensor calibrations stored in the `calibration` table.
+
+The exact data stored in this table will depend on the type of data being processed.
 
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
-voyage_id*               F_KEY          The voyage to which this data relates
-time*                    DateTime       The date/time of the record
-longitude                Float          The longitude at which the measurement was taken
-latitude                 Float          The latitude at which the measurement was taken
-run_type                 F_KEY          The run type for the measurement
-value0
-.
-.
-value255                 Float          Calculation values. These will vary according to the type of calculation being performed.
-qc_flag                  Integer        The QC flag assigned by the automatic QC routines
-qc_message               String         The message(s) from the automatic QC routines
-woce_flag                Integer        The WOCE flag assigned by the user
-woce_comment             String         The WOCE comment
+id*                      Integer        Primary Key
+dataset_id               F_KEY          The data set to which this calibration data relates
+time*                    DateTime       The date/time when the calibration data was recorded
+calibration_value**      Double         The calibration value
+use                      Boolean        Indicates whether or not this calibration record should be used
+use_message              String         Reason for not using this calibration record
+
+**One `calibration_value` field will exist for each type of calibration data that can be used.
+
+
+## _`calculation_data`_
+Each calculation defined for the application (e.g. pCO<sub>2</sub> or pH) will have its own table in the application.
+The calculation routine will be responsible for knowing what table name it uses, and what fields are in that table.
+(Similarly, the calculation routine must also know which sensor fields are in the `dataset_data` table.) Each calculation
+table must contain at least the following fields:
+
+Field                    Type           Description
+--------------------     ------------   -------------------------------------------------------------------------
+measurement_id*          F_KEY          The row in `dataset_data` on which this calculation is based
+auto_qc_flag             Integer        The QC flag assigned by the automatic QC routines
+auto_qc_message          String         The message(s) from the automatic QC routines
+user_qc_flag             Integer        The final QC flag assigned by the user
+user_qc_comment          String         The user's QC comment
+
+The actual calculation fields will depend on the type of data being processed.
 
 
 # Jobs
