@@ -91,6 +91,12 @@ public class SensorType {
 	private boolean usedInCalculation = true;
 	
 	/**
+	 * Indicates whether or not this sensor's data is calibrated
+	 * using data
+	 */
+	private boolean calibratedUsingData = false;
+	
+	/**
 	 * Simple constructor - sets all values
 	 * @param name The name of the sensor type
 	 * @param required Whether or not the sensor type is required
@@ -100,7 +106,8 @@ public class SensorType {
 	 * @param dependsQuestion The question that determines whether the {@link #dependsOn} criterion will be honoured.
 	 * @param many Whether or not multiple instances of the sensor are allowed
 	 */
-	protected SensorType(String name, boolean required, boolean named, String requiredGroup, String dependsOn, String dependsQuestion, boolean many, boolean averaged, boolean postCalibrated, boolean coreSensor, boolean usedInCaclulation) {
+	protected SensorType(String name, boolean required, boolean named, String requiredGroup, String dependsOn, String dependsQuestion, boolean many, boolean averaged,
+			boolean postCalibrated, boolean coreSensor, boolean usedInCaclulation, boolean calibratedUsingData) {
 		this.name = name;
 		this.required = required;
 		this.named = named;
@@ -121,6 +128,7 @@ public class SensorType {
 		this.postCalibrated = postCalibrated;
 		this.coreSensor = coreSensor;
 		this.usedInCalculation = usedInCaclulation;
+		this.calibratedUsingData = calibratedUsingData;
 	}
 	
 	/**
@@ -267,4 +275,12 @@ public class SensorType {
 		return result;
 	}
 
+	/**
+	 * Determine whether or not this sensor's data
+	 * is calibrated using data
+	 * @return {@code true} if the sensor is calibrated from data; {@code false} if it is not. 
+	 */
+	public boolean isCalibratedUsingData() {
+		return calibratedUsingData;
+	}
 }
