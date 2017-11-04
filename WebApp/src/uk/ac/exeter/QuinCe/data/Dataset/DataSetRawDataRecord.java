@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 
 /**
@@ -18,7 +19,7 @@ public class DataSetRawDataRecord {
 	 * The data set to which the record belongs
 	 */
 	private DataSet dataSet;
-	
+		
 	/**
 	 * The date of the record
 	 */
@@ -37,7 +38,12 @@ public class DataSetRawDataRecord {
 	/**
 	 * The Run Type of the record
 	 */
-	private RunTypeCategory runType;
+	private String runType;
+	
+	/**
+	 * The Run Type Category of the record
+	 */
+	private RunTypeCategory runTypeCategory;
 	
 	/**
 	 * Map holding the field values used in calculations
@@ -56,13 +62,15 @@ public class DataSetRawDataRecord {
 	 * @param longitude The longitude
 	 * @param latitude The latitude
 	 * @param runType The Run Type
+	 * @param runTypeCategory The Run Type Category
 	 */
-	public DataSetRawDataRecord(DataSet dataSet, LocalDateTime date, double longitude, double latitude, RunTypeCategory runType) {
+	public DataSetRawDataRecord(DataSet dataSet, LocalDateTime date, double longitude, double latitude, String runType, RunTypeCategory runTypeCategory) {
 		this.dataSet = dataSet;
 		this.date = date;
 		this.longitude = longitude;
 		this.latitude = latitude;
 		this.runType = runType;
+		this.runTypeCategory = runTypeCategory;
 		
 		sensorValue = new TreeMap<String, Double>();
 		diagnosticValues = new HashMap<String, Double>();
@@ -89,17 +97,19 @@ public class DataSetRawDataRecord {
 	/**
 	 * Determine whether or not this record is for a measurement
 	 * @return {@code true} if this is a measurement; {@code false} otherwise
+	 * @throws NoSuchCategoryException If the record's run type does not exist
 	 */
-	public boolean isMeasurement() {
-		return runType.getType() == RunTypeCategory.TYPE_MEASUREMENT;
+	public boolean isMeasurement() throws NoSuchCategoryException {
+		return runTypeCategory.getType() == RunTypeCategory.TYPE_MEASUREMENT;
 	}
 	
 	/**
 	 * Determine whether or not this is a calibration record
 	 * @return {@code true} if this is a calibration record; {@code false} otherwise
+	 * @throws NoSuchCategoryException If the record's run type does not exist
 	 */
-	public boolean isCalibration() {
-		return runType.getType() == RunTypeCategory.TYPE_CALIBRATION;
+	public boolean isCalibration() throws NoSuchCategoryException {
+		return runTypeCategory.getType() == RunTypeCategory.TYPE_CALIBRATION;
 	}
 	
 	/**
@@ -139,7 +149,7 @@ public class DataSetRawDataRecord {
 	 * Get the Run Type
 	 * @return The Run Type
 	 */
-	public RunTypeCategory getRunType() {
+	public String getRunType() {
 		return runType;
 	}
 	

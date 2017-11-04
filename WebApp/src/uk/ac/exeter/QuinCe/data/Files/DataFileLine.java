@@ -79,7 +79,7 @@ public class DataFileLine {
 		// If a file does not have run types, it can always be used
 		// for a measurement. So we only check files that have them.
 		if (fileDefinition.hasRunTypes()) {
-			RunTypeCategory runType = file.getRunType(line);
+			RunTypeCategory runType = file.getRunTypeCategory(line);
 			ignored = runType.equals(RunTypeCategory.IGNORED_CATEGORY);
 		}
 			
@@ -92,8 +92,18 @@ public class DataFileLine {
 	 * @throws DataFileException If the Run Type cannot be extracted from the line
 	 * @throws FileDefinitionException If the Run Types are invalid for this file
 	 */
-	public RunTypeCategory getRunType() throws DataFileException, FileDefinitionException {
+	public String getRunType() throws DataFileException, FileDefinitionException {
 		return file.getRunType(line);
+	}
+	
+	/**
+	 * Get the line's Run Type
+	 * @return The Run Type
+	 * @throws DataFileException If the Run Type cannot be extracted from the line
+	 * @throws FileDefinitionException If the Run Types are invalid for this file
+	 */
+	public RunTypeCategory getRunTypeCategory() throws DataFileException, FileDefinitionException {
+		return file.getRunTypeCategory(line);
 	}
 	
 	/**

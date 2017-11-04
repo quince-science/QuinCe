@@ -262,7 +262,7 @@ public class DataFile {
 				
 				if (fileDefinition.hasRunTypes()) {
 					try {
-						RunTypeCategory runType = fileDefinition.getRunType(line);
+						RunTypeCategory runType = fileDefinition.getRunTypeCategory(line);
 						if (runType.equals(RunTypeCategory.IGNORED_CATEGORY)) {
 							checkColumnCount = false;
 						}
@@ -393,13 +393,32 @@ public class DataFile {
 	 * @throws DataFileException If the data cannot be extracted
 	 * @throws FileDefinitionException If the run types are invalid
 	 */
-	public RunTypeCategory getRunType(int line) throws DataFileException, FileDefinitionException {
-		RunTypeCategory runType = null;
+	public String getRunType(int line) throws DataFileException, FileDefinitionException {
+		String runType = null;
 		int runTypeColumn = fileDefinition.getRunTypeColumn();
 		
 		if (runTypeColumn > -1) {
 			loadContents();
 			runType = fileDefinition.getRunType(contents.get(line));
+		}
+
+		return runType;
+	}
+
+	/**
+	 * Get the run type for a given line. Returns {@code null} if this file does not contain run types
+	 * @param line The line
+	 * @return The run type for the line
+	 * @throws DataFileException If the data cannot be extracted
+	 * @throws FileDefinitionException If the run types are invalid
+	 */
+	public RunTypeCategory getRunTypeCategory(int line) throws DataFileException, FileDefinitionException {
+		RunTypeCategory runType = null;
+		int runTypeColumn = fileDefinition.getRunTypeColumn();
+		
+		if (runTypeColumn > -1) {
+			loadContents();
+			runType = fileDefinition.getRunTypeCategory(contents.get(line));
 		}
 
 		return runType;

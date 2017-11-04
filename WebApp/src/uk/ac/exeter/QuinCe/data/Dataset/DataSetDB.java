@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -325,8 +326,9 @@ public class DataSetDB {
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DataSetException If a non-measurement record is supplied
 	 * @throws DatabaseException If a database error occurs
+	 * @throws NoSuchCategoryException If the record's Run Type is not recognised
 	 */
-	public static PreparedStatement storeRecord(Connection conn, DataSetRawDataRecord record, PreparedStatement datasetDataStatement) throws MissingParamException, DataSetException, DatabaseException {
+	public static PreparedStatement storeRecord(Connection conn, DataSetRawDataRecord record, PreparedStatement datasetDataStatement) throws MissingParamException, DataSetException, DatabaseException, NoSuchCategoryException {
 		
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkMissing(record, "record");
@@ -346,7 +348,7 @@ public class DataSetDB {
 			datasetDataStatement.setLong(2, DateTimeUtils.dateToLong(record.getDate()));
 			datasetDataStatement.setDouble(3, record.getLongitude());
 			datasetDataStatement.setDouble(4, record.getLatitude());
-			datasetDataStatement.setString(5, record.getRunType().getName());
+			datasetDataStatement.setString(5, record.getRunType());
 			datasetDataStatement.setString(6, record.getDiagnosticValuesString());
 			
 			int currentField = 6;

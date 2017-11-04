@@ -2,14 +2,12 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -41,67 +39,51 @@ public class CalibrationDataDB {
 	 * 
 	 * @param conn A database connection
 	 * @param record The record to be stored
-	 * @param datasetDataStatement A previously generated statement for inserting a record. Can be null.
+	 * @param statement A previously generated statement for inserting a record. Can be null.
 	 * @return A {@link PreparedStatement} that can be used for storing subsequent records
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DataSetException If a non-measurement record is supplied
 	 * @throws DatabaseException If a database error occurs
+	 * @throws NoSuchCategoryException If the record's Run Type is not recognised
 	 */
-	public static PreparedStatement storeCalibrationRecord(Connection conn, DataSetRawDataRecord record, PreparedStatement datasetDataStatement) throws MissingParamException, DataSetException, DatabaseException {
+	public static PreparedStatement storeCalibrationRecord(Connection conn, DataSetRawDataRecord record, PreparedStatement statement) throws MissingParamException, DataSetException, DatabaseException, NoSuchCategoryException {
 		
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkMissing(record, "record");
 
-		if (!record.isMeasurement()) {
-			throw new DataSetException("Record is not a measurement");
+		if (!record.isCalibration()) {
+			throw new DataSetException("Record is not a calibration record");
 		}
 		
-		ResultSet createdKeys = null;
-		
 		try {
-			if (null == datasetDataStatement) {
-				datasetDataStatement = createInsertRecordStatement(conn, record);
+			if (null == statement) {
+				statement = createInsertRecordStatement(conn, record);
 			}
 			
-			datasetDataStatement.setLong(1, record.getDatasetId());
-			datasetDataStatement.setLong(2, DateTimeUtils.dateToLong(record.getDate()));
-			datasetDataStatement.setDouble(3, record.getLongitude());
-			datasetDataStatement.setDouble(4, record.getLatitude());
-			datasetDataStatement.setString(5, record.getRunType().getName());
-			datasetDataStatement.setString(6, record.getDiagnosticValuesString());
+			statement.setLong(1, record.getDatasetId());
+			statement.setLong(2, DateTimeUtils.dateToLong(record.getDate()));
+			statement.setString(3, record.getRunType());
 			
-			int currentField = 6;
+			int currentField = 3;
 			SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
 			for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-				if (sensorType.isUsedInCalculation()) {
+				if (sensorType.isCalibratedUsingData()) {
 					currentField++;
 					Double sensorValue = record.getSensorValue(sensorType.getName());
 					if (null == sensorValue) {
-						datasetDataStatement.setNull(currentField, Types.DOUBLE);
+						statement.setNull(currentField, Types.DOUBLE);
 					} else {
-						datasetDataStatement.setDouble(currentField, sensorValue);
+						statement.setDouble(currentField, sensorValue);
 					}
 				}
 			}
 			
-			datasetDataStatement.execute();
-			
-			CalculationDB calculationDB = CalculationDBFactory.getCalculatioDB();
-			
-			createdKeys = datasetDataStatement.getGeneratedKeys();
-			while (createdKeys.next()) {
-				
-				calculationDB.createCalculationRecord(conn, createdKeys.getLong(1));
-				
-			}
-			
+			statement.execute();
 		} catch (SQLException e) {
 			throw new DatabaseException("Error storing dataset record", e);
-		} finally {
-			DatabaseUtils.closeResultSets(createdKeys);
 		}
 		
-		return datasetDataStatement;
+		return statement;
 	}
 
 	/**

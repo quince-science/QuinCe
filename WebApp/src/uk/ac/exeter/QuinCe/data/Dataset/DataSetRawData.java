@@ -453,7 +453,7 @@ public abstract class DataSetRawData {
 			// Get the Run Type of the current line
 			RunTypeCategory currentRunType = null;
 			if (!currentLineIndex.equals(NOT_STARTED)) {
-				currentRunType = getLine(fileIndex, currentLineIndex).getRunType();
+				currentRunType = getLine(fileIndex, currentLineIndex).getRunTypeCategory();
 			}
 			
 			// Get the next line index
@@ -468,7 +468,7 @@ public abstract class DataSetRawData {
 				result = EOF;
 				finished = true;
 			} else {
-				RunTypeCategory nextRunType = getLine(fileIndex, nextLineIndex).getRunType();
+				String nextRunType = getLine(fileIndex, nextLineIndex).getRunType();
 				
 				if (nextRunType.equals(currentRunType)) {
 					// Check to see if we're in the post-flushing period
@@ -498,7 +498,7 @@ public abstract class DataSetRawData {
 					
 					// Assuming we didn't fall off the end of the file...
 					if (!finished) {
-						RunTypeCategory newRunType = getLine(fileIndex, nextLineIndex).getRunType();
+						String newRunType = getLine(fileIndex, nextLineIndex).getRunType();
 						
 						// We are at the start of a new run type. Skip over the pre-flushing stage
 						boolean preFlushingTimeProcessed = false;
@@ -538,7 +538,7 @@ public abstract class DataSetRawData {
 	 * @throws DataFileException If the line data cannot be processed
 	 * @throws FileDefinitionException If an invalid Run Type is detected
 	 */
-	private boolean inPostFlushingPeriod(int fileIndex, RunTypeCategory runType, ExtendedMutableInt line) throws DataFileException, FileDefinitionException {
+	private boolean inPostFlushingPeriod(int fileIndex, String runType, ExtendedMutableInt line) throws DataFileException, FileDefinitionException {
 		
 		boolean inPostFlushing = false;
 		
@@ -601,7 +601,7 @@ public abstract class DataSetRawData {
 	 * @return {@code true} if the flushing time expires before the Run Type changes; {@code false} if a new Run Type is encountered
 	 * @throws FileDefinitionException If an invalid Run Type is found
 	 */
-	private boolean skipPreFlushingTime(int fileIndex, RunTypeCategory runType, ExtendedMutableInt lineIndex) throws DataFileException, FileDefinitionException {
+	private boolean skipPreFlushingTime(int fileIndex, String runType, ExtendedMutableInt lineIndex) throws DataFileException, FileDefinitionException {
 		
 		boolean withinRunType = true;
 		
@@ -668,7 +668,7 @@ public abstract class DataSetRawData {
 		DataSetRawDataRecord record;
 		
 		try {
-			record = new DataSetRawDataRecord(dataSet, getSelectedTime(), getSelectedLatitude(), getSelectedLongitude(), getSelectedRunType());
+			record = new DataSetRawDataRecord(dataSet, getSelectedTime(), getSelectedLatitude(), getSelectedLongitude(), getSelectedRunType(), getSelectedRunTypeCategory());
 
 			for (Map.Entry<SensorType, Set<SensorAssignment>> entry : instrument.getSensorAssignments().entrySet()) {
 				
@@ -748,10 +748,22 @@ public abstract class DataSetRawData {
 	 * @throws DataFileException If the run type cannot be extracted
 	 * @throws FileDefinitionException If the run type is invalid
 	 */
-	private RunTypeCategory getSelectedRunType() throws DataFileException, FileDefinitionException {
+	private String getSelectedRunType() throws DataFileException, FileDefinitionException {
 		int fileIndex = getCoreFileIndex();
 		int currentRow = selectedRows.get(fileIndex).get(0);
 		return data.get(fileIndex).get(currentRow).getRunType();
+	}
+	
+	/**
+	 * Get the Run Type Category of the currently selected row(s)
+	 * @return The Run Type Category
+	 * @throws DataFileException If the run type cannot be extracted
+	 * @throws FileDefinitionException If the run type is invalid
+	 */
+	private RunTypeCategory getSelectedRunTypeCategory() throws DataFileException, FileDefinitionException {
+		int fileIndex = getCoreFileIndex();
+		int currentRow = selectedRows.get(fileIndex).get(0);
+		return data.get(fileIndex).get(currentRow).getRunTypeCategory();
 	}
 	
 	/**

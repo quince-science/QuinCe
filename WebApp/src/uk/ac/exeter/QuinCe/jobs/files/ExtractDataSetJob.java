@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
@@ -67,7 +68,8 @@ public class ExtractDataSetJob extends Job {
 	protected void execute(JobThread thread) throws JobFailedException {
 		
 		Connection conn = null;
-		PreparedStatement storeStatement = null;
+		PreparedStatement storeMeasurementStatement = null;
+		PreparedStatement storeCalibrationStatement = null;
 		
 		try {
 			conn = dataSource.getConnection();
@@ -90,9 +92,10 @@ public class ExtractDataSetJob extends Job {
 
 			DataSetRawDataRecord record = rawData.getNextRecord();
 			while (null != record) {
-
 				if (record.isMeasurement()) {
-					storeStatement = DataSetDB.storeRecord(conn, record, storeStatement);
+					storeMeasurementStatement = DataSetDB.storeRecord(conn, record, storeMeasurementStatement);
+				} else if (record.isCalibration()) {
+					storeCalibrationStatement = CalibrationDataDB.storeCalibrationRecord(conn, record, storeCalibrationStatement);
 				}
 				
 				// Read the next record
@@ -110,7 +113,7 @@ public class ExtractDataSetJob extends Job {
 			}
 			throw new JobFailedException(id, e);
 		} finally {
-			DatabaseUtils.closeStatements(storeStatement);
+			DatabaseUtils.closeStatements(storeMeasurementStatement, storeCalibrationStatement);
 			DatabaseUtils.closeConnection(conn);
 		}
 	}
@@ -131,6 +134,7 @@ public class ExtractDataSetJob extends Job {
 	private void reset(Connection conn) throws MissingParamException, InvalidDataSetStatusException, DatabaseException {
 		
 		try {
+			CalibrationDataDB.deleteDatasetData(conn, dataSet);
 			CalculationDBFactory.getCalculationDB().deleteDatasetCalculationData(conn, dataSet);
 			DataSetDB.deleteDatasetData(conn, dataSet);
 			DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_WAITING);
