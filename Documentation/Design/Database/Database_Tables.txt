@@ -267,6 +267,8 @@ id*                      Integer        Primary Key
 dataset_id               F_KEY          The data set to which this calibration data relates
 time*                    DateTime       The date/time when the calibration data was recorded
 calibration_value**      Double         The calibration value
+use                      Boolean        Indicates whether or not this calibration record should be used
+use_message              String         Reason for not using this calibration record
 
 **One `calibration_value` field will exist for each type of calibration data that can be used.
 

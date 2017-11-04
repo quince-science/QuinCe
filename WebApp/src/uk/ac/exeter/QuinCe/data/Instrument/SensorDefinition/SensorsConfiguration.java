@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.utils.FileUtils;
@@ -100,6 +101,14 @@ public class SensorsConfiguration {
 		}
 		
 		buildSensorTypes(configFile);
+	}
+	
+	/**
+	 * Get the list of sensor types in this configuration
+	 * @return The sensor types
+	 */
+	public List<SensorType> getSensorTypes() {
+		return Collections.unmodifiableList(sensorTypes);
 	}
 	
 	/**

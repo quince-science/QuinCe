@@ -1,8 +1,10 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
@@ -12,13 +14,12 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -63,7 +64,14 @@ public class ExtractDataSetJob extends Job {
 
 	@Override
 	protected void execute(JobThread thread) throws JobFailedException {
+		
+		Connection conn = null;
+		
 		try {
+			
+			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
+			
 			// Get the data set from the database
 			dataSet = DataSetDB.getDataSet(dataSource, Long.parseLong(parameters.get(ID_PARAM)));
 			
@@ -77,62 +85,32 @@ public class ExtractDataSetJob extends Job {
 			instrument = InstrumentDB.getInstrument(dataSource, dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
 			
 			DataSetRawData rawData = DataSetRawDataFactory.getDataSetRawData(dataSource, dataSet, instrument);
-			
+
+			PreparedStatement storeStatement = null;
 			DataSetRawDataRecord record = rawData.getNextRecord();
 			while (null != record) {
 
-				for (Map.Entry<SensorType, Set<SensorAssignment>> entry : instrument.getSensorAssignments().entrySet()) {
-					
-					SensorType sensorType = entry.getKey();
-					Set<SensorAssignment> assignments = entry.getValue();
-					
-					if (sensorType.isUsedInCalculation()) {
-						
-						double primarySensorTotal = 0.0;
-						int primarySensorCount = 0;
-						
-						double fallbackSensorTotal = 0.0;
-						int fallbackSensorCount = 0;
-						
-						for (SensorAssignment assignment : assignments) {
-							Double sensorValue = rawData.getSensorValue(assignment);
-							if (null != sensorValue) {
-								if (assignment.isPrimary()) {
-									primarySensorTotal += sensorValue;
-									primarySensorCount++;
-								} else {
-									fallbackSensorTotal+= sensorValue;
-									fallbackSensorCount++;
-								}
-							}
-						}
-						
-						Double finalSensorValue = null;
-						
-						if (primarySensorCount > 0) {
-							finalSensorValue = new Double(primarySensorTotal / primarySensorCount);
-						} else if (fallbackSensorCount > 0) {
-							finalSensorValue = new Double(fallbackSensorTotal / fallbackSensorCount);
-						}
-
-						record.setValue(sensorType.getName(), finalSensorValue);
-					} else {
-						for (SensorAssignment assignment : assignments) {
-							record.setDiagnosticValue(assignment.getSensorName(), rawData.getSensorValue(assignment));
-						}
-					}
-					
+				if (record.isMeasurement()) {
+					storeStatement = DataSetDB.storeRecord(conn, record, storeStatement);
 				}
-				
-				
 				
 				// Read the next record
 				record = rawData.getNextRecord();
 			}
 			
+			conn.commit();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			throw new JobFailedException(id, e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
 		}
 	}
 

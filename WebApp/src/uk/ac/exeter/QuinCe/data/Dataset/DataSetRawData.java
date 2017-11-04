@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -21,6 +22,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.ExtendedMutableInt;
@@ -190,7 +192,7 @@ public abstract class DataSetRawData {
 	 * 
 	 * <p>
 	 *   This will collect all rows that are relevant under the averaging scheme
-	 *   for the data set
+	 *   for the data set.
 	 * </p>
 	 * 
 	 * @return {@code true} if a new record is discovered; {@code false} if there are no more records in the data set
@@ -668,8 +670,48 @@ public abstract class DataSetRawData {
 		try {
 			record = new DataSetRawDataRecord(dataSet, getSelectedTime(), getSelectedLatitude(), getSelectedLongitude(), getSelectedRunType());
 
-			
-			
+			for (Map.Entry<SensorType, Set<SensorAssignment>> entry : instrument.getSensorAssignments().entrySet()) {
+				
+				SensorType sensorType = entry.getKey();
+				Set<SensorAssignment> assignments = entry.getValue();
+				
+				if (sensorType.isUsedInCalculation()) {
+					
+					double primarySensorTotal = 0.0;
+					int primarySensorCount = 0;
+					
+					double fallbackSensorTotal = 0.0;
+					int fallbackSensorCount = 0;
+					
+					for (SensorAssignment assignment : assignments) {
+						Double sensorValue = getSensorValue(assignment);
+						if (null != sensorValue) {
+							if (assignment.isPrimary()) {
+								primarySensorTotal += sensorValue;
+								primarySensorCount++;
+							} else {
+								fallbackSensorTotal+= sensorValue;
+								fallbackSensorCount++;
+							}
+						}
+					}
+					
+					Double finalSensorValue = null;
+					
+					if (primarySensorCount > 0) {
+						finalSensorValue = new Double(primarySensorTotal / primarySensorCount);
+					} else if (fallbackSensorCount > 0) {
+						finalSensorValue = new Double(fallbackSensorTotal / fallbackSensorCount);
+					}
+
+					record.setSensorValue(sensorType.getName(), finalSensorValue);
+				} else {
+					for (SensorAssignment assignment : assignments) {
+						record.setDiagnosticValue(assignment.getSensorName(), getSensorValue(assignment));
+					}
+				}
+				
+			}
 		} catch (Exception e) {
 			throw new DataFileException(e);
 		}

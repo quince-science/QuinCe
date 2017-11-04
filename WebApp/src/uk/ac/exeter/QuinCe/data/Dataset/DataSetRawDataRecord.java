@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 
@@ -41,7 +42,7 @@ public class DataSetRawDataRecord {
 	/**
 	 * Map holding the field values used in calculations
 	 */
-	private Map<String, Double> fieldValues;
+	private Map<String, Double> sensorValue;
 	
 	/**
 	 * Map holding values from diagnostic sensors
@@ -63,7 +64,7 @@ public class DataSetRawDataRecord {
 		this.latitude = latitude;
 		this.runType = runType;
 		
-		fieldValues = new HashMap<String, Double>();
+		sensorValue = new TreeMap<String, Double>();
 		diagnosticValues = new HashMap<String, Double>();
 	}
 	
@@ -72,8 +73,8 @@ public class DataSetRawDataRecord {
 	 * @param sensorName The sensor name
 	 * @param value The value
 	 */
-	public void setValue(String sensorName, Double value) {
-		fieldValues.put(sensorName, value);
+	public void setSensorValue(String sensorName, Double value) {
+		sensorValue.put(sensorName, value);
 	}
 	
 	/**
@@ -82,6 +83,90 @@ public class DataSetRawDataRecord {
 	 * @param value The value
 	 */
 	public void setDiagnosticValue(String sensorName, Double value) {
-		fieldValues.put(sensorName, value);
+		sensorValue.put(sensorName, value);
+	}
+	
+	/**
+	 * Determine whether or not this record is for a measurement
+	 * @return {@code true} if this is a measurement; {@code false} otherwise
+	 */
+	public boolean isMeasurement() {
+		return runType.getType() == RunTypeCategory.TYPE_MEASUREMENT;
+	}
+	
+	/**
+	 * Determine whether or not this is a calibration record
+	 * @return {@code true} if this is a calibration record; {@code false} otherwise
+	 */
+	public boolean isCalibration() {
+		return runType.getType() == RunTypeCategory.TYPE_CALIBRATION;
+	}
+	
+	/**
+	 * Get the database ID of the dataset to which this record
+	 * belongs
+	 * @return The dataset ID
+	 */
+	public long getDatasetId() {
+		return dataSet.getId();
+	}
+	
+	/**
+	 * Get the date of the record
+	 * @return The record date
+	 */
+	public LocalDateTime getDate() {
+		return date;
+	}
+	
+	/**
+	 * Get the longitude
+	 * @return The longitude
+	 */
+	public double getLongitude() {
+		return longitude;
+	}
+	
+	/**
+	 * Get the latitude
+	 * @return The latitude
+	 */
+	public double getLatitude() {
+		return latitude;
+	}
+	
+	/**
+	 * Get the Run Type
+	 * @return The Run Type
+	 */
+	public RunTypeCategory getRunType() {
+		return runType;
+	}
+	
+	/**
+	 * Get the diagnostic values as a String
+	 * @return The diagnostic values String
+	 */
+	public String getDiagnosticValuesString() {
+		
+		StringBuilder result = new StringBuilder();
+		
+		for (Map.Entry<String, Double> entry : diagnosticValues.entrySet()) {
+			result.append(entry.getKey());
+			result.append(':');
+			result.append(entry.getValue());
+			result.append(';');
+		}
+		
+		return result.toString();
+	}
+	
+	/**
+	 * Get a sensor value
+	 * @param sensorName The sensor name
+	 * @return The sensor value
+	 */
+	public Double getSensorValue(String sensorName) {
+		return sensorValue.get(sensorName);
 	}
 }
