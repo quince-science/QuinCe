@@ -13,6 +13,8 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -318,13 +320,13 @@ public class DataSetDB {
 	 * 
 	 * @param conn A database connection
 	 * @param record The record to be stored
-	 * @param statement A previously generated statement for inserting a record. Can be null.
+	 * @param datasetDataStatement A previously generated statement for inserting a record. Can be null.
 	 * @return A {@link PreparedStatement} that can be used for storing subsequent records
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DataSetException If a non-measurement record is supplied
 	 * @throws DatabaseException If a database error occurs
 	 */
-	public static PreparedStatement storeRecord(Connection conn, DataSetRawDataRecord record, PreparedStatement statement) throws MissingParamException, DataSetException, DatabaseException {
+	public static PreparedStatement storeRecord(Connection conn, DataSetRawDataRecord record, PreparedStatement datasetDataStatement) throws MissingParamException, DataSetException, DatabaseException {
 		
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkMissing(record, "record");
@@ -333,17 +335,19 @@ public class DataSetDB {
 			throw new DataSetException("Record is not a measurement");
 		}
 		
+		ResultSet createdKeys = null;
+		
 		try {
-			if (null == statement) {
-				statement = createInsertRecordStatement(conn, record);
+			if (null == datasetDataStatement) {
+				datasetDataStatement = createInsertRecordStatement(conn, record);
 			}
 			
-			statement.setLong(1, record.getDatasetId());
-			statement.setLong(2, DateTimeUtils.dateToLong(record.getDate()));
-			statement.setDouble(3, record.getLongitude());
-			statement.setDouble(4, record.getLatitude());
-			statement.setString(5, record.getRunType().getName());
-			statement.setString(6, record.getDiagnosticValuesString());
+			datasetDataStatement.setLong(1, record.getDatasetId());
+			datasetDataStatement.setLong(2, DateTimeUtils.dateToLong(record.getDate()));
+			datasetDataStatement.setDouble(3, record.getLongitude());
+			datasetDataStatement.setDouble(4, record.getLatitude());
+			datasetDataStatement.setString(5, record.getRunType().getName());
+			datasetDataStatement.setString(6, record.getDiagnosticValuesString());
 			
 			int currentField = 6;
 			SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
@@ -352,20 +356,31 @@ public class DataSetDB {
 					currentField++;
 					Double sensorValue = record.getSensorValue(sensorType.getName());
 					if (null == sensorValue) {
-						statement.setNull(currentField, Types.DOUBLE);
+						datasetDataStatement.setNull(currentField, Types.DOUBLE);
 					} else {
-						statement.setDouble(currentField, sensorValue);
+						datasetDataStatement.setDouble(currentField, sensorValue);
 					}
 				}
 			}
 			
-			statement.execute();
+			datasetDataStatement.execute();
+			
+			CalculationDB calculationDB = CalculationDBFactory.getCalculatioDB();
+			
+			createdKeys = datasetDataStatement.getGeneratedKeys();
+			while (createdKeys.next()) {
+				
+				calculationDB.createCalculationRecord(conn, createdKeys.getLong(1));
+				
+			}
 			
 		} catch (SQLException e) {
 			throw new DatabaseException("Error storing dataset record", e);
+		} finally {
+			DatabaseUtils.closeResultSets(createdKeys);
 		}
 		
-		return statement;
+		return datasetDataStatement;
 	}
 	
 	/**
@@ -421,6 +436,5 @@ public class DataSetDB {
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
 		}
-		
 	}
 }

@@ -284,8 +284,8 @@ Field                    Type           Description
 measurement_id*          F_KEY          The row in `dataset_data` on which this calculation is based
 auto_qc_flag             Integer        The QC flag assigned by the automatic QC routines
 auto_qc_message          String         The message(s) from the automatic QC routines
-woce_flag                Integer        The WOCE flag assigned by the user
-woce_comment             String         The WOCE comment
+user_qc_flag             Integer        The final QC flag assigned by the user
+user_qc_comment          String         The user's QC comment
 
 The actual calculation fields will depend on the type of data being processed.
 

@@ -66,6 +66,7 @@ public class ExtractDataSetJob extends Job {
 	protected void execute(JobThread thread) throws JobFailedException {
 		
 		Connection conn = null;
+		PreparedStatement storeStatement = null;
 		
 		try {
 			conn = dataSource.getConnection();
@@ -86,7 +87,6 @@ public class ExtractDataSetJob extends Job {
 			
 			DataSetRawData rawData = DataSetRawDataFactory.getDataSetRawData(dataSource, dataSet, instrument);
 
-			PreparedStatement storeStatement = null;
 			DataSetRawDataRecord record = rawData.getNextRecord();
 			while (null != record) {
 
@@ -110,6 +110,7 @@ public class ExtractDataSetJob extends Job {
 			}
 			throw new JobFailedException(id, e);
 		} finally {
+			DatabaseUtils.closeStatements(storeStatement);
 			DatabaseUtils.closeConnection(conn);
 		}
 	}

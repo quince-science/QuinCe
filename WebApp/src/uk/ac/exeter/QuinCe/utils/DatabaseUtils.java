@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -121,6 +122,19 @@ public class DatabaseUtils {
 		return result;
 	}
 	
+	/**
+	 * Create an insert statement for a table and list of fields
+	 * @param conn A database connection
+	 * @param table The table
+	 * @param fields The fields
+	 * @return The query
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws SQLException If the statement cannot be created
+	 */
+	public static PreparedStatement createInsertStatement(Connection conn, String table, List<String> fields) throws MissingParamException, SQLException {
+		return createInsertStatement(conn, table, fields, Statement.NO_GENERATED_KEYS);
+	}
+
 	/**
 	 * Create an insert statement for a table and list of fields
 	 * @param conn A database connection
