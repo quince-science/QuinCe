@@ -68,21 +68,21 @@ public class ExtractDataSetJob extends Job {
 		Connection conn = null;
 		
 		try {
-			
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
-			
+
 			// Get the data set from the database
-			dataSet = DataSetDB.getDataSet(dataSource, Long.parseLong(parameters.get(ID_PARAM)));
-			
+			dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
+
 			// Reset the data set and all associated data
-			reset();
+			reset(conn);
 			
 			// Set processing status
-			DataSetDB.setDatasetStatus(dataSource, dataSet, DataSet.STATUS_DATA_EXTRACTION);
+			DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_DATA_EXTRACTION);
+			conn.commit();
 
 			// Get related data
-			instrument = InstrumentDB.getInstrument(dataSource, dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
+			instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
 			
 			DataSetRawData rawData = DataSetRawDataFactory.getDataSetRawData(dataSource, dataSet, instrument);
 
@@ -127,7 +127,14 @@ public class ExtractDataSetJob extends Job {
 	 * @throws InvalidDataSetStatusException If the method sets an invalid data set status
 	 * @throws DatabaseException If a database error occurs
 	 */
-	private void reset() throws MissingParamException, InvalidDataSetStatusException, DatabaseException {
-		DataSetDB.setDatasetStatus(dataSource, dataSet, DataSet.STATUS_WAITING);
+	private void reset(Connection conn) throws MissingParamException, InvalidDataSetStatusException, DatabaseException {
+		
+		try {
+			DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_WAITING);
+			DataSetDB.deleteDatasetData(conn, dataSet);
+			conn.commit();
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while resetting dataset data", e);
+		}
 	}
 }

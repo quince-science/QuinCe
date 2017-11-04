@@ -62,6 +62,12 @@ public class DataSetDB {
 			+ "SET status = ? WHERE id = ?";
 	
 	/**
+	 * Statement to delete all records for a given dataset
+	 */
+	private static final String DELETE_DATASET_QUERY = "DELETE FROM dataset_data "
+			+ "WHERE dataset_id = ?";
+	
+	/**
 	 * Get the list of data sets defined for a given instrument
 	 * @param dataSource A data source
 	 * @param instrumentId The instrument's database ID
@@ -184,16 +190,42 @@ public class DataSetDB {
 	public static DataSet getDataSet(DataSource dataSource, long id) throws DatabaseException, MissingParamException, RecordNotFoundException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
+		
+		DataSet result = null;
+		Connection conn = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			result = getDataSet(conn, id);
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving data sets", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Get a data set using its database ID
+	 * @param conn A database connection
+	 * @param id The data set's id
+	 * @return The data set
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws RecordNotFoundException If the data set does not exist
+	 */
+	public static DataSet getDataSet(Connection conn, long id) throws DatabaseException, MissingParamException, RecordNotFoundException {
+		
+		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkZeroPositive(id, "id");
 		
 		DataSet result = null;
 		
-		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet record = null;
 		
 		try {
-			conn = dataSource.getConnection();
 			stmt = conn.prepareStatement(GET_DATASET_QUERY);
 			stmt.setLong(1, id);
 			
@@ -210,7 +242,6 @@ public class DataSetDB {
 		} finally {
 			DatabaseUtils.closeResultSets(record);
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
 		}
 		
 		return result;
@@ -228,17 +259,41 @@ public class DataSetDB {
 	public static void setDatasetStatus(DataSource dataSource, DataSet dataSet, int status) throws MissingParamException, InvalidDataSetStatusException, DatabaseException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
+		
+		Connection conn = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			setDatasetStatus(conn, dataSet, status);
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while setting dataset status", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	
+	/**
+	 * Set the status of a {@link DataSet}.
+	 * @param conn A database connection
+	 * @param dataSet The data set
+	 * @param status The new status
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws InvalidDataSetStatusException If the status is invalid
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public static void setDatasetStatus(Connection conn, DataSet dataSet, int status) throws MissingParamException, InvalidDataSetStatusException, DatabaseException {
+		
+		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkMissing(dataSet, "dataSet");
 		
 		if (!DataSet.validateStatus(status)) {
 			throw new InvalidDataSetStatusException(status);
 		}
 		
-		Connection conn = null;
 		PreparedStatement stmt = null;
 		
 		try {
-			conn = dataSource.getConnection();
 			stmt = conn.prepareStatement(SET_STATUS_STATEMENT);
 			
 			stmt.setInt(1, status);
@@ -252,7 +307,6 @@ public class DataSetDB {
 			throw new DatabaseException("Error while setting data set status", e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
 		}
 	}
 	
@@ -341,5 +395,32 @@ public class DataSetDB {
 		}
 		
 		return DatabaseUtils.createInsertStatement(conn, "dataset_data", fieldNames, Statement.RETURN_GENERATED_KEYS);
+	}
+	
+	/**
+	 * Delete all records for a given data set
+	 * @param conn A database connection
+	 * @param dataSet The data set
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public static void deleteDatasetData(Connection conn, DataSet dataSet) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkMissing(dataSet, "dataSet");
+		
+		PreparedStatement stmt = null;
+		
+		try {
+			stmt = conn.prepareStatement(DELETE_DATASET_QUERY);
+			stmt.setLong(1, dataSet.getId());
+			
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while deleting dataset data", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+		}
+		
 	}
 }
