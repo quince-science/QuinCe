@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -82,6 +83,34 @@ public abstract class CalculationDB {
 		}
 		
 		return insertStatement;
+	}
+	
+	/**
+	 * Delete the calculation data for a given data set
+	 * @param conn A database connection
+	 * @param dataSet The data set
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public void deleteDatasetCalculationData(Connection conn, DataSet dataSet) throws MissingParamException, DatabaseException {
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkMissing(dataSet, "dataSet");
+		
+		PreparedStatement stmt = null;
+		
+		try {
+			// TODO I think this could be done better. But maybe not.
+			String deleteStatement = "DELETE c.* FROM " + getCalculationTable() + " AS c INNER JOIN dataset_data AS d ON c.measurement_id = d.id WHERE d.dataset_id = ?";
+
+			stmt = conn.prepareStatement(deleteStatement);
+			stmt.setLong(1, dataSet.getId());
+			
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while deleting dataset data", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+		}
 
 	}
 }

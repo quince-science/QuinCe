@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
 
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
@@ -105,7 +106,6 @@ public class ExtractDataSetJob extends Job {
 			try {
 				conn.rollback();
 			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			throw new JobFailedException(id, e);
@@ -131,8 +131,9 @@ public class ExtractDataSetJob extends Job {
 	private void reset(Connection conn) throws MissingParamException, InvalidDataSetStatusException, DatabaseException {
 		
 		try {
-			DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_WAITING);
+			CalculationDBFactory.getCalculationDB().deleteDatasetCalculationData(conn, dataSet);
 			DataSetDB.deleteDatasetData(conn, dataSet);
+			DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_WAITING);
 			conn.commit();
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while resetting dataset data", e);
