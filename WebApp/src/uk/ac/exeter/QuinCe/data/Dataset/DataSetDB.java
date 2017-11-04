@@ -365,7 +365,7 @@ public class DataSetDB {
 			
 			datasetDataStatement.execute();
 			
-			CalculationDB calculationDB = CalculationDBFactory.getCalculatioDB();
+			CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
 			
 			createdKeys = datasetDataStatement.getGeneratedKeys();
 			while (createdKeys.next()) {
