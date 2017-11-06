@@ -11,17 +11,31 @@
 		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
 		<ui:insert name="localHead"></ui:insert>
 		<h:outputScript name="script/plotPage.js"/>
-		<h:outputStylesheet name="style/plotPage.css"/>
 	</h:head>
 	<h:body class="fullPage">
 		<ui:include src="/WEB-INF/templates/keep_alive.xhtml"/>
 
 		<!--  The main stylesheet goes here because it can then override PrimeFaces styles -->
 		<h:outputStylesheet name="style/main.css"/>
+		<h:outputStylesheet name="style/plotPage.css"/>
 
-		<div id="plotPageHeader">
-			<ui:insert name="plotHeader">Plot Header</ui:insert>
-		</div>
+		<h:form id="plotPageForm" method="post">
+			<p:toolbar styleClass="plotPageHeader">
+				<f:facet name="left">
+					<ui:insert name="dataSetName">Data Set Name</ui:insert>
+				</f:facet>
+			</p:toolbar>
+			
+			<div id="dataContent" class="plotPageContent">
+				The plots and table live here.
+			</div>
+			
+			<p:toolbar styleClass="plotPageFooter">
+				<f:facet name="right">
+					<ui:insert name="finishButton">Finish button here</ui:insert>
+				</f:facet>
+			</p:toolbar>
+		</h:form>
 
 	</h:body>
 </html>

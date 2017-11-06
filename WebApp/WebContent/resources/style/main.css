@@ -222,9 +222,8 @@ ul input {
   clear: both;
 }
 
-.fullpage {
-  width: 95%;
-  margin: auto;
+.fullPage {
+	overflow: hidden;
 }
 
 .statBarCol {

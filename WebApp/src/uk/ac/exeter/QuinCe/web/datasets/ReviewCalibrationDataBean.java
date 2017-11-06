@@ -22,6 +22,11 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 	private static final String NAV_PLOT = "calibration_data_plot";
 	
 	/**
+	 * Navigation to the dataset list
+	 */
+	private static final String NAV_DATASET_LIST = "dataset_list";
+	
+	/**
 	 * The ID of the data set being processed
 	 */
 	private long datasetId;
@@ -73,5 +78,13 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 	public String start() {
 		init();
 		return NAV_PLOT;
+	}
+	
+	/**
+	 * Finish the calibration data validation
+	 * @return
+	 */
+	public String finish() {
+		return NAV_DATASET_LIST;
 	}
 }

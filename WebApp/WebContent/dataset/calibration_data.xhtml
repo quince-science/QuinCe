@@ -7,5 +7,11 @@
 	template="/WEB-INF/templates/plot_page.xhtml">
 
 	<ui:define name="title">Calibration Data</ui:define>
+	
+	<ui:define name="dataSetName">#{reviewCalibrationDataBean.dataset.name}</ui:define>
+	
+	<ui:define name="finishButton">
+		<p:commandButton value="Finish" ajax="false" action="#{reviewCalibrationDataBean.finish}" styleClass="inlineButton"/>
+	</ui:define>
 
 </ui:composition>
