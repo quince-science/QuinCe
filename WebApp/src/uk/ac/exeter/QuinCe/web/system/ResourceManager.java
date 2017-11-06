@@ -15,8 +15,8 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QCRoutines.config.ColumnConfig;
 import uk.ac.exeter.QCRoutines.config.ConfigException;
 import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
-import uk.ac.exeter.QuinCe.data.ExportConfig;
-import uk.ac.exeter.QuinCe.data.ExportException;
+import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
+import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
 
@@ -60,7 +60,7 @@ public class ResourceManager implements ServletContextListener {
         
         // Initialise the job thread pool
        	try {
-			JobThreadPool.initialise(3);
+			JobThreadPool.initialise(1);
 		} catch (InvalidThreadCountException e) {
 			// Do nothing for now
 		}

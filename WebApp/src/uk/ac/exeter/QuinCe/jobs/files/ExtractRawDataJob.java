@@ -8,27 +8,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import uk.ac.exeter.QuinCe.data.CalibrationCoefficients;
-import uk.ac.exeter.QuinCe.data.CalibrationStub;
-import uk.ac.exeter.QuinCe.data.FileInfo;
-import uk.ac.exeter.QuinCe.data.Instrument;
-import uk.ac.exeter.QuinCe.data.RawDataFile;
-import uk.ac.exeter.QuinCe.data.SensorCode;
-import uk.ac.exeter.QuinCe.data.User;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.DatabaseUtils;
-import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.Calculation.DataReductionDB;
-import uk.ac.exeter.QuinCe.database.Calculation.RawDataDB;
-import uk.ac.exeter.QuinCe.database.Instrument.CalibrationDB;
-import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.database.QC.QCDB;
-import uk.ac.exeter.QuinCe.database.files.DataFileDB;
+import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Calculation.DataReductionDB;
+import uk.ac.exeter.QuinCe.data.Calculation.RawDataDB;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.FileInfo;
+import uk.ac.exeter.QuinCe.data.Files.RawDataFile;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorCode;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationCoefficients;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationStub;
+import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -103,7 +103,7 @@ public class ExtractRawDataJob extends FileJob {
 				
 				lineNumber++;
 				
-				String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE));
+				String runType = line.get(instrument.getColumnAssignment(Instrument.COL_RUN_TYPE)).trim();
 				if (instrument.isMeasurementRunType(runType) || instrument.isStandardRunType(runType)) {
 				
 					// Check that we're still using the right calibration
@@ -153,6 +153,7 @@ public class ExtractRawDataJob extends FileJob {
 			}
 		} catch (Exception e) {
 			DatabaseUtils.rollBack(conn);
+			e.printStackTrace();
 			throw new JobFailedException(id, lineNumber, e);
 		} finally {
 			DatabaseUtils.closeConnection(conn);

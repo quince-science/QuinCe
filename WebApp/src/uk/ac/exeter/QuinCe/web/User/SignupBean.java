@@ -5,9 +5,9 @@ import java.util.Map;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
-import uk.ac.exeter.QuinCe.data.User;
-import uk.ac.exeter.QuinCe.database.User.UserDB;
-import uk.ac.exeter.QuinCe.database.User.UserExistsException;
+import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.User.UserDB;
+import uk.ac.exeter.QuinCe.User.UserExistsException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob;
 import uk.ac.exeter.QuinCe.utils.StringFormatException;

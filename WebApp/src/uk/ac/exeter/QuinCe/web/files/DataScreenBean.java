@@ -9,20 +9,20 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QuinCe.data.FileInfo;
-import uk.ac.exeter.QuinCe.data.Instrument;
-import uk.ac.exeter.QuinCe.data.RunType;
-import uk.ac.exeter.QuinCe.database.DatabaseException;
-import uk.ac.exeter.QuinCe.database.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.database.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.database.QC.QCDB;
-import uk.ac.exeter.QuinCe.database.files.CommentSet;
-import uk.ac.exeter.QuinCe.database.files.CommentSetEntry;
-import uk.ac.exeter.QuinCe.database.files.DataFileDB;
-import uk.ac.exeter.QuinCe.database.files.FileDataInterrogator;
+import uk.ac.exeter.QuinCe.data.Files.CommentSet;
+import uk.ac.exeter.QuinCe.data.Files.CommentSetEntry;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.FileDataInterrogator;
+import uk.ac.exeter.QuinCe.data.Files.FileInfo;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.RunType;
+import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.FileJob;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
@@ -315,6 +315,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 */
 	public String end() throws Exception {
 		
+		/*
 		if (dirty) {
 			Map<String, String> parameters = new HashMap<String, String>(1);
 			parameters.put(FileJob.FILE_ID_KEY, String.valueOf(fileId));
@@ -325,6 +326,7 @@ public class DataScreenBean extends BaseManagedBean {
 			JobManager.addJob(conn, getUser(), FileInfo.getJobClass(FileInfo.JOB_CODE_REDUCTION), parameters);
 			DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_REDUCTION);
 		}
+		*/
 		
 		clearData();
 		return PAGE_END;
