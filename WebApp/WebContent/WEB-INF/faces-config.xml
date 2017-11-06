@@ -234,6 +234,10 @@
 			<from-outcome>dataset_list</from-outcome>
 			<to-view-id>/dataset/dataset_list.xhtml</to-view-id>
 		</navigation-case>
+		<navigation-case>
+			<from-outcome>calibration_data_plot</from-outcome>
+			<to-view-id>/dataset/calibration_data.xhtml</to-view-id>
+		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
 		<display-name>DataScreen</display-name>
