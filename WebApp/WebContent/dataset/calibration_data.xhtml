@@ -7,8 +7,25 @@
 	template="/WEB-INF/templates/plot_page.xhtml">
 
 	<ui:define name="title">Calibration Data</ui:define>
+	<ui:define name="localHead">
+		<h:outputScript name="script/reviewCalibrationData.js"/>
+		<h:outputStylesheet name="style/reviewCalibrationData.css"/>
+	</ui:define>
 	
-	<ui:define name="dataSetName">#{reviewCalibrationDataBean.dataset.name}</ui:define>
+	<ui:define name="dataSetName">#{reviewCalibrationDataBean.dataset.name} - Gas Standards</ui:define>
+	
+	<ui:define name="plots">
+		<div id="treeContainer">
+			<p:tree value="#{reviewCalibrationDataBean.gasStandardsTree}" var="node">
+				<p:treeNode>
+					<h:outputText value="#{node}"/>
+				</p:treeNode>
+			</p:tree>
+		</div>
+		<div id="standardsPlotContainer">
+			Standards plot is here
+		</div>
+	</ui:define>
 	
 	<ui:define name="finishButton">
 		<p:commandButton value="Finish" ajax="false" action="#{reviewCalibrationDataBean.finish}" styleClass="inlineButton"/>

@@ -22,5 +22,21 @@
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
-	background-color: #FFFF99;
+}
+
+/* jQuery splitter overrides */
+.splitter_panel .vsplitter {
+    background: url("#{resource['image/primefaces_gradient_vertical.png']}") #E4F0F7 repeat-y;
+    background-size: 7px 1px;
+    cursor: col-resize;
+    z-index:900;
+    width: 7px;
+}
+
+.splitter_panel .hsplitter {
+    background: url("#{resource['image/primefaces_gradient_horizontal.png']}") #E4F0F7 repeat-x;
+    background-size: 1px 7px;
+    cursor: row-resize;
+    z-index: 800;
+    height: 10px;
 }

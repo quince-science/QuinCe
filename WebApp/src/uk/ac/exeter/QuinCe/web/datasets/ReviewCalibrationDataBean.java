@@ -3,8 +3,14 @@ package uk.ac.exeter.QuinCe.web.datasets;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
+import org.primefaces.model.DefaultTreeNode;
+import org.primefaces.model.TreeNode;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 /**
@@ -35,6 +41,11 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 	 * The data set being processed
 	 */
 	private DataSet dataset;
+	
+	/**
+	 * Tree model for gas standards selection
+	 */
+	private TreeNode gasStandardsTree;
 		
 	/**
 	 * Initialise the required data for the bean
@@ -42,6 +53,7 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 	public void init() {
 		try {
 			dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
+			buildGasStandardsTree();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -81,10 +93,32 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 	}
 	
 	/**
+	 * Get the tree containing the gas standards
+	 * @return The gas standards tree
+	 */
+	public TreeNode getGasStandardsTree() {
+		return gasStandardsTree;
+	}
+	
+	/**
 	 * Finish the calibration data validation
-	 * @return
+	 * @return Navigation to the data set list
 	 */
 	public String finish() {
 		return NAV_DATASET_LIST;
+	}
+	
+	/**
+	 * Build the Gas Standards tree
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MissingParamException If any required parameters are missing
+	 */
+	private void buildGasStandardsTree() throws MissingParamException, DatabaseException {
+		gasStandardsTree = new DefaultTreeNode("Gas Standards Tree Root", null);
+		TreeNode gasStandardsNode = new DefaultTreeNode("All Gas Standards", gasStandardsTree);
+		gasStandardsTree.getChildren().add(gasStandardsNode);
+		for (String runType : InstrumentDB.getRunTypes(getDataSource(), dataset.getInstrumentId(), "STD")) {
+			gasStandardsNode.getChildren().add(new DefaultTreeNode(runType, gasStandardsNode));
+		}
 	}
 }

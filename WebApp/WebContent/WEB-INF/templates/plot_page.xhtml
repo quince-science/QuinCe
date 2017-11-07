@@ -11,6 +11,9 @@
 		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
 		<ui:insert name="localHead"></ui:insert>
 		<h:outputScript name="script/plotPage.js"/>
+		<h:outputScript name="script/jquery.splitter.js"/>
+    	<h:outputStylesheet name="style/jquery.splitter.css"/>
+		<ui:insert name="localHead"></ui:insert>
 	</h:head>
 	<h:body class="fullPage">
 		<ui:include src="/WEB-INF/templates/keep_alive.xhtml"/>
@@ -26,8 +29,13 @@
 				</f:facet>
 			</p:toolbar>
 			
-			<div id="dataContent" class="plotPageContent">
-				The plots and table live here.
+			<div id="plotPageContent" class="plotPageContent">
+				<div id="plots">
+					<ui:insert name="plots">Plots</ui:insert>
+				</div>
+				<div id="data">
+					Data
+				</div>
 			</div>
 			
 			<p:toolbar styleClass="plotPageFooter">
