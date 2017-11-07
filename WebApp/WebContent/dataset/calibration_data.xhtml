@@ -16,7 +16,7 @@
 	
 	<ui:define name="plots">
 		<div id="treeContainer">
-			<p:tree value="#{reviewCalibrationDataBean.gasStandardsTree}" var="node">
+			<p:tree value="#{reviewCalibrationDataBean.gasStandardsTree}" selection="#{reviewCalibrationDataBean.selectedStandards}" var="node" selectionMode="single">
 				<p:treeNode>
 					<h:outputText value="#{node}"/>
 				</p:treeNode>

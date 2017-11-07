@@ -46,6 +46,11 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 	 * Tree model for gas standards selection
 	 */
 	private TreeNode gasStandardsTree;
+	
+	/**
+	 * The selected gas standard
+	 */
+	private TreeNode selectedStandard;
 		
 	/**
 	 * Initialise the required data for the bean
@@ -116,9 +121,30 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 	private void buildGasStandardsTree() throws MissingParamException, DatabaseException {
 		gasStandardsTree = new DefaultTreeNode("Gas Standards Tree Root", null);
 		TreeNode gasStandardsNode = new DefaultTreeNode("All Gas Standards", gasStandardsTree);
+		gasStandardsNode.setExpanded(true);
 		gasStandardsTree.getChildren().add(gasStandardsNode);
 		for (String runType : InstrumentDB.getRunTypes(getDataSource(), dataset.getInstrumentId(), "STD")) {
 			gasStandardsNode.getChildren().add(new DefaultTreeNode(runType, gasStandardsNode));
 		}
+		
+		// Select the All Standards node
+		selectedStandard = gasStandardsNode;
+		gasStandardsNode.setSelected(true);
+	}
+	
+	/**
+	 * Get the selected gas standards
+	 * @return The selected gas standards
+	 */
+	public TreeNode getSelectedStandards() {
+		return selectedStandard;
+	}
+	
+	/**
+	 * Set the selected gas standards
+	 * @param selectedStandards The selected standards
+	 */
+	public void setSelectedStandards(TreeNode selectedStandards) {
+		this.selectedStandard = selectedStandards;
 	}
 }
