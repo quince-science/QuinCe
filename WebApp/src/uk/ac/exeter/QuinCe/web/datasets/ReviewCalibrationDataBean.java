@@ -59,6 +59,11 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 	private TreeNode selectedStandard;
 	
 	/**
+	 * The labels for the plot
+	 */
+	private String plotLabels;
+	
+	/**
 	 * Data for the plot
 	 */
 	private String plotCsv;
@@ -71,6 +76,9 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 			dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
 			buildGasStandardsTree();
 			getCalibrationData();
+			
+			// TODO This should be built dynamically in CalibrationDataDB
+			plotLabels = "Date/Time;CO2";
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -186,6 +194,22 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 			standardName = null;
 		}
 		
-		plotCsv = CalibrationDataDB.getCalibrationCSV(getDataSource(), datasetId, standardName);
+		plotCsv = CalibrationDataDB.getCalibrationJson(getDataSource(), datasetId, standardName);
+	}
+	
+	/**
+	 * Get the labels for the plot
+	 * @return The plot labels
+	 */
+	public String getPlotLabels() {
+		return plotLabels;
+	}
+	
+	/**
+	 * Set the labels for the plot (dummy)
+	 * @dummy The supplied labels. Ignored.
+	 */
+	public void setPlotLabels(String dummy) {
+		// Do nothing
 	}
 }

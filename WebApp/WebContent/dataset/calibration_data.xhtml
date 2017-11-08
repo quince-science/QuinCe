@@ -13,6 +13,7 @@
 	</ui:define>
 	
 	<ui:define name="formEntries">
+		<h:inputHidden id="plotLabels" value="#{reviewCalibrationDataBean.plotLabels}"/>
 		<h:inputHidden id="plotData" value="#{reviewCalibrationDataBean.plotCsv}"/>
 	</ui:define>
 	
@@ -21,7 +22,7 @@
 	<ui:define name="plots">
 		<div id="treeContainer">
 			<p:tree id="standardName" value="#{reviewCalibrationDataBean.gasStandardsTree}" selection="#{reviewCalibrationDataBean.selectedStandard}" var="node" selectionMode="single">
-				<p:ajax event="select" listener="#{reviewCalibrationDataBean.getCalibrationData}" process="@this" update="plotPageForm:plotData" oncomplete="drawPlot()"/>
+				<p:ajax event="select" listener="#{reviewCalibrationDataBean.getCalibrationData}" process="@this" update="plotPageForm:plotData, plotPageForm:plotLabels" oncomplete="drawPlot()"/>
 				<p:treeNode>
 					<h:outputText value="#{node}"/>
 				</p:treeNode>

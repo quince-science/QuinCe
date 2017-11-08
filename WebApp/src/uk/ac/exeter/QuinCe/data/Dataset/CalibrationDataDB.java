@@ -3,7 +3,6 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -160,7 +159,7 @@ public class CalibrationDataDB {
 	}
 	
 	/**
-	 * Get the gas standard data for a given data set and standard in CSV format
+	 * Get the gas standard data for a given data set and standard in JSON format
 	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
 	 * @param dataSource A data source
 	 * @param datasetId The database ID of the data set
@@ -169,7 +168,7 @@ public class CalibrationDataDB {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws MissingParamException If any required parameters are missing
  	 */
-	public static String getCalibrationCSV(DataSource dataSource, long datasetId, String standardName) throws MissingParamException, DatabaseException {
+	public static String getCalibrationJson(DataSource dataSource, long datasetId, String standardName) throws MissingParamException, DatabaseException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkZeroPositive(datasetId, "datasetId");
@@ -182,15 +181,8 @@ public class CalibrationDataDB {
 			}
 		}
 
-		StringBuilder csv = new StringBuilder();
-		csv.append("Date,");
-		for (int i = 0; i < calibrationFields.size(); i++) {
-			csv.append(calibrationFields.get(i));
-			if (i < calibrationFields.size() -1) {
-				csv.append(',');
-			}
-		}
-		csv.append("\n");
+		StringBuilder json = new StringBuilder();
+		json.append('[');
 		
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -208,9 +200,11 @@ public class CalibrationDataDB {
 			}
 			
 			records = stmt.executeQuery();
-			
+			boolean hasRecords = false;
 			while (records.next()) {
+				hasRecords = true;
 
+				json.append('[');
 				// This is only going to be used for the graph for now, so just grab the columns we're interested in
 				
 				/*
@@ -219,8 +213,8 @@ public class CalibrationDataDB {
 				csv.append(records.getLong(2)); // dataset_id
 				csv.append(',');
 				*/
-				csv.append(records.getLong(3)); // date
-				csv.append(',');
+				json.append(records.getLong(3)); // date
+				json.append(',');
 				
 				/*
 				csv.append(records.getString(4)); // run_type
@@ -232,15 +226,20 @@ public class CalibrationDataDB {
 				*/
 
 				for (int i = 0; i < calibrationFields.size(); i++) {
-					csv.append(records.getDouble(6 + i + 1));
+					json.append(records.getDouble(6 + i + 1));
 					if (i < calibrationFields.size() -1) {
-						csv.append(',');
+						json.append(',');
 					}
 				}
 				
-				csv.append('\n');
+				json.append("],");
 			}
-			
+			// Remove the trailing comma from the last record
+			if (hasRecords) {
+				json.deleteCharAt(json.length() - 1);
+			}
+			json.append(']');
+
 		} catch (SQLException e) {
 			throw new DatabaseException("Error retrieving calibration data", e);
 		} finally {
@@ -249,6 +248,7 @@ public class CalibrationDataDB {
 			DatabaseUtils.closeConnection(conn);
 		}
 		
-		return csv.toString();
+		
+		return json.toString();
 	}
 }

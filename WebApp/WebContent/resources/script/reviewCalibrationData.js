@@ -14,9 +14,12 @@ function drawPlot() {
 		standardsPlot.destroy();
 	}
 	
+	var graph_options = BASE_GRAPH_OPTIONS;
+	graph_options.labels = $('#plotPageForm\\:plotLabels').val().split(';');
+	
 	standardsPlot = new Dygraph (
 			document.getElementById('standardsPlotContainer'),
-			$('#plotPageForm\\:plotData').val(),
+			makeJSDates(JSON.parse($('#plotPageForm\\:plotData').val())),
 			BASE_GRAPH_OPTIONS
 		);
 }
