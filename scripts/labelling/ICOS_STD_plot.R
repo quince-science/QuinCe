@@ -20,11 +20,6 @@
 
 ## rm(list = ls())
 
-##_-----------------------------------------------------------------------------
-#
-# Create function
-# STD_plots <- function(date_col, time_col, dt_format, CO2_col, run_type_col, std_names, std_val) {
-
 
 date_col <- 1
 time_col <- 1
@@ -100,16 +95,3 @@ std_val <- c(0,248.82,358.98,501.25)
   
   
   }
-
-
-#}
-
-
-
-
-
-
-
-
-
-
