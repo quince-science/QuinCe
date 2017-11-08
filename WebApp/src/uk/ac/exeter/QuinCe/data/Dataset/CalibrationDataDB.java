@@ -174,7 +174,23 @@ public class CalibrationDataDB {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkZeroPositive(datasetId, "datasetId");
 		
+		List<String> calibrationFields = new ArrayList<String>();
+		SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
+		for (SensorType sensorType : sensorConfig.getSensorTypes()) {
+			if (sensorType.isCalibratedUsingData()) {
+				calibrationFields.add(sensorType.getName());
+			}
+		}
+
 		StringBuilder csv = new StringBuilder();
+		csv.append("Date,");
+		for (int i = 0; i < calibrationFields.size(); i++) {
+			csv.append(calibrationFields.get(i));
+			if (i < calibrationFields.size() -1) {
+				csv.append(',');
+			}
+		}
+		csv.append("\n");
 		
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -192,12 +208,10 @@ public class CalibrationDataDB {
 			}
 			
 			records = stmt.executeQuery();
-			ResultSetMetaData rsmd = records.getMetaData();
-			int columnCount = rsmd.getColumnCount();
 			
 			while (records.next()) {
 
-				// This is only going to be used for the graph, so just grab the columns we're interested in
+				// This is only going to be used for the graph for now, so just grab the columns we're interested in
 				
 				/*
 				csv.append(records.getLong(1)); // id
@@ -217,9 +231,9 @@ public class CalibrationDataDB {
 				csv.append(',');
 				*/
 
-				for (int i = 7; i <= columnCount; i++) {
-					csv.append(records.getDouble(i));
-					if (i < columnCount) {
+				for (int i = 0; i < calibrationFields.size(); i++) {
+					csv.append(records.getDouble(6 + i + 1));
+					if (i < calibrationFields.size() -1) {
 						csv.append(',');
 					}
 				}
