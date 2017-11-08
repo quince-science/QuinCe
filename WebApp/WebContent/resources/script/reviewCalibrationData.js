@@ -16,6 +16,7 @@ function drawPlot() {
 	
 	standardsPlot = new Dygraph (
 			document.getElementById('standardsPlotContainer'),
-			$('#plotPageForm\\:plotData').val()
+			$('#plotPageForm\\:plotData').val(),
+			BASE_GRAPH_OPTIONS
 		);
 }
