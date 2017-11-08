@@ -1,3 +1,11 @@
 #plots {
 	display: flex;
 }
+
+#treeContainer {
+	width: 300px;
+}
+
+#standardsPlotContainer {
+	width: calc(100% - 300px);
+}

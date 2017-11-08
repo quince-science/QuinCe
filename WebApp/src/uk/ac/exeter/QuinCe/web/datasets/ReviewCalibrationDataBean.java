@@ -6,6 +6,7 @@ import javax.faces.bean.SessionScoped;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
+import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -22,6 +23,11 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 @SessionScoped
 public class ReviewCalibrationDataBean extends BaseManagedBean {
 
+	/**
+	 * The name for selecting all gas standards
+	 */
+	private static final String ALL_NAME = "All Gas Standards";
+	
 	/**
 	 * Navigation to the calibration data plot page
 	 */
@@ -51,6 +57,11 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 	 * The selected gas standard
 	 */
 	private TreeNode selectedStandard;
+	
+	/**
+	 * Data for the plot
+	 */
+	private String plotCsv;
 		
 	/**
 	 * Initialise the required data for the bean
@@ -59,6 +70,7 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 		try {
 			dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
 			buildGasStandardsTree();
+			getCalibrationData();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -120,7 +132,7 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 	 */
 	private void buildGasStandardsTree() throws MissingParamException, DatabaseException {
 		gasStandardsTree = new DefaultTreeNode("Gas Standards Tree Root", null);
-		TreeNode gasStandardsNode = new DefaultTreeNode("All Gas Standards", gasStandardsTree);
+		TreeNode gasStandardsNode = new DefaultTreeNode(ALL_NAME, gasStandardsTree);
 		gasStandardsNode.setExpanded(true);
 		gasStandardsTree.getChildren().add(gasStandardsNode);
 		for (String runType : InstrumentDB.getRunTypes(getDataSource(), dataset.getInstrumentId(), "STD")) {
@@ -136,15 +148,44 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 	 * Get the selected gas standards
 	 * @return The selected gas standards
 	 */
-	public TreeNode getSelectedStandards() {
+	public TreeNode getSelectedStandard() {
 		return selectedStandard;
 	}
 	
 	/**
 	 * Set the selected gas standards
-	 * @param selectedStandards The selected standards
+	 * @param selectedStandard The selected standards
 	 */
-	public void setSelectedStandards(TreeNode selectedStandards) {
-		this.selectedStandard = selectedStandards;
+	public void setSelectedStandard(TreeNode selectedStandard) {
+		this.selectedStandard = selectedStandard;
+	}
+	
+	/**
+	 * Get the CSV data for the plot
+	 * @return The plot data
+	 */
+	public String getPlotCsv() {
+		return plotCsv;
+	}
+	
+	/**
+	 * Dummy method for setting plot csv; does nothing
+	 */
+	public void setPlotCsv(String plotCsv) {
+		// Dummy
+	}
+	
+	/**
+	 * Load the calibration data for the page
+     * @throws DatabaseException If a database error occurs
+     * @throws MissingParamException If any required parameters are missing
+ 	 */
+	public void getCalibrationData() throws MissingParamException, DatabaseException {
+		String standardName = (String) selectedStandard.getData();
+		if (standardName.equals(ALL_NAME)) {
+			standardName = null;
+		}
+		
+		plotCsv = CalibrationDataDB.getCalibrationCSV(getDataSource(), datasetId, standardName);
 	}
 }

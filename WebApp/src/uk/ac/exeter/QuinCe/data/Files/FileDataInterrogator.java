@@ -37,6 +37,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class FileDataInterrogator {
 	
 	/**

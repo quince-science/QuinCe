@@ -10,9 +10,11 @@
 		<title><ui:insert name="title">Welcome</ui:insert> - QuinCe</title>
 		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
 		<ui:insert name="localHead"></ui:insert>
-		<h:outputScript name="script/plotPage.js"/>
+		<h:outputScript name="script/dygraph.min.js"/>
+		<h:outputStylesheet name="style/dygraph.css"/>
 		<h:outputScript name="script/jquery.splitter.js"/>
     	<h:outputStylesheet name="style/jquery.splitter.css"/>
+		<h:outputScript name="script/plotPage.js"/>
 		<ui:insert name="localHead"></ui:insert>
 	</h:head>
 	<h:body class="fullPage">
@@ -23,6 +25,7 @@
 		<h:outputStylesheet name="style/plotPage.css"/>
 
 		<h:form id="plotPageForm" method="post">
+			<ui:insert name="formEntries"></ui:insert>
 			<p:toolbar styleClass="plotPageHeader">
 				<f:facet name="left">
 					<ui:insert name="dataSetName">Data Set Name</ui:insert>

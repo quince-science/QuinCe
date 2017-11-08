@@ -2,10 +2,14 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -18,7 +22,14 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Class for handling calibration data from within a data set
+ * Class for handling calibration data from within a data set.
+ * 
+ * <p>
+ *   This is likely to be replaced
+ *   when the new calibration data handling system is written
+ *   (see Github issue #556).
+ * </p>
+ * 
  * @author Steve Jones
  *
  */
@@ -30,6 +41,17 @@ public class CalibrationDataDB {
 	private static final String DELETE_CALIBRATION_DATA_QUERY = "DELETE FROM calibration_data "
 			+ "WHERE dataset_id = ?";
 
+	/**
+	 * Statement to retrieve all calibration data for a dataset
+	 */
+	private static final String ALL_CALIBRATION_DATA_QUERY = "SELECT * FROM calibration_data "
+			+ "WHERE dataset_id = ?";
+	
+	/**
+	 * Statement to retrieve calibration data for a specific run type for a dataset
+	 */
+	private static final String SELECTED_CALIBRATION_DATA_QUERY = "SELECT * FROM calibration_data "
+			+ "WHERE dataset_id = ? AND run_type = ?";
 	
 	/**
 	 * Store a data set record in the database.
@@ -57,7 +79,7 @@ public class CalibrationDataDB {
 		
 		try {
 			if (null == statement) {
-				statement = createInsertRecordStatement(conn, record);
+				statement = DatabaseUtils.createInsertStatement(conn, "calibration_data", createAllFieldsList());
 			}
 			
 			statement.setLong(1, record.getDatasetId());
@@ -89,17 +111,12 @@ public class CalibrationDataDB {
 	}
 
 	/**
-	 * Create a statement to insert a new dataset record in the database
-	 * @param conn A database connection
-	 * @param record A dataset record
-	 * @return The statement
-	 * @throws MissingParamException If any required parameters are missing
-	 * @throws SQLException If the statement cannot be created
+	 * Generate a list of all the fields in the {@code calibration_data} table
+	 * @return The field list
 	 */
-	private static PreparedStatement createInsertRecordStatement(Connection conn, DataSetRawDataRecord record) throws MissingParamException, SQLException {
-		
+	private static List<String> createAllFieldsList() {
 		List<String> fieldNames = new ArrayList<String>();
-				
+		
 		fieldNames.add("dataset_id");
 		fieldNames.add("date");
 		fieldNames.add("run_type");
@@ -113,7 +130,7 @@ public class CalibrationDataDB {
 			}
 		}
 		
-		return DatabaseUtils.createInsertStatement(conn, "calibration_data", fieldNames);
+		return fieldNames;
 	}
 	
 	/**
@@ -140,5 +157,84 @@ public class CalibrationDataDB {
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
 		}
+	}
+	
+	/**
+	 * Get the gas standard data for a given data set and standard in CSV format
+	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
+	 * @param dataSource A data source
+	 * @param datasetId The database ID of the data set
+	 * @param standardName The name of the standard ({@code null} for all standards)
+	 * @return The standards data
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MissingParamException If any required parameters are missing
+ 	 */
+	public static String getCalibrationCSV(DataSource dataSource, long datasetId, String standardName) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkZeroPositive(datasetId, "datasetId");
+		
+		StringBuilder csv = new StringBuilder();
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			if (null == standardName) {
+				stmt = conn.prepareStatement(ALL_CALIBRATION_DATA_QUERY);
+				stmt.setLong(1, datasetId);
+			} else {
+				stmt = conn.prepareStatement(SELECTED_CALIBRATION_DATA_QUERY);
+				stmt.setLong(1, datasetId);
+				stmt.setString(2, standardName);
+			}
+			
+			records = stmt.executeQuery();
+			ResultSetMetaData rsmd = records.getMetaData();
+			int columnCount = rsmd.getColumnCount();
+			
+			while (records.next()) {
+
+				// This is only going to be used for the graph, so just grab the columns we're interested in
+				
+				/*
+				csv.append(records.getLong(1)); // id
+				csv.append(',');
+				csv.append(records.getLong(2)); // dataset_id
+				csv.append(',');
+				*/
+				csv.append(records.getLong(3)); // date
+				csv.append(',');
+				
+				/*
+				csv.append(records.getString(4)); // run_type
+				csv.append(',');
+				csv.append(records.getInt(5)); // use_record
+				csv.append(',');
+				csv.append(records.getString(6)); // use_message
+				csv.append(',');
+				*/
+
+				for (int i = 7; i <= columnCount; i++) {
+					csv.append(records.getDouble(i));
+					if (i < columnCount) {
+						csv.append(',');
+					}
+				}
+				
+				csv.append('\n');
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error retrieving calibration data", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return csv.toString();
 	}
 }
