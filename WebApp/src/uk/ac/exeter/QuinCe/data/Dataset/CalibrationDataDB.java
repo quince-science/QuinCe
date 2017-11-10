@@ -318,7 +318,6 @@ public class CalibrationDataDB {
 			DatabaseUtils.closeConnection(conn);
 		}
 
-		System.out.println(json.toString());
 		return json.toString();
 	}
 
