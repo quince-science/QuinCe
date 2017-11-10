@@ -6,6 +6,7 @@ function start() {
 
 function drawPage() {
 	drawPlot();
+	drawTable();
 }
 
 function drawPlot() {
@@ -15,7 +16,7 @@ function drawPlot() {
 	}
 	
 	var graph_options = BASE_GRAPH_OPTIONS;
-	graph_options.labels = $('#plotPageForm\\:plotLabels').val().split(';');
+	graph_options.labels = JSON.parse($('#plotPageForm\\:plotLabels').val());
 	
 	standardsPlot = new Dygraph (
 			document.getElementById('standardsPlotContainer'),

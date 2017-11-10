@@ -10,12 +10,18 @@
 		<title><ui:insert name="title">Welcome</ui:insert> - QuinCe</title>
 		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
 		<ui:insert name="localHead"></ui:insert>
-		<h:outputScript name="script/dygraph.min.js"/>
-		<h:outputStylesheet name="style/dygraph.css"/>
 		<h:outputScript name="script/jquery.splitter.js"/>
     	<h:outputStylesheet name="style/jquery.splitter.css"/>
+		<h:outputScript name="script/dygraph.min.js"/>
+		<h:outputStylesheet name="style/dygraph.css"/>
+		<h:outputScript name="script/datatables.min.js"/>
+		<h:outputStylesheet name="style/datatables.min.css"/>
 		<h:outputScript name="script/plotPage.js"/>
 		<ui:insert name="localHead"></ui:insert>
+		<script>
+			var columnHeadings = #{sessionScope[beanName].tableHeadings};
+			var selectableRows = #{sessionScope[beanName].selectableRowIds};
+		</script>
 	</h:head>
 	<h:body class="fullPage">
 		<ui:include src="/WEB-INF/templates/keep_alive.xhtml"/>
@@ -25,6 +31,18 @@
 		<h:outputStylesheet name="style/plotPage.css"/>
 
 		<h:form id="plotPageForm" method="post">
+			<h:inputHidden value="#{sessionScope[beanName].tableJsonData}" id="tableJsonData"/>		
+			<h:inputHidden value="#{sessionScope[beanName].recordCount}" id="recordCount"/>		
+			<h:inputHidden value="#{sessionScope[beanName].tableDataDraw}" id="tableDataDraw"/>		
+			<h:inputHidden value="#{sessionScope[beanName].tableDataStart}" id="tableDataStart"/>		
+			<h:inputHidden value="#{sessionScope[beanName].tableDataLength}" id="tableDataLength"/>		
+			<h:commandLink id="tableGetData" action="#{sessionScope[beanName].generateTableData}">		
+				<f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw recordCount" onevent="tableDataDownload"/>		
+			</h:commandLink>
+			
+			<h:inputHidden id="selectedRows" value="#{sessionScope[beanName].selectedRows}"/>
+			
+			
 			<ui:insert name="formEntries"></ui:insert>
 			<p:toolbar styleClass="plotPageHeader">
 				<f:facet name="left">
@@ -36,12 +54,12 @@
 				<div id="plots">
 					<ui:insert name="plots">Plots</ui:insert>
 				</div>
-				<div id="data">
+				<div id="tableContent">
 					Data
 				</div>
 			</div>
 			
-			<p:toolbar styleClass="plotPageFooter">
+			<p:toolbar id="footerToolbar" styleClass="plotPageFooter">
 				<f:facet name="right">
 					<ui:insert name="finishButton">Finish button here</ui:insert>
 				</f:facet>

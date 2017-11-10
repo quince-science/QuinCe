@@ -41,15 +41,27 @@ public class CalibrationDataDB {
 			+ "WHERE dataset_id = ?";
 
 	/**
-	 * Statement to retrieve all calibration data for a dataset
+	 * Statement to retrieve the count of all calibration data for a dataset
 	 */
-	private static final String ALL_CALIBRATION_DATA_QUERY = "SELECT * FROM calibration_data "
+	private static final String ALL_CALIBRATION_DATA_COUNT_QUERY = "SELECT COUNT(*) FROM calibration_data "
 			+ "WHERE dataset_id = ?";
 	
 	/**
-	 * Statement to retrieve calibration data for a specific run type for a dataset
+	 * Statement to retrieve the count of calibration data for a specific run type for a dataset
 	 */
-	private static final String SELECTED_CALIBRATION_DATA_QUERY = "SELECT * FROM calibration_data "
+	private static final String SELECTED_CALIBRATION_DATA_COUNT_QUERY = "SELECT COUNT(*) FROM calibration_data "
+			+ "WHERE dataset_id = ? AND run_type = ?";
+	
+	/**
+	 * Statement to retrieve the IDs of all calibration data for a dataset
+	 */
+	private static final String ALL_CALIBRATION_DATA_IDS_QUERY = "SELECT id FROM calibration_data "
+			+ "WHERE dataset_id = ?";
+	
+	/**
+	 * Statement to retrieve the IDs of calibration data for a specific run type for a dataset
+	 */
+	private static final String SELECTED_CALIBRATION_DATA_IDS_QUERY = "SELECT id FROM calibration_data "
 			+ "WHERE dataset_id = ? AND run_type = ?";
 	
 	/**
@@ -163,12 +175,34 @@ public class CalibrationDataDB {
 	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
 	 * @param dataSource A data source
 	 * @param datasetId The database ID of the data set
+	 * @param includeId States whether the record ID should be included in the output
+	 * @param includeRunType States whether the Run Type should be included in the output
+	 * @param includeUse States whether the record usage fields should be included in the output
 	 * @param standardName The name of the standard ({@code null} for all standards)
 	 * @return The standards data
 	 * @throws DatabaseException If a database error occurs
 	 * @throws MissingParamException If any required parameters are missing
  	 */
-	public static String getCalibrationJson(DataSource dataSource, long datasetId, String standardName) throws MissingParamException, DatabaseException {
+	public static String getJsonDataArray(DataSource dataSource, long datasetId, boolean includeId, boolean includeRunType, boolean includeUse, String standardName) throws MissingParamException, DatabaseException {
+		return getJsonDataArray(dataSource, datasetId, includeId, includeRunType, includeUse, standardName, -1, -1);
+	}
+
+		/**
+	 * Get the gas standard data for a given data set and standard in JSON format
+	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
+	 * @param dataSource A data source
+	 * @param datasetId The database ID of the data set
+	 * @param includeId States whether the record ID should be included in the output
+	 * @param includeRunType States whether the Run Type should be included in the output
+	 * @param includeUse States whether the record usage fields should be included in the output
+	 * @param standardName The name of the standard ({@code null} for all standards)
+	 * @param start The first record to return
+	 * @param length The number of records to return
+	 * @return The standards data
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MissingParamException If any required parameters are missing
+ 	 */
+	public static String getJsonDataArray(DataSource dataSource, long datasetId, boolean includeId, boolean includeRunType, boolean includeUse, String standardName, int start, int length) throws MissingParamException, DatabaseException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkZeroPositive(datasetId, "datasetId");
@@ -177,10 +211,31 @@ public class CalibrationDataDB {
 		SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
 		for (SensorType sensorType : sensorConfig.getSensorTypes()) {
 			if (sensorType.isCalibratedUsingData()) {
-				calibrationFields.add(sensorType.getName());
+				calibrationFields.add(sensorType.getDatabaseFieldName());
 			}
 		}
 
+		List<String> queryFields = new ArrayList<String>();
+		if (includeId) {
+			queryFields.add("id");
+		}
+		queryFields.add("date");
+		if (includeRunType) {
+			queryFields.add("run_type");
+		}
+		queryFields.addAll(calibrationFields);
+		
+		if (includeUse) {
+			queryFields.add("use_record");
+			queryFields.add("use_message");
+		}
+		
+		List<String> andFields = new ArrayList<String>();
+		andFields.add("dataset_id");
+		if (null != standardName) {
+			andFields.add("run_type");
+		}
+		
 		StringBuilder json = new StringBuilder();
 		json.append('[');
 		
@@ -190,12 +245,10 @@ public class CalibrationDataDB {
 		
 		try {
 			conn = dataSource.getConnection();
-			if (null == standardName) {
-				stmt = conn.prepareStatement(ALL_CALIBRATION_DATA_QUERY);
-				stmt.setLong(1, datasetId);
-			} else {
-				stmt = conn.prepareStatement(SELECTED_CALIBRATION_DATA_QUERY);
-				stmt.setLong(1, datasetId);
+
+			stmt = DatabaseUtils.createSelectStatement(conn, "calibration_data", queryFields, andFields, start, length);
+			stmt.setLong(1, datasetId);
+			if (null != standardName) {
 				stmt.setString(2, standardName);
 			}
 			
@@ -205,30 +258,47 @@ public class CalibrationDataDB {
 				hasRecords = true;
 
 				json.append('[');
-				// This is only going to be used for the graph for now, so just grab the columns we're interested in
 				
-				/*
-				csv.append(records.getLong(1)); // id
-				csv.append(',');
-				csv.append(records.getLong(2)); // dataset_id
-				csv.append(',');
-				*/
-				json.append(records.getLong(3)); // date
+				int columnIndex = 0;
+				if (includeId) {
+					columnIndex++;
+					json.append(records.getLong(columnIndex)); // id
+					json.append(',');
+				}
+
+				columnIndex++;
+				json.append(records.getLong(columnIndex)); // date
 				json.append(',');
 				
-				/*
-				csv.append(records.getString(4)); // run_type
-				csv.append(',');
-				csv.append(records.getInt(5)); // use_record
-				csv.append(',');
-				csv.append(records.getString(6)); // use_message
-				csv.append(',');
-				*/
-
+				
+				if (includeRunType) {
+					columnIndex++;
+					json.append('"');
+					json.append(records.getString(columnIndex)); // Run Type
+					json.append("\",");
+				}
+				
 				for (int i = 0; i < calibrationFields.size(); i++) {
-					json.append(records.getDouble(6 + i + 1));
-					if (i < calibrationFields.size() -1) {
+					columnIndex++;
+					json.append(records.getDouble(columnIndex));
+					if (includeUse || i < calibrationFields.size() -1) {
 						json.append(',');
+					}
+				}
+				
+				if (includeUse) {
+					columnIndex++;
+					json.append(records.getBoolean(columnIndex));
+					json.append(',');
+					
+					columnIndex++;
+					String message = records.getString(columnIndex);
+					if (null == message) {
+						json.append("null");
+					} else {
+						json.append('"');
+						json.append(message);
+						json.append('"');
 					}
 				}
 				
@@ -247,8 +317,113 @@ public class CalibrationDataDB {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(conn);
 		}
-		
-		
+
+		System.out.println(json.toString());
 		return json.toString();
+	}
+
+	/**
+	 * Get the gas standard data for a given data set and standard in JSON format
+	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
+	 * @param dataSource A data source
+	 * @param datasetId The database ID of the data set
+	 * @param standardName The name of the standard ({@code null} for all standards)
+	 * @return The standards data
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MissingParamException If any required parameters are missing
+ 	 */
+	public static int getCalibrationRecordCount(DataSource dataSource, long datasetId, String standardName) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkZeroPositive(datasetId, "datasetId");
+		
+		int result = 0;
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			if (null == standardName) {
+				stmt = conn.prepareStatement(ALL_CALIBRATION_DATA_COUNT_QUERY);
+				stmt.setLong(1, datasetId);
+			} else {
+				stmt = conn.prepareStatement(SELECTED_CALIBRATION_DATA_COUNT_QUERY);
+				stmt.setLong(1, datasetId);
+				stmt.setString(2, standardName);
+			}
+			
+			records = stmt.executeQuery();
+			if (records.next()) {
+				result = records.getInt(1);
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error retrieving calibration data", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get the gas standard data for a given data set and standard in JSON format
+	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
+	 * @param dataSource A data source
+	 * @param datasetId The database ID of the data set
+	 * @param standardName The name of the standard ({@code null} for all standards)
+	 * @return The standards data
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MissingParamException If any required parameters are missing
+ 	 */
+	public static String getCalibrationRecordIds(DataSource dataSource, long datasetId, String standardName) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkZeroPositive(datasetId, "datasetId");
+		
+		StringBuilder result = new StringBuilder();
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			if (null == standardName) {
+				stmt = conn.prepareStatement(ALL_CALIBRATION_DATA_IDS_QUERY);
+				stmt.setLong(1, datasetId);
+			} else {
+				stmt = conn.prepareStatement(SELECTED_CALIBRATION_DATA_IDS_QUERY);
+				stmt.setLong(1, datasetId);
+				stmt.setString(2, standardName);
+			}
+			
+			records = stmt.executeQuery();
+			boolean hasRecords = false;
+			result.append('[');
+			
+			while (records.next()) {
+				hasRecords = true;
+				result.append(records.getLong(1));
+				result.append(',');
+			}
+			
+			// Remove the trailing comma from the last record
+			if (hasRecords) {
+				result.deleteCharAt(result.length() - 1);
+			}
+			result.append(']');
+		} catch (SQLException e) {
+			throw new DatabaseException("Error retrieving calibration data", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+
+		return result.toString();
 	}
 }

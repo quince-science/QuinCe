@@ -12,7 +12,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.PlotPageBean;
 
 /**
  * Bean for handling review of calibration data
@@ -21,7 +21,7 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
  */
 @ManagedBean
 @SessionScoped
-public class ReviewCalibrationDataBean extends BaseManagedBean {
+public class ReviewCalibrationDataBean extends PlotPageBean {
 
 	/**
 	 * The name for selecting all gas standards
@@ -59,26 +59,12 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 	private TreeNode selectedStandard;
 	
 	/**
-	 * The labels for the plot
-	 */
-	private String plotLabels;
-	
-	/**
-	 * Data for the plot
-	 */
-	private String plotCsv;
-		
-	/**
 	 * Initialise the required data for the bean
 	 */
 	public void init() {
 		try {
 			dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
 			buildGasStandardsTree();
-			getCalibrationData();
-			
-			// TODO This should be built dynamically in CalibrationDataDB
-			plotLabels = "Date/Time;CO2";
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -106,15 +92,6 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 	 */
 	public DataSet getDataset() {
 		return dataset;
-	}
-	
-	/**
-	 * Start the calibration data review
-	 * @return Navigation to the plot page
-	 */
-	public String start() {
-		init();
-		return NAV_PLOT;
 	}
 	
 	/**
@@ -168,48 +145,63 @@ public class ReviewCalibrationDataBean extends BaseManagedBean {
 		this.selectedStandard = selectedStandard;
 	}
 	
-	/**
-	 * Get the CSV data for the plot
-	 * @return The plot data
-	 */
-	public String getPlotCsv() {
-		return plotCsv;
+	@Override
+	public String loadPlotData() throws Exception {
+		return CalibrationDataDB.getJsonDataArray(getDataSource(), datasetId, false, false, false, getStandardSearchString());
+	}
+	
+	@Override
+	protected int loadRecordCount() throws Exception {
+		return CalibrationDataDB.getCalibrationRecordCount(getDataSource(), datasetId, getStandardSearchString());
 	}
 	
 	/**
-	 * Dummy method for setting plot csv; does nothing
+	 * Get the search string for the selected standard
+	 * @return The search string
 	 */
-	public void setPlotCsv(String plotCsv) {
-		// Dummy
-	}
-	
-	/**
-	 * Load the calibration data for the page
-     * @throws DatabaseException If a database error occurs
-     * @throws MissingParamException If any required parameters are missing
- 	 */
-	public void getCalibrationData() throws MissingParamException, DatabaseException {
+	private String getStandardSearchString() {
 		String standardName = (String) selectedStandard.getData();
 		if (standardName.equals(ALL_NAME)) {
 			standardName = null;
 		}
 		
-		plotCsv = CalibrationDataDB.getCalibrationJson(getDataSource(), datasetId, standardName);
+		return standardName;
 	}
 	
-	/**
-	 * Get the labels for the plot
-	 * @return The plot labels
-	 */
-	public String getPlotLabels() {
-		return plotLabels;
+	@Override
+	protected String buildTableHeadings() {
+		StringBuilder headings = new StringBuilder();
+		
+		headings.append('[');
+		headings.append("\"ID\",");
+		headings.append("\"Date\",");
+		headings.append("\"Run Type\",");
+		headings.append("\"CO2\",");
+		headings.append("\"Use\",");
+		headings.append("\"Use Message\"");
+		headings.append(']');
+		
+		return headings.toString();
 	}
 	
-	/**
-	 * Set the labels for the plot (dummy)
-	 * @dummy The supplied labels. Ignored.
-	 */
-	public void setPlotLabels(String dummy) {
-		// Do nothing
+	@Override
+	protected String buildSelectableRowIds() throws Exception {
+		return CalibrationDataDB.getCalibrationRecordIds(getDataSource(), datasetId, getStandardSearchString());
+	}
+
+	@Override
+	protected String getScreenNavigation() {
+		return NAV_PLOT;
+	}
+
+	@Override
+	protected String buildPlotLabels() {
+		// TODO This should be built dynamically in CalibrationDataDB
+		return "[\"Date\",\"CO2\"]";
+	}
+
+	@Override
+	protected String loadTableData(int start, int length) throws Exception {
+		return CalibrationDataDB.getJsonDataArray(getDataSource(), datasetId, true, true, true, getStandardSearchString(), start, length);
 	}
 }
