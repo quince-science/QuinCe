@@ -172,9 +172,6 @@ function calcTableScrollY() {
  * the data from the server.		
  */		
 function tableDataDownload(data) {		
-			
-	console.log(data.status);
-	
 	var status = data.status;		
 	if (status == "success") {
 		dataTableDrawCallback( {		
@@ -185,40 +182,3 @@ function tableDataDownload(data) {
 		});
 	}
 }		
-
-/*
- * Show or hide columns as required.
- */
-function renderTableColumns() {
-
-	// TODO This is from the original dataScreen.js. See how to do it here at a later date
-	
-	/*
-	var visibleTableColumns = new Array();
-	var hiddenTableColumns = new Array();
-	
-	// Do the stuff
-	for (var i = 0; i < columnHeadings.length; i++) {
-		columnVisible = false;
-		
-		if ($.inArray(columnHeadings[i], compulsoryColumns) != -1) {
-			columnVisible = true;
-		} else {
-			searchColumns = visibleColumns[PF('tableModeSelector').getJQ().find(':checked').val()];
-			for (j = 0; j < searchColumns.length && !columnVisible; j++) {
-				columnVisible = new RegExp(searchColumns[j]).test(columnHeadings[i]);
-			}
-		}
-		
-		columnVisible ? visibleTableColumns.push(i) : hiddenTableColumns.push(i);
-		
-		
-	}
-	*/
-	/*
-	// Update the table
-	jsDataTable.columns(visibleTableColumns).visible(true, false);
-	jsDataTable.columns(hiddenTableColumns).visible(false, false);
-	jsDataTable.columns.adjust().draw(false);
-	*/
-}

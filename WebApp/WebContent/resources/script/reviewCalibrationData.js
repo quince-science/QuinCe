@@ -24,3 +24,11 @@ function drawPlot() {
 			BASE_GRAPH_OPTIONS
 		);
 }
+
+/*
+ * Show or hide columns as required.
+ */
+function renderTableColumns() {
+	jsDataTable.columns(0).visible(false, false);
+	jsDataTable.columns(5).visible(false, false);
+}
