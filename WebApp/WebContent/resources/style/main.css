@@ -392,6 +392,18 @@ td.labels {
   font-weight: 700;
 }
 
+table .numericCol {
+  text-align: right;
+}
+
+table .centreCol {
+  text-align: center;
+}
+
+table .noWrap {
+  white-space: nowrap;
+}
+
 .shown {
   display: block;
 }

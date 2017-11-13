@@ -177,7 +177,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 		headings.append("\"Date\",");
 		headings.append("\"Run Type\",");
 		headings.append("\"CO2\",");
-		headings.append("\"Use\",");
+		headings.append("\"Use?\",");
 		headings.append("\"Use Message\"");
 		headings.append(']');
 		

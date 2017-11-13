@@ -115,7 +115,8 @@ function drawTable() {
     		// Submit the query to the server		
     		$('#plotPageForm\\:tableGetData').click();		
     	},
-    	bInfo: false
+    	bInfo: false,
+    	columnDefs: getColumnDefs()
     	
     	/*
     	drawCallback: function (settings) {
