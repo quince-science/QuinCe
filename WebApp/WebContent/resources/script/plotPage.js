@@ -39,6 +39,8 @@ var scrollEventTimeLimit = 300;
 
 //Keeps track of the split positions as a percentage of the
 //full data area
+
+var resizeEventTimer = null;
 var tableSplitProportion = 0.5;
 
 // Page Load function - kicks everything off
@@ -53,7 +55,8 @@ $(function() {
 	
 	// When the window is resized, scale the panels
 	$(window).resize(function() {
-		setTimeout('resizeContent()', 100);
+		clearTimeout(resizeEventTimer);
+		resizeEventTimer = setTimeout(resizeContent, 100);
 	});
 
 });
