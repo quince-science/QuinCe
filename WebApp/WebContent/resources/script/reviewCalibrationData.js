@@ -66,3 +66,12 @@ function getColumnDefs() {
         },
 	];
 }
+
+function resizePlots() {
+	// TODO See if we can make this work stuff out automatically
+	// when the plots are stored in plotPage.js
+	// See issue #564
+	
+	
+	
+}

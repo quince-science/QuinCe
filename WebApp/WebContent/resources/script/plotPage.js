@@ -37,18 +37,44 @@ var tableScrollRow = null;
 var scrollEventTimer = null;
 var scrollEventTimeLimit = 300;
 
+//Keeps track of the split positions as a percentage of the
+//full data area
+var tableSplitProportion = 0.5;
+
 // Page Load function - kicks everything off
 $(function() {
 	// Make the panel splits
-	$('#plotPageContent').split({orientation: 'horizontal', onDragEnd: function(){resizeContent()}});
-	
+	$('#plotPageContent').split({orientation: 'horizontal', onDragEnd: function(){scaleTableSplit()}});
+	tableSplitProportion = 0.5;
+
 	if (typeof start == 'function') {
 		start();
 	}
+	
+	// When the window is resized, scale the panels
+	$(window).resize(function() {
+		setTimeout('resizeContent()', 100);
+	});
+
 });
 
+function scaleTableSplit() {
+	tableSplitProportion = $('#plotPageContent').split().position() / $('#plotPageContent').height();
+	resizeContent();
+}
+
 function resizeContent() {
-	// Don't do anything just now
+	$('#plotPageContent').height(window.innerHeight - 65);
+
+	$('#plotPageContent').split().position($('#plotPageContent').height() * tableSplitProportion);
+	
+	if (null != jsDataTable) {
+		$('.dataTables_scrollBody').height(calcTableScrollY());
+	}
+
+	if (typeof resizePlots == 'function') {
+		resizePlots();
+	}
 }
 
 function makeJSDates(data) {
@@ -163,8 +189,7 @@ function drawTable() {
  * Calculate the value of the scrollY entry for the data table
  */
 function calcTableScrollY() {
-	// 41 is the post-rendered height of the header in FF (as measured on screen). Can we detect it somewhere?
-	return $('#tableContent').height() - $('#plotPageForm\\:footerToolbar').outerHeight() - 50;
+	return $('#tableContent').height() - $('#plotPageForm\\:footerToolbar').outerHeight();
 }
 
 /*
