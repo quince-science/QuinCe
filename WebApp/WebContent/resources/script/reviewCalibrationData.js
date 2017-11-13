@@ -17,6 +17,7 @@ function drawPlot() {
 	
 	var graph_options = BASE_GRAPH_OPTIONS;
 	graph_options.labels = JSON.parse($('#plotPageForm\\:plotLabels').val());
+	graph_options.visibility = [0, 2];
 	
 	standardsPlot = new Dygraph (
 			document.getElementById('standardsPlotContainer'),

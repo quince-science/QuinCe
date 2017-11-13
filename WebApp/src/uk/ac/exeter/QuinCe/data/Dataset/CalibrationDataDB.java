@@ -171,30 +171,10 @@ public class CalibrationDataDB {
 	}
 	
 	/**
-	 * Get the gas standard data for a given data set and standard in JSON format
+	 * Get the gas standard data for a given data set and standard in JSON format for the table view
 	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
 	 * @param dataSource A data source
 	 * @param datasetId The database ID of the data set
-	 * @param includeId States whether the record ID should be included in the output
-	 * @param includeRunType States whether the Run Type should be included in the output
-	 * @param includeUse States whether the record usage fields should be included in the output
-	 * @param standardName The name of the standard ({@code null} for all standards)
-	 * @return The standards data
-	 * @throws DatabaseException If a database error occurs
-	 * @throws MissingParamException If any required parameters are missing
- 	 */
-	public static String getJsonDataArray(DataSource dataSource, long datasetId, boolean includeId, boolean includeRunType, boolean includeUse, String standardName) throws MissingParamException, DatabaseException {
-		return getJsonDataArray(dataSource, datasetId, includeId, includeRunType, includeUse, standardName, -1, -1);
-	}
-
-		/**
-	 * Get the gas standard data for a given data set and standard in JSON format
-	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
-	 * @param dataSource A data source
-	 * @param datasetId The database ID of the data set
-	 * @param includeId States whether the record ID should be included in the output
-	 * @param includeRunType States whether the Run Type should be included in the output
-	 * @param includeUse States whether the record usage fields should be included in the output
 	 * @param standardName The name of the standard ({@code null} for all standards)
 	 * @param start The first record to return
 	 * @param length The number of records to return
@@ -202,7 +182,7 @@ public class CalibrationDataDB {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws MissingParamException If any required parameters are missing
  	 */
-	public static String getJsonDataArray(DataSource dataSource, long datasetId, boolean includeId, boolean includeRunType, boolean includeUse, String standardName, int start, int length) throws MissingParamException, DatabaseException {
+	public static String getJsonTableData(DataSource dataSource, long datasetId, String standardName, int start, int length) throws MissingParamException, DatabaseException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkZeroPositive(datasetId, "datasetId");
@@ -216,19 +196,12 @@ public class CalibrationDataDB {
 		}
 
 		List<String> queryFields = new ArrayList<String>();
-		if (includeId) {
-			queryFields.add("id");
-		}
+		queryFields.add("id");
 		queryFields.add("date");
-		if (includeRunType) {
-			queryFields.add("run_type");
-		}
+		queryFields.add("run_type");
 		queryFields.addAll(calibrationFields);
-		
-		if (includeUse) {
-			queryFields.add("use_record");
-			queryFields.add("use_message");
-		}
+		queryFields.add("use_record");
+		queryFields.add("use_message");
 		
 		List<String> andFields = new ArrayList<String>();
 		andFields.add("dataset_id");
@@ -260,45 +233,129 @@ public class CalibrationDataDB {
 				json.append('[');
 				
 				int columnIndex = 0;
-				if (includeId) {
-					columnIndex++;
-					json.append(records.getLong(columnIndex)); // id
-					json.append(',');
-				}
+				columnIndex++;
+				json.append(records.getLong(columnIndex)); // id
+				json.append(',');
 
 				columnIndex++;
 				json.append(records.getLong(columnIndex)); // date
 				json.append(',');
 				
-				
-				if (includeRunType) {
-					columnIndex++;
-					json.append('"');
-					json.append(records.getString(columnIndex)); // Run Type
-					json.append("\",");
-				}
+				columnIndex++;
+				json.append('"');
+				json.append(records.getString(columnIndex)); // Run Type
+				json.append("\",");
 				
 				for (int i = 0; i < calibrationFields.size(); i++) {
 					columnIndex++;
 					json.append(records.getDouble(columnIndex));
-					if (includeUse || i < calibrationFields.size() -1) {
-						json.append(',');
-					}
+					json.append(',');
 				}
 				
-				if (includeUse) {
-					columnIndex++;
-					json.append(records.getBoolean(columnIndex));
-					json.append(',');
+				columnIndex++;
+				json.append(records.getBoolean(columnIndex));
+				json.append(',');
 					
+				columnIndex++;
+				String message = records.getString(columnIndex);
+				if (null == message) {
+					json.append("null");
+				} else {
+					json.append('"');
+					json.append(message);
+					json.append('"');
+				}
+				
+				json.append("],");
+			}
+			// Remove the trailing comma from the last record
+			if (hasRecords) {
+				json.deleteCharAt(json.length() - 1);
+			}
+			json.append(']');
+
+		} catch (SQLException e) {
+			throw new DatabaseException("Error retrieving calibration data", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+
+		return json.toString();
+	}
+	
+	/**
+	 * Get the gas standard data for a given data set and standard in JSON format for the table view
+	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
+	 * @param dataSource A data source
+	 * @param datasetId The database ID of the data set
+	 * @param standardName The name of the standard ({@code null} for all standards)
+	 * @return The standards data
+	 * @throws DatabaseException If a database error occurs
+	 * @throws MissingParamException If any required parameters are missing
+ 	 */
+	public static String getJsonPlotData(DataSource dataSource, long datasetId, String standardName) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkZeroPositive(datasetId, "datasetId");
+		
+		List<String> calibrationFields = new ArrayList<String>();
+		SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
+		for (SensorType sensorType : sensorConfig.getSensorTypes()) {
+			if (sensorType.isCalibratedUsingData()) {
+				calibrationFields.add(sensorType.getDatabaseFieldName());
+			}
+		}
+
+		List<String> queryFields = new ArrayList<String>();
+		queryFields.add("date");
+		queryFields.add("id");
+		queryFields.addAll(calibrationFields);
+		
+		List<String> andFields = new ArrayList<String>();
+		andFields.add("dataset_id");
+		if (null != standardName) {
+			andFields.add("run_type");
+		}
+		
+		StringBuilder json = new StringBuilder();
+		json.append('[');
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			conn = dataSource.getConnection();
+
+			stmt = DatabaseUtils.createSelectStatement(conn, "calibration_data", queryFields, andFields);
+			stmt.setLong(1, datasetId);
+			if (null != standardName) {
+				stmt.setString(2, standardName);
+			}
+			
+			records = stmt.executeQuery();
+			boolean hasRecords = false;
+			while (records.next()) {
+				hasRecords = true;
+
+				json.append('[');
+				
+				int columnIndex = 0;
+				columnIndex++;
+				json.append(records.getLong(columnIndex)); // date
+				json.append(',');
+
+				columnIndex++;
+				json.append(records.getLong(columnIndex)); // id
+				json.append(',');
+				
+				for (int i = 0; i < calibrationFields.size(); i++) {
 					columnIndex++;
-					String message = records.getString(columnIndex);
-					if (null == message) {
-						json.append("null");
-					} else {
-						json.append('"');
-						json.append(message);
-						json.append('"');
+					json.append(records.getDouble(columnIndex));
+					if (i < calibrationFields.size() - 1) {
+						json.append(',');
 					}
 				}
 				

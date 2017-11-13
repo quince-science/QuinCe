@@ -187,6 +187,20 @@ public class DatabaseUtils {
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws SQLException If the query cannot be created
 	 */
+	public static PreparedStatement createSelectStatement(Connection conn, String table, List<String> queryFields, List<String> andFields) throws MissingParamException, SQLException {
+		return createSelectStatement(conn, table, queryFields, andFields, -1, -1);
+	}
+
+	/**
+	 * Prepare a select statement
+	 * @param conn A database connection
+	 * @param table The table name
+	 * @param queryFields The fields to retrieve
+	 * @param andFields The WHERE parameters (ANDed together)
+	 * @return The prepared query
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws SQLException If the query cannot be created
+	 */
 	public static PreparedStatement createSelectStatement(Connection conn, String table, List<String> queryFields, List<String> andFields, int start, int length) throws MissingParamException, SQLException {
 		
 		MissingParam.checkMissing(conn, "conn");
