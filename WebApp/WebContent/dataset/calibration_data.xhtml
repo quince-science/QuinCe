@@ -24,7 +24,7 @@
 	<ui:define name="plots">
 		<div id="treeContainer">
 			<p:tree id="standardName" value="#{reviewCalibrationDataBean.gasStandardsTree}" selection="#{reviewCalibrationDataBean.selectedStandard}" var="node" selectionMode="single">
-				<p:ajax event="select" listener="#{reviewCalibrationDataBean.reloadPlotData}" process="@this" update="plotPageForm:plotData, plotPageForm:plotLabels" oncomplete="drawPlot()"/>
+				<p:ajax event="select" listener="#{reviewCalibrationDataBean.reloadPageData}" process="@this" update="plotPageForm:plotData, plotPageForm:plotLabels plotPageForm:tableJsonData plotPageForm:tableDataDraw plotPageForm:recordCount" oncomplete="drawPage()"/>
 				<p:treeNode>
 					<h:outputText value="#{node}"/>
 				</p:treeNode>

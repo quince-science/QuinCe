@@ -231,6 +231,17 @@ public abstract class PlotPageBean extends BaseManagedBean {
 			e.printStackTrace();
 		}
 	}
+
+	/**
+	 * Clear existing table data.
+	 * This will force calls to generateTableData to
+	 * reinitialise everything.
+	 */
+	private void clearTableData() {
+		recordCount = -1;
+		tableHeadings = null;
+		tableJsonData = null;
+	}
 	
 	/**
 	 * Get the number of records in the table
@@ -281,6 +292,15 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 */
 	public void setPlotLabels(String dummy) {
 		// Do nothing
+	}
+	
+	/**
+	 * Reload all the data on the page
+	 */
+	public void reloadPageData() {
+		reloadPlotData();
+		clearTableData();
+		generateTableData();
 	}
 	
 	/**
