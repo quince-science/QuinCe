@@ -49,6 +49,12 @@ function getColumnDefs() {
         },
         {"render":
         	function (data, type, row) {
+        		return data.toFixed(3);
+        	},
+        	"targets": 3
+        },
+        {"render":
+        	function (data, type, row) {
 	            var output = '<div class="';
 	            output += data ? 'good' : 'bad';
 	            output += '">';
