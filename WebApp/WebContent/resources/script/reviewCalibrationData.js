@@ -72,6 +72,7 @@ function resizePlots() {
 	// when the plots are stored in plotPage.js
 	// See issue #564
 	
-	
+	$('#standardsPlotContainer').width(window.innerWidth - 300).height('100%');
+	standardsPlot.resize($('#standardsPlotContainer').width(), $('#standardsPlotContainer').height());
 	
 }
