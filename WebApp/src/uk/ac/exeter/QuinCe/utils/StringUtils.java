@@ -331,4 +331,116 @@ public class StringUtils {
 
 		return result;
 	}
+	
+	/**
+	 * Create a JSON field value
+	 * @param fieldNumber The field number
+	 * @param value The field value
+	 * @return The field string
+	 */
+	public static String makeJsonField(int fieldNumber, String value) {
+		return makeJsonField(fieldNumber, value, true);
+	}
+	
+	/**
+	 * Create a JSON field value
+	 * @param fieldNumber The field number
+	 * @param value The field value
+	 * @param asString Indicates whether or not the value should be represented as a String
+	 * @return The field string
+	 */
+	public static String makeJsonField(int fieldNumber, double value, boolean asString) {
+		return makeJsonField(fieldNumber, String.valueOf(value), asString);
+	}
+	
+	/**
+	 * Create a JSON field value
+	 * @param fieldNumber The field number
+	 * @param value The field value
+	 * @param asString Indicates whether or not the value should be represented as a String
+	 * @return The field string
+	 */
+	public static String makeJsonField(int fieldNumber, boolean value, boolean asString) {
+		return makeJsonField(fieldNumber, String.valueOf(value), asString);
+	}
+	
+	/**
+	 * Create a JSON field value
+	 * @param fieldNumber The field number
+	 * @param value The field value
+	 * @return The field string
+	 */
+	public static String makeJsonField(int fieldNumber, double value) {
+		return makeJsonField(fieldNumber, String.valueOf(value), false);
+	}
+	
+	/**
+	 * Create a JSON field value
+	 * @param fieldNumber The field number
+	 * @param value The field value
+	 * @return The field string
+	 */
+	public static String makeJsonField(int fieldNumber, boolean value) {
+		return makeJsonField(fieldNumber, String.valueOf(value), false);
+	}
+	
+	/**
+	 * Create a JSON field value
+	 * @param fieldNumber The field number
+	 * @param value The field value
+	 * @param asString Indicates whether or not the value should be represented as a String
+	 * @return The field string
+	 */
+	public static String makeJsonField(int fieldNumber, long value, boolean asString) {
+		return makeJsonField(fieldNumber, String.valueOf(value), asString);
+	}
+	
+	/**
+	 * Create a JSON field value
+	 * @param fieldNumber The field number
+	 * @param value The field value
+	 * @return The field string
+	 */
+	public static String makeJsonField(int fieldNumber, long value) {
+		return makeJsonField(fieldNumber, String.valueOf(value), false);
+	}
+	
+	/**
+	 * Create a JSON field value
+	 * @param fieldNumber The field number
+	 * @param value The field value
+	 * @param asString Indicates whether or not the value should be represented as a String
+	 * @return The field string
+	 */
+	public static String makeJsonField(int fieldNumber, String value, boolean asString) {
+		return makeJsonField(String.valueOf(fieldNumber), value, asString);
+	}
+
+	/**
+	 * Create a JSON field value
+	 * @param fieldName The field name
+	 * @param value The field value
+	 * @param asString Indicates whether or not the value should be represented as a String
+	 * @return The field string
+	 */
+	public static String makeJsonField(String fieldName, String value, boolean asString) {
+		
+		StringBuilder field = new StringBuilder();
+		
+		field.append("\"");
+		field.append(fieldName);
+		field.append("\":");
+		
+		if (asString) {
+			field.append("\"");
+		}
+		
+		field.append(value);
+		
+		if (asString) {
+			field.append("\"");
+		}
+		
+		return field.toString();
+	}
 }

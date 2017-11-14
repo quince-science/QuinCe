@@ -33,12 +33,13 @@
 
 		<h:form id="plotPageForm" method="post">
 			<h:inputHidden value="#{sessionScope[beanName].tableJsonData}" id="tableJsonData"/>		
+			<h:inputHidden value="#{sessionScope[beanName].tableRowIds}" id="tableRowIds"/>
 			<h:inputHidden value="#{sessionScope[beanName].recordCount}" id="recordCount"/>		
 			<h:inputHidden value="#{sessionScope[beanName].tableDataDraw}" id="tableDataDraw"/>		
 			<h:inputHidden value="#{sessionScope[beanName].tableDataStart}" id="tableDataStart"/>		
 			<h:inputHidden value="#{sessionScope[beanName].tableDataLength}" id="tableDataLength"/>		
 			<h:commandLink id="tableGetData" action="#{sessionScope[beanName].generateTableData}">		
-				<f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw recordCount" onevent="tableDataDownload"/>		
+				<f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw tableRowIds recordCount" onevent="tableDataDownload"/>		
 			</h:commandLink>
 			
 			<h:inputHidden id="selectedRows" value="#{sessionScope[beanName].selectedRows}"/>

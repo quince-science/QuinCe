@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
+import java.util.List;
+
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
@@ -151,8 +153,8 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	}
 	
 	@Override
-	protected int loadRecordCount() throws Exception {
-		return CalibrationDataDB.getCalibrationRecordCount(getDataSource(), datasetId, getStandardSearchString());
+	protected List<Long> loadRowIds() throws Exception {
+		return CalibrationDataDB.getCalibrationRowIds(getDataSource(), datasetId, getStandardSearchString());
 	}
 	
 	/**
@@ -186,7 +188,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	
 	@Override
 	protected String buildSelectableRowIds() throws Exception {
-		return CalibrationDataDB.getCalibrationRecordIds(getDataSource(), datasetId, getStandardSearchString());
+		return getTableRowIds();
 	}
 
 	@Override

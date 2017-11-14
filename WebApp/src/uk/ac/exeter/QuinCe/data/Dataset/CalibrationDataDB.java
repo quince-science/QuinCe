@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -43,25 +44,13 @@ public class CalibrationDataDB {
 	/**
 	 * Statement to retrieve the count of all calibration data for a dataset
 	 */
-	private static final String ALL_CALIBRATION_DATA_COUNT_QUERY = "SELECT COUNT(*) FROM calibration_data "
+	private static final String ALL_CALIBRATION_DATA_ROWIDS_QUERY = "SELECT id FROM calibration_data "
 			+ "WHERE dataset_id = ?";
 	
 	/**
 	 * Statement to retrieve the count of calibration data for a specific run type for a dataset
 	 */
-	private static final String SELECTED_CALIBRATION_DATA_COUNT_QUERY = "SELECT COUNT(*) FROM calibration_data "
-			+ "WHERE dataset_id = ? AND run_type = ?";
-	
-	/**
-	 * Statement to retrieve the IDs of all calibration data for a dataset
-	 */
-	private static final String ALL_CALIBRATION_DATA_IDS_QUERY = "SELECT id FROM calibration_data "
-			+ "WHERE dataset_id = ?";
-	
-	/**
-	 * Statement to retrieve the IDs of calibration data for a specific run type for a dataset
-	 */
-	private static final String SELECTED_CALIBRATION_DATA_IDS_QUERY = "SELECT id FROM calibration_data "
+	private static final String SELECTED_CALIBRATION_DATA_ROWIDS_QUERY = "SELECT id FROM calibration_data "
 			+ "WHERE dataset_id = ? AND run_type = ?";
 	
 	/**
@@ -227,46 +216,48 @@ public class CalibrationDataDB {
 			
 			records = stmt.executeQuery();
 			boolean hasRecords = false;
+			int rowId = start - 1;
 			while (records.next()) {
+				rowId++;
 				hasRecords = true;
-
-				json.append('[');
-				
 				int columnIndex = 0;
-				columnIndex++;
-				json.append(records.getLong(columnIndex)); // id
-				json.append(',');
 
-				columnIndex++;
-				json.append(records.getLong(columnIndex)); // date
+				json.append('{');
+				json.append(StringUtils.makeJsonField("DT_RowId", "row" + rowId, true));
 				json.append(',');
 				
 				columnIndex++;
-				json.append('"');
-				json.append(records.getString(columnIndex)); // Run Type
-				json.append("\",");
+				json.append(StringUtils.makeJsonField(columnIndex - 1, records.getLong(columnIndex))); // id
+				json.append(',');
+
+				columnIndex++;
+				json.append(StringUtils.makeJsonField(columnIndex - 1, records.getLong(columnIndex))); //date
+				json.append(',');
+				
+				columnIndex++;
+				json.append(StringUtils.makeJsonField(columnIndex - 1, records.getString(columnIndex))); //Run Type
+				json.append(',');
 				
 				for (int i = 0; i < calibrationFields.size(); i++) {
 					columnIndex++;
-					json.append(records.getDouble(columnIndex));
+					json.append(StringUtils.makeJsonField(columnIndex - 1, records.getDouble(columnIndex)));
 					json.append(',');
 				}
 				
 				columnIndex++;
-				json.append(records.getBoolean(columnIndex));
+				json.append(StringUtils.makeJsonField(columnIndex - 1, records.getBoolean(columnIndex))); // Use?
 				json.append(',');
 					
+				// Use message
 				columnIndex++;
 				String message = records.getString(columnIndex);
 				if (null == message) {
-					json.append("null");
+					json.append(StringUtils.makeJsonField(columnIndex - 1, "", true));
 				} else {
-					json.append('"');
-					json.append(message);
-					json.append('"');
+					json.append(StringUtils.makeJsonField(columnIndex - 1, message));
 				}
 				
-				json.append("],");
+				json.append("},");
 			}
 			// Remove the trailing comma from the last record
 			if (hasRecords) {
@@ -388,12 +379,12 @@ public class CalibrationDataDB {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws MissingParamException If any required parameters are missing
  	 */
-	public static int getCalibrationRecordCount(DataSource dataSource, long datasetId, String standardName) throws MissingParamException, DatabaseException {
+	public static List<Long> getCalibrationRowIds(DataSource dataSource, long datasetId, String standardName) throws MissingParamException, DatabaseException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkZeroPositive(datasetId, "datasetId");
 		
-		int result = 0;
+		List<Long> result = new ArrayList<Long>();
 		
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -402,17 +393,17 @@ public class CalibrationDataDB {
 		try {
 			conn = dataSource.getConnection();
 			if (null == standardName) {
-				stmt = conn.prepareStatement(ALL_CALIBRATION_DATA_COUNT_QUERY);
+				stmt = conn.prepareStatement(ALL_CALIBRATION_DATA_ROWIDS_QUERY);
 				stmt.setLong(1, datasetId);
 			} else {
-				stmt = conn.prepareStatement(SELECTED_CALIBRATION_DATA_COUNT_QUERY);
+				stmt = conn.prepareStatement(SELECTED_CALIBRATION_DATA_ROWIDS_QUERY);
 				stmt.setLong(1, datasetId);
 				stmt.setString(2, standardName);
 			}
 			
 			records = stmt.executeQuery();
-			if (records.next()) {
-				result = records.getInt(1);
+			while (records.next()) {
+				result.add(records.getLong(1));
 			}
 		} catch (SQLException e) {
 			throw new DatabaseException("Error retrieving calibration data", e);
@@ -423,63 +414,5 @@ public class CalibrationDataDB {
 		}
 
 		return result;
-	}
-
-	/**
-	 * Get the gas standard data for a given data set and standard in JSON format
-	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
-	 * @param dataSource A data source
-	 * @param datasetId The database ID of the data set
-	 * @param standardName The name of the standard ({@code null} for all standards)
-	 * @return The standards data
-	 * @throws DatabaseException If a database error occurs
-	 * @throws MissingParamException If any required parameters are missing
- 	 */
-	public static String getCalibrationRecordIds(DataSource dataSource, long datasetId, String standardName) throws MissingParamException, DatabaseException {
-		
-		MissingParam.checkMissing(dataSource, "dataSource");
-		MissingParam.checkZeroPositive(datasetId, "datasetId");
-		
-		StringBuilder result = new StringBuilder();
-		
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet records = null;
-		
-		try {
-			conn = dataSource.getConnection();
-			if (null == standardName) {
-				stmt = conn.prepareStatement(ALL_CALIBRATION_DATA_IDS_QUERY);
-				stmt.setLong(1, datasetId);
-			} else {
-				stmt = conn.prepareStatement(SELECTED_CALIBRATION_DATA_IDS_QUERY);
-				stmt.setLong(1, datasetId);
-				stmt.setString(2, standardName);
-			}
-			
-			records = stmt.executeQuery();
-			boolean hasRecords = false;
-			result.append('[');
-			
-			while (records.next()) {
-				hasRecords = true;
-				result.append(records.getLong(1));
-				result.append(',');
-			}
-			
-			// Remove the trailing comma from the last record
-			if (hasRecords) {
-				result.deleteCharAt(result.length() - 1);
-			}
-			result.append(']');
-		} catch (SQLException e) {
-			throw new DatabaseException("Error retrieving calibration data", e);
-		} finally {
-			DatabaseUtils.closeResultSets(records);
-			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
-		}
-
-		return result.toString();
 	}
 }

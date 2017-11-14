@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.web;
 
+import java.util.List;
+
 /**
  * Bean for pages containing plots and tables
  * @author Steve Jones
@@ -23,16 +25,15 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	private String tableJsonData = null;
 
 	/**
-	 * The total number of records in the data set. A negative value indicates that the record count is not known and
-	 *   needs to be retrieved from the server.
-	 * 
-	 * <p>
-	 *   Note that this is the number
-	 *   of atmospheric or ocean records, depending on what is being displayed.
-	 * </p>
+	 * The list of row ids in the data being displayed.
 	 */
-	protected int recordCount = -1;	
-
+	private List<Long> tableRowIds = null;
+	
+	/**
+	 * The list of row IDs as a JSON string
+	 */
+	private String tableRowIdsJson = null;
+	
 	/**
 	 * The table headings as a JSON array
 	 */
@@ -114,24 +115,43 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * @return The number of records
 	 */
 	public int getRecordCount() {		
-		return recordCount;		
+		int result = -1;
+		if (null != tableRowIds) {
+			result = tableRowIds.size();
+		}
+		
+		return result;		
+	}
+	
+	/**
+	 * Set the record count (dummy method)
+	 * @param recordCount Ignored.
+	 */
+	public void setRecordCount(int recordCount) {
+		// Do nothing
+	}
+	
+	/**
+	 * Returns the list of table rows as a JSON string
+	 * @return The table row IDs
+	 */
+	public String getTableRowIds() {
+		String result = "[]";
+		if (null != tableRowIdsJson) {
+			result = tableRowIdsJson;
+		}
+		
+		return result;
 	}
  
 	/**
-	 * Set the total number of records in the data file. If the number of records
-	 * is not known, set a negative value.
-	 * 
-	 * <p>
-	 *   Note that this is the number
-	 *   of atmospheric or ocean records, depending on what is being displayed.
-	 * </p>
-	 * 
-	 * @param recordCount The number of records
+	 * Set the table row IDs (dummy method)
+	 * @param tableRowIds Ignored.
 	 */
-	public void setRecordCount(int recordCount) {
-		this.recordCount = recordCount;
-  	}
-
+	public void setTableRowIds(String tableRowIds) {
+		// Do nothing
+	}
+	
  	/**
  	 * Get the current value for the DataTables internal {@code draw} parameter
  	 * @return The DataTables {@code draw} parameter
@@ -218,8 +238,20 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 */
 	public void generateTableData() {
 		try {
-			if (recordCount < 0) {
-				setRecordCount(loadRecordCount());
+			if (null == tableRowIds) {
+				tableRowIds = loadRowIds();
+				
+				StringBuilder json = new StringBuilder();
+				json.append('[');
+				for (int i = 0; i < tableRowIds.size(); i++) {
+					json.append(tableRowIds.get(i));
+					if (i < tableRowIds.size() - 1) {
+						json.append(',');
+					}
+				}
+				json.append(']');
+				
+				tableRowIdsJson = json.toString();
 			}
 			
 			if (null == tableHeadings) {
@@ -238,16 +270,17 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * reinitialise everything.
 	 */
 	private void clearTableData() {
-		recordCount = -1;
+		tableRowIds = null;
+		tableRowIdsJson = null;
 		tableHeadings = null;
 		tableJsonData = null;
 	}
 	
 	/**
-	 * Get the number of records in the table
-	 * @return The record count
+	 * Get the list of row IDs for the data being displayed
+	 * @return The row IDs
 	 */
-	protected abstract int loadRecordCount() throws Exception;
+	protected abstract List<Long> loadRowIds() throws Exception;
 
 	/**
 	 * Build the table headings

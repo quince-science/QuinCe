@@ -20,11 +20,11 @@ var BASE_GRAPH_OPTIONS = {
           gridLinePattern: [1, 3],
           gridLineColor: 'rbg(200, 200, 200)',
         }
-    }
+    },
+	clickCallback: function(e, x, points) {
+		scrollToTableRow(getRowId(e, x, points));
+	}
 };
-
-// The list of dates in the current view. Used for searching.
-var dateList = null;
 
 //The data table
 var jsDataTable = null;
@@ -82,17 +82,10 @@ function resizeContent() {
 
 function makeJSDates(data) {
 	
-	dateList = new Array();
-	
 	for (var i = 0; i < data.length; i++) {
-		point_data = data[i];
-		
-		// Store the milliseconds value in the global dates list
-		dateList.push(point_data[0]);
-		
 		// Replace the milliseconds value with a Javascript date
+		point_data = data[i];
 		point_data[0] = new Date(point_data[0]);
-		
 		data[i] = point_data;
 	}
 
@@ -108,14 +101,15 @@ function makeJSDates(data) {
 function drawTable() {
 
 	// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
-	html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%">';
-	html += '<thead>';
+	html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%"><thead>';
 
 	columnHeadings.forEach(heading => {
 		html += '<th>';
 		html += heading;
 		html += '</th>';
 	});
+
+	html += '</thead></table>';
 
 	$('#tableContent').html(html);
     
@@ -145,16 +139,13 @@ function drawTable() {
     		$('#plotPageForm\\:tableGetData').click();		
     	},
     	bInfo: false,
-    	columnDefs: getColumnDefs()
-    	
-    	/*
+    	columnDefs: getColumnDefs(),
     	drawCallback: function (settings) {
     		if (null != tableScrollRow) {
     			highlightRow(tableScrollRow);
-    			tableScrollRow = null;
+				tableScrollRow = null;
     		}
-    	},
-    	*/
+    	}
     	/*
     	rowCallback: function( row, data, index ) {
     		var rowNumber = parseInt(data[getColumnIndex('Row')], 10);
@@ -210,4 +201,50 @@ function tableDataDownload(data) {
             recordsFiltered: $('#plotPageForm\\:recordCount').val()		
 		});
 	}
-}		
+}
+
+/*
+ * Get the Row ID from a given graph click event
+ * 
+ * For now, this just looks up the row using the X value. This will
+ * work for dates, but will need to be more intelligent for non-date plots.
+ */
+function getRowId(event, xValue, points) {
+	var plotData = JSON.parse($('#plotPageForm\\:plotData').val());
+	var pointId = points[0]['idx'];
+	return plotData[pointId][1];
+}
+
+/*
+ * Scroll to the table row with the given ID
+ */
+function scrollToTableRow(rowId) {
+
+	var tableRow = -1;
+	
+	if (null != rowId) {
+		tableRow = JSON.parse($('#plotPageForm\\:tableRowIds').val()).indexOf(rowId);
+	}
+	
+	if (tableRow >= 0) {
+		jsDataTable.scroller().scrollToRow(tableRow - 2);
+		
+		// Because we scroll to the row - 2, we know that the
+		// row we want to highlight is the third row
+		tableScrollRow = tableRow;
+		
+		// The highlight is done as part of the table draw callback
+	}
+}
+
+function highlightRow(tableRow) {
+	if (null != tableRow) {
+		setTimeout(function() {
+			var rowNode = $('#row' + tableRow)[0];
+			$(rowNode).css('animationName', 'rowFlash').css('animationDuration', '1s');
+			setTimeout(function() {
+				$(rowNode).css('animationName', '');
+			}, 1000);
+		}, 100);
+	}
+}
