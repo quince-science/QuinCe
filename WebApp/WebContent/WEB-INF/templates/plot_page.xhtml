@@ -63,6 +63,9 @@
 			
 			<p:toolbar id="footerToolbar" styleClass="plotPageFooter">
 				<f:facet name="right">
+					Selected rows: <span id="selectedRowsCount">0</span>
+					<p:commandButton value="x" ajax="true" process="@none" action="#{reviewCalibrationDataBean.finish}" styleClass="inlineButton"/>
+					|
 					<ui:insert name="finishButton">Finish button here</ui:insert>
 				</f:facet>
 			</p:toolbar>

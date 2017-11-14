@@ -8,6 +8,7 @@
 	bottom: 0px;
 	height: 30px;
 	width: calc(100% - 8px);
+	color: #2779AA;
 }
 
 .plotPageContent {
@@ -56,4 +57,8 @@
    50% {background-color: #fff;}
    75% {background-color: #fd0;}
   100% {background-color: #fff;}
+}
+
+tr.selected {
+	background-color: #FFFF00 !important;
 }

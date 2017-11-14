@@ -1,3 +1,6 @@
+var SELECT_ACTION = 1;
+var DESELECT_ACTION = 0;
+
 var PLOT_POINT_SIZE = 2;
 var PLOT_HIGHLIGHT_SIZE = 5;
 var PLOT_FLAG_SIZE = 8;
@@ -28,6 +31,15 @@ var BASE_GRAPH_OPTIONS = {
 
 //The data table
 var jsDataTable = null;
+
+//Table selections
+var selectedRows = [];
+
+// The row number (in the data file) of the last selected/deselected row, and
+// which action was performed.
+var lastClickedRow = -1;
+var lastClickedAction = DESELECT_ACTION;
+
 
 // The callback function for the DataTables drawing call
 var dataTableDrawCallback = null;
@@ -99,8 +111,6 @@ function makeJSDates(data) {
  * its data from the server using the hidden form.
  */
 function drawTable() {
-
-	// PUT COLUMN HEADERS IN JS FROM DATASCREENBEAN
 	html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%"><thead>';
 
 	columnHeadings.forEach(heading => {
@@ -139,25 +149,27 @@ function drawTable() {
     		$('#plotPageForm\\:tableGetData').click();		
     	},
     	bInfo: false,
-    	columnDefs: getColumnDefs(),
     	drawCallback: function (settings) {
     		if (null != tableScrollRow) {
     			highlightRow(tableScrollRow);
 				tableScrollRow = null;
     		}
-    	}
-    	/*
+    	},
     	rowCallback: function( row, data, index ) {
-    		var rowNumber = parseInt(data[getColumnIndex('Row')], 10);
-            if ( $.inArray(rowNumber, selectedRows) !== -1 ) {
+    		if ($.inArray(data[0], selectedRows) !== -1) {
                 $(row).addClass('selected');
             }
             
+    		// For some reason, the click handler is added twice
+    		// on the first round of data loading (i.e. when the screen
+    		// is first drawn). I can't find why, so for now I'll just
+    		// remove all existing click handlers before adding this one.
+    		$(row).off('click');
             $(row).on('click', function(event) {
-            	clickRowAction(rowNumber, event.shiftKey);
+            	clickRowAction(data[0], event.shiftKey);
             });
-        }
-        */
+        },
+    	columnDefs: getColumnDefs()
     });
     
     renderTableColumns();
@@ -247,4 +259,122 @@ function highlightRow(tableRow) {
 			}, 1000);
 		}, 100);
 	}
+}
+
+/*
+ * Process row clicks as selections/deselections
+ */
+function clickRowAction(rowId, shiftClick) {
+	// We only do something if the row is selectable
+	if ($.inArray(rowId, selectableRows) != -1) {
+		
+		var action = lastClickedAction;
+		var actionRows = [rowId];
+		
+		if (!shiftClick) {
+			if ($.inArray(rowId, selectedRows) != -1) {
+				action = DESELECT_ACTION;
+			} else {
+				action = SELECT_ACTION;
+			}
+		} else {
+			actionRows = getRowsInRange(lastClickedRow, rowId);
+		}
+		
+		if (action == SELECT_ACTION) {
+			addRowsToSelection(actionRows);
+		} else {
+			removeRowsFromSelection(actionRows);
+		}
+		
+		selectionUpdated();
+		lastClickedRow = rowId;
+		lastClickedAction = action;
+	}
+}
+
+function addRowsToSelection(rows) {
+	var rowsIndex = 0;
+	var selectionIndex = 0;
+	
+	while (selectionIndex < selectedRows.length && rowsIndex < rows.length) {
+		while (selectedRows[selectionIndex] > rows[rowsIndex]) {
+			selectedRows.splice(selectionIndex, 0, rows[rowsIndex]);
+			selectionIndex++;
+			rowsIndex++;
+		}
+		
+		if (selectedRows[selectionIndex] == rows[rowsIndex]) {
+			rowsIndex++;
+		}
+		selectionIndex++;
+	}
+	
+	if (rowsIndex < rows.length) {
+		selectedRows = selectedRows.concat(rows.slice(rowsIndex));
+	}
+}
+
+function removeRowsFromSelection(rows) {
+	
+	var rowsIndex = 0;
+	var selectionIndex = 0;
+	
+	while (selectionIndex < selectedRows.length && rowsIndex < rows.length) {
+		while (selectedRows[selectionIndex] == rows[rowsIndex]) {
+			selectedRows.splice(selectionIndex, 1);
+			rowsIndex++;
+			if (rowsIndex == rows.length || selectionIndex == selectedRows.length) {
+				break;
+			}
+		}
+		selectionIndex++;
+	}
+}
+
+function getRowsInRange(startRow, endRow) {
+	
+	var rows = [];
+	
+	var step = 1;
+	if (endRow < startRow) {
+		step = -1;
+	}
+	
+	var startIndex = $.inArray(startRow, selectableRows);
+	var currentIndex = startIndex;
+	
+	while (selectableRows[currentIndex] != endRow) {
+		currentIndex = currentIndex + step;
+		rows.push(selectableRows[currentIndex]);
+	}
+	
+	if (step == -1) {
+		rows = rows.reverse();
+	}
+	
+	return rows;
+}
+
+function selectionUpdated() {
+
+	// Update the displayed rows
+	var rows = jsDataTable.rows()[0];
+	for (var i = 0; i < rows.length; i++) {
+		var row = jsDataTable.row(i);
+		if ($.inArray(row.data()[0], selectedRows) > -1) {
+			$(row.node()).addClass('selected');
+		} else {
+			$(row.node()).removeClass('selected');
+		}
+	}
+	
+	// Update the selected rows counter
+	$('#selectedRowsCount').html(selectedRows.length);
+}
+
+function clearSelection() {
+	jsDataTable.rows(selectedRows).deselect();
+	selectedRows = [];
+	selectionUpdated();
 }
