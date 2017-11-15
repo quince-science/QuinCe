@@ -127,6 +127,8 @@ input[type="submit"][disabled="disabled"] {
 
 .inlineButton {
 	margin-top: 0px;
+	margin-left: 5px;
+	margin-right: 5px;
 }
 
 input[type="submit"]:last-of-type, button:last-of-type {

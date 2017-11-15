@@ -62,3 +62,12 @@
 tr.selected {
 	background-color: #FFFF00 !important;
 }
+
+.clearSelectionButton {
+	background-image: url("#{resource['image/delete_button.svg']}") !important;
+	background-size: cover;
+	margin-left: -13px !important;
+	margin-top: -13px !important;
+	width: 25px !important;
+	height: 25px !important;
+}
