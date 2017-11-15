@@ -187,8 +187,19 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	}
 	
 	@Override
-	protected String buildSelectableRowIds() throws Exception {
-		return getTableRowIds();
+	protected String buildSelectableRows() throws Exception {
+		List<Long> ids = CalibrationDataDB.getCalibrationRowIds(getDataSource(), getDatasetId(), getStandardSearchString());
+		StringBuilder result = new StringBuilder();
+		result.append('[');
+		for (int i = 0; i < ids.size(); i++) {
+			result.append(ids.get(i));
+			if (i < ids.size() - 1) {
+				result.append(',');
+			}
+		}
+		result.append(']');
+		
+		return result.toString();
 	}
 
 	@Override

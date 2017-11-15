@@ -68,7 +68,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * The rows are loaded during {@link #start} via {@link #buildSelectableRowIds()}.
 	 * </p>
 	 */
-	protected String selectableRowIds = null;
+	protected String selectableRows = null;
 
 	/**
 	 * The row numbers that have been selected by the user. Stored as a comma-separated list.
@@ -210,8 +210,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * Get the list of selectable row IDs
 	 * @return The selectable rows
 	 */
-	public String getSelectableRowIds() {
-		return selectableRowIds;
+	public String getSelectableRows() {
+		return selectableRows;
 	}
 	
 	/**
@@ -358,7 +358,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 			plotLabels = buildPlotLabels();
 			plotData = loadPlotData();
 			tableHeadings = buildTableHeadings();
-			selectableRowIds = buildSelectableRowIds();
+			selectableRows = buildSelectableRows();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -388,7 +388,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * Build the list of selectable record IDs
 	 * @throws Exception If the list cannot be created
 	 */
-	protected abstract String buildSelectableRowIds() throws Exception;
+	protected abstract String buildSelectableRows() throws Exception;
 	
 	/**
 	 * Build the labels for the plot

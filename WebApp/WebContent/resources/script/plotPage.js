@@ -174,6 +174,7 @@ function drawTable() {
     
     renderTableColumns();
     resizeContent();
+    clearSelection();
     
     // Large table scrolls trigger highlights when the table is redrawn.
     // This handles small scrolls that don't trigger a redraw.
@@ -198,6 +199,9 @@ function calcTableScrollY() {
 	return $('#tableContent').height() - $('#plotPageForm\\:footerToolbar').outerHeight();
 }
 
+function getSelectableRows() {
+	return JSON.parse($('#plotPageForm\\:selectableRows').val());
+}
 /*
  * Called when table data has been downloaded from the server.		
  * The previously stored callback function is triggered with		
@@ -266,7 +270,9 @@ function highlightRow(tableRow) {
  */
 function clickRowAction(rowId, shiftClick) {
 	// We only do something if the row is selectable
-	if ($.inArray(rowId, selectableRows) != -1) {
+	if ($.inArray(rowId, getSelectableRows()) != -1) {
+		
+		console.log(rowId);
 		
 		var action = lastClickedAction;
 		var actionRows = [rowId];
@@ -341,12 +347,12 @@ function getRowsInRange(startRow, endRow) {
 		step = -1;
 	}
 	
-	var startIndex = $.inArray(startRow, selectableRows);
+	var startIndex = $.inArray(startRow, getSelectableRows());
 	var currentIndex = startIndex;
 	
-	while (selectableRows[currentIndex] != endRow) {
+	while (getSelectableRows()[currentIndex] != endRow) {
 		currentIndex = currentIndex + step;
-		rows.push(selectableRows[currentIndex]);
+		rows.push(getSelectableRows()[currentIndex]);
 	}
 	
 	if (step == -1) {
