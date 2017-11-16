@@ -1,0 +1,73 @@
+.plotPageHeader {
+	height: 25px;
+	font-size: 18px;
+}
+
+.plotPageFooter {
+	position: absolute;
+	bottom: 0px;
+	height: 30px;
+	width: calc(100% - 8px);
+	color: #2779AA;
+}
+
+.plotPageContent {
+	position: absolute;
+	top: 35px;
+	width: 100%;
+	height: calc(100% - 65px);
+	overflow: hidden;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+#plots {
+	overflow: hidden;
+}
+
+#tableContent {
+	overflow: hidden;
+}
+
+/* jQuery splitter overrides */
+.splitter_panel .vsplitter {
+    background: url("#{resource['image/primefaces_gradient_vertical.png']}") #E4F0F7 repeat-y;
+    background-size: 7px 1px;
+    cursor: col-resize;
+    z-index:900;
+    width: 7px;
+}
+
+.splitter_panel .hsplitter {
+    background: url("#{resource['image/primefaces_gradient_horizontal.png']}") #E4F0F7 repeat-x;
+    background-size: 1px 7px;
+    cursor: row-resize;
+    z-index: 800;
+    height: 10px;
+}
+
+/* Table row highlighter */
+@keyframes rowFlash {
+    0% {background-color: #fff;}
+   25% {background-color: #fd0;}
+   50% {background-color: #fff;}
+   75% {background-color: #fd0;}
+  100% {background-color: #fff;}
+}
+
+tr.selected {
+	background-color: #FFFF00 !important;
+}
+
+.clearSelectionButton {
+	background-image: url("#{resource['image/delete_button.svg']}") !important;
+	background-size: cover;
+	margin-left: -13px !important;
+	margin-top: -13px !important;
+	width: 25px !important;
+	height: 25px !important;
+}

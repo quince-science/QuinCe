@@ -84,7 +84,7 @@ public class InstrumentDB {
 	/**
 	 * Query to get all the run types of a given run type category
 	 */
-	private static final String GET_RUN_TYPES_QUERY = "SELECT CONCAT(f.description, ': ', r.run_name) AS run_type "
+	private static final String GET_RUN_TYPES_QUERY = "SELECT r.run_name AS run_type "
 			+ "FROM file_definition AS f INNER JOIN run_type AS r ON f.id = r.file_definition_id "
 			+ "WHERE f.instrument_id = ? AND category_code = ? ORDER BY run_type";
 	

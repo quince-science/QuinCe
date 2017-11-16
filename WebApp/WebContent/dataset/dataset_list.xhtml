@@ -9,16 +9,26 @@
 	<ui:define name="title">Data Sets</ui:define>
 	<ui:define name="localHead">
 		<c:set var="mainMenuActiveIndex" value="0" scope="request"/>
+		<script>
+			function goToCalibrationData(id) {
+				$('#datasetListForm\\:calibrationDatasetId').val(id);
+				$('#datasetListForm\\:reviewCalibrationDataLink').click();
+				return false;
+			}
+		</script>
 	</ui:define>
 	
 	<ui:define name="content">
-		<h:form id="fileListForm" method="post" charset="utf8">
+		<h:form id="datasetListForm" method="post" charset="utf8">
 			<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
 				<p:outputLabel for="instrument" value="Select Instrument:"/>
 				<p:selectOneMenu id="instrument" value="#{dataFilesBean.currentInstrument}">
 					<f:selectItems value="#{dataFilesBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
 				</p:selectOneMenu>
 			</h:panelGrid>
+			
+			<h:inputHidden id="calibrationDatasetId" value="#{reviewCalibrationDataBean.datasetId}"/>
+			<p:commandLink id="reviewCalibrationDataLink" ajax="false" action="#{reviewCalibrationDataBean.start}"/>
 
 			<p:dataTable id="datasets" value="#{dataSetsBean.dataSets}" var="dataset" styleClass="pageTable" scrollable="true" scrollHeight="450">
 				<p:column>
@@ -44,6 +54,12 @@
 						<h:outputText value="Status"/>
 					</f:facet>
 					<h:outputText value="#{dataset.statusName}"/>
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Actions"/>
+					</f:facet>
+					<a href="#" onclick="return goToCalibrationData(#{dataset.id})">Cal</a>
 				</p:column>
 			</p:dataTable>
 			

@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+	  xmlns:f="http://xmlns.jcp.org/jsf/core"
+	  xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+  	<h:head>
+		<title><ui:insert name="title">Welcome</ui:insert> - QuinCe</title>
+		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
+		<ui:insert name="localHead"></ui:insert>
+		<h:outputScript name="script/jquery.splitter.js"/>
+    	<h:outputStylesheet name="style/jquery.splitter.css"/>
+		<h:outputScript name="script/jquery-dateFormat.min.js"/>
+		<h:outputScript name="script/dygraph.min.js"/>
+		<h:outputStylesheet name="style/dygraph.css"/>
+		<h:outputScript name="script/datatables.min.js"/>
+		<h:outputStylesheet name="style/datatables.min.css"/>
+		<h:outputScript name="script/plotPage.js"/>
+		<ui:insert name="localHead"></ui:insert>
+		<script>
+			var columnHeadings = #{sessionScope[beanName].tableHeadings};
+		</script>
+	</h:head>
+	<h:body class="fullPage">
+		<ui:include src="/WEB-INF/templates/keep_alive.xhtml"/>
+
+		<!--  The main stylesheet goes here because it can then override PrimeFaces styles -->
+		<h:outputStylesheet name="style/main.css"/>
+		<h:outputStylesheet name="style/plotPage.css"/>
+
+		<h:form id="plotPageForm" method="post">
+			<h:inputHidden value="#{sessionScope[beanName].selectableRows}" id="selectableRows"/>
+			<h:inputHidden value="#{sessionScope[beanName].tableJsonData}" id="tableJsonData"/>		
+			<h:inputHidden value="#{sessionScope[beanName].tableRowIds}" id="tableRowIds"/>
+			<h:inputHidden value="#{sessionScope[beanName].recordCount}" id="recordCount"/>		
+			<h:inputHidden value="#{sessionScope[beanName].tableDataDraw}" id="tableDataDraw"/>		
+			<h:inputHidden value="#{sessionScope[beanName].tableDataStart}" id="tableDataStart"/>		
+			<h:inputHidden value="#{sessionScope[beanName].tableDataLength}" id="tableDataLength"/>		
+			<h:commandLink id="tableGetData" action="#{sessionScope[beanName].generateTableData}">		
+				<f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw tableRowIds recordCount selectableRows" onevent="tableDataDownload"/>		
+			</h:commandLink>
+			
+			<div id="infoPopup" class="popup">
+				Info
+			</div>
+
+			<h:inputHidden id="selectedRows" value="#{sessionScope[beanName].selectedRows}"/>
+			<ui:insert name="selectionDialog"/>
+			
+			<ui:insert name="formEntries"></ui:insert>
+			<p:toolbar styleClass="plotPageHeader">
+				<f:facet name="left">
+					<ui:insert name="dataSetName">Data Set Name</ui:insert>
+				</f:facet>
+			</p:toolbar>
+			
+			<div id="plotPageContent" class="plotPageContent">
+				<div id="plots">
+					<ui:insert name="plots">Plots</ui:insert>
+				</div>
+				<div id="tableContent">
+					Data
+				</div>
+			</div>
+			
+			<p:toolbar id="footerToolbar" styleClass="plotPageFooter">
+				<f:facet name="right">
+					Selection: <span id="selectedRowsCount">0</span>
+					<p:commandButton icon="clearSelectionButton" onclick="clearSelection();" styleClass="inlineButton tightButton"/>
+					<ui:insert name="selectionActions">Selection actions here</ui:insert>
+					|
+					<ui:insert name="finishButton">Finish button here</ui:insert>
+				</f:facet>
+			</p:toolbar>
+		</h:form>
+
+	</h:body>
+</html>
+      

@@ -1,5 +1,5 @@
 /*!
- * JQuery Spliter Plugin
+ * JQuery Spliter Plugin version 0.24.0
  * Copyright (C) 2010-2016 Jakub Jankiewicz <http://jcubic.pl>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -113,6 +113,8 @@
                                 panel_2.width(self.width()-pw-sw);
                                 splitter.css('left', pw);
                             }
+                            panel_1.find('.splitter_panel').eq(0).height(self.height());
+                            panel_2.find('.splitter_panel').eq(0).height(self.height());
                         }
                         if (!silent) {
                             self.trigger('splitter.resize');
@@ -172,7 +174,7 @@
                 self.unbind('splitter.resize');
                 self.trigger('splitter.resize');
                 self.find('.splitter_panel').trigger('splitter.resize');
-                splitters[i] = null;
+                splitters[id] = null;
                 count--;
                 splitter.remove();
                 self.removeData('splitter');
@@ -227,7 +229,12 @@
             pos = settings.limit;
         }
         self.position(pos, true);
-        if (splitters.length === 0) { // first time bind events to document
+		var parent = this.closest('.splitter_panel');
+        if (parent.length) {
+            this.height(parent.height());
+        }
+        // bind events to document if no splitters
+        if (splitters.filter(Boolean).length === 0) {
             $(window).bind('resize.splitter', function() {
                 $.each(splitters, function(i, splitter) {
                     if (splitter) {
@@ -237,6 +244,7 @@
             });
             $(document.documentElement).on('mousedown.splitter touchstart.splitter', function(e) {
                 if (splitter_id !== null) {
+                    e.preventDefault();
                     current_splitter = splitters[splitter_id];
                     setTimeout(function() {
                         $('<div class="splitterMask"></div>').
