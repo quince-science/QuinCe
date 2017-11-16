@@ -386,3 +386,41 @@ function clearSelection() {
 	selectedRows = [];
 	selectionUpdated();
 }
+
+function showInfoPopup(qcFlag, qcMessage, target) {
+
+    $('#infoPopup').stop(true, true);
+
+    if (qcMessage != "") {
+
+        var content = '';
+	    content += '<div class="qcInfoMessage ';
+
+	    switch (qcFlag) {
+	    case 3: {
+	    	content += 'questionable';
+	    	break;
+	    }
+	    case 4:
+	    case 44: {
+	    	content += 'bad';
+	    	break;
+    	}
+	    }
+
+	    content += '">';
+	    content += qcMessage;
+	    content += '</div>';
+
+    	$('#infoPopup')
+          .html(content)
+          .css({"left": 0, "top": 0})
+          .offset({"left": $(target).position().left - $('#qcInfoPopup').width() - 10, "top": $(target).offset().top - 3})
+          .show('slide', {direction: 'right'}, 100);
+   }
+ }
+
+function hideInfoPopup() {
+    $('#infoPopup').stop(true, true);
+    $('#infoPopup').hide('slide', {direction: 'right'}, 100);
+}

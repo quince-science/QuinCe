@@ -42,6 +42,10 @@
 				<f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw tableRowIds recordCount selectableRows" onevent="tableDataDownload"/>		
 			</h:commandLink>
 			
+			<div id="infoPopup" class="popup">
+				Info
+			</div>
+
 			<h:inputHidden id="selectedRows" value="#{sessionScope[beanName].selectedRows}"/>
 			<ui:insert name="selectionDialog"/>
 			

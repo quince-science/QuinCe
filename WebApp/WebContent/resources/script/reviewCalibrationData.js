@@ -56,7 +56,7 @@ function getColumnDefs() {
         },
         {"render":
         	function (data, type, row) {
-	            var output = '<div class="';
+        		var output = '<div onmouseover="showInfoPopup(' + 4 + ', \'' + row[5] + '\', this)" onmouseout="hideInfoPopup()" class="';
 	            output += data ? 'good' : 'bad';
 	            output += '">';
 	            output += data ? 'Yes' : 'No';
