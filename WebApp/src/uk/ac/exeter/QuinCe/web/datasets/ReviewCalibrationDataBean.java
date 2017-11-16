@@ -61,6 +61,16 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	private TreeNode selectedStandard;
 	
 	/**
+	 * Indicates whether or not the selected calibrations should be used
+	 */
+	private boolean useCalibrations = true;
+	
+	/**
+	 * The message attached to calibrations that should not be used
+	 */
+	private String useCalibrationsMessage = null;
+	
+	/**
 	 * Initialise the required data for the bean
 	 */
 	public void init() {
@@ -216,5 +226,51 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	@Override
 	protected String loadTableData(int start, int length) throws Exception {
 		return CalibrationDataDB.getJsonTableData(getDataSource(), datasetId, getStandardSearchString(), start, length);
+	}
+	
+	/**
+	 * Get the flag indicating whether the selected calibrations are to be used
+	 * @return The use calibrations flag
+	 */
+	public boolean getUseCalibrations() {
+		return useCalibrations;
+	}
+	
+	/**
+	 * Set the flag indicating whether the selected calibrations are to be used
+	 * @param useCalibrations The use calibrations flag
+	 */
+	public void setUseCalibrations(boolean useCalibrations) {
+		this.useCalibrations = useCalibrations;
+	}
+	
+	/**
+	 * Get the message that will be attached to calibrations which aren't being used
+	 * @return The message for unused calibrations
+	 */
+	public String getUseCalibrationsMessage() {
+		return useCalibrationsMessage;
+	}
+	
+	/**
+	 * Set the message that will be attached to calibrations which aren't being used
+	 * @param useCalibrationsMessage The message for unused calibrations
+	 */
+	public void setUseCalibrationsMessage(String useCalibrationsMessage) {
+		this.useCalibrationsMessage = useCalibrationsMessage;
+	}
+
+	/**
+	 * Set the usage status of the selected rows
+     * @throws DatabaseException If a database error occurs
+     * @throws MissingParamException If any required parameters are missing
+	 */
+	public void setCalibrationUse() throws MissingParamException, DatabaseException {
+		
+		try {
+			CalibrationDataDB.setCalibrationUse(getDataSource(), getSelectedRowsList(), useCalibrations, useCalibrationsMessage);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

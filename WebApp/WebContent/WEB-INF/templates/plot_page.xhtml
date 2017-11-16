@@ -43,7 +43,7 @@
 			</h:commandLink>
 			
 			<h:inputHidden id="selectedRows" value="#{sessionScope[beanName].selectedRows}"/>
-			
+			<ui:insert name="selectionDialog"/>
 			
 			<ui:insert name="formEntries"></ui:insert>
 			<p:toolbar styleClass="plotPageHeader">

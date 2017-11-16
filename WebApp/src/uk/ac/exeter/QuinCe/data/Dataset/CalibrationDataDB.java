@@ -415,4 +415,56 @@ public class CalibrationDataDB {
 
 		return result;
 	}
+	
+	/**
+	 * Set the use flags on a set of rows in a data set
+	 * @param dataSource A data set
+	 * @param ids The row IDs
+	 * @param use The Use flag
+	 * @param useMessage The message for the flag (only used if the flag is {@code false}
+	 * @throws MissingParamException If any required flags are missing
+	 * @throws DatabaseException If a database error occurs 
+	 */
+	public static void setCalibrationUse(DataSource dataSource, List<Long> ids, boolean use, String useMessage) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(ids, "ids");
+		if (!use) {
+			MissingParam.checkMissing(useMessage, "useMessage");
+		}
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.prepareStatement(DatabaseUtils.makeInStatementSql(SET_USE_FLAGS_STATEMENT, ids.size()));
+			stmt.setBoolean(1, use);
+			
+			if (use) {
+				stmt.setNull(2, Types.VARCHAR);
+			} else {
+				stmt.setString(2, useMessage);
+			}
+			
+			int valueIndex = 2;
+			for (long id : ids) {
+				valueIndex++;
+				stmt.setLong(valueIndex, id);
+			}
+			
+			stmt.execute();
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while storing calibration use flags", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		
+	}
+	
+	private static final String SET_USE_FLAGS_STATEMENT = "UPDATE calibration_data SET "
+			+ "use_record = ?, use_message = ? "
+			+ "WHERE id IN " + DatabaseUtils.IN_PARAMS_TOKEN;
 }

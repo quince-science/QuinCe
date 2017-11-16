@@ -2,6 +2,8 @@ package uk.ac.exeter.QuinCe.web;
 
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.utils.StringUtils;
+
 /**
  * Bean for pages containing plots and tables
  * @author Steve Jones
@@ -215,12 +217,28 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	}
 	
 	/**
+	 * Dummy method to set selectable rows (required by bean)
+	 * @param dummy Ignored
+	 */
+	public void setSelectableRows(String dummy) {
+		// Do nothing
+	}
+	
+	/**
 	 * Get the set of rows that have been selected by the user.
 	 * The rows are returned as an unsorted comma-separated list.
 	 * @return The selected rows
 	 */
 	public String getSelectedRows() {
 		return selectedRows;
+	}
+	
+	/**
+	 * Get the selected rows as a list of numbers
+	 * @return The selected rows
+	 */
+	public List<Long> getSelectedRowsList() {
+		return StringUtils.delimitedToLongList(selectedRows);
 	}
 	
 	/**

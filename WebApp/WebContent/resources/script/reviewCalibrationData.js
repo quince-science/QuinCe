@@ -77,3 +77,52 @@ function resizePlots() {
 	standardsPlot.resize($('#standardsPlotContainer').width(), $('#standardsPlotContainer').height());
 	
 }
+
+function showUseDialog() {
+	// Select the first radio button, which is "Yes"
+	PF('useCalibrationsWidget').jq.find('input:radio[value=true]').parent().next().trigger('click.selectOneRadio');
+	$(PF('useCalibrationsMessageWidget').jqId).val("");
+	updateUseDialogControls();
+	PF('useDialog').show();
+}
+
+function storeCalibrationSelection() {
+	console.log("I am storing the calibration selection!");
+	$('#plotPageForm\\:selectedRows').val(selectedRows);
+	$('#plotPageForm\\:setUseCalibrations').click();
+
+	// Update the table data
+	var rows = jsDataTable.rows()[0];
+	for (var i = 0; i < rows.length; i++) {
+		var row = jsDataTable.row(i);
+		if ($.inArray(row.data()[0], selectedRows) > -1) {
+			jsDataTable.cell(i, 4).data(PF('useCalibrationsWidget').getJQ().find(':checked').val() == 'true');
+			jsDataTable.cell(i, 5).data($(PF('useCalibrationsMessageWidget').jqId).val());
+		}
+	}
+	
+	clearSelection();
+	PF('useDialog').hide();
+}
+
+function postSelectionUpdated() {
+	if (selectedRows.length == 0) {
+		PF('useCalibrationsButton').disable();
+	} else {
+		PF('useCalibrationsButton').enable();
+	}
+}
+
+function updateUseDialogControls() {
+	if (PF('useCalibrationsWidget').getJQ().find(':checked').val() == 'true') {
+		$('#reasonSection').css('visibility', 'hidden');
+		PF('okButtonWidget').enable();
+	} else {
+		$('#reasonSection').css('visibility', 'visible');
+		if ($(PF('useCalibrationsMessageWidget').jqId).val().trim() == '') {
+			PF('okButtonWidget').disable();
+		} else {
+			PF('okButtonWidget').enable();
+		}
+	}
+}

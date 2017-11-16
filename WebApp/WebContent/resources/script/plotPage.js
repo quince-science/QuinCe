@@ -272,8 +272,6 @@ function clickRowAction(rowId, shiftClick) {
 	// We only do something if the row is selectable
 	if ($.inArray(rowId, getSelectableRows()) != -1) {
 		
-		console.log(rowId);
-		
 		var action = lastClickedAction;
 		var actionRows = [rowId];
 		
@@ -377,6 +375,10 @@ function selectionUpdated() {
 	
 	// Update the selected rows counter
 	$('#selectedRowsCount').html(selectedRows.length);
+	
+	if (typeof postSelectionUpdated == 'function') {
+		postSelectionUpdated();
+	}
 }
 
 function clearSelection() {

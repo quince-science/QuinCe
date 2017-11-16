@@ -136,6 +136,28 @@ public class StringUtils {
 	}
 	
 	/**
+	 * Convert a comma-separated list of numbers to a list of longs
+	 * @param values The numbers
+	 * @return The longs
+	 */
+	public static List<Long> delimitedToLongList(String values) {
+		// TODO This is the preferred way of doing this. Make the other methods do the same.
+		
+		List<Long> result = null;
+		
+		if (values != null) {
+			String[] numberList = values.split(",");
+			result = new ArrayList<Long>(numberList.length);
+			
+			for (String number : numberList) {
+				result.add(Long.parseLong(number));
+			}
+		}
+		
+		return result;
+	}
+
+	/**
 	 * Extract the stack trace from an Exception (or other
 	 * Throwable) as a String.
 	 * @param e The error

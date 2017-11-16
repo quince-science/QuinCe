@@ -26,6 +26,12 @@ public class DatabaseUtils {
 	public static final int NO_DATABASE_RECORD = -1;
 	
 	/**
+	 * Token to mark the place where the parameters for an IN clause should be in an SQL string.
+	 * @see #makeInStatementSql(String, int)
+	 */
+	public static final String IN_PARAMS_TOKEN = "%%IN_PARAMS%%";
+	
+	/**
 	 * Close a set of {@link java.sql.ResultSet} objects, ignoring any errors
 	 * @param results The ResultSets
 	 */
@@ -260,5 +266,29 @@ public class DatabaseUtils {
 		}
 		
 		return conn.prepareStatement(query.toString());
+	}
+
+	/**
+	 * Construct an SQL Prepared Statement string that contains an IN parameter
+	 * with the given number of parameters.
+	 * 
+	 * The query must contain an {@link #IN_PARAMS_TOKEN}.
+	 * 
+	 * @param query The query
+	 * @param inSize The number of items in the IN parameter
+	 * @return The generated SQL statement
+	 */
+	public static String makeInStatementSql(String query, int inSize) {
+		
+		StringBuilder inParams = new StringBuilder();
+		inParams.append('(');
+		for (int i = 0; i < inSize; i++) {
+			inParams.append("?,");
+		}
+		inParams.deleteCharAt(inParams.length() - 1);
+
+		inParams.append(')');
+		
+		return query.replaceAll(IN_PARAMS_TOKEN, inParams.toString());
 	}
 }
