@@ -34,6 +34,16 @@ public class DataSet {
 	public static final String STATUS_DATA_EXTRACTION_NAME = "Data extraction";
 	
 	/**
+	 * The numeric value for the data extraction status
+	 */
+	public static final int STATUS_WAITING_FOR_CALCULATION = 2;
+	
+	/**
+	 * The string for the data extraction status
+	 */
+	public static final String STATUS_WAITING_FOR_CALCULATION_NAME = "Waiting for calculation";
+	
+	/**
 	 * The database ID
 	 */
 	private long id = DatabaseUtils.NO_DATABASE_RECORD;
@@ -134,6 +144,10 @@ public class DataSet {
 		}
 		case STATUS_DATA_EXTRACTION: {
 			result = STATUS_DATA_EXTRACTION_NAME;
+			break;
+		}
+		case STATUS_WAITING_FOR_CALCULATION: {
+			result = STATUS_WAITING_FOR_CALCULATION_NAME;
 			break;
 		}
 		default: {

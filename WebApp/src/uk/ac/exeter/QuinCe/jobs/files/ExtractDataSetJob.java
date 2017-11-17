@@ -102,6 +102,8 @@ public class ExtractDataSetJob extends Job {
 				record = rawData.getNextRecord();
 			}
 			
+			DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_WAITING_FOR_CALCULATION);
+			
 			conn.commit();
 			
 		} catch (Exception e) {
