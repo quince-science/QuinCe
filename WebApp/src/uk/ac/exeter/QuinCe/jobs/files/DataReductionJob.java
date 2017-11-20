@@ -30,6 +30,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunType;
 import uk.ac.exeter.QuinCe.data.QC.NoDataQCRecord;
 import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
+import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
@@ -49,8 +50,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  * @see <a href="http://www.sciencedirect.com/science/article/pii/S0967064508004268">Recommendations for autonomous underway pCO<sub>2</sub> measuring systems and data-reduction routines</a> 
  */
-@Deprecated
-public class DataReductionJob extends FileJob {
+public class DataReductionJob extends Job {
+
+	/**
+	 * The parameter name for the data set id
+	 */
+	public static final String ID_PARAM = "id";
 
 	/**
 	 * The conversion factor from Pascals to Atmospheres
@@ -75,7 +80,7 @@ public class DataReductionJob extends FileJob {
 	}
 	
 	@Override
-	protected void executeFileJob(JobThread thread) throws JobFailedException {
+	protected void execute(JobThread thread) throws JobFailedException {
 
 		/*
 		
@@ -275,11 +280,6 @@ public class DataReductionJob extends FileJob {
 	 * @throws JobFailedException If an error occurs
 	 */
 	protected void reset() throws JobFailedException {
-		try {
-			DataReductionDB.clearDataReductionData(dataSource, fileId);
-		} catch(DatabaseException e) {
-			throw new JobFailedException(id, e);
-		}
 	}
 
 	/**
@@ -678,6 +678,12 @@ public class DataReductionJob extends FileJob {
 		double sst_kelvin = sst + 273.15;
 		double eqt_kelvin = eqt + 273.15;
 		return fco2TE * Math.exp(0.0423 * (sst_kelvin - eqt_kelvin));
+	}
+
+	@Override
+	protected void validateParameters() throws InvalidJobParametersException {
+		// TODO Auto-generated method stub
+		
 	}
 }
 
