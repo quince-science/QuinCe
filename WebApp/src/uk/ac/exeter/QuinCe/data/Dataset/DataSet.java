@@ -294,6 +294,6 @@ public class DataSet {
 	 * @return {@code true} if the status is valid; {@code false} if it is not
 	 */
 	public static boolean validateStatus(int status) {
-		return (status == STATUS_WAITING || status == STATUS_DATA_EXTRACTION);
+		return (status == STATUS_WAITING || status == STATUS_DATA_EXTRACTION || status == STATUS_WAITING_FOR_CALCULATION);
 	}
 }
