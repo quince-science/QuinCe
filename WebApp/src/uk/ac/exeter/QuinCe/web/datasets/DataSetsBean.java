@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -59,6 +60,11 @@ public class DataSetsBean extends BaseManagedBean {
 	 * The data set being created
 	 */
 	private DataSet newDataSet;
+	
+	/**
+	 * The ID of the data set being processed
+	 */
+	private long datasetId;
 		
 	/**
 	 * Initialise/Reset the bean
@@ -300,5 +306,34 @@ public class DataSetsBean extends BaseManagedBean {
 		}
 		
 		return NAV_DATASET_LIST;
+	}
+	
+	/**
+	 * Get the dataset ID
+	 * @return The dataset ID
+	 */
+	public long getDatasetId() {
+		return datasetId;
+	}
+	
+	/**
+	 * Set the dataset ID
+	 * @param datasetId The dataset ID
+	 */
+	public void setDatasetId(long datasetId) {
+		this.datasetId = datasetId;
+	}
+
+	/**
+	 * Submit the data set for data reduction
+	 */
+	public void submitDataReductionJob() {
+		try {
+			Map<String, String> jobParams = new HashMap<String, String>();
+			jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(datasetId));
+			JobManager.addJob(getDataSource(), getUser(), DataReductionJob.class.getCanonicalName(), jobParams);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
