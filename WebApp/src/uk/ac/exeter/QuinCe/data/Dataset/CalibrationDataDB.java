@@ -91,6 +91,19 @@ public class CalibrationDataDB {
 	 */
 	private static final String GET_ALL_CALIBRATIONS_QUERY = "SELECT * FROM calibration_data WHERE dataset_id = ? ORDER BY date ASC";
 	
+
+	/**
+	 * Statement to set the Use flags for a set of records
+	 */
+	private static final String SET_USE_FLAGS_STATEMENT = "UPDATE calibration_data SET "
+			+ "use_record = ?, use_message = ? "
+			+ "WHERE id IN " + DatabaseUtils.IN_PARAMS_TOKEN;
+
+	/**
+	 * Query to get all records for a given dataset
+	 */
+	private static final String GET_ALL_CALIBRATIONS_QUERY = "SELECT * FROM calibration_data WHERE dataset_id = ?";
+	
 	/**
 	 * Store a data set record in the database.
 	 * 
