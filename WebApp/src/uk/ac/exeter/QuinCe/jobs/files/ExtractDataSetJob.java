@@ -10,6 +10,7 @@ import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
@@ -68,6 +69,8 @@ public class ExtractDataSetJob extends Job {
 	protected void execute(JobThread thread) throws JobFailedException {
 		
 		Connection conn = null;
+		
+		// The statements for measurements and calibrations can be re-used for each record
 		PreparedStatement storeMeasurementStatement = null;
 		PreparedStatement storeCalibrationStatement = null;
 		
@@ -93,7 +96,7 @@ public class ExtractDataSetJob extends Job {
 			DataSetRawDataRecord record = rawData.getNextRecord();
 			while (null != record) {
 				if (record.isMeasurement()) {
-					storeMeasurementStatement = DataSetDB.storeRecord(conn, record, storeMeasurementStatement);
+					storeMeasurementStatement = DataSetDataDB.storeRecord(conn, record, storeMeasurementStatement);
 				} else if (record.isCalibration()) {
 					storeCalibrationStatement = CalibrationDataDB.storeCalibrationRecord(conn, record, storeCalibrationStatement);
 				}

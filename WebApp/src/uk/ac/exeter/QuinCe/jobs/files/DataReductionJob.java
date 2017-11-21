@@ -21,6 +21,11 @@ import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Calculation.DataReductionDB;
 import uk.ac.exeter.QuinCe.data.Calculation.GasStandardRuns;
 import uk.ac.exeter.QuinCe.data.Calculation.RawDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.FileInfo;
 import uk.ac.exeter.QuinCe.data.Files.RawDataValues;
@@ -61,6 +66,11 @@ public class DataReductionJob extends Job {
 	 * The conversion factor from Pascals to Atmospheres
 	 */
 	private static final double PASCALS_TO_ATMOSPHERES = 0.00000986923266716013;
+	
+	/**
+	 * The database ID of the dataset being processed
+	 */
+	private long datasetId = -1;
 
 	/**
 	 * Constructor for a data reduction job to be run on a specific data file.
@@ -82,6 +92,25 @@ public class DataReductionJob extends Job {
 	@Override
 	protected void execute(JobThread thread) throws JobFailedException {
 
+		Connection conn = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
+
+			DataSet dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
+			List<DataSetRawDataRecord> measurements = DataSetDataDB.getMeasurements(conn, dataSet);
+			List<DataSetRawDataRecord> calibrations = CalibrationDataDB.getCalibrationRecords(conn, dataSet);
+			
+			System.out.println(measurements.size());
+			System.out.println(calibrations.size());
+			
+		} catch (Exception e) {
+			throw new JobFailedException(id, e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+		
 		/*
 		
 		Connection conn = null;
@@ -682,8 +711,17 @@ public class DataReductionJob extends Job {
 
 	@Override
 	protected void validateParameters() throws InvalidJobParametersException {
-		// TODO Auto-generated method stub
 		
+		String datasetIdString = parameters.get(ID_PARAM);
+		if (null == datasetIdString) {
+			throw new InvalidJobParametersException(ID_PARAM + "is missing");
+		}
+		
+		try {
+			Long.parseLong(datasetIdString);
+		} catch (NumberFormatException e) {
+			throw new InvalidJobParametersException(ID_PARAM + "is not numeric");
+		}
 	}
 }
 
