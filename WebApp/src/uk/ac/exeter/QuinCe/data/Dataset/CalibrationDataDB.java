@@ -76,7 +76,7 @@ public class CalibrationDataDB {
 	 * Statement to retrieve the count of calibration data for a specific run type for a dataset
 	 */
 	private static final String SELECTED_CALIBRATION_DATA_ROWIDS_QUERY = "SELECT id FROM calibration_data "
-			+ "WHERE dataset_id = ? AND run_type = ?";
+			+ "WHERE dataset_id = ? AND run_type = ? ORDER BY date ASC";
 	
 
 	/**
@@ -89,7 +89,7 @@ public class CalibrationDataDB {
 	/**
 	 * Query to get all records for a given dataset
 	 */
-	private static final String GET_ALL_CALIBRATIONS_QUERY = "SELECT * FROM calibration_data WHERE dataset_id = ?";
+	private static final String GET_ALL_CALIBRATIONS_QUERY = "SELECT * FROM calibration_data WHERE dataset_id = ? ORDER BY date ASC";
 	
 	/**
 	 * Store a data set record in the database.
@@ -508,7 +508,7 @@ public class CalibrationDataDB {
      * @throws DatabaseException If a database error occurs
      * @throws MissingParamException If any required parameters are missing
 	 */
-	public static List<DataSetRawDataRecord> getCalibrationRecords(Connection conn, DataSet dataSet) throws DatabaseException, MissingParamException {
+	public static CalibrationDataSet getCalibrationRecords(Connection conn, DataSet dataSet) throws DatabaseException, MissingParamException {
 		
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkMissing(dataSet, "dataSet");
@@ -516,7 +516,7 @@ public class CalibrationDataDB {
 		PreparedStatement stmt = null;
 		ResultSet records = null;
 		
-		List<DataSetRawDataRecord> result = new ArrayList<DataSetRawDataRecord>();
+		CalibrationDataSet result = new CalibrationDataSet();
 		
 		int idCol = -1;
 		int dateCol = -1;

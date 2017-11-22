@@ -17,11 +17,14 @@ import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.MissingValueMessage;
+import uk.ac.exeter.QuinCe.EquilibratorPco2.EquilibratorPco2Calculator;
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Calculation.DataReductionCalculator;
 import uk.ac.exeter.QuinCe.data.Calculation.DataReductionDB;
 import uk.ac.exeter.QuinCe.data.Calculation.GasStandardRuns;
 import uk.ac.exeter.QuinCe.data.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -68,11 +71,6 @@ public class DataReductionJob extends Job {
 	private static final double PASCALS_TO_ATMOSPHERES = 0.00000986923266716013;
 	
 	/**
-	 * The database ID of the dataset being processed
-	 */
-	private long datasetId = -1;
-
-	/**
 	 * Constructor for a data reduction job to be run on a specific data file.
 	 * The job record must already have been created in the database.
 	 * 
@@ -100,10 +98,16 @@ public class DataReductionJob extends Job {
 
 			DataSet dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
 			List<DataSetRawDataRecord> measurements = DataSetDataDB.getMeasurements(conn, dataSet);
-			List<DataSetRawDataRecord> calibrations = CalibrationDataDB.getCalibrationRecords(conn, dataSet);
+			CalibrationDataSet calibrations = CalibrationDataDB.getCalibrationRecords(conn, dataSet);
 			
-			System.out.println(measurements.size());
-			System.out.println(calibrations.size());
+			// TODO This will loop through all available calculators
+			DataReductionCalculator calculator = new EquilibratorPco2Calculator(calibrations);
+			
+			for (DataSetRawDataRecord measurement : measurements) {
+				calculator.performDataReduction(measurement);
+			}
+			
+			System.out.println("I am waiting for the gas standards stuff to be revised");
 			
 		} catch (Exception e) {
 			throw new JobFailedException(id, e);
