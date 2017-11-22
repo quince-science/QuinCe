@@ -32,7 +32,7 @@ public class CalibrationFactory {
 		Calibration result;
 		
 		switch (calibrationType) {
-		case GasStandardDB.GAS_STANDARD_CALIBRATION_TYPE: {
+		case ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE: {
 			try {
 				result = new GasStandard(instrumentId, target, deploymentDate, coefficients);
 			} catch (CalibrationException e) {

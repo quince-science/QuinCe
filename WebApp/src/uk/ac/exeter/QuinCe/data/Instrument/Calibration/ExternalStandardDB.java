@@ -6,6 +6,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -15,27 +16,22 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  * @author Steve Jones
  *
  */
-public class GasStandardDB extends CalibrationDB {
+public class ExternalStandardDB extends CalibrationDB {
 
 	/**
 	 * The calibration type for gas standards
 	 */
-	public static final String GAS_STANDARD_CALIBRATION_TYPE = "GAS_STANDARD";
+	public static final String EXTERNAL_STANDARD_CALIBRATION_TYPE = "EXTERNAL_STANDARD";
 	
 	/**
 	 * The singleton instance of the class
 	 */
-	private static GasStandardDB instance = null;
+	private static ExternalStandardDB instance = null;
 	
-	/**
-	 * The run type code for gas standards
-	 */
-	public static final String GAS_STANDARD_RUNTYPE = "STD";
-
 	/**
 	 * Basic constructor
 	 */
-	public GasStandardDB() {
+	public ExternalStandardDB() {
 		super();
 	}
 	
@@ -43,9 +39,9 @@ public class GasStandardDB extends CalibrationDB {
 	 * Retrieve the singleton instance of the class
 	 * @return The singleton
 	 */
-	public static GasStandardDB getInstance() {
+	public static ExternalStandardDB getInstance() {
 		if (null == instance) {
-			instance = new GasStandardDB();
+			instance = new ExternalStandardDB();
 		}
 		
 		return instance;
@@ -60,9 +56,9 @@ public class GasStandardDB extends CalibrationDB {
 	
 	@Override
 	public List<String> getTargets(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-		List<String> standardNames = InstrumentDB.getRunTypes(dataSource, instrumentId, GAS_STANDARD_RUNTYPE);
+		List<String> standardNames = InstrumentDB.getRunTypes(dataSource, instrumentId, RunTypeCategory.EXTERNAL_STANDARD_CATEGORY.getCode());
 		if (standardNames.size() == 0) {
-			throw new RecordNotFoundException("No gas standard names found for instrument " + instrumentId);
+			throw new RecordNotFoundException("No external standard names found for instrument " + instrumentId);
 		}
 
 		return Collections.unmodifiableList(standardNames);
@@ -70,6 +66,6 @@ public class GasStandardDB extends CalibrationDB {
 	
 	@Override
 	public String getCalibrationType() {
-		return GAS_STANDARD_CALIBRATION_TYPE;
+		return EXTERNAL_STANDARD_CALIBRATION_TYPE;
 	}
 }

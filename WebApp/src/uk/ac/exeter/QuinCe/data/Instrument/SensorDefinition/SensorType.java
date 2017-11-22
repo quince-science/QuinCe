@@ -94,7 +94,7 @@ public class SensorType {
 	 * Indicates whether or not this sensor's data is calibrated
 	 * using data
 	 */
-	private boolean calibratedUsingData = false;
+	private boolean externalStandards = false;
 	
 	/**
 	 * Simple constructor - sets all values
@@ -107,7 +107,7 @@ public class SensorType {
 	 * @param many Whether or not multiple instances of the sensor are allowed
 	 */
 	protected SensorType(String name, boolean required, boolean named, String requiredGroup, String dependsOn, String dependsQuestion, boolean many, boolean averaged,
-			boolean postCalibrated, boolean coreSensor, boolean usedInCaclulation, boolean calibratedUsingData) {
+			boolean postCalibrated, boolean coreSensor, boolean usedInCaclulation, boolean externalStandards) {
 		this.name = name;
 		this.required = required;
 		this.named = named;
@@ -128,7 +128,7 @@ public class SensorType {
 		this.postCalibrated = postCalibrated;
 		this.coreSensor = coreSensor;
 		this.usedInCalculation = usedInCaclulation;
-		this.calibratedUsingData = calibratedUsingData;
+		this.externalStandards = externalStandards;
 	}
 	
 	/**
@@ -276,11 +276,10 @@ public class SensorType {
 	}
 
 	/**
-	 * Determine whether or not this sensor's data
-	 * is calibrated using data
-	 * @return {@code true} if the sensor is calibrated from data; {@code false} if it is not. 
+	 * Determine whether or not this sensor is calibrated using external standards
+	 * @return {@code true} if the sensor is calibrated from external standards; {@code false} if it is not. 
 	 */
-	public boolean isCalibratedUsingData() {
-		return calibratedUsingData;
+	public boolean hasExternalStandards() {
+		return externalStandards;
 	}
 }

@@ -30,7 +30,7 @@ public class GasStandard extends Calibration {
 	 * @param instrumentId The instrument ID
 	 */
 	public GasStandard(long instrumentId) {
-		super(instrumentId, GasStandardDB.GAS_STANDARD_CALIBRATION_TYPE);
+		super(instrumentId, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE);
 	}
 	
 	/**
@@ -39,7 +39,7 @@ public class GasStandard extends Calibration {
 	 * @param standard The standard
 	 */
 	protected GasStandard(long instrumentid, String standard) {
-		super(instrumentid, GasStandardDB.GAS_STANDARD_CALIBRATION_TYPE, standard);
+		super(instrumentid, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE, standard);
 	}
 
 	/**
@@ -51,7 +51,7 @@ public class GasStandard extends Calibration {
 	 * @throws ParameterException If the calibration details are invalid
 	 */
 	protected GasStandard(long instrumentId, String target, LocalDateTime deploymentDate, List<Double> coefficients) throws ParameterException {
-		super(instrumentId, GasStandardDB.GAS_STANDARD_CALIBRATION_TYPE, target);
+		super(instrumentId, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE, target);
 		
 		if (null != target) {
 			setDeploymentDate(deploymentDate);

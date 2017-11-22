@@ -1,20 +1,25 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.GasStandard;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.GasStandardDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 
 /**
  * Bean for gas standards
  * @author Steve Jones
  *
  */
-public class GasStandardsBean extends CalibrationBean {
+@ManagedBean
+@SessionScoped
+public class ExternalStandardsBean extends CalibrationBean {
 
 	/**
 	 * The navigation string for the gas standards list
 	 */
-	private static final String NAV_LIST = "gas_standards";
+	private static final String NAV_LIST = "external_standards";
 	
 	/**
 	 * The gas standard being edited by the user
@@ -24,14 +29,14 @@ public class GasStandardsBean extends CalibrationBean {
 	/**
 	 * The gas standards database utility class
 	 */
-	private GasStandardDB db = null;
+	private ExternalStandardDB db = null;
 	
 	/**
 	 * Constructor
 	 */
-	public GasStandardsBean() {
+	public ExternalStandardsBean() {
 		super();
-		db = GasStandardDB.getInstance();
+		db = ExternalStandardDB.getInstance();
 	}
 	
 	@Override
@@ -56,6 +61,6 @@ public class GasStandardsBean extends CalibrationBean {
 	
 	@Override
 	protected String getCalibrationType() {
-		return GasStandardDB.GAS_STANDARD_CALIBRATION_TYPE;
+		return ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE;
 	}
 }
