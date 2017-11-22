@@ -160,8 +160,8 @@ public class CalibrationDataDB {
 	}
 	
 	/**
-	 * Get the gas standard data for a given data set and standard in JSON format for the table view
-	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
+	 * Get the external standard data for a given data set and standard in JSON format for the table view
+	 * If {@code standardName} is {@code null}, all external standards will be included in the results
 	 * @param dataSource A data source
 	 * @param datasetId The database ID of the data set
 	 * @param standardName The name of the standard ({@code null} for all standards)
@@ -277,8 +277,8 @@ public class CalibrationDataDB {
 	}
 	
 	/**
-	 * Get the gas standard data for a given data set and standard in JSON format for the table view
-	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
+	 * Get the external standard data for a given data set and standard in JSON format for the table view
+	 * If {@code standardName} is {@code null}, all external standards will be included in the results
 	 * @param dataSource A data source
 	 * @param datasetId The database ID of the data set
 	 * @param standardName The name of the standard ({@code null} for all standards)
@@ -370,8 +370,8 @@ public class CalibrationDataDB {
 	}
 
 	/**
-	 * Get the gas standard data for a given data set and standard in JSON format
-	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
+	 * Get the external standard data for a given data set and standard in JSON format
+	 * If {@code standardName} is {@code null}, all external standards will be included in the results
 	 * @param dataSource A data source
 	 * @param datasetId The database ID of the data set
 	 * @param standardName The name of the standard ({@code null} for all standards)

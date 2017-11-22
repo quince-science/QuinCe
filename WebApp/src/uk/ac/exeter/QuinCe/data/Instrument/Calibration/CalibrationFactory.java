@@ -24,7 +24,7 @@ public class CalibrationFactory {
 	 * @param calibrationClass The class of the desired calibration object
 	 * @param instrumentId The instrument to which the calibration applies
 	 * @param deploymentDate The deployment date (may be null)
-	 * @param target The target (sensor, gas standard etc) of the calibration
+	 * @param target The target (sensor, external standard etc) of the calibration
 	 * @param coefficients The calibration coefficients
 	 * @return The Calibration object
 	 */
@@ -34,7 +34,7 @@ public class CalibrationFactory {
 		switch (calibrationType) {
 		case ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE: {
 			try {
-				result = new GasStandard(instrumentId, target, deploymentDate, coefficients);
+				result = new ExternalStandard(instrumentId, target, deploymentDate, coefficients);
 			} catch (CalibrationException e) {
 				throw e;
 			} catch (Exception e) {

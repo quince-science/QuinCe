@@ -145,7 +145,7 @@ public abstract class CalibrationDB {
 	 * @return The targets
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
-	 * @throws RecordNotFoundException If no gas standard run types are found
+	 * @throws RecordNotFoundException If no external standard run types are found
 	 */
 	public abstract List<String> getTargets(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException;
 	

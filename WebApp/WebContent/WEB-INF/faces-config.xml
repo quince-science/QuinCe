@@ -148,10 +148,6 @@
 			<from-outcome>name</from-outcome>
 			<to-view-id>/instrument/new/instrument_name.xhtml</to-view-id>
 		</navigation-case>
-		<navigation-case>
-			<from-outcome>gasStandards</from-outcome>
-			<to-view-id>/instrument/standards.xhtml</to-view-id>
-		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
 		<display-name>NewInstrumentNavigation</display-name>
@@ -189,8 +185,8 @@
 			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
-			<from-outcome>gas_standards</from-outcome>
-			<to-view-id>/instrument/gas_standards.xhtml</to-view-id>
+			<from-outcome>external_standards</from-outcome>
+			<to-view-id>/instrument/external_standards.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>

@@ -47,7 +47,7 @@
 					<h:outputText styleClass="note" rendered="#{!instrument.calibratableSensors}" value="No sensors require calibration"/>
 				</p:column>
 				<p:column styleClass="centeredCell">
-					<f:facet name="header">Gas Standard Deployments</f:facet>
+					<f:facet name="header">External Standard Deployments</f:facet>
 					<p:button value="View Deployments" styleClass="inlineButton" onclick="return goToStandards(#{instrument.id}, '#{instrument.name}')"/>
 				</p:column>
 			</p:dataTable>
