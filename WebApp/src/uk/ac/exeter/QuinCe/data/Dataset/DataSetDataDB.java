@@ -37,7 +37,7 @@ public class DataSetDataDB {
 	/**
 	 * Query to get all measurements for a data set
 	 */
-	private static final String GET_ALL_MEASUREMENTS_QUERY = "SELECT * FROM dataset_data WHERE dataset_id = ?";
+	private static final String GET_ALL_MEASUREMENTS_QUERY = "SELECT * FROM dataset_data WHERE dataset_id = ? ORDER BY date ASC";
 	
 	/**
 	 * The name of the ID column
