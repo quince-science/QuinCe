@@ -26,9 +26,9 @@ import uk.ac.exeter.QuinCe.web.PlotPageBean;
 public class ReviewCalibrationDataBean extends PlotPageBean {
 
 	/**
-	 * The name for selecting all gas standards
+	 * The name for selecting all external standards
 	 */
-	private static final String ALL_NAME = "All Gas Standards";
+	private static final String ALL_NAME = "All External Standards";
 	
 	/**
 	 * Navigation to the calibration data plot page
@@ -51,12 +51,12 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	private DataSet dataset;
 	
 	/**
-	 * Tree model for gas standards selection
+	 * Tree model for external standards selection
 	 */
-	private TreeNode gasStandardsTree;
+	private TreeNode externalStandardsTree;
 	
 	/**
-	 * The selected gas standard
+	 * The selected external standard
 	 */
 	private TreeNode selectedStandard;
 	
@@ -76,7 +76,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	public void init() {
 		try {
 			dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
-			buildGasStandardsTree();
+			buildExternalStandardsTree();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -107,11 +107,11 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	}
 	
 	/**
-	 * Get the tree containing the gas standards
-	 * @return The gas standards tree
+	 * Get the tree containing the external standards
+	 * @return The external standards tree
 	 */
-	public TreeNode getGasStandardsTree() {
-		return gasStandardsTree;
+	public TreeNode getExternalStandardsTree() {
+		return externalStandardsTree;
 	}
 	
 	/**
@@ -123,34 +123,34 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	}
 	
 	/**
-	 * Build the Gas Standards tree
+	 * Build the External Standards tree
 	 * @throws DatabaseException If a database error occurs
 	 * @throws MissingParamException If any required parameters are missing
 	 */
-	private void buildGasStandardsTree() throws MissingParamException, DatabaseException {
-		gasStandardsTree = new DefaultTreeNode("Gas Standards Tree Root", null);
-		TreeNode gasStandardsNode = new DefaultTreeNode(ALL_NAME, gasStandardsTree);
-		gasStandardsNode.setExpanded(true);
-		gasStandardsTree.getChildren().add(gasStandardsNode);
+	private void buildExternalStandardsTree() throws MissingParamException, DatabaseException {
+		externalStandardsTree = new DefaultTreeNode("External Standards Tree Root", null);
+		TreeNode externalStandardsNode = new DefaultTreeNode(ALL_NAME, externalStandardsTree);
+		externalStandardsNode.setExpanded(true);
+		externalStandardsTree.getChildren().add(externalStandardsNode);
 		for (String runType : InstrumentDB.getRunTypes(getDataSource(), dataset.getInstrumentId(), "STD")) {
-			gasStandardsNode.getChildren().add(new DefaultTreeNode(runType, gasStandardsNode));
+			externalStandardsNode.getChildren().add(new DefaultTreeNode(runType, externalStandardsNode));
 		}
 		
 		// Select the All Standards node
-		selectedStandard = gasStandardsNode;
-		gasStandardsNode.setSelected(true);
+		selectedStandard = externalStandardsNode;
+		externalStandardsNode.setSelected(true);
 	}
 	
 	/**
-	 * Get the selected gas standards
-	 * @return The selected gas standards
+	 * Get the selected external standards
+	 * @return The selected external standards
 	 */
 	public TreeNode getSelectedStandard() {
 		return selectedStandard;
 	}
 	
 	/**
-	 * Set the selected gas standards
+	 * Set the selected external standards
 	 * @param selectedStandard The selected standards
 	 */
 	public void setSelectedStandard(TreeNode selectedStandard) {

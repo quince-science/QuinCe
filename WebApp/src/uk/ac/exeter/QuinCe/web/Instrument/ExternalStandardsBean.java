@@ -4,11 +4,11 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.GasStandard;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandard;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 
 /**
- * Bean for gas standards
+ * Bean for external standards
  * @author Steve Jones
  *
  */
@@ -17,17 +17,17 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 public class ExternalStandardsBean extends CalibrationBean {
 
 	/**
-	 * The navigation string for the gas standards list
+	 * The navigation string for the external standards list
 	 */
 	private static final String NAV_LIST = "external_standards";
 	
 	/**
-	 * The gas standard being edited by the user
+	 * The external standard being edited by the user
 	 */
-	private GasStandard enteredStandard = null;
+	private ExternalStandard enteredStandard = null;
 	
 	/**
-	 * The gas standards database utility class
+	 * The external standards database utility class
 	 */
 	private ExternalStandardDB db = null;
 	
@@ -46,11 +46,11 @@ public class ExternalStandardsBean extends CalibrationBean {
 	
 	@Override
 	protected void createEnteredCalibration() {
-		enteredStandard = new GasStandard(instrumentId);
+		enteredStandard = new ExternalStandard(instrumentId);
 	}
 
 	@Override
-	public GasStandard getEnteredCalibration() {
+	public ExternalStandard getEnteredCalibration() {
 		return enteredStandard;
 	}
 

@@ -12,14 +12,14 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
- * Methods for storing and retrieving gas standards information from the database
+ * Methods for storing and retrieving external standards information from the database
  * @author Steve Jones
  *
  */
 public class ExternalStandardDB extends CalibrationDB {
 
 	/**
-	 * The calibration type for gas standards
+	 * The calibration type for external standards
 	 */
 	public static final String EXTERNAL_STANDARD_CALIBRATION_TYPE = "EXTERNAL_STANDARD";
 	

@@ -86,8 +86,8 @@ public class InstrumentListBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * View the gas standards list page for the chosen instrument
-	 * @return The gas standards list page navigation
+	 * View the external standards list page for the chosen instrument
+	 * @return The external standards list page navigation
 	 */
 	public String viewStandards() {
 		return PAGE_STANDARDS;

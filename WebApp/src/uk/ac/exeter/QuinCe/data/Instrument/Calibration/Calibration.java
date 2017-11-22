@@ -10,7 +10,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * Base class for a calibration.
  * 
  * <p>
- *   {@code Calibration} classes can be used for gas standards,
+ *   {@code Calibration} classes can be used for external standards,
  *   sensor calibrations or external calibrations.
  * </p>
  * 
@@ -48,7 +48,7 @@ public abstract class Calibration implements Comparable<Calibration> {
 	
 	/**
 	 * The part of the instrument to which this calibration applies.
-	 * Examples are the name of a gas standard, sensor etc.
+	 * Examples are the name of an external standard, sensor etc.
 	 */
 	private String target = null;
 

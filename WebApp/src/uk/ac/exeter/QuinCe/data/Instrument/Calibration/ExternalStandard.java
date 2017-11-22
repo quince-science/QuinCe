@@ -7,11 +7,11 @@ import java.util.List;
 import uk.ac.exeter.QuinCe.utils.ParameterException;
 
 /**
- * Represents a gas standard calibration
+ * Represents a external standard calibration
  * @author Steve Jones
  *
  */
-public class GasStandard extends Calibration {
+public class ExternalStandard extends Calibration {
 
 	/**
 	 * Contains the label for the concentration value
@@ -25,32 +25,32 @@ public class GasStandard extends Calibration {
 	}
 	
 	/**
-	 * Create an empty gas standard placeholder that isn't
+	 * Create an empty external standard placeholder that isn't
 	 * bound to a particular standard
 	 * @param instrumentId The instrument ID
 	 */
-	public GasStandard(long instrumentId) {
+	public ExternalStandard(long instrumentId) {
 		super(instrumentId, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE);
 	}
 	
 	/**
-	 * Creates an empty gas standard for a specified standard
+	 * Creates an empty external standard for a specified standard
 	 * @param instrumentid The instrument ID
 	 * @param standard The standard
 	 */
-	protected GasStandard(long instrumentid, String standard) {
+	protected ExternalStandard(long instrumentid, String standard) {
 		super(instrumentid, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE, standard);
 	}
 
 	/**
-	 * Construct a complete gas standard object with all data
+	 * Construct a complete external standard object with all data
 	 * @param instrumentId The instrument ID
-	 * @param target The target gas standard
+	 * @param target The target external standard
 	 * @param deploymentDate The deployment date
 	 * @param coefficients The standard concentration
 	 * @throws ParameterException If the calibration details are invalid
 	 */
-	protected GasStandard(long instrumentId, String target, LocalDateTime deploymentDate, List<Double> coefficients) throws ParameterException {
+	protected ExternalStandard(long instrumentId, String target, LocalDateTime deploymentDate, List<Double> coefficients) throws ParameterException {
 		super(instrumentId, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE, target);
 		
 		if (null != target) {
@@ -79,7 +79,7 @@ public class GasStandard extends Calibration {
 	}
 	
 	/**
-	 * Get the concentration of the gas standard
+	 * Get the concentration of the external standard
 	 * @return The concentration
 	 */
 	public double getConcentration() {
@@ -91,7 +91,7 @@ public class GasStandard extends Calibration {
 	}
 	
 	/**
-	 * Set the concentration of the gas standard
+	 * Set the concentration of the external standard
 	 * @param concentration The concentration
 	 */
 	public void setConcentration(double concentration) {
