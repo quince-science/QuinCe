@@ -91,7 +91,7 @@ public class CalibrationDataDB {
 			int currentField = 5;
 			SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
 			for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-				if (sensorType.hasExternalStandards()) {
+				if (sensorType.isUsedInCalculation()) {
 					currentField++;
 					Double sensorValue = record.getSensorValue(sensorType.getName());
 					if (null == sensorValue) {
@@ -125,7 +125,7 @@ public class CalibrationDataDB {
 
 		SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
 		for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-			if (sensorType.hasExternalStandards()) {
+			if (sensorType.isUsedInCalculation()) {
 				fieldNames.add(sensorType.getDatabaseFieldName());
 			}
 		}
