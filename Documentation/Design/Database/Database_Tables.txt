@@ -183,7 +183,8 @@ code will perform the conversion during the read/write phases.
 Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
 instrument_id*           F_KEY          Instrument ID
-type*                    String         Calibration type
+type*                    String         Calibration type - either the name of the sensor being calibrated, or
+                                        `SENSOR_CALIBRATION` for sensor post-calibration coefficients
 target*                  String         Name of the target of this calibration
 deployment_date*         DateTime       Date/time of calibration. Stored as a milliseconds value.
 values                   String         The values for the calibration. See above.
@@ -270,7 +271,8 @@ calibration_value**      Double         The calibration value
 use                      Boolean        Indicates whether or not this calibration record should be used
 use_message              String         Reason for not using this calibration record
 
-**One `calibration_value` field will exist for each type of calibration data that can be used.
+**One `calibration_value` field will exist for each type of calibration data that can be used. It is likely that
+only one or two sensor values will be present in each record.
 
 
 ## _`calculation_data`_

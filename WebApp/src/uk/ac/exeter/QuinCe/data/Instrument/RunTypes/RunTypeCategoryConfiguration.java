@@ -64,7 +64,7 @@ public class RunTypeCategoryConfiguration {
 	/**
 	 * Load the configuration
 	 * @param configFile The config file
-	 * @throws RunTypeCategoryException If the configuration is invalid or cannit be read
+	 * @throws RunTypeCategoryException If the configuration is invalid or cannot be read
 	 */
 	private void loadConfig(File configFile) throws RunTypeCategoryException {
 		categories = new ArrayList<RunTypeCategory>();
@@ -125,10 +125,10 @@ public class RunTypeCategoryConfiguration {
 	 * @return The run type categories
 	 */
 	public List<RunTypeCategory> getCategories(boolean includeIgnored) {
-		List<RunTypeCategory> result = categories;
+		List<RunTypeCategory> result = new ArrayList<RunTypeCategory>(categories);
+		result.add(RunTypeCategory.EXTERNAL_STANDARD_CATEGORY);
 		
 		if (includeIgnored) {
-			result = new ArrayList<RunTypeCategory>(categories);
 			result.add(RunTypeCategory.IGNORED_CATEGORY);
 		}
 		
@@ -147,6 +147,8 @@ public class RunTypeCategoryConfiguration {
 		
 		if (categoryCode.equalsIgnoreCase(RunTypeCategory.IGNORED_CATEGORY.getCode())) {
 			result = RunTypeCategory.IGNORED_CATEGORY;
+		} else if (categoryCode.equalsIgnoreCase(RunTypeCategory.EXTERNAL_STANDARD_CATEGORY.getCode())) {
+			result = RunTypeCategory.EXTERNAL_STANDARD_CATEGORY;
 		} else {
 			for (RunTypeCategory category : categories) {
 				if (category.getCode().equalsIgnoreCase(categoryCode)) {
