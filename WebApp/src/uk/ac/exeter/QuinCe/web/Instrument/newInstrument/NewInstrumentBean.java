@@ -303,7 +303,12 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * The averaging mode
 	 */
 	private int averagingMode = DataSetRawData.AVG_MODE_NONE;
-	
+
+	/**
+	 * The averaging mode
+	 */
+	private String platformCode = null;
+
 	/**
 	 * The name of the file for which a Run Type column is being defined
 	 */
@@ -1669,6 +1674,20 @@ public class NewInstrumentBean extends FileUploadBean {
 	}
 
 	/**
+	 * @return the platformCode
+	 */
+	public String getPlatformCode() {
+		return platformCode;
+	}
+
+	/**
+	 * @param platformCode the platformCode to set
+	 */
+	public void setPlatformCode(String platformCode) {
+		this.platformCode = platformCode;
+	}
+
+	/**
 	 * Store the instrument
 	 * @return Navigation to the instrument list
 	 * @throws InstrumentException If the instrument object is invalid
@@ -1679,7 +1698,9 @@ public class NewInstrumentBean extends FileUploadBean {
 	public String saveInstrument() throws MissingParamException, InstrumentException, DatabaseException, IOException {
 		
 		try {
-			Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles, sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow, averagingMode); 
+			Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles,
+				sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow, averagingMode,
+				platformCode);
 			InstrumentDB.storeInstrument(getDataSource(), instrument);
 			
 			// Reinitialise the instrument list bean to update the instrument list
