@@ -1,5 +1,8 @@
 library(ncdf4)
 
+wd <- "D:/MyFiles/Projects/ICOS/Labelling/Labelling Step 2/Data_checks/external_data"
+setwd(wd)
+
 # File locations
 INPUT_DIR <- "input"
 OUTPUT_DIR <- "output"
@@ -52,7 +55,7 @@ for (file_loop in 1:length(input_files)) {
 			date$year <- date$year + 1900
 
 			longitude <- as.double(data[["Longitude"]][row])
-			if (longitude < 0) {
+			if (longitude < 0 & !is.na(longitude)) {
 				longitude <- 180 + (180 - abs(longitude))
 			}
 			latitude <- as.numeric(data[["Latitude"]][row])
@@ -104,7 +107,7 @@ for (file_loop in 1:length(input_files)) {
 		date$year <- date$year + 1900
 
 		longitude <- as.double(data[["Longitude"]][row])
-		if (longitude < 0) {
+		if (longitude < 0 & !is.na(longitude)) {
 			longitude <- 180 + (180 - abs(longitude))
 		}
 		latitude <- as.numeric(data[["Latitude"]][row])
