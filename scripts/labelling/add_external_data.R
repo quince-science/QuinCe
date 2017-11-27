@@ -53,9 +53,11 @@ for (file_loop in 1:length(input_files)) {
 			# Make sure we have the right external data loaded
 			date <- as.POSIXlt(data[["Date"]][row], "%Y-%m-%d %H:%M:%S", tz="UTC")
 			date$year <- date$year + 1900
-
-			longitude <- as.double(data[["Longitude"]][row])
-			if (longitude < 0 & !is.na(longitude)) {
+			
+      longitude <- as.double(data[["Longitude"]][row])
+			if (!is.na(longitude)) {
+        
+			if (longitude < 0) {
 				longitude <- 180 + (180 - abs(longitude))
 			}
 			latitude <- as.numeric(data[["Latitude"]][row])
@@ -91,9 +93,11 @@ for (file_loop in 1:length(input_files)) {
 
 				data[[original_column_count + ecmwf_loop]][row] <- external_value
 			}
+		 }
 		}
 	}
 
+  
 	# EN4 SS
 	current_year <- 0
 	for (row in 1:nrow(data)) {
@@ -106,8 +110,11 @@ for (file_loop in 1:length(input_files)) {
 		date <- as.POSIXlt(data[["Date"]][row], "%Y-%m-%d %H:%M:%S", tz="UTC")
 		date$year <- date$year + 1900
 
+    
 		longitude <- as.double(data[["Longitude"]][row])
-		if (longitude < 0 & !is.na(longitude)) {
+		if (!is.na(longitude)) {
+		
+		if (longitude < 0) {
 			longitude <- 180 + (180 - abs(longitude))
 		}
 		latitude <- as.numeric(data[["Latitude"]][row])
@@ -130,7 +137,7 @@ for (file_loop in 1:length(input_files)) {
 			data[[original_column_count + 3]][row] <- external_value
 		}
 	}
-
+	}
 	# Write out the data
 	out_file <- paste(OUTPUT_DIR, "/", input_files[file_loop], sep="")
 	write.csv(data, file=out_file, row.names=FALSE, fileEncoding="UTF8")
