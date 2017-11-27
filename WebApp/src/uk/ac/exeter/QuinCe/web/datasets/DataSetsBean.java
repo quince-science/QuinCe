@@ -13,13 +13,17 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
@@ -59,6 +63,11 @@ public class DataSetsBean extends BaseManagedBean {
 	 * The data set being created
 	 */
 	private DataSet newDataSet;
+
+	/**
+	 * Plaform code of the instrument for this dataset
+	 */
+	private String platformCode = null;
 		
 	/**
 	 * Initialise/Reset the bean
@@ -300,5 +309,38 @@ public class DataSetsBean extends BaseManagedBean {
 		}
 		
 		return NAV_DATASET_LIST;
+	}
+
+	/**
+	 * @return the platformCode
+	 */
+	public String getPlatformCode() {
+		if (platformCode == null) {
+			if (newDataSet == null) {
+				return null;
+			}
+			ResourceManager rm = ResourceManager.getInstance();
+			try {
+				Instrument i = InstrumentDB.getInstrument(
+					rm.getDBDataSource(),
+					getNewDataSet().getInstrumentId(),
+					rm.getSensorsConfiguration(),
+					rm.getRunTypeCategoryConfiguration()
+				);
+				platformCode = i.getPlatformCode();
+				return platformCode;
+			} catch (MissingParamException | DatabaseException | RecordNotFoundException | InstrumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return platformCode;
+	}
+
+	/**
+	 * @param platformCode the platformCode to set
+	 */
+	public void setPlatformCode(String platformCode) {
+		this.platformCode = platformCode;
 	}
 }

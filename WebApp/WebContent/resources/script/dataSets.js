@@ -18,13 +18,10 @@ var newDataSetItem = {
 	title: 'New Date Set'
 }
 
-function processNewDataSet() {
-	
+function processNewDataSet(eventType) {
 	// Remove the existing entry
 	timeline.itemsData.getDataSet().remove(newDataSetItem);
 	
-	newDataSetItem['content'] = PF('pDataSetName').jq.val().trim();
-	newDataSetItem['title'] = PF('pDataSetName').jq.val().trim();
 	newDataSetItem['start'] = PF('pStartDate').getDate();
 	newDataSetItem['end'] = PF('pEndDate').getDate();
 
@@ -33,7 +30,12 @@ function processNewDataSet() {
 	} else {
 		newDataSetItem['className'] = 'badNewDataSet';
 	}
-	
+	if (eventType == 'start') {
+		var s = PF('pDataSetName').jq;
+		s.val(s.data('platform-code') + $.format.date(newDataSetItem['start'], 'yyyyMMdd'));
+	}
+	newDataSetItem['content'] = PF('pDataSetName').jq.val().trim();
+	newDataSetItem['title'] = PF('pDataSetName').jq.val().trim();
 	if (newDataSetItem['end'] > newDataSetItem['start']) {
 		timeline.itemsData.getDataSet().add(newDataSetItem);
 	}
