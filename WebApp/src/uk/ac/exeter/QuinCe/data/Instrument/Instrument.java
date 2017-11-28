@@ -62,7 +62,12 @@ public class Instrument {
 	 * The averaging mode
 	 */
 	private int averagingMode = DataSetRawData.AVG_MODE_NONE;
-	
+
+	/**
+	 * Platform code
+	 */
+	private String platformCode = null;
+
 	/**
 	 * Constructor for a complete instrument that's already in the database
 	 * @param databaseId The instrument's database ID
@@ -74,8 +79,9 @@ public class Instrument {
 	 * @param postFlushingTime The post-flushing time
 	 * @param minimumWaterFlow The minimum water flow
 	 * @param averagingMode The averaging mode
+	 * @param platformCode
 	 */
-	public Instrument(long databaseId, long ownerId, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, int preFlushingTime, int postFlushingTime, int minimumWaterFlow, int averagingMode) {
+	public Instrument(long databaseId, long ownerId, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, int preFlushingTime, int postFlushingTime, int minimumWaterFlow, int averagingMode, String platformCode) {
 		this.databaseID = databaseId;
 		this.ownerId = ownerId;
 		this.name = name;
@@ -85,7 +91,8 @@ public class Instrument {
 		this.postFlushingTime = postFlushingTime;
 		this.minimumWaterFlow = minimumWaterFlow;
 		this.averagingMode = averagingMode;
-		
+		this.setPlatformCode(platformCode);
+
 		//TODO Validate averaging mode
 	}
 	
@@ -100,7 +107,7 @@ public class Instrument {
 	 * @param minimumWaterFlow The minimum water flow
 	 * @param averagingMode The averaging mode
 	 */
-	public Instrument(User owner, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, int preFlushingTime, int postFlushingTime, int minimumWaterFlow, int averagingMode) {
+	public Instrument(User owner, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, int preFlushingTime, int postFlushingTime, int minimumWaterFlow, int averagingMode, String platformCode) {
 		this.ownerId = owner.getDatabaseID();
 		this.name = name;
 		this.fileDefinitions = fileDefinitions;
@@ -109,6 +116,7 @@ public class Instrument {
 		this.postFlushingTime = postFlushingTime;
 		this.minimumWaterFlow = minimumWaterFlow;
 		this.averagingMode = averagingMode;
+		this.platformCode = platformCode;
 
 		//TODO Validate averaging mode
 	}
@@ -225,5 +233,19 @@ public class Instrument {
 	 */
 	public int getAveragingMode() {
 		return averagingMode;
+	}
+
+	/**
+	 * @return the platformCode
+	 */
+	public String getPlatformCode() {
+		return platformCode;
+	}
+
+	/**
+	 * @param platformCode the platformCode to set
+	 */
+	public void setPlatformCode(String platformCode) {
+		this.platformCode = platformCode;
 	}
 }

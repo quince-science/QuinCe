@@ -3,6 +3,7 @@
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	template="/WEB-INF/templates/basic_page.xhtml">
 	
@@ -10,6 +11,7 @@
 	<ui:define name="localHead">
 		<h:outputScript name="script/dataSets.js"/>
 		<h:outputScript name="script/vis-timeline-graph2d.min.js"/>
+		<h:outputScript name="script/jquery-dateFormat.min.js"/>
 		<h:outputStylesheet name="style/vis-timeline-graph2d.min.css"/>
 		<h:outputStylesheet name="style/dataSets.css"/>
 	</ui:define>
@@ -31,10 +33,20 @@
 				
 				<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
 					<p:outputLabel for="dataSetName" value="Data Set Name:"/>
-					<p:inputText id="dataSetName" widgetVar="pDataSetName" value="#{dataSetsBean.newDataSet.name}" onkeyup="processNewDataSet();"/>
+					<p:inputText
+						id="dataSetName" widgetVar="pDataSetName"
+						value="#{dataSetsBean.newDataSet.name}"
+						onkeyup="processNewDataSet();"
+						pt:data-platform-code="#{dataSetsBean.platformCode}"
+					/>
 					<p:outputLabel for="startDate" value="Start Date"/>
 					<p:outputLabel for="endDate" value="End Date"/>
-					<p:calendar id="startDate" widgetVar="pStartDate" value="#{dataSetsBean.newDataSet.start}" mode="popup" maxLength="19" size="19" pattern="yyyy-MM-dd HH:mm:ss" navigator="true" onchange="processNewDataSet();">
+					<p:calendar 
+						id="startDate" widgetVar="pStartDate" 
+						value="#{dataSetsBean.newDataSet.start}" mode="popup" 
+						maxLength="19" size="19" pattern="yyyy-MM-dd HH:mm:ss" 
+						navigator="true" onchange="processNewDataSet('start');"
+					>
 						<f:converter converterId="localDateTimeConverter"/>
 					</p:calendar>
 					<p:calendar id="endDate" widgetVar="pEndDate" value="#{dataSetsBean.newDataSet.end}" mode="popup" maxLength="19" size="19" pattern="yyyy-MM-dd HH:mm:ss" navigator="true" onchange="processNewDataSet();">

@@ -683,3 +683,11 @@ table.fileDates {
 .ui-tabs .ui-tabs-nav li a.clickable {
 	cursor: pointer;
 }
+
+@keyframes rowFlash {
+    0% {background-color: #fff;}
+   25% {background-color: #fd0;}
+   50% {background-color: #fff;}
+   75% {background-color: #fd0;}
+  100% {background-color: #fff;}
+}

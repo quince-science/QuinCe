@@ -54,9 +54,9 @@ public class InstrumentDB {
 	 */
 	private static final String CREATE_INSTRUMENT_STATEMENT = "INSERT INTO instrument ("
 			+ "owner, name," // 2
-			+ "pre_flushing_time, post_flushing_time, minimum_water_flow, averaging_mode " // 6
-			+ ") VALUES (?, ?, ?, ?, ?, ?)";
-	
+			+ "pre_flushing_time, post_flushing_time, minimum_water_flow, averaging_mode, platform_code" // 7
+			+ ") VALUES (?, ?, ?, ?, ?, ?, ?)";
+
 	/**
 	 * Statement for inserting a file definition record
 	 */
@@ -127,7 +127,7 @@ public class InstrumentDB {
 	 */
 	private static final String GET_INSTRUMENT_QUERY = "SELECT "
 			+ "name, owner, " // 2
-			+ "pre_flushing_time, post_flushing_time, minimum_water_flow, averaging_mode " // 6
+			+ "pre_flushing_time, post_flushing_time, minimum_water_flow, averaging_mode, platform_code " // 7
 			+ "FROM instrument WHERE id = ?";
 	
 	/**
@@ -289,7 +289,8 @@ public class InstrumentDB {
 		stmt.setInt(4, instrument.getPostFlushingTime()); // post_flushing_time
 		stmt.setInt(5, instrument.getMinimumWaterFlow()); // minimum_water_flow
 		stmt.setInt(6, instrument.getAveragingMode()); // averaging_mode
-		
+		stmt.setString(7, instrument.getPlatformCode()); // averaging_mode
+
 		return stmt;
 	}
 	
@@ -572,6 +573,7 @@ public class InstrumentDB {
 			int postFlushingTime;
 			int minimumWaterFlow;
 			int averagingMode;
+			String platformCode;
 			InstrumentFileSet files;
 			SensorAssignments sensorAssignments;
 			
@@ -594,15 +596,16 @@ public class InstrumentDB {
 				postFlushingTime = instrumentRecord.getInt(4);
 				minimumWaterFlow = instrumentRecord.getInt(5);
 				averagingMode = instrumentRecord.getInt(6);
-				
-				
+				platformCode = instrumentRecord.getString(7);
+
+
 				// Now get the file definitions
 				files = getFileDefinitions(conn, instrumentId);
 				
 				// Now the sensor assignments
 				sensorAssignments = getSensorAssignments(conn, files, sensorConfiguration, runTypeConfiguration);
-				
-				instrument = new Instrument(instrumentId, owner, name, files, sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow, averagingMode);
+
+				instrument = new Instrument(instrumentId, owner, name, files, sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow, averagingMode, platformCode);
 			}
 			
 		} catch (SQLException e) {
