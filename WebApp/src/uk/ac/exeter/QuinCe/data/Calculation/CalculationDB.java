@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
@@ -111,6 +112,26 @@ public abstract class CalculationDB {
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
 		}
-
 	}
+
+	/**
+	 * Store the calculation values for a given measurement. This method
+	 * must only update an existing record in the database.
+	 * @param conn A database connection
+	 * @param measurementId The measurement's database ID
+	 * @param values The values to be stored
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public abstract void storeCalculationValues(Connection conn, long measurementId, Map<String, Double> values) throws MissingParamException, DatabaseException;
+	
+	/**
+	 * Clear the calculation values for a given measurement. This method
+	 * must only update an existing record in the database.
+	 * @param conn A database connection
+	 * @param measurementId The measurement's database ID
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public abstract void clearCalculationValues(Connection conn, long measurementId) throws MissingParamException, DatabaseException;
 }

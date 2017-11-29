@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Calculation;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
@@ -56,9 +57,10 @@ public abstract class DataReductionCalculator {
 	 * Perform the data reduction calculation for a given measurement,
 	 * and store the results in the database.
 	 * @param measurement The measurement
+	 * @return The calculated values
 	 * @throws CalculatorException if the calculation cannot be completed
 	 */
-	public abstract void performDataReduction(DataSetRawDataRecord measurement) throws CalculatorException;
+	public abstract Map<String, Double> performDataReduction(DataSetRawDataRecord measurement) throws CalculatorException;
 	
 	// TODO Document this properly
 	/**
