@@ -14,7 +14,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
  * @author Steve Jones
  *
  */
-public class DataSetRawDataRecord {
+public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 
 	/**
 	 * Latitude/Longitude value indicating no position
@@ -248,5 +248,35 @@ public class DataSetRawDataRecord {
 	 */
 	public Double getSensorValue(String sensorName) {
 		return sensorValue.get(sensorName);
+	}
+
+	@Override
+	public int compareTo(DataSetRawDataRecord o) {
+		return this.date.compareTo(o.date);
+	}
+
+	/**
+	 * Compare this record to a given date.
+	 * 
+	 * Works the same as {@link Comparable#compareTo(Object)}.
+	 * 
+	 * @param date The date to compare
+	 * @return A negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified date.
+	 */
+	public int compareTo(LocalDateTime date) {
+		return this.date.compareTo(date);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		boolean result = false;
+
+		if (o instanceof LocalDateTime) {
+			result = ((LocalDateTime) o).equals(this.date);
+		} else if (o instanceof DataSetRawDataRecord) {
+			result = ((DataSetRawDataRecord) o).date.equals(this.date);
+		}
+		
+		return result;
 	}
 }

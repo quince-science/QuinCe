@@ -89,7 +89,7 @@ public class CalibrationDataDB {
 	/**
 	 * Query to get all records for a given dataset
 	 */
-	private static final String GET_ALL_CALIBRATIONS_QUERY = "SELECT * FROM calibration_data WHERE dataset_id = ? ORDER BY date ASC";
+	private static final String GET_ALL_CALIBRATIONS_QUERY = "SELECT * FROM calibration_data WHERE dataset_id = ? AND use_record = 1 ORDER BY date ASC";
 	
 	/**
 	 * Store a data set record in the database.

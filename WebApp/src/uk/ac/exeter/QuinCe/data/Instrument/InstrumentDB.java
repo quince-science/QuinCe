@@ -884,24 +884,23 @@ public class InstrumentDB {
 	 *   {@code <file>: <sensorName>}
 	 * </p>
 	 * 
-	 * @param dataSource A data source
+	 * @param conn A database connection
 	 * @param instrumentId The instrument ID
 	 * @return The list of calibratable sensors
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 */
-	public static List<String> getCalibratableSensors(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException {
+	public static List<String> getCalibratableSensors(Connection conn, long instrumentId) throws MissingParamException, DatabaseException {
 		
 		List<String> result = new ArrayList<String>();
 		
-		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkPositive(instrumentId, "instrumentId");
 		
-		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet records = null;
 		
 		try {
-			conn = dataSource.getConnection();
 			stmt = conn.prepareStatement(GET_CALIBRATABLE_SENSORS_QUERY);
 			stmt.setLong(1, instrumentId);
 			
@@ -914,7 +913,6 @@ public class InstrumentDB {
 		} finally {
 			DatabaseUtils.closeResultSets(records);
 			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
 		}
 		
 		

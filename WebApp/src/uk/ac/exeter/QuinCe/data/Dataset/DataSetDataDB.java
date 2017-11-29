@@ -220,6 +220,7 @@ public class DataSetDataDB {
 								if (sensorType.isUsedInCalculation()) {
 									if (columnName.equals(sensorType.getDatabaseFieldName())) {
 										sensorColumns.put(i, sensorType.getName());
+										break;
 									}
 								}
 							}
