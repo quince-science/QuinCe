@@ -35,6 +35,8 @@ import uk.ac.exeter.QuinCe.data.Files.RawDataValues;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunType;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.QC.NoDataQCRecord;
 import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
@@ -98,10 +100,15 @@ public class DataReductionJob extends Job {
 
 			DataSet dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
 			List<DataSetRawDataRecord> measurements = DataSetDataDB.getMeasurements(conn, dataSet);
-			CalibrationDataSet calibrations = CalibrationDataDB.getCalibrationRecords(conn, dataSet);
+			CalibrationDataSet calibrationRecords = CalibrationDataDB.getCalibrationRecords(conn, dataSet);
+			CalibrationSet externalStandards = ExternalStandardDB.getInstance().getStandardsSet(conn, dataSet.getInstrumentId(), measurements.get(0).getDate());
+			
+			if (!externalStandards.isComplete()) {
+				throw new JobFailedException(id, "No complete set of external standards available");
+			}
 			
 			// TODO This will loop through all available calculators
-			DataReductionCalculator calculator = new EquilibratorPco2Calculator(calibrations);
+			DataReductionCalculator calculator = new EquilibratorPco2Calculator(externalStandards, calibrationRecords);
 			
 			for (DataSetRawDataRecord measurement : measurements) {
 				calculator.performDataReduction(measurement);

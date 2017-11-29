@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
+import java.sql.Connection;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -53,8 +54,8 @@ public class SensorCalibrationDB extends CalibrationDB {
 	}
 	
 	@Override
-	public List<String> getTargets(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-		return InstrumentDB.getCalibratableSensors(dataSource, instrumentId);
+	public List<String> getTargets(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		return InstrumentDB.getCalibratableSensors(conn, instrumentId);
 	}
 	
 	@Override

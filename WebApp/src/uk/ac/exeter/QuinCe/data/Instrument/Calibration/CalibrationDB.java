@@ -147,7 +147,31 @@ public abstract class CalibrationDB {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If no external standard run types are found
 	 */
-	public abstract List<String> getTargets(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException;
+	public List<String> getTargets(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		Connection conn = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			return getTargets(conn, instrumentId);
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while getting calibration targets", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+
+	/**
+	 * Get the list of possible calibration targets for a given instrument
+	 * @param conn A database connection
+	 * @param instrumentId The instrument's database ID
+	 * @return The targets
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If no external standard run types are found
+	 */
+	public abstract List<String> getTargets(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException;
+
+	
 	
 	/**
 	 * Get the calibration type for database actions

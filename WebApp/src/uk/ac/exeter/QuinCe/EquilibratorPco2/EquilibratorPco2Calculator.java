@@ -3,9 +3,11 @@ package uk.ac.exeter.QuinCe.EquilibratorPco2;
 import java.time.LocalDateTime;
 
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculatorException;
 import uk.ac.exeter.QuinCe.data.Calculation.DataReductionCalculator;
 import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 
 /**
  * 
@@ -17,9 +19,10 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
 	/**
 	 * Base constructor
 	 * @param calibrations The calibration data for the data set
+	 * @throws CalculatorException If any calibration data is missing
 	 */
-	public EquilibratorPco2Calculator(CalibrationDataSet calibrations) {
-		super(calibrations);
+	public EquilibratorPco2Calculator(CalibrationSet externalStandards, CalibrationDataSet calibrations) throws CalculatorException {
+		super(externalStandards, calibrations);
 	}
 	
 	@Override
@@ -28,7 +31,7 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
 	}
 	
 	@Override
-	public void performDataReduction(DataSetRawDataRecord measurement) {
+	public void performDataReduction(DataSetRawDataRecord measurement) throws CalculatorException {
 
 		LocalDateTime date = measurement.getDate();
 		double intakeTemperature = measurement.getSensorValue("Intake Temperature");
@@ -60,7 +63,7 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
 			co2Dried = calcDriedCo2(co2Measured, xH2O);
 		}
 		
-		
+		double co2Calibration = applyExternalStandards(date, "CO2", co2Dried);
 	}
 	
 	/**
