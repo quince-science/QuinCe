@@ -70,7 +70,7 @@ public abstract class DataReductionCalculator {
 	 * @return The calibrated sensor value
 	 * @throws CalculatorException If there are not sufficient standard measurements
 	 */
-	protected double applyExternalStandards(LocalDateTime recordDate, String sensorName, double originalValue) throws CalculatorException {
+	protected double applyExternalStandards2d(LocalDateTime recordDate, String sensorName, double originalValue) throws CalculatorException {
 
 		double calibratedValue;
 		
@@ -83,7 +83,7 @@ public abstract class DataReductionCalculator {
 				throw new CalculatorException("No external standards defined");
 			}
 			
-			double standardBelowValue = externalStandards.getCalibrationValue(standardBelow);
+			double standardBelowValue = externalStandards.getCalibrationValue(standardBelow, sensorName);
 			
 			String standardAbove = externalStandards.getCalibrationAbove(standardBelowValue, false);
 			if (null == standardAbove) {
@@ -93,13 +93,13 @@ public abstract class DataReductionCalculator {
 				if (null != standardBeneathBelow) {
 					standardAbove = standardBelow;
 					standardBelow = standardBeneathBelow;
-					standardBelowValue = externalStandards.getCalibrationValue(standardBelow);
+					standardBelowValue = externalStandards.getCalibrationValue(standardBelow, sensorName);
 				} else {
 					throw new CalculatorException("Need more than one external standard");
 				}
 			}
 			
-			double standardAboveValue = externalStandards.getCalibrationValue(standardAbove);
+			double standardAboveValue = externalStandards.getCalibrationValue(standardAbove, sensorName);
 			
 			// Get the calibration measurements for the above two standards taken immediately before the measurement.
 			// If there is no measurement before, take the measurement immediately afterwards - we will do a linear
@@ -165,6 +165,80 @@ public abstract class DataReductionCalculator {
 			
 			// Calculate the final offsets to the standards
 			calibratedValue = originalValue + calculateOffsetAtValue(standardBelowValue, belowOffset, standardAboveValue, aboveOffset, originalValue);
+		} catch (Exception e) {
+			if (e instanceof CalculatorException) {
+				throw (CalculatorException) e;
+			} else {
+				throw new CalculatorException(e);
+			}
+		}
+		
+		return calibratedValue;
+	}
+
+	// TODO Document this properly
+	// TODO A lot of this code can be refactored and shared with the 2d version.
+	/**
+	 * Apply external standards calibration to a sensor value
+	 * 
+	 * @param recordDate The date of the record from which the sensor value was taken
+	 * @param sensorName The name of the sensor
+	 * @param originalValue The sensor value to be calibrated
+	 * @return The calibrated sensor value
+	 * @throws CalculatorException If there are not sufficient standard measurements
+	 */
+	protected double applyExternalStandards1d(LocalDateTime recordDate, String sensorName, double originalValue) throws CalculatorException {
+
+		double calibratedValue;
+		
+		try {
+			// Get the standards with concentrations either side of the measured value
+			String standard = externalStandards.getCalibrationBelow(originalValue, true);
+			if (null == standard) {
+				standard = externalStandards.getCalibrationAbove(originalValue, true);
+			} if (null == standard) {
+				throw new CalculatorException("No external standards defined");
+			}
+			
+			double standardValue = externalStandards.getCalibrationValue(standard, sensorName);
+			
+			// Get the calibration measurements for the above two standards taken immediately before the measurement.
+			// If there is no measurement before, take the measurement immediately afterwards - we will do a linear
+			// extrapolation from that and the following standard.
+			DataSetRawDataRecord priorCalibration = calibrations.getCalibrationBefore(recordDate, standard);
+			if (null == priorCalibration) {
+				priorCalibration = calibrations.getCalibrationAfter(recordDate, standard);
+			} if (null == priorCalibration) {
+				throw new CalculatorException("No external standard measurements for " + standard);
+			}
+			
+			// Get the calibration measurements immediately after the measurements retrieve above.
+			// This will give us the two sets of calibrations we need for the adjustments
+			DataSetRawDataRecord postCalibration = calibrations.getCalibrationAfter(priorCalibration.getDate(), standard);
+			if (null == postCalibration) {
+				// Maybe we're after the last calibration record. So look for one before the "prior" record
+				DataSetRawDataRecord calibrationBeforePrior = calibrations.getCalibrationBefore(priorCalibration.getDate(), standard);
+				
+				if (null != calibrationBeforePrior) {
+					postCalibration = priorCalibration;
+					priorCalibration = calibrationBeforePrior;
+				} else {
+					throw new CalculatorException("Need more than one external standard measurement for " + standard);
+				}
+			}
+	
+			// Get the offset of the measurements from the true standard values
+			double priorCalibrationOffset = standardValue - priorCalibration.getSensorValue(sensorName);
+			long priorCalibrationTime = DateTimeUtils.dateToLong(priorCalibration.getDate());
+			
+			double postCalibrationOffset = standardValue - postCalibration.getSensorValue(sensorName);
+			long postCalibrationTime = DateTimeUtils.dateToLong(postCalibration.getDate());
+			
+			// Calculate the offsets of the standards at the time of the measurement 
+			double offset = calculateOffsetAtValue(priorCalibrationTime, priorCalibrationOffset, postCalibrationTime, postCalibrationOffset, DateTimeUtils.dateToLong(recordDate));
+			
+			// Calculate the final offsets to the standards
+			calibratedValue = originalValue + offset;
 		} catch (Exception e) {
 			if (e instanceof CalculatorException) {
 				throw (CalculatorException) e;

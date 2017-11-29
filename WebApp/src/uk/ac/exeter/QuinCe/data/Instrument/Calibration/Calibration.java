@@ -287,4 +287,22 @@ public abstract class Calibration implements Comparable<Calibration> {
 		
 		return result;
 	}
+	
+	/**
+	 * Get the value of a named coefficient
+	 * @param name The coefficient name
+	 * @return The coefficient value
+	 */
+	public Double getCoefficient(String name) {
+		Double result = null;
+
+		for (CalibrationCoefficient coefficient : getCoefficients()) {
+			if (coefficient.getName().equals(name)) {
+				result = coefficient.getValue();
+				break;
+			}
+		}
+		
+		return result;
+	}
 }
