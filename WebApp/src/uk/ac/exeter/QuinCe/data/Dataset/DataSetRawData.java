@@ -261,21 +261,6 @@ public abstract class DataSetRawData {
 		
 		if (allRowsMatch()) {
 			found = true;
-
-			/*
-			try {
-				StringBuilder message = new StringBuilder();
-				for (int i = 0; i < fileDefinitions.size(); i++) {
-					message.append(selectedRows.get(i).get(0));
-					message.append(' ');
-					message.append(getLine(i, selectedRows.get(i).get(0)).getDate());
-					message.append(';');
-				}
-				System.out.println(message.toString());
-			} catch (Exception e) {
-				throw new DataSetException(e);
-			}
-			*/
 		}
 		
 		DataSetRawDataRecord record = null;
