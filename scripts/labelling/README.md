@@ -1,7 +1,7 @@
 Scripts to add external data to files exported from QuinCe.
 
 `add_external_data.R` needs SST and SLP from ECMWF, named in the form:
-`<VAR>_<YEAR>.nc`
+`<VAR>_<YEAR>.nc`. Also add your working directory to the script.
 
 The configuration for the ECMWF downloads is:
 * Time steps: 0,12,16,18
