@@ -21,7 +21,8 @@ public class ExternalStandard extends Calibration {
 	
 	static {
 		valueNames = new ArrayList<String>(1);
-		valueNames.add("Concentration");
+		valueNames.add("CO2");
+		valueNames.add("xH2O");
 	}
 	
 	/**
@@ -107,10 +108,16 @@ public class ExternalStandard extends Calibration {
 		boolean result = true;
 		
 		if (null != coefficients) {
-			if (coefficients.size() != 1) {
+			if (coefficients.size() != 2) {
 				result = false;
-			} else if (getConcentration() < 0) {
-				result = false;
+			} else {
+				if (getConcentration() < 0) {
+					result = false;
+				}
+				if (getCoefficients().get(1).getValue() != 0.0) {
+					// xH2O must be zero
+					result = false;
+				}
 			}
 		}
 

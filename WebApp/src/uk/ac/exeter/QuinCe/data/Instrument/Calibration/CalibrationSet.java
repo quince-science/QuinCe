@@ -226,14 +226,14 @@ public class CalibrationSet extends TreeSet<Calibration> {
 	 * @return The calibration value
 	 * @throws RecordNotFoundException If the target does not exist
 	 */
-	public double getCalibrationValue(String target) throws RecordNotFoundException {
+	public double getCalibrationValue(String target, String sensorName) throws RecordNotFoundException {
 		double result = 0;
 		boolean calibrationFound = false;
 		
 		for (Calibration calibration : this) {
 			if (calibration.getTarget().equals(target)) {
 				calibrationFound = true;
-				result = calibration.getCoefficients().get(0).getValue();
+				result = calibration.getCoefficient(sensorName);
 			}
 		}
 		

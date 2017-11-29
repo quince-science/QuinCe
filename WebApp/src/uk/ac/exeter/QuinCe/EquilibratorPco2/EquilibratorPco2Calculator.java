@@ -38,7 +38,6 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
 		double salinity = measurement.getSensorValue("Salinity");
 		double equilTemperature = measurement.getSensorValue("Equilibrator Temperature");
 		
-		
 		// TODO We need some kind of flag we can run to check which equilibrator pressure to use. #577
 		double equilibratorPressure;
 		
@@ -54,23 +53,23 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
 		Double xH2O = measurement.getSensorValue("xH2O");
 		double co2Measured = measurement.getSensorValue("CO2");
 		
-		
 		double co2Dried;
 		
 		if (null == xH2O) {
 			co2Dried = co2Measured;
 		} else {
-			co2Dried = calcDriedCo2(co2Measured, xH2O);
+			double truexH2O = applyExternalStandards1d(date, "xH2O", xH2O);
+			co2Dried = calcDriedCo2(co2Measured, truexH2O);
 		}
 		
-		double co2Calibration = applyExternalStandards(date, "CO2", co2Dried);
+		double co2Calibration = applyExternalStandards2d(date, "CO2", co2Dried);
 	}
 	
 	/**
 	 * Calculate dried CO2 using a moisture measurement
 	 * @param co2 The measured CO2 value
 	 * @param xH2O The moisture value
-	 * @return
+	 * @return The 'dry' CO2 value
 	 */
 	private double calcDriedCo2(double co2, double xH2O) {
 		return co2 / (1.0 - (xH2O / 1000));
