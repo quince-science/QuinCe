@@ -101,6 +101,7 @@ public abstract class Job {
 	 * @param id The id of the job in the database
 	 * @param parameters The parameters for the job
 	 * @throws InvalidJobParametersException If the parameters are not valid for the job
+	 * @throws MissingParamException If any required parameters are missing
 	 */
 	public Job(ResourceManager resourceManager, Properties config, long id, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException {
 		

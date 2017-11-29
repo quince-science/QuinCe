@@ -28,9 +28,9 @@
 	
 	<ui:define name="content">
 		<h:form id="instrumentListForm" method="post" accept-charset="utf8">
-			<h:inputHidden id="standardsInstrumentId" value="#{gasStandardsBean.instrumentId}"/>
-			<h:inputHidden id="standardsInstrumentName" value="#{gasStandardsBean.instrumentName}"/>
-			<p:commandLink id="showStandardsLink" ajax="false" action="#{gasStandardsBean.start}"/>
+			<h:inputHidden id="standardsInstrumentId" value="#{externalStandardsBean.instrumentId}"/>
+			<h:inputHidden id="standardsInstrumentName" value="#{externalStandardsBean.instrumentName}"/>
+			<p:commandLink id="showStandardsLink" ajax="false" action="#{externalStandardsBean.start}"/>
 
 			<h:inputHidden id="calibrationssInstrumentId" value="#{sensorCalibrationsBean.instrumentId}"/>
 			<h:inputHidden id="calibrationsInstrumentName" value="#{sensorCalibrationsBean.instrumentName}"/>
@@ -47,7 +47,7 @@
 					<h:outputText styleClass="note" rendered="#{!instrument.calibratableSensors}" value="No sensors require calibration"/>
 				</p:column>
 				<p:column styleClass="centeredCell">
-					<f:facet name="header">Gas Standard Deployments</f:facet>
+					<f:facet name="header">External Standard Deployments</f:facet>
 					<p:button value="View Deployments" styleClass="inlineButton" onclick="return goToStandards(#{instrument.id}, '#{instrument.name}')"/>
 				</p:column>
 			</p:dataTable>

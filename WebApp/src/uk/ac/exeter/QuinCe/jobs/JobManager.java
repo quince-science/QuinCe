@@ -228,10 +228,14 @@ public class JobManager {
 			long fileId = -1;
 			try {
 				if (isFileJob(jobClass)) {
-					fileId = Long.parseLong(parameters.get(FileJob.FILE_ID_KEY));
-					if (!DataFileDB.fileExists(conn, fileId) || DataFileDB.getDeleteFlag(conn, fileId)) {
-						throw new JobException("Data file with ID " + fileId + " does not exist or is marked for deletion. Job cannot be queued.");
+					String fileIdString = parameters.get(FileJob.FILE_ID_KEY);
+					if (null != fileIdString) {
+						fileId = Long.parseLong(parameters.get(FileJob.FILE_ID_KEY));
+						if (!DataFileDB.fileExists(conn, fileId) || DataFileDB.getDeleteFlag(conn, fileId)) {
+							throw new JobException("Data file with ID " + fileId + " does not exist or is marked for deletion. Job cannot be queued.");
+						}
 					}
+					
 				}
 			} catch (RecordNotFoundException e) {
 				throw new JobException("Data file with ID " + fileId + " does not exist or is marked for deletion. Job cannot be queued.");

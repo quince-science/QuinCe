@@ -15,6 +15,12 @@
 				$('#datasetListForm\\:reviewCalibrationDataLink').click();
 				return false;
 			}
+
+			function createDataReductionJob(id) {
+				$('#datasetListForm\\:datasetId').val(id);
+				$('#datasetListForm\\:dataReductionLink').click();
+				return false;
+			}
 		</script>
 	</ui:define>
 	
@@ -29,6 +35,9 @@
 			
 			<h:inputHidden id="calibrationDatasetId" value="#{reviewCalibrationDataBean.datasetId}"/>
 			<p:commandLink id="reviewCalibrationDataLink" ajax="false" action="#{reviewCalibrationDataBean.start}"/>
+
+			<h:inputHidden id="datasetId" value="#{dataSetsBean.datasetId}"/>
+			<p:commandLink id="dataReductionLink" ajax="false" action="#{dataSetsBean.submitDataReductionJob}"/>
 
 			<p:dataTable id="datasets" value="#{dataSetsBean.dataSets}" var="dataset" styleClass="pageTable" scrollable="true" scrollHeight="450">
 				<p:column>
@@ -60,6 +69,7 @@
 						<h:outputText value="Actions"/>
 					</f:facet>
 					<a href="#" onclick="return goToCalibrationData(#{dataset.id})">Cal</a>
+					<a href="#" onclick="return createDataReductionJob(#{dataset.id})">Red</a>
 				</p:column>
 			</p:dataTable>
 			

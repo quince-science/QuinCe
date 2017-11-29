@@ -7,6 +7,7 @@ import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Class representing a set of calibrations of a given type for a given instrument.
@@ -70,7 +71,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
 		}
 
 		if (!type.equals(calibration.getType())) {
-			throw new CalibrationException("Incorrect calibraiton type");
+			throw new CalibrationException("Incorrect calibration type");
 		}
 		
 		if (!targets.contains(calibration.getTarget())) {
@@ -155,6 +156,90 @@ public class CalibrationSet extends TreeSet<Calibration> {
 			result = true;
 		}
 		
+		return result;
+	}
+
+	/**
+	 * Get the target name of the calibration whose coefficient is immediately below the specified value.
+	 * This assumes that the calibrations have a single coefficient, and picks the first one in the list
+	 * @param value The value
+	 * @param allowEqualValue Indicates whether exactly equal matches count as 'below'
+	 * @return The calibration below the specified value
+	 */
+	public String getCalibrationBelow(double value, boolean allowEqualValue) {
+		
+		String targetBelow = null;
+		double targetValue = Double.MIN_VALUE * -1;
+		
+		for (Calibration calibration : this) {
+			double calibrationValue = calibration.coefficients.get(0).getValue();
+			
+			boolean matchFound = false;
+			
+			if (calibrationValue > targetValue) {
+				matchFound = (calibrationValue < value) || (allowEqualValue && calibrationValue == value);
+			}
+			
+			if (matchFound) {
+				targetBelow = calibration.getTarget();
+				targetValue = calibration.coefficients.get(0).getValue();
+			}
+		}
+	
+		return targetBelow;
+	}
+
+
+	/**
+	 * Get the target name of the calibration whose coefficient is immediately above the specified value.
+	 * This assumes that the calibrations have a single coefficient, and picks the first one in the list
+	 * @param value The value
+	 * @param allowEqualValue Indicates whether exactly equal matches count as 'above'
+	 * @return The calibration above the specified value
+	 */
+	public String getCalibrationAbove(double value, boolean allowEqualValue) {
+		
+		String targetAbove = null;
+		double targetValue = Double.MAX_VALUE;
+		
+		for (Calibration calibration : this) {
+			double calibrationValue = calibration.coefficients.get(0).getValue();
+			
+			boolean matchFound = false;
+			
+			if (calibrationValue < targetValue) {
+				matchFound = (calibrationValue > value) || (allowEqualValue && calibrationValue == value);
+			}
+			
+			if (matchFound) {
+				targetAbove = calibration.getTarget();
+				targetValue = calibration.coefficients.get(0).getValue();
+			}
+		}
+	
+		return targetAbove;
+	}
+	
+	/**
+	 * Get the value of the named calibration. Assumes that there is only one coefficient.
+	 * @param target The calibration target
+	 * @return The calibration value
+	 * @throws RecordNotFoundException If the target does not exist
+	 */
+	public double getCalibrationValue(String target, String sensorName) throws RecordNotFoundException {
+		double result = 0;
+		boolean calibrationFound = false;
+		
+		for (Calibration calibration : this) {
+			if (calibration.getTarget().equals(target)) {
+				calibrationFound = true;
+				result = calibration.getCoefficient(sensorName);
+			}
+		}
+		
+		if (!calibrationFound) {
+			throw new RecordNotFoundException("Calibration '" + target + "' not found in calibration set");
+		}
 		return result;
 	}
 }

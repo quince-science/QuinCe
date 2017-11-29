@@ -86,7 +86,7 @@ public class SensorsConfiguration {
 	 * The column specifying whether a sensor's values are calibrated
 	 * using data
 	 */
-	private static final int COL_CALIBRATED_USING_DATA = 11;
+	private static final int COL_EXTERNAL_STANDARDS = 11;
 	
 	/**
 	 * The set of sensors defined for the instrument with
@@ -175,9 +175,9 @@ public class SensorsConfiguration {
 							boolean postCalibrated = StringUtils.parseYNBoolean(fields.get(COL_POST_CALIBRATED));
 							boolean coreSensor = StringUtils.parseYNBoolean(fields.get(COL_CORE));
 							boolean usedInCalculation = StringUtils.parseYNBoolean(fields.get(COL_USED_IN_CALCULATION));
-							boolean calibratedUsingData = StringUtils.parseYNBoolean(fields.get(COL_CALIBRATED_USING_DATA));
+							boolean externalStandards = StringUtils.parseYNBoolean(fields.get(COL_EXTERNAL_STANDARDS));
 							
-							SensorType sensor = new SensorType(sensorName, required, named, requiredGroup, dependsOn, dependsQuestion, many, averaged, postCalibrated, coreSensor, usedInCalculation, calibratedUsingData);
+							SensorType sensor = new SensorType(sensorName, required, named, requiredGroup, dependsOn, dependsQuestion, many, averaged, postCalibrated, coreSensor, usedInCalculation, externalStandards);
 							
 							sensorTypes.add(sensor);
 							

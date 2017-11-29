@@ -1,7 +1,7 @@
 # This file lists the sensors etc that are needed for a particular
 # configuration of QuinCe.
 
-# Sensor Name,Required?,Named?,RequiredGroup,DependsOn,DependsQuestion,Many?,Averaged?,Can Be Post-Calibrated?,Core?,Used In Calculation?,Calibrated using data?
+# Sensor Name,Required?,Named?,RequiredGroup,DependsOn,DependsQuestion,Many?,Averaged?,Can Be Post-Calibrated?,Core?,Used In Calculation?,External Standards?
 Intake Temperature,Y,Y,,,,Y,Y,Y,N,Y,N
 Salinity,Y,Y,,,,Y,Y,Y,N,Y,N
 Equilibrator Temperature,Y,Y,,,,Y,Y,Y,N,Y,N

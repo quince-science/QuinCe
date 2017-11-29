@@ -7,18 +7,29 @@ import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
 /**
  * Class to hold data for a single record extracted from raw data
  * @author Steve Jones
  *
  */
-public class DataSetRawDataRecord {
+public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 
+	/**
+	 * Latitude/Longitude value indicating no position
+	 */
+	public static final double NO_POSITION = -999.9;
+	
 	/**
 	 * The data set to which the record belongs
 	 */
 	private DataSet dataSet;
+	
+	/**
+	 * The database ID of the record
+	 */
+	private long id;
 		
 	/**
 	 * The date of the record
@@ -65,6 +76,30 @@ public class DataSetRawDataRecord {
 	 * @param runTypeCategory The Run Type Category
 	 */
 	public DataSetRawDataRecord(DataSet dataSet, LocalDateTime date, double longitude, double latitude, String runType, RunTypeCategory runTypeCategory) {
+		this.id = DatabaseUtils.NO_DATABASE_RECORD;
+		this.dataSet = dataSet;
+		this.date = date;
+		this.longitude = longitude;
+		this.latitude = latitude;
+		this.runType = runType;
+		this.runTypeCategory = runTypeCategory;
+		
+		sensorValue = new TreeMap<String, Double>();
+		diagnosticValues = new HashMap<String, Double>();
+	}
+	
+	/**
+	 * Constructor for a record from the database
+	 * @param dataSet The data set to which the record belongs
+	 * @param id The database ID
+	 * @param date The date of the record
+	 * @param longitude The longitude
+	 * @param latitude The latitude
+	 * @param runType The Run Type
+	 * @param runTypeCategory The Run Type Category
+	 */
+	public DataSetRawDataRecord(DataSet dataSet, long id, LocalDateTime date, double longitude, double latitude, String runType, RunTypeCategory runTypeCategory) {
+		this.id = id;
 		this.dataSet = dataSet;
 		this.date = date;
 		this.longitude = longitude;
@@ -95,6 +130,33 @@ public class DataSetRawDataRecord {
 	}
 	
 	/**
+	 * Set the diagnostic values contained in a String.
+	 * The String should be formatted as per the output of {@link #getDiagnosticValuesString()}.
+	 * @param valuesString The values string
+	 * @throws DataSetException If the values string is invalid
+	 */
+	public void setDiagnosticValues(String valuesString) throws DataSetException {
+		
+		if (null != valuesString && valuesString.length() > 0) {
+			String[] entries = valuesString.split(";");
+			for (String entry : entries) {
+				String[] fields = entry.split(":");
+				if (fields.length != 2) {
+					throw new DataSetException("Invalid diagnostic values string");
+				} else {
+					try {
+						setSensorValue(fields[0], Double.parseDouble(fields[1]));
+					} catch (NumberFormatException e) {
+						throw new DataSetException("Invalid diagnostic values string");
+					}
+				}
+			}
+		}
+		
+		
+	}
+	
+	/**
 	 * Determine whether or not this record is for a measurement
 	 * @return {@code true} if this is a measurement; {@code false} otherwise
 	 * @throws NoSuchCategoryException If the record's run type does not exist
@@ -110,6 +172,14 @@ public class DataSetRawDataRecord {
 	 */
 	public boolean isCalibration() throws NoSuchCategoryException {
 		return runTypeCategory.getType() == RunTypeCategory.TYPE_CALIBRATION;
+	}
+	
+	/**
+	 * Get the database ID of the record
+	 * @return The record ID
+	 */
+	public long getId() {
+		return id;
 	}
 	
 	/**
@@ -178,5 +248,35 @@ public class DataSetRawDataRecord {
 	 */
 	public Double getSensorValue(String sensorName) {
 		return sensorValue.get(sensorName);
+	}
+
+	@Override
+	public int compareTo(DataSetRawDataRecord o) {
+		return this.date.compareTo(o.date);
+	}
+
+	/**
+	 * Compare this record to a given date.
+	 * 
+	 * Works the same as {@link Comparable#compareTo(Object)}.
+	 * 
+	 * @param date The date to compare
+	 * @return A negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified date.
+	 */
+	public int compareTo(LocalDateTime date) {
+		return this.date.compareTo(date);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		boolean result = false;
+
+		if (o instanceof LocalDateTime) {
+			result = ((LocalDateTime) o).equals(this.date);
+		} else if (o instanceof DataSetRawDataRecord) {
+			result = ((DataSetRawDataRecord) o).date.equals(this.date);
+		}
+		
+		return result;
 	}
 }

@@ -26,17 +26,17 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 public class SensorCalibrationsBean extends CalibrationBean {
 
 	/**
-	 * The navigation string for the gas standards list
+	 * The navigation string for the sensor calibrations list
 	 */
 	private static final String NAV_LIST = "sensor_calibrations";
 	
 	/**
-	 * The gas standard being edited by the user
+	 * The sensor calibration being edited by the user
 	 */
 	private PolynomialSensorCalibration enteredCalibration = null;
 	
 	/**
-	 * The gas standards database utility class
+	 * The sensor calibration database utility class
 	 */
 	private SensorCalibrationDB db = null;
 	

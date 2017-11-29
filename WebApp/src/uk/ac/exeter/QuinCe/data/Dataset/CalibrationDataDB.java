@@ -3,14 +3,19 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -36,6 +41,26 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class CalibrationDataDB {
 
 	/**
+	 * The name of the ID column
+	 */
+	private static final String ID_COL = "id";
+	
+	/**
+	 * The name of the date column
+	 */
+	private static final String DATE_COL = "date";
+	
+	/**
+	 * The name of the run type column
+	 */
+	private static final String RUN_TYPE_COL = "run_type";
+	
+	/**
+	 * The name of the dataset ID column
+	 */
+	private static final String DATASET_COL = "dataset_id";
+
+	/**
 	 * Statement to delete all records for a given dataset
 	 */
 	private static final String DELETE_CALIBRATION_DATA_QUERY = "DELETE FROM calibration_data "
@@ -51,7 +76,20 @@ public class CalibrationDataDB {
 	 * Statement to retrieve the count of calibration data for a specific run type for a dataset
 	 */
 	private static final String SELECTED_CALIBRATION_DATA_ROWIDS_QUERY = "SELECT id FROM calibration_data "
-			+ "WHERE dataset_id = ? AND run_type = ?";
+			+ "WHERE dataset_id = ? AND run_type = ? ORDER BY date ASC";
+	
+
+	/**
+	 * Statement to set the Use flags for a set of records
+	 */
+	private static final String SET_USE_FLAGS_STATEMENT = "UPDATE calibration_data SET "
+			+ "use_record = ?, use_message = ? "
+			+ "WHERE id IN " + DatabaseUtils.IN_PARAMS_TOKEN;
+
+	/**
+	 * Query to get all records for a given dataset
+	 */
+	private static final String GET_ALL_CALIBRATIONS_QUERY = "SELECT * FROM calibration_data WHERE dataset_id = ? AND use_record = 1 ORDER BY date ASC";
 	
 	/**
 	 * Store a data set record in the database.
@@ -91,7 +129,7 @@ public class CalibrationDataDB {
 			int currentField = 5;
 			SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
 			for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-				if (sensorType.isCalibratedUsingData()) {
+				if (sensorType.isUsedInCalculation()) {
 					currentField++;
 					Double sensorValue = record.getSensorValue(sensorType.getName());
 					if (null == sensorValue) {
@@ -125,7 +163,7 @@ public class CalibrationDataDB {
 
 		SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
 		for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-			if (sensorType.isCalibratedUsingData()) {
+			if (sensorType.isUsedInCalculation()) {
 				fieldNames.add(sensorType.getDatabaseFieldName());
 			}
 		}
@@ -160,8 +198,8 @@ public class CalibrationDataDB {
 	}
 	
 	/**
-	 * Get the gas standard data for a given data set and standard in JSON format for the table view
-	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
+	 * Get the external standard data for a given data set and standard in JSON format for the table view
+	 * If {@code standardName} is {@code null}, all external standards will be included in the results
 	 * @param dataSource A data source
 	 * @param datasetId The database ID of the data set
 	 * @param standardName The name of the standard ({@code null} for all standards)
@@ -179,7 +217,7 @@ public class CalibrationDataDB {
 		List<String> calibrationFields = new ArrayList<String>();
 		SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
 		for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-			if (sensorType.isCalibratedUsingData()) {
+			if (sensorType.hasExternalStandards()) {
 				calibrationFields.add(sensorType.getDatabaseFieldName());
 			}
 		}
@@ -277,8 +315,8 @@ public class CalibrationDataDB {
 	}
 	
 	/**
-	 * Get the gas standard data for a given data set and standard in JSON format for the table view
-	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
+	 * Get the external standard data for a given data set and standard in JSON format for the table view
+	 * If {@code standardName} is {@code null}, all external standards will be included in the results
 	 * @param dataSource A data source
 	 * @param datasetId The database ID of the data set
 	 * @param standardName The name of the standard ({@code null} for all standards)
@@ -294,7 +332,7 @@ public class CalibrationDataDB {
 		List<String> calibrationFields = new ArrayList<String>();
 		SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
 		for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-			if (sensorType.isCalibratedUsingData()) {
+			if (sensorType.hasExternalStandards()) {
 				calibrationFields.add(sensorType.getDatabaseFieldName());
 			}
 		}
@@ -370,8 +408,8 @@ public class CalibrationDataDB {
 	}
 
 	/**
-	 * Get the gas standard data for a given data set and standard in JSON format
-	 * If {@code standardName} is {@code null}, all gas standards will be included in the results
+	 * Get the external standard data for a given data set and standard in JSON format
+	 * If {@code standardName} is {@code null}, all external standards will be included in the results
 	 * @param dataSource A data source
 	 * @param datasetId The database ID of the data set
 	 * @param standardName The name of the standard ({@code null} for all standards)
@@ -460,11 +498,101 @@ public class CalibrationDataDB {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(conn);
 		}
-		
-		
 	}
 	
-	private static final String SET_USE_FLAGS_STATEMENT = "UPDATE calibration_data SET "
-			+ "use_record = ?, use_message = ? "
-			+ "WHERE id IN " + DatabaseUtils.IN_PARAMS_TOKEN;
+	/**
+	 * Get all the calibration records for a dataset
+	 * @param conn A database connection
+	 * @param dataSet The data set
+	 * @return The measurement records
+     * @throws DatabaseException If a database error occurs
+     * @throws MissingParamException If any required parameters are missing
+	 */
+	public static CalibrationDataSet getCalibrationRecords(Connection conn, DataSet dataSet) throws DatabaseException, MissingParamException {
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkMissing(dataSet, "dataSet");
+		
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		CalibrationDataSet result = new CalibrationDataSet();
+		
+		int idCol = -1;
+		int dateCol = -1;
+		int runTypeCol = -1;
+
+		SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
+		Map<Integer, String> calibrationColumns = new HashMap<Integer, String>();
+		
+		try {
+			stmt = conn.prepareStatement(GET_ALL_CALIBRATIONS_QUERY);
+			stmt.setLong(1, dataSet.getId());
+			
+			records = stmt.executeQuery();
+			ResultSetMetaData rsmd = records.getMetaData();
+			
+			while (records.next()) {
+				
+				// Get the column indices if we haven't already got them
+				if (idCol == -1) {
+					for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+						String columnName = rsmd.getColumnName(i);
+						switch (columnName) {
+						case ID_COL: {
+							idCol = i;
+							break;
+						}
+						case DATE_COL: {
+							dateCol = i;
+							break;
+						}
+						case RUN_TYPE_COL: {
+							runTypeCol = i;
+							break;
+						}
+						case DATASET_COL: {
+							// Do nothing
+							break;
+						}
+						default: {
+							// This is a sensor field. Get the sensor name from the sensors configuration
+							for (SensorType sensorType : sensorConfig.getSensorTypes()) {
+								if (sensorType.isUsedInCalculation()) {
+									if (columnName.equals(sensorType.getDatabaseFieldName())) {
+										calibrationColumns.put(i, sensorType.getName());
+									}
+								}
+							}
+						}
+						}
+					}
+				}
+				
+				long id = records.getLong(idCol);
+				LocalDateTime date = DateTimeUtils.longToDate(records.getLong(dateCol));
+				double longitude = DataSetRawDataRecord.NO_POSITION;
+				double latitude = DataSetRawDataRecord.NO_POSITION;
+				String runType = records.getString(runTypeCol);
+				RunTypeCategory runTypeCategory = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategory(runType);
+				
+				DataSetRawDataRecord measurement = new DataSetRawDataRecord(dataSet, id, date, longitude, latitude, runType, runTypeCategory);
+				
+				for (Map.Entry<Integer, String> entry : calibrationColumns.entrySet()) {
+					measurement.setSensorValue(entry.getValue(), records.getDouble(entry.getKey()));
+				}
+				
+				result.add(measurement);
+			}
+			
+			return result;
+			
+		} catch (Exception e) {
+			throw new DatabaseException("Error while retrieving measurements", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+		}
+		
+	}
 }

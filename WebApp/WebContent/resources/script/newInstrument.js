@@ -189,12 +189,16 @@ function renderAssignments() {
 	var positionOK = renderPositionAssignments();
 	var otherColumnsOK = renderOtherColumns();
 	var timeOK = renderDateTimeAssignments();
+
+	PF('next').enable();
 	
+	/*
 	if (sensorsOK && positionOK && otherColumnsOK && timeOK) {
 		PF('next').enable();
 	} else {
 		PF('next').disable();
 	}
+	*/
 }
 
 function renderSensorAssignments() {
@@ -1245,7 +1249,6 @@ function populateRunTypeMenus() {
 		var file = runTypeAssignments[i];
 		
 		for (var j = 0; j < file['assignments'].length; j++) {
-			console.log(file["file"] + "-" + file["assignments"][j]["runType"] + "-menu", file["assignments"][j]["category"]);
 			PF(file["file"] + "-" + file["assignments"][j]["runType"] + "-menu").selectValue(file["assignments"][j]["category"]);
 		}
 	}
