@@ -241,7 +241,12 @@ public class DataSetDataDB {
 				measurement.setDiagnosticValues(diagnosticValues);
 				
 				for (Map.Entry<Integer, String> entry : sensorColumns.entrySet()) {
-					measurement.setSensorValue(entry.getValue(), records.getDouble(entry.getKey()));
+					Double value = records.getDouble(entry.getKey());
+					if (records.wasNull()) {
+					  value = null;
+					}
+					
+					measurement.setSensorValue(entry.getValue(), value);
 				}
 				
 				result.add(measurement);
