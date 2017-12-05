@@ -12,6 +12,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -62,6 +63,10 @@ public class DataSetDB {
 	 */
 	private static final String DELETE_DATASET_QUERY = "DELETE FROM dataset_data "
 			+ "WHERE dataset_id = ?";
+	
+	private static final String GET_TIME_POSITION_QUERY = "SELECT "
+			+ "date, longitude, latitude "
+			+ "FROM dataset_data WHERE dataset_id = ? AND id = ?";
 	
 	/**
 	 * Get the list of data sets defined for a given instrument
@@ -328,6 +333,56 @@ public class DataSetDB {
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while deleting dataset data", e);
 		} finally {
+			DatabaseUtils.closeStatements(stmt);
+		}
+	}
+	
+	/**
+	 * Retrieve the date and position information for a given dataset record
+	 * @param conn A database connection
+	 * @param record The record requiring the date and position
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the record is not in the database
+	 */
+	public static void getDateAndPosition(Connection conn, CalculationRecord record) throws DatabaseException, MissingParamException, RecordNotFoundException {
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkMissing(record, "record");
+		
+		PreparedStatement stmt = null;
+		ResultSet match = null;
+		
+		try {
+			stmt = conn.prepareStatement(GET_TIME_POSITION_QUERY);
+			stmt.setLong(1, record.getDatasetId());
+			stmt.setLong(2, record.getLineNumber());
+			
+			match = stmt.executeQuery();
+			if (!match.next()) {
+				throw new RecordNotFoundException("Cannot find data set record", "dataset_data", record.getLineNumber());
+			} else {
+				record.setDate(DateTimeUtils.longToDate(match.getLong(1)));
+				
+				Double longitude = match.getDouble(2);
+				if (match.wasNull()) {
+					record.setLongitude(null);
+				} else {
+					record.setLongitude(longitude);
+				}
+				
+				Double latitude = match.getDouble(2);
+				if (match.wasNull()) {
+					record.setLatitude(null);
+				} else {
+					record.setLatitude(latitude);
+				}
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving time/position data", e);
+		} finally {
+			DatabaseUtils.closeResultSets(match);
 			DatabaseUtils.closeStatements(stmt);
 		}
 	}
