@@ -5,7 +5,7 @@
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	template="/WEB-INF/templates/basic_page.xhtml">
-	
+
 	<ui:define name="title">Upload Files</ui:define>
 	<ui:define name="localHead">
 		<h:outputScript name="script/dataFiles.js"/>
@@ -17,25 +17,31 @@
 		<h:form id="uploadForm" method="post" charset="utf8">
 			<div class="pageTable">
 				<div id="uploadFile">
-					<p:messages id="messages"/>
+					<p:messages id="messages" autoUpdate="true" closable="true"/>
 					<div id="messages" class="error listBox hidden"></div>
 					<p:outputLabel value="Select a file to upload"/>
 					<p:fileUpload fileUploadListener="#{fileUpload.handleFileUpload}"
-					mode="advanced" auto="false" oncomplete="processFiles()"
+					mode="advanced" auto="false" oncomplete="extractNext()"
 					multiple="true" update="fileDetails" widgetVar="fileUploadWidget"/>
 				</div>
-				<p:remoteCommand
-				name="refreshFileList"
-				action="#{fileUpload.refreshFileList()}"
-				process="@this"
-				update="fileDetails" />
 				<p:outputPanel id="fileDetails" styleClass="#{fileUpload.displayClass}">
 					<p:remoteCommand
 					name="extractNext"
 					action="#{fileUpload.extractNext()}"
 					process="@this"
 					update="fileList storeFileButton" />
-					<p:dataTable id="fileList" var="file" value="#{fileUpload.uploadedFiles}">
+					<p:dialog id="msgDialog" widgetVar="msgDialog" header="Errors and messages" minHeight="40" >
+						<p:scrollPanel style="height:200px" mode="native">
+							<div id="messageText"></div>
+						</p:scrollPanel>>
+					</p:dialog>
+					<p:dataTable
+					id="fileList"
+					var="file"
+					value="#{fileUpload.uploadedFiles}"
+					rowStyleClass="#{file.messageClass}"
+					rowIndexVar="rowIndex"
+					>
 					    <p:column headerText="Filename">
 					        <h:outputText value="#{file.name}" />
 					    </p:column>
@@ -44,7 +50,7 @@
 							value="#{file.startDate}" >
 							    <f:convertDateTime pattern="#{fileUpload.longDateFormat}" />
 							</h:outputText>
-							<div class="tablespinner #{file.startDate == null ? 'loading' : ''}"></div>
+							<div class="tablespinner #{file.startDate == null and file.messageClass == '' ? 'loading' : ''}"></div>
 					    </p:column>
 
 					    <p:column headerText="End date">
@@ -52,7 +58,7 @@
 							value="#{file.endDate}" >
 							    <f:convertDateTime pattern="#{fileUpload.longDateFormat}" />
 							</h:outputText>
-							<div class="tablespinner #{file.endDate == null ? 'loading' : ''}"></div>
+							<div class="tablespinner #{file.endDate == null and file.messageClass == '' ? 'loading' : ''}"></div>
 					    </p:column>
 
 					    <p:column headerText="No. of records">
@@ -61,8 +67,18 @@
 					    <p:column headerText="Store file to database">
 							<p:selectBooleanCheckbox
 							id="fileStoreCheckbox"
-							styleClass="#{file.endDate == null ? 'hidden' : 'ready'}"
+							styleClass="#{file.endDate == null or file.messageClass != '' ? 'hidden' : 'ready'}"
 							value="#{file.store}" />
+							<p:commandButton
+							id="messageButton"
+							icon="fa-info-circle"
+							styleClass="messageButton #{file.messageClass == '' ? 'hidden' : ''}"
+							onclick="renderMessages($(this).data('messages'))"
+							title="Errors"
+							value="Errors"
+							>
+								<f:passThroughAttribute name="data-messages" value="#{file.messages}" />
+							</p:commandButton>
 						</p:column>
 					</p:dataTable>
 				</p:outputPanel>

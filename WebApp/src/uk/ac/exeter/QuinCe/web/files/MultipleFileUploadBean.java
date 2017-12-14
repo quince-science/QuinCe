@@ -6,10 +6,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import javax.annotation.PostConstruct;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
-import org.primefaces.context.RequestContext;
 import org.primefaces.event.FileUploadEvent;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
@@ -32,8 +33,11 @@ public class MultipleFileUploadBean extends BaseManagedBean {
 	private ArrayList<UploadedFileExtended> dataFiles = new ArrayList<>();
 	private String displayClass = "hidden";
 
-
-	public MultipleFileUploadBean() {
+	/**
+	 * Initialize resources
+	 */
+	@PostConstruct
+	public void init() {
 		initialiseInstruments();
 	}
 
@@ -51,20 +55,12 @@ public class MultipleFileUploadBean extends BaseManagedBean {
 		return dataFiles;
 	}
 
-
-	/**
-	 * Refresh file list in frontend
-	 */
-	public void refreshFileList() {
-		RequestContext.getCurrentInstance().update("uploadForm:fileList");
-	}
-
 	/**
 	 * Extract next file in file list that is not yet extracted
 	 */
 	public void extractNext() {
 		for (UploadedFileExtended file: dataFiles) {
-			if (file.getDataFile() == null) {
+			if (file.getDataFile() == null && file.isStore()) {
 				extractFile(file);
 				return;
 			}
@@ -113,9 +109,8 @@ public class MultipleFileUploadBean extends BaseManagedBean {
 					file.getName(),
 					Arrays.asList(file.getLines())
 			));
-
 			if (file.getDataFile().getMessageCount() > 0) {
-				setMessage(null, file.getName() + " could not be processed (see messages below). Please fix these problems and upload the file again.");
+				file.putMessage(file.getName() + " could not be processed (see messages below). Please fix these problems and upload the file again.", FacesMessage.SEVERITY_ERROR);
 			} else if (
 					DataFileDB.fileExistsWithDates(
 							getDataSource(),
@@ -128,16 +123,15 @@ public class MultipleFileUploadBean extends BaseManagedBean {
 				//This can be improved when overlapping files are implemented instead of being rejected.
 				fileDefinition = null;
 				file.setDataFile(null);
-				setMessage(null, "A file already exists that covers overlaps with this file. Please upload a different file.");
+				file.putMessage("A file already exists that covers overlaps with this file. Please upload a different file.", FacesMessage.SEVERITY_ERROR);
 			}
 		} catch (NoSuchElementException nose) {
 			file.setDataFile(null);
-			setMessage(null, "The format of " + file.getName() + " was not recognised. Please upload a different file.");
+			file.putMessage("The format of " + file.getName() + " was not recognised. Please upload a different file.", FacesMessage.SEVERITY_ERROR);
 			return;
 		} catch (Exception e){
 			file.setDataFile(null);
-			e.printStackTrace();
-			setMessage(null, "The file could not be processed: " + e.getMessage());
+			file.putMessage("The file could not be processed: " + e.getMessage(), FacesMessage.SEVERITY_ERROR);
 		}
 	}
 

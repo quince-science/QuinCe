@@ -715,3 +715,20 @@ table.fileDates {
 .ui-fileupload-buttonbar .ui-button {
 	margin-top: 5px;
 }
+
+#uploadForm\:msgDialog {
+	min-width: 500px;
+	min-height: 200px;
+}
+
+#uploadForm\:fileList_data .ui-button {
+	margin: 5px auto;
+	display: block;
+}
+
+#uploadForm\:fileList_data .ui-button.hidden {
+	display: none;
+}
+#messageText {
+	padding: 5px 10px;
+}

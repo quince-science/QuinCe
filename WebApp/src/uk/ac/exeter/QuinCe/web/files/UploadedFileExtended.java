@@ -2,13 +2,24 @@ package uk.ac.exeter.QuinCe.web.files;
 
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 
+import javax.faces.application.FacesMessage;
+import javax.faces.application.FacesMessage.Severity;
+
+import org.primefaces.json.JSONArray;
+import org.primefaces.json.JSONObject;
 import org.primefaces.model.UploadedFile;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
+import uk.ac.exeter.QuinCe.data.Files.DataFileMessage;
 
+/**
+ * @author Jonas F. Henriksen
+ *
+ */
 /**
  * @author Jonas F. Henriksen
  *
@@ -18,6 +29,8 @@ public class UploadedFileExtended {
 	private int rowCount = 0;
 	private boolean store = true;
 	private DataFile dataFile = null;
+	private ArrayList<FacesMessage> messages = new ArrayList<>();
+
 	public UploadedFileExtended(UploadedFile file) {
 		setUploadedFile(file);
 	}
@@ -105,5 +118,78 @@ public class UploadedFileExtended {
 	 */
 	public Date getEndDate() throws DataFileException {
 		return null == dataFile ? null : Date.from(dataFile.getEndDate().atZone(ZoneId.of("UTC")).toInstant());
+	}
+
+	/**
+	 * @return the messageClass
+	 */
+	public String getMessageClass() {
+		String messageClass = "";
+		Severity level = null;
+		for (FacesMessage message: messages) {
+			if (level == null || message.getSeverity().compareTo(level) > 0) {
+				level = message.getSeverity();
+			}
+		}
+		messageClass = getSeverityLabel(level);
+		if ("".equals(messageClass) && dataFile != null && dataFile.getMessages().size() > 0) {
+			messageClass = getSeverityLabel(FacesMessage.SEVERITY_INFO);
+		}
+		return messageClass;
+	}
+
+	/**
+	 * @param summary
+	 * @param severityError
+	 */
+	public void putMessage(String summary, Severity severityError) {
+		messages.add(new FacesMessage(severityError, summary, ""));
+		setStore(false);
+	}
+
+	/**
+	 * Get info and error-messages as a JSON-structure.
+	 * @return a json-array with messages
+	 */
+	public String getMessages() {
+		JSONArray jsonArray = new JSONArray();
+		for (FacesMessage message: messages) {
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("summary", message.getSummary());
+			jsonObject.put("severity", getSeverityLabel(message.getSeverity()));
+			jsonObject.put("type", "file");
+			jsonArray.put(jsonObject);
+		}
+		if (null != dataFile) {
+			for (DataFileMessage message: dataFile.getMessages()) {
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("summary", message.toString());
+				jsonObject.put("severity", getSeverityLabel(FacesMessage.SEVERITY_INFO));
+				jsonObject.put("type", "row");
+				jsonArray.put(jsonObject);
+			}
+		}
+		return jsonArray.toString();
+	}
+
+	/**
+	 * Get a label indicating the severity of the error. This can be used eg. as a css-class in the
+	 * front-end.
+	 *
+	 * @param severity Severity-level of the message
+	 * @return the string label.
+	 */
+	public String getSeverityLabel(Severity severity) {
+		String severityClass = "";
+		if (FacesMessage.SEVERITY_WARN.equals(severity)) {
+			severityClass = "warning";
+		} else if (FacesMessage.SEVERITY_ERROR.equals(severity)) {
+			severityClass = "error";
+		} else if (FacesMessage.SEVERITY_FATAL.equals(severity)) {
+			severityClass = "fatal";
+		} else if (FacesMessage.SEVERITY_INFO.equals(severity)) {
+			severityClass = "info";
+		}
+		return severityClass;
 	}
 }
