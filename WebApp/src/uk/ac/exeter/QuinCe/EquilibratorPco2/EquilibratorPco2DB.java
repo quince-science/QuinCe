@@ -8,7 +8,12 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
+import uk.ac.exeter.QCRoutines.data.DataColumn;
+import uk.ac.exeter.QCRoutines.data.InvalidDataException;
+import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -53,7 +58,8 @@ public class EquilibratorPco2DB extends CalculationDB {
 	private static final String GET_CALCULATION_VALUES_STATEMENT = "SELECT "
 			+ "delta_temperature, true_moisture, ph2o, " // 3
 			+ "dried_co2, calibrated_co2, pco2_te_dry, " // 6
-			+ "pco2_te_wet, fco2_te, fco2 " // 9
+			+ "pco2_te_wet, fco2_te, fco2, " // 9
+			+ "auto_flag, auto_message, user_flag, user_message " // 13
 			+ "FROM " + TABLE_NAME
 			+ " WHERE measurment_id = ?";
 			
@@ -101,39 +107,53 @@ public class EquilibratorPco2DB extends CalculationDB {
 		}
 	}
 	
+	// TODO In the long run a lot of this can be factored out. Or it may become obsolete with per-field QC flags.
 	@Override
-	public Map<String, Double> getCalculationValues(Connection conn, long measurementId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+	public Map<String, Double> getCalculationValues(Connection conn, CalculationRecord record) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		MissingParam.checkMissing(conn, "conn");
-		MissingParam.checkZeroPositive(measurementId, "measurementId");
-
-		Map<String, Double> values = new HashMap<String, Double>();
+		MissingParam.checkMissing(record, "record");
 		
 		PreparedStatement stmt = null;
-		ResultSet record = null;
+		ResultSet dbRecord = null;
+		Map<String, Double> values = new HashMap<String, Double>();
 		
 		try {
 			stmt = conn.prepareStatement(GET_CALCULATION_VALUES_STATEMENT);
-			stmt.setLong(1, measurementId);
+			stmt.setLong(1, record.getLineNumber());
 			
-			record = stmt.executeQuery();
+			dbRecord = stmt.executeQuery();
 			
-			if (!record.next()) {
-				throw new RecordNotFoundException("Calculation data record not found", TABLE_NAME, measurementId);
+			if (!dbRecord.next()) {
+				throw new RecordNotFoundException("Calculation data record not found", TABLE_NAME, record.getLineNumber());
 			} else {
-				values.put("delta_temperature", record.getDouble(1));
-				values.put("true_moisture", record.getDouble(2));
-				values.put("ph2o", record.getDouble(3));
-				values.put("dried_co2", record.getDouble(4));
-				values.put("calibrated_co2", record.getDouble(5));
-				values.put("pco2_te_dry", record.getDouble(6));
-				values.put("pco2_te_wet", record.getDouble(7));
-				values.put("fco2_te", record.getDouble(8));
-				values.put("fco2", record.getDouble(9));
+				
+				values.put("delta_temperature", dbRecord.getDouble(1));
+				values.put("true_moisture", dbRecord.getDouble(2));
+				values.put("ph2o", dbRecord.getDouble(3));
+				values.put("dried_co2", dbRecord.getDouble(4));
+				values.put("calibrated_co2", dbRecord.getDouble(5));
+				values.put("pco2_te_dry", dbRecord.getDouble(6));
+				values.put("pco2_te_wet", dbRecord.getDouble(7));
+				values.put("fco2_te", dbRecord.getDouble(8));
+				values.put("fco2", dbRecord.getDouble(9));
+				
+				for (DataColumn column : record.getData()) {
+					String databaseName = DatabaseUtils.getDatabaseFieldName(column.getName());
+					Double value = values.get(databaseName);
+					if (null != value) {
+						column.setValue(String.valueOf(value));
+					}
+				}
+				
+				record.setAutoFlag(new Flag(dbRecord.getInt(10)));
+				record.setAutoMessage(dbRecord.getString(11));
+				record.setUserFlag(new Flag(dbRecord.getInt(12)));
+				record.setUserMessage(dbRecord.getString(13));
 			}
-		} catch (SQLException e) {
-			throw new DatabaseException("Error storing calculations" , e);
+		} catch (SQLException|InvalidDataException|InvalidFlagException e) {
+			throw new DatabaseException("Error retrieving calculations" , e);
 		} finally {
-			DatabaseUtils.closeResultSets(record);
+			DatabaseUtils.closeResultSets(dbRecord);
 			DatabaseUtils.closeStatements(stmt);
 		}
 		
