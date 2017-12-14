@@ -291,4 +291,26 @@ public class DatabaseUtils {
 		
 		return query.replaceAll(IN_PARAMS_TOKEN, inParams.toString());
 	}
+
+
+	/**
+	 * Get the database field name for a human-readable data field name
+	 * 
+	 * <p>
+	 *   The database field name is the full name
+	 *   converted to lower case and with spaces replaced by
+	 *   underscores. Brackets and other odd characters that
+	 *   upset MySQL are removed.
+	 * </p>
+	 *
+	 * @return The database field name
+	 */
+	public static String getDatabaseFieldName(String fullName) {
+		String result = null;
+		if (null != fullName) {
+			result = fullName.replaceAll(" ", "_").replaceAll("[\\(\\)]", "").toLowerCase();
+		}
+
+		return result;
+	}
 }

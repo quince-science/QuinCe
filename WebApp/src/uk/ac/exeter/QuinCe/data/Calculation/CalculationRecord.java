@@ -2,20 +2,34 @@ package uk.ac.exeter.QuinCe.data.Calculation;
 
 import java.sql.Connection;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.TreeSet;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import uk.ac.exeter.QCRoutines.config.ColumnConfig;
+import uk.ac.exeter.QCRoutines.data.DataColumn;
 import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QCRoutines.data.DataRecordException;
+import uk.ac.exeter.QCRoutines.data.InvalidDataException;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
+/**
+ * Instance of the QCRoutines {@link DataRecord} for
+ * calculated measurements.
+ * 
+ * @author Steve Jones
+ *
+ */
 public abstract class CalculationRecord extends DataRecord {
 	
 	/**
@@ -46,6 +60,11 @@ public abstract class CalculationRecord extends DataRecord {
 	private long datasetId;
 	
 	/**
+	 * The data set object
+	 */
+	private DataSet dataSet = null;
+	
+	/**
 	 * The record date
 	 */
 	private LocalDateTime date = null;
@@ -61,6 +80,11 @@ public abstract class CalculationRecord extends DataRecord {
 	private Double latitude = null;
 	
 	/**
+	 * The calculation DB instance
+	 */
+	protected CalculationDB calculationDB = null;
+	
+	/**
 	 * Create an empty calculation record for a given measurement in a given data set
 	 * @param datasetId The dataset ID
 	 * @param measurementId The measurement ID
@@ -69,6 +93,7 @@ public abstract class CalculationRecord extends DataRecord {
 	public CalculationRecord(long datasetId, int measurementId, ColumnConfig columnConfig) {
 		super(measurementId, columnConfig);
 		this.datasetId = datasetId;
+		calculationDB = getCalculationDB();
 	}
 	
 	/**
@@ -158,15 +183,62 @@ public abstract class CalculationRecord extends DataRecord {
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the record is not in the database
+	 * @throws InvalidDataException If a field cannot be added to the record
 	 */
-	public void loadData(Connection conn) throws MissingParamException, DatabaseException, RecordNotFoundException {
-		DataSetDB.getDateAndPosition(conn, this);
+	public void loadData(Connection conn) throws MissingParamException, DatabaseException, RecordNotFoundException, InvalidDataException {
+		loadSensorData(conn);
 		loadCalculationData(conn);
 	}
 	
 	/**
-	 * Load the calculation data specific to the this instance of the {@code CalculationRecord}.
+	 * Load the base sensor data for the measurement
 	 * @param conn A database connection
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the record is not in the database
+	 * @throws InvalidDataException If a value cannot be added to the record
 	 */
-	public abstract void loadCalculationData(Connection conn);
+	private void loadSensorData(Connection conn) throws MissingParamException, DatabaseException, RecordNotFoundException, InvalidDataException {
+		dataSet = DataSetDB.getDataSet(conn, datasetId);
+		DataSetRawDataRecord sensorData = DataSetDataDB.getMeasurement(conn, dataSet, lineNumber);
+		
+		date = sensorData.getDate();
+		longitude = sensorData.getLongitude();
+		latitude = sensorData.getLatitude();
+		
+		// TODO Load diagnostic values (Issue #614)
+		
+		for (DataColumn column : data) {
+			Double value = sensorData.getSensorValue(column.getName());
+			if (null != value) {
+				column.setValue(String.valueOf(value));
+			}
+		}
+	}
+	
+	
+	/**
+	 * Load the calculation data for the measurement
+	 * @param conn A database connection
+	 * @throws InvalidDataException If a value cannot be added to the record
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the record is not in the database
+	 */
+	private void loadCalculationData(Connection conn) throws InvalidDataException, MissingParamException, DatabaseException, RecordNotFoundException {
+		Map<String, Double> values = calculationDB.getCalculationValues(conn, lineNumber);
+		for (DataColumn column : data) {
+			String databaseName = DatabaseUtils.getDatabaseFieldName(column.getName());
+			Double value = values.get(databaseName);
+			if (null != value) {
+				column.setValue(String.valueOf(value));
+			}
+		}
+	}
+	
+	/**
+	 * Retrieve the CalculationDB instance to be used with this record
+	 * @return The CalculationDB instance
+	 */
+	protected abstract CalculationDB getCalculationDB();
 }

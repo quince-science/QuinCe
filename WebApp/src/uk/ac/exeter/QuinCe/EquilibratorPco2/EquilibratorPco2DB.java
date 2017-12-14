@@ -2,8 +2,10 @@ package uk.ac.exeter.QuinCe.EquilibratorPco2;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.HashMap;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
@@ -11,6 +13,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Instance of {@link CalculationDB} for underway pCO2
@@ -43,6 +46,17 @@ public class EquilibratorPco2DB extends CalculationDB {
 			+ "dried_co2 = NULL, calibrated_co2 = NULL, pco2_te_dry = NULL, " // 6
 			+ "pco2_te_wet = NULL, fco2_te = NULL, fco2 = NULL " // 9
 			+ "WHERE measurement_id = ?";
+	
+	/**
+	 * The query to retrieve calculation values
+	 */
+	private static final String GET_CALCULATION_VALUES_STATEMENT = "SELECT "
+			+ "delta_temperature, true_moisture, ph2o, " // 3
+			+ "dried_co2, calibrated_co2, pco2_te_dry, " // 6
+			+ "pco2_te_wet, fco2_te, fco2 " // 9
+			+ "FROM " + TABLE_NAME
+			+ " WHERE measurment_id = ?";
+			
 	
 	@Override
 	public String getCalculationTable() {
@@ -85,6 +99,45 @@ public class EquilibratorPco2DB extends CalculationDB {
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
 		}
+	}
+	
+	@Override
+	public Map<String, Double> getCalculationValues(Connection conn, long measurementId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkZeroPositive(measurementId, "measurementId");
+
+		Map<String, Double> values = new HashMap<String, Double>();
+		
+		PreparedStatement stmt = null;
+		ResultSet record = null;
+		
+		try {
+			stmt = conn.prepareStatement(GET_CALCULATION_VALUES_STATEMENT);
+			stmt.setLong(1, measurementId);
+			
+			record = stmt.executeQuery();
+			
+			if (!record.next()) {
+				throw new RecordNotFoundException("Calculation data record not found", TABLE_NAME, measurementId);
+			} else {
+				values.put("delta_temperature", record.getDouble(1));
+				values.put("true_moisture", record.getDouble(2));
+				values.put("ph2o", record.getDouble(3));
+				values.put("dried_co2", record.getDouble(4));
+				values.put("calibrated_co2", record.getDouble(5));
+				values.put("pco2_te_dry", record.getDouble(6));
+				values.put("pco2_te_wet", record.getDouble(7));
+				values.put("fco2_te", record.getDouble(8));
+				values.put("fco2", record.getDouble(9));
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error storing calculations" , e);
+		} finally {
+			DatabaseUtils.closeResultSets(record);
+			DatabaseUtils.closeStatements(stmt);
+		}
+		
+		return values;
 	}
 
 	@Override

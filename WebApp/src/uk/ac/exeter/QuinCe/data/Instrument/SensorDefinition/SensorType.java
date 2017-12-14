@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+
 /**
  * Defines an individual sensor type for an instrument
  * @author Steve Jones
@@ -254,7 +256,7 @@ public class SensorType {
 	 * <p>
 	 *   The database field name is the sensor type's name
 	 *   converted to lower case and with spaces replaced by
-	 *   underscores. Brackets and other odd characeters that
+	 *   underscores. Brackets and other odd characters that
 	 *   upset MySQL are removed.
 	 * </p>
 	 *
@@ -269,7 +271,7 @@ public class SensorType {
 	public String getDatabaseFieldName() {
 		String result = null;
 		if (usedInCalculation) {
-			result = name.replaceAll(" ", "_").replaceAll("[\\(\\)]", "").toLowerCase();
+			result = DatabaseUtils.getDatabaseFieldName(name);
 		}
 
 		return result;
