@@ -127,15 +127,15 @@ public abstract class CalculationDB {
 	public abstract void storeCalculationValues(Connection conn, long measurementId, Map<String, Double> values) throws MissingParamException, DatabaseException;
 	
 	/**
-	 * Get the calculation values for a given measurement
+	 * Add the calculation values to a {@link CalculationRecord}
 	 * @param conn A database connection
-	 * @param measurementId The measurement's database ID
+	 * @param record The record for which values should be retrieved
 	 * @return The calculation values
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the record does not exist
 	 */
-	public abstract Map<String, Double> getCalculationValues(Connection conn, long measurementId) throws MissingParamException, DatabaseException, RecordNotFoundException;
+	public abstract Map<String, Double> getCalculationValues(Connection conn, CalculationRecord record) throws MissingParamException, DatabaseException, RecordNotFoundException;
 	
 	/**
 	 * Clear the calculation values for a given measurement. This method

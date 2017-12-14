@@ -2,7 +2,7 @@ package uk.ac.exeter.QuinCe.data.Calculation;
 
 import java.sql.Connection;
 import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.List;
 import java.util.TreeSet;
 
 import org.joda.time.DateTime;
@@ -13,12 +13,12 @@ import uk.ac.exeter.QCRoutines.data.DataColumn;
 import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QCRoutines.data.DataRecordException;
 import uk.ac.exeter.QCRoutines.data.InvalidDataException;
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -83,6 +83,26 @@ public abstract class CalculationRecord extends DataRecord {
 	 * The calculation DB instance
 	 */
 	protected CalculationDB calculationDB = null;
+	
+	/**
+	 * The flag set by automatic QC
+	 */
+	private Flag autoFlag = Flag.NOT_SET;
+	
+	/**
+	 * The automatic QC message
+	 */
+	private String autoMessage = null;
+	
+	/**
+	 * The flag set by the user
+	 */
+	private Flag userFlag = Flag.NOT_SET;
+
+	/**
+	 * The user QC message
+	 */
+	private String userMessage = null;
 	
 	/**
 	 * Create an empty calculation record for a given measurement in a given data set
@@ -226,14 +246,7 @@ public abstract class CalculationRecord extends DataRecord {
 	 * @throws RecordNotFoundException If the record is not in the database
 	 */
 	private void loadCalculationData(Connection conn) throws InvalidDataException, MissingParamException, DatabaseException, RecordNotFoundException {
-		Map<String, Double> values = calculationDB.getCalculationValues(conn, lineNumber);
-		for (DataColumn column : data) {
-			String databaseName = DatabaseUtils.getDatabaseFieldName(column.getName());
-			Double value = values.get(databaseName);
-			if (null != value) {
-				column.setValue(String.valueOf(value));
-			}
-		}
+		calculationDB.getCalculationValues(conn, this);
 	}
 	
 	/**
@@ -241,4 +254,76 @@ public abstract class CalculationRecord extends DataRecord {
 	 * @return The CalculationDB instance
 	 */
 	protected abstract CalculationDB getCalculationDB();
+	
+	/**
+	 * Get the record data objects
+	 * @return The record data objects
+	 */
+	public List<DataColumn> getData() {
+		return data;
+	}
+
+	/**
+	 * Get the automatic QC flag
+	 * @return the autoFlag
+	 */
+	public Flag getAutoFlag() {
+		return autoFlag;
+	}
+
+	/**
+	 * Set the automatic QC flag
+	 * @param autoFlag the autoFlag to set
+	 */
+	public void setAutoFlag(Flag autoFlag) {
+		this.autoFlag = autoFlag;
+	}
+
+	/**
+	 * Get the automatic QC message
+	 * @return the autoMessage
+	 */
+	public String getAutoMessage() {
+		return autoMessage;
+	}
+
+	/**
+	 * Set the automatic QC message
+	 * @param autoMessage the autoMessage to set
+	 */
+	public void setAutoMessage(String autoMessage) {
+		this.autoMessage = autoMessage;
+	}
+
+	/**
+	 * Get the user QC flag
+	 * @return the userFlag
+	 */
+	public Flag getUserFlag() {
+		return userFlag;
+	}
+
+	/**
+	 * Set the user QC flag
+	 * @param userFlag the userFlag to set
+	 */
+	public void setUserFlag(Flag userFlag) {
+		this.userFlag = userFlag;
+	}
+
+	/**
+	 * Get the user QC message
+	 * @return the userMessage
+	 */
+	public String getUserMessage() {
+		return userMessage;
+	}
+
+	/**
+	 * Set the user QC message
+	 * @param userMessage the userMessage to set
+	 */
+	public void setUserMessage(String userMessage) {
+		this.userMessage = userMessage;
+	}
 }
