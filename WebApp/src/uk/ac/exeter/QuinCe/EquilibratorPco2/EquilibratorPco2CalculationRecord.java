@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.EquilibratorPco2;
 
-import java.sql.Connection;
-
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -11,7 +11,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *
  */
 public class EquilibratorPco2CalculationRecord extends CalculationRecord {
-
+	
 	/**
 	 * Creates an empty calculation record for the given dataset and measurement
 	 * @param datasetId The dataset ID
@@ -23,6 +23,8 @@ public class EquilibratorPco2CalculationRecord extends CalculationRecord {
 	}
 
 	@Override
-	public void loadCalculationData(Connection conn) {
+	protected CalculationDB getCalculationDB() {
+		return CalculationDBFactory.getCalculationDB();
 	}
+
 }

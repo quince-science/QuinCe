@@ -59,7 +59,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 	/**
 	 * Map holding the field values used in calculations
 	 */
-	private Map<String, Double> sensorValue;
+	private Map<String, Double> sensorValues;
 	
 	/**
 	 * Map holding values from diagnostic sensors
@@ -84,7 +84,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 		this.runType = runType;
 		this.runTypeCategory = runTypeCategory;
 		
-		sensorValue = new TreeMap<String, Double>();
+		sensorValues = new TreeMap<String, Double>();
 		diagnosticValues = new HashMap<String, Double>();
 	}
 	
@@ -107,7 +107,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 		this.runType = runType;
 		this.runTypeCategory = runTypeCategory;
 		
-		sensorValue = new TreeMap<String, Double>();
+		sensorValues = new TreeMap<String, Double>();
 		diagnosticValues = new HashMap<String, Double>();
 	}
 	
@@ -117,7 +117,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 	 * @param value The value
 	 */
 	public void setSensorValue(String sensorName, Double value) {
-		sensorValue.put(sensorName, value);
+		sensorValues.put(sensorName, value);
 	}
 	
 	/**
@@ -126,7 +126,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 	 * @param value The value
 	 */
 	public void setDiagnosticValue(String sensorName, Double value) {
-		sensorValue.put(sensorName, value);
+		sensorValues.put(sensorName, value);
 	}
 	
 	/**
@@ -247,7 +247,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 	 * @return The sensor value
 	 */
 	public Double getSensorValue(String sensorName) {
-		return sensorValue.get(sensorName);
+		return sensorValues.get(sensorName);
 	}
 
 	@Override

@@ -14,6 +14,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Class for dealing with database calls related to calculation data
@@ -124,6 +125,17 @@ public abstract class CalculationDB {
 	 * @throws DatabaseException If a database error occurs
 	 */
 	public abstract void storeCalculationValues(Connection conn, long measurementId, Map<String, Double> values) throws MissingParamException, DatabaseException;
+	
+	/**
+	 * Get the calculation values for a given measurement
+	 * @param conn A database connection
+	 * @param measurementId The measurement's database ID
+	 * @return The calculation values
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the record does not exist
+	 */
+	public abstract Map<String, Double> getCalculationValues(Connection conn, long measurementId) throws MissingParamException, DatabaseException, RecordNotFoundException;
 	
 	/**
 	 * Clear the calculation values for a given measurement. This method
