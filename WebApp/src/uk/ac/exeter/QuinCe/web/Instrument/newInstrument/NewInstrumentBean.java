@@ -407,10 +407,10 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	@Override
 	public void processUploadedFile() {
-		extractFileLines();
-		currentInstrumentFile.setFileContents(fileLines);
+		currentInstrumentFile.setFileContents(getFileLines());
 	}
-	
+
+
 	/**
 	 * Clear all data from the bean ready for a new
 	 * instrument to be defined
@@ -1227,7 +1227,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	public void extractStartTime() throws HighlightedStringException {
 		FileDefinitionBuilder fileDefinition = (FileDefinitionBuilder) instrumentFiles.get(dateTimeFile);
 		
-		HighlightedString headerLine = fileDefinition.getHeaderLine(fileLines, startTimePrefix, startTimeSuffix);
+		HighlightedString headerLine = fileDefinition.getHeaderLine(getFileLines(), startTimePrefix, startTimeSuffix);
 		if (null == headerLine) {
 			startTimeLine = null;
 			startTimeDate = null;
