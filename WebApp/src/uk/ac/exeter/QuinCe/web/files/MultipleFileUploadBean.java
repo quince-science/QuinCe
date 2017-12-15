@@ -20,13 +20,13 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.FileUploadBean;
 import uk.ac.exeter.QuinCe.web.Instrument.newInstrument.FileDefinitionBuilder;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 @ManagedBean(name="fileUpload")
 @ViewScoped
-public class MultipleFileUploadBean extends BaseManagedBean {
+public class MultipleFileUploadBean extends FileUploadBean {
 	/**
 	 * The data file object
 	 */
@@ -41,12 +41,9 @@ public class MultipleFileUploadBean extends BaseManagedBean {
 		initialiseInstruments();
 	}
 
-	/**
-	 * Handle the file upload and subsequent processing.
-	 * @param event The file upload event
-	 */
-	public final void handleFileUpload(FileUploadEvent event) {
-		UploadedFileExtended file = new UploadedFileExtended(event.getFile());
+	@Override
+	public void processUploadedFile() {
+		UploadedFileExtended file = new UploadedFileExtended(getFile());
 		dataFiles.add(file);
 		setDisplayClass("");
 	}
