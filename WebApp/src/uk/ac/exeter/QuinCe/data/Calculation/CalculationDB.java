@@ -2,13 +2,19 @@ package uk.ac.exeter.QuinCe.data.Calculation;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
+import uk.ac.exeter.QCRoutines.messages.Message;
+import uk.ac.exeter.QCRoutines.messages.MessageException;
+import uk.ac.exeter.QCRoutines.messages.RebuildCode;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -76,10 +82,10 @@ public abstract class CalculationDB {
 			List<String> fields = new ArrayList<String>();
 			
 			fields.add("measurement_id");
-			fields.add("auto_qc_flag");
-			fields.add("auto_qc_message");
-			fields.add("user_qc_flag");
-			fields.add("user_qc_comment");
+			fields.add("auto_flag");
+			fields.add("auto_message");
+			fields.add("user_flag");
+			fields.add("user_message");
 
 			insertStatement = DatabaseUtils.createInsertStatement(conn, getCalculationTable(), fields);
 		}
@@ -114,6 +120,140 @@ public abstract class CalculationDB {
 			DatabaseUtils.closeStatements(stmt);
 		}
 	}
+	
+	/**
+	 * Get the Automatic QC flag for a measurement
+	 * @param conn A database connection
+	 * @param measurementId The measurement ID
+	 * @return The automatic QC flag
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the measurement does not exist
+	 * @throws InvalidFlagException The the flag value is invalid
+	 */
+	public Flag getAutoQCFlag(Connection conn, long measurementId) throws MissingParamException, DatabaseException, RecordNotFoundException, InvalidFlagException {
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkZeroPositive(measurementId, "measurementId");
+	
+		Flag result = null;
+		PreparedStatement stmt = null;
+		ResultSet record = null;
+		
+		try {
+			// TODO I think this could be done better. But maybe not.
+			String flagStatement = "SELECT auto_flag FROM " + getCalculationTable() + " WHERE measurement_id = ?";
+			
+			stmt = conn.prepareStatement(flagStatement);
+			stmt.setLong(1, measurementId);
+			
+			record = stmt.executeQuery();
+			if (!record.next()) {
+				throw new RecordNotFoundException("Cannot find calculation record", getCalculationTable(), measurementId);
+			} else {
+				result = new Flag(record.getInt(1));
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving QC flag", e);
+		} finally {
+			DatabaseUtils.closeResultSets(record);
+			DatabaseUtils.closeStatements(stmt);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Get the automatic QC messages for a given measurement
+	 * @param conn A datbase connection
+	 * @param measurementId The measurement ID
+	 * @return The QC messages
+	 * @throws MessageException If the messages cannot be parsed
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the measurement cannot be found
+	 */
+	public List<Message> getQCMessages(Connection conn, long measurementId) throws MessageException, DatabaseException, RecordNotFoundException, MissingParamException {
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkZeroPositive(measurementId, "measurementId");
+		
+		PreparedStatement stmt = null;
+		ResultSet record = null;
+		List<Message> result = null;
+		
+		try {
+			// TODO I think this could be done better. But maybe not.
+			String query = "SELECT auto_message FROM " + getCalculationTable() + " WHERE measurement_id = ?";
+			
+			stmt = conn.prepareStatement(query);
+			
+			stmt.setLong(1, measurementId);
+			record = stmt.executeQuery();
+			
+			if (!record.next()) {
+				throw new RecordNotFoundException("Cannot find calculation record", getCalculationTable(), measurementId);
+			} else {
+				result = RebuildCode.getMessagesFromRebuildCodes(record.getString(1));
+			}
+			
+			return result;
+		} catch (SQLException e) {
+			throw new DatabaseException("An error occurred while retrieving QC messages", e);
+		} finally {
+			DatabaseUtils.closeResultSets(record);
+			DatabaseUtils.closeStatements(stmt);
+		}
+	}
+
+	/**
+	 * Store the QC information for a given record
+	 * @param conn A database connection
+	 * @param record The record
+	 * @throws MessageException If the messages cannot be serialized for storage
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public void storeQC(Connection conn, CalculationRecord record) throws MissingParamException, DatabaseException, MessageException {
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkMissing(record, "record");
+		
+		PreparedStatement stmt = null;
+		
+		try {
+			// TODO I think this could be done better. But maybe not.
+			String sql = "UPDATE " + getCalculationTable() + " SET auto_flag = ?, "
+					+ "auto_message = ?, user_flag = ?, user_message = ? "
+					+ "WHERE measurement_id = ?";
+			
+			stmt = conn.prepareStatement(sql);
+			
+			stmt.setInt(1, record.getAutoFlag().getFlagValue());
+			String rebuildCodes = RebuildCode.getRebuildCodes(record.getAutoQCMessages());
+			if (null == rebuildCodes || rebuildCodes.length() == 0) {
+				stmt.setNull(2, Types.VARCHAR);
+			} else {
+				stmt.setString(2, RebuildCode.getRebuildCodes(record.getAutoQCMessages()));
+			}
+			
+			stmt.setInt(3, record.getUserFlag().getFlagValue());
+			String userMessage = record.getUserMessage();
+			if (null == userMessage || userMessage.length() == 0) {
+				stmt.setNull(4, Types.VARCHAR);
+			} else {
+				stmt.setString(4, record.getUserMessage());
+			}
+			stmt.setLong(5, record.getLineNumber());
+			
+			stmt.execute();
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while storing QC info", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+		}
+	}
 
 	/**
 	 * Store the calculation values for a given measurement. This method
@@ -134,8 +274,10 @@ public abstract class CalculationDB {
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the record does not exist
+	 * @throws MessageException If the automatic QC messages cannot be parsed
+	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed 
 	 */
-	public abstract Map<String, Double> getCalculationValues(Connection conn, CalculationRecord record) throws MissingParamException, DatabaseException, RecordNotFoundException;
+	public abstract Map<String, Double> getCalculationValues(Connection conn, CalculationRecord record) throws MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException, MessageException;
 	
 	/**
 	 * Clear the calculation values for a given measurement. This method

@@ -21,6 +21,13 @@
 				$('#datasetListForm\\:dataReductionLink').click();
 				return false;
 			}
+
+
+			function createAutoQcJob(id) {
+				$('#datasetListForm\\:datasetId').val(id);
+				$('#datasetListForm\\:autoQcLink').click();
+				return false;
+			}
 		</script>
 	</ui:define>
 	
@@ -38,6 +45,7 @@
 
 			<h:inputHidden id="datasetId" value="#{dataSetsBean.datasetId}"/>
 			<p:commandLink id="dataReductionLink" ajax="false" action="#{dataSetsBean.submitDataReductionJob}"/>
+			<p:commandLink id="autoQcLink" ajax="false" action="#{dataSetsBean.submitAutoQcJob}"/>
 
 			<p:dataTable id="datasets" value="#{dataSetsBean.dataSets}" var="dataset" styleClass="pageTable" scrollable="true" scrollHeight="450">
 				<p:column>
@@ -70,6 +78,7 @@
 					</f:facet>
 					<a href="#" onclick="return goToCalibrationData(#{dataset.id})">Cal</a>
 					<a href="#" onclick="return createDataReductionJob(#{dataset.id})">Red</a>
+					<a href="#" onclick="return createAutoQcJob(#{dataset.id})">AutoQC</a>
 				</p:column>
 			</p:dataTable>
 			

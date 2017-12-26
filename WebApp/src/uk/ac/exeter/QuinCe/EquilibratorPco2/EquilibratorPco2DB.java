@@ -10,8 +10,11 @@ import java.util.Map;
 
 import uk.ac.exeter.QCRoutines.data.DataColumn;
 import uk.ac.exeter.QCRoutines.data.InvalidDataException;
+import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
+import uk.ac.exeter.QCRoutines.messages.MessageException;
+import uk.ac.exeter.QCRoutines.messages.RebuildCode;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -61,7 +64,7 @@ public class EquilibratorPco2DB extends CalculationDB {
 			+ "pco2_te_wet, fco2_te, fco2, " // 9
 			+ "auto_flag, auto_message, user_flag, user_message " // 13
 			+ "FROM " + TABLE_NAME
-			+ " WHERE measurment_id = ?";
+			+ " WHERE measurement_id = ?";
 			
 	
 	@Override
@@ -109,7 +112,7 @@ public class EquilibratorPco2DB extends CalculationDB {
 	
 	// TODO In the long run a lot of this can be factored out. Or it may become obsolete with per-field QC flags.
 	@Override
-	public Map<String, Double> getCalculationValues(Connection conn, CalculationRecord record) throws MissingParamException, DatabaseException, RecordNotFoundException {
+	public Map<String, Double> getCalculationValues(Connection conn, CalculationRecord record) throws MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException, MessageException {
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkMissing(record, "record");
 		
@@ -137,7 +140,8 @@ public class EquilibratorPco2DB extends CalculationDB {
 				values.put("fco2_te", dbRecord.getDouble(8));
 				values.put("fco2", dbRecord.getDouble(9));
 				
-				for (DataColumn column : record.getData()) {
+				for (int i = 1; i < record.getData().size(); i++) {
+					DataColumn column = record.getData().get(i);
 					String databaseName = DatabaseUtils.getDatabaseFieldName(column.getName());
 					Double value = values.get(databaseName);
 					if (null != value) {
@@ -146,7 +150,7 @@ public class EquilibratorPco2DB extends CalculationDB {
 				}
 				
 				record.setAutoFlag(new Flag(dbRecord.getInt(10)));
-				record.setAutoMessage(dbRecord.getString(11));
+				record.setMessages(RebuildCode.getMessagesFromRebuildCodes(dbRecord.getString(11)));
 				record.setUserFlag(new Flag(dbRecord.getInt(12)));
 				record.setUserMessage(dbRecord.getString(13));
 			}
