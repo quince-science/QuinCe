@@ -41,6 +41,11 @@ public class DataSetDataDB {
 	private static final String GET_ALL_MEASUREMENTS_QUERY = "SELECT * FROM dataset_data WHERE dataset_id = ? ORDER BY date ASC";
 	
 	/**
+	 * Query to get all measurements IDs for a data set
+	 */
+	private static final String GET_ALL_MEASUREMENT_IDS_QUERY = "SELECT id FROM dataset_data WHERE dataset_id = ? ORDER BY date ASC";
+	
+	/**
 	 * Query to get a single measurement
 	 */
 	private static final String GET_MEASUREMENT_QUERY = "SELECT * FROM dataset_data WHERE id = ?";
@@ -366,5 +371,48 @@ public class DataSetDataDB {
 		}
 		
 		return DatabaseUtils.createInsertStatement(conn, "dataset_data", fieldNames, Statement.RETURN_GENERATED_KEYS);
+	}
+	
+	/**
+	 * Get the IDs of all the measurements for a given data set
+	 * @param conn A database connection
+	 * @param datasetId The dataset ID
+	 * @return The measurement IDs
+     * @throws DatabaseException If a database error occurs
+     * @throws MissingParamException If any required parameters are missing
+	 * @throws RecordNotFoundException If no measurements are found
+	 */
+	public static List<Long> getMeasurementIds(Connection conn, long datasetId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+		
+		MissingParam.checkMissing(conn, "conn");
+		MissingParam.checkZeroPositive(datasetId, "datasetId");
+		
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		List<Long> ids = new ArrayList<Long>();
+		
+		try {
+			stmt = conn.prepareStatement(GET_ALL_MEASUREMENT_IDS_QUERY);
+			stmt.setLong(1, datasetId);
+			
+			records = stmt.executeQuery();
+			
+			while(records.next()) {
+				ids.add(records.getLong(1));
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while getting measurement IDs", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+		}
+		
+		if (ids.size() == 0) {
+			throw new RecordNotFoundException("No records found for dataset " + datasetId);
+		}
+		
+		return ids;
 	}
 }

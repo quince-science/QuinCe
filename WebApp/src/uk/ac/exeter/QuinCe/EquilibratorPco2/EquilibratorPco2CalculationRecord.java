@@ -18,7 +18,7 @@ public class EquilibratorPco2CalculationRecord extends CalculationRecord {
 	 * @param measurementId The measurement ID
 	 * @param resourceManager A Resource Manager containing the QC Column Config for Equilibrator pCO2
 	 */
-	public EquilibratorPco2CalculationRecord(long datasetId, int measurementId, ResourceManager resourceManager) {
+	public EquilibratorPco2CalculationRecord(long datasetId, long measurementId, ResourceManager resourceManager) {
 		super(datasetId, measurementId, resourceManager.getColumnConfig());
 	}
 
@@ -26,5 +26,4 @@ public class EquilibratorPco2CalculationRecord extends CalculationRecord {
 	protected CalculationDB getCalculationDB() {
 		return CalculationDBFactory.getCalculationDB();
 	}
-
 }

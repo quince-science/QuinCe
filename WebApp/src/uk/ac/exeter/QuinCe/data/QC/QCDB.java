@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.ParameterException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
+@Deprecated
 public class QCDB {
 
 	private static final int FIELD_ROW_NUMBER = 1;
@@ -374,7 +375,7 @@ public class QCDB {
 			stmt.setInt(15, record.getWoceFlag().getFlagValue());
 			stmt.setString(16, record.getWoceComment());
 			stmt.setLong(17, fileId);
-			stmt.setInt(18, record.getLineNumber());
+			stmt.setLong(18, record.getLineNumber());
 			
 			stmt.execute();
 			

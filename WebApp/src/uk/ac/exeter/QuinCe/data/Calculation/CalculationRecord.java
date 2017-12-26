@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Calculation;
 
 import java.sql.Connection;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -13,7 +14,10 @@ import uk.ac.exeter.QCRoutines.data.DataColumn;
 import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QCRoutines.data.DataRecordException;
 import uk.ac.exeter.QCRoutines.data.InvalidDataException;
+import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QCRoutines.messages.Message;
+import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -85,15 +89,10 @@ public abstract class CalculationRecord extends DataRecord {
 	protected CalculationDB calculationDB = null;
 	
 	/**
-	 * The flag set by automatic QC
+	 * The flag set by the automatic QC
 	 */
 	private Flag autoFlag = Flag.NOT_SET;
-	
-	/**
-	 * The automatic QC message
-	 */
-	private String autoMessage = null;
-	
+
 	/**
 	 * The flag set by the user
 	 */
@@ -110,7 +109,7 @@ public abstract class CalculationRecord extends DataRecord {
 	 * @param measurementId The measurement ID
 	 * @param columnConfig The column configuration for the QC routines
 	 */
-	public CalculationRecord(long datasetId, int measurementId, ColumnConfig columnConfig) {
+	public CalculationRecord(long datasetId, long measurementId, ColumnConfig columnConfig) {
 		super(measurementId, columnConfig);
 		this.datasetId = datasetId;
 		calculationDB = getCalculationDB();
@@ -204,8 +203,10 @@ public abstract class CalculationRecord extends DataRecord {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the record is not in the database
 	 * @throws InvalidDataException If a field cannot be added to the record
+	 * @throws MessageException If the automatic QC messages cannot be parsed
+	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed 
 	 */
-	public void loadData(Connection conn) throws MissingParamException, DatabaseException, RecordNotFoundException, InvalidDataException {
+	public void loadData(Connection conn) throws MissingParamException, DatabaseException, RecordNotFoundException, InvalidDataException, NoSuchColumnException, MessageException {
 		loadSensorData(conn);
 		loadCalculationData(conn);
 	}
@@ -228,7 +229,8 @@ public abstract class CalculationRecord extends DataRecord {
 		
 		// TODO Load diagnostic values (Issue #614)
 		
-		for (DataColumn column : data) {
+		for (int i = 1; i < data.size(); i++) {
+			DataColumn column = data.get(i);
 			Double value = sensorData.getSensorValue(column.getName());
 			if (null != value) {
 				column.setValue(String.valueOf(value));
@@ -244,8 +246,10 @@ public abstract class CalculationRecord extends DataRecord {
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the record is not in the database
+	 * @throws MessageException If the automatic QC messages cannot be parsed
+	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed 
 	 */
-	private void loadCalculationData(Connection conn) throws InvalidDataException, MissingParamException, DatabaseException, RecordNotFoundException {
+	private void loadCalculationData(Connection conn) throws InvalidDataException, MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException, MessageException {
 		calculationDB.getCalculationValues(conn, this);
 	}
 	
@@ -283,16 +287,8 @@ public abstract class CalculationRecord extends DataRecord {
 	 * Get the automatic QC message
 	 * @return the autoMessage
 	 */
-	public String getAutoMessage() {
-		return autoMessage;
-	}
-
-	/**
-	 * Set the automatic QC message
-	 * @param autoMessage the autoMessage to set
-	 */
-	public void setAutoMessage(String autoMessage) {
-		this.autoMessage = autoMessage;
+	public List<Message> getAutoQCMessages() {
+		return messages;
 	}
 
 	/**
@@ -326,4 +322,21 @@ public abstract class CalculationRecord extends DataRecord {
 	public void setUserMessage(String userMessage) {
 		this.userMessage = userMessage;
 	}
+	
+	/**
+	 * Clear the automatic QC data
+	 */
+	public void clearAutoQCData() {
+		messages = new ArrayList<Message>();
+		setAutoFlag(Flag.NOT_SET);
+	}
+	
+	@Override
+	public void addMessage(Message message) throws NoSuchColumnException {
+		super.addMessage(message);
+		if (message.getFlag().moreSignificantThan(autoFlag)) {
+			autoFlag = message.getFlag();
+		}
+	}
+
 }

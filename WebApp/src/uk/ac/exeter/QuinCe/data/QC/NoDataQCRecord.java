@@ -17,6 +17,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class NoDataQCRecord extends QCRecord {
 
 	public NoDataQCRecord(long dataFileId, Instrument instrument, ColumnConfig columnConfig, int lineNumber,

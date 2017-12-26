@@ -13,10 +13,10 @@ public class CalculationRecordFactory {
 	/**
 	 * Create a calculation record for a given data type
 	 * @param datasetId The ID of the dataset to which the record belongs
-	 * @param row The record number
+	 * @param row The measurement ID
 	 * @return The new, empty calculation record
 	 */
-	public static CalculationRecord makeCalculationRecord(long datasetId, int row) {
+	public static CalculationRecord makeCalculationRecord(long datasetId, long row) {
 		return new EquilibratorPco2CalculationRecord(datasetId, row, ResourceManager.getInstance());
 	}
 	

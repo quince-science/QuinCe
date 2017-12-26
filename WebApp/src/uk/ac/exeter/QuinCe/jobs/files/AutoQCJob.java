@@ -1,21 +1,24 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
 import uk.ac.exeter.QCRoutines.data.DataRecord;
+import uk.ac.exeter.QCRoutines.data.InvalidDataException;
+import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.Message;
+import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.routines.Routine;
-import uk.ac.exeter.QuinCe.User.User;
-import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
-import uk.ac.exeter.QuinCe.data.Files.FileInfo;
-import uk.ac.exeter.QuinCe.data.QC.QCDB;
-import uk.ac.exeter.QuinCe.data.QC.QCRecord;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecordFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -79,26 +82,19 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @see Flag
  * @see Message
  */
-public class AutoQCJob extends FileJob {
+public class AutoQCJob extends Job {
+
+	/**
+	 * The parameter name for the data set id
+	 */
+	public static final String ID_PARAM = "id";
 
 	/**
 	 * The name of the job parameter that contains the path to the configuration
 	 * for the QC Routines
 	 * @see RoutinesConfig
 	 */
-	private static final String PARAM_ROUTINES_CONFIG = "ROUTINES_CONFIG";
-	
-	/**
-	 * The job code for the job that must be executed after the QC has completed.
-	 * @see FileInfo
-	 */
-	private static final String PARAM_NEXT_JOB_CODE = "NEXT_CODE";
-	
-	/**
-	 * The job code for the job that must be executed if the QC is interrupted
-	 * @see FileInfo
-	 */
-	private static final String PARAM_INTERRUPTED_JOB_CODE = "INTERRUPTED_CODE";
+	public static final String PARAM_ROUTINES_CONFIG = "ROUTINES_CONFIG";
 	
 	/**
 	 * Constructor that allows the {@link JobManager} to create an instance of this job.
@@ -123,54 +119,62 @@ public class AutoQCJob extends FileJob {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	protected void executeFileJob(JobThread thread) throws JobFailedException {
+	protected void execute(JobThread thread) throws JobFailedException {
 		
 		Connection conn = null;
+		long datasetId = Long.parseLong(parameters.get(ID_PARAM));
 		
 		try {
-			// This automatically filters out QC records that are already marked IGNORE or BAD
-			List<? extends DataRecord> qcRecords = QCDB.getQCRecords(dataSource, resourceManager.getColumnConfig(), fileId, instrument);
+			conn = dataSource.getConnection();
 			
-			// Remove any existing QC flags and messages
-			for (DataRecord record : qcRecords) {
-				((QCRecord) record).clearQCData();
+			CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
+			
+			// TODO This should be replaced with something that gets all the records in one query.
+			//      This will need changes to how the CalculationRecords are built
+			List<Long> measurementIds = DataSetDataDB.getMeasurementIds(conn, datasetId);
+			List<? extends DataRecord> records = getRecords(conn, datasetId, measurementIds);
+
+			// Remove any existing automatic QC flags or records
+			for (DataRecord record : records) {
+				((CalculationRecord) record).clearAutoQCData();
 			}
+			
 			List<Routine> routines = RoutinesConfig.getInstance(parameters.get(PARAM_ROUTINES_CONFIG)).getRoutines();
-			
+
 			for (Routine routine : routines) {
-				routine.processRecords((List<DataRecord>) qcRecords, null);
+				routine.processRecords((List<DataRecord>) records, null);
 			}
-			
+				
 			// Record the messages from the QC in the database
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
-			for (DataRecord record : qcRecords) {
+			for (DataRecord record : records) {
 				
 				if (thread.isInterrupted()) {
 					break;
 				}
 				
-				QCRecord qcRecord = (QCRecord) record;
+				CalculationRecord qcRecord = (CalculationRecord) record;
 				boolean writeRecord = false;
 				
 				int messageCount = qcRecord.getMessages().size();
 				
-				Flag previousQCFlag = QCDB.getQCFlag(conn, fileId, qcRecord.getLineNumber());
+				Flag previousQCFlag = calculationDB.getAutoQCFlag(conn, qcRecord.getLineNumber());
 				if (previousQCFlag.equals(Flag.NOT_SET)) {
 					writeRecord = true;
 				}
 
 				if (messageCount == 0) {
 					if (!previousQCFlag.isGood()) {
-						qcRecord.setQCFlag(Flag.GOOD);
-						qcRecord.setWoceFlag(Flag.ASSUMED_GOOD);
-						qcRecord.setWoceComment(null);
+						qcRecord.setAutoFlag(Flag.GOOD);
+						qcRecord.setUserFlag(Flag.ASSUMED_GOOD);
+						qcRecord.setUserMessage(null);
 						writeRecord = true;
 					} else {
-						Flag woceFlag = qcRecord.getWoceFlag();
-						if (!woceFlag.equals(Flag.ASSUMED_GOOD) && !woceFlag.equals(Flag.GOOD)) {
-							qcRecord.setWoceFlag(Flag.ASSUMED_GOOD);
-							qcRecord.setWoceComment(null);
+						Flag userFlag = qcRecord.getUserFlag();
+						if (!userFlag.equals(Flag.ASSUMED_GOOD) && !userFlag.equals(Flag.GOOD)) {
+							qcRecord.setUserFlag(Flag.ASSUMED_GOOD);
+							qcRecord.setUserMessage(null);
 							writeRecord = true;
 						}
 					}
@@ -180,7 +184,7 @@ public class AutoQCJob extends FileJob {
 					// messages) with the new rebuild codes. If they're the same,
 					// take no action. Otherwise reset the QC & WOCE flags and comments
 					boolean messagesMatch = true;
-					List<Message> databaseMessages = QCDB.getQCMessages(conn, fileId, qcRecord.getLineNumber());
+					List<Message> databaseMessages = calculationDB.getQCMessages(conn, qcRecord.getLineNumber());
 					if (databaseMessages.size() != qcRecord.getMessages().size()) {
 						messagesMatch = false;
 					} else {
@@ -198,52 +202,26 @@ public class AutoQCJob extends FileJob {
 					}
 					
 					if (!messagesMatch) {
-						if (qcRecord.getQCFlag().equals(Flag.FATAL)) {
-							qcRecord.setWoceFlag(Flag.FATAL);
+						if (qcRecord.getAutoFlag().equals(Flag.FATAL)) {
+							qcRecord.setUserFlag(Flag.FATAL);
 						} else {
-							qcRecord.setWoceFlag(Flag.NEEDED);
+							qcRecord.setUserFlag(Flag.NEEDED);
 						}
-						qcRecord.setWoceComment(qcRecord.getMessageSummaries());
+						qcRecord.setUserMessage(qcRecord.getMessageSummaries());
 						writeRecord = true;
 					}
 				}
 
 				if (writeRecord) {
-					QCDB.setQC(conn, fileId, (QCRecord) record);
+					calculationDB.storeQC(conn, (CalculationRecord) record);
 				}
 			}
 			
 			// If the thread was interrupted, undo everything
 			if (thread.isInterrupted()) {
 				conn.rollback();
-
-				// Queue up the fallback job
-				try {
-					int interruptedJobCode = Integer.parseInt(parameters.get(PARAM_INTERRUPTED_JOB_CODE));
-					Map<String, String> interruptedJobParams = getJobParameters(interruptedJobCode, fileId);
-					
-					User owner = JobManager.getJobOwner(dataSource, id);
-					JobManager.addJob(conn, owner, FileInfo.getJobClass(interruptedJobCode), interruptedJobParams);
-					DataFileDB.setCurrentJob(conn, fileId, interruptedJobCode);
-					conn.commit();
-				} catch (RecordNotFoundException e) {
-					// This means the file has been marked for deletion. No action is required.
-				}
 			} else {
 				// Commit all the records
-				conn.commit();
-				
-				// Queue up the next job
-				int nextJobCode = Integer.parseInt(parameters.get(PARAM_NEXT_JOB_CODE));
-				if (nextJobCode == FileInfo.JOB_CODE_USER_QC) {
-					DataFileDB.setCurrentJob(conn, fileId, FileInfo.JOB_CODE_USER_QC);
-				} else {
-					Map<String, String> nextJobParams = getJobParameters(nextJobCode, fileId);
-					User owner = JobManager.getJobOwner(dataSource, id);
-					JobManager.addJob(conn, owner, FileInfo.getJobClass(nextJobCode), nextJobParams);
-					DataFileDB.setCurrentJob(conn, fileId, nextJobCode);
-				}
-				
 				conn.commit();
 			}
 		} catch (Exception e) {
@@ -252,43 +230,36 @@ public class AutoQCJob extends FileJob {
 			DatabaseUtils.closeConnection(conn);
 		}
 	}
+
+	@Override
+	protected void validateParameters() throws InvalidJobParametersException {
+		// TODO Auto-generated method stub
+	}
 	
 	/**
-	 * Create a set of parameters for the AutoQC job.
-	 * 
-	 * <p>
-	 *   The job's file id is passed in to the method. The routines
-	 *   and job parameters are set according to the {@code jobCode},
-	 *   which indicates the current state of processing the data file.
-	 * </p>
-	 * 
-	 * @param jobCode The current job code
-	 * @param fileId The data file's database ID
-	 * @return The parameters for the job
-	 * @see FileJob#FILE_ID_KEY
-	 * @see #PARAM_ROUTINES_CONFIG
-	 * @see #PARAM_NEXT_JOB_CODE
-	 * @see #PARAM_INTERRUPTED_JOB_CODE
+	 * Get the calculation records for a set of measurements. BAD or IGNORED records
+	 * are not included.
+	 * @param datasetId The dataset ID
+	 * @param ids The measurement IDs
+	 * @return The calculation records
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the record is not in the database
+	 * @throws InvalidDataException If a field cannot be added to the record
+	 * @throws MessageException If the automatic QC messages cannot be parsed
+	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed 
 	 */
-	protected static Map<String, String> getJobParameters(int jobCode, long fileId) {
-		Map<String, String> parameters = new HashMap<String, String>(4);
-		parameters.put(FILE_ID_KEY, String.valueOf(fileId));
+	private List<CalculationRecord> getRecords(Connection conn, long datasetId, List<Long> ids) throws MissingParamException, InvalidDataException, NoSuchColumnException, DatabaseException, RecordNotFoundException, MessageException {
+		List<CalculationRecord> records = new ArrayList<CalculationRecord>(ids.size());
 		
-		switch (jobCode) {
-		case FileInfo.JOB_CODE_INITIAL_CHECK: {
-			parameters.put(PARAM_ROUTINES_CONFIG, ResourceManager.INITIAL_CHECK_ROUTINES_CONFIG);
-			parameters.put(PARAM_INTERRUPTED_JOB_CODE, String.valueOf(FileInfo.JOB_CODE_INITIAL_CHECK));
-			parameters.put(PARAM_NEXT_JOB_CODE, String.valueOf(FileInfo.JOB_CODE_TRIM_FLUSHING));
-			break;
-		}
-		case FileInfo.JOB_CODE_AUTO_QC: {
-			parameters.put(PARAM_ROUTINES_CONFIG, ResourceManager.QC_ROUTINES_CONFIG);
-			parameters.put(PARAM_INTERRUPTED_JOB_CODE, String.valueOf(FileInfo.JOB_CODE_REDUCTION));
-			parameters.put(PARAM_NEXT_JOB_CODE, String.valueOf(FileInfo.JOB_CODE_USER_QC));
-			break;
-		}
+		for (long id : ids) {
+			CalculationRecord record = CalculationRecordFactory.makeCalculationRecord(datasetId, id);
+			record.loadData(conn);
+			if (!record.getUserFlag().equals(Flag.BAD) && !record.getUserFlag().equals(Flag.IGNORED)) {
+				records.add(record);
+			}
 		}
 		
-		return parameters;
+		return records;
 	}
 }
