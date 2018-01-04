@@ -132,7 +132,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 		TreeNode externalStandardsNode = new DefaultTreeNode(ALL_NAME, externalStandardsTree);
 		externalStandardsNode.setExpanded(true);
 		externalStandardsTree.getChildren().add(externalStandardsNode);
-		for (String runType : InstrumentDB.getRunTypes(getDataSource(), dataset.getInstrumentId(), "STD")) {
+		for (String runType : InstrumentDB.getRunTypes(getDataSource(), dataset.getInstrumentId(), "EXT")) {
 			externalStandardsNode.getChildren().add(new DefaultTreeNode(runType, externalStandardsNode));
 		}
 		
