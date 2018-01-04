@@ -67,7 +67,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * cannot be processed at all.
 	 * 
 	 * <p>
-	 * The rows are loaded during {@link #start} via {@link #buildSelectableRowIds()}.
+	 * The rows are loaded during {@link #start} via {@link #buildSelectableRows()}.
 	 * </p>
 	 */
 	protected String selectableRows = null;
@@ -80,12 +80,12 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	/**
 	 * The plot data as a JSON string
 	 */
-	protected String plotData;
+	protected String plot1Data;
 
 	/**
 	 * The labels for the plot
 	 */
-	protected String plotLabels;
+	protected String plot1Labels;
 	
 	/**
 	 * Get the data for the current view in the data table
@@ -314,34 +314,34 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	}
 
 	/**
-	 * Get the plot data
-	 * @return The plot data
+	 * Get the plot 1 data
+	 * @return The plot 1 data
 	 */
-	public String getPlotData() {
-		return plotData;
+	public String getPlot1Data() {
+		return plot1Data;
 	}
 	
 	/**
-	 * Dummy method to set the plot data. Does nothing
-	 * @param plotData The supplied data; ignored
+	 * Dummy method to set the plot 1 data. Does nothing
+	 * @param dummy The supplied data; ignored
 	 */
-	public void setPlotData(String plotData) {
+	public void setPlot1Data(String dummy) {
 		// Do nothing
 	}
 	
 	/**
-	 * Get the labels for the plot
-	 * @return The plot labels
+	 * Get the labels for plot 1
+	 * @return The plot 1 labels
 	 */
-	public String getPlotLabels() {
-		return plotLabels;
+	public String getPlot1Labels() {
+		return plot1Labels;
 	}
 	
 	/**
 	 * Set the labels for the plot (dummy)
 	 * @param dummy The supplied labels. Ignored.
 	 */
-	public void setPlotLabels(String dummy) {
+	public void setPlot1Labels(String dummy) {
 		// Do nothing
 	}
 	
@@ -359,8 +359,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 */
 	public void reloadPlotData() {
 		try {
-			plotLabels = buildPlotLabels();
-			plotData = loadPlotData();
+			plot1Labels = buildPlot1Labels();
+			plot1Data = loadPlot1Data();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -373,8 +373,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	public String start() {
 		try {
 			init();
-			plotLabels = buildPlotLabels();
-			plotData = loadPlotData();
+			plot1Labels = buildPlot1Labels();
+			plot1Data = loadPlot1Data();
 			tableHeadings = buildTableHeadings();
 			selectableRows = buildSelectableRows();
 		} catch (Exception e) {
@@ -400,7 +400,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * @return The plot data
 	 * @throws Exception If the data cannot be retrieved
 	 */
-	protected abstract String loadPlotData() throws Exception;
+	protected abstract String loadPlot1Data() throws Exception;
 	
 	/**
 	 * Build the list of selectable record IDs
@@ -411,7 +411,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	/**
 	 * Build the labels for the plot
 	 */
-	protected abstract String buildPlotLabels();
+	protected abstract String buildPlot1Labels();
 	
 	/**
 	 * Load the data for the specified portion of the table as a JSON string

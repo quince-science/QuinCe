@@ -158,7 +158,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	}
 	
 	@Override
-	public String loadPlotData() throws Exception {
+	public String loadPlot1Data() throws Exception {
 		return CalibrationDataDB.getJsonPlotData(getDataSource(), datasetId, getStandardSearchString());
 	}
 	
@@ -218,7 +218,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	}
 
 	@Override
-	protected String buildPlotLabels() {
+	protected String buildPlot1Labels() {
 		// TODO This should be built dynamically in CalibrationDataDB
 		return "[\"Date\",\"ID\",\"CO2\"]";
 	}

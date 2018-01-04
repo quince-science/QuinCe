@@ -29,6 +29,10 @@ var BASE_GRAPH_OPTIONS = {
 	}
 };
 
+// The two plots
+var plot1 = null;
+var plot2 = null;
+
 //The data table
 var jsDataTable = null;
 
@@ -226,7 +230,7 @@ function tableDataDownload(data) {
  * work for dates, but will need to be more intelligent for non-date plots.
  */
 function getRowId(event, xValue, points) {
-	var plotData = JSON.parse($('#plotPageForm\\:plotData').val());
+	var plotData = JSON.parse($('#plotPageForm\\:plot1Data').val());
 	var pointId = points[0]['idx'];
 	return plotData[pointId][1];
 }
@@ -423,4 +427,44 @@ function showInfoPopup(qcFlag, qcMessage, target) {
 function hideInfoPopup() {
     $('#infoPopup').stop(true, true);
     $('#infoPopup').hide('slide', {direction: 'right'}, 100);
+}
+
+function drawPlot(index) {
+	// Remove the existing plot
+	if (null != plot1) {
+		plot1.destroy();
+	}
+	
+	var graph_options = BASE_GRAPH_OPTIONS;
+	graph_options.labels = getPlotLabels(index);
+	graph_options.visibility = [0, 2];
+	
+	plot1 = new Dygraph (
+			document.getElementById('plot' + index + 'Container'),
+			makeJSDates(getPlotData(index)),
+			BASE_GRAPH_OPTIONS
+		);
+}
+
+function getPlotLabels(index) {
+	var result = null;
+	
+	if (index == 1) {
+		result = JSON.parse($('#plotPageForm\\:plot1Labels').val());
+	} else if (index == 2) {
+		result = JSON.parse($('#plotPageForm\\:plot2Labels').val());
+	}
+	
+	return result;
+}
+
+function getPlotData(index) {
+	var result = null;
+	
+	if (index == 1) {
+		result = JSON.parse($('#plotPageForm\\:plot1Data').val());
+	} else if (index == 2) {
+		result = JSON.parse($('#plotPageForm\\:plot2Data').val());
+	}
+	return result;
 }
