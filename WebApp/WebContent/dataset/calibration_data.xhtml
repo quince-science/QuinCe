@@ -15,8 +15,6 @@
 	</ui:define>
 	
 	<ui:define name="formEntries">
-		<h:inputHidden id="plotLabels" value="#{reviewCalibrationDataBean.plotLabels}"/>
-		<h:inputHidden id="plotData" value="#{reviewCalibrationDataBean.plotData}"/>
 		<p:commandLink id="setUseCalibrations" action="#{reviewCalibrationDataBean.setCalibrationUse}" ajax="true" process="useCalibrations useCalibrationsMessage selectedRows" update="@none"/>
 	</ui:define>
 	
@@ -25,13 +23,13 @@
 	<ui:define name="plots">
 		<div id="treeContainer">
 			<p:tree id="standardName" value="#{reviewCalibrationDataBean.externalStandardsTree}" selection="#{reviewCalibrationDataBean.selectedStandard}" var="node" selectionMode="single">
-				<p:ajax event="select" listener="#{reviewCalibrationDataBean.reloadPageData}" process="@this" update="plotPageForm:plotData, plotPageForm:plotLabels plotPageForm:tableJsonData plotPageForm:tableDataDraw plotPageForm:recordCount" oncomplete="drawPage()"/>
+				<p:ajax event="select" listener="#{reviewCalibrationDataBean.reloadPageData}" process="@this" update="plotPageForm:plot1Data, plotPageForm:plot1Labels plotPageForm:tableJsonData plotPageForm:tableDataDraw plotPageForm:recordCount" oncomplete="drawPage()"/>
 				<p:treeNode>
 					<h:outputText value="#{node}"/>
 				</p:treeNode>
 			</p:tree>
 		</div>
-		<div id="standardsPlotContainer">
+		<div id="plot1Container">
 			Standards plot is here
 		</div>
 	</ui:define>

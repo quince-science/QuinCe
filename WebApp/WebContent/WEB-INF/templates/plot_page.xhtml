@@ -41,6 +41,9 @@
 			<h:commandLink id="tableGetData" action="#{sessionScope[beanName].generateTableData}">		
 				<f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw tableRowIds recordCount selectableRows" onevent="tableDataDownload"/>		
 			</h:commandLink>
+
+			<h:inputHidden id="plot1Labels" value="#{sessionScope[beanName].plot1Labels}"/>
+			<h:inputHidden id="plot1Data" value="#{sessionScope[beanName].plot1Data}"/>
 			
 			<div id="infoPopup" class="popup">
 				Info
