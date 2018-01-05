@@ -158,8 +158,14 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	}
 	
 	@Override
-	public String loadPlot1Data() throws Exception {
-		return CalibrationDataDB.getJsonPlotData(getDataSource(), datasetId, getStandardSearchString());
+	public String loadPlotData(int plotIndex) throws Exception {
+		String result = null;
+		
+		if (plotIndex == 1) {
+			result = CalibrationDataDB.getJsonPlotData(getDataSource(), datasetId, getStandardSearchString());
+		}
+		
+		return result;
 	}
 	
 	@Override
@@ -218,9 +224,15 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	}
 
 	@Override
-	protected String buildPlot1Labels() {
-		// TODO This should be built dynamically in CalibrationDataDB
-		return "[\"Date\",\"ID\",\"CO2\"]";
+	protected String buildPlotLabels(int plotIndex) {
+		String result = null;
+		
+		if (plotIndex == 1) {
+			// TODO This should be built dynamically in CalibrationDataDB
+			return "[\"Date\",\"ID\",\"CO2\"]";
+		}
+
+		return result;
 	}
 
 	@Override
