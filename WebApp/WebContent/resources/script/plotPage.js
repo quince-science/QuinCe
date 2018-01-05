@@ -230,9 +230,15 @@ function tableDataDownload(data) {
  * work for dates, but will need to be more intelligent for non-date plots.
  */
 function getRowId(event, xValue, points) {
-	var plotData = JSON.parse($('#plotPageForm\\:plot1Data').val());
+	var containerId = $(event.target).
+						parents().
+						filter(function() {
+							return this.id.match(/plot[1-2]Container/)
+						})[0]['id'];
+	
+	var plotIndex = containerId.substring(4, 5);
 	var pointId = points[0]['idx'];
-	return plotData[pointId][1];
+	return getPlotData(plotIndex)[pointId][1];
 }
 
 /*

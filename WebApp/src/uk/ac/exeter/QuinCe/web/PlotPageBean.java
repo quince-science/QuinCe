@@ -78,14 +78,24 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	private String selectedRows = null;
 	
 	/**
-	 * The plot data as a JSON string
+	 * The data for the first plot as a JSON string
 	 */
 	protected String plot1Data;
 
 	/**
-	 * The labels for the plot
+	 * The labels for the first plot
 	 */
 	protected String plot1Labels;
+	
+	/**
+	 * The data for the second plot as a JSON string
+	 */
+	protected String plot2Data;
+
+	/**
+	 * The labels for the second plot
+	 */
+	protected String plot2Labels;
 	
 	/**
 	 * Get the data for the current view in the data table
@@ -322,10 +332,26 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	}
 	
 	/**
+	 * Get the plot 2 data
+	 * @return The plot 2 data
+	 */
+	public String getPlot2Data() {
+		return plot2Data;
+	}
+	
+	/**
 	 * Dummy method to set the plot 1 data. Does nothing
 	 * @param dummy The supplied data; ignored
 	 */
 	public void setPlot1Data(String dummy) {
+		// Do nothing
+	}
+	
+	/**
+	 * Dummy method to set the plot 2 data. Does nothing
+	 * @param dummy The supplied data; ignored
+	 */
+	public void setPlot2Data(String dummy) {
 		// Do nothing
 	}
 	
@@ -338,7 +364,15 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Set the labels for the plot (dummy)
+	 * Get the labels for plot 2
+	 * @return The plot 2 labels
+	 */
+	public String getPlot2Labels() {
+		return plot2Labels;
+	}
+	
+	/**
+	 * Set the labels for the first plot (dummy)
 	 * @param dummy The supplied labels. Ignored.
 	 */
 	public void setPlot1Labels(String dummy) {
@@ -346,21 +380,41 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	}
 	
 	/**
+	 * Set the labels for the second plot (dummy)
+	 * @param dummy The supplied labels. Ignored.
+	 */
+	public void setPlot2Labels(String dummy) {
+		// Do nothing
+	}
+	
+	/**
 	 * Reload all the data on the page
 	 */
 	public void reloadPageData() {
-		reloadPlotData();
+		reloadPlotData(1);
+		reloadPlotData(2);
 		clearTableData();
 		generateTableData();
 	}
 	
 	/**
-	 * Reload the plot data. Can be used if the plot is changed.
+	 * Reload data for a given plot. Can be used if the plot is changed.
+	 * @plotIndex The plot that needs to be reloaded
 	 */
-	public void reloadPlotData() {
+	public void reloadPlotData(int plotIndex) {
 		try {
-			plot1Labels = buildPlot1Labels();
-			plot1Data = loadPlot1Data();
+			switch (plotIndex) {
+			case 1: {
+				plot1Labels = buildPlotLabels(1);
+				plot1Data = loadPlotData(1);
+				break;
+			}
+			case 2: {
+				plot2Labels = buildPlotLabels(2);
+				plot2Data = buildPlotLabels(2);
+				break;
+			}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -373,8 +427,10 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	public String start() {
 		try {
 			init();
-			plot1Labels = buildPlot1Labels();
-			plot1Data = loadPlot1Data();
+			plot1Labels = buildPlotLabels(1);
+			plot1Data = loadPlotData(1);
+			plot2Labels = buildPlotLabels(2);
+			plot2Data = buildPlotLabels(2);
 			tableHeadings = buildTableHeadings();
 			selectableRows = buildSelectableRows();
 		} catch (Exception e) {
@@ -400,7 +456,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * @return The plot data
 	 * @throws Exception If the data cannot be retrieved
 	 */
-	protected abstract String loadPlot1Data() throws Exception;
+	protected abstract String loadPlotData(int plotIndex) throws Exception;
 	
 	/**
 	 * Build the list of selectable record IDs
@@ -411,7 +467,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	/**
 	 * Build the labels for the plot
 	 */
-	protected abstract String buildPlot1Labels();
+	protected abstract String buildPlotLabels(int plotIndex);
 	
 	/**
 	 * Load the data for the specified portion of the table as a JSON string
