@@ -374,7 +374,7 @@ public class QCDB {
 			stmt.setInt(15, record.getWoceFlag().getFlagValue());
 			stmt.setString(16, record.getWoceComment());
 			stmt.setLong(17, fileId);
-			stmt.setInt(18, record.getLineNumber());
+			stmt.setInt(18, (int)record.getLineNumber());
 			
 			stmt.execute();
 			

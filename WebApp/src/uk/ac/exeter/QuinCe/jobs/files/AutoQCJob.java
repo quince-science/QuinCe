@@ -155,7 +155,7 @@ public class AutoQCJob extends FileJob {
 				
 				int messageCount = qcRecord.getMessages().size();
 				
-				Flag previousQCFlag = QCDB.getQCFlag(conn, fileId, qcRecord.getLineNumber());
+				Flag previousQCFlag = QCDB.getQCFlag(conn, fileId, (int)qcRecord.getLineNumber());
 				if (previousQCFlag.equals(Flag.NOT_SET)) {
 					writeRecord = true;
 				}
@@ -180,7 +180,7 @@ public class AutoQCJob extends FileJob {
 					// messages) with the new rebuild codes. If they're the same,
 					// take no action. Otherwise reset the QC & WOCE flags and comments
 					boolean messagesMatch = true;
-					List<Message> databaseMessages = QCDB.getQCMessages(conn, fileId, qcRecord.getLineNumber());
+					List<Message> databaseMessages = QCDB.getQCMessages(conn, fileId, (int)qcRecord.getLineNumber());
 					if (databaseMessages.size() != qcRecord.getMessages().size()) {
 						messagesMatch = false;
 					} else {
