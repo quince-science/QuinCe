@@ -274,7 +274,7 @@ public class DataSetDataDB {
 				}
 			}
 			
-			stmt = conn.prepareStatement(GET_ALL_MEASUREMENTS_QUERY);
+			stmt = conn.prepareStatement(query.toString());
 			stmt.setLong(1, dataSet.getId());
 			
 			records = stmt.executeQuery();
