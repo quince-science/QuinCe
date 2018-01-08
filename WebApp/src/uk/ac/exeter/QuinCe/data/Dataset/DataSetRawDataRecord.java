@@ -2,10 +2,9 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
-import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -60,7 +59,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 	/**
 	 * Map holding the field values used in calculations
 	 */
-	private Map<String, Double> sensorValues;
+	private LinkedHashMap<String, Double> sensorValues;
 	
 	/**
 	 * Map holding values from diagnostic sensors
@@ -85,7 +84,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 		this.runType = runType;
 		this.runTypeCategory = runTypeCategory;
 		
-		sensorValues = new TreeMap<String, Double>();
+		sensorValues = new LinkedHashMap<String, Double>();
 		diagnosticValues = new HashMap<String, Double>();
 	}
 	
@@ -108,7 +107,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 		this.runType = runType;
 		this.runTypeCategory = runTypeCategory;
 		
-		sensorValues = new TreeMap<String, Double>();
+		sensorValues = new LinkedHashMap<String, Double>();
 		diagnosticValues = new HashMap<String, Double>();
 	}
 	
@@ -127,7 +126,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 	 * @param value The value
 	 */
 	public void setDiagnosticValue(String sensorName, Double value) {
-		sensorValues.put(sensorName, value);
+		diagnosticValues.put(sensorName, value);
 	}
 	
 	/**
@@ -249,6 +248,14 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 	 */
 	public Double getSensorValue(String sensorName) {
 		return sensorValues.get(sensorName);
+	}
+	
+	/**
+	 * Get all the sensor values for this record
+	 * @return The sensor values
+	 */
+	public Map<String, Double> getSensorValues() {
+		return sensorValues;
 	}
 
 	@Override

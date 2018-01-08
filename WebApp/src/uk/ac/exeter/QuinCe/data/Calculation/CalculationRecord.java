@@ -290,6 +290,23 @@ public abstract class CalculationRecord extends DataRecord {
 	public List<Message> getAutoQCMessages() {
 		return messages;
 	}
+	
+	/**
+	 * Get message strings for all messages related to this record
+	 * @return The message strings
+	 */
+	public String getAutoQCMessagesString() {
+		StringBuilder result = new StringBuilder();
+		
+		for (int i = 0; i < messages.size(); i++) {
+			result.append(messages.get(i).getShortMessage());
+			if (i < messages.size() - 1) {
+				result.append(',');
+			}
+		}
+		
+		return result.toString();
+	}
 
 	/**
 	 * Get the user QC flag
@@ -339,4 +356,9 @@ public abstract class CalculationRecord extends DataRecord {
 		}
 	}
 
+	/**
+	 * Get the list of columns that contain calculation values
+	 * @return The column names
+	 */
+	public abstract List<String> getCalculationColumns();
 }

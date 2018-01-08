@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
@@ -268,6 +270,33 @@ public abstract class CalculationDB {
 	
 	/**
 	 * Add the calculation values to a {@link CalculationRecord}
+	 * @param dataSource A data source
+	 * @param record The record for which values should be retrieved
+	 * @return The calculation values
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws DatabaseException If a database error occurs
+	 * @throws RecordNotFoundException If the record does not exist
+	 * @throws MessageException If the automatic QC messages cannot be parsed
+	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed 
+	 */
+	public Map<String, Double> getCalculationValues(DataSource dataSource, CalculationRecord record) throws MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException, MessageException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(record, "record");
+		
+		Connection conn = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			return getCalculationValues(conn, record);
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while getting calculation values", e);
+		} finally {
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
+	
+	/**
+	 * Add the calculation values to a {@link CalculationRecord}
 	 * @param conn A database connection
 	 * @param record The record for which values should be retrieved
 	 * @return The calculation values
@@ -288,4 +317,62 @@ public abstract class CalculationDB {
 	 * @throws DatabaseException If a database error occurs
 	 */
 	public abstract void clearCalculationValues(Connection conn, long measurementId) throws MissingParamException, DatabaseException;
+	
+	/**
+	 * Get the list of column headings for calculation fields
+	 * @return The column headings
+	 */
+	public abstract List<String> getCalculationColumnHeadings();
+	
+	/**
+	 * Get the list of measurement IDs for a dataset that can be manipulated by the user.
+	 * This is basically all the IDs that have not been flagged as FATAL or INGNORED. 
+	 * @param dataSource A data source
+	 * @param datasetId The dataset ID
+	 * @return The selectable measurement IDs
+     * @throws DatabaseException If a database error occurs
+     * @throws MissingParamException If any required parameters are missing
+   	 */
+	public List<Long> getSelectableMeasurementIds(DataSource dataSource, long datasetId) throws MissingParamException, DatabaseException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkZeroPositive(datasetId, "datasetId");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		List<Long> ids = new ArrayList<Long>();
+		
+		try {
+			conn = dataSource.getConnection();
+			
+			String sql = "SELECT c.measurement_id FROM "
+				+ getCalculationTable()
+				+ " c INNER JOIN dataset_data d ON c.measurement_id = d.id "
+				+ " WHERE d.dataset_id = ? AND c.user_flag NOT IN ("
+				+ Flag.VALUE_FATAL
+				+ ","
+				+ Flag.VALUE_IGNORED
+				+ ") ORDER BY c.measurement_id ASC";
+			
+			stmt = conn.prepareStatement(sql);
+			stmt.setLong(1, datasetId);
+			
+			records = stmt.executeQuery();
+			
+			while (records.next()) {
+				ids.add(records.getLong(1));
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while getting measurement IDs", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return ids;
+	}
 }

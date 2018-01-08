@@ -4,7 +4,7 @@ function start() {
 }
 
 function drawPage() {
-	drawPlot(1);
+	//drawPlot(1);
 	drawTable();
 }
 
@@ -12,14 +12,20 @@ function drawPage() {
  * Show or hide columns as required.
  */
 function renderTableColumns() {
+
+	/*
 	jsDataTable.columns(0).visible(false, false);
 	jsDataTable.columns(5).visible(false, false);
+	*/
 }
 
 /*
  * Formats etc for table columns
  */
 function getColumnDefs() {
+	return [];
+	
+	/*
 	return [
         {"className": "noWrap", "targets": [0]},
         {"className": "centreCol", "targets": [2, 4]},
@@ -48,6 +54,7 @@ function getColumnDefs() {
         	"targets": 4
         },
 	];
+	*/
 }
 
 function resizePlots() {
@@ -60,12 +67,12 @@ function resizePlots() {
 	
 }
 
-function showUseDialog() {
+function showFlagDialog() {
 	// Select the first radio button, which is "Yes"
-	PF('useCalibrationsWidget').jq.find('input:radio[value=true]').parent().next().trigger('click.selectOneRadio');
-	$(PF('useCalibrationsMessageWidget').jqId).val("");
-	updateUseDialogControls();
-	PF('useDialog').show();
+	//PF('useCalibrationsWidget').jq.find('input:radio[value=true]').parent().next().trigger('click.selectOneRadio');
+	//$(PF('useCalibrationsMessageWidget').jqId).val("");
+	//updateUseDialogControls();
+	PF('flagDialog').show();
 }
 
 function storeCalibrationSelection() {

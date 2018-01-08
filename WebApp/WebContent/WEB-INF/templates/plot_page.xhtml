@@ -38,8 +38,9 @@
 			<h:inputHidden value="#{sessionScope[beanName].tableDataDraw}" id="tableDataDraw"/>		
 			<h:inputHidden value="#{sessionScope[beanName].tableDataStart}" id="tableDataStart"/>		
 			<h:inputHidden value="#{sessionScope[beanName].tableDataLength}" id="tableDataLength"/>		
+			<h:inputHidden value="#{sessionScope[beanName].additionalTableData}" id="additionalTableData"/>		
 			<h:commandLink id="tableGetData" action="#{sessionScope[beanName].generateTableData}">		
-				<f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw tableRowIds recordCount selectableRows" onevent="tableDataDownload"/>		
+				<f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw tableRowIds recordCount selectableRows additionalTableData" onevent="tableDataDownload"/>		
 			</h:commandLink>
 
 			<h:inputHidden id="plot1Labels" value="#{sessionScope[beanName].plot1Labels}"/>
