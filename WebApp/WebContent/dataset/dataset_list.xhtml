@@ -16,12 +16,17 @@
 				return false;
 			}
 
+			function goToQc(id) {
+				$('#datasetListForm\\:manualQcDatasetId').val(id);
+				$('#datasetListForm\\:manualQcLink').click();
+				return false;
+			}
+
 			function createDataReductionJob(id) {
 				$('#datasetListForm\\:datasetId').val(id);
 				$('#datasetListForm\\:dataReductionLink').click();
 				return false;
 			}
-
 
 			function createAutoQcJob(id) {
 				$('#datasetListForm\\:datasetId').val(id);
@@ -46,6 +51,9 @@
 			<h:inputHidden id="datasetId" value="#{dataSetsBean.datasetId}"/>
 			<p:commandLink id="dataReductionLink" ajax="false" action="#{dataSetsBean.submitDataReductionJob}"/>
 			<p:commandLink id="autoQcLink" ajax="false" action="#{dataSetsBean.submitAutoQcJob}"/>
+			
+			<h:inputHidden id="manualQcDatasetId" value="#{manualQcBean.datasetId}"/>
+			<p:commandLink id="manualQcLink" ajax="false" action="#{manualQcBean.start}"/>
 
 			<p:dataTable id="datasets" value="#{dataSetsBean.dataSets}" var="dataset" styleClass="pageTable" scrollable="true" scrollHeight="450">
 				<p:column>
@@ -79,6 +87,7 @@
 					<a href="#" onclick="return goToCalibrationData(#{dataset.id})">Cal</a>
 					<a href="#" onclick="return createDataReductionJob(#{dataset.id})">Red</a>
 					<a href="#" onclick="return createAutoQcJob(#{dataset.id})">AutoQC</a>
+					<a href="#" onclick="return goToQc(#{dataset.id})">ManualQC</a>
 				</p:column>
 			</p:dataTable>
 			
@@ -87,6 +96,4 @@
 			</h:panelGrid>			
 		</h:form>
 	</ui:define>
-
-
 </ui:composition>

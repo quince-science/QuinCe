@@ -8,8 +8,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+
+import uk.ac.exeter.QCRoutines.messages.Flag;
 
 /**
  * Miscellaneous string utilities
@@ -365,6 +368,16 @@ public class StringUtils {
 	}
 	
 	/**
+	 * Make a JSON field value from a flag, using the flag's integer value
+	 * @param fieldNumber The field number
+	 * @param flag The flag
+	 * @return The field string
+	 */
+	public static String makeJsonField(int fieldNumber, Flag flag) {
+		return makeJsonField(fieldNumber, flag.getFlagValue());
+	}
+	
+	/**
 	 * Create a JSON field value
 	 * @param fieldNumber The field number
 	 * @param value The field value
@@ -372,7 +385,27 @@ public class StringUtils {
 	 * @return The field string
 	 */
 	public static String makeJsonField(int fieldNumber, double value, boolean asString) {
-		return makeJsonField(fieldNumber, String.valueOf(value), asString);
+		return makeJsonField(fieldNumber, value, asString, -1);
+	}
+	
+	/**
+	 * Create a JSON field value formatted with a given number of decimal places
+	 * @param fieldNumber The field number
+	 * @param value The field value
+	 * @param asString Indicates whether or not the value should be represented as a String
+	 * @param decimalPlaces The number of decimal places
+	 * @return The field string
+	 */
+	public static String makeJsonField(int fieldNumber, double value, boolean asString, int decimalPlaces) {
+		String stringValue;
+		
+		if (decimalPlaces > -1) {
+			stringValue = String.format(Locale.ENGLISH, "%.0" + decimalPlaces + "f", value);
+		} else {
+			stringValue = String.valueOf(value);
+		}
+		
+		return makeJsonField(fieldNumber, stringValue, asString);
 	}
 	
 	/**
@@ -393,7 +426,18 @@ public class StringUtils {
 	 * @return The field string
 	 */
 	public static String makeJsonField(int fieldNumber, double value) {
-		return makeJsonField(fieldNumber, String.valueOf(value), false);
+		return makeJsonField(fieldNumber, value, false, -1);
+	}
+	
+	/**
+	 * Create a JSON field value
+	 * @param fieldNumber The field number
+	 * @param value The field value
+	 * @param decimalPlaces The number of decimal places
+	 * @return The field string
+	 */
+	public static String makeJsonField(int fieldNumber, double value, int decimalPlaces) {
+		return makeJsonField(fieldNumber, value, false, decimalPlaces);
 	}
 	
 	/**
@@ -462,6 +506,30 @@ public class StringUtils {
 		if (asString) {
 			field.append("\"");
 		}
+		
+		return field.toString();
+	}
+	
+	/**
+	 * Create a JSON field with a {@code null} value
+	 * @param fieldNumber The field number
+	 * @return The JSON field
+	 */
+	public static String makeJsonNull(int fieldNumber) {
+		return makeJsonNull(String.valueOf(fieldNumber));
+	}
+	
+	/**
+	 * Create a JSON field with a {@code null} value
+	 * @param fieldName The field name
+	 * @return The JSON field
+	 */
+	public static String makeJsonNull(String fieldName) {
+		StringBuilder field = new StringBuilder();
+		
+		field.append("\"");
+		field.append(fieldName);
+		field.append("\":null");
 		
 		return field.toString();
 	}

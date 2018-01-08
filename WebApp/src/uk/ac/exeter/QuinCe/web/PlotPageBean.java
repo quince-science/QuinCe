@@ -313,7 +313,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	/**
 	 * Build the table headings
 	 */
-	protected abstract String buildTableHeadings();
+	protected abstract String buildTableHeadings() throws Exception;
 	
 	/**
 	 * Get the headings for the table
@@ -438,6 +438,14 @@ public abstract class PlotPageBean extends BaseManagedBean {
 		}
 		
 		return getScreenNavigation();
+	}
+	
+	/**
+	 * Get any additional table data required on the front end
+	 * @return The additional table data
+	 */
+	public String getAdditionalTableData() {
+		return null;
 	}
 
 	/**

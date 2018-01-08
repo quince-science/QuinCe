@@ -5,7 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import uk.ac.exeter.QCRoutines.data.DataColumn;
@@ -142,8 +145,8 @@ public class EquilibratorPco2DB extends CalculationDB {
 				
 				for (int i = 1; i < record.getData().size(); i++) {
 					DataColumn column = record.getData().get(i);
-					String databaseName = DatabaseUtils.getDatabaseFieldName(column.getName());
-					Double value = values.get(databaseName);
+					String fieldName = DatabaseUtils.getDatabaseFieldName(column.getName());
+					Double value = values.get(fieldName);
 					if (null != value) {
 						column.setValue(String.valueOf(value));
 					}
@@ -181,5 +184,22 @@ public class EquilibratorPco2DB extends CalculationDB {
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
 		}
+	}
+
+	@Override
+	public List<String> getCalculationColumnHeadings() {
+		List<String> columnHeadings = new ArrayList<String>();
+		
+		columnHeadings.add("ΔT");
+		columnHeadings.add("True Moisture");
+		columnHeadings.add("pH2O");
+		columnHeadings.add("Dried CO2");
+		columnHeadings.add("Calibrated CO2");
+		columnHeadings.add("pCO2 TE Dry");
+		columnHeadings.add("pCO2 TE Wet");
+		columnHeadings.add("fCO2 TE");
+		columnHeadings.add("fCO2 Final");
+		
+		return columnHeadings;
 	}
 }
