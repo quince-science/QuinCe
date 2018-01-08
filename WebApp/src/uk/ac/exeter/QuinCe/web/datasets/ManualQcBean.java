@@ -101,7 +101,7 @@ public class ManualQcBean extends PlotPageBean {
 	@Override
 	protected String buildTableHeadings() throws Exception {
 		List<String> dataHeadings = DataSetDataDB.getDatasetDataColumnNames(getDataSource());
-		sensorColumnCount = dataHeadings.size();
+		sensorColumnCount = dataHeadings.size() - 4; // Skip id, date, lat, lon
 		List<String> calculationHeadings = CalculationDBFactory.getCalculationDB().getCalculationColumnHeadings();
 		calculationColumnCount = calculationHeadings.size();
 	
@@ -198,11 +198,11 @@ public class ManualQcBean extends PlotPageBean {
 			json.append(',');
 
 			columnIndex++;
-			json.append(StringUtils.makeJsonField(columnIndex, dsData.getLongitude(), 3)); // Longitude
+			json.append(StringUtils.makeJsonField(columnIndex, dsData.getLongitude())); // Longitude
 			json.append(',');
 
 			columnIndex++;
-			json.append(StringUtils.makeJsonField(columnIndex, dsData.getLatitude(), 3)); // Latitude
+			json.append(StringUtils.makeJsonField(columnIndex, dsData.getLatitude())); // Latitude
 			json.append(',');
 
 			for (Map.Entry<String, Double> entry : dsData.getSensorValues().entrySet()) {
@@ -211,7 +211,7 @@ public class ManualQcBean extends PlotPageBean {
 				if (null == value) {
 					json.append(StringUtils.makeJsonNull(columnIndex));
 				} else {
-					json.append(StringUtils.makeJsonField(columnIndex, entry.getValue(), 3));
+					json.append(StringUtils.makeJsonField(columnIndex, entry.getValue()));
 				}
 				json.append(',');
 			}
@@ -220,7 +220,7 @@ public class ManualQcBean extends PlotPageBean {
 			
 			for (int j = 0; j < calcColumns.size(); j++) {
 				columnIndex++;
-				json.append(StringUtils.makeJsonField(columnIndex, calcData.getNumericValue(calcColumns.get(j)), 3));
+				json.append(StringUtils.makeJsonField(columnIndex, calcData.getNumericValue(calcColumns.get(j))));
 				json.append(',');
 			}
 			
