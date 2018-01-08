@@ -1,3 +1,5 @@
+var sensorColums = [];
+var calculationColumns = [];
 
 function start() {
 	drawPage();
@@ -12,9 +14,8 @@ function drawPage() {
  * Show or hide columns as required.
  */
 function renderTableColumns() {
-
-	/*
 	jsDataTable.columns(0).visible(false, false);
+	/*
 	jsDataTable.columns(5).visible(false, false);
 	*/
 }
@@ -23,7 +24,38 @@ function renderTableColumns() {
  * Formats etc for table columns
  */
 function getColumnDefs() {
-	return [];
+	var columnCounts = JSON.parse($('#plotPageForm\\:additionalTableData').val());
+	
+	sensorColumns = [];
+	var colIndex = 3;
+	for (i = 0; i < columnCounts[0]; i++) {
+		colIndex++;
+		sensorColumns.push(colIndex);
+	}
+
+	calculationColumns = [];
+	for (i = 0; i < columnCounts[1]; i++) {
+		colIndex++;
+		calculationColumns.push(colIndex);
+	}
+	
+	var numericCols = $.merge($.merge([2, 3], sensorColumns), calculationColumns); // Lon and Lat
+
+	return [
+        {"className": "numericCol", "targets": numericCols},
+        {"render":
+        	function (data, type, row) {
+        		return $.format.date(data, 'yyyy-MM-dd HH:mm:ss');
+        	},
+        	"targets": 1
+        },
+        {"render":
+        	function (data, type, row) {
+        		return (null == data ? null : data.toFixed(3));
+        	},
+        	"targets": numericCols
+        }
+	];
 	
 	/*
 	return [
