@@ -72,6 +72,7 @@ public class ManualQcBean extends PlotPageBean {
 	 */
 	@Override
 	public void init() {
+		setTableMode("sensors");
 		try {
 			dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
 		} catch (Exception e) {
@@ -116,16 +117,19 @@ public class ManualQcBean extends PlotPageBean {
 		calculationColumnCount = calculationHeadings.size();
 	
 		StringBuilder headings = new StringBuilder();
+		int columnIndex = -1;
 		
 		headings.append('[');
 
 		for (String heading : dataHeadings) {
+			columnIndex++;
 			headings.append('"');
 			headings.append(heading);
 			headings.append("\",");
 		}
 		
 		for (int i = 0; i < calculationHeadings.size(); i++) {
+			columnIndex++;
 			headings.append('"');
 			headings.append(calculationHeadings.get(i));
 			headings.append('"');
@@ -134,6 +138,10 @@ public class ManualQcBean extends PlotPageBean {
 		}
 		
 		headings.append("\"Automatic QC\",\"Automatic QC Message\",\"Manual QC\",\"Manual QC Message\"]");
+
+		// Columns are zero-based, so we don't need to add one to get to the auto flag column
+		autoFlagColumn = dataHeadings.size() + calculationHeadings.size();
+		userFlagColumn = autoFlagColumn + 2;
 		
 		return headings.toString();
 	}
@@ -235,7 +243,6 @@ public class ManualQcBean extends PlotPageBean {
 			}
 			
 			columnIndex++;
-			autoFlagColumn = columnIndex;
 			json.append(StringUtils.makeJsonField(columnIndex, calcData.getAutoFlag()));
 			json.append(',');
 
@@ -244,7 +251,6 @@ public class ManualQcBean extends PlotPageBean {
 			json.append(',');
 			
 			columnIndex++;
-			userFlagColumn = columnIndex;
 			json.append(StringUtils.makeJsonField(columnIndex, calcData.getUserFlag()));
 			json.append(',');
 			

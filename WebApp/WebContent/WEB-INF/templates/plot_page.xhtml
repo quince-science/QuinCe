@@ -70,6 +70,9 @@
 			</div>
 			
 			<p:toolbar id="footerToolbar" styleClass="plotPageFooter">
+				<f:facet name="left">
+					<ui:insert name="tableControls"></ui:insert>
+				</f:facet>
 				<f:facet name="right">
 					Selection: <span id="selectedRowsCount">0</span>
 					<p:commandButton icon="clearSelectionButton" onclick="clearSelection();" styleClass="inlineButton tightButton"/>

@@ -58,7 +58,12 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * The number of rows to be loaded for DataTables
 	 * @see <a href="https://datatables.net/examples/data_sources/server_side.html">DataTables Server-Side Processing</a>
 	 */
-	private int tableDataLength;	
+	private int tableDataLength;
+	
+	/**
+	 * The current table mode
+	 */
+	private String tableMode = null;
 	
 	/**
 	 * A Javascript array string containing the list of all row numbers in the current data file that can be
@@ -454,6 +459,22 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 */
 	public void setAdditionalTableData(String tableData) {
 		// Do nothing
+	}
+	
+	/**
+	 * Get the current table mode
+	 * @return The table mode
+	 */
+	public String getTableMode() {
+		return tableMode;
+	}
+	
+	/**
+	 * Set the table mode
+	 * @param tableMode The table mode
+	 */
+	public void setTableMode(String tableMode) {
+		this.tableMode = tableMode;
 	}
 
 	/**
