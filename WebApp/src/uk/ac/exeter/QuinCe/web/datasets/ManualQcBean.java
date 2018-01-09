@@ -58,6 +58,16 @@ public class ManualQcBean extends PlotPageBean {
 	private int calculationColumnCount = 0;
 	
 	/**
+	 * The column containing the auto QC flag
+	 */
+	private int autoFlagColumn = 0;
+	
+	/**
+	 * The column containing the manual QC flag
+	 */
+	private int userFlagColumn = 0;
+	
+	/**
 	 * Initialise the required data for the bean
 	 */
 	@Override
@@ -100,7 +110,7 @@ public class ManualQcBean extends PlotPageBean {
 
 	@Override
 	protected String buildTableHeadings() throws Exception {
-		List<String> dataHeadings = DataSetDataDB.getDatasetDataColumnNames(getDataSource());
+		List<String> dataHeadings = DataSetDataDB.getDatasetDataColumnNames(getDataSource(), dataset);
 		sensorColumnCount = dataHeadings.size() - 4; // Skip id, date, lat, lon
 		List<String> calculationHeadings = CalculationDBFactory.getCalculationDB().getCalculationColumnHeadings();
 		calculationColumnCount = calculationHeadings.size();
@@ -225,14 +235,19 @@ public class ManualQcBean extends PlotPageBean {
 			}
 			
 			columnIndex++;
+			autoFlagColumn = columnIndex;
 			json.append(StringUtils.makeJsonField(columnIndex, calcData.getAutoFlag()));
 			json.append(',');
+
 			columnIndex++;
 			json.append(StringUtils.makeJsonField(columnIndex, calcData.getAutoQCMessagesString(), true));
 			json.append(',');
+			
 			columnIndex++;
+			userFlagColumn = columnIndex;
 			json.append(StringUtils.makeJsonField(columnIndex, calcData.getUserFlag()));
 			json.append(',');
+			
 			columnIndex++;
 			json.append(StringUtils.makeJsonField(columnIndex, calcData.getUserMessage(), true));
 			
@@ -258,11 +273,15 @@ public class ManualQcBean extends PlotPageBean {
 	@Override
 	public String getAdditionalTableData() {
 		StringBuilder json = new StringBuilder();
-		json.append('[');
+		json.append("{\"sensorColumnCount\":");
 		json.append(sensorColumnCount);
-		json.append(',');
+		json.append(",\"calculationColumnCount\":");
 		json.append(calculationColumnCount);
-		json.append(']');
+		json.append(",\"flagColumns\":[");
+		json.append(autoFlagColumn);
+		json.append(',');
+		json.append(userFlagColumn);
+		json.append("]}");
 		
 		return json.toString();
 	}

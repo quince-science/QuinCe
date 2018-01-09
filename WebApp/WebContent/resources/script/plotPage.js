@@ -425,7 +425,7 @@ function showInfoPopup(qcFlag, qcMessage, target) {
     	$('#infoPopup')
           .html(content)
           .css({"left": 0, "top": 0})
-          .offset({"left": $(target).position().left - $('#qcInfoPopup').width() - 10, "top": $(target).offset().top - 3})
+          .offset({"left": $(target).position().left - $('#infoPopup').width() - 10, "top": $(target).offset().top - 3})
           .show('slide', {direction: 'right'}, 100);
    }
  }
@@ -473,4 +473,50 @@ function getPlotData(index) {
 		result = JSON.parse($('#plotPageForm\\:plot2Data').val());
 	}
 	return result;
+}
+
+function getFlagText(flag) {
+    var flagText = "";
+
+    if (flag == '-1001') {
+        flagText = 'Needs Flag';
+    } else if (flag == '-1002') {
+        flagText = 'Ignore';
+    } else if (flag == '-2') {
+        flagText = 'Assumed Good';
+    } else if (flag == '2') {
+        flagText = 'Good';
+    } else if (flag == '3') {
+        flagText = 'Questionable';
+    } else if (flag == '4') {
+        flagText = 'Bad';
+    } else if (flag == '44') {
+    	flagText = 'Fatal';
+    } else {
+        flagText = 'Needs Flag';
+    }
+
+    return flagText;
+}
+
+function getFlagClass(flag) {
+    var flagClass = "";
+
+    if (flag == '-1001') {
+        flagClass = 'needsFlagging';
+    } else if (flag == '-1002') {
+        flagClass = 'ignore';
+    } else if (flag == '-2') {
+        flagClass = 'assumedGood';
+    } else if (flag == '2') {
+        flagClass = 'good';
+    } else if (flag == '3') {
+        flagClass = 'questionable';
+    } else if (flag == '4' || flag == '44') {
+        flagClass = 'bad';
+    } else {
+        flagClass = 'needsFlagging';
+    }
+
+    return flagClass;
 }

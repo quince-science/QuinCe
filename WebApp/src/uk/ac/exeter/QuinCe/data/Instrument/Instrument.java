@@ -1,9 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
@@ -79,7 +76,7 @@ public class Instrument {
 	 * @param postFlushingTime The post-flushing time
 	 * @param minimumWaterFlow The minimum water flow
 	 * @param averagingMode The averaging mode
-	 * @param platformCode
+	 * @param platformCode The platform code
 	 */
 	public Instrument(long databaseId, long ownerId, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, int preFlushingTime, int postFlushingTime, int minimumWaterFlow, int averagingMode, String platformCode) {
 		this.databaseID = databaseId;
@@ -106,6 +103,7 @@ public class Instrument {
 	 * @param postFlushingTime The post-flushing time
 	 * @param minimumWaterFlow The minimum water flow
 	 * @param averagingMode The averaging mode
+	 * @param platformCode The platform code
 	 */
 	public Instrument(User owner, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, int preFlushingTime, int postFlushingTime, int minimumWaterFlow, int averagingMode, String platformCode) {
 		this.ownerId = owner.getDatabaseID();
