@@ -23,6 +23,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Class for dealing with database calls related to calculation data
@@ -374,5 +375,77 @@ public abstract class CalculationDB {
 		}
 		
 		return ids;
+	}
+	
+	/**
+	 * Accept the automatic QC flag as the final QC result for a set of rows
+	 * @param dataSource A data source
+	 * @param rows The rows' database IDs
+     * @throws DatabaseException If a database error occurs
+     * @throws MissingParamException If any required parameters are missing
+  	 * @throws MessageException If the automatic QC messages cannot be extracted
+	 */
+	public void acceptAutoQc(DataSource dataSource, List<Long> rows) throws MissingParamException, DatabaseException, MessageException {
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(rows, "rows", true);
+		
+		Connection conn = null;
+		List<PreparedStatement> statements = new ArrayList<PreparedStatement>(rows.size() + 1);
+		ResultSet records = null;
+
+		String readSql = "SELECT measurement_id, auto_flag, auto_message FROM "
+				+ getCalculationTable()
+				+ " WHERE measurement_id IN ("
+				+ StringUtils.listToDelimited(rows)
+				+ ")";
+		
+		String writeSql = "UPDATE "
+				+ getCalculationTable()
+				+ " SET user_flag = ?, user_message = ?"
+				+ " WHERE measurement_id = ?";
+		
+		try {
+			conn = dataSource.getConnection();
+			conn.setAutoCommit(false);
+			
+			PreparedStatement readStatement = conn.prepareStatement(readSql);
+			statements.add(readStatement);
+
+			records = readStatement.executeQuery();
+			
+			while (records.next()) {
+				
+				long id = records.getLong(1);
+				int flag = records.getInt(2);
+				List<Message> messages = RebuildCode.getMessagesFromRebuildCodes(records.getString(3));
+				
+				StringBuilder outputMessages = new StringBuilder();
+				for (int i = 0; i < messages.size(); i++) {
+					outputMessages.append(messages.get(i).getShortMessage());
+					if (i < messages.size() - 1) {
+						outputMessages.append(';');
+					}
+				}
+				
+				PreparedStatement writeStatement = conn.prepareStatement(writeSql);
+				statements.add(writeStatement);
+				
+				writeStatement.setInt(1, flag);
+				writeStatement.setString(2, outputMessages.toString());
+				writeStatement.setLong(3, id);
+				
+				writeStatement.execute();
+			}
+
+			conn.commit();
+			
+		} catch (SQLException e) {
+			DatabaseUtils.rollBack(conn);
+			throw new DatabaseException("Error while accepting auto QC", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(statements);
+			DatabaseUtils.closeConnection(conn);
+		}
 	}
 }

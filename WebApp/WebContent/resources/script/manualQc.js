@@ -2,6 +2,13 @@ var sensorColums = [];
 var calculationColumns = [];
 
 function start() {
+	/*
+	 * This is a hack to get round a bug in PrimeFaces.
+	 * The selection buttons should be disabled up front, but
+	 * PrimeFaces then drops their onclick handlers. So they're
+	 * enabled when the page loads, and this will disable them.
+	 */
+	postSelectionUpdated();
 	drawPage();
 }
 
@@ -94,37 +101,6 @@ function getColumnDefs() {
             "targets": additionalData.flagColumns[1]
         }
 	];
-	
-	/*
-	return [
-        {"className": "noWrap", "targets": [0]},
-        {"className": "centreCol", "targets": [2, 4]},
-        {"className": "numericCol", "targets": [3]},
-        {"render":
-        	function (data, type, row) {
-        		return $.format.date(data, 'yyyy-MM-dd HH:mm:ss');
-        	},
-        	"targets": 1
-        },
-        {"render":
-        	function (data, type, row) {
-        		return data.toFixed(3);
-        	},
-        	"targets": 3
-        },
-        {"render":
-        	function (data, type, row) {
-        		var output = '<div onmouseover="showInfoPopup(' + 4 + ', \'' + row[5] + '\', this)" onmouseout="hideInfoPopup()" class="';
-	            output += data ? 'good' : 'bad';
-	            output += '">';
-	            output += data ? 'Yes' : 'No';
-	            output += '</div>';
-	            return output;
-        	},
-        	"targets": 4
-        },
-	];
-	*/
 }
 
 function resizePlots() {
@@ -165,9 +141,11 @@ function storeCalibrationSelection() {
 
 function postSelectionUpdated() {
 	if (selectedRows.length == 0) {
-		PF('useCalibrationsButton').disable();
+		PF('acceptQcButton').disable();
+		PF('overrideQcButton').disable();
 	} else {
-		PF('useCalibrationsButton').enable();
+		PF('acceptQcButton').enable();
+		PF('overrideQcButton').enable();
 	}
 }
 
@@ -183,4 +161,29 @@ function updateUseDialogControls() {
 			PF('okButtonWidget').enable();
 		}
 	}
+}
+
+function acceptAutoQc() {
+	$('#plotPageForm\\:selectedRows').val(selectedRows);
+	$('#plotPageForm\\:acceptAutoQc').click();
+}
+
+function qcFlagsAccepted() {
+	var additionalData = JSON.parse($('#plotPageForm\\:additionalTableData').val());
+	
+	var autoFlagColumn = additionalData.flagColumns[0];
+	var autoMessageColumn = autoFlagColumn + 1;
+	var userFlagColumn= additionalData.flagColumns[1];
+	var userMessageColumn = userFlagColumn + 1;
+	
+	var rows = jsDataTable.rows()[0];
+	for (var i = 0; i < rows.length; i++) {
+		var row = jsDataTable.row(i);
+		if ($.inArray(row.data()[0], selectedRows) > -1) {
+			jsDataTable.cell(i, userMessageColumn).data(jsDataTable.cell(row, autoMessageColumn).data());
+			jsDataTable.cell(i, userFlagColumn).data(jsDataTable.cell(row, autoFlagColumn).data());
+		}
+	}
+	
+	clearSelection();
 }

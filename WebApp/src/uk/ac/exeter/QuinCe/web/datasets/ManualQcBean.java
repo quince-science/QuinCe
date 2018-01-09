@@ -117,19 +117,16 @@ public class ManualQcBean extends PlotPageBean {
 		calculationColumnCount = calculationHeadings.size();
 	
 		StringBuilder headings = new StringBuilder();
-		int columnIndex = -1;
 		
 		headings.append('[');
 
 		for (String heading : dataHeadings) {
-			columnIndex++;
 			headings.append('"');
 			headings.append(heading);
 			headings.append("\",");
 		}
 		
 		for (int i = 0; i < calculationHeadings.size(); i++) {
-			columnIndex++;
 			headings.append('"');
 			headings.append(calculationHeadings.get(i));
 			headings.append('"');
@@ -290,5 +287,17 @@ public class ManualQcBean extends PlotPageBean {
 		json.append("]}");
 		
 		return json.toString();
+	}
+
+	/**
+	 * Apply the automatically generated QC flags to the rows selected in the table
+	 */
+	public void acceptAutoQc() {
+		try {
+			CalculationDBFactory.getCalculationDB().acceptAutoQc(getDataSource(), getSelectedRowsList());
+			dirty = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
