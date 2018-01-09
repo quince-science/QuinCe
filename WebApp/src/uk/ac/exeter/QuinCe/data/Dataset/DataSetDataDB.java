@@ -18,8 +18,12 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -188,7 +192,7 @@ public class DataSetDataDB {
 			if (!records.next()) {
 				throw new RecordNotFoundException("Measurement data not found", "dataset_data", measurementId);
 			} else {
-				result = getRecordFromResultSet(dataSet, records, baseColumns, sensorColumns);
+				result = getRecordFromResultSet(conn, dataSet, records, baseColumns, sensorColumns);
 			}
 		} catch (Exception e) {
 			throw new DatabaseException("Error while retrieving measurement data", e);
@@ -266,12 +270,10 @@ public class DataSetDataDB {
 		try {
 			StringBuilder query = new StringBuilder(GET_ALL_MEASUREMENTS_QUERY);
 			if (length > 0) {
-				if (length > 0) {
-					query.append(" LIMIT ");
-					query.append(start);
-					query.append(',');
-					query.append(length);
-				}
+				query.append(" LIMIT ");
+				query.append(start);
+				query.append(',');
+				query.append(length);
 			}
 			
 			stmt = conn.prepareStatement(query.toString());
@@ -280,7 +282,7 @@ public class DataSetDataDB {
 			records = stmt.executeQuery();
 			
 			while (records.next()) {
-				result.add(getRecordFromResultSet(dataSet, records, baseColumns, sensorColumns));
+				result.add(getRecordFromResultSet(conn, dataSet, records, baseColumns, sensorColumns));
 			}
 			
 			return result;
@@ -303,10 +305,12 @@ public class DataSetDataDB {
      * @throws MissingParamException If any required parameters are missing
      * @throws SQLException If the record details cannot be extracted
 	 * @throws DataSetException If the diagnostic values cannot be read
-	 * @throws NoSuchCategoryException If the Run Type category is not recognised
+	 * @throws InstrumentException If the instrument details cannot be retrieved
+	 * @throws RecordNotFoundException If the instrument does not exist
+	 * @throws DatabaseException If a database error occurs
      * 
 	 */
-	private static DataSetRawDataRecord getRecordFromResultSet(DataSet dataSet, ResultSet records, Map<String, Integer> baseColumns, Map<Integer, String> sensorColumns) throws MissingParamException, SQLException, NoSuchCategoryException, DataSetException {
+	private static DataSetRawDataRecord getRecordFromResultSet(Connection conn, DataSet dataSet, ResultSet records, Map<String, Integer> baseColumns, Map<Integer, String> sensorColumns) throws MissingParamException, SQLException, DataSetException, DatabaseException, RecordNotFoundException, InstrumentException {
 		
 		MissingParam.checkMissing(records, "records");
 		MissingParam.checkMissing(baseColumns, "baseColumns", true);
@@ -317,7 +321,10 @@ public class DataSetDataDB {
 		// Get the column indices if we haven't already got them
 		if (baseColumns.size() == 0) {
 			ResultSetMetaData rsmd = records.getMetaData();
-			calculateColumnIndices(rsmd, baseColumns, sensorColumns);
+			ResourceManager resourceManager = ResourceManager.getInstance();
+			Instrument instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
+			SensorAssignments sensorAssignments = instrument.getSensorAssignments();
+			calculateColumnIndices(rsmd, sensorAssignments, baseColumns, sensorColumns);
 		}
 		
 		long id = records.getLong(baseColumns.get(ID_COL));
@@ -350,7 +357,7 @@ public class DataSetDataDB {
 	 * @param sensorColumns The mapping of sensor columns
 	 * @throws SQLException If the column details cannot be read
 	 */
-	private static void calculateColumnIndices(ResultSetMetaData rsmd, Map<String, Integer> baseColumns, Map<Integer, String> sensorColumns) throws SQLException {
+	private static void calculateColumnIndices(ResultSetMetaData rsmd, SensorAssignments sensorAssignments, Map<String, Integer> baseColumns, Map<Integer, String> sensorColumns) throws SQLException {
 		SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
 
 		for (int i = 1; i <= rsmd.getColumnCount(); i++) {
@@ -387,7 +394,7 @@ public class DataSetDataDB {
 			default: {
 				// This is a sensor field. Get the sensor name from the sensors configuration
 				for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-					if (sensorType.isUsedInCalculation()) {
+					if (sensorType.isUsedInCalculation() && sensorAssignments.get(sensorType).size() > 0) {
 						if (columnName.equals(sensorType.getDatabaseFieldName())) {
 							sensorColumns.put(i, sensorType.getName());
 							break;
@@ -499,11 +506,14 @@ public class DataSetDataDB {
 	/**
 	 * Get the list of columns names for a raw dataset record
 	 * @param dataSource A data source
+	 * @param dataSet The data set
 	 * @return The column names
      * @throws DatabaseException If a database error occurs
      * @throws MissingParamException If any required parameters are missing
+     * @throws InstrumentException If the instrument details cannot be retrieved
+     * @throws RecordNotFoundException If the instrument for the data set does not exist
  	 */
-	public static List<String> getDatasetDataColumnNames(DataSource dataSource) throws MissingParamException, DatabaseException {
+	public static List<String> getDatasetDataColumnNames(DataSource dataSource, DataSet dataSet) throws MissingParamException, DatabaseException, InstrumentException, RecordNotFoundException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		
 		List<String> result = new ArrayList<String>();
@@ -514,6 +524,10 @@ public class DataSetDataDB {
 		
 		try {
 			conn = dataSource.getConnection();
+
+			ResourceManager resourceManager = ResourceManager.getInstance();
+			Instrument instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
+			SensorAssignments sensorAssignments = instrument.getSensorAssignments();
 			
 			DatabaseMetaData metadata = conn.getMetaData();
 			columns = metadata.getColumns(null, null, "dataset_data", null);
@@ -550,9 +564,11 @@ public class DataSetDataDB {
 				default: {
 					// Sensor value columns
 					for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-						if (columnName.equals(sensorType.getDatabaseFieldName())) {
-							result.add(sensorType.getName());
-							break;
+						if (sensorAssignments.get(sensorType).size() > 0) {
+							if (columnName.equals(sensorType.getDatabaseFieldName())) {
+								result.add(sensorType.getName());
+								break;
+							}
 						}
 					}
 					

@@ -414,14 +414,14 @@ table .noWrap {
   display: none;
 }
 
-#qcInfoPopup {
+#infoPopup {
   height: 20px;
   display: block;
   position: absolute;
   display: none;
 }
 
-.qcInfoMessage {
+.infoMessage {
     display: inline;
 }
 

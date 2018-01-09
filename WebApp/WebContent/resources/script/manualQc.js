@@ -14,34 +14,36 @@ function drawPage() {
  * Show or hide columns as required.
  */
 function renderTableColumns() {
+	// ID
 	jsDataTable.columns(0).visible(false, false);
-	/*
-	jsDataTable.columns(5).visible(false, false);
-	*/
+
+	// Message columns are the last and third from last columns
+	jsDataTable.columns([jsDataTable.columns()[0].length - 1, jsDataTable.columns()[0].length - 3]).visible(false, false);
 }
 
 /*
  * Formats etc for table columns
  */
 function getColumnDefs() {
-	var columnCounts = JSON.parse($('#plotPageForm\\:additionalTableData').val());
+	var additionalData = JSON.parse($('#plotPageForm\\:additionalTableData').val());
 	
 	sensorColumns = [];
 	var colIndex = 3;
-	for (i = 0; i < columnCounts[0]; i++) {
+	for (i = 0; i < additionalData.sensorColumnCount; i++) {
 		colIndex++;
 		sensorColumns.push(colIndex);
 	}
 
 	calculationColumns = [];
-	for (i = 0; i < columnCounts[1]; i++) {
+	for (i = 0; i < additionalData.calculationColumnCount; i++) {
 		colIndex++;
 		calculationColumns.push(colIndex);
 	}
 	
-	var numericCols = $.merge($.merge([2, 3], sensorColumns), calculationColumns); // Lon and Lat
-
+	var numericCols = $.merge($.merge([2, 3], sensorColumns), calculationColumns);
+	
 	return [
+        {"className": "centreCol", "targets": additionalData.flagColumns},
         {"className": "numericCol", "targets": numericCols},
         {"render":
         	function (data, type, row) {
@@ -54,6 +56,28 @@ function getColumnDefs() {
         		return (null == data ? null : data.toFixed(3));
         	},
         	"targets": numericCols
+        },
+        {"render":
+        	function (data, type, row) {
+                var output = '<div onmouseover="showInfoPopup(' + row[additionalData.flagColumns[0]] + ', \'' + row[additionalData.flagColumns[0] + 1] + '\', this)" onmouseout="hideInfoPopup()" class="';
+                output += getFlagClass(data);
+                output += '">';
+                output += getFlagText(data);
+                output += '</div>';
+                return output;
+            },
+            "targets": additionalData.flagColumns[0]
+        },
+        {"render":
+        	function (data, type, row) {
+        		var output = '<div class="';
+        		output += getFlagClass(data);
+        		output += '">';
+				output += getFlagText(data);
+				output += '</div>';
+				return output;
+            },
+            "targets": additionalData.flagColumns[1]
         }
 	];
 	
