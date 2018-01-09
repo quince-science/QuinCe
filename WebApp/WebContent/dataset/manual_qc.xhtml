@@ -15,6 +15,7 @@
 	</ui:define>
 	
 	<ui:define name="formEntries">
+		<p:commandLink id="acceptAutoQc" action="#{manualQcBean.acceptAutoQc}" ajax="true" process="selectedRows" update="@none" oncomplete="qcFlagsAccepted()"/>
 	</ui:define>
 	
 	<ui:define name="dataSetName">#{manualQcBean.dataset.name} - Quality Control #{requestScope[beanName]}</ui:define>
@@ -47,10 +48,10 @@
    		</p:selectOneButton>
 	</ui:define>
 	<ui:define name="selectionActions">
-		<p:commandButton widgetVar="overrideFlags" value="Set QC Flags" onclick="showFlagDialog();" styleClass="inlineButton"/>
+		<p:commandButton widgetVar="acceptQcButton" value="Accept Automatic QC" onclick="acceptAutoQc();" styleClass="inlineButton"/>
+		<p:commandButton widgetVar="overrideQcButton" value="Override Automatic QC" onclick="showFlagDialog(); return false;" styleClass="inlineButton" disabled="true"/>
 	</ui:define>
 	<ui:define name="finishButton">
-		<p:commandButton value="Finish" ajax="false" process="@none" action="#{manualQcBean.finish}" styleClass="inlineButton"/>
+		<p:commandButton widgetVar="finishButton" value="Finish" ajax="false" process="@none" action="#{manualQcBean.finish}" styleClass="inlineButton"/>
 	</ui:define>
-
 </ui:composition>

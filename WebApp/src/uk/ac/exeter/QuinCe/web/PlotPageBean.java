@@ -103,6 +103,11 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	protected String plot2Labels;
 	
 	/**
+	 * Dirty data indicator
+	 */
+	protected boolean dirty = false;
+	
+	/**
 	 * Get the data for the current view in the data table
 	 * @return The table data
 	 * @see #tableJsonData
@@ -432,6 +437,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	public String start() {
 		try {
 			init();
+			dirty = false;
 			plot1Labels = buildPlotLabels(1);
 			plot1Data = loadPlotData(1);
 			plot2Labels = buildPlotLabels(2);
