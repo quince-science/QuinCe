@@ -19,6 +19,20 @@ function renderTableColumns() {
 
 	// Message columns are the last and third from last columns
 	jsDataTable.columns([jsDataTable.columns()[0].length - 1, jsDataTable.columns()[0].length - 3]).visible(false, false);
+	
+	var tableMode = PF('tableModeSelector').getJQ().find(':checked').val();
+	
+	if (tableMode == "sensors") {
+		jsDataTable.columns(sensorColumns).visible(true, false);
+		jsDataTable.columns(calculationColumns).visible(false, false);
+	} else if (tableMode == "calculations") {
+		jsDataTable.columns(sensorColumns).visible(false, false);
+		jsDataTable.columns(calculationColumns).visible(true, false);
+	}
+	
+	// TODO This is an ugly hack to ensure the final fCO2 is always displayed.
+	var additionalData = JSON.parse($('#plotPageForm\\:additionalTableData').val());
+	jsDataTable.columns(additionalData.flagColumns[0] - 1).visible(true, true);
 }
 
 /*

@@ -39,6 +39,13 @@
 			</div>
 		</p:dialog>
 	</ui:define>
+	<ui:define name="tableControls">
+   		<p:selectOneButton value="#{manualQcBean.tableMode}" widgetVar="tableModeSelector" onchange="renderTableColumns()">
+   			<f:selectItem itemLabel="Sensors" itemValue="sensors"/>
+   			<f:selectItem itemLabel="Calculations" itemValue="calculations"/>
+   			<f:ajax render="@none"/>
+   		</p:selectOneButton>
+	</ui:define>
 	<ui:define name="selectionActions">
 		<p:commandButton widgetVar="overrideFlags" value="Set QC Flags" onclick="showFlagDialog();" styleClass="inlineButton"/>
 	</ui:define>
