@@ -190,7 +190,7 @@ function showFlagDialog() {
     $('#plotPageForm\\:manualComment').val(commentsString);
     
     PF('flagMenu').selectValue($('#plotPageForm\\:worstSelectedFlag').val());
-
+    updateFlagDialogControls();
     PF('flagDialog').show();
 }
 
