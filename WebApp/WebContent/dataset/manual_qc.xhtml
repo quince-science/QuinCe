@@ -42,13 +42,13 @@
 			</div>
 	        <h:panelGrid columns="2" width="100%">
 		        <p:outputLabel for="manualFlag" value="Flag:"/>
-		        <p:selectOneMenu widgetVar="flagMenu" id="manualFlag" value="#{manualQcBean.userFlag}" var="flag">
+		        <p:selectOneMenu widgetVar="flagMenu" id="manualFlag" value="#{manualQcBean.userFlag}" var="flag" onchange="updateFlagDialogControls()">
 		        	<f:selectItem itemLabel="Good" itemValue="2"/>
 		        	<f:selectItem itemLabel="Questionable" itemValue="3"/>
 		        	<f:selectItem itemLabel="Bad" itemValue="4"/>
 		        </p:selectOneMenu>
 		        <p:outputLabel for="manualComment" value="Comment:"/>
-	           	<p:inputTextarea id="manualComment" value="#{manualQcBean.userComment}" style="width: 95%; height: 150px;"/>
+	           	<p:inputTextarea id="manualComment" value="#{manualQcBean.userComment}" style="width: 95%; height: 150px;" onkeyup="updateFlagDialogControls()"/>
 	        </h:panelGrid>
 			<h:panelGrid columns="2" styleClass="buttonPanel">
 				<p:commandButton widgetVar="okButtonWidget" value="OK" onclick="saveManualComment();"/>

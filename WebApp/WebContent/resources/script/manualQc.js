@@ -113,26 +113,6 @@ function resizePlots() {
 	
 }
 
-/*
-function storeCalibrationSelection() {
-	$('#plotPageForm\\:selectedRows').val(selectedRows);
-	$('#plotPageForm\\:setUseCalibrations').click();
-
-	// Update the table data
-	var rows = jsDataTable.rows()[0];
-	for (var i = 0; i < rows.length; i++) {
-		var row = jsDataTable.row(i);
-		if ($.inArray(row.data()[0], selectedRows) > -1) {
-			jsDataTable.cell(i, 4).data(PF('useCalibrationsWidget').getJQ().find(':checked').val() == 'true');
-			jsDataTable.cell(i, 5).data($(PF('useCalibrationsMessageWidget').jqId).val());
-		}
-	}
-	
-	clearSelection();
-	PF('useDialog').hide();
-}
-*/
-
 function postSelectionUpdated() {
 	if (selectedRows.length == 0) {
 		PF('acceptQcButton').disable();
@@ -143,21 +123,22 @@ function postSelectionUpdated() {
 	}
 }
 
-/*
-function updateUseDialogControls() {
-	if (PF('useCalibrationsWidget').getJQ().find(':checked').val() == 'true') {
-		$('#reasonSection').css('visibility', 'hidden');
-		PF('okButtonWidget').enable();
-	} else {
-		$('#reasonSection').css('visibility', 'visible');
-		if ($(PF('useCalibrationsMessageWidget').jqId).val().trim() == '') {
-			PF('okButtonWidget').disable();
-		} else {
-			PF('okButtonWidget').enable();
+
+function updateFlagDialogControls() {
+	var canSubmit = true;
+	
+	if (PF('flagMenu').input.val() != 2) {
+		if ($('#plotPageForm\\:manualComment').val().trim().length == 0) {
+			canSubmit = false;
 		}
 	}
+	
+	if (canSubmit) {
+		PF('okButtonWidget').enable();
+	} else {
+		PF('okButtonWidget').disable();
+	}
 }
-*/
 
 function acceptAutoQc() {
 	$('#plotPageForm\\:selectedRows').val(selectedRows);
@@ -207,6 +188,8 @@ function showFlagDialog() {
     	}
     }
     $('#plotPageForm\\:manualComment').val(commentsString);
+    
+    PF('flagMenu').selectValue($('#plotPageForm\\:worstSelectedFlag').val());
 
     PF('flagDialog').show();
 }
