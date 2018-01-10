@@ -396,7 +396,7 @@ public abstract class CalculationDB {
 		String readSql = "SELECT measurement_id, auto_flag, auto_message FROM "
 				+ getCalculationTable()
 				+ " WHERE measurement_id IN ("
-				+ StringUtils.listToDelimited(rows)
+				+ StringUtils.listToDelimited(rows, ",")
 				+ ")";
 		
 		String writeSql = "UPDATE "
