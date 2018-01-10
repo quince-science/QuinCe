@@ -108,19 +108,12 @@ function resizePlots() {
 	// when the plots are stored in plotPage.js
 	// See issue #564
 	
-	$('#plot1Container').width(window.innerWidth - 300).height('100%');
-	plot1.resize($('#plot1Container').width(), $('#plot1Container').height());
+//	$('#plot1Container').width(window.innerWidth - 300).height('100%');
+//	plot1.resize($('#plot1Container').width(), $('#plot1Container').height());
 	
 }
 
-function showFlagDialog() {
-	// Select the first radio button, which is "Yes"
-	//PF('useCalibrationsWidget').jq.find('input:radio[value=true]').parent().next().trigger('click.selectOneRadio');
-	//$(PF('useCalibrationsMessageWidget').jqId).val("");
-	//updateUseDialogControls();
-	PF('flagDialog').show();
-}
-
+/*
 function storeCalibrationSelection() {
 	$('#plotPageForm\\:selectedRows').val(selectedRows);
 	$('#plotPageForm\\:setUseCalibrations').click();
@@ -138,6 +131,7 @@ function storeCalibrationSelection() {
 	clearSelection();
 	PF('useDialog').hide();
 }
+*/
 
 function postSelectionUpdated() {
 	if (selectedRows.length == 0) {
@@ -149,6 +143,7 @@ function postSelectionUpdated() {
 	}
 }
 
+/*
 function updateUseDialogControls() {
 	if (PF('useCalibrationsWidget').getJQ().find(':checked').val() == 'true') {
 		$('#reasonSection').css('visibility', 'hidden');
@@ -162,6 +157,7 @@ function updateUseDialogControls() {
 		}
 	}
 }
+*/
 
 function acceptAutoQc() {
 	$('#plotPageForm\\:selectedRows').val(selectedRows);
@@ -187,3 +183,56 @@ function qcFlagsAccepted() {
 	
 	clearSelection();
 }
+
+function startUserQcFlags() {
+	$('#plotPageForm\\:selectedRows').val(selectedRows);
+	$('#plotPageForm\\:generateUserQcComments').click();
+}
+
+function showFlagDialog() {
+	var woceRowHtml = selectedRows.length.toString() + ' row';
+	if (selectedRows.length > 1) {
+		woceRowHtml += 's';
+	} 
+	$('#manualRowCount').html(woceRowHtml);
+
+    var commentsString = '';
+    var comments = JSON.parse($('#plotPageForm\\:userCommentList').val());
+    for (var i = 0; i < comments.length; i++) {
+    	var comment = comments[i];
+    	commentsString += comment[0];
+    	commentsString += ' (' + comment[2] + ')';
+    	if (i < comments.length - 1) {
+    		commentsString += '\n';
+    	}
+    }
+    $('#plotPageForm\\:manualComment').val(commentsString);
+
+    PF('flagDialog').show();
+}
+
+function saveManualComment() {
+	$('#plotPageForm\\:selectedRows').val(selectedRows);
+	$('#plotPageForm\\:applyManualFlag').click();
+	PF('flagDialog').hide();
+}
+
+function manualFlagsUpdated() {
+	
+	var additionalData = JSON.parse($('#plotPageForm\\:additionalTableData').val());
+	
+	var userFlagColumn= additionalData.flagColumns[1];
+	var userMessageColumn = userFlagColumn + 1;
+	
+	var rows = jsDataTable.rows()[0];
+	for (var i = 0; i < rows.length; i++) {
+		var row = jsDataTable.row(i);
+		if ($.inArray(row.data()[0], selectedRows) > -1) {
+			jsDataTable.cell(i, userMessageColumn).data($('#plotPageForm\\:manualComment').val());
+			jsDataTable.cell(i, userFlagColumn).data(PF('flagMenu').input.val());
+		}
+	}
+
+	clearSelection();
+}
+

@@ -448,4 +448,116 @@ public abstract class CalculationDB {
 			DatabaseUtils.closeConnection(conn);
 		}
 	}
+
+	/**
+	 * Retrieve a set of comments for a specified set of rows in a data file.
+	 * The comments are grouped by their comment string. Each string also has the number
+	 * of times that comment appeared, along with the 'worst' flag assigned to that comment.
+	 * 
+	 * Both QC comments and user comments are included in the list.
+	 * 
+	 * @param dataSource A data source
+	 * @param rows The rows for which comments must be retrieved.
+	 * @return The comments
+	 * @throws DatabaseException If a database error occurs 
+	 * @throws InvalidFlagException If a flag retrieved from the database is invalid
+	 * @throws MessageException If a QC message cannot be reconstructed from its rebuild code
+	 * @throws MissingParamException If any required parameters are missing
+	 */
+	public CommentSet getCommentsForRows(DataSource dataSource, List<Long> rows) throws DatabaseException, InvalidFlagException, MessageException, MissingParamException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(rows, "rows");
+		
+		CommentSet result = new CommentSet();
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			
+			String sql = "SELECT auto_message, user_message, user_flag FROM "
+					+ getCalculationTable()
+					+ " WHERE measurement_id IN ("
+					+ StringUtils.listToDelimited(rows, ",")
+					+ ")";
+			
+			stmt = conn.prepareStatement(sql);
+			records = stmt.executeQuery();
+			while (records.next()) {
+				
+				String autoMessages = records.getString(1);
+				String userMessage = records.getString(2);
+				Flag userFlag = new Flag(records.getInt(3));
+				
+				for (Message message : RebuildCode.getMessagesFromRebuildCodes(autoMessages)) {
+					if (userFlag.equals(Flag.NEEDED) || !message.getShortMessage().equalsIgnoreCase(userMessage)) {
+						result.addComment(message.getShortMessage(), message.getFlag());
+					}
+				}
+				
+				if (!userFlag.equals(Flag.NEEDED) && null != userMessage && userMessage.length() > 0) {
+					result.addComment(userMessage, userFlag);
+				}
+			}
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while retrieving comments", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Apply a manual flag and comment to a set of rows
+	 * @param dataSource A data source
+	 * @param rows The rows to be updated
+	 * @param flag The flag
+	 * @param comment The comment
+     * @throws DatabaseException If a database error occurs
+     * @throws MissingParamException If any required parameters are missing
+     * @throws InvalidFlagException If the flag value is invalid
+	 */
+	public void applyManualFlag(DataSource dataSource, List<Long> rows, int flag, String comment) throws DatabaseException, MissingParamException, InvalidFlagException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(rows, "rows");
+		if (!Flag.isValidFlagValue(flag)) {
+			throw new InvalidFlagException(flag);
+		}
+		if (flag != Flag.VALUE_GOOD) {
+			MissingParam.checkMissing(comment, "comment");
+		}
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			
+			String sql = "UPDATE "
+					+ getCalculationTable()
+					+ " SET user_flag = ?, user_message = ? WHERE measurement_id IN ("
+					+ StringUtils.listToDelimited(rows, ",")
+					+ ")";
+			
+			stmt = conn.prepareStatement(sql);
+			stmt.setInt(1, flag);
+			stmt.setString(2, comment);
+			
+			stmt.execute();
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while setting user flags", e);
+		} finally {
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+	}
 }

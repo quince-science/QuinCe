@@ -9,8 +9,8 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QuinCe.data.Files.CommentSet;
-import uk.ac.exeter.QuinCe.data.Files.CommentSetEntry;
+import uk.ac.exeter.QuinCe.data.Calculation.CommentSet;
+import uk.ac.exeter.QuinCe.data.Calculation.CommentSetEntry;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.FileDataInterrogator;
 import uk.ac.exeter.QuinCe.data.Files.FileInfo;
