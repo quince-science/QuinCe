@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.data.Files;
+package uk.ac.exeter.QuinCe.data.Calculation;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
 
@@ -7,7 +7,6 @@ import uk.ac.exeter.QCRoutines.messages.Flag;
  * @author Steve Jones
  * @see CommentSet
  */
-@Deprecated
 public class CommentSetEntry implements Comparable<CommentSetEntry> {
 
 	/**

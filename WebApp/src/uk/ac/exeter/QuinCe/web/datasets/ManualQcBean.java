@@ -7,9 +7,12 @@ import java.util.Map;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecordFactory;
+import uk.ac.exeter.QuinCe.data.Calculation.CommentSet;
+import uk.ac.exeter.QuinCe.data.Calculation.CommentSetEntry;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -66,6 +69,27 @@ public class ManualQcBean extends PlotPageBean {
 	 * The column containing the manual QC flag
 	 */
 	private int userFlagColumn = 0;
+
+	/**
+	 * The set of comments for the user QC dialog. Stored as a Javascript array of entries, with each entry containing
+	 * Comment, Count and Flag value
+	 */
+	private String userCommentList = "[]";
+	
+	/**
+	 * The worst flag set on the selected rows
+	 */
+	private Flag worstSelectedFlag = Flag.GOOD;
+	
+	/**
+	 * The user QC flag
+	 */
+	private int userFlag;
+	
+	/**
+	 * The user QC comment
+	 */
+	private String userComment;
 	
 	/**
 	 * Initialise the required data for the bean
@@ -295,6 +319,119 @@ public class ManualQcBean extends PlotPageBean {
 	public void acceptAutoQc() {
 		try {
 			CalculationDBFactory.getCalculationDB().acceptAutoQc(getDataSource(), getSelectedRowsList());
+			dirty = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Returns the set of comments for the WOCE dialog
+	 * @return The comments for the WOCE dialog
+	 */
+	public String getUserCommentList() {
+		return userCommentList;
+	}
+
+	/**
+	 * Dummy: Sets the set of comments for the WOCE dialog
+	 * @param userCommentList The comments; ignored
+	 */
+	public void setUserCommentList(String userCommentList) {
+		// Do nothing
+	}
+
+	/**
+	 * Get the worst flag set on the selected rows
+	 * @return The worst flag on the selected rows
+	 */
+	public int getWorstSelectedFlag() {
+		return worstSelectedFlag.getFlagValue();
+	}
+	
+	/**
+	 * Dummy: Set the worst selected flag
+	 * @param worstSelectedFlag The flag; ignored
+	 */
+	public void setWorstSelectedFlag(int worstSelectedFlag) {
+		// Do nothing
+	}
+
+	/**
+	 * Generate the list of comments for the WOCE dialog
+	 */
+	public void generateUserCommentList() {
+
+		worstSelectedFlag = Flag.GOOD;
+		
+		StringBuilder list = new StringBuilder();
+		list.append('[');
+		
+		try {
+			CommentSet comments = CalculationDBFactory.getCalculationDB().getCommentsForRows(getDataSource(), getSelectedRowsList());
+			for (CommentSetEntry entry : comments) {
+				list.append("[\"");
+				list.append(entry.getComment());
+				list.append("\",");
+				list.append(entry.getFlag().getFlagValue());
+				list.append(",");
+				list.append(entry.getCount());
+				list.append("],");
+				
+				if (entry.getFlag().moreSignificantThan(worstSelectedFlag)) {
+					worstSelectedFlag = entry.getFlag();
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			list.append("[\"Existing comments could not be retrieved\", 4, 1],");
+			worstSelectedFlag = Flag.BAD;
+		}
+		
+		// Remove the trailing comma from the last entry
+		if (list.charAt(list.length() - 1) == ',') {
+			list.deleteCharAt(list.length() - 1);
+		}
+		list.append(']');
+		
+		userCommentList = list.toString();
+	}
+
+	/**
+	 * @return the userComment
+	 */
+	public String getUserComment() {
+		return userComment;
+	}
+
+	/**
+	 * @param userComment the userComment to set
+	 */
+	public void setUserComment(String userComment) {
+		this.userComment = userComment;
+	}
+
+	/**
+	 * @return the userFlag
+	 */
+	public int getUserFlag() {
+		return userFlag;
+	}
+
+	/**
+	 * @param userFlag the userFlag to set
+	 */
+	public void setUserFlag(int userFlag) {
+		this.userFlag = userFlag;
+	}
+
+	/**
+	 * Apply the entered WOCE flag and comment to the rows selected in the table
+	 */
+	public void applyManualFlag() {
+		try {
+			CalculationDBFactory.getCalculationDB().applyManualFlag(getDataSource(), getSelectedRowsList(), userFlag, userComment);
 			dirty = true;
 		} catch (Exception e) {
 			e.printStackTrace();
