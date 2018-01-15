@@ -321,6 +321,12 @@ public class NewInstrumentBean extends FileUploadBean {
 	private int runTypeColumn = -1;
 	
 	/**
+	* The contents of the uploaded file as a list of strings
+	* @see #extractFileLines()
+	*/
+	private List<String> fileLines = null;
+
+	/**
 	 * Begin a new instrument definition
 	 * @return The navigation to the start page
 	 */
@@ -1778,4 +1784,13 @@ public class NewInstrumentBean extends FileUploadBean {
     public Map<String, Integer> getAveragingModes() {
     	return DataSetRawData.averagingModes();
     }
+
+
+	@Override
+	public List<String> getFileLines() {
+		if (null == fileLines) {
+			fileLines = super.getFileLines();
+		}
+		return fileLines;
+	}
 }
