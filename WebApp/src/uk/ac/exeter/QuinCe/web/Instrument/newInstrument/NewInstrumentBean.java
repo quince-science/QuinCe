@@ -82,7 +82,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	/**
 	 * Date/Time formatter for previewing extracted dates
 	 */
-	private static final DateTimeFormatter PREVIEW_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-DD HH:mm:ss");
+	private static final DateTimeFormatter PREVIEW_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	
 	/**
 	 * The Instrument List Bean
