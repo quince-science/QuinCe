@@ -73,7 +73,7 @@ public class LatitudeSpecification extends PositionSpecification {
 			throw new PositionException("Invalid latitude value " + line.get(getValueColumn()));
 		}
 		
-		if (value < -180 || value > 180) {
+		if (value < -90 || value > 90) {
 			throw new PositionException("Invalid latitude value " + value);
 		}
 		
