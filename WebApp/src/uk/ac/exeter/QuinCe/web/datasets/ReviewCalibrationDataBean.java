@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.faces.bean.ManagedBean;
@@ -15,6 +16,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.PlotPageBean;
+import uk.ac.exeter.QuinCe.web.Variable;
 
 /**
  * Bean for handling review of calibration data
@@ -285,5 +287,35 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	protected Variable getDefaultPlot1XAxis() {
+		return null;
+	}
+
+	@Override
+	protected List<Variable> getDefaultPlot1YAxis() {
+		return new ArrayList<Variable>();
+	}
+
+	@Override
+	protected Variable getDefaultPlot2XAxis() {
+		return null;
+	}
+
+	@Override
+	protected List<Variable> getDefaultPlot2YAxis() {
+		return new ArrayList<Variable>();
+	}
+
+	@Override
+	protected Variable getDefaultMap1Variable() {
+		return null;
+	}
+
+	@Override
+	protected Variable getDefaultMap2Variable() {
+		return null;
 	}
 }

@@ -13,13 +13,12 @@ import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecordFactory;
 import uk.ac.exeter.QuinCe.data.Calculation.CommentSet;
 import uk.ac.exeter.QuinCe.data.Calculation.CommentSetEntry;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.PlotPageBean;
+import uk.ac.exeter.QuinCe.web.Variable;
 
 /**
  * User QC bean
@@ -40,16 +39,6 @@ public class ManualQcBean extends PlotPageBean {
 	 */
 	private static final String NAV_DATASET_LIST = "dataset_list";
 
-	/**
-	 * The ID of the data set being processed
-	 */
-	private long datasetId;
-	
-	/**
-	 * The data set being processed
-	 */
-	private DataSet dataset;
-	
 	/**
 	 * The number of sensor columns
 	 */
@@ -97,45 +86,16 @@ public class ManualQcBean extends PlotPageBean {
 	@Override
 	public void init() {
 		setTableMode("sensors");
-		try {
-			dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	/**
-	 * Get the dataset ID
-	 * @return The dataset ID
-	 */
-	public long getDatasetId() {
-		return datasetId;
-	}
-	
-	/**
-	 * Set the dataset ID
-	 * @param datasetId The dataset ID
-	 */
-	public void setDatasetId(long datasetId) {
-		this.datasetId = datasetId;
-	}
-	
-	/**
-	 * Get the current DataSet object
-	 * @return The data set
-	 */
-	public DataSet getDataset() {
-		return dataset;
 	}
 	
 	@Override
 	protected List<Long> loadRowIds() throws Exception {
-		return DataSetDataDB.getMeasurementIds(getDataSource(), datasetId);
+		return DataSetDataDB.getMeasurementIds(getDataSource(), getDatasetId());
 	}
 
 	@Override
 	protected String buildTableHeadings() throws Exception {
-		List<String> dataHeadings = DataSetDataDB.getDatasetDataColumnNames(getDataSource(), dataset);
+		List<String> dataHeadings = DataSetDataDB.getDatasetDataColumnNames(getDataSource(), getDataset());
 		sensorColumnCount = dataHeadings.size() - 4; // Skip id, date, lat, lon
 		List<String> calculationHeadings = CalculationDBFactory.getCalculationDB().getCalculationColumnHeadings();
 		calculationColumnCount = calculationHeadings.size();
@@ -180,7 +140,7 @@ public class ManualQcBean extends PlotPageBean {
 
 	@Override
 	protected String buildSelectableRows() throws Exception {
-		List<Long> ids = CalculationDBFactory.getCalculationDB().getSelectableMeasurementIds(getDataSource(), datasetId);
+		List<Long> ids = CalculationDBFactory.getCalculationDB().getSelectableMeasurementIds(getDataSource(), getDatasetId());
 		
 		StringBuilder result = new StringBuilder();
 		
@@ -210,7 +170,7 @@ public class ManualQcBean extends PlotPageBean {
 		
 		List<CalculationRecord> calculationData = new ArrayList<CalculationRecord>(datasetData.size());
 		for (DataSetRawDataRecord record : datasetData) {
-			CalculationRecord calcRecord = CalculationRecordFactory.makeCalculationRecord(datasetId, record.getId());
+			CalculationRecord calcRecord = CalculationRecordFactory.makeCalculationRecord(getDatasetId(), record.getId());
 			CalculationDBFactory.getCalculationDB().getCalculationValues(getDataSource(), calcRecord);
 			calculationData.add(calcRecord);
 		}
@@ -436,5 +396,39 @@ public class ManualQcBean extends PlotPageBean {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	protected Variable getDefaultPlot1XAxis() {
+		return variables.getVariableWithLabel("Date/Time");
+	}
+
+	@Override
+	protected List<Variable> getDefaultPlot1YAxis() {
+		List<Variable> result = new ArrayList<Variable>(1);
+		result.add(variables.getVariableWithLabel("Intake Temperature"));
+		return result;
+	}
+
+	@Override
+	protected Variable getDefaultPlot2XAxis() {
+		return variables.getVariableWithLabel("Date/Time");
+	}
+
+	@Override
+	protected List<Variable> getDefaultPlot2YAxis() {
+		List<Variable> result = new ArrayList<Variable>(1);
+		result.add(variables.getVariableWithLabel("Final fCO2"));
+		return result;
+	}
+
+	@Override
+	protected Variable getDefaultMap1Variable() {
+		return variables.getVariableWithLabel("Intake Temperature");
+	}
+
+	@Override
+	protected Variable getDefaultMap2Variable() {
+		return variables.getVariableWithLabel("Final fCO2");
 	}
 }
