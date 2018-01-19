@@ -917,9 +917,6 @@ function initMap(index) {
     		center: ol.proj.fromLonLat([bounds[4], bounds[5]]),
     		zoom: 4,
     		minZoom: 2,
-    		controls: [
-    			new ol.control.Zoom()
-    		]
 		});
 
 		window[mapVar] = new ol.Map({
@@ -929,6 +926,9 @@ function initMap(index) {
 	        		source: mapSource
 	    		}),
 	  		],
+    		controls: [
+    			new ol.control.Zoom()
+    		],
 	  		view: initialView
 		});
 		
