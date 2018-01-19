@@ -1066,7 +1066,10 @@ function resetZoom(index) {
 		window['map' + index + 'Extent'] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", window['map' + index].getView().getProjection());
 		window['map' + index].getView().fit(window['map' + index + 'Extent'], window['map' + index].getSize());
 	} else {
-		alert('Need to do this');
+		window['plot' + index].updateOptions({
+		    dateWindow: null,
+		    valueRange: null
+		});
 	}
 }
 
