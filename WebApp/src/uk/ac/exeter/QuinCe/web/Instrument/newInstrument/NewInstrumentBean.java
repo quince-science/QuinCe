@@ -5,6 +5,7 @@ import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1698,6 +1699,15 @@ public class NewInstrumentBean extends FileUploadBean {
 	public String saveInstrument() throws MissingParamException, InstrumentException, DatabaseException, IOException {
 		
 		try {
+
+			/*
+			 * Adding a Run Type sensor assignment
+			 */
+			SensorAssignment sensorAssignment = new SensorAssignment(getRunTypeFile(),
+					getRunTypeColumn(), "Run Type", false, true, false, null);
+			HashSet<SensorAssignment> hashSet = new HashSet<SensorAssignment>();
+			hashSet.add(sensorAssignment);
+			sensorAssignments.put(SensorType.getRunTypeSensorType(), hashSet);
 			Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles,
 				sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow, averagingMode,
 				platformCode);
