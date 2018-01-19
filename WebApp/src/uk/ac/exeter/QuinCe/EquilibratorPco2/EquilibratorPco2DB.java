@@ -8,7 +8,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import uk.ac.exeter.QCRoutines.data.DataColumn;
@@ -25,6 +24,8 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.web.VariableList;
+import uk.ac.exeter.QuinCe.web.Variable;
 
 /**
  * Instance of {@link CalculationDB} for underway pCO2
@@ -201,5 +202,21 @@ public class EquilibratorPco2DB extends CalculationDB {
 		columnHeadings.add("fCO2 Final");
 		
 		return columnHeadings;
+	}
+
+	@Override
+	public void populateVariableList(VariableList variables) throws MissingParamException {
+		MissingParam.checkMissing(variables, "variables", true);
+		
+		variables.addVariable("ΔT", new Variable(Variable.TYPE_CALCULATION, "ΔT", "delta_temperature"));
+		variables.addVariable("xH2O", new Variable(Variable.TYPE_CALCULATION, "True xH2O", "true_moisture"));
+		variables.addVariable("pH2O", new Variable(Variable.TYPE_CALCULATION, "pH2O", "ph2o"));
+
+		variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "Dried CO2", "dried_co2"));
+		variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "Calibrated CO2", "calibrated_co2"));
+		variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "pCO2 TE Dry", "pco2_te_dry"));
+		variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "pCO2 TE Wet", "pco2_te_wet"));
+		variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "fCO2 TE", "fco2_te"));
+		variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "Final fCO2", "fco2"));
 	}
 }

@@ -12,7 +12,6 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -63,10 +62,6 @@ public class DataSetDB {
 	 */
 	private static final String DELETE_DATASET_QUERY = "DELETE FROM dataset_data "
 			+ "WHERE dataset_id = ?";
-	
-	private static final String GET_TIME_POSITION_QUERY = "SELECT "
-			+ "date, longitude, latitude "
-			+ "FROM dataset_data WHERE dataset_id = ? AND id = ?";
 	
 	/**
 	 * Get the list of data sets defined for a given instrument

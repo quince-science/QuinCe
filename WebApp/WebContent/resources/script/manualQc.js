@@ -1,6 +1,8 @@
 var sensorColums = [];
 var calculationColumns = [];
 
+var plotSplitProportion = 0.5;
+
 function start() {
 	/*
 	 * This is a hack to get round a bug in PrimeFaces.
@@ -9,12 +11,58 @@ function start() {
 	 * enabled when the page loads, and this will disable them.
 	 */
 	postSelectionUpdated();
+	$('#plots').split({orientation: 'vertical', onDragEnd: function(){resizePlots()}});
+	plotSplitProportion = 0.5;
 	drawPage();
 }
 
 function drawPage() {
-	//drawPlot(1);
+	
+	// The plot variables are read from the dialog, so to init we must
+	// add them to the dialog first
+	//TODO This is ugly and must be fixed up
+	
+	initPlot(1);
+	initPlot(2);
+
 	drawTable();
+}
+
+function initPlot(index) {
+	var mode = $('[id^=plotPageForm\\:plot' + index + 'Mode]:checked').val();
+	
+	if (mode == 'plot') {
+		setupPlotVariables(index);
+		$('#map' + index + 'map1ScaleControlContainer').hide();
+		$('#map' + index + 'Container').hide();
+		$('#plot' + index + 'Container').show();
+	} else {
+		setupMapVariables(index);
+		$('#plot' + index + 'Container').hide();
+		$('#map' + index + 'Container').show();
+		$('#map' + index + 'ScaleControlContainer').show();
+		
+	}
+
+	variablesPlotIndex = index;
+	applyVariables();
+}
+
+function resizePlots() {
+	// TODO See if we can make this work stuff out automatically
+	// when the plots are stored in plotPage.js
+	// See issue #564
+	if (null != plot1) {
+		$('#plot1Container').width('100%');
+		$('#plot1Container').height($('#plot1Panel').height() - 40);
+		plot1.resize($('#plot1Container').width(), $('#plot1Container').height());
+	}
+
+	if (null != plot2) {
+		$('#plot2Container').width('100%');
+		$('#plot2Container').height($('#plot2Panel').height() - 40);
+		plot2.resize($('#plot2Container').width(), $('#plot2Container').height());
+	}
 }
 
 /*
@@ -103,16 +151,6 @@ function getColumnDefs() {
 	];
 }
 
-function resizePlots() {
-	// TODO See if we can make this work stuff out automatically
-	// when the plots are stored in plotPage.js
-	// See issue #564
-	
-//	$('#plot1Container').width(window.innerWidth - 300).height('100%');
-//	plot1.resize($('#plot1Container').width(), $('#plot1Container').height());
-	
-}
-
 function postSelectionUpdated() {
 	if (selectedRows.length == 0) {
 		PF('acceptQcButton').disable();
@@ -122,7 +160,6 @@ function postSelectionUpdated() {
 		PF('overrideQcButton').enable();
 	}
 }
-
 
 function updateFlagDialogControls() {
 	var canSubmit = true;
@@ -134,9 +171,9 @@ function updateFlagDialogControls() {
 	}
 	
 	if (canSubmit) {
-		PF('okButtonWidget').enable();
+		PF('manualCommentOk').enable();
 	} else {
-		PF('okButtonWidget').disable();
+		PF('manualCommentOk').disable();
 	}
 }
 

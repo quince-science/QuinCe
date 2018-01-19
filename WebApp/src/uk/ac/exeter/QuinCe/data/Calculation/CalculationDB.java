@@ -11,6 +11,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.math3.stat.descriptive.rank.Percentile;
+
 import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
@@ -18,12 +20,16 @@ import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.RebuildCode;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.VariableList;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Class for dealing with database calls related to calculation data
@@ -324,6 +330,14 @@ public abstract class CalculationDB {
 	 * @return The column headings
 	 */
 	public abstract List<String> getCalculationColumnHeadings();
+
+	/**
+	 * Add the calculation variables to a variables list used
+	 * for selecting plots and maps
+	 * @param variables The variables list to be populated
+	 * @throws MissingParamException If the variable list is null
+	 */
+	public abstract void populateVariableList(VariableList variables) throws MissingParamException;
 	
 	/**
 	 * Get the list of measurement IDs for a dataset that can be manipulated by the user.
@@ -559,5 +573,225 @@ public abstract class CalculationDB {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(conn);
 		}
+	}
+
+
+	/**
+	 * Get a JSON data array for a dataset with the given fields
+	 * @param dataSource A data source
+	 * @param dataset The dataset
+	 * @param fields The fields to retrieve
+	 * @return The JSON array
+	 * @throws InstrumentException If the dataset's instrument cannot be retrieved
+	 * @throws RecordNotFoundException If the dataset does not exist
+     * @throws DatabaseException If a database error occurs
+     * @throws MissingParamException If any required parameters are missing
+	 */
+	public String getJsonData(DataSource dataSource, DataSet dataset, List<String> fields) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
+		return getJsonData(dataSource, dataset, fields, null, false);
+	}
+
+	/**
+	 * Get a JSON data array for a dataset with the given fields
+	 * @param dataSource A data source
+	 * @param dataset The dataset
+	 * @param fields The fields to retrieve
+	 * @param bounds The geographical limits of the query
+	 * @param limitPoints Indicates whether the number of points returned should be limited
+	 * @return The JSON array
+	 * @throws InstrumentException If the dataset's instrument cannot be retrieved
+	 * @throws RecordNotFoundException If the dataset does not exist
+     * @throws DatabaseException If a database error occurs
+     * @throws MissingParamException If any required parameters are missing
+	 */
+	public String getJsonData(DataSource dataSource, DataSet dataset, List<String> fields, List<Double> bounds, boolean limitPoints) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
+		
+		MissingParam.checkMissing(dataSource, "dataSource");
+		MissingParam.checkMissing(dataset, "dataset");
+		MissingParam.checkMissing(fields, "fields");
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet records = null;
+		
+
+		StringBuilder json = new StringBuilder();
+		
+		try {
+			conn = dataSource.getConnection();
+			
+			List<String> datasetFields = DataSetDataDB.extractDatasetFields(conn, dataset, fields);
+			List<String> calculationFields = new ArrayList<String>(fields);
+			calculationFields.removeAll(datasetFields);
+
+			StringBuilder sql = new StringBuilder();
+			
+			sql.append("SELECT ");
+			for (int i = 0; i < fields.size(); i++) {
+				String field = fields.get(i);
+				
+				if (datasetFields.contains(field)) {
+					sql.append('d');
+				} else {
+					sql.append('c');
+				}
+				
+				sql.append('.');
+				sql.append(field);
+				
+				if (i < fields.size() - 1) {
+					sql.append(',');
+				}
+			}
+			
+			sql.append(" FROM dataset_data d INNER JOIN ");
+			sql.append(getCalculationTable());
+			sql.append(" c ON d.id = c.measurement_id WHERE d.dataset_id = ?");
+
+			if (null != bounds) {
+				sql.append(" AND d.longitude >= ");
+				sql.append(bounds.get(0));
+				sql.append(" AND d.longitude <= ");
+				sql.append(bounds.get(2));
+				sql.append(" AND d.latitude >= ");
+				sql.append(bounds.get(1));
+				sql.append(" AND d.latitude <= ");
+				sql.append(bounds.get(3));
+			}
+			
+			stmt = conn.prepareStatement(sql.toString());
+			stmt.setLong(1, dataset.getId());
+			
+			records = stmt.executeQuery();
+			int recordCount = 0;
+			try {
+			    records.last();
+			    recordCount = records.getRow();
+			    records.beforeFirst();
+			} catch (SQLException e) {
+				recordCount = 0;
+			}
+
+			int everyNthRecord = 1;
+			if (limitPoints) {
+				int maxPoints = Integer.parseInt(ResourceManager.getInstance().getConfig().getProperty("map.max_points"));
+				everyNthRecord = recordCount / maxPoints;
+				if (everyNthRecord < 1) {
+					everyNthRecord = 1;
+				}
+			}
+			
+			json.append('[');
+			
+			boolean hasRecords = false;
+			while (records.relative(everyNthRecord)) {
+				hasRecords = true;
+						
+				json.append('[');
+				
+				for (int i = 0; i < fields.size(); i++) {
+					
+					if (fields.get(i).equals("id") || fields.get(i).equals("date")) {
+						json.append(records.getLong(i + 1));
+					} else {
+						json.append(records.getDouble(i + 1));
+					}
+					
+					if (i < fields.size() - 1) {
+						json.append(',');
+					}
+				}
+				
+				json.append("],");
+			}
+			
+			// Remove the trailing comma
+			if (hasRecords) {
+				json.deleteCharAt(json.length() - 1);
+			}
+			json.append(']');
+
+		} catch (SQLException e) {
+			throw new DatabaseException("Error while getting dataset records", e);
+		} finally {
+			DatabaseUtils.closeResultSets(records);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		return json.toString();
+	}
+
+	public List<Double> getValueRange(DataSource dataSource, DataSet dataset, String field) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
+		double min = 0;
+		double max = 0;
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet results = null;
+		
+		try {
+			conn = dataSource.getConnection();
+			
+			List<String> fieldList = new ArrayList<String>(1);
+			fieldList.add(field);
+			List<String> datasetFields = DataSetDataDB.extractDatasetFields(conn, dataset, fieldList);
+
+			StringBuilder sql = new StringBuilder();
+			
+			sql.append("SELECT ");
+			if (datasetFields.size() > 0) {
+				sql.append('d');
+			} else {
+				sql.append('c');
+			}
+			
+			sql.append('.');
+			sql.append(field);
+
+			sql.append(" FROM dataset_data d INNER JOIN ");
+			sql.append(getCalculationTable());
+			sql.append(" c ON d.id = c.measurement_id WHERE d.dataset_id = ?");
+			
+			sql.append(" AND c.user_flag IN (");
+			sql.append(Flag.VALUE_ASSUMED_GOOD);
+			sql.append(',');
+			sql.append(Flag.VALUE_GOOD);
+			sql.append(',');
+			sql.append(Flag.VALUE_QUESTIONABLE);
+			sql.append(")");
+			
+			stmt = conn.prepareStatement(sql.toString());
+			stmt.setLong(1, dataset.getId());
+			results = stmt.executeQuery();
+			
+			List<Double> values = new ArrayList<Double>();
+			
+			while(results.next()) {
+				values.add(results.getDouble(1));
+			}
+
+			Percentile percentile = new Percentile();
+			
+			double[] array = values.stream().mapToDouble(d -> d).toArray();
+
+			min = percentile.evaluate(array, 5);
+			max = percentile.evaluate(array, 95);
+			
+		} catch (SQLException e) {
+			throw new DatabaseException("Excpeption while getting scale bounds", e);
+		} finally {
+			DatabaseUtils.closeResultSets(results);
+			DatabaseUtils.closeStatements(stmt);
+			DatabaseUtils.closeConnection(conn);
+		}
+		
+		
+		
+		List<Double> result = new ArrayList<Double>(2);
+		result.add(min);
+		result.add(max);
+		
+		return result;
 	}
 }

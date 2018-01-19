@@ -2,6 +2,10 @@ package uk.ac.exeter.QuinCe.web;
 
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -12,12 +16,27 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 public abstract class PlotPageBean extends BaseManagedBean {
 
 	/**
+	 * The ID of the data set being processed
+	 */
+	private long datasetId;
+	
+	/**
+	 * The geographical bounds of the data set
+	 */
+	private List<Double> dataBounds;
+	
+	/**
+	 * The data set being processed
+	 */
+	private DataSet dataset;
+	
+	/**
 	 * The data for the current view of the data table.
 	 * 
 	 * <p>
 	 *   The table data is loaded on demand as the user scrolls around, to
 	 *   eliminate the delay and memory requirements of loading a complete
-	 *   voayge's data in one go. When the user scrolls to a particular row,
+	 *   voyage's data in one go. When the user scrolls to a particular row,
 	 *   the data for that row and a set of rows before and after it is loaded.
 	 * </p>
 	 * 
@@ -83,29 +102,48 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	private String selectedRows = null;
 	
 	/**
+	 * The tree of variables for the plots
+	 */
+	protected VariableList variables = null;
+	
+	/**
 	 * The data for the first plot as a JSON string
 	 */
-	protected String plot1Data;
+	protected Plot plot1;
 
-	/**
-	 * The labels for the first plot
-	 */
-	protected String plot1Labels;
-	
 	/**
 	 * The data for the second plot as a JSON string
 	 */
-	protected String plot2Data;
-
-	/**
-	 * The labels for the second plot
-	 */
-	protected String plot2Labels;
+	protected Plot plot2;
 	
 	/**
 	 * Dirty data indicator
 	 */
 	protected boolean dirty = false;
+	
+	/**
+	 * Get the dataset ID
+	 * @return The dataset ID
+	 */
+	public long getDatasetId() {
+		return datasetId;
+	}
+	
+	/**
+	 * Set the dataset ID
+	 * @param datasetId The dataset ID
+	 */
+	public void setDatasetId(long datasetId) {
+		this.datasetId = datasetId;
+	}
+	
+	/**
+	 * Get the current DataSet object
+	 * @return The data set
+	 */
+	public DataSet getDataset() {
+		return dataset;
+	}
 	
 	/**
 	 * Get the data for the current view in the data table
@@ -125,6 +163,14 @@ public abstract class PlotPageBean extends BaseManagedBean {
  		this.tableJsonData = tableJsonData;
  	}		
 	
+ 	/**
+ 	 * Dummy set for the variable set JSON
+ 	 * @param variableSetJson Ignored.
+ 	 */
+ 	public void setVariableSetJson(String variableSetJson) {
+ 		// Do nothing
+ 	}
+ 	
 	/**
 	 * Get the total number of rows in the data file. If the number of rows is not
 	 * known, the result will be negative.
@@ -332,69 +378,29 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	public String getTableHeadings() {
 		return tableHeadings;
 	}
+	
+	/**
+	 * Get the list of variables for the current data set
+	 * @return The variables
+	 */
+	public VariableList getVariablesList() {
+		return variables;
+	}
 
 	/**
-	 * Get the plot 1 data
-	 * @return The plot 1 data
+	 * Get the details for Plot 1
+	 * @return The plot 1 details
 	 */
-	public String getPlot1Data() {
-		return plot1Data;
+	public Plot getPlot1() {
+		return plot1;
 	}
 	
 	/**
-	 * Get the plot 2 data
-	 * @return The plot 2 data
+	 * Get the details for Plot 2
+	 * @return The plot 2 details
 	 */
-	public String getPlot2Data() {
-		return plot2Data;
-	}
-	
-	/**
-	 * Dummy method to set the plot 1 data. Does nothing
-	 * @param dummy The supplied data; ignored
-	 */
-	public void setPlot1Data(String dummy) {
-		// Do nothing
-	}
-	
-	/**
-	 * Dummy method to set the plot 2 data. Does nothing
-	 * @param dummy The supplied data; ignored
-	 */
-	public void setPlot2Data(String dummy) {
-		// Do nothing
-	}
-	
-	/**
-	 * Get the labels for plot 1
-	 * @return The plot 1 labels
-	 */
-	public String getPlot1Labels() {
-		return plot1Labels;
-	}
-	
-	/**
-	 * Get the labels for plot 2
-	 * @return The plot 2 labels
-	 */
-	public String getPlot2Labels() {
-		return plot2Labels;
-	}
-	
-	/**
-	 * Set the labels for the first plot (dummy)
-	 * @param dummy The supplied labels. Ignored.
-	 */
-	public void setPlot1Labels(String dummy) {
-		// Do nothing
-	}
-	
-	/**
-	 * Set the labels for the second plot (dummy)
-	 * @param dummy The supplied labels. Ignored.
-	 */
-	public void setPlot2Labels(String dummy) {
-		// Do nothing
+	public Plot getPlot2() {
+		return plot2;
 	}
 	
 	/**
@@ -406,22 +412,22 @@ public abstract class PlotPageBean extends BaseManagedBean {
 		clearTableData();
 		generateTableData();
 	}
-	
+
 	/**
 	 * Reload data for a given plot. Can be used if the plot is changed.
-	 * @plotIndex The plot that needs to be reloaded
+	 * @param plotIndex The plot that needs to be reloaded
 	 */
 	public void reloadPlotData(int plotIndex) {
 		try {
 			switch (plotIndex) {
 			case 1: {
-				plot1Labels = buildPlotLabels(1);
-				plot1Data = loadPlotData(1);
+				//plot1Labels = buildPlotLabels(1);
+				//plot1Data = loadPlotData(1);
 				break;
 			}
 			case 2: {
-				plot2Labels = buildPlotLabels(2);
-				plot2Data = buildPlotLabels(2);
+				//plot2Labels = buildPlotLabels(2);
+				//plot2Data = buildPlotLabels(2);
 				break;
 			}
 			}
@@ -436,12 +442,18 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 */
 	public String start() {
 		try {
+			dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
+
+			variables = new VariableList();
+			DataSetDataDB.populateVariableList(getDataSource(), dataset, variables);
+			dataBounds = DataSetDataDB.getDataBounds(getDataSource(), dataset);
+			CalculationDBFactory.getCalculationDB().populateVariableList(variables);
+			
 			init();
 			dirty = false;
-			plot1Labels = buildPlotLabels(1);
-			plot1Data = loadPlotData(1);
-			plot2Labels = buildPlotLabels(2);
-			plot2Data = buildPlotLabels(2);
+			plot1 = new Plot(variables, getDataSource(), dataset, dataBounds, getDefaultPlot1XAxis(), getDefaultPlot1YAxis(), getDefaultMap1Variable());
+			plot2 = new Plot(variables, getDataSource(), dataset, dataBounds, getDefaultPlot2XAxis(), getDefaultPlot2YAxis(), getDefaultMap2Variable());
+			
 			tableHeadings = buildTableHeadings();
 			selectableRows = buildSelectableRows();
 		} catch (Exception e) {
@@ -519,4 +531,64 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * @return The table data
 	 */
 	protected abstract String loadTableData(int start, int length) throws Exception;
+	
+	/**
+	 * Get the default variable to use on the X axis of Plot 1
+	 * @return The default variable
+	 */
+	protected abstract Variable getDefaultPlot1XAxis();
+	
+	/**
+	 * Get the default variables to use on the Y axis of Plot 1
+	 * @return The default variables
+	 */
+	protected abstract List<Variable> getDefaultPlot1YAxis();
+	
+	/**
+	 * Get the default variable to use on the X axis of Plot 2
+	 * @return The default variable
+	 */
+	protected abstract Variable getDefaultPlot2XAxis();
+	
+	/**
+	 * Get the default variables to use on the Y axis of Plot 2
+	 * @return The default variables
+	 */
+	protected abstract List<Variable> getDefaultPlot2YAxis();
+
+	/**
+	 * Get the default variable to use on Map 1
+	 * @return The default variable
+	 */
+	protected abstract Variable getDefaultMap1Variable();
+
+	/**
+	 * Get the default variable to use on Map 2
+	 * @return The default variable
+	 */
+	protected abstract Variable getDefaultMap2Variable();
+
+	/**
+	 * Get the variable group details
+	 * @return The variable group details
+	 */
+	public String getVariableGroups() {
+		return variables.getGroupsJson();
+	}
+	
+	/**
+	 * Get the bounds of the data as a JSON string
+	 * @return The data bounds
+	 */
+	public String getDataBounds() {
+		return '[' + StringUtils.listToDelimited(dataBounds, ",") + ']';
+	}
+	
+	/**
+	 * Dummy
+	 * @param dataBounds Ignored
+	 */
+	public void setDataBounds(String dataBounds) {
+		// Do nothing
+	}
 }
