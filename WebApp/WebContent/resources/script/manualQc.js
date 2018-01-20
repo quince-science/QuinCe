@@ -52,16 +52,19 @@ function resizePlots() {
 	// TODO See if we can make this work stuff out automatically
 	// when the plots are stored in plotPage.js
 	// See issue #564
-	if (null != plot1) {
-		$('#plot1Container').width('100%');
-		$('#plot1Container').height($('#plot1Panel').height() - 40);
-		plot1.resize($('#plot1Container').width(), $('#plot1Container').height());
-	}
+	
+	for (var index = 1; index <= 2; index++) {
+		if (null != window['plot' + index]) {
+			$('#plot' + index + 'Container').width('100%');
+			$('#plot' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
+			plot1.resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+		}
 
-	if (null != plot2) {
-		$('#plot2Container').width('100%');
-		$('#plot2Container').height($('#plot2Panel').height() - 40);
-		plot2.resize($('#plot2Container').width(), $('#plot2Container').height());
+		if (null != window['map' + index]) {
+			$('#map' + index + 'Container').width($('#plot' + index + 'Panel').width());
+			$('#map' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
+			window['map' + index].updateSize();
+		}
 	}
 }
 

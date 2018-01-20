@@ -907,8 +907,6 @@ function initMap(index) {
 	
 	var mapVar = 'map' + index;
 	var extentVar = mapVar + 'Extent';
-
-
 	
 	var bounds = JSON.parse($('#plotPageForm\\:dataBounds').val());
 	
