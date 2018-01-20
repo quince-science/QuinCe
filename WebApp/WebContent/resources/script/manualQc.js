@@ -270,3 +270,6 @@ function manualFlagsUpdated() {
 	clearSelection();
 }
 
+function getPlotMode(index) {
+	return $('[id^=plotPageForm\\:plot' + index + 'Mode]:checked').val();
+}

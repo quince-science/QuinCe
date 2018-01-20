@@ -19,6 +19,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.PlotPageBean;
 import uk.ac.exeter.QuinCe.web.Variable;
+import uk.ac.exeter.QuinCe.web.VariableList;
 
 /**
  * User QC bean
@@ -130,12 +131,6 @@ public class ManualQcBean extends PlotPageBean {
 	@Override
 	protected String getScreenNavigation() {
 		return NAV_PLOT;
-	}
-
-	@Override
-	protected String loadPlotData(int plotIndex) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -430,5 +425,32 @@ public class ManualQcBean extends PlotPageBean {
 	@Override
 	protected Variable getDefaultMap2Variable() {
 		return variables.getVariableWithLabel("Final fCO2");
+	}
+
+	@Override
+	protected void buildVariableList(VariableList variables) throws Exception {
+		DataSetDataDB.populateVariableList(getDataSource(), getDataset(), variables);
+		CalculationDBFactory.getCalculationDB().populateVariableList(variables);
+	}
+
+	@Override
+	protected String getData(List<String> fields) throws Exception {
+		return CalculationDBFactory.getCalculationDB().getJsonData(getDataSource(), getDataset(), fields);
+	}
+
+	@Override
+	protected List<String> getFixedPlotFieldNames() {
+		List<String> result = new ArrayList<String>(2);
+		result.add("auto_flag");
+		result.add("user_flag");
+		return result;
+	}
+
+	@Override
+	protected List<String> getFixedPlotFieldLabels() {
+		List<String> result = new ArrayList<String>(2);
+		result.add("Automatic Flag");
+		result.add("Manual Flag");
+		return result;
 	}
 }
