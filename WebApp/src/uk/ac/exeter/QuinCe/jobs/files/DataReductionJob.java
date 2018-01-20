@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -92,6 +93,13 @@ public class DataReductionJob extends Job {
 				JobManager.requeueJob(conn, id);
 				conn.commit();
 			} else {
+				
+				// Set up the Auto QC job
+				Map<String, String> jobParams = new HashMap<String, String>();
+				jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
+				jobParams.put(AutoQCJob.PARAM_ROUTINES_CONFIG, ResourceManager.QC_ROUTINES_CONFIG);
+				JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), AutoQCJob.class.getCanonicalName(), jobParams);
+
 				conn.commit();
 			}
 
