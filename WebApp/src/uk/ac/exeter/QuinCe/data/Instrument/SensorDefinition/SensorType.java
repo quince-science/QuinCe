@@ -282,4 +282,13 @@ public class SensorType {
 	public boolean hasExternalStandards() {
 		return externalStandards;
 	}
+
+	/**
+	 * Get a sensor type for the Run Type
+	 * @return the SensorType
+	 */
+	public static SensorType getRunTypeSensorType() {
+		return new SensorType("Run Type", true, false, null, null, null, false,
+				false, false, false, false, false);
+	}
 }
