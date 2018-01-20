@@ -30,22 +30,33 @@ function drawPage() {
 
 function initPlot(index) {
 	var mode = $('[id^=plotPageForm\\:plot' + index + 'Mode]:checked').val();
-	
+
+	var redraw = false;
+
 	if (mode == 'plot') {
 		setupPlotVariables(index);
-		$('#map' + index + 'map1ScaleControlContainer').hide();
+		$('#map' + index + 'ScaleControlContainer').hide();
 		$('#map' + index + 'Container').hide();
 		$('#plot' + index + 'Container').show();
+		
+		if (null == window['plot' + index]) {
+			redraw = true;
+		}
 	} else {
 		setupMapVariables(index);
 		$('#plot' + index + 'Container').hide();
 		$('#map' + index + 'Container').show();
 		$('#map' + index + 'ScaleControlContainer').show();
 		
+		if (null == window['map' + index]) {
+			redraw = true;
+		}
 	}
 
-	variablesPlotIndex = index;
-	applyVariables();
+	if (redraw) {
+		variablesPlotIndex = index;
+		applyVariables();
+	}
 }
 
 function resizePlots() {
