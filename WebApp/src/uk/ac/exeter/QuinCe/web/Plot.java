@@ -3,11 +3,7 @@ package uk.ac.exeter.QuinCe.web;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sql.DataSource;
-
-
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -27,19 +23,9 @@ public class Plot {
 	public static final String MODE_MAP = "map";
 
 	/**
-	 * The available variables
+	 * The bean to which this plot belongs
 	 */
-	private VariableList variables;
-	
-	/**
-	 * A data source
-	 */
-	private DataSource dataSource;
-	
-	/**
-	 * The dataset being plotted
-	 */
-	private DataSet dataset;
+	private PlotPageBean parentBean;
 	
 	/**
 	 * The current mode
@@ -89,17 +75,14 @@ public class Plot {
 
 	/**
 	 * Basic constructor
-	 * @param variables The available variables
-	 * @param dataSource A data source
-	 * @param dataset The dataset
+	 * @param parentBean The bean to which this plot belongs
+	 * @param mapBounds The bounds of the map display
 	 * @param xAxis The x axis variable
 	 * @param yAxis The y axis variables
 	 * @param mapVariable The map variable
 	 */
-	public Plot(VariableList variables, DataSource dataSource, DataSet dataset, List<Double> mapBounds, Variable xAxis, List<Variable> yAxis, Variable mapVariable) {
-		this.variables = variables;
-		this.dataSource = dataSource;
-		this.dataset = dataset;
+	public Plot(PlotPageBean parentBean, List<Double> mapBounds, Variable xAxis, List<Variable> yAxis, Variable mapVariable) {
+		this.parentBean = parentBean;
 		this.mapBounds = mapBounds;
 		this.xAxis = xAxis;
 		this.yAxis = yAxis;
@@ -128,14 +111,19 @@ public class Plot {
 	 * @return the xAxis
 	 */
 	public int getXAxis() {
-		return xAxis.getId();
+		int result = -1;
+		if (null != xAxis) {
+			result = xAxis.getId();
+		}
+
+		return result;
 	}
 
 	/**
 	 * @param xAxis the xAxis to set
 	 */
 	public void setXAxis(int xAxis) {
-		this.xAxis = variables.getVariable(xAxis);
+		this.xAxis = parentBean.getVariablesList().getVariable(xAxis);
 	}
 
 	/**
@@ -149,14 +137,32 @@ public class Plot {
 	 * @return the yAxis
 	 */
 	public String getYAxis() {
-		return StringUtils.intListToJsonArray(Variable.getIds(yAxis));
+		
+		List<Integer> ids;
+		
+		if (null == yAxis) {
+			ids = new ArrayList<Integer>(1);
+			ids.add(-1);
+		} else {
+			ids = Variable.getIds(yAxis);
+		}
+		
+		return StringUtils.intListToJsonArray(ids);
+	}
+	
+	/**
+	 * Get the selected Y Axis variables
+	 * @return The selected Y axis variables
+	 */
+	public List<Variable> getYAxisVariables() {
+		return yAxis;
 	}
 
 	/**
 	 * @param yAxis the yAxis to set
 	 */
 	public void setYAxis(String yAxis) {
-		this.yAxis = variables.getVariables(StringUtils.jsonArrayToIntList(yAxis));
+		this.yAxis = parentBean.getVariablesList().getVariables(StringUtils.jsonArrayToIntList(yAxis));
 	}
 	/**
 	
@@ -171,14 +177,20 @@ public class Plot {
 	 * @return the mapVariable
 	 */
 	public int getMapVariable() {
-		return mapVariable.getId();
+		int result = -1;
+		
+		if (null != mapVariable) {
+			result = mapVariable.getId();
+		}
+		
+		return result;
 	}
 
 	/**
 	 * @param mapVariable the mapVariable to set
 	 */
 	public void setMapVariable(int mapVariable) {
-		this.mapVariable = variables.getVariable(mapVariable);
+		this.mapVariable = parentBean.getVariablesList().getVariable(mapVariable);
 	}
 
 	/**
@@ -207,15 +219,6 @@ public class Plot {
 		// Do nothing
 	}
 	
-	/**
-	 * Set the plot data. Protected method to stop the JSF
-	 * front end setting data.
-	 * @param data The plot data
-	 */
-	protected void setPlotData(String data) {
-		this.data = data;
-	}
-	
 	// TODO This is horrible. Come up with an alternative.
 	//      But we need a way to stop the labels coming from the front end
 
@@ -231,24 +234,43 @@ public class Plot {
 		
 		switch(mode) {
 		case MODE_PLOT: {
+			
 			// TODO Remove the magic strings. Make PSF fields in CalculationDB
 			result.append('"');
-			result.append(xAxis.getLabel());
+			if (null != xAxis) {
+				result.append(xAxis.getLabel());
+			}
 			result.append("\",\"");
 			result.append("ID");
-			result.append("\",\"");
-			result.append("Automatic Flag");
-			result.append("\",\"");
-			result.append("Manual Flag");
-			result.append("\",");
+			result.append('"');
 
-			for (int i = 0; i < yAxis.size(); i++) {
-				result.append('"');
-				result.append(yAxis.get(i).getLabel());
-				result.append('"');
+			List<String> fixedPlotFields = parentBean.getFixedPlotFieldLabels();
+			
+			if (null != fixedPlotFields && fixedPlotFields.size() > 0) {
+				result.append(',');
 				
-				if (i < yAxis.size() - 1) {
-					result.append(',');
+				for (int i = 0; i < fixedPlotFields.size(); i++) {
+					result.append('"');
+					result.append(fixedPlotFields.get(i));
+					result.append('"');
+					
+					if (i < fixedPlotFields.size() - 1) {
+						result.append(',');
+					}
+				}
+			}
+			
+			if (null != yAxis) {
+				result.append(',');
+
+				for (int i = 0; i < yAxis.size(); i++) {
+					result.append('"');
+					result.append(yAxis.get(i).getLabel());
+					result.append('"');
+					
+					if (i < yAxis.size() - 1) {
+						result.append(',');
+					}
 				}
 			}
 			
@@ -300,11 +322,16 @@ public class Plot {
 			// TODO Remove the magic strings. Make PSF fields in CalculationDB
 			fields.add(xAxis.getFieldName());
 			fields.add("id");
-			fields.add("auto_flag");
-			fields.add("user_flag");
 			
-			for (Variable variable : yAxis) {
-				fields.add(variable.getFieldName());
+			List<String> fixedFields = parentBean.getFixedPlotFieldNames();
+			if (null != fixedFields) {
+				fields.addAll(fixedFields);
+			}
+
+			if (null != yAxis) {
+				for (Variable variable : yAxis) {
+					fields.add(variable.getFieldName());
+				}
 			}
 			
 			break;
@@ -329,7 +356,7 @@ public class Plot {
    	 */
 	public void updatePlot() {
 		try {
-			data = CalculationDBFactory.getCalculationDB().getJsonData(dataSource, dataset, getPlotDataFields());
+			data = parentBean.getData(getPlotDataFields());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -396,7 +423,7 @@ public class Plot {
             // if (mapUpdateScale) {
                 mapScaleLimits = loadMapScaleLimits();
             //}
-            mapData = CalculationDBFactory.getCalculationDB().getJsonData(dataSource, dataset, getPlotDataFields(), mapBounds, true);
+            mapData = CalculationDBFactory.getCalculationDB().getJsonData(parentBean.getDataSource(), parentBean.getDataset(), getPlotDataFields(), mapBounds, true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -410,7 +437,8 @@ public class Plot {
 		List<Double> result = null;
 		
 		try {
-			result = CalculationDBFactory.getCalculationDB().getValueRange(dataSource, dataset, mapVariable.getFieldName());
+			// TODO This is specific to the Manual QC. Move it out to a method in the parent bean
+			result = CalculationDBFactory.getCalculationDB().getValueRange(parentBean.getDataSource(), parentBean.getDataset(), mapVariable.getFieldName());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

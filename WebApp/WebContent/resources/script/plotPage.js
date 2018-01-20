@@ -591,11 +591,11 @@ function showVariableDialog(plotIndex) {
 	
 	variablesPlotIndex = plotIndex;
 	
-	var mode = $('[id^=plotPageForm\\:plot' + plotIndex + 'Mode]:checked').val();
+	var mode = getPlotMode(plotIndex);
 	
 	if (mode == 'plot') {
 		setupPlotVariables(plotIndex);
-	} else {
+	} else if (mode == 'map') {
 		setupMapVariables(plotIndex);
 	}
 	
@@ -763,22 +763,22 @@ function resizeVariablesDialog() {
 function applyVariables() {
 	updatePlotInputs(variablesPlotIndex);
 
-	var mode = $('[id^=plotPageForm\\:plot' + variablesPlotIndex + 'Mode]:checked').val();
+	var mode = getPlotMode(variablesPlotIndex);
 
 	if (mode == 'plot') {
 		$('#plotPageForm\\:plot' + variablesPlotIndex + 'GetData').click();
-	} else {
+	} else if (mode == 'map') {
 		initMap(variablesPlotIndex);
 	}
 }
 
 function updatePlotInputs(plotIndex) {
-	var mode = $('[id^=plotPageForm\\:plot' + plotIndex + 'Mode]:checked').val();
+	var mode = getPlotMode(plotIndex);
 
 	if (mode == 'plot') {
 		$('#plotPageForm\\:plot' + plotIndex + 'XAxis').val(getSelectedXAxis());
 		$('#plotPageForm\\:plot' + plotIndex + 'YAxis').val(getSelectedYAxis());
-	} else {
+	} else if (mode == 'map') {
 		$('#plotPageForm\\:map' + plotIndex + 'Variable').val(getSelectedMapVar());
 	}
 	
@@ -884,9 +884,11 @@ function updateMap2(data) {
 
 function updatePlot(plotIndex) {
 
-	PF('variableDialog').hide();
+	if (PrimeFaces.widgets['variableDialog']) {
+		PF('variableDialog').hide();
+	}
 	
-	var mode = $('[id^=plotPageForm\\:plot' + plotIndex + 'Mode]:checked').val();
+	var mode = getPlotMode(plotIndex);
 	
 	if (mode == "plot") {
 		drawPlot(plotIndex);
@@ -1057,7 +1059,7 @@ function mapClick(event, pixel) {
 }
 
 function resetZoom(index) {
-	var mode = $('[id^=plotPageForm\\:plot' + index + 'Mode]:checked').val();
+	var mode = getPlotMode(index)
 
 	if (mode == 'map') {
 		var bounds = JSON.parse($('#plotPageForm\\:dataBounds').val());

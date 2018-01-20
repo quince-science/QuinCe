@@ -47,7 +47,7 @@ public class VariableList extends ArrayList<VariableGroup> {
 		lastId++;
 		variable.setId(lastId);
 
-		VariableGroup group = get(groupName);
+		VariableGroup group = getGroup(groupName);
 		
 		if (null == group) {
 			group = new VariableGroup(groupName);
@@ -73,7 +73,7 @@ public class VariableList extends ArrayList<VariableGroup> {
 	 * @param groupName The group name
 	 * @return The group, or {@code null} if it does not exist
 	 */
-	private VariableGroup get(String groupName) {
+	public VariableGroup getGroup(String groupName) {
 		VariableGroup result = null;
 
 		for (VariableGroup group : this) {
@@ -119,10 +119,12 @@ public class VariableList extends ArrayList<VariableGroup> {
 	 */
 	public List<Variable> getVariables(List<Integer> ids) {
 		
-		List<Variable> result = new ArrayList<Variable>(ids.size());
+		List<Variable> result = new ArrayList<Variable>();
 		
-		for (int id : ids) {
-			result.add(getVariable(id));
+		if (null != ids) {
+			for (int id : ids) {
+				result.add(getVariable(id));
+			}
 		}
 		
 		return result;

@@ -6,17 +6,12 @@ import java.util.List;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
-import org.primefaces.model.DefaultTreeNode;
-import org.primefaces.model.TreeNode;
-
 import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.PlotPageBean;
 import uk.ac.exeter.QuinCe.web.Variable;
+import uk.ac.exeter.QuinCe.web.VariableList;
 
 /**
  * Bean for handling review of calibration data
@@ -43,26 +38,6 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	private static final String NAV_DATASET_LIST = "dataset_list";
 	
 	/**
-	 * The ID of the data set being processed
-	 */
-	private long datasetId;
-	
-	/**
-	 * The data set being processed
-	 */
-	private DataSet dataset;
-	
-	/**
-	 * Tree model for external standards selection
-	 */
-	private TreeNode externalStandardsTree;
-	
-	/**
-	 * The selected external standard
-	 */
-	private TreeNode selectedStandard;
-	
-	/**
 	 * Indicates whether or not the selected calibrations should be used
 	 */
 	private boolean useCalibrations = true;
@@ -77,44 +52,6 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	 */
 	@Override
 	public void init() {
-		try {
-			dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
-			buildExternalStandardsTree();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	/**
-	 * Get the dataset ID
-	 * @return The dataset ID
-	 */
-	public long getDatasetId() {
-		return datasetId;
-	}
-	
-	/**
-	 * Set the dataset ID
-	 * @param datasetId The dataset ID
-	 */
-	public void setDatasetId(long datasetId) {
-		this.datasetId = datasetId;
-	}
-	
-	/**
-	 * Get the current DataSet object
-	 * @return The data set
-	 */
-	public DataSet getDataset() {
-		return dataset;
-	}
-	
-	/**
-	 * Get the tree containing the external standards
-	 * @return The external standards tree
-	 */
-	public TreeNode getExternalStandardsTree() {
-		return externalStandardsTree;
 	}
 	
 	/**
@@ -125,68 +62,9 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 		return NAV_DATASET_LIST;
 	}
 	
-	/**
-	 * Build the External Standards tree
-	 * @throws DatabaseException If a database error occurs
-	 * @throws MissingParamException If any required parameters are missing
-	 */
-	private void buildExternalStandardsTree() throws MissingParamException, DatabaseException {
-		externalStandardsTree = new DefaultTreeNode("External Standards Tree Root", null);
-		TreeNode externalStandardsNode = new DefaultTreeNode(ALL_NAME, externalStandardsTree);
-		externalStandardsNode.setExpanded(true);
-		externalStandardsTree.getChildren().add(externalStandardsNode);
-		for (String runType : InstrumentDB.getRunTypes(getDataSource(), dataset.getInstrumentId(), "EXT")) {
-			externalStandardsNode.getChildren().add(new DefaultTreeNode(runType, externalStandardsNode));
-		}
-		
-		// Select the All Standards node
-		selectedStandard = externalStandardsNode;
-		externalStandardsNode.setSelected(true);
-	}
-	
-	/**
-	 * Get the selected external standards
-	 * @return The selected external standards
-	 */
-	public TreeNode getSelectedStandard() {
-		return selectedStandard;
-	}
-	
-	/**
-	 * Set the selected external standards
-	 * @param selectedStandard The selected standards
-	 */
-	public void setSelectedStandard(TreeNode selectedStandard) {
-		this.selectedStandard = selectedStandard;
-	}
-	
-	@Override
-	public String loadPlotData(int plotIndex) throws Exception {
-		String result = null;
-		
-		if (plotIndex == 1) {
-			result = CalibrationDataDB.getJsonPlotData(getDataSource(), datasetId, getStandardSearchString());
-		}
-		
-		return result;
-	}
-	
 	@Override
 	protected List<Long> loadRowIds() throws Exception {
-		return CalibrationDataDB.getCalibrationRowIds(getDataSource(), datasetId, getStandardSearchString());
-	}
-	
-	/**
-	 * Get the search string for the selected standard
-	 * @return The search string
-	 */
-	private String getStandardSearchString() {
-		String standardName = (String) selectedStandard.getData();
-		if (standardName.equals(ALL_NAME)) {
-			standardName = null;
-		}
-		
-		return standardName;
+		return CalibrationDataDB.getCalibrationRowIds(getDataSource(), getDatasetId(), ALL_NAME);
 	}
 	
 	@Override
@@ -207,7 +85,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	
 	@Override
 	protected String buildSelectableRows() throws Exception {
-		List<Long> ids = CalibrationDataDB.getCalibrationRowIds(getDataSource(), getDatasetId(), getStandardSearchString());
+		List<Long> ids = CalibrationDataDB.getCalibrationRowIds(getDataSource(), getDatasetId(), ALL_NAME);
 		StringBuilder result = new StringBuilder();
 		result.append('[');
 		for (int i = 0; i < ids.size(); i++) {
@@ -240,7 +118,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 
 	@Override
 	protected String loadTableData(int start, int length) throws Exception {
-		return CalibrationDataDB.getJsonTableData(getDataSource(), datasetId, getStandardSearchString(), start, length);
+		return CalibrationDataDB.getJsonTableData(getDataSource(), getDatasetId(), null, start, length);
 	}
 	
 	/**
@@ -291,12 +169,12 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 
 	@Override
 	protected Variable getDefaultPlot1XAxis() {
-		return null;
+		return variables.getVariableWithLabel("Date/Time");
 	}
 
 	@Override
 	protected List<Variable> getDefaultPlot1YAxis() {
-		return new ArrayList<Variable>();
+		return variables.getGroup("CO2").getVariables();
 	}
 
 	@Override
@@ -316,6 +194,32 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 
 	@Override
 	protected Variable getDefaultMap2Variable() {
+		return null;
+	}
+
+	@Override
+	protected void buildVariableList(VariableList variables) throws Exception {
+		variables.addVariable("Date/Time", new Variable(Variable.TYPE_BASE, "Date/Time", "date"));
+		CalibrationDataDB.populateVariableList(getDataSource(), getDataset(), variables);
+	}
+
+	@Override
+	protected String getData(List<String> fields) throws Exception {
+		List<String> standardNames = new ArrayList<String>();
+		for (Variable variable : plot1.getYAxisVariables()) {
+			standardNames.add(variable.getFieldName());
+		}
+		
+		return CalibrationDataDB.getJsonPlotData(getDataSource(), getDataset(), standardNames);
+	}
+
+	@Override
+	protected List<String> getFixedPlotFieldNames() {
+		return null;
+	}
+
+	@Override
+	protected List<String> getFixedPlotFieldLabels() {
 		return null;
 	}
 }

@@ -4,8 +4,14 @@ function start() {
 }
 
 function drawPage() {
-	drawPlot(1);
+	initPlot();
 	drawTable();
+}
+
+function initPlot(index) {
+	setupPlotVariables(1);
+	variablesPlotIndex = 1;
+	applyVariables();
 }
 
 /*
@@ -54,10 +60,8 @@ function resizePlots() {
 	// TODO See if we can make this work stuff out automatically
 	// when the plots are stored in plotPage.js
 	// See issue #564
-	
-	$('#plot1Container').width(window.innerWidth - 300).height('100%');
-	plot1.resize($('#plot1Container').width(), $('#plot1Container').height());
-	
+	$('#plot1Container').width('100%');
+	$('#plot1Container').height($('#plot1Panel').height() - 40);
 }
 
 function showUseDialog() {
@@ -106,4 +110,8 @@ function updateUseDialogControls() {
 			PF('okButtonWidget').enable();
 		}
 	}
+}
+
+function getPlotMode(index) {
+	return 'plot';
 }

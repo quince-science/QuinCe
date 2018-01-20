@@ -15,22 +15,23 @@
 	</ui:define>
 	
 	<ui:define name="formEntries">
+		<h:inputHidden value="#{reviewCalibrationDataBean.plot1.mode}" id="plot1Mode"/>
+		<h:inputHidden value="#{reviewCalibrationDataBean.plot2.mode}" id="plot2Mode"/>
+		
 		<p:commandLink id="setUseCalibrations" action="#{reviewCalibrationDataBean.setCalibrationUse}" ajax="true" process="useCalibrations useCalibrationsMessage selectedRows" update="@none"/>
 	</ui:define>
 	
 	<ui:define name="dataSetName">#{reviewCalibrationDataBean.dataset.name} - Calibration Data #{requestScope[beanName]}</ui:define>
 	
 	<ui:define name="plots">
-		<div id="treeContainer">
-			<p:tree id="standardName" value="#{reviewCalibrationDataBean.externalStandardsTree}" selection="#{reviewCalibrationDataBean.selectedStandard}" var="node" selectionMode="single">
-				<p:ajax event="select" listener="#{reviewCalibrationDataBean.reloadPageData}" process="@this" update="plotPageForm:plot1Data, plotPageForm:plot1Labels plotPageForm:tableJsonData plotPageForm:tableDataDraw plotPageForm:recordCount" oncomplete="drawPage()"/>
-				<p:treeNode>
-					<h:outputText value="#{node}"/>
-				</p:treeNode>
-			</p:tree>
-		</div>
-		<div id="plot1Container">
-			Standards plot is here
+		<div id="plot1Panel" class="plotContainer">
+			<div id="plot1Container"></div>
+			<p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
+				<f:facet name="left">
+					<p:commandButton icon="selectVariableButton" onclick="showVariableDialog(1)" styleClass="inlineButton tightButton"/>
+					<p:commandButton icon="zoomOutButton" onclick="resetZoom(1)" styleClass="inlineButton tightButton"/>
+				</f:facet>
+			</p:toolbar>
 		</div>
 	</ui:define>
 	

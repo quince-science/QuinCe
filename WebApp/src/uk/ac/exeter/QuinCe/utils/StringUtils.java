@@ -134,7 +134,7 @@ public class StringUtils {
 		
 		List<Integer> result = null;
 		
-		if (values != null) {
+		if (values != null && values.length() > 0) {
 			List<String> stringList = delimitedToList(values, delimiter);
 			result = new ArrayList<Integer>(stringList.size());
 

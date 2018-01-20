@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.web;
 
 import java.util.List;
 
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -445,14 +444,13 @@ public abstract class PlotPageBean extends BaseManagedBean {
 			dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
 
 			variables = new VariableList();
-			DataSetDataDB.populateVariableList(getDataSource(), dataset, variables);
+			buildVariableList(variables);
 			dataBounds = DataSetDataDB.getDataBounds(getDataSource(), dataset);
-			CalculationDBFactory.getCalculationDB().populateVariableList(variables);
 			
 			init();
 			dirty = false;
-			plot1 = new Plot(variables, getDataSource(), dataset, dataBounds, getDefaultPlot1XAxis(), getDefaultPlot1YAxis(), getDefaultMap1Variable());
-			plot2 = new Plot(variables, getDataSource(), dataset, dataBounds, getDefaultPlot2XAxis(), getDefaultPlot2YAxis(), getDefaultMap2Variable());
+			plot1 = new Plot(this, dataBounds, getDefaultPlot1XAxis(), getDefaultPlot1YAxis(), getDefaultMap1Variable());
+			plot2 = new Plot(this, dataBounds, getDefaultPlot2XAxis(), getDefaultPlot2YAxis(), getDefaultMap2Variable());
 			
 			tableHeadings = buildTableHeadings();
 			selectableRows = buildSelectableRows();
@@ -505,13 +503,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * @return The navigation to the plot screen
 	 */
 	protected abstract String getScreenNavigation();
-	
-	/**
-	 * Load the data for the first plot view
-	 * @return The plot data
-	 * @throws Exception If the data cannot be retrieved
-	 */
-	protected abstract String loadPlotData(int plotIndex) throws Exception;
 	
 	/**
 	 * Build the list of selectable record IDs
@@ -591,4 +582,33 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	public void setDataBounds(String dataBounds) {
 		// Do nothing
 	}
+	
+	/**
+	 * Build the variable list for the plots
+	 * @param variables The list to be populated
+	 * @throws Exception If any errors occur
+	 */
+	protected abstract void buildVariableList(VariableList variables) throws Exception;
+	
+	/**
+	 * Retrieve the data for the specified fields as a JSON string
+	 * @param fields The fields to retrieve
+	 * @return The data
+	 * @throws Exception If an error occurs
+	 */
+	protected abstract String getData(List<String> fields) throws Exception;
+	
+	/**
+	 * Get the names of the fields that must be included in the plots
+	 * (not maps)
+	 * @return The required fields
+	 */
+	protected abstract List<String> getFixedPlotFieldNames();
+	
+	/**
+	 * Get the names of the fields that must be included in the plots
+	 * (not maps)
+	 * @return The required fields
+	 */
+	protected abstract List<String> getFixedPlotFieldLabels();
 }

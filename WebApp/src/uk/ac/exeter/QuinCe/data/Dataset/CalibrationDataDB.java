@@ -14,6 +14,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -24,6 +25,8 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.Variable;
+import uk.ac.exeter.QuinCe.web.VariableList;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -214,13 +217,7 @@ public class CalibrationDataDB {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkZeroPositive(datasetId, "datasetId");
 		
-		List<String> calibrationFields = new ArrayList<String>();
-		SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
-		for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-			if (sensorType.hasExternalStandards()) {
-				calibrationFields.add(sensorType.getDatabaseFieldName());
-			}
-		}
+		List<String> calibrationFields = getCalibrationFields();
 
 		List<String> queryFields = new ArrayList<String>();
 		queryFields.add("id");
@@ -318,34 +315,48 @@ public class CalibrationDataDB {
 	 * Get the external standard data for a given data set and standard in JSON format for the table view
 	 * If {@code standardName} is {@code null}, all external standards will be included in the results
 	 * @param dataSource A data source
-	 * @param datasetId The database ID of the data set
-	 * @param standardName The name of the standard ({@code null} for all standards)
+	 * @param dataset The data set
+	 * @param standardNames The names of the standards ({@code null} for all standards)
 	 * @return The standards data
 	 * @throws DatabaseException If a database error occurs
 	 * @throws MissingParamException If any required parameters are missing
  	 */
-	public static String getJsonPlotData(DataSource dataSource, long datasetId, String standardName) throws MissingParamException, DatabaseException {
+	public static String getJsonPlotData(DataSource dataSource, DataSet dataset, List<String> standardNames) throws MissingParamException, DatabaseException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
-		MissingParam.checkZeroPositive(datasetId, "datasetId");
+		MissingParam.checkMissing(dataset, "dataset");
+				
+		List<String> calibrationFields = getCalibrationFields();
+
+		StringBuilder sql = new StringBuilder();
 		
-		List<String> calibrationFields = new ArrayList<String>();
-		SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
-		for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-			if (sensorType.hasExternalStandards()) {
-				calibrationFields.add(sensorType.getDatabaseFieldName());
+		sql.append("SELECT run_type, date, id, ");
+		for (int i = 0; i < calibrationFields.size(); i++) {
+			sql.append(calibrationFields.get(i));
+			
+			if (i < calibrationFields.size() - 1) {
+				sql.append(',');
 			}
 		}
 
-		List<String> queryFields = new ArrayList<String>();
-		queryFields.add("date");
-		queryFields.add("id");
-		queryFields.addAll(calibrationFields);
+		sql.append(" FROM calibration_data ");
 		
-		List<String> andFields = new ArrayList<String>();
-		andFields.add("dataset_id");
-		if (null != standardName) {
-			andFields.add("run_type");
+		sql.append(" WHERE dataset_id = ?");
+		
+		if (null != standardNames && standardNames.size() > 0) {
+			sql.append(" AND run_type IN (");
+			
+			for (int i = 0; i < standardNames.size(); i++) {
+				sql.append('"');
+				sql.append(standardNames.get(i));
+				sql.append('"');
+				
+				if (i < standardNames.size() - 1) {
+					sql.append(',');
+				}
+			}
+			
+			sql.append(')');
 		}
 		
 		StringBuilder json = new StringBuilder();
@@ -358,11 +369,8 @@ public class CalibrationDataDB {
 		try {
 			conn = dataSource.getConnection();
 
-			stmt = DatabaseUtils.createSelectStatement(conn, "calibration_data", queryFields, andFields);
-			stmt.setLong(1, datasetId);
-			if (null != standardName) {
-				stmt.setString(2, standardName);
-			}
+			stmt = conn.prepareStatement(sql.toString());
+			stmt.setLong(1, dataset.getId());
 			
 			records = stmt.executeQuery();
 			boolean hasRecords = false;
@@ -373,6 +381,9 @@ public class CalibrationDataDB {
 				
 				int columnIndex = 0;
 				columnIndex++;
+				String runType = records.getString(columnIndex);
+				
+				columnIndex++;
 				json.append(records.getLong(columnIndex)); // date
 				json.append(',');
 
@@ -382,7 +393,21 @@ public class CalibrationDataDB {
 				
 				for (int i = 0; i < calibrationFields.size(); i++) {
 					columnIndex++;
-					json.append(records.getDouble(columnIndex));
+					
+					double value = records.getDouble(columnIndex);
+					
+					for (int j = 0; j < standardNames.size(); j++) {
+						if (runType.equals(standardNames.get(j))) {
+							json.append(value);
+						} else {
+							json.append("null");
+						}
+						
+						if (j < standardNames.size() - 1) {
+							json.append(',');
+						}
+					}
+					
 					if (i < calibrationFields.size() - 1) {
 						json.append(',');
 					}
@@ -405,6 +430,36 @@ public class CalibrationDataDB {
 		}
 
 		return json.toString();
+	}
+
+	/**
+	 * Get the calibration fields from the system
+	 * @return The calibration fields
+	 */
+	private static List<String> getCalibrationFields() {
+		List<String> calibrationFields = new ArrayList<String>();
+		SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
+		for (SensorType sensorType : sensorConfig.getSensorTypes()) {
+			if (sensorType.hasExternalStandards()) {
+				calibrationFields.add(sensorType.getDatabaseFieldName());
+			}
+		}
+		return calibrationFields;
+	}
+
+	/**
+	 * Get the calibration fields from the system
+	 * @return The calibration fields
+	 */
+	private static List<String> getCalibrationFieldNames() {
+		List<String> calibrationFields = new ArrayList<String>();
+		SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
+		for (SensorType sensorType : sensorConfig.getSensorTypes()) {
+			if (sensorType.hasExternalStandards()) {
+				calibrationFields.add(sensorType.getName());
+			}
+		}
+		return calibrationFields;
 	}
 
 	/**
@@ -592,7 +647,21 @@ public class CalibrationDataDB {
 		} finally {
 			DatabaseUtils.closeResultSets(records);
 			DatabaseUtils.closeStatements(stmt);
+		}	
+	}
+	
+	/**
+	 * Populate a variables list with the calibration fields
+	 * @param dataSource A data source
+	 * @param dataset A data set
+	 * @param variables The variables list
+	 * @throws Exception If an error occurs 
+	 */
+	public static void populateVariableList(DataSource dataSource, DataSet dataset, VariableList variables) throws Exception {
+		for (String fieldName : getCalibrationFieldNames()) {
+			for (String runType : InstrumentDB.getRunTypes(dataSource, dataset.getInstrumentId(), "EXT")) {
+				variables.addVariable(fieldName, new Variable(Variable.TYPE_SENSOR, runType, runType));
+			}
 		}
-		
 	}
 }
