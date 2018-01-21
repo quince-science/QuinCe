@@ -44,6 +44,16 @@ public class DataSet {
 	public static final String STATUS_WAITING_FOR_CALCULATION_NAME = "Waiting for calculation";
 	
 	/**
+	 * The numeric value for the data extraction status
+	 */
+	public static final int STATUS_QC = 3;
+	
+	/**
+	 * The string for the data extraction status
+	 */
+	public static final String STATUS_QC_NAME = "Ready for QC";
+	
+	/**
 	 * The database ID
 	 */
 	private long id = DatabaseUtils.NO_DATABASE_RECORD;
@@ -148,6 +158,10 @@ public class DataSet {
 		}
 		case STATUS_WAITING_FOR_CALCULATION: {
 			result = STATUS_WAITING_FOR_CALCULATION_NAME;
+			break;
+		}
+		case STATUS_QC: {
+			result = STATUS_QC_NAME;
 			break;
 		}
 		default: {
@@ -294,6 +308,9 @@ public class DataSet {
 	 * @return {@code true} if the status is valid; {@code false} if it is not
 	 */
 	public static boolean validateStatus(int status) {
-		return (status == STATUS_WAITING || status == STATUS_DATA_EXTRACTION || status == STATUS_WAITING_FOR_CALCULATION);
+		return (status == STATUS_WAITING || 
+				status == STATUS_DATA_EXTRACTION || 
+				status == STATUS_WAITING_FOR_CALCULATION ||
+				status == STATUS_QC);
 	}
 }
