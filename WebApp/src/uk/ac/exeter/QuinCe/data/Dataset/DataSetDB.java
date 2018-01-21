@@ -268,6 +268,18 @@ public class DataSetDB {
 		}
 	}
 	
+	/**
+	 * Set the status of a {@link DataSet}.
+	 * @param conn A database connection
+	 * @param datasetId The data set's ID
+	 * @param status The new status
+	 * @throws MissingParamException If any required parameters are missing
+	 * @throws InvalidDataSetStatusException If the status is invalid
+	 * @throws DatabaseException If a database error occurs
+	 */
+	public static void setDatasetStatus(Connection conn, long datasetId, int status) throws MissingParamException, InvalidDataSetStatusException, DatabaseException, RecordNotFoundException {
+		setDatasetStatus(conn, getDataSet(conn, datasetId), status);
+	}
 	
 	/**
 	 * Set the status of a {@link DataSet}.

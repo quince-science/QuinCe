@@ -18,6 +18,8 @@ import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecordFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
@@ -222,6 +224,7 @@ public class AutoQCJob extends Job {
 				conn.rollback();
 			} else {
 				// Commit all the records
+				DataSetDB.setDatasetStatus(conn, datasetId, DataSet.STATUS_QC);
 				conn.commit();
 			}
 		} catch (Exception e) {
