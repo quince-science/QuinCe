@@ -84,10 +84,15 @@
 					<f:facet name="header">
 						<h:outputText value="Actions"/>
 					</f:facet>
-					<a href="#" onclick="return goToCalibrationData(#{dataset.id})">Cal</a>
-					<a href="#" onclick="return createDataReductionJob(#{dataset.id})">Red</a>
-					<a href="#" onclick="return createAutoQcJob(#{dataset.id})">AutoQC</a>
-					<a href="#" onclick="return goToQc(#{dataset.id})">ManualQC</a>
+					<p:commandLink onclick="goToCalibrationData(#{dataset.id})">
+						<h:graphicImage value="/resources/image/calibration.svg" styleClass="actionIcon" alt="Calibration" title="Calibration"/>
+					</p:commandLink>
+					<p:commandLink onclick="createDataReductionJob(#{dataset.id})">
+						<h:graphicImage value="/resources/image/calculate.svg" styleClass="actionIcon" alt="Data Reduction" title="Data Reduction"/>
+					</p:commandLink>
+					<p:commandLink onclick="goToQc(#{dataset.id})">
+						<h:graphicImage value="/resources/image/qc.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
+					</p:commandLink>
 				</p:column>
 			</p:dataTable>
 			
