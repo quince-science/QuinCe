@@ -26,7 +26,6 @@ import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
-import uk.ac.exeter.QuinCe.jobs.NoSuchJobException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -241,7 +240,7 @@ public class AutoQCJob extends Job {
 	}
 	
 	/**
-	 * Get the calculation records for a set of measurements. BAD or IGNORED records
+	 * Get the calculation records for a set of measurements. QUESTIONABLE, BAD or IGNORED records
 	 * are not included.
 	 * @param datasetId The dataset ID
 	 * @param ids The measurement IDs
@@ -259,7 +258,7 @@ public class AutoQCJob extends Job {
 		for (long id : ids) {
 			CalculationRecord record = CalculationRecordFactory.makeCalculationRecord(datasetId, id);
 			record.loadData(conn);
-			if (!record.getUserFlag().equals(Flag.BAD) && !record.getUserFlag().equals(Flag.IGNORED)) {
+			if (!record.getUserFlag().equals(Flag.QUESTIONABLE) && !record.getUserFlag().equals(Flag.BAD) && !record.getUserFlag().equals(Flag.IGNORED)) {
 				records.add(record);
 			}
 		}
