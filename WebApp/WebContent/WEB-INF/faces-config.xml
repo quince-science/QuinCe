@@ -4,12 +4,17 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd"
     version="2.2">
-	<managed-bean>
-		<description>Handles user login</description>
-		<managed-bean-name>loginBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.User.LoginBean</managed-bean-class>
-		<managed-bean-scope>request</managed-bean-scope>
-	</managed-bean>
+	<converter>
+		<description>Converts strings to LocalDateTime objects</description>
+		<display-name>LocalDateTimeConverter</display-name>
+		<converter-id>localDateTimeConverter</converter-id>
+		<converter-class>uk.ac.exeter.QuinCe.web.system.LocalDateTimeConverter</converter-class>
+		<attribute>
+			<attribute-name>dateOnly</attribute-name>
+			<attribute-class>java.lang.Boolean</attribute-class>
+			<default-value>false</default-value>
+		</attribute>
+	</converter>
 	<managed-bean>
 		<description>Processes user signup</description>
 		<managed-bean-name>signupBean</managed-bean-name>
@@ -29,27 +34,9 @@
 		<managed-bean-scope>request</managed-bean-scope>
 	</managed-bean>
 	<managed-bean>
-		<description>New Instrument</description>
-		<managed-bean-name>newInstrumentBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.NewInstrumentBean</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
 		<description>Small bean for producing lists of instruments</description>
 		<managed-bean-name>instrumentListBean</managed-bean-name>
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.InstrumentListBean</managed-bean-class>
-		<managed-bean-scope>request</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
-		<description>Handles viewing and editing of sensor calibrations</description>
-		<managed-bean-name>calibrationsBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.CalibrationsBean</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
-		<description>Handles viewing and editing of gas standards</description>
-		<managed-bean-name>standardsBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.StandardsBean</managed-bean-class>
 		<managed-bean-scope>session</managed-bean-scope>
 	</managed-bean>
 	<managed-bean>
@@ -65,40 +52,28 @@
 		<managed-bean-scope>view</managed-bean-scope>
 	</managed-bean>
 	<managed-bean>
-		<description>Handles the File List page</description>
-		<managed-bean-name>fileListBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.files.FileListBean</managed-bean-class>
-		<managed-bean-scope>request</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
-		<description>Handles upload of data files</description>
-		<managed-bean-name>uploadDataFileBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.files.UploadDataFileBean</managed-bean-class>
-		<managed-bean-scope>view</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
-		<description>Holds all data required by the Data Screen, where the user performs QC.</description>
-		<managed-bean-name>dataScreenBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.files.DataScreenBean</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
 		<description>Bean that can be touched to keep user sessions alive</description>
 		<managed-bean-name>keepAliveBean</managed-bean-name>
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.KeepAliveBean</managed-bean-class>
 		<managed-bean-scope>session</managed-bean-scope>
 	</managed-bean>
 	<validator>
-		<description>Ensures that sensor calibration dates are unique</description>
-		<display-name>Calibration Date Validator</display-name>
-		<validator-id>calibrationDateValidator</validator-id>
-		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.CalibrationDateValidator</validator-class>
+		<description>Ensures that instrument names are not empty, and are unique to the user</description>
+		<display-name>Instrument Name Validator</display-name>
+		<validator-id>instrumentNameValidator</validator-id>
+		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.newInstrument.InstrumentNameValidator</validator-class>
 	</validator>
 	<validator>
-		<description>Ensures that gas standard dates are unique</description>
-		<display-name>Gas Standard Date Validator</display-name>
-		<validator-id>standardDateValidator</validator-id>
-		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.StandardDateValidator</validator-class>
+		<description>Checks that the file description for an instrument file is unique and not empty. This should be used in instrument/new/upload_file.xhtml, but I&amp;apos;m doing it in Javascript for now because it&amp;apos;s easier to work with and I&amp;apos;m not in the mood to mess around with it.</description>
+		<display-name>Instrument File Description Validator</display-name>
+		<validator-id>instrumentFileDescriptionValidator</validator-id>
+		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.newInstrument.InstrumentFileDescriptionValidator</validator-class>
+	</validator>
+	<validator>
+		<description>Checks that a separator is valid for a data file</description>
+		<display-name>Separation Validator</display-name>
+		<validator-id>separatorValidator</validator-id>
+		<validator-class>uk.ac.exeter.QuinCe.web.Instrument.newInstrument.SeparatorValidator</validator-class>
 	</validator>
 	<navigation-rule>
 		<display-name>all_pages</display-name>
@@ -121,7 +96,7 @@
 		</navigation-case>
 		<navigation-case>
 			<from-outcome>AuthenticationSuccess</from-outcome>
-			<to-view-id>/data/file_list.xhtml</to-view-id>
+			<to-view-id>/dataset/dataset_list.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
@@ -164,80 +139,48 @@
 		<display-name>InstrumentList</display-name>
 		<from-view-id>/instrument/instrument_list.xhtml</from-view-id>
 		<navigation-case>
-			<from-outcome>names</from-outcome>
-			<to-view-id>/instrument/new/names.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>calibrations</from-outcome>
-			<to-view-id>/instrument/calibrations.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>standards</from-outcome>
-			<to-view-id>/instrument/standards.xhtml</to-view-id>
+			<from-outcome>name</from-outcome>
+			<to-view-id>/instrument/new/instrument_name.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
 		<display-name>NewInstrumentNavigation</display-name>
 		<from-view-id>/instrument/new/*</from-view-id>
 		<navigation-case>
-			<from-outcome>cancel</from-outcome>
+			<from-outcome>instrument_list</from-outcome>
 			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
-			<from-outcome>names</from-outcome>
-			<to-view-id>/instrument/new/names.xhtml</to-view-id>
+			<from-outcome>name</from-outcome>
+			<to-view-id>/instrument/new/instrument_name.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
-			<from-outcome>filespec</from-outcome>
-			<to-view-id>/instrument/new/file_spec.xhtml</to-view-id>
+			<from-outcome>upload_file</from-outcome>
+			<to-view-id>/instrument/new/upload_file.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
-			<from-outcome>sample_file</from-outcome>
-			<to-view-id>/instrument/new/upload_sample_file.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>column_selection</from-outcome>
-			<to-view-id>/instrument/new/select_columns.xhtml</to-view-id>
+			<from-outcome>assign_variables</from-outcome>
+			<to-view-id>/instrument/new/assign_variables.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
 			<from-outcome>run_types</from-outcome>
 			<to-view-id>/instrument/new/run_types.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
-			<from-outcome>instrument_list</from-outcome>
-			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
+			<from-outcome>other_info</from-outcome>
+			<to-view-id>/instrument/new/other_info.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
-		<display-name>CalibrationsList</display-name>
-		<from-view-id>/instrument/calibrations.xhtml</from-view-id>
+		<display-name>ExternalStandardsList</display-name>
+		<from-view-id>/instrument/external_standards.xhtml</from-view-id>
 		<navigation-case>
 			<from-outcome>instrument_list</from-outcome>
 			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
-			<from-outcome>calibrations</from-outcome>
-			<to-view-id>/instrument/calibrations.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>calibrationEditor</from-outcome>
-			<to-view-id>/instrument/calibration_edit.xhtml</to-view-id>
-		</navigation-case>
-	</navigation-rule>
-	<navigation-rule>
-		<display-name>StandardsList</display-name>
-		<from-view-id>/instrument/standards.xhtml</from-view-id>
-		<navigation-case>
-			<from-outcome>instrument_list</from-outcome>
-			<to-view-id>/instrument/instrument_list.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>standards</from-outcome>
-			<to-view-id>/instrument/standards.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>standardEditor</from-outcome>
-			<to-view-id>/instrument/standard_edit.xhtml</to-view-id>
+			<from-outcome>external_standards</from-outcome>
+			<to-view-id>/instrument/external_standards.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
@@ -253,31 +196,35 @@
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
-		<display-name>FileList</display-name>
-		<from-view-id>/data/file_list.xhtml</from-view-id>
+		<display-name>DataFiles</display-name>
+		<from-view-id>/data_file/*</from-view-id>
 		<navigation-case>
-			<from-outcome>upload_file</from-outcome>
-			<to-view-id>/data/upload_file.xhtml</to-view-id>
+			<from-outcome>upload</from-outcome>
+			<to-view-id>/data_file/upload.xhtml</to-view-id>
 		</navigation-case>
 		<navigation-case>
 			<from-outcome>file_list</from-outcome>
-			<to-view-id>/data/file_list.xhtml</to-view-id>
-		</navigation-case>
-		<navigation-case>
-			<from-outcome>data_screen</from-outcome>
-			<to-view-id>/data/data_screen.xhtml</to-view-id>
-        </navigation-case>
-        <navigation-case>
-			<from-outcome>export</from-outcome>
-			<to-view-id>/data/export.xhtml</to-view-id>
+			<to-view-id>/data_file/file_list.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
-		<display-name>UploadDataFile</display-name>
-		<from-view-id>/data/upload_file.xhtml</from-view-id>
+		<display-name>DataSets</display-name>
+		<from-view-id>/dataset/*</from-view-id>
 		<navigation-case>
-			<from-outcome>file_list</from-outcome>
-			<to-view-id>/data/file_list.xhtml</to-view-id>
+			<from-outcome>new_dataset</from-outcome>
+			<to-view-id>/dataset/new_dataset.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>dataset_list</from-outcome>
+			<to-view-id>/dataset/dataset_list.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>calibration_data_plot</from-outcome>
+			<to-view-id>/dataset/calibration_data.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>user_qc</from-outcome>
+			<to-view-id>/dataset/manual_qc.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>

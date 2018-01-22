@@ -1,19 +1,20 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 	template="/WEB-INF/templates/basic_page.xhtml">
 
 	<ui:define name="title">Registration Successful</ui:define>
 
 	<ui:define name="content">
-		<div id="contentbox">
+		<div class="contentBox">
 			<h1>Registration Successful</h1>
 			<div class="instructions">
-			You will shortly receive an email. Click on the link in the email to activate your account.
+				You will shortly receive an email. Click on the link in the email to activate your account.
 			</div>
-			<div class="buttonWrapper">
-            	<h:button id="okButton" value="OK" outcome="/index.xhtml"/>
-            </div>
+			<h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+            	<p:button id="okButton" value="OK" outcome="/index.xhtml"/>
+            </h:panelGrid>
 		</div>
 	</ui:define>
 </ui:composition>

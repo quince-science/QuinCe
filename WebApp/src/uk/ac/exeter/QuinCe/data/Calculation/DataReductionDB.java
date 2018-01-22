@@ -20,6 +20,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class DataReductionDB {
 
 	/**

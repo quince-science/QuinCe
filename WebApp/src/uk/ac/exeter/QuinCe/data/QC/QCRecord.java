@@ -31,6 +31,7 @@ import uk.ac.exeter.QuinCe.utils.InvalidDateTimeStringException;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class QCRecord extends DataRecord {
 	
 	private long dataFileId;
@@ -213,12 +214,7 @@ public class QCRecord extends DataRecord {
 	}
 	
 	public String getWoceComment() {
-		String result = woceComment;
-		if (null == result) {
-			result = "<no comment entered>";
-		}
-		
-		return result;
+		return woceComment;
 	}
 	
 	public void setWoceComment(String woceComment) {

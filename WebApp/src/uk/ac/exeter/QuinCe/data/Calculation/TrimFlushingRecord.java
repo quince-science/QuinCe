@@ -10,6 +10,7 @@ import org.joda.time.DateTime;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class TrimFlushingRecord implements Comparable<TrimFlushingRecord> {
 
 	/**
@@ -35,6 +36,7 @@ public class TrimFlushingRecord implements Comparable<TrimFlushingRecord> {
 	/**
 	 * The date/time of the record
 	 */
+	@Deprecated
 	private DateTime dateTime;
 	
 	/**
@@ -54,6 +56,7 @@ public class TrimFlushingRecord implements Comparable<TrimFlushingRecord> {
 	 * @param dateTime The date/time
 	 * @param runTypeId The run type
 	 */
+	@Deprecated
 	public TrimFlushingRecord(int recordType, int row, DateTime dateTime, long runTypeId) {
 		this.recordType = recordType;
 		this.row = row;
@@ -75,6 +78,7 @@ public class TrimFlushingRecord implements Comparable<TrimFlushingRecord> {
 	 * @param preFlushLimit The pre-flushing limit
 	 * @return {@code true} if the record is within the pre-flushing limit; {@code false} if it is not
 	 */
+	@Deprecated
 	public boolean checkPreFlushing(DateTime preFlushLimit) {
 		boolean result = false;
 		
@@ -91,6 +95,7 @@ public class TrimFlushingRecord implements Comparable<TrimFlushingRecord> {
 	 * @param postFlushLimit The post-flushing limit
 	 * @return {@code true} if the record is within the post-flushing limit; {@code false} if it is not
 	 */
+	@Deprecated
 	public boolean checkPostFlushing(DateTime postFlushLimit) {
 		boolean result = false;
 		
@@ -123,6 +128,7 @@ public class TrimFlushingRecord implements Comparable<TrimFlushingRecord> {
 	 * Get the record's date/time
 	 * @return The date/time
 	 */
+	@Deprecated
 	public DateTime getDateTime() {
 		return dateTime;
 	}

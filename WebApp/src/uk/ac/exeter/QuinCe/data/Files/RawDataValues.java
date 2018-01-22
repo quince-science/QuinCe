@@ -2,12 +2,14 @@ package uk.ac.exeter.QuinCe.data.Files;
 
 import java.util.Calendar;
 
+@Deprecated
 public class RawDataValues {
 
 	private long dataFileId;
 	
 	private int row;
 	
+	@Deprecated
 	private Calendar time;
 	
 	private long runTypeId;
@@ -257,10 +259,12 @@ public class RawDataValues {
 		return row;
 	}
 	
+	@Deprecated
 	public void setTime(Calendar time) {
 		this.time = time;
 	}
 	
+	@Deprecated
 	public Calendar getTime() {
 		return time;
 	}

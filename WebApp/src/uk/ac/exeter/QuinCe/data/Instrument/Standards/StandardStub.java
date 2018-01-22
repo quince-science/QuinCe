@@ -7,6 +7,7 @@ import java.util.Date;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class StandardStub {
 
 	/**
@@ -22,6 +23,7 @@ public class StandardStub {
 	/**
 	 * The date of the standard
 	 */
+	@Deprecated
 	private Date deployedDate;
 	
 	/**
@@ -30,6 +32,7 @@ public class StandardStub {
 	 * @param instrumentId The ID of the instrument to which this standard belongs
 	 * @param deployedDate The standard date
 	 */
+	@Deprecated
 	public StandardStub (long id, long instrumentId, Date deployedDate) {
 		this.id = id;
 		this.instrumentId = instrumentId;
@@ -56,6 +59,7 @@ public class StandardStub {
 	 * Returns the standard date
 	 * @return The standard date
 	 */
+	@Deprecated
 	public Date getDeployedDate() {
 		return deployedDate;
 	}

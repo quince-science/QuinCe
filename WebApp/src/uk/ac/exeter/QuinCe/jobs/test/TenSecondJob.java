@@ -67,7 +67,7 @@ public class TenSecondJob extends Job {
 			throw new InvalidJobParametersException("Wrong number of parameters");
 		} else {
 			try {
-				chunkCount = Integer.parseInt(parameters.get(0));
+				chunkCount = Integer.parseInt(parameters.get(CHUNK_KEY));
 			} catch(NumberFormatException e) {
 				throw new InvalidJobParametersException("It's not a number!");
 			}

@@ -21,7 +21,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class FileDeleteScheduler extends BackgroundTask {
 
 	protected void doTask() throws BackgroundTaskException {
-		
+		/*
 		try {
 			DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
 			List<Long> deletedFiles = DataFileDB.getFilesWithDeleteFlag(dataSource);
@@ -38,6 +38,7 @@ public class FileDeleteScheduler extends BackgroundTask {
 		} catch (Exception e) {
 			throw new BackgroundTaskException(e);
 		}
+		*/
 	}
 	
 	@Override

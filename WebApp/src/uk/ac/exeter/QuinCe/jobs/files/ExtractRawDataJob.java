@@ -2,8 +2,6 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -17,9 +15,6 @@ import uk.ac.exeter.QuinCe.data.Files.RawDataFile;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorCode;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationCoefficients;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationStub;
 import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -51,6 +46,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class ExtractRawDataJob extends FileJob {
 
 	/**
@@ -74,6 +70,8 @@ public class ExtractRawDataJob extends FileJob {
 	 */
 	@Override
 	protected void executeFileJob(JobThread thread) throws JobFailedException {
+		
+		/*
 		
 		reset();
 		Connection conn = null;
@@ -157,6 +155,8 @@ public class ExtractRawDataJob extends FileJob {
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}
+		
+		*/
 	}
 	
 	/**
@@ -166,8 +166,8 @@ public class ExtractRawDataJob extends FileJob {
 	 * @param instrument The instrument with which the data is associated
 	 * @param coefficients The calibration coefficients to be applied
 	 */
+	/*
 	private void applyCalibrations(List<String> line, Instrument instrument, List<CalibrationCoefficients> coefficients) {
-		
 		if (instrument.hasIntakeTemp1()) {
 			SensorCode code = new SensorCode(SensorCode.TYPE_INTAKE_TEMP, 1, instrument);
 			applyCoefficients(line, instrument.getColumnAssignment(Instrument.COL_INTAKE_TEMP_1), code, coefficients);
@@ -228,6 +228,7 @@ public class ExtractRawDataJob extends FileJob {
 			applyCoefficients(line, instrument.getColumnAssignment(Instrument.COL_EQP_3), code, coefficients);
 		}
 	}
+	*/
 	
 	/**
 	 * Apply a set of calibration coefficients to a specific sensor
@@ -237,6 +238,7 @@ public class ExtractRawDataJob extends FileJob {
 	 * @param sensorCode The sensor code for the sensor
 	 * @param coefficients The calibration coefficients
 	 */
+	/*
 	private void applyCoefficients(List<String> line, int sensorColumn, SensorCode sensorCode, List<CalibrationCoefficients> coefficients) {
 		
 		CalibrationCoefficients calibration = CalibrationCoefficients.findSensorCoefficients(coefficients, sensorCode);
@@ -251,6 +253,7 @@ public class ExtractRawDataJob extends FileJob {
 							
 		line.set(sensorColumn, String.valueOf(calibratedValue));
 	}
+	*/
 	
 	/**
 	 * Reset the data for the data file configured for this job.

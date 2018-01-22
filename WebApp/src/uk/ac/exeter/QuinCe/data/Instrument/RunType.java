@@ -9,6 +9,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class RunType implements Comparable<RunType>, Serializable {
 
 	/**
@@ -27,7 +28,7 @@ public class RunType implements Comparable<RunType>, Serializable {
 	public static final int RUN_TYPE_WATER = 0;
 	
 	/**
-	 * Indicates that teh run type is for atmospheric CO2
+	 * Indicates that the run type is for atmospheric CO2
 	 */
 	public static final int RUN_TYPE_ATMOSPHERIC = 1;
 	

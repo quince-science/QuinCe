@@ -11,19 +11,17 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.RunType;
-import uk.ac.exeter.QuinCe.data.Instrument.Standards.GasStandardDB;
-import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardConcentration;
-import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardStub;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
- * Represents all the gas standard runs in a data file.
+ * Represents a complete set of gas standard runs from a data file
  * @author Steve Jones
  * @see GasStandardMean
  */
+@Deprecated
 public class GasStandardRuns {
 
 	/**
@@ -50,12 +48,15 @@ public class GasStandardRuns {
 	public GasStandardRuns(long fileId, Instrument instrument) {
 		this.fileId = fileId;
 		groupedStandardMeans = new HashMap<String,TreeSet<GasStandardMean>>();
+		
+		/*
+		
 		for (RunType runType : instrument.getRunTypes()) {
 			if (instrument.isStandardRunType(runType.getName())) {
 				groupedStandardMeans.put(runType.getName(), new TreeSet<GasStandardMean>());
 			}
 		}
-		
+		*/
 		allStandardMeans = new TreeSet<GasStandardMean>();
 	}
 	
@@ -72,9 +73,11 @@ public class GasStandardRuns {
 	 * @param standardMean The gas standard results
 	 */
 	public void addStandardMean(GasStandardMean standardMean) {
+		/*
 		TreeSet<GasStandardMean> runMeans = groupedStandardMeans.get(standardMean.getRunName());		
 		runMeans.add(standardMean);
 		allStandardMeans.add(standardMean);
+		*/
 	}
 	
 	/**
@@ -94,6 +97,7 @@ public class GasStandardRuns {
 	 * @return The interpolated moisture value
 	 * @see RunType
 	 */
+	@Deprecated
 	public double getInterpolatedXh2o(String runType, Calendar time) {
 		return getInterpolatedValue(runType, time, GasStandardMean.TYPE_XH2O);
 	}
@@ -115,6 +119,7 @@ public class GasStandardRuns {
 	 * @return The interpolated CO<sub>2</sub> value
 	 * @see RunType
 	 */
+	@Deprecated
 	public double getInterpolatedCo2(String runType, Calendar time) {
 		return getInterpolatedValue(runType, time, GasStandardMean.TYPE_CO2);
 	}
@@ -122,14 +127,15 @@ public class GasStandardRuns {
 	/**
 	 * Calculate an interpolated moisture or CO<sub>2</sub> value for a given
 	 * gas standard type. This performs the calculations for
-	 * {@link #getInterpolatedCo2(String, Calendar)} and {@link #getInterpolatedXh2o(String, Calendar)}.
+	 * {@link #getInterpolatedCo2(String, Calendar)} and {@link #getInterpolatedMoisture(String, Calendar)}.
 	 * 
 	 * @param runType The gas standard type
 	 * @param time The time to which the values should be interpolated
-	 * @param valueType The type of value to interpolate. Either {@link GasStandardMean#TYPE_CO2} or {@link GasStandardMean#TYPE_XH2O}.
+	 * @param valueType The type of value to interpolate. Either {@link GasStandardMean#TYPE_CO2} or {@link GasStandardMean#TYPE_MOISTURE}.
 	 * @return The interpolated value
 	 * @see RunType
 	 */
+	@Deprecated
 	private double getInterpolatedValue(String runType, Calendar time, int valueType) {
 		GasStandardMean previous = getStandardBefore(runType, time);
 		GasStandardMean next = getStandardAfter(runType, time);
@@ -163,6 +169,7 @@ public class GasStandardRuns {
 	 * @param time The target time
 	 * @return The standard before the specified time, or {@code null} if there is no standard
 	 */
+	@Deprecated
 	private GasStandardMean getStandardBefore(String runType, Calendar time) {
 		
 		TreeSet<GasStandardMean> searchSet = getSearchSet(runType);
@@ -189,6 +196,7 @@ public class GasStandardRuns {
 	 * @param time The target time
 	 * @return The standard after the specified time, or {@code null} if there is no standard
 	 */
+	@Deprecated
 	private GasStandardMean getStandardAfter(String runType, Calendar time) {
 		
 		TreeSet<GasStandardMean> searchSet = getSearchSet(runType);
@@ -244,10 +252,11 @@ public class GasStandardRuns {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If any required database records are missing
 	 */
+	@Deprecated
 	public SimpleRegression getStandardsRegression(DataSource dataSource, long instrumentId, Calendar time) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		
 		SimpleRegression result = new SimpleRegression(true);
-		
+		/*
 		StandardStub actualStandard = GasStandardDB.getStandardBefore(dataSource, instrumentId, time);
 		Map<String, StandardConcentration> actualConcentrations = GasStandardDB.getConcentrationsMap(dataSource, actualStandard);
 		
@@ -263,7 +272,7 @@ public class GasStandardRuns {
 				result.addData(measuredStandard, actualConcentration);
 			}
 		}
-		
+		*/
 		return result;
 	}
 }

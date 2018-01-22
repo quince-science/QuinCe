@@ -3,7 +3,6 @@ package uk.ac.exeter.QuinCe.data.Calculation;
 import java.util.Calendar;
 
 import uk.ac.exeter.QuinCe.data.Instrument.RunType;
-import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardConcentration;
 
 /**
  * Represents the mean of a gas standard during an instrument's
@@ -20,31 +19,31 @@ import uk.ac.exeter.QuinCe.data.Instrument.Standards.StandardConcentration;
  * @author Steve Jones
  * @see GasStandardRuns
  */
+@Deprecated
 public class GasStandardMean implements Comparable<GasStandardMean> {
 
-	/**
-	 * Code indicating that xH<sub>2</sub>O values should be retrieved from a gas standard run 
-	 */
 	protected static final int TYPE_XH2O = 0;
 	
 	/**
-	 * Code indicating that CO<sub>2</sub> values should be retrieved from a gas standard run 
+	 * Code for retrieving the CO<sub>2</sub> values from a gas standard run
 	 */
 	protected static final int TYPE_CO2 = 1;
 	
 	/**
 	 * The true concentration of the gas standard bottle
 	 */
-	private StandardConcentration standardConcentration;
+	//private StandardConcentration standardConcentration;
 	
 	/**
 	 * The start time of the gas standard run
 	 */
+	@Deprecated
 	private Calendar startTime;
 	
 	/**
 	 * The end time of the gas standard run
 	 */
+	@Deprecated
 	private Calendar endTime;
 	
 	/**
@@ -53,7 +52,7 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	private double meanConcentration;
 	
 	/**
-	 * The mean xH<sub>2</sub>O measured during the run
+	 * The mean xH2O measured during the run
 	 */
 	private double meanXh2o;
 	
@@ -65,6 +64,7 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	 * @param meanConcentration The mean concentration measured during the run
 	 * @param meanXh2o The mean xH2O measured during the run
 	 */
+	/*
 	public GasStandardMean(StandardConcentration standardConcentration, Calendar startTime, Calendar endTime, double meanConcentration, double meanXh2o) {
 		this.standardConcentration = standardConcentration;
 		this.startTime = startTime;
@@ -72,19 +72,23 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 		this.meanConcentration = meanConcentration;
 		this.meanXh2o = meanXh2o;
 	}
+	*/
 
 	/**
 	 * Get the standard concentration record related to this gas standard run
 	 * @return The standard concentration
 	 */
+	/*
 	public StandardConcentration getStandardConcentration() {
 		return standardConcentration;
 	}
+	*/
 
 	/**
 	 * Get the start time of the gas standard run
 	 * @return The start time
 	 */
+	@Deprecated
 	public Calendar getStartTime() {
 		return startTime;
 	}
@@ -93,6 +97,7 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	 * Get the end time of the gas standard run
 	 * @return The end time
 	 */
+	@Deprecated
 	public Calendar getEndTime() {
 		return endTime;
 	}
@@ -105,10 +110,6 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 		return meanConcentration;
 	}
 
-	/**
-	 * Get the mean xH<sub>2</sub>O value for the gas standard run
-	 * @return The mean xH<sub>2</sub>O value
-	 */
 	public double getMeanXh2o() {
 		return meanXh2o;
 	}
@@ -117,6 +118,7 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	 * Get the time at the mid point of the gas standard run
 	 * @return The mid point time
 	 */
+	@Deprecated
 	public Calendar getMidTime() {
 		int midLength = (int) (endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 2;
 		Calendar result = (Calendar) startTime.clone();
@@ -135,20 +137,22 @@ public class GasStandardMean implements Comparable<GasStandardMean> {
 	 * @return The gas standard name
 	 * @see RunType
 	 */
+	/*
 	public String getRunName() {
 		return standardConcentration.getStandardName();
 	}
+	*/
 	
 	/**
 	 * Get either the mean CO<sub>2</sub> concentration or mean
 	 * moisture of the gas standard run.
 	 * 
 	 * <p>
-	 *   The {@code valueType} must be one of {@link #TYPE_CO2} or {@link #TYPE_XH2O}.
+	 *   The {@code valueType} must be one of {@link #TYPE_CO2} or {@link #TYPE_MOISTURE}.
 	 *   If any other value is passed, the method's behaviour is undefined.
 	 * </p>
 	 * 
-	 * @param valueType Either {@link #TYPE_CO2} or {@link #TYPE_XH2O}
+	 * @param valueType Either {@link #TYPE_CO2} or {@link #TYPE_MOISTURE}
 	 * @return The mean value
 	 */
 	public double getMeanValue(int valueType) {

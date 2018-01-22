@@ -237,10 +237,14 @@ public class JobManager {
 			long fileId = -1;
 			try {
 				if (isFileJob(jobClass)) {
-					fileId = Long.parseLong(parameters.get(FileJob.FILE_ID_KEY));
-					if (!DataFileDB.fileExists(conn, fileId) || DataFileDB.getDeleteFlag(conn, fileId)) {
-						throw new JobException("Data file with ID " + fileId + " does not exist or is marked for deletion. Job cannot be queued.");
+					String fileIdString = parameters.get(FileJob.FILE_ID_KEY);
+					if (null != fileIdString) {
+						fileId = Long.parseLong(parameters.get(FileJob.FILE_ID_KEY));
+						if (!DataFileDB.fileExists(conn, fileId) || DataFileDB.getDeleteFlag(conn, fileId)) {
+							throw new JobException("Data file with ID " + fileId + " does not exist or is marked for deletion. Job cannot be queued.");
+						}
 					}
+					
 				}
 			} catch (RecordNotFoundException e) {
 				throw new JobException("Data file with ID " + fileId + " does not exist or is marked for deletion. Job cannot be queued.");
@@ -822,6 +826,7 @@ public class JobManager {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws MissingParamException If any requierd parameters are missing
 	 */
+	@Deprecated
 	public static List<JobSummary> getJobList(DataSource dataSource) throws DatabaseException, MissingParamException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
@@ -1132,6 +1137,13 @@ public class JobManager {
 			throw new DatabaseException("An error occurred while requeuing jobs", e);
 		} finally {
 			DatabaseUtils.closeStatements(stmt);
+		}
+
+		// Start the next job in the queue
+		try {
+			startNextJob(ResourceManager.getInstance(), ResourceManager.getInstance().getConfig());
+		} catch (Exception e) {
+			// Don't sweat it
 		}
 	}
 	

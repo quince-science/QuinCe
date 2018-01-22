@@ -5,10 +5,11 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 	<h:head>
 		<title><ui:insert name="title">Welcome</ui:insert> - QuinCe</title>
-	    <link href="https://fonts.googleapis.com/css?family=Noto+Sans:400,400italic,700,700italic" rel="stylesheet" type="text/css"/>
-	    <h:outputStylesheet name="style/main.css"/>
+		<ui:insert name="localHead"/>
 	</h:head>
 	<h:body>
+	    <h:outputStylesheet name="style/main.css"/>
+	    <div class="pageTitle"><ui:insert name="pageTitle">Page Title</ui:insert></div>
 		<ui:insert name="content">No content supplied to template!</ui:insert>
 	</h:body>
 </html>

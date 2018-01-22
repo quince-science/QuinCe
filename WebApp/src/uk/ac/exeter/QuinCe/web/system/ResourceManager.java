@@ -17,6 +17,10 @@ import uk.ac.exeter.QCRoutines.config.ConfigException;
 import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
 
@@ -55,6 +59,10 @@ public class ResourceManager implements ServletContextListener {
 	 * The column configuration used by the QC routines
 	 */
 	private ColumnConfig columnConfig;
+
+	private SensorsConfiguration sensorsConfiguration;
+
+	private RunTypeCategoryConfiguration runTypeCategoryConfiguration;
 	
 	/**
 	 * The singleton instance of the resource manage
@@ -116,8 +124,22 @@ public class ResourceManager implements ServletContextListener {
        		throw new RuntimeException("Could not initialise export configuration", e);
        	}
        	
+       	// Initialise the sensors configuration
+       	try {
+       		sensorsConfiguration = new SensorsConfiguration(new File(configuration.getProperty("sensors.configfile")));
+       	} catch (SensorConfigurationException e) {
+       		throw new RuntimeException("Could not load sensors configuration", e);
+       	}
+       	
+       	// Initialise run type category configuration
+       	try {
+       		runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(new File(configuration.getProperty("runtypes.configfile")));
+       	} catch (RunTypeCategoryException e) {
+       		throw new RuntimeException("Could not load sensors configuration", e);
+       	}
+       	
        	instance = this;
-}
+	}
 
     @Override
     public void contextDestroyed(ServletContextEvent event) {
@@ -147,6 +169,16 @@ public class ResourceManager implements ServletContextListener {
     public ColumnConfig getColumnConfig() {
     	return columnConfig;
     }
+
+
+    public SensorsConfiguration getSensorsConfiguration() {
+    	return sensorsConfiguration;
+    }
+    
+    public RunTypeCategoryConfiguration getRunTypeCategoryConfiguration() {
+    	return runTypeCategoryConfiguration;
+    }
+
     
     /**
      * Retrieve the singleton instance of the Resource Manager

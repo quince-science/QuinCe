@@ -9,13 +9,14 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QuinCe.data.Files.CommentSet;
-import uk.ac.exeter.QuinCe.data.Files.CommentSetEntry;
+import uk.ac.exeter.QuinCe.data.Calculation.CommentSet;
+import uk.ac.exeter.QuinCe.data.Calculation.CommentSetEntry;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.FileDataInterrogator;
 import uk.ac.exeter.QuinCe.data.Files.FileInfo;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunType;
 import uk.ac.exeter.QuinCe.data.QC.QCDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
@@ -34,6 +35,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class DataScreenBean extends BaseManagedBean {
 
 	/**
@@ -83,14 +85,12 @@ public class DataScreenBean extends BaseManagedBean {
 	 * </p>
 	 * 
 	 * <p>
-	 *   The row number, QC and WOCE flag, are automatically added to this list, but
-	 *   are hidden when the plot is rendered.
+	 *   The first three Y axis columns are always the row number, QC and WOCE flag,
+	 *   which are hidden when the plot is rendered.
 	 *   The row is used to cross-reference with the data table, and the flags
-	 *   are used to highlight values on the plot.
+	 *   are used to highlight values on the plots.
 	 * </p>
-	 * 
-	 * @see FileDataInterrogator
-	 * @see #getPlotData(List) 
+	 * @see FileDataInterrogator 
 	 */
 	private String leftPlotColumns = null;
 	
@@ -113,48 +113,6 @@ public class DataScreenBean extends BaseManagedBean {
 	private String leftPlotNames = null;
 
 	/**
-	 * The data column being used in the left map.
-
-	 * @see FileDataInterrogator
-	 * @see #getMapData(String, List) 
-	 */
-	private String leftMapColumn = null;
-	
-	/**
-	 * The bounds of the left map display.
-	 * This is a list of [minx, miny, maxx, maxy]
-	 */
-	private List<Double> leftMapBounds = null;
-	
-	/**
-	 * The scale limits for the left map
-	 */
-	private List<Double> leftMapScaleLimits = null;
-	
-	/**
-	 * Indicates whether or not the scale for the left map should be updated
-	 */
-	private boolean leftMapUpdateScale = false;
-	
-	/**
-	 * The data for the left map.
-	 * 
-	 * <p>
-	 *   The data is stored as a JSON string, which will be parsed by the Javascript on
-	 *   the user interface.
-	 * </p>
-	 * @see #generateLeftMapData()
-	 * @see #getMapData(String, List)
-	 */
-	private String leftMapData = null;
-	
-	/**
-	 * The human-readable names of the column shown in the left map.
-	 * @see #leftMapColumn
-	 */
-	private String leftMapName = null;
-
-	/**
 	 * The data columns being used in the right plot.
 	 * 
 	 * <p>
@@ -165,14 +123,12 @@ public class DataScreenBean extends BaseManagedBean {
 	 * </p>
 	 * 
 	 * <p>
-	 *   The row number, QC and WOCE flag, are automatically added to this list, but
-	 *   are hidden when the plot is rendered.
+	 *   The first three Y axis columns are always the row number, QC and WOCE flag,
+	 *   which are hidden when the plot is rendered.
 	 *   The row is used to cross-reference with the data table, and the flags
-	 *   are used to highlight values on the plot.
-	 * </p>
-	 * 
-	 * @see FileDataInterrogator
-	 * @see #getPlotData(List) 
+	 *   are used to highlight values on the plots.
+	 * </p> 
+	 * @see FileDataInterrogator 
 	 */
 	private String rightPlotColumns = null;
 	
@@ -193,48 +149,6 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @see #rightPlotColumns
 	 */
 	private String rightPlotNames = null;
-
-	/**
-	 * The data column being used in the right map.
-
-	 * @see FileDataInterrogator
-	 * @see #getMapData(String, List)
-	 */
-	private String rightMapColumn = null;
-	
-	/**
-	 * The bounds of the right map display.
-	 * This is a list of [minx, miny, maxx, maxy]
-	 */
-	private List<Double> rightMapBounds = null;
-	
-	/**
-	 * The scale limits for the right map
-	 */
-	private List<Double> rightMapScaleLimits = null;
-	
-	/**
-	 * Indicates whether or not the scale for the right map should be updated
-	 */
-	private boolean rightMapUpdateScale = false;
-	
-	/**
-	 * The data for the right map.
-	 * 
-	 * <p>
-	 *   The data is stored as a JSON string, which will be parsed by the Javascript on
-	 *   the user interface.
-	 * </p>
-	 * @see #generateRightMapData()
-	 * @see #getMapData(String, List)
-	 */
-	private String rightMapData = null;
-	
-	/**
-	 * The human-readable names of the column shown in the right map.
-	 * @see #rightMapColumn
-	 */
-	private String rightMapName = null;
 
 	/**
 	 * The type of CO<sub>2</sub> measurements being viewed.
@@ -365,22 +279,6 @@ public class DataScreenBean extends BaseManagedBean {
 	 * The worst flag set on the selected rows
 	 */
 	private Flag worstSelectedFlag = Flag.GOOD;
-
-	/**
-	 * The bounds of the data. This is a list of values, of the form:
-	 * <ul>
-	 *   <li>Upper latitude</li>
-	 *   <li>Right-most longitude</li>
-	 *   <li>Lower latitude</li>
-	 *   <li>Left-most longitude</li>
-	 *   <li>Centre longitude</li>
-	 *   <li>Centre latitude</li>
-	 * </ul>
-	 * 
-	 * The values will take into account data that crosses the 180° line.
-	 * These values are calculated by {@link FileDataInterrogator#getGeographicalBounds}
-	 */
-	private List<Double> dataBounds = null;
 	
 	/**
 	 * Required basic constructor. This does nothing: all the actual construction
@@ -530,108 +428,6 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Get the column to be displayed in the right map
-	 * @return The right map column
-	 */
-	public String getRightMapColumn() {
-		return rightMapColumn;
-	}
-	
-	/**
-	 * Set the column to be displayed in the right map
-	 * @param rightMapColumn The right map column
-	 */
-	public void setRightMapColumn(String rightMapColumn) {
-		this.rightMapColumn = rightMapColumn;
-	}
-	
-	/**
-	 * Get the current bounds of the right map viewport
-	 * @return The right map bounds
-	 */
-	public String getRightMapBounds() {
-		return StringUtils.listToDelimited(rightMapBounds, ",");
-	}
-	
-	/**
-	 * Set the current bounds of the right map viewport.
-	 * Converts a csv list to a Java list
-	 * @param rightMapBounds The right map bounds
-	 */
-	public void setRightMapBounds(String rightMapBounds) {
-		this.rightMapBounds = StringUtils.delimitedToDoubleList(rightMapBounds);
-	}
-	
-	/**
-	 * Get the scale limits for the right map
-	 * @return The scale limits
-	 */
-	public String getRightMapScaleLimits() {
-		return '[' + StringUtils.listToDelimited(rightMapScaleLimits, ",") + ']';
-	}
-	
-	/**
-	 * Set the scale limits for the right map
-	 * @param rightMapScaleLimits The scale limits
-	 */
-	public void setRightMapScaleLimits(String rightMapScaleLimits) {
-		this.rightMapScaleLimits = StringUtils.delimitedToDoubleList(rightMapScaleLimits);
-	}
-	
-	/**
-	 * Determine whether the right map's scale limits need to be updated
-	 * @return {@code true} if the scale is to be updated; {@code false} otherwise.
-	 */
-	public boolean getRightMapUpdateScale() {
-		return rightMapUpdateScale;
-	}
-	
-	/**
-	 * Set whether the right map's scale limits need to be updated
-	 * @param rightMapUpdateScale {@code true} if the scale is to be updated; {@code false} otherwise.
-	 */
-	public void setRightMapUpdateScale(boolean rightMapUpdateScale) {
-		this.rightMapUpdateScale = rightMapUpdateScale;
-	}
-	
-	/**
-	 * Get the data for the right map
-	 * @return The map data
-	 */
-	public String getRightMapData() {
-		return rightMapData;
-	}
-	
-	/**
-	 * Set the data for the right map.
-	 * @param rightMapData The data for the right map
-	 * @see #rightMapData
-	 */
-	public void setRightMapData(String rightMapData) {
-		this.rightMapData = rightMapData;
-	}
-	
-	/**
-	 * Get the human-readable name of the column being displayed
-	 * in the right map.
-	 * @return The human-readable column name
-	 * @see #rightMapName
-	 */
-	public String getRightMapName(){
-		return rightMapName;
-	}
-
-	/**
-	 * Set the human-readable name of the column being displayed
-	 * in the right map.
-	 * @param rightMapName The column name
-	 * @see #rightMapName
-	 */
-	public void setRightMapName(String rightMapName){
-		this.rightMapName = rightMapName;
-	}
-
-	/**
 	 * Get the columns to be displayed in the right plot.
 	 * @return The columns for the right plot
 	 * @see #rightPlotColumns
@@ -687,109 +483,6 @@ public class DataScreenBean extends BaseManagedBean {
 		this.rightPlotNames = rightPlotNames;
 	}
 	
-	/**
-	 * Get the column to be displayed in the left map
-	 * @return The left map column
-	 */
-	public String getLeftMapColumn() {
-		return leftMapColumn;
-	}
-	
-	/**
-	 * Set the column to be displayed in the left map
-	 * @param leftMapColumn The left map column
-	 */
-	public void setLeftMapColumn(String leftMapColumn) {
-		this.leftMapColumn = leftMapColumn;
-	}
-	
-	/**
-	 * Get the current bounds of the left map viewport
-	 * @return The left map bounds
-	 */
-	public String getLeftMapBounds() {
-		return StringUtils.listToDelimited(leftMapBounds, ",");
-	}
-	
-	/**
-	 * Set the current bounds of the left map viewport.
-	 * Converts a CSV list to a proper Java list
-	 * @param leftMapBounds The left map bounds
-	 */
-	public void setLeftMapBounds(String leftMapBounds) {
-		this.leftMapBounds = StringUtils.delimitedToDoubleList(leftMapBounds);
-	}
-	
-	
-	/**
-	 * Get the scale limits for the left map
-	 * @return The scale limits
-	 */
-	public String getLeftMapScaleLimits() {
-		return '[' + StringUtils.listToDelimited(leftMapScaleLimits, ",") + ']';
-	}
-	
-	/**
-	 * Set the scale limits for the left map
-	 * @param leftMapScaleLimits The scale limits
-	 */
-	public void setLeftMapScaleLimits(String leftMapScaleLimits) {
-		this.leftMapScaleLimits = StringUtils.delimitedToDoubleList(leftMapScaleLimits);
-	}
-	
-	/**
-	 * Determine whether the left map's scale limits need to be updated
-	 * @return {@code true} if the scale is to be updated; {@code false} otherwise.
-	 */
-	public boolean getLeftMapUpdateScale() {
-		return leftMapUpdateScale;
-	}
-	
-	/**
-	 * Set whether the left map's scale limits need to be updated
-	 * @param leftMapUpdateScale {@code true} if the scale is to be updated; {@code false} otherwise.
-	 */
-	public void setLeftMapUpdateScale(boolean leftMapUpdateScale) {
-		this.leftMapUpdateScale = leftMapUpdateScale;
-	}
-
-	/**
-	 * Get the data for the left map
-	 * @return The map data
-	 */
-	public String getLeftMapData() {
-		return leftMapData;
-	}
-	
-	/**
-	 * Set the data for the left map.
-	 * @param leftMapData The data for the left map
-	 * @see #leftMapData
-	 */
-	public void setLeftMapData(String leftMapData) {
-		this.leftMapData = leftMapData;
-	}
-	
-	/**
-	 * Get the human-readable name of the column being displayed
-	 * in the left map.
-	 * @return The human-readable column name
-	 * @see #leftMapName
-	 */
-	public String getLeftMapName(){
-		return leftMapName;
-	}
-
-	/**
-	 * Set the human-readable name of the column being displayed
-	 * in the left map.
-	 * @param leftMapName The column name
-	 * @see #leftMapName
-	 */
-	public void setLeftMapName(String leftMapName){
-		this.leftMapName = leftMapName;
-	}
-
 	/**
 	 * Return the type of CO<sub>2</sub> measurement being viewed
 	 * @return The CO<sub>2</sub> measurement type
@@ -1014,12 +707,11 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws ResourceException If the application resources cannot be accessed
 	 * @throws RecordNotFoundException If the selected data file (or any of its related records) cannot be found
+	 * @throws InstrumentException If any instrument details are invalid
 	 */
-	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException {
+	private void loadFileDetails() throws MissingParamException, DatabaseException, ResourceException, RecordNotFoundException, InstrumentException {
 		fileDetails = DataFileDB.getFileDetails(ServletUtils.getDBDataSource(), fileId);
-		dataBounds = FileDataInterrogator.getGeographicalBounds(ServletUtils.getDBDataSource(), fileId);
-		DataFileDB.touchFile(ServletUtils.getDBDataSource(), fileId);
-		instrument = InstrumentDB.getInstrumentByFileId(ServletUtils.getDBDataSource(), fileId);
+		instrument = InstrumentDB.getInstrumentByFileId(ServletUtils.getDBDataSource(), fileId, ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
 	}
 	
 	/**
@@ -1027,11 +719,12 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @return The HTML for the check boxes
 	 * @throws MissingParamException If any parameters for underlying data retrieval calls are missing
 	 * @throws DatabaseException If a database error occurs
-	 * @throws RecordNotFoundException If any required database records are missing
+	 * @throws RecordNotFoundException If any required database records are mising
 	 * @throws ResourceException If the application resources cannot be accessed
 	 */
 	public String getPlotPopupEntries() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
-		
+		return null;
+		/*
 		Instrument instrument = InstrumentDB.getInstrument(ServletUtils.getDBDataSource(), fileDetails.getInstrumentId());
 		
 		StringBuffer output = new StringBuffer();
@@ -1195,6 +888,9 @@ public class DataScreenBean extends BaseManagedBean {
 
 			output.append("</table></td></tr>");
 		}
+		*/
+		
+		
 		
 		// Atmospheric Pressure
 		/*
@@ -1205,6 +901,9 @@ public class DataScreenBean extends BaseManagedBean {
 		output.append("</td><td>Atmospheric Pressure</td></tr>");
 		*/
 		
+		
+		
+		/*
 		// xH2O
 		output.append("<tr><td colspan=\"2\" class=\"minorHeading\">xH<sub>2</sub>O:</td></tr>");
 		output.append("<tr><td></td><td><table>");
@@ -1245,228 +944,8 @@ public class DataScreenBean extends BaseManagedBean {
 		output.append("</tr></table>");
 		
 		return output.toString();
-	}
-	
-	/**
-	 * Generate the check boxes to select columns for the data maps.
-	 * @return The HTML for the check boxes
-	 * @throws MissingParamException If any parameters for underlying data retrieval calls are missing
-	 * @throws DatabaseException If a database error occurs
-	 * @throws RecordNotFoundException If any required database records are missing
-	 * @throws ResourceException If the application resources cannot be accessed
-	 */
-	public String getMapPopupEntries() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
-		Instrument instrument = InstrumentDB.getInstrument(ServletUtils.getDBDataSource(), fileDetails.getInstrumentId());
 		
-		StringBuffer output = new StringBuffer();
-		
-		output.append("<table><tr>");
-		
-		// First column
-		output.append("<td><table>");
-		
-		output.append(makeMapCheckbox("datetime", "dateTime", "Date/Time"));
-
-		// Intake temperature
-		if (instrument.getIntakeTempCount() == 1) {
-			output.append(makeMapCheckbox("intakeTemp", "intakeTempMean", "Intake Temperature"));
-		} else {
-			output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Intake Temperature:</td></tr>");
-			output.append("<tr><td></td><td><table>");
-
-			output.append(makeMapCheckbox("intakeTemp", "intakeTempMean", "Mean"));
-			
-			if (instrument.hasIntakeTemp1()) {
-				output.append(makeMapCheckbox("intakeTemp", "intakeTemp1", instrument.getIntakeTempName1()));
-			}
-			
-			if (instrument.hasIntakeTemp2()) {
-				output.append(makeMapCheckbox("intakeTemp", "intakeTemp2", instrument.getIntakeTempName2()));
-			}
-			
-			if (instrument.hasIntakeTemp3()) {
-				output.append(makeMapCheckbox("intakeTemp", "intakeTemp3", instrument.getIntakeTempName3()));
-			}
-			
-			output.append("</table></td></tr>");
-		}
-
-		// Salinity
-		if (instrument.getSalinityCount() == 1) {
-			output.append(makeMapCheckbox("salinity", "salinityMean", "Salinity"));
-		} else {
-			output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Salinity:</td></tr>");
-			output.append("<tr><td></td><td><table>");
-
-			output.append(makeMapCheckbox("salinity", "salinityMean", "Mean"));
-			
-			if (instrument.hasSalinity1()) {
-				output.append(makeMapCheckbox("salinity", "salinity1", instrument.getSalinityName1()));
-			}
-			
-			if (instrument.hasSalinity2()) {
-				output.append(makeMapCheckbox("salinity", "salinity2", instrument.getSalinityName2()));
-			}
-			
-			if (instrument.hasSalinity3()) {
-				output.append(makeMapCheckbox("salinity", "salinity3", instrument.getSalinityName3()));
-			}
-
-			output.append("</table></td></tr>");
-		}
-		
-		// End of first column/start of second
-		output.append("</table></td><td><table>");
-		
-		boolean flowSensor = false;
-		
-		if (instrument.getAirFlowCount() > 0) {
-			flowSensor = true;
-			
-			output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Air Flow:</td></tr>");
-			output.append("<tr><td></td><td><table>");
-			
-			if (instrument.hasAirFlow1()) {
-				output.append(makeMapCheckbox("airFlow", "airFlow1", instrument.getAirFlowName1()));
-			}
-			
-			if (instrument.hasAirFlow2()) {
-				output.append(makeMapCheckbox("airFlow", "airFlow2", instrument.getAirFlowName2()));
-			}
-			
-			if (instrument.hasAirFlow3()) {
-				output.append(makeMapCheckbox("airFlow", "airFlow3", instrument.getAirFlowName3()));
-			}
-			
-			output.append("</table></td></tr>");
-		}
-		
-		if (instrument.getWaterFlowCount() > 0) {
-			flowSensor = true;
-			
-			output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Water Flow:</td></tr>");
-			output.append("<tr><td></td><td><table>");
-			
-			if (instrument.hasWaterFlow1()) {
-				output.append(makeMapCheckbox("waterFlow", "waterFlow1", instrument.getWaterFlowName1()));
-			}
-			
-			if (instrument.hasWaterFlow2()) {
-				output.append(makeMapCheckbox("waterFlow", "waterFlow2", instrument.getWaterFlowName2()));
-			}
-			
-			if (instrument.hasWaterFlow3()) {
-				output.append(makeMapCheckbox("waterFlow", "waterFlow3", instrument.getWaterFlowName3()));
-			}
-			
-			output.append("</table></td></tr>");
-		}
-		
-		if (flowSensor) {
-			// End of 2nd column/start of 3rd
-			output.append("</table></td><td><table>");
-		}
-
-		// Equilibrator temperature
-		if (instrument.getEqtCount() == 1) {
-			output.append(makeMapCheckbox("eqt", "eqtMean", "Equilibrator Temperature"));
-		} else {
-			output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Equilibrator Temperature:</td></tr>");
-			output.append("<tr><td></td><td><table>");
-			
-			output.append(makeMapCheckbox("eqt", "eqtMean", "Mean"));
-			
-			if (instrument.hasEqt1()) {
-				output.append(makeMapCheckbox("eqt", "eqt1", instrument.getEqtName1()));
-			}
-			
-			if (instrument.hasEqt2()) {
-				output.append(makeMapCheckbox("eqt", "eqt2", instrument.getEqtName2()));
-			}
-			
-			if (instrument.hasEqt3()) {
-				output.append(makeMapCheckbox("eqt", "eqt3", instrument.getEqtName3()));
-			}
-			
-			output.append("</table></td></tr>");
-		}
-		
-		// Delta T
-		output.append(makePlotCheckbox("deltaT", "deltaT", "Δ Temperature"));
-
-		// Equilibrator Pressure
-		if (instrument.getEqpCount() == 1) {
-			output.append(makeMapCheckbox("eqp", "eqpMean", "Equilibrator Pressure"));
-		} else {
-			output.append("<tr><td colspan=\"2\" class=\"minorHeading\">Equilibrator Pressure:</td></tr>");
-			output.append("<tr><td></td><td><table>");
-
-			output.append(makeMapCheckbox("eqp", "eqpMean", "Mean"));
-			
-			if (instrument.hasEqp1()) {
-				output.append(makeMapCheckbox("eqp", "eqp1", instrument.getEqpName1()));
-			}
-			
-			if (instrument.hasEqp2()) {
-				output.append(makeMapCheckbox("eqp", "eqp2", instrument.getEqpName2()));
-			}
-			
-			if (instrument.hasEqp3()) {
-				output.append(makeMapCheckbox("eqp", "eqp3", instrument.getEqpName3()));
-			}
-
-			output.append("</table></td></tr>");
-		}
-		
-		// Atmospheric Pressure
-		/*
-		 * We'll put this in when we get to doing atmospheric stuff.
-		 * It needs to specify whether it's measured or from external data
-		 * 
-		output.append(makePlotCheckbox("atmosPressure", "atmospressure", "Atmospheric Pressure"));
-		output.append("</td><td>Atmospheric Pressure</td></tr>");
 		*/
-		
-		// xH2O
-		output.append("<tr><td colspan=\"2\" class=\"minorHeading\">xH<sub>2</sub>O:</td></tr>");
-		output.append("<tr><td></td><td><table>");
-
-		output.append(makeMapCheckbox("xh2o", "xh2oMeasured", "Measured"));
-		output.append(makeMapCheckbox("xh2o", "xh2oTrue", "True"));
-		
-		output.append("</table></td></tr>");
-
-		// pH2O
-		output.append(makeMapCheckbox("pH2O", "pH2O", "pH<sub>2</sub>O"));
-
-		// End of 3rd column/Start of 4th column
-		output.append("</table></td><td><table>");
-
-		// CO2
-		output.append("<tr><td colspan=\"2\" class=\"minorHeading\">CO<sub>2</sub>:</td></tr>");
-		output.append("<tr><td></td><td><table>");
-
-		output.append(makeMapCheckbox("co2", "co2Measured", "Measured"));
-
-		if (!instrument.getSamplesDried()) {
-			output.append(makeMapCheckbox("co2", "co2Dried", "Dried"));
-		}
-
-		output.append(makeMapCheckbox("co2", "co2Calibrated", "Calibrated"));
-		output.append(makeMapCheckbox("co2", "pCO2TEDry", "pCO<sub>2</sub> TE Dry"));
-		output.append(makeMapCheckbox("co2", "pCO2TEWet", "pCO<sub>2</sub> TE Wet"));
-		output.append(makeMapCheckbox("co2", "fCO2TE", "fCO<sub>2</sub> TE"));
-		output.append(makeMapCheckbox("co2", "fCO2Final", "fCO<sub>2</sub> Final"));
-
-		output.append("</table></td></tr>");
-
-		// End of column 4
-		output.append("</td></table>");
-		
-		// End of outer table
-		output.append("</tr></table>");
-		
-		return output.toString();
 	}
 	
 	/**
@@ -1518,26 +997,13 @@ public class DataScreenBean extends BaseManagedBean {
 	}
 	
 	/**
-	 * Generate the data for the left plot.
+	 * Generate the data for the left plot. See {@link #getPlotData(List)}.
 	 * @see #getPlotData(List)
 	 */
 	public void generateLeftPlotData() {
 		List<String> columns = StringUtils.delimitedToList(leftPlotColumns);
 		setLeftPlotData(getPlotData(columns));
 		setLeftPlotNames(makePlotNames(columns));
-	}
-	
-	/**
-	 * Generate the data for the left map.
-	 * @see #getMapData(String, List)
-	 */
-	public void generateLeftMapData() {
-		if (leftMapUpdateScale) {
-			leftMapScaleLimits = getMapScaleLimits(leftMapColumn);
-		}
-		
-		setLeftMapData(getMapData(leftMapColumn, leftMapBounds));
-		setLeftMapName(getPlotSeriesName(leftMapColumn));
 	}
 
 	/**
@@ -1550,43 +1016,6 @@ public class DataScreenBean extends BaseManagedBean {
 		setRightPlotNames(makePlotNames(columns));
 	}
 	
-	/**
-	 * Generate the data for the right map.
-	 * @see #getMapData(String, List)
-	 */
-	public void generateRightMapData() {
-		if (rightMapUpdateScale) {
-			rightMapScaleLimits = getMapScaleLimits(rightMapColumn);
-		}
-		
-		setRightMapData(getMapData(rightMapColumn, rightMapBounds));
-		setRightMapName(getPlotSeriesName(rightMapColumn));
-	}
-	
-	/**
-	 * Get the value range for a column being shown on a map
-	 * @param column The column
-	 * @return The value range
-	 */
-	public List<Double> getMapScaleLimits(String column) {
-		List<Double> result = null;
-		
-		try {
-			result = FileDataInterrogator.getValueRange(ServletUtils.getDBDataSource(), fileId, column, co2Type);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		if (null == result) {
-			result = new ArrayList<Double>(2);
-			result.add(0.0);
-			result.add(0.0);
-		}
-		
-		return result;
-	}
-	
-
 	/**
 	 * Retrieve the data for a plot from the database as a JSON string.
 	 * @param columns The list of columns for the plot. The first column will be for the X axis, and the subsequent columns will be display on the Y axis.
@@ -1616,48 +1045,7 @@ public class DataScreenBean extends BaseManagedBean {
 			// And the Y axis columns
 			submittedColumnList.addAll(columns.subList(1, columns.size()));
 			
-			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, null, getIncludeFlags(), 1, 0, true, false, false);
-		} catch (Exception e) {
-			e.printStackTrace();
-			output = "***ERROR: " + e.getMessage();
-		}
-		
-		return output;
-	}
-	
-	/**
-	 * Retrieve the data for a map from the database as a JSON string.
-	 * @param column The list column to be displayed on the map
-	 * @return The map data
-	 */
-	private String getMapData(String column, List<Double> bounds) {
-		String output;
-		
-		try {
-			DataSource dataSource = ServletUtils.getDBDataSource();
-			
-			// Add in the row number and flags as the first Y-axis columns. We need it for syncing the graphs and the table
-			// The list returned from delimitedToList does not allow inserting, so we have to do it the hard way.
-			List<String> submittedColumnList = new ArrayList<String>(6);
-			
-			// Position
-			submittedColumnList.add("longitude");
-			submittedColumnList.add("latitude");
-			
-			// The date/time
-			submittedColumnList.add("dateTime");
-			
-			// Now the row number
-			submittedColumnList.add("row");
-			
-			// Add QC and WOCE flags
-			submittedColumnList.add("qcFlag");
-			submittedColumnList.add("woceFlag");
-			
-			// And the Y axis columns
-			submittedColumnList.add(column);
-						
-			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, bounds, getIncludeFlags(), 1, 0, true, false, true);
+			output = FileDataInterrogator.getJsonDataArray(dataSource, fileId, co2Type, submittedColumnList, getIncludeFlags(), 1, 0, true, false);
 		} catch (Exception e) {
 			e.printStackTrace();
 			output = "***ERROR: " + e.getMessage();
@@ -1671,7 +1059,7 @@ public class DataScreenBean extends BaseManagedBean {
 	 * The data is stored in {@link #tableJsonData}.
 	 */
 	public void generateTableData() {
-
+		/*
 		try {
 			DataSource dataSource = ServletUtils.getDBDataSource();
 			
@@ -1792,6 +1180,7 @@ public class DataScreenBean extends BaseManagedBean {
 			e.printStackTrace();
 			setTableJsonData("***ERROR: " + e.getMessage());
 		}
+		*/
 	}
 	
 	/**
@@ -1799,7 +1188,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @return The list of column headings
 	 */
 	public String getTableHeadings() {
-
+		return null;
+		/*
 		StringBuffer output = new StringBuffer('[');
 		
 		output.append("['Date/Time', 'Row', 'Longitude', 'Latitude', ");
@@ -1930,6 +1320,7 @@ public class DataScreenBean extends BaseManagedBean {
 				+ "'pCO₂ TE Wet', 'fCO₂ TE', 'fCO₂ Final', 'QC Flag', 'QC Message', 'WOCE Flag', 'WOCE Message']");
 		
 		return output.toString();
+		*/
 	}
 
 	/**
@@ -2000,7 +1391,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @see FileDataInterrogator
 	 */
 	private String makePlotNames(List<String> columns) {
-
+		return null;
+		/*
 		List<String> output = new ArrayList<String>(columns.size());
 		
 		// The first column is the X axis
@@ -2018,6 +1410,7 @@ public class DataScreenBean extends BaseManagedBean {
 		}
 		
 		return StringUtils.listToDelimited(output);
+		*/
 	}
 
 	/**
@@ -2027,7 +1420,8 @@ public class DataScreenBean extends BaseManagedBean {
 	 * @return The human-readable name
 	 */
 	private String getPlotSeriesName(String series) {
-		
+		return null;
+		/*
 		String result;
 		
 		switch (series) {
@@ -2181,19 +1575,7 @@ public class DataScreenBean extends BaseManagedBean {
 		}
 
 		return result;
-	}
-
-/**
-	 * Get the data bounds for the current data file
-	 * @return The data bounds
-	 * @see #dataBounds
-	 */
-	public String getDataBounds() {
-		StringBuilder output = new StringBuilder();
-		output.append('[');
-		output.append(StringUtils.listToDelimited(dataBounds, ","));
-		output.append(']');
-		return output.toString();
+		*/
 	}
 	
 	/**

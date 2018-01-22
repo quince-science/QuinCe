@@ -1,17 +1,33 @@
+@import 'https://fonts.googleapis.com/css?family=Noto Sans:400,400i,700';
+
 body {
   font-family: 'Noto Sans', sans-serif;
   font-size: 14px;
+  font-weight: 400;
   background: #F3F3F3;
   margin: 0px;
   overflow-x: hidden;
 }
 
-#contentbox {
+a {
+	outline: none;
+}
+
+pre {
+	font-family: 'Inconsolata', monospace;
+	margin: 0px;
+}
+
+.contentBox {
   max-width: 400px;
   margin: 40px auto 28px;
   border: 1px solid #DEDEDE;
   padding: 15px;
   background: #FFF;
+}
+
+.wideContentBox {
+	max-width: 600px !important;
 }
 
 h1,h2 {
@@ -21,16 +37,27 @@ h1,h2 {
   justify-content: center;
 }
 
+h4 {
+	text-decoration: underline;
+	margin-top: 12px;
+	margin-bottom: 6px;
+}
+
+h4:first-child {
+	margin-top: 0px;
+}
+
 #logoTitle {
   display:flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 28px;
+  margin-bottom: 40px;
 }
 
 label {
-  font-weight: bold;
+  font-weight: 700;
 }
 
 input {
@@ -69,11 +96,13 @@ input[type="submit"], input[type="button"], button {
 
   font-family: 'Noto Sans', sans-serif;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 700;
   cursor: pointer;
   min-width: 100px;
   margin-right: 20px;
   white-space: nowrap;
+  
+  outline: none;
 }
 
 input[type="submit"].inline {
@@ -96,6 +125,12 @@ input[type="submit"][disabled="disabled"] {
     cursor: default;
 }
 
+.inlineButton {
+	margin-top: 0px;
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
 input[type="submit"]:last-of-type, button:last-of-type {
     margin-right: 0px;
 }
@@ -112,12 +147,12 @@ input.smallButton, button.smallButton {
 	border: 2px solid #0030FF;
 }
 
-.buttonWrapper {
+.buttonPanel {
+	margin: auto;
+}
+
+.buttonPanel td {
     text-align: center;
-    clear: both;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    width: 100%;
 }
 
 form ul {
@@ -151,7 +186,7 @@ ul input {
   left: 0px;
   padding: 5px 10px 5px 10px;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 #hiddenData {
@@ -183,65 +218,14 @@ ul input {
 
 #content {
   margin-top: 30px;
+  margin-left: 5px;
+  margin-right: 5px;
   position: relative;
   clear: both;
 }
 
-table {
-  border-collapse: collapse;
-}
-
-th {
-  background: #8CD5ED;
-  text-align: left;
-  padding: 2px 5px 2px 5px;
-}
-
-th.right {
-	text-align: right;
-}
-
-tr.link {
-  cursor: pointer;
-}
-
-tr.fileList {
-  border-bottom: 1px solid black;
-}
-
-table .numericCol {
-  text-align: right;
-}
-
-table .centreCol {
-  text-align: center;
-}
-
-table .noWrap {
-  white-space: nowrap;
-}
-
-td {
-  padding: 3px 5px 3px 5px;
-  vertical-align: top;
-}
-
-td.columnBorder {
-    border-left: 1px solid #aaa;
-}
-
-td.columnBorder:first-of-type {
-    border-left: none;
-}
-
-.fullpage {
-  width: 95%;
-  margin: auto;
-}
-
-td.alert {
-  color: red;
-  font-weight: bold;
+.fullPage {
+	overflow: hidden;
 }
 
 .statBarCol {
@@ -288,7 +272,7 @@ ul.menu {
 li.menuitem {
   font-size: 14px;
   color: #555;
-  font-weight: bold;
+  font-weight: 700;
   cursor: pointer;
   padding: 5px 0px 5px 5px;
   -webkit-touch-callout: none;
@@ -301,7 +285,7 @@ li.menuitem {
 }
 
 li.smallMenuitem {
-    font-weight: bold;
+    font-weight: 700;
     cursor: pointer;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -328,7 +312,7 @@ li.menuitem:hover, li.smallMenuitem:hover {
   display: none;
   z-index: 1000;
   box-shadow: 1px 2px 3px #000000;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .popupMenu {
@@ -391,7 +375,7 @@ div.fullPage {
   background: #8CD5ED;
   margin-top: 5px;
   padding: 5px;
-  font-weight: bold;
+  font-weight: 700;
   font-style: italic;
 }
 
@@ -407,7 +391,19 @@ td.labels {
   width: 50%;
   text-align: right;
   padding-right: 10px;
-  font-weight: bold;
+  font-weight: 700;
+}
+
+table .numericCol {
+  text-align: right;
+}
+
+table .centreCol {
+  text-align: center;
+}
+
+table .noWrap {
+  white-space: nowrap;
 }
 
 .shown {
@@ -418,14 +414,14 @@ td.labels {
   display: none;
 }
 
-#qcInfoPopup {
+#infoPopup {
   height: 20px;
   display: block;
   position: absolute;
   display: none;
 }
 
-.qcInfoMessage {
+.infoMessage {
     display: inline;
 }
 
@@ -434,6 +430,7 @@ td.labels {
   font-size: 16px;
   left: 10px;
   padding-bottom: 20px;
+  font-weight: 700;
 }
 
 .scrollable {
@@ -453,11 +450,26 @@ td.disabled {
 }
 
 tr.header {
-    font-weight: bold;
+    font-weight: 700;
+}
+
+.pageTitle {
+	margin: auto;
+	text-align: center;
+	font-size: 2em;
+	font-weight: 700;
+}
+
+.sectionTitle {
+	margin: auto;
+	margin-top: 15px;
+	text-align: center;
+	font-size: 1.5em;
+	font-weight: 700;
 }
 
 .smallHeader {
-    font-weight: bold;
+    font-weight: 700;
     font-size: 15px;
 }
 
@@ -465,9 +477,13 @@ hr {
     margin-bottom: 25px;
 }
 
+.nowrap {
+	white-space: nowrap;
+}
+
 .error {
 	color: #ff0000;
-	font-weight: bold;
+	font-weight: 700;
 }
 
 .info {
@@ -476,7 +492,7 @@ hr {
 
 .errors {
 	color: #ff0000;
-	font-weight: bold;
+	font-weight: 700;
 	text-align: center;	
 }
 
@@ -527,4 +543,152 @@ table.fileDates {
 	margin-right: 7px;
 	width: 20px;
 	height: 20px;
+}
+
+.inputForm {
+	margin-top: 15px;
+	margin-bottom: 15px;
+	width: 100%;
+}
+
+.inputLabels {
+	text-align: right;
+	vertical-align: middle;
+	white-space: nowrap; 
+}
+
+.inputInputs {
+	width: 100%;
+}
+
+.inputFormInput {
+	width: 95%;
+}
+
+.errorBox {
+	color: #B94A48;
+	background-color: #F2DEDE;
+	border-color: #EED3D7;
+	border: 1px solid;
+	margin: 0 5px;
+	padding: 2px 5px;
+	border-radius: 6px;
+	display: none;
+}
+
+.flexSet {
+	display: flex;
+	align-items: center;
+	margin-bottom: 5px;
+}
+
+.flexSet .nowrap {
+	flex-wrap: nowrap;
+}
+
+.flexSet:last-child {
+	margin-bottom: 0px;
+}
+
+.flexSetItem {
+	margin-right: 8px;
+}
+
+.flexSetItem:last-child {
+	margin-right: 0px;
+}
+
+.flexSetItemGrow {
+	flex-grow: 1000;
+}
+
+.flexSetItemShrink {
+	flex-shrink: 1000;
+}
+
+.dialogSection {
+	margin-top: 15px;
+}
+
+.variableText {
+	display: inline;
+}
+
+.codeLine {
+	margin: 5px 0px 5px 10px;
+	font-family: 'Inconsolata', monospace;
+}
+
+.pageTable {
+	width: 75%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.centeredCell {
+	text-align: center
+}
+
+.note {
+	color: #888888;
+	font-style: italic;
+}
+
+.pageTitle {
+	margin: auto;
+	text-align: center;
+	font-size: 2em;
+	font-weight: 700;
+}
+
+/* PrimeFaces overrides */
+.ui-panel-content td {
+	vertical-align: middle;
+}
+
+.ui-steps.custom .ui-steps-item {
+	height: 30px;	
+}
+
+.ui-steps.custom .ui-menuitem-link {
+	padding: 5px 0px 0px 0px;
+}
+
+.ui-steps.custom .ui-steps-number {
+	display: none;
+}
+
+.ui-steps.custom .ui-state-highlight {
+	font-weight: 700;
+}
+
+.ui-steps.custom .ui-state-default {
+	font-weight: 700;
+}
+
+.ui-tabs .ui-tabs-nav li a {
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+	padding-left: 0.5em;
+	padding-right: 0em;
+}
+
+.ui-tabs .ui-tabs-nav li a:first-of-type {
+	padding-left: 1em;
+}
+
+.ui-tabs .ui-tabs-nav li a:last-of-type {
+	padding-right: 1em;
+}
+
+.ui-tabs .ui-tabs-nav li a.clickable {
+	cursor: pointer;
+}
+
+@keyframes rowFlash {
+    0% {background-color: #fff;}
+   25% {background-color: #fd0;}
+   50% {background-color: #fff;}
+   75% {background-color: #fd0;}
+  100% {background-color: #fff;}
 }

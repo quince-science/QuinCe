@@ -35,6 +35,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class TrimFlushingJob extends FileJob {
 	
 	/**
@@ -55,7 +56,9 @@ public class TrimFlushingJob extends FileJob {
 
 	@Override
 	public void executeFileJob(JobThread thread) throws JobFailedException {
+		// TODO Reinstate
 		
+		/*
 		// Note that this job ignores interrupt calls!
 		
 		Connection conn = null;
@@ -126,6 +129,7 @@ public class TrimFlushingJob extends FileJob {
 		} finally {
 			DatabaseUtils.closeConnection(conn);
 		}
+		*/
 	}
 	
 	/**

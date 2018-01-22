@@ -16,13 +16,12 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.math3.stat.descriptive.rank.Percentile;
-
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.RebuildCode;
+import uk.ac.exeter.QuinCe.data.Calculation.CommentSet;
 import uk.ac.exeter.QuinCe.data.Calculation.RawDataDB;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -33,13 +32,13 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * An API to retrieve all kinds of data for a data file from the database.
  * @author Steve Jones
  *
  */
+@Deprecated
 public class FileDataInterrogator {
 	
 	/**
@@ -51,8 +50,7 @@ public class FileDataInterrogator {
 	/**
 	 * A special column identifier indicating that the record count should be included.
 	 * This equates to the {@code COUNT(*)} SQL directive. If the rest of the requested
-	 * columns are not compatible with this in the final SQL query
-	 * {@link #makeFileDataStatement(Connection, long, List, int, List, List, int, int, boolean)},
+	 * columns are not compatible with this in the final SQL query {@link #GET_COLUMN_DATA_QUERY},
 	 * the final output of the request is undefined, although it is likely that a {@link DatabaseException}
 	 * will be thrown.
 	 */
@@ -65,7 +63,40 @@ public class FileDataInterrogator {
 	private static Map<String, String> COLUMN_MAPPINGS = null;
 	
 	/**
+	 * The template SQL query for retrieving data from the database.
+	 * 
+	 * <p>
+	 *   This contains tags delimited by {@code %%} that are substituted for the required
+	 *   values by the method that will ultimately invoke the query. These are:
+	 * </p>
+	 * <ul>
+	 *   <li>
+	 *     {@code COLUMNS}: The columns to be read from the database. This is a comma-separated list (as required
+	 *     by SQL syntax) of values from the {@link #COLUMN_MAPPINGS} lookup, or the special values
+	 *     {@link #COLUMN_ORIGINAL_FILE} or {@link #COLUMN_RECORD_COUNT}.
+	 *   </li>
+	 *   <li>
+	 *     {@code CO2TYPES}: The type of CO<sub>2</sub> measurements to include in the output.
+	 *     Can contain {@link RunType#RUN_TYPE_WATER}, {@link RunType#RUN_TYPE_ATMOSPHERIC}, or
+	 *     both (separated by a comma). If other values are included, the data resulting from
+	 *     the query will contain unpredictable results.
+	 *   </li>
+	 *   <li>
+	 *     {@code ORDER}: The sort order for the resulting data. This can be any value that's available in the
+	 *     {@link #COLUMN_MAPPINGS} lookup table. To sort by the order of records as they are in the original
+	 *     file, use {@code raw_data.row}.
+	 *   </li>
+	 * </ul> 
+	 */
+	private static final String GET_COLUMN_DATA_QUERY = "SELECT %%COLUMNS%% FROM raw_data "
+					+ " INNER JOIN data_reduction ON raw_data.data_file_id = data_reduction.data_file_id AND raw_data.row = data_reduction.row"
+					+ " INNER JOIN qc ON raw_data.data_file_id = qc.data_file_id AND raw_data.row = qc.row"
+					+ " WHERE raw_data.data_file_id = ? AND raw_data.co2_type IN (%%CO2TYPES%%) AND qc.woce_flag IN (%%FLAGS%%)"
+					+ " ORDER BY %%ORDER%% ASC";
+	
+	/**
 	 * Query to retrieve the list of selectable row numbers for a given data file.
+
 	 * <p>
 	 *   Selectable rows can have their WOCE flag set by the user.
 	 *   Unselectable rows are rows that have their QC flag set to FATAL, which means they
@@ -79,11 +110,6 @@ public class FileDataInterrogator {
 	 */
 	private static final String GET_COMMENTS_QUERY = "SELECT qc_message, woce_message, woce_flag FROM qc WHERE data_file_id = ? AND row IN (%%ROWS%%)";
 	
-	/**
-	 * Query to get the geographical bounds of the data in a data file
-	 */
-	private static final String GET_GEOGRAPHICAL_BOUNDS_QUERY = "SELECT MAX(latitude), MAX(longitude), MIN(latitude), MIN(longitude) FROM raw_data WHERE data_file_id = ? AND row IN (SELECT row FROM qc WHERE data_file_id = ?)";
-
 	static {
 		// Map input names from the web front end to database column names
 		COLUMN_MAPPINGS = new HashMap<String, String>();
@@ -165,7 +191,7 @@ public class FileDataInterrogator {
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RawDataFileException If the original data file cannot be accessed
-	 * @see #makeFileDataStatement(Connection, long, List, int, List, List, int, int, boolean)
+	 * @see #GET_COLUMN_DATA_QUERY
 	 * @see RunType
 	 * @see Flag
 	 */
@@ -231,11 +257,14 @@ public class FileDataInterrogator {
 	 * @throws MissingParamException If any of the parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RawDataFileException If the original data file cannot be accessed
-	 * @see #makeFileDataStatement(Connection, long, List, int, List, List, int, int, boolean)
+	 * @see #GET_COLUMN_DATA_QUERY
 	 * @see RunType
 	 * @see Flag
 	 */
 	public static String getCSVData(DataSource dataSource, Properties appConfig, long fileId, Instrument instrument, List<String> columns, String separator, int co2Type, List<Integer> includeFlags, int start, int length) throws MissingParamException, DatabaseException, RawDataFileException {
+		return null;
+		/*
+		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(instrument, "instrument");
@@ -273,19 +302,49 @@ public class FileDataInterrogator {
 			// searching the original file data
 			conn = dataSource.getConnection();
 			
-			List<String> databaseColumnList = new ArrayList<String>();
-			databaseColumnList.add("dateTime");
+			StringBuffer databaseColumnList = new StringBuffer();
+			databaseColumnList.append(COLUMN_MAPPINGS.get("dateTime"));
+			databaseColumnList.append(',');
 			
 			for (int col = 0; col < columns.size(); col++) {
 				if (!columns.get(col).equals(COLUMN_ORIGINAL_FILE)) {
 					String column = columns.get(col);
 					if (instrumentHasColumn(instrument, column)) {
-						databaseColumnList.add(column);
+						databaseColumnList.append(COLUMN_MAPPINGS.get(column));
+						databaseColumnList.append(',');
 					}
 				}
 			}
 			
-			stmt = makeFileDataStatement(conn, fileId, databaseColumnList, co2Type, null, includeFlags, start, length, false);
+			// We always add a comma separator, so we remove the last character
+			// Normally we'd check as we built the string, but the optional 'original' field
+			// makes it awkward.
+			databaseColumnList.deleteCharAt(databaseColumnList.length() - 1);
+			StringBuffer co2Types = new StringBuffer();
+
+			if (co2Type == RunType.RUN_TYPE_BOTH) {
+				co2Types.append(RunType.RUN_TYPE_WATER);
+				co2Types.append(',');
+				co2Types.append(RunType.RUN_TYPE_ATMOSPHERIC);
+			} else {
+				co2Types.append(co2Type);
+			}
+			
+			StringBuffer flags = new StringBuffer();
+			for (int i = 0; i < includeFlags.size(); i++) {
+				flags.append(includeFlags.get(i));
+				if (i < includeFlags.size() - 1) {
+					flags.append(',');
+				}
+			}
+
+			String queryString = GET_COLUMN_DATA_QUERY.replaceAll("%%COLUMNS%%", databaseColumnList.toString());
+			queryString = queryString.replaceAll("%%CO2TYPES%%", co2Types.toString());
+			queryString = queryString.replaceAll("%%FLAGS%%", flags.toString());
+			
+			stmt = conn.prepareStatement(queryString);
+			stmt.setLong(1, fileId);
+			
 			records = stmt.executeQuery();
 			
 			StringBuffer outputBuffer = new StringBuffer();
@@ -437,6 +496,8 @@ public class FileDataInterrogator {
 		}
 		
 		return output;
+		
+		*/
 	}
 
 	/**
@@ -460,6 +521,7 @@ public class FileDataInterrogator {
 	 * @param records The record data
 	 * @param columnIndex The index of the desired column in the record data
 	 * @param columnName The column name
+	 * @param asString Indicates that numeric values should be surrounded by double quotes
 	 * @return The formatted field
 	 * @throws SQLException If the field value cannot be extracted from the result set
 	 * @throws MessageException If the QC message cannot be reconstructed
@@ -564,11 +626,10 @@ public class FileDataInterrogator {
 	 * @param length The number of rows to retrieve
 	 * @param sortByFirstColumn If any of the parameters are missing
 	 * @param valuesAsStrings If a database error occurs
-	 * @param includeRowId If the row number should be included as a table ID in the output
 	 * @return The requested data
 	 * @throws MissingParamException If any parameters are missing
 	 * @throws MessageException If the QC message cannot be reconstructed
-	 * @see #makeFileDataStatement(Connection, long, List, int, List, List, int, int, boolean)
+	 * @see #GET_COLUMN_DATA_QUERY
 	 * @see RunType
 	 * @see Flag
 	 */
@@ -592,7 +653,7 @@ public class FileDataInterrogator {
 
 		try {
 			conn = dataSource.getConnection();
-			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, null, includeFlags, start, length, sortByFirstColumn);
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, start, length, sortByFirstColumn);
 			
 			records = stmt.executeQuery();
 			ResultSetMetaData rsmd = records.getMetaData();
@@ -660,24 +721,7 @@ public class FileDataInterrogator {
 		return output;
 	}
 	
-	/**
-	 * Retrieve file data from the database, formatted as a JSON array
-	 * @param dataSource A data source
-	 * @param fileId The file's database ID
-	 * @param co2Type The CO2 type to retrieve
-	 * @param columns The data columns to retrieve
-	 * @param bounds The geographical bounds of the query (can be null to retrieve all data)
-	 * @param includeFlags The list of QC flags. Only records with these flags will be retrieved
-	 * @param start The first record to be retrieved. If {@code -1}, all records will be retrieved
-	 * @param length The number of records to be retrieved. Ignored if {@code start} is {@code -1};
-	 * @param sortByFirstColumn If {@code true}, the records will be sorted by the first column in {@code columns}. Otherwise they will be sorted by row number.
-	 * @param valuesAsStrings Indicates if all values should be returned as strings
-	 * @param limitPoints If {@code true}, the returned records will be sampled such that only the configured number of max_points will be returned.
-	 * @return The JSON data array
-	 * @throws MissingParamException If any required parameters are missing
-	 * @throws MessageException If processing of QC messages fails
-	 */
-	public static String getJsonDataArray(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Double> bounds, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings, boolean limitPoints) throws MissingParamException, MessageException {
+	public static String getJsonDataArray(DataSource dataSource, long fileId, int co2Type, List<String> columns, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn, boolean valuesAsStrings) throws MissingParamException, MessageException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkPositive(fileId, "fileId");
 		MissingParam.checkMissing(columns, "columns");
@@ -697,7 +741,7 @@ public class FileDataInterrogator {
 
 		try {
 			conn = dataSource.getConnection();
-			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, bounds, includeFlags, start, length, sortByFirstColumn);
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, start, length, sortByFirstColumn);
 			
 			records = stmt.executeQuery();
 			ResultSetMetaData rsmd = records.getMetaData();
@@ -705,26 +749,10 @@ public class FileDataInterrogator {
 
 			StringBuilder outputBuffer = new StringBuilder();
 			outputBuffer.append('[');
-
-			int recordCount = 0;
-			try {
-			    records.last();
-			    recordCount = records.getRow();
-			    records.beforeFirst();
-			} catch (SQLException e) {
-				recordCount = 0;
-			}
-
-			int everyNthRecord = 1;
-			if (limitPoints) {
-				int maxPoints = Integer.parseInt(ResourceManager.getInstance().getConfig().getProperty("map.max_points"));
-				everyNthRecord = recordCount / maxPoints;
-				if (everyNthRecord < 1) {
-					everyNthRecord = 1;
-				}
-			}
 			
-			while (records.relative(everyNthRecord)) {
+			boolean hasRecords = false;
+			while (records.next()) {
+				hasRecords = true;
 				
 				outputBuffer.append('[');
 				for (int col = 1; col <= columnCount; col++) {
@@ -752,7 +780,7 @@ public class FileDataInterrogator {
 			}
 			
 			// Remove the trailing comma from the last record
-			if (recordCount > 1) {
+			if (hasRecords) {
 				outputBuffer.deleteCharAt(outputBuffer.length() - 1);
 			}
 			outputBuffer.append(']');
@@ -803,7 +831,7 @@ public class FileDataInterrogator {
 			columns.add(COLUMN_RECORD_COUNT);
 			
 			conn = dataSource.getConnection();
-			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, null, includeFlags, -1, -1, false);
+			stmt = makeFileDataStatement(conn, fileId, columns, co2Type, includeFlags, -1, -1, false);
 			
 			records = stmt.executeQuery();
 
@@ -832,6 +860,11 @@ public class FileDataInterrogator {
 	 * @return The human-readable column name
 	 */
 	private static String getColumnHeading(String columnName, Instrument instrument) {
+		
+		return null;
+		
+		/*
+		
 		String result;
 		
 		switch (columnName) {
@@ -1026,6 +1059,8 @@ public class FileDataInterrogator {
 		}
 		
 		return result;
+		
+		*/
 	}
 	
 	/**
@@ -1074,86 +1109,6 @@ public class FileDataInterrogator {
 		
 		return output.toString();
 	}
-	
-	/**
-	 * Get the value range of a given column in a data file. Only values with
-	 * WOCE flags of {@link Flag#ASSUMED_GOOD}, {@link Flag#GOOD} or {@link Flag#QUESTIONABLE}
-	 * are included, and the returned range is encompasses the 5th and 95th percentiles of the values.
-	 * These prevent extreme values from giving an excessively large (and therefore meaningless) range.
-	 * 
-	 * @param dataSource A data source
-	 * @param fileId The database ID of the data file
-	 * @param column The column
-	 * @param co2Type The type of observations to be matched. One of {@link RunType#RUN_TYPE_WATER}, {@link RunType#RUN_TYPE_ATMOSPHERIC}, or {@link RunType#RUN_TYPE_BOTH}.
-	 * @return The minimum and maximum values for the column
-	 * @throws DatabaseException If a database error occurs
-	 */
-	public static List<Double> getValueRange(DataSource dataSource, long fileId, String column, int co2Type) throws DatabaseException {
-		double min = 0;
-		double max = 0;
-		
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet results = null;
-		
-		try {
-			List<String> columnList = new ArrayList<String>(0);
-			columnList.add(column);
-			String databaseColumn = makeDatabaseColumnList(columnList);
-	
-			String co2Types = makeCo2Types(co2Type);
-	
-			StringBuilder query = new StringBuilder();
-			query.append("SELECT ");
-			query.append(databaseColumn);
-			query.append(" FROM raw_data");
-			query.append(" INNER JOIN data_reduction ON raw_data.data_file_id = data_reduction.data_file_id AND raw_data.row = data_reduction.row");
-			query.append(" INNER JOIN qc ON raw_data.data_file_id = qc.data_file_id AND raw_data.row = qc.row");
-			query.append(" WHERE raw_data.data_file_id = ");
-			query.append(fileId);
-			query.append(" AND raw_data.co2_type IN (");
-			query.append(co2Types);
-			query.append(") AND qc.woce_flag IN (");
-			query.append(Flag.VALUE_ASSUMED_GOOD);
-			query.append(',');
-			query.append(Flag.VALUE_GOOD);
-			query.append(',');
-			query.append(Flag.VALUE_QUESTIONABLE);
-			query.append(")");
-			
-			conn = dataSource.getConnection();
-			stmt = conn.prepareStatement(query.toString());
-			results = stmt.executeQuery();
-			
-			List<Double> values = new ArrayList<Double>();
-			
-			while(results.next()) {
-				values.add(results.getDouble(1));
-			}
-
-			Percentile percentile = new Percentile();
-			
-			double[] array = values.stream().mapToDouble(d -> d).toArray();
-
-			min = percentile.evaluate(array, 5);
-			max = percentile.evaluate(array, 95);
-			
-		} catch (SQLException e) {
-			throw new DatabaseException("Excpeption while getting scale bounds", e);
-		} finally {
-			DatabaseUtils.closeResultSets(results);
-			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
-		}
-		
-		
-		
-		List<Double> result = new ArrayList<Double>(2);
-		result.add(min);
-		result.add(max);
-		
-		return result;
-	}
 
 	/**
 	 * Create the SQL statement to retrieve the required data from a data file.
@@ -1171,9 +1126,10 @@ public class FileDataInterrogator {
 	 * @see #getCSVData(DataSource, Properties, long, Instrument, List, String, int, List, int, int)
 	 * @see #getCSVData(DataSource, Properties, long, Instrument, ExportOption)
 	 * @see #getCSVData(DataSource, Properties, long, Instrument, List, int, List)
+	 * @see #getJsonData(DataSource, long, int, List, List, int, int, boolean, boolean)
 	 * @see #getRecordCount(DataSource, long, int, List)
 	 */
-	private static PreparedStatement makeFileDataStatement(Connection conn, long fileId, List<String> columns, int co2Type, List<Double> bounds, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn) throws SQLException {
+	private static PreparedStatement makeFileDataStatement(Connection conn, long fileId, List<String> columns, int co2Type, List<Integer> includeFlags, int start, int length, boolean sortByFirstColumn) throws SQLException {
 		
 		PreparedStatement stmt = null;
 
@@ -1182,49 +1138,22 @@ public class FileDataInterrogator {
 			String co2Types = makeCo2Types(co2Type);
 			String flags = makeFlags(includeFlags);
 
-			StringBuilder query = new StringBuilder();
-			query.append("SELECT ");
-			query.append(databaseColumnList);
-			query.append(" FROM raw_data");
-			query.append(" INNER JOIN data_reduction ON raw_data.data_file_id = data_reduction.data_file_id AND raw_data.row = data_reduction.row");
-			query.append(" INNER JOIN qc ON raw_data.data_file_id = qc.data_file_id AND raw_data.row = qc.row");
-			query.append(" WHERE raw_data.data_file_id = ");
-			query.append(fileId);
-			query.append(" AND raw_data.co2_type IN (");
-			query.append(co2Types);
-			query.append(')');
-			
-			if (null != bounds) {
-				query.append(" AND raw_data.longitude >= ");
-				query.append(bounds.get(0));
-				query.append(" AND raw_data.longitude <= ");
-				query.append(bounds.get(2));
-				query.append(" AND raw_data.latitude >= ");
-				query.append(bounds.get(1));
-				query.append(" AND raw_data.latitude <= ");
-				query.append(bounds.get(3));
-			}
-			
-			query.append(" AND qc.woce_flag IN (");
-			query.append(flags);
-			query.append(") ORDER BY ");
+			String queryString = GET_COLUMN_DATA_QUERY.replaceAll("%%COLUMNS%%", databaseColumnList);
+			queryString = queryString.replaceAll("%%CO2TYPES%%", co2Types);
+			queryString = queryString.replaceAll("%%FLAGS%%", flags);
 			
 			if (!sortByFirstColumn) {
-				query.append("raw_data.row");
+				queryString = queryString.replaceAll("%%ORDER%%", "raw_data.row");
 			} else {
-				query.append(COLUMN_MAPPINGS.get(columns.get(0)));
+				queryString = queryString.replaceAll("%%ORDER%%", COLUMN_MAPPINGS.get(columns.get(0)));
 			}
 			
-			query.append(" ASC");
-
 			if (length > 0) {
-				query.append(" LIMIT ");
-				query.append(start);
-				query.append(',');
-				query.append(length);
+				queryString += " LIMIT " + start + "," + length;
 			}
-			
-			stmt = conn.prepareStatement(query.toString(), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+
+			stmt = conn.prepareStatement(queryString);
+			stmt.setLong(1, fileId);
 		} catch (SQLException e) {
 			DatabaseUtils.closeStatements(stmt);
 			throw e;
@@ -1310,7 +1239,7 @@ public class FileDataInterrogator {
 	 */
 	private static boolean instrumentHasColumn(Instrument instrument, String column) {
 		boolean result = true;
-		
+		/*
 		switch (column) {
 		case "intakeTemp1": {
 			result = instrument.hasIntakeTemp1();
@@ -1385,7 +1314,7 @@ public class FileDataInterrogator {
 			break;
 		}
 		}
-
+		*/
 		return result;
 	}
 	
@@ -1498,119 +1427,6 @@ public class FileDataInterrogator {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(conn);
 		}
-		
-		return result;
-	}
-
-	/**
-	 * The bounds of the data. This is a list of values, of the form:
-	 * <ul>
-	 *   <li>Upper latitude</li>
-	 *   <li>Right-most longitude</li>
-	 *   <li>Lower latitude</li>
-	 *   <li>Left-most longitude</li>
-	 *   <li>Centre longitude</li>
-	 *   <li>Centre latitude</li>
-	 * </ul>
-	 * 
-	 * The values will take into account data that crosses the 180° line.
-	 *
-	 * @param dataSource A data source
-	 * @param fileId The file's database ID
-	 * @throws DatabaseException If a database error occurs
-	 * @return The list of geographical bounds values
-	 */
-	public static List<Double> getGeographicalBounds(DataSource dataSource, long fileId) throws DatabaseException {
-		
-		List<Double> result = new ArrayList<Double>(6);
-		
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet results= null;
-		
-		try {
-			conn = dataSource.getConnection();
-			stmt = conn.prepareStatement(GET_GEOGRAPHICAL_BOUNDS_QUERY);
-			stmt.setLong(1, fileId);
-			stmt.setLong(2, fileId);
-			
-			results = stmt.executeQuery();
-			if (!results.next()) {
-				throw new DatabaseException("No data retrieved while getting geographical bounds");
-			} else {
-
-				double topLatitude = results.getDouble(1);
-				double rightLongitude = results.getDouble(2);
-				double bottomLatitude = results.getDouble(3);
-				double leftLongitude = results.getDouble(4);
-
-				if (rightLongitude - leftLongitude > 180) {
-					double temp = rightLongitude;
-					rightLongitude = leftLongitude;
-					leftLongitude = temp;
-				}
-				
-				List<Double> midPoint = rhumbMidPoint(leftLongitude, bottomLatitude, rightLongitude, topLatitude);
-				
-				result.add(leftLongitude);
-				result.add(bottomLatitude);
-				result.add(rightLongitude);
-				result.add(topLatitude);
-				result.add(midPoint.get(0));
-				result.add(midPoint.get(1));
-			}
-			
-		} catch (SQLException e) {
-			throw new DatabaseException("Error while getting geographical bounds", e);
-		} finally {
-			DatabaseUtils.closeResultSets(results);
-			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * Calculate the mid-point of four co-ordinates. We use the
-	 * rhumb line calculation because the data will be viewed on a rectangular projection
-	 * @param lon1 Longitude of first point
-	 * @param lat1 Latitude of first point
-	 * @param lon2 Longitude of second point
-	 * @param lat2 Latitude of second point
-	 * @return The mid-point of the coordinates
-	 * @see "http://www.movable-type.co.uk/scripts/latlong.html"
-	 */
-	private static List<Double> rhumbMidPoint(double lon1, double lat1, double lon2, double lat2) {
-		
-		lon1 = Math.toRadians(lon1);
-		lat1 = Math.toRadians(lat1);
-		lon2 = Math.toRadians(lon2);
-		lat2 = Math.toRadians(lat2);
-		
-		List<Double> result = new ArrayList<Double>(2);
-		
-		if (Math.abs(lon2 - lon1) > Math.PI) {
-			lon1 += 2 * Math.PI;
-		}
-		
-		double midLat = (lat1 + lat2) / 2;
-		double f1 = Math.tan(Math.PI / 4 + lat1 / 2);
-		double f2 = Math.tan(Math.PI / 4 + lat2 / 2);
-		double f3 = Math.tan(Math.PI / 4 + midLat / 2);
-		
-		double midLon;
-		double bottomPart = Math.log(f2 / f1);
-		if (bottomPart == 0) {
-			midLon = (lon1 + lon2) / 2;
-		} else {
-			midLon = ((lon2 - lon1) * Math.log(f3) + lon1 * Math.log(f2) - lon2 * Math.log(f1)) / Math.log(f2 / f1);
-		}
-		
-		midLon = (Math.toDegrees(midLon) + 540) % 360 - 180;
-		
-		result.add(midLon);
-		result.add(Math.toDegrees(midLat));
 		
 		return result;
 	}

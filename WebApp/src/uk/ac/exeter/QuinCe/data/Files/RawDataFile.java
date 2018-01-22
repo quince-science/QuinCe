@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class RawDataFile {
 
 	/**
@@ -52,11 +53,13 @@ public class RawDataFile {
 	/**
 	 * The date of the first CO2 line in the file
 	 */
+	@Deprecated
 	private Calendar startDate = null;
 	
 	/**
 	 * The date/time of all records in the file
 	 */
+	@Deprecated
 	private List<Calendar> dates = null;
 	
 	/**
@@ -132,7 +135,7 @@ public class RawDataFile {
 	 * @throws RawDataFileException If any other other error occurs while retrieving the file data
 	 */
 	private void readDataFromStore() throws IOException, RawDataFileException {
-		
+		/*
 		boolean fileOK = true;
 		int badLine = -1;
 		String errorMessage = null;
@@ -210,6 +213,8 @@ public class RawDataFile {
 			contents = null;
 			throw new RawDataFileException(badLine, errorMessage);
 		}
+		
+		*/
 	}
 	
 	
@@ -220,7 +225,7 @@ public class RawDataFile {
 	 * @throws IOException If an I/O error occurs while reading the file data from disk
 	 */
 	private void readData(List<String> messages) throws RawDataFileException, IOException {
-		
+		/*
 		boolean fileOK = true;
 		int firstBadLine = -1;
 		String firstBadMessage = null;
@@ -276,6 +281,7 @@ public class RawDataFile {
 			contents = null;
 			throw new RawDataFileException(firstBadLine, firstBadMessage);
 		}
+		*/
 	}
 	
 	/**
@@ -286,6 +292,7 @@ public class RawDataFile {
 	 * @throws IOException If an I/O error occurs while reading the file data from disk
 	 * @throws RawDataFileException If any other other error occurs while retrieving the file data
 	 */
+	@Deprecated
 	public List<Calendar> getDates(List<String> messages) throws RawDataFileException, IOException {
 		
 		if (null == dates) {
@@ -302,6 +309,8 @@ public class RawDataFile {
 	 * @throws RawDataFileException If any other other error occurs while retrieving the file data
 	 */
 	private void createDatesList(List<String> messages) throws RawDataFileException, IOException {
+		/*
+		
 		boolean datesOK = true;
 		int firstBadDate = -1;
 		String firstBadMessage = null;
@@ -332,6 +341,8 @@ public class RawDataFile {
 		if (!datesOK) {
 			throw new RawDataFileException(firstBadDate, firstBadMessage);
 		}
+		
+		*/
 	}
 	
 	/**
@@ -402,9 +413,13 @@ public class RawDataFile {
 	 * @throws InstrumentException If the date/time format is not recognised
 	 * @throws DateTimeParseException  If the date or time cannot be parsed from the line
 	 */
+	@Deprecated
 	private Calendar getDateFromLine(int lineNumber) throws DateTimeParseException, InstrumentException {
+		return null;
+		/*
 		List<String> line = contents.get(lineNumber);
 		return instrument.getDateFromLine(line);
+		*/
 	}
 	
 	/**
@@ -419,6 +434,7 @@ public class RawDataFile {
 	 * Returns the first measurement date in the file
 	 * @return The start date
 	 */
+	@Deprecated
 	public Calendar getStartDate() {
 		return startDate;
 	}
@@ -454,7 +470,8 @@ public class RawDataFile {
 	 * @throws IOException If an I/O error occurs while reading the file data from disk
 	 */
 	public String getOriginalLine(int lineNumber) throws RawDataFileException, IOException {
-		
+		return null;
+		/*
 		List<String> fields = getLineData(lineNumber);
 		
 		StringBuffer result = new StringBuffer();
@@ -467,6 +484,7 @@ public class RawDataFile {
 		}
 		
 		return result.toString();
+		*/
 	}
 	
 	/**
@@ -478,6 +496,7 @@ public class RawDataFile {
 	 * @throws RawDataFileException If the file cannot be read from the file store, or no line exists with the specified date
 	 * @throws IOException If an error occurs while processing the file content
 	 */
+	@Deprecated
 	public int findLineByDate(Calendar date, int start) throws RawDataFileException, IOException {
 
 		if (null == dates) {

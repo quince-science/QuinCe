@@ -1,0 +1,226 @@
+.plotPageHeader {
+	height: 25px;
+	font-size: 18px;
+}
+
+.plotPageFooter {
+	position: absolute;
+	bottom: 0px;
+	height: 30px;
+	width: calc(100% - 8px);
+	color: #2779AA;
+}
+
+.plotPageContent {
+	position: absolute;
+	top: 35px;
+	width: 100%;
+	height: calc(100% - 65px);
+	overflow: hidden;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+#plots {
+	overflow: hidden;
+}
+
+.plotContainer {
+	height: 100%;
+	width: 100%;
+	overflow: hidden !important;	
+}
+
+#tableContent {
+	overflow: hidden;
+}
+
+/* jQuery splitter overrides */
+.splitter_panel .vsplitter {
+    background: url("#{resource['image/primefaces_gradient_vertical.png']}") #E4F0F7 repeat-y;
+    background-size: 7px 1px;
+    cursor: col-resize;
+    z-index:900;
+    width: 7px;
+}
+
+.splitter_panel .hsplitter {
+    background: url("#{resource['image/primefaces_gradient_horizontal.png']}") #E4F0F7 repeat-x;
+    background-size: 1px 7px;
+    cursor: row-resize;
+    z-index: 800;
+    height: 10px;
+}
+
+/* Table row highlighter */
+@keyframes rowFlash {
+    0% {background-color: #fff;}
+   25% {background-color: #fd0;}
+   50% {background-color: #fff;}
+   75% {background-color: #fd0;}
+  100% {background-color: #fff;}
+}
+
+tr.selected {
+	background-color: #FFFF00 !important;
+}
+
+.clearSelectionButton {
+	background-image: url("#{resource['image/delete_button.svg']}") !important;
+	background-size: cover;
+	margin-left: -13px !important;
+	margin-top: -13px !important;
+	width: 25px !important;
+	height: 25px !important;
+	margin-left: -13px !important;
+	margin-top: -13px !important;
+}
+
+.plotModeButtons .ui-button:nth-child(1) {
+	background-image: url("#{resource['image/plot_button.svg']}") !important;
+	background-size: 20px;
+	background-repeat: no-repeat;
+	width: 46.77px !important;
+	height: 29.22px !important;
+}
+
+.plotModeButtons .ui-button:nth-child(2) {
+	background-image: url("#{resource['image/globe_button.svg']}") !important;
+	background-size: 20px;
+	background-repeat: no-repeat;
+	width: 46.77px !important;
+	height: 29.22px !important;
+}
+
+.plotFooterButton {
+	top: -10px !important;
+	height: 32px !important;
+}
+
+.selectVariableButton {
+	background-image: url("#{resource['image/select_button.svg']}") !important;
+	background-size: cover;
+	margin-left: -13px !important;
+	margin-top: -13px !important;
+	width: 25px !important;
+	height: 25px !important;
+}
+
+.zoomOutButton {
+	background-image: url("#{resource['image/zoomout_button.svg']}") !important;
+	background-size: cover;
+	margin-left: -13px !important;
+	margin-top: -13px !important;
+	width: 25px !important;
+	height: 25px !important;
+}
+
+#variablesList {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+}
+
+.variable {
+	display: flex;
+	margin-bottom: 3px;
+	margin-left: 10px;
+	margin-right: 10px;
+	height: 18px;
+}
+
+.variable:last-of-type {
+	margin-bottom: 10px;
+}
+
+.singleVariable {
+	margin-bottom: 10px;
+}
+
+.varName {
+	font-style: italic;
+	padding-right: 5px;
+	flex-grow: 1;
+}
+
+.variableGroup {
+	margin-left: 10px;
+}
+
+.varGroupName {
+	font-weight: 700;
+	text-decoration: underline;
+	margin-bottom: 2px;
+	height: 18px;
+}
+
+.varGroupMember {
+	text-indent: 15px;
+}
+
+.variableControls {
+	margin-left: 5px;
+}
+
+.axisButton {
+	font-size: 12px !important;
+	width: 16px;
+	height: 16px;
+	position: relative;
+	top: -5px;
+}
+
+.ui-selectbooleanbutton .ui-button-text {
+	margin-left: -8px;
+	margin-top: -3px;
+}
+
+.mapScale {
+	width: 350px;
+	height: 50px;
+	position: absolute;
+	bottom: 40px;
+	right: 35px;
+	background-color: white;
+}
+
+.mapScaleControlContainer {
+	position: absolute;
+	bottom: 40px;
+	right: 8px;
+	width: 23px;
+}
+
+.mapValue {
+	position: absolute;
+	left: 0px;
+	bottom: 41px;
+	z-index: 100;
+	background-color: #E1E1E1;
+}
+
+.mapScaleControlContainer {
+	position: absolute;
+	bottom: 45px;
+	right: 8px;
+	width: 23px;
+	z-index: 100;
+}
+
+.mapScale {
+	width: 350px;
+	height: 50px;
+	position: absolute;
+	bottom: 45px;
+	right: 35px;
+	background: transparent;
+}
+
+.ol-control button {
+	min-width: 0px;
+}
+

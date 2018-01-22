@@ -15,14 +15,14 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public class User {
 
 	/**
-	 * Permission bit for job managers
+	 * Permissions bit for job managers
 	 */
 	public static final int BIT_JOB_MANAGER = 1;
 	
 	/**
 	 * The user's database record ID
 	 */
-	private int databaseID;
+	private int databaseId;
 	
 	/**
 	 * The user's email address
@@ -44,7 +44,6 @@ public class User {
 	 * user should not be able to log in until the verification is complete.
 	 */
 	private String emailVerificationCode = null;
-	
 	
 	/**
 	 * The time at which the email verification code was set
@@ -69,26 +68,33 @@ public class User {
 	private int permissions = 0;
 	
 	/**
+	 * The user's preferences
+	 */
+	private UserPreferences preferences;
+	
+	/**
 	 * Construct a User object
-	 * @param databaseID The database record ID for the user
+	 * @param databaseId The database record ID for the user
 	 * @param emailAddress The user's email address
 	 * @param givenName The user's given name
 	 * @param surname The user's surname
-	 * @param permissions The permissions for the user
+	 * @param permissions The user's permissions bit mask
+	 * @param preferences The user's preferences
 	 * @throws MissingParamException If any required parameters are missing
 	 */
-	public User(int databaseID, String emailAddress, String givenName, String surname, int permissions) throws MissingParamException {
+	public User(int databaseId, String emailAddress, String givenName, String surname, int permissions, String preferences) throws MissingParamException {
 		
 		MissingParam.checkMissing(emailAddress, "email");
 		MissingParam.checkMissing(givenName, "givenName");
 		MissingParam.checkMissing(surname, "surname");
 		MissingParam.checkZeroPositive(permissions, "permissions");
 		
-		this.databaseID = databaseID;
+		this.databaseId = databaseId;
 		this.emailAddress = emailAddress;
 		this.givenName = givenName;
 		this.surname = surname;
 		this.permissions = permissions;
+		this.preferences = new UserPreferences(databaseId, preferences);
 	}
 	
 	/**
@@ -127,7 +133,7 @@ public class User {
 	/**
 	 * Set the email verification code
 	 * @param code The email verification code
-	 * @param time The time at which the code was generated
+	 * @param time The time that the code was created
 	 */
 	public void setEmailVerificationCode(String code, Timestamp time) {
 		emailVerificationCode = code;
@@ -137,7 +143,7 @@ public class User {
 	/**
 	 * Set the password reset code
 	 * @param code The password reset code
-	 * @param time The time at which the code was generated
+	 * @param time The time that the code was created
 	 */
 	public void setPasswordResetCode(String code, Timestamp time) {
 		passwordResetCode = code;
@@ -183,7 +189,7 @@ public class User {
 	 * @return The user's database ID
 	 */
 	public int getDatabaseID() {
-		return databaseID;
+		return databaseId;
 	}
 	
 	/**
@@ -191,7 +197,7 @@ public class User {
 	 * @param id The user's ID
 	 */
 	public void setDatabaseID(int id) {
-		databaseID = id;
+		databaseId = id;
 	}
 	
 	/**
@@ -200,5 +206,13 @@ public class User {
 	 */
 	public boolean getJobManager() {
 		return (permissions & BIT_JOB_MANAGER) > 0;
+	}
+	
+	/**
+	 * Get the user's preferences
+	 * @return The user's preferences
+	 */
+	public UserPreferences getPreferences() {
+		return preferences;
 	}
 }

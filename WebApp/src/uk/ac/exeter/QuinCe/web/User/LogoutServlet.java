@@ -28,8 +28,6 @@ public class LogoutServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		HttpSession session = request.getSession();
 		if (session != null) {
-			session.removeAttribute(LoginBean.USER_SESSION_ATTR);
-        	session.setAttribute("SESSION_EXPIRED", "true");
 			session.invalidate();
 		}
 		

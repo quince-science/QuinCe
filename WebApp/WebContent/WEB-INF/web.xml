@@ -66,7 +66,17 @@
 
 	<context-param>
 	    <param-name>configuration.path</param-name>
-	    <param-value>/Users/zuj007/Documents/QuinCe/alpha1_config/quince.properties</param-value>
+	    <param-value>/Users/zuj007/Documents/QuinCe/voyage_config/quince.properties</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>primefaces.THEME</param-name>
+		<param-value>cupertino</param-value>
+	</context-param>
+	
+	<context-param>
+	    <param-name>javax.faces.FACELETS_SKIP_COMMENTS</param-name>
+	    <param-value>true</param-value>
 	</context-param>
 
  	<filter>
@@ -83,5 +93,8 @@
 	    <listener-class>uk.ac.exeter.QuinCe.web.system.ResourceManager</listener-class>
 	</listener>
  
+    <listener>
+		<listener-class>uk.ac.exeter.QuinCe.web.User.UserSessionListener</listener-class>
+	</listener>
 
 </web-app>

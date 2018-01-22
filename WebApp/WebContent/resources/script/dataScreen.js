@@ -97,50 +97,21 @@ var plotSplitPercent = 0;
 // the selection limits
 var plotPopupSingleSelection = true;
 
-// Specifies the target plot (L/R) and axis (X/Y) for the popup
+// Specifies the target plot (1/2) and axis (X/Y) for the popup
 var plotPopupTarget = 'LX';
 
 // The selected parameters for the plots and maps
 var leftPlotXAxis = ['plot_datetime_dateTime'];
 var leftPlotYAxis = ['plot_intaketemp_intakeTempMean'];
+var leftMap = 'plot_co2_fCO2Final';
 
 var rightPlotXAxis = ['plot_datetime_dateTime'];
 var rightPlotYAxis = ['plot_co2_fCO2Final'];
+var rightMap = 'plot_intaketemp_intakeTempMean';
 
 // Variables for the plots
 var leftGraph = null;
 var rightGraph = null;
-
-// Map variables
-var mapPopupTarget = 'L';
-var leftMapVar = 'map_co2_fCO2Final';
-var rightMapVar = 'map_intaketemp_intakeTempMean';
-
-var leftMap = null;
-var rightMap = null;
-
-var leftColorScale = new ColorScale([[0,'#FFFFD4'],[0.25,'#FED98E'],[0.5,'#FE9929'],[0.75,'#D95F0E'],[1,'#993404']]);
-leftColorScale.setFont('Noto Sans', 11);
-
-var rightColorScale = new ColorScale([[0,'#FFFFD4'],[0.25,'#FED98E'],[0.5,'#FE9929'],[0.75,'#D95F0E'],[1,'#993404']]);
-rightColorScale.setFont('Noto Sans', 11);
-
-var leftMapDataLayer = null;
-var rightMapDataLayer = null;
-
-var leftMapExtent = null;
-var rightMapExtent = null;
-
-var scaleOptions = {
-	outliers: 'b',
-	outlierSize: 5,
-	decimalPlaces: 3
-};
-
-var mapSource = new ol.source.Stamen({
-		layer: "terrain",
-		url: "https://stamen-tiles-{a-d}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png"
-});
 
 // The data table
 var jsDataTable = null;
@@ -195,8 +166,8 @@ $(function() {
 
 	
 	// Initial loading screens for each panel
-	drawLoading($('#plotLeft'));
-	drawLoading($('#plotRight'));
+	drawLoading($('#plotLeftContent'));
+	drawLoading($('#plotRightContent'));
 	drawLoading($('#tableContent'));
 	
 	// When the window is resized, scale the panels
@@ -218,15 +189,6 @@ $(function() {
     	});
     });
     
-    // Set up change handlers for checkboxes on the map popup
-    $('#mapFieldList')
-    .find('input')
-    .each(function(index, item) {
-    	$(item).change(function(event) {
-    		processMapFieldChange(item);
-    	});
-    });
-    
     // Set up the data table options
     
     
@@ -238,8 +200,8 @@ $(function() {
  * Refreshes all data objects (both plots and the table)
  */
 function drawAllData() {
-	drawLoading($('#plotLeft'));
-	drawLoading($('#plotRight'));
+	drawLoading($('#plotLeftContent'));
+	drawLoading($('#plotRightContent'));
 	drawLoading($('#tableContent'));
     updatePlot('left');
     updatePlot('right');
@@ -253,16 +215,16 @@ function resizeContent() {
 	tableSplitPercent = '' + $('#dataScreenContent').split().position() / $('#dataScreenContent').height() * 100 + '%';
 	plotSplitPercent = '' + $('#plots').split().position() / $('#dataScreenContent').width() * 100 + '%';
 
-	$('#plotLeft').width('100%');
-	$('#plotLeft').height($('#plotContainerLeft').height() - 30);
+	$('#plotLeftContent').width('100%');
+	$('#plotLeftContent').height($('#plotContainerLeft').height() - 30);
 	if (leftGraph != null) {
-		leftGraph.resize($('#plotLeft').width(), $('#plotLeft').height() - 15);
+		leftGraph.resize($('#plotLeftContent').width(), $('#plotLeftContent').height() - 15);
 	}
 	
-	$('#plotRight').width('100%');
-	$('#plotRight').height('' + $('#plotContainerRight').height() - 30);
+	$('#plotRightContent').width('100%');
+	$('#plotRightContent').height('' + $('#plotContainerRight').height() - 30);
 	if (rightGraph != null) {
-		rightGraph.resize($('#plotRight').width(), $('#plotRight').height() - 15);
+		rightGraph.resize($('#plotRightContent').width(), $('#plotRightContent').height() - 15);
 	}
 	
 	// Set the height of the DataTables scrollbody
@@ -492,15 +454,35 @@ function savePlotSelection() {
 function updatePlot(plot) {
 	
 	if (plot == 'left') {
+		// Replace the existing plot with the loading animation
+		drawLoading($('#plotLeftContent'));
+		
 		// Destroy the existing graph data
 		if (leftGraph != null) {
 			leftGraph.destroy();
 			leftGraph = null;
 		}
 		
-		drawLoading($('#plotLeft'));
-		initLeftPlot();
+		// Build the list of columns to be sent to the server
+		var columnList = '';
+		for (var i = 0; i < leftPlotXAxis.length; i++) {
+			columnList += getColumnName(leftPlotXAxis[i]);
+			columnList += ';';
+		}
+		for (var i = 0; i < leftPlotYAxis.length; i++) {
+			columnList += getColumnName(leftPlotYAxis[i]);
+			if (i < leftPlotYAxis.length - 1) {
+				columnList += ';';
+			}
+		}
+		
+		// Fill in the hidden form and submit it
+		$('#plotDataForm\\:leftColumns').val(columnList);
+		$('#plotDataForm\\:leftGetData').click();
+		$('#leftUpdate').removeClass('highlightButton');
 	} else {
+		// Replace the existing plot with the loading animation
+		drawLoading($('#plotRightContent'));
 		
 		// Destroy the existing graph data
 		if (rightGraph != null) {
@@ -508,51 +490,27 @@ function updatePlot(plot) {
 			rightGraph = null;
 		}
 		
-		drawLoading($('#plotRight'));
-		initRightPlot();
+		// Build the list of columns to be sent to the server
+		var columnList = '';
+		for (var i = 0; i < rightPlotXAxis.length; i++) {
+			columnList += getColumnName(rightPlotXAxis[i]);
+			columnList += ';';
+		}
+		for (var i = 0; i < rightPlotYAxis.length; i++) {
+			columnList += getColumnName(rightPlotYAxis[i]);
+			if (i < rightPlotYAxis.length - 1) {
+				columnList += ';';
+			}
+		}
+		
+		// Fill in the hidden form and submit it
+		$('#plotDataForm\\:rightColumns').val(columnList);
+		$('#plotDataForm\\:rightGetData').click();
+		$('#rightUpdate').removeClass('highlightButton');
 	}
+	
 	
 	return false;
-}
-
-function initLeftPlot() {
-	// Build the list of columns to be sent to the server
-	var columnList = '';
-	for (var i = 0; i < leftPlotXAxis.length; i++) {
-		columnList += getColumnName(leftPlotXAxis[i]);
-		columnList += ';';
-	}
-	for (var i = 0; i < leftPlotYAxis.length; i++) {
-		columnList += getColumnName(leftPlotYAxis[i]);
-		if (i < leftPlotYAxis.length - 1) {
-			columnList += ';';
-		}
-	}
-	
-	// Fill in the hidden form and submit it
-	$('#plotDataForm\\:leftColumns').val(columnList);
-	$('#plotDataForm\\:leftGetData').click();
-	$('#leftUpdate').removeClass('highlightButton');
-}
-
-function initRightPlot() {
-	// Build the list of columns to be sent to the server
-	var columnList = '';
-	for (var i = 0; i < rightPlotXAxis.length; i++) {
-		columnList += getColumnName(rightPlotXAxis[i]);
-		columnList += ';';
-	}
-	for (var i = 0; i < rightPlotYAxis.length; i++) {
-		columnList += getColumnName(rightPlotYAxis[i]);
-		if (i < rightPlotYAxis.length - 1) {
-			columnList += ';';
-		}
-	}
-	
-	// Fill in the hidden form and submit it
-	$('#plotDataForm\\:rightColumns').val(columnList);
-	$('#plotDataForm\\:rightGetData').click();
-	$('#rightUpdate').removeClass('highlightButton');
 }
 
 /*
@@ -611,7 +569,7 @@ function drawLeftPlot(data) {
 		}
 	
 		leftGraph = new Dygraph (
-			document.getElementById('plotLeft'),
+			document.getElementById('plotLeftContent'),
 			graph_data,
 	        	graph_options
 		);
@@ -674,7 +632,7 @@ function drawRightPlot(data) {
 		}
 
 		rightGraph = new Dygraph (
-			document.getElementById('plotRight'),
+			document.getElementById('plotRightContent'),
 			graph_data,
 	        	graph_options
 		);
@@ -851,13 +809,15 @@ function renderTableColumns() {
 		if ($.inArray(columnHeadings[i], compulsoryColumns) != -1) {
 			columnVisible = true;
 		} else {
-			searchColumns = visibleColumns[$('#dataScreenForm\\:tableModeSelector').find(':checked').val()];
+			searchColumns = visibleColumns[PF('tableModeSelector').getJQ().find(':checked').val()];
 			for (j = 0; j < searchColumns.length && !columnVisible; j++) {
 				columnVisible = new RegExp(searchColumns[j]).test(columnHeadings[i]);
 			}
 		}
 		
 		columnVisible ? visibleTableColumns.push(i) : hiddenTableColumns.push(i);
+		
+		
 	}
 	
 	// Update the table
@@ -943,6 +903,7 @@ function scrollToTableRow(milliseconds) {
 		// The highlight is done as part of the table draw callback
 	}
 }
+
 
 function makeHighlights(plotData) {
 	
@@ -1323,437 +1284,4 @@ function zoomOut(g) {
 	});
 	
 	return false;
-}
-
-function showLeftMap() {
-	$('#plotLeft').hide();
-	$('#plotControlsLeft').hide();
-	$('#mapLeft').show();
-	$('#mapScaleControlContainerLeft').show();
-	$('#mapZoomControlContainerLeft').show();
-	$('#leftMapValue').show();
-	$('#mapControlsLeft').show();
-	if (null == leftMap) {
-		initLeftMap();
-	}
-	resizeContent();
-	return false;
-}
-
-function showLeftPlot() {
-	$('#mapLeft').hide();
-	$('#mapScaleControlContainerLeft').hide();
-	$('#mapZoomControlContainerLeft').hide();
-	$('#leftMapValue').hide();
-	$('#mapScaleLeft').hide();
-	$('#mapControlsLeft').hide();
-	$('#plotLeft').show();
-	$('#plotControlsLeft').show();
-	resizeContent();
-	return false;
-}
-
-function showRightMap() {
-	$('#plotRight').hide();
-	$('#plotControlsRight').hide();
-	$('#mapRight').show();
-	$('#mapScaleControlContainerRight').show();
-	$('#mapZoomControlContainerRight').show();
-	$('#rightMapValue').show();
-	$('#mapControlsRight').show();
-	if (null == rightMap) {
-		initRightMap();
-	}
-	resizeContent();
-	return false;
-}
-
-function showRightPlot() {
-	$('#mapRight').hide();
-	$('#mapScaleControlContainerRight').hide();
-	$('#mapZoomControlContainerRight').hide();
-	$('#rightMapValue').hide();
-	$('#mapScaleRight').hide();
-	$('#mapControlsRight').hide();
-	$('#plotRight').show();
-	$('#plotControlsRight').show();
-	resizeContent();
-	return false;
-}
-
-function setMapPopupInputs() {
-
-	var selectedInput = null;
-	
-	switch (mapPopupTarget) {
-	case 'L': {
-		selectedInput = leftMapVar;
-		break;
-	}
-	case 'R': {
-		selectedInput = rightMapVar;
-		break;
-	}
-	}
-	
-	// Now update the inputs
-	$('#mapFieldList')
-	.find('input')
-	.each(function(index, item) {
-		if (item.id == selectedInput) {
-			item.checked = true;
-		} else {
-			item.checked = false;
-		}
-	});
-}
-
-function showMapPopup(event, target) {
-	// Set the target information
-	mapPopupTarget = target;
-	
-	// Update the inputs with the existing selections
-	setMapPopupInputs();
-	
-	// Position and show the popup
-	leftOffset = ($(window).width() / 2) - ($('#mapFieldList').width() / 2);
-	topOffset = ($(window).height() / 2) - ($('#mapFieldList').height() / 2);
-
-	$('#mapFieldList')
-	.css({"left": 0, "top": 0})
-	.offset({
-		"left": leftOffset,
-		"top": topOffset,
-		"width": $('#mapFieldList').width(),
-		"height": $('#mapFieldList').height()
-	})
-	.zIndex(1000);
-
-	
-	$('#mapFieldList').show(0);
-
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-
-	return false;
-}
-
-function hideMapPopup() {
-	$('#mapFieldList').hide(100);
-}
-
-function processMapFieldChange(input) {
-	$('#mapFieldList')
-	.find('input')
-	.each(function(index, item) {
-		if (item.id != input.id) {
-			item.checked = false;
-		}
-	});
-}
-
-function saveMapSelection() {
-	
-	// Get the list of checked inputs
-	selectedInput = null;
-	
-	$('#mapFieldList')
-	.find('input')
-	.each(function(index, item) {
-		if (item.checked) {
-			selectedInput = item.id;
-		}
-	});
-
-	switch (mapPopupTarget) {
-	case 'L': {
-		leftMapVar = selectedInput;
-		updateMap('left');
-		break;
-	}
-	case 'R': {
-		rightMapVar = selectedInput;
-		updateMap('right');
-		break;
-	}
-	}
-	
-	hideMapPopup();
-	return false;
-}
-
-function updateMap(target) {
-	if (target == 'left') {
-		initLeftMap();
-	} else {
-		initRightMap();
-	}
-}
-
-function initLeftMap() {
-	
-	if (leftMap == null) {
-		var initialView = new ol.View({
-    		center: ol.proj.fromLonLat([bounds[4], bounds[5]]),
-    		zoom: 4,
-    		minZoom: 2
-  		});
-
-		leftMap = new ol.Map({
-	 		target: 'mapLeft',
-	 		layers: [
-	    		new ol.layer.Tile({
-	        		source: mapSource
-	    		}),
-	  		],
-	  		view: initialView
-		});
-		
-		leftMapExtent = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
-		leftMapResetZoom();
-		
-		leftMap.on('moveend', getLeftMapData);
-		leftMap.on('pointermove', function(event) {
-			displayLeftMapFeatureInfo(leftMap.getEventPixel(event.originalEvent));
-		});
-		leftMap.on('click', function(event) {
-			leftMapClick(leftMap.getEventPixel(event.originalEvent));
-		});
-	}
-
-	$('#plotDataForm\\:leftMapUpdateScale').val(true);
-	getLeftMapData();
-}
-
-function displayLeftMapFeatureInfo(pixel) {
-	var feature = leftMap.forEachFeatureAtPixel(pixel, function(feature) {
-		return feature;
-	});
-	
-	var featureInfo = '';
-	
-	if (feature) {
-		featureInfo += '<b>Position:</b> '
-		featureInfo += feature['data'][0];
-		featureInfo += ' ';
-		featureInfo += feature['data'][1];
-		featureInfo += ' ';
-		featureInfo += ' <b>Value:</b> '
-		featureInfo += feature['data'][6];
-	}
-	
-	$('#leftMapValue').html(featureInfo);
-}
-
-function displayRightMapFeatureInfo(pixel) {
-	var feature = rightMap.forEachFeatureAtPixel(pixel, function(feature) {
-		return feature;
-	});
-	
-	var featureInfo = '';
-	
-	if (feature) {
-		featureInfo += '<b>Position:</b> '
-		featureInfo += feature['data'][0];
-		featureInfo += ' ';
-		featureInfo += feature['data'][1];
-		featureInfo += ' ';
-		featureInfo += ' <b>Value:</b> '
-		featureInfo += feature['data'][6];
-	}
-	
-	$('#rightMapValue').html(featureInfo);
-}
-
-function leftMapClick(pixel) {
-	var feature = leftMap.forEachFeatureAtPixel(pixel, function(feature) {
-		return feature;
-	});
-	
-	if (feature) {
-		scrollToTableRow(feature['data'][2]);
-	}
-}
-
-function rightMapClick(pixel) {
-	var feature = rightMap.forEachFeatureAtPixel(pixel, function(feature) {
-		return feature;
-	});
-	
-	if (feature) {
-		scrollToTableRow(feature['data'][2]);
-	}
-}
-
-function getLeftMapData() {
-	// Fill in the hidden form and submit it
-	$('#plotDataForm\\:leftMapColumn').val(getColumnName(leftMapVar));
-	var extent = ol.proj.transformExtent(leftMap.getView().calculateExtent(), leftMap.getView().getProjection(), "EPSG:4326");
-	$('#plotDataForm\\:leftMapBounds').val(extent);
-	$('#plotDataForm\\:leftGetMapData').click();	
-}
-
-function leftMapResetZoom() {
-	leftMap.getView().fit(leftMapExtent, leftMap.getSize());
-}
-
-function drawLeftMap(data) {
-	var status = data.status;
-	
-	if (status == "success") {
-
-		if (null != leftMapDataLayer) {
-			leftMap.removeLayer(leftMapDataLayer);
-			leftMapDataLayer = null;
-		}
-
-		var mapData = JSON.parse($('#plotDataForm\\:leftMapData').html());
-
-		var scaleLimits = JSON.parse($('#plotDataForm\\:leftMapScaleLimits').val());
-		leftColorScale.setValueRange(scaleLimits[0], scaleLimits[1]);
-
-		var layerFeatures = new Array();
-
-		for (var i = 0; i < mapData.length; i++) {
-			var featureData = mapData[i];
-			
-			var feature = new ol.Feature({
-				geometry: new ol.geom.Point([featureData[0], featureData[1]]).transform(ol.proj.get("EPSG:4326"), mapSource.getProjection())
-			});
-			
-			feature.setStyle(new ol.style.Style({
-				image: new ol.style.Circle({
-					radius: 5,
-					fill: new ol.style.Fill({
-						color: leftColorScale.getColor(featureData[6])
-					})
-				})
-			}));
-			
-			feature['data'] = featureData;
-			feature['tableRow'] = i;
-			
-			layerFeatures.push(feature);
-		}
-		
-		leftMapDataLayer = new ol.layer.Vector({
-			source: new ol.source.Vector({
-				features: layerFeatures
-			})
-		})
-		
-		leftMap.addLayer(leftMapDataLayer);
-		leftColorScale.drawScale($('#mapScaleLeft'), scaleOptions);
-		$('#plotDataForm\\:leftMapUpdateScale').val(false);
-	}
-}
-
-function initRightMap() {
-	if (rightMap == null) {
-		var initialView = new ol.View({
-    		center: ol.proj.fromLonLat([bounds[4], bounds[5]]),
-    		zoom: 4,
-    		minZoom: 2
-  		});
-
-		rightMap = new ol.Map({
-	 		target: 'mapRight',
-	 		layers: [
-	    		new ol.layer.Tile({
-	        		source: mapSource
-	    		}),
-	  		],
-	  		view: initialView
-		});
-		
-		rightMapExtent = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
-		rightMapResetZoom();
-
-		rightMap.on('moveend', getRightMapData);
-		rightMap.on('pointermove', function(event) {
-			displayRightMapFeatureInfo(rightMap.getEventPixel(event.originalEvent));
-		});
-		rightMap.on('click', function(event) {
-			rightMapClick(rightMap.getEventPixel(event.originalEvent));
-		});
-	}
-	
-	$('#plotDataForm\\:rightMapUpdateScale').val(true);
-	getRightMapData();
-}
-
-function getRightMapData() {
-	// Fill in the hidden form and submit it
-	$('#plotDataForm\\:rightMapColumn').val(getColumnName(rightMapVar));
-	var extent = ol.proj.transformExtent(rightMap.getView().calculateExtent(), rightMap.getView().getProjection(), "EPSG:4326");
-	$('#plotDataForm\\:rightMapBounds').val(extent);
-	$('#plotDataForm\\:rightGetMapData').click();	
-}
-
-function rightMapResetZoom() {
-	rightMap.getView().fit(rightMapExtent, rightMap.getSize());
-}
-
-function drawRightMap(data) {
-	var status = data.status;
-	
-	if (status == "success") {
-
-		if (null != rightMapDataLayer) {
-			rightMap.removeLayer(rightMapDataLayer);
-			rightMapDataLayer = null;
-		}
-
-		var mapData = JSON.parse($('#plotDataForm\\:rightMapData').html());
-
-		var scaleLimits = JSON.parse($('#plotDataForm\\:rightMapScaleLimits').val());
-		rightColorScale.setValueRange(scaleLimits[0], scaleLimits[1]);
-
-		var layerFeatures = new Array();
-
-		for (var i = 0; i < mapData.length; i++) {
-			var featureData = mapData[i];
-			
-			var feature = new ol.Feature({
-				geometry: new ol.geom.Point([featureData[0], featureData[1]]).transform(ol.proj.get("EPSG:4326"), mapSource.getProjection())
-			});
-			
-			feature.setStyle(new ol.style.Style({
-				image: new ol.style.Circle({
-					radius: 5,
-					stroke: new ol.style.Stroke({
-						color: '#DDDDDD',
-						width: 1
-					}),
-					fill: new ol.style.Fill({
-						color: rightColorScale.getColor(featureData[6])
-					})
-				})
-			}));
-
-			feature['data'] = featureData;
-			feature['tableRow'] = i;
-
-			layerFeatures.push(feature);
-		}
-		
-		rightMapDataLayer = new ol.layer.Vector({
-			source: new ol.source.Vector({
-				features: layerFeatures
-			})
-		})
-		
-		rightMap.addLayer(rightMapDataLayer);
-		rightColorScale.drawScale($('#mapScaleRight'), scaleOptions);
-		$('#plotDataForm\\:rightMapUpdateScale').val(false);
-	}
-}
-
-function toggleLeftScale() {
-	$('#mapScaleLeft').toggle(100);
-}
-
-function toggleRightScale() {
-	$('#mapScaleRight').toggle(100);
 }

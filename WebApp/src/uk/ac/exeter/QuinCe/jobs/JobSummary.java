@@ -44,11 +44,13 @@ public class JobSummary {
 	/**
 	 * The date/time that the job was started
 	 */
+	@Deprecated
 	private Date started;
 	
 	/**
 	 * The date/time that the job finished
 	 */
+	@Deprecated
 	private Date ended;
 	
 	/**
@@ -73,6 +75,7 @@ public class JobSummary {
 	 * @param progress The current progress of the job
 	 * @param stackTrace The stack trace for the job
 	 */
+	@Deprecated
 	public JobSummary(long id, User owner, String className, Date submitted, String status, Date started, Date ended, double progress, String stackTrace) {
 		this.id = id;
 		this.owner = owner;
@@ -131,6 +134,7 @@ public class JobSummary {
 	 * Get the date/time that the job was started
 	 * @return The date/time that the job was started
 	 */
+	@Deprecated
 	public Date getStarted() {
 		return started;
 	}
@@ -139,6 +143,7 @@ public class JobSummary {
 	 * Get the date/time that the job finished
 	 * @return The date/time that the job finished
 	 */
+	@Deprecated
 	public Date getEnded() {
 		return ended;
 	}

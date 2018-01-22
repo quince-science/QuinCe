@@ -1,7 +1,11 @@
 package uk.ac.exeter.QuinCe.web.User;
 
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.RequestScoped;
+
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserDB;
+import uk.ac.exeter.QuinCe.User.UserPreferences;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
@@ -10,6 +14,8 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  * @author Steve Jones
  *
  */
+@ManagedBean
+@RequestScoped
 public class LoginBean extends BaseManagedBean {
 	
 	/**
@@ -31,6 +37,9 @@ public class LoginBean extends BaseManagedBean {
 	 * The session attribute in which the user's details are stored
 	 */
 	public static final String USER_SESSION_ATTR = "User";
+
+	public static final String USER_PREFS_ATTR = "UserPrefs";
+
 	
 	/**
 	 * The entered email address
@@ -96,8 +105,10 @@ public class LoginBean extends BaseManagedBean {
 			
 			switch (authenticateResult) {
 			case UserDB.AUTHENTICATE_OK: {
-				User user = UserDB.getUser(ServletUtils.getDBDataSource(), emailAddress);
+				User user = UserDB.getUser(getDataSource(), emailAddress);
 				getSession().setAttribute(USER_SESSION_ATTR, user);
+				UserPreferences prefs = UserDB.getPreferences(getDataSource(), user.getDatabaseID());
+				getSession().setAttribute(USER_PREFS_ATTR, prefs);
 				result = AUTHENTICATION_OK_RESULT;
 				break;
 			}

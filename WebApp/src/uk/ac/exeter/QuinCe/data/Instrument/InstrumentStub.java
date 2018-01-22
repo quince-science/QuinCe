@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
-import java.io.Serializable;
-
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -9,24 +9,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
- * A cut-down Instrument object, containing just a name and
- * database ID. These objects are returned from the results
- * of several searches and queries, and provide the minimum
- * information required to obtain the full details of an instrument.
- * This is done for performance reasons, since there are many instances
- * where only the instrument names are required for certain search results,
- * after which a single instrument is examined in more detail. At this point
- * the full instrument details can be loaded using {@link #getFullInstrument()}.
- * 
+ * A stub object for an instrument, containing only information
+ * useful for display in a list of instruments.
  * @author Steve Jones
  *
  */
-public class InstrumentStub implements Serializable {
-
-	/**
-	 * The Serial Version UID
-	 */
-	private static final long serialVersionUID = 5898379713476853550L;
+public class InstrumentStub {
 
 	/**
 	 * The instrument's database ID
@@ -39,13 +27,21 @@ public class InstrumentStub implements Serializable {
 	private String name;
 	
 	/**
+	 * Indicates whether or not the instrument has sensors that require
+	 * calibration within QuinCe
+	 */
+	private boolean calibratableSensors;
+	
+	/**
 	 * Simple constructor
 	 * @param id The instrument's database ID
 	 * @param name The instrument's name
+	 * @param calibratableSensors Indicates the presence of sensors requiring calibration
 	 */
-	public InstrumentStub(long id, String name) {
+	public InstrumentStub(long id, String name, boolean calibratableSensors) {
 		this.id = id;
 		this.name = name;
+		this.calibratableSensors = calibratableSensors;
 	}
 
 	/**
@@ -55,9 +51,10 @@ public class InstrumentStub implements Serializable {
 	 * @throws DatabaseException If an error occurs while retrieving the data from the database
 	 * @throws RecordNotFoundException If the instrument record cannot be found in the database
 	 * @throws ResourceException If the data source cannot be retrieved
+	 * @throws InstrumentException If any instrument details are invalid
 	 */
-	public Instrument getFullInstrument() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException {
-		return InstrumentDB.getInstrument(ServletUtils.getDBDataSource(), id);
+	public Instrument getFullInstrument() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException, InstrumentException {
+		return InstrumentDB.getInstrument(ServletUtils.getDBDataSource(), id, ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
 	}
 	
 	///////// *** GETTERS AND SETTERS *** ///////////
@@ -75,5 +72,14 @@ public class InstrumentStub implements Serializable {
 	 */
 	public String getName() {
 		return name;
+	}
+	
+	/**
+	 * Determine whether or not the instrument has sensors that require
+	 * calibration within QuinCe
+	 * @return {@code true} if the instrument has sensors that need calibrating; {@code false if not}.
+	 */
+	public boolean getCalibratableSensors() {
+		return calibratableSensors;
 	}
 }

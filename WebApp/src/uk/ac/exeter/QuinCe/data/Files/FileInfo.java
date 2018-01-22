@@ -10,6 +10,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class FileInfo {
 
 	/**
@@ -135,11 +136,13 @@ public class FileInfo {
 	/**
 	 * The date on which the file was last touched
 	 */
+	@Deprecated
 	private Calendar lastTouched;
 	
 	/**
 	 * The date of the first measurement in the file
 	 */
+	@Deprecated
 	private Calendar startDate;
 	
 	/**
@@ -251,6 +254,7 @@ public class FileInfo {
 	 * @param oceanMeasurementsCount The number of ocean measurements in the file
 	 * @param standardsCount The number of gas standards measurements in the file
 	 */
+	@Deprecated
 	public FileInfo(long fileId, long instrumentId, String instrument, String fileName, Calendar startDate, int recordCount,
 			boolean deleteFlag, int currentJob, Calendar lastTouched, int atmosphericMeasurementsCount, int oceanMeasurementsCount, int standardsCount) {
 		this.fileId = fileId;
@@ -294,6 +298,7 @@ public class FileInfo {
 	 * Get the date of the first measurement record in the file
 	 * @return The first measurement date
 	 */
+	@Deprecated
 	public Calendar getStartDate() {
 		return startDate;
 	}
@@ -357,6 +362,7 @@ public class FileInfo {
 	/**
 	 * @return the lastTouched
 	 */
+	@Deprecated
 	public Calendar getLastTouched() {
 		return lastTouched;
 	}

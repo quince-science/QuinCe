@@ -10,6 +10,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class RawDataFileException extends Exception {
 	
 	/**
@@ -40,6 +41,7 @@ public class RawDataFileException extends Exception {
 	 * Constructor for when a date search fails to find a matching line in the data file
 	 * @param date The date/time that was being searched for
 	 */
+	@Deprecated
 	public RawDataFileException(Calendar date) {
 		super("Cannot find line with date: " + DateTimeUtils.formatDateTime(date));
 	}

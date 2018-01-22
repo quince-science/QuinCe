@@ -1,0 +1,65 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	template="/WEB-INF/templates/plot_page.xhtml">
+
+	<ui:param name="beanName" value="reviewCalibrationDataBean"/>
+
+	<ui:define name="title">Calibration Data</ui:define>
+	<ui:define name="localHead">
+		<h:outputScript name="script/reviewCalibrationData.js"/>
+		<h:outputStylesheet name="style/reviewCalibrationData.css"/>
+	</ui:define>
+	
+	<ui:define name="formEntries">
+		<h:inputHidden value="#{reviewCalibrationDataBean.plot1.mode}" id="plot1Mode"/>
+		<h:inputHidden value="#{reviewCalibrationDataBean.plot2.mode}" id="plot2Mode"/>
+		
+		<p:commandLink id="setUseCalibrations" action="#{reviewCalibrationDataBean.setCalibrationUse}" ajax="true" process="useCalibrations useCalibrationsMessage selectedRows" update="@none"/>
+	</ui:define>
+	
+	<ui:define name="dataSetName">#{reviewCalibrationDataBean.dataset.name} - Calibration Data #{requestScope[beanName]}</ui:define>
+	
+	<ui:define name="plots">
+		<div id="plot1Panel" class="plotContainer">
+			<div id="plot1Container"></div>
+			<p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
+				<f:facet name="left">
+					<p:commandButton icon="selectVariableButton" onclick="showVariableDialog(1)" styleClass="inlineButton tightButton"/>
+					<p:commandButton icon="zoomOutButton" onclick="resetZoom(1)" styleClass="inlineButton tightButton"/>
+				</f:facet>
+			</p:toolbar>
+		</div>
+	</ui:define>
+	
+	<ui:define name="selectionDialog">
+		<p:dialog widgetVar="useDialog" modal="true" header="Use Selected Calibrations?">
+			<div class="insructions">
+				Should these calibrations be used?
+				<p:selectOneRadio id="useCalibrations" widgetVar="useCalibrationsWidget" value="#{reviewCalibrationDataBean.useCalibrations}" onchange="updateUseDialogControls()">
+					<f:selectItem itemLabel="Yes" itemValue="true"/>
+					<f:selectItem itemLabel="No" itemValue="false"/>
+				</p:selectOneRadio>
+				<div id="reasonSection">
+					<p:outputLabel for="useCalibrationsMessage" value="Reason:"/>
+					<br/>
+					<p:inputTextarea id="useCalibrationsMessage" widgetVar="useCalibrationsMessageWidget" rows="4" cols="40" value="#{reviewCalibrationDataBean.useCalibrationsMessage}" onkeyup="updateUseDialogControls()"/>
+				</div>
+				<h:panelGrid columns="2" styleClass="buttonPanel">
+					<p:commandButton widgetVar="okButtonWidget" value="OK" onclick="storeCalibrationSelection();"/>
+					<p:commandButton value="Cancel" onclick="PF('useDialog').hide();"/>
+				</h:panelGrid>
+			</div>
+		</p:dialog>
+	</ui:define>
+	<ui:define name="selectionActions">
+		<p:commandButton widgetVar="useCalibrationsButton" value="Use Calibrations?" onclick="showUseDialog();" styleClass="inlineButton"/>
+	</ui:define>
+	<ui:define name="finishButton">
+		<p:commandButton value="Finish" ajax="false" process="@none" action="#{reviewCalibrationDataBean.finish}" styleClass="inlineButton"/>
+	</ui:define>
+
+</ui:composition>
