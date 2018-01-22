@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.data.Files;
+package uk.ac.exeter.QuinCe.data.Calculation;
 
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -11,7 +11,6 @@ import uk.ac.exeter.QCRoutines.messages.Flag;
  * @author Steve Jones
  *
  */
-@Deprecated
 public class CommentSet implements Iterable<CommentSetEntry> {
 
 	/**

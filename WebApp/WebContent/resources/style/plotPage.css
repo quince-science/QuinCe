@@ -29,6 +29,12 @@
 	overflow: hidden;
 }
 
+.plotContainer {
+	height: 100%;
+	width: 100%;
+	overflow: hidden !important;	
+}
+
 #tableContent {
 	overflow: hidden;
 }
@@ -70,4 +76,151 @@ tr.selected {
 	margin-top: -13px !important;
 	width: 25px !important;
 	height: 25px !important;
+	margin-left: -13px !important;
+	margin-top: -13px !important;
 }
+
+.plotModeButtons .ui-button:nth-child(1) {
+	background-image: url("#{resource['image/plot_button.svg']}") !important;
+	background-size: 20px;
+	background-repeat: no-repeat;
+	width: 46.77px !important;
+	height: 29.22px !important;
+}
+
+.plotModeButtons .ui-button:nth-child(2) {
+	background-image: url("#{resource['image/globe_button.svg']}") !important;
+	background-size: 20px;
+	background-repeat: no-repeat;
+	width: 46.77px !important;
+	height: 29.22px !important;
+}
+
+.plotFooterButton {
+	top: -10px !important;
+	height: 32px !important;
+}
+
+.selectVariableButton {
+	background-image: url("#{resource['image/select_button.svg']}") !important;
+	background-size: cover;
+	margin-left: -13px !important;
+	margin-top: -13px !important;
+	width: 25px !important;
+	height: 25px !important;
+}
+
+.zoomOutButton {
+	background-image: url("#{resource['image/zoomout_button.svg']}") !important;
+	background-size: cover;
+	margin-left: -13px !important;
+	margin-top: -13px !important;
+	width: 25px !important;
+	height: 25px !important;
+}
+
+#variablesList {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+}
+
+.variable {
+	display: flex;
+	margin-bottom: 3px;
+	margin-left: 10px;
+	margin-right: 10px;
+	height: 18px;
+}
+
+.variable:last-of-type {
+	margin-bottom: 10px;
+}
+
+.singleVariable {
+	margin-bottom: 10px;
+}
+
+.varName {
+	font-style: italic;
+	padding-right: 5px;
+	flex-grow: 1;
+}
+
+.variableGroup {
+	margin-left: 10px;
+}
+
+.varGroupName {
+	font-weight: 700;
+	text-decoration: underline;
+	margin-bottom: 2px;
+	height: 18px;
+}
+
+.varGroupMember {
+	text-indent: 15px;
+}
+
+.variableControls {
+	margin-left: 5px;
+}
+
+.axisButton {
+	font-size: 12px !important;
+	width: 16px;
+	height: 16px;
+	position: relative;
+	top: -5px;
+}
+
+.ui-selectbooleanbutton .ui-button-text {
+	margin-left: -8px;
+	margin-top: -3px;
+}
+
+.mapScale {
+	width: 350px;
+	height: 50px;
+	position: absolute;
+	bottom: 40px;
+	right: 35px;
+	background-color: white;
+}
+
+.mapScaleControlContainer {
+	position: absolute;
+	bottom: 40px;
+	right: 8px;
+	width: 23px;
+}
+
+.mapValue {
+	position: absolute;
+	left: 0px;
+	bottom: 41px;
+	z-index: 100;
+	background-color: #E1E1E1;
+}
+
+.mapScaleControlContainer {
+	position: absolute;
+	bottom: 45px;
+	right: 8px;
+	width: 23px;
+	z-index: 100;
+}
+
+.mapScale {
+	width: 350px;
+	height: 50px;
+	position: absolute;
+	bottom: 45px;
+	right: 35px;
+	background: transparent;
+}
+
+.ol-control button {
+	min-width: 0px;
+}
+

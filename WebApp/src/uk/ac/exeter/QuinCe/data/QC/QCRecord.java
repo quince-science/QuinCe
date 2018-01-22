@@ -31,6 +31,7 @@ import uk.ac.exeter.QuinCe.utils.InvalidDateTimeStringException;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class QCRecord extends DataRecord {
 	
 	private long dataFileId;

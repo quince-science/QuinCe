@@ -1,29 +1,17 @@
-var standardsPlot = null;
 
 function start() {
 	drawPage();
 }
 
 function drawPage() {
-	drawPlot();
+	initPlot();
 	drawTable();
 }
 
-function drawPlot() {
-	// Remove the existing plot
-	if (null != standardsPlot) {
-		standardsPlot.destroy();
-	}
-	
-	var graph_options = BASE_GRAPH_OPTIONS;
-	graph_options.labels = JSON.parse($('#plotPageForm\\:plotLabels').val());
-	graph_options.visibility = [0, 2];
-	
-	standardsPlot = new Dygraph (
-			document.getElementById('standardsPlotContainer'),
-			makeJSDates(JSON.parse($('#plotPageForm\\:plotData').val())),
-			BASE_GRAPH_OPTIONS
-		);
+function initPlot(index) {
+	setupPlotVariables(1);
+	variablesPlotIndex = 1;
+	applyVariables();
 }
 
 /*
@@ -72,10 +60,8 @@ function resizePlots() {
 	// TODO See if we can make this work stuff out automatically
 	// when the plots are stored in plotPage.js
 	// See issue #564
-	
-	$('#standardsPlotContainer').width(window.innerWidth - 300).height('100%');
-	standardsPlot.resize($('#standardsPlotContainer').width(), $('#standardsPlotContainer').height());
-	
+	$('#plot1Container').width('100%');
+	$('#plot1Container').height($('#plot1Panel').height() - 40);
 }
 
 function showUseDialog() {
@@ -87,7 +73,6 @@ function showUseDialog() {
 }
 
 function storeCalibrationSelection() {
-	console.log("I am storing the calibration selection!");
 	$('#plotPageForm\\:selectedRows').val(selectedRows);
 	$('#plotPageForm\\:setUseCalibrations').click();
 
@@ -125,4 +110,8 @@ function updateUseDialogControls() {
 			PF('okButtonWidget').enable();
 		}
 	}
+}
+
+function getPlotMode(index) {
+	return 'plot';
 }

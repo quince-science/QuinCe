@@ -2,6 +2,9 @@ package uk.ac.exeter.QuinCe.web;
 
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -12,12 +15,27 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 public abstract class PlotPageBean extends BaseManagedBean {
 
 	/**
+	 * The ID of the data set being processed
+	 */
+	private long datasetId;
+	
+	/**
+	 * The geographical bounds of the data set
+	 */
+	private List<Double> dataBounds;
+	
+	/**
+	 * The data set being processed
+	 */
+	private DataSet dataset;
+	
+	/**
 	 * The data for the current view of the data table.
 	 * 
 	 * <p>
 	 *   The table data is loaded on demand as the user scrolls around, to
 	 *   eliminate the delay and memory requirements of loading a complete
-	 *   voayge's data in one go. When the user scrolls to a particular row,
+	 *   voyage's data in one go. When the user scrolls to a particular row,
 	 *   the data for that row and a set of rows before and after it is loaded.
 	 * </p>
 	 * 
@@ -58,7 +76,12 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * The number of rows to be loaded for DataTables
 	 * @see <a href="https://datatables.net/examples/data_sources/server_side.html">DataTables Server-Side Processing</a>
 	 */
-	private int tableDataLength;	
+	private int tableDataLength;
+	
+	/**
+	 * The current table mode
+	 */
+	private String tableMode = null;
 	
 	/**
 	 * A Javascript array string containing the list of all row numbers in the current data file that can be
@@ -67,7 +90,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * cannot be processed at all.
 	 * 
 	 * <p>
-	 * The rows are loaded during {@link #start} via {@link #buildSelectableRowIds()}.
+	 * The rows are loaded during {@link #start} via {@link #buildSelectableRows()}.
 	 * </p>
 	 */
 	protected String selectableRows = null;
@@ -78,14 +101,48 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	private String selectedRows = null;
 	
 	/**
-	 * The plot data as a JSON string
+	 * The tree of variables for the plots
 	 */
-	protected String plotData;
+	protected VariableList variables = null;
+	
+	/**
+	 * The data for the first plot as a JSON string
+	 */
+	protected Plot plot1;
 
 	/**
-	 * The labels for the plot
+	 * The data for the second plot as a JSON string
 	 */
-	protected String plotLabels;
+	protected Plot plot2;
+	
+	/**
+	 * Dirty data indicator
+	 */
+	protected boolean dirty = false;
+	
+	/**
+	 * Get the dataset ID
+	 * @return The dataset ID
+	 */
+	public long getDatasetId() {
+		return datasetId;
+	}
+	
+	/**
+	 * Set the dataset ID
+	 * @param datasetId The dataset ID
+	 */
+	public void setDatasetId(long datasetId) {
+		this.datasetId = datasetId;
+	}
+	
+	/**
+	 * Get the current DataSet object
+	 * @return The data set
+	 */
+	public DataSet getDataset() {
+		return dataset;
+	}
 	
 	/**
 	 * Get the data for the current view in the data table
@@ -105,6 +162,14 @@ public abstract class PlotPageBean extends BaseManagedBean {
  		this.tableJsonData = tableJsonData;
  	}		
 	
+ 	/**
+ 	 * Dummy set for the variable set JSON
+ 	 * @param variableSetJson Ignored.
+ 	 */
+ 	public void setVariableSetJson(String variableSetJson) {
+ 		// Do nothing
+ 	}
+ 	
 	/**
 	 * Get the total number of rows in the data file. If the number of rows is not
 	 * known, the result will be negative.
@@ -303,7 +368,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	/**
 	 * Build the table headings
 	 */
-	protected abstract String buildTableHeadings();
+	protected abstract String buildTableHeadings() throws Exception;
 	
 	/**
 	 * Get the headings for the table
@@ -312,55 +377,59 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	public String getTableHeadings() {
 		return tableHeadings;
 	}
+	
+	/**
+	 * Get the list of variables for the current data set
+	 * @return The variables
+	 */
+	public VariableList getVariablesList() {
+		return variables;
+	}
 
 	/**
-	 * Get the plot data
-	 * @return The plot data
+	 * Get the details for Plot 1
+	 * @return The plot 1 details
 	 */
-	public String getPlotData() {
-		return plotData;
+	public Plot getPlot1() {
+		return plot1;
 	}
 	
 	/**
-	 * Dummy method to set the plot data. Does nothing
-	 * @param plotData The supplied data; ignored
+	 * Get the details for Plot 2
+	 * @return The plot 2 details
 	 */
-	public void setPlotData(String plotData) {
-		// Do nothing
-	}
-	
-	/**
-	 * Get the labels for the plot
-	 * @return The plot labels
-	 */
-	public String getPlotLabels() {
-		return plotLabels;
-	}
-	
-	/**
-	 * Set the labels for the plot (dummy)
-	 * @param dummy The supplied labels. Ignored.
-	 */
-	public void setPlotLabels(String dummy) {
-		// Do nothing
+	public Plot getPlot2() {
+		return plot2;
 	}
 	
 	/**
 	 * Reload all the data on the page
 	 */
 	public void reloadPageData() {
-		reloadPlotData();
+		reloadPlotData(1);
+		reloadPlotData(2);
 		clearTableData();
 		generateTableData();
 	}
-	
+
 	/**
-	 * Reload the plot data. Can be used if the plot is changed.
+	 * Reload data for a given plot. Can be used if the plot is changed.
+	 * @param plotIndex The plot that needs to be reloaded
 	 */
-	public void reloadPlotData() {
+	public void reloadPlotData(int plotIndex) {
 		try {
-			plotLabels = buildPlotLabels();
-			plotData = loadPlotData();
+			switch (plotIndex) {
+			case 1: {
+				//plot1Labels = buildPlotLabels(1);
+				//plot1Data = loadPlotData(1);
+				break;
+			}
+			case 2: {
+				//plot2Labels = buildPlotLabels(2);
+				//plot2Data = buildPlotLabels(2);
+				break;
+			}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -372,9 +441,17 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 */
 	public String start() {
 		try {
+			dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
+
+			variables = new VariableList();
+			buildVariableList(variables);
+			dataBounds = DataSetDataDB.getDataBounds(getDataSource(), dataset);
+			
 			init();
-			plotLabels = buildPlotLabels();
-			plotData = loadPlotData();
+			dirty = false;
+			plot1 = new Plot(this, dataBounds, getDefaultPlot1XAxis(), getDefaultPlot1YAxis(), getDefaultMap1Variable());
+			plot2 = new Plot(this, dataBounds, getDefaultPlot2XAxis(), getDefaultPlot2YAxis(), getDefaultMap2Variable());
+			
 			tableHeadings = buildTableHeadings();
 			selectableRows = buildSelectableRows();
 		} catch (Exception e) {
@@ -382,6 +459,38 @@ public abstract class PlotPageBean extends BaseManagedBean {
 		}
 		
 		return getScreenNavigation();
+	}
+	
+	/**
+	 * Get any additional table data required on the front end
+	 * @return The additional table data
+	 */
+	public String getAdditionalTableData() {
+		return null;
+	}
+	
+	/**
+	 * Dummy method for setting the additional table data; does nothing
+	 * @param tableData The table data; ignored
+	 */
+	public void setAdditionalTableData(String tableData) {
+		// Do nothing
+	}
+	
+	/**
+	 * Get the current table mode
+	 * @return The table mode
+	 */
+	public String getTableMode() {
+		return tableMode;
+	}
+	
+	/**
+	 * Set the table mode
+	 * @param tableMode The table mode
+	 */
+	public void setTableMode(String tableMode) {
+		this.tableMode = tableMode;
 	}
 
 	/**
@@ -396,13 +505,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	protected abstract String getScreenNavigation();
 	
 	/**
-	 * Load the data for the first plot view
-	 * @return The plot data
-	 * @throws Exception If the data cannot be retrieved
-	 */
-	protected abstract String loadPlotData() throws Exception;
-	
-	/**
 	 * Build the list of selectable record IDs
 	 * @throws Exception If the list cannot be created
 	 */
@@ -411,7 +513,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	/**
 	 * Build the labels for the plot
 	 */
-	protected abstract String buildPlotLabels();
+	protected abstract String buildPlotLabels(int plotIndex);
 	
 	/**
 	 * Load the data for the specified portion of the table as a JSON string
@@ -420,4 +522,93 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * @return The table data
 	 */
 	protected abstract String loadTableData(int start, int length) throws Exception;
+	
+	/**
+	 * Get the default variable to use on the X axis of Plot 1
+	 * @return The default variable
+	 */
+	protected abstract Variable getDefaultPlot1XAxis();
+	
+	/**
+	 * Get the default variables to use on the Y axis of Plot 1
+	 * @return The default variables
+	 */
+	protected abstract List<Variable> getDefaultPlot1YAxis();
+	
+	/**
+	 * Get the default variable to use on the X axis of Plot 2
+	 * @return The default variable
+	 */
+	protected abstract Variable getDefaultPlot2XAxis();
+	
+	/**
+	 * Get the default variables to use on the Y axis of Plot 2
+	 * @return The default variables
+	 */
+	protected abstract List<Variable> getDefaultPlot2YAxis();
+
+	/**
+	 * Get the default variable to use on Map 1
+	 * @return The default variable
+	 */
+	protected abstract Variable getDefaultMap1Variable();
+
+	/**
+	 * Get the default variable to use on Map 2
+	 * @return The default variable
+	 */
+	protected abstract Variable getDefaultMap2Variable();
+
+	/**
+	 * Get the variable group details
+	 * @return The variable group details
+	 */
+	public String getVariableGroups() {
+		return variables.getGroupsJson();
+	}
+	
+	/**
+	 * Get the bounds of the data as a JSON string
+	 * @return The data bounds
+	 */
+	public String getDataBounds() {
+		return '[' + StringUtils.listToDelimited(dataBounds, ",") + ']';
+	}
+	
+	/**
+	 * Dummy
+	 * @param dataBounds Ignored
+	 */
+	public void setDataBounds(String dataBounds) {
+		// Do nothing
+	}
+	
+	/**
+	 * Build the variable list for the plots
+	 * @param variables The list to be populated
+	 * @throws Exception If any errors occur
+	 */
+	protected abstract void buildVariableList(VariableList variables) throws Exception;
+	
+	/**
+	 * Retrieve the data for the specified fields as a JSON string
+	 * @param fields The fields to retrieve
+	 * @return The data
+	 * @throws Exception If an error occurs
+	 */
+	protected abstract String getData(List<String> fields) throws Exception;
+	
+	/**
+	 * Get the names of the fields that must be included in the plots
+	 * (not maps)
+	 * @return The required fields
+	 */
+	protected abstract List<String> getFixedPlotFieldNames();
+	
+	/**
+	 * Get the names of the fields that must be included in the plots
+	 * (not maps)
+	 * @return The required fields
+	 */
+	protected abstract List<String> getFixedPlotFieldLabels();
 }

@@ -42,7 +42,7 @@ public class MissingParam {
 		if (null == parameter) {
 			isMissing = true;
 		} else {
-			if (canBeEmpty && parameter.length == 0) {
+			if (!canBeEmpty && parameter.length == 0) {
 					isMissing = true;
 			}
 		}

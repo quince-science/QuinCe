@@ -17,6 +17,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -374,6 +375,20 @@ public class DataSetsBean extends BaseManagedBean {
 			Map<String, String> jobParams = new HashMap<String, String>();
 			jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(datasetId));
 			JobManager.addJob(getDataSource(), getUser(), DataReductionJob.class.getCanonicalName(), jobParams);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Submit the data set for automatic QC
+	 */
+	public void submitAutoQcJob() {
+		try {
+			Map<String, String> jobParams = new HashMap<String, String>();
+			jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(datasetId));
+			jobParams.put(AutoQCJob.PARAM_ROUTINES_CONFIG, ResourceManager.QC_ROUTINES_CONFIG);
+			JobManager.addJob(getDataSource(), getUser(), AutoQCJob.class.getCanonicalName(), jobParams);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

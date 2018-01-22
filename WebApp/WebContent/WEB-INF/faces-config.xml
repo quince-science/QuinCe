@@ -52,12 +52,6 @@
 		<managed-bean-scope>view</managed-bean-scope>
 	</managed-bean>
 	<managed-bean>
-		<description>Holds all data required by the Data Screen, where the user performs QC.</description>
-		<managed-bean-name>dataScreenBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.files.DataScreenBean</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
 		<description>Bean that can be touched to keep user sessions alive</description>
 		<managed-bean-name>keepAliveBean</managed-bean-name>
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.KeepAliveBean</managed-bean-class>
@@ -227,6 +221,10 @@
 		<navigation-case>
 			<from-outcome>calibration_data_plot</from-outcome>
 			<to-view-id>/dataset/calibration_data.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>user_qc</from-outcome>
+			<to-view-id>/dataset/manual_qc.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>

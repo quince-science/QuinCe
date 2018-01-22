@@ -8,8 +8,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+
+import uk.ac.exeter.QCRoutines.messages.Flag;
 
 /**
  * Miscellaneous string utilities
@@ -45,6 +48,13 @@ public class StringUtils {
 		return listToDelimited(list, delimiter, null);
 	}
 	
+	/**
+	 * Convert a list of objects to a delimited string
+	 * @param list The list
+	 * @param delimiter The delimiter
+	 * @param surrounder The character to put at the start and end of each entry
+	 * @return The delimited string
+	 */
 	public static String listToDelimited(List<?> list, String delimiter, String surrounder) {
 		
 		String result = null;
@@ -82,11 +92,23 @@ public class StringUtils {
 	 * @return A list of String values
 	 */
 	public static List<String> delimitedToList(String values) {
-		
+		return delimitedToList(values, ";");
+	}
+
+	/**
+	 * Converts a String containing values separated by semi-colon delimiters
+	 * into a list of String values
+	 * 
+	 * <b>Note that this does not handle semi-colons within the values themselves.</b>
+	 * 
+	 * @param values The String to be converted
+	 * @param delimiter The delimiter
+	 * @return A list of String values
+	 */
+	public static List<String> delimitedToList(String values, String delimiter) {
 		List<String> result = null;
 		
 		if (null != values) {
-			String delimiter = ";";
 			result = Arrays.asList(values.split(delimiter, 0));
 		}
 		
@@ -99,11 +121,21 @@ public class StringUtils {
 	 * @return The list as integers
 	 */
 	public static List<Integer> delimitedToIntegerList(String values) {
+		return delimitedToIntegerList(values, ";");
+	}
+		
+		/**
+		 * Convert a delimited list of integers into a list of integers
+		 * @param values The list
+		 * @param delimiter The delimiter
+		 * @return The list as integers
+		 */
+		public static List<Integer> delimitedToIntegerList(String values, String delimiter) {
 		
 		List<Integer> result = null;
 		
-		if (values != null) {
-			List<String> stringList = delimitedToList(values);
+		if (values != null && values.length() > 0) {
+			List<String> stringList = delimitedToList(values, delimiter);
 			result = new ArrayList<Integer>(stringList.size());
 
 			for (String item: stringList) {
@@ -114,17 +146,21 @@ public class StringUtils {
 		return result;
 	}
 	
+	public static List<Double> delimitedToDoubleList(String values) {
+		return delimitedToDoubleList(values, ";");
+	}
+
 	/**
 	 * Convert a delimited list of double into a list of doubles
 	 * @param values The list
 	 * @return The list as integers
 	 */
-	public static List<Double> delimitedToDoubleList(String values) {
+	public static List<Double> delimitedToDoubleList(String values, String delimiter) {
 		
 		List<Double> result = null;
 		
 		if (values != null) {
-			List<String> stringList = delimitedToList(values);
+			List<String> stringList = delimitedToList(values, delimiter);
 			result = new ArrayList<Double>(stringList.size());
 
 			for (String item: stringList) {
@@ -202,6 +238,11 @@ public class StringUtils {
 		return result;
 	}
 	
+	/**
+	 * Determine whether or not a String contains a numeric value
+	 * @param value The String
+	 * @return {@code true} if the String contains a number; {@code false} if it does not
+	 */
 	public static boolean isNumeric(String value) {
 		boolean result = true;
 		
@@ -221,6 +262,11 @@ public class StringUtils {
 		return result;
 	}
 	
+	/**
+	 * Determine whether or not a String contains an integer value
+	 * @param value The String
+	 * @return {@code true} if the String contains an integer; {@code false} if it does not
+	 */
 	public static boolean isInteger(String value) {
 		boolean result = true;
 		
@@ -365,6 +411,16 @@ public class StringUtils {
 	}
 	
 	/**
+	 * Make a JSON field value from a flag, using the flag's integer value
+	 * @param fieldNumber The field number
+	 * @param flag The flag
+	 * @return The field string
+	 */
+	public static String makeJsonField(int fieldNumber, Flag flag) {
+		return makeJsonField(fieldNumber, flag.getFlagValue());
+	}
+	
+	/**
 	 * Create a JSON field value
 	 * @param fieldNumber The field number
 	 * @param value The field value
@@ -372,7 +428,27 @@ public class StringUtils {
 	 * @return The field string
 	 */
 	public static String makeJsonField(int fieldNumber, double value, boolean asString) {
-		return makeJsonField(fieldNumber, String.valueOf(value), asString);
+		return makeJsonField(fieldNumber, value, asString, -1);
+	}
+	
+	/**
+	 * Create a JSON field value formatted with a given number of decimal places
+	 * @param fieldNumber The field number
+	 * @param value The field value
+	 * @param asString Indicates whether or not the value should be represented as a String
+	 * @param decimalPlaces The number of decimal places
+	 * @return The field string
+	 */
+	public static String makeJsonField(int fieldNumber, double value, boolean asString, int decimalPlaces) {
+		String stringValue;
+		
+		if (decimalPlaces > -1) {
+			stringValue = String.format(Locale.ENGLISH, "%.0" + decimalPlaces + "f", value);
+		} else {
+			stringValue = String.valueOf(value);
+		}
+		
+		return makeJsonField(fieldNumber, stringValue, asString);
 	}
 	
 	/**
@@ -393,7 +469,18 @@ public class StringUtils {
 	 * @return The field string
 	 */
 	public static String makeJsonField(int fieldNumber, double value) {
-		return makeJsonField(fieldNumber, String.valueOf(value), false);
+		return makeJsonField(fieldNumber, value, false, -1);
+	}
+	
+	/**
+	 * Create a JSON field value
+	 * @param fieldNumber The field number
+	 * @param value The field value
+	 * @param decimalPlaces The number of decimal places
+	 * @return The field string
+	 */
+	public static String makeJsonField(int fieldNumber, double value, int decimalPlaces) {
+		return makeJsonField(fieldNumber, value, false, decimalPlaces);
 	}
 	
 	/**
@@ -464,5 +551,52 @@ public class StringUtils {
 		}
 		
 		return field.toString();
+	}
+	
+	/**
+	 * Create a JSON field with a {@code null} value
+	 * @param fieldNumber The field number
+	 * @return The JSON field
+	 */
+	public static String makeJsonNull(int fieldNumber) {
+		return makeJsonNull(String.valueOf(fieldNumber));
+	}
+	
+	/**
+	 * Create a JSON field with a {@code null} value
+	 * @param fieldName The field name
+	 * @return The JSON field
+	 */
+	public static String makeJsonNull(String fieldName) {
+		StringBuilder field = new StringBuilder();
+		
+		field.append("\"");
+		field.append(fieldName);
+		field.append("\":null");
+		
+		return field.toString();
+	}
+	
+	/**
+	 * Convert a JSON array of numbers to a list of integers
+	 * @param jsonArray The JSON array
+	 * @return The integer list
+	 */
+	public static List<Integer> jsonArrayToIntList(String jsonArray) {
+		return delimitedToIntegerList(jsonArray.substring(1, jsonArray.length() - 1), ",");
+	}
+	
+	/**
+	 * Convert a list of objects to a JSON array
+	 * @param list The list
+	 * @return The JSON array
+	 */
+	public static String intListToJsonArray(List<Integer> list) {
+		StringBuilder result = new StringBuilder();
+		result.append('[');
+		result.append(listToDelimited(list, ","));
+		result.append(']');
+		return result.toString();
+		
 	}
 }
