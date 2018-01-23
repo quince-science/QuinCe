@@ -10,6 +10,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
 import uk.ac.exeter.QuinCe.data.Instrument.InvalidSeparatorException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.utils.HighlightedString;
+import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.web.html.HtmlUtils;
 
 /**
@@ -438,5 +440,26 @@ public class FileDefinitionBuilder extends FileDefinition {
 	 */
 	private int getHeaderLength() {
 		return getHeaderLength(fileContents);
+	}
+
+	/**
+	 * Get the header line from a file that contains the given prefix and suffix.
+	 * A line will match if it contains the prefix, followed by a
+	 * number of characters, followed by the suffix.
+	 * <p>
+	 *   The matching line will be returned as a {@link HighlightedString},
+	 *   with the portion between the prefix and suffix highlighted.
+	 * </p>
+	 * <p>
+	 *   If multiple lines match the prefix and suffix, the first line
+	 *   will be returned.
+	 * </p>
+	 * @param prefix The prefix
+	 * @param suffix The suffix
+	 * @return The matching line
+	 * @throws HighlightedStringException If an error occurs while building the highlighted string
+	 */
+	public HighlightedString getHeaderLine(String prefix, String suffix) throws HighlightedStringException {
+		return super.getHeaderLine(fileContents, prefix, suffix);
 	}
 }

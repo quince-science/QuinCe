@@ -319,12 +319,6 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * The column index being assigned for Run Type
 	 */
 	private int runTypeColumn = -1;
-	
-	/**
-	* The contents of the uploaded file as a list of strings
-	* @see #extractFileLines()
-	*/
-	private List<String> fileLines = null;
 
 	/**
 	 * Begin a new instrument definition
@@ -1233,7 +1227,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	public void extractStartTime() throws HighlightedStringException {
 		FileDefinitionBuilder fileDefinition = (FileDefinitionBuilder) instrumentFiles.get(dateTimeFile);
 		
-		HighlightedString headerLine = fileDefinition.getHeaderLine(getFileLines(), startTimePrefix, startTimeSuffix);
+		HighlightedString headerLine = fileDefinition.getHeaderLine(startTimePrefix, startTimeSuffix);
 		if (null == headerLine) {
 			startTimeLine = null;
 			startTimeDate = null;
@@ -1784,13 +1778,4 @@ public class NewInstrumentBean extends FileUploadBean {
     public Map<String, Integer> getAveragingModes() {
     	return DataSetRawData.averagingModes();
     }
-
-
-	@Override
-	public List<String> getFileLines() {
-		if (null == fileLines) {
-			fileLines = super.getFileLines();
-		}
-		return fileLines;
-	}
 }
