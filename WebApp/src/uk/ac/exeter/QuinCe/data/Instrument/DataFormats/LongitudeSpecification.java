@@ -75,6 +75,7 @@ public class LongitudeSpecification extends PositionSpecification {
 			case FORMAT_0_180: {
 				String hemisphere = line.get(getHemisphereColumn());
 				value = value * hemisphereMultiplier(hemisphere);
+				break;
 			}
 			default: {
 				throw new InvalidPositionFormatException(format);

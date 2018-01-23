@@ -103,6 +103,7 @@ public class LatitudeSpecification extends PositionSpecification {
 		case "s":
 		case "south": {
 			multiplier = -1.0;
+			break;
 		}
 		default: {
 			throw new PositionException("Invalid hemisphere value " + hemisphere);
