@@ -113,6 +113,7 @@ public class LongitudeSpecification extends PositionSpecification {
 		case "w":
 		case "west": {
 			multiplier = -1.0;
+			break;
 		}
 		default: {
 			throw new PositionException("Invalid hemisphere value " + hemisphere);
