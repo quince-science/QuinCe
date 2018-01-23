@@ -192,13 +192,11 @@ function renderAssignments() {
 
 	PF('next').enable();
 	
-	/*
 	if (sensorsOK && positionOK && otherColumnsOK && timeOK) {
 		PF('next').enable();
 	} else {
 		PF('next').disable();
 	}
-	*/
 }
 
 function renderSensorAssignments() {
