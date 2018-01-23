@@ -55,7 +55,6 @@ public class DataFilesBean extends FileUploadBean {
 	
 	@Override
 	public void processUploadedFile() {
-		extractFileLines();
 	}
 
 	/**
@@ -90,6 +89,7 @@ public class DataFilesBean extends FileUploadBean {
 			}
 			
 			FileDefinitionBuilder guessedFileLayout = new FileDefinitionBuilder(currentFullInstrument.getFileDefinitions());
+			List<String> fileLines = getFileLines();
 			guessedFileLayout.setFileContents(fileLines);
 			guessedFileLayout.guessFileLayout();
 			

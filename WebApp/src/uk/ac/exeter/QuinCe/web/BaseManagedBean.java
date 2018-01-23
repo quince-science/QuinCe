@@ -56,6 +56,11 @@ public abstract class BaseManagedBean {
 	protected Instrument currentFullInstrument = null;
 	
 	/**
+	 * Long date format for displaying dates
+	 */
+	private final String longDateFormat = "yyyy-MM-dd HH:mm:ss";
+
+	/**
 	 * Set a message that can be displayed to the user on a form
 	 * @param componentID The component ID to which the message relates (can be null)
 	 * @param messageString The message string
@@ -260,6 +265,13 @@ public abstract class BaseManagedBean {
 			getUserPrefs().setLastInstrument(currentInstrument);
 			currentFullInstrument = null;
 		}
+	}
+
+	/**
+	 * @return the longDateFormat
+	 */
+	public String getLongDateFormat() {
+		return longDateFormat;
 	}
 	
 }

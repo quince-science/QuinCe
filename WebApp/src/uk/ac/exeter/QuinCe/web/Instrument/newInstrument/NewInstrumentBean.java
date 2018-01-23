@@ -321,6 +321,12 @@ public class NewInstrumentBean extends FileUploadBean {
 	private int runTypeColumn = -1;
 	
 	/**
+	* The contents of the uploaded file as a list of strings
+	* @see #extractFileLines()
+	*/
+	private List<String> fileLines = null;
+
+	/**
 	 * Begin a new instrument definition
 	 * @return The navigation to the start page
 	 */
@@ -407,10 +413,10 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	@Override
 	public void processUploadedFile() {
-		extractFileLines();
-		currentInstrumentFile.setFileContents(fileLines);
+		currentInstrumentFile.setFileContents(getFileLines());
 	}
-	
+
+
 	/**
 	 * Clear all data from the bean ready for a new
 	 * instrument to be defined
@@ -1227,7 +1233,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	public void extractStartTime() throws HighlightedStringException {
 		FileDefinitionBuilder fileDefinition = (FileDefinitionBuilder) instrumentFiles.get(dateTimeFile);
 		
-		HighlightedString headerLine = fileDefinition.getHeaderLine(fileLines, startTimePrefix, startTimeSuffix);
+		HighlightedString headerLine = fileDefinition.getHeaderLine(getFileLines(), startTimePrefix, startTimeSuffix);
 		if (null == headerLine) {
 			startTimeLine = null;
 			startTimeDate = null;
@@ -1778,4 +1784,13 @@ public class NewInstrumentBean extends FileUploadBean {
     public Map<String, Integer> getAveragingModes() {
     	return DataSetRawData.averagingModes();
     }
+
+
+	@Override
+	public List<String> getFileLines() {
+		if (null == fileLines) {
+			fileLines = super.getFileLines();
+		}
+		return fileLines;
+	}
 }

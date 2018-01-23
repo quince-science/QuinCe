@@ -39,14 +39,6 @@ body.fullPage {
 	overflow: hidden;
 }
 
-.loading {
-	margin-top: 50px;
-	background-image: url("#{resource['image/loading.gif']}");
-	background-repeat: no-repeat;
-	background-position: center;
-	height: 100px;
-}
-
 .controls {
   position: absolute;
   background: #AAA;

@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.primefaces.event.FileUploadEvent;
@@ -21,12 +22,6 @@ public abstract class FileUploadBean extends BaseManagedBean {
 	 */
 	protected UploadedFile file = null;
 	
-	/**
-	 * The contents of the uploaded file as a list of strings
-	 * @see #extractFileLines()
-	 */
-	protected List<String> fileLines = null;
-
 	/**
 	 * Handle the file upload and subsequent processing.
 	 * @param event The file upload event
@@ -65,11 +60,14 @@ public abstract class FileUploadBean extends BaseManagedBean {
     }
     
     /**
-     * Extract the contents of the uploaded file as a list of strings
+     * @return the file lines in the uploaded file as strings
      */
-    protected void extractFileLines() {
+    public List<String> getFileLines() {
+        if (null == getFile()) {
+            return Collections.emptyList();
+        }
 		String fileContent = new String(getFile().getContents(), StandardCharsets.UTF_8);
-		fileLines = Arrays.asList(fileContent.split("[\\r\\n]+"));
+		List<String> fileLines = Arrays.asList(fileContent.split("[\\r\\n]+"));
 		
 		// Remove empty lines at the end of the file
 		boolean blankLine = true;
@@ -81,6 +79,7 @@ public abstract class FileUploadBean extends BaseManagedBean {
 				blankLine = false;
 			}
 		}
+		return fileLines;
     }
     
     /**

@@ -1,37 +1,23 @@
-function showProcessingMessage() {
-	$('#uploadFile').hide();
-	$('#messages').hide();
-	$('#processingFileMessage').show();
-	$('#uploadForm\\:extractFileLink').click();
-}
-
-function showFileDetails() {
-	
-	$('#processingFileMessage').hide();
-
-	var matchedFile = $('#uploadForm\\:fileType').html();
-	
-	if (matchedFile == '') {
-		$('#uploadFile').show();
-	} else {
-		var messages = JSON.parse($('#uploadForm\\:fileMessages').val());
-		if (messages.length > 0) {
-			$('#uploadFile').show();
-			renderMessages(messages);
-			$('#messages').show();
-		} else {
-			$('#fileDetails').show();
-			$('#uploadForm\\:fileButtons').show();
-		}
-	}
-}
+// Hide dialog with escape key
+$(document).on('keydown', function(e) {
+    if (e.keyCode === 27) {
+        PF('msgDialog').hide();
+    }
+});
 
 function renderMessages(messages) {
-	var html = '<ul>';
+	var html = $('<ul/>');
 	for (var i = 0; i < messages.length; i++) {
-		html += '<li>' + messages[i] + '</li>';
+		var row = $('<li/>');
+		row.addClass(messages[i].severity);
+		var summary = $('<span>');
+		if (messages[i].type == "file") {
+			summary = $('<h3/>');
+		}
+		summary.text(messages[i].summary);
+		row.html(summary)
+		html.append(row);
 	}
-	html += '</ul>';
-
-	$('#messages').html(html);
+	$("#messageText").html(html);
+	PF('msgDialog').show();
 }
