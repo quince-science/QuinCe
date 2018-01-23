@@ -20,18 +20,14 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileMessage;
  * @author Jonas F. Henriksen
  *
  */
-/**
- * @author Jonas F. Henriksen
- *
- */
-public class UploadedFileExtended {
+public class UploadedDataFile {
 	private UploadedFile uploadedFile;
 	private int rowCount = 0;
 	private boolean store = true;
 	private DataFile dataFile = null;
 	private ArrayList<FacesMessage> messages = new ArrayList<>();
 
-	public UploadedFileExtended(UploadedFile file) {
+	public UploadedDataFile(UploadedFile file) {
 		setUploadedFile(file);
 	}
 	/**

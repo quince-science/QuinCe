@@ -30,7 +30,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
 	/**
 	 * The data file object
 	 */
-	private ArrayList<UploadedFileExtended> dataFiles = new ArrayList<>();
+	private ArrayList<UploadedDataFile> dataFiles = new ArrayList<>();
 	private String displayClass = "hidden";
 
 	/**
@@ -43,12 +43,12 @@ public class MultipleFileUploadBean extends FileUploadBean {
 
 	@Override
 	public void processUploadedFile() {
-		UploadedFileExtended file = new UploadedFileExtended(getFile());
+		UploadedDataFile file = new UploadedDataFile(getFile());
 		dataFiles.add(file);
 		setDisplayClass("");
 	}
 
-	public List<UploadedFileExtended> getUploadedFiles() {
+	public List<UploadedDataFile> getUploadedFiles() {
 		return dataFiles;
 	}
 
@@ -56,7 +56,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
 	 * Extract next file in file list that is not yet extracted
 	 */
 	public void extractNext() {
-		for (UploadedFileExtended file: dataFiles) {
+		for (UploadedDataFile file: dataFiles) {
 			if (file.getDataFile() == null && file.isStore()) {
 				extractFile(file);
 				return;
@@ -72,7 +72,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
 	 * @throws DatabaseException
 	 */
 	public void store() throws MissingParamException, FileExistsException, DatabaseException {
-		for (UploadedFileExtended file: dataFiles) {
+		for (UploadedDataFile file: dataFiles) {
 			if (file.isStore() && null != file.getDataFile()) {
 				DataFileDB.storeFile(getDataSource(), getAppConfig(), file.getDataFile());
 			}
@@ -82,7 +82,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
 	/**
 	 * Extract and process the uploaded file's contents
 	 */
-	public void extractFile(UploadedFileExtended file) {
+	public void extractFile(UploadedDataFile file) {
 		try {
 			if (null == currentFullInstrument) {
 				currentFullInstrument = InstrumentDB.getInstrument(
