@@ -1,0 +1,44 @@
+.hidden, #uploadForm .ui-chkbox.hidden {
+  display: none;
+}
+
+.loading {
+	margin-top: 50px;
+	background-image: url("#{resource['image/loading.gif']}");
+	background-repeat: no-repeat;
+	background-position: center;
+	height: 100px;
+}
+.tablespinner.loading {
+	display:block;
+	width: 31px;
+	height: 31px;
+	margin: 0 auto;
+}
+
+#uploadForm .ui-chkbox {
+	margin: 0 auto;
+	max-width: 18px;
+	display: block;
+}
+
+.ui-fileupload-buttonbar .ui-button {
+	margin-top: 5px;
+}
+
+#uploadForm\:msgDialog {
+	min-width: 500px;
+	min-height: 200px;
+}
+
+#uploadForm\:fileList_data .ui-button {
+	margin: 5px auto;
+	display: block;
+}
+
+#uploadForm\:fileList_data .ui-button.hidden {
+	display: none;
+}
+#messageText {
+	padding: 5px 10px;
+}
