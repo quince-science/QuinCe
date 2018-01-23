@@ -214,14 +214,16 @@ public class InstrumentDB {
 						fileDefinitionIds.put(file.getFileDescription(), fileId);
 
 						// Run Types
-						for (Map.Entry<String, RunTypeCategory> entry : file.getRunTypes().entrySet()) {
-							PreparedStatement runTypeStatement = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
-							runTypeStatement.setLong(1, fileId);
-							runTypeStatement.setString(2, entry.getKey());
-							runTypeStatement.setString(3, entry.getValue().getCode());
-							
-							runTypeStatement.execute();
-							subStatements.add(runTypeStatement);
+						if (null != file.getRunTypes()) {
+							for (Map.Entry<String, RunTypeCategory> entry : file.getRunTypes().entrySet()) {
+								PreparedStatement runTypeStatement = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
+								runTypeStatement.setLong(1, fileId);
+								runTypeStatement.setString(2, entry.getKey());
+								runTypeStatement.setString(3, entry.getValue().getCode());
+								
+								runTypeStatement.execute();
+								subStatements.add(runTypeStatement);
+							}
 						}
 					}
 				}
