@@ -31,7 +31,6 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  */
 @ManagedBean
 @SessionScoped
-@Deprecated
 public class DataFilesBean extends FileUploadBean {
 
 	/**
