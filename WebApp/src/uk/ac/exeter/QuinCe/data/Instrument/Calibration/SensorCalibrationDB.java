@@ -3,8 +3,6 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 import java.sql.Connection;
 import java.util.List;
 
-import javax.sql.DataSource;
-
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;

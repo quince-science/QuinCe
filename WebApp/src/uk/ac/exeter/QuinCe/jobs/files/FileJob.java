@@ -3,9 +3,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.util.Map;
 import java.util.Properties;
 
-import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -94,12 +92,7 @@ public abstract class FileJob extends Job {
 	@Override
 	protected final void execute(JobThread thread) throws JobFailedException {
 		try {
-			boolean deleteFlag = DataFileDB.getDeleteFlag(dataSource, fileId);
-			if (deleteFlag) {
-				setFinishState(KILLED_STATUS);
-			} else {
-				executeFileJob(thread);
-			}
+			executeFileJob(thread);
 		} catch (JobFailedException e) {
 			throw e;
 		} catch (Exception e) {
