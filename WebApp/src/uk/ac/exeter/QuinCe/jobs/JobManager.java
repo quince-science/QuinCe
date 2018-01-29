@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,11 +118,6 @@ public class JobManager {
 	 * Statement to get the number of jobs of each status
 	 */
 	private static final String GET_JOB_COUNTS_QUERY = "SELECT status, COUNT(status) FROM job GROUP BY status";
-	
-	/**
-	 * Statement to retrieve the list of jobs
-	 */
-	private static final String JOB_LIST_QUERY = "SELECT id, owner, class, submitted, status, started, ended, progress, stack_trace FROM job ORDER BY submitted DESC";
 	
 	/**
 	 * Statement to retrieve the status of a given job
@@ -240,8 +234,8 @@ public class JobManager {
 					String fileIdString = parameters.get(FileJob.FILE_ID_KEY);
 					if (null != fileIdString) {
 						fileId = Long.parseLong(parameters.get(FileJob.FILE_ID_KEY));
-						if (!DataFileDB.fileExists(conn, fileId) || DataFileDB.getDeleteFlag(conn, fileId)) {
-							throw new JobException("Data file with ID " + fileId + " does not exist or is marked for deletion. Job cannot be queued.");
+						if (!DataFileDB.fileExists(conn, fileId)) {
+							throw new JobException("Data file with ID " + fileId + " does not exist. Job cannot be queued.");
 						}
 					}
 					
@@ -819,66 +813,6 @@ public class JobManager {
 		return result;	
 	}
 	
-	/**
-	 * Retrieve summaries of the complete list of jobs in the system.
-	 * @param dataSource A data source
-	 * @return The list of jobs
-	 * @throws DatabaseException If a database error occurs
-	 * @throws MissingParamException If any requierd parameters are missing
-	 */
-	@Deprecated
-	public static List<JobSummary> getJobList(DataSource dataSource) throws DatabaseException, MissingParamException {
-		
-		MissingParam.checkMissing(dataSource, "dataSource");
-		
-		List<JobSummary> result = new ArrayList<JobSummary>();
-		
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet records = null;
-		
-		try {
-
-			conn = dataSource.getConnection();
-			stmt = conn.prepareStatement(JOB_LIST_QUERY);
-			
-			records = stmt.executeQuery();
-			while (records.next()) {
-				long id = records.getLong(1);
-				long userID = records.getLong(2);
-				User owner = UserDB.getUser(dataSource, userID);
-				String className = records.getString(3);
-				Date submitted = new Date(records.getTimestamp(4).getTime());
-				String status = records.getString(5);
-				Date started = null;
-				
-				if (null != records.getTimestamp(6)) {
-					started = new Date(records.getTimestamp(6).getTime());
-				}
-				
-				Date ended = null;
-				
-				if (null != records.getTimestamp(7)) {
-					ended = new Date(records.getTimestamp(7).getTime());
-				}
-				
-				double progress = records.getDouble(8);
-				String stackTrace = records.getString(9);
-				
-				result.add(new JobSummary(id, owner, className, submitted, status, started, ended, progress, stackTrace));
-			}
-		
-		} catch (SQLException e) {
-			throw new DatabaseException("Error while retrieving job list", e);
-		} finally {
-			DatabaseUtils.closeResultSets(records);
-			DatabaseUtils.closeStatements(stmt);
-			DatabaseUtils.closeConnection(conn);
-		}
-		
-		return result;
-	}
-
 	/**
 	 * Start the next queued job, if there is one
 	 * @param resourceManager The application's resource manager

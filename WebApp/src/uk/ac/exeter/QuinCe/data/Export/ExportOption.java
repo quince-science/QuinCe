@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QuinCe.data.Files.FileDataInterrogator;
 
 /**
  * Class to hold details of a single export configuration
@@ -71,12 +70,6 @@ public class ExportOption {
 		flags.add(Flag.VALUE_QUESTIONABLE);
 		flags.add(Flag.VALUE_BAD);
 		flags.add(Flag.VALUE_NEEDED);
-		
-		String invalidColumn = FileDataInterrogator.validateColumnNames(columns);
-		
-		if (null != invalidColumn) {
-			throw new ExportException(name, "Invalid column name '" + invalidColumn + "'");
-		}
 	}
 	
 	/**

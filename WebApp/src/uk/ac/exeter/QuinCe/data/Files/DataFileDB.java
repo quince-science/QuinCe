@@ -12,10 +12,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.User.User;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
-import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
@@ -262,21 +259,6 @@ public class DataFileDB {
 
 	/**
 	 * Determines whether a file with the specified ID exists in the database
-	 * @param dataSource A data source
-	 * @param fileId The file ID
-	 * @return {@code true} if the file exists; {@code false} if it does not
-	 * @throws MissingParamException If any parameters are missing
-	 * @throws DatabaseException If an error occurs
-	 * @throws RecordNotFoundException If the database record disappears during checks. A very unlikely occurrence.
-	 * @see #getFileDetails(Connection, long)
-	 */
-	@Deprecated
-	public static boolean fileExists(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-		return (null != getFileDetails(dataSource, fileId));
-	}
-	
-	/**
-	 * Determines whether a file with the specified ID exists in the database
 	 * @param conn A database connection
 	 * @param fileId The file ID
 	 * @return {@code true} if the file exists; {@code false} if it does not
@@ -461,40 +443,6 @@ public class DataFileDB {
 	}
 	
 	/**
-	 * Retrieve all the details of a specified data file. These are supplied as
-	 * a {@link FileInfo} object.
-	 * 
-	 * @param dataSource A data source
-	 * @param fileId The data file's database ID
-	 * @return An object containing the file's details
-	 * @throws MissingParamException If any required parameters are missing
-	 * @throws DatabaseException If a database error occurs
-	 * @throws RecordNotFoundException If the specified data file does not exist
-	 * @see #getFileDetails(Connection, long)
-	 */
-	@Deprecated
-	public static FileInfo getFileDetails(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-		// TODO remove
-		return null;
-	}
-	
-	/**
-	 * Returns the details of a specified data file
-	 * @param conn A database connection
-	 * @param fileId The database ID of the data file
-	 * @return The file details
-	 * @throws MissingParamException If any required parameters are missing
-	 * @throws DatabaseException If a database error occurs
-	 * @throws RecordNotFoundException If any of the file's details cannot be found
-	 * @see #FIND_FILE_BY_ID_QUERY
-	 * @see #makeFileInfo(ResultSet, Connection)
-	 */
-	public static FileInfo getFileDetails(Connection conn, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-		// TODO remove
-		return null;
-	}
-	
-	/**
 	 * Removes a file from the database and the underlying file store.
 	 * @param dataSource A data source
 	 * @param appConfig The application configuration
@@ -573,28 +521,6 @@ public class DataFileDB {
 	 */
 	@Deprecated
 	public static void setCurrentJob(Connection conn, long fileId, int jobCode) throws MissingParamException, DatabaseException {
-		// TODO remove
-	}
-	
-	/**
-	 * <p>Update the flag counts for a specified data file.</p>
-	 * 
-	 * <p>
-	 *   The file details to be updated are provided as a pre-existing {@link FileInfo}
-	 *   object. The file's database ID is extracted and used to query the database. The
-	 *   {@link FileInfo} object is then updated with the retrieved flag counts.
-	 * </p>
-	 * @param conn A database connection
-	 * @param fileInfo The {@link FileInfo} for the file whose flag counts are to be updated
-	 * @throws DatabaseException If a database error occurs
-	 * @throws RecordNotFoundException If the specified data file does not exist
-	 * @throws MissingParamException If any required parameters in internal method calls are missing
-	 * @see Flag
-	 * @see #GET_QC_FLAGS_QUERY
-	 * @see #GET_WOCE_FLAGS_QUERY
-	 */
-	@Deprecated
-	public static void updateFlagCounts(Connection conn, FileInfo fileInfo) throws DatabaseException, RecordNotFoundException, MissingParamException {
 		// TODO remove
 	}
 	
