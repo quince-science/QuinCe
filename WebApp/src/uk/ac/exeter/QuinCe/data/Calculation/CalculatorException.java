@@ -8,6 +8,11 @@ package uk.ac.exeter.QuinCe.data.Calculation;
 public class CalculatorException extends Exception{
 
 	/**
+	 * Serial version UID
+	 */
+	private static final long serialVersionUID = 525572587560571303L;
+
+	/**
 	 * Constructor for a simple error message
 	 * @param message The error message
 	 */

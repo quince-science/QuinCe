@@ -14,6 +14,11 @@ import java.util.TreeSet;
 public class CalibrationDataSet extends TreeSet<DataSetRawDataRecord> {
 
 	/**
+	 * Serial version UID
+	 */
+	private static final long serialVersionUID = -5614215614210710902L;
+
+	/**
 	 * Parameter to indicate searches must find the record before a date
 	 */
 	public static final int BEFORE = -1;
