@@ -1,7 +1,5 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;

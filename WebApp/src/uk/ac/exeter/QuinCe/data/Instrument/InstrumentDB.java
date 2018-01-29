@@ -19,7 +19,6 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.User.User;
-import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
@@ -956,27 +955,5 @@ public class InstrumentDB {
 		}
 		
 		
-	}
-	
-	/**
-	 * Get the Instrument object associated with a give data file,
-	 * identified by its database ID
-	 * @param dataSource A data source
-	 * @param fileId The data file ID
-	 * @param sensorConfiguration The sensors configuration
-	 * @param runTypeConfiguration The run type category configuration
-	 * @return The instrument object
-	 * @throws MissingParamException If any parameters are missing
-	 * @throws DatabaseException If an unexpected database error occurs
-	 * @throws RecordNotFoundException If the file ID is not in the database
-	 * @throws InstrumentException If any instrument details are invalid
-	 */
-	public static Instrument getInstrumentByFileId(DataSource dataSource, long fileId, SensorsConfiguration sensorConfiguration, RunTypeCategoryConfiguration runTypeConfiguration) throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException {
-		
-		MissingParam.checkMissing(dataSource, "dataSource");
-		MissingParam.checkMissing(fileId, "fileId");
-		
-		long instrumentId = DataFileDB.getInstrumentId(dataSource, fileId);
-		return getInstrument(dataSource, instrumentId, sensorConfiguration, runTypeConfiguration);
 	}
 }

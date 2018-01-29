@@ -1369,6 +1369,7 @@ public class NewInstrumentBean extends FileUploadBean {
 	 * Remove a file from the instrument
 	 * @return Navigation to either the upload page (if all files have been removed), or the assignment page
 	 */
+	@SuppressWarnings("unlikely-arg-type")
 	public String removeFile() {
 		String result;
 		
