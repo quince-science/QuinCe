@@ -83,7 +83,7 @@ public class DataSetsBean extends BaseManagedBean {
 	public void initialise() {
 		try {
 			initialiseInstruments();
-			if (null == currentFullInstrument) {
+			if (null == currentFullInstrument && -1 != getCurrentInstrument()) {
 				currentFullInstrument = InstrumentDB.getInstrument(getDataSource(), getCurrentInstrument(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
 			}
 			loadDataSets();
@@ -132,7 +132,11 @@ public class DataSetsBean extends BaseManagedBean {
 	 * @throws DatabaseException If a database error occurs
 	 */
 	private void loadDataSets() throws MissingParamException, DatabaseException {
-		dataSets = DataSetDB.getDataSets(getDataSource(), currentFullInstrument.getDatabaseId());
+		if (null != currentFullInstrument) {
+			dataSets = DataSetDB.getDataSets(getDataSource(), currentFullInstrument.getDatabaseId());
+		} else {
+			dataSets = null;
+		}
 	}
 	
 	/**

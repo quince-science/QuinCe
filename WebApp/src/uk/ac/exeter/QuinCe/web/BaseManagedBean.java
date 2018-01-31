@@ -290,4 +290,13 @@ public abstract class BaseManagedBean {
 		return longDateFormat;
 	}
 	
+	/**
+	 * Determine whether or not there are instruments available for this user
+	 * @return {@code true} if the user has any instruments; {@code false} if not.
+	 */
+	public boolean getHasInstruments() {
+		initialiseInstruments();
+		System.out.println(instruments.size() > 0);
+		return instruments.size() > 0;
+	}
 }
