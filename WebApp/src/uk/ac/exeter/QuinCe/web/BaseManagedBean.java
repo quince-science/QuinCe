@@ -296,7 +296,6 @@ public abstract class BaseManagedBean {
 	 */
 	public boolean getHasInstruments() {
 		initialiseInstruments();
-		System.out.println(instruments.size() > 0);
 		return instruments.size() > 0;
 	}
 }
