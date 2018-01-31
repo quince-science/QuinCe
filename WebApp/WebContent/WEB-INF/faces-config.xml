@@ -34,12 +34,6 @@
 		<managed-bean-scope>request</managed-bean-scope>
 	</managed-bean>
 	<managed-bean>
-		<description>Small bean for producing lists of instruments</description>
-		<managed-bean-name>instrumentListBean</managed-bean-name>
-		<managed-bean-class>uk.ac.exeter.QuinCe.web.Instrument.InstrumentListBean</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
-	</managed-bean>
-	<managed-bean>
 		<description>Handles editing of the user profile</description>
 		<managed-bean-name>userProfileBean</managed-bean-name>
 		<managed-bean-class>uk.ac.exeter.QuinCe.web.User.UserProfileBean</managed-bean-class>
