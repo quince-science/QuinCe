@@ -1,0 +1,3 @@
+[submodule "src/QC_Routines"]
+	path = src/QC_Routines
+	url = git@github.com:squaregoldfish/QC_Routines.git
