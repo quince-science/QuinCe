@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.files;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -304,9 +305,19 @@ public class DataFilesBean extends FileUploadBean {
 	 * @throws MissingParamException If any internal calls have missing parameters
 	 */
 	public List<DataFile> getListFiles() throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException, ResourceException {
-		if (null == currentFullInstrument) {
+		
+		List<DataFile> result;
+		
+		if (null == currentFullInstrument && -1 != getCurrentInstrument()) {
 			currentFullInstrument = InstrumentDB.getInstrument(getDataSource(), getCurrentInstrument(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
 		}
-		return DataFileDB.getUserFiles(getDataSource(), getAppConfig(), getUser(), currentFullInstrument.getDatabaseId());
+		
+		if (null != currentFullInstrument) {
+			result = DataFileDB.getUserFiles(getDataSource(), getAppConfig(), getUser(), currentFullInstrument.getDatabaseId());
+		} else {
+			result = new ArrayList<DataFile>();
+		}
+
+		return result;
 	}
 }
