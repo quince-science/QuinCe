@@ -295,7 +295,7 @@ public abstract class BaseManagedBean {
 	 * @return {@code true} if the user has any instruments; {@code false} if not.
 	 */
 	public boolean getHasInstruments() {
-		initialiseInstruments();
+		List<InstrumentStub> instruments = getInstruments();
 		return instruments.size() > 0;
 	}
 }
