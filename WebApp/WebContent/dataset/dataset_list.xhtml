@@ -4,6 +4,7 @@
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:pe="http://primefaces.org/ui/extensions"
 	template="/WEB-INF/templates/menu_page.xhtml">
 	
 	<ui:define name="title">Data Sets</ui:define>
@@ -37,68 +38,79 @@
 	</ui:define>
 	
 	<ui:define name="content">
-		<h:form id="datasetListForm" method="post" charset="utf8">
-			<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
-				<p:outputLabel for="instrument" value="Select Instrument:"/>
-				<p:selectOneMenu id="instrument" value="#{dataFilesBean.currentInstrument}">
-					<f:selectItems value="#{dataFilesBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
-				</p:selectOneMenu>
-			</h:panelGrid>
+		
+		<pe:switch id="instrumentDetector" value="#{dataSetsBean.hasInstruments}">
+			<pe:defaultCase>
+				<div class="instructions error">
+					You do not have any instruments defined. Go to the Instruments tab to add an instrument.
+				</div>
+			</pe:defaultCase>
 			
-			<h:inputHidden id="calibrationDatasetId" value="#{reviewCalibrationDataBean.datasetId}"/>
-			<p:commandLink id="reviewCalibrationDataLink" ajax="false" action="#{reviewCalibrationDataBean.start}"/>
-
-			<h:inputHidden id="datasetId" value="#{dataSetsBean.datasetId}"/>
-			<p:commandLink id="dataReductionLink" ajax="false" action="#{dataSetsBean.submitDataReductionJob}"/>
-			<p:commandLink id="autoQcLink" ajax="false" action="#{dataSetsBean.submitAutoQcJob}"/>
-			
-			<h:inputHidden id="manualQcDatasetId" value="#{manualQcBean.datasetId}"/>
-			<p:commandLink id="manualQcLink" ajax="false" action="#{manualQcBean.start}"/>
-
-			<p:dataTable id="datasets" value="#{dataSetsBean.dataSets}" var="dataset" styleClass="pageTable" scrollable="true" scrollHeight="450">
-				<p:column>
-					<f:facet name="header">
-						<h:outputText value="Name"/>
-					</f:facet>
-					<h:outputText value="#{dataset.name}"/>
-				</p:column>
-				<p:column>
-					<f:facet name="header">
-						<h:outputText value="Start Date"/>
-					</f:facet>
-					<h:outputText value="#{dataset.start}"/>
-				</p:column>
-				<p:column>
-					<f:facet name="header">
-						<h:outputText value="End Date"/>
-					</f:facet>
-					<h:outputText value="#{dataset.end}"/>
-				</p:column>
-				<p:column>
-					<f:facet name="header">
-						<h:outputText value="Status"/>
-					</f:facet>
-					<h:outputText value="#{dataset.statusName}"/>
-				</p:column>
-				<p:column>
-					<f:facet name="header">
-						<h:outputText value="Actions"/>
-					</f:facet>
-					<p:commandLink onclick="goToCalibrationData(#{dataset.id})">
-						<h:graphicImage value="/resources/image/calibration.svg" styleClass="actionIcon" alt="Calibration" title="Calibration"/>
-					</p:commandLink>
-					<p:commandLink onclick="createDataReductionJob(#{dataset.id})">
-						<h:graphicImage value="/resources/image/calculate.svg" styleClass="actionIcon" alt="Data Reduction" title="Data Reduction"/>
-					</p:commandLink>
-					<p:commandLink onclick="goToQc(#{dataset.id})">
-						<h:graphicImage value="/resources/image/qc.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
-					</p:commandLink>
-				</p:column>
-			</p:dataTable>
-			
-			<h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
-				<p:commandButton value="Create New Data Set" ajax="false" action="#{dataSetsBean.startNewDataset}"/>
-			</h:panelGrid>			
-		</h:form>
+			<pe:case value="true">		
+				<h:form id="datasetListForm" method="post" charset="utf8">
+					<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
+						<p:outputLabel for="instrument" value="Select Instrument:"/>
+						<p:selectOneMenu id="instrument" value="#{dataSetsBean.currentInstrument}">
+							<f:selectItems value="#{dataSetsBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
+						</p:selectOneMenu>
+					</h:panelGrid>
+					
+					<h:inputHidden id="calibrationDatasetId" value="#{reviewCalibrationDataBean.datasetId}"/>
+					<p:commandLink id="reviewCalibrationDataLink" ajax="false" action="#{reviewCalibrationDataBean.start}"/>
+		
+					<h:inputHidden id="datasetId" value="#{dataSetsBean.datasetId}"/>
+					<p:commandLink id="dataReductionLink" ajax="false" action="#{dataSetsBean.submitDataReductionJob}"/>
+					<p:commandLink id="autoQcLink" ajax="false" action="#{dataSetsBean.submitAutoQcJob}"/>
+					
+					<h:inputHidden id="manualQcDatasetId" value="#{manualQcBean.datasetId}"/>
+					<p:commandLink id="manualQcLink" ajax="false" action="#{manualQcBean.start}"/>
+		
+					<p:dataTable id="datasets" value="#{dataSetsBean.dataSets}" var="dataset" styleClass="pageTable" scrollable="true" scrollHeight="450">
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="Name"/>
+							</f:facet>
+							<h:outputText value="#{dataset.name}"/>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="Start Date"/>
+							</f:facet>
+							<h:outputText value="#{dataset.start}"/>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="End Date"/>
+							</f:facet>
+							<h:outputText value="#{dataset.end}"/>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="Status"/>
+							</f:facet>
+							<h:outputText value="#{dataset.statusName}"/>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="Actions"/>
+							</f:facet>
+							<p:commandLink onclick="goToCalibrationData(#{dataset.id})">
+								<h:graphicImage value="/resources/image/calibration.svg" styleClass="actionIcon" alt="Calibration" title="Calibration"/>
+							</p:commandLink>
+							<p:commandLink onclick="createDataReductionJob(#{dataset.id})">
+								<h:graphicImage value="/resources/image/calculate.svg" styleClass="actionIcon" alt="Data Reduction" title="Data Reduction"/>
+							</p:commandLink>
+							<p:commandLink onclick="goToQc(#{dataset.id})">
+								<h:graphicImage value="/resources/image/qc.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
+							</p:commandLink>
+						</p:column>
+					</p:dataTable>
+					
+					<h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
+						<p:commandButton value="Create New Data Set" ajax="false" action="#{dataSetsBean.startNewDataset}"/>
+					</h:panelGrid>			
+				</h:form>
+			</pe:case>
+		</pe:switch>
 	</ui:define>
 </ui:composition>

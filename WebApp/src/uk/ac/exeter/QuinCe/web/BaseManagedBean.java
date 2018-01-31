@@ -207,8 +207,24 @@ public abstract class BaseManagedBean {
 		// Load the instruments list. Set the current instrument if it isn't already set.
 		try {
 			instruments = InstrumentDB.getInstrumentList(getDataSource(), getUser());
-			if (getCurrentInstrument() == -1 && instruments.size() > 0) {
-				setCurrentInstrument(instruments.get(0).getId());
+			
+			boolean userInstrumentExists = false;
+			long currentUserInstrument = getCurrentInstrument();
+			if (currentUserInstrument != -1) {
+				for (InstrumentStub instrument : instruments) {
+					if (instrument.getId() == currentUserInstrument) {
+						userInstrumentExists = true;
+						break;
+					}
+				}
+			}
+			
+			if (!userInstrumentExists) {
+				if (instruments.size() > 0) {
+					setCurrentInstrument(instruments.get(0).getId());
+				} else {
+					setCurrentInstrument(-1);
+				}
 			}
 			
 			// TODO We don't need to reset the instrument every time -
@@ -274,4 +290,12 @@ public abstract class BaseManagedBean {
 		return longDateFormat;
 	}
 	
+	/**
+	 * Determine whether or not there are instruments available for this user
+	 * @return {@code true} if the user has any instruments; {@code false} if not.
+	 */
+	public boolean getHasInstruments() {
+		initialiseInstruments();
+		return instruments.size() > 0;
+	}
 }
