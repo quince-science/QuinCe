@@ -4,7 +4,6 @@
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
-	xmlns:pe="http://primefaces.org/ui/extensions"
 	template="/WEB-INF/templates/menu_page.xhtml">
 	
 	<ui:define name="title">Files</ui:define>
@@ -13,62 +12,58 @@
 	</ui:define>
 	
 	<ui:define name="content">
-		
-		<pe:switch id="instrumentDetector" value="#{dataSetsBean.hasInstruments}">
-			<pe:defaultCase>
-				<div class="instructions error">
-					You do not have any instruments defined. Go to the Instruments tab to add an instrument.
-				</div>
-			</pe:defaultCase>
-			
-			<pe:case value="true">		
-				<h:form id="fileListForm" method="post" charset="utf8">
-					<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
-						<p:outputLabel for="instrument" value="Select Instrument:"/>
-						<p:selectOneMenu id="instrument" value="#{dataFilesBean.currentInstrument}">
-							<f:selectItems value="#{dataFilesBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
-							<p:ajax event="change" update="files"/>
-						</p:selectOneMenu>
-					</h:panelGrid>
-					
-					<p:dataTable id="files" value="#{dataFilesBean.listFiles}" var="file" styleClass="pageTable" scrollable="true" scrollHeight="450">
-						<p:column>
-							<f:facet name="header">
-								<h:outputText value="Filename"/>
-							</f:facet>
-							<h:outputText value="#{file.filename}"/>
-						</p:column>
-						<p:column>
-							<f:facet name="header">
-								<h:outputText value="File Type"/>
-							</f:facet>
-							<h:outputText value="#{file.fileDefinition.fileDescription}"/>
-						</p:column>
-						<p:column>
-							<f:facet name="header">
-								<h:outputText value="Start Date"/>
-							</f:facet>
-							<h:outputText value="#{file.startDate}"/>
-						</p:column>
-						<p:column>
-							<f:facet name="header">
-								<h:outputText value="End Date"/>
-							</f:facet>
-							<h:outputText value="#{file.endDate}"/>
-						</p:column>
-						<p:column>
-							<f:facet name="header">
-								<h:outputText value="Records"/>
-							</f:facet>
-							<h:outputText value="#{file.recordCount}"/>
-						</p:column>
-					</p:dataTable>
-					<h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
-						<p:button value="Upload New File(s)" ajax="false" outcome="upload" />
-					</h:panelGrid>			
-				</h:form>
-			</pe:case>
-		</pe:switch>
+		<ui:fragment rendered="#{not dataFilesBean.hasInstruments}">
+			<div class="instructions error">
+				You do not have any instruments defined. Go to the Instruments tab to add an instrument.
+			</div>
+		</ui:fragment>
+		<ui:fragment rendered="#{dataFilesBean.hasInstruments}">
+			<h:form id="fileListForm" method="post" charset="utf8">
+				<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
+					<p:outputLabel for="instrument" value="Select Instrument:"/>
+					<p:selectOneMenu id="instrument" value="#{dataFilesBean.currentInstrument}">
+						<f:selectItems value="#{dataFilesBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
+						<p:ajax event="change" update="files"/>
+					</p:selectOneMenu>
+				</h:panelGrid>
+				
+				<p:dataTable id="files" value="#{dataFilesBean.listFiles}" var="file" styleClass="pageTable" scrollable="true" scrollHeight="450">
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="Filename"/>
+						</f:facet>
+						<h:outputText value="#{file.filename}"/>
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="File Type"/>
+						</f:facet>
+						<h:outputText value="#{file.fileDefinition.fileDescription}"/>
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="Start Date"/>
+						</f:facet>
+						<h:outputText value="#{file.startDate}"/>
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="End Date"/>
+						</f:facet>
+						<h:outputText value="#{file.endDate}"/>
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="Records"/>
+						</f:facet>
+						<h:outputText value="#{file.recordCount}"/>
+					</p:column>
+				</p:dataTable>
+				<h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
+					<p:button value="Upload New File(s)" ajax="false" outcome="upload" />
+				</h:panelGrid>			
+			</h:form>
+		</ui:fragment>
 	</ui:define>
 	
 	

@@ -38,6 +38,8 @@ import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 import uk.ac.exeter.QuinCe.web.Instrument.InstrumentListBean;
+import uk.ac.exeter.QuinCe.web.datasets.DataSetsBean;
+import uk.ac.exeter.QuinCe.web.files.DataFilesBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
@@ -90,6 +92,18 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
 	@ManagedProperty("#{instrumentListBean}")
 	private InstrumentListBean instrumentListBean;
+	
+	/**
+	 * The data sets bean
+	 */
+	@ManagedProperty("#{dataSetsBean}")
+	private DataSetsBean dataSetsBean;
+	
+	/**
+	 * The data sets bean
+	 */
+	@ManagedProperty("#{dataFilesBean}")
+	private DataFilesBean dataFilesBean;
 	
 	/**
 	 * The name of the new instrument
@@ -1713,8 +1727,11 @@ public class NewInstrumentBean extends FileUploadBean {
 				platformCode);
 			InstrumentDB.storeInstrument(getDataSource(), instrument);
 			
-			// Reinitialise the instrument list bean to update the instrument list
+			// Reinitialise beans to update their instrument lists
 			instrumentListBean.init();
+			dataFilesBean.initialise();
+			dataSetsBean.initialise();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
@@ -1729,6 +1746,22 @@ public class NewInstrumentBean extends FileUploadBean {
 	 */
     public void setInstrumentListBean(InstrumentListBean instrumentListBean) {
         this.instrumentListBean = instrumentListBean;
+    }
+
+	/**
+	 * Set up the reference to the Data Files Bean
+	 * @param dataFilesBean The data files bean
+	 */
+    public void setDataFilesBean(DataFilesBean dataFilesBean) {
+        this.dataFilesBean = dataFilesBean;
+    }
+
+	/**
+	 * Set up the reference to the Data Sets Bean
+	 * @param dataSetsBean The data sets bean
+	 */
+    public void setDataSetsBean(DataSetsBean dataSetsBean) {
+        this.dataSetsBean = dataSetsBean;
     }
 
     /**
