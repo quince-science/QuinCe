@@ -617,8 +617,8 @@ public class FileDefinition implements Comparable<FileDefinition> {
 		case HEADER_TYPE_LINE_COUNT: {
 			if (headerLines != compare.headerLines) {
 				matches = false;
-				break;
 			}
+			break;
 		}
 		case HEADER_TYPE_STRING: {
 			if (null == headerEndString) {
