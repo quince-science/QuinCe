@@ -12,5 +12,4 @@
 #
 #Code,Name,Type,MinCount
 MCO2,Marine CO₂,0,1
-ACO2,Atmospheric CO₂,0,0
-STD,Gas Standard,1,3
+#ACO2,Atmospheric CO₂,0,0
