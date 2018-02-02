@@ -23,11 +23,6 @@ import uk.ac.exeter.QuinCe.web.VariableList;
 public class ReviewCalibrationDataBean extends PlotPageBean {
 
 	/**
-	 * The name for selecting all external standards
-	 */
-	private static final String ALL_NAME = "All External Standards";
-	
-	/**
 	 * Navigation to the calibration data plot page
 	 */
 	private static final String NAV_PLOT = "calibration_data_plot";
@@ -64,7 +59,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	
 	@Override
 	protected List<Long> loadRowIds() throws Exception {
-		return CalibrationDataDB.getCalibrationRowIds(getDataSource(), getDatasetId(), ALL_NAME);
+		return CalibrationDataDB.getCalibrationRowIds(getDataSource(), getDatasetId(), null);
 	}
 	
 	@Override
@@ -85,7 +80,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	
 	@Override
 	protected String buildSelectableRows() throws Exception {
-		List<Long> ids = CalibrationDataDB.getCalibrationRowIds(getDataSource(), getDatasetId(), ALL_NAME);
+		List<Long> ids = CalibrationDataDB.getCalibrationRowIds(getDataSource(), getDatasetId(), null);
 		StringBuilder result = new StringBuilder();
 		result.append('[');
 		for (int i = 0; i < ids.size(); i++) {
