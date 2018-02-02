@@ -1,63 +1,36 @@
 #Class,Option,Option....
 #ShipSpeed,150,750
-TimeGap,7
-ConstantValue,Intake Temp 1,120
-ConstantValue,Intake Temp 2,120
-ConstantValue,Intake Temp 3,120
-ConstantValue,Salinity 1,120
-ConstantValue,Salinity 2,120
-ConstantValue,Salinity 3,120
-ConstantValue,Equilibrator Temperature 1,120
-ConstantValue,Equilibrator Temperature 2,120
-ConstantValue,Equilibrator Temperature 3,120
-ConstantValue,Equilibrator Pressure 1,120
-ConstantValue,Equilibrator Pressure 2,120
-ConstantValue,Equilibrator Pressure 3,120
+#TimeGap,7
+ConstantValue,Intake Temperature,120
+ConstantValue,Salinity,120
+ConstantValue,Equilibrator Temperature,120
+ConstantValue,Equilibrator Pressure,120
 ConstantValue,xH2O,120
 ConstantValue,Atmospheric Pressure,120
-ConstantValue,fCO2,120
-RangeCheck,Intake Temp 1,-5,40,-10,50
-RangeCheck,Intake Temp 2,-5,40,-10,50
-RangeCheck,Intake Temp 3,-5,40,-10,50
-RangeCheck,Salinity 1,0,42,0,50
-RangeCheck,Salinity 2,0,42,0,50
-RangeCheck,Salinity 3,0,42,0,50
-RangeCheck,Equilibrator Temperature 1,-5,40,-10,50
-RangeCheck,Equilibrator Temperature 2,-5,40,-10,50
-RangeCheck,Equilibrator Temperature 3,-5,40,-10,50
-RangeCheck,Equilibrator Pressure 1,900,1100,750,1250
-RangeCheck,Equilibrator Pressure 2,900,1100,750,1250
-RangeCheck,Equilibrator Pressure 3,900,1100,750,1250
+ConstantValue,CO2,120
+RangeCheck,Intake Temperature,-5,40,-10,50
+RangeCheck,Salinity,0,42,0,50
+RangeCheck,Equilibrator Temperature,-5,40,-10,50
+RangeCheck,Equilibrator Pressure,900,1100,750,1250
 RangeCheck,Atmospheric Pressure,900,1100,750,1250
-RangeCheck,fCO2,80,1200,0,50000
 RangeCheck,xH2O,0,100,0,100
-Outlier,Intake Temp 1,3
-Outlier,Intake Temp 2,3
-Outlier,Intake Temp 3,3
-Outlier,Salinity 1,3
-Outlier,Salinity 2,3
-Outlier,Salinity 3,3
-Outlier,Equilibrator Temperature 1,3
-Outlier,Equilibrator Temperature 2,3
-Outlier,Equilibrator Temperature 3,3
-Outlier,Equilibrator Pressure 1,3
-Outlier,Equilibrator Pressure 2,3
-Outlier,Equilibrator Pressure 3,3
+RangeCheck,CO2,80,1200,0,50000
+RangeCheck,Delta Temperature,-1,1,-2,2
+RangeCheck,True Moisture,0,100,0,100
+RangeCheck,pH2O,0,0.1,0,0.1
+Outlier,Intake Temperature,3
+Outlier,Salinity,3
+Outlier,Equilibrator Temperature,3
+Outlier,Equilibrator Pressure,3
 Outlier,xH2O,3
 Outlier,Atmospheric Pressure,3
-Outlier,fCO2,3
-HighDelta,Intake Temp 1,3
-HighDelta,Intake Temp 2,3
-HighDelta,Intake Temp 3,3
-HighDelta,Salinity 1,3
-HighDelta,Salinity 2,3
-HighDelta,Salinity 3,3
-HighDelta,Equilibrator Temperature 1,3
-HighDelta,Equilibrator Temperature 2,3
-HighDelta,Equilibrator Temperature 3,3
-HighDelta,Equilibrator Pressure 1,50
-HighDelta,Equilibrator Pressure 2,50
-HighDelta,Equilibrator Pressure 3,50
+Outlier,CO2,3
+Outlier,Delta Temperature,3
+HighDelta,Intake Temperature,3
+HighDelta,Salinity,3
+HighDelta,Equilibrator Temperature,3
+HighDelta,Equilibrator Pressure,50
 HighDelta,xH2O,5
 HighDelta,Atmospheric Pressure,50
-HighDelta,fCO2,20
+HighDelta,CO2,20
+HighDelta,Delta Temperature,0.5
