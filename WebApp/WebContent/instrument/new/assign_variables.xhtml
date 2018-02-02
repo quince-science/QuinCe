@@ -94,10 +94,10 @@
 					</table>
 				</div>
 				<div id="sensorAssignmentPrimaryContainer" class="dialogSection">
-					<div>
+					<div class="hidden">
 						<p:outputLabel value="Is this a primary or fallback sensor?"/> <i>??</i>
 					</div>
-					<div>
+					<div class="hidden">
 						<p:selectOneRadio id="sensorAssignmentPrimary" widgetVar="primary" value="#{newInstrumentBean.sensorAssignmentPrimary}">
 							<f:selectItem itemLabel="Primary" itemValue="true"/>
 							<f:selectItem itemLabel="Fallback" itemValue="false"/>
@@ -105,10 +105,10 @@
 					</div>
 				</div>
 				<div id="sensorAssignmentPostCalibration" class="dialogSection">
-					<div>
+					<div class="hidden">
 						<p:outputLabel value="Should calibration adjustments be applied to this sensor?"/> <i>??</i>
 					</div>
-					<div>
+					<div class="hidden">
 						<p:selectOneRadio id="sensorAssignmentPostCalibrated" value="#{newInstrumentBean.sensorAssignmentPostCalibrated}">
 							<f:selectItem itemLabel="Yes" itemValue="true"/>
 							<f:selectItem itemLabel="No" itemValue="false"/>

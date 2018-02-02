@@ -13,9 +13,11 @@
 	</ui:define>
 	<ui:define name="pageTitle"></ui:define>
 	<ui:define name="content">
-	    <div style="text-align: right">
-	    	<h:link outcome="/credits.xhtml">Credits</h:link>
-	    </div>
+	    <ui:fragment rendered="false">
+		    <div style="text-align: right">
+		    		<h:link outcome="/credits.xhtml">Credits</h:link>
+		    </div>
+		</ui:fragment>
 	    <div class="contentBox">
 		    <div id="logoTitle">
 		    	<h:graphicImage id="logo" alt="logo" value="/resources/image/quince.png" style="margin-right: 20px;"/>
