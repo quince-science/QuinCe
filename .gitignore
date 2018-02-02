@@ -6,3 +6,7 @@
 .settings
 .DS_Store
 
+# Ignore build-files from gradle. Make sure gradle-wrapper.jar is not ignored
+/.gradle/
+/build/
+!gradle-wrapper.jar
