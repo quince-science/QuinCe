@@ -1,0 +1,10 @@
+################################################################
+# Cron scripts for the production server.                      #
+# These scripts copy data to the test-server on a daily basis. #
+# Scripts should be installed using crontab -e by user tomcat. #
+################################################################
+
+4  0 * * * scripts/prodserver/backup_database.sh
+25 1 * * * rsync shared/backups/quince.sql.gz* centos@158.39.77.86:/data/shared/quince_backups
+35 1 * * * rsync -r /var/backup/quince/QUINCE_FILE_STORE centos@158.39.77.86:/data/shared/quince_backups/QUINCE_FILE_STORE
+
