@@ -207,14 +207,4 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 		
 		return CalibrationDataDB.getJsonPlotData(getDataSource(), getDataset(), standardNames);
 	}
-
-	@Override
-	protected List<String> getFixedPlotFieldNames() {
-		return null;
-	}
-
-	@Override
-	protected List<String> getFixedPlotFieldLabels() {
-		return null;
-	}
 }

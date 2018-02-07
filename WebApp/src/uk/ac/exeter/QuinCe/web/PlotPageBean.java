@@ -597,18 +597,4 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 * @throws Exception If an error occurs
 	 */
 	protected abstract String getData(List<String> fields) throws Exception;
-	
-	/**
-	 * Get the names of the fields that must be included in the plots
-	 * (not maps)
-	 * @return The required fields
-	 */
-	protected abstract List<String> getFixedPlotFieldNames();
-	
-	/**
-	 * Get the names of the fields that must be included in the plots
-	 * (not maps)
-	 * @return The required fields
-	 */
-	protected abstract List<String> getFixedPlotFieldLabels();
 }

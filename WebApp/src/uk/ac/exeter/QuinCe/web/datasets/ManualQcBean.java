@@ -437,20 +437,4 @@ public class ManualQcBean extends PlotPageBean {
 	protected String getData(List<String> fields) throws Exception {
 		return CalculationDBFactory.getCalculationDB().getJsonData(getDataSource(), getDataset(), fields);
 	}
-
-	@Override
-	protected List<String> getFixedPlotFieldNames() {
-		List<String> result = new ArrayList<String>(2);
-		result.add("auto_flag");
-		result.add("user_flag");
-		return result;
-	}
-
-	@Override
-	protected List<String> getFixedPlotFieldLabels() {
-		List<String> result = new ArrayList<String>(2);
-		result.add("Automatic Flag");
-		result.add("Manual Flag");
-		return result;
-	}
 }

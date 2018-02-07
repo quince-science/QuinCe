@@ -330,7 +330,7 @@ public class CalibrationDataDB {
 
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("SELECT run_type, date, id, ");
+		sql.append("SELECT run_type, date, id, use_record, ");
 		for (int i = 0; i < calibrationFields.size(); i++) {
 			sql.append(calibrationFields.get(i));
 			
@@ -389,6 +389,15 @@ public class CalibrationDataDB {
 
 				columnIndex++;
 				json.append(records.getLong(columnIndex)); // id
+				json.append(',');
+				
+				// The Use Record flag is converted to BAD or GOOD for the plot highlighting functions
+				columnIndex++;
+				if (records.getBoolean(columnIndex)) {
+					json.append('2');
+				} else {
+					json.append('4');
+				}
 				json.append(',');
 				
 				for (int i = 0; i < calibrationFields.size(); i++) {
