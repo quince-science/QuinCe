@@ -240,25 +240,7 @@ public class Plot {
 			if (null != xAxis) {
 				result.append(xAxis.getLabel());
 			}
-			result.append("\",\"");
-			result.append("ID");
-			result.append('"');
-
-			List<String> fixedPlotFields = parentBean.getFixedPlotFieldLabels();
-			
-			if (null != fixedPlotFields && fixedPlotFields.size() > 0) {
-				result.append(',');
-				
-				for (int i = 0; i < fixedPlotFields.size(); i++) {
-					result.append('"');
-					result.append(fixedPlotFields.get(i));
-					result.append('"');
-					
-					if (i < fixedPlotFields.size() - 1) {
-						result.append(',');
-					}
-				}
-			}
+			result.append("\",\"ID\",\"Manual Flag\"");
 			
 			if (null != yAxis) {
 				result.append(',');
@@ -322,12 +304,8 @@ public class Plot {
 			// TODO Remove the magic strings. Make PSF fields in CalculationDB
 			fields.add(xAxis.getFieldName());
 			fields.add("id");
+			fields.add("user_flag");
 			
-			List<String> fixedFields = parentBean.getFixedPlotFieldNames();
-			if (null != fixedFields) {
-				fields.addAll(fixedFields);
-			}
-
 			if (null != yAxis) {
 				for (Variable variable : yAxis) {
 					fields.add(variable.getFieldName());

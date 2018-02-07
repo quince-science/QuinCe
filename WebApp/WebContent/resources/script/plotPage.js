@@ -15,9 +15,8 @@ var PLOT_FLAG_SIZE = 8;
 
 var PLOT_X_AXIS_INDEX = 0;
 var PLOT_MEASUREMENT_ID_INDEX = 1;
-var PLOT_AUTOMATIC_FLAG_INDEX = 2;
-var PLOT_MANUAL_FLAG_INDEX = 3;
-var PLOT_FIRST_Y_INDEX = 4;
+var PLOT_MANUAL_FLAG_INDEX = 2;
+var PLOT_FIRST_Y_INDEX = 3;
 
 
 var BASE_GRAPH_OPTIONS = {
@@ -543,7 +542,6 @@ function getPlotVisibility(index) {
 	for (var i = 1; i < labels.length; i++) {
 		switch (labels[i]) {
 		case 'ID':
-		case 'Automatic Flag':
 		case 'Manual Flag': {
 			visibility.push(false);
 			break;
