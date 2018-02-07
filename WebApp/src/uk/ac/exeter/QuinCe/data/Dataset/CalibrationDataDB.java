@@ -14,6 +14,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
@@ -394,9 +395,9 @@ public class CalibrationDataDB {
 				// The Use Record flag is converted to BAD or GOOD for the plot highlighting functions
 				columnIndex++;
 				if (records.getBoolean(columnIndex)) {
-					json.append('2');
+					json.append(Flag.GOOD.getFlagValue());
 				} else {
-					json.append('4');
+					json.append(Flag.BAD.getFlagValue());
 				}
 				json.append(',');
 				
