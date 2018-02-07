@@ -1,9 +1,19 @@
+var FLAG_GOOD = 2;
+var FLAG_ASSUMED_GOOD = -2;
+var FLAG_QUESTIONABLE = 3;
+var FLAG_BAD = 4;
+var FLAG_FATAL = 44;
+var FLAG_NEEDS_FLAG = -10;
+var FLAG_IGNORED = -1002;
+
 var SELECT_ACTION = 1;
 var DESELECT_ACTION = 0;
 
 var PLOT_POINT_SIZE = 2;
 var PLOT_HIGHLIGHT_SIZE = 5;
 var PLOT_FLAG_SIZE = 8;
+var PLOT_FIRST_Y_INDEX = 4;
+
 
 var BASE_GRAPH_OPTIONS = {
     drawPoints: true,
@@ -495,11 +505,27 @@ function drawPlot(index) {
 	} else {
 		plotData = getPlotData(index);
 	}
-	
+
+	var plotHighlights = makeHighlights(index, plotData);
+	if (plotHighlights.length > 0) {
+		graph_options.underlayCallback = function(canvas, area, g) {
+			for (var i = 0; i < plotHighlights.length; i++) {
+				var xPoint = g.toDomXCoord(plotHighlights[i][0]);
+				var yPoint = g.toDomYCoord(plotHighlights[i][1]);
+				canvas.fillStyle = plotHighlights[i][2];
+				canvas.beginPath();
+				canvas.arc(xPoint, yPoint, PLOT_FLAG_SIZE, 0, 2 * Math.PI, false);
+				canvas.fill();
+			}
+		}
+	} else {
+		graph_options.underlayCallback = null;
+	}
+
 	window[plotVar] = new Dygraph (
 			document.getElementById('plot' + index + 'Container'),
 			plotData,
-			BASE_GRAPH_OPTIONS
+			graph_options
 		);
 }
 
@@ -1081,4 +1107,50 @@ function getMapIndex(event) {
 
 function toggleScale(index) {
 	$('#map' + index + 'Scale').toggle(100);
+}
+
+function makeHighlights(index, plotData) {
+	var highlights = [];
+	
+	var currentFlag = FLAG_GOOD;
+	var highlightColor = null;
+	
+	var plotColumns = getPlotLabels(index);
+	var flagIndex = plotColumns.indexOf('Manual Flag');
+	
+	if (flagIndex != -1) {
+		for (var i = 0; i < plotData.length; i++) {
+			
+			if (Math.abs(plotData[i][flagIndex]) != FLAG_GOOD) {
+			
+				switch (plotData[i][flagIndex]) {
+				case FLAG_BAD:
+				case FLAG_FATAL: {
+					highlightColor = 'rgba(255, 0, 0, 1)';
+					break;
+				}
+				case FLAG_QUESTIONABLE: {
+					highlightColor = 'rgba(216, 177, 0, 1)';
+					break;
+				}
+				case FLAG_NEEDS_FLAG: {
+					highlightColor = 'rgba(129, 127, 255, 1)';
+					break;
+				}
+				case FLAG_IGNORED: {
+					highlightColor = 'rgba(225, 225, 225, 1)';
+					break;
+				}
+				}
+				
+				for (j = PLOT_FIRST_Y_INDEX; j < plotData[i].length; j++) {
+					if (plotData[i][j] != null) {
+						highlights.push([plotData[i][0], plotData[i][j], highlightColor]);
+					}
+				}
+			}
+		}
+	}
+		
+	return highlights;
 }
