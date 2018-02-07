@@ -50,6 +50,7 @@
 					<p:outputLabel for="instrument" value="Select Instrument:"/>
 					<p:selectOneMenu id="instrument" value="#{dataSetsBean.currentInstrument}">
 						<f:selectItems value="#{dataSetsBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
+						<p:ajax event="change" update="datasets"/>
 					</p:selectOneMenu>
 				</h:panelGrid>
 				
