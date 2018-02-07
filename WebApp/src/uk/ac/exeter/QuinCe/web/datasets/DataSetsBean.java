@@ -25,6 +25,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
@@ -128,10 +129,16 @@ public class DataSetsBean extends BaseManagedBean {
 	
 	/**
 	 * Load the list of data sets for the instrument from the database
-	 * @throws MissingParamException If any required parameters are missing
-	 * @throws DatabaseException If a database error occurs
+	 * @throws ResourceException If the app resources cannot be accessed
+	 * @throws InstrumentException If the instrument data is invalid
+	 * @throws RecordNotFoundException If the instrument cannot be found
+	 * @throws MissingParamException If any internal calls have missing parameters
 	 */
-	private void loadDataSets() throws MissingParamException, DatabaseException {
+	private void loadDataSets() throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException, ResourceException {
+		if (null == currentFullInstrument && -1 != getCurrentInstrument()) {
+			currentFullInstrument = InstrumentDB.getInstrument(getDataSource(), getCurrentInstrument(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
+		}
+
 		if (null != currentFullInstrument) {
 			dataSets = DataSetDB.getDataSets(getDataSource(), currentFullInstrument.getDatabaseId());
 		} else {
