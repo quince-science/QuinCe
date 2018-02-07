@@ -5,6 +5,8 @@
 .project
 .settings
 .DS_Store
+/quince.setup*
+!/quince.setup.default
 
 # Ignore build-files from gradle. Make sure gradle-wrapper.jar is not ignored
 /.gradle/

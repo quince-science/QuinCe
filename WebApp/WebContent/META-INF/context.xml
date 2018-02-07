@@ -8,6 +8,6 @@
   -->
   <Resource name="jdbc/QuinCeDB" auth="Container" type="javax.sql.DataSource"
      maxTotal="100" maxIdle="30" maxWaitMillis="10000" removeAbandoned="true"
-     username="quince_dev" password="quince_dev" driverClassName="com.mysql.jdbc.Driver"
-     url="jdbc:mysql://localhost:3306/quince_dev_2?useUnicode=true&amp;characterEncoding=utf-8" />
+     username="%db_username%" password="%db_password%" driverClassName="com.mysql.jdbc.Driver"
+     url="jdbc:mysql://%db_host%:%db_port%/%db_database%?useUnicode=true&amp;characterEncoding=utf-8" />
 </Context>

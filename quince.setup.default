@@ -1,0 +1,15 @@
+################################################
+#
+# Default setup properties for quince. These
+# are used on deployment, and on checkout by
+# git. Override these settings by adding a
+# quince.setup file to your setup.
+#
+################################################
+%quince_root_folder%=/home/centos/QuinCe
+%filestore_folder%=/home/centos/FILESTORE
+%db_username%=quince_dev
+%db_password%=quince_dev
+%db_database%=quince_dev
+%db_port%=3306
+%db_host%=localhost
