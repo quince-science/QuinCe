@@ -441,6 +441,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	 */
 	public String start() {
 		try {
+			tableRowIds = null;
 			dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
 
 			variables = new VariableList();
