@@ -269,8 +269,6 @@ public class Plot {
 			result.append("\",\"");
 			result.append("ID");
 			result.append("\",\"");
-			result.append("Automatic Flag");
-			result.append("\",\"");
 			result.append("Manual Flag");
 			result.append("\",\"");
 			result.append(mapVariable.getLabel());
@@ -320,7 +318,6 @@ public class Plot {
 			fields.add("latitude");
 			fields.add("date");
 			fields.add("id");
-			fields.add("auto_flag");
 			fields.add("user_flag");
 			fields.add(mapVariable.getFieldName());
 		}
