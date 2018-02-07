@@ -420,7 +420,7 @@ public class Plot {
 	
 	public void generateMapData() {
 		try {
-            // if (mapUpdateScale) {
+            // if (mapUpdateScale) { // This doesn't work well. Since the performance hit is small, leave out the check for now.
                 mapScaleLimits = loadMapScaleLimits();
             //}
             mapData = CalculationDBFactory.getCalculationDB().getJsonData(parentBean.getDataSource(), parentBean.getDataset(), getPlotDataFields(), mapBounds, true);
