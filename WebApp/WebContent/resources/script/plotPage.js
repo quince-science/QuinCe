@@ -1025,7 +1025,7 @@ function drawMap(index) {
 			image: new ol.style.Circle({
 				radius: 5,
 				fill: new ol.style.Fill({
-					color: window[colorScaleVar].getColor(featureData[6])
+					color: window[colorScaleVar].getColor(featureData[5])
 				})
 			})
 		}));
