@@ -68,7 +68,7 @@ function resizePlots() {
 		if (null != window['plot' + index]) {
 			$('#plot' + index + 'Container').width('100%');
 			$('#plot' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
-			plot1.resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
+			window['plot' + index].resize($('#plot' + index + 'Container').width(), $('#plot' + index + 'Container').height());
 		}
 
 		if (null != window['map' + index]) {
