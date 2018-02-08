@@ -435,6 +435,6 @@ public class ManualQcBean extends PlotPageBean {
 
 	@Override
 	protected String getData(List<String> fields) throws Exception {
-		return CalculationDBFactory.getCalculationDB().getJsonData(getDataSource(), getDataset(), fields);
+		return CalculationDBFactory.getCalculationDB().getJsonData(getDataSource(), getDataset(), fields, fields.get(0));
 	}
 }
