@@ -165,4 +165,28 @@ public class VariableList extends ArrayList<VariableGroup> {
 		
 		return json.toString();
 	}
+	
+	/**
+	 * Get the names of all the variable groups as a JSON string
+	 * @return The group names
+	 */
+	protected String getGroupNamesJson() {
+		StringBuilder json = new StringBuilder();
+		
+		json.append('[');
+		
+		for (int i = 0; i < size(); i++) {
+			json.append('\'');
+			json.append(get(i).getName());
+			json.append('\'');
+			
+			if (i < size() - 1) {
+				json.append(',');
+			}
+		}
+		
+		json.append(']');
+		
+		return json.toString();
+	}
 }
