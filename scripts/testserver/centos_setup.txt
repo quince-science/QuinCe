@@ -1,0 +1,82 @@
+###############################################################
+#
+# The following are commands to run to setup a new centos
+# server as a QuinCe test server
+#
+# The commands are most easily run as root: sudo su -
+#
+###############################################################
+
+
+# Installing software:
+yum install epel-release -y
+yum update -y
+yum install mariadb-server -y
+systemctl enable mariadb # make sure mariadb starts on boot
+systemctl start mariadb
+yum install java-1.8.0-openjdk.x86_64 -y
+yum install java-1.8.0-openjdk-devel.x86_64 -y
+yum install git -y
+
+
+# Setup folders for inncoming data from prod server:
+mkdir -p /data/shared/quince_backups
+chmod -R 755 /data/shared
+chmod 777 /data/shared/quince_backups
+chown -R centos:centos /data/shared
+ln -s /data/shared /home/centos/shared
+
+################
+# git commands #
+################
+
+# Before git commands can be run, youll need to create an ssh - key and
+# upload to github:
+ssh-keygen
+# Answer questions from ssh-keygen politely :)
+# To add the key to your keystore on github:
+cat ~/.ssh/id_rsa.pub
+
+# Select the output from the previous command, and copy (<ctrl><shift>c)
+# Go to http://github.com/settings/keys in the browser and
+# Press New SSH key, give the key a name, and paste the key you kopied.
+
+# Now you are ready for initialisation:
+cd
+git clone git@github.com:BjerknesClimateDataCentre/QuinCe.git
+cd QuinCe
+git submodule init src/QC_Routines
+git submodule update
+
+# To checkout a specific branch:
+# git checkout somebranch
+
+# Some important settings are in the file
+# quince.setup.default
+
+cp quince.setup.default quince.setup
+
+# now you can modify quince.setup to fit the current setup
+
+
+# To ignore changes in config files
+scripts/setup_hide_changes.sh
+# use setup_show_changes.sh to see them again.
+
+# To start the tomcat web server:
+# ./gradlew appRunWar
+
+###################################
+# SQL Commands                    #
+# Using settings from context.xml #
+###################################
+username=scripts/get_setup_property.sh username
+password=scripts/get_setup_property.sh password
+database=scripts/get_setup_property.sh database
+
+# Depending on how the mysql privileges are setup, you might have to do this
+# differently:
+
+echo "create database if not exists $database character set utf8" |mysql -uroot
+echo "grant all privileges on $database.* to $username@'localhost' identified by '$password'" |mysql -uroot
+
