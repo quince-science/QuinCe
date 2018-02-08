@@ -1096,7 +1096,7 @@ function displayMapFeatureInfo(event, pixel) {
 		featureInfo += feature['data'][1];
 		featureInfo += ' ';
 		featureInfo += ' <b>Value:</b> '
-		featureInfo += feature['data'][6];
+		featureInfo += feature['data'][5];
 	}
 	
 	$('#map' + index + 'Value').html(featureInfo);
