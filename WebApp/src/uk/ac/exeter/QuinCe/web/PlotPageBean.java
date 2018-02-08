@@ -569,6 +569,14 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	}
 	
 	/**
+	 * Get the variable group names as a JSON string
+	 * @return The variable group names
+	 */
+	public String getVariableGroupNames() {
+		return variables.getGroupNamesJson();
+	}
+	
+	/**
 	 * Get the bounds of the data as a JSON string
 	 * @return The data bounds
 	 */

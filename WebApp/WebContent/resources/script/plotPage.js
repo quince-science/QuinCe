@@ -495,8 +495,21 @@ function drawPlot(index) {
 	var interactionModel = Dygraph.defaultInteractionModel;
 	interactionModel.dblclick = null;
 
+	var labels = getPlotLabels(index);
+	var xLabel = labels[0];
+	var yLabels = labels.slice(3);
+	var yLabel = yLabels[0];
+	
+	if (yLabels.length > 1) {
+		var yIds = JSON.parse($('#plotPageForm\\:plot' + index + 'YAxis').val());
+		yLabel = getVariableGroup(yIds[0]);
+	}
+	
+	
 	var graph_options = BASE_GRAPH_OPTIONS;
 	graph_options.labels = getPlotLabels(index);
+	graph_options.xlabel = xLabel;
+	graph_options.ylabel = yLabel;
 	graph_options.visibility = getPlotVisibility(index);
 	graph_options.interactionModel = interactionModel;
 	graph_options.width = $('#plot' + index + 'Panel').width();
@@ -720,7 +733,7 @@ function inSameGroup(id1, id2) {
 	if (id1 == id2) {
 		result = true;
 	} else {
-		for (i = 0; i < variableGroups.length; i++) {
+		for (var i = 0; i < variableGroups.length; i++) {
 			var groupMembers = variableGroups[i];
 			if ($.inArray(id1, groupMembers) > -1 && $.inArray(id2, groupMembers) > -1) {
 				result = true;
@@ -728,8 +741,21 @@ function inSameGroup(id1, id2) {
 		}
 	}
 	
-	
 	return result;
+}
+
+function getVariableGroup(varIndex) {
+	
+	var label = '';
+	for (var i = 0; i < variableGroups.length; i++) {
+	
+		if ($.inArray(varIndex, variableGroups[i]) > -1) {
+			label = variableGroupNames[i];
+			break
+		}
+	}
+	
+	return label;
 }
 
 function setupMapVariables(plotIndex) {
