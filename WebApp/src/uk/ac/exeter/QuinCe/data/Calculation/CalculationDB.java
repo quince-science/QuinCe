@@ -587,8 +587,8 @@ public abstract class CalculationDB {
      * @throws DatabaseException If a database error occurs
      * @throws MissingParamException If any required parameters are missing
 	 */
-	public String getJsonData(DataSource dataSource, DataSet dataset, List<String> fields) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
-		return getJsonData(dataSource, dataset, fields, null, false);
+	public String getJsonData(DataSource dataSource, DataSet dataset, List<String> fields, String sortField) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
+		return getJsonData(dataSource, dataset, fields, sortField, null, false);
 	}
 
 	/**
@@ -596,6 +596,7 @@ public abstract class CalculationDB {
 	 * @param dataSource A data source
 	 * @param dataset The dataset
 	 * @param fields The fields to retrieve
+	 * @param sortField The field used to sort the data. If {@code null}, default ordering will be used
 	 * @param bounds The geographical limits of the query
 	 * @param limitPoints Indicates whether the number of points returned should be limited
 	 * @return The JSON array
@@ -604,7 +605,7 @@ public abstract class CalculationDB {
      * @throws DatabaseException If a database error occurs
      * @throws MissingParamException If any required parameters are missing
 	 */
-	public String getJsonData(DataSource dataSource, DataSet dataset, List<String> fields, List<Double> bounds, boolean limitPoints) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
+	public String getJsonData(DataSource dataSource, DataSet dataset, List<String> fields, String sortField, List<Double> bounds, boolean limitPoints) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
 		
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(dataset, "dataset");
@@ -657,6 +658,18 @@ public abstract class CalculationDB {
 				sql.append(bounds.get(1));
 				sql.append(" AND d.latitude <= ");
 				sql.append(bounds.get(3));
+			}
+			
+			if (null != sortField) {
+				sql.append(" ORDER BY ");
+				if (datasetFields.contains(sortField)) {
+					sql.append('d');
+				} else {
+					sql.append('c');
+				}
+				
+				sql.append('.');
+				sql.append(sortField);
 			}
 			
 			stmt = conn.prepareStatement(sql.toString());
