@@ -10,8 +10,8 @@
 #
 # The script also updates the local file-store from the
 # production server.
-# 
-# Usage: 
+#
+# Usage:
 # scripts/db_restore_from_prod.sh [-v] [username]
 # v - Verbose output
 # username - username used to log in to the poseidon server
@@ -77,7 +77,7 @@ fi
 # Restore database
 echo "drop database $database"|mysql -u$username -p$password
 echo "create database $database character set utf8" |mysql -u$username -p$password
-zcat $file | \
+zcat < $file | \
   mysql -u$username -p$password $database --default-character-set utf8
 
 # Delete tempfile, don't display errors
