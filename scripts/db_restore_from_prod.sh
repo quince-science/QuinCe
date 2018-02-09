@@ -10,6 +10,11 @@
 #
 # The script also updates the local file-store from the
 # production server.
+# 
+# Usage: 
+# scripts/db_restore_from_prod.sh [-v] [username]
+# v - Verbose output
+# username - username used to log in to the poseidon server
 #
 ############################################################
 
@@ -31,6 +36,13 @@ while getopts "v" opt; do
   esac
 done
 
+ssh_user=${@:$OPTIND:1}
+poseidon=poseidon.uib.no
+if [ -n "$ssh_user" ]
+then
+  poseidon=$ssh_user'@'$poseidon
+fi
+
 # DB backup file on test server opdated daily from prod
 file=/data/shared/quince_backups/quince.sql.gz
 
@@ -38,7 +50,7 @@ if [ ! -f $file ];
 then
   # If not on the test server, try fetchind db backup directly from prodserver
   tmpfile=$(mktemp /tmp/db_restore_from_prod.sh.XXXX)
-  remotefile=poseidon.uib.no:/var/backup/shared/backups/quince.sql.gz
+  remotefile=$poseidon:/var/backup/shared/backups/quince.sql.gz
 
   if [ $verbose -eq 1 ]
   then
@@ -79,7 +91,7 @@ file=/data/shared/quince_backups/QUINCE_FILE_STORE/QUINCE_FILE_STORE/.
 if [ ! -d $file ]
 then
   # Fetch filestore directly from poseidon
-  file=poseidon.uib.no:/var/backup/quince/QUINCE_FILE_STORE/.
+  file=$poseidon:/var/backup/quince/QUINCE_FILE_STORE/.
 fi
 
 # Just make sure the filestore is not pointing directly to the folder files are
