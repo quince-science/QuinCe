@@ -75,9 +75,9 @@ do
       printf "    $f\n"
     fi
 
-    sed -i "s/$key/$value/" "$f"
+    sed -i.bak "s/$key/$value/" "$f"
+    rm $f.bak
   done <<< "$files"
 done <<< "$setup"
 
 rm NB-quince_is_not_setup 2>/dev/null
-

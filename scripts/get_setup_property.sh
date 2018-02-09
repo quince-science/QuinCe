@@ -30,7 +30,7 @@ then
 
 elif [ $1 = 'database' ]
 then
-  propertyvalue=$(grep -m 1 -o 'jdbc\:mysql\:\/\/localhost:3306\/[a-zA-Z0-9_]\+' WebApp/WebContent/META-INF/context.xml|sed -e 's/^.*\/\([^\/]\+\)$/\1/')
+  propertyvalue=$(grep -m 1 -o 'jdbc\:mysql\:\/\/localhost:3306\/[a-zA-Z0-9_]\+' WebApp/WebContent/META-INF/context.xml|sed -e 's:.*/\([^/]*\)$:\1:')
 elif [ $1 = 'filestore' ]
 then
   propertyvalue=$(sed -n 's/^filestore *= *\(.*\)$/\1/p' configuration/quince.properties)
