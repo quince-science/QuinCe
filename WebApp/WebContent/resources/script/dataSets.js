@@ -5,7 +5,10 @@ TIMELINE_OPTIONS = {
 	stack: false,
 	showCurrentTime: false,
 	selectable: false,
-	editable: false
+	editable: false,
+	moment: function(date) {
+	    return vis.moment(date).utc();
+	}
 };
 
 var newDataSetItem = {
@@ -22,8 +25,17 @@ function processNewDataSet(eventType) {
 	// Remove the existing entry
 	timeline.itemsData.getDataSet().remove(newDataSetItem);
 	
-	newDataSetItem['start'] = PF('pStartDate').getDate();
-	newDataSetItem['end'] = PF('pEndDate').getDate();
+	if (null == PF('pStartDate').getDate()) {
+		newDataSetItem['start'] = null;
+	} else {
+		newDataSetItem['start'] = new Date(PF('pStartDate').getDate().toString().substring(0,24) + 'Z');
+	}
+
+	if (null == PF('pEndDate').getDate()) {
+		newDataSetItem['end'] = null;
+	} else {
+		newDataSetItem['end'] = new Date(PF('pEndDate').getDate().toString().substring(0,24) + 'Z');
+	}
 
 	if (validateNewDataSet()) {
 		newDataSetItem['className'] = 'goodNewDataSet';
