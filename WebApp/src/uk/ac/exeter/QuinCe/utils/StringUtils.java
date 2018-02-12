@@ -19,8 +19,15 @@ import uk.ac.exeter.QCRoutines.messages.Flag;
  * @author Steve Jones
  *
  */
-public class StringUtils {
+public final class StringUtils {
 
+	/**
+	 * Private constructor to prevent instantiation
+	 */
+	private StringUtils() {
+		// Do nothing
+	}
+	
 	/**
 	 * Converts a list of values to a single string,
 	 * with a semi-colon delimiter.
