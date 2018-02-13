@@ -1,0 +1,65 @@
+# Column configurations for QuinCe QC Records
+
+# The format of this file is CSV, with columns as follows:
+#
+# 1. Column Name
+# 2. Data Type: One of S (String), N (Numeric), B (Boolean). Times should be set as Strings and parsed by the code.
+# 3. Required: True if a value is required, false otherwise. If a Boolean is empty it is assumed false.
+# 4. Flag Cascade: Flags placed on a column can cascade to other columns. (See below.)
+
+# Flag Cascading
+#
+# When a flag is set on a column, it can cascade to other columns. The specification is as follows:
+#
+# <Target column name>|<Flag to set on Questionable>|<Flag to set on Bad>
+#
+# Multiple columns can be specified separated by semi-colons.
+#
+#
+# An example:
+#
+# Salinity,N,Y,Mean Salinity|3|4;fCO2|2|3
+#
+# This is the entry for a Salinity column. If its flag is set to Questionable, then the Mean Salinity column
+# is also assigned a Questionable flag, while the fCO2 column is assigned a Good flag.
+# For a Bad Salinity, Mean Salinity is set to Bad, and fCO2 is set to Questionable.
+#
+# Note that these cascades will only set flags if they are 'worse' than the flag that is already set, i.e.
+# Good -> Questionable -> Bad
+#
+# A Questionable flag cascading to a column that already has a Bad flag will have no effect.
+
+
+#Name,Type,Required,FlagCascade
+CO2 Type,N,Y,
+Date/Time,S,Y,
+Longitude,N,Y,
+Latitude,N,Y,
+Intake Temp 1,N,Y,Mean Intake Temp|3|4
+Intake Temp 2,N,N,Mean Intake Temp|3|4
+Intake Temp 3,N,N,Mean Intake Temp|3|4
+Salinity 1,N,Y,Mean Salinity|3|4
+Salinity 2,N,N,Mean Salinity|3|4
+Salinity 3,N,N,Mean Salinity|3|4
+Equilibrator Temperature 1,N,Y,Mean Equilibrator Temperature|3|4
+Equilibrator Temperature 2,N,N,Mean Equilibrator Temperature|3|4
+Equilibrator Temperature 3,N,N,Mean Equilibrator Temperature|3|4
+Equilibrator Pressure 1,N,Y,Mean Equilibrator Pressure|3|4
+Equilibrator Pressure 2,N,N,Mean Equilibrator Pressure|3|4
+Equilibrator Pressure 3,N,N,Mean Equilibrator Pressure|3|4
+xH2O,N,Y,True xH2O|3|4
+Atmospheric Pressure,N,Y,
+CO2,N,Y,
+Mean Intake Temp,N,Y,
+Mean Salinity,N,Y,
+Mean Equilibrator Temperature,N,Y,
+Mean Equilibrator Pressure,N,Y,
+True xH2O,N,Y,
+Dried CO2,N,Y,
+Calibrated CO2,N,Y,
+pCO2 TE Dry,N,Y,
+pH2O,N,Y,
+pCO2 TE Wet,N,Y,
+fCO2 TE,N,Y,
+fCO2,N,Y,
+
