@@ -767,7 +767,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 			String runTypeValue = extractFields(line).get(runTypeColumn);
 			if (null != runTypeValue && runTypeValue.length() > 0) {
 				if (!runTypes.containsKey(runTypeValue)) {
-					throw new FileDefinitionException("Unrecognised run type '" + runTypeValue + "'");
+					throw new FileDefinitionException("Unrecognised run type '"
+						+ runTypeValue + "'. Please register new run type "
+						+ runTypeValue + " on instrument to load this file.");
 				} else {
 					result = runTypeValue;
 				}
