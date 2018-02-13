@@ -66,12 +66,13 @@ dependencies {
 	compile 'org.apache.myfaces.core:myfaces-impl:2.2.8'
 	compile 'org.apache.myfaces.core:myfaces-bundle:2.2.8'
 
-  // gretty plugin handling the tomcat server
-  gretty 'org.apache.tomcat:tomcat-dbcp:8.0.1'
-  gretty 'org.apache.tomcat:tomcat:8.0.1'
+	// gretty plugin handling the tomcat server
+	gretty 'org.apache.tomcat:tomcat-dbcp:8.0.1'
+	gretty 'org.apache.tomcat:tomcat:8.0.1'
 
 	// Use JUnit test framework
 	testImplementation 'junit:junit:4.12'
+	compile 'org.mockito:mockito-core:2.15.0'
 }
 
 sourceSets {
@@ -85,6 +86,9 @@ sourceSets {
 
     }
     test {
+    		resources {
+    			srcDir "WebApp/junit/resources"
+    		}
         java {
             srcDirs = ['WebApp/junit']
         }

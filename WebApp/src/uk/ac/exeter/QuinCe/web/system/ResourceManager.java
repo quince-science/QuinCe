@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web.system;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -74,15 +75,14 @@ public class ResourceManager implements ServletContextListener {
         ServletContext servletContext = event.getServletContext();
         String databaseName = servletContext.getInitParameter("database.name");
         try {
-        	dbDataSource = (DataSource) new InitialContext().lookup(databaseName);
+        		dbDataSource = (DataSource) createInitialContext().lookup(databaseName);
         } catch (NamingException e) {
             throw new RuntimeException("Config failed: datasource not found", e);
         }
         
         try {
             String filePath = (String) servletContext.getInitParameter("configuration.path");
-            configuration = new Properties();
-            configuration.load(new FileInputStream(new File(filePath)));
+            configuration = loadConfiguration(filePath);
         } catch (IOException e) {
             throw new RuntimeException("Config failed: could not read config file", e);
         }
@@ -141,6 +141,10 @@ public class ResourceManager implements ServletContextListener {
        	instance = this;
 	}
 
+	protected InitialContext createInitialContext() throws NamingException {
+		return new InitialContext();
+	}
+
     @Override
     public void contextDestroyed(ServletContextEvent event) {
         // NOOP.
@@ -179,6 +183,18 @@ public class ResourceManager implements ServletContextListener {
     	return runTypeCategoryConfiguration;
     }
 
+    /**
+     * Load the application configuration
+     * @param filePath The path to the configuration file
+     * @return The configuration Properties object
+     * @throws FileNotFoundException If the file does not exist
+     * @throws IOException If the file cannot be read
+     */
+    protected Properties loadConfiguration(String filePath) throws FileNotFoundException, IOException {
+    		Properties result = new Properties();
+        result.load(new FileInputStream(new File(filePath)));
+        return result;
+    }
     
     /**
      * Retrieve the singleton instance of the Resource Manager
