@@ -1,5 +1,6 @@
 package junit.uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
@@ -35,6 +36,18 @@ public class LocalTestResourceManager extends ResourceManager {
 	 */
 	protected static final String CONFIG_PATH = "DUMMY_PROPERTIES_PATH";
 	
+	public LocalTestResourceManager() {
+		// Create the file store, and request that it
+		// be deleted on shutdown
+		File fileStore = new File(getFileStorePath());
+		if (fileStore.exists()) {
+			fileStore.delete();
+		}
+		
+		fileStore.mkdirs();
+		fileStore.deleteOnExit();
+	}
+	
 	/**
 	 * Create a mock InitialContext that returns a mock DataSource
 	 */
@@ -63,7 +76,7 @@ public class LocalTestResourceManager extends ResourceManager {
 		config.setProperty("email.port", "25");
 		config.setProperty("email.fromname", "QuinCe");
 		config.setProperty("email.fromaddress", "quince@uib.no");
-		config.setProperty("filestore", "RESOURCES/FILE_STORE");
+		config.setProperty("filestore", getFileStorePath());
 		config.setProperty("extract_routines.configfile", CONFIG_PATH_ROOT + "extract_routines_config.csv");
 		config.setProperty("qc_routines.configfile", CONFIG_PATH_ROOT + "qc_routines_config.csv");
 		config.setProperty("columns.configfile", CONFIG_PATH_ROOT + "eqpco2_column_config.csv");
@@ -73,5 +86,13 @@ public class LocalTestResourceManager extends ResourceManager {
 		config.setProperty("map.max_points", "1000");
 		
 		return config;
+	}
+	
+	/**
+	 * Build the path to the file store location used for testing
+	 * @return The file store path
+	 */
+	private String getFileStorePath() {
+		return System.getProperty("java.io.tmpdir") + "/FILE_STORE";
 	}
 }
