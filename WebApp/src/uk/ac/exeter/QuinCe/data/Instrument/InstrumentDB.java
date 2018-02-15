@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunType;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -215,12 +216,15 @@ public class InstrumentDB {
 						// Run Types
 						if (null != file.getRunTypes()) {
 							for (Map.Entry<String, RunTypeCategory> entry : file.getRunTypes().entrySet()) {
-								PreparedStatement runTypeStatement = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
-								runTypeStatement.setLong(1, fileId);
-								runTypeStatement.setString(2, entry.getKey());
-								runTypeStatement.setString(3, entry.getValue().getCode());
-								
-								runTypeStatement.execute();
+								RunType runType = new RunType(
+										entry.getKey(),
+										entry.getValue().getCode());
+								PreparedStatement runTypeStatement =
+										storeFileRunType(
+												conn,
+												fileId,
+												runType
+										);
 								subStatements.add(runTypeStatement);
 							}
 						}
@@ -955,5 +959,18 @@ public class InstrumentDB {
 		}
 		
 		
+	}
+
+	public static PreparedStatement storeFileRunType(
+			Connection conn,
+			long fileId,
+			RunType runType) throws SQLException {
+		PreparedStatement runTypeStatement = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
+		runTypeStatement.setLong(1, fileId);
+		runTypeStatement.setString(2, runType.getRunTypeName());
+		runTypeStatement.setString(3, runType.getRunTypeCategoryCode());
+
+		runTypeStatement.execute();
+		return runTypeStatement;
 	}
 }

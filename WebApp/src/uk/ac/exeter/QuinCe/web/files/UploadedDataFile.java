@@ -134,6 +134,13 @@ public class UploadedDataFile {
 		return messageClass;
 	}
 
+	public String getMissingRunTypeClass() {
+		if (null != dataFile && dataFile.getMissingRunTypes().size() > 0) {
+			return "show";
+		}
+		return "";
+	}
+
 	/**
 	 * @param summary
 	 * @param severityError

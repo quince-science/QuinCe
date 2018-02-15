@@ -1,19 +1,25 @@
 package uk.ac.exeter.QuinCe.web.files;
 
+
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.FileExistsException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunType;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
@@ -60,7 +66,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
 	}
 
 	/**
-	 * Store selected files. This moves the file(s) to the file store, and updates the database with file 
+	 * Store selected files. This moves the file(s) to the file store, and updates the database with file
 	 * info.
 	 * @throws MissingParamException
 	 * @throws FileExistsException
@@ -138,4 +144,28 @@ public class MultipleFileUploadBean extends FileUploadBean {
 	public String getStoreFileButtonClass() {
 		return dataFiles.size()>0 ? "" : "hidden";
 	}
+
+	public void runTypesUpdated() {
+		Map<String,String> params = FacesContext
+				.getCurrentInstance()
+				.getExternalContext()
+				.getRequestParameterMap();
+
+		int fileIndex = Integer.parseInt(params.get("fileIndex"));
+		DataFile dataFile = dataFiles.get(fileIndex).getDataFile();
+		for(RunType runType: dataFile.getMissingRunTypes()) {
+			if (runType.getRunTypeCategoryCode() != null
+					&& !"".equals(runType.getRunTypeCategoryCode())) {
+				try {
+					InstrumentDB.storeFileRunType(
+							getDataSource().getConnection(),
+							dataFile.getFileDefinition().getDatabaseId(),
+							runType);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
 }

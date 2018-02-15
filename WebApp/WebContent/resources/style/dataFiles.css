@@ -42,3 +42,6 @@
 #messageText {
 	padding: 5px 10px;
 }
+.runTypeFile>fieldset {
+	margin: .5em 0;
+}
