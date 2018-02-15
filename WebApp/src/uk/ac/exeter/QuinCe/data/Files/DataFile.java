@@ -1,15 +1,21 @@
 package uk.ac.exeter.QuinCe.data.Files;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
+import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunType;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
@@ -73,6 +79,18 @@ public class DataFile {
 	 * The location of the file store
 	 */
 	private String fileStore;
+
+	/**
+	 * Run types in this file not defined in the file definition
+	 */
+	private Set<RunType> missingRunTypes = new HashSet<>();
+
+
+	public List<RunType> getMissingRunTypes() {
+		List<RunType> list = new ArrayList<>(missingRunTypes);
+		Collections.sort(list);
+		return list;
+	}
 
 	/**
 	 * Create a DataFile with the specified definition and contents
@@ -268,6 +286,9 @@ public class DataFile {
 						}
 					} catch (FileDefinitionException e) {
 						addMessage(lineNumber, e.getMessage());
+						if (e instanceof MissingRunTypeException) {
+							missingRunTypes.add(((MissingRunTypeException)e).getRunType());
+						}
 					}
 				}
 				
