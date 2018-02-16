@@ -26,6 +26,7 @@
 			var columnHeadings = #{sessionScope[beanName].tableHeadings};
 			var variableGroups = #{sessionScope[beanName].variableGroups};
 			var variableGroupNames = #{sessionScope[beanName].variableGroupNames};
+			var variableCount = #{sessionScope[beanName].variableCount};
 		</script>
 	</h:head>
 	<h:body class="fullPage">
@@ -98,8 +99,12 @@
 								</div>
 								<div class="variableControls">
 									<p:selectBooleanCheckbox widgetVar="mapVar-#{varGroup.variables[0].id}" id="mapVarCheckbox" onchange="updateMapCheckboxes(#{varGroup.variables[0].id})"/>
-									<p:selectBooleanButton widgetVar="xAxis-#{varGroup.variables[0].id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateXAxisButtons(#{varGroup.variables[0].id})"/>
-									<p:selectBooleanButton widgetVar="yAxis-#{varGroup.variables[0].id}" onLable="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateYAxisButtons(#{varGroup.variables[0].id})"/>
+									<ui:fragment rendered="#{varGroup.variables[0].canUseOnXAxis}">
+										<p:selectBooleanButton widgetVar="xAxis-#{varGroup.variables[0].id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateXAxisButtons(#{varGroup.variables[0].id})"/>
+									</ui:fragment>
+									<ui:fragment rendered="#{varGroup.variables[0].canUseOnYAxis}">
+										<p:selectBooleanButton widgetVar="yAxis-#{varGroup.variables[0].id}" onLable="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateYAxisButtons(#{varGroup.variables[0].id})"/>
+									</ui:fragment>
 								</div>
 							</div>
 						</ui:fragment>
@@ -115,8 +120,12 @@
 										</div>
 										<div class="variableControls">
 											<p:selectBooleanCheckbox widgetVar="mapVar-#{variable.id}" id="mapVarCheckbox" onchange="updateMapCheckboxes(#{variable.id})"/>
-											<p:selectBooleanButton widgetVar="xAxis-#{variable.id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateXAxisButtons(#{variable.id})"/>
-											<p:selectBooleanButton widgetVar="yAxis-#{variable.id}" onLable="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateYAxisButtons(#{variable.id})"/>
+											<ui:fragment rendered="#{variable.canUseOnXAxis}">
+												<p:selectBooleanButton widgetVar="xAxis-#{variable.id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateXAxisButtons(#{variable.id})"/>
+											</ui:fragment>
+											<ui:fragment rendered="#{variable.canUseOnYAxis}">
+												<p:selectBooleanButton widgetVar="yAxis-#{variable.id}" onLable="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateYAxisButtons(#{variable.id})"/>
+											</ui:fragment>
 										</div>
 									</div>
 								</ui:repeat>
