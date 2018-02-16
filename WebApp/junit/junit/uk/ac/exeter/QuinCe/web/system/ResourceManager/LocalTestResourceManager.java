@@ -22,6 +22,46 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class LocalTestResourceManager extends ResourceManager {
 
 	/**
+	 * No failure file
+	 */
+	protected static final int FAILURE_FILE_NONE = 0;
+	
+	/**
+	 * Extraction QC Routines file failure
+	 */
+	protected static final int FAILURE_FILE_EXTRACT_ROUTINES_CONFIG = 1;
+	
+	/**
+	 * Main QC Routines file failure
+	 */
+	protected static final int FAILURE_FILE_QC_ROUTINES_CONFIG = 2;
+	
+	/**
+	 * Column config file failure
+	 */
+	protected static final int FAILURE_FILE_COLUMNS_CONFIG = 3;
+	
+	/**
+	 * Export config file failure
+	 */
+	protected static final int FAILURE_FILE_EXPORT_CONFIG = 4;
+	
+	/**
+	 * Sensors config file failure
+	 */
+	protected static final int FAILURE_FILE_SENSOR_CONFIG = 5;
+	
+	/**
+	 * Run types file failure
+	 */
+	protected static final int FAILURE_FILE_RUN_TYPES = 6;
+	
+	/**
+	 * The configuration file on which to fail
+	 */
+	private int failureFile = FAILURE_FILE_NONE;
+	
+	/**
 	 * The dummy test database name
 	 */
 	protected static final String DATABASE_NAME = "test.database";
@@ -37,6 +77,15 @@ public class LocalTestResourceManager extends ResourceManager {
 	protected static final String CONFIG_PATH = "DUMMY_PROPERTIES_PATH";
 	
 	public LocalTestResourceManager() {
+		initFileStore();
+	}
+	
+	public LocalTestResourceManager(int failureFile) {
+		initFileStore();
+		this.failureFile = failureFile;
+	}
+	
+	private void initFileStore() {
 		// Create the file store, and request that it
 		// be deleted on shutdown
 		File fileStore = new File(getFileStorePath());
@@ -84,6 +133,39 @@ public class LocalTestResourceManager extends ResourceManager {
 		config.setProperty("sensors.configfile", CONFIG_PATH_ROOT + "sensor_config.csv");
 		config.setProperty("runtypes.configfile", CONFIG_PATH_ROOT + "run_types_config.csv");
 		config.setProperty("map.max_points", "1000");
+		
+		String failureFileId = null;
+		
+		switch (failureFile) {
+		case FAILURE_FILE_EXTRACT_ROUTINES_CONFIG: {
+			failureFileId = "extract_routines.configfile";
+			break;
+		}
+		case FAILURE_FILE_QC_ROUTINES_CONFIG: {
+			failureFileId = "qc_routines.configfile";
+			break;
+		}
+		case FAILURE_FILE_COLUMNS_CONFIG: {
+			failureFileId = "columns.configfile";
+			break;
+		}
+		case FAILURE_FILE_EXPORT_CONFIG: {
+			failureFileId = "export.configfile";
+			break;
+		}
+		case FAILURE_FILE_SENSOR_CONFIG: {
+			failureFileId = "sensors.configfile";
+			break;
+		}
+		case FAILURE_FILE_RUN_TYPES: {
+			failureFileId = "runtypes.configfile";
+			break;
+		}
+		}
+		
+		if (null != failureFileId) {
+			config.setProperty(failureFileId, "missing_file.csv");
+		}
 		
 		return config;
 	}
