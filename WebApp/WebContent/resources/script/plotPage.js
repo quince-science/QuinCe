@@ -713,15 +713,20 @@ function updateYAxisButtons(variable) {
 			var widget = PrimeFaces.widgets['yAxis-' + index];
 			if (null == widget) {
 				finished = true;
-			} else if (index == variable) {
-				widget.check();
-			} else if (!inSameGroup(index, variable)) {
+			} else if (index != variable && !inSameGroup(index, variable)) {
 				widget.uncheck();
 			}
-
+			
 			index++;
 		}
 
+		// If no Y axis is selected, disabled the OK button
+		if ($('[id$=yAxisButton_input]:checked').length == 0) {
+			PF('variableOk').disable();
+		} else {
+			PF('variableOk').enable();
+		}
+		
 		variablesUpdating = false;
 	}
 }
