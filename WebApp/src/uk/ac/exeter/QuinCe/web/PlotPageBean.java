@@ -577,6 +577,14 @@ public abstract class PlotPageBean extends BaseManagedBean {
 	}
 	
 	/**
+	 * Get the total number of available variables
+	 * @return The number of variables
+	 */
+	public int getVariableCount() {
+		return variables.getVariableCount();
+	}
+	
+	/**
 	 * Get the bounds of the data as a JSON string
 	 * @return The data bounds
 	 */

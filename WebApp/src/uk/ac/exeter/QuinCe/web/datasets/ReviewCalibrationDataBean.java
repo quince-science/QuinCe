@@ -194,7 +194,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 
 	@Override
 	protected void buildVariableList(VariableList variables) throws Exception {
-		variables.addVariable("Date/Time", new Variable(Variable.TYPE_BASE, "Date/Time", "date"));
+		variables.addVariable("Date/Time", new Variable(Variable.TYPE_BASE, "Date/Time", "date", true, false));
 		CalibrationDataDB.populateVariableList(getDataSource(), getDataset(), variables);
 	}
 

@@ -189,4 +189,18 @@ public class VariableList extends ArrayList<VariableGroup> {
 		
 		return json.toString();
 	}
+	
+	/**
+	 * Get the total number of variables in the list
+	 * @return The number of variables
+	 */
+	public int getVariableCount() {
+		int count = 0;
+		
+		for (VariableGroup group : this) {
+			count += group.getSize();
+		}
+		
+		return count;
+	}
 }
