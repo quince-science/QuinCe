@@ -47,6 +47,16 @@ public class Variable {
 	private String fieldName;
 	
 	/**
+	 * Indicates whether or not this variable can be used on the X Axis of plots
+	 */
+	private boolean canUseOnXAxis = true;
+	
+	/**
+	 * Indicates whether or not this variable can be used on the Y Axis of plots
+	 */
+	private boolean canUseOnYAxis = true;
+	
+	/**
 	 * Constructor for a top-level tree entry
 	 * @param type The entry type
 	 * @param label The label
@@ -56,6 +66,22 @@ public class Variable {
 		this.type = type;
 		this.label = label;
 		this.fieldName = fieldName;
+	}
+	
+	/**
+	 * Constructor for a top-level tree entry
+	 * @param type The entry type
+	 * @param label The label
+	 * @param fieldName The database field name
+	 * @param canUseOnXAxis Indicates whether or not this variable can be used on the X Axis of plots
+	 * @param canUseOnYAxis Indicates whether or not this variable can be used on the Y Axis of plots
+	 */
+	public Variable(int type, String label, String fieldName, boolean canUseOnXAxis, boolean canUseOnYAxis) {
+		this.type = type;
+		this.label = label;
+		this.fieldName = fieldName;
+		this.canUseOnXAxis = canUseOnXAxis;
+		this.canUseOnYAxis = canUseOnYAxis;
 	}
 	
 	/**
@@ -112,5 +138,21 @@ public class Variable {
 		}
 		
 		return ids;
+	}
+	
+	/**
+	 * Determine whether or not this variable can be shown on the X axis of plots
+	 * @return {@code true} if the variable can be shown on the X axis; {@code false} if it cannot
+	 */
+	public boolean getCanUseOnXAxis() {
+		return canUseOnXAxis;
+	}
+	
+	/**
+	 * Determine whether or not this variable can be shown on the Y axis of plots
+	 * @return {@code true} if the variable can be shown on the Y axis; {@code false} if it cannot
+	 */
+	public boolean getCanUseOnYAxis() {
+		return canUseOnYAxis;
 	}
 }

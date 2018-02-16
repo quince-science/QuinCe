@@ -658,20 +658,15 @@ function updateXAxisButtons(variable) {
 	if (!variablesUpdating) {
 		variablesUpdating = true;
 		
-		var finished = false;
-		var index = 0;
-		
-		while (!finished) {
-			var widget = PrimeFaces.widgets['xAxis-' + index];
-			if (null == widget) {
-				finished = true;
-			} else if (index == variable) {
-				widget.check();
-			} else {
-				widget.uncheck();
+		for (var i = 0; i < variableCount; i++) {
+			var widget = PrimeFaces.widgets['xAxis-' + i];
+			if (null != widget) {
+				if (i == variable) {
+					widget.check();
+				} else {
+					widget.uncheck();
+				}
 			}
-
-			index++;
 		}
 
 		variablesUpdating = false;
@@ -682,22 +677,18 @@ function populateYAxisButtons(variables) {
 	if (!variablesUpdating) {
 		variablesUpdating = true;
 		
-		var finished = false;
-		var index = 0;
-		
-		while (!finished) {
-			var widget = PrimeFaces.widgets['yAxis-' + index];
-			if (null == widget) {
-				finished = true;
-			} else if ($.inArray(index, variables) > -1) {
-				widget.check();
-			} else {
-				widget.uncheck();
+
+		for (var i = 0; i < variableCount; i++) {
+			var widget = PrimeFaces.widgets['yAxis-' + i];
+			if (null != widget) {
+				if ($.inArray(i, variables) > -1) {
+					widget.check();
+				} else {
+					widget.uncheck();
+				}
 			}
-
-			index++;
 		}
-
+		
 		variablesUpdating = false;
 	}
 }
@@ -848,21 +839,14 @@ function getSelectedXAxis() {
 	
 	var result = -1;
 	
-	var id = 0;
-	var finished = false;
-	
-	while (!finished) {
-		var widget = PrimeFaces.widgets['xAxis-' + id];
-		if (null == widget) {
-			finished = true;
-		} else {
+	for (var i = 0; i < variableCount; i++) {
+		var widget = PrimeFaces.widgets['xAxis-' + i];
+		if (null != widget) {
 			if (widget.input.prop('checked')) {
-				result = id;
-				finished = true;
+				result = i;
+				break;
 			}
 		}
-		
-		id++;
 	}
 	
 	return result;
@@ -870,26 +854,20 @@ function getSelectedXAxis() {
 
 function getSelectedYAxis() {
 	
-	var id = 0;
-	var finished = false;
-
 	var result = '[';
-	while (!finished) {
-		var widget = PrimeFaces.widgets['yAxis-' + id];
-		if (null == widget) {
-			finished = true;
-		} else {
-			if (widget.input.prop('checked')) {
-				result += id;
-				result += ',';
-			}
+
+	for (var i = 0; i < variableCount; i++) {
+		var widget = PrimeFaces.widgets['yAxis-' + i];
+		if (null != widget && widget.input.prop('checked')) {
+			result += i;
+			result += ',';
 		}
-		
-		id++;
 	}
-	
+
 	result = result.substring(0, result.length - 1);
 	result += ']';
+
+	console.log(result);
 	
 	return result;
 }
