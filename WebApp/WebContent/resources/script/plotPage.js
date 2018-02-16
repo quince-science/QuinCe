@@ -43,7 +43,7 @@ var BASE_GRAPH_OPTIONS = {
 	}
 };
 
-var VARIABLES_DIALOG_ENTRY_HEIGHT = 30;
+var VARIABLES_DIALOG_ENTRY_HEIGHT = 35;
 
 // Controller for input updates
 var variablesUpdating = false;
@@ -790,17 +790,17 @@ function resizeVariablesDialog() {
 	var varList = $('#variablesList');
 	varList.width(200);
 	
-	var varCount = $('.variable, .varGroupName', varList).length; 
-		
 	var maxHeight = $(window).innerHeight() - 200;
 
 	var varsPerColumn = Math.ceil(maxHeight / VARIABLES_DIALOG_ENTRY_HEIGHT);
 	
-	var columns = Math.ceil(varCount / varsPerColumn);
-	
-	if (columns < 2 && varCount > 5) {
+	var columns = Math.ceil(variableCount / varsPerColumn);
+
+	if (columns == 1 && variableCount < 5) {
+		varsPerColumn = variableCount;
+	} else if (columns < 2 && variableCount > 5) {
 		columns = 2;
-		varsPerColumn = Math.ceil(varCount / 2);
+		varsPerColumn = Math.ceil(variableCount / 2);
 	}
 	
 	varList.height(varsPerColumn * VARIABLES_DIALOG_ENTRY_HEIGHT);
