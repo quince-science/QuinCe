@@ -65,7 +65,7 @@ public class ResourceManagerTest {
 	 */
 	@Test(expected = RuntimeException.class)
 	public void testInitResourceManagerBadExtractConfig() {
-		ResourceManager badResourceManager = new LocalTestResourceManager(LocalTestResourceManager.FAILURE_FILE_EXTRACT_ROUTINES_CONFIG);
+		ResourceManager badResourceManager = new BrokenConfigTestResourceManager(BrokenConfigTestResourceManager.FAILURE_FILE_EXTRACT_ROUTINES_CONFIG);
 		badResourceManager.contextInitialized(servletContextEvent);
 	}
 	
@@ -74,7 +74,7 @@ public class ResourceManagerTest {
 	 */
 	@Test(expected = RuntimeException.class)
 	public void testInitResourceManagerBadQcConfig() {
-		ResourceManager badResourceManager = new LocalTestResourceManager(LocalTestResourceManager.FAILURE_FILE_QC_ROUTINES_CONFIG);
+		ResourceManager badResourceManager = new BrokenConfigTestResourceManager(BrokenConfigTestResourceManager.FAILURE_FILE_QC_ROUTINES_CONFIG);
 		badResourceManager.contextInitialized(servletContextEvent);
 	}
 	
@@ -83,7 +83,7 @@ public class ResourceManagerTest {
 	 */
 	@Test(expected = RuntimeException.class)
 	public void testInitResourceManagerBadColumnConfig() {
-		ResourceManager badResourceManager = new LocalTestResourceManager(LocalTestResourceManager.FAILURE_FILE_COLUMNS_CONFIG);
+		ResourceManager badResourceManager = new BrokenConfigTestResourceManager(BrokenConfigTestResourceManager.FAILURE_FILE_COLUMNS_CONFIG);
 		badResourceManager.contextInitialized(servletContextEvent);
 	}
 	
@@ -92,7 +92,7 @@ public class ResourceManagerTest {
 	 */
 	@Test(expected = RuntimeException.class)
 	public void testInitResourceManagerBadExportConfig() {
-		ResourceManager badResourceManager = new LocalTestResourceManager(LocalTestResourceManager.FAILURE_FILE_EXPORT_CONFIG);
+		ResourceManager badResourceManager = new BrokenConfigTestResourceManager(BrokenConfigTestResourceManager.FAILURE_FILE_EXPORT_CONFIG);
 		badResourceManager.contextInitialized(servletContextEvent);
 	}
 	
@@ -101,7 +101,7 @@ public class ResourceManagerTest {
 	 */
 	@Test(expected = RuntimeException.class)
 	public void testInitResourceManagerBadSensorConfig() {
-		ResourceManager badResourceManager = new LocalTestResourceManager(LocalTestResourceManager.FAILURE_FILE_SENSOR_CONFIG);
+		ResourceManager badResourceManager = new BrokenConfigTestResourceManager(BrokenConfigTestResourceManager.FAILURE_FILE_SENSOR_CONFIG);
 		badResourceManager.contextInitialized(servletContextEvent);
 	}
 	
@@ -110,7 +110,7 @@ public class ResourceManagerTest {
 	 */
 	@Test(expected = RuntimeException.class)
 	public void testInitResourceManagerBadRunTypesConfig() {
-		ResourceManager badResourceManager = new LocalTestResourceManager(LocalTestResourceManager.FAILURE_FILE_RUN_TYPES);
+		ResourceManager badResourceManager = new BrokenConfigTestResourceManager(BrokenConfigTestResourceManager.FAILURE_FILE_RUN_TYPES);
 		badResourceManager.contextInitialized(servletContextEvent);
 	}
 }
