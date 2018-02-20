@@ -92,7 +92,7 @@
 			<p:dialog widgetVar="variableDialog" modal="true" header="Variables" resizable="false">
 				<div id="variablesList">
 					<ui:repeat value="#{sessionScope[beanName].variablesList}" var="varGroup">
-						<ui:fragment rendered="#{varGroup.size eq 1}">
+						<ui:fragment rendered="#{varGroup.size eq 1 and varGroup.variables[0].visible}">
 							<div class="variable singleVariable">
 								<div class="varName">
 									<h:outputText value="#{varGroup.variables[0].label}"/>
@@ -114,20 +114,22 @@
 									<h:outputText value="#{varGroup.name}"/>
 								</div>
 								<ui:repeat value="#{varGroup.variables}" var="variable">
-									<div class="variable">
-										<div class="varName varGroupMember">
-											<h:outputText value="#{variable.label}"/>
+									<ui:fragment rendered="#{variable.visible}">
+										<div class="variable">
+											<div class="varName varGroupMember">
+												<h:outputText value="#{variable.label}"/>
+											</div>
+											<div class="variableControls">
+												<p:selectBooleanCheckbox widgetVar="mapVar-#{variable.id}" id="mapVarCheckbox" onchange="updateMapCheckboxes(#{variable.id})"/>
+												<ui:fragment rendered="#{variable.canUseOnXAxis}">
+													<p:selectBooleanButton widgetVar="xAxis-#{variable.id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateXAxisButtons(#{variable.id})"/>
+												</ui:fragment>
+												<ui:fragment rendered="#{variable.canUseOnYAxis}">
+													<p:selectBooleanButton widgetVar="yAxis-#{variable.id}" onLable="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateYAxisButtons(#{variable.id})"/>
+												</ui:fragment>
+											</div>
 										</div>
-										<div class="variableControls">
-											<p:selectBooleanCheckbox widgetVar="mapVar-#{variable.id}" id="mapVarCheckbox" onchange="updateMapCheckboxes(#{variable.id})"/>
-											<ui:fragment rendered="#{variable.canUseOnXAxis}">
-												<p:selectBooleanButton widgetVar="xAxis-#{variable.id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateXAxisButtons(#{variable.id})"/>
-											</ui:fragment>
-											<ui:fragment rendered="#{variable.canUseOnYAxis}">
-												<p:selectBooleanButton widgetVar="yAxis-#{variable.id}" onLable="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateYAxisButtons(#{variable.id})"/>
-											</ui:fragment>
-										</div>
-									</div>
+									</ui:fragment>
 								</ui:repeat>
 							</div>
 						</ui:fragment>
