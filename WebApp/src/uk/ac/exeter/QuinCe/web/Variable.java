@@ -57,6 +57,12 @@ public class Variable {
 	private boolean canUseOnYAxis = true;
 	
 	/**
+	 * Indicates whether or not this variable will be visible in the selection
+	 * dialog. This has limited uses at this time, so use with care!
+	 */
+	private boolean visible = true;
+	
+	/**
 	 * Constructor for a top-level tree entry
 	 * @param type The entry type
 	 * @param label The label
@@ -76,12 +82,13 @@ public class Variable {
 	 * @param canUseOnXAxis Indicates whether or not this variable can be used on the X Axis of plots
 	 * @param canUseOnYAxis Indicates whether or not this variable can be used on the Y Axis of plots
 	 */
-	public Variable(int type, String label, String fieldName, boolean canUseOnXAxis, boolean canUseOnYAxis) {
+	public Variable(int type, String label, String fieldName, boolean canUseOnXAxis, boolean canUseOnYAxis, boolean visible) {
 		this.type = type;
 		this.label = label;
 		this.fieldName = fieldName;
 		this.canUseOnXAxis = canUseOnXAxis;
 		this.canUseOnYAxis = canUseOnYAxis;
+		this.visible = visible;
 	}
 	
 	/**
@@ -154,5 +161,14 @@ public class Variable {
 	 */
 	public boolean getCanUseOnYAxis() {
 		return canUseOnYAxis;
+	}
+	
+	/**
+	 * Determine whether or not this variable should be visible in the
+	 * selection dialog
+	 * @return {@code true} if the variable is visible; {@code false} if it is not
+	 */
+	public boolean getVisible() {
+		return visible;
 	}
 }
