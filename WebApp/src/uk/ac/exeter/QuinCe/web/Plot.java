@@ -123,7 +123,10 @@ public class Plot {
 	 * @param xAxis the xAxis to set
 	 */
 	public void setXAxis(int xAxis) {
-		this.xAxis = parentBean.getVariablesList().getVariable(xAxis);
+		// A -1 value means no change is required
+		if (-1 != xAxis) {
+			this.xAxis = parentBean.getVariablesList().getVariable(xAxis);
+		}
 	}
 
 	/**
@@ -162,10 +165,13 @@ public class Plot {
 	 * @param yAxis the yAxis to set
 	 */
 	public void setYAxis(String yAxis) {
-		this.yAxis = parentBean.getVariablesList().getVariables(StringUtils.jsonArrayToIntList(yAxis));
+		List<Integer> axisVariables = StringUtils.jsonArrayToIntList(yAxis);
+		if (axisVariables.size() > 0) {
+			this.yAxis = parentBean.getVariablesList().getVariables(axisVariables);
+		}
 	}
-	/**
 	
+	/**
 	 * 
 	 * @param yAxis The yAxis to set
 	 */

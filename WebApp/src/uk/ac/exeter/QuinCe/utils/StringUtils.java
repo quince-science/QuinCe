@@ -109,7 +109,11 @@ public class StringUtils {
 		List<String> result = null;
 		
 		if (null != values) {
-			result = Arrays.asList(values.split(delimiter, 0));
+			if (values.length() == 0) {
+				result = new ArrayList<String>();
+			} else {
+				result = Arrays.asList(values.split(delimiter, 0));
+			} 
 		}
 		
 		return result;
@@ -134,11 +138,10 @@ public class StringUtils {
 		
 		List<Integer> result = null;
 		
-		if (values != null && values.length() > 0) {
-			List<String> stringList = delimitedToList(values, delimiter);
-			result = new ArrayList<Integer>(stringList.size());
+		if (values != null) {
+			result = new ArrayList<Integer>();
 
-			for (String item: stringList) {
+			for (String item : delimitedToList(values, delimiter)) {
 				result.add(Integer.parseInt(item));
 			}
 		}

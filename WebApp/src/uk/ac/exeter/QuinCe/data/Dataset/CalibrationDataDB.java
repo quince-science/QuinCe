@@ -670,7 +670,7 @@ public class CalibrationDataDB {
 	public static void populateVariableList(DataSource dataSource, DataSet dataset, VariableList variables) throws Exception {
 		for (String fieldName : getCalibrationFieldNames()) {
 			for (String runType : InstrumentDB.getRunTypes(dataSource, dataset.getInstrumentId(), "EXT")) {
-				variables.addVariable(fieldName, new Variable(Variable.TYPE_SENSOR, runType, runType, false, true));
+				variables.addVariable(fieldName, new Variable(Variable.TYPE_SENSOR, runType, runType, false, true, true));
 			}
 		}
 	}
