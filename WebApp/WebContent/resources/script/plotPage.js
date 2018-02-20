@@ -827,7 +827,13 @@ function updatePlotInputs(plotIndex) {
 	var mode = getPlotMode(plotIndex);
 
 	if (mode == 'plot') {
-		$('#plotPageForm\\:plot' + plotIndex + 'XAxis').val(getSelectedXAxis());
+		
+		// If no X Axis is selected, keep the current selection
+		var xAxis = getSelectedXAxis();
+		if (-1 != xAxis) {
+			$('#plotPageForm\\:plot' + plotIndex + 'XAxis').val(getSelectedXAxis());
+		}
+		
 		$('#plotPageForm\\:plot' + plotIndex + 'YAxis').val(getSelectedYAxis());
 	} else if (mode == 'map') {
 		$('#plotPageForm\\:map' + plotIndex + 'Variable').val(getSelectedMapVar());
