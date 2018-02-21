@@ -84,9 +84,6 @@ public class DataSetsBean extends BaseManagedBean {
 	public void initialise() {
 		try {
 			initialiseInstruments();
-			if (null == currentFullInstrument && -1 != getCurrentInstrument()) {
-				currentFullInstrument = InstrumentDB.getInstrument(getDataSource(), getCurrentInstrument(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
-			}
 			loadDataSets();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -99,7 +96,7 @@ public class DataSetsBean extends BaseManagedBean {
 	 */
 	public String startNewDataset() {
 		initialise();
-		newDataSet = new DataSet(currentFullInstrument.getDatabaseId());
+		newDataSet = new DataSet(getCurrentInstrument().getDatabaseId());
 		fileDefinitionsJson = null;
 		timelineEntriesJson = null;
 
@@ -135,12 +132,8 @@ public class DataSetsBean extends BaseManagedBean {
 	 * @throws MissingParamException If any internal calls have missing parameters
 	 */
 	private void loadDataSets() throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException, ResourceException {
-		if (null == currentFullInstrument && -1 != getCurrentInstrument()) {
-			currentFullInstrument = InstrumentDB.getInstrument(getDataSource(), getCurrentInstrument(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
-		}
-
-		if (null != currentFullInstrument) {
-			dataSets = DataSetDB.getDataSets(getDataSource(), currentFullInstrument.getDatabaseId());
+		if (null != getCurrentInstrument()) {
+			dataSets = DataSetDB.getDataSets(getDataSource(), getCurrentInstrument().getDatabaseId());
 		} else {
 			dataSets = null;
 		}
@@ -177,13 +170,8 @@ public class DataSetsBean extends BaseManagedBean {
 	 */
 	private void buildTimelineJson() {
 		try {
-			if (null == currentFullInstrument) {
-				currentFullInstrument = InstrumentDB.getInstrument(getDataSource(), getCurrentInstrument(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
-			}
-
 			// Make the list of file definitions
 			Map<String, Integer> definitionIds = new HashMap<String, Integer>();
-			
 			
 			StringBuilder fdJson = new StringBuilder();
 			
@@ -192,8 +180,8 @@ public class DataSetsBean extends BaseManagedBean {
 			// Add a fake definition for the data sets, so they can be seen on the timeline
 			fdJson.append("{\"id\":-1000,\"content\":\"File Type:\",\"order\":-1000},");
 			
-			for (int i = 0; i < currentFullInstrument.getFileDefinitions().size(); i++) {
-				FileDefinition definition = currentFullInstrument.getFileDefinitions().get(i);
+			for (int i = 0; i < getCurrentInstrument().getFileDefinitions().size(); i++) {
+				FileDefinition definition = getCurrentInstrument().getFileDefinitions().get(i);
 				
 				// Store the definition number for use when building the files JSON below
 				definitionIds.put(definition.getFileDescription(), i);
@@ -207,7 +195,7 @@ public class DataSetsBean extends BaseManagedBean {
 				fdJson.append(i);
 				fdJson.append('}');
 				
-				if (i < currentFullInstrument.getFileDefinitions().size() - 1) {
+				if (i < getCurrentInstrument().getFileDefinitions().size() - 1) {
 					fdJson.append(',');
 				}
 			}
@@ -217,7 +205,7 @@ public class DataSetsBean extends BaseManagedBean {
 			fileDefinitionsJson = fdJson.toString();
 
 			// Now the actual files
-			List<DataFile> dataFiles = DataFileDB.getUserFiles(getDataSource(), getAppConfig(), getUser(), currentFullInstrument.getDatabaseId());
+			List<DataFile> dataFiles = DataFileDB.getUserFiles(getDataSource(), getAppConfig(), getUser(), getCurrentInstrument().getDatabaseId());
 
 			StringBuilder entriesJson = new StringBuilder();
 			entriesJson.append('[');

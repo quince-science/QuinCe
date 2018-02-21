@@ -46,14 +46,14 @@ public abstract class BaseManagedBean {
 	public static final String VALIDATION_FAILED_RESULT = "ValidationFailed";
 	
 	/**
+	 * The session attribute where the current full instrument is stored
+	 */
+	private static final String CURRENT_FULL_INSTRUMENT_ATTR = "currentFullInstrument";
+	
+	/**
 	 * The instruments owned by the user
 	 */
 	private List<InstrumentStub> instruments;
-	
-	/**
-	 * The complete record of the current full instrument
-	 */
-	protected Instrument currentFullInstrument = null;
 	
 	/**
 	 * Long date format for displaying dates
@@ -208,8 +208,9 @@ public abstract class BaseManagedBean {
 		try {
 			instruments = InstrumentDB.getInstrumentList(getDataSource(), getUser());
 			
+			
 			boolean userInstrumentExists = false;
-			long currentUserInstrument = getCurrentInstrument();
+			long currentUserInstrument = getUserPrefs().getLastInstrument();
 			if (currentUserInstrument != -1) {
 				for (InstrumentStub instrument : instruments) {
 					if (instrument.getId() == currentUserInstrument) {
@@ -221,15 +222,19 @@ public abstract class BaseManagedBean {
 			
 			if (!userInstrumentExists) {
 				if (instruments.size() > 0) {
-					setCurrentInstrument(instruments.get(0).getId());
+					setCurrentInstrumentId(instruments.get(0).getId());
 				} else {
-					setCurrentInstrument(-1);
+					setCurrentInstrumentId(-1);
 				}
 			}
 			
-			// TODO We don't need to reset the instrument every time -
-			// TODO only if the user switches instrument in the menu
-			currentFullInstrument = null;
+
+			// If the current instrument is now different to the one held in the session,
+			// remove it so it will get reloaded on next access
+			Instrument currentInstrument = (Instrument) getSession().getAttribute(CURRENT_FULL_INSTRUMENT_ATTR);
+			if (null != currentInstrument && currentInstrument.getDatabaseId() != currentUserInstrument) {
+				getSession().removeAttribute(CURRENT_FULL_INSTRUMENT_ATTR);
+			}
 		} catch (Exception e) {
 			// Fail quietly, but print the log
 			e.printStackTrace();
@@ -248,25 +253,53 @@ public abstract class BaseManagedBean {
 		return instruments;
 	}
 	
-	/**
-	 * Get the instrument that the user is currently viewing
-	 * @return The current instrument
-	 */
-	public long getCurrentInstrument() {
-		return getUserPrefs().getLastInstrument();
+	public Instrument getCurrentInstrument() {
+		// Get the current instrument from the session
+		Instrument currentFullInstrument = (Instrument) getSession().getAttribute(CURRENT_FULL_INSTRUMENT_ATTR);
+		
+		try {
+			// If there is nothing in the session, get the instrument from
+			// the user prefs and put it in the session
+			if (null == currentFullInstrument) {
+				long currentInstrumentId = getUserPrefs().getLastInstrument();
+				for (InstrumentStub instrumentStub : instruments) {
+					if (instrumentStub.getId() == currentInstrumentId) {
+						currentFullInstrument = instrumentStub.getFullInstrument();
+						getSession().setAttribute(CURRENT_FULL_INSTRUMENT_ATTR, currentFullInstrument);
+					}
+				}
+
+				// If we still don't have an instrument, then get the first one from the list
+				if (null == currentFullInstrument) {
+					if (instruments.size() == 0) {
+						getUserPrefs().setLastInstrument(-1);
+					} else {
+						InstrumentStub stub = instruments.get(0);
+						currentFullInstrument = stub.getFullInstrument();
+						getSession().setAttribute(CURRENT_FULL_INSTRUMENT_ATTR, currentFullInstrument);
+						getUserPrefs().setLastInstrument(stub.getId());
+					}
+				}
+			}
+		} catch (Exception e) {
+			// Swallow the error, but dump it
+			e.printStackTrace();
+			currentFullInstrument = null;
+		}
+		
+		return currentFullInstrument;
 	}
 	
 	/**
-	 * Get the name of the current instrument
-	 * @return The instrument name
+	 * Get the current instrument
+	 * @return The current instrument
 	 */
-	public String getCurrentInstrumentName() {
-		String result = null;
-		for (InstrumentStub instrument : instruments) {
-			if (instrument.getId() == getCurrentInstrument()) {
-				result = instrument.getName();
-				break;
-			}
+	public long getCurrentInstrumentId() {
+
+		long result = -1;
+		
+		if (null != getCurrentInstrument()) {
+			result = getCurrentInstrument().getDatabaseId();
 		}
 		
 		return result;
@@ -276,10 +309,17 @@ public abstract class BaseManagedBean {
 	 * Set the current instrument
 	 * @param currentInstrument The current instrument
 	 */
-	public void setCurrentInstrument(long currentInstrument) {
-		if (getUserPrefs().getLastInstrument() != currentInstrument) {
-			getUserPrefs().setLastInstrument(currentInstrument);
-			currentFullInstrument = null;
+	public void setCurrentInstrumentId(long currentInstrumentId) {
+		
+		// Only do something if the instrument has actually changed
+		if (getUserPrefs().getLastInstrument() != currentInstrumentId) {
+			
+			// Update the user preferences
+			getUserPrefs().setLastInstrument(currentInstrumentId);
+			
+			// Remove the current instrument from the session;
+			// It will be replaced on next access
+			getSession().removeAttribute(CURRENT_FULL_INSTRUMENT_ATTR);
 		}
 	}
 
