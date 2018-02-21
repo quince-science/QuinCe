@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.web.files;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,12 +14,10 @@ import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.FileExistsException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 import uk.ac.exeter.QuinCe.web.Instrument.newInstrument.FileDefinitionBuilder;
-import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 @ManagedBean(name="fileUpload")
 @ViewScoped
@@ -82,19 +79,10 @@ public class MultipleFileUploadBean extends FileUploadBean {
 	 */
 	public void extractFile(UploadedDataFile file) {
 		try {
-			if (null == currentFullInstrument) {
-				currentFullInstrument = InstrumentDB.getInstrument(
-						getDataSource(),
-						getCurrentInstrument(),
-						ServletUtils.getResourceManager().getSensorsConfiguration(),
-						ServletUtils.getResourceManager().getRunTypeCategoryConfiguration()
-				);
-			}
-
-			FileDefinitionBuilder guessedFileLayout = new FileDefinitionBuilder(currentFullInstrument.getFileDefinitions());
+			FileDefinitionBuilder guessedFileLayout = new FileDefinitionBuilder(getCurrentInstrument().getFileDefinitions());
 			guessedFileLayout.setFileContents(Arrays.asList(file.getLines()));
 			guessedFileLayout.guessFileLayout();
-			FileDefinition fileDefinition = currentFullInstrument.getFileDefinitions()
+			FileDefinition fileDefinition = getCurrentInstrument().getFileDefinitions()
 					.getMatchingFileDefinition(guessedFileLayout).iterator().next();
 			// TODO Handle multiple matched definitions
 

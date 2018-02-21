@@ -16,7 +16,6 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileMessage;
 import uk.ac.exeter.QuinCe.data.Files.FileExistsException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -24,7 +23,6 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 import uk.ac.exeter.QuinCe.web.Instrument.newInstrument.FileDefinitionBuilder;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
-import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Bean for handling raw data files
@@ -85,16 +83,12 @@ public class DataFilesBean extends FileUploadBean {
 		dataFile = null;
 		
 		try {
-			if (null == currentFullInstrument) {
-				currentFullInstrument = InstrumentDB.getInstrument(getDataSource(), getCurrentInstrument(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
-			}
-			
-			FileDefinitionBuilder guessedFileLayout = new FileDefinitionBuilder(currentFullInstrument.getFileDefinitions());
+			FileDefinitionBuilder guessedFileLayout = new FileDefinitionBuilder(getCurrentInstrument().getFileDefinitions());
 			List<String> fileLines = getFileLines();
 			guessedFileLayout.setFileContents(fileLines);
 			guessedFileLayout.guessFileLayout();
 			
-			matchedFileDefinitions = currentFullInstrument.getFileDefinitions().getMatchingFileDefinition(guessedFileLayout);
+			matchedFileDefinitions = getCurrentInstrument().getFileDefinitions().getMatchingFileDefinition(guessedFileLayout);
 			FileDefinition fileDefinition = null;
 			
 			if (matchedFileDefinitions.size() == 0) {
@@ -134,7 +128,7 @@ public class DataFilesBean extends FileUploadBean {
 	 * @throws FileDefinitionException If the file definition does not match the file contents
 	 */
 	public void setFileDefinition(String fileDescription) throws FileDefinitionException {
-		dataFile.setFileDefinition(currentFullInstrument.getFileDefinitions().get(fileDescription));
+		dataFile.setFileDefinition(getCurrentInstrument().getFileDefinitions().get(fileDescription));
 	}
 	
 	/**
@@ -308,12 +302,8 @@ public class DataFilesBean extends FileUploadBean {
 		
 		List<DataFile> result;
 		
-		if (null == currentFullInstrument && -1 != getCurrentInstrument()) {
-			currentFullInstrument = InstrumentDB.getInstrument(getDataSource(), getCurrentInstrument(), ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
-		}
-		
-		if (null != currentFullInstrument) {
-			result = DataFileDB.getUserFiles(getDataSource(), getAppConfig(), getUser(), currentFullInstrument.getDatabaseId());
+		if (null != getCurrentInstrument()) {
+			result = DataFileDB.getUserFiles(getDataSource(), getAppConfig(), getUser(), getCurrentInstrument().getDatabaseId());
 		} else {
 			result = new ArrayList<DataFile>();
 		}
