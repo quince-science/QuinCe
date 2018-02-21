@@ -21,7 +21,7 @@
 			<h:form id="fileListForm" method="post" charset="utf8">
 				<h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
 					<p:outputLabel for="instrument" value="Select Instrument:"/>
-					<p:selectOneMenu id="instrument" value="#{dataFilesBean.currentInstrument}">
+					<p:selectOneMenu id="instrument" value="#{dataFilesBean.currentInstrumentId}">
 						<f:selectItems value="#{dataFilesBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
 						<p:ajax event="change" update="files"/>
 					</p:selectOneMenu>
