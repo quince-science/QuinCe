@@ -10,6 +10,7 @@
 	<ui:define name="localHead">
 		<h:outputScript name="script/dataFiles.js"/>
 		<h:outputStylesheet name="style/dataFiles.css"/>
+		<h:outputStylesheet name="grid/grid.css" library="primefaces" />
 	</ui:define>
 
 	<ui:define name="pageTitle">#{fileUpload.currentInstrument.name} - Upload Data Files</ui:define>
@@ -31,6 +32,7 @@
 					action="#{fileUpload.extractNext()}"
 					process="@this"
 					update="fileList storeFileButton" />
+
 
 					<p:dialog id="msgDialog" widgetVar="msgDialog" header="Errors and messages" minHeight="40" >
 						<p:scrollPanel style="height:200px" mode="native">
@@ -82,7 +84,7 @@
 							</p:commandButton>
 							<p:commandButton
 							icon="ui-icon-plus"
-							styleClass="missingRunTypeButton #{uploadedFile.missingRunTypeClass == '' ? 'hidden' : ''}"
+							styleClass="missingRunTypeButton #{uploadedFile.missingRunTypeClass}"
 							onclick="PF('runTypesDialog_#{rowIndex}').show()"
 							title="Manage Missing Run Types"
 							value="Manage Missing Run Types"
@@ -91,38 +93,52 @@
 						    <p:dialog widgetVar="runTypesDialog_#{rowIndex}">
 								<div class="runTypeFile">
 									<p:fieldset legend="Update undefined Run Types">
-										<ui:repeat
-										value="#{uploadedFile.dataFile.missingRunTypes}"
-										var="runType"
-										rowKeyVar="index">
-											<div>
-												<label for="selectOneMenu_#{rowIndex}_#{index}">#{runType}</label>
-												<p:selectOneMenu
-												id="selectOneMenu_#{rowIndex}_#{index}"
-												value="#{runType.runTypeCategoryCode}"
-												>
-													<f:selectItem itemLabel="Select Category" itemValue="" />
-													<f:selectItems
-													value="#{utils.runTypeCategories}"
-													var="category"
-													itemValue="#{category.code}"
-													itemLabel="#{category.name}" />
-												</p:selectOneMenu>
-											</div>
-										</ui:repeat>
+										<div class="ui-g">
+											<ui:repeat
+											value="#{uploadedFile.dataFile.missingRunTypes}"
+											var="runType"
+											rowKeyVar="index">
+												<div class="ui-g-6">
+													<label for="selectOneMenu_#{rowIndex}_#{index}">#{runType}</label>
+												</div>
+												<div class="ui-g-6">
+													<p:selectOneMenu
+													id="selectOneMenu_#{rowIndex}_#{index}"
+													value="#{runType.runTypeCategoryCode}"
+													>
+														<f:selectItem itemLabel="Select Category" itemValue="" />
+														<f:selectItems
+														value="#{utils.runTypeCategories}"
+														var="category"
+														itemValue="#{category.code}"
+														itemLabel="#{category.name}" />
+													</p:selectOneMenu>
+												</div>
+											</ui:repeat>
+										</div>
 										<p:commandButton
 										icon="ui-icon-check"
 										actionListener="#{fileUpload.runTypesUpdated}"
 										title="Save Run Types"
 										value="Save Run Types"
+										onclick="PF('runTypesDialog_#{rowIndex}').hide()"
+										update="fileList"
+										oncomplete="reProcessUploadedFiles()"
 										>
 											<f:param name="fileIndex" value="#{rowIndex}" />
 										</p:commandButton>
 									</p:fieldset>
 									<p:fieldset legend="These run types are already defined">
-										<ui:repeat value="#{uploadedFile.dataFile.fileDefinition.runTypes.entrySet().toArray()}" var="runType">
-											<div>#{runType.key} : #{runType.value.name}</div>
-										</ui:repeat>
+										<div class="ui-g">
+											<ui:repeat
+											value="#{uploadedFile.dataFile.fileDefinition.runTypes.entrySet().toArray()}"
+											var="runType"
+											rowKeyVar="index"
+											>
+												<div class="ui-g-6"><h:outputText value="#{runType.key}" /></div>
+												<div class="ui-g-6"><h:outputText value="#{runType.value.name}" /></div>
+											</ui:repeat>
+										</div>
 									</p:fieldset>
 								</div>
 							</p:dialog>

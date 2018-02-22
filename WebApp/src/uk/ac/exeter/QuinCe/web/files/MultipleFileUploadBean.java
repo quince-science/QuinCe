@@ -14,6 +14,8 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 
+import org.primefaces.model.UploadedFile;
+
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.FileExistsException;
@@ -44,17 +46,20 @@ public class MultipleFileUploadBean extends FileUploadBean {
 
 	@Override
 	public void processUploadedFile() {
-		UploadedDataFile file = new UploadedDataFile(getFile());
-		dataFiles.add(file);
-		setDisplayClass("");
+		processUploadedFile(getFile());
 	}
 
+	public void processUploadedFile(UploadedFile uploadedFile) {
+		UploadedDataFile uploadedDataFile = new UploadedDataFile(uploadedFile);
+		dataFiles.add(uploadedDataFile);
+		setDisplayClass("");
+	}
 	public List<UploadedDataFile> getUploadedFiles() {
 		return dataFiles;
 	}
 
 	/**
-	 * Extract next file in file list that is not yet extracted
+	 * Extract files in file list that are not yet extracted
 	 */
 	public void extractNext() {
 		for (UploadedDataFile file: dataFiles) {
@@ -145,12 +150,15 @@ public class MultipleFileUploadBean extends FileUploadBean {
 		return dataFiles.size()>0 ? "" : "hidden";
 	}
 
+	/**
+	 * Called when run types have been updated. This will initiate
+	 * re-processing of the uploaded files.
+	 */
 	public void runTypesUpdated() {
 		Map<String,String> params = FacesContext
 				.getCurrentInstance()
 				.getExternalContext()
 				.getRequestParameterMap();
-
 		int fileIndex = Integer.parseInt(params.get("fileIndex"));
 		DataFile dataFile = dataFiles.get(fileIndex).getDataFile();
 		for(RunType runType: dataFile.getMissingRunTypes()) {
@@ -166,6 +174,16 @@ public class MultipleFileUploadBean extends FileUploadBean {
 				}
 			}
 		}
+		unsetDataFiles();
 	}
 
+	private void unsetDataFiles() {
+		// Initialize instruments with new run types
+		initialiseInstruments();
+		List<UploadedDataFile> tmplist = dataFiles;
+		dataFiles = new ArrayList<>();
+		for (UploadedDataFile file: tmplist) {
+			processUploadedFile(file.getUploadedFile());
+		}
+	}
 }
