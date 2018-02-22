@@ -42,6 +42,6 @@
 #messageText {
 	padding: 5px 10px;
 }
-.runTypeFile>fieldset {
-	margin: .5em 0;
+.runTypeFile .ui-g {
+	max-width: 400px;
 }
