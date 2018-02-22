@@ -1,9 +1,6 @@
 package junit.uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Properties;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

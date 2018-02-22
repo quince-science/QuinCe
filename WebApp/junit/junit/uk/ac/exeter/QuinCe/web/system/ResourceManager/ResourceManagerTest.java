@@ -15,17 +15,20 @@ import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPoolNotInitialisedException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+/**
+ * Tests for building the resource manager
+ */
 public class ResourceManagerTest {
 
 	/**
 	 * Servlet Context
 	 */
-	@Mock private static ServletContext servletContext;
+	@Mock protected static ServletContext servletContext;
 	
 	/**
 	 * Servlet Context Event
 	 */
-	@Mock private static ServletContextEvent servletContextEvent;
+	@Mock protected static ServletContextEvent servletContextEvent;
 	
 	@BeforeClass
 	public static void createServletContextEvent() {
@@ -39,7 +42,7 @@ public class ResourceManagerTest {
 		servletContextEvent = Mockito.mock(ServletContextEvent.class);
 		Mockito.doReturn(servletContext).when(servletContextEvent).getServletContext();
 	}
-	
+
 	/**
 	 * Check that the ResourceManager can be constructed
 	 */
@@ -66,6 +69,14 @@ public class ResourceManagerTest {
 		} catch (JobThreadPoolNotInitialisedException e) {
 			fail("Job Thread Pool not initialised by ResourceManager");
 		}
+		
+		// Check that all the elements that should be accessible from the ResourceManager
+		// are available
+		assertNotNull("Application Configuration not available from ResourceManager", ResourceManager.getInstance().getConfig());
+		assertNotNull("DataSource not available from ResourceManager", ResourceManager.getInstance().getDBDataSource());
+		assertNotNull("ColumnConfig not available from ResourceManager", ResourceManager.getInstance().getColumnConfig());
+		assertNotNull("SensorsConfiguration not available from ResourceManager", ResourceManager.getInstance().getSensorsConfiguration());
+		assertNotNull("RunTypeCategoryConfiguration not available from ResourceManager", ResourceManager.getInstance().getRunTypeCategoryConfiguration());
 	}
 	
 	/**
