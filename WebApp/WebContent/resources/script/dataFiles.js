@@ -1,8 +1,12 @@
 // Hide dialog with escape key
 $(document).on('keydown', function(e) {
-    if (e.keyCode === 27) {
-        PF('msgDialog').hide();
-    }
+	if (e.keyCode === 27) {
+		$.each(PrimeFaces.widgets, function(index, val) {
+			if (index.match(/dialog/i)) {
+				PF(index).hide();
+			}
+		})
+	}
 });
 
 function renderMessages(messages) {
@@ -20,4 +24,10 @@ function renderMessages(messages) {
 	}
 	$("#messageText").html(html);
 	PF('msgDialog').show();
+}
+
+function reProcessUploadedFiles() {
+	$('#uploadForm\\:fileList_data>tr').each(function() {
+		extractNext();
+	});
 }
