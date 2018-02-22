@@ -1,6 +1,7 @@
 package junit.uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -10,6 +11,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
+import uk.ac.exeter.QuinCe.jobs.JobThreadPoolNotInitialisedException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class ResourceManagerTest {
@@ -57,7 +60,12 @@ public class ResourceManagerTest {
 		// Check that the instance has been created
 		assertNotNull("ResourceManager instance not created", ResourceManager.getInstance());
 		
-		// TODO Check that all required objects have been created
+		// Check that the job thread pool has been initialised
+		try {
+			JobThreadPool.getInstance();
+		} catch (JobThreadPoolNotInitialisedException e) {
+			fail("Job Thread Pool not initialised by ResourceManager");
+		}
 	}
 	
 	/**
