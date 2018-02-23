@@ -34,6 +34,12 @@ then
 elif [ $1 = 'filestore' ]
 then
   propertyvalue=$(sed -n 's/^filestore *= *\(.*\)$/\1/p' configuration/quince.properties)
+else
+  propertyvalue=$(sed -n "s/^%$1% *= *\(.*\) *$/\1/p" quince.setup)
+  if [ -z $propertyvalue ]
+  then
+    propertyvalue=$(sed -n "s/^%$1% *= *\(.*\) *$/\1/p" quince.setup.default)
+  fi
 fi
 
 echo $propertyvalue

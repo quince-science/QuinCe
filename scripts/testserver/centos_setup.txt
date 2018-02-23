@@ -17,6 +17,8 @@ systemctl start mariadb
 yum install java-1.8.0-openjdk.x86_64 -y
 yum install java-1.8.0-openjdk-devel.x86_64 -y
 yum install git -y
+yum install mailx -y
+yum install php-cli -y
 
 
 # Setup folders for inncoming data from prod server:
@@ -79,4 +81,3 @@ database=scripts/get_setup_property.sh database
 
 echo "create database if not exists $database character set utf8" |mysql -uroot
 echo "grant all privileges on $database.* to $username@'localhost' identified by '$password'" |mysql -uroot
-

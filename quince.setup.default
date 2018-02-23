@@ -14,3 +14,5 @@
 %db_port%=3306
 %db_host%=localhost
 %app.urlstub%=http://localhost:8080/QuinCe
+%git_test_branch%=master
+%slack_app_url%=https://hooks.slack.com/services/XXXXXXX/XXXXXXXXX/XXXXXXXXXXXXXXXXXXX
