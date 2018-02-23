@@ -23,12 +23,12 @@ public class ResourceManagerTest {
 	/**
 	 * Servlet Context
 	 */
-	@Mock protected static ServletContext servletContext;
+	@Mock private static ServletContext servletContext;
 	
 	/**
 	 * Servlet Context Event
 	 */
-	@Mock protected static ServletContextEvent servletContextEvent;
+	@Mock private static ServletContextEvent servletContextEvent;
 	
 	@BeforeClass
 	public static void createServletContextEvent() {
