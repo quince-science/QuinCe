@@ -34,6 +34,17 @@ git submodule update --init
 scripts/setup_replace_strings.sh
 scripts/setup_hide_changes.sh
 
+####################
 # gradle tasks
+###################
+
+# Stop tomcat
+./gradlew appStop
 tmpfile=/tmp/gradle_build_test_output.txt
+
+# Clean, test and build the war file. Failing tests are sent to the QuinCe-QC
+# slack #errors channel
 ./gradlew clean test war > $tmpfile 2>&1 || scripts/slackerror.sh -f $tmpfile
+
+# Start tomcat with nohup to allow cron to exit while tomcat keeps running
+nohup ./gradlew appStartWar &
