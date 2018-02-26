@@ -29,18 +29,19 @@ done
 
 setuptype=${@:$OPTIND:1}
 setupfile=quince.setup.default
-
+setup=$(cat $setupfile)
 if [ -e quince.setup ]
 then
   setupfile=quince.setup
-fi
-
-if [ -e "quince.setup.$setuptype" ]
+  # using awk to keep properties in quince.setup.default not in quince.setup
+  setup=$(awk -F= '!a[$1]++' quince.setup quince.setup.default)
+elif [ -e "quince.setup.$setuptype" ]
 then
   setupfile="quince.setup.$setuptype"
+  # using awk to keep properties in quince.setup.default not in quince.setup.$setuptype
+  setup=$(awk -F= '!a[$1]++' quince.setup.$setuptype quince.setup.default)
 fi
 
-setup=$(cat $setupfile)
 
 if [ $verbose -eq 1 ]
 then
