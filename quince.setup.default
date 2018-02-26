@@ -13,3 +13,4 @@
 %db_database%=quince_dev
 %db_port%=3306
 %db_host%=localhost
+%app.urlstub%=http://localhost:8080/QuinCe
