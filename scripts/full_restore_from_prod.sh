@@ -16,7 +16,7 @@
 ssh_user=${@:$OPTIND:1}
 
 scripts/db_restore_from_prod.sh $ssh_user || \
-  { echo "Error updating database. Exit!"; exit 1 }
+  exit 1;
 
 branch=$(scripts/get_setup_property.sh git_test_branch)
 
