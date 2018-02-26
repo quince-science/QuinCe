@@ -61,6 +61,11 @@ public abstract class BaseManagedBean {
 	private final String longDateFormat = "yyyy-MM-dd HH:mm:ss";
 
 	/**
+	 * Set this to force reloading the instrument even though it is already set
+	 */
+	private boolean forceInstrumentReload = false;
+
+	/**
 	 * Set a message that can be displayed to the user on a form
 	 * @param componentID The component ID to which the message relates (can be null)
 	 * @param messageString The message string
@@ -229,11 +234,18 @@ public abstract class BaseManagedBean {
 			}
 			
 
-			// If the current instrument is now different to the one held in the session,
-			// remove it so it will get reloaded on next access
 			Instrument currentInstrument = (Instrument) getSession().getAttribute(CURRENT_FULL_INSTRUMENT_ATTR);
-			if (null != currentInstrument && currentInstrument.getDatabaseId() != currentUserInstrument) {
+			if (
+					// if forceInstrumentReload is set, always reload
+					isForceInstrumentReload() ||
+
+					// If the current instrument is now different to the one held in the session,
+					// remove it so it will get reloaded on next access
+					(null != currentInstrument &&
+					currentInstrument.getDatabaseId() != currentUserInstrument)
+			) {
 				getSession().removeAttribute(CURRENT_FULL_INSTRUMENT_ATTR);
+				setForceInstrumentReload(false);
 			}
 		} catch (Exception e) {
 			// Fail quietly, but print the log
@@ -337,5 +349,21 @@ public abstract class BaseManagedBean {
 	public boolean getHasInstruments() {
 		List<InstrumentStub> instruments = getInstruments();
 		return instruments.size() > 0;
+	}
+
+	/**
+	 * @return true if instrument should always be reloaded on initialiseInstrument
+	 */
+	public boolean isForceInstrumentReload() {
+		return forceInstrumentReload;
+	}
+
+	/**
+	 * Set to true to make full instrument reload on initialiseInstrument
+	 * This is reset to false after running initialiseInstrument
+	 * @param forceReload
+	 */
+	public void setForceInstrumentReload(boolean forceReload) {
+		this.forceInstrumentReload = forceReload;
 	}
 }

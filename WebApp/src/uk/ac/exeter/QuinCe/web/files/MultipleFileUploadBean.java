@@ -179,6 +179,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
 
 	private void unsetDataFiles() {
 		// Initialize instruments with new run types
+		setForceInstrumentReload(true);
 		initialiseInstruments();
 		List<UploadedDataFile> tmplist = dataFiles;
 		dataFiles = new ArrayList<>();
