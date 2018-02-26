@@ -86,13 +86,18 @@
 							icon="ui-icon-plus"
 							styleClass="missingRunTypeButton #{uploadedFile.missingRunTypeClass}"
 							onclick="PF('runTypesDialog_#{rowIndex}').show()"
-							title="Manage Missing Run Types"
-							value="Manage Missing Run Types"
+							title="Unrecognised Run Types Found"
+							value="Unrecognised Run Types Found"
 							>
 							</p:commandButton>
-						    <p:dialog widgetVar="runTypesDialog_#{rowIndex}">
+						    <p:dialog widgetVar="runTypesDialog_#{rowIndex}"
+						    modal="true">
 								<div class="runTypeFile">
-									<p:fieldset legend="Update undefined Run Types">
+									<p:fieldset legend="Unrecognised Run Types">
+										<div class="instructions">
+											This file contained unrecognised Run Types.
+											Please assign them using the menu options.
+										</div>
 										<div class="ui-g">
 											<ui:repeat
 											value="#{uploadedFile.dataFile.missingRunTypes}"

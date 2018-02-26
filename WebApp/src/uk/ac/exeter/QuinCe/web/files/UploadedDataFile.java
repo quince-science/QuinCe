@@ -136,7 +136,7 @@ public class UploadedDataFile {
 
 	public String getMissingRunTypeClass() {
 		if (null != dataFile && dataFile.getMissingRunTypes().size() > 0) {
-			return "show";
+			return "shown";
 		}
 		return "hidden";
 	}
