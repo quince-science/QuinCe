@@ -67,7 +67,7 @@ public class JobManager {
   /**
    * SQL statement to create a job record
    */
-  private static final String CREATE_JOB_STATEMENT = "INSERT INTO job (owner, submitted, class, parameters) VALUES (?, ?, ?, ?)";
+  private static final String CREATE_JOB_STATEMENT = "INSERT INTO job (owner, created, class, parameters) VALUES (?, ?, ?, ?)";
 
   /**
    * SQL statement to see if a job with a given ID exists
@@ -112,7 +112,7 @@ public class JobManager {
   /**
    * SQL statement to retrieve the next queued job
    */
-  private static final String GET_NEXT_JOB_QUERY = "SELECT id, class, parameters FROM job WHERE status='WAITING' ORDER BY submitted ASC LIMIT 1";
+  private static final String GET_NEXT_JOB_QUERY = "SELECT id, class, parameters FROM job WHERE status='WAITING' ORDER BY created ASC LIMIT 1";
 
   /**
    * Statement to get the number of jobs of each status
@@ -830,23 +830,23 @@ public class JobManager {
     if (null != nextJob) {
       JobThread thread = JobThreadPool.getInstance().getJobThread(nextJob);
       if (null != thread) {
-        thread.start();
+         thread.start();
 
-        // Wait until the job's status is updated in the database
-        boolean jobRunning = false;
-        while (!jobRunning) {
-          if (!getJobStatus(resourceManager.getDBDataSource(), nextJob.getID()).equals(Job.WAITING_STATUS)) {
-            jobRunning = true;
-          } else {
-            try {
-              Thread.sleep(250);
-            } catch (InterruptedException e) {
-              // Do nothing
-            }
-          }
-        }
+         // Wait until the job's status is updated in the database
+         boolean jobRunning = false;
+         while (!jobRunning) {
+           if (!getJobStatus(resourceManager.getDBDataSource(), nextJob.getID()).equals(Job.WAITING_STATUS)) {
+             jobRunning = true;
+           } else {
+             try {
+               Thread.sleep(250);
+             } catch (InterruptedException e) {
+               // Do nothing
+             }
+           }
+         }
 
-        jobStarted = true;
+         jobStarted = true;
       }
     }
     return jobStarted;

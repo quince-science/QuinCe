@@ -32,9 +32,9 @@ public class JobSummary {
   private String className;
 
   /**
-   * The date/time that the job was submitted
+   * The date/time that the job was created
    */
-  private Date submitted;
+  private Date created;
 
   /**
    * The current status of the job
@@ -68,7 +68,7 @@ public class JobSummary {
    * @param id The job's database ID
    * @param owner The job's owner
    * @param className The job's class name
-   * @param submitted The date/time that the job was submitted
+   * @param created The date/time that the job was created
    * @param status The current status of the job
    * @param started The date/time that the job was started
    * @param ended The date/time that the job finished
@@ -76,11 +76,11 @@ public class JobSummary {
    * @param stackTrace The stack trace for the job
    */
   @Deprecated
-  public JobSummary(long id, User owner, String className, Date submitted, String status, Date started, Date ended, double progress, String stackTrace) {
+  public JobSummary(long id, User owner, String className, Date created, String status, Date started, Date ended, double progress, String stackTrace) {
     this.id = id;
     this.owner = owner;
     this.className = className;
-    this.submitted = submitted;
+    this.created = created;
     this.status = status;
     this.started = started;
     this.ended = ended;
@@ -115,11 +115,11 @@ public class JobSummary {
   }
 
   /**
-   * Get the date/time that the job was submitted
-   * @return The date/time that the job was submitted
+   * Get the date/time that the job was created
+   * @return The date/time that the job was created
    */
-  public Date getSubmitted() {
-    return submitted;
+  public Date getCreated() {
+    return created;
   }
 
   /**
