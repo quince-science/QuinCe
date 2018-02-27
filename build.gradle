@@ -12,7 +12,15 @@ buildscript {
    }
    dependencies {
        classpath 'org.akhikhl.gretty:gretty:2.0.0'
+
+       // Flyway migration needs the mysql connector
+       classpath 'mysql:mysql-connector-java:5.1.36'
    }
+}
+
+// Flyway database migration plugin:
+plugins {
+    id "org.flywaydb.flyway" version "5.0.7"
 }
 
 apply plugin: 'java'
@@ -81,7 +89,7 @@ sourceSets {
             srcDirs = ['WebApp/src', 'src/QC_Routines/src']
         }
         resources {
-            srcDirs = ['WebApp/WebContent/resources']
+            srcDirs = ['WebApp/WebContent/resources', 'src/migrations']
         }
 
     }
@@ -105,4 +113,19 @@ eclipse {
         }
     }
 
+}
+def rootPath = file('.').absolutePath
+def webContext=new XmlSlurper().parse(rootPath + '/WebApp/WebContent/META-INF/context.xml')
+
+// Load db setup
+// Database migration scripts are added to the folder
+// src/migrations/flywayMigrations/dbmigrations
+// sql migration files are named with:
+// V[number]__[any_name].sql, eg V2__new_table_record.sql
+flyway {
+  url = webContext.Resource.@url
+  user = webContext.Resource.@username
+  password = webContext.Resource.@password
+  locations = ["classpath:db_migrations"]
+  baselineOnMigrate = true
 }
