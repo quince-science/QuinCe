@@ -1,0 +1,35 @@
+% QuinCe Database Migration system
+
+# Version History
+
+Version      Date                     Description
+---------    ----------------------   ------------------------------------------------------
+alpha2.02    2018-02-27               Database migration scripts
+
+
+# Database migration scripts
+
+Database migration scripts are handled by the flywayMigration library provided
+by boxfuse, https://flywaydb.org/
+
+Flyway functionality is enabled using the flyway plgin for gradle. Database
+migration scripts are added to the folder
+
+* src/migrations/flywayMigrations/dbmigrations
+
+where the migration scripts are sql files named after the following convention:
+
+* V[number]__[any_name].sql
+
+An example file could be eg: V2__github_issue_740.sql
+...referencing github issue #740 for the QuinCe project.
+
+Database schema versions is simply a running number starting on one for the
+database baseline, so start you script on the lowest available number. Migration
+scripts not applied will be run on the next migration.
+
+Migration scripts for the test server are applied daily after resetting the
+database to the state of the production database.
+
+For the production server, migration scripts that have not yet run, will be
+applied on the next release.
