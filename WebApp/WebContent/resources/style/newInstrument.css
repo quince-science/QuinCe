@@ -11,19 +11,19 @@
 }
 
 #cancel {
-	margin-top: 0px;
+  margin-top: 0px;
 }
 
 #progress {
-	margin-top: 20px;
-	margin-left: 50px;
-	margin-right: 50px;
-	margin-bottom: 25px;
+  margin-top: 20px;
+  margin-left: 50px;
+  margin-right: 50px;
+  margin-bottom: 25px;
 }
 
 #newInstrumentContent {
-	margin-left: 50px;
-	margin-right: 50px;
+  margin-left: 50px;
+  margin-right: 50px;
 }
 
 .ui-steps .ui-steps-item {
@@ -31,21 +31,21 @@
 }
 
 #nameForm {
-	padding-top: 20px;
-	margin: auto;
-	text-align: center;
-	height: 70px;
+  padding-top: 20px;
+  margin: auto;
+  text-align: center;
+  height: 70px;
 }
 
 .instrumentName {
-	width: 30%;
-	font-size: 1.5em;
+  width: 30%;
+  font-size: 1.5em;
 }
 
 .instrumentNameMessage {
-	width: 50%;
-	margin: 10px auto 0px auto !important;
-	height: 18px;
+  width: 50%;
+  margin: 10px auto 0px auto !important;
+  height: 18px;
 }
 
 /*********************************
@@ -55,34 +55,34 @@
  */
 
 #uploadFormContent {
-	height: 600px;
+  height: 600px;
 }
 
 #fileFormatSpec {
-	margin-top: 30px;
-	width: 95%;
-	height: 400px;
+  margin-top: 30px;
+  width: 95%;
+  height: 400px;
 }
 
 #fileFormatSpecContent {
-	display: grid;
-	grid-template-columns: auto 400px;
+  display: grid;
+  grid-template-columns: auto 400px;
 }
 
 #fileContent {
-	overflow: scroll;
-	height: 400px;
-	margin-right: 40px;
-	border: 1px solid black;
-	background-color: #FFF;
+  overflow: scroll;
+  height: 400px;
+  margin-right: 40px;
+  border: 1px solid black;
+  background-color: #FFF;
 }
 
 .header {
-	color: #DD0000;
+  color: #DD0000;
 }
 
 .columnHeading {
-	color: #00AAFF;
+  color: #00AAFF;
 }
 
 /*********************************
@@ -91,120 +91,120 @@
  *
  */
 .assignmentsList {
-	display: flex;
-	flex-wrap: wrap;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 #mainAssignmentMenu {
-	position: absolute;
-	left: 0px;
-	right: 0px;
-	font-size: 0.8em;
-	z-index: 1000;
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  font-size: 0.8em;
+  z-index: 1000;
 }
 
 #dateTimeMenu {
-	position: absolute;
-	left: 0px;
-	right: 0px;
-	font-size: 0.8em;
-	z-index: 1000;
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  font-size: 0.8em;
+  z-index: 1000;
 }
 
 .assignmentListEntry {
-	--entry_color: #2779AA;
-	display: flex;
-	border: 2px solid black;
-	border-radius: 5px;
-	margin: 4px;
-	border-color: var(--entry_color);
-	background-color: var(--entry_color);
-	color: var(--entry_color);
-	width: 300px;
+  --entry_color: #2779AA;
+  display: flex;
+  border: 2px solid black;
+  border-radius: 5px;
+  margin: 4px;
+  border-color: var(--entry_color);
+  background-color: var(--entry_color);
+  color: var(--entry_color);
+  width: 300px;
 }
 
 .assignmentRequired {
-	--entry_color: #FF0000;
+  --entry_color: #FF0000;
 }
 
 .assignmentLabel {
-	display: inline;
-	background-color: white;
-	padding: 0px 4px 0px 1px;
-	border-radius: 3px;
-	width: 100%;
-	white-space: nowrap;
-	overflow: hidden;
+  display: inline;
+  background-color: white;
+  padding: 0px 4px 0px 1px;
+  border-radius: 3px;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .assignmentCount {
-	text-align: center;
-	position: relative;
-	display: inline;
-	right: 0px;
-	color: white;
-	width: 45px;
-	cursor: pointer;
+  text-align: center;
+  position: relative;
+  display: inline;
+  right: 0px;
+  color: white;
+  width: 45px;
+  cursor: pointer;
 }
 
 table.sampleData {
-	font-size: 0.8em;
-	margin: 0px !important;
+  font-size: 0.8em;
+  margin: 0px !important;
 }
 
 .sampleDataTableContainer {
-	width: 900px;
+  width: 900px;
 }
 
 .fileTab {
-	display: flex;
+  display: flex;
 }
 
 .fileAssignments {
-	min-width: 400px;
-	flex-grow: 1000;
-	margin-right: 20px;
+  min-width: 400px;
+  flex-grow: 1000;
+  margin-right: 20px;
 }
 
 .invalidFileAssignment {
-	border: 2px solid red;
+  border: 2px solid red;
 }
 
 .assignmentCol {
-	cursor: pointer;
+  cursor: pointer;
 }
 
 .assignmentColAssigned {
-	opacity:.35;filter:Alpha(Opacity=35);background-image:none; /* Copied from PrimeFaces theme */
-	cursor: pointer;
+  opacity:.35;filter:Alpha(Opacity=35);background-image:none; /* Copied from PrimeFaces theme */
+  cursor: pointer;
 }
 
 .assignmentMenuEntry {
-	display: flex !important;
-	align-items: center;
+  display: flex !important;
+  align-items: center;
 }
 
 .assignmentMenuEntryText {
-	flex-grow: 1000;
+  flex-grow: 1000;
 }
 
 .assignmentMenuEntryTextDisabled {
-	text-decoration: line-through !important;
+  text-decoration: line-through !important;
 }
 
 .assignmentMenuEntryIcon {
-	padding-right: 3px;
+  padding-right: 3px;
 }
 
 .otherAssignmentIcon {
-	padding-left: 3px;
+  padding-left: 3px;
 }
 
 .highlight {
-	color: #00AAFF;
+  color: #00AAFF;
 }
 
 #runTypeFiles {
-	display: flex;
-	flex-wrap: wrap;
+  display: flex;
+  flex-wrap: wrap;
 }

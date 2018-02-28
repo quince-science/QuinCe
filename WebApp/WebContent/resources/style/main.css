@@ -10,12 +10,12 @@ body {
 }
 
 a {
-	outline: none;
+  outline: none;
 }
 
 pre {
-	font-family: 'Inconsolata', monospace;
-	margin: 0px;
+  font-family: 'Inconsolata', monospace;
+  margin: 0px;
 }
 
 .contentBox {
@@ -27,7 +27,7 @@ pre {
 }
 
 .wideContentBox {
-	max-width: 600px !important;
+  max-width: 600px !important;
 }
 
 h1,h2 {
@@ -38,13 +38,13 @@ h1,h2 {
 }
 
 h4 {
-	text-decoration: underline;
-	margin-top: 12px;
-	margin-bottom: 6px;
+  text-decoration: underline;
+  margin-top: 12px;
+  margin-bottom: 6px;
 }
 
 h4:first-child {
-	margin-top: 0px;
+  margin-top: 0px;
 }
 
 #logoTitle {
@@ -126,9 +126,9 @@ input[type="submit"][disabled="disabled"] {
 }
 
 .inlineButton {
-	margin-top: 0px;
-	margin-left: 5px;
-	margin-right: 5px;
+  margin-top: 0px;
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 input[type="submit"]:last-of-type, button:last-of-type {
@@ -140,15 +140,15 @@ input.smallButton, button.smallButton {
 }
 
 .tightButton {
-	min-width: 0px;
+  min-width: 0px;
 }
 
 .highlightButton {
-	border: 2px solid #0030FF;
+  border: 2px solid #0030FF;
 }
 
 .buttonPanel {
-	margin: auto;
+  margin: auto;
 }
 
 .buttonPanel td {
@@ -190,7 +190,7 @@ ul input {
 }
 
 #hiddenData {
-	display: none;
+  display: none;
 }
 
 #userSettings {
@@ -225,7 +225,7 @@ ul input {
 }
 
 .fullPage {
-	overflow: hidden;
+  overflow: hidden;
 }
 
 .statBarCol {
@@ -360,8 +360,8 @@ li.menuitem:hover, li.smallMenuitem:hover {
 }
 
 div.fullPage {
-	margin-left: 30px;
-	margin-right: 30px;
+  margin-left: 30px;
+  margin-right: 30px;
 }
 
 .instructions {
@@ -454,18 +454,18 @@ tr.header {
 }
 
 .pageTitle {
-	margin: auto;
-	text-align: center;
-	font-size: 2em;
-	font-weight: 700;
+  margin: auto;
+  text-align: center;
+  font-size: 2em;
+  font-weight: 700;
 }
 
 .sectionTitle {
-	margin: auto;
-	margin-top: 15px;
-	text-align: center;
-	font-size: 1.5em;
-	font-weight: 700;
+  margin: auto;
+  margin-top: 15px;
+  text-align: center;
+  font-size: 1.5em;
+  font-weight: 700;
 }
 
 .smallHeader {
@@ -478,211 +478,211 @@ hr {
 }
 
 .nowrap {
-	white-space: nowrap;
+  white-space: nowrap;
 }
 
 .error {
-	color: #ff0000;
-	font-weight: 700;
+  color: #ff0000;
+  font-weight: 700;
 }
 
 .info {
-	font-style: italic;
+  font-style: italic;
 }
 
 .errors {
-	color: #ff0000;
-	font-weight: 700;
-	text-align: center;
+  color: #ff0000;
+  font-weight: 700;
+  text-align: center;
 }
 
 .invisible {
-	display: none;
-	visibility: hidden;
+  display: none;
+  visibility: hidden;
 }
 
 .inlineRadio {
-	margin-left: 20px;
+  margin-left: 20px;
 }
 
 .listBox {
-	margin-top: 5px;
-	background: white;
-	max-height: 250px;
-	overflow: auto;
-	border-left: 2px solid #555555;
-	border-top: 2px solid #555555;
-	border-right: 2px solid #cccccc;
-	border-bottom: 2px solid #cccccc;
-	width: 80%;
-	margin-left: auto;
-	margin-right: auto;
+  margin-top: 5px;
+  background: white;
+  max-height: 250px;
+  overflow: auto;
+  border-left: 2px solid #555555;
+  border-top: 2px solid #555555;
+  border-right: 2px solid #cccccc;
+  border-bottom: 2px solid #cccccc;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 table.fileDates {
-	text-align: right;
-	width: 80%;
-	margin: auto;
+  text-align: right;
+  width: 80%;
+  margin: auto;
 }
 
 .minorHeading {
-	text-decoration: underline;
+  text-decoration: underline;
 }
 
 .minimalCentered {
-	text-align: left;
-	margin-left: auto;
-	margin-right: auto;
+  text-align: left;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .indent {
-	padding-left: 40px;
+  padding-left: 40px;
 }
 
 .actionIcon {
-	margin-right: 7px;
-	width: 20px;
-	height: 20px;
+  margin-right: 7px;
+  width: 20px;
+  height: 20px;
 }
 
 .inputForm {
-	margin-top: 15px;
-	margin-bottom: 15px;
-	width: 100%;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  width: 100%;
 }
 
 .inputLabels {
-	text-align: right;
-	vertical-align: middle;
-	white-space: nowrap;
+  text-align: right;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 .inputInputs {
-	width: 100%;
+  width: 100%;
 }
 
 .inputFormInput {
-	width: 95%;
+  width: 95%;
 }
 
 .errorBox {
-	color: #B94A48;
-	background-color: #F2DEDE;
-	border-color: #EED3D7;
-	border: 1px solid;
-	margin: 0 5px;
-	padding: 2px 5px;
-	border-radius: 6px;
-	display: none;
+  color: #B94A48;
+  background-color: #F2DEDE;
+  border-color: #EED3D7;
+  border: 1px solid;
+  margin: 0 5px;
+  padding: 2px 5px;
+  border-radius: 6px;
+  display: none;
 }
 
 .flexSet {
-	display: flex;
-	align-items: center;
-	margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
 }
 
 .flexSet .nowrap {
-	flex-wrap: nowrap;
+  flex-wrap: nowrap;
 }
 
 .flexSet:last-child {
-	margin-bottom: 0px;
+  margin-bottom: 0px;
 }
 
 .flexSetItem {
-	margin-right: 8px;
+  margin-right: 8px;
 }
 
 .flexSetItem:last-child {
-	margin-right: 0px;
+  margin-right: 0px;
 }
 
 .flexSetItemGrow {
-	flex-grow: 1000;
+  flex-grow: 1000;
 }
 
 .flexSetItemShrink {
-	flex-shrink: 1000;
+  flex-shrink: 1000;
 }
 
 .dialogSection {
-	margin-top: 15px;
+  margin-top: 15px;
 }
 
 .variableText {
-	display: inline;
+  display: inline;
 }
 
 .codeLine {
-	margin: 5px 0px 5px 10px;
-	font-family: 'Inconsolata', monospace;
+  margin: 5px 0px 5px 10px;
+  font-family: 'Inconsolata', monospace;
 }
 
 .pageTable {
-	width: 75%;
-	margin-left: auto;
-	margin-right: auto;
+  width: 75%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .centeredCell {
-	text-align: center
+  text-align: center
 }
 
 .note {
-	color: #888888;
-	font-style: italic;
+  color: #888888;
+  font-style: italic;
 }
 
 .pageTitle {
-	margin: auto;
-	text-align: center;
-	font-size: 2em;
-	font-weight: 700;
+  margin: auto;
+  text-align: center;
+  font-size: 2em;
+  font-weight: 700;
 }
 
 /* PrimeFaces overrides */
 .ui-panel-content td {
-	vertical-align: middle;
+  vertical-align: middle;
 }
 
 .ui-steps.custom .ui-steps-item {
-	height: 30px;
+  height: 30px;
 }
 
 .ui-steps.custom .ui-menuitem-link {
-	padding: 5px 0px 0px 0px;
+  padding: 5px 0px 0px 0px;
 }
 
 .ui-steps.custom .ui-steps-number {
-	display: none;
+  display: none;
 }
 
 .ui-steps.custom .ui-state-highlight {
-	font-weight: 700;
+  font-weight: 700;
 }
 
 .ui-steps.custom .ui-state-default {
-	font-weight: 700;
+  font-weight: 700;
 }
 
 .ui-tabs .ui-tabs-nav li a {
-	padding-top: 0.5em;
-	padding-bottom: 0.5em;
-	padding-left: 0.5em;
-	padding-right: 0em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  padding-left: 0.5em;
+  padding-right: 0em;
 }
 
 .ui-tabs .ui-tabs-nav li a:first-of-type {
-	padding-left: 1em;
+  padding-left: 1em;
 }
 
 .ui-tabs .ui-tabs-nav li a:last-of-type {
-	padding-right: 1em;
+  padding-right: 1em;
 }
 
 .ui-tabs .ui-tabs-nav li a.clickable {
-	cursor: pointer;
+  cursor: pointer;
 }
 
 @keyframes rowFlash {
