@@ -1000,5 +1000,3 @@ public class DateTimeSpecification {
     return result;
   }
 }
-
-
