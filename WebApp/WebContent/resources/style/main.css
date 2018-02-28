@@ -101,7 +101,7 @@ input[type="submit"], input[type="button"], button {
   min-width: 100px;
   margin-right: 20px;
   white-space: nowrap;
-  
+
   outline: none;
 }
 
@@ -493,7 +493,7 @@ hr {
 .errors {
 	color: #ff0000;
 	font-weight: 700;
-	text-align: center;	
+	text-align: center;
 }
 
 .invisible {
@@ -554,7 +554,7 @@ table.fileDates {
 .inputLabels {
 	text-align: right;
 	vertical-align: middle;
-	white-space: nowrap; 
+	white-space: nowrap;
 }
 
 .inputInputs {
@@ -647,7 +647,7 @@ table.fileDates {
 }
 
 .ui-steps.custom .ui-steps-item {
-	height: 30px;	
+	height: 30px;
 }
 
 .ui-steps.custom .ui-menuitem-link {
