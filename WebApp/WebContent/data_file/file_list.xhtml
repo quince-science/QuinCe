@@ -5,12 +5,12 @@
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	template="/WEB-INF/templates/menu_page.xhtml">
-	
+
 	<ui:define name="title">Files</ui:define>
 	<ui:define name="localHead">
 		<c:set var="mainMenuActiveIndex" value="1" scope="request"/>
 	</ui:define>
-	
+
 	<ui:define name="content">
 		<ui:fragment rendered="#{not dataFilesBean.hasInstruments}">
 			<div class="instructions error">
@@ -26,7 +26,7 @@
 						<p:ajax event="change" update="files"/>
 					</p:selectOneMenu>
 				</h:panelGrid>
-				
+
 				<p:dataTable id="files" value="#{dataFilesBean.listFiles}" var="file" styleClass="pageTable" scrollable="true" scrollHeight="450">
 					<p:column>
 						<f:facet name="header">
@@ -61,10 +61,10 @@
 				</p:dataTable>
 				<h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
 					<p:button value="Upload New File(s)" ajax="false" outcome="upload" />
-				</h:panelGrid>			
+				</h:panelGrid>
 			</h:form>
 		</ui:fragment>
 	</ui:define>
-	
-	
+
+
 </ui:composition>

@@ -13,16 +13,16 @@
 		<h:outputScript name="script/reviewCalibrationData.js"/>
 		<h:outputStylesheet name="style/reviewCalibrationData.css"/>
 	</ui:define>
-	
+
 	<ui:define name="formEntries">
 		<h:inputHidden value="#{reviewCalibrationDataBean.plot1.mode}" id="plot1Mode"/>
 		<h:inputHidden value="#{reviewCalibrationDataBean.plot2.mode}" id="plot2Mode"/>
-		
+
 		<p:commandLink id="setUseCalibrations" action="#{reviewCalibrationDataBean.setCalibrationUse}" ajax="true" process="useCalibrations useCalibrationsMessage selectedRows" update="@none"/>
 	</ui:define>
-	
+
 	<ui:define name="dataSetName">#{reviewCalibrationDataBean.dataset.name} - Calibration Data #{requestScope[beanName]}</ui:define>
-	
+
 	<ui:define name="plots">
 		<div id="plot1Panel" class="plotContainer">
 			<div id="plot1Container"></div>
@@ -34,7 +34,7 @@
 			</p:toolbar>
 		</div>
 	</ui:define>
-	
+
 	<ui:define name="selectionDialog">
 		<p:dialog widgetVar="useDialog" modal="true" header="Use Selected Calibrations?">
 			<div class="insructions">

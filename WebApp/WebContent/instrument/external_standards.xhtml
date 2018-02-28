@@ -18,7 +18,7 @@
 			}
 		</script>
 	</ui:define>
-	
+
 	<ui:define name="pageTitle">External Standards - #{externalStandardsBean.instrumentName}</ui:define>
 	<ui:define name="content">
 		<h:form id="standardsForm" metho="post" charset="utf8">
@@ -35,7 +35,7 @@
 							<f:selectItems value="#{externalStandardsBean.targets}"/>
 						</p:selectOneMenu>
 						<p:outputLabel for="concentration" value="Concentration:"/>
-						<p:inputNumber id="concentration" value="#{externalStandardsBean.enteredCalibration.concentration}" size="12" decimalPlaces="5"/>				
+						<p:inputNumber id="concentration" value="#{externalStandardsBean.enteredCalibration.concentration}" size="12" decimalPlaces="5"/>
 					</h:panelGrid>
 				</div>
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
@@ -43,9 +43,9 @@
 					<p:button value="Cancel" onclick="return hideDeploymentDialog();"/>
 				</h:panelGrid>
 			</p:dialog>
-			
+
 			<h:panelGrid columns="1" styleClass="buttonPanel">
-				<p:button value="Add Deployment" onclick="showDeploymentDialog(); return false;"/> 
+				<p:button value="Add Deployment" onclick="showDeploymentDialog(); return false;"/>
 			</h:panelGrid>
 
 			<div class="sectionTitle">
@@ -62,9 +62,9 @@
 					<h:outputText value="#{calibration.humanReadableCoefficients}"/>
 				</p:column>
 			</p:dataTable>
-			
+
 			<h:panelGrid columns="1" styleClass="buttonPanel">
-				<p:commandButton value="Back to Instruments List" action="/instrument/instrument_list.xhtml"/> 
+				<p:commandButton value="Back to Instruments List" action="/instrument/instrument_list.xhtml"/>
 			</h:panelGrid>
 		</h:form>
 	</ui:define>

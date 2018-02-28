@@ -38,17 +38,17 @@
 
 		<h:form id="plotPageForm" method="post">
 			<h:inputHidden value="#{sessionScope[beanName].selectableRows}" id="selectableRows"/>
-			<h:inputHidden value="#{sessionScope[beanName].tableJsonData}" id="tableJsonData"/>		
+			<h:inputHidden value="#{sessionScope[beanName].tableJsonData}" id="tableJsonData"/>
 			<h:inputHidden value="#{sessionScope[beanName].tableRowIds}" id="tableRowIds"/>
-			<h:inputHidden value="#{sessionScope[beanName].recordCount}" id="recordCount"/>		
-			<h:inputHidden value="#{sessionScope[beanName].tableDataDraw}" id="tableDataDraw"/>		
-			<h:inputHidden value="#{sessionScope[beanName].tableDataStart}" id="tableDataStart"/>		
-			<h:inputHidden value="#{sessionScope[beanName].tableDataLength}" id="tableDataLength"/>		
-			<h:inputHidden value="#{sessionScope[beanName].additionalTableData}" id="additionalTableData"/>		
-			<h:commandLink id="tableGetData" action="#{sessionScope[beanName].generateTableData}">		
-				<f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw tableRowIds recordCount selectableRows additionalTableData" onevent="tableDataDownload"/>		
+			<h:inputHidden value="#{sessionScope[beanName].recordCount}" id="recordCount"/>
+			<h:inputHidden value="#{sessionScope[beanName].tableDataDraw}" id="tableDataDraw"/>
+			<h:inputHidden value="#{sessionScope[beanName].tableDataStart}" id="tableDataStart"/>
+			<h:inputHidden value="#{sessionScope[beanName].tableDataLength}" id="tableDataLength"/>
+			<h:inputHidden value="#{sessionScope[beanName].additionalTableData}" id="additionalTableData"/>
+			<h:commandLink id="tableGetData" action="#{sessionScope[beanName].generateTableData}">
+				<f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw tableRowIds recordCount selectableRows additionalTableData" onevent="tableDataDownload"/>
 			</h:commandLink>
-			
+
 			<h:inputHidden value="#{sessionScope[beanName].plot1.XAxis}" id="plot1XAxis"/>
 			<h:inputHidden value="#{sessionScope[beanName].plot1.YAxis}" id="plot1YAxis"/>
 			<h:inputHidden value="#{sessionScope[beanName].plot1.data}" id="plot1Data"/>
@@ -56,7 +56,7 @@
 			<h:commandLink id="plot1GetData" action="#{sessionScope[beanName].plot1.updatePlot}">
 				<f:ajax execute="plot1XAxis plot1YAxis map1Variable" render="plot1Data plot1Labels" onevent="updatePlot1"/>
 			</h:commandLink>
-			
+
 			<h:inputHidden value="#{sessionScope[beanName].plot2.XAxis}" id="plot2XAxis"/>
 			<h:inputHidden value="#{sessionScope[beanName].plot2.YAxis}" id="plot2YAxis"/>
 			<h:inputHidden value="#{sessionScope[beanName].plot2.data}" id="plot2Data"/>
@@ -64,9 +64,9 @@
 			<h:commandLink id="plot2GetData" action="#{sessionScope[beanName].plot2.updatePlot}">
 				<f:ajax execute="plot2XAxis plot2YAxis map2Variable" render="plot2Data plot2Labels" onevent="updatePlot2"/>
 			</h:commandLink>
-			
+
 			<h:inputHidden value="#{sessionScope[beanName].dataBounds}" id="dataBounds"/>
-			
+
 			<h:inputHidden value="#{sessionScope[beanName].plot1.mapVariable}" id="map1Variable"/>
 			<h:inputHidden value="#{sessionScope[beanName].plot1.mapBounds}" id="map1Bounds"/>
 			<h:inputHidden value="#{sessionScope[beanName].plot1.mapScaleLimits}" id="map1ScaleLimits"/>
@@ -75,7 +75,7 @@
 			<h:commandLink id="map1GetData" action="#{sessionScope[beanName].plot1.generateMapData}">
 				<f:ajax execute="map1Variable map1Bounds map1UpdateScale plot1Mode" render="map1Data map1ScaleLimits" onevent="updateMap1"/>
 			</h:commandLink>
-			
+
 			<h:inputHidden value="#{sessionScope[beanName].plot2.mapVariable}" id="map2Variable"/>
 			<h:inputHidden value="#{sessionScope[beanName].plot2.mapBounds}" id="map2Bounds"/>
 			<h:inputHidden value="#{sessionScope[beanName].plot2.mapScaleLimits}" id="map2ScaleLimits"/>
@@ -84,11 +84,11 @@
 			<h:commandLink id="map2GetData" action="#{sessionScope[beanName].plot2.generateMapData}">
 				<f:ajax execute="map2Variable map2Bounds map2UpdateScale plot2Mode" render="map2Data map2ScaleLimits" onevent="updateMap2"/>
 			</h:commandLink>
-			
+
 			<div id="infoPopup" class="popup">
 				Info
 			</div>
-			
+
 			<p:dialog widgetVar="variableDialog" modal="true" header="Variables" resizable="false">
 				<div id="variablesList">
 					<ui:repeat value="#{sessionScope[beanName].variablesList}" var="varGroup">
@@ -134,7 +134,7 @@
 							</div>
 						</ui:fragment>
 					</ui:repeat>
-				</div>				
+				</div>
 				<h:panelGrid columns="2" styleClass="buttonPanel">
 					<p:commandButton widgetVar="variableOk" value="OK" onclick="applyVariables();"/>
 					<p:commandButton value="Cancel" onclick="PF('variableDialog').hide();"/>
@@ -143,21 +143,21 @@
 
 			<h:inputHidden id="selectedRows" value="#{sessionScope[beanName].selectedRows}"/>
 			<ui:insert name="selectionDialog"/>
-			
+
 			<ui:insert name="formEntries"></ui:insert>
 			<p:toolbar styleClass="plotPageHeader">
 				<f:facet name="left">
 					<ui:insert name="dataSetName">Data Set Name</ui:insert>
 				</f:facet>
 			</p:toolbar>
-			
+
 			<div id="plotPageContent" class="plotPageContent">
 				<div id="plots">
 					<ui:insert name="plots">Plots</ui:insert>
 				</div>
 				<div id="tableContent"></div>
 			</div>
-			
+
 			<p:toolbar id="footerToolbar" styleClass="plotPageFooter">
 				<f:facet name="left">
 					<ui:insert name="tableControls"></ui:insert>
@@ -173,4 +173,3 @@
 		</h:form>
 	</h:body>
 </html>
-      
