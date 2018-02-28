@@ -103,143 +103,143 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  */
 public class ExportConfig {
 
-	/**
-	 * The concrete instance of the {@code ExportConfig} singleton
-	 */
-	private static ExportConfig instance = null;
+  /**
+   * The concrete instance of the {@code ExportConfig} singleton
+   */
+  private static ExportConfig instance = null;
 
-	/**
-	 * The set of export options
-	 */
-	private List<ExportOption> options = null;
+  /**
+   * The set of export options
+   */
+  private List<ExportOption> options = null;
 
-	/**
-	 * The full path of the export configuration file
-	 */
-	private static String configFilename = null;
+  /**
+   * The full path of the export configuration file
+   */
+  private static String configFilename = null;
 
-	/**
-	 * <p>
-	 *   Loads and parses the export configuration file.
-	 * </p>
-	 *
-	 * <p>
-	 *   This is an internal constructor that is called by the {@link #init(String)} method.
-	 * </p>
-	 *
-	 * @throws ExportException If the configuration file cannot be loaded or parsed
-	 */
-	private ExportConfig() throws ExportException {
-		if (configFilename == null) {
-			throw new ExportException("ExportConfig filename has not been set - must run init first");
-		}
+  /**
+   * <p>
+   *   Loads and parses the export configuration file.
+   * </p>
+   *
+   * <p>
+   *   This is an internal constructor that is called by the {@link #init(String)} method.
+   * </p>
+   *
+   * @throws ExportException If the configuration file cannot be loaded or parsed
+   */
+  private ExportConfig() throws ExportException {
+    if (configFilename == null) {
+      throw new ExportException("ExportConfig filename has not been set - must run init first");
+    }
 
-		options = new ArrayList<ExportOption>();
-		try {
-			readFile();
-		} catch (FileNotFoundException e) {
-			throw new ExportException("Could not find configuration file '" + configFilename + "'");
-		}
-	}
+    options = new ArrayList<ExportOption>();
+    try {
+      readFile();
+    } catch (FileNotFoundException e) {
+      throw new ExportException("Could not find configuration file '" + configFilename + "'");
+    }
+  }
 
-	/**
-	 * Initialises the {@code ExportConfig} singleton. This must be called before the class can be used.
-	 * @param configFile The full path to the export configuration file
-	 * @throws ExportException If the configuration file cannot be loaded or parsed
-	 */
-	public static void init(String configFile) throws ExportException {
-		configFilename = configFile;
-		instance = new ExportConfig();
-	}
+  /**
+   * Initialises the {@code ExportConfig} singleton. This must be called before the class can be used.
+   * @param configFile The full path to the export configuration file
+   * @throws ExportException If the configuration file cannot be loaded or parsed
+   */
+  public static void init(String configFile) throws ExportException {
+    configFilename = configFile;
+    instance = new ExportConfig();
+  }
 
-	/**
-	 * Returns the {@code ExportConfig} singleton instance
-	 * @return The {@code ExportConfig} singleton instance
-	 * @throws ExportException If the class has not been initialised
-	 */
-	public static ExportConfig getInstance() throws ExportException {
+  /**
+   * Returns the {@code ExportConfig} singleton instance
+   * @return The {@code ExportConfig} singleton instance
+   * @throws ExportException If the class has not been initialised
+   */
+  public static ExportConfig getInstance() throws ExportException {
 
-		if (null == instance) {
-			throw new ExportException("Export options have not been configured");
-		}
+    if (null == instance) {
+      throw new ExportException("Export options have not been configured");
+    }
 
-		return instance;
-	}
+    return instance;
+  }
 
-	/**
-	 * Read and parse the export options configuration file
-	 * @throws ExportException If the configuration file is invalid
-	 * @throws FileNotFoundException If the file specified in the {@link #init(String)} call does not exist
-	 */
-	private void readFile() throws ExportException, FileNotFoundException {
+  /**
+   * Read and parse the export options configuration file
+   * @throws ExportException If the configuration file is invalid
+   * @throws FileNotFoundException If the file specified in the {@link #init(String)} call does not exist
+   */
+  private void readFile() throws ExportException, FileNotFoundException {
 
-		BufferedReader reader = new BufferedReader(new FileReader(configFilename));
+    BufferedReader reader = new BufferedReader(new FileReader(configFilename));
 
-		String regex = "(?<!\\\\)" + Pattern.quote(",");
-		int lineCount = 0;
+    String regex = "(?<!\\\\)" + Pattern.quote(",");
+    int lineCount = 0;
 
-		try {
-			String line = reader.readLine();
-			lineCount++;
+    try {
+      String line = reader.readLine();
+      lineCount++;
 
-			while (null != line) {
-				if (!StringUtils.isComment(line)) {
-					List<String> fields = Arrays.asList(line.split(regex));
-					fields = StringUtils.trimList(fields);
+      while (null != line) {
+        if (!StringUtils.isComment(line)) {
+          List<String> fields = Arrays.asList(line.split(regex));
+          fields = StringUtils.trimList(fields);
 
-					String name = fields.get(0);
-					String separator = fields.get(1);
-					if (separator.equals("\\t")) {
-						separator = "\t";
-					}
+          String name = fields.get(0);
+          String separator = fields.get(1);
+          if (separator.equals("\\t")) {
+            separator = "\t";
+          }
 
-					int co2Type = Integer.parseInt(fields.get(2));
+          int co2Type = Integer.parseInt(fields.get(2));
 
-					List<String> columns = fields.subList(3, fields.size());
+          List<String> columns = fields.subList(3, fields.size());
 
-					options.add(new ExportOption(options.size(), name, separator, columns, co2Type));
-				}
+          options.add(new ExportOption(options.size(), name, separator, columns, co2Type));
+        }
 
-				line = reader.readLine();
-				lineCount++;
-			}
-		} catch (Exception e) {
-			if (e instanceof ExportException) {
-				throw (ExportException) e;
-			} else {
-				throw new ExportException("Error initialising export options (line " + lineCount + ")", e);
-			}
-		} finally {
-			try {
-				reader.close();
-			} catch (Exception e) {
-				// Shrug
-			}
-		}
-	}
+        line = reader.readLine();
+        lineCount++;
+      }
+    } catch (Exception e) {
+      if (e instanceof ExportException) {
+        throw (ExportException) e;
+      } else {
+        throw new ExportException("Error initialising export options (line " + lineCount + ")", e);
+      }
+    } finally {
+      try {
+        reader.close();
+      } catch (Exception e) {
+        // Shrug
+      }
+    }
+  }
 
-	/**
-	 * Returns the list of all configured export options
-	 * @return The list of export options
-	 */
-	public List<ExportOption> getOptions() {
-		return options;
-	}
+  /**
+   * Returns the list of all configured export options
+   * @return The list of export options
+   */
+  public List<ExportOption> getOptions() {
+    return options;
+  }
 
-	/**
-	 * <p>
-	 *   Returns a specified export configuration referenced by its position in the configuration file (zero-based).
-	 * </p>
-	 *
-	 * <p>
-	 *   This method will throw an {@link ArrayIndexOutOfBoundsException} if the specified index is outside the range
-	 *   of the list of export options.
-	 * </p>
-	 *
-	 * @param index The index of the desired configuration.
-	 * @return The export configuration
-	 */
-	public ExportOption getOption(int index) {
-		return options.get(index);
-	}
+  /**
+   * <p>
+   *   Returns a specified export configuration referenced by its position in the configuration file (zero-based).
+   * </p>
+   *
+   * <p>
+   *   This method will throw an {@link ArrayIndexOutOfBoundsException} if the specified index is outside the range
+   *   of the list of export options.
+   * </p>
+   *
+   * @param index The index of the desired configuration.
+   * @return The export configuration
+   */
+  public ExportOption getOption(int index) {
+    return options.get(index);
+  }
 }

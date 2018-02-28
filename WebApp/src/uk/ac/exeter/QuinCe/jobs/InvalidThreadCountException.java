@@ -8,16 +8,16 @@ package uk.ac.exeter.QuinCe.jobs;
  */
 public class InvalidThreadCountException extends Exception {
 
-	/**
-	 * The Serial Version UID
-	 */
-	private static final long serialVersionUID = 5225485603801625923L;
+  /**
+   * The Serial Version UID
+   */
+  private static final long serialVersionUID = 5225485603801625923L;
 
-	/**
-	 * Simple constructor.
-	 */
-	public InvalidThreadCountException() {
-		super("The number of threads must be positive");
-	}
+  /**
+   * Simple constructor.
+   */
+  public InvalidThreadCountException() {
+    super("The number of threads must be positive");
+  }
 
 }

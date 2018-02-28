@@ -13,25 +13,25 @@ package uk.ac.exeter.QuinCe.jobs;
  */
 public class JobException extends Exception {
 
-	/**
-	 * The Serial Version UID
-	 */
-	private static final long serialVersionUID = 8771569630286515893L;
+  /**
+   * The Serial Version UID
+   */
+  private static final long serialVersionUID = 8771569630286515893L;
 
-	/**
-	 * Constructor with a simple error message
-	 * @param message The error message
-	 */
-	public JobException(String message) {
-		super(message);
-	}
+  /**
+   * Constructor with a simple error message
+   * @param message The error message
+   */
+  public JobException(String message) {
+    super(message);
+  }
 
-	/**
-	 * Constructor with an error message and an underlying cause
-	 * @param message The error message
-	 * @param cause The underlying cause
-	 */
-	public JobException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  /**
+   * Constructor with an error message and an underlying cause
+   * @param message The error message
+   * @param cause The underlying cause
+   */
+  public JobException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

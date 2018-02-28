@@ -38,152 +38,152 @@ import uk.ac.exeter.QuinCe.User.User;
 @WebFilter("*")
 public class AuthenticatedFilter implements Filter {
 
-	/**
-	 * The list of paths that can be accessed without being logged in.
-	 */
-	private List<String> allowedPaths = new ArrayList<String>();
+  /**
+   * The list of paths that can be accessed without being logged in.
+   */
+  private List<String> allowedPaths = new ArrayList<String>();
 
-	/**
-	 * The list of paths that will be identified as resources.
-	 *
-	 * <p>
-	 *   Resources are things like Javascript files, images, stylesheets etc.
-	 *   They do not need checking as they are not security-restricted in terms
-	 *   of the application.
-	 * </p>
-	 */
-	private List<String> resourcePaths = new ArrayList<String>();
+  /**
+   * The list of paths that will be identified as resources.
+   *
+   * <p>
+   *   Resources are things like Javascript files, images, stylesheets etc.
+   *   They do not need checking as they are not security-restricted in terms
+   *   of the application.
+   * </p>
+   */
+  private List<String> resourcePaths = new ArrayList<String>();
 
-	/**
-	 * Checks all requests for application pages to ensure that the user is
-	 * logged in. If the user is not logged in, they will be redirected
-	 * to the login page with a 'session expired' message.
-	 */
-	@Override
-	public void doFilter(ServletRequest req, ServletResponse res, FilterChain filterChain) throws IOException, ServletException {
-		HttpServletRequest request = (HttpServletRequest) req;
+  /**
+   * Checks all requests for application pages to ensure that the user is
+   * logged in. If the user is not logged in, they will be redirected
+   * to the login page with a 'session expired' message.
+   */
+  @Override
+  public void doFilter(ServletRequest req, ServletResponse res, FilterChain filterChain) throws IOException, ServletException {
+    HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         HttpSession session = request.getSession(false);
 
-    	String requestURL = request.getRequestURI();
-    	if (requestURL.endsWith("/")) {
-    		requestURL = requestURL.substring(0, requestURL.length() - 1);
-    	}
+      String requestURL = request.getRequestURI();
+      if (requestURL.endsWith("/")) {
+        requestURL = requestURL.substring(0, requestURL.length() - 1);
+      }
 
         if (null == session) {
-        	if (requestURL.equals(request.getContextPath())) {
-        		filterChain.doFilter(request, response);
-        	} else {
-        		response.sendRedirect(request.getContextPath());
-        	}
+          if (requestURL.equals(request.getContextPath())) {
+            filterChain.doFilter(request, response);
+          } else {
+            response.sendRedirect(request.getContextPath());
+          }
         } else {
 
             // Get the user's email address from the session (if possible)
             User user = (User) session.getAttribute(LoginBean.USER_SESSION_ATTR);
 
             if (user != null || isResourceRequest(request) || isAllowedPath(request)) {
-            	filterChain.doFilter(request, response);
+              filterChain.doFilter(request, response);
             } else {
-            	if (requestURL.equals(request.getContextPath())) {
-                	session.removeAttribute("SESSION_EXPIRED");
-                	filterChain.doFilter(request, response);
-            	} else {
-                	session.setAttribute("SESSION_EXPIRED", "true");
+              if (requestURL.equals(request.getContextPath())) {
+                  session.removeAttribute("SESSION_EXPIRED");
+                  filterChain.doFilter(request, response);
+              } else {
+                  session.setAttribute("SESSION_EXPIRED", "true");
                     response.sendRedirect(request.getContextPath());
-            	}
+              }
             }
         }
-	}
+  }
 
-	/**
-	 * Determines whether or not this is a request for a resource rather than
-	 * a page of the application.
-	 * @param request The request
-	 * @return {@code true} if the request is a resource request; {@code false} otherwise.
-	 * @see #resourcePaths
-	 */
-	private boolean isResourceRequest(HttpServletRequest request) {
-		boolean result = false;
+  /**
+   * Determines whether or not this is a request for a resource rather than
+   * a page of the application.
+   * @param request The request
+   * @return {@code true} if the request is a resource request; {@code false} otherwise.
+   * @see #resourcePaths
+   */
+  private boolean isResourceRequest(HttpServletRequest request) {
+    boolean result = false;
 
-		for (String resourcePath : resourcePaths) {
-			if (request.getRequestURI().startsWith(request.getContextPath() + resourcePath)) {
-				result = true;
-				break;
-			}
-		}
+    for (String resourcePath : resourcePaths) {
+      if (request.getRequestURI().startsWith(request.getContextPath() + resourcePath)) {
+        result = true;
+        break;
+      }
+    }
 
-		return result;
-	}
+    return result;
+  }
 
-	/**
-	 * Determines whether or not a page can be accessed without the user having logged in.
-	 * @param request The request
-	 * @return {@code true} if the request is allowed without being logged in; {@code false} otherwise.
-	 * @see #allowedPaths
-	 */
-	private boolean isAllowedPath(HttpServletRequest request) {
-		boolean allowed = false;
+  /**
+   * Determines whether or not a page can be accessed without the user having logged in.
+   * @param request The request
+   * @return {@code true} if the request is allowed without being logged in; {@code false} otherwise.
+   * @see #allowedPaths
+   */
+  private boolean isAllowedPath(HttpServletRequest request) {
+    boolean allowed = false;
 
-		if (request.getRequestURI().equals(request.getContextPath() + "/")) {
-			allowed = true;
-		} else {
-			for (String allowedPath: allowedPaths) {
-				String pathURIBase = request.getContextPath() + allowedPath;
-				String requestURI = request.getRequestURI();
-				int sessionIdPos = requestURI.indexOf(";jsessionid");
-				if (sessionIdPos != -1) {
-					requestURI = requestURI.substring(0, sessionIdPos);
-				}
+    if (request.getRequestURI().equals(request.getContextPath() + "/")) {
+      allowed = true;
+    } else {
+      for (String allowedPath: allowedPaths) {
+        String pathURIBase = request.getContextPath() + allowedPath;
+        String requestURI = request.getRequestURI();
+        int sessionIdPos = requestURI.indexOf(";jsessionid");
+        if (sessionIdPos != -1) {
+          requestURI = requestURI.substring(0, sessionIdPos);
+        }
 
-				boolean pathMatched = false;
+        boolean pathMatched = false;
 
 
-				// Allowed paths with . in are complete, so don't try adding a suffix
-				if (allowedPath.contains(".") && requestURI.equals(pathURIBase)) {
-					pathMatched = true;
-				} else if (requestURI.equals(pathURIBase + ".jsf")) {
-					pathMatched = true;
-				} else if (requestURI.equals(pathURIBase + ".xhtml")) {
-					pathMatched = true;
-				}
+        // Allowed paths with . in are complete, so don't try adding a suffix
+        if (allowedPath.contains(".") && requestURI.equals(pathURIBase)) {
+          pathMatched = true;
+        } else if (requestURI.equals(pathURIBase + ".jsf")) {
+          pathMatched = true;
+        } else if (requestURI.equals(pathURIBase + ".xhtml")) {
+          pathMatched = true;
+        }
 
-				if (pathMatched) {
-					allowed = true;
-					break;
-				}
-			}
-		}
+        if (pathMatched) {
+          allowed = true;
+          break;
+        }
+      }
+    }
 
-		return allowed;
-	}
+    return allowed;
+  }
 
-	/**
-	 * Sets up the list of resource paths, and pages that can be accessed without being logged in.
-	 *
-	 * <p>
-	 *   Pages specified without an extension are checked for both{@code .jsf} and {@code .xhtml} requests.
-	 *   Pages with extensions are checked as-is.
-	 * </p>
-	 */
-	@Override
-	public void init(FilterConfig arg0) throws ServletException {
-		allowedPaths.add("/index");
-		allowedPaths.add("/user/signup");
-		allowedPaths.add("/user/signup_complete");
-		allowedPaths.add("/user/verify_email");
-		allowedPaths.add("/credits");
-		allowedPaths.add("/favicon.ico");
+  /**
+   * Sets up the list of resource paths, and pages that can be accessed without being logged in.
+   *
+   * <p>
+   *   Pages specified without an extension are checked for both{@code .jsf} and {@code .xhtml} requests.
+   *   Pages with extensions are checked as-is.
+   * </p>
+   */
+  @Override
+  public void init(FilterConfig arg0) throws ServletException {
+    allowedPaths.add("/index");
+    allowedPaths.add("/user/signup");
+    allowedPaths.add("/user/signup_complete");
+    allowedPaths.add("/user/verify_email");
+    allowedPaths.add("/credits");
+    allowedPaths.add("/favicon.ico");
 
-		resourcePaths.add(ResourceHandler.RESOURCE_IDENTIFIER);
-		resourcePaths.add("/resources");
-	}
+    resourcePaths.add(ResourceHandler.RESOURCE_IDENTIFIER);
+    resourcePaths.add("/resources");
+  }
 
-	/**
-	 * Destruction - nothing needs doing
-	 */
-	@Override
-	public void destroy() {
-		// Do nothing
-	}
+  /**
+   * Destruction - nothing needs doing
+   */
+  @Override
+  public void destroy() {
+    // Do nothing
+  }
 
 }

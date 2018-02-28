@@ -7,16 +7,16 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
  */
 public class UnrecognisedCalibrationTypeException extends CalibrationException {
 
-	/**
-	 * The serial version UID
-	 */
-	private static final long serialVersionUID = 7615133288119877695L;
+  /**
+   * The serial version UID
+   */
+  private static final long serialVersionUID = 7615133288119877695L;
 
-	/**
-	 * Simple constructor
-	 * @param type The unrecognised type
-	 */
-	public UnrecognisedCalibrationTypeException(String type) {
-		super("Unrecognised calibration type '" + type + "'");
-	}
+  /**
+   * Simple constructor
+   * @param type The unrecognised type
+   */
+  public UnrecognisedCalibrationTypeException(String type) {
+    super("Unrecognised calibration type '" + type + "'");
+  }
 }

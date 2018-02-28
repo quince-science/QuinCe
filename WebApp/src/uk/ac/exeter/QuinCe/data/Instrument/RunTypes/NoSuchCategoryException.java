@@ -7,16 +7,16 @@ package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
  */
 public class NoSuchCategoryException extends RunTypeCategoryException {
 
-	/**
-	 * The serial version UID
-	 */
-	private static final long serialVersionUID = -1941769419137273289L;
+  /**
+   * The serial version UID
+   */
+  private static final long serialVersionUID = -1941769419137273289L;
 
-	/**
-	 * Basic constructor
-	 * @param code The run type code that could not be found
-	 */
-	public NoSuchCategoryException(String code) {
-		super("There is no Run Type Category with code " + code);
-	}
+  /**
+   * Basic constructor
+   * @param code The run type code that could not be found
+   */
+  public NoSuchCategoryException(String code) {
+    super("There is no Run Type Category with code " + code);
+  }
 }

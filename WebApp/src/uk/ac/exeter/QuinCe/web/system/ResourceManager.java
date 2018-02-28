@@ -34,48 +34,48 @@ import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
  */
 public class ResourceManager implements ServletContextListener {
 
-	/**
-	 * The name of the QC Routines configuration for routines run when files
-	 * are first uploaded
-	 */
-	public static final String INITIAL_CHECK_ROUTINES_CONFIG = "InitialCheck";
+  /**
+   * The name of the QC Routines configuration for routines run when files
+   * are first uploaded
+   */
+  public static final String INITIAL_CHECK_ROUTINES_CONFIG = "InitialCheck";
 
-	/**
-	 * The name of the QC routines configuration for routines run during
-	 * full automatic QC (after data reduction)
-	 */
-	public static final String QC_ROUTINES_CONFIG = "QC";
+  /**
+   * The name of the QC routines configuration for routines run during
+   * full automatic QC (after data reduction)
+   */
+  public static final String QC_ROUTINES_CONFIG = "QC";
 
-	/**
-	 * The application's data source
-	 */
-	private DataSource dbDataSource;
+  /**
+   * The application's data source
+   */
+  private DataSource dbDataSource;
 
-	/**
-	 * The application's configuration
-	 */
-	private Properties configuration;
+  /**
+   * The application's configuration
+   */
+  private Properties configuration;
 
-	/**
-	 * The column configuration used by the QC routines
-	 */
-	private ColumnConfig columnConfig;
+  /**
+   * The column configuration used by the QC routines
+   */
+  private ColumnConfig columnConfig;
 
-	private SensorsConfiguration sensorsConfiguration;
+  private SensorsConfiguration sensorsConfiguration;
 
-	private RunTypeCategoryConfiguration runTypeCategoryConfiguration;
+  private RunTypeCategoryConfiguration runTypeCategoryConfiguration;
 
-	/**
-	 * The singleton instance of the resource manage
-	 */
-	private static ResourceManager instance = null;
+  /**
+   * The singleton instance of the resource manage
+   */
+  private static ResourceManager instance = null;
 
-	@Override
+  @Override
     public void contextInitialized(ServletContextEvent event) {
         ServletContext servletContext = event.getServletContext();
         String databaseName = servletContext.getInitParameter("database.name");
         try {
-        		dbDataSource = (DataSource) createInitialContext().lookup(databaseName);
+            dbDataSource = (DataSource) createInitialContext().lookup(databaseName);
         } catch (NamingException e) {
             throw new RuntimeException("Config failed: datasource not found", e);
         }
@@ -89,61 +89,61 @@ public class ResourceManager implements ServletContextListener {
 
 
         // Initialise the job thread pool
-       	try {
-			JobThreadPool.initialise(3);
-		} catch (InvalidThreadCountException e) {
-			// Do nothing for now
-		}
+        try {
+      JobThreadPool.initialise(3);
+    } catch (InvalidThreadCountException e) {
+      // Do nothing for now
+    }
 
-       	// Initialise the column config
-       	try {
-       		ColumnConfig.init(configuration.getProperty("columns.configfile"));
-       		columnConfig = ColumnConfig.getInstance();
-       	} catch (ConfigException e) {
-       		throw new RuntimeException("Could not initialise data column configuration", e);
-       	}
+        // Initialise the column config
+        try {
+          ColumnConfig.init(configuration.getProperty("columns.configfile"));
+          columnConfig = ColumnConfig.getInstance();
+        } catch (ConfigException e) {
+          throw new RuntimeException("Could not initialise data column configuration", e);
+        }
 
-       	// Initialise the Extraction Check Routines configuration
-       	try {
-       		RoutinesConfig.init(INITIAL_CHECK_ROUTINES_CONFIG, configuration.getProperty("extract_routines.configfile"));
-       	} catch (ConfigException e) {
-       		throw new RuntimeException("Could not initialise Extraction Check Routines", e);
-       	}
+        // Initialise the Extraction Check Routines configuration
+        try {
+          RoutinesConfig.init(INITIAL_CHECK_ROUTINES_CONFIG, configuration.getProperty("extract_routines.configfile"));
+        } catch (ConfigException e) {
+          throw new RuntimeException("Could not initialise Extraction Check Routines", e);
+        }
 
-       	// Initialise the QC Routines configuration
-       	try {
-       		RoutinesConfig.init(QC_ROUTINES_CONFIG, configuration.getProperty("qc_routines.configfile"));
-       	} catch (ConfigException e) {
-       		throw new RuntimeException("Could not initialise QC Routines", e);
-       	}
+        // Initialise the QC Routines configuration
+        try {
+          RoutinesConfig.init(QC_ROUTINES_CONFIG, configuration.getProperty("qc_routines.configfile"));
+        } catch (ConfigException e) {
+          throw new RuntimeException("Could not initialise QC Routines", e);
+        }
 
-       	// Initialise the file export options configuration
-       	try {
-       		ExportConfig.init(configuration.getProperty("export.configfile"));
-       	} catch (ExportException e) {
-       		throw new RuntimeException("Could not initialise export configuration", e);
-       	}
+        // Initialise the file export options configuration
+        try {
+          ExportConfig.init(configuration.getProperty("export.configfile"));
+        } catch (ExportException e) {
+          throw new RuntimeException("Could not initialise export configuration", e);
+        }
 
-       	// Initialise the sensors configuration
-       	try {
-       		sensorsConfiguration = new SensorsConfiguration(new File(configuration.getProperty("sensors.configfile")));
-       	} catch (SensorConfigurationException e) {
-       		throw new RuntimeException("Could not load sensors configuration", e);
-       	}
+        // Initialise the sensors configuration
+        try {
+          sensorsConfiguration = new SensorsConfiguration(new File(configuration.getProperty("sensors.configfile")));
+        } catch (SensorConfigurationException e) {
+          throw new RuntimeException("Could not load sensors configuration", e);
+        }
 
-       	// Initialise run type category configuration
-       	try {
-       		runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(new File(configuration.getProperty("runtypes.configfile")));
-       	} catch (RunTypeCategoryException e) {
-       		throw new RuntimeException("Could not load sensors configuration", e);
-       	}
+        // Initialise run type category configuration
+        try {
+          runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(new File(configuration.getProperty("runtypes.configfile")));
+        } catch (RunTypeCategoryException e) {
+          throw new RuntimeException("Could not load sensors configuration", e);
+        }
 
-       	instance = this;
-	}
+        instance = this;
+  }
 
-	protected InitialContext createInitialContext() throws NamingException {
-		return new InitialContext();
-	}
+  protected InitialContext createInitialContext() throws NamingException {
+    return new InitialContext();
+  }
 
     @Override
     public void contextDestroyed(ServletContextEvent event) {
@@ -171,16 +171,16 @@ public class ResourceManager implements ServletContextListener {
      * @return The column configuration
      */
     public ColumnConfig getColumnConfig() {
-    	return columnConfig;
+      return columnConfig;
     }
 
 
     public SensorsConfiguration getSensorsConfiguration() {
-    	return sensorsConfiguration;
+      return sensorsConfiguration;
     }
 
     public RunTypeCategoryConfiguration getRunTypeCategoryConfiguration() {
-    	return runTypeCategoryConfiguration;
+      return runTypeCategoryConfiguration;
     }
 
     /**
@@ -191,7 +191,7 @@ public class ResourceManager implements ServletContextListener {
      * @throws IOException If the file cannot be read
      */
     protected Properties loadConfiguration(String filePath) throws FileNotFoundException, IOException {
-    		Properties result = new Properties();
+        Properties result = new Properties();
         result.load(new FileInputStream(new File(filePath)));
         return result;
     }

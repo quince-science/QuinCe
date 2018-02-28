@@ -25,18 +25,18 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 @WebListener
 public class JobTidier extends BackgroundTask {
 
-	@Override
-	protected void doTask() throws BackgroundTaskException {
-		try {
-			JobManager.deleteFinishedJobs(ResourceManager.getInstance().getDBDataSource(), 28);
-		} catch (Exception e) {
-			throw new BackgroundTaskException(e);
-		}
-	}
+  @Override
+  protected void doTask() throws BackgroundTaskException {
+    try {
+      JobManager.deleteFinishedJobs(ResourceManager.getInstance().getDBDataSource(), 28);
+    } catch (Exception e) {
+      throw new BackgroundTaskException(e);
+    }
+  }
 
-	@Override
-	protected long getRunInterval() {
-		return 86400;
-	}
+  @Override
+  protected long getRunInterval() {
+    return 86400;
+  }
 
 }

@@ -26,7 +26,7 @@ import java.util.Random;
  *   </li>
  *   <li>
  *     Redistributions in binary form must reproduce the above copyright notice,
- * 	   this list of conditions and the following disclaimer in the documentation
+ *     this list of conditions and the following disclaimer in the documentation
  *     and/or other materials provided with the distribution.
  *   </li>
  * </ol>
@@ -53,7 +53,7 @@ public class PasswordHash
      * The algorithm to use for the hashes. CHANGING THIS WILL BREAK
      * EXISTING HASHES.
      */
-	public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
+  public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
 
     /**
      * The size of the salt in bytes. Can be changed without breaking existing hashes.
@@ -89,9 +89,9 @@ public class PasswordHash
      */
     public static final int PBKDF2_INDEX = 2;
 
-	/**
-	 * Characters to be used in generating salts.
-	 */
+  /**
+   * Characters to be used in generating salts.
+   */
     private static final byte[] VALID_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456879".getBytes();
 
 
@@ -196,8 +196,8 @@ public class PasswordHash
      * @param   iterations  the iteration count (slowness factor)
      * @param   bytes       the length of the hash to compute in bytes
      * @return              the PBDKF2 hash of the password
-	 * @throws NoSuchAlgorithmException If the hashing algorithm is not supported
-	 * @throws InvalidKeySpecException If the key specification is invalid
+   * @throws NoSuchAlgorithmException If the hashing algorithm is not supported
+   * @throws InvalidKeySpecException If the key specification is invalid
      */
     protected static byte[] pbkdf2(char[] password, byte[] salt, int iterations, int bytes)
         throws NoSuchAlgorithmException, InvalidKeySpecException
@@ -303,17 +303,17 @@ public class PasswordHash
      *   So what you can do is seed Random with 64 bits of entropy bits. Every call to {@code Random.nextInt(62)}
      *   will consume 6 bits of entropy, so you can generate 10 alphanumeric characters that are "fully random"
      *   before you run out of entropy bits {@code (64/10 > log2(62))}.
-	 * </p>
-	 * <p>
-	 *   This means you get 5 times the characters for the same number of entropy bits. This is the fastest way
-	 *   to generate purely random alphanumeric strings.
-	 * </p>
-	 *
+   * </p>
+   * <p>
+   *   This means you get 5 times the characters for the same number of entropy bits. This is the fastest way
+   *   to generate purely random alphanumeric strings.
+   * </p>
+   *
      * @param size The length of the string
      * @return The generated string
      */
     public static byte[] generateRandomString(int size) {
-    	SecureRandom srand = new SecureRandom();
+      SecureRandom srand = new SecureRandom();
         Random rand = new Random();
         byte[] randomString = new byte[size];
 
@@ -332,8 +332,8 @@ public class PasswordHash
      * @return The salt
      */
     public static byte[] generateSalt() {
-    	// Copied from createHash above
-    	SecureRandom random = new SecureRandom();
+      // Copied from createHash above
+      SecureRandom random = new SecureRandom();
         byte[] salt = new byte[SALT_BYTE_SIZE];
         random.nextBytes(salt);
         return salt;

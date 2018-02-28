@@ -86,183 +86,183 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 public class AutoQCJob extends Job {
 
-	/**
-	 * The parameter name for the data set id
-	 */
-	public static final String ID_PARAM = "id";
+  /**
+   * The parameter name for the data set id
+   */
+  public static final String ID_PARAM = "id";
 
-	/**
-	 * The name of the job parameter that contains the path to the configuration
-	 * for the QC Routines
-	 * @see RoutinesConfig
-	 */
-	public static final String PARAM_ROUTINES_CONFIG = "ROUTINES_CONFIG";
+  /**
+   * The name of the job parameter that contains the path to the configuration
+   * for the QC Routines
+   * @see RoutinesConfig
+   */
+  public static final String PARAM_ROUTINES_CONFIG = "ROUTINES_CONFIG";
 
-	/**
-	 * Constructor that allows the {@link JobManager} to create an instance of this job.
-	 * @param resourceManager The application's resource manager
-	 * @param config The application configuration
-	 * @param jobId The database ID of the job
-	 * @param parameters The job parameters
-	 * @throws MissingParamException If any parameters are missing
-	 * @throws InvalidJobParametersException If any of the job parameters are invalid
-	 * @throws DatabaseException If a database occurs
-	 * @throws RecordNotFoundException If any required database records are missing
-	 * @see JobManager#getNextJob(ResourceManager, Properties)
-	 */
-	public AutoQCJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
-		super(resourceManager, config, jobId, parameters);
-	}
+  /**
+   * Constructor that allows the {@link JobManager} to create an instance of this job.
+   * @param resourceManager The application's resource manager
+   * @param config The application configuration
+   * @param jobId The database ID of the job
+   * @param parameters The job parameters
+   * @throws MissingParamException If any parameters are missing
+   * @throws InvalidJobParametersException If any of the job parameters are invalid
+   * @throws DatabaseException If a database occurs
+   * @throws RecordNotFoundException If any required database records are missing
+   * @see JobManager#getNextJob(ResourceManager, Properties)
+   */
+  public AutoQCJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+    super(resourceManager, config, jobId, parameters);
+  }
 
-	/**
-	 * Runs the configured QC routines on the file specified in the job parameters.
-	 * @param thread The thread that is running this job
-	 * @see FileJob#FILE_ID_KEY
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	protected void execute(JobThread thread) throws JobFailedException {
+  /**
+   * Runs the configured QC routines on the file specified in the job parameters.
+   * @param thread The thread that is running this job
+   * @see FileJob#FILE_ID_KEY
+   */
+  @SuppressWarnings("unchecked")
+  @Override
+  protected void execute(JobThread thread) throws JobFailedException {
 
-		Connection conn = null;
-		long datasetId = Long.parseLong(parameters.get(ID_PARAM));
+    Connection conn = null;
+    long datasetId = Long.parseLong(parameters.get(ID_PARAM));
 
-		try {
-			conn = dataSource.getConnection();
+    try {
+      conn = dataSource.getConnection();
 
-			CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
+      CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
 
-			// TODO This should be replaced with something that gets all the records in one query.
-			//      This will need changes to how the CalculationRecords are built
-			List<Long> measurementIds = DataSetDataDB.getMeasurementIds(conn, datasetId);
-			List<? extends DataRecord> records = getRecords(conn, datasetId, measurementIds);
+      // TODO This should be replaced with something that gets all the records in one query.
+      //      This will need changes to how the CalculationRecords are built
+      List<Long> measurementIds = DataSetDataDB.getMeasurementIds(conn, datasetId);
+      List<? extends DataRecord> records = getRecords(conn, datasetId, measurementIds);
 
-			// Remove any existing automatic QC flags or records
-			for (DataRecord record : records) {
-				((CalculationRecord) record).clearAutoQCData();
-			}
+      // Remove any existing automatic QC flags or records
+      for (DataRecord record : records) {
+        ((CalculationRecord) record).clearAutoQCData();
+      }
 
-			List<Routine> routines = RoutinesConfig.getInstance(parameters.get(PARAM_ROUTINES_CONFIG)).getRoutines();
+      List<Routine> routines = RoutinesConfig.getInstance(parameters.get(PARAM_ROUTINES_CONFIG)).getRoutines();
 
-			for (Routine routine : routines) {
-				routine.processRecords((List<DataRecord>) records, null);
-			}
+      for (Routine routine : routines) {
+        routine.processRecords((List<DataRecord>) records, null);
+      }
 
-			// Record the messages from the QC in the database
-			conn = dataSource.getConnection();
-			conn.setAutoCommit(false);
-			for (DataRecord record : records) {
+      // Record the messages from the QC in the database
+      conn = dataSource.getConnection();
+      conn.setAutoCommit(false);
+      for (DataRecord record : records) {
 
-				if (thread.isInterrupted()) {
-					break;
-				}
+        if (thread.isInterrupted()) {
+          break;
+        }
 
-				CalculationRecord qcRecord = (CalculationRecord) record;
-				boolean writeRecord = false;
+        CalculationRecord qcRecord = (CalculationRecord) record;
+        boolean writeRecord = false;
 
-				int messageCount = qcRecord.getMessages().size();
+        int messageCount = qcRecord.getMessages().size();
 
-				Flag previousQCFlag = calculationDB.getAutoQCFlag(conn, qcRecord.getLineNumber());
-				if (previousQCFlag.equals(Flag.NOT_SET)) {
-					writeRecord = true;
-				}
+        Flag previousQCFlag = calculationDB.getAutoQCFlag(conn, qcRecord.getLineNumber());
+        if (previousQCFlag.equals(Flag.NOT_SET)) {
+          writeRecord = true;
+        }
 
-				if (messageCount == 0) {
-					if (!previousQCFlag.isGood()) {
-						qcRecord.setAutoFlag(Flag.GOOD);
-						qcRecord.setUserFlag(Flag.ASSUMED_GOOD);
-						qcRecord.setUserMessage(null);
-						writeRecord = true;
-					} else {
-						Flag userFlag = qcRecord.getUserFlag();
-						if (!userFlag.equals(Flag.ASSUMED_GOOD) && !userFlag.equals(Flag.GOOD)) {
-							qcRecord.setUserFlag(Flag.ASSUMED_GOOD);
-							qcRecord.setUserMessage(null);
-							writeRecord = true;
-						}
-					}
-				} else {
+        if (messageCount == 0) {
+          if (!previousQCFlag.isGood()) {
+            qcRecord.setAutoFlag(Flag.GOOD);
+            qcRecord.setUserFlag(Flag.ASSUMED_GOOD);
+            qcRecord.setUserMessage(null);
+            writeRecord = true;
+          } else {
+            Flag userFlag = qcRecord.getUserFlag();
+            if (!userFlag.equals(Flag.ASSUMED_GOOD) && !userFlag.equals(Flag.GOOD)) {
+              qcRecord.setUserFlag(Flag.ASSUMED_GOOD);
+              qcRecord.setUserMessage(null);
+              writeRecord = true;
+            }
+          }
+        } else {
 
-					// Compare the QC comment (which is the Rebuild Codes for the
-					// messages) with the new rebuild codes. If they're the same,
-					// take no action. Otherwise reset the QC & WOCE flags and comments
-					boolean messagesMatch = true;
-					List<Message> databaseMessages = calculationDB.getQCMessages(conn, qcRecord.getLineNumber());
-					if (databaseMessages.size() != qcRecord.getMessages().size()) {
-						messagesMatch = false;
-					} else {
-						for (int i = 0; i < databaseMessages.size() && messagesMatch; i++) {
-							Message databaseMessage = databaseMessages.get(i);
-							boolean databaseMessageFound = false;
-							for (Message recordMessage : qcRecord.getMessages()) {
-								databaseMessageFound = recordMessage.equals(databaseMessage);
-							}
+          // Compare the QC comment (which is the Rebuild Codes for the
+          // messages) with the new rebuild codes. If they're the same,
+          // take no action. Otherwise reset the QC & WOCE flags and comments
+          boolean messagesMatch = true;
+          List<Message> databaseMessages = calculationDB.getQCMessages(conn, qcRecord.getLineNumber());
+          if (databaseMessages.size() != qcRecord.getMessages().size()) {
+            messagesMatch = false;
+          } else {
+            for (int i = 0; i < databaseMessages.size() && messagesMatch; i++) {
+              Message databaseMessage = databaseMessages.get(i);
+              boolean databaseMessageFound = false;
+              for (Message recordMessage : qcRecord.getMessages()) {
+                databaseMessageFound = recordMessage.equals(databaseMessage);
+              }
 
-							if (!databaseMessageFound) {
-								messagesMatch = false;
-							}
-						}
-					}
+              if (!databaseMessageFound) {
+                messagesMatch = false;
+              }
+            }
+          }
 
-					if (!messagesMatch) {
-						if (qcRecord.getAutoFlag().equals(Flag.FATAL)) {
-							qcRecord.setUserFlag(Flag.FATAL);
-						} else {
-							qcRecord.setUserFlag(Flag.NEEDED);
-						}
-						qcRecord.setUserMessage(qcRecord.getMessageSummaries());
-						writeRecord = true;
-					}
-				}
+          if (!messagesMatch) {
+            if (qcRecord.getAutoFlag().equals(Flag.FATAL)) {
+              qcRecord.setUserFlag(Flag.FATAL);
+            } else {
+              qcRecord.setUserFlag(Flag.NEEDED);
+            }
+            qcRecord.setUserMessage(qcRecord.getMessageSummaries());
+            writeRecord = true;
+          }
+        }
 
-				if (writeRecord) {
-					calculationDB.storeQC(conn, (CalculationRecord) record);
-				}
-			}
+        if (writeRecord) {
+          calculationDB.storeQC(conn, (CalculationRecord) record);
+        }
+      }
 
-			// If the thread was interrupted, undo everything
-			if (thread.isInterrupted()) {
-				conn.rollback();
-			} else {
-				// Commit all the records
-				DataSetDB.setDatasetStatus(conn, datasetId, DataSet.STATUS_QC);
-				conn.commit();
-			}
-		} catch (Exception e) {
-			throw new JobFailedException(id, e);
-		} finally {
-			DatabaseUtils.closeConnection(conn);
-		}
-	}
+      // If the thread was interrupted, undo everything
+      if (thread.isInterrupted()) {
+        conn.rollback();
+      } else {
+        // Commit all the records
+        DataSetDB.setDatasetStatus(conn, datasetId, DataSet.STATUS_QC);
+        conn.commit();
+      }
+    } catch (Exception e) {
+      throw new JobFailedException(id, e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+  }
 
-	@Override
-	protected void validateParameters() throws InvalidJobParametersException {
-		// TODO Auto-generated method stub
-	}
+  @Override
+  protected void validateParameters() throws InvalidJobParametersException {
+    // TODO Auto-generated method stub
+  }
 
-	/**
-	 * Get the calculation records for a set of measurements. QUESTIONABLE, BAD or IGNORED records
-	 * are not included.
-	 * @param datasetId The dataset ID
-	 * @param ids The measurement IDs
-	 * @return The calculation records
-	 * @throws MissingParamException If any required parameters are missing
-	 * @throws DatabaseException If a database error occurs
-	 * @throws RecordNotFoundException If the record is not in the database
-	 * @throws InvalidDataException If a field cannot be added to the record
-	 * @throws MessageException If the automatic QC messages cannot be parsed
-	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed
-	 */
-	private List<CalculationRecord> getRecords(Connection conn, long datasetId, List<Long> ids) throws MissingParamException, InvalidDataException, NoSuchColumnException, DatabaseException, RecordNotFoundException, MessageException {
-		List<CalculationRecord> records = new ArrayList<CalculationRecord>(ids.size());
+  /**
+   * Get the calculation records for a set of measurements. QUESTIONABLE, BAD or IGNORED records
+   * are not included.
+   * @param datasetId The dataset ID
+   * @param ids The measurement IDs
+   * @return The calculation records
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   * @throws RecordNotFoundException If the record is not in the database
+   * @throws InvalidDataException If a field cannot be added to the record
+   * @throws MessageException If the automatic QC messages cannot be parsed
+   * @throws NoSuchColumnException If the automatic QC messages cannot be parsed
+   */
+  private List<CalculationRecord> getRecords(Connection conn, long datasetId, List<Long> ids) throws MissingParamException, InvalidDataException, NoSuchColumnException, DatabaseException, RecordNotFoundException, MessageException {
+    List<CalculationRecord> records = new ArrayList<CalculationRecord>(ids.size());
 
-		for (long id : ids) {
-			CalculationRecord record = CalculationRecordFactory.makeCalculationRecord(datasetId, id);
-			record.loadData(conn);
-			if (!record.getUserFlag().equals(Flag.QUESTIONABLE) && !record.getUserFlag().equals(Flag.BAD) && !record.getUserFlag().equals(Flag.IGNORED)) {
-				records.add(record);
-			}
-		}
+    for (long id : ids) {
+      CalculationRecord record = CalculationRecordFactory.makeCalculationRecord(datasetId, id);
+      record.loadData(conn);
+      if (!record.getUserFlag().equals(Flag.QUESTIONABLE) && !record.getUserFlag().equals(Flag.BAD) && !record.getUserFlag().equals(Flag.IGNORED)) {
+        records.add(record);
+      }
+    }
 
-		return records;
-	}
+    return records;
+  }
 }

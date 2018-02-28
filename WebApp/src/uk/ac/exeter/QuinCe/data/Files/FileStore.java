@@ -24,155 +24,155 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  */
 public class FileStore {
 
-	/**
-	 * Store a file in the file store.
-	 * This will overwrite any existing file.
-	 *
-	 * @param fileStore The location of the file store
-	 * @param dataFile The data file
-	 * @throws MissingParamException If any of the parameters are missing
-	 * @throws FileStoreException If an error occurs while storing the file
-	 * @see DataFileDB#storeFile(DataSource, Properties, DataFile)
-	 */
-	protected static void storeFile(String fileStore, DataFile dataFile) throws MissingParamException, FileStoreException {
+  /**
+   * Store a file in the file store.
+   * This will overwrite any existing file.
+   *
+   * @param fileStore The location of the file store
+   * @param dataFile The data file
+   * @throws MissingParamException If any of the parameters are missing
+   * @throws FileStoreException If an error occurs while storing the file
+   * @see DataFileDB#storeFile(DataSource, Properties, DataFile)
+   */
+  protected static void storeFile(String fileStore, DataFile dataFile) throws MissingParamException, FileStoreException {
 
-		MissingParam.checkMissing(fileStore, "fileStore");
-		MissingParam.checkMissing(dataFile, "dataFile");
+    MissingParam.checkMissing(fileStore, "fileStore");
+    MissingParam.checkMissing(dataFile, "dataFile");
 
-		FileWriter fileWriter = null;
-		File file = null;
+    FileWriter fileWriter = null;
+    File file = null;
 
-		try {
-			checkInstrumentDirectory(fileStore, dataFile.getFileDefinition().getDatabaseId());
+    try {
+      checkInstrumentDirectory(fileStore, dataFile.getFileDefinition().getDatabaseId());
 
-			file = getFileObject(fileStore, dataFile);
-			if (file.exists()) {
-				file.delete();
-			}
+      file = getFileObject(fileStore, dataFile);
+      if (file.exists()) {
+        file.delete();
+      }
 
-			fileWriter = new FileWriter(file);
-			fileWriter.write(dataFile.getContents());
-			fileWriter.close();
+      fileWriter = new FileWriter(file);
+      fileWriter.write(dataFile.getContents());
+      fileWriter.close();
 
-		} catch (Exception e) {
+    } catch (Exception e) {
 
-			closeWriter(fileWriter);
-			deleteFile(file);
+      closeWriter(fileWriter);
+      deleteFile(file);
 
-			throw new FileStoreException("An error occurred while storing the file", e);
-		}
-	}
+      throw new FileStoreException("An error occurred while storing the file", e);
+    }
+  }
 
-	/**
-	 * Deletes a file from the file store
-	 * @param fileStore The location of the file store
-	 * @param dataFile The data file
-	 * @throws MissingParamException If any of the parameters are missing
-	 * @see DataFileDB#deleteFile(DataSource, Properties, DataFile)
-	 */
-	protected static void deleteFile(String fileStore, DataFile dataFile) throws MissingParamException {
+  /**
+   * Deletes a file from the file store
+   * @param fileStore The location of the file store
+   * @param dataFile The data file
+   * @throws MissingParamException If any of the parameters are missing
+   * @see DataFileDB#deleteFile(DataSource, Properties, DataFile)
+   */
+  protected static void deleteFile(String fileStore, DataFile dataFile) throws MissingParamException {
 
-		MissingParam.checkMissing(fileStore, "fileStore");
-		MissingParam.checkMissing(dataFile, "dataFile");
+    MissingParam.checkMissing(fileStore, "fileStore");
+    MissingParam.checkMissing(dataFile, "dataFile");
 
-		File fileToDelete = getFileObject(fileStore, dataFile);
-		deleteFile(fileToDelete);
-	}
+    File fileToDelete = getFileObject(fileStore, dataFile);
+    deleteFile(fileToDelete);
+  }
 
-	/**
-	 * Retrieve a file from the file store
-	 * @param fileStore The location of the file store
-	 * @param dataFile The file whose contents are to be loaded
-	 * @throws IOException If a disk I/O error occurs
-	 * @throws MissingParamException If any required parameters are missing
-	 */
-	protected static void loadFileContents(String fileStore, DataFile dataFile) throws IOException, MissingParamException {
-		File readFile = getFileObject(fileStore, dataFile);
+  /**
+   * Retrieve a file from the file store
+   * @param fileStore The location of the file store
+   * @param dataFile The file whose contents are to be loaded
+   * @throws IOException If a disk I/O error occurs
+   * @throws MissingParamException If any required parameters are missing
+   */
+  protected static void loadFileContents(String fileStore, DataFile dataFile) throws IOException, MissingParamException {
+    File readFile = getFileObject(fileStore, dataFile);
 
-		FileInputStream inputStream = null;
-		try {
-			inputStream = new FileInputStream(readFile);
-			int fileLength = (int) readFile.length();
-			byte[] fileData = new byte[fileLength];
-			int bytesRead = inputStream.read(fileData);
-			if (bytesRead < fileLength) {
-				throw new IOException("Too few bytes read from file " + readFile.getAbsolutePath() + ": got " + bytesRead + ", expected " + fileLength);
-			}
+    FileInputStream inputStream = null;
+    try {
+      inputStream = new FileInputStream(readFile);
+      int fileLength = (int) readFile.length();
+      byte[] fileData = new byte[fileLength];
+      int bytesRead = inputStream.read(fileData);
+      if (bytesRead < fileLength) {
+        throw new IOException("Too few bytes read from file " + readFile.getAbsolutePath() + ": got " + bytesRead + ", expected " + fileLength);
+      }
 
-			dataFile.setContents(new String(fileData));
-		} catch (IOException e) {
-			throw e;
-		} finally {
-			if (null != inputStream) {
-				inputStream.close();
-			}
-		}
-	}
+      dataFile.setContents(new String(fileData));
+    } catch (IOException e) {
+      throw e;
+    } finally {
+      if (null != inputStream) {
+        inputStream.close();
+      }
+    }
+  }
 
-	/**
-	 * Ensure that the directory for a given instrument's files exists
-	 * @param fileStorePath The root path of the file store
-	 * @param fileDefinitionId The instrument ID
-	 * @throws FileStoreException If the directory doesn't exist and can't be created
-	 */
-	private static void checkInstrumentDirectory(String fileStorePath, long fileDefinitionId) throws FileStoreException {
+  /**
+   * Ensure that the directory for a given instrument's files exists
+   * @param fileStorePath The root path of the file store
+   * @param fileDefinitionId The instrument ID
+   * @throws FileStoreException If the directory doesn't exist and can't be created
+   */
+  private static void checkInstrumentDirectory(String fileStorePath, long fileDefinitionId) throws FileStoreException {
 
-		File file = new File(getStorageDirectory(fileStorePath, fileDefinitionId));
-		if (!file.exists()) {
-			boolean dirMade = file.mkdirs();
-			if (!dirMade) {
-				throw new FileStoreException("Unable to create directory for file definition ID " + fileDefinitionId);
-			}
-		} else if (!file.isDirectory()) {
-			throw new FileStoreException("The path to the instrument directory is not a directory!");
-		}
-	}
+    File file = new File(getStorageDirectory(fileStorePath, fileDefinitionId));
+    if (!file.exists()) {
+      boolean dirMade = file.mkdirs();
+      if (!dirMade) {
+        throw new FileStoreException("Unable to create directory for file definition ID " + fileDefinitionId);
+      }
+    } else if (!file.isDirectory()) {
+      throw new FileStoreException("The path to the instrument directory is not a directory!");
+    }
+  }
 
-	/**
-	 * Returns the path to the directory where a given instrument's files are stored
-	 * @param fileStorePath The root of the file store
-	 * @param fileDefinitionId The file definition database ID
-	 * @return The directory path
-	 */
-	private static String getStorageDirectory(String fileStorePath, long fileDefinitionId) {
-		return fileStorePath + File.separator + fileDefinitionId;
-	}
+  /**
+   * Returns the path to the directory where a given instrument's files are stored
+   * @param fileStorePath The root of the file store
+   * @param fileDefinitionId The file definition database ID
+   * @return The directory path
+   */
+  private static String getStorageDirectory(String fileStorePath, long fileDefinitionId) {
+    return fileStorePath + File.separator + fileDefinitionId;
+  }
 
-	/**
-	 * Get the Java File object for a data file
-	 * @param fileStorePath The path to the data file within the file store
-	 * @param dataFile The data file
-	 * @return The Java File object
-	 */
-	private static File getFileObject(String fileStorePath, DataFile dataFile) {
-		return new File(getStorageDirectory(fileStorePath, dataFile.getFileDefinition().getDatabaseId())
-				+ File.separator + dataFile.getDatabaseId());
-	}
+  /**
+   * Get the Java File object for a data file
+   * @param fileStorePath The path to the data file within the file store
+   * @param dataFile The data file
+   * @return The Java File object
+   */
+  private static File getFileObject(String fileStorePath, DataFile dataFile) {
+    return new File(getStorageDirectory(fileStorePath, dataFile.getFileDefinition().getDatabaseId())
+        + File.separator + dataFile.getDatabaseId());
+  }
 
-	/**
-	 * Close a writer. Not strictly a database thing,
-	 * but it's in the same spirit and used in the same places.
-	 * @param writer The writer
-	 */
-	private static void closeWriter(Writer writer) {
-		if (null != writer) {
-			try {
-				writer.close();
-			} catch (IOException e) {
-				// Do nothing
-			}
-		}
-	}
+  /**
+   * Close a writer. Not strictly a database thing,
+   * but it's in the same spirit and used in the same places.
+   * @param writer The writer
+   */
+  private static void closeWriter(Writer writer) {
+    if (null != writer) {
+      try {
+        writer.close();
+      } catch (IOException e) {
+        // Do nothing
+      }
+    }
+  }
 
-	/**
-	 * Delete a file from the file system. If the file does not exist, no action is taken.
-	 * @param file The file to be deleted
-	 */
-	private static void deleteFile(File file) {
-		if (null != file) {
-			if (file.exists()) {
-				file.delete();
-			}
-		}
-	}
+  /**
+   * Delete a file from the file system. If the file does not exist, no action is taken.
+   * @param file The file to be deleted
+   */
+  private static void deleteFile(File file) {
+    if (null != file) {
+      if (file.exists()) {
+        file.delete();
+      }
+    }
+  }
 }

@@ -7,17 +7,17 @@ package uk.ac.exeter.QuinCe.utils;
  */
 public class BackgroundTaskException extends Exception {
 
-	/**
-	 * The serial version UID
-	 */
-	private static final long serialVersionUID = -1588777340186860764L;
+  /**
+   * The serial version UID
+   */
+  private static final long serialVersionUID = -1588777340186860764L;
 
-	/**
-	 * Basic constructor
-	 * @param cause The underlying error
-	 */
-	public BackgroundTaskException(Throwable cause) {
-		super("Error in background task", cause);
-	}
+  /**
+   * Basic constructor
+   * @param cause The underlying error
+   */
+  public BackgroundTaskException(Throwable cause) {
+    super("Error in background task", cause);
+  }
 
 }
