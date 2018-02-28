@@ -764,7 +764,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 		if (!hasRunTypes()) {
 			throw new FileDefinitionException("File does not contain run types");
 		} else {
-			String runTypeValue = extractFields(line).get(runTypeColumn);
+			String runTypeValue = extractFields(line).get(runTypeColumn).toUpperCase();
 			if (null != runTypeValue && runTypeValue.length() > 0) {
 				if (!runTypes.containsKey(runTypeValue)) {
 					throw new MissingRunTypeException("Unrecognised run type '"
