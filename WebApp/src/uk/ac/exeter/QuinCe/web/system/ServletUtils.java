@@ -23,7 +23,7 @@ public class ServletUtils {
 			throw new ResourceException("Error while retrieving database data source", e);
 		}
 	}
-	
+
 	/**
 	 * Retrieve a database connection from the pool
 	 * @return A database connection
@@ -36,7 +36,7 @@ public class ServletUtils {
 			throw new ResourceException("Error while retrieving database data source", e);
 		}
 	}
-	
+
 	/**
 	 * Retrieve the application configuration
 	 * @return The application configuration
@@ -49,5 +49,5 @@ public class ServletUtils {
 			throw new ResourceException("Error while retrieving application configuration", e);
 		}
 	}
-	
+
 }

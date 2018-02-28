@@ -6,17 +6,17 @@ package uk.ac.exeter.QuinCe.utils;
  *
  */
 public class HighlightedString {
-	
+
 	/**
 	 * The string
 	 */
 	private String string;
-	
+
 	/**
 	 * The index of the first highlighted character
 	 */
 	private int highlightStart;
-	
+
 	/**
 	 * The index after the last highlighted character
 	 */
@@ -37,7 +37,7 @@ public class HighlightedString {
 		}
 		this.highlightStart = highlightStart;
 		this.highlightEnd = highlightEnd;
-		
+
 		if (this.string.length() == 0) {
 			highlightStart = -1;
 			highlightEnd = -1;
@@ -45,15 +45,15 @@ public class HighlightedString {
 			if (highlightStart >= string.length()) {
 				throw new HighlightedStringException("Highlight start is outside the string bounds");
 			}
-			
+
 			if (highlightStart < 0) {
 				this.highlightStart = 0;
 			}
-			
+
 			if (highlightEnd < highlightStart) {
 				throw new HighlightedStringException("Highlight end cannot be before highlight start");
 			}
-			
+
 			if (highlightEnd >= string.length()) {
 				this.highlightEnd = string.length();
 			}
@@ -66,7 +66,7 @@ public class HighlightedString {
 	 */
 	public String getJson() {
 		StringBuilder json = new StringBuilder();
-		
+
 		json.append("{\"string\":\"");
 		json.append(string.replaceAll(" ", "∙").replaceAll("\t", "⇥"));
 		json.append("\",\"highlightStart\":");
@@ -74,10 +74,10 @@ public class HighlightedString {
 		json.append(",\"highlightEnd\":");
 		json.append(highlightEnd);
 		json.append('}');
-		
+
 		return json.toString();
 	}
-	
+
 	/**
 	 * Get the highlighted portion of the string
 	 * @return The highlighted portion of the string
@@ -85,7 +85,7 @@ public class HighlightedString {
 	public String getHighlightedPortion(){
 		return string.substring(highlightStart, highlightEnd);
 	}
-	
+
 	@Override
 	public String toString() {
 		return string;

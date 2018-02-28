@@ -30,12 +30,12 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 /**
  * Instance of the QCRoutines {@link DataRecord} for
  * calculated measurements.
- * 
+ *
  * @author Steve Jones
  *
  */
 public abstract class CalculationRecord extends DataRecord {
-	
+
 	/**
 	 * Dummy set of date/time columns for the QCRoutines code.
 	 * Set up in the {@code static} block
@@ -46,48 +46,48 @@ public abstract class CalculationRecord extends DataRecord {
 	 * Dummy latitude column for the QCRoutines code
 	 */
 	private static final int LATITUDE_COLUMN = -1;
-	
+
 	/**
 	 * Dummy longitude column for the QCRoutines code
 	 */
 	private static final int LONGITUDE_COLUMN = -1;
-	
+
 	// Set up the dummy date/time columns
 	static {
 		dateTimeColumns = new TreeSet<Integer>();
 		dateTimeColumns.add(-1);
 	}
-	
+
 	/**
 	 * The dataset ID
 	 */
 	private long datasetId;
-	
+
 	/**
 	 * The data set object
 	 */
 	private DataSet dataSet = null;
-	
+
 	/**
 	 * The record date
 	 */
 	private LocalDateTime date = null;
-	
+
 	/**
 	 * The longitude
 	 */
 	private Double longitude = null;
-	
+
 	/**
 	 * The latitude
 	 */
 	private Double latitude = null;
-	
+
 	/**
 	 * The calculation DB instance
 	 */
 	protected CalculationDB calculationDB = null;
-	
+
 	/**
 	 * The flag set by the automatic QC
 	 */
@@ -102,7 +102,7 @@ public abstract class CalculationRecord extends DataRecord {
 	 * The user QC message
 	 */
 	private String userMessage = null;
-	
+
 	/**
 	 * Create an empty calculation record for a given measurement in a given data set
 	 * @param datasetId The dataset ID
@@ -114,7 +114,7 @@ public abstract class CalculationRecord extends DataRecord {
 		this.datasetId = datasetId;
 		calculationDB = getCalculationDB();
 	}
-	
+
 	/**
 	 * Get the dataset ID
 	 * @return The dataset ID
@@ -160,22 +160,22 @@ public abstract class CalculationRecord extends DataRecord {
 	public void setDate(LocalDateTime date) {
 		this.date = date;
 	}
-	
+
 	/**
 	 * Get the record date.
-	 * 
+	 *
 	 * Note that this returns the date as a
 	 * {@code java.time.LocalDateTime} object;
 	 * the {@link #getTime()} method returns
 	 * a {@code joda.time.DateTime} object for use with
 	 * the QC_Routines library.
-	 * 
+	 *
 	 * @return The record date
 	 */
 	public LocalDateTime getDate() {
 		return date;
 	}
-	
+
 	/**
 	 * Set the longitude
 	 * @param longitude The longitude
@@ -183,7 +183,7 @@ public abstract class CalculationRecord extends DataRecord {
 	public void setLongitude(Double longitude) {
 		this.longitude = longitude;
 	}
-	
+
 	/**
 	 * Set the latitude
 	 * @param latitude The latitude
@@ -191,26 +191,26 @@ public abstract class CalculationRecord extends DataRecord {
 	public void setLatitude(Double latitude) {
 		this.latitude = latitude;
 	}
-	
+
 	/**
 	 * Load the record data from the database.
-	 * 
+	 *
 	 * Loads the position and date information itself, and then
 	 * calls the {@link #loadCalculationData(Connection)} method to get the calculation data.
-	 * 
+	 *
 	 * @param conn A database connection
 	 * @throws MissingParamException If any required parameters are missing
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the record is not in the database
 	 * @throws InvalidDataException If a field cannot be added to the record
 	 * @throws MessageException If the automatic QC messages cannot be parsed
-	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed 
+	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed
 	 */
 	public void loadData(Connection conn) throws MissingParamException, DatabaseException, RecordNotFoundException, InvalidDataException, NoSuchColumnException, MessageException {
 		loadSensorData(conn);
 		loadCalculationData(conn);
 	}
-	
+
 	/**
 	 * Load the base sensor data for the measurement
 	 * @param conn A database connection
@@ -222,13 +222,13 @@ public abstract class CalculationRecord extends DataRecord {
 	private void loadSensorData(Connection conn) throws MissingParamException, DatabaseException, RecordNotFoundException, InvalidDataException {
 		dataSet = DataSetDB.getDataSet(conn, datasetId);
 		DataSetRawDataRecord sensorData = DataSetDataDB.getMeasurement(conn, dataSet, lineNumber);
-		
+
 		date = sensorData.getDate();
 		longitude = sensorData.getLongitude();
 		latitude = sensorData.getLatitude();
-		
+
 		// TODO Load diagnostic values (Issue #614)
-		
+
 		for (int i = 1; i < data.size(); i++) {
 			DataColumn column = data.get(i);
 			Double value = sensorData.getSensorValue(column.getName());
@@ -237,8 +237,8 @@ public abstract class CalculationRecord extends DataRecord {
 			}
 		}
 	}
-	
-	
+
+
 	/**
 	 * Load the calculation data for the measurement
 	 * @param conn A database connection
@@ -247,18 +247,18 @@ public abstract class CalculationRecord extends DataRecord {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the record is not in the database
 	 * @throws MessageException If the automatic QC messages cannot be parsed
-	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed 
+	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed
 	 */
 	private void loadCalculationData(Connection conn) throws InvalidDataException, MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException, MessageException {
 		calculationDB.getCalculationValues(conn, this);
 	}
-	
+
 	/**
 	 * Retrieve the CalculationDB instance to be used with this record
 	 * @return The CalculationDB instance
 	 */
 	protected abstract CalculationDB getCalculationDB();
-	
+
 	/**
 	 * Get the record data objects
 	 * @return The record data objects
@@ -290,21 +290,21 @@ public abstract class CalculationRecord extends DataRecord {
 	public List<Message> getAutoQCMessages() {
 		return messages;
 	}
-	
+
 	/**
 	 * Get message strings for all messages related to this record
 	 * @return The message strings
 	 */
 	public String getAutoQCMessagesString() {
 		StringBuilder result = new StringBuilder();
-		
+
 		for (int i = 0; i < messages.size(); i++) {
 			result.append(messages.get(i).getShortMessage());
 			if (i < messages.size() - 1) {
 				result.append(',');
 			}
 		}
-		
+
 		return result.toString();
 	}
 
@@ -339,7 +339,7 @@ public abstract class CalculationRecord extends DataRecord {
 	public void setUserMessage(String userMessage) {
 		this.userMessage = userMessage;
 	}
-	
+
 	/**
 	 * Clear the automatic QC data
 	 */
@@ -347,7 +347,7 @@ public abstract class CalculationRecord extends DataRecord {
 		messages = new ArrayList<Message>();
 		setAutoFlag(Flag.NOT_SET);
 	}
-	
+
 	@Override
 	public void addMessage(Message message) throws NoSuchColumnException {
 		super.addMessage(message);

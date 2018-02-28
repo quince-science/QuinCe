@@ -14,47 +14,47 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 public class Instrument {
 
 	////////////// *** FIELDS *** ///////////////
-	
+
 	/**
 	 * The instrument's ID in the database
 	 */
 	private long databaseID = DatabaseUtils.NO_DATABASE_RECORD;
-	
+
 	/**
 	 * The ID of the owner of the instrument
 	 */
 	private long ownerId;
-	
+
 	/**
 	 * The name of the instrument
 	 */
 	private String name = null;
-	
+
 	/**
 	 * The instrument's file format definitions
 	 */
 	private InstrumentFileSet fileDefinitions = null;
-	
+
 	/**
 	 * The assignment of columns in data files to sensors
 	 */
 	private SensorAssignments sensorAssignments = null;
-	
+
 	/**
 	 * The flushing time at the start of each run
 	 */
 	private int preFlushingTime = 0;
-	
+
 	/**
 	 * The flushing time at the end of each run
 	 */
 	private int postFlushingTime = 0;
-	
+
 	/**
 	 * The minimum water flow
 	 */
 	private int minimumWaterFlow = -1;
-	
+
 	/**
 	 * The averaging mode
 	 */
@@ -92,7 +92,7 @@ public class Instrument {
 
 		//TODO Validate averaging mode
 	}
-	
+
 	/**
 	 * Constructor for a complete instrument with no database ID
 	 * @param owner The instrument's owner
@@ -118,7 +118,7 @@ public class Instrument {
 
 		//TODO Validate averaging mode
 	}
-	
+
 	/**
 	 * Validate that all required information for the Instrument is present
 	 * @param checkDatabaseColumns Specifies whether or not database columns
@@ -128,7 +128,7 @@ public class Instrument {
 	public void validate(boolean checkDatabaseColumns) throws InstrumentException {
 		// TODO Write it!
 	}
-	
+
 	/**
 	 * Returns the ID of the instrument in the database
 	 * @return The ID of the instrument in the database
@@ -136,7 +136,7 @@ public class Instrument {
 	public long getDatabaseId() {
 		return databaseID;
 	}
-	
+
 	/**
 	 * Sets the ID of the instrument in the database
 	 * @param databaseID The database ID
@@ -144,7 +144,7 @@ public class Instrument {
 	public void setDatabaseId(long databaseID) {
 		this.databaseID = databaseID;
 	}
-	
+
 	/**
 	 * Returns the database ID of the owner of the instrument
 	 * @return The ID of the owner of the instrument
@@ -160,7 +160,7 @@ public class Instrument {
 	public String getName() {
 		return name;
 	}
-	
+
 	/**
 	 * Returns the pre-flushing time
 	 * @return The pre-flushing time
@@ -168,7 +168,7 @@ public class Instrument {
 	public int getPreFlushingTime() {
 		return preFlushingTime;
 	}
-	
+
 	/**
 	 * Sets the pre-flushing time
 	 * @param preFlushingTime The pre-flushing time
@@ -176,7 +176,7 @@ public class Instrument {
 	public void setPreFlushingTime(int preFlushingTime) {
 		this.preFlushingTime = preFlushingTime;
 	}
-	
+
 	/**
 	 * Returns the post-flushing time
 	 * @return The post-flushing time
@@ -184,7 +184,7 @@ public class Instrument {
 	public int getPostFlushingTime() {
 		return postFlushingTime;
 	}
-	
+
 	/**
 	 * Sets the post-flushing time
 	 * @param postFlushingTime The post-flushing time
@@ -192,7 +192,7 @@ public class Instrument {
 	public void setPostFlushingTime(int postFlushingTime) {
 		this.postFlushingTime = postFlushingTime;
 	}
-	
+
 	/**
 	 * Get the instrument's file definitions
 	 * @return The file definitions
@@ -200,7 +200,7 @@ public class Instrument {
 	public InstrumentFileSet getFileDefinitions() {
 		return fileDefinitions;
 	}
-	
+
 	/**
 	 * Get the minimum water flow
 	 * @return The minimum water flow
@@ -208,7 +208,7 @@ public class Instrument {
 	public int getMinimumWaterFlow() {
 		return minimumWaterFlow;
 	}
-	
+
 	/**
 	 * Set the minimum water flow
 	 * @param minimumWaterFlow The minimum water flow
@@ -216,7 +216,7 @@ public class Instrument {
 	public void setMinimumWaterFlow(int minimumWaterFlow) {
 		this.minimumWaterFlow = minimumWaterFlow;
 	}
-	
+
 	/**
 	 * Get the sensor assignments
 	 * @return The sensor assignments
@@ -224,7 +224,7 @@ public class Instrument {
 	public SensorAssignments getSensorAssignments() {
 		return sensorAssignments;
 	}
-	
+
 	/**
 	 * Get the averaging mode
 	 * @return The averaging mode

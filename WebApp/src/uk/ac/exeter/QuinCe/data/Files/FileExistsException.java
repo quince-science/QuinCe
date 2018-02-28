@@ -24,7 +24,7 @@ public class FileExistsException extends Exception {
 	 * The exception message, generated in the constructor
 	 */
 	private String message;
-	
+
 	/**
 	 * The exception constructor
 	 * @param dataSource A data source
@@ -40,7 +40,7 @@ public class FileExistsException extends Exception {
 			message = "File '" + fileName + "' already exists for this instrument";
 		}
 	}
-	
+
 	/**
 	 * Constructor for an existing file found that overlaps the specified date range
 	 * @param fileDescription The file description
@@ -52,10 +52,10 @@ public class FileExistsException extends Exception {
 		message = "A " + fileDescription + " file already exists covering " + DateTimeUtils.formatDateTime(startDate)
 		 	+  " to " + DateTimeUtils.formatDateTime(endDate);
 	}
-	
+
 	@Override
 	public String getMessage() {
 		return message;
 	}
-	
+
 }

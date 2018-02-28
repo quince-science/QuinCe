@@ -19,7 +19,7 @@ public class DataSetException extends Exception {
 	public DataSetException(String message) {
 		super(message);
 	}
-	
+
 	/**
 	 * Constructor for wrapping an error
 	 * @param cause The error
@@ -27,7 +27,7 @@ public class DataSetException extends Exception {
 	public DataSetException(Throwable cause) {
 		super("Error while processing data set", cause);
 	}
-	
+
 	/**
 	 * Constructor for wrapping an error with a message
 	 * @param message The error message

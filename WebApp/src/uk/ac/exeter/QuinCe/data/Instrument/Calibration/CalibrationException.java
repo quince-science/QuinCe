@@ -19,7 +19,7 @@ public class CalibrationException extends RuntimeException {
 	public CalibrationException(String message) {
 		super(message);
 	}
-	
+
 	/**
 	 * Constructor wrapper for an internal error while processing calibrations
 	 * @param cause The error
@@ -27,5 +27,5 @@ public class CalibrationException extends RuntimeException {
 	public CalibrationException(Throwable cause) {
 		super("Error while processing calibrations", cause);
 	}
-	
+
 }

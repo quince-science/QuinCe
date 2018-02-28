@@ -21,7 +21,7 @@ public class SensorConfigurationException extends InstrumentException {
 	public SensorConfigurationException(String message) {
 		super(message);
 	}
-	
+
 	/**
 	 * Simple constructor with an error message
 	 * @param message The error message
@@ -29,7 +29,7 @@ public class SensorConfigurationException extends InstrumentException {
 	public SensorConfigurationException(String message, Throwable cause) {
 		super(message, cause);
 	}
-	
+
 	/**
 	 * Constructor for an error on a given line of the configuration file
 	 * @param lineNumber The line number on which the error was found

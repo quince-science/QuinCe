@@ -24,15 +24,15 @@ public class ResourceManagerTest {
 	 * Servlet Context
 	 */
 	@Mock private static ServletContext servletContext;
-	
+
 	/**
 	 * Servlet Context Event
 	 */
 	@Mock private static ServletContextEvent servletContextEvent;
-	
+
 	@BeforeClass
 	public static void createServletContextEvent() {
-		
+
 		// I have read that you shouldn't create mocks of classes that you don't own.
 		// But I don't know how to do this any other way, so bollocks to it.
 		servletContext = Mockito.mock(ServletContext.class);
@@ -51,7 +51,7 @@ public class ResourceManagerTest {
 		ResourceManager emptyResourceManager = new ResourceManager();
 		assertNotNull("Empty resource manager not created", emptyResourceManager);
 	}
-	
+
 	/**
 	 * Check that a fully operational ResourceManager can be initialised
 	 */
@@ -59,17 +59,17 @@ public class ResourceManagerTest {
 	public void testInitResourceManagerSuccessful() {
 		ResourceManager resourceManager = new LocalTestResourceManager();
 		resourceManager.contextInitialized(servletContextEvent);
-		
+
 		// Check that the instance has been created
 		assertNotNull("ResourceManager instance not created", ResourceManager.getInstance());
-		
+
 		// Check that the job thread pool has been initialised
 		try {
 			JobThreadPool.getInstance();
 		} catch (JobThreadPoolNotInitialisedException e) {
 			fail("Job Thread Pool not initialised by ResourceManager");
 		}
-		
+
 		// Check that all the elements that should be accessible from the ResourceManager
 		// are available
 		assertNotNull("Application Configuration not available from ResourceManager", ResourceManager.getInstance().getConfig());
@@ -78,7 +78,7 @@ public class ResourceManagerTest {
 		assertNotNull("SensorsConfiguration not available from ResourceManager", ResourceManager.getInstance().getSensorsConfiguration());
 		assertNotNull("RunTypeCategoryConfiguration not available from ResourceManager", ResourceManager.getInstance().getRunTypeCategoryConfiguration());
 	}
-	
+
 	/**
 	 * Check that bad extraction-time QC routines config is detected
 	 */
@@ -87,7 +87,7 @@ public class ResourceManagerTest {
 		ResourceManager badResourceManager = new BrokenConfigTestResourceManager(BrokenConfigTestResourceManager.FAILURE_FILE_EXTRACT_ROUTINES_CONFIG);
 		badResourceManager.contextInitialized(servletContextEvent);
 	}
-	
+
 	/**
 	 * Check that bad general QC routines config is detected
 	 */
@@ -96,7 +96,7 @@ public class ResourceManagerTest {
 		ResourceManager badResourceManager = new BrokenConfigTestResourceManager(BrokenConfigTestResourceManager.FAILURE_FILE_QC_ROUTINES_CONFIG);
 		badResourceManager.contextInitialized(servletContextEvent);
 	}
-	
+
 	/**
 	 * Check that bad general columns config is detected
 	 */
@@ -105,7 +105,7 @@ public class ResourceManagerTest {
 		ResourceManager badResourceManager = new BrokenConfigTestResourceManager(BrokenConfigTestResourceManager.FAILURE_FILE_COLUMNS_CONFIG);
 		badResourceManager.contextInitialized(servletContextEvent);
 	}
-	
+
 	/**
 	 * Check that bad export config is detected
 	 */
@@ -114,7 +114,7 @@ public class ResourceManagerTest {
 		ResourceManager badResourceManager = new BrokenConfigTestResourceManager(BrokenConfigTestResourceManager.FAILURE_FILE_EXPORT_CONFIG);
 		badResourceManager.contextInitialized(servletContextEvent);
 	}
-	
+
 	/**
 	 * Check that bad sensor config is detected
 	 */
@@ -123,7 +123,7 @@ public class ResourceManagerTest {
 		ResourceManager badResourceManager = new BrokenConfigTestResourceManager(BrokenConfigTestResourceManager.FAILURE_FILE_SENSOR_CONFIG);
 		badResourceManager.contextInitialized(servletContextEvent);
 	}
-	
+
 	/**
 	 * Check that bad general run types config is detected
 	 */

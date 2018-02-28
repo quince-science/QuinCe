@@ -9,12 +9,12 @@ import java.util.List;
  *
  */
 public class VariableGroup {
-	
+
 	/**
 	 * The group name
 	 */
 	private String name;
-	
+
 	/**
 	 * The variables within the group
 	 */
@@ -30,7 +30,7 @@ public class VariableGroup {
 		this.name = name;
 		this.variables = new ArrayList<Variable>();
 	}
-	
+
 	/**
 	 * Get the number of variables in the group
 	 * @return The number of variables in the group
@@ -38,7 +38,7 @@ public class VariableGroup {
 	public int size() {
 		return variables.size();
 	}
-	
+
 	/**
 	 * Add a variable to the group
 	 * @param variable The variable
@@ -46,7 +46,7 @@ public class VariableGroup {
 	public void add(Variable variable) {
 		variables.add(variable);
 	}
-	
+
 	/**
 	 * Get the group's name
 	 * @return The name
@@ -54,7 +54,7 @@ public class VariableGroup {
 	public String getName() {
 		return name;
 	}
-	
+
 	/**
 	 * Get the number of variables in the group
 	 * @return The group size
@@ -62,7 +62,7 @@ public class VariableGroup {
 	public int getSize() {
 		return variables.size();
 	}
-	
+
 	/**
 	 * Get the variables in this group
 	 * @return The variables

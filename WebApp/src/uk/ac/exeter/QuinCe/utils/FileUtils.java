@@ -8,7 +8,7 @@ import java.io.File;
  *
  */
 public class FileUtils {
-	
+
 	/**
 	 * Check that a file can be accessed
 	 * @param file The file to be checked
@@ -16,7 +16,7 @@ public class FileUtils {
 	 */
 	public static boolean canAccessFile(File file) {
 		boolean ok = true;
-		
+
 		if (!file.exists()) {
 			ok = false;
 		} else if (!file.isFile()) {
@@ -24,8 +24,8 @@ public class FileUtils {
 		} else if (!file.canRead()) {
 			ok = false;
 		}
-		
+
 		return ok;
 	}
-	
+
 }

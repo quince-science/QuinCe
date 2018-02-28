@@ -16,7 +16,7 @@ public class Plot {
 	 * Mode indicator for plot
 	 */
 	public static final String MODE_PLOT = "plot";
-	
+
 	/**
 	 * Mode indicator for map
 	 */
@@ -26,12 +26,12 @@ public class Plot {
 	 * The bean to which this plot belongs
 	 */
 	private PlotPageBean parentBean;
-	
+
 	/**
 	 * The current mode
 	 */
 	private String mode = MODE_PLOT;
-	
+
 	/**
 	 * The variable to use on the X Axis in Plot 1.
 	 */
@@ -41,12 +41,12 @@ public class Plot {
 	 * The variables to use on the Y Axis in Plot 1.
 	 */
 	private List<Variable> yAxis;
-		
+
 	/**
 	 * The plot data
 	 */
 	private String data;
-	
+
 	/**
 	 * The variable to show on the map
 	 */
@@ -67,7 +67,7 @@ public class Plot {
 	 * This is a list of [minx, miny, maxx, maxy]
 	 */
 	private List<Double> mapBounds = null;
-	
+
 	/**
 	 * The scale limits for the left map
 	 */
@@ -87,7 +87,7 @@ public class Plot {
 		this.xAxis = xAxis;
 		this.yAxis = yAxis;
 		this.mapVariable = mapVariable;
-		
+
 		mapScaleLimits = new ArrayList<Double>(4);
 		mapScaleLimits.add(0.0);
 		mapScaleLimits.add(0.0);
@@ -140,19 +140,19 @@ public class Plot {
 	 * @return the yAxis
 	 */
 	public String getYAxis() {
-		
+
 		List<Integer> ids;
-		
+
 		if (null == yAxis) {
 			ids = new ArrayList<Integer>(1);
 			ids.add(-1);
 		} else {
 			ids = Variable.getIds(yAxis);
 		}
-		
+
 		return StringUtils.intListToJsonArray(ids);
 	}
-	
+
 	/**
 	 * Get the selected Y Axis variables
 	 * @return The selected Y axis variables
@@ -170,25 +170,25 @@ public class Plot {
 			this.yAxis = parentBean.getVariablesList().getVariables(axisVariables);
 		}
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param yAxis The yAxis to set
 	 */
 	public void setYAxis(List<Variable> yAxis) {
 		this.yAxis = yAxis;
 	}
-	
+
 	/**
 	 * @return the mapVariable
 	 */
 	public int getMapVariable() {
 		int result = -1;
-		
+
 		if (null != mapVariable) {
 			result = mapVariable.getId();
 		}
-		
+
 		return result;
 	}
 
@@ -205,7 +205,7 @@ public class Plot {
 	public void setMapVariable(Variable mapVariable) {
 		this.mapVariable = mapVariable;
 	}
-	
+
 	/**
 	 * Get the plot data
 	 * @return The plot data
@@ -213,10 +213,10 @@ public class Plot {
 	public String getData() {
 		return data;
 	}
-	
+
 	// TODO This is horrible. Come up with an alternative.
 	//      But we need a way to stop the data coming from the front end
-	
+
 	/**
 	 * Dummy method for JSF - does nothing
 	 * @param data The data from JSF - ignored
@@ -224,7 +224,7 @@ public class Plot {
 	public void setData(String data) {
 		// Do nothing
 	}
-	
+
 	// TODO This is horrible. Come up with an alternative.
 	//      But we need a way to stop the labels coming from the front end
 
@@ -234,20 +234,20 @@ public class Plot {
 	 */
 	public String getLabels() {
 		StringBuilder result = new StringBuilder();
-		
+
 		result.append('[');
 
-		
+
 		switch(mode) {
 		case MODE_PLOT: {
-			
+
 			// TODO Remove the magic strings. Make PSF fields in CalculationDB
 			result.append('"');
 			if (null != xAxis) {
 				result.append(xAxis.getLabel());
 			}
 			result.append("\",\"ID\",\"Manual Flag\"");
-			
+
 			if (null != yAxis) {
 				result.append(',');
 
@@ -255,13 +255,13 @@ public class Plot {
 					result.append('"');
 					result.append(yAxis.get(i).getLabel());
 					result.append('"');
-					
+
 					if (i < yAxis.size() - 1) {
 						result.append(',');
 					}
 				}
 			}
-			
+
 			break;
 		}
 		case MODE_MAP: {
@@ -281,12 +281,12 @@ public class Plot {
 			result.append('"');
 		}
 		}
-		
+
 		result.append(']');
-		
+
 		return result.toString();
 	}
-	
+
 	/**
 	 * Dummy method for the front end
 	 * @param labels Ignored
@@ -294,28 +294,28 @@ public class Plot {
 	public void setLabels(String labels) {
 		// Do nothing
 	}
-	
+
 	/**
 	 * Get the fields required for the plot in its current configuration
 	 * @return The fields
 	 */
 	private List<String> getPlotDataFields() {
-		
+
 		List<String> fields = new ArrayList<String>();
-		
+
 		switch(mode) {
 		case MODE_PLOT: {
 			// TODO Remove the magic strings. Make PSF fields in CalculationDB
 			fields.add(xAxis.getFieldName());
 			fields.add("id");
 			fields.add("user_flag");
-			
+
 			if (null != yAxis) {
 				for (Variable variable : yAxis) {
 					fields.add(variable.getFieldName());
 				}
 			}
-			
+
 			break;
 		}
 		case MODE_MAP: {
@@ -331,7 +331,7 @@ public class Plot {
 
 		return fields;
 	}
-	
+
 	/**
 	 * Update the plot data
    	 */
@@ -391,14 +391,14 @@ public class Plot {
 	public String getMapScaleLimits() {
 		return '[' + StringUtils.listToDelimited(mapScaleLimits, ",") + ']';
 	}
-	
+
 	/**
 	 * @param mapScaleLimits the scaleLimits to set
 	 */
 	public void setMapScaleLimits(String mapScaleLimits) {
 		// Do nothing
 	}
-	
+
 	public void generateMapData() {
 		try {
             // if (mapUpdateScale) { // This doesn't work well. Since the performance hit is small, leave out the check for now.
@@ -409,27 +409,27 @@ public class Plot {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Get the value range for a column being shown on a map
 	 * @return The value range
 	 */
 	private List<Double> loadMapScaleLimits() {
 		List<Double> result = null;
-		
+
 		try {
 			// TODO This is specific to the Manual QC. Move it out to a method in the parent bean
 			result = CalculationDBFactory.getCalculationDB().getValueRange(parentBean.getDataSource(), parentBean.getDataset(), mapVariable.getFieldName());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		if (null == result) {
 			result = new ArrayList<Double>(2);
 			result.add(0.0);
 			result.add(0.0);
 		}
-		
+
 		return result;
 	}
 }

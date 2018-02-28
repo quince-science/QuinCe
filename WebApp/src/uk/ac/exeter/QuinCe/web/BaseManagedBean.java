@@ -28,33 +28,33 @@ public abstract class BaseManagedBean {
 
 	/**
 	 * The default result for successful completion of a process. This will be used in the
-	 * {@code faces-config.xml} file to determine the next navigation destination. 
+	 * {@code faces-config.xml} file to determine the next navigation destination.
 	 */
 	public static final String SUCCESS_RESULT = "Success";
-	
+
 	/**
 	 * The default result for indicating that an error occurred during a processing action.
 	 * This will be used in the {@code faces-config.xml} file to determine the next navigation destination.
 	 * @see #internalError(Throwable)
 	 */
 	public static final String INTERNAL_ERROR_RESULT = "InternalError";
-	
+
 	/**
 	 * The default result for indicating that the data validation failed for a given processing action.
-	 * This will be used in the {@code faces-config.xml} file to determine the next navigation destination. 
+	 * This will be used in the {@code faces-config.xml} file to determine the next navigation destination.
 	 */
 	public static final String VALIDATION_FAILED_RESULT = "ValidationFailed";
-	
+
 	/**
 	 * The session attribute where the current full instrument is stored
 	 */
 	private static final String CURRENT_FULL_INSTRUMENT_ATTR = "currentFullInstrument";
-	
+
 	/**
 	 * The instruments owned by the user
 	 */
 	private List<InstrumentStub> instruments;
-	
+
 	/**
 	 * Long date format for displaying dates
 	 */
@@ -79,7 +79,7 @@ public abstract class BaseManagedBean {
 		message.setDetail(messageString);
 		context.addMessage(componentID, message);
 	}
-	
+
 	/**
 	 * Generates a JSF component ID for a given form input name by combining
 	 * it with the bean's form name.
@@ -90,15 +90,15 @@ public abstract class BaseManagedBean {
 	protected String getComponentID(String componentName) {
 		return getFormName() + ":" + componentName;
 	}
-	
+
 	/**
 	 * Register an internal error. This places the error
 	 * stack trace in the messages, and sends back a result
 	 * that will redirect the application to the internal error page.
-	 * 
+	 *
 	 * This should only be used for errors that can't be handled properly,
 	 * e.g. database failures and the like.
-	 * 
+	 *
 	 * @param error The error
 	 * @return A result string that will direct to the internal error page.
 	 * @see #INTERNAL_ERROR_RESULT
@@ -110,7 +110,7 @@ public abstract class BaseManagedBean {
 		}
 		return INTERNAL_ERROR_RESULT;
 	}
-	
+
 	/**
 	 * Retrieve a parameter from the request
 	 * @param paramName The name of the parameter to retrieve
@@ -119,7 +119,7 @@ public abstract class BaseManagedBean {
 	public String getRequestParameter(String paramName) {
 		return (String) FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(paramName);
 	}
-	
+
 	/**
 	 * Retrieves the current HTTP Session object
 	 * @return The HTTP Session object
@@ -127,7 +127,7 @@ public abstract class BaseManagedBean {
 	public HttpSession getSession() {
 		return (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(true);
 	}
-	
+
 	/**
 	 * Directly navigate to a given result
 	 * @param navigation The navigation result
@@ -136,7 +136,7 @@ public abstract class BaseManagedBean {
 		ConfigurableNavigationHandler nav = (ConfigurableNavigationHandler) FacesContext.getCurrentInstance().getApplication().getNavigationHandler();
 		nav.performNavigation(navigation);
 	}
-	
+
 	/**
 	 * Evaluate and EL expression and return its value
 	 * @param expression The EL expression
@@ -146,7 +146,7 @@ public abstract class BaseManagedBean {
 		FacesContext context = FacesContext.getCurrentInstance();
 		return context.getApplication().evaluateExpressionGet(context, expression, String.class);
 	}
-	
+
 	/**
 	 * Returns the User object for the current session
 	 * @return The User object
@@ -154,32 +154,32 @@ public abstract class BaseManagedBean {
 	public User getUser() {
 		return (User) getSession().getAttribute(LoginBean.USER_SESSION_ATTR);
 	}
-	
+
 	public UserPreferences getUserPrefs() {
 		UserPreferences result = (UserPreferences) getSession().getAttribute(LoginBean.USER_PREFS_ATTR);
 		if (null == result) {
 			result = new UserPreferences(getUser().getDatabaseID());
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Accessing components requires the name of the form
 	 * that they are in as well as their own name. Most beans will only have one form,
 	 * so this method will provide the name of that form.
-	 * 
+	 *
 	 * <p>
 	 *   This class provides a default form name. Override the method
 	 *   to provide a name specific to the bean.
 	 * </p>
-	 * 
+	 *
 	 * @return The form name for the bean
 	 */
 	protected String getFormName() {
 		return "DEFAULT_FORM";
 	}
-	
+
 	/**
 	 * Get the URL stub for the application
 	 * @return The application URL stub
@@ -188,7 +188,7 @@ public abstract class BaseManagedBean {
 		// TODO This can probably be replaced with something like FacesContext.getCurrentInstance().getExternalContext().getRe‌​questContextPath()
 		return ResourceManager.getInstance().getConfig().getProperty("app.urlstub");
 	}
-	
+
 	/**
 	 * Get a data source
 	 * @return The data source
@@ -196,7 +196,7 @@ public abstract class BaseManagedBean {
 	protected DataSource getDataSource() {
 		return ResourceManager.getInstance().getDBDataSource();
 	}
-	
+
 	/**
 	 * Get the application configuration
 	 * @return The application configuration
@@ -204,7 +204,7 @@ public abstract class BaseManagedBean {
 	protected Properties getAppConfig() {
 		return ResourceManager.getInstance().getConfig();
 	}
-	
+
 	/**
 	 * Initialise/reset the bean
 	 */
@@ -212,8 +212,8 @@ public abstract class BaseManagedBean {
 		// Load the instruments list. Set the current instrument if it isn't already set.
 		try {
 			instruments = InstrumentDB.getInstrumentList(getDataSource(), getUser());
-			
-			
+
+
 			boolean userInstrumentExists = false;
 			long currentUserInstrument = getUserPrefs().getLastInstrument();
 			if (currentUserInstrument != -1) {
@@ -224,7 +224,7 @@ public abstract class BaseManagedBean {
 					}
 				}
 			}
-			
+
 			if (!userInstrumentExists) {
 				if (instruments.size() > 0) {
 					setCurrentInstrumentId(instruments.get(0).getId());
@@ -232,7 +232,7 @@ public abstract class BaseManagedBean {
 					setCurrentInstrumentId(-1);
 				}
 			}
-			
+
 
 			Instrument currentInstrument = (Instrument) getSession().getAttribute(CURRENT_FULL_INSTRUMENT_ATTR);
 			if (
@@ -261,14 +261,14 @@ public abstract class BaseManagedBean {
 		if (null == instruments) {
 			initialiseInstruments();
 		}
-		
+
 		return instruments;
 	}
-	
+
 	public Instrument getCurrentInstrument() {
 		// Get the current instrument from the session
 		Instrument currentFullInstrument = (Instrument) getSession().getAttribute(CURRENT_FULL_INSTRUMENT_ATTR);
-		
+
 		try {
 			// If there is nothing in the session, get the instrument from
 			// the user prefs and put it in the session
@@ -298,10 +298,10 @@ public abstract class BaseManagedBean {
 			e.printStackTrace();
 			currentFullInstrument = null;
 		}
-		
+
 		return currentFullInstrument;
 	}
-	
+
 	/**
 	 * Get the current instrument
 	 * @return The current instrument
@@ -309,26 +309,26 @@ public abstract class BaseManagedBean {
 	public long getCurrentInstrumentId() {
 
 		long result = -1;
-		
+
 		if (null != getCurrentInstrument()) {
 			result = getCurrentInstrument().getDatabaseId();
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Set the current instrument
 	 * @param currentInstrument The current instrument
 	 */
 	public void setCurrentInstrumentId(long currentInstrumentId) {
-		
+
 		// Only do something if the instrument has actually changed
 		if (getUserPrefs().getLastInstrument() != currentInstrumentId) {
-			
+
 			// Update the user preferences
 			getUserPrefs().setLastInstrument(currentInstrumentId);
-			
+
 			// Remove the current instrument from the session;
 			// It will be replaced on next access
 			getSession().removeAttribute(CURRENT_FULL_INSTRUMENT_ATTR);
@@ -341,7 +341,7 @@ public abstract class BaseManagedBean {
 	public String getLongDateFormat() {
 		return longDateFormat;
 	}
-	
+
 	/**
 	 * Determine whether or not there are instruments available for this user
 	 * @return {@code true} if the user has any instruments; {@code false} if not.

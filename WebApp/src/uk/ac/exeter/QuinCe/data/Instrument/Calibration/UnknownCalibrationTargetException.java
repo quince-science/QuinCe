@@ -6,7 +6,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
  *
  */
 public class UnknownCalibrationTargetException extends CalibrationException {
-	
+
 	/**
 	 * The serial version UID
 	 */

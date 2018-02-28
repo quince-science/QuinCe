@@ -15,7 +15,7 @@ public class EmailSender {
 
 	/**
 	 * Send an email. The email server/authentication details are extracted from the supplied configuration.
-	 * 
+	 *
 	 * <p>
 	 *   The following configuration values are used:
 	 * </p>
@@ -42,11 +42,11 @@ public class EmailSender {
 	 *     {@code email.fromaddress} The From address for emails sent by the application.
 	 *   </li>
 	 *   <li>
-	 *     {@code email.fromname} The From name for emails sent by the application. 
+	 *     {@code email.fromname} The From name for emails sent by the application.
 	 *   </li>
 	 * </ul>
-	 * 
-	 * 
+	 *
+	 *
 	 * @param config The application configuration
 	 * @param address The destination email address
 	 * @param subject The email subject
@@ -58,10 +58,10 @@ public class EmailSender {
 
 		email.setStartTLSEnabled(Boolean.valueOf(config.getProperty("email.starttls", "false")));
 		email.setSSLOnConnect(Boolean.valueOf(config.getProperty("email.ssl", "false")));
-		
+
 		email.setHostName(config.getProperty("email.hostname"));
 		email.setSmtpPort(Integer.parseInt(config.getProperty("email.port")));
-		
+
 		String userName = config.getProperty("email.username");
 		if (null != userName && userName.trim().length() > 0) {
 			email.setAuthentication(config.getProperty("email.username"), config.getProperty("email.password"));

@@ -6,7 +6,7 @@ package uk.ac.exeter.QuinCe.web.system;
  *
  */
 public class ResourceException extends Exception {
-	
+
 	/**
 	 * The serial version UID
 	 */

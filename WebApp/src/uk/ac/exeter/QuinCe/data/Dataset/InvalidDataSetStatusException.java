@@ -7,7 +7,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 public class InvalidDataSetStatusException extends Exception {
 
 	/**
-	 * The serial version UID 
+	 * The serial version UID
 	 */
 	private static final long serialVersionUID = -4323030986300023229L;
 
@@ -18,5 +18,5 @@ public class InvalidDataSetStatusException extends Exception {
 	public InvalidDataSetStatusException(int status) {
 		super("Unrecognised data set status value: " + status);
 	}
-	
+
 }

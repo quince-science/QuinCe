@@ -27,7 +27,7 @@ public class SendEmailVerificationMailJob extends Job {
 	 * The key for the email address in the job parameters
 	 */
 	public static final String EMAIL_KEY = "emailAddress";
-	
+
 	/**
 	 * Job object constructor
 	 * @param resourceManager The application's resource manager
@@ -40,15 +40,15 @@ public class SendEmailVerificationMailJob extends Job {
 	public SendEmailVerificationMailJob(ResourceManager resourceManager, Properties config, long id, Map<String, String> params) throws MissingParamException, InvalidJobParametersException {
 		super(resourceManager, config, id, params);
 	}
-	
+
 	@Override
 	protected void execute(JobThread thread) throws JobFailedException {
-		
+
 		StringBuffer emailText = new StringBuffer();
 		emailText.append("Click the link\n\n");
 		emailText.append(buildLink(config));
 		emailText.append("\n");
-		
+
 		try {
 			EmailSender.sendEmail(config, parameters.get(EMAIL_KEY), "Activate your QuinCe account", emailText.toString());
 		} catch (EmailException e) {
@@ -59,14 +59,14 @@ public class SendEmailVerificationMailJob extends Job {
 	@Override
 	/**
 	 * Validate the job parameters. In this case, make sure a URL stub and user ID is given.
-	 * 
+	 *
 	 * For the moment, we don't verify the URL stub - we just make sure we've got a string.
 	 */
 	protected void validateParameters() throws InvalidJobParametersException {
 		if (parameters.size() != 1) {
 			throw new InvalidJobParametersException("Incorrect number of parameters");
 		}
-		
+
 		User dbUser;
 		try {
 			dbUser = UserDB.getUser(dataSource, parameters.get(EMAIL_KEY));
@@ -79,7 +79,7 @@ public class SendEmailVerificationMailJob extends Job {
 			throw new InvalidJobParametersException("Unhandled exception while validating parameters", e);
 		}
 	}
-	
+
 	/**
 	 * Construct the email verification link that the user will click in the email
 	 * @param config The application configuration
@@ -87,9 +87,9 @@ public class SendEmailVerificationMailJob extends Job {
 	 * @throws JobFailedException If the link cannot be built
 	 */
 	private String buildLink(Properties config) throws JobFailedException {
-		
+
 		String emailAddress = parameters.get(EMAIL_KEY);
-		
+
 		StringBuffer link = new StringBuffer();
 
 		User dbUser;
@@ -117,10 +117,10 @@ public class SendEmailVerificationMailJob extends Job {
 		} catch (Exception e) {
 			throw new JobFailedException(id, e);
 		}
-		
+
 		return link.toString();
 	}
-	
+
 	@Override
 	protected String getFinishState() {
 		// Since we ignore interrupts, we always return FINISHED

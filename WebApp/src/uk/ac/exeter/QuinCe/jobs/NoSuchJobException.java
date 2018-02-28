@@ -19,5 +19,5 @@ public class NoSuchJobException extends Exception {
 	public NoSuchJobException(long jobID) {
 		super("The specified job (ID " + jobID + ") does not exist");
 	}
-	
+
 }

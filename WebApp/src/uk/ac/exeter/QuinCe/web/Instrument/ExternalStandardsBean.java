@@ -20,17 +20,17 @@ public class ExternalStandardsBean extends CalibrationBean {
 	 * The navigation string for the external standards list
 	 */
 	private static final String NAV_LIST = "external_standards";
-	
+
 	/**
 	 * The external standard being edited by the user
 	 */
 	private ExternalStandard enteredStandard = null;
-	
+
 	/**
 	 * The external standards database utility class
 	 */
 	private ExternalStandardDB db = null;
-	
+
 	/**
 	 * Constructor
 	 */
@@ -38,12 +38,12 @@ public class ExternalStandardsBean extends CalibrationBean {
 		super();
 		db = ExternalStandardDB.getInstance();
 	}
-	
+
 	@Override
 	protected String getListNavigation() {
 		return NAV_LIST;
 	}
-	
+
 	@Override
 	protected void createEnteredCalibration() {
 		enteredStandard = new ExternalStandard(instrumentId);
@@ -58,7 +58,7 @@ public class ExternalStandardsBean extends CalibrationBean {
 	protected CalibrationDB getDbInstance() {
 		return db;
 	}
-	
+
 	@Override
 	protected String getCalibrationType() {
 		return ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE;

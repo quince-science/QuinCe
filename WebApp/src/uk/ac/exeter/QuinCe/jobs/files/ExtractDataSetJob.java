@@ -38,20 +38,20 @@ public class ExtractDataSetJob extends Job {
 	 * The parameter name for the data set id
 	 */
 	public static final String ID_PARAM = "id";
-	
+
 	/**
 	 * The data set being processed by the job
 	 */
 	private DataSet dataSet = null;
-	
+
 	/**
 	 * The instrument to which the data set belongs
 	 */
 	private Instrument instrument = null;
-	
+
 	/**
 	 * Initialise the job object so it is ready to run
-	 * 
+	 *
 	 * @param resourceManager The system resource manager
 	 * @param config The application configuration
 	 * @param jobId The id of the job in the database
@@ -67,13 +67,13 @@ public class ExtractDataSetJob extends Job {
 
 	@Override
 	protected void execute(JobThread thread) throws JobFailedException {
-		
+
 		Connection conn = null;
-		
+
 		// The statements for measurements and calibrations can be re-used for each record
 		PreparedStatement storeMeasurementStatement = null;
 		PreparedStatement storeCalibrationStatement = null;
-		
+
 		try {
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
@@ -83,14 +83,14 @@ public class ExtractDataSetJob extends Job {
 
 			// Reset the data set and all associated data
 			reset(conn);
-			
+
 			// Set processing status
 			DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_DATA_EXTRACTION);
 			conn.commit();
 
 			// Get related data
 			instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
-			
+
 			DataSetRawData rawData = DataSetRawDataFactory.getDataSetRawData(dataSource, dataSet, instrument);
 
 			DataSetRawDataRecord record = rawData.getNextRecord();
@@ -100,15 +100,15 @@ public class ExtractDataSetJob extends Job {
 				} else if (record.isCalibration()) {
 					storeCalibrationStatement = CalibrationDataDB.storeCalibrationRecord(conn, record, storeCalibrationStatement);
 				}
-				
+
 				// Read the next record
 				record = rawData.getNextRecord();
 			}
-			
+
 			DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_WAITING_FOR_CALCULATION);
-			
+
 			conn.commit();
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			try {
@@ -130,14 +130,14 @@ public class ExtractDataSetJob extends Job {
 
 	/**
 	 * Reset the data set processing.
-	 * 
+	 *
 	 * Delete all related records and reset the status
 	 * @throws MissingParamException If any of the parameters are invalid
 	 * @throws InvalidDataSetStatusException If the method sets an invalid data set status
 	 * @throws DatabaseException If a database error occurs
 	 */
 	private void reset(Connection conn) throws MissingParamException, InvalidDataSetStatusException, DatabaseException {
-		
+
 		try {
 			CalibrationDataDB.deleteDatasetData(conn, dataSet);
 			CalculationDBFactory.getCalculationDB().deleteDatasetCalculationData(conn, dataSet);

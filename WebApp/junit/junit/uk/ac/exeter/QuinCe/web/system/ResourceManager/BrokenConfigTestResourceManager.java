@@ -15,55 +15,55 @@ public class BrokenConfigTestResourceManager extends LocalTestResourceManager {
 	 * No failure file
 	 */
 	protected static final int FAILURE_FILE_NONE = 0;
-	
+
 	/**
 	 * Extraction QC Routines file failure
 	 */
 	protected static final int FAILURE_FILE_EXTRACT_ROUTINES_CONFIG = 1;
-	
+
 	/**
 	 * Main QC Routines file failure
 	 */
 	protected static final int FAILURE_FILE_QC_ROUTINES_CONFIG = 2;
-	
+
 	/**
 	 * Column config file failure
 	 */
 	protected static final int FAILURE_FILE_COLUMNS_CONFIG = 3;
-	
+
 	/**
 	 * Export config file failure
 	 */
 	protected static final int FAILURE_FILE_EXPORT_CONFIG = 4;
-	
+
 	/**
 	 * Sensors config file failure
 	 */
 	protected static final int FAILURE_FILE_SENSOR_CONFIG = 5;
-	
+
 	/**
 	 * Run types file failure
 	 */
 	protected static final int FAILURE_FILE_RUN_TYPES = 6;
-	
+
 	/**
 	 * The configuration file on which to fail
 	 */
 	private int failureFile = FAILURE_FILE_NONE;
-	
+
 	public BrokenConfigTestResourceManager(int failureFile) {
 		super();
 		this.failureFile = failureFile;
 	}
-	
+
 	/**
 	 * Create a fixed set of configuration properties
 	 */
 	@Override
 	protected Properties loadConfiguration(String filePath) throws FileNotFoundException, IOException {
-		
+
 		Properties config = new Properties();
-		
+
 		config.setProperty("app.urlstub", "http://localhost:8080/QuinCe");
 		config.setProperty("email.starttls", "false");
 		config.setProperty("email.ssl", "false");
@@ -79,9 +79,9 @@ public class BrokenConfigTestResourceManager extends LocalTestResourceManager {
 		config.setProperty("sensors.configfile", CONFIG_PATH_ROOT + "sensor_config.csv");
 		config.setProperty("runtypes.configfile", CONFIG_PATH_ROOT + "run_types_config.csv");
 		config.setProperty("map.max_points", "1000");
-		
+
 		String failureFileId = null;
-		
+
 		switch (failureFile) {
 		case FAILURE_FILE_EXTRACT_ROUTINES_CONFIG: {
 			failureFileId = "extract_routines.configfile";
@@ -108,12 +108,12 @@ public class BrokenConfigTestResourceManager extends LocalTestResourceManager {
 			break;
 		}
 		}
-		
+
 		if (null != failureFileId) {
 			config.setProperty(failureFileId, "missing_file.csv");
 		}
-		
+
 		return config;
 	}
-	
+
 }

@@ -6,7 +6,7 @@ package uk.ac.exeter.QuinCe.data.Instrument;
  *
  */
 public class FileDefinitionException extends Exception {
-	
+
 	/**
 	 * The serial version UID
 	 */

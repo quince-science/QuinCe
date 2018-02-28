@@ -16,17 +16,17 @@ public class ExportOption {
 	 * The index of this configuration in the export configuration file
 	 */
 	private int index;
-	
+
 	/**
 	 * The name of this export configuration
 	 */
 	private String name;
-	
+
 	/**
 	 * The separator to be used between columns in the output file
 	 */
 	private String separator;
-	
+
 	/**
 	 * The set of columns to be exported. See {@link ExportConfig} for a list
 	 * of supported columns
@@ -42,15 +42,15 @@ public class ExportOption {
 	 * </ul>
 	 */
 	private int co2Type;
-	
+
 	/**
 	 * The list of flags that records must match to be included in the export
 	 */
 	private List<Integer> flags;
-	
+
 	/**
 	 * Constructor for an export option object
-	 * @param index The index of the configuration in the export configuration file 
+	 * @param index The index of the configuration in the export configuration file
 	 * @param name The name of the configuration
 	 * @param separator The column separator
 	 * @param columns The columns to be exported
@@ -63,7 +63,7 @@ public class ExportOption {
 		this.separator = separator;
 		this.columns = columns;
 		this.co2Type = co2Type;
-		
+
 		flags = new ArrayList<Integer>();
 		flags.add(Flag.VALUE_GOOD);
 		flags.add(Flag.VALUE_ASSUMED_GOOD);
@@ -71,7 +71,7 @@ public class ExportOption {
 		flags.add(Flag.VALUE_BAD);
 		flags.add(Flag.VALUE_NEEDED);
 	}
-	
+
 	/**
 	 * Returns the index of this configuration in the export configuration file
 	 * @return The configuration index
@@ -79,7 +79,7 @@ public class ExportOption {
 	public int getIndex() {
 		return index;
 	}
-	
+
 	/**
 	 * Returns the name of the configuration
 	 * @return The configuration name
@@ -87,7 +87,7 @@ public class ExportOption {
 	public String getName() {
 		return name;
 	}
-	
+
 	/**
 	 * Returns the list of columns to be included in the export file
 	 * @return The list of columns
@@ -95,7 +95,7 @@ public class ExportOption {
 	public List<String> getColumns() {
 		return columns;
 	}
-	
+
 	/**
 	 * The column separator to be used in the export file
 	 * @return The column separator
@@ -103,7 +103,7 @@ public class ExportOption {
 	public String getSeparator() {
 		return separator;
 	}
-	
+
 	/**
 	 * Returns the type of measurements to be included in the export file
 	 * @return The type of measurements to be included in the export file
@@ -112,7 +112,7 @@ public class ExportOption {
 	public int getCo2Type() {
 		return co2Type;
 	}
-	
+
 	/**
 	 * Returns the list of record flags to be included in the export file.
 	 * Records without one of these flags will not be exported.

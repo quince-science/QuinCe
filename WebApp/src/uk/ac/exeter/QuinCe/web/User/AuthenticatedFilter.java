@@ -27,11 +27,11 @@ import uk.ac.exeter.QuinCe.User.User;
  *   <li>Email Verification Page</li>
  *   <li>Password Reset page</li>
  * </ul>
- * 
+ *
  * <p>Based on code from stackoverflow.</p>
- * 
- * @see <a href="http://stackoverflow.com/questions/8480100/how-implement-a-login-filter-in-jsf">How implement a login filter in JSF?</a> 
- * 
+ *
+ * @see <a href="http://stackoverflow.com/questions/8480100/how-implement-a-login-filter-in-jsf">How implement a login filter in JSF?</a>
+ *
  * @author Steve Jones
  *
  */
@@ -39,13 +39,13 @@ import uk.ac.exeter.QuinCe.User.User;
 public class AuthenticatedFilter implements Filter {
 
 	/**
-	 * The list of paths that can be accessed without being logged in. 
+	 * The list of paths that can be accessed without being logged in.
 	 */
 	private List<String> allowedPaths = new ArrayList<String>();
-	
+
 	/**
 	 * The list of paths that will be identified as resources.
-	 * 
+	 *
 	 * <p>
 	 *   Resources are things like Javascript files, images, stylesheets etc.
 	 *   They do not need checking as they are not security-restricted in terms
@@ -53,7 +53,7 @@ public class AuthenticatedFilter implements Filter {
 	 * </p>
 	 */
 	private List<String> resourcePaths = new ArrayList<String>();
-	
+
 	/**
 	 * Checks all requests for application pages to ensure that the user is
 	 * logged in. If the user is not logged in, they will be redirected
@@ -77,7 +77,7 @@ public class AuthenticatedFilter implements Filter {
         		response.sendRedirect(request.getContextPath());
         	}
         } else {
-        	
+
             // Get the user's email address from the session (if possible)
             User user = (User) session.getAttribute(LoginBean.USER_SESSION_ATTR);
 
@@ -94,7 +94,7 @@ public class AuthenticatedFilter implements Filter {
             }
         }
 	}
-	
+
 	/**
 	 * Determines whether or not this is a request for a resource rather than
 	 * a page of the application.
@@ -104,17 +104,17 @@ public class AuthenticatedFilter implements Filter {
 	 */
 	private boolean isResourceRequest(HttpServletRequest request) {
 		boolean result = false;
-		
+
 		for (String resourcePath : resourcePaths) {
 			if (request.getRequestURI().startsWith(request.getContextPath() + resourcePath)) {
 				result = true;
 				break;
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Determines whether or not a page can be accessed without the user having logged in.
 	 * @param request The request
@@ -134,10 +134,10 @@ public class AuthenticatedFilter implements Filter {
 				if (sessionIdPos != -1) {
 					requestURI = requestURI.substring(0, sessionIdPos);
 				}
-				
+
 				boolean pathMatched = false;
-				
-				
+
+
 				// Allowed paths with . in are complete, so don't try adding a suffix
 				if (allowedPath.contains(".") && requestURI.equals(pathURIBase)) {
 					pathMatched = true;
@@ -146,20 +146,20 @@ public class AuthenticatedFilter implements Filter {
 				} else if (requestURI.equals(pathURIBase + ".xhtml")) {
 					pathMatched = true;
 				}
-				
+
 				if (pathMatched) {
 					allowed = true;
 					break;
 				}
 			}
 		}
-		
+
 		return allowed;
 	}
 
 	/**
 	 * Sets up the list of resource paths, and pages that can be accessed without being logged in.
-	 * 
+	 *
 	 * <p>
 	 *   Pages specified without an extension are checked for both{@code .jsf} and {@code .xhtml} requests.
 	 *   Pages with extensions are checked as-is.
@@ -173,7 +173,7 @@ public class AuthenticatedFilter implements Filter {
 		allowedPaths.add("/user/verify_email");
 		allowedPaths.add("/credits");
 		allowedPaths.add("/favicon.ico");
-		
+
 		resourcePaths.add(ResourceHandler.RESOURCE_IDENTIFIER);
 		resourcePaths.add("/resources");
 	}

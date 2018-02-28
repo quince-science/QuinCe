@@ -6,7 +6,7 @@ package uk.ac.exeter.QuinCe.utils;
  *
  */
 public class DateTimeParseException extends Exception {
-	
+
 	/**
 	 * The serial version UID
 	 */

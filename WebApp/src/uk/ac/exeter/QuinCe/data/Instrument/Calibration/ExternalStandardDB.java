@@ -33,24 +33,24 @@ public class ExternalStandardDB extends CalibrationDB {
 		    + "(SELECT MAX(deployment_date) deployment_date, target "
 			+ "FROM calibration WHERE deployment_date < ? GROUP BY target) "
 		    + "AS c2 ON c1.target = c2.target AND c1.deployment_date = c2.deployment_date WHERE instrument_id = ?";
-	
+
 	/**
 	 * The calibration type for external standards
 	 */
 	public static final String EXTERNAL_STANDARD_CALIBRATION_TYPE = "EXTERNAL_STANDARD";
-	
+
 	/**
 	 * The singleton instance of the class
 	 */
 	private static ExternalStandardDB instance = null;
-	
+
 	/**
 	 * Basic constructor
 	 */
 	public ExternalStandardDB() {
 		super();
 	}
-	
+
 	/**
 	 * Retrieve the singleton instance of the class
 	 * @return The singleton
@@ -59,17 +59,17 @@ public class ExternalStandardDB extends CalibrationDB {
 		if (null == instance) {
 			instance = new ExternalStandardDB();
 		}
-		
+
 		return instance;
 	}
-	
+
 	/**
 	 * Destroy the singleton instance
 	 */
 	public static void destroy() {
 		instance = null;
 	}
-	
+
 	@Override
 	public List<String> getTargets(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		List<String> standardNames = InstrumentDB.getRunTypes(conn, instrumentId, RunTypeCategory.EXTERNAL_STANDARD_CATEGORY.getCode());
@@ -91,22 +91,22 @@ public class ExternalStandardDB extends CalibrationDB {
 	 * @throws RecordNotFoundException If the instrument does not exist
 	 */
 	public CalibrationSet getStandardsSet(Connection conn, long instrumentId, LocalDateTime date) throws DatabaseException, MissingParamException, RecordNotFoundException {
-		
+
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 		MissingParam.checkMissing(date, "date");
-		
+
 		CalibrationSet result = new CalibrationSet(instrumentId, EXTERNAL_STANDARD_CALIBRATION_TYPE, getTargets(conn, instrumentId));
-		
+
 		PreparedStatement stmt = null;
 		ResultSet records = null;
-		
+
 		try {
-			
+
 			stmt = conn.prepareStatement(GET_STANDARD_SET_QUERY);
 			stmt.setLong(1, DateTimeUtils.dateToLong(date));
 			stmt.setLong(2, instrumentId);
-			
+
 			records = stmt.executeQuery();
 			while (records.next()) {
 				String target = records.getString(1);
@@ -121,10 +121,10 @@ public class ExternalStandardDB extends CalibrationDB {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeResultSets(records);
 		}
-		
+
 		return result;
 	}
-	
+
 	@Override
 	public String getCalibrationType() {
 		return EXTERNAL_STANDARD_CALIBRATION_TYPE;

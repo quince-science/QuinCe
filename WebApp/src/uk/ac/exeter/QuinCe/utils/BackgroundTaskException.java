@@ -6,7 +6,7 @@ package uk.ac.exeter.QuinCe.utils;
  * @see BackgroundTask
  */
 public class BackgroundTaskException extends Exception {
-	
+
 	/**
 	 * The serial version UID
 	 */

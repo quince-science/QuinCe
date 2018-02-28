@@ -19,5 +19,5 @@ public class CalculationRecordFactory {
 	public static CalculationRecord makeCalculationRecord(long datasetId, long row) {
 		return new EquilibratorPco2CalculationRecord(datasetId, row, ResourceManager.getInstance());
 	}
-	
+
 }

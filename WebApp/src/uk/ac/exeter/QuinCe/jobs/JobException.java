@@ -4,10 +4,10 @@ package uk.ac.exeter.QuinCe.jobs;
  * Exception to indicate a general problem with a job.
  * Issues that lead to this exception might include failures
  * while instantiating a job object.
- * 
+ *
  * This MUST NOT be used to throw exceptions from a job's normal
  * running. Any such errors must be handled by the jobs themselves.
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -25,7 +25,7 @@ public class JobException extends Exception {
 	public JobException(String message) {
 		super(message);
 	}
-	
+
 	/**
 	 * Constructor with an error message and an underlying cause
 	 * @param message The error message

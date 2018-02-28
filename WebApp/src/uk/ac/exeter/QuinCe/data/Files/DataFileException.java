@@ -19,7 +19,7 @@ public class DataFileException extends Exception {
 	public DataFileException(String message) {
 		super(message);
 	}
-	
+
 	/**
 	 * Constructor for an error with an underlying cause
 	 * @param cause The cause
@@ -27,7 +27,7 @@ public class DataFileException extends Exception {
 	public DataFileException(Throwable cause) {
 		super(cause);
 	}
-	
+
 	/**
 	 * Constructor for an error with an underlying cause
 	 * @param message The error message

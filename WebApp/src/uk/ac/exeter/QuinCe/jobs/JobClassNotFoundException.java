@@ -19,5 +19,5 @@ public class JobClassNotFoundException extends Exception {
 	public JobClassNotFoundException(String className) {
 		super("The specified job class '" + className + "' could not be found");
 	}
-	
+
 }

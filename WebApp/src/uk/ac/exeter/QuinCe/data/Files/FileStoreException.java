@@ -19,7 +19,7 @@ public class FileStoreException extends Exception {
 	public FileStoreException(String message) {
 		super(message);
 	}
-	
+
 	/**
 	 * Constructs a new exception with the specified detail message and cause.
 	 * @param message The message

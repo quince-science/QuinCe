@@ -11,17 +11,17 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Class representing a set of calibrations of a given type for a given instrument.
- * 
+ *
  * <p>
  *   Calibrations can only be added to the set if they are for the correct instrument
  *   and of the correct type.
  * </p>
- *   
+ *
  * @author Steve Jones
  *
  */
 public class CalibrationSet extends TreeSet<Calibration> {
-	
+
 	/**
 	 * Serial version UID
 	 */
@@ -31,17 +31,17 @@ public class CalibrationSet extends TreeSet<Calibration> {
 	 * The ID of the instrument for to which this calibration set belongs
 	 */
 	private long instrumentId;
-	
+
 	/**
 	 * The calibration type that is allowed in this set
 	 */
 	private String type;
-	
+
 	/**
 	 * The set of targets that can be contained in this set
 	 */
 	private Collection<String> targets;
-	
+
 	/**
 	 * Initialise an empty calibration set
 	 * @param instrumentId The ID of the instrument to which the calibrations will belong
@@ -54,16 +54,16 @@ public class CalibrationSet extends TreeSet<Calibration> {
 		MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 		MissingParam.checkMissing(type, "type");
 		MissingParam.checkMissing(targets, "targets");
-		
+
 		this.instrumentId = instrumentId;
 		this.type = type;
 		this.targets = targets;
-		
+
 		for (String target : targets) {
 			add(new EmptyCalibration(instrumentId, type, target));
 		}
 	}
-	
+
 	@Override
 	public boolean add(Calibration calibration) {
 		if (calibration.getInstrumentId() != instrumentId) {
@@ -73,7 +73,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
 		if (!type.equals(calibration.getType())) {
 			throw new CalibrationException("Incorrect calibration type");
 		}
-		
+
 		if (!targets.contains(calibration.getTarget())) {
 			throw new CalibrationException("Calibration with target '" + calibration.getTarget() + "' is not allowed in this set");
 		}
@@ -81,55 +81,55 @@ public class CalibrationSet extends TreeSet<Calibration> {
 		if (contains(calibration)) {
 			super.remove(calibration);
 		}
-		
+
 		super.add(calibration);
-		
+
 		return true;
 	}
-	
+
 	@Override
 	public boolean addAll(Collection<? extends Calibration> c) {
 		for (Calibration calibration : c) {
 			add(calibration);
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Determines whether or not a {@code Calibration} for the
-	 * specified target has been added to the set. The method 
+	 * specified target has been added to the set. The method
 	 * does not check whether or not the target is in the list
 	 * of allowed targets.
-	 * 
+	 *
 	 * Empty calibrations are not detected by this method.
-	 * 
+	 *
 	 * @param target The target to find
 	 * @return {@code true} if a calibration for the target is found; {@code false} otherwise
 	 */
 	public boolean containsTarget(String target) {
 		boolean result = false;
-		
+
 		for (Calibration calibration : this) {
 			if (!(calibration instanceof EmptyCalibration) && calibration.getTarget().equals(target)) {
 				result = true;
 				break;
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Get the contents of the calibration set as a {@link List}.
-	 * 
+	 *
 	 * Required for JSF.
 	 * @return The calibration set as a {@link List}.
 	 */
 	public List<Calibration> asList() {
 		return new ArrayList<Calibration>(this);
 	}
-	
+
 	/**
 	 * Determines whether or not the calibration set contains a {@link Calibration}
 	 * for all the targets specified for the set.
@@ -138,14 +138,14 @@ public class CalibrationSet extends TreeSet<Calibration> {
 	 */
 	public boolean isComplete() {
 		boolean result = false;
-		
+
 		List<String> addedTargets = new ArrayList<String>();
 		for (Calibration calibration : this) {
 			if (!(calibration instanceof EmptyCalibration)) {
 				addedTargets.add(calibration.getTarget());
 			}
 		}
-		
+
 		/*
 		 * Since we can only add calibrations for targets in the original
 		 * targets list, then by definition the list of added targets will
@@ -155,7 +155,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
 		if (addedTargets.size() == targets.size()) {
 			result = true;
 		}
-		
+
 		return result;
 	}
 
@@ -167,25 +167,25 @@ public class CalibrationSet extends TreeSet<Calibration> {
 	 * @return The calibration below the specified value
 	 */
 	public String getCalibrationBelow(double value, boolean allowEqualValue) {
-		
+
 		String targetBelow = null;
 		double targetValue = Double.MIN_VALUE * -1;
-		
+
 		for (Calibration calibration : this) {
 			double calibrationValue = calibration.coefficients.get(0).getValue();
-			
+
 			boolean matchFound = false;
-			
+
 			if (calibrationValue > targetValue) {
 				matchFound = (calibrationValue < value) || (allowEqualValue && calibrationValue == value);
 			}
-			
+
 			if (matchFound) {
 				targetBelow = calibration.getTarget();
 				targetValue = calibration.coefficients.get(0).getValue();
 			}
 		}
-	
+
 		return targetBelow;
 	}
 
@@ -198,28 +198,28 @@ public class CalibrationSet extends TreeSet<Calibration> {
 	 * @return The calibration above the specified value
 	 */
 	public String getCalibrationAbove(double value, boolean allowEqualValue) {
-		
+
 		String targetAbove = null;
 		double targetValue = Double.MAX_VALUE;
-		
+
 		for (Calibration calibration : this) {
 			double calibrationValue = calibration.coefficients.get(0).getValue();
-			
+
 			boolean matchFound = false;
-			
+
 			if (calibrationValue < targetValue) {
 				matchFound = (calibrationValue > value) || (allowEqualValue && calibrationValue == value);
 			}
-			
+
 			if (matchFound) {
 				targetAbove = calibration.getTarget();
 				targetValue = calibration.coefficients.get(0).getValue();
 			}
 		}
-	
+
 		return targetAbove;
 	}
-	
+
 	/**
 	 * Get the value of the named calibration. Assumes that there is only one coefficient.
 	 * @param target The calibration target
@@ -229,14 +229,14 @@ public class CalibrationSet extends TreeSet<Calibration> {
 	public double getCalibrationValue(String target, String sensorName) throws RecordNotFoundException {
 		double result = 0;
 		boolean calibrationFound = false;
-		
+
 		for (Calibration calibration : this) {
 			if (calibration.getTarget().equals(target)) {
 				calibrationFound = true;
 				result = calibration.getCoefficient(sensorName);
 			}
 		}
-		
+
 		if (!calibrationFound) {
 			throw new RecordNotFoundException("Calibration '" + target + "' not found in calibration set");
 		}

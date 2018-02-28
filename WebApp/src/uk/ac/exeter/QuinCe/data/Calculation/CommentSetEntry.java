@@ -13,17 +13,17 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 	 * The comment
 	 */
 	private String comment;
-	
+
 	/**
 	 * The flag for the comment
 	 */
 	private Flag flag;
-	
+
 	/**
 	 * The number of instances of this comment
 	 */
 	private int count;
-	
+
 	/**
 	 * Basic constructor
 	 * @param comment The comment string
@@ -34,12 +34,12 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 		this.flag = flag;
 		this.count = 1;
 	}
-	
+
 	/**
 	 * Add a new instance of this comment. If the flag
 	 * for the new comment is 'worse' than the existing flag,
 	 * it is updated.
-	 * 
+	 *
 	 * @param flag The flag for the new instance
 	 */
 	protected void increment(Flag flag) {
@@ -48,18 +48,18 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 			this.flag = flag;
 		}
 	}
-	
+
 	/**
 	 * Determines whether or not this entry matches the specified comment. The matching
 	 * is case insensitive.
-	 * 
+	 *
 	 * @param comment The comment to match
 	 * @return {@code true} if this entry matches the comment; {@code false} if it does not.
 	 */
 	public boolean matches(String comment) {
 		return comment.equalsIgnoreCase(this.comment);
 	}
-	
+
 	/**
 	 * Get the comment string for this entry
 	 * @return The comment
@@ -67,7 +67,7 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 	public String getComment() {
 		return comment;
 	}
-	
+
 	/**
 	 * Get the number of instances of this comment that have been recorded
 	 * @return The instance count
@@ -75,7 +75,7 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 	public int getCount() {
 		return count;
 	}
-	
+
 	/**
 	 * Get the 'worst' flag assigned to instances of this comment
 	 * @return The flag
@@ -83,7 +83,7 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 	public Flag getFlag() {
 		return flag;
 	}
-	
+
 	/**
 	 * CommentSetEntry objects are ordered by their comment string
 	 */

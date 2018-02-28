@@ -9,17 +9,17 @@ import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Calculation record for equilibrator-based pCO2 systems 
+ * Calculation record for equilibrator-based pCO2 systems
  * @author Steve Jones
  *
  */
 public class EquilibratorPco2CalculationRecord extends CalculationRecord {
-	
+
 	/**
 	 * The list of columns that contain calculation values
 	 */
 	private static List<String> calculationColumns = null;
-	
+
 	static {
 		// TODO These should be retrieved from the configuration somehow
 		calculationColumns = new ArrayList<String>();
@@ -33,7 +33,7 @@ public class EquilibratorPco2CalculationRecord extends CalculationRecord {
 		calculationColumns.add("fCO2 TE");
 		calculationColumns.add("fCO2");
 	}
-	
+
 	/**
 	 * Creates an empty calculation record for the given dataset and measurement
 	 * @param datasetId The dataset ID

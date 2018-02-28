@@ -6,7 +6,7 @@ package uk.ac.exeter.QuinCe.data.Files;
  *
  */
 public class ValueNotNumericException extends DataFileException {
-	
+
 	/**
 	 * The serial version UID
 	 */

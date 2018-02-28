@@ -4,18 +4,18 @@ package uk.ac.exeter.QuinCe.utils;
  * An exception class for any database-level exceptions.
  * Most {@code DatabaseException}s will be wrappers around an
  * {@link java.sql.SQLException}.
- * 
+ *
  * @author Steve Jones
  *
  */
 public class DatabaseException extends Exception {
-	
+
 	/**
 	 * Indicates whether or not an attempted rollback
 	 * of a transaction succeeded
 	 */
 	private boolean rollbackOK = true;
-	
+
 	/**
 	 * The Serial Version UID
 	 */
@@ -23,16 +23,16 @@ public class DatabaseException extends Exception {
 
 	/**
 	 * Constructor for an exception without an underlying cause
-	 * 
+	 *
 	 * @param message The error message
 	 */
 	public DatabaseException(String message) {
 		super(message);
 	}
-	
+
 	/**
 	 * Constructor for an exception with an underlying cause
-	 * 
+	 *
 	 * @param message The error message
 	 * @param cause The root cause of the error
 	 */
@@ -40,10 +40,10 @@ public class DatabaseException extends Exception {
 		super(message, cause);
 	}
 
-	
+
 	/**
 	 * Constructor for an exception with an underlying cause
-	 * 
+	 *
 	 * @param message The error message
 	 * @param cause The root cause of the error
 	 * @param rollbackOK Indicates whether or not a rollback was successful after the error occurred
@@ -52,15 +52,15 @@ public class DatabaseException extends Exception {
 		super(message, cause);
 		this.rollbackOK = rollbackOK;
 	}
-	
+
 	@Override
 	public String getMessage() {
 		StringBuilder message = new StringBuilder(super.getMessage());
-		
+
 		if (!rollbackOK) {
 			message.append(" (transaction rollback failed)");
 		}
-		
+
 		return message.toString();
 	}
 }

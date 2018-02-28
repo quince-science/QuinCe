@@ -22,32 +22,32 @@ public class RunTypeCategoryConfiguration {
 	 * The number of columns required in the configuration file
 	 */
 	private static final int COL_COUNT = 4;
-	
+
 	/**
 	 * The column index for the category code
 	 */
 	private static final int COL_CODE = 0;
-	
+
 	/**
 	 * The column index for the category name
 	 */
 	private static final int COL_NAME = 1;
-	
+
 	/**
 	 * The column index for the category type
 	 */
 	private static final int COL_TYPE = 2;
-	
+
 	/**
 	 * The column index for the minimum count
 	 */
 	private static final int COL_MIN_COUNT = 3;
-	
+
 	/**
 	 *  The configured run type categories
 	 */
 	List<RunTypeCategory> categories = null;
-	
+
 	/**
 	 * Loads the configuration from a config file
 	 * @param configFile The config file
@@ -57,10 +57,10 @@ public class RunTypeCategoryConfiguration {
 		if (!FileUtils.canAccessFile(configFile)) {
 			throw new RunTypeCategoryException("Cannot access config file '" + configFile.getAbsolutePath() + "'");
 		}
-		
+
 		loadConfig(configFile);
 	}
-	
+
 	/**
 	 * Load the configuration
 	 * @param configFile The config file
@@ -68,13 +68,13 @@ public class RunTypeCategoryConfiguration {
 	 */
 	private void loadConfig(File configFile) throws RunTypeCategoryException {
 		categories = new ArrayList<RunTypeCategory>();
-		BufferedReader reader = null; 
-		
+		BufferedReader reader = null;
+
 		try {
 			reader = new BufferedReader(new FileReader(configFile));
 			String line = reader.readLine();
 			int lineCount = 1;
-			
+
 			while (null != line) {
 				if (!StringUtils.isComment(line)) {
 					List<String> fields = StringUtils.trimList(Arrays.asList(line.split(",", -1)));
@@ -85,18 +85,18 @@ public class RunTypeCategoryConfiguration {
 						if (!StringUtils.isInteger(fields.get(COL_TYPE))) {
 							throw new RunTypeCategoryException(lineCount, "Value for Type column must be numeric");
 						}
-						
+
 						if (!StringUtils.isInteger(fields.get(COL_MIN_COUNT))) {
 							throw new RunTypeCategoryException(lineCount, "Value for MinCount column must be numeric");
 						}
-						
+
 						String code = fields.get(COL_CODE);
 						String name = fields.get(COL_NAME);
 						int type = Integer.parseInt(fields.get(COL_TYPE));
 						int minCount = Integer.parseInt(fields.get(COL_MIN_COUNT));
-						
+
 						categories.add(new RunTypeCategory(code, name, type, minCount));
-						
+
 					}
 				}
 				line = reader.readLine();
@@ -113,7 +113,7 @@ public class RunTypeCategoryConfiguration {
 			}
 		}
 	}
-	
+
 	/**
 	 * Return the configured run type categories.
 	 * <p>
@@ -127,14 +127,14 @@ public class RunTypeCategoryConfiguration {
 	public List<RunTypeCategory> getCategories(boolean includeIgnored) {
 		List<RunTypeCategory> result = new ArrayList<RunTypeCategory>(categories);
 		result.add(RunTypeCategory.EXTERNAL_STANDARD_CATEGORY);
-		
+
 		if (includeIgnored) {
 			result.add(RunTypeCategory.IGNORED_CATEGORY);
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Get a category using its code
 	 * @param categoryCode The code
@@ -142,9 +142,9 @@ public class RunTypeCategoryConfiguration {
 	 * @throws NoSuchCategoryException If a category with the specified code cannot be found
 	 */
 	public RunTypeCategory getCategory(String categoryCode) throws NoSuchCategoryException {
-		
+
 		RunTypeCategory result = null;
-		
+
 		if (categoryCode.equalsIgnoreCase(RunTypeCategory.IGNORED_CATEGORY.getCode())) {
 			result = RunTypeCategory.IGNORED_CATEGORY;
 		} else if (categoryCode.equalsIgnoreCase(RunTypeCategory.EXTERNAL_STANDARD_CATEGORY.getCode())) {

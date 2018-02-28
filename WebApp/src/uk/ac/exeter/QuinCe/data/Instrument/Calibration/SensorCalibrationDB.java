@@ -19,12 +19,12 @@ public class SensorCalibrationDB extends CalibrationDB {
 	 * Indentifier for sensor calibrations
 	 */
 	public static final String SENSOR_CALIBRATION_TYPE = "SENSOR_CALIBRATION";
-	
+
 	/**
 	 * The singleton instance of the class
 	 */
 	private static SensorCalibrationDB instance = null;
-	
+
 	/**
 	 * Basic constructor
 	 */
@@ -40,7 +40,7 @@ public class SensorCalibrationDB extends CalibrationDB {
 		if (null == instance) {
 			instance = new SensorCalibrationDB();
 		}
-		
+
 		return instance;
 	}
 
@@ -50,12 +50,12 @@ public class SensorCalibrationDB extends CalibrationDB {
 	public static void destroy() {
 		instance = null;
 	}
-	
+
 	@Override
 	public List<String> getTargets(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		return InstrumentDB.getCalibratableSensors(conn, instrumentId);
 	}
-	
+
 	@Override
 	public String getCalibrationType() {
 		return SENSOR_CALIBRATION_TYPE;

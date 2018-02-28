@@ -19,5 +19,5 @@ public class InvalidThreadCountException extends Exception {
 	public InvalidThreadCountException() {
 		super("The number of threads must be positive");
 	}
-	
+
 }

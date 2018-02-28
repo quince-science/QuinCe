@@ -15,41 +15,41 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * A version of the Job class specifically for jobs operating on data files.
- * 
+ *
  * <p>
  *   Before the job is run, the file is checked to see if it has been marked for deletion.
  *   It is up to the concrete implementation of a {@code FileJob} to decide if it wants to
  *   check the file again during processing.
  * </p>
- * 
+ *
  * @author Steve Jones
  * @see Job
  */
 public abstract class FileJob extends Job {
-	
+
 	/**
 	 * The parameter key that holds the data file's database ID
 	 */
 	public static final String FILE_ID_KEY = "FILE_ID";
-	
+
 	/**
 	 * The ID of the data file
 	 */
 	protected long fileId;
-	
+
 	/**
 	 * The instrument to which the data file being processed belongs
 	 */
 	protected Instrument instrument = null;
-	
+
 	/**
 	 * Construct a Job to run on a data file.
-	 * 
+	 *
 	 * <p>
 	 *   The first entry in the {@code parameters} list must be the
 	 *   database ID of the file to be processed.
 	 * </p>
-	 *  
+	 *
 	 * @param resourceManager The system resource manager
 	 * @param config The application configuration
 	 * @param jobId The job's database ID
@@ -61,8 +61,8 @@ public abstract class FileJob extends Job {
 	 */
 	public FileJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(resourceManager, config, jobId, parameters);
-		
-		// The file ID and instrument are extracted in the validateParameters method 
+
+		// The file ID and instrument are extracted in the validateParameters method
 	}
 
 	/**
@@ -88,7 +88,7 @@ public abstract class FileJob extends Job {
 			throw new InvalidJobParametersException("An unexpected error occurred: " + e.getMessage());
 		}
 	}
-	
+
 	@Override
 	protected final void execute(JobThread thread) throws JobFailedException {
 		try {

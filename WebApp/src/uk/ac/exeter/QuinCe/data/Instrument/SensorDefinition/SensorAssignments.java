@@ -13,7 +13,7 @@ import java.util.Set;
  *   convenience methods defined here to change the contents of the Map.
  *   You can do it all yourself if you like, but caveat emptor.
  * </p>
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -33,16 +33,16 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 			put(type, new HashSet<SensorAssignment>());
 		}
 	}
-	
+
 	/**
 	 * Determines whether or not a given sensor type must have a column assigned.
-	 * 
+	 *
 	 * <p>
 	 *   This method checks the current sensor assignments, and determines whether
 	 *   or not a given sensor still needs to have an assignment made. This
 	 *   requires a number of checks:
 	 * </p>
-	 * 
+	 *
 	 * <ul>
 	 *   <li>
 	 *     If a primary sensor has been assigned, then no further assignment is needed
@@ -54,7 +54,7 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 	 *     assignment is needed for this sensor.
 	 *   </li>
 	 *   <li>
-	 *     If the sensor is not part of a required group, but its required 
+	 *     If the sensor is not part of a required group, but its required
 	 *     flag is set, then a sensor assignment is required.
 	 *   </li>
 	 *   <li>
@@ -70,11 +70,11 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 	 */
 	public boolean isAssignmentRequired(SensorType sensorType) throws SensorAssignmentException {
 		boolean required = false;
-		
+
 		if (!containsKey(sensorType)) {
 			throw new SensorAssignmentException("The specified sensor was not found");
 		}
-		
+
 		if (!sensorAssigned(sensorType, true)) {
 			if (sensorType.isRequired()) {
 				if (!groupAssigned(sensorType.getRequiredGroup())) {
@@ -84,10 +84,10 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 				required = true;
 			}
 		}
-		
+
 		return required;
 	}
-	
+
 	/**
 	 * Determines whether or not a named Required Group has been assigned
 	 * within any of its member sensor types.
@@ -96,7 +96,7 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 	 */
 	private boolean groupAssigned(String requiredGroup) {
 		boolean result = false;
-		
+
 		if (null != requiredGroup) {
 			for (SensorType sensorType : keySet()) {
 				String sensorGroup = sensorType.getRequiredGroup();
@@ -111,15 +111,15 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Determines whether or not any of the sensor types in the
 	 * collection depends on the supplied sensor type.
-	 * 
+	 *
 	 * If the sensor type has a Depends Question, this is taken into account.
-	 * 
+	 *
 	 * The logic of this is quite nasty. Follow the code comments.
-	 * 
+	 *
 	 * @param sensorType The sensor type that other sensors may depend on
 	 * @return {@code true} if any other sensor types depend on the supplied sensor type; {@code false} if there are no dependents
 	 * @see SensorType#getDependsQuestion()
@@ -132,18 +132,18 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 				break;
 			// A sensor can't depend on itself
 			} else if (!testType.equals(sensorType)) {
-				
+
 				// See if the test sensor *may* depend on this sensor
 				boolean potentiallyDependent = false;
-				
+
 				String dependsOn = testType.getDependsOn();
-				
+
 				// If the dependsOn isn't null...
 				if (null != dependsOn) {
-					
+
 					// ...and it matches this sensor...
 					if (testType.getDependsOn().equalsIgnoreCase(sensorType.getName())) {
-						
+
 						// If the sensor is assigned then it might be dependent
 						if (sensorAssigned(testType, false)) {
 							potentiallyDependent = true;
@@ -155,9 +155,9 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 						}
 					}
 				}
-				
+
 				if (potentiallyDependent) {
-					
+
 					// If there is no Depends Question, then we have a dependency
 					if (!testType.hasDependsQuestion()) {
 						result = true;
@@ -176,10 +176,10 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 				}
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Add a sensor assignment using the name of a sensor
 	 * @param sensorType The sensor type
@@ -198,38 +198,38 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 	 * @throws SensorTypeNotFoundException If the sensor type does not exist
 	 */
 	public SensorType getSensorType(String sensorName) throws SensorTypeNotFoundException {
-		
+
 		SensorType result = null;
-		
+
 		for (SensorType sensorType : keySet()) {
 			if (sensorType.getName().equals(sensorName)) {
 				result = sensorType;
 				break;
 			}
 		}
-		
+
 		if (null == result) {
 			throw new SensorTypeNotFoundException(sensorName);
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Determines whether or not a sensor type has been assigned to a column in
 	 * a file. Setting the {@code primary} flag will restrict the checks to only
 	 * looking at primary assignments; if the sensor has only been assigned as a fallback,
 	 * then it won't count. Setting {@code primary} to {@code false} will accept any
 	 * assignment.
-	 * 
+	 *
 	 * @param sensorType The sensor type
 	 * @param primaryOnly If the sensor must have been assigned as a primary sensor.
 	 * @return {@code true} if the sensor has been assigned; {@code false} if it has not
 	 */
 	private boolean sensorAssigned(SensorType sensorType, boolean primaryOnly) {
-	
+
 		boolean assigned = false;
-		
+
 		Set<SensorAssignment> assignments = get(sensorType);
 		if (null != assignments) {
 			if (!primaryOnly) {
@@ -242,12 +242,12 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 					}
 				}
 			}
-			
+
 		}
-		
+
 		return assigned;
 	}
-	
+
 	/**
 	 * De-assign a file/column from this set of assignments. The assignment doesn't have
 	 * to exist; the method will return a {@code boolean} indicating whether or not
@@ -257,11 +257,11 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 	 * @return {@code true} if an assignment was removed; {@code false} if not
 	 */
 	public boolean removeAssignment(String fileDescription, int columnIndex) {
-		
+
 		boolean assignmentRemoved = false;
-		
+
 		for (Map.Entry<SensorType, Set<SensorAssignment>> entry : entrySet()) {
-			
+
 			Set<SensorAssignment> assignments = entry.getValue();
 			for (SensorAssignment assignment : assignments) {
 				if (assignment.getDataFile().equalsIgnoreCase(fileDescription) && assignment.getColumn() == columnIndex) {
@@ -270,19 +270,19 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 					break;
 				}
 			}
-			
+
 		}
-		
+
 		return assignmentRemoved;
 	}
-	
+
 	/**
 	 * Remove all assignments from a given file
 	 * @param fileDescription The file description
 	 */
 	public void removeFileAssignments(String fileDescription) {
 		for (Map.Entry<SensorType, Set<SensorAssignment>> entry : entrySet()) {
-			
+
 			Set<SensorAssignment> assignments = entry.getValue();
 			for (SensorAssignment assignment : assignments) {
 				if (assignment.getDataFile().equalsIgnoreCase(fileDescription)) {
@@ -291,7 +291,7 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 			}
 		}
 	}
-	
+
 	/**
 	 * Determines whether or not a Core Sensor has been assigned within a given file
 	 * @param file The file to be checked
@@ -299,7 +299,7 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 	 */
 	public boolean coreSensorAssigned(String file) {
 		boolean result = false;
-		
+
 		for (SensorType sensorType : keySet()) {
 			if (sensorType.isCoreSensor()) {
 				for (SensorAssignment assignment : get(sensorType)) {
@@ -310,7 +310,7 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 				}
 			}
 		}
-		
+
 		return result;
 	}
 }

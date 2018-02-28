@@ -36,7 +36,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * <p>
  *   This {@link Job} class runs a set of QC routines on the records for a given data file.
  * </p>
- * 
+ *
  * <p>
  *   This job can be run more than once during file processing, since certain QC routines
  *   are more suited to different stages. For example, certain QC failures will mean that
@@ -45,18 +45,18 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *   will indicate where the calculations are in a file's processing, and which job
  *   should be run next.
  * </p>
- * 
+ *
  * <p>
  *   Records that have already had their WOCE flag to {@link Flag#FATAL}, {@link Flag#BAD} or {@link Flag#IGNORED}
  *   are excluded from the QC checks.
  * </p>
- * 
+ *
  * <p>
  *   Once the QC has been completed, the QC Flag and QC Message are set. The QC flag will be set to {@link Flag#GOOD},
  *   {@link Flag#QUESTIONABLE} or {@link Flag#BAD}. In the latter two cases, the QC Message will contain details of the fault(s)
  *   that were found.
  * </p>
- * 
+ *
  * <p>
  *   If the QC flag was set to {@link Flag#GOOD}, the WOCE flag for the record will be set to {@link Flag#ASSUMED_GOOD},
  *   to indicate that the software will assume that the record is good unless the user overrides it. Otherwise
@@ -64,12 +64,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *   Flag, either by accepting the suggestion from the QC job, or overriding the flag and choosing their own. The WOCE
  *   Comment will default to being identical to the QC Message, but this can also be changed if required.
  * </p>
- * 
+ *
  * <p>
  *   If the {@code AutoQCJob} has been run before, some WOCE Flags and Comments will have already been set by the user.
- *   These will be dealt with as follows: 
+ *   These will be dealt with as follows:
  * </p>
- * 
+ *
  * <ul>
  *   <li>
  *     If the QC results have not changed from their previous value, the WOCE flags are kept unchanged.
@@ -79,7 +79,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *     as described above. The user will have to re-examine these records and set the WOCE Flag and Comment once more.
  *   </li>
  * </ul>
- * 
+ *
  * @author Steve Jones
  * @see Flag
  * @see Message
@@ -97,7 +97,7 @@ public class AutoQCJob extends Job {
 	 * @see RoutinesConfig
 	 */
 	public static final String PARAM_ROUTINES_CONFIG = "ROUTINES_CONFIG";
-	
+
 	/**
 	 * Constructor that allows the {@link JobManager} to create an instance of this job.
 	 * @param resourceManager The application's resource manager
@@ -122,15 +122,15 @@ public class AutoQCJob extends Job {
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void execute(JobThread thread) throws JobFailedException {
-		
+
 		Connection conn = null;
 		long datasetId = Long.parseLong(parameters.get(ID_PARAM));
-		
+
 		try {
 			conn = dataSource.getConnection();
-			
+
 			CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
-			
+
 			// TODO This should be replaced with something that gets all the records in one query.
 			//      This will need changes to how the CalculationRecords are built
 			List<Long> measurementIds = DataSetDataDB.getMeasurementIds(conn, datasetId);
@@ -140,27 +140,27 @@ public class AutoQCJob extends Job {
 			for (DataRecord record : records) {
 				((CalculationRecord) record).clearAutoQCData();
 			}
-			
+
 			List<Routine> routines = RoutinesConfig.getInstance(parameters.get(PARAM_ROUTINES_CONFIG)).getRoutines();
 
 			for (Routine routine : routines) {
 				routine.processRecords((List<DataRecord>) records, null);
 			}
-				
+
 			// Record the messages from the QC in the database
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
 			for (DataRecord record : records) {
-				
+
 				if (thread.isInterrupted()) {
 					break;
 				}
-				
+
 				CalculationRecord qcRecord = (CalculationRecord) record;
 				boolean writeRecord = false;
-				
+
 				int messageCount = qcRecord.getMessages().size();
-				
+
 				Flag previousQCFlag = calculationDB.getAutoQCFlag(conn, qcRecord.getLineNumber());
 				if (previousQCFlag.equals(Flag.NOT_SET)) {
 					writeRecord = true;
@@ -181,7 +181,7 @@ public class AutoQCJob extends Job {
 						}
 					}
 				} else {
-					
+
 					// Compare the QC comment (which is the Rebuild Codes for the
 					// messages) with the new rebuild codes. If they're the same,
 					// take no action. Otherwise reset the QC & WOCE flags and comments
@@ -196,13 +196,13 @@ public class AutoQCJob extends Job {
 							for (Message recordMessage : qcRecord.getMessages()) {
 								databaseMessageFound = recordMessage.equals(databaseMessage);
 							}
-							
+
 							if (!databaseMessageFound) {
 								messagesMatch = false;
 							}
 						}
 					}
-					
+
 					if (!messagesMatch) {
 						if (qcRecord.getAutoFlag().equals(Flag.FATAL)) {
 							qcRecord.setUserFlag(Flag.FATAL);
@@ -218,7 +218,7 @@ public class AutoQCJob extends Job {
 					calculationDB.storeQC(conn, (CalculationRecord) record);
 				}
 			}
-			
+
 			// If the thread was interrupted, undo everything
 			if (thread.isInterrupted()) {
 				conn.rollback();
@@ -238,7 +238,7 @@ public class AutoQCJob extends Job {
 	protected void validateParameters() throws InvalidJobParametersException {
 		// TODO Auto-generated method stub
 	}
-	
+
 	/**
 	 * Get the calculation records for a set of measurements. QUESTIONABLE, BAD or IGNORED records
 	 * are not included.
@@ -250,11 +250,11 @@ public class AutoQCJob extends Job {
 	 * @throws RecordNotFoundException If the record is not in the database
 	 * @throws InvalidDataException If a field cannot be added to the record
 	 * @throws MessageException If the automatic QC messages cannot be parsed
-	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed 
+	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed
 	 */
 	private List<CalculationRecord> getRecords(Connection conn, long datasetId, List<Long> ids) throws MissingParamException, InvalidDataException, NoSuchColumnException, DatabaseException, RecordNotFoundException, MessageException {
 		List<CalculationRecord> records = new ArrayList<CalculationRecord>(ids.size());
-		
+
 		for (long id : ids) {
 			CalculationRecord record = CalculationRecordFactory.makeCalculationRecord(datasetId, id);
 			record.loadData(conn);
@@ -262,7 +262,7 @@ public class AutoQCJob extends Job {
 				records.add(record);
 			}
 		}
-		
+
 		return records;
 	}
 }

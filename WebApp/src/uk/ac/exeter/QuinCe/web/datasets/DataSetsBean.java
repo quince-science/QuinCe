@@ -41,17 +41,17 @@ public class DataSetsBean extends BaseManagedBean {
 	 * Navigation string for the New Dataset page
 	 */
 	private static final String NAV_NEW_DATASET = "new_dataset";
-	
+
 	/**
 	 * Navigation string for the datasets list
 	 */
 	private static final String NAV_DATASET_LIST = "dataset_list";
-	
+
 	/**
 	 * The data sets for the current instrument
 	 */
 	private List<DataSet> dataSets;
-	
+
 	/**
 	 * The file definitions for the current instrument in JSON format for the timeline
 	 */
@@ -61,7 +61,7 @@ public class DataSetsBean extends BaseManagedBean {
 	 * The data sets and data files for the current instrument in JSON format
 	 */
 	private String timelineEntriesJson;
-	
+
 	/**
 	 * The data set being created
 	 */
@@ -76,7 +76,7 @@ public class DataSetsBean extends BaseManagedBean {
 	 * Plaform code of the instrument for this dataset
 	 */
 	private String platformCode = null;
-		
+
 	/**
 	 * Initialise/Reset the bean
 	 */
@@ -89,7 +89,7 @@ public class DataSetsBean extends BaseManagedBean {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Start the dataset definition procedure
 	 * @return The navigation to the dataset definition page
@@ -102,7 +102,7 @@ public class DataSetsBean extends BaseManagedBean {
 
 		return NAV_NEW_DATASET;
 	}
-	
+
 	/**
 	 * Navigate to the datasets list
 	 * @return The navigation string
@@ -110,7 +110,7 @@ public class DataSetsBean extends BaseManagedBean {
 	public String goToList() {
 		return NAV_DATASET_LIST;
 	}
-	
+
 	/**
 	 * Get the data sets for the current instrument
 	 * @return The data sets
@@ -123,7 +123,7 @@ public class DataSetsBean extends BaseManagedBean {
 		}
 		return dataSets;
 	}
-	
+
 	/**
 	 * Load the list of data sets for the instrument from the database
 	 * @throws ResourceException If the app resources cannot be accessed
@@ -138,7 +138,7 @@ public class DataSetsBean extends BaseManagedBean {
 			dataSets = null;
 		}
 	}
-	
+
 	/**
 	 * Get the data files for the current instrument in JSON format
 	 * for the timeline
@@ -148,10 +148,10 @@ public class DataSetsBean extends BaseManagedBean {
 		if (null == timelineEntriesJson) {
 			buildTimelineJson();
 		}
-		
+
 		return timelineEntriesJson;
 	}
-	
+
 	/**
 	 * Get the file definitions for the current instrument in JSON format
 	 * for the timeline
@@ -161,10 +161,10 @@ public class DataSetsBean extends BaseManagedBean {
 		if (null == timelineEntriesJson) {
 			buildTimelineJson();
 		}
-		
+
 		return fileDefinitionsJson;
 	}
-	
+
 	/**
 	 * Build the timeline JSON string for the data files
 	 */
@@ -172,20 +172,20 @@ public class DataSetsBean extends BaseManagedBean {
 		try {
 			// Make the list of file definitions
 			Map<String, Integer> definitionIds = new HashMap<String, Integer>();
-			
+
 			StringBuilder fdJson = new StringBuilder();
-			
+
 			fdJson.append('[');
 
 			// Add a fake definition for the data sets, so they can be seen on the timeline
 			fdJson.append("{\"id\":-1000,\"content\":\"File Type:\",\"order\":-1000},");
-			
+
 			for (int i = 0; i < getCurrentInstrument().getFileDefinitions().size(); i++) {
 				FileDefinition definition = getCurrentInstrument().getFileDefinitions().get(i);
-				
+
 				// Store the definition number for use when building the files JSON below
 				definitionIds.put(definition.getFileDescription(), i);
-				
+
 				fdJson.append('{');
 				fdJson.append("\"id\":");
 				fdJson.append(i);
@@ -194,14 +194,14 @@ public class DataSetsBean extends BaseManagedBean {
 				fdJson.append("\",\"order\":");
 				fdJson.append(i);
 				fdJson.append('}');
-				
+
 				if (i < getCurrentInstrument().getFileDefinitions().size() - 1) {
 					fdJson.append(',');
 				}
 			}
-			
+
 			fdJson.append(']');
-			
+
 			fileDefinitionsJson = fdJson.toString();
 
 			// Now the actual files
@@ -209,10 +209,10 @@ public class DataSetsBean extends BaseManagedBean {
 
 			StringBuilder entriesJson = new StringBuilder();
 			entriesJson.append('[');
-			
+
 			for (int i = 0; i < dataFiles.size(); i++) {
 				DataFile file = dataFiles.get(i);
-				
+
 				entriesJson.append('{');
 				entriesJson.append("\"type\":\"range\", \"group\":");
 				entriesJson.append(definitionIds.get(file.getFileDefinition().getFileDescription()));
@@ -225,18 +225,18 @@ public class DataSetsBean extends BaseManagedBean {
 				entriesJson.append("\",\"title\":\"");
 				entriesJson.append(file.getFilename());
 				entriesJson.append("\"}");
-				
+
 				if (i < dataFiles.size() - 1) {
 					entriesJson.append(',');
 				}
 			}
-			
+
 			if (dataSets.size() > 0) {
 				entriesJson.append(',');
 
 				for (int i = 0; i < dataSets.size(); i++) {
 					DataSet dataSet = dataSets.get(i);
-					
+
 					entriesJson.append('{');
 					entriesJson.append("\"type\":\"background\",");
 					entriesJson.append("\"start\":\"");
@@ -254,15 +254,15 @@ public class DataSetsBean extends BaseManagedBean {
 					}
 				}
 			}
-			
+
 			entriesJson.append(']');
-			
+
 			timelineEntriesJson = entriesJson.toString();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Get the new data set
 	 * @return The new data set
@@ -270,50 +270,50 @@ public class DataSetsBean extends BaseManagedBean {
 	public DataSet getNewDataSet() {
 		return newDataSet;
 	}
-	
+
 	/**
 	 * Get the names of all data sets for the instrument as a JSON string
 	 * @return The data set names
 	 */
 	public String getDataSetNamesJson() {
 		StringBuilder json = new StringBuilder();
-		
+
 		json.append('[');
-		
+
 		for (int i = 0; i < dataSets.size(); i++) {
 			json.append('"');
 			json.append(dataSets.get(i).getName());
 			json.append('"');
-			
+
 			if (i < dataSets.size() - 1) {
 				json.append(',');
 			}
 		}
-		
+
 		json.append(']');
 
 		return json.toString();
 	}
-	
+
 	/**
 	 * Store the newly defined data set
 	 * @return Navigation to the data set list
 	 */
 	public String addDataSet() {
-		
+
 		try {
 			DataSetDB.addDataSet(getDataSource(), newDataSet);
-			
+
 			Map<String, String> params = new HashMap<String, String>();
 			params.put(ExtractDataSetJob.ID_PARAM, String.valueOf(newDataSet.getId()));
-			
+
 			JobManager.addJob(getDataSource(), getUser(), ExtractDataSetJob.class.getCanonicalName(), params);
-			
+
 			loadDataSets();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return NAV_DATASET_LIST;
 	}
 
@@ -357,7 +357,7 @@ public class DataSetsBean extends BaseManagedBean {
 	public long getDatasetId() {
 		return datasetId;
 	}
-	
+
 	/**
 	 * Set the dataset ID
 	 * @param datasetId The dataset ID
