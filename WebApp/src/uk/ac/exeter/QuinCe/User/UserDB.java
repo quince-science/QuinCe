@@ -729,4 +729,3 @@ public class UserDB {
     private byte[] hashedPassword;
   }
 }
-
