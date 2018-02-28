@@ -229,7 +229,7 @@
             pos = settings.limit;
         }
         self.position(pos, true);
-		var parent = this.closest('.splitter_panel');
+    var parent = this.closest('.splitter_panel');
         if (parent.length) {
             this.height(parent.height());
         }
