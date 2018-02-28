@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <Context reloadable="true">
-  <!-- 
+  <!--
     maxActive: Maximum number of dB connections in pool. Set to -1 for no limit.
     maxIdle: Maximum number of idle dB connections to retain in pool. Set to -1 for no limit.
     maxWait: Maximum milliseconds to wait for a dB connection to become available

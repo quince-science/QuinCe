@@ -1,100 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns="http://java.sun.com/xml/ns/javaee"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-	version="3.0">
-	<!-- The bare minimum needed for JSF 2.2 is a servlet 2.5 or later declaration 
-		(this uses 3.0) and the mapping for the FacesServlet. Setting PROJECT_STAGE 
-		to Development is highly recommended during initial development so that you 
-		get more helpful error messages. Whether you want server-side state saving 
-		(default) or client-side is a more complicated question: client-side uses 
-		more bandwidth but fewer server resources. Client-side also helps to avoid 
-		the dreaded view expired exceptions. From JSF 2 and PrimeFaces tutorial at 
-		http://www.coreservlets.com/JSF-Tutorial/jsf2/ -->
-	<display-name>QuinCe</display-name>
-	
-	<servlet>
-		<servlet-name>Faces Servlet</servlet-name>
-		<servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>Faces Servlet</servlet-name>
-		<url-pattern>*.jsf</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>Faces Servlet</servlet-name>
-		<url-pattern>*.xhtml</url-pattern>
-	</servlet-mapping>
-	<servlet>
-		<servlet-name>Logout</servlet-name>
-		<servlet-class>uk.ac.exeter.QuinCe.web.User.LogoutServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>Logout</servlet-name>
-		<url-pattern>/logout</url-pattern>
-	</servlet-mapping>
-	<context-param>
-		<param-name>javax.faces.PROJECT_STAGE</param-name>
-		<param-value>Development</param-value>
-	</context-param>
-	<context-param>
-		<description>State saving method: 'client' or 'server' (default). See JSF Specification section 2.5.2</description>
-		<param-name>javax.faces.STATE_SAVING_METHOD</param-name>
-		<param-value>client</param-value>
-	</context-param>
+  xmlns="http://java.sun.com/xml/ns/javaee"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+  version="3.0">
+  <!-- The bare minimum needed for JSF 2.2 is a servlet 2.5 or later declaration
+    (this uses 3.0) and the mapping for the FacesServlet. Setting PROJECT_STAGE
+    to Development is highly recommended during initial development so that you
+    get more helpful error messages. Whether you want server-side state saving
+    (default) or client-side is a more complicated question: client-side uses
+    more bandwidth but fewer server resources. Client-side also helps to avoid
+    the dreaded view expired exceptions. From JSF 2 and PrimeFaces tutorial at
+    http://www.coreservlets.com/JSF-Tutorial/jsf2/ -->
+  <display-name>QuinCe</display-name>
 
-	<!--  PrimeFaces stuff -->	
-	<!-- If you go to http://host/project/ (with no file name), it will try 
-		index.jsf first, welcome.jsf next, and so forth. -->
-	<welcome-file-list>
-		<welcome-file>index.xhtml</welcome-file>
-	</welcome-file-list>
+  <servlet>
+    <servlet-name>Faces Servlet</servlet-name>
+    <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Faces Servlet</servlet-name>
+    <url-pattern>*.jsf</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>Faces Servlet</servlet-name>
+    <url-pattern>*.xhtml</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>Logout</servlet-name>
+    <servlet-class>uk.ac.exeter.QuinCe.web.User.LogoutServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Logout</servlet-name>
+    <url-pattern>/logout</url-pattern>
+  </servlet-mapping>
+  <context-param>
+    <param-name>javax.faces.PROJECT_STAGE</param-name>
+    <param-value>Development</param-value>
+  </context-param>
+  <context-param>
+    <description>State saving method: 'client' or 'server' (default). See JSF Specification section 2.5.2</description>
+    <param-name>javax.faces.STATE_SAVING_METHOD</param-name>
+    <param-value>client</param-value>
+  </context-param>
 
-	<!-- Database connection pool -->
-	<resource-ref>
-		<description>DB Connection Pool</description>
-		<res-ref-name>jdbc/QuinCeDB</res-ref-name>
-		<res-type>javax.sql.DataSource</res-type>
-		<res-auth>Container</res-auth>
-		<res-sharing-scope>Shareable</res-sharing-scope>
-	</resource-ref>
-	
-	<context-param>
-	    <param-name>database.name</param-name>
-	    <param-value>java:/comp/env/jdbc/QuinCeDB</param-value>
-	</context-param>
+  <!--  PrimeFaces stuff -->
+  <!-- If you go to http://host/project/ (with no file name), it will try
+    index.jsf first, welcome.jsf next, and so forth. -->
+  <welcome-file-list>
+    <welcome-file>index.xhtml</welcome-file>
+  </welcome-file-list>
 
-	<context-param>
-	    <param-name>configuration.path</param-name>
-	    <param-value>%quince_root_folder%/configuration/quince.properties</param-value>
-	</context-param>
-	
-	<context-param>
-		<param-name>primefaces.THEME</param-name>
-		<param-value>cupertino</param-value>
-	</context-param>
-	
-	<context-param>
-	    <param-name>javax.faces.FACELETS_SKIP_COMMENTS</param-name>
-	    <param-value>true</param-value>
-	</context-param>
+  <!-- Database connection pool -->
+  <resource-ref>
+    <description>DB Connection Pool</description>
+    <res-ref-name>jdbc/QuinCeDB</res-ref-name>
+    <res-type>javax.sql.DataSource</res-type>
+    <res-auth>Container</res-auth>
+    <res-sharing-scope>Shareable</res-sharing-scope>
+  </resource-ref>
 
- 	<filter>
-	    <filter-name>PrimeFaces FileUpload Filter</filter-name>
-	    <filter-class>org.primefaces.webapp.filter.FileUploadFilter</filter-class>
-	</filter>
-	<filter-mapping>
-	    <filter-name>PrimeFaces FileUpload Filter</filter-name>
-	    <servlet-name>Faces Servlet</servlet-name>
-	    <dispatcher>FORWARD</dispatcher>
-	</filter-mapping>
+  <context-param>
+      <param-name>database.name</param-name>
+      <param-value>java:/comp/env/jdbc/QuinCeDB</param-value>
+  </context-param>
 
-	<listener>
-	    <listener-class>uk.ac.exeter.QuinCe.web.system.ResourceManager</listener-class>
-	</listener>
- 
+  <context-param>
+      <param-name>configuration.path</param-name>
+      <param-value>%quince_root_folder%/configuration/quince.properties</param-value>
+  </context-param>
+
+  <context-param>
+    <param-name>primefaces.THEME</param-name>
+    <param-value>cupertino</param-value>
+  </context-param>
+
+  <context-param>
+      <param-name>javax.faces.FACELETS_SKIP_COMMENTS</param-name>
+      <param-value>true</param-value>
+  </context-param>
+
+   <filter>
+      <filter-name>PrimeFaces FileUpload Filter</filter-name>
+      <filter-class>org.primefaces.webapp.filter.FileUploadFilter</filter-class>
+  </filter>
+  <filter-mapping>
+      <filter-name>PrimeFaces FileUpload Filter</filter-name>
+      <servlet-name>Faces Servlet</servlet-name>
+      <dispatcher>FORWARD</dispatcher>
+  </filter-mapping>
+
+  <listener>
+      <listener-class>uk.ac.exeter.QuinCe.web.system.ResourceManager</listener-class>
+  </listener>
+
     <listener>
-		<listener-class>uk.ac.exeter.QuinCe.web.User.UserSessionListener</listener-class>
-	</listener>
+    <listener-class>uk.ac.exeter.QuinCe.web.User.UserSessionListener</listener-class>
+  </listener>
 
 </web-app>
