@@ -37,8 +37,8 @@ public class EquilibratorPco2DB extends CalculationDB {
 	/**
 	 * The name of the database table
 	 */
-	private static final String TABLE_NAME = "equilibrator_pco2"; 
-	
+	private static final String TABLE_NAME = "equilibrator_pco2";
+
 	/**
 	 * The statement to store calculation values
 	 */
@@ -48,7 +48,7 @@ public class EquilibratorPco2DB extends CalculationDB {
 			+ "dried_co2 = ?, calibrated_co2 = ?, pco2_te_dry = ?, " // 6
 			+ "pco2_te_wet = ?, fco2_te = ?, fco2 = ? " // 9
 			+ "WHERE measurement_id = ?";
-	
+
 	/**
 	 * The statement to clear calculation values
 	 */
@@ -58,7 +58,7 @@ public class EquilibratorPco2DB extends CalculationDB {
 			+ "dried_co2 = NULL, calibrated_co2 = NULL, pco2_te_dry = NULL, " // 6
 			+ "pco2_te_wet = NULL, fco2_te = NULL, fco2 = NULL " // 9
 			+ "WHERE measurement_id = ?";
-	
+
 	/**
 	 * The query to retrieve calculation values
 	 */
@@ -69,8 +69,8 @@ public class EquilibratorPco2DB extends CalculationDB {
 			+ "auto_flag, auto_message, user_flag, user_message " // 13
 			+ "FROM " + TABLE_NAME
 			+ " WHERE measurement_id = ?";
-			
-	
+
+
 	@Override
 	public String getCalculationTable() {
 		return TABLE_NAME;
@@ -78,18 +78,18 @@ public class EquilibratorPco2DB extends CalculationDB {
 
 	@Override
 	public void storeCalculationValues(Connection conn, long measurementId, Map<String, Double> values) throws MissingParamException, DatabaseException {
-		
+
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkZeroPositive(measurementId, "measurementId");
 		MissingParam.checkMissing(values, "values");
-		
+
 		PreparedStatement stmt = null;
-		
+
 		try {
 			stmt = conn.prepareStatement(STORE_CALCULATION_VALUES_STATEMENT);
-			
+
 			stmt.setDouble(1, values.get("delta_temperature"));
-			
+
 			Double trueMoisture = values.get("true_moisture");
 			if (null == trueMoisture) {
 				stmt.setNull(2, Types.DOUBLE);
@@ -105,7 +105,7 @@ public class EquilibratorPco2DB extends CalculationDB {
 			stmt.setDouble(8, values.get("fco2_te"));
 			stmt.setDouble(9, values.get("fco2"));
 			stmt.setLong(10, measurementId);
-			
+
 			stmt.execute();
 		} catch (SQLException e) {
 			throw new DatabaseException("Error storing calculations" , e);
@@ -113,27 +113,27 @@ public class EquilibratorPco2DB extends CalculationDB {
 			DatabaseUtils.closeStatements(stmt);
 		}
 	}
-	
+
 	// TODO In the long run a lot of this can be factored out. Or it may become obsolete with per-field QC flags.
 	@Override
 	public Map<String, Double> getCalculationValues(Connection conn, CalculationRecord record) throws MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException, MessageException {
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkMissing(record, "record");
-		
+
 		PreparedStatement stmt = null;
 		ResultSet dbRecord = null;
 		Map<String, Double> values = new HashMap<String, Double>();
-		
+
 		try {
 			stmt = conn.prepareStatement(GET_CALCULATION_VALUES_STATEMENT);
 			stmt.setLong(1, record.getLineNumber());
-			
+
 			dbRecord = stmt.executeQuery();
-			
+
 			if (!dbRecord.next()) {
 				throw new RecordNotFoundException("Calculation data record not found", TABLE_NAME, record.getLineNumber());
 			} else {
-				
+
 				values.put("delta_temperature", dbRecord.getDouble(1));
 				values.put("true_moisture", dbRecord.getDouble(2));
 				values.put("ph2o", dbRecord.getDouble(3));
@@ -143,7 +143,7 @@ public class EquilibratorPco2DB extends CalculationDB {
 				values.put("pco2_te_wet", dbRecord.getDouble(7));
 				values.put("fco2_te", dbRecord.getDouble(8));
 				values.put("fco2", dbRecord.getDouble(9));
-				
+
 				for (int i = 1; i < record.getData().size(); i++) {
 					DataColumn column = record.getData().get(i);
 					String fieldName = DatabaseUtils.getDatabaseFieldName(column.getName());
@@ -152,7 +152,7 @@ public class EquilibratorPco2DB extends CalculationDB {
 						column.setValue(String.valueOf(value));
 					}
 				}
-				
+
 				record.setAutoFlag(new Flag(dbRecord.getInt(10)));
 				record.setMessages(RebuildCode.getMessagesFromRebuildCodes(dbRecord.getString(11)));
 				record.setUserFlag(new Flag(dbRecord.getInt(12)));
@@ -164,18 +164,18 @@ public class EquilibratorPco2DB extends CalculationDB {
 			DatabaseUtils.closeResultSets(dbRecord);
 			DatabaseUtils.closeStatements(stmt);
 		}
-		
+
 		return values;
 	}
 
 	@Override
 	public void clearCalculationValues(Connection conn, long measurementId) throws MissingParamException, DatabaseException {
-		
+
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkZeroPositive(measurementId, "measurementId");
-		
+
 		PreparedStatement stmt = null;
-		
+
 		try {
 			stmt = conn.prepareStatement(CLEAR_CALCULATION_VALUES_STATEMENT);
 			stmt.setLong(1, measurementId);
@@ -190,7 +190,7 @@ public class EquilibratorPco2DB extends CalculationDB {
 	@Override
 	public List<String> getCalculationColumnHeadings() {
 		List<String> columnHeadings = new ArrayList<String>();
-		
+
 		columnHeadings.add("ΔT");
 		columnHeadings.add("True Moisture");
 		columnHeadings.add("pH2O");
@@ -200,14 +200,14 @@ public class EquilibratorPco2DB extends CalculationDB {
 		columnHeadings.add("pCO2 TE Wet");
 		columnHeadings.add("fCO2 TE");
 		columnHeadings.add("fCO2 Final");
-		
+
 		return columnHeadings;
 	}
 
 	@Override
 	public void populateVariableList(VariableList variables) throws MissingParamException {
 		MissingParam.checkMissing(variables, "variables", true);
-		
+
 		variables.addVariable("ΔT", new Variable(Variable.TYPE_CALCULATION, "ΔT", "delta_temperature"));
 		variables.addVariable("xH2O", new Variable(Variable.TYPE_CALCULATION, "True xH2O", "true_moisture"));
 		variables.addVariable("pH2O", new Variable(Variable.TYPE_CALCULATION, "pH2O", "ph2o"));

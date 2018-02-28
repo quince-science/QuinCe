@@ -21,10 +21,10 @@ public class JobRunScheduler extends BackgroundTask {
 		} catch (Exception e) {
 			// We don't mind if this fails.
 		}
-			
+
 		try {
 			JobManager.resetInterruptedJobs(resourceManager);
-			
+
 			boolean ranJob = true;
 			while (ranJob) {
 				ranJob = JobManager.startNextJob(resourceManager, resourceManager.getConfig());
@@ -33,7 +33,7 @@ public class JobRunScheduler extends BackgroundTask {
 			throw new BackgroundTaskException(e);
 		}
 	}
-	
+
 	@Override
 	protected long getRunInterval() {
 		return 15;

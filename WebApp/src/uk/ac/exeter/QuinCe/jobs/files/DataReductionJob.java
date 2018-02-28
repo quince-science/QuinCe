@@ -31,7 +31,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * The background job to perform data reduction on a data file.
- * 
+ *
  * @author Steve Jones
  */
 public class DataReductionJob extends Job {
@@ -44,7 +44,7 @@ public class DataReductionJob extends Job {
 	/**
 	 * Constructor for a data reduction job to be run on a specific data file.
 	 * The job record must already have been created in the database.
-	 * 
+	 *
 	 * @param resourceManager The QuinCe resource manager
 	 * @param config The application configuration
 	 * @param jobId The job's database ID
@@ -57,13 +57,13 @@ public class DataReductionJob extends Job {
 	public DataReductionJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
 		super(resourceManager, config, jobId, parameters);
 	}
-	
+
 	@Override
 	protected void execute(JobThread thread) throws JobFailedException {
 
 		Connection conn = null;
 		CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
-		
+
 		try {
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
@@ -72,19 +72,19 @@ public class DataReductionJob extends Job {
 			List<DataSetRawDataRecord> measurements = DataSetDataDB.getMeasurements(conn, dataSet);
 			CalibrationDataSet calibrationRecords = CalibrationDataDB.getCalibrationRecords(conn, dataSet);
 			CalibrationSet externalStandards = ExternalStandardDB.getInstance().getStandardsSet(conn, dataSet.getInstrumentId(), measurements.get(0).getDate());
-			
+
 			if (!externalStandards.isComplete()) {
 				throw new JobFailedException(id, "No complete set of external standards available");
 			}
-			
+
 			// TODO This will loop through all available calculators
 			DataReductionCalculator calculator = new EquilibratorPco2Calculator(externalStandards, calibrationRecords);
-			
+
 			for (DataSetRawDataRecord measurement : measurements) {
 				Map<String, Double> calculatedValues = calculator.performDataReduction(measurement);
 				calculationDB.storeCalculationValues(conn, measurement.getId(), calculatedValues);
 			}
-			
+
 			// If the thread was interrupted, undo everything
 			if (thread.isInterrupted()) {
 				conn.rollback();
@@ -93,7 +93,7 @@ public class DataReductionJob extends Job {
 				JobManager.requeueJob(conn, id);
 				conn.commit();
 			} else {
-				
+
 				// Set up the Auto QC job
 				Map<String, String> jobParams = new HashMap<String, String>();
 				jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
@@ -110,16 +110,16 @@ public class DataReductionJob extends Job {
 			DatabaseUtils.closeConnection(conn);
 		}
 	}
-	
+
 	/**
 	 * Removes any previously calculated data reduction results from the database
 	 * @throws JobFailedException If an error occurs
 	 */
 	protected void reset() throws JobFailedException {
-		
+
 		Connection conn = null;
 		CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
-		
+
 		try {
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
@@ -138,12 +138,12 @@ public class DataReductionJob extends Job {
 
 	@Override
 	protected void validateParameters() throws InvalidJobParametersException {
-		
+
 		String datasetIdString = parameters.get(ID_PARAM);
 		if (null == datasetIdString) {
 			throw new InvalidJobParametersException(ID_PARAM + "is missing");
 		}
-		
+
 		try {
 			Long.parseLong(datasetIdString);
 		} catch (NumberFormatException e) {

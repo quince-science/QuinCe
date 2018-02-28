@@ -10,14 +10,14 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 
 /**
  * Bean for sensor calibrations.
- * 
+ *
  * <p>
  *   This currently uses the PolynomialSensorCalibration exclusively,
  *   because that is the only supported version right now. This will
  *   need to be genericised when the full framework of different calibration
  *   formulae is implemented.
  * </p>
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -29,17 +29,17 @@ public class SensorCalibrationsBean extends CalibrationBean {
 	 * The navigation string for the sensor calibrations list
 	 */
 	private static final String NAV_LIST = "sensor_calibrations";
-	
+
 	/**
 	 * The sensor calibration being edited by the user
 	 */
 	private PolynomialSensorCalibration enteredCalibration = null;
-	
+
 	/**
 	 * The sensor calibration database utility class
 	 */
 	private SensorCalibrationDB db = null;
-	
+
 	/**
 	 * Constructor
 	 */

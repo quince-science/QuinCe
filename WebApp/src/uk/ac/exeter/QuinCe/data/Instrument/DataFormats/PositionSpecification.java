@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Abstract class for position specifications. Longitudinal and latitudinal
  * positions share much similar functionality.
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -15,32 +15,32 @@ public abstract class PositionSpecification {
 	 * Indicates the longitude for setting the hemisphere column
 	 */
 	public static final int COORD_LONGITUDE = 0;
-	
+
 	/**
 	 * Indicates the latitude for setting the hemisphere column
 	 */
 	public static final int COORD_LATITUDE = 1;
-	
+
 	/**
 	 * Unknown position format value
 	 */
 	public static final int FORMAT_UNKNOWN = -1;
-	
+
 	/**
 	 * The index of the column containing the position value
 	 */
 	protected int valueColumn;
-	
+
 	/**
 	 * The index of the column containing the hemisphere
 	 */
 	protected int hemisphereColumn;
-	
+
 	/**
 	 * The position format
 	 */
 	protected int format;
-	
+
 	/**
 	 * Creates an empty position specification
 	 */
@@ -65,7 +65,7 @@ public abstract class PositionSpecification {
 			throw new PositionException("Specification is not complete");
 		}
 	}
-	
+
 	/**
 	 * Get the position format
 	 * @return The position format
@@ -73,7 +73,7 @@ public abstract class PositionSpecification {
 	public int getFormat() {
 		return format;
 	}
-	
+
 	/**
 	 * Set the format for this position specification
 	 * @param format The format code
@@ -83,24 +83,24 @@ public abstract class PositionSpecification {
 		if (!formatValid(format)) {
 			throw new InvalidPositionFormatException(format);
 		}
-		
+
 		this.format = format;
 	}
-	
+
 	/**
 	 * Determine whether a given format identifier is valid
 	 * @param format The format identifier
 	 * @return {@code true} if the format is valid; {@code false} if it is not
 	 */
 	public abstract boolean formatValid(int format);
-	
+
 	/**
 	 * Determines whether or not a hemisphere column is required for
 	 * this specification's format
 	 * @return {@code true} if a hemisphere column is required; {@code false} if it is not
 	 */
 	public abstract boolean hemisphereRequired();
-	
+
 	/**
 	 * Determines whether or not this specification is complete,
 	 * i.e. all required column indices are supplied
@@ -108,15 +108,15 @@ public abstract class PositionSpecification {
 	 */
 	public boolean specificationComplete() {
 		boolean complete = true;
-		
+
 		if (valueColumn == -1) {
 			complete = false;
 		}
-		
+
 		if (hemisphereRequired() && hemisphereColumn == -1) {
 			complete = false;
 		}
-		
+
 		return complete;
 	}
 
@@ -151,10 +151,10 @@ public abstract class PositionSpecification {
 	public void setHemisphereColumn(int hemisphereColumn) {
 		this.hemisphereColumn = hemisphereColumn;
 	}
-	
+
 	/**
 	 * Get the JSON representation of this specification.
-	 * 
+	 *
 	 * <p>
 	 *   The JSON string is as follows:
 	 * </p>
@@ -170,7 +170,7 @@ public abstract class PositionSpecification {
 	 *   to the chosen format. The JSON processor will need
 	 *   to know how to translate these.
 	 * </p>
-	 * 
+	 *
 	 * @return The JSON string
 	 */
 	public String getJsonString() {
@@ -187,21 +187,21 @@ public abstract class PositionSpecification {
 		json.append('}');
 		return json.toString();
 	}
-	
+
 	/**
 	 * Reset the value column
 	 */
 	public void clearValueColumn() {
 		valueColumn = -1;
 	}
-	
+
 	/**
 	 * Reset the hemisphere column
 	 */
 	public void clearHemisphereColumn() {
 		hemisphereColumn = -1;
 	}
-	
+
 	/**
 	 *  Get the position value from a given line
 	 * @param line The line

@@ -21,23 +21,23 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 	protected InstrumentFileSet() {
 		super();
 	}
-	
+
 	@Override
 	public boolean add(FileDefinition file) {
 		boolean result = false;
-		
+
 		int currentPosition = indexOf(file);
-		
+
 		if (currentPosition == -1) {
 			result = super.add(file);
 		} else {
 			set(currentPosition, file);
 			result = true;
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Determine whether or not the file set contains a file definition
 	 * with the specified description
@@ -46,17 +46,17 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 	 */
 	public boolean containsFileDescription(String description) {
 		boolean found = false;
-		
+
 		for (FileDefinition file : this) {
 			if (file.getFileDescription().equalsIgnoreCase(description)) {
 				found = true;
 				break;
 			}
 		}
-		
+
 		return found;
 	}
-	
+
 	/**
 	 * Retrieve the file definition with the specified description.
 	 * If no definition is found, the method returns {@code null}
@@ -65,17 +65,17 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 	 */
 	public FileDefinition get(String description) {
 		FileDefinition result = null;
-		
+
 		for (FileDefinition file : this) {
 			if (file.getFileDescription().equalsIgnoreCase(description)) {
 				result = file;
 				break;
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Retrieve the file definition with the specified database ID.
 	 * If no definition is found, the method returns {@code null}
@@ -84,57 +84,57 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
 	 */
 	public FileDefinition get(long definitionId) {
 		FileDefinition result = null;
-		
+
 		for (FileDefinition file : this) {
 			if (file.getDatabaseId() == definitionId) {
 				result = file;
 				break;
 			}
 		}
-		
+
 		return result;
 	}
 
 	@Override
 	public boolean remove(Object o) {
 		boolean removed = false;
-		
+
 		if (o instanceof FileDefinition) {
 			removed = super.remove(o);
 		} else if (o instanceof String) {
 			// Allow removal by file description
 			int fileToRemove = -1;
-			
+
 			for (int i = 0; i < size(); i++) {
 				if (get(i).getFileDescription().equalsIgnoreCase((String) o)) {
 					fileToRemove = i;
 					break;
 				}
 			}
-			
+
 			remove(fileToRemove);
 		}
-		
+
 		return removed;
 	}
-	
+
 	/**
 	 * Find file definitions that match the layout of the
 	 * supplied file definition.
-	 * 
+	 *
 	 * @param fileToMatch The file definition to be matched
 	 * @return The matching file definitions
 	 */
 	public List<FileDefinition> getMatchingFileDefinition(FileDefinition fileToMatch) {
 		List<FileDefinition> result = new ArrayList<FileDefinition>();
-		
+
 		for (FileDefinition file : this) {
 			if (file.matchesLayout(fileToMatch)) {
 				result.add(file);
 				break;
 			}
 		}
-		
+
 		return result;
 	}
 }

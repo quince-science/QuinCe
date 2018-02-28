@@ -23,12 +23,12 @@ public class TenSecondJob extends Job {
 	 * The parameter key for the number of chunks
 	 */
 	public static final String CHUNK_KEY = "chunks";
-	
+
 	/**
 	 * The number of 10 second chunks in the job
 	 */
 	private int chunkCount = 1;
-	
+
 	/**
 	 * Constructs a job object, and validates the parameters passed to it
 	 * @param resourceManager The system resource manager

@@ -19,7 +19,7 @@ public class RecordNotFoundException extends Exception {
 	public RecordNotFoundException(String message) {
 		super(message);
 	}
-	
+
 	/**
 	 * Constructor for a named table and record ID
 	 * @param message The error message

@@ -18,13 +18,13 @@ public class ExternalStandard extends Calibration {
 	 * (constructed in the {@code static} block)
 	 */
 	private static List<String> valueNames;
-	
+
 	static {
 		valueNames = new ArrayList<String>(1);
 		valueNames.add("CO2");
 		valueNames.add("xH2O");
 	}
-	
+
 	/**
 	 * Create an empty external standard placeholder that isn't
 	 * bound to a particular standard
@@ -33,7 +33,7 @@ public class ExternalStandard extends Calibration {
 	public ExternalStandard(long instrumentId) {
 		super(instrumentId, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE);
 	}
-	
+
 	/**
 	 * Creates an empty external standard for a specified standard
 	 * @param instrumentid The instrument ID
@@ -53,7 +53,7 @@ public class ExternalStandard extends Calibration {
 	 */
 	protected ExternalStandard(long instrumentId, String target, LocalDateTime deploymentDate, List<Double> coefficients) throws ParameterException {
 		super(instrumentId, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE, target);
-		
+
 		if (null != target) {
 			setDeploymentDate(deploymentDate);
 			setCoefficients(coefficients);
@@ -71,14 +71,14 @@ public class ExternalStandard extends Calibration {
 	@Override
 	public String buildHumanReadableCoefficients() {
 		String result = "Not set";
-		
+
 		if (null != coefficients) {
-			result = String.valueOf(coefficients.get(0).getValue()); 
+			result = String.valueOf(coefficients.get(0).getValue());
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Get the concentration of the external standard
 	 * @return The concentration
@@ -87,10 +87,10 @@ public class ExternalStandard extends Calibration {
 		if (null == coefficients) {
 			initialiseCoefficients();
 		}
-		
+
 		return coefficients.get(0).getValue();
 	}
-	
+
 	/**
 	 * Set the concentration of the external standard
 	 * @param concentration The concentration
@@ -99,14 +99,14 @@ public class ExternalStandard extends Calibration {
 		if (null == coefficients) {
 			initialiseCoefficients();
 		}
-		
+
 		coefficients.set(0, new CalibrationCoefficient(getCoefficientNames().get(0), concentration));
 	}
 
 	@Override
 	public boolean coefficientsValid() {
 		boolean result = true;
-		
+
 		if (null != coefficients) {
 			if (coefficients.size() != 2) {
 				result = false;

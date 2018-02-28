@@ -16,12 +16,12 @@ import java.util.Random;
  *   All rights reserved.
  * </p>
  * <p>
- *   Redistribution and use in source and binary forms, with or without 
+ *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions are met:
  * </p>
  * <ol>
  *   <li>
- *     Redistributions of source code must retain the above copyright notice, 
+ *     Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
  *   </li>
  *   <li>
@@ -31,19 +31,19 @@ import java.util.Random;
  *   </li>
  * </ol>
  * <p>
- *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- *   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- *   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- *   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
- *   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- *   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- *   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- *   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- *   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- *   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *   POSSIBILITY OF SUCH DAMAGE.
  * </p>
- * 
+ *
  * @author: havoc AT defuse.ca
  * @author: Steve Jones
  */
@@ -56,15 +56,15 @@ public class PasswordHash
 	public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
 
     /**
-     * The size of the salt in bytes. Can be changed without breaking existing hashes. 
+     * The size of the salt in bytes. Can be changed without breaking existing hashes.
      */
     public static final int SALT_BYTE_SIZE = 20;
-    
+
     /**
      * The size of the hash in bytes. Can be changed without breaking existing hashes.
      */
     public static final int HASH_BYTE_SIZE = 45;
-    
+
     /**
      * The number of iterations to use in the hashing algorithm.
      * Can be changed without breaking existing hashes.
@@ -88,7 +88,7 @@ public class PasswordHash
      * @see #validatePassword(char[], String)
      */
     public static final int PBKDF2_INDEX = 2;
-    
+
 	/**
 	 * Characters to be used in generating salts.
 	 */
@@ -163,7 +163,7 @@ public class PasswordHash
         int iterations = Integer.parseInt(params[ITERATION_INDEX]);
         byte[] salt = fromHex(params[SALT_INDEX]);
         byte[] hash = fromHex(params[PBKDF2_INDEX]);
-        // Compute the hash of the provided password, using the same salt, 
+        // Compute the hash of the provided password, using the same salt,
         // iteration count, and hash length
         byte[] testHash = pbkdf2(password, salt, iterations, hash.length);
         // Compare the hashes in constant time. The password is correct if
@@ -173,11 +173,11 @@ public class PasswordHash
 
     /**
      * Compares two byte arrays in length-constant time. This comparison method
-     * is used so that password hashes cannot be extracted from an on-line 
+     * is used so that password hashes cannot be extracted from an on-line
      * system using a timing attack and then attacked off-line.
-     * 
+     *
      * @param   a       the first byte array
-     * @param   b       the second byte array 
+     * @param   b       the second byte array
      * @return          true if both byte arrays are the same, false if not
      */
     private static boolean slowEquals(byte[] a, byte[] b)
@@ -234,7 +234,7 @@ public class PasswordHash
         BigInteger bi = new BigInteger(1, array);
         String hex = bi.toString(16);
         int paddingLength = (array.length * 2) - hex.length();
-        if(paddingLength > 0) 
+        if(paddingLength > 0)
             return String.format("%0" + paddingLength + "d", 0) + hex;
         else
             return hex;
@@ -285,7 +285,7 @@ public class PasswordHash
             System.out.println("ERROR: " + ex);
         }
     }
-    
+
     /**
      * Generate a random string.
      * <p>
@@ -308,7 +308,7 @@ public class PasswordHash
 	 *   This means you get 5 times the characters for the same number of entropy bits. This is the fastest way
 	 *   to generate purely random alphanumeric strings.
 	 * </p>
-	 * 
+	 *
      * @param size The length of the string
      * @return The generated string
      */
@@ -323,10 +323,10 @@ public class PasswordHash
           }
           randomString[i] = VALID_CHARACTERS[rand.nextInt(VALID_CHARACTERS.length)];
         }
-        
+
         return randomString;
     }
-    
+
     /**
      * Generate a random salt to be used with a password.
      * @return The salt

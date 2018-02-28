@@ -28,7 +28,7 @@ public class UserPreferences extends Properties {
 	 * The user ID
 	 */
 	private long userId;
-	
+
 	/**
 	 * Construct an empty preferences object for a user
 	 * @param userId The user ID
@@ -37,7 +37,7 @@ public class UserPreferences extends Properties {
 		super();
 		this.userId = userId;
 	}
-	
+
 	/**
 	 * Construct a preferences object from a String representation
 	 * @param userId The user ID
@@ -46,7 +46,7 @@ public class UserPreferences extends Properties {
 	protected UserPreferences(long userId, String preferencesString) {
 		super();
 		this.userId = userId;
-		
+
 		if (null != preferencesString) {
 			StringReader reader = new StringReader(preferencesString);
 			try {
@@ -61,7 +61,7 @@ public class UserPreferences extends Properties {
 			}
 		}
 	}
-	
+
 	/**
 	 * Get the ID of the user to which these preferences belong
 	 * @return The user ID
@@ -69,7 +69,7 @@ public class UserPreferences extends Properties {
 	protected long getUserId() {
 		return userId;
 	}
-	
+
 	/**
 	 * Store the last instrument that the user interacted with
 	 * @param instrumentId The instrument's database ID
@@ -77,14 +77,14 @@ public class UserPreferences extends Properties {
 	public void setLastInstrument(long instrumentId) {
 		setProperty(LAST_INSTRUMENT, String.valueOf(instrumentId));
 	}
-	
+
 	/**
 	 * Retrieve the last instrument that the user interacted with
 	 * @return The instrument's database ID
 	 */
 	public long getLastInstrument() {
 		long result = -1;
-		
+
 		if (null != getProperty(LAST_INSTRUMENT)) {
 			try {
 				result = Long.parseLong(getProperty(LAST_INSTRUMENT));
@@ -93,17 +93,17 @@ public class UserPreferences extends Properties {
 				setLastInstrument(-1);
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Write the user preferences to a String
 	 * @return The user preferences string
 	 */
 	public String writeToString() {
 		String result = null;
-		
+
 		try {
 			StringWriter writer = new StringWriter();
 			store(writer, null);
@@ -113,7 +113,7 @@ public class UserPreferences extends Properties {
 			 * We fail silently. If the properties can't be
 			 * converted to a String we return null so they'll
 			 * be reset in the database.
-			 * 
+			 *
 			 * Log the error to the console
 			 */
 			e.printStackTrace();

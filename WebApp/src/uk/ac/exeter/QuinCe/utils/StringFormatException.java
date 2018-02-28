@@ -6,7 +6,7 @@ package uk.ac.exeter.QuinCe.utils;
  * @see StringUtils
  */
 public class StringFormatException extends Exception {
-	
+
 	/**
 	 * The serial version UID
 	 */
@@ -20,5 +20,5 @@ public class StringFormatException extends Exception {
 	public StringFormatException(String message, String value) {
 		super(message + ": '" + value + "'");
 	}
-	
+
 }

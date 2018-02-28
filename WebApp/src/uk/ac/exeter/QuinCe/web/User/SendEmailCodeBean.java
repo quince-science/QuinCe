@@ -16,7 +16,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  *
  */
 public class SendEmailCodeBean extends BaseManagedBean {
-	
+
 	/**
 	 * Basic constructor
 	 */
@@ -28,7 +28,7 @@ public class SendEmailCodeBean extends BaseManagedBean {
 	 * The email address to which the verification code should be sent
 	 */
 	private String email = null;
-	
+
 	/**
 	 * Sends an email verification code to a user (based on email address)
 	 * If the email address is not supplied or invalid, simply returns to the login
@@ -36,9 +36,9 @@ public class SendEmailCodeBean extends BaseManagedBean {
 	 * @return The routing result for the web application
 	 */
 	public String sendCode() {
-		
+
 		String result = VALIDATION_FAILED_RESULT;
-		
+
 		if (null != email && email.length() > 0) {
 			try {
 				User user = UserDB.getUser(ServletUtils.getDBDataSource(), email);
@@ -46,7 +46,7 @@ public class SendEmailCodeBean extends BaseManagedBean {
 					UserDB.generateEmailVerificationCode(ServletUtils.getDBDataSource(), user);
 					Map<String, String> emailJobParams = new HashMap<String, String>(1);
 					emailJobParams.put(SendEmailVerificationMailJob.EMAIL_KEY, email);
-					
+
 					JobManager.addInstantJob(ServletUtils.getResourceManager(), ServletUtils.getAppConfig(), user, "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob", emailJobParams);
 					result = SUCCESS_RESULT;
 				}
@@ -54,10 +54,10 @@ public class SendEmailCodeBean extends BaseManagedBean {
 				result = internalError(e);
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Get the email address. If it's not already been set in the
 	 * bean, get it from the request
@@ -65,15 +65,15 @@ public class SendEmailCodeBean extends BaseManagedBean {
 	 */
 	public String getEmail() {
 		String result = email;
-		
+
 		if (null == email || email.length() == 0) {
 			result = getRequestParameter(VerifyEmailBean.USER_PARAM);
 		}
-		
-		
+
+
 		return result;
 	}
-	
+
 	/**
 	 * Set the email address
 	 * @param email The email address

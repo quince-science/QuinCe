@@ -9,10 +9,10 @@ import javax.servlet.ServletContextListener;
 
 /**
  * QuinCe has a number of maintenance tasks that run on a periodic basis.
- * 
+ *
  * This abstract class provides a framework for those tasks, providing scheduling
  * details and ensuring that only one instance of a given task is running concurrently.
- * 
+ *
  * @author Steve Jones
  */
 public abstract class BackgroundTask implements ServletContextListener, Runnable {
@@ -21,14 +21,14 @@ public abstract class BackgroundTask implements ServletContextListener, Runnable
 	 * The scheduler for the task.
 	 */
 	private ScheduledExecutorService scheduler = null;
-	
+
 	/**
 	 * A simple lock object for use when starting tasks.
 	 * It is used when setting the {@link #running} status of the task
 	 * to ensure that only one instance of a given task can be started.
 	 */
 	private final Object lock = new Object();
-	
+
 	/**
 	 * Indicates whether or not this task is running.
 	 */
@@ -62,16 +62,16 @@ public abstract class BackgroundTask implements ServletContextListener, Runnable
 	 */
 	@Override
 	public void run() {
-		
+
 		boolean doRun = false;
-		
+
 		synchronized(lock) {
 			if (!running) {
 				running = true;
 				doRun = true;
 			}
 		}
-		
+
 		if (doRun) {
 			try {
 				doTask();
@@ -85,13 +85,13 @@ public abstract class BackgroundTask implements ServletContextListener, Runnable
 			}
 		}
 	}
-	
+
 	/**
 	 * Perform the task actions
 	 * @throws BackgroundTaskException If an error occurs in the task
 	 */
 	protected abstract void doTask() throws BackgroundTaskException;
-	
+
 	/**
 	 * Returns the amount of time (in seconds) to wait before
 	 * running the task again.

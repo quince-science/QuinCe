@@ -22,24 +22,24 @@ public abstract class CalibrationBean extends BaseManagedBean {
 	 * The database ID of the current instrument
 	 */
 	protected long instrumentId;
-	
+
 	/**
 	 * The name of the current instrument
 	 */
 	private String instrumentName;
-	
+
 	/**
 	 * List of the most recent calibrations for each target
 	 */
 	private CalibrationSet currentCalibrations;
-	
+
 	/**
 	 * Empty constructor
 	 */
 	public CalibrationBean() {
-		
+
 	}
-	
+
 	/**
 	 * Initialise the bean
 	 * @return The navigation string
@@ -48,7 +48,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 		String nav = getListNavigation();
 
 		boolean ok = true;
-		
+
 		// Get the instrument ID
 		if (instrumentId == 0) {
 			nav = internalError(new MissingParamException("instrumentId"));
@@ -61,7 +61,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 				ok = false;
 			}
 		}
-		
+
 		if (ok) {
 			try {
 				createEnteredCalibration();
@@ -73,7 +73,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
 		return nav;
 	}
-	
+
 	/**
 	 * Get the instrument's database ID
 	 * @return The instrument ID
@@ -81,7 +81,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 	public long getInstrumentId() {
 		return instrumentId;
 	}
-	
+
 	/**
 	 * Set the database ID of the instrument
 	 * @param instrumentId The instrument ID
@@ -89,7 +89,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 	public void setInstrumentId(long instrumentId) {
 		this.instrumentId = instrumentId;
 	}
-	
+
 	/**
 	 * Get the instrument name
 	 * @return The instrument name
@@ -97,7 +97,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 	public String getInstrumentName() {
 		return instrumentName;
 	}
-	
+
 	/**
 	 * Set the instrument name
 	 * @param instrumentName The instrument name
@@ -105,25 +105,25 @@ public abstract class CalibrationBean extends BaseManagedBean {
 	public void setInstrumentName(String instrumentName) {
 		this.instrumentName = instrumentName;
 	}
-	
+
 	/**
 	 * Get the calibration object for new calibrations entered on the page
 	 * @return The entered calibration
 	 */
 	public abstract Calibration getEnteredCalibration();
-	
+
 	/**
 	 * Create a new, empty calibration object ready to be populated
 	 */
 	protected abstract void createEnteredCalibration();
-	
+
 	/**
 	 * Get the navigation string that will navigate to
 	 * the list of calibrations
 	 * @return The list navigation string
 	 */
 	protected abstract String getListNavigation();
-	
+
 	/**
 	 * Get a list of all possible targets for the calibration type
 	 * @return The targets
@@ -132,14 +132,14 @@ public abstract class CalibrationBean extends BaseManagedBean {
 	public List<String> getTargets() throws Exception {
 		return getDbInstance().getTargets(getDataSource(), instrumentId);
 	};
-	
+
 	/**
 	 * Store the entered calibration in the database
 	 * @return The navigation
 	 */
 	public String addCalibration() {
 		String nav = getListNavigation();
-		
+
 		try {
 			storeEnteredCalibration();
 			loadCurrentCalibrations();
@@ -150,7 +150,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
 		return nav;
 	}
-	
+
 	/**
 	 * Store the entered calibration in the database
 	 * @throws Exception If the calibration cannot be stored
@@ -158,14 +158,14 @@ public abstract class CalibrationBean extends BaseManagedBean {
 	protected void storeEnteredCalibration() throws Exception {
 		getDbInstance().addCalibration(getDataSource(), getEnteredCalibration());
 	}
-	
+
 	/**
 	 * Get an instance of the database interaction class for
 	 * the calibrations
 	 * @return The database interaction instance
 	 */
 	protected abstract CalibrationDB getDbInstance();
-	
+
 	/**
 	 * Load the most recent calibrations from the database
 	 * @throws RecordNotFoundException If any required database records are missing
@@ -176,7 +176,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 	private void loadCurrentCalibrations() throws MissingParamException, CalibrationException, DatabaseException, RecordNotFoundException {
 		currentCalibrations = getDbInstance().getCurrentCalibrations(getDataSource(), instrumentId);
 	}
-	
+
 	/**
 	 * Get the current calibrations
 	 * @return The current calibrations
@@ -189,10 +189,10 @@ public abstract class CalibrationBean extends BaseManagedBean {
 		if (null == currentCalibrations) {
 			loadCurrentCalibrations();
 		}
-		
+
 		return currentCalibrations.asList();
 	}
-	
+
 	/**
 	 * Get the calibration type for the calibrations being edited
 	 * @return The calibration type

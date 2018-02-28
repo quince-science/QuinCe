@@ -19,9 +19,9 @@ public class CalculatorException extends Exception{
 	public CalculatorException(String message) {
 		super(message);
 	}
-	
+
 	/**
-	 * Constructor for wrapping a different exception 
+	 * Constructor for wrapping a different exception
 	 * @param cause The underlying exception
 	 */
 	public CalculatorException(Throwable cause) {

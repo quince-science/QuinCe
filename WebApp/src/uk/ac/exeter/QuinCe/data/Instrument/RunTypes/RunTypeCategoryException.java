@@ -21,7 +21,7 @@ public class RunTypeCategoryException extends InstrumentException {
 	public RunTypeCategoryException(String message) {
 		super(message);
 	}
-	
+
 	/**
 	 * Constructor for an error with an underlying cause
 	 * @param message The error message

@@ -34,7 +34,7 @@ public class ManualQcBean extends PlotPageBean {
 	 * Navigation to the calibration data plot page
 	 */
 	private static final String NAV_PLOT = "user_qc";
-	
+
 	/**
 	 * Navigation to the dataset list
 	 */
@@ -44,17 +44,17 @@ public class ManualQcBean extends PlotPageBean {
 	 * The number of sensor columns
 	 */
 	private int sensorColumnCount = 0;
-	
+
 	/**
 	 * The number of calculation columns
 	 */
 	private int calculationColumnCount = 0;
-	
+
 	/**
 	 * The column containing the auto QC flag
 	 */
 	private int autoFlagColumn = 0;
-	
+
 	/**
 	 * The column containing the manual QC flag
 	 */
@@ -65,22 +65,22 @@ public class ManualQcBean extends PlotPageBean {
 	 * Comment, Count and Flag value
 	 */
 	private String userCommentList = "[]";
-	
+
 	/**
 	 * The worst flag set on the selected rows
 	 */
 	private Flag worstSelectedFlag = Flag.GOOD;
-	
+
 	/**
 	 * The user QC flag
 	 */
 	private int userFlag;
-	
+
 	/**
 	 * The user QC comment
 	 */
 	private String userComment;
-	
+
 	/**
 	 * Initialise the required data for the bean
 	 */
@@ -88,7 +88,7 @@ public class ManualQcBean extends PlotPageBean {
 	public void init() {
 		setTableMode("sensors");
 	}
-	
+
 	@Override
 	protected List<Long> loadRowIds() throws Exception {
 		return DataSetDataDB.getMeasurementIds(getDataSource(), getDatasetId());
@@ -100,9 +100,9 @@ public class ManualQcBean extends PlotPageBean {
 		sensorColumnCount = dataHeadings.size() - 4; // Skip id, date, lat, lon
 		List<String> calculationHeadings = CalculationDBFactory.getCalculationDB().getCalculationColumnHeadings();
 		calculationColumnCount = calculationHeadings.size();
-	
+
 		StringBuilder headings = new StringBuilder();
-		
+
 		headings.append('[');
 
 		for (String heading : dataHeadings) {
@@ -110,21 +110,21 @@ public class ManualQcBean extends PlotPageBean {
 			headings.append(heading);
 			headings.append("\",");
 		}
-		
+
 		for (int i = 0; i < calculationHeadings.size(); i++) {
 			headings.append('"');
 			headings.append(calculationHeadings.get(i));
 			headings.append('"');
-			
+
 			headings.append(',');
 		}
-		
+
 		headings.append("\"Automatic QC\",\"Automatic QC Message\",\"Manual QC\",\"Manual QC Message\"]");
 
 		// Columns are zero-based, so we don't need to add one to get to the auto flag column
 		autoFlagColumn = dataHeadings.size() + calculationHeadings.size();
 		userFlagColumn = autoFlagColumn + 2;
-		
+
 		return headings.toString();
 	}
 
@@ -136,20 +136,20 @@ public class ManualQcBean extends PlotPageBean {
 	@Override
 	protected String buildSelectableRows() throws Exception {
 		List<Long> ids = CalculationDBFactory.getCalculationDB().getSelectableMeasurementIds(getDataSource(), getDatasetId());
-		
+
 		StringBuilder result = new StringBuilder();
-		
+
 		result.append('[');
-		
+
 		for (int i = 0; i < ids.size(); i++) {
 			result.append(ids.get(i));
 			if (i < ids.size() - 1) {
 				result.append(',');
 			}
 		}
-		
+
 		result.append(']');
-		
+
 		return result.toString();
 	}
 
@@ -162,27 +162,27 @@ public class ManualQcBean extends PlotPageBean {
 	@Override
 	protected String loadTableData(int start, int length) throws Exception {
 		List<DataSetRawDataRecord> datasetData = DataSetDataDB.getMeasurements(getDataSource(), getDataset(), start, length);
-		
+
 		List<CalculationRecord> calculationData = new ArrayList<CalculationRecord>(datasetData.size());
 		for (DataSetRawDataRecord record : datasetData) {
 			CalculationRecord calcRecord = CalculationRecordFactory.makeCalculationRecord(getDatasetId(), record.getId());
 			CalculationDBFactory.getCalculationDB().getCalculationValues(getDataSource(), calcRecord);
 			calculationData.add(calcRecord);
 		}
-		
+
 		StringBuilder json = new StringBuilder();
 		json.append('[');
 		int rowId = start - 1;
 		for (int i = 0; i < datasetData.size(); i++) {
 			rowId++;
-			
+
 			DataSetRawDataRecord dsData = datasetData.get(i);
 			CalculationRecord calcData = calculationData.get(i);
-			
+
 			json.append('{');
 			json.append(StringUtils.makeJsonField("DT_RowId", "row" + rowId, true));
 			json.append(',');
-			
+
 			int columnIndex = 0;
 			json.append(StringUtils.makeJsonField(columnIndex, dsData.getId())); // ID
 			json.append(',');
@@ -211,13 +211,13 @@ public class ManualQcBean extends PlotPageBean {
 			}
 
 			List<String> calcColumns = calcData.getCalculationColumns();
-			
+
 			for (int j = 0; j < calcColumns.size(); j++) {
 				columnIndex++;
 				json.append(StringUtils.makeJsonField(columnIndex, calcData.getNumericValue(calcColumns.get(j))));
 				json.append(',');
 			}
-			
+
 			columnIndex++;
 			json.append(StringUtils.makeJsonField(columnIndex, calcData.getAutoFlag()));
 			json.append(',');
@@ -225,22 +225,22 @@ public class ManualQcBean extends PlotPageBean {
 			columnIndex++;
 			json.append(StringUtils.makeJsonField(columnIndex, calcData.getAutoQCMessagesString(), true));
 			json.append(',');
-			
+
 			columnIndex++;
 			json.append(StringUtils.makeJsonField(columnIndex, calcData.getUserFlag()));
 			json.append(',');
-			
+
 			columnIndex++;
 			json.append(StringUtils.makeJsonField(columnIndex, calcData.getUserMessage(), true));
-			
+
 			json.append('}');
 			if (i < datasetData.size() - 1) {
 				json.append(',');
 			}
 		}
-		
+
 		json.append(']');
-		
+
 		return json.toString();
 	}
 
@@ -264,7 +264,7 @@ public class ManualQcBean extends PlotPageBean {
 		json.append(',');
 		json.append(userFlagColumn);
 		json.append("]}");
-		
+
 		return json.toString();
 	}
 
@@ -303,7 +303,7 @@ public class ManualQcBean extends PlotPageBean {
 	public int getWorstSelectedFlag() {
 		return worstSelectedFlag.getFlagValue();
 	}
-	
+
 	/**
 	 * Dummy: Set the worst selected flag
 	 * @param worstSelectedFlag The flag; ignored
@@ -318,10 +318,10 @@ public class ManualQcBean extends PlotPageBean {
 	public void generateUserCommentList() {
 
 		worstSelectedFlag = Flag.GOOD;
-		
+
 		StringBuilder list = new StringBuilder();
 		list.append('[');
-		
+
 		try {
 			CommentSet comments = CalculationDBFactory.getCalculationDB().getCommentsForRows(getDataSource(), getSelectedRowsList());
 			for (CommentSetEntry entry : comments) {
@@ -332,24 +332,24 @@ public class ManualQcBean extends PlotPageBean {
 				list.append(",");
 				list.append(entry.getCount());
 				list.append("],");
-				
+
 				if (entry.getFlag().moreSignificantThan(worstSelectedFlag)) {
 					worstSelectedFlag = entry.getFlag();
 				}
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			list.append("[\"Existing comments could not be retrieved\", 4, 1],");
 			worstSelectedFlag = Flag.BAD;
 		}
-		
+
 		// Remove the trailing comma from the last entry
 		if (list.charAt(list.length() - 1) == ',') {
 			list.deleteCharAt(list.length() - 1);
 		}
 		list.append(']');
-		
+
 		userCommentList = list.toString();
 	}
 

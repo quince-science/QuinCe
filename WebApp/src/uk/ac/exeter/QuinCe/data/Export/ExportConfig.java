@@ -14,7 +14,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * <p>
  *   Holds details of the various file export options configured for the application.
  * </p>
- * 
+ *
  * <p>
  *   The export options are provided in a CSV file. Each line in the file represents one export option,
  *   and contains the following columns:
@@ -36,7 +36,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  *     columns to be included in the output.
  *   </li>
  * </ul>
- * 
+ *
  * <p>
  *   Supported column names are:
  * </p>
@@ -83,21 +83,21 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  *   <li>{@code woceFlag}</li>
  *   <li>{@code woceMessage}</li>
  * </ul>
- * 
+ *
  * <p>
  *   There is also a special column called {@code original}, which will grab the original file from disk
  *   and include it in the exported file. If this is included, the separator specified in the configuration
  *   will be ignored, and the separator from the original file will be used instead.
  * </p>
- * 
+ *
  * <p>
  *   The export options are held in a list, kept in the same order as the options appear in the configuration file.
  * </p>
- * 
+ *
  * <p>
  *   This class exists as a singleton that must be initialised before it is used by calling the {@link #init(String)} method.
  * </p>
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -107,26 +107,26 @@ public class ExportConfig {
 	 * The concrete instance of the {@code ExportConfig} singleton
 	 */
 	private static ExportConfig instance = null;
-	
+
 	/**
 	 * The set of export options
 	 */
 	private List<ExportOption> options = null;
-	
+
 	/**
 	 * The full path of the export configuration file
 	 */
 	private static String configFilename = null;
-	
+
 	/**
 	 * <p>
 	 *   Loads and parses the export configuration file.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 *   This is an internal constructor that is called by the {@link #init(String)} method.
 	 * </p>
-	 * 
+	 *
 	 * @throws ExportException If the configuration file cannot be loaded or parsed
 	 */
 	private ExportConfig() throws ExportException {
@@ -141,7 +141,7 @@ public class ExportConfig {
 			throw new ExportException("Could not find configuration file '" + configFilename + "'");
 		}
 	}
-	
+
 	/**
 	 * Initialises the {@code ExportConfig} singleton. This must be called before the class can be used.
 	 * @param configFile The full path to the export configuration file
@@ -151,55 +151,55 @@ public class ExportConfig {
 		configFilename = configFile;
 		instance = new ExportConfig();
 	}
-	
+
 	/**
 	 * Returns the {@code ExportConfig} singleton instance
 	 * @return The {@code ExportConfig} singleton instance
 	 * @throws ExportException If the class has not been initialised
 	 */
 	public static ExportConfig getInstance() throws ExportException {
-		
+
 		if (null == instance) {
 			throw new ExportException("Export options have not been configured");
 		}
-		
+
 		return instance;
 	}
-	
+
 	/**
 	 * Read and parse the export options configuration file
 	 * @throws ExportException If the configuration file is invalid
 	 * @throws FileNotFoundException If the file specified in the {@link #init(String)} call does not exist
 	 */
 	private void readFile() throws ExportException, FileNotFoundException {
-		
+
 		BufferedReader reader = new BufferedReader(new FileReader(configFilename));
-		
+
 		String regex = "(?<!\\\\)" + Pattern.quote(",");
 		int lineCount = 0;
-		
+
 		try {
 			String line = reader.readLine();
 			lineCount++;
-			
+
 			while (null != line) {
 				if (!StringUtils.isComment(line)) {
 					List<String> fields = Arrays.asList(line.split(regex));
 					fields = StringUtils.trimList(fields);
-					
+
 					String name = fields.get(0);
 					String separator = fields.get(1);
 					if (separator.equals("\\t")) {
 						separator = "\t";
 					}
-					
+
 					int co2Type = Integer.parseInt(fields.get(2));
-					
+
 					List<String> columns = fields.subList(3, fields.size());
-					
+
 					options.add(new ExportOption(options.size(), name, separator, columns, co2Type));
 				}
-				
+
 				line = reader.readLine();
 				lineCount++;
 			}
@@ -217,7 +217,7 @@ public class ExportConfig {
 			}
 		}
 	}
-	
+
 	/**
 	 * Returns the list of all configured export options
 	 * @return The list of export options
@@ -225,17 +225,17 @@ public class ExportConfig {
 	public List<ExportOption> getOptions() {
 		return options;
 	}
-	
+
 	/**
 	 * <p>
 	 *   Returns a specified export configuration referenced by its position in the configuration file (zero-based).
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 *   This method will throw an {@link ArrayIndexOutOfBoundsException} if the specified index is outside the range
 	 *   of the list of export options.
 	 * </p>
-	 * 
+	 *
 	 * @param index The index of the desired configuration.
 	 * @return The export configuration
 	 */

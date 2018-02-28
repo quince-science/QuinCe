@@ -30,7 +30,7 @@ public class LogoutServlet extends HttpServlet {
 		if (session != null) {
 			session.invalidate();
 		}
-		
+
 		String postLogoutURL = "";
 		try {
 			postLogoutURL = ServletUtils.getAppConfig().getProperty("app.urlstub");
@@ -39,7 +39,7 @@ public class LogoutServlet extends HttpServlet {
 		}
 		response.sendRedirect(postLogoutURL);
 	}
-	
+
 	/**
 	 * Destroy the current session and go to the login page
 	 */

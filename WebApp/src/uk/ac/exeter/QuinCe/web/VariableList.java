@@ -22,12 +22,12 @@ public class VariableList extends ArrayList<VariableGroup> {
 	 * The shortcut lookup table
 	 */
 	private Map<Integer, Variable> lookup;
-	
+
 	/**
 	 * The last ID used in the tree
 	 */
 	private int lastId;
-	
+
 	/**
 	 * Create a new tree
 	 */
@@ -36,7 +36,7 @@ public class VariableList extends ArrayList<VariableGroup> {
 		lookup = new HashMap<Integer, Variable>();
 		lastId = -1;
 	}
-	
+
 	/**
 	 * Add a new variable
 	 * @param groupName The name of the group to which the variable belongs
@@ -48,17 +48,17 @@ public class VariableList extends ArrayList<VariableGroup> {
 		variable.setId(lastId);
 
 		VariableGroup group = getGroup(groupName);
-		
+
 		if (null == group) {
 			group = new VariableGroup(groupName);
 			add(group);
 		}
-		
+
 		group.add(variable);
-		
+
 		lookup.put(variable.getId(), variable);
 	}
-	
+
 	/**
 	 * Retrieve a variable using its ID
 	 * @param id The ID
@@ -67,7 +67,7 @@ public class VariableList extends ArrayList<VariableGroup> {
 	protected Variable getVariable(int id) {
 		return lookup.get(id);
 	}
-	
+
 	/**
 	 * Get the named variable group
 	 * @param groupName The group name
@@ -82,10 +82,10 @@ public class VariableList extends ArrayList<VariableGroup> {
 				break;
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Get the variable with the given label
 	 * @param label The label
@@ -95,20 +95,20 @@ public class VariableList extends ArrayList<VariableGroup> {
 		Variable result = null;
 
 		for (VariableGroup group : this) {
-			
+
 			for (Variable variable : group.getVariables()) {
 				if (variable.getLabel().equals(label)) {
 					result = variable;
 					break;
 				}
 			}
-			
-			
+
+
 			if (null != result) {
 				break;
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -118,15 +118,15 @@ public class VariableList extends ArrayList<VariableGroup> {
 	 * @return The variables
 	 */
 	public List<Variable> getVariables(List<Integer> ids) {
-		
+
 		List<Variable> result = new ArrayList<Variable>();
-		
+
 		if (null != ids) {
 			for (int id : ids) {
 				result.add(getVariable(id));
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -136,15 +136,15 @@ public class VariableList extends ArrayList<VariableGroup> {
 	 * @return The group details
 	 */
 	protected String getGroupsJson() {
-		
+
 		StringBuilder json = new StringBuilder();
-		
+
 		json.append('[');
-		
+
 		for (int i = 0; i < size(); i++) {
-			
+
 			json.append('[');
-			
+
 			List<Variable> groupVariables = get(i).getVariables();
 			for (int j = 0; j < groupVariables.size(); j++) {
 				json.append(groupVariables.get(j).getId());
@@ -152,55 +152,55 @@ public class VariableList extends ArrayList<VariableGroup> {
 					json.append(',');
 				}
 			}
-			
+
 			json.append(']');
-			
+
 			if (i < size() - 1) {
 				json.append(',');
 			}
-			
+
 		}
-		
+
 		json.append(']');
-		
+
 		return json.toString();
 	}
-	
+
 	/**
 	 * Get the names of all the variable groups as a JSON string
 	 * @return The group names
 	 */
 	protected String getGroupNamesJson() {
 		StringBuilder json = new StringBuilder();
-		
+
 		json.append('[');
-		
+
 		for (int i = 0; i < size(); i++) {
 			json.append('\'');
 			json.append(get(i).getName());
 			json.append('\'');
-			
+
 			if (i < size() - 1) {
 				json.append(',');
 			}
 		}
-		
+
 		json.append(']');
-		
+
 		return json.toString();
 	}
-	
+
 	/**
 	 * Get the total number of variables in the list
 	 * @return The number of variables
 	 */
 	public int getVariableCount() {
 		int count = 0;
-		
+
 		for (VariableGroup group : this) {
 			count += group.getSize();
 		}
-		
+
 		return count;
 	}
 }

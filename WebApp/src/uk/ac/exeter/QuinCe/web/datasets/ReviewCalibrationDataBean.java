@@ -26,29 +26,29 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	 * Navigation to the calibration data plot page
 	 */
 	private static final String NAV_PLOT = "calibration_data_plot";
-	
+
 	/**
 	 * Navigation to the dataset list
 	 */
 	private static final String NAV_DATASET_LIST = "dataset_list";
-	
+
 	/**
 	 * Indicates whether or not the selected calibrations should be used
 	 */
 	private boolean useCalibrations = true;
-	
+
 	/**
 	 * The message attached to calibrations that should not be used
 	 */
 	private String useCalibrationsMessage = null;
-	
+
 	/**
 	 * Initialise the required data for the bean
 	 */
 	@Override
 	public void init() {
 	}
-	
+
 	/**
 	 * Finish the calibration data validation
 	 * @return Navigation to the data set list
@@ -56,16 +56,16 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	public String finish() {
 		return NAV_DATASET_LIST;
 	}
-	
+
 	@Override
 	protected List<Long> loadRowIds() throws Exception {
 		return CalibrationDataDB.getCalibrationRowIds(getDataSource(), getDatasetId(), null);
 	}
-	
+
 	@Override
 	protected String buildTableHeadings() {
 		StringBuilder headings = new StringBuilder();
-		
+
 		headings.append('[');
 		headings.append("\"ID\",");
 		headings.append("\"Date\",");
@@ -74,10 +74,10 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 		headings.append("\"Use?\",");
 		headings.append("\"Use Message\"");
 		headings.append(']');
-		
+
 		return headings.toString();
 	}
-	
+
 	@Override
 	protected String buildSelectableRows() throws Exception {
 		List<Long> ids = CalibrationDataDB.getCalibrationRowIds(getDataSource(), getDatasetId(), null);
@@ -90,7 +90,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 			}
 		}
 		result.append(']');
-		
+
 		return result.toString();
 	}
 
@@ -102,7 +102,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	@Override
 	protected String buildPlotLabels(int plotIndex) {
 		String result = null;
-		
+
 		if (plotIndex == 1) {
 			// TODO This should be built dynamically in CalibrationDataDB
 			return "[\"Date\",\"ID\",\"CO2\"]";
@@ -115,7 +115,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	protected String loadTableData(int start, int length) throws Exception {
 		return CalibrationDataDB.getJsonTableData(getDataSource(), getDatasetId(), null, start, length);
 	}
-	
+
 	/**
 	 * Get the flag indicating whether the selected calibrations are to be used
 	 * @return The use calibrations flag
@@ -123,7 +123,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	public boolean getUseCalibrations() {
 		return useCalibrations;
 	}
-	
+
 	/**
 	 * Set the flag indicating whether the selected calibrations are to be used
 	 * @param useCalibrations The use calibrations flag
@@ -131,7 +131,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	public void setUseCalibrations(boolean useCalibrations) {
 		this.useCalibrations = useCalibrations;
 	}
-	
+
 	/**
 	 * Get the message that will be attached to calibrations which aren't being used
 	 * @return The message for unused calibrations
@@ -139,7 +139,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 	public String getUseCalibrationsMessage() {
 		return useCalibrationsMessage;
 	}
-	
+
 	/**
 	 * Set the message that will be attached to calibrations which aren't being used
 	 * @param useCalibrationsMessage The message for unused calibrations
@@ -154,7 +154,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
      * @throws MissingParamException If any required parameters are missing
 	 */
 	public void setCalibrationUse() throws MissingParamException, DatabaseException {
-		
+
 		try {
 			CalibrationDataDB.setCalibrationUse(getDataSource(), getSelectedRowsList(), useCalibrations, useCalibrationsMessage);
 		} catch (Exception e) {
@@ -204,7 +204,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 		for (Variable variable : plot1.getYAxisVariables()) {
 			standardNames.add(variable.getFieldName());
 		}
-		
+
 		return CalibrationDataDB.getJsonPlotData(getDataSource(), getDataset(), standardNames);
 	}
 }

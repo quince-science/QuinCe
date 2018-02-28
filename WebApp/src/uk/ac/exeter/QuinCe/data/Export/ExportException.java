@@ -6,7 +6,7 @@ package uk.ac.exeter.QuinCe.data.Export;
  *
  */
 public class ExportException extends Exception {
-	
+
 	/**
 	 * The serial version UID
 	 */
@@ -20,7 +20,7 @@ public class ExportException extends Exception {
 	public ExportException(String message) {
 		super(message);
 	}
-	
+
 	/**
 	 * Constructor for errors that occur in a specific export configuration.
 	 * @param name The name of the export configuration
@@ -29,7 +29,7 @@ public class ExportException extends Exception {
 	public ExportException(String name, String message) {
 		super("Error in exporter '" + name + "': " + message);
 	}
-	
+
 	/**
 	 * Constructor for errors that occur in a specific export configuration
 	 * that have an underlying cause.

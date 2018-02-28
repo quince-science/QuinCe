@@ -25,17 +25,17 @@ public class DataSetRawDataFactory {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If no data files are found within the data set
 	 * @throws DataFileException If the data cannot be extracted from the files
-	 * @throws DataSetException If a suitable object cannot be created 
+	 * @throws DataSetException If a suitable object cannot be created
 	 */
 	public static DataSetRawData getDataSetRawData(DataSource dataSource, DataSet dataSet, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException, DataFileException, DataSetException {
-		
+
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(dataSet, "dataSet");
 		MissingParam.checkMissing(instrument, "Instrument");
-		
-		
+
+
 		DataSetRawData result = null;
-		
+
 		switch (instrument.getAveragingMode()) {
 		case DataSetRawData.AVG_MODE_NONE: {
 			result = new NoAverageDataSetRawData(dataSource, dataSet, instrument);
@@ -48,8 +48,8 @@ public class DataSetRawDataFactory {
 			throw new DataSetException("Unrecognised averaging mode " + instrument.getAveragingMode());
 		}
 		}
-		
+
 		return result;
 	}
-	
+
 }

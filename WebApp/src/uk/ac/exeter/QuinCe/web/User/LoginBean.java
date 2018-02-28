@@ -17,22 +17,22 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 @ManagedBean
 @RequestScoped
 public class LoginBean extends BaseManagedBean {
-	
+
 	/**
 	 * The navigation to the sign-up page to create a new account
 	 */
 	public static final String SIGNUP_RESULT = "SignUp";
-	
+
 	/**
 	 * The result indicating that authentication failed
 	 */
 	public static final String AUTHENTICATION_FAILED_RESULT = "AuthenticationFailed";
-	
+
 	/**
 	 * The result indicating that authentication succeeded
 	 */
 	public static final String AUTHENTICATION_OK_RESULT = "AuthenticationSuccess";
-	
+
 	/**
 	 * The session attribute in which the user's details are stored
 	 */
@@ -40,24 +40,24 @@ public class LoginBean extends BaseManagedBean {
 
 	public static final String USER_PREFS_ATTR = "UserPrefs";
 
-	
+
 	/**
 	 * The entered email address
 	 */
 	private String emailAddress = null;
-	
+
 	/**
 	 * The entered password
 	 */
 	private String password = null;
-	
+
 	/**
 	 * Constructor - does nothing
 	 */
 	public LoginBean() {
 		// Do nothing
 	}
-	
+
 	/**
 	 * Get the entered email address
 	 * @return The email address
@@ -96,13 +96,13 @@ public class LoginBean extends BaseManagedBean {
 	 * @see UserDB#authenticate(javax.sql.DataSource, String, char[])
 	 */
 	public String authenticate() {
-		
+
 		String result = AUTHENTICATION_FAILED_RESULT;
-		
+
 		try {
 			// Clear any existing user bean
 			int authenticateResult = UserDB.authenticate(ServletUtils.getDBDataSource(), emailAddress, password.toCharArray());
-			
+
 			switch (authenticateResult) {
 			case UserDB.AUTHENTICATE_OK: {
 				User user = UserDB.getUser(getDataSource(), emailAddress);
@@ -121,15 +121,15 @@ public class LoginBean extends BaseManagedBean {
 				break;
 			}
 			}
-			
+
 		} catch (Exception e) {
 			internalError(e);
 		}
-		
+
 		getSession().removeAttribute("SESSION_EXPIRED");
 		return result;
 	}
-	
+
 	/**
 	 * Navigate to the sign-up page
 	 * @return The navigation to the sign-up page

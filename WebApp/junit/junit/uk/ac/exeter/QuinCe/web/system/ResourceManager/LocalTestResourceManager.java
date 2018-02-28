@@ -22,16 +22,16 @@ public class LocalTestResourceManager extends ResourceManager {
 	 * The dummy test database name
 	 */
 	protected static final String DATABASE_NAME = "test.database";
-	
+
 	/**
 	 * The configuration file name
 	 */
 	protected static final String CONFIG_PATH = "./WebApp/junit/resources/configuration/quince.properties";
-	
+
 	public LocalTestResourceManager() {
 		initFileStore();
 	}
-	
+
 	private void initFileStore() {
 		// Create the file store, and request that it
 		// be deleted on shutdown
@@ -39,24 +39,24 @@ public class LocalTestResourceManager extends ResourceManager {
 		if (fileStore.exists()) {
 			fileStore.delete();
 		}
-		
+
 		fileStore.mkdirs();
 		fileStore.deleteOnExit();
 	}
-	
+
 	/**
 	 * Create a mock InitialContext that returns a mock DataSource
 	 */
 	@Override
 	protected InitialContext createInitialContext() throws NamingException {
-		
+
 		DataSource dataSource = Mockito.mock(DataSource.class);
 		InitialContext context = Mockito.mock(InitialContext.class);
-		
+
 		Mockito.doReturn(dataSource).when(context).lookup(DATABASE_NAME);
 		return context;
 	}
-	
+
 	/**
 	 * Build the path to the file store location used for testing
 	 * @return The file store path

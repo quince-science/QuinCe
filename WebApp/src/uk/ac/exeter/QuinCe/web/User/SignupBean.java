@@ -19,37 +19,37 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  *
  */
 public class SignupBean extends BaseManagedBean {
-	
+
 	/**
 	 * Navigation result for when a user already exists
 	 */
 	public static final String USER_EXISTS_RESULT = "UserExists";
-	
+
 	/**
 	 * The user's email address
 	 */
 	private String emailAddress = null;
-	
+
 	/**
 	 * The user's given name
 	 */
 	private String givenName = null;
-	
+
 	/**
 	 * The user's surname
 	 */
 	private String surname = null;
-	
+
 	/**
 	 * The first entered password
 	 */
 	private String password1 = null;
-	
+
 	/**
 	 * The repeated password
 	 */
 	private String password2 = null;
-	
+
 	/**
 	 * Empty constructor
 	 */
@@ -144,13 +144,13 @@ public class SignupBean extends BaseManagedBean {
 	 * @return Result string
 	 */
 	public String signUp() {
-		
+
 		String result = SUCCESS_RESULT;
-		
+
 		if (!validate()) {
 			result = VALIDATION_FAILED_RESULT;
 		} else {
-			
+
 			try {
 				// Add the user to the database
 				User newUser = UserDB.createUser(ServletUtils.getDBDataSource(), emailAddress, password1.toCharArray(), givenName, surname, true);
@@ -158,7 +158,7 @@ public class SignupBean extends BaseManagedBean {
 				// Build and start the job to send out the verification email
 				Map<String, String> emailJobParams = new HashMap<String, String>(1);
 				emailJobParams.put(SendEmailVerificationMailJob.EMAIL_KEY, emailAddress);
-				
+
 				JobManager.addInstantJob(ServletUtils.getResourceManager(), ServletUtils.getAppConfig(), newUser, "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob", emailJobParams);
 			} catch (UserExistsException e) {
 				setMessage(getComponentID("emailAddress"), "A user already exists with that email address");
@@ -167,30 +167,30 @@ public class SignupBean extends BaseManagedBean {
 				result = internalError(e);
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Validate the bean's contents
 	 * @return {@code true} if the contents are valid; {@code false} otherwise.
 	 */
 	private boolean validate() {
 		boolean ok = true;
-		
+
 		// Email
 		if (!EmailValidator.getInstance().isValid(emailAddress)) {
 			ok = false;
 			setMessage(getComponentID("emailAddress"), "Email is not valid");
 		}
-		
+
 		// Passwords must match
 		if (!password1.equals(password2)) {
 			ok = false;
 			setMessage(getComponentID("password1"), "Passwords must match");
 			setMessage(getComponentID("password2"), "Passwords must match");
 		}
-		
+
 		return ok;
 	}
 

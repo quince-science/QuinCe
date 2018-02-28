@@ -17,82 +17,82 @@ public class DataSet {
 	 * The numeric value for the data extraction status
 	 */
 	public static final int STATUS_WAITING = 0;
-	
+
 	/**
 	 * The string for the data extraction status
 	 */
 	public static final String STATUS_WAITING_NAME = "Waiting";
-	
+
 	/**
 	 * The numeric value for the data extraction status
 	 */
 	public static final int STATUS_DATA_EXTRACTION = 1;
-	
+
 	/**
 	 * The string for the data extraction status
 	 */
 	public static final String STATUS_DATA_EXTRACTION_NAME = "Data extraction";
-	
+
 	/**
 	 * The numeric value for the data extraction status
 	 */
 	public static final int STATUS_WAITING_FOR_CALCULATION = 2;
-	
+
 	/**
 	 * The string for the data extraction status
 	 */
 	public static final String STATUS_WAITING_FOR_CALCULATION_NAME = "Waiting for calculation";
-	
+
 	/**
 	 * The numeric value for the data extraction status
 	 */
 	public static final int STATUS_QC = 3;
-	
+
 	/**
 	 * The string for the data extraction status
 	 */
 	public static final String STATUS_QC_NAME = "Ready for QC";
-	
+
 	/**
 	 * The database ID
 	 */
 	private long id = DatabaseUtils.NO_DATABASE_RECORD;
-	
+
 	/**
 	 * The database ID of the instrument to which this data set belongs
 	 */
 	private long instrumentId;
-	
+
 	/**
 	 * The data set name
 	 */
 	private String name;
-	
+
 	/**
 	 * The start date of the data set
 	 */
 	private LocalDateTime start;
-	
+
 	/**
 	 * The end date of the data set
 	 */
 	private LocalDateTime end;
-	
+
 	/**
 	 * Additional properties of the data set
 	 */
 	private Properties properties;
-	
+
 	/**
 	 * The time when the data file was last touched
 	 */
 	private LocalDateTime lastTouched;
-	
+
 	/**
 	 * The data set's status
 	 */
 	private int status = STATUS_WAITING;
-	
+
 	/**
 	 * Constructor for all fields
 	 * @param id The data set's database ID
@@ -114,7 +114,7 @@ public class DataSet {
 		this.properties = properties;
 		this.lastTouched = lastTouched;
 	}
-	
+
 	/**
 	 * Constructor for a new, empty data set
 	 * @param instrumentId The database ID of the instrument to which the data set belongs
@@ -122,7 +122,7 @@ public class DataSet {
 	public DataSet(long instrumentId) {
 		this.instrumentId = instrumentId;
 	}
-	
+
 	/**
 	 * Get the data set's status
 	 * @return The status
@@ -130,7 +130,7 @@ public class DataSet {
 	public int getStatus() {
 		return status;
 	}
-	
+
 	/**
 	 * Get the human-readable status of the data set
 	 * @return The status
@@ -138,7 +138,7 @@ public class DataSet {
 	public String getStatusName() {
 		return getStatusName(status);
 	}
-	
+
 	/**
 	 * Get the human-readable name of a given data set status
 	 * @param statusValue The status value
@@ -146,7 +146,7 @@ public class DataSet {
 	 */
 	public static String getStatusName(int statusValue) {
 		String result;
-		
+
 		switch (statusValue) {
 		case STATUS_WAITING: {
 			result =STATUS_WAITING_NAME;
@@ -168,7 +168,7 @@ public class DataSet {
 			result = "UNKNOWN";
 		}
 		}
-		
+
 		return result;
 	}
 
@@ -268,10 +268,10 @@ public class DataSet {
 		if (!validateStatus(status)) {
 			throw new InvalidDataSetStatusException(status);
 		}
-		
+
 		this.status = status;
 	}
-	
+
 	/**
 	 * Set a property on the data set.
 	 * @param key The key
@@ -282,10 +282,10 @@ public class DataSet {
 		if (null == properties) {
 			properties = new Properties();
 		}
-		
+
 		properties.setProperty(key, value);
 	}
-	
+
 	/**
 	 * Get a property from the data set
 	 * @param key The key
@@ -294,22 +294,22 @@ public class DataSet {
 	 */
 	public String getProperty(String key) {
 		String result = null;
-		
+
 		if (null != properties) {
 			result = properties.getProperty(key);
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Determine whether or not a given status value is valid
 	 * @param status The status to be checked
 	 * @return {@code true} if the status is valid; {@code false} if it is not
 	 */
 	public static boolean validateStatus(int status) {
-		return (status == STATUS_WAITING || 
-				status == STATUS_DATA_EXTRACTION || 
+		return (status == STATUS_WAITING ||
+				status == STATUS_DATA_EXTRACTION ||
 				status == STATUS_WAITING_FOR_CALCULATION ||
 				status == STATUS_QC);
 	}

@@ -14,18 +14,18 @@ public class StandardStub {
 	 * The ID of the standard's database record
 	 */
 	private long id;
-	
+
 	/**
 	 * The ID of the instrument that this standard belongs to
 	 */
 	private long instrumentId;
-	
+
 	/**
 	 * The date of the standard
 	 */
 	@Deprecated
 	private Date deployedDate;
-	
+
 	/**
 	 * Simple constructor for the two fields
 	 * @param id The database ID
@@ -54,7 +54,7 @@ public class StandardStub {
 	public long getInstrumentId() {
 		return instrumentId;
 	}
-	
+
 	/**
 	 * Returns the standard date
 	 * @return The standard date
@@ -63,5 +63,5 @@ public class StandardStub {
 	public Date getDeployedDate() {
 		return deployedDate;
 	}
-	
+
 }

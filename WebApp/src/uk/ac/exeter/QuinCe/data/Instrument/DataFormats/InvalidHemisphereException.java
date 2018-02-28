@@ -6,7 +6,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
  *
  */
 public class InvalidHemisphereException extends PositionException {
-	
+
 	/**
 	 * The serial version UID
 	 */

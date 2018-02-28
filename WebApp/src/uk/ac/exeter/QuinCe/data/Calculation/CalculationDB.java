@@ -43,13 +43,13 @@ public abstract class CalculationDB {
 	 * Created as required by {@link #createCalculationRecord(Connection, long)}.
 	 */
 	private PreparedStatement insertStatement = null;
-	
+
 	/**
 	 * Get the name of the database table where calculation data is stored
 	 * @return The table name
 	 */
 	public abstract String getCalculationTable();
-	
+
 	/**
 	 * Create a calculation record for the given measurement record
 	 * @param conn A database connection
@@ -58,26 +58,26 @@ public abstract class CalculationDB {
 	 * @throws MissingParamException If any required parameters are missing
 	 */
 	public void createCalculationRecord(Connection conn, long measurementId) throws DatabaseException, MissingParamException {
-		
+
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkZeroPositive(measurementId, "measurementId");
-		
+
 		try {
 			PreparedStatement statement = getInsertStatement(conn);
-			
+
 			statement.setLong(1, measurementId);
 			statement.setInt(2, Flag.VALUE_NOT_SET);
 			statement.setNull(3, Types.VARCHAR);
 			statement.setInt(4, Flag.VALUE_NOT_SET);
 			statement.setNull(5, Types.VARCHAR);
-			
+
 			statement.execute();
-		
+
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while creating calculation record", e);
 		}
 	}
-	
+
 	/**
 	 * Generate the insert statement for a new calculation record
 	 * @param conn A database connection
@@ -86,10 +86,10 @@ public abstract class CalculationDB {
 	 * @throws SQLException If the statement cannot be created
 	 */
 	private PreparedStatement getInsertStatement(Connection conn) throws MissingParamException, SQLException {
-		
+
 		if (null == insertStatement) {
 			List<String> fields = new ArrayList<String>();
-			
+
 			fields.add("measurement_id");
 			fields.add("auto_flag");
 			fields.add("auto_message");
@@ -98,10 +98,10 @@ public abstract class CalculationDB {
 
 			insertStatement = DatabaseUtils.createInsertStatement(conn, getCalculationTable(), fields);
 		}
-		
+
 		return insertStatement;
 	}
-	
+
 	/**
 	 * Delete the calculation data for a given data set
 	 * @param conn A database connection
@@ -112,16 +112,16 @@ public abstract class CalculationDB {
 	public void deleteDatasetCalculationData(Connection conn, DataSet dataSet) throws MissingParamException, DatabaseException {
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkMissing(dataSet, "dataSet");
-		
+
 		PreparedStatement stmt = null;
-		
+
 		try {
 			// TODO I think this could be done better. But maybe not.
 			String deleteStatement = "DELETE c.* FROM " + getCalculationTable() + " AS c INNER JOIN dataset_data AS d ON c.measurement_id = d.id WHERE d.dataset_id = ?";
 
 			stmt = conn.prepareStatement(deleteStatement);
 			stmt.setLong(1, dataSet.getId());
-			
+
 			stmt.execute();
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while deleting dataset data", e);
@@ -129,7 +129,7 @@ public abstract class CalculationDB {
 			DatabaseUtils.closeStatements(stmt);
 		}
 	}
-	
+
 	/**
 	 * Get the Automatic QC flag for a measurement
 	 * @param conn A database connection
@@ -141,21 +141,21 @@ public abstract class CalculationDB {
 	 * @throws InvalidFlagException The the flag value is invalid
 	 */
 	public Flag getAutoQCFlag(Connection conn, long measurementId) throws MissingParamException, DatabaseException, RecordNotFoundException, InvalidFlagException {
-		
+
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkZeroPositive(measurementId, "measurementId");
-	
+
 		Flag result = null;
 		PreparedStatement stmt = null;
 		ResultSet record = null;
-		
+
 		try {
 			// TODO I think this could be done better. But maybe not.
 			String flagStatement = "SELECT auto_flag FROM " + getCalculationTable() + " WHERE measurement_id = ?";
-			
+
 			stmt = conn.prepareStatement(flagStatement);
 			stmt.setLong(1, measurementId);
-			
+
 			record = stmt.executeQuery();
 			if (!record.next()) {
 				throw new RecordNotFoundException("Cannot find calculation record", getCalculationTable(), measurementId);
@@ -168,10 +168,10 @@ public abstract class CalculationDB {
 			DatabaseUtils.closeResultSets(record);
 			DatabaseUtils.closeStatements(stmt);
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Get the automatic QC messages for a given measurement
 	 * @param conn A datbase connection
@@ -183,29 +183,29 @@ public abstract class CalculationDB {
 	 * @throws RecordNotFoundException If the measurement cannot be found
 	 */
 	public List<Message> getQCMessages(Connection conn, long measurementId) throws MessageException, DatabaseException, RecordNotFoundException, MissingParamException {
-		
+
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkZeroPositive(measurementId, "measurementId");
-		
+
 		PreparedStatement stmt = null;
 		ResultSet record = null;
 		List<Message> result = null;
-		
+
 		try {
 			// TODO I think this could be done better. But maybe not.
 			String query = "SELECT auto_message FROM " + getCalculationTable() + " WHERE measurement_id = ?";
-			
+
 			stmt = conn.prepareStatement(query);
-			
+
 			stmt.setLong(1, measurementId);
 			record = stmt.executeQuery();
-			
+
 			if (!record.next()) {
 				throw new RecordNotFoundException("Cannot find calculation record", getCalculationTable(), measurementId);
 			} else {
 				result = RebuildCode.getMessagesFromRebuildCodes(record.getString(1));
 			}
-			
+
 			return result;
 		} catch (SQLException e) {
 			throw new DatabaseException("An error occurred while retrieving QC messages", e);
@@ -224,20 +224,20 @@ public abstract class CalculationDB {
 	 * @throws DatabaseException If a database error occurs
 	 */
 	public void storeQC(Connection conn, CalculationRecord record) throws MissingParamException, DatabaseException, MessageException {
-		
+
 		MissingParam.checkMissing(conn, "conn");
 		MissingParam.checkMissing(record, "record");
-		
+
 		PreparedStatement stmt = null;
-		
+
 		try {
 			// TODO I think this could be done better. But maybe not.
 			String sql = "UPDATE " + getCalculationTable() + " SET auto_flag = ?, "
 					+ "auto_message = ?, user_flag = ?, user_message = ? "
 					+ "WHERE measurement_id = ?";
-			
+
 			stmt = conn.prepareStatement(sql);
-			
+
 			stmt.setInt(1, record.getAutoFlag().getFlagValue());
 			String rebuildCodes = RebuildCode.getRebuildCodes(record.getAutoQCMessages());
 			if (null == rebuildCodes || rebuildCodes.length() == 0) {
@@ -245,7 +245,7 @@ public abstract class CalculationDB {
 			} else {
 				stmt.setString(2, RebuildCode.getRebuildCodes(record.getAutoQCMessages()));
 			}
-			
+
 			stmt.setInt(3, record.getUserFlag().getFlagValue());
 			String userMessage = record.getUserMessage();
 			if (null == userMessage || userMessage.length() == 0) {
@@ -254,9 +254,9 @@ public abstract class CalculationDB {
 				stmt.setString(4, record.getUserMessage());
 			}
 			stmt.setLong(5, record.getLineNumber());
-			
+
 			stmt.execute();
-			
+
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while storing QC info", e);
 		} finally {
@@ -274,7 +274,7 @@ public abstract class CalculationDB {
 	 * @throws DatabaseException If a database error occurs
 	 */
 	public abstract void storeCalculationValues(Connection conn, long measurementId, Map<String, Double> values) throws MissingParamException, DatabaseException;
-	
+
 	/**
 	 * Add the calculation values to a {@link CalculationRecord}
 	 * @param dataSource A data source
@@ -284,14 +284,14 @@ public abstract class CalculationDB {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the record does not exist
 	 * @throws MessageException If the automatic QC messages cannot be parsed
-	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed 
+	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed
 	 */
 	public Map<String, Double> getCalculationValues(DataSource dataSource, CalculationRecord record) throws MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException, MessageException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(record, "record");
-		
+
 		Connection conn = null;
-		
+
 		try {
 			conn = dataSource.getConnection();
 			return getCalculationValues(conn, record);
@@ -301,7 +301,7 @@ public abstract class CalculationDB {
 			DatabaseUtils.closeConnection(conn);
 		}
 	}
-	
+
 	/**
 	 * Add the calculation values to a {@link CalculationRecord}
 	 * @param conn A database connection
@@ -311,10 +311,10 @@ public abstract class CalculationDB {
 	 * @throws DatabaseException If a database error occurs
 	 * @throws RecordNotFoundException If the record does not exist
 	 * @throws MessageException If the automatic QC messages cannot be parsed
-	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed 
+	 * @throws NoSuchColumnException If the automatic QC messages cannot be parsed
 	 */
 	public abstract Map<String, Double> getCalculationValues(Connection conn, CalculationRecord record) throws MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException, MessageException;
-	
+
 	/**
 	 * Clear the calculation values for a given measurement. This method
 	 * must only update an existing record in the database.
@@ -324,7 +324,7 @@ public abstract class CalculationDB {
 	 * @throws DatabaseException If a database error occurs
 	 */
 	public abstract void clearCalculationValues(Connection conn, long measurementId) throws MissingParamException, DatabaseException;
-	
+
 	/**
 	 * Get the list of column headings for calculation fields
 	 * @return The column headings
@@ -338,10 +338,10 @@ public abstract class CalculationDB {
 	 * @throws MissingParamException If the variable list is null
 	 */
 	public abstract void populateVariableList(VariableList variables) throws MissingParamException;
-	
+
 	/**
 	 * Get the list of measurement IDs for a dataset that can be manipulated by the user.
-	 * This is basically all the IDs that have not been flagged as FATAL or INGNORED. 
+	 * This is basically all the IDs that have not been flagged as FATAL or INGNORED.
 	 * @param dataSource A data source
 	 * @param datasetId The dataset ID
 	 * @return The selectable measurement IDs
@@ -349,19 +349,19 @@ public abstract class CalculationDB {
      * @throws MissingParamException If any required parameters are missing
    	 */
 	public List<Long> getSelectableMeasurementIds(DataSource dataSource, long datasetId) throws MissingParamException, DatabaseException {
-		
+
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkZeroPositive(datasetId, "datasetId");
-		
+
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet records = null;
-		
+
 		List<Long> ids = new ArrayList<Long>();
-		
+
 		try {
 			conn = dataSource.getConnection();
-			
+
 			String sql = "SELECT c.measurement_id FROM "
 				+ getCalculationTable()
 				+ " c INNER JOIN dataset_data d ON c.measurement_id = d.id "
@@ -370,16 +370,16 @@ public abstract class CalculationDB {
 				+ ","
 				+ Flag.VALUE_IGNORED
 				+ ") ORDER BY c.measurement_id ASC";
-			
+
 			stmt = conn.prepareStatement(sql);
 			stmt.setLong(1, datasetId);
-			
+
 			records = stmt.executeQuery();
-			
+
 			while (records.next()) {
 				ids.add(records.getLong(1));
 			}
-			
+
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while getting measurement IDs", e);
 		} finally {
@@ -387,10 +387,10 @@ public abstract class CalculationDB {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(conn);
 		}
-		
+
 		return ids;
 	}
-	
+
 	/**
 	 * Accept the automatic QC flag as the final QC result for a set of rows
 	 * @param dataSource A data source
@@ -402,7 +402,7 @@ public abstract class CalculationDB {
 	public void acceptAutoQc(DataSource dataSource, List<Long> rows) throws MissingParamException, DatabaseException, MessageException {
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(rows, "rows", true);
-		
+
 		Connection conn = null;
 		List<PreparedStatement> statements = new ArrayList<PreparedStatement>(rows.size() + 1);
 		ResultSet records = null;
@@ -412,27 +412,27 @@ public abstract class CalculationDB {
 				+ " WHERE measurement_id IN ("
 				+ StringUtils.listToDelimited(rows, ",")
 				+ ")";
-		
+
 		String writeSql = "UPDATE "
 				+ getCalculationTable()
 				+ " SET user_flag = ?, user_message = ?"
 				+ " WHERE measurement_id = ?";
-		
+
 		try {
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
-			
+
 			PreparedStatement readStatement = conn.prepareStatement(readSql);
 			statements.add(readStatement);
 
 			records = readStatement.executeQuery();
-			
+
 			while (records.next()) {
-				
+
 				long id = records.getLong(1);
 				int flag = records.getInt(2);
 				List<Message> messages = RebuildCode.getMessagesFromRebuildCodes(records.getString(3));
-				
+
 				StringBuilder outputMessages = new StringBuilder();
 				for (int i = 0; i < messages.size(); i++) {
 					outputMessages.append(messages.get(i).getShortMessage());
@@ -440,19 +440,19 @@ public abstract class CalculationDB {
 						outputMessages.append(';');
 					}
 				}
-				
+
 				PreparedStatement writeStatement = conn.prepareStatement(writeSql);
 				statements.add(writeStatement);
-				
+
 				writeStatement.setInt(1, flag);
 				writeStatement.setString(2, outputMessages.toString());
 				writeStatement.setLong(3, id);
-				
+
 				writeStatement.execute();
 			}
 
 			conn.commit();
-			
+
 		} catch (SQLException e) {
 			DatabaseUtils.rollBack(conn);
 			throw new DatabaseException("Error while accepting auto QC", e);
@@ -467,56 +467,56 @@ public abstract class CalculationDB {
 	 * Retrieve a set of comments for a specified set of rows in a data file.
 	 * The comments are grouped by their comment string. Each string also has the number
 	 * of times that comment appeared, along with the 'worst' flag assigned to that comment.
-	 * 
+	 *
 	 * Both QC comments and user comments are included in the list.
-	 * 
+	 *
 	 * @param dataSource A data source
 	 * @param rows The rows for which comments must be retrieved.
 	 * @return The comments
-	 * @throws DatabaseException If a database error occurs 
+	 * @throws DatabaseException If a database error occurs
 	 * @throws InvalidFlagException If a flag retrieved from the database is invalid
 	 * @throws MessageException If a QC message cannot be reconstructed from its rebuild code
 	 * @throws MissingParamException If any required parameters are missing
 	 */
 	public CommentSet getCommentsForRows(DataSource dataSource, List<Long> rows) throws DatabaseException, InvalidFlagException, MessageException, MissingParamException {
-		
+
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(rows, "rows");
-		
+
 		CommentSet result = new CommentSet();
-		
+
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet records = null;
-		
+
 		try {
 			conn = dataSource.getConnection();
-			
+
 			String sql = "SELECT auto_message, user_message, user_flag FROM "
 					+ getCalculationTable()
 					+ " WHERE measurement_id IN ("
 					+ StringUtils.listToDelimited(rows, ",")
 					+ ")";
-			
+
 			stmt = conn.prepareStatement(sql);
 			records = stmt.executeQuery();
 			while (records.next()) {
-				
+
 				String autoMessages = records.getString(1);
 				String userMessage = records.getString(2);
 				Flag userFlag = new Flag(records.getInt(3));
-				
+
 				for (Message message : RebuildCode.getMessagesFromRebuildCodes(autoMessages)) {
 					if (userFlag.equals(Flag.NEEDED) || !message.getShortMessage().equalsIgnoreCase(userMessage)) {
 						result.addComment(message.getShortMessage(), message.getFlag());
 					}
 				}
-				
+
 				if (!userFlag.equals(Flag.NEEDED) && null != userMessage && userMessage.length() > 0) {
 					result.addComment(userMessage, userFlag);
 				}
 			}
-			
+
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while retrieving comments", e);
 		} finally {
@@ -524,10 +524,10 @@ public abstract class CalculationDB {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(conn);
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Apply a manual flag and comment to a set of rows
 	 * @param dataSource A data source
@@ -539,7 +539,7 @@ public abstract class CalculationDB {
      * @throws InvalidFlagException If the flag value is invalid
 	 */
 	public void applyManualFlag(DataSource dataSource, List<Long> rows, int flag, String comment) throws DatabaseException, MissingParamException, InvalidFlagException {
-		
+
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(rows, "rows");
 		if (!Flag.isValidFlagValue(flag)) {
@@ -548,25 +548,25 @@ public abstract class CalculationDB {
 		if (flag != Flag.VALUE_GOOD) {
 			MissingParam.checkMissing(comment, "comment");
 		}
-		
+
 		Connection conn = null;
 		PreparedStatement stmt = null;
-		
+
 		try {
 			conn = dataSource.getConnection();
-			
+
 			String sql = "UPDATE "
 					+ getCalculationTable()
 					+ " SET user_flag = ?, user_message = ? WHERE measurement_id IN ("
 					+ StringUtils.listToDelimited(rows, ",")
 					+ ")";
-			
+
 			stmt = conn.prepareStatement(sql);
 			stmt.setInt(1, flag);
 			stmt.setString(2, comment);
-			
+
 			stmt.execute();
-			
+
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while setting user flags", e);
 		} finally {
@@ -606,45 +606,45 @@ public abstract class CalculationDB {
      * @throws MissingParamException If any required parameters are missing
 	 */
 	public String getJsonData(DataSource dataSource, DataSet dataset, List<String> fields, String sortField, List<Double> bounds, boolean limitPoints) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
-		
+
 		MissingParam.checkMissing(dataSource, "dataSource");
 		MissingParam.checkMissing(dataset, "dataset");
 		MissingParam.checkMissing(fields, "fields");
-		
+
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet records = null;
-		
+
 
 		StringBuilder json = new StringBuilder();
-		
+
 		try {
 			conn = dataSource.getConnection();
-			
+
 			List<String> datasetFields = DataSetDataDB.extractDatasetFields(conn, dataset, fields);
 			List<String> calculationFields = new ArrayList<String>(fields);
 			calculationFields.removeAll(datasetFields);
 
 			StringBuilder sql = new StringBuilder();
-			
+
 			sql.append("SELECT ");
 			for (int i = 0; i < fields.size(); i++) {
 				String field = fields.get(i);
-				
+
 				if (datasetFields.contains(field)) {
 					sql.append('d');
 				} else {
 					sql.append('c');
 				}
-				
+
 				sql.append('.');
 				sql.append(field);
-				
+
 				if (i < fields.size() - 1) {
 					sql.append(',');
 				}
 			}
-			
+
 			sql.append(" FROM dataset_data d INNER JOIN ");
 			sql.append(getCalculationTable());
 			sql.append(" c ON d.id = c.measurement_id WHERE d.dataset_id = ?");
@@ -659,7 +659,7 @@ public abstract class CalculationDB {
 				sql.append(" AND d.latitude <= ");
 				sql.append(bounds.get(3));
 			}
-			
+
 			if (null != sortField) {
 				sql.append(" ORDER BY ");
 				if (datasetFields.contains(sortField)) {
@@ -667,14 +667,14 @@ public abstract class CalculationDB {
 				} else {
 					sql.append('c');
 				}
-				
+
 				sql.append('.');
 				sql.append(sortField);
 			}
-			
+
 			stmt = conn.prepareStatement(sql.toString());
 			stmt.setLong(1, dataset.getId());
-			
+
 			records = stmt.executeQuery();
 			int recordCount = 0;
 			try {
@@ -693,31 +693,31 @@ public abstract class CalculationDB {
 					everyNthRecord = 1;
 				}
 			}
-			
+
 			json.append('[');
-			
+
 			boolean hasRecords = false;
 			while (records.relative(everyNthRecord)) {
 				hasRecords = true;
-						
+
 				json.append('[');
-				
+
 				for (int i = 0; i < fields.size(); i++) {
-					
+
 					if (fields.get(i).equals("id") || fields.get(i).equals("date")) {
 						json.append(records.getLong(i + 1));
 					} else {
 						json.append(records.getDouble(i + 1));
 					}
-					
+
 					if (i < fields.size() - 1) {
 						json.append(',');
 					}
 				}
-				
+
 				json.append("],");
 			}
-			
+
 			// Remove the trailing comma
 			if (hasRecords) {
 				json.deleteCharAt(json.length() - 1);
@@ -731,41 +731,41 @@ public abstract class CalculationDB {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(conn);
 		}
-		
+
 		return json.toString();
 	}
 
 	public List<Double> getValueRange(DataSource dataSource, DataSet dataset, String field) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
 		double min = 0;
 		double max = 0;
-		
+
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet results = null;
-		
+
 		try {
 			conn = dataSource.getConnection();
-			
+
 			List<String> fieldList = new ArrayList<String>(1);
 			fieldList.add(field);
 			List<String> datasetFields = DataSetDataDB.extractDatasetFields(conn, dataset, fieldList);
 
 			StringBuilder sql = new StringBuilder();
-			
+
 			sql.append("SELECT ");
 			if (datasetFields.size() > 0) {
 				sql.append('d');
 			} else {
 				sql.append('c');
 			}
-			
+
 			sql.append('.');
 			sql.append(field);
 
 			sql.append(" FROM dataset_data d INNER JOIN ");
 			sql.append(getCalculationTable());
 			sql.append(" c ON d.id = c.measurement_id WHERE d.dataset_id = ?");
-			
+
 			sql.append(" AND c.user_flag IN (");
 			sql.append(Flag.VALUE_ASSUMED_GOOD);
 			sql.append(',');
@@ -773,24 +773,24 @@ public abstract class CalculationDB {
 			sql.append(',');
 			sql.append(Flag.VALUE_QUESTIONABLE);
 			sql.append(")");
-			
+
 			stmt = conn.prepareStatement(sql.toString());
 			stmt.setLong(1, dataset.getId());
 			results = stmt.executeQuery();
-			
+
 			List<Double> values = new ArrayList<Double>();
-			
+
 			while(results.next()) {
 				values.add(results.getDouble(1));
 			}
 
 			Percentile percentile = new Percentile();
-			
+
 			double[] array = values.stream().mapToDouble(d -> d).toArray();
 
 			min = percentile.evaluate(array, 5);
 			max = percentile.evaluate(array, 95);
-			
+
 		} catch (SQLException e) {
 			throw new DatabaseException("Excpeption while getting scale bounds", e);
 		} finally {
@@ -798,13 +798,13 @@ public abstract class CalculationDB {
 			DatabaseUtils.closeStatements(stmt);
 			DatabaseUtils.closeConnection(conn);
 		}
-		
-		
-		
+
+
+
 		List<Double> result = new ArrayList<Double>(2);
 		result.add(min);
 		result.add(max);
-		
+
 		return result;
 	}
 }

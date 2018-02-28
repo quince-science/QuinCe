@@ -14,19 +14,19 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 	 * The name set on any thread that is in the stack waiting to run
 	 */
 	private static final String WAITING_THREAD_NAME = "waiting";
-	
+
 	/**
 	 * The object that will run the job
 	 */
 	private Job job;
-	
+
 	/**
 	 * Indicates whether or not this is an overflow thread.
 	 * Overflow threads are not returned to the stack, but are destroyed
 	 * once they have completed.
 	 */
 	private boolean overflowThread;
-		
+
 	/**
 	 * Creates a job thread
 	 * @param overflowThread Indicates whether or not this is an overflow thread
@@ -35,7 +35,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 		this.overflowThread = overflowThread;
 		setName(WAITING_THREAD_NAME);
 	}
-	
+
 	/**
 	 * Sets up the job that this thread will run.
 	 * @param job The job
@@ -45,7 +45,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 		MissingParam.checkMissing(job, "job");
 		this.job = job;
 	}
-	
+
 	/**
 	 * Reset this job thread so it can be returned to the job pool.
 	 */
@@ -54,7 +54,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 		job.destroy();
 		job = null;
 	}
-	
+
 	/**
 	 * Checks whether or not this is an overflow thread, and therefore
 	 * whether it should be destroyed when finished with or returned to the thread pool
@@ -63,7 +63,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 	protected boolean isOverflowThread() {
 		return overflowThread;
 	}
-	
+
 	/**
 	 * Start the thread and run the job.
 	 * When finished the thread will return itself to the thread pool
@@ -71,13 +71,13 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 	public void run() {
 		try {
 			setName(String.valueOf(job.getID()) + '_' + System.currentTimeMillis());
-			
+
 			// Run the job
 			job.setFinishState(Job.FINISHED_STATUS);
 			job.setProgress(0);
 			job.logStarted(getName());
 			job.execute(this);
-			
+
 			switch (job.getFinishState()) {
 			case (Job.KILLED_STATUS):
 			{
@@ -116,7 +116,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 	public int compareTo(JobThread o) {
 		return Long.signum(getId() - o.getId());
 	}
-	
+
 	/**
 	 * Stop the job immediately, and set its status is {@link Job#KILLED_STATUS}.
 	 */
@@ -124,7 +124,7 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 	public void interrupt() {
 		// Do the standard thread interruption
 		super.interrupt();
-		
+
 		// Set the finish state on the job to KILLED
 		try {
 			job.setFinishState(Job.KILLED_STATUS);
