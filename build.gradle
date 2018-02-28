@@ -21,6 +21,7 @@ buildscript {
 // Flyway database migration plugin:
 plugins {
     id "org.flywaydb.flyway" version "5.0.7"
+    id "com.diffplug.gradle.spotless" version "3.10.0"
 }
 
 apply plugin: 'java'
@@ -125,4 +126,42 @@ flyway {
   password = webContext.Resource.@password
   locations = ["classpath:db_migrations"]
   baselineOnMigrate = true
+}
+
+spotless {
+  // Blocks defining how to format different code types
+  format 'java', {
+    // Formatting options for java files
+    target 'WebApp/**/*.java'
+    trimTrailingWhitespace()
+    indentWithSpaces(2)
+    endWithNewline()
+  }
+  format 'misc', {
+    // Formatting options for misc files
+    target 'WebApp/**/*.xhtml', 'WebApp/**/*.xml',
+      'WebApp/WebContent/resources/style/dataFiles.css',
+      'WebApp/WebContent/resources/style/main.css',
+      'WebApp/WebContent/resources/style/manualQc.css',
+      'WebApp/WebContent/resources/style/newInstrument.css',
+      'WebApp/WebContent/resources/style/plotPage.css',
+      'WebApp/WebContent/resources/style/reviewCalibrationData.css',
+      'scripts/*.sh', 'scripts/**/*.sh'
+    trimTrailingWhitespace()
+    indentWithSpaces(2)
+    endWithNewline()
+  }
+  format 'js', {
+    // Formatting options for javascript files
+    target 'WebApp/WebContent/resources/script/dataFiles.js',
+      'WebApp/WebContent/resources/script/dataSets.js',
+      'WebApp/WebContent/resources/script/jsColorScale.js',
+      'WebApp/WebContent/resources/script/manualQc.js',
+      'WebApp/WebContent/resources/script/newInstrument.js',
+      'WebApp/WebContent/resources/script/plotPage.js',
+      'WebApp/WebContent/resources/script/reviewCalibrationData.js'
+    trimTrailingWhitespace()
+    indentWithSpaces(2)
+    endWithNewline()
+  }
 }
