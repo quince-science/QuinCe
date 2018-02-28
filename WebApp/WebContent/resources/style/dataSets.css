@@ -1,28 +1,28 @@
 #timelineContainer {
-	background-color: #FFFFFF;
+  background-color: #FFFFFF;
 }
 
 .vis-label {
-	font-weight: 700;
+  font-weight: 700;
 }
 
 .vis-item {
-	background-color: #D7EBF9;
-	border-color: #AED0EA;
+  background-color: #D7EBF9;
+  border-color: #AED0EA;
 }
 
 .timelineDataSet {
-	font-weight: 700;
-	background-color: #226EA0 !important;
-	color: #FFFFFF !important;
+  font-weight: 700;
+  background-color: #226EA0 !important;
+  color: #FFFFFF !important;
 }
 
 .goodNewDataSet {
-	font-weight: 700;
-	background-color: #FFEF96 !important;
+  font-weight: 700;
+  background-color: #FFEF96 !important;
 }
 
 .badNewDataSet {
-	font-weight: 700;
-	background-color: #F0D9D9 !important;
+  font-weight: 700;
+  background-color: #F0D9D9 !important;
 }
