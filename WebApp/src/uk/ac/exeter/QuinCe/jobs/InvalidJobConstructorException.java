@@ -9,16 +9,16 @@ package uk.ac.exeter.QuinCe.jobs;
  */
 public class InvalidJobConstructorException extends Exception {
 
-	/**
-	 * The Serial Version UID
-	 */
-	private static final long serialVersionUID = 8855435038251108392L;
+  /**
+   * The Serial Version UID
+   */
+  private static final long serialVersionUID = 8855435038251108392L;
 
-	/**
-	 * Constructor
-	 * @param className The name of the invalid class
-	 */
-	public InvalidJobConstructorException(String className) {
-		super("The specified job class '" + className + "' does not have a valid constructor");
-	}
+  /**
+   * Constructor
+   * @param className The name of the invalid class
+   */
+  public InvalidJobConstructorException(String className) {
+    super("The specified job class '" + className + "' does not have a valid constructor");
+  }
 }

@@ -10,16 +10,16 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
  */
 public class InstrumentFileExistsException extends Exception {
 
-	/**
-	 * Serial Version UID
-	 */
-	private static final long serialVersionUID = 3317044919826150286L;
+  /**
+   * Serial Version UID
+   */
+  private static final long serialVersionUID = 3317044919826150286L;
 
-	/**
-	 * Basic constructor
-	 * @param file The duplicate instrument file
-	 */
-	public InstrumentFileExistsException(FileDefinition file) {
-		super("An instrument file with the description '" + file.getFileDescription() + "' already exists");
-	}
+  /**
+   * Basic constructor
+   * @param file The duplicate instrument file
+   */
+  public InstrumentFileExistsException(FileDefinition file) {
+    super("An instrument file with the description '" + file.getFileDescription() + "' already exists");
+  }
 }

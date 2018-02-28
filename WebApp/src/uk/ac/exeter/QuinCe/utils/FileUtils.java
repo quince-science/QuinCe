@@ -9,23 +9,23 @@ import java.io.File;
  */
 public class FileUtils {
 
-	/**
-	 * Check that a file can be accessed
-	 * @param file The file to be checked
-	 * @return {@code true} if the file can be accessed; {@code if it cannot}
-	 */
-	public static boolean canAccessFile(File file) {
-		boolean ok = true;
+  /**
+   * Check that a file can be accessed
+   * @param file The file to be checked
+   * @return {@code true} if the file can be accessed; {@code if it cannot}
+   */
+  public static boolean canAccessFile(File file) {
+    boolean ok = true;
 
-		if (!file.exists()) {
-			ok = false;
-		} else if (!file.isFile()) {
-			ok = false;
-		} else if (!file.canRead()) {
-			ok = false;
-		}
+    if (!file.exists()) {
+      ok = false;
+    } else if (!file.isFile()) {
+      ok = false;
+    } else if (!file.canRead()) {
+      ok = false;
+    }
 
-		return ok;
-	}
+    return ok;
+  }
 
 }

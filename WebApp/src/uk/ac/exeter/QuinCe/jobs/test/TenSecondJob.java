@@ -19,58 +19,58 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 public class TenSecondJob extends Job {
 
-	/**
-	 * The parameter key for the number of chunks
-	 */
-	public static final String CHUNK_KEY = "chunks";
+  /**
+   * The parameter key for the number of chunks
+   */
+  public static final String CHUNK_KEY = "chunks";
 
-	/**
-	 * The number of 10 second chunks in the job
-	 */
-	private int chunkCount = 1;
+  /**
+   * The number of 10 second chunks in the job
+   */
+  private int chunkCount = 1;
 
-	/**
-	 * Constructs a job object, and validates the parameters passed to it
-	 * @param resourceManager The system resource manager
-	 * @param config The application properties
-	 * @param id The id of the job in the database
-	 * @param parameters The parameters for the job
-	 * @throws InvalidJobParametersException If the parameters are not valid for the job
-	 * @throws MissingParamException If any required parameters are missing
-	 */
-	public TenSecondJob(ResourceManager resourceManager, Properties config, long id, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException {
-		super(resourceManager, config, id, parameters);
-		chunkCount = Integer.parseInt(parameters.get(CHUNK_KEY));
-	}
+  /**
+   * Constructs a job object, and validates the parameters passed to it
+   * @param resourceManager The system resource manager
+   * @param config The application properties
+   * @param id The id of the job in the database
+   * @param parameters The parameters for the job
+   * @throws InvalidJobParametersException If the parameters are not valid for the job
+   * @throws MissingParamException If any required parameters are missing
+   */
+  public TenSecondJob(ResourceManager resourceManager, Properties config, long id, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException {
+    super(resourceManager, config, id, parameters);
+    chunkCount = Integer.parseInt(parameters.get(CHUNK_KEY));
+  }
 
-	@Override
-	protected void execute(JobThread thread) throws JobFailedException {
-		for (int i = 0; i < chunkCount && !thread.isInterrupted(); i++) {
-			System.out.println("Job " + id + ": Chunk " + i + " of " + chunkCount);
-			try {
-				Thread.sleep(10000);
-				setProgress(((double)i / (double)chunkCount) * 100);
-			} catch(InterruptedException e) {
-				// Don't care
-			} catch(Exception e) {
-				throw new JobFailedException(id, e);
-			}
-		}
-	}
+  @Override
+  protected void execute(JobThread thread) throws JobFailedException {
+    for (int i = 0; i < chunkCount && !thread.isInterrupted(); i++) {
+      System.out.println("Job " + id + ": Chunk " + i + " of " + chunkCount);
+      try {
+        Thread.sleep(10000);
+        setProgress(((double)i / (double)chunkCount) * 100);
+      } catch(InterruptedException e) {
+        // Don't care
+      } catch(Exception e) {
+        throw new JobFailedException(id, e);
+      }
+    }
+  }
 
-	@Override
-	protected void validateParameters() throws InvalidJobParametersException {
-		// For the test, we expect exactly one string, which is an integer
-		if (null == parameters) {
-			throw new InvalidJobParametersException("parameters are null");
-		} else if (parameters.size() != 1) {
-			throw new InvalidJobParametersException("Wrong number of parameters");
-		} else {
-			try {
-				chunkCount = Integer.parseInt(parameters.get(CHUNK_KEY));
-			} catch(NumberFormatException e) {
-				throw new InvalidJobParametersException("It's not a number!");
-			}
-		}
-	}
+  @Override
+  protected void validateParameters() throws InvalidJobParametersException {
+    // For the test, we expect exactly one string, which is an integer
+    if (null == parameters) {
+      throw new InvalidJobParametersException("parameters are null");
+    } else if (parameters.size() != 1) {
+      throw new InvalidJobParametersException("Wrong number of parameters");
+    } else {
+      try {
+        chunkCount = Integer.parseInt(parameters.get(CHUNK_KEY));
+      } catch(NumberFormatException e) {
+        throw new InvalidJobParametersException("It's not a number!");
+      }
+    }
+  }
 }

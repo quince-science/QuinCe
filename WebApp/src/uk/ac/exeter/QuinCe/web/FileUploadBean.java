@@ -17,37 +17,37 @@ import org.primefaces.model.UploadedFile;
  */
 public abstract class FileUploadBean extends BaseManagedBean {
 
-	/**
-	 * The uploaded file
-	 */
-	protected UploadedFile file = null;
+  /**
+   * The uploaded file
+   */
+  protected UploadedFile file = null;
 
-	/**
-	 * Handle the file upload and subsequent processing.
-	 * @param event The file upload event
-	 */
-	public final void handleFileUpload(FileUploadEvent event) {
-		setFile(event.getFile());
-		processUploadedFile();
-	}
+  /**
+   * Handle the file upload and subsequent processing.
+   * @param event The file upload event
+   */
+  public final void handleFileUpload(FileUploadEvent event) {
+    setFile(event.getFile());
+    processUploadedFile();
+  }
 
-	/**
-	 * Process the uploaded file
-	 */
-	public abstract void processUploadedFile();
+  /**
+   * Process the uploaded file
+   */
+  public abstract void processUploadedFile();
 
-	/**
-	 * Retrieve the uploaded file
-	 * @return The uploaded file
-	 */
-	public UploadedFile getFile() {
-		return file;
-	}
+  /**
+   * Retrieve the uploaded file
+   * @return The uploaded file
+   */
+  public UploadedFile getFile() {
+    return file;
+  }
 
-	/**
-	 * Set the uploaded file
-	 * @param file The uploaded file
-	 */
+  /**
+   * Set the uploaded file
+   * @param file The uploaded file
+   */
     public void setFile(UploadedFile file) {
         this.file = file;
     }
@@ -56,7 +56,7 @@ public abstract class FileUploadBean extends BaseManagedBean {
      * Remove any existing uploaded file
      */
     public void clearFile() {
-    	this.file = null;
+      this.file = null;
     }
 
     /**
@@ -66,20 +66,20 @@ public abstract class FileUploadBean extends BaseManagedBean {
         if (null == getFile()) {
             return Collections.emptyList();
         }
-		String fileContent = new String(getFile().getContents(), StandardCharsets.UTF_8);
-		List<String> fileLines = Arrays.asList(fileContent.split("[\\r\\n]+"));
+    String fileContent = new String(getFile().getContents(), StandardCharsets.UTF_8);
+    List<String> fileLines = Arrays.asList(fileContent.split("[\\r\\n]+"));
 
-		// Remove empty lines at the end of the file
-		boolean blankLine = true;
-		while (blankLine) {
-			String lastLine = fileLines.get(fileLines.size() - 1);
-			if (lastLine.trim().length() == 0) {
-				fileLines.remove(fileLines.size() - 1);
-			} else {
-				blankLine = false;
-			}
-		}
-		return fileLines;
+    // Remove empty lines at the end of the file
+    boolean blankLine = true;
+    while (blankLine) {
+      String lastLine = fileLines.get(fileLines.size() - 1);
+      if (lastLine.trim().length() == 0) {
+        fileLines.remove(fileLines.size() - 1);
+      } else {
+        blankLine = false;
+      }
+    }
+    return fileLines;
     }
 
     /**
@@ -87,12 +87,12 @@ public abstract class FileUploadBean extends BaseManagedBean {
      * @return The filename
      */
     public String getFilename() {
-    	String result = null;
+      String result = null;
 
-    	if (null != file) {
-    		result = file.getFileName();
-    	}
+      if (null != file) {
+        result = file.getFileName();
+      }
 
-    	return result;
+      return result;
     }
 }

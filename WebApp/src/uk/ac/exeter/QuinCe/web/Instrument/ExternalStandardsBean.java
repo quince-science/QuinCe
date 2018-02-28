@@ -16,51 +16,51 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 @SessionScoped
 public class ExternalStandardsBean extends CalibrationBean {
 
-	/**
-	 * The navigation string for the external standards list
-	 */
-	private static final String NAV_LIST = "external_standards";
+  /**
+   * The navigation string for the external standards list
+   */
+  private static final String NAV_LIST = "external_standards";
 
-	/**
-	 * The external standard being edited by the user
-	 */
-	private ExternalStandard enteredStandard = null;
+  /**
+   * The external standard being edited by the user
+   */
+  private ExternalStandard enteredStandard = null;
 
-	/**
-	 * The external standards database utility class
-	 */
-	private ExternalStandardDB db = null;
+  /**
+   * The external standards database utility class
+   */
+  private ExternalStandardDB db = null;
 
-	/**
-	 * Constructor
-	 */
-	public ExternalStandardsBean() {
-		super();
-		db = ExternalStandardDB.getInstance();
-	}
+  /**
+   * Constructor
+   */
+  public ExternalStandardsBean() {
+    super();
+    db = ExternalStandardDB.getInstance();
+  }
 
-	@Override
-	protected String getListNavigation() {
-		return NAV_LIST;
-	}
+  @Override
+  protected String getListNavigation() {
+    return NAV_LIST;
+  }
 
-	@Override
-	protected void createEnteredCalibration() {
-		enteredStandard = new ExternalStandard(instrumentId);
-	}
+  @Override
+  protected void createEnteredCalibration() {
+    enteredStandard = new ExternalStandard(instrumentId);
+  }
 
-	@Override
-	public ExternalStandard getEnteredCalibration() {
-		return enteredStandard;
-	}
+  @Override
+  public ExternalStandard getEnteredCalibration() {
+    return enteredStandard;
+  }
 
-	@Override
-	protected CalibrationDB getDbInstance() {
-		return db;
-	}
+  @Override
+  protected CalibrationDB getDbInstance() {
+    return db;
+  }
 
-	@Override
-	protected String getCalibrationType() {
-		return ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE;
-	}
+  @Override
+  protected String getCalibrationType() {
+    return ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE;
+  }
 }

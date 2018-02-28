@@ -10,58 +10,58 @@ import java.util.Date;
 @Deprecated
 public class StandardStub {
 
-	/**
-	 * The ID of the standard's database record
-	 */
-	private long id;
+  /**
+   * The ID of the standard's database record
+   */
+  private long id;
 
-	/**
-	 * The ID of the instrument that this standard belongs to
-	 */
-	private long instrumentId;
+  /**
+   * The ID of the instrument that this standard belongs to
+   */
+  private long instrumentId;
 
-	/**
-	 * The date of the standard
-	 */
-	@Deprecated
-	private Date deployedDate;
+  /**
+   * The date of the standard
+   */
+  @Deprecated
+  private Date deployedDate;
 
-	/**
-	 * Simple constructor for the two fields
-	 * @param id The database ID
-	 * @param instrumentId The ID of the instrument to which this standard belongs
-	 * @param deployedDate The standard date
-	 */
-	@Deprecated
-	public StandardStub (long id, long instrumentId, Date deployedDate) {
-		this.id = id;
-		this.instrumentId = instrumentId;
-		this.deployedDate = deployedDate;
-	}
+  /**
+   * Simple constructor for the two fields
+   * @param id The database ID
+   * @param instrumentId The ID of the instrument to which this standard belongs
+   * @param deployedDate The standard date
+   */
+  @Deprecated
+  public StandardStub (long id, long instrumentId, Date deployedDate) {
+    this.id = id;
+    this.instrumentId = instrumentId;
+    this.deployedDate = deployedDate;
+  }
 
-	/**
-	 * Returns the database ID
-	 * @return The database ID
-	 */
-	public long getId() {
-		return id;
-	}
+  /**
+   * Returns the database ID
+   * @return The database ID
+   */
+  public long getId() {
+    return id;
+  }
 
-	/**
-	 * Returns the database ID of the instrument that this standard belongs to
-	 * @return The instrument ID
-	 */
-	public long getInstrumentId() {
-		return instrumentId;
-	}
+  /**
+   * Returns the database ID of the instrument that this standard belongs to
+   * @return The instrument ID
+   */
+  public long getInstrumentId() {
+    return instrumentId;
+  }
 
-	/**
-	 * Returns the standard date
-	 * @return The standard date
-	 */
-	@Deprecated
-	public Date getDeployedDate() {
-		return deployedDate;
-	}
+  /**
+   * Returns the standard date
+   * @return The standard date
+   */
+  @Deprecated
+  public Date getDeployedDate() {
+    return deployedDate;
+  }
 
 }

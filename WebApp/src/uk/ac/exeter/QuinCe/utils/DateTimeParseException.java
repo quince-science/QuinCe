@@ -7,17 +7,17 @@ package uk.ac.exeter.QuinCe.utils;
  */
 public class DateTimeParseException extends Exception {
 
-	/**
-	 * The serial version UID
-	 */
-	private static final long serialVersionUID = 4894503384132198690L;
+  /**
+   * The serial version UID
+   */
+  private static final long serialVersionUID = 4894503384132198690L;
 
-	/**
-	 * Simple constructor
-	 * @param message The error message
-	 */
-	public DateTimeParseException(String message) {
-		super(message);
-	}
+  /**
+   * Simple constructor
+   * @param message The error message
+   */
+  public DateTimeParseException(String message) {
+    super(message);
+  }
 
 }

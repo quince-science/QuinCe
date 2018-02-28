@@ -7,16 +7,16 @@ package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
  */
 public class PositionException extends Exception {
 
-	/**
-	 * The serial version UID
-	 */
-	private static final long serialVersionUID = -5002071128888697454L;
+  /**
+   * The serial version UID
+   */
+  private static final long serialVersionUID = -5002071128888697454L;
 
-	/**
-	 * Simple error message
-	 * @param message The error message
-	 */
-	public PositionException(String message) {
-		super(message);
-	}
+  /**
+   * Simple error message
+   * @param message The error message
+   */
+  public PositionException(String message) {
+    super(message);
+  }
 }

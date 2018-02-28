@@ -13,46 +13,46 @@ import uk.ac.exeter.QCRoutines.messages.Flag;
  */
 public class CommentSet implements Iterable<CommentSetEntry> {
 
-	/**
-	 * The comment set entries
-	 */
-	private TreeSet<CommentSetEntry> entries;
+  /**
+   * The comment set entries
+   */
+  private TreeSet<CommentSetEntry> entries;
 
-	/**
-	 * Create an empty comment set
-	 */
-	public CommentSet() {
-		entries = new TreeSet<CommentSetEntry>();
-	}
+  /**
+   * Create an empty comment set
+   */
+  public CommentSet() {
+    entries = new TreeSet<CommentSetEntry>();
+  }
 
-	/**
-	 * Add a comment to the comment set.
-	 * @param comment The comment string
-	 * @param flag The flag for the comment
-	 */
-	public void addComment(String comment, Flag flag) {
+  /**
+   * Add a comment to the comment set.
+   * @param comment The comment string
+   * @param flag The flag for the comment
+   */
+  public void addComment(String comment, Flag flag) {
 
-		boolean commentAdded = false;
+    boolean commentAdded = false;
 
-		for (CommentSetEntry entry : entries) {
-			if (entry.matches(comment)) {
-				entry.increment(flag);
-				commentAdded = true;
-				break;
-			}
-		}
+    for (CommentSetEntry entry : entries) {
+      if (entry.matches(comment)) {
+        entry.increment(flag);
+        commentAdded = true;
+        break;
+      }
+    }
 
-		if (!commentAdded) {
-			entries.add(new CommentSetEntry(comment, flag));
-		}
-	}
+    if (!commentAdded) {
+      entries.add(new CommentSetEntry(comment, flag));
+    }
+  }
 
-	/**
-	 * Provides an iterator for the entries in this comment set
-	 * @return The iterator
-	 */
-	@Override
-	public Iterator<CommentSetEntry> iterator() {
-		return entries.iterator();
-	}
+  /**
+   * Provides an iterator for the entries in this comment set
+   * @return The iterator
+   */
+  @Override
+  public Iterator<CommentSetEntry> iterator() {
+    return entries.iterator();
+  }
 }

@@ -14,42 +14,42 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  */
 public class DataSetRawDataFactory {
 
-	/**
-	 * Construct a {@link DataSetRawData} object suitable for the averaging
-	 * mode of the supplied instrument
-	 * @param dataSource A data source
-	 * @param dataSet The data set whose raw data is to be processed
-	 * @param instrument The instrument to which the data set belongs
-	 * @return The {@link DataSetRawData} object
-	 * @throws MissingParamException If any required parameters are missing
-	 * @throws DatabaseException If a database error occurs
-	 * @throws RecordNotFoundException If no data files are found within the data set
-	 * @throws DataFileException If the data cannot be extracted from the files
-	 * @throws DataSetException If a suitable object cannot be created
-	 */
-	public static DataSetRawData getDataSetRawData(DataSource dataSource, DataSet dataSet, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException, DataFileException, DataSetException {
+  /**
+   * Construct a {@link DataSetRawData} object suitable for the averaging
+   * mode of the supplied instrument
+   * @param dataSource A data source
+   * @param dataSet The data set whose raw data is to be processed
+   * @param instrument The instrument to which the data set belongs
+   * @return The {@link DataSetRawData} object
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   * @throws RecordNotFoundException If no data files are found within the data set
+   * @throws DataFileException If the data cannot be extracted from the files
+   * @throws DataSetException If a suitable object cannot be created
+   */
+  public static DataSetRawData getDataSetRawData(DataSource dataSource, DataSet dataSet, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException, DataFileException, DataSetException {
 
-		MissingParam.checkMissing(dataSource, "dataSource");
-		MissingParam.checkMissing(dataSet, "dataSet");
-		MissingParam.checkMissing(instrument, "Instrument");
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(dataSet, "dataSet");
+    MissingParam.checkMissing(instrument, "Instrument");
 
 
-		DataSetRawData result = null;
+    DataSetRawData result = null;
 
-		switch (instrument.getAveragingMode()) {
-		case DataSetRawData.AVG_MODE_NONE: {
-			result = new NoAverageDataSetRawData(dataSource, dataSet, instrument);
-			break;
-		}
-		case DataSetRawData.AVG_MODE_MINUTE: {
-			throw new DataSetException("Minute averager hasn't been written yet!");
-		}
-		default: {
-			throw new DataSetException("Unrecognised averaging mode " + instrument.getAveragingMode());
-		}
-		}
+    switch (instrument.getAveragingMode()) {
+    case DataSetRawData.AVG_MODE_NONE: {
+      result = new NoAverageDataSetRawData(dataSource, dataSet, instrument);
+      break;
+    }
+    case DataSetRawData.AVG_MODE_MINUTE: {
+      throw new DataSetException("Minute averager hasn't been written yet!");
+    }
+    default: {
+      throw new DataSetException("Unrecognised averaging mode " + instrument.getAveragingMode());
+    }
+    }
 
-		return result;
-	}
+    return result;
+  }
 
 }

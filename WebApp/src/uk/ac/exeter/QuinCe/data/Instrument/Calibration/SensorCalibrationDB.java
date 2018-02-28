@@ -15,49 +15,49 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  */
 public class SensorCalibrationDB extends CalibrationDB {
 
-	/**
-	 * Indentifier for sensor calibrations
-	 */
-	public static final String SENSOR_CALIBRATION_TYPE = "SENSOR_CALIBRATION";
+  /**
+   * Indentifier for sensor calibrations
+   */
+  public static final String SENSOR_CALIBRATION_TYPE = "SENSOR_CALIBRATION";
 
-	/**
-	 * The singleton instance of the class
-	 */
-	private static SensorCalibrationDB instance = null;
+  /**
+   * The singleton instance of the class
+   */
+  private static SensorCalibrationDB instance = null;
 
-	/**
-	 * Basic constructor
-	 */
-	public SensorCalibrationDB() {
-		super();
-	}
+  /**
+   * Basic constructor
+   */
+  public SensorCalibrationDB() {
+    super();
+  }
 
-	/**
-	 * Retrieve the singleton instance of the class
-	 * @return The singleton
-	 */
-	public static SensorCalibrationDB getInstance() {
-		if (null == instance) {
-			instance = new SensorCalibrationDB();
-		}
+  /**
+   * Retrieve the singleton instance of the class
+   * @return The singleton
+   */
+  public static SensorCalibrationDB getInstance() {
+    if (null == instance) {
+      instance = new SensorCalibrationDB();
+    }
 
-		return instance;
-	}
+    return instance;
+  }
 
-	/**
-	 * Destroy the singleton instance
-	 */
-	public static void destroy() {
-		instance = null;
-	}
+  /**
+   * Destroy the singleton instance
+   */
+  public static void destroy() {
+    instance = null;
+  }
 
-	@Override
-	public List<String> getTargets(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-		return InstrumentDB.getCalibratableSensors(conn, instrumentId);
-	}
+  @Override
+  public List<String> getTargets(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+    return InstrumentDB.getCalibratableSensors(conn, instrumentId);
+  }
 
-	@Override
-	public String getCalibrationType() {
-		return SENSOR_CALIBRATION_TYPE;
-	}
+  @Override
+  public String getCalibrationType() {
+    return SENSOR_CALIBRATION_TYPE;
+  }
 }

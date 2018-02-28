@@ -36,118 +36,118 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 public class DataReductionJob extends Job {
 
-	/**
-	 * The parameter name for the data set id
-	 */
-	public static final String ID_PARAM = "id";
+  /**
+   * The parameter name for the data set id
+   */
+  public static final String ID_PARAM = "id";
 
-	/**
-	 * Constructor for a data reduction job to be run on a specific data file.
-	 * The job record must already have been created in the database.
-	 *
-	 * @param resourceManager The QuinCe resource manager
-	 * @param config The application configuration
-	 * @param jobId The job's database ID
-	 * @param parameters The job parameters. These will be ignored.
-	 * @throws MissingParamException If any constructor parameters are missing
-	 * @throws InvalidJobParametersException If any of the parameters are invalid. Because parameters are ignored for this job, this exception will not be thrown.
-	 * @throws DatabaseException If a database error occurs
-	 * @throws RecordNotFoundException If the job cannot be found in the database
-	 */
-	public DataReductionJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
-		super(resourceManager, config, jobId, parameters);
-	}
+  /**
+   * Constructor for a data reduction job to be run on a specific data file.
+   * The job record must already have been created in the database.
+   *
+   * @param resourceManager The QuinCe resource manager
+   * @param config The application configuration
+   * @param jobId The job's database ID
+   * @param parameters The job parameters. These will be ignored.
+   * @throws MissingParamException If any constructor parameters are missing
+   * @throws InvalidJobParametersException If any of the parameters are invalid. Because parameters are ignored for this job, this exception will not be thrown.
+   * @throws DatabaseException If a database error occurs
+   * @throws RecordNotFoundException If the job cannot be found in the database
+   */
+  public DataReductionJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+    super(resourceManager, config, jobId, parameters);
+  }
 
-	@Override
-	protected void execute(JobThread thread) throws JobFailedException {
+  @Override
+  protected void execute(JobThread thread) throws JobFailedException {
 
-		Connection conn = null;
-		CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
+    Connection conn = null;
+    CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
 
-		try {
-			conn = dataSource.getConnection();
-			conn.setAutoCommit(false);
+    try {
+      conn = dataSource.getConnection();
+      conn.setAutoCommit(false);
 
-			DataSet dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
-			List<DataSetRawDataRecord> measurements = DataSetDataDB.getMeasurements(conn, dataSet);
-			CalibrationDataSet calibrationRecords = CalibrationDataDB.getCalibrationRecords(conn, dataSet);
-			CalibrationSet externalStandards = ExternalStandardDB.getInstance().getStandardsSet(conn, dataSet.getInstrumentId(), measurements.get(0).getDate());
+      DataSet dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
+      List<DataSetRawDataRecord> measurements = DataSetDataDB.getMeasurements(conn, dataSet);
+      CalibrationDataSet calibrationRecords = CalibrationDataDB.getCalibrationRecords(conn, dataSet);
+      CalibrationSet externalStandards = ExternalStandardDB.getInstance().getStandardsSet(conn, dataSet.getInstrumentId(), measurements.get(0).getDate());
 
-			if (!externalStandards.isComplete()) {
-				throw new JobFailedException(id, "No complete set of external standards available");
-			}
+      if (!externalStandards.isComplete()) {
+        throw new JobFailedException(id, "No complete set of external standards available");
+      }
 
-			// TODO This will loop through all available calculators
-			DataReductionCalculator calculator = new EquilibratorPco2Calculator(externalStandards, calibrationRecords);
+      // TODO This will loop through all available calculators
+      DataReductionCalculator calculator = new EquilibratorPco2Calculator(externalStandards, calibrationRecords);
 
-			for (DataSetRawDataRecord measurement : measurements) {
-				Map<String, Double> calculatedValues = calculator.performDataReduction(measurement);
-				calculationDB.storeCalculationValues(conn, measurement.getId(), calculatedValues);
-			}
+      for (DataSetRawDataRecord measurement : measurements) {
+        Map<String, Double> calculatedValues = calculator.performDataReduction(measurement);
+        calculationDB.storeCalculationValues(conn, measurement.getId(), calculatedValues);
+      }
 
-			// If the thread was interrupted, undo everything
-			if (thread.isInterrupted()) {
-				conn.rollback();
+      // If the thread was interrupted, undo everything
+      if (thread.isInterrupted()) {
+        conn.rollback();
 
-				// Requeue the data reduction job
-				JobManager.requeueJob(conn, id);
-				conn.commit();
-			} else {
+        // Requeue the data reduction job
+        JobManager.requeueJob(conn, id);
+        conn.commit();
+      } else {
 
-				// Set up the Auto QC job
-				Map<String, String> jobParams = new HashMap<String, String>();
-				jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
-				jobParams.put(AutoQCJob.PARAM_ROUTINES_CONFIG, ResourceManager.QC_ROUTINES_CONFIG);
-				JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), AutoQCJob.class.getCanonicalName(), jobParams);
+        // Set up the Auto QC job
+        Map<String, String> jobParams = new HashMap<String, String>();
+        jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
+        jobParams.put(AutoQCJob.PARAM_ROUTINES_CONFIG, ResourceManager.QC_ROUTINES_CONFIG);
+        JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), AutoQCJob.class.getCanonicalName(), jobParams);
 
-				conn.commit();
-			}
+        conn.commit();
+      }
 
-		} catch (Exception e) {
-			DatabaseUtils.rollBack(conn);
-			throw new JobFailedException(id, e);
-		} finally {
-			DatabaseUtils.closeConnection(conn);
-		}
-	}
+    } catch (Exception e) {
+      DatabaseUtils.rollBack(conn);
+      throw new JobFailedException(id, e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+  }
 
-	/**
-	 * Removes any previously calculated data reduction results from the database
-	 * @throws JobFailedException If an error occurs
-	 */
-	protected void reset() throws JobFailedException {
+  /**
+   * Removes any previously calculated data reduction results from the database
+   * @throws JobFailedException If an error occurs
+   */
+  protected void reset() throws JobFailedException {
 
-		Connection conn = null;
-		CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
+    Connection conn = null;
+    CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
 
-		try {
-			conn = dataSource.getConnection();
-			conn.setAutoCommit(false);
-			DataSet dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
-			List<DataSetRawDataRecord> measurements = DataSetDataDB.getMeasurements(conn, dataSet);
-			for (DataSetRawDataRecord measurement : measurements) {
-				calculationDB.clearCalculationValues(conn, measurement.getId());
-			}
-		} catch (Exception e) {
-			DatabaseUtils.rollBack(conn);
-			throw new JobFailedException(id, e);
-		} finally {
-			DatabaseUtils.closeConnection(conn);
-		}
-	}
+    try {
+      conn = dataSource.getConnection();
+      conn.setAutoCommit(false);
+      DataSet dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
+      List<DataSetRawDataRecord> measurements = DataSetDataDB.getMeasurements(conn, dataSet);
+      for (DataSetRawDataRecord measurement : measurements) {
+        calculationDB.clearCalculationValues(conn, measurement.getId());
+      }
+    } catch (Exception e) {
+      DatabaseUtils.rollBack(conn);
+      throw new JobFailedException(id, e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+  }
 
-	@Override
-	protected void validateParameters() throws InvalidJobParametersException {
+  @Override
+  protected void validateParameters() throws InvalidJobParametersException {
 
-		String datasetIdString = parameters.get(ID_PARAM);
-		if (null == datasetIdString) {
-			throw new InvalidJobParametersException(ID_PARAM + "is missing");
-		}
+    String datasetIdString = parameters.get(ID_PARAM);
+    if (null == datasetIdString) {
+      throw new InvalidJobParametersException(ID_PARAM + "is missing");
+    }
 
-		try {
-			Long.parseLong(datasetIdString);
-		} catch (NumberFormatException e) {
-			throw new InvalidJobParametersException(ID_PARAM + "is not numeric");
-		}
-	}
+    try {
+      Long.parseLong(datasetIdString);
+    } catch (NumberFormatException e) {
+      throw new InvalidJobParametersException(ID_PARAM + "is not numeric");
+    }
+  }
 }

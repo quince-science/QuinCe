@@ -7,17 +7,17 @@ package uk.ac.exeter.QuinCe.web.system;
  */
 public class ResourceException extends Exception {
 
-	/**
-	 * The serial version UID
-	 */
-	private static final long serialVersionUID = -4508422717634373177L;
+  /**
+   * The serial version UID
+   */
+  private static final long serialVersionUID = -4508422717634373177L;
 
-	/**
-	 * Constructor for an error with an underlying cause
-	 * @param message The error message
-	 * @param cause The underlying cause
-	 */
-	public ResourceException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  /**
+   * Constructor for an error with an underlying cause
+   * @param message The error message
+   * @param cause The underlying cause
+   */
+  public ResourceException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }
