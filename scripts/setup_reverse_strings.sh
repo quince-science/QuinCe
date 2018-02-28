@@ -18,5 +18,3 @@ echo "Run scripts/setup_replace_strings.sh to apply setup "\
 git checkout WebApp/WebContent/META-INF/context.xml \
   WebApp/WebContent/WEB-INF/web.xml \
   configuration/quince.properties
-
-
