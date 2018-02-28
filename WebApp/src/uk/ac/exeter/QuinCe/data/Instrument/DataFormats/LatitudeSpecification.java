@@ -13,13 +13,13 @@ public class LatitudeSpecification extends PositionSpecification {
 	 * Indicates that latitudes are between -90 and 90
 	 */
 	public static final int FORMAT_MINUS90_90 = 0;
-	
+
 	/**
 	 * Indicates that longitudes are between 0 and 90,
 	 * with a separate column specifying the hemisphere
 	 */
 	public static final int FORMAT_0_90 = 1;
-	
+
 	/**
 	 * Basic constructor
 	 */
@@ -47,15 +47,15 @@ public class LatitudeSpecification extends PositionSpecification {
 	public boolean hemisphereRequired() {
 		return (getFormat() == FORMAT_0_90);
 	}
-	
+
 	@Override
 	public double getValue(List<String> line) throws PositionException {
-		
+
 		double value;
-		
+
 		try {
 			value = Double.parseDouble(line.get(getValueColumn()));
-		
+
 			switch (format) {
 			case FORMAT_MINUS90_90: {
 				// No need to do anything!
@@ -73,14 +73,14 @@ public class LatitudeSpecification extends PositionSpecification {
 		} catch (NumberFormatException e) {
 			throw new PositionException("Invalid latitude value " + line.get(getValueColumn()));
 		}
-		
+
 		if (value < -90 || value > 90) {
 			throw new PositionException("Invalid latitude value " + value);
 		}
-		
+
 		return value;
 	}
-	
+
 	/**
 	 * Calculate the longitude multiplier for a longitude value. East = 1, West = -1
 	 * @param hemisphere The hemisphere
@@ -89,11 +89,11 @@ public class LatitudeSpecification extends PositionSpecification {
 	 */
 	private double hemisphereMultiplier(String hemisphere) throws PositionException {
 		double multiplier = 1.0;
-		
+
 		if (null == hemisphere) {
 			throw new PositionException("Missing hemisphere value");
 		}
-		
+
 		switch (hemisphere.toLowerCase()) {
 		case "n":
 		case "north": {
@@ -109,7 +109,7 @@ public class LatitudeSpecification extends PositionSpecification {
 			throw new PositionException("Invalid hemisphere value " + hemisphere);
 		}
 		}
-		
+
 		return multiplier;
 	}
 }

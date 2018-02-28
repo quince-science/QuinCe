@@ -23,77 +23,77 @@ public class JobsBean extends BaseManagedBean {
 	 * The number of threads in the thread pool
 	 */
 	private int idleThreads = 0;
-	
+
 	/**
 	 * The maximum number of threads in the thread pool
 	 */
 	private int maxThreads = 0;
-	
+
 	/**
 	 * The number of running threads (normal priority)
 	 */
 	private int runningThreads = 0;
-	
+
 	/**
 	 * The number of running immediate-priority threads
 	 */
 	private int overflowThreads = 0;
-	
+
 	/**
 	 * The number of jobs with different statuses
 	 */
 	private Map<String,Integer> jobCounts = null;
-	
+
 	/**
 	 * The complete list of jobs
 	 */
 	private List<JobSummary> jobList = null;
-	
+
 	/**
 	 * The number of chunks in the test job
 	 */
 	private int chunkCount = 1;
-	
+
 	/**
 	 * The ID of the job that is currently being worked on
 	 */
 	private long chosenJob = 0;
-	
+
 	////////////// *** METHODS *** ///////////////////////
-	
+
 	/**
 	 * Update the details shown on the job list page
 	 */
 	public void update() {
-		
+
 		try {
 			idleThreads = JobThreadPool.getInstance().getPoolThreadCount();
 		} catch (Exception e) {
 			e.printStackTrace();
 			idleThreads = -1;
 		}
-		
+
 		try {
 			runningThreads = JobThreadPool.getInstance().getRunningThreadsCount();
 		} catch (Exception e) {
 			e.printStackTrace();
 			runningThreads = -1;
 		}
-		
+
 		try {
 			overflowThreads = JobThreadPool.getInstance().getOverflowThreadsCount();
 		} catch (Exception e) {
 			e.printStackTrace();
 			overflowThreads = -1;
 		}
-		
+
 		try {
 			maxThreads = JobThreadPool.getInstance().getMaxThreads();
 		} catch (Exception e) {
 			e.printStackTrace();
 			maxThreads = -1;
 		}
-			
+
 		try {
 			jobCounts = JobManager.getJobCounts(ServletUtils.getDBDataSource());
 		} catch (Exception e) {
@@ -101,7 +101,7 @@ public class JobsBean extends BaseManagedBean {
 			jobCounts = null;
 		}
 	}
-	
+
 	/**
 	 * Submit a test job to the queue.
 	 * @see TenSecondJob
@@ -112,11 +112,11 @@ public class JobsBean extends BaseManagedBean {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		// Finally, update everything
 		update();
 	}
-	
+
 	/**
 	 * Submit a test job to be run immediately
 	 * @see TenSecondJob
@@ -127,11 +127,11 @@ public class JobsBean extends BaseManagedBean {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		// Finally, update everything
 		update();
 	}
-	
+
 	/**
 	 * Build the parameters for a test job
 	 * @return The test job parameters
@@ -143,7 +143,7 @@ public class JobsBean extends BaseManagedBean {
 		parameters.put(TenSecondJob.CHUNK_KEY, String.valueOf(chunkCount));
 		return parameters;
 	}
-	
+
 	/**
 	 * Manually start the next job in the queue
 	 * @see JobManager#startNextJob(uk.ac.exeter.QuinCe.web.system.ResourceManager, java.util.Properties)
@@ -154,10 +154,10 @@ public class JobsBean extends BaseManagedBean {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		update();
 	}
-	
+
 	/**
 	 * Place a job back in the queue to be run again
 	 * @see JobManager#requeueJob(javax.sql.DataSource, long)
@@ -168,12 +168,12 @@ public class JobsBean extends BaseManagedBean {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		update();
 	}
 
 	//////////////// *** GETTERS AND SETTERS *** /////////////////////////
-	
+
 	/**
 	 * Get the number of idle threads
 	 * @return The number of idle threads
@@ -237,7 +237,7 @@ public class JobsBean extends BaseManagedBean {
 	public void setOverflowThreads(int overflowThreads) {
 		this.overflowThreads = overflowThreads;
 	}
-	
+
 	/**
 	 * Get the number of waiting jobs
 	 * @return The number of waiting jobs
@@ -245,7 +245,7 @@ public class JobsBean extends BaseManagedBean {
 	public int getWaitingJobs() {
 		return getJobCount(Job.WAITING_STATUS);
 	}
-	
+
 	/**
 	 * Get the number of running jobs
 	 * @return The number of running jobs
@@ -253,7 +253,7 @@ public class JobsBean extends BaseManagedBean {
 	public int getRunningJobs() {
 		return getJobCount(Job.RUNNING_STATUS);
 	}
-	
+
 	/**
 	 * Get the number of jobs with errors
 	 * @return The number of jobs with errors
@@ -261,7 +261,7 @@ public class JobsBean extends BaseManagedBean {
 	public int getErrorJobs() {
 		return getJobCount(Job.ERROR_STATUS);
 	}
-	
+
 	/**
 	 * Get the number of jobs that have finished successfully
 	 * @return The number of jobs that have finished successfully
@@ -269,7 +269,7 @@ public class JobsBean extends BaseManagedBean {
 	public int getFinishedJobs() {
 		return getJobCount(Job.FINISHED_STATUS);
 	}
-	
+
 	/**
 	 * Get the list of all jobs in the system
 	 * @return The list of jobs
@@ -277,7 +277,7 @@ public class JobsBean extends BaseManagedBean {
 	public List<JobSummary> getJobList() {
 		return jobList;
 	}
-	
+
 	/**
 	 * Get the number of jobs with a specified status
 	 * @param status The status
@@ -285,7 +285,7 @@ public class JobsBean extends BaseManagedBean {
 	 */
 	private int getJobCount(String status) {
 		int result = 0;
-		
+
 		if (null == jobCounts) {
 			result = -1;
 		} else {
@@ -293,10 +293,10 @@ public class JobsBean extends BaseManagedBean {
 				result = jobCounts.get(status);
 			}
 		}
-			
+
 		return result;
 	}
-	
+
 	/**
 	 * Get the number of chunks for the test job
 	 * @return The number of chunks for the test job
@@ -307,7 +307,7 @@ public class JobsBean extends BaseManagedBean {
 	public int getChunkCount() {
 		return chunkCount;
 	}
-	
+
 	/**
 	 * Set the number of chunks for the test job
 	 * @param chunkCount The number of chunks for the test job
@@ -318,7 +318,7 @@ public class JobsBean extends BaseManagedBean {
 	public void setChunkCount(int chunkCount) {
 		this.chunkCount = chunkCount;
 	}
-	
+
 	/**
 	 * Set the ID of the job that is currently being worked on
 	 * @param chosenJob The job ID
@@ -326,7 +326,7 @@ public class JobsBean extends BaseManagedBean {
 	public void setChosenJob(long chosenJob) {
 		this.chosenJob = chosenJob;
 	}
-	
+
 	/**
 	 * Get the ID of the job that is currently being worked on
 	 * @return The job ID

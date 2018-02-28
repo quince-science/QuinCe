@@ -18,18 +18,18 @@ public class InstrumentStub {
 	 * The instrument's database ID
 	 */
 	private long id;
-	
+
 	/**
 	 * The instrument's name
 	 */
 	private String name;
-	
+
 	/**
 	 * Indicates whether or not the instrument has sensors that require
 	 * calibration within QuinCe
 	 */
 	private boolean calibratableSensors;
-	
+
 	/**
 	 * Simple constructor
 	 * @param id The instrument's database ID
@@ -54,7 +54,7 @@ public class InstrumentStub {
 	public Instrument getFullInstrument() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException, InstrumentException {
 		return InstrumentDB.getInstrument(ServletUtils.getDBDataSource(), id, ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
 	}
-	
+
 	///////// *** GETTERS AND SETTERS *** ///////////
 	/**
 	 * Returns the instrument's database ID
@@ -63,7 +63,7 @@ public class InstrumentStub {
 	public long getId() {
 		return id;
 	}
-	
+
 	/**
 	 * Return the instrument's name
 	 * @return The instrument's name
@@ -71,7 +71,7 @@ public class InstrumentStub {
 	public String getName() {
 		return name;
 	}
-	
+
 	/**
 	 * Determine whether or not the instrument has sensors that require
 	 * calibration within QuinCe

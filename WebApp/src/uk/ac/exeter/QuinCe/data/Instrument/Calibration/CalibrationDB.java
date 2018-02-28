@@ -32,7 +32,7 @@ public abstract class CalibrationDB {
 	private static final String ADD_CALIBRATION_STATEMENT = "INSERT INTO calibration "
 			+ "(instrument_id, type, target, deployment_date, coefficients, class) "
 			+ "VALUES (?, ?, ?, ?, ?, ?)";
-	
+
 	/**
 	 * Query for finding recent calibrations.
 	 * @see #getCurrentCalibrations(DataSource, long)
@@ -40,17 +40,17 @@ public abstract class CalibrationDB {
 	private static final String GET_RECENT_CALIBRATIONS_QUERY = "SELECT "
 			+ "target, deployment_date, coefficients, class FROM calibration WHERE "
 			+ "instrument_id = ? AND type = ? ORDER BY deployment_date DESC";
-			
-	
+
+
 	/**
 	 * Empty constructor. These classes must be singletons so the
 	 * abstract methods can be declared. Individual instances can
-	 * be retrieved from the concrete classes 
+	 * be retrieved from the concrete classes
 	 */
 	protected CalibrationDB() {
 		// Do nothing
 	}
-	
+
 	/**
 	 * Add a new calibration to the database
 	 * @param dataSource A data source
@@ -66,10 +66,10 @@ public abstract class CalibrationDB {
 		 if (!calibration.validate()) {
 			 throw new ParameterException("Calibration coefficients", "Coefficients are invalid");
 		 }
-		 
+
 		 Connection conn = null;
 		 PreparedStatement stmt = null;
-		 
+
 		 try {
 			 conn = dataSource.getConnection();
 			 stmt = conn.prepareStatement(ADD_CALIBRATION_STATEMENT);
@@ -79,7 +79,7 @@ public abstract class CalibrationDB {
 			 stmt.setLong(4, DateTimeUtils.dateToLong(calibration.getDeploymentDate()));
 			 stmt.setString(5, calibration.getCoefficientsAsDelimitedList());
 			 stmt.setString(6, calibration.getClass().getSimpleName());
-			 
+
 			 stmt.execute();
 		 } catch (SQLException e) {
 			 throw new DatabaseException("Error while storing calibration", e);
@@ -88,9 +88,9 @@ public abstract class CalibrationDB {
 			 DatabaseUtils.closeConnection(conn);
 		 }
 	}
-	
+
 	/**
-	 * Get the most recent calibrations for each target 
+	 * Get the most recent calibrations for each target
 	 * @param dataSource A data source
 	 * @param instrumentId The instrument ID
 	 * @return The calibrations
@@ -100,19 +100,19 @@ public abstract class CalibrationDB {
 	 * @throws MissingParamException If any internal calls are missing required parameters
 	 */
 	public CalibrationSet getCurrentCalibrations(DataSource dataSource, long instrumentId) throws CalibrationException, DatabaseException, MissingParamException, RecordNotFoundException {
-		
+
 		CalibrationSet result = new CalibrationSet(instrumentId, getCalibrationType(), getTargets(dataSource, instrumentId));
-		
+
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet records = null;
-		
+
 		try {
 			conn = dataSource.getConnection();
 			stmt = conn.prepareStatement(GET_RECENT_CALIBRATIONS_QUERY);
 			stmt.setLong(1, instrumentId);
 			stmt.setString(2, getCalibrationType());
-			
+
 			records = stmt.executeQuery();
 			while (!result.isComplete() && records.next()) {
 				String target = records.getString(1);
@@ -121,12 +121,12 @@ public abstract class CalibrationDB {
 					LocalDateTime deploymentDate = DateTimeUtils.longToDate(records.getLong(2));
 					List<Double> coefficients = StringUtils.delimitedToDoubleList(records.getString(3));
 					String calibrationClass = records.getString(4);
-					
+
 					Calibration calibration = CalibrationFactory.createCalibration(getCalibrationType(), calibrationClass, instrumentId, deploymentDate, target, coefficients);
 					result.add(calibration);
 				}
 			}
-			
+
 		} catch (SQLException e) {
 			throw new DatabaseException("Error while retrieving calibrations", e);
 		} finally {
@@ -137,7 +137,7 @@ public abstract class CalibrationDB {
 
 		return result;
 	}
-	
+
 	/**
 	 * Get the list of possible calibration targets for a given instrument
 	 * @param dataSource A data source
@@ -149,7 +149,7 @@ public abstract class CalibrationDB {
 	 */
 	public List<String> getTargets(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 		Connection conn = null;
-		
+
 		try {
 			conn = dataSource.getConnection();
 			return getTargets(conn, instrumentId);
@@ -171,8 +171,8 @@ public abstract class CalibrationDB {
 	 */
 	public abstract List<String> getTargets(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException;
 
-	
-	
+
+
 	/**
 	 * Get the calibration type for database actions
 	 * @return The calibration type

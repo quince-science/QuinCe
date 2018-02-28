@@ -22,12 +22,12 @@ public class CalibrationDataSet extends TreeSet<DataSetRawDataRecord> {
 	 * Parameter to indicate searches must find the record before a date
 	 */
 	public static final int BEFORE = -1;
-	
+
 	/**
 	 * Parameter to indicate searches must find the record after a date
 	 */
 	public static final int AFTER = 1;
-	
+
 	/**
 	 * Get the calibration record that relates to the specified calibration target, and
 	 * which was recorded immediately before the specified date
@@ -40,7 +40,7 @@ public class CalibrationDataSet extends TreeSet<DataSetRawDataRecord> {
 		List<DataSetRawDataRecord> recordsList = getRecordsWithRunType(calibrationTarget);
 		return searchForClosest(recordsList, recordDate, BEFORE);
 	}
-	
+
 	/**
 	 * Get the calibration record that relates to the specified calibration target, and
 	 * which was recorded immediately before the specified date
@@ -53,25 +53,25 @@ public class CalibrationDataSet extends TreeSet<DataSetRawDataRecord> {
 		List<DataSetRawDataRecord> recordsList = getRecordsWithRunType(calibrationTarget);
 		return searchForClosest(recordsList, recordDate, AFTER);
 	}
-	
+
 	/**
 	 * Get a list of the records that have the specified run type
 	 * @param runType The run type
 	 * @return The matching records
 	 */
 	private List<DataSetRawDataRecord> getRecordsWithRunType(String runType) {
-		
+
 		List<DataSetRawDataRecord> result = new ArrayList<DataSetRawDataRecord>();
-		
+
 		for (DataSetRawDataRecord record : this) {
 			if (record.getRunType().equalsIgnoreCase(runType)) {
 				result.add(record);
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Find a record immediately preceding or following a given date in a list of records
 	 * @param records The records to be searched
@@ -81,21 +81,21 @@ public class CalibrationDataSet extends TreeSet<DataSetRawDataRecord> {
 	 * @return The matched record, or {@code null} if no matching record is found
 	 */
 	private DataSetRawDataRecord searchForClosest(List<DataSetRawDataRecord> records, LocalDateTime date, int direction) {
-		
+
 		DataSetRawDataRecord result = null;
 
 		// TODO This should be done as a binary search. See issue #590
 		int position;
-		
+
 		if (direction == BEFORE) {
 			position = records.size();
 		} else {
 			position = -1;
 		}
-		
+
 		boolean searchEnded = false;
 		while (!searchEnded) {
-			
+
 			position += direction;
 			if (direction == BEFORE) {
 				if (position < 0) {
@@ -106,7 +106,7 @@ public class CalibrationDataSet extends TreeSet<DataSetRawDataRecord> {
 						result = record;
 						searchEnded = true;
 					}
-					
+
 				}
 			} else {
 				if (position >= records.size()) {
@@ -120,7 +120,7 @@ public class CalibrationDataSet extends TreeSet<DataSetRawDataRecord> {
 				}
 			}
 		}
-		
+
 		return result;
 	}
 }

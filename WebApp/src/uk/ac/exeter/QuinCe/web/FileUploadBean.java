@@ -11,17 +11,17 @@ import org.primefaces.model.UploadedFile;
 /**
  * Extended version of the {@link BaseManagedBean} that includes
  * file upload handling.
- * 
+ *
  * @author Steve Jones
  * @see BaseManagedBean
  */
 public abstract class FileUploadBean extends BaseManagedBean {
-	
+
 	/**
 	 * The uploaded file
 	 */
 	protected UploadedFile file = null;
-	
+
 	/**
 	 * Handle the file upload and subsequent processing.
 	 * @param event The file upload event
@@ -30,12 +30,12 @@ public abstract class FileUploadBean extends BaseManagedBean {
 		setFile(event.getFile());
 		processUploadedFile();
 	}
-	
+
 	/**
 	 * Process the uploaded file
 	 */
 	public abstract void processUploadedFile();
-	
+
 	/**
 	 * Retrieve the uploaded file
 	 * @return The uploaded file
@@ -43,7 +43,7 @@ public abstract class FileUploadBean extends BaseManagedBean {
 	public UploadedFile getFile() {
 		return file;
 	}
-	
+
 	/**
 	 * Set the uploaded file
 	 * @param file The uploaded file
@@ -51,14 +51,14 @@ public abstract class FileUploadBean extends BaseManagedBean {
     public void setFile(UploadedFile file) {
         this.file = file;
     }
-    
+
     /**
      * Remove any existing uploaded file
      */
     public void clearFile() {
     	this.file = null;
     }
-    
+
     /**
      * @return the file lines in the uploaded file as strings
      */
@@ -68,7 +68,7 @@ public abstract class FileUploadBean extends BaseManagedBean {
         }
 		String fileContent = new String(getFile().getContents(), StandardCharsets.UTF_8);
 		List<String> fileLines = Arrays.asList(fileContent.split("[\\r\\n]+"));
-		
+
 		// Remove empty lines at the end of the file
 		boolean blankLine = true;
 		while (blankLine) {
@@ -81,18 +81,18 @@ public abstract class FileUploadBean extends BaseManagedBean {
 		}
 		return fileLines;
     }
-    
+
     /**
      * Get the name of the uploaded file
      * @return The filename
      */
     public String getFilename() {
     	String result = null;
-    	
+
     	if (null != file) {
     		result = file.getFileName();
     	}
-    	
+
     	return result;
     }
 }

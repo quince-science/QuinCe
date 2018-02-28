@@ -22,7 +22,7 @@ public class ExtendedMutableInt extends MutableInt {
 	public ExtendedMutableInt(int value) {
 		super(value);
 	}
-	
+
 	/**
 	 * See if the value of this object is greater than the specified value
 	 * @param otherValue The value to compare
@@ -31,7 +31,7 @@ public class ExtendedMutableInt extends MutableInt {
 	public boolean greaterThan(int otherValue) {
 		return (getValue() > otherValue);
 	}
-	
+
 	/**
 	 * Create a new {@code ExtendedMutableInt} object with
 	 * a value one higher than this object's value.

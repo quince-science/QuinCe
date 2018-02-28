@@ -23,22 +23,22 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
 	protected NewInstrumentFileSet() {
 		super();
 	}
-	
+
 	@Override
 	public boolean add(FileDefinition file) {
 		boolean result = false;
-		
+
 		if (file instanceof FileDefinitionBuilder) {
 			result = super.add(file);
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Get the time and position column assignments for all
 	 * files related to this instrument.
-	 * 
+	 *
 	 * <p>
 	 *   The assignments are encoded as a JSON string in
 	 *   the following format:
@@ -52,13 +52,13 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
 	 */
 	public String getFileSpecificAssignments(SensorAssignments sensorAssignments) throws DateTimeSpecificationException {
 		StringBuilder json = new StringBuilder();
-		
+
 		json.append('[');
-		
+
 		int count = 0;
 		for (FileDefinition file : this) {
 			count++;
-			
+
 			json.append('{');
 			json.append("\"longitude\":");
 			json.append(file.getLongitudeSpecification().getJsonString());
@@ -71,14 +71,14 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
 			json.append(",\"runTypeCol\":");
 			json.append(file.getRunTypeColumn());
 			json.append('}');
-			
+
 			if (count < size()) {
 				json.append(',');
 			}
 		}
-		
+
 		json.append(']');
-		
+
 		return json.toString();
 	}
 
@@ -88,16 +88,16 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
 	 */
 	public String getFilesAndColumns() {
 		StringBuilder json = new StringBuilder();
-		
+
 		json.append('[');
 
 		int count = 0;
 		for (FileDefinition file : this) {
 			FileDefinitionBuilder fileBuilder = (FileDefinitionBuilder) file;
 			count++;
-			
+
 			json.append('{');
-			
+
 			json.append("'description':'");
 			json.append(fileBuilder.getFileDescription());
 			json.append("','columns':");
@@ -108,7 +108,7 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
 				json.append(',');
 			}
 		}
-		
+
 		json.append(']');
 		return json.toString();
 	}

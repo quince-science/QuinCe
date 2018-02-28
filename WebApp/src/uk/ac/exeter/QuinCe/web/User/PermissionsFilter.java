@@ -16,7 +16,7 @@ import uk.ac.exeter.QuinCe.User.User;
 
 /**
  * A filter to determine whether a user has a given permission.
- * 
+ *
  * <p>
  *   This is an abstract class. Implementing classes will determine
  *   which permission they will check.
@@ -38,7 +38,7 @@ public abstract class PermissionsFilter implements Filter {
         HttpSession session = request.getSession(false);
 
         User user = (User) session.getAttribute(LoginBean.USER_SESSION_ATTR);
-        
+
         if (hasPermission(user)) {
         	filterChain.doFilter(request, response);
         } else {
@@ -50,7 +50,7 @@ public abstract class PermissionsFilter implements Filter {
 	public void init(FilterConfig arg0) throws ServletException {
 		// Do nothing
 	}
-	
+
 	/**
 	 * Determine whether or not the specified user has the permission
 	 * being checked by this filter.

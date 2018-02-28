@@ -3,7 +3,7 @@ package uk.ac.exeter.QuinCe.User;
 /**
  * An exception to indicate that an attempt to
  * locate a user's database record has failed.
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -21,7 +21,7 @@ public class NoSuchUserException extends Exception {
 	public NoSuchUserException(User user) {
 		super("The user '" + user.getEmailAddress() + "' does not exist in the database");
 	}
-	
+
 	/**
 	 * Exception for an error raised from an email address
 	 * @param email The email address

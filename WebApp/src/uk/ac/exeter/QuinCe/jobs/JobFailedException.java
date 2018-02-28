@@ -6,7 +6,7 @@ package uk.ac.exeter.QuinCe.jobs;
  *
  */
 public class JobFailedException extends Exception {
-	
+
 	/**
 	 * The Serial Version UID
 	 */
@@ -20,7 +20,7 @@ public class JobFailedException extends Exception {
 	public JobFailedException(long id, Throwable cause) {
 		super("Job ID " + id + " failed", cause);
 	}
-	
+
 	/**
 	 * Constructor with an error message
 	 * @param id The job ID
@@ -30,7 +30,7 @@ public class JobFailedException extends Exception {
 	public JobFailedException(long id, String message, Throwable cause) {
 		super("Job ID " + id + " failed (" + message + ')', cause);
 	}
-	
+
 	/**
 	 * Constructor for an error that occurred at a specific point in a job.
 	 * This is usually used for errors while processing files, to indicate the
@@ -42,7 +42,7 @@ public class JobFailedException extends Exception {
 	public JobFailedException(long id, int place, Throwable cause) {
 		super("Job ID " + id + " failed at position " + place, cause);
 	}
-	
+
 	/**
 	 * Constructor for an error condition that occurs without
 	 * an underlying cause

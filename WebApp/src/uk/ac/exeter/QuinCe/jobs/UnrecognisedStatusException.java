@@ -19,5 +19,5 @@ public class UnrecognisedStatusException extends Exception {
 	public UnrecognisedStatusException(String status) {
 		super("The status '" + status + "' is not recognised");
 	}
-	
+
 }

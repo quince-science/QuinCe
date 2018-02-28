@@ -18,12 +18,12 @@ public class DataFileLine {
 	 * The file that the line is from
 	 */
 	private DataFile file;
-	
+
 	/**
 	 * The line number
 	 */
 	private int line;
-	
+
 	/**
 	 * Basic constructor
 	 * @param file The data file
@@ -33,7 +33,7 @@ public class DataFileLine {
 		this.file = file;
 		this.line = line;
 	}
-	
+
 	/**
 	 * Get the name of the file that the line is in
 	 * @return The file name
@@ -41,7 +41,7 @@ public class DataFileLine {
 	public String getFilename() {
 		return file.getFilename();
 	}
-	
+
 	/**
 	 * Get the line number
 	 * @return The line number
@@ -49,7 +49,7 @@ public class DataFileLine {
 	public int getLine() {
 		return line;
 	}
-	
+
 	/**
 	 * Get the date of the line
 	 * @return The date
@@ -58,34 +58,34 @@ public class DataFileLine {
 	public LocalDateTime getDate() throws DataFileException {
 		return file.getDate(line);
 	}
-	
+
 	/**
 	 * Determines whether or not this line should be ignored based on its Run Type.
-	 * 
+	 *
 	 * <p>
 	 *   If the file does not have Run Types, lines should never be ignored.
 	 * </p>
-	 * 
+	 *
 	 * @return {@code true} if the line should be ignored; {@code false} if it should be used
 	 * @throws DataFileException If the data cannot be extracted from the file
 	 * @throws FileDefinitionException If the run type is invalid
 	 */
 	public boolean isIgnored() throws DataFileException, FileDefinitionException {
-		
+
 		boolean ignored = false;
-		
+
 		FileDefinition fileDefinition = file.getFileDefinition();
-		
+
 		// If a file does not have run types, it can always be used
 		// for a measurement. So we only check files that have them.
 		if (fileDefinition.hasRunTypes()) {
 			RunTypeCategory runType = file.getRunTypeCategory(line);
 			ignored = runType.equals(RunTypeCategory.IGNORED_CATEGORY);
 		}
-			
+
 		return ignored;
 	}
-	
+
 	/**
 	 * Get the line's Run Type
 	 * @return The Run Type
@@ -95,7 +95,7 @@ public class DataFileLine {
 	public String getRunType() throws DataFileException, FileDefinitionException {
 		return file.getRunType(line);
 	}
-	
+
 	/**
 	 * Get the line's Run Type
 	 * @return The Run Type
@@ -105,7 +105,7 @@ public class DataFileLine {
 	public RunTypeCategory getRunTypeCategory() throws DataFileException, FileDefinitionException {
 		return file.getRunTypeCategory(line);
 	}
-	
+
 	/**
 	 * Get the longitude of the line
 	 * @return The longitude
@@ -115,7 +115,7 @@ public class DataFileLine {
 	public double getLongitude() throws DataFileException, PositionException {
 		return file.getLongitude(line);
 	}
-	
+
 	/**
 	 * Get the latitude of the line
 	 * @return The latitude
@@ -125,7 +125,7 @@ public class DataFileLine {
 	public double getLatitude() throws DataFileException, PositionException {
 		return file.getLatitude(line);
 	}
-	
+
 	/**
 	 * Get a value from a field. If the value is missing (i.e.
 	 * it equals the {@code missingValue}), returns {@code null}.

@@ -4,7 +4,7 @@ package uk.ac.exeter.QuinCe.jobs;
  * The progress of a job must be expressed as a percentage, between 0 and 100.
  * If the progress for a job is set to anything outside this range, this
  * exception will be thrown.
- * 
+ *
  * @author Steve Jones
  *
  */

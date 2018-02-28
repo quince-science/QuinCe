@@ -7,7 +7,7 @@ package uk.ac.exeter.QuinCe.User;
  *
  */
 public class UserExistsException extends Exception {
-	
+
 	/**
 	 *  The serial version UID
 	 */

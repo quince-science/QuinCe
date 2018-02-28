@@ -6,11 +6,11 @@ import java.util.List;
 /**
  * Abstract class for sensor calibrations. Sensor calibrations are of a common type,
  * but the calculations are made in different ways and may require different parameters.
- * 
+ *
  * @author Steve Jones
  */
 public abstract class SensorCalibration extends Calibration {
-	
+
 	/**
 	 * Basic constructor
 	 * @param instrumentId The instrument that the calibration is for
@@ -19,7 +19,7 @@ public abstract class SensorCalibration extends Calibration {
 	protected SensorCalibration(long instrumentId, String target) {
 		super(instrumentId, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE, target);
 	}
-	
+
 	/**
 	 * Basic constructor with no target set
 	 * @param instrumentId The instrument that the calibration is for
@@ -27,7 +27,7 @@ public abstract class SensorCalibration extends Calibration {
 	protected SensorCalibration(long instrumentId) {
 		super(instrumentId, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE);
 	}
-	
+
 	/**
 	 * Construct a complete sensor calibration object.
 	 * @param instrumentId The instrument ID

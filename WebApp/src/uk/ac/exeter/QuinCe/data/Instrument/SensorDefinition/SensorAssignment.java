@@ -11,44 +11,44 @@ public class SensorAssignment {
 	 * The data file
 	 */
 	private String dataFile;
-	
+
 	/**
 	 * The column number (zero-based)
 	 */
 	private int column;
-	
+
 	/**
-	 * The column in which the data will be stored in the database	
+	 * The column in which the data will be stored in the database
 	 */
 	private int databaseColumn = -1;
-	
+
 	/**
 	 * The name of the sensor
 	 */
 	private String sensorName;
-	
+
 	/**
 	 * Indicates whether or not values from this
 	 * sensor require post-calibration adjustments applied to them
 	 */
 	private boolean postCalibrated;
-	
+
 	/**
 	 * The answer to the Depends Question
 	 * @see SensorType#getDependsQuestion
 	 */
 	private boolean dependsQuestionAnswer = false;
-	
+
 	/**
 	 * Indicates whether this is a primary or fallback sensor
 	 */
 	private boolean primary = true;
-	
+
 	/**
 	 * The String that indicates a missing value
 	 */
 	private String missingValue = null;
-	
+
 	/**
 	 * Simple constructor
 	 * @param dataFile The data file
@@ -68,7 +68,7 @@ public class SensorAssignment {
 		this.dependsQuestionAnswer = dependsQuestionAnswer;
 		this.missingValue = missingValue;
 	}
-	
+
 	/**
 	 * Simple constructor
 	 * @param dataFile The data file
@@ -90,7 +90,7 @@ public class SensorAssignment {
 		this.dependsQuestionAnswer = dependsQuestionAnswer;
 		this.missingValue = missingValue;
 	}
-	
+
 	/**
 	 * Get the data file
 	 * @return The data file
@@ -98,7 +98,7 @@ public class SensorAssignment {
 	public String getDataFile() {
 		return dataFile;
 	}
-	
+
 	/**
 	 * Get the column number
 	 * @return The column number
@@ -106,21 +106,21 @@ public class SensorAssignment {
 	public int getColumn() {
 		return column;
 	}
-	
+
 	/**
 	 * Get the name of the sensor
 	 * @return The sensor name
 	 */
 	public String getSensorName() {
 		String result = "";
-		
+
 		if (null != sensorName) {
 			result = sensorName;
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Determine whether or not values from this
 	 * sensor require post-calibration adjustments applied to them
@@ -129,7 +129,7 @@ public class SensorAssignment {
 	public boolean getPostCalibrated() {
 		return postCalibrated;
 	}
-	
+
 	/**
 	 * Set the answer to the Depends Question
 	 * @param dependsQuestionAnswer The answer
@@ -138,7 +138,7 @@ public class SensorAssignment {
 	public void setDependsQuestionAnswer(boolean dependsQuestionAnswer) {
 		this.dependsQuestionAnswer = dependsQuestionAnswer;
 	}
-	
+
 	/**
 	 * Get the answer to the Depends Question
 	 * @return The answer
@@ -147,7 +147,7 @@ public class SensorAssignment {
 	public boolean getDependsQuestionAnswer() {
 		return dependsQuestionAnswer;
 	}
-	
+
 	/**
 	 * Determines whether or not this is a primary sensor
 	 * @return {@code true} if this is a primary sensor; {@code false} if it is a fallback sensor
@@ -155,7 +155,7 @@ public class SensorAssignment {
 	public boolean isPrimary() {
 		return primary;
 	}
-	
+
 	/**
 	 * Get the column index where this sensor's data will be stored in the database
 	 * @return The database column index
@@ -163,7 +163,7 @@ public class SensorAssignment {
 	public int getDatabaseColumn() {
 		return databaseColumn;
 	}
-	
+
 	/**
 	 * Set the column index where this sensor's data will be stored in the database
 	 * @param databaseColumn The database column index
@@ -171,7 +171,7 @@ public class SensorAssignment {
 	public void setDatabaseColumn(int databaseColumn) {
 		this.databaseColumn = databaseColumn;
 	}
-	
+
 	/**
 	 * Get the missing value String
 	 * @return The missing value String
@@ -179,7 +179,7 @@ public class SensorAssignment {
 	public String getMissingValue() {
 		return missingValue;
 	}
-	
+
 	/**
 	 * Set the missing value String
 	 * @param missingValue The missing value String

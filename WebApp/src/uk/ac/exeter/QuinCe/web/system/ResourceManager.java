@@ -39,7 +39,7 @@ public class ResourceManager implements ServletContextListener {
 	 * are first uploaded
 	 */
 	public static final String INITIAL_CHECK_ROUTINES_CONFIG = "InitialCheck";
-	
+
 	/**
 	 * The name of the QC routines configuration for routines run during
 	 * full automatic QC (after data reduction)
@@ -50,12 +50,12 @@ public class ResourceManager implements ServletContextListener {
 	 * The application's data source
 	 */
 	private DataSource dbDataSource;
-	
+
 	/**
 	 * The application's configuration
 	 */
 	private Properties configuration;
-	
+
 	/**
 	 * The column configuration used by the QC routines
 	 */
@@ -64,12 +64,12 @@ public class ResourceManager implements ServletContextListener {
 	private SensorsConfiguration sensorsConfiguration;
 
 	private RunTypeCategoryConfiguration runTypeCategoryConfiguration;
-	
+
 	/**
 	 * The singleton instance of the resource manage
 	 */
 	private static ResourceManager instance = null;
-	
+
 	@Override
     public void contextInitialized(ServletContextEvent event) {
         ServletContext servletContext = event.getServletContext();
@@ -79,7 +79,7 @@ public class ResourceManager implements ServletContextListener {
         } catch (NamingException e) {
             throw new RuntimeException("Config failed: datasource not found", e);
         }
-        
+
         try {
             String filePath = (String) servletContext.getInitParameter("configuration.path");
             configuration = loadConfiguration(filePath);
@@ -87,14 +87,14 @@ public class ResourceManager implements ServletContextListener {
             throw new RuntimeException("Config failed: could not read config file", e);
         }
 
-        
+
         // Initialise the job thread pool
        	try {
 			JobThreadPool.initialise(3);
 		} catch (InvalidThreadCountException e) {
 			// Do nothing for now
 		}
-       	
+
        	// Initialise the column config
        	try {
        		ColumnConfig.init(configuration.getProperty("columns.configfile"));
@@ -109,35 +109,35 @@ public class ResourceManager implements ServletContextListener {
        	} catch (ConfigException e) {
        		throw new RuntimeException("Could not initialise Extraction Check Routines", e);
        	}
-       	
+
        	// Initialise the QC Routines configuration
        	try {
        		RoutinesConfig.init(QC_ROUTINES_CONFIG, configuration.getProperty("qc_routines.configfile"));
        	} catch (ConfigException e) {
        		throw new RuntimeException("Could not initialise QC Routines", e);
        	}
-       	
+
        	// Initialise the file export options configuration
        	try {
        		ExportConfig.init(configuration.getProperty("export.configfile"));
        	} catch (ExportException e) {
        		throw new RuntimeException("Could not initialise export configuration", e);
        	}
-       	
+
        	// Initialise the sensors configuration
        	try {
        		sensorsConfiguration = new SensorsConfiguration(new File(configuration.getProperty("sensors.configfile")));
        	} catch (SensorConfigurationException e) {
        		throw new RuntimeException("Could not load sensors configuration", e);
        	}
-       	
+
        	// Initialise run type category configuration
        	try {
        		runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(new File(configuration.getProperty("runtypes.configfile")));
        	} catch (RunTypeCategoryException e) {
        		throw new RuntimeException("Could not load sensors configuration", e);
        	}
-       	
+
        	instance = this;
 	}
 
@@ -157,7 +157,7 @@ public class ResourceManager implements ServletContextListener {
     public DataSource getDBDataSource() {
         return dbDataSource;
     }
-    
+
     /**
      * Retrieve the application configuration
      * @return The application configuration
@@ -178,7 +178,7 @@ public class ResourceManager implements ServletContextListener {
     public SensorsConfiguration getSensorsConfiguration() {
     	return sensorsConfiguration;
     }
-    
+
     public RunTypeCategoryConfiguration getRunTypeCategoryConfiguration() {
     	return runTypeCategoryConfiguration;
     }
@@ -195,7 +195,7 @@ public class ResourceManager implements ServletContextListener {
         result.load(new FileInputStream(new File(filePath)));
         return result;
     }
-    
+
     /**
      * Retrieve the singleton instance of the Resource Manager
      * @return The resource manager

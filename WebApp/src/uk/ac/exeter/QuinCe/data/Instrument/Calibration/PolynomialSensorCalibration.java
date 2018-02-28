@@ -16,13 +16,13 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 	 * The name of the Intercept coefficient
 	 */
 	private static final String INTERCEPT_NAME = "Intercept";
-	
+
 	/**
 	 * Contains the labels for the polynomial curve parameters
 	 * (constructed in the {@code static} block)
 	 */
 	private static List<String> valueNames;
-	
+
 	static {
 		valueNames = new ArrayList<String>(5);
 		valueNames.add("x⁵");
@@ -32,7 +32,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 		valueNames.add("x");
 		valueNames.add(INTERCEPT_NAME);
 	}
-	
+
 	/**
 	 * Create a calibration object
 	 * @param instrumentId The instrument to which the calibration target belongs
@@ -69,14 +69,14 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 
 	@Override
 	protected String buildHumanReadableCoefficients() {
-		
+
 		StringBuilder result = new StringBuilder();
-		
+
 		for (CalibrationCoefficient coefficient : coefficients) {
 			appendCoefficient(result, coefficient);
 		}
-		
-		return result.toString();		
+
+		return result.toString();
 	}
 
 	/**
@@ -85,13 +85,13 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 	 * @param coefficient The coefficient
 	 */
 	private void appendCoefficient(StringBuilder string, CalibrationCoefficient coefficient) {
-		
+
 		String name = coefficient.getName();
 		double value = coefficient.getValue();
-		
+
 		if (string.length() == 0 && value != 0) {
 			string.append(value);
-			
+
 			if (!name.equals(INTERCEPT_NAME)) {
 				string.append(name);
 			}
@@ -101,7 +101,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 			} else if (value < 0) {
 				string.append(" - ");
 			}
-			
+
 			string.append(Math.abs(value));
 			if (!name.equals(INTERCEPT_NAME)) {
 				string.append(name);
@@ -113,7 +113,7 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 	public boolean coefficientsValid() {
 		return (null != coefficients && coefficients.size() == 6);
 	}
-	
+
 	@Override
 	protected void initialiseCoefficients() {
 		coefficients = new ArrayList<CalibrationCoefficient>(getCoefficientNames().size());

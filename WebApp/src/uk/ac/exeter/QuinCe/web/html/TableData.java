@@ -11,15 +11,15 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
  * on a web page. The table is built as a String, and there is
  * a corresponding Javascript function to parse the string
  * and draw the table in HTML
- * 
+ *
  * The table must be constructed in order, by calling
  * setHeaders (which sets the number of columns) followed by
  * repeated setColumn calls.
- * 
- * The table does not support colspan or rowspan functionality.
- * 
  *
- * 
+ * The table does not support colspan or rowspan functionality.
+ *
+ *
+ *
  * @author Steve Jones
  *
  */
@@ -27,17 +27,17 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 public class TableData {
 
 	//TODO Replace this with JSON sent to the front end, rendered with Javascript
-	
+
 	/**
 	 * The String representation of the table
 	 */
 	private List<TableCell> tableData = new ArrayList<TableCell>();
-	
+
 	/**
 	 * Indicates whether or not the headers have been set for the table
 	 */
 	private boolean headersSet = false;
-	
+
 	/**
 	 * Stores the number of columns in the table
 	 */
@@ -47,21 +47,21 @@ public class TableData {
 	 * The CSS class for the table
 	 */
 	private String tableClass = null;
-	
+
 	/**
 	 * The CSS class for the table header
 	 */
 	private String headerClass = null;
-	
-	
+
+
 	public TableData(String tableClass, String headerClass) {
 		this.tableClass = tableClass;
 		this.headerClass = headerClass;
 	}
-	
+
 	public TableData() {
 	}
-	
+
 	/**
 	 * Set the table headers. Also implicitly defines the number
 	 * of columns in the table
@@ -89,7 +89,7 @@ public class TableData {
 	public void addColumn(String text, String className) {
 		tableData.add(new TableCell(text, className));
 	}
-	
+
 	/**
 	 * Add a column to the table with no CSS class
 	 * @param text The column text
@@ -97,14 +97,14 @@ public class TableData {
 	public void addColumn(String text) {
 		tableData.add(new TableCell(text));
 	}
-	
+
 	/**
 	 * Add an empty column to the table
 	 */
 	public void addEmptyColumn() {
 		tableData.add(TableCell.emptyTableCell());
 	}
-	
+
 	/**
 	 * Add a date to the table with a CSS class
 	 * @param date The date
@@ -118,7 +118,7 @@ public class TableData {
 			tableData.add(new TableCell(DateTimeUtils.formatDate(date), className));
 		}
 	}
-	
+
 	/**
 	 * Add a date to the table with no CSS class
 	 * @param date The date
@@ -134,7 +134,7 @@ public class TableData {
 
 	public String toHtml() {
 		StringBuffer html = new StringBuffer();
-		
+
 		html.append("<table");
 		if (null != tableClass) {
 			html.append(" class=\"");
@@ -142,11 +142,11 @@ public class TableData {
 			html.append('"');
 		}
 		html.append('>');
-		
+
 		int currentColumn = 0;
-		
+
 		html.append("<tr>");
-		
+
 		// The first n columns are headers
 		while (currentColumn < columnCount) {
 			html.append("<th");
@@ -156,19 +156,19 @@ public class TableData {
 				html.append('"');
 			}
 			html.append('>');
-			
+
 			html.append(tableData.get(currentColumn).content);
 			html.append("</th>");
 			currentColumn++;
 		}
-		
+
 		html.append("<tr>");
-		
+
 		for (; currentColumn < tableData.size(); currentColumn++) {
 			if (currentColumn % columnCount == 0) {
 				html.append("<tr>");
 			}
-				
+
 			TableCell cell = tableData.get(currentColumn);
 			html.append("<td");
 			if (null != cell.className) {
@@ -179,34 +179,34 @@ public class TableData {
 			html.append('>');
 			html.append(cell.content);
 			html.append("</td>");
-			
+
 			if (currentColumn % columnCount == (columnCount - 1)) {
 				html.append("</tr>");
 			}
 		}
-		
+
 		html.append("</table>");
-		
+
 		return html.toString();
 	}
 }
 
 class TableCell {
-	
+
 	protected String content;
-	
+
 	protected String className;
-	
+
 	protected TableCell(String content, String className) {
 		this.content = content;
 		this.className = className;
 	}
-	
+
 	protected TableCell(String content) {
 		this.content = content;
 		this.className = null;
 	}
-	
+
 	protected static TableCell emptyTableCell() {
 		return new TableCell("");
 	}

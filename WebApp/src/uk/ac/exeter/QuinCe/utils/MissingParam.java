@@ -40,7 +40,7 @@ public class MissingParam {
 	 */
 	public static void checkMissing(Object parameter, String parameterName, boolean canBeEmpty) throws MissingParamException {
 		boolean isMissing = false;
-		
+
 		if (null == parameter) {
 			isMissing = true;
 		} else {
@@ -61,7 +61,7 @@ public class MissingParam {
 			throw new MissingParamException(parameterName);
 		}
 	}
-	
+
 	/**
 	 * Check that a character array is not {@code null}. It can be empty if
 	 * {@code canBeEmpty} is set to {@code true}.
@@ -72,7 +72,7 @@ public class MissingParam {
 	 */
 	public static void checkMissing(char[] parameter, String parameterName, boolean canBeEmpty) throws MissingParamException {
 		boolean isMissing = false;
-		
+
 		if (null == parameter) {
 			isMissing = true;
 		} else {
@@ -80,12 +80,12 @@ public class MissingParam {
 					isMissing = true;
 			}
 		}
-		
+
 		if (isMissing) {
 			throw new MissingParamException(parameterName);
 		}
 	}
-	
+
 	/**
 	 * Check that an integer value is positive
 	 * @param parameter The value
@@ -109,7 +109,7 @@ public class MissingParam {
 			throw new MissingParamException(parameterName);
 		}
 	}
-	
+
 	/**
 	 * Check that an integer value is zero or positive
 	 * @param parameter The value
@@ -133,15 +133,15 @@ public class MissingParam {
 			throw new MissingParamException(parameterName);
 		}
 	}
-	
+
 	/**
-	 * Check that a String value contains a comma-separated list of integers 
+	 * Check that a String value contains a comma-separated list of integers
 	 * @param list The String value
 	 * @param parameterName The parameter name
 	 * @throws ParameterException If the String format is invalid
 	 */
 	public static void checkListOfIntegers(String list, String parameterName) throws ParameterException {
-		
+
 		checkMissing(list, parameterName);
 
 		boolean ok = true;
@@ -154,7 +154,7 @@ public class MissingParam {
 		} catch (NumberFormatException e) {
 			ok = false;
 		}
-		
+
 		if (!ok) {
 			throw new ParameterException(parameterName, "is not a list of integers");
 		}

@@ -8,7 +8,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
  *
  */
 public class SensorAssignmentException extends InstrumentException {
-	
+
 	/**
 	 * The serial version UID
 	 */
