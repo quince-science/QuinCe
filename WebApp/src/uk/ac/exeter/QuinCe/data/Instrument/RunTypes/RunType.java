@@ -17,14 +17,14 @@ public class RunType implements Comparable<RunType> {
 	 * @param runTypeName found in the run type column in the data file
 	 */
 	public RunType(String runTypeName) {
-		this.runTypeName = runTypeName;
+		this.runTypeName = runTypeName.toUpperCase();
 	}
 	/**
 	 * @param runTypeName found in the run type column in the data file
 	 * @param runTypeCategoryCode are given in the configuration
 	 */
 	public RunType(String runTypeName, String runTypeCategoryCode) {
-		this.runTypeName = runTypeName;
+		this.runTypeName = runTypeName.toUpperCase();
 		setRunTypeCategoryCode(runTypeCategoryCode);
 	}
 	/**
