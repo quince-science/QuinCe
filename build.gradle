@@ -94,9 +94,6 @@ sourceSets {
 
     }
     test {
-    		resources {
-    			srcDir "WebApp/junit/resources"
-    		}
         java {
             srcDirs = ['WebApp/junit']
         }
