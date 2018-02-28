@@ -2,174 +2,174 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-	  xmlns:f="http://xmlns.jcp.org/jsf/core"
-	  xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-  	<h:head>
-		<title><ui:insert name="title">Welcome</ui:insert> - QuinCe</title>
-		<h:outputScript library="primefaces" name="jquery/jquery.js"/>
-		<ui:insert name="localHead"></ui:insert>
-		<h:outputScript name="script/jquery.splitter.js"/>
-    	<h:outputStylesheet name="style/jquery.splitter.css"/>
-		<h:outputScript name="script/jquery-dateFormat.min.js"/>
-		<h:outputScript name="script/dygraph.min.js"/>
-		<h:outputStylesheet name="style/dygraph.css"/>
-		<h:outputScript name="script/ol.js"/>
-		<h:outputStylesheet name="style/ol.css"/>
-		<h:outputScript name="script/jsColorScale.js"/>
-		<h:outputScript name="script/datatables.min.js"/>
-		<h:outputStylesheet name="style/datatables.min.css"/>
-		<h:outputScript name="script/plotPage.js"/>
-		<ui:insert name="localHead"></ui:insert>
-		<script>
-			var columnHeadings = #{sessionScope[beanName].tableHeadings};
-			var variableGroups = #{sessionScope[beanName].variableGroups};
-			var variableGroupNames = #{sessionScope[beanName].variableGroupNames};
-			var variableCount = #{sessionScope[beanName].variableCount};
-		</script>
-	</h:head>
-	<h:body class="fullPage">
-		<ui:include src="/WEB-INF/templates/keep_alive.xhtml"/>
+    <h:head>
+    <title><ui:insert name="title">Welcome</ui:insert> - QuinCe</title>
+    <h:outputScript library="primefaces" name="jquery/jquery.js"/>
+    <ui:insert name="localHead"></ui:insert>
+    <h:outputScript name="script/jquery.splitter.js"/>
+      <h:outputStylesheet name="style/jquery.splitter.css"/>
+    <h:outputScript name="script/jquery-dateFormat.min.js"/>
+    <h:outputScript name="script/dygraph.min.js"/>
+    <h:outputStylesheet name="style/dygraph.css"/>
+    <h:outputScript name="script/ol.js"/>
+    <h:outputStylesheet name="style/ol.css"/>
+    <h:outputScript name="script/jsColorScale.js"/>
+    <h:outputScript name="script/datatables.min.js"/>
+    <h:outputStylesheet name="style/datatables.min.css"/>
+    <h:outputScript name="script/plotPage.js"/>
+    <ui:insert name="localHead"></ui:insert>
+    <script>
+      var columnHeadings = #{sessionScope[beanName].tableHeadings};
+      var variableGroups = #{sessionScope[beanName].variableGroups};
+      var variableGroupNames = #{sessionScope[beanName].variableGroupNames};
+      var variableCount = #{sessionScope[beanName].variableCount};
+    </script>
+  </h:head>
+  <h:body class="fullPage">
+    <ui:include src="/WEB-INF/templates/keep_alive.xhtml"/>
 
-		<!--  The main stylesheet goes here because it can then override PrimeFaces styles -->
-		<h:outputStylesheet name="style/main.css"/>
-		<h:outputStylesheet name="style/plotPage.css"/>
+    <!--  The main stylesheet goes here because it can then override PrimeFaces styles -->
+    <h:outputStylesheet name="style/main.css"/>
+    <h:outputStylesheet name="style/plotPage.css"/>
 
-		<h:form id="plotPageForm" method="post">
-			<h:inputHidden value="#{sessionScope[beanName].selectableRows}" id="selectableRows"/>
-			<h:inputHidden value="#{sessionScope[beanName].tableJsonData}" id="tableJsonData"/>
-			<h:inputHidden value="#{sessionScope[beanName].tableRowIds}" id="tableRowIds"/>
-			<h:inputHidden value="#{sessionScope[beanName].recordCount}" id="recordCount"/>
-			<h:inputHidden value="#{sessionScope[beanName].tableDataDraw}" id="tableDataDraw"/>
-			<h:inputHidden value="#{sessionScope[beanName].tableDataStart}" id="tableDataStart"/>
-			<h:inputHidden value="#{sessionScope[beanName].tableDataLength}" id="tableDataLength"/>
-			<h:inputHidden value="#{sessionScope[beanName].additionalTableData}" id="additionalTableData"/>
-			<h:commandLink id="tableGetData" action="#{sessionScope[beanName].generateTableData}">
-				<f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw tableRowIds recordCount selectableRows additionalTableData" onevent="tableDataDownload"/>
-			</h:commandLink>
+    <h:form id="plotPageForm" method="post">
+      <h:inputHidden value="#{sessionScope[beanName].selectableRows}" id="selectableRows"/>
+      <h:inputHidden value="#{sessionScope[beanName].tableJsonData}" id="tableJsonData"/>
+      <h:inputHidden value="#{sessionScope[beanName].tableRowIds}" id="tableRowIds"/>
+      <h:inputHidden value="#{sessionScope[beanName].recordCount}" id="recordCount"/>
+      <h:inputHidden value="#{sessionScope[beanName].tableDataDraw}" id="tableDataDraw"/>
+      <h:inputHidden value="#{sessionScope[beanName].tableDataStart}" id="tableDataStart"/>
+      <h:inputHidden value="#{sessionScope[beanName].tableDataLength}" id="tableDataLength"/>
+      <h:inputHidden value="#{sessionScope[beanName].additionalTableData}" id="additionalTableData"/>
+      <h:commandLink id="tableGetData" action="#{sessionScope[beanName].generateTableData}">
+        <f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw tableRowIds recordCount selectableRows additionalTableData" onevent="tableDataDownload"/>
+      </h:commandLink>
 
-			<h:inputHidden value="#{sessionScope[beanName].plot1.XAxis}" id="plot1XAxis"/>
-			<h:inputHidden value="#{sessionScope[beanName].plot1.YAxis}" id="plot1YAxis"/>
-			<h:inputHidden value="#{sessionScope[beanName].plot1.data}" id="plot1Data"/>
-			<h:inputHidden value="#{sessionScope[beanName].plot1.labels}" id="plot1Labels"/>
-			<h:commandLink id="plot1GetData" action="#{sessionScope[beanName].plot1.updatePlot}">
-				<f:ajax execute="plot1XAxis plot1YAxis map1Variable" render="plot1Data plot1Labels" onevent="updatePlot1"/>
-			</h:commandLink>
+      <h:inputHidden value="#{sessionScope[beanName].plot1.XAxis}" id="plot1XAxis"/>
+      <h:inputHidden value="#{sessionScope[beanName].plot1.YAxis}" id="plot1YAxis"/>
+      <h:inputHidden value="#{sessionScope[beanName].plot1.data}" id="plot1Data"/>
+      <h:inputHidden value="#{sessionScope[beanName].plot1.labels}" id="plot1Labels"/>
+      <h:commandLink id="plot1GetData" action="#{sessionScope[beanName].plot1.updatePlot}">
+        <f:ajax execute="plot1XAxis plot1YAxis map1Variable" render="plot1Data plot1Labels" onevent="updatePlot1"/>
+      </h:commandLink>
 
-			<h:inputHidden value="#{sessionScope[beanName].plot2.XAxis}" id="plot2XAxis"/>
-			<h:inputHidden value="#{sessionScope[beanName].plot2.YAxis}" id="plot2YAxis"/>
-			<h:inputHidden value="#{sessionScope[beanName].plot2.data}" id="plot2Data"/>
-			<h:inputHidden value="#{sessionScope[beanName].plot2.labels}" id="plot2Labels"/>
-			<h:commandLink id="plot2GetData" action="#{sessionScope[beanName].plot2.updatePlot}">
-				<f:ajax execute="plot2XAxis plot2YAxis map2Variable" render="plot2Data plot2Labels" onevent="updatePlot2"/>
-			</h:commandLink>
+      <h:inputHidden value="#{sessionScope[beanName].plot2.XAxis}" id="plot2XAxis"/>
+      <h:inputHidden value="#{sessionScope[beanName].plot2.YAxis}" id="plot2YAxis"/>
+      <h:inputHidden value="#{sessionScope[beanName].plot2.data}" id="plot2Data"/>
+      <h:inputHidden value="#{sessionScope[beanName].plot2.labels}" id="plot2Labels"/>
+      <h:commandLink id="plot2GetData" action="#{sessionScope[beanName].plot2.updatePlot}">
+        <f:ajax execute="plot2XAxis plot2YAxis map2Variable" render="plot2Data plot2Labels" onevent="updatePlot2"/>
+      </h:commandLink>
 
-			<h:inputHidden value="#{sessionScope[beanName].dataBounds}" id="dataBounds"/>
+      <h:inputHidden value="#{sessionScope[beanName].dataBounds}" id="dataBounds"/>
 
-			<h:inputHidden value="#{sessionScope[beanName].plot1.mapVariable}" id="map1Variable"/>
-			<h:inputHidden value="#{sessionScope[beanName].plot1.mapBounds}" id="map1Bounds"/>
-			<h:inputHidden value="#{sessionScope[beanName].plot1.mapScaleLimits}" id="map1ScaleLimits"/>
-			<h:inputHidden value="#{sessionScope[beanName].plot1.mapUpdateScale}" id="map1UpdateScale"/>
-			<h:inputHidden value="#{sessionScope[beanName].plot1.mapData}" id="map1Data"/>
-			<h:commandLink id="map1GetData" action="#{sessionScope[beanName].plot1.generateMapData}">
-				<f:ajax execute="map1Variable map1Bounds map1UpdateScale plot1Mode" render="map1Data map1ScaleLimits" onevent="updateMap1"/>
-			</h:commandLink>
+      <h:inputHidden value="#{sessionScope[beanName].plot1.mapVariable}" id="map1Variable"/>
+      <h:inputHidden value="#{sessionScope[beanName].plot1.mapBounds}" id="map1Bounds"/>
+      <h:inputHidden value="#{sessionScope[beanName].plot1.mapScaleLimits}" id="map1ScaleLimits"/>
+      <h:inputHidden value="#{sessionScope[beanName].plot1.mapUpdateScale}" id="map1UpdateScale"/>
+      <h:inputHidden value="#{sessionScope[beanName].plot1.mapData}" id="map1Data"/>
+      <h:commandLink id="map1GetData" action="#{sessionScope[beanName].plot1.generateMapData}">
+        <f:ajax execute="map1Variable map1Bounds map1UpdateScale plot1Mode" render="map1Data map1ScaleLimits" onevent="updateMap1"/>
+      </h:commandLink>
 
-			<h:inputHidden value="#{sessionScope[beanName].plot2.mapVariable}" id="map2Variable"/>
-			<h:inputHidden value="#{sessionScope[beanName].plot2.mapBounds}" id="map2Bounds"/>
-			<h:inputHidden value="#{sessionScope[beanName].plot2.mapScaleLimits}" id="map2ScaleLimits"/>
-			<h:inputHidden value="#{sessionScope[beanName].plot2.mapUpdateScale}" id="map2UpdateScale"/>
-			<h:inputHidden value="#{sessionScope[beanName].plot2.mapData}" id="map2Data"/>
-			<h:commandLink id="map2GetData" action="#{sessionScope[beanName].plot2.generateMapData}">
-				<f:ajax execute="map2Variable map2Bounds map2UpdateScale plot2Mode" render="map2Data map2ScaleLimits" onevent="updateMap2"/>
-			</h:commandLink>
+      <h:inputHidden value="#{sessionScope[beanName].plot2.mapVariable}" id="map2Variable"/>
+      <h:inputHidden value="#{sessionScope[beanName].plot2.mapBounds}" id="map2Bounds"/>
+      <h:inputHidden value="#{sessionScope[beanName].plot2.mapScaleLimits}" id="map2ScaleLimits"/>
+      <h:inputHidden value="#{sessionScope[beanName].plot2.mapUpdateScale}" id="map2UpdateScale"/>
+      <h:inputHidden value="#{sessionScope[beanName].plot2.mapData}" id="map2Data"/>
+      <h:commandLink id="map2GetData" action="#{sessionScope[beanName].plot2.generateMapData}">
+        <f:ajax execute="map2Variable map2Bounds map2UpdateScale plot2Mode" render="map2Data map2ScaleLimits" onevent="updateMap2"/>
+      </h:commandLink>
 
-			<div id="infoPopup" class="popup">
-				Info
-			</div>
+      <div id="infoPopup" class="popup">
+        Info
+      </div>
 
-			<p:dialog widgetVar="variableDialog" modal="true" header="Variables" resizable="false">
-				<div id="variablesList">
-					<ui:repeat value="#{sessionScope[beanName].variablesList}" var="varGroup">
-						<ui:fragment rendered="#{varGroup.size eq 1 and varGroup.variables[0].visible}">
-							<div class="variable singleVariable">
-								<div class="varName">
-									<h:outputText value="#{varGroup.variables[0].label}"/>
-								</div>
-								<div class="variableControls">
-									<p:selectBooleanCheckbox widgetVar="mapVar-#{varGroup.variables[0].id}" id="mapVarCheckbox" onchange="updateMapCheckboxes(#{varGroup.variables[0].id})"/>
-									<ui:fragment rendered="#{varGroup.variables[0].canUseOnXAxis}">
-										<p:selectBooleanButton widgetVar="xAxis-#{varGroup.variables[0].id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateXAxisButtons(#{varGroup.variables[0].id})"/>
-									</ui:fragment>
-									<ui:fragment rendered="#{varGroup.variables[0].canUseOnYAxis}">
-										<p:selectBooleanButton widgetVar="yAxis-#{varGroup.variables[0].id}" onLable="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateYAxisButtons(#{varGroup.variables[0].id})"/>
-									</ui:fragment>
-								</div>
-							</div>
-						</ui:fragment>
-						<ui:fragment rendered="#{varGroup.size gt 1}">
-							<div class="variableGroup">
-								<div class="varGroupName">
-									<h:outputText value="#{varGroup.name}"/>
-								</div>
-								<ui:repeat value="#{varGroup.variables}" var="variable">
-									<ui:fragment rendered="#{variable.visible}">
-										<div class="variable">
-											<div class="varName varGroupMember">
-												<h:outputText value="#{variable.label}"/>
-											</div>
-											<div class="variableControls">
-												<p:selectBooleanCheckbox widgetVar="mapVar-#{variable.id}" id="mapVarCheckbox" onchange="updateMapCheckboxes(#{variable.id})"/>
-												<ui:fragment rendered="#{variable.canUseOnXAxis}">
-													<p:selectBooleanButton widgetVar="xAxis-#{variable.id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateXAxisButtons(#{variable.id})"/>
-												</ui:fragment>
-												<ui:fragment rendered="#{variable.canUseOnYAxis}">
-													<p:selectBooleanButton widgetVar="yAxis-#{variable.id}" onLable="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateYAxisButtons(#{variable.id})"/>
-												</ui:fragment>
-											</div>
-										</div>
-									</ui:fragment>
-								</ui:repeat>
-							</div>
-						</ui:fragment>
-					</ui:repeat>
-				</div>
-				<h:panelGrid columns="2" styleClass="buttonPanel">
-					<p:commandButton widgetVar="variableOk" value="OK" onclick="applyVariables();"/>
-					<p:commandButton value="Cancel" onclick="PF('variableDialog').hide();"/>
-				</h:panelGrid>
-			</p:dialog>
+      <p:dialog widgetVar="variableDialog" modal="true" header="Variables" resizable="false">
+        <div id="variablesList">
+          <ui:repeat value="#{sessionScope[beanName].variablesList}" var="varGroup">
+            <ui:fragment rendered="#{varGroup.size eq 1 and varGroup.variables[0].visible}">
+              <div class="variable singleVariable">
+                <div class="varName">
+                  <h:outputText value="#{varGroup.variables[0].label}"/>
+                </div>
+                <div class="variableControls">
+                  <p:selectBooleanCheckbox widgetVar="mapVar-#{varGroup.variables[0].id}" id="mapVarCheckbox" onchange="updateMapCheckboxes(#{varGroup.variables[0].id})"/>
+                  <ui:fragment rendered="#{varGroup.variables[0].canUseOnXAxis}">
+                    <p:selectBooleanButton widgetVar="xAxis-#{varGroup.variables[0].id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateXAxisButtons(#{varGroup.variables[0].id})"/>
+                  </ui:fragment>
+                  <ui:fragment rendered="#{varGroup.variables[0].canUseOnYAxis}">
+                    <p:selectBooleanButton widgetVar="yAxis-#{varGroup.variables[0].id}" onLable="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateYAxisButtons(#{varGroup.variables[0].id})"/>
+                  </ui:fragment>
+                </div>
+              </div>
+            </ui:fragment>
+            <ui:fragment rendered="#{varGroup.size gt 1}">
+              <div class="variableGroup">
+                <div class="varGroupName">
+                  <h:outputText value="#{varGroup.name}"/>
+                </div>
+                <ui:repeat value="#{varGroup.variables}" var="variable">
+                  <ui:fragment rendered="#{variable.visible}">
+                    <div class="variable">
+                      <div class="varName varGroupMember">
+                        <h:outputText value="#{variable.label}"/>
+                      </div>
+                      <div class="variableControls">
+                        <p:selectBooleanCheckbox widgetVar="mapVar-#{variable.id}" id="mapVarCheckbox" onchange="updateMapCheckboxes(#{variable.id})"/>
+                        <ui:fragment rendered="#{variable.canUseOnXAxis}">
+                          <p:selectBooleanButton widgetVar="xAxis-#{variable.id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateXAxisButtons(#{variable.id})"/>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{variable.canUseOnYAxis}">
+                          <p:selectBooleanButton widgetVar="yAxis-#{variable.id}" onLable="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateYAxisButtons(#{variable.id})"/>
+                        </ui:fragment>
+                      </div>
+                    </div>
+                  </ui:fragment>
+                </ui:repeat>
+              </div>
+            </ui:fragment>
+          </ui:repeat>
+        </div>
+        <h:panelGrid columns="2" styleClass="buttonPanel">
+          <p:commandButton widgetVar="variableOk" value="OK" onclick="applyVariables();"/>
+          <p:commandButton value="Cancel" onclick="PF('variableDialog').hide();"/>
+        </h:panelGrid>
+      </p:dialog>
 
-			<h:inputHidden id="selectedRows" value="#{sessionScope[beanName].selectedRows}"/>
-			<ui:insert name="selectionDialog"/>
+      <h:inputHidden id="selectedRows" value="#{sessionScope[beanName].selectedRows}"/>
+      <ui:insert name="selectionDialog"/>
 
-			<ui:insert name="formEntries"></ui:insert>
-			<p:toolbar styleClass="plotPageHeader">
-				<f:facet name="left">
-					<ui:insert name="dataSetName">Data Set Name</ui:insert>
-				</f:facet>
-			</p:toolbar>
+      <ui:insert name="formEntries"></ui:insert>
+      <p:toolbar styleClass="plotPageHeader">
+        <f:facet name="left">
+          <ui:insert name="dataSetName">Data Set Name</ui:insert>
+        </f:facet>
+      </p:toolbar>
 
-			<div id="plotPageContent" class="plotPageContent">
-				<div id="plots">
-					<ui:insert name="plots">Plots</ui:insert>
-				</div>
-				<div id="tableContent"></div>
-			</div>
+      <div id="plotPageContent" class="plotPageContent">
+        <div id="plots">
+          <ui:insert name="plots">Plots</ui:insert>
+        </div>
+        <div id="tableContent"></div>
+      </div>
 
-			<p:toolbar id="footerToolbar" styleClass="plotPageFooter">
-				<f:facet name="left">
-					<ui:insert name="tableControls"></ui:insert>
-				</f:facet>
-				<f:facet name="right">
-					Selection: <span id="selectedRowsCount">0</span>
-					<p:commandButton icon="clearSelectionButton" onclick="clearSelection();" styleClass="inlineButton tightButton"/>
-					<ui:insert name="selectionActions">Selection actions here</ui:insert>
-					|
-					<ui:insert name="finishButton">Finish button here</ui:insert>
-				</f:facet>
-			</p:toolbar>
-		</h:form>
-	</h:body>
+      <p:toolbar id="footerToolbar" styleClass="plotPageFooter">
+        <f:facet name="left">
+          <ui:insert name="tableControls"></ui:insert>
+        </f:facet>
+        <f:facet name="right">
+          Selection: <span id="selectedRowsCount">0</span>
+          <p:commandButton icon="clearSelectionButton" onclick="clearSelection();" styleClass="inlineButton tightButton"/>
+          <ui:insert name="selectionActions">Selection actions here</ui:insert>
+          |
+          <ui:insert name="finishButton">Finish button here</ui:insert>
+        </f:facet>
+      </p:toolbar>
+    </h:form>
+  </h:body>
 </html>

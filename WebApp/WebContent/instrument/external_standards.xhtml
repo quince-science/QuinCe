@@ -1,71 +1,71 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:h="http://xmlns.jcp.org/jsf/html"
-	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-	xmlns:p="http://primefaces.org/ui"
-	xmlns:f="http://xmlns.jcp.org/jsf/core"
-	xmlns:c="http://java.sun.com/jsp/jstl/core"
-	template="/WEB-INF/templates/basic_page.xhtml">
+  xmlns:h="http://xmlns.jcp.org/jsf/html"
+  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+  xmlns:p="http://primefaces.org/ui"
+  xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:c="http://java.sun.com/jsp/jstl/core"
+  template="/WEB-INF/templates/basic_page.xhtml">
 
-	<ui:define name="title">External Standards - #{externalStandardsBean.instrumentName}</ui:define>
-	<ui:define name="localHead">
-		<script>
-			function showDeploymentDialog() {
-				PF('deploymentDialog').show();
-			}
+  <ui:define name="title">External Standards - #{externalStandardsBean.instrumentName}</ui:define>
+  <ui:define name="localHead">
+    <script>
+      function showDeploymentDialog() {
+        PF('deploymentDialog').show();
+      }
 
-			function hideDeploymentDialog() {
-				PF('deploymentDialog').hide();
-			}
-		</script>
-	</ui:define>
+      function hideDeploymentDialog() {
+        PF('deploymentDialog').hide();
+      }
+    </script>
+  </ui:define>
 
-	<ui:define name="pageTitle">External Standards - #{externalStandardsBean.instrumentName}</ui:define>
-	<ui:define name="content">
-		<h:form id="standardsForm" metho="post" charset="utf8">
-			<p:dialog header="Add Deployment" widgetVar="deploymentDialog" modal="true">
-				<div class="dialogSection">
-					<h:panelGrid columns="2" styleClass="buttonPanel">
-						<p:outputLabel for="deploymentDate" value="Deployment Date:"/>
-						<p:calendar id="deploymentDate" value="#{externalStandardsBean.enteredCalibration.deploymentDate}" maxLength="19" size="19" pattern="yyyy-MM-dd HH:mm:ss" navigator="true">
-							<f:converter converterId="localDateTimeConverter"/>
-						</p:calendar>
+  <ui:define name="pageTitle">External Standards - #{externalStandardsBean.instrumentName}</ui:define>
+  <ui:define name="content">
+    <h:form id="standardsForm" metho="post" charset="utf8">
+      <p:dialog header="Add Deployment" widgetVar="deploymentDialog" modal="true">
+        <div class="dialogSection">
+          <h:panelGrid columns="2" styleClass="buttonPanel">
+            <p:outputLabel for="deploymentDate" value="Deployment Date:"/>
+            <p:calendar id="deploymentDate" value="#{externalStandardsBean.enteredCalibration.deploymentDate}" maxLength="19" size="19" pattern="yyyy-MM-dd HH:mm:ss" navigator="true">
+              <f:converter converterId="localDateTimeConverter"/>
+            </p:calendar>
 
-						<p:outputLabel for="standard" value="Standard:"/>
-						<p:selectOneMenu id="standard" value="#{externalStandardsBean.enteredCalibration.target}">
-							<f:selectItems value="#{externalStandardsBean.targets}"/>
-						</p:selectOneMenu>
-						<p:outputLabel for="concentration" value="Concentration:"/>
-						<p:inputNumber id="concentration" value="#{externalStandardsBean.enteredCalibration.concentration}" size="12" decimalPlaces="5"/>
-					</h:panelGrid>
-				</div>
-				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
-					<p:commandButton widgetVar="addDeploymentButton" value="Add" ajax="false" action="#{externalStandardsBean.addCalibration}"/>
-					<p:button value="Cancel" onclick="return hideDeploymentDialog();"/>
-				</h:panelGrid>
-			</p:dialog>
+            <p:outputLabel for="standard" value="Standard:"/>
+            <p:selectOneMenu id="standard" value="#{externalStandardsBean.enteredCalibration.target}">
+              <f:selectItems value="#{externalStandardsBean.targets}"/>
+            </p:selectOneMenu>
+            <p:outputLabel for="concentration" value="Concentration:"/>
+            <p:inputNumber id="concentration" value="#{externalStandardsBean.enteredCalibration.concentration}" size="12" decimalPlaces="5"/>
+          </h:panelGrid>
+        </div>
+        <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+          <p:commandButton widgetVar="addDeploymentButton" value="Add" ajax="false" action="#{externalStandardsBean.addCalibration}"/>
+          <p:button value="Cancel" onclick="return hideDeploymentDialog();"/>
+        </h:panelGrid>
+      </p:dialog>
 
-			<h:panelGrid columns="1" styleClass="buttonPanel">
-				<p:button value="Add Deployment" onclick="showDeploymentDialog(); return false;"/>
-			</h:panelGrid>
+      <h:panelGrid columns="1" styleClass="buttonPanel">
+        <p:button value="Add Deployment" onclick="showDeploymentDialog(); return false;"/>
+      </h:panelGrid>
 
-			<div class="sectionTitle">
-				Current Deployments
-			</div>
-			<p:dataTable styleClass="pageTable" var="calibration" value="#{externalStandardsBean.currentCalibrations}">
-				<p:column headerText="External Standard">
-					<h:outputText value="#{calibration.target}"/>
-				</p:column>
-				<p:column headerText="Deployment Date">
-					<h:outputText value="#{calibration.deploymentDate}"/>
-				</p:column>
-				<p:column headerText="Concentration">
-					<h:outputText value="#{calibration.humanReadableCoefficients}"/>
-				</p:column>
-			</p:dataTable>
+      <div class="sectionTitle">
+        Current Deployments
+      </div>
+      <p:dataTable styleClass="pageTable" var="calibration" value="#{externalStandardsBean.currentCalibrations}">
+        <p:column headerText="External Standard">
+          <h:outputText value="#{calibration.target}"/>
+        </p:column>
+        <p:column headerText="Deployment Date">
+          <h:outputText value="#{calibration.deploymentDate}"/>
+        </p:column>
+        <p:column headerText="Concentration">
+          <h:outputText value="#{calibration.humanReadableCoefficients}"/>
+        </p:column>
+      </p:dataTable>
 
-			<h:panelGrid columns="1" styleClass="buttonPanel">
-				<p:commandButton value="Back to Instruments List" action="/instrument/instrument_list.xhtml"/>
-			</h:panelGrid>
-		</h:form>
-	</ui:define>
+      <h:panelGrid columns="1" styleClass="buttonPanel">
+        <p:commandButton value="Back to Instruments List" action="/instrument/instrument_list.xhtml"/>
+      </h:panelGrid>
+    </h:form>
+  </ui:define>
 </ui:composition>

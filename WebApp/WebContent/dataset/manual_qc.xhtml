@@ -1,105 +1,105 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:h="http://xmlns.jcp.org/jsf/html"
-	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-	xmlns:p="http://primefaces.org/ui"
-	xmlns:f="http://xmlns.jcp.org/jsf/core"
-	xmlns:c="http://java.sun.com/jsp/jstl/core"
-	template="/WEB-INF/templates/plot_page.xhtml">
+  xmlns:h="http://xmlns.jcp.org/jsf/html"
+  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+  xmlns:p="http://primefaces.org/ui"
+  xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:c="http://java.sun.com/jsp/jstl/core"
+  template="/WEB-INF/templates/plot_page.xhtml">
 
-	<ui:param name="beanName" value="manualQcBean"/>
+  <ui:param name="beanName" value="manualQcBean"/>
 
-	<ui:define name="title">Quality Control</ui:define>
-	<ui:define name="localHead">
-		<h:outputScript name="script/manualQc.js"/>
-		<h:outputStylesheet name="style/manualQc.css"/>
-	</ui:define>
+  <ui:define name="title">Quality Control</ui:define>
+  <ui:define name="localHead">
+    <h:outputScript name="script/manualQc.js"/>
+    <h:outputStylesheet name="style/manualQc.css"/>
+  </ui:define>
 
-	<ui:define name="formEntries">
-		<p:commandLink id="acceptAutoQc" action="#{manualQcBean.acceptAutoQc}" ajax="true" process="selectedRows" update="@none" oncomplete="qcFlagsAccepted()"/>
+  <ui:define name="formEntries">
+    <p:commandLink id="acceptAutoQc" action="#{manualQcBean.acceptAutoQc}" ajax="true" process="selectedRows" update="@none" oncomplete="qcFlagsAccepted()"/>
 
-		<h:inputHidden id="userCommentList" value="#{manualQcBean.userCommentList}"/>
-		<h:inputHidden id="worstSelectedFlag" value="#{manualQcBean.worstSelectedFlag}"/>
-		<p:commandLink id="generateUserQcComments" action="#{manualQcBean.generateUserCommentList}" ajax="true" execute="selectedRows" update="userCommentList worstSelectedFlag" oncomplete="showFlagDialog()"/>
+    <h:inputHidden id="userCommentList" value="#{manualQcBean.userCommentList}"/>
+    <h:inputHidden id="worstSelectedFlag" value="#{manualQcBean.worstSelectedFlag}"/>
+    <p:commandLink id="generateUserQcComments" action="#{manualQcBean.generateUserCommentList}" ajax="true" execute="selectedRows" update="userCommentList worstSelectedFlag" oncomplete="showFlagDialog()"/>
 
-		<p:commandLink id="applyManualFlag" action="#{manualQcBean.applyManualFlag}" ajax="true" execute="manualFlag manualComment" update="@none" oncomplete="manualFlagsUpdated()"/>
-	</ui:define>
+    <p:commandLink id="applyManualFlag" action="#{manualQcBean.applyManualFlag}" ajax="true" execute="manualFlag manualComment" update="@none" oncomplete="manualFlagsUpdated()"/>
+  </ui:define>
 
-	<ui:define name="dataSetName">#{manualQcBean.dataset.name} - Quality Control #{requestScope[beanName]}</ui:define>
+  <ui:define name="dataSetName">#{manualQcBean.dataset.name} - Quality Control #{requestScope[beanName]}</ui:define>
 
-	<ui:define name="plots">
-		<div id="plot1Panel" class="plotContainer">
-			<div id="plot1Container"></div>
-			<div id="map1Container" class="hidden"></div>
-			<div id="map1ScaleControlContainer" class="ol-unselectable ol-control mapScaleControlContainer hidden">
-				<button type="button" onclick="toggleScale(1);">S</button>
-			</div>
-			<div id="map1Value" class="mapValue"></div>
-			<div id="map1Scale" class="mapScale hidden"></div>
-			<p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
-				<f:facet name="left">
-					<p:selectOneButton id="plot1Mode" widgetVar="plot1Mode" value="#{manualQcBean.plot1.mode}" styleClass="plotModeButtons" onchange="initPlot(1)">
-						<f:selectItem itemLabel=" " itemValue="plot"/>
-						<f:selectItem itemLabel=" " itemValue="map"/>
-					</p:selectOneButton>
-					<p:commandButton icon="selectVariableButton" onclick="showVariableDialog(1)" styleClass="inlineButton tightButton plotFooterButton"/>
-					<p:commandButton icon="zoomOutButton" onclick="resetZoom(1)" styleClass="inlineButton tightButton plotFooterButton"/>
-				</f:facet>
-			</p:toolbar>
-		</div>
-		<div id="plot2Panel" class="plotContainer">
-			<div id="plot2Container"></div>
-			<div id="map2Container" class="hidden"></div>
-			<div id="map2ScaleControlContainer" class="ol-unselectable ol-control mapScaleControlContainer hidden">
-				<button type="button" onclick="toggleScale(2);">S</button>
-			</div>
-			<div id="map2Value" class="mapValue"></div>
-			<div id="map2Scale" class="mapScale hidden"></div>
-			<p:toolbar id="plot2Toolbar" styleClass="plotPageFooter">
-				<f:facet name="left">
-					<p:selectOneButton id="plot2Mode" widgetVar="plot2Mode" value="#{manualQcBean.plot2.mode}" styleClass="plotModeButtons" onchange="initPlot(2)">
-						<f:selectItem itemLabel=" " itemValue="plot"/>
-						<f:selectItem itemLabel=" " itemValue="map"/>
-					</p:selectOneButton>
-					<p:commandButton icon="selectVariableButton" onclick="showVariableDialog(2)" styleClass="inlineButton tightButton plotFooterButton"/>
-					<p:commandButton icon="zoomOutButton" onclick="resetZoom(2)" styleClass="inlineButton tightButton plotFooterButton"/>
-				</f:facet>
-			</p:toolbar>
-		</div>
-	</ui:define>
+  <ui:define name="plots">
+    <div id="plot1Panel" class="plotContainer">
+      <div id="plot1Container"></div>
+      <div id="map1Container" class="hidden"></div>
+      <div id="map1ScaleControlContainer" class="ol-unselectable ol-control mapScaleControlContainer hidden">
+        <button type="button" onclick="toggleScale(1);">S</button>
+      </div>
+      <div id="map1Value" class="mapValue"></div>
+      <div id="map1Scale" class="mapScale hidden"></div>
+      <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
+        <f:facet name="left">
+          <p:selectOneButton id="plot1Mode" widgetVar="plot1Mode" value="#{manualQcBean.plot1.mode}" styleClass="plotModeButtons" onchange="initPlot(1)">
+            <f:selectItem itemLabel=" " itemValue="plot"/>
+            <f:selectItem itemLabel=" " itemValue="map"/>
+          </p:selectOneButton>
+          <p:commandButton icon="selectVariableButton" onclick="showVariableDialog(1)" styleClass="inlineButton tightButton plotFooterButton"/>
+          <p:commandButton icon="zoomOutButton" onclick="resetZoom(1)" styleClass="inlineButton tightButton plotFooterButton"/>
+        </f:facet>
+      </p:toolbar>
+    </div>
+    <div id="plot2Panel" class="plotContainer">
+      <div id="plot2Container"></div>
+      <div id="map2Container" class="hidden"></div>
+      <div id="map2ScaleControlContainer" class="ol-unselectable ol-control mapScaleControlContainer hidden">
+        <button type="button" onclick="toggleScale(2);">S</button>
+      </div>
+      <div id="map2Value" class="mapValue"></div>
+      <div id="map2Scale" class="mapScale hidden"></div>
+      <p:toolbar id="plot2Toolbar" styleClass="plotPageFooter">
+        <f:facet name="left">
+          <p:selectOneButton id="plot2Mode" widgetVar="plot2Mode" value="#{manualQcBean.plot2.mode}" styleClass="plotModeButtons" onchange="initPlot(2)">
+            <f:selectItem itemLabel=" " itemValue="plot"/>
+            <f:selectItem itemLabel=" " itemValue="map"/>
+          </p:selectOneButton>
+          <p:commandButton icon="selectVariableButton" onclick="showVariableDialog(2)" styleClass="inlineButton tightButton plotFooterButton"/>
+          <p:commandButton icon="zoomOutButton" onclick="resetZoom(2)" styleClass="inlineButton tightButton plotFooterButton"/>
+        </f:facet>
+      </p:toolbar>
+    </div>
+  </ui:define>
 
-	<ui:define name="selectionDialog">
-		<p:dialog widgetVar="flagDialog" modal="true" header="Set QC Flag" width="50%">
-			<div class="dialogTitle">
-				Set QC Flag for <span id="manualRowCount">row count</span>
-			</div>
-	        <h:panelGrid columns="2" width="100%">
-		        <p:outputLabel for="manualFlag" value="Flag:"/>
-		        <p:selectOneMenu widgetVar="flagMenu" id="manualFlag" value="#{manualQcBean.userFlag}" var="flag" onchange="updateFlagDialogControls()">
-		        	<f:selectItem itemLabel="Good" itemValue="2"/>
-		        	<f:selectItem itemLabel="Questionable" itemValue="3"/>
-		        	<f:selectItem itemLabel="Bad" itemValue="4"/>
-		        </p:selectOneMenu>
-		        <p:outputLabel for="manualComment" value="Comment:"/>
-	           	<p:inputTextarea id="manualComment" value="#{manualQcBean.userComment}" style="width: 95%; height: 150px;" onkeyup="updateFlagDialogControls()"/>
-	        </h:panelGrid>
-			<h:panelGrid columns="2" styleClass="buttonPanel">
-				<p:commandButton widgetVar="manualCommentOk" value="OK" onclick="saveManualComment();"/>
-				<p:commandButton value="Cancel" onclick="PF('flagDialog').hide();"/>
-			</h:panelGrid>
-		</p:dialog>
-	</ui:define>
-	<ui:define name="tableControls">
-   		<p:selectOneButton value="#{manualQcBean.tableMode}" widgetVar="tableModeSelector" onchange="renderTableColumns()">
-   			<f:selectItem itemLabel="Sensors" itemValue="sensors"/>
-   			<f:selectItem itemLabel="Calculations" itemValue="calculations"/>
-   			<f:ajax render="@none"/>
-   		</p:selectOneButton>
-	</ui:define>
-	<ui:define name="selectionActions">
-		<p:commandButton widgetVar="acceptQcButton" value="Accept Automatic QC" onclick="acceptAutoQc()" styleClass="inlineButton"/>
-		<p:commandButton widgetVar="overrideQcButton" value="Override Automatic QC" onclick="startUserQcFlags()" styleClass="inlineButton"/>
-	</ui:define>
-	<ui:define name="finishButton">
-		<p:commandButton widgetVar="finishButton" value="Finish" ajax="false" process="@none" action="#{manualQcBean.finish}" styleClass="inlineButton"/>
-	</ui:define>
+  <ui:define name="selectionDialog">
+    <p:dialog widgetVar="flagDialog" modal="true" header="Set QC Flag" width="50%">
+      <div class="dialogTitle">
+        Set QC Flag for <span id="manualRowCount">row count</span>
+      </div>
+          <h:panelGrid columns="2" width="100%">
+            <p:outputLabel for="manualFlag" value="Flag:"/>
+            <p:selectOneMenu widgetVar="flagMenu" id="manualFlag" value="#{manualQcBean.userFlag}" var="flag" onchange="updateFlagDialogControls()">
+              <f:selectItem itemLabel="Good" itemValue="2"/>
+              <f:selectItem itemLabel="Questionable" itemValue="3"/>
+              <f:selectItem itemLabel="Bad" itemValue="4"/>
+            </p:selectOneMenu>
+            <p:outputLabel for="manualComment" value="Comment:"/>
+              <p:inputTextarea id="manualComment" value="#{manualQcBean.userComment}" style="width: 95%; height: 150px;" onkeyup="updateFlagDialogControls()"/>
+          </h:panelGrid>
+      <h:panelGrid columns="2" styleClass="buttonPanel">
+        <p:commandButton widgetVar="manualCommentOk" value="OK" onclick="saveManualComment();"/>
+        <p:commandButton value="Cancel" onclick="PF('flagDialog').hide();"/>
+      </h:panelGrid>
+    </p:dialog>
+  </ui:define>
+  <ui:define name="tableControls">
+      <p:selectOneButton value="#{manualQcBean.tableMode}" widgetVar="tableModeSelector" onchange="renderTableColumns()">
+        <f:selectItem itemLabel="Sensors" itemValue="sensors"/>
+        <f:selectItem itemLabel="Calculations" itemValue="calculations"/>
+        <f:ajax render="@none"/>
+      </p:selectOneButton>
+  </ui:define>
+  <ui:define name="selectionActions">
+    <p:commandButton widgetVar="acceptQcButton" value="Accept Automatic QC" onclick="acceptAutoQc()" styleClass="inlineButton"/>
+    <p:commandButton widgetVar="overrideQcButton" value="Override Automatic QC" onclick="startUserQcFlags()" styleClass="inlineButton"/>
+  </ui:define>
+  <ui:define name="finishButton">
+    <p:commandButton widgetVar="finishButton" value="Finish" ajax="false" process="@none" action="#{manualQcBean.finish}" styleClass="inlineButton"/>
+  </ui:define>
 </ui:composition>
