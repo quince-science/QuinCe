@@ -11,7 +11,7 @@
 		<c:set var="instrumentStep" value="1" scope="request"/>
 		<script>
 			var hasFileData = #{newInstrumentBean.currentInstrumentFile.hasFileData};
-			
+
 			$(document).ready(function() {
 				if (hasFileData) {
 					$('#fileSpec').show();
@@ -24,16 +24,16 @@
 	</ui:define>
 	<ui:define name="new_instrument_content">
 		<h:form id="newInstrumentForm" method="post" charset="utf8" enctype="multipart/form-data">
-		
+
 			<h:inputHidden id="sampleFileContent" value="#{newInstrumentBean.currentInstrumentFile.filePreview}"/>
 			<p:commandLink id="guessFileLayout" ajax="true" process="@this" update="headerType headerLineCount headerEndString separator columnHeaderRows columnCount sampleFileContent" action="#{newInstrumentBean.currentInstrumentFile.guessFileLayout}" oncomplete="updateFileContentDisplay()"/>
-		
-			<div id="uploadFormContent">		
+
+			<div id="uploadFormContent">
 				<div class="instructions">
 					Please upload a sample file from your instrument.
 					<h:outputText value="If your instrument uses more than one data file, others can be uploaded later." rendered="#{!newInstrumentBean.hasMultipleFiles}"/>
 				</div>
-				
+
 				<h:panelGrid columns="3" cellpadding="5">
 					<p:outputLabel for="fileDescription" value="File Description (e.g. TSG)"/>
 					<p:inputText id="fileDescription" value="#{newInstrumentBean.currentInstrumentFile.fileDescription}" required="true" requiredMessage="You must enter a file description">
@@ -48,11 +48,11 @@
 					<p:outputLabel value="Select a file to upload"/>
 					<p:fileUpload fileUploadListener="#{newInstrumentBean.handleFileUpload}" mode="advanced" auto="true" oncomplete="showProcessingMessage()"/>
 				</div>
-				
+
 				<div id="processingFileMessage" class="hidden">
 					Processing file...
 				</div>
-				
+
 				<div id="fileFormatSpec" class="hidden">
 					<div id="fileFormatSpecContent">
 						<div id="fileContent"></div>
@@ -63,12 +63,12 @@
 										<f:selectItem itemValue="0"/>
 										<f:selectItem itemValue="1"/>
 									</p:selectOneRadio>
-									
+
 									<h:panelGrid columns="3" cellpadding="5">
 										<p:radioButton id="lineCountType" for="headerType" itemIndex="0"/>
 										<p:outputLabel for="lineCountType" value="# Lines"/>
 										<p:spinner id="headerLineCount" widgetVar="headerLines" size="3" value="#{newInstrumentBean.currentInstrumentFile.headerLines}" min="0" max="500" onkeypress="return numberOnly(event)" onkeyup="setTimeout(function() {renderSampleFile()}, 100)" onchange="renderSampleFile()"/>
-									
+
 										<p:radioButton id="stringType" for="headerType" itemIndex="1"/>
 										<p:outputLabel for="stringType" value="End Line"/>
 										<p:inputText id="headerEndString" widgetVar="headerEndString" value="#{newInstrumentBean.currentInstrumentFile.headerEndString}" onkeyup="renderSampleFile()"/>
@@ -82,7 +82,7 @@
 									<p:spinner id="columnHeaderRows" widgetVar="colHeadRows" styleClass="flexSetItem" size="3" value="#{newInstrumentBean.currentInstrumentFile.columnHeaderRows}" min="0" max="500" onkeypress="return numberOnly(event)" onkeyup="setTimeout(function() {renderSampleFile()}, 100)" onchange="renderSampleFile()"/>
 								</div>
 							</p:panel>
-							
+
 							<p:panel header="Separator">
 								<div class="flexSet nowrap">
 									<div class="flexSetItem grow">

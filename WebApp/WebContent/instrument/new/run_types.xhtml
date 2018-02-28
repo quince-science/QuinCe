@@ -20,21 +20,21 @@
 	</ui:define>
 	<ui:define name="new_instrument_content">
 		<h:form id="newInstrumentForm" metho="post" charset="utf8">
-		
+
 			<h:inputHidden id="assignedCategories" value="#{newInstrumentBean.categoryAssignments}"/>
 			<h:inputHidden id="assignedRunTypes" value="#{newInstrumentBean.runTypeAssignments}"/>
-		
+
 			<h:inputHidden id="assignCategoryFile" value="#{newInstrumentBean.runTypeAssignFile}"/>
 			<h:inputHidden id="assignCategoryRunType" value="#{newInstrumentBean.runTypeAssignName}"/>
 			<h:inputHidden id="assignCategoryCode" value="#{newInstrumentBean.runTypeAssignCode}"/>
 			<p:commandLink id="assignCategoryLink" style="invisible" ajax="true" action="#{newInstrumentBean.assignRunTypeCategory}"
 				process="assignCategoryFile assignCategoryRunType assignCategoryCode" update="assignedCategories" oncomplete="renderAssignedCategories();"/>
-			
-			
+
+
 			<p:fieldset id="categoriesPanel" legend="Run Type Categories" style="margin-bottom: 20px">
 				<div id="categoriesList" class="assignmentsList"></div>
 			</p:fieldset>
-			
+
 			<p:fieldset id="runTypesPanel" legend="Assign Run Types" style="margin-bottom: 20px">
 				<div class="instructions">
 					Below is a list of values from the Run Type columns in each file. Please associate each
@@ -70,4 +70,4 @@
 			</h:panelGrid>
 		</h:form>
 	</ui:define>
-</ui:composition>	
+</ui:composition>

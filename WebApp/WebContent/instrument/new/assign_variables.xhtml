@@ -8,20 +8,20 @@
 
 	<ui:define name="title">New Instrument</ui:define>
 	<ui:define name="instrumentHead">
-		<c:set var="instrumentStep" value="1" scope="request"/>	
+		<c:set var="instrumentStep" value="1" scope="request"/>
 		<h:outputScript name="script/datatables.min.js"/>
 		<h:outputStylesheet name="style/datatables.min.css"/>
 		<script>
 			$(document).ready(function() {
 				renderAssignments();
-				
+
 				$('body').click(function () {
 					hideMainAssignmentMenu();
 					hideDateTimeMenu();
 				});
-				
+
 			});
-			
+
 			// Escape key
 			$(document).keyup(function(e) {
 			    if (e.keyCode == 27) {
@@ -31,19 +31,19 @@
 
 			// Global!
 			tabCount = 0;
-			
+
 			// The data tables in each tab
 			var tabTables = new Array();
-			
+
 			var filesAndColumns = #{newInstrumentBean.filesAndColumns};
-			
+
 			var urlStub = '#{newInstrumentBean.urlStub}';
-		</script>	
+		</script>
 	</ui:define>
 	<ui:define name="new_instrument_content">
 		<div id="mainAssignmentMenu" class="ui-menu ui-widget ui-widget-content ui-corner-all ui-helper-clearfix ui-shadow ui-overlay-hidden" role="menu"></div>
 		<div id="dateTimeMenu" class="ui-menu ui-widget ui-widget-content ui-corner-all ui-helper-clearfix ui-shadow ui-overlay-hidden" role="menu"></div>
-	
+
 		<h:form id="newInstrumentForm" metho="post" charset="utf8">
 			<h:inputHidden id="sensorAssignments" value="#{newInstrumentBean.sensorAssignments}"/>
 			<h:inputHidden id="fileSpecificAssignments" value="#{newInstrumentBean.fileSpecificAssignments}"/>
@@ -52,12 +52,12 @@
 			<h:inputHidden id="runTypeColumn" value="#{newInstrumentBean.runTypeColumn}"/>
 			<p:commandLink id="runTypeLink" style="invisible" ajax="true" action="#{newInstrumentBean.assignRunType}"
 					process="runTypeFile runTypeColumn" update="fileSpecificAssignments" oncomplete="renderAssignments()"/>
-					
+
 			<h:inputHidden id="unassignFile" value="#{newInstrumentBean.unassignFile}"/>
 			<h:inputHidden id="unassignColumn" value="#{newInstrumentBean.unassignColumn}"/>
 			<p:commandLink id="unassignVariableLink" style="invisible" ajax="true" action="#{newInstrumentBean.unassignVariable}"
 					process="unassignFile unassignColumn" update="sensorAssignments fileSpecificAssignments" oncomplete="renderAssignments()"/>
-					
+
 			<h:inputHidden id="removeFileName" value="#{newInstrumentBean.removeFileName}"/>
 			<p:confirmDialog widgetVar="removeFileConfirm" message="Remove file and all associated assignments?">
 				<p:commandButton value="Remove File" ajax="false" action="#{newInstrumentBean.removeFile}"/>
@@ -68,7 +68,7 @@
 				<h:inputHidden id="sensorAssignmentFile" value="#{newInstrumentBean.sensorAssignmentFile}"/>
 				<h:inputHidden id="sensorAssignmentColumn" value="#{newInstrumentBean.sensorAssignmentColumn}"/>
 				<h:inputHidden id="sensorAssignmentSensorType" value="#{newInstrumentBean.sensorAssignmentSensorType}"/>
-				
+
 				<div class="dialogSection">
 					<table>
 						<tr>
@@ -124,7 +124,7 @@
 						</p:selectOneRadio>
 					</div>
 				</div>
-				
+
 				<div class="dialogSection">
 					<table>
 						<tr>
@@ -133,7 +133,7 @@
 						</tr>
 					</table>
 				</div>
-				
+
 				<h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
 					<p:commandButton widgetVar="sensorAssignmentAssignButton" value="Assign" ajax="true" action="#{newInstrumentBean.storeSensorAssignment}"
 					  process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue"
@@ -142,12 +142,12 @@
 					<p:commandButton value="Cancel" ajax="true" action="#{newInstrumentBean.resetSensorAssignmentValues}" process="@none"
 					  update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue" oncomplete="PF('sensorAssignmentDialog').hide();"/>
 				</h:panelGrid>
-				
+
 			</p:dialog>
 			<p:dialog header="Assign Longitude" widgetVar="longitudeAssignmentDialog" modal="true">
 				<h:inputHidden id="longitudeFile" value="#{newInstrumentBean.longitudeFile}"/>
 				<h:inputHidden id="longitudeColumn" value="#{newInstrumentBean.longitudeColumn}"/>
-			
+
 				<table>
 					<tr>
 						<td><p:outputLabel value="Assigning"/></td>
@@ -180,11 +180,11 @@
 					<p:commandButton value="Cancel" onclick="PF('longitudeAssignmentDialog').hide(); return false;"/>
 				</h:panelGrid>
 			</p:dialog>
-			
+
 			<p:dialog header="Assign Latitude" widgetVar="latitudeAssignmentDialog" modal="true">
 				<h:inputHidden id="latitudeFile" value="#{newInstrumentBean.latitudeFile}"/>
 				<h:inputHidden id="latitudeColumn" value="#{newInstrumentBean.latitudeColumn}"/>
-			
+
 				<table>
 					<tr>
 						<td><p:outputLabel value="Assigning"/></td>
@@ -221,7 +221,7 @@
 				<h:inputHidden id="hemisphereFile" value="#{newInstrumentBean.hemisphereFile}"/>
 				<h:inputHidden id="hemisphereCoordinate" value="#{newInstrumentBean.hemisphereCoordinate}"/>
 				<h:inputHidden id="hemisphereColumn" value="#{newInstrumentBean.hemisphereColumn}"/>
-			
+
 				<table>
 					<tr>
 						<td><p:outputLabel value="Assigning"/></td>
@@ -245,7 +245,7 @@
 				<h:inputHidden id="dateTimeFile" value="#{newInstrumentBean.dateTimeFile}"/>
 				<h:inputHidden id="dateTimeColumn" value="#{newInstrumentBean.dateTimeColumn}"/>
 				<h:inputHidden id="dateTimeVariable" value="#{newInstrumentBean.dateTimeVariable}"/>
-			
+
 				<table>
 					<tr>
 						<td><p:outputLabel value="Assigning"/></td>
@@ -324,7 +324,7 @@
 				<div id="hoursFromStartContainer" class="dialogSection">
 					<h:inputHidden id="startTimeLine" value="#{newInstrumentBean.startTimeLine}"/>
 					<h:inputHidden id="startTimeDate" value="#{newInstrumentBean.startTimeDate}"/>
-					
+
 					<p:outputLabel value="Please enter the details of how to find the start time in the file header"/>
 					<table>
 						<tr>
@@ -341,7 +341,7 @@
 								<p:inputText id="startTimeSuffix" size="20" value="#{newInstrumentBean.startTimeSuffix}" autocomplete="off">
 									<p:ajax process="dateTimeFile startTimePrefix startTimeSuffix startTimeFormat" update="startTimeLine startTimeDate" listener="#{newInstrumentBean.extractStartTime}" event="keyup" oncomplete="updateStartTime();"/>
 								</p:inputText>
-									
+
 							</td>
 						</tr>
 						<tr>
@@ -375,11 +375,11 @@
 					<p:commandButton value="Cancel" onclick="PF('dateTimeAssignmentDialog').hide(); return false;"/>
 				</h:panelGrid>
 			</p:dialog>
-			
+
 			<p:fieldset id="assignmentsPanel" legend="Column Assignments" style="margin-bottom: 20px">
 				<div id="assignmentsList" class="assignmentsList"></div>
 			</p:fieldset>
-			
+
 			<p:tabView value="#{newInstrumentBean.instrumentFiles}" var="iFile" widgetVar="fileTabs">
 				<p:tab>
 					<f:facet name="title">
@@ -406,42 +406,42 @@
 								</script>
 							</p:fieldset>
 						</div>
-						
+
 						<script>
 							var containerId = 'fileTableContainer-' + tabCount;
 							var tableId = 'fileTable-' + tabCount;
-							
+
 							document.write('<div id="' + containerId + '" class="sampleDataTableContainer"></div>');
-						
+
 							var html = '';
-							
+
 							html += '<table id="' + tableId + '" class="sampleData compact nowrap cell-border stripe">';
 							html += '<thead>';
-							
+
 							var headers = JSON.parse('#{iFile.fileColumns}');
 							for (var i = 0; i &lt; headers.length; i++) {
 								html += '<th id="colHead_' + tabCount + '_' + i + '" class="ui-state-default assignmentCol" onclick="showMainAssignmentMenu(event, ' + tabCount + ', ' + i + ')">';
 								html += $('<div/>').text(headers[i]).html(); // Funky HTML escaping
 								html += '</th>';
 							}
-							
+
 							html += '</thead><tbody>';
-	
+
 							var data = JSON.parse('#{iFile.jsonData}');
 							for (var i = 0; i &lt; data.length; i++) {
 								var row = data[i];
-								
+
 								html += '<tr>';
 								for (var j = 0; j &lt; row.length; j++) {
 									html += '<td>';
 									html += $('<div/>').text(row[j]).html(); // Funky HTML escaping
 									html += '</td>';
-								} 
+								}
 								html += '</tr>';
 							}
-	
+
 							html += '</tbody></table>';
-							
+
 							$('#' + containerId).html(html);
 							tabTables.push($('#' + tableId).DataTable({
 						    	ordering: false,
@@ -451,13 +451,13 @@
 								paging: false,
 								info: false
 							}));
-							
+
 							tabCount++;
 						</script>
 					</div>
 				</p:tab>
 			</p:tabView>
-		
+
 			<h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
 				<p:commandButton value="Add File" ajax="false" action="#{newInstrumentBean.addFile}" immediate="true"/>
 			</h:panelGrid>
