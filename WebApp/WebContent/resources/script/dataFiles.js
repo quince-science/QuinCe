@@ -10,20 +10,20 @@ $(document).on('keydown', function(e) {
 });
 
 function renderMessages(messages) {
-	var html = $('<ul/>');
-	for (var i = 0; i < messages.length; i++) {
-		var row = $('<li/>');
-		row.addClass(messages[i].severity);
-		var summary = $('<span>');
-		if (messages[i].type == "file") {
-			summary = $('<h3/>');
-		}
-		summary.text(messages[i].summary);
-		row.html(summary)
-		html.append(row);
-	}
-	$("#messageText").html(html);
-	PF('msgDialog').show();
+  var html = $('<ul/>');
+  for (var i = 0; i < messages.length; i++) {
+    var row = $('<li/>');
+    row.addClass(messages[i].severity);
+    var summary = $('<span>');
+    if (messages[i].type == "file") {
+      summary = $('<h3/>');
+    }
+    summary.text(messages[i].summary);
+    row.html(summary)
+    html.append(row);
+  }
+  $("#messageText").html(html);
+  PF('msgDialog').show();
 }
 
 function reProcessUploadedFiles() {
