@@ -5,7 +5,7 @@
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	template="/WEB-INF/templates/menu_page.xhtml">
-	
+
 	<ui:define name="title">Instruments</ui:define>
 	<ui:define name="localHead">
 		<c:set var="mainMenuActiveIndex" value="2" scope="request"/>
@@ -25,7 +25,7 @@
 			}
 		</script>
 	</ui:define>
-	
+
 	<ui:define name="content">
 		<h:form id="instrumentListForm" method="post" accept-charset="utf8">
 			<h:inputHidden id="standardsInstrumentId" value="#{externalStandardsBean.instrumentId}"/>
@@ -35,7 +35,7 @@
 			<h:inputHidden id="calibrationssInstrumentId" value="#{sensorCalibrationsBean.instrumentId}"/>
 			<h:inputHidden id="calibrationsInstrumentName" value="#{sensorCalibrationsBean.instrumentName}"/>
 			<p:commandLink id="showCalibrationsLink" ajax="false" action="#{sensorCalibrationsBean.start}"/>
-		
+
 			<p:dataTable id="instruments" var="instrument" value="#{instrumentListBean.instrumentList}" styleClass="pageTable">
 				<p:column>
 					<f:facet name="header">Instrument Name</f:facet>
@@ -51,7 +51,7 @@
 					<p:button value="View Deployments" styleClass="inlineButton" onclick="return goToStandards(#{instrument.id}, '#{instrument.name}')"/>
 				</p:column>
 			</p:dataTable>
-		
+
 			<h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
 				<p:commandButton value="Add New Instrument" ajax="false" action="#{newInstrumentBean.start}"/>
 			</h:panelGrid>

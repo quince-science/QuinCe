@@ -5,14 +5,14 @@
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	template="/WEB-INF/templates/menu_page.xhtml">
-	
+
 	<ui:define name="title">Jobs</ui:define>
 	<ui:define name="localHead">
 		<c:set var="mainMenuActiveIndex" value="4" scope="request"/>
 
 		<script>
 			var refreshEnabled = true;
-			
+
 			$(function() {
 				$('#jobsForm\\:updateThreads').trigger("click");
 			});
@@ -22,27 +22,27 @@
 					$('#jobsForm\\:updateThreads').trigger("click");
 				}
 			}
-			
+
 			setInterval(function() {
 				triggerUpdateThreads();
 			}, 10000);
-			
+
 			function requeue(id) {
 				$('#jobListForm\\:chosenJob').val(id);
 				$('#jobListForm\\:requeueLink').trigger("click");
 			}
-			
+
 		    function showStackTrace(stackTrace, target) {
 		    	refreshEnabled = false;
 				$('#stackTracePopup').stop(true, true);
-	
+
 				$('#stackTracePopup')
 					.html(stackTrace)
 					.css({"left": 0, "top": 0})
 					.offset({"left": $(target).position().left, "top": $(target).position().top + 20 })
 					.show('slide', {direction: 'up'}, 100);
 		    }
-		    
+
 			function hideStackTrace() {
 				$('#stackTracePopup').stop(true, true);
 				$('#stackTracePopup').hide('slide', {direction: 'up'}, 100);

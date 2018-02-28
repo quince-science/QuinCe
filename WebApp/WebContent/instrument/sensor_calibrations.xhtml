@@ -49,9 +49,9 @@
 					<p:button value="Cancel" onclick="return hideCalibrationDialog();"/>
 				</h:panelGrid>
 			</p:dialog>
-			
+
 			<h:panelGrid columns="1" styleClass="buttonPanel">
-				<p:button value="Add Calibration" onclick="showCalibrationDialog(); return false;"/> 
+				<p:button value="Add Calibration" onclick="showCalibrationDialog(); return false;"/>
 			</h:panelGrid>
 
 			<div class="sectionTitle">
@@ -68,10 +68,10 @@
 					<h:outputText value="#{calibration.humanReadableCoefficients}"/>
 				</p:column>
 			</p:dataTable>
-			
-			
+
+
 			<h:panelGrid columns="1" styleClass="buttonPanel">
-				<p:commandButton value="Back to Instruments List" action="/instrument/instrument_list.xhtml"/> 
+				<p:commandButton value="Back to Instruments List" action="/instrument/instrument_list.xhtml"/>
 			</h:panelGrid>
 		</h:form>
 	</ui:define>
