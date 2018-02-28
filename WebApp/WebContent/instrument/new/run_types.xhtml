@@ -1,73 +1,73 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:h="http://xmlns.jcp.org/jsf/html"
-	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-	xmlns:f="http://xmlns.jcp.org/jsf/core"
-	xmlns:p="http://primefaces.org/ui"
-	xmlns:c="http://java.sun.com/jsp/jstl/core"
-	template="/WEB-INF/templates/new_instrument.xhtml">
+  xmlns:h="http://xmlns.jcp.org/jsf/html"
+  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+  xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:p="http://primefaces.org/ui"
+  xmlns:c="http://java.sun.com/jsp/jstl/core"
+  template="/WEB-INF/templates/new_instrument.xhtml">
 
-	<ui:define name="title">New Instrument</ui:define>
-	<ui:define name="instrumentHead">
-		<c:set var="instrumentStep" value="2" scope="request"/>
-		<script>
-			$(document).ready(function() {
-				setTimeout(function() {
-					  renderAssignedCategories();
-					  populateRunTypeMenus();
-					}, 500);
-			});
-		</script>
-	</ui:define>
-	<ui:define name="new_instrument_content">
-		<h:form id="newInstrumentForm" metho="post" charset="utf8">
+  <ui:define name="title">New Instrument</ui:define>
+  <ui:define name="instrumentHead">
+    <c:set var="instrumentStep" value="2" scope="request"/>
+    <script>
+      $(document).ready(function() {
+        setTimeout(function() {
+            renderAssignedCategories();
+            populateRunTypeMenus();
+          }, 500);
+      });
+    </script>
+  </ui:define>
+  <ui:define name="new_instrument_content">
+    <h:form id="newInstrumentForm" metho="post" charset="utf8">
 
-			<h:inputHidden id="assignedCategories" value="#{newInstrumentBean.categoryAssignments}"/>
-			<h:inputHidden id="assignedRunTypes" value="#{newInstrumentBean.runTypeAssignments}"/>
+      <h:inputHidden id="assignedCategories" value="#{newInstrumentBean.categoryAssignments}"/>
+      <h:inputHidden id="assignedRunTypes" value="#{newInstrumentBean.runTypeAssignments}"/>
 
-			<h:inputHidden id="assignCategoryFile" value="#{newInstrumentBean.runTypeAssignFile}"/>
-			<h:inputHidden id="assignCategoryRunType" value="#{newInstrumentBean.runTypeAssignName}"/>
-			<h:inputHidden id="assignCategoryCode" value="#{newInstrumentBean.runTypeAssignCode}"/>
-			<p:commandLink id="assignCategoryLink" style="invisible" ajax="true" action="#{newInstrumentBean.assignRunTypeCategory}"
-				process="assignCategoryFile assignCategoryRunType assignCategoryCode" update="assignedCategories" oncomplete="renderAssignedCategories();"/>
+      <h:inputHidden id="assignCategoryFile" value="#{newInstrumentBean.runTypeAssignFile}"/>
+      <h:inputHidden id="assignCategoryRunType" value="#{newInstrumentBean.runTypeAssignName}"/>
+      <h:inputHidden id="assignCategoryCode" value="#{newInstrumentBean.runTypeAssignCode}"/>
+      <p:commandLink id="assignCategoryLink" style="invisible" ajax="true" action="#{newInstrumentBean.assignRunTypeCategory}"
+        process="assignCategoryFile assignCategoryRunType assignCategoryCode" update="assignedCategories" oncomplete="renderAssignedCategories();"/>
 
 
-			<p:fieldset id="categoriesPanel" legend="Run Type Categories" style="margin-bottom: 20px">
-				<div id="categoriesList" class="assignmentsList"></div>
-			</p:fieldset>
+      <p:fieldset id="categoriesPanel" legend="Run Type Categories" style="margin-bottom: 20px">
+        <div id="categoriesList" class="assignmentsList"></div>
+      </p:fieldset>
 
-			<p:fieldset id="runTypesPanel" legend="Assign Run Types" style="margin-bottom: 20px">
-				<div class="instructions">
-					Below is a list of values from the Run Type columns in each file. Please associate each
-					run type with a measurement category.
-				</div>
+      <p:fieldset id="runTypesPanel" legend="Assign Run Types" style="margin-bottom: 20px">
+        <div class="instructions">
+          Below is a list of values from the Run Type columns in each file. Please associate each
+          run type with a measurement category.
+        </div>
 
-				<div id="runTypeFiles">
-					<ui:repeat value="#{newInstrumentBean.instrumentFiles}" var="file">
-						<div class="runTypeFile">
-							<p:fieldset legend="#{file.fileDescription}">
-								<table class="form">
-		  							<ui:repeat value="#{file.runTypeValues}" var="runType">
-		    							<tr>
-		      								<td class="labels">#{runType}</td>
-		      								<td>
-		        								<p:selectOneMenu widgetVar="#{file.fileDescription}-#{runType}-menu" onchange="setRunTypeCategory('#{file.fileDescription}', '#{runType}', event.target.value)">
-		          									<f:selectItems value="#{newInstrumentBean.runTypeCategories}" var="category" itemValue="#{category.code}" itemLabel="#{category.name}"/>
-		        								</p:selectOneMenu>
-		      								</td>
-										</tr>
-									</ui:repeat>
-								</table>
-							</p:fieldset>
-						</div>
-					</ui:repeat>
-				</div>
-			</p:fieldset>
-			<!--  The cancel include has a 2 entries (1 is invisible) -->
-			<h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
-				<ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml"/>
-				<p:commandButton value="Back" ajax="false" action="#{newInstrumentBean.goToAssignVariables}" immediate="true"/>
-				<p:commandButton id="nextButton" widgetVar="next" value="Next" ajax="false" action="#{newInstrumentBean.goToOtherInfo}"/>
-			</h:panelGrid>
-		</h:form>
-	</ui:define>
+        <div id="runTypeFiles">
+          <ui:repeat value="#{newInstrumentBean.instrumentFiles}" var="file">
+            <div class="runTypeFile">
+              <p:fieldset legend="#{file.fileDescription}">
+                <table class="form">
+                    <ui:repeat value="#{file.runTypeValues}" var="runType">
+                      <tr>
+                          <td class="labels">#{runType}</td>
+                          <td>
+                            <p:selectOneMenu widgetVar="#{file.fileDescription}-#{runType}-menu" onchange="setRunTypeCategory('#{file.fileDescription}', '#{runType}', event.target.value)">
+                                <f:selectItems value="#{newInstrumentBean.runTypeCategories}" var="category" itemValue="#{category.code}" itemLabel="#{category.name}"/>
+                            </p:selectOneMenu>
+                          </td>
+                    </tr>
+                  </ui:repeat>
+                </table>
+              </p:fieldset>
+            </div>
+          </ui:repeat>
+        </div>
+      </p:fieldset>
+      <!--  The cancel include has a 2 entries (1 is invisible) -->
+      <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
+        <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml"/>
+        <p:commandButton value="Back" ajax="false" action="#{newInstrumentBean.goToAssignVariables}" immediate="true"/>
+        <p:commandButton id="nextButton" widgetVar="next" value="Next" ajax="false" action="#{newInstrumentBean.goToOtherInfo}"/>
+      </h:panelGrid>
+    </h:form>
+  </ui:define>
 </ui:composition>
