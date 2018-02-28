@@ -38,9 +38,9 @@ var BASE_GRAPH_OPTIONS = {
           gridLineColor: 'rbg(200, 200, 200)',
         }
     },
-	clickCallback: function(e, x, points) {
-		scrollToTableRow(getRowId(e, x, points));
-	}
+  clickCallback: function(e, x, points) {
+    scrollToTableRow(getRowId(e, x, points));
+  }
 };
 
 var VARIABLES_DIALOG_ENTRY_HEIGHT = 35;
@@ -73,14 +73,14 @@ var map2Extent = null;
 var redrawMap = true;
 
 var scaleOptions = {
-	outliers: 'b',
-	outlierSize: 5,
-	decimalPlaces: 3
+  outliers: 'b',
+  outlierSize: 5,
+  decimalPlaces: 3
 };
 
 var mapSource = new ol.source.Stamen({
-		layer: "terrain",
-		url: "https://stamen-tiles-{a-d}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png"
+    layer: "terrain",
+    url: "https://stamen-tiles-{a-d}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png"
 });
 
 //The data table
@@ -110,50 +110,50 @@ var tableSplitProportion = 0.5;
 
 // Page Load function - kicks everything off
 $(function() {
-	// Make the panel splits
-	$('#plotPageContent').split({orientation: 'horizontal', onDragEnd: function(){scaleTableSplit()}});
-	tableSplitProportion = 0.5;
+  // Make the panel splits
+  $('#plotPageContent').split({orientation: 'horizontal', onDragEnd: function(){scaleTableSplit()}});
+  tableSplitProportion = 0.5;
 
-	if (typeof start == 'function') {
-		start();
-	}
-	
-	// When the window is resized, scale the panels
-	$(window).resize(function() {
-		clearTimeout(resizeEventTimer);
-		resizeEventTimer = setTimeout(resizeContent, 100);
-	});
+  if (typeof start == 'function') {
+    start();
+  }
+
+  // When the window is resized, scale the panels
+  $(window).resize(function() {
+    clearTimeout(resizeEventTimer);
+    resizeEventTimer = setTimeout(resizeContent, 100);
+  });
 });
 
 function scaleTableSplit() {
-	tableSplitProportion = $('#plotPageContent').split().position() / $('#plotPageContent').height();
-	resizeContent();
+  tableSplitProportion = $('#plotPageContent').split().position() / $('#plotPageContent').height();
+  resizeContent();
 }
 
 function resizeContent() {
-	$('#plotPageContent').height(window.innerHeight - 65);
+  $('#plotPageContent').height(window.innerHeight - 65);
 
-	$('#plotPageContent').split().position($('#plotPageContent').height() * tableSplitProportion);
-	
-	if (null != jsDataTable) {
-		$('.dataTables_scrollBody').height(calcTableScrollY());
-	}
+  $('#plotPageContent').split().position($('#plotPageContent').height() * tableSplitProportion);
 
-	if (typeof resizePlots == 'function') {
-		resizePlots();
-	}
+  if (null != jsDataTable) {
+    $('.dataTables_scrollBody').height(calcTableScrollY());
+  }
+
+  if (typeof resizePlots == 'function') {
+    resizePlots();
+  }
 }
 
 function makeJSDates(data) {
-	
-	for (var i = 0; i < data.length; i++) {
-		// Replace the milliseconds value with a Javascript date
-		point_data = data[i];
-		point_data[0] = new Date(point_data[0]);
-		data[i] = point_data;
-	}
 
-	return data;
+  for (var i = 0; i < data.length; i++) {
+    // Replace the milliseconds value with a Javascript date
+    point_data = data[i];
+    point_data[0] = new Date(point_data[0]);
+    data[i] = point_data;
+  }
+
+  return data;
 }
 
 /*
@@ -163,84 +163,84 @@ function makeJSDates(data) {
  * its data from the server using the hidden form.
  */
 function drawTable() {
-	html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%"><thead>';
+  html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%"><thead>';
 
-	columnHeadings.forEach(heading => {
-		html += '<th>';
-		html += heading;
-		html += '</th>';
-	});
+  columnHeadings.forEach(heading => {
+    html += '<th>';
+    html += heading;
+    html += '</th>';
+  });
 
-	html += '</thead></table>';
+  html += '</thead></table>';
 
-	$('#tableContent').html(html);
-    
+  $('#tableContent').html(html);
+
     jsDataTable = $('#dataTable').DataTable( {
-    	ordering: false,
-    	searching: false,
-    	serverSide: true,
-    	scroller: {
-    		loadingIndicator: true		
-    	},
-    	scrollY: calcTableScrollY(),
-    	ajax: function ( data, callback, settings ) {
-    		// Since we've done a major scroll, disable the short
-    		// scroll timeout
-    		clearTimeout(scrollEventTimer);
-    		scrollEventTimer = null;
-    		
-    		// Store the callback		
-    		dataTableDrawCallback = callback;		
-    				
-    		// Fill in the form inputs		
-    		$('#plotPageForm\\:tableDataDraw').val(data.draw);		
-    		$('#plotPageForm\\:tableDataStart').val(data.start);		
-    		$('#plotPageForm\\:tableDataLength').val(data.length);		
-    		
-    		// Submit the query to the server		
-    		$('#plotPageForm\\:tableGetData').click();		
-    	},
-    	bInfo: false,
-    	drawCallback: function (settings) {
-    		if (null != tableScrollRow) {
-    			highlightRow(tableScrollRow);
-				tableScrollRow = null;
-    		}
-    	},
-    	rowCallback: function( row, data, index ) {
-    		if ($.inArray(data[0], selectedRows) > -1) {
+      ordering: false,
+      searching: false,
+      serverSide: true,
+      scroller: {
+        loadingIndicator: true
+      },
+      scrollY: calcTableScrollY(),
+      ajax: function ( data, callback, settings ) {
+        // Since we've done a major scroll, disable the short
+        // scroll timeout
+        clearTimeout(scrollEventTimer);
+        scrollEventTimer = null;
+
+        // Store the callback
+        dataTableDrawCallback = callback;
+
+        // Fill in the form inputs
+        $('#plotPageForm\\:tableDataDraw').val(data.draw);
+        $('#plotPageForm\\:tableDataStart').val(data.start);
+        $('#plotPageForm\\:tableDataLength').val(data.length);
+
+        // Submit the query to the server
+        $('#plotPageForm\\:tableGetData').click();
+      },
+      bInfo: false,
+      drawCallback: function (settings) {
+        if (null != tableScrollRow) {
+          highlightRow(tableScrollRow);
+        tableScrollRow = null;
+        }
+      },
+      rowCallback: function( row, data, index ) {
+        if ($.inArray(data[0], selectedRows) > -1) {
                 $(row).addClass('selected');
             }
-            
-    		// For some reason, the click handler is added twice
-    		// on the first round of data loading (i.e. when the screen
-    		// is first drawn). I can't find why, so for now I'll just
-    		// remove all existing click handlers before adding this one.
-    		$(row).off('click');
+
+        // For some reason, the click handler is added twice
+        // on the first round of data loading (i.e. when the screen
+        // is first drawn). I can't find why, so for now I'll just
+        // remove all existing click handlers before adding this one.
+        $(row).off('click');
             $(row).on('click', function(event) {
-            	clickRowAction(data[0], event.shiftKey);
+              clickRowAction(data[0], event.shiftKey);
             });
         },
-    	columnDefs: getColumnDefs()
+      columnDefs: getColumnDefs()
     });
-    
+
     renderTableColumns();
     resizeContent();
     clearSelection();
-    
+
     // Large table scrolls trigger highlights when the table is redrawn.
     // This handles small scrolls that don't trigger a redraw.
     $('.dataTables_scrollBody').scroll(function() {
-		if (null != tableScrollRow) {
-			if (scrollEventTimer) {
-				clearTimeout(scrollEventTimer);
-			}
-			
-			scrollEventTimer = setTimeout(function() {
-				highlightRow(tableScrollRow);
-				tableScrollRow = null;
-			}, scrollEventTimeLimit);
-		}
+    if (null != tableScrollRow) {
+      if (scrollEventTimer) {
+        clearTimeout(scrollEventTimer);
+      }
+
+      scrollEventTimer = setTimeout(function() {
+        highlightRow(tableScrollRow);
+        tableScrollRow = null;
+      }, scrollEventTimeLimit);
+    }
     });
 }
 
@@ -248,45 +248,45 @@ function drawTable() {
  * Calculate the value of the scrollY entry for the data table
  */
 function calcTableScrollY() {
-	return $('#tableContent').height() - $('#plotPageForm\\:footerToolbar').outerHeight();
+  return $('#tableContent').height() - $('#plotPageForm\\:footerToolbar').outerHeight();
 }
 
 function getSelectableRows() {
-	return JSON.parse($('#plotPageForm\\:selectableRows').val());
+  return JSON.parse($('#plotPageForm\\:selectableRows').val());
 }
 /*
- * Called when table data has been downloaded from the server.		
- * The previously stored callback function is triggered with		
- * the data from the server.		
- */		
-function tableDataDownload(data) {		
-	var status = data.status;		
-	if (status == "success") {
-		dataTableDrawCallback( {		
-            draw: $('#plotPageForm\\:tableDataDraw').val(),		
-            data: JSON.parse($('#plotPageForm\\:tableJsonData').val()),		
-            recordsTotal: $('#plotPageForm\\:recordCount').val(),		
-            recordsFiltered: $('#plotPageForm\\:recordCount').val()		
-		});
-	}
+ * Called when table data has been downloaded from the server.
+ * The previously stored callback function is triggered with
+ * the data from the server.
+ */
+function tableDataDownload(data) {
+  var status = data.status;
+  if (status == "success") {
+    dataTableDrawCallback( {
+            draw: $('#plotPageForm\\:tableDataDraw').val(),
+            data: JSON.parse($('#plotPageForm\\:tableJsonData').val()),
+            recordsTotal: $('#plotPageForm\\:recordCount').val(),
+            recordsFiltered: $('#plotPageForm\\:recordCount').val()
+    });
+  }
 }
 
 /*
  * Get the Row ID from a given graph click event
- * 
+ *
  * For now, this just looks up the row using the X value. This will
  * work for dates, but will need to be more intelligent for non-date plots.
  */
 function getRowId(event, xValue, points) {
-	var containerId = $(event.target).
-						parents().
-						filter(function() {
-							return this.id.match(/plot[1-2]Container/)
-						})[0]['id'];
-	
-	var plotIndex = containerId.substring(4, 5);
-	var pointId = points[0]['idx'];
-	return getPlotData(plotIndex)[pointId][1];
+  var containerId = $(event.target).
+            parents().
+            filter(function() {
+              return this.id.match(/plot[1-2]Container/)
+            })[0]['id'];
+
+  var plotIndex = containerId.substring(4, 5);
+  var pointId = points[0]['idx'];
+  return getPlotData(plotIndex)[pointId][1];
 }
 
 /*
@@ -294,155 +294,155 @@ function getRowId(event, xValue, points) {
  */
 function scrollToTableRow(rowId) {
 
-	var tableRow = -1;
-	
-	if (null != rowId) {
-		tableRow = JSON.parse($('#plotPageForm\\:tableRowIds').val()).indexOf(rowId);
-	}
-	
-	if (tableRow >= 0) {
-		jsDataTable.scroller().scrollToRow(tableRow - 2);
-		
-		// Because we scroll to the row - 2, we know that the
-		// row we want to highlight is the third row
-		tableScrollRow = tableRow;
-		
-		// The highlight is done as part of the table draw callback
-	}
+  var tableRow = -1;
+
+  if (null != rowId) {
+    tableRow = JSON.parse($('#plotPageForm\\:tableRowIds').val()).indexOf(rowId);
+  }
+
+  if (tableRow >= 0) {
+    jsDataTable.scroller().scrollToRow(tableRow - 2);
+
+    // Because we scroll to the row - 2, we know that the
+    // row we want to highlight is the third row
+    tableScrollRow = tableRow;
+
+    // The highlight is done as part of the table draw callback
+  }
 }
 
 function highlightRow(tableRow) {
-	if (null != tableRow) {
-		setTimeout(function() {
-			var rowNode = $('#row' + tableRow)[0];
-			$(rowNode).css('animationName', 'rowFlash').css('animationDuration', '1s');
-			setTimeout(function() {
-				$(rowNode).css('animationName', '');
-			}, 1000);
-		}, 100);
-	}
+  if (null != tableRow) {
+    setTimeout(function() {
+      var rowNode = $('#row' + tableRow)[0];
+      $(rowNode).css('animationName', 'rowFlash').css('animationDuration', '1s');
+      setTimeout(function() {
+        $(rowNode).css('animationName', '');
+      }, 1000);
+    }, 100);
+  }
 }
 
 /*
  * Process row clicks as selections/deselections
  */
 function clickRowAction(rowId, shiftClick) {
-	// We only do something if the row is selectable
-	if ($.inArray(rowId, getSelectableRows()) != -1) {
-		
-		var action = lastClickedAction;
-		var actionRows = [rowId];
-		
-		if (!shiftClick) {
-			if ($.inArray(rowId, selectedRows) != -1) {
-				action = DESELECT_ACTION;
-			} else {
-				action = SELECT_ACTION;
-			}
-		} else {
-			actionRows = getRowsInRange(lastClickedRow, rowId);
-		}
-		
-		if (action == SELECT_ACTION) {
-			addRowsToSelection(actionRows);
-		} else {
-			removeRowsFromSelection(actionRows);
-		}
-		
-		selectionUpdated();
-		lastClickedRow = rowId;
-		lastClickedAction = action;
-	}
+  // We only do something if the row is selectable
+  if ($.inArray(rowId, getSelectableRows()) != -1) {
+
+    var action = lastClickedAction;
+    var actionRows = [rowId];
+
+    if (!shiftClick) {
+      if ($.inArray(rowId, selectedRows) != -1) {
+        action = DESELECT_ACTION;
+      } else {
+        action = SELECT_ACTION;
+      }
+    } else {
+      actionRows = getRowsInRange(lastClickedRow, rowId);
+    }
+
+    if (action == SELECT_ACTION) {
+      addRowsToSelection(actionRows);
+    } else {
+      removeRowsFromSelection(actionRows);
+    }
+
+    selectionUpdated();
+    lastClickedRow = rowId;
+    lastClickedAction = action;
+  }
 }
 
 function addRowsToSelection(rows) {
-	var rowsIndex = 0;
-	var selectionIndex = 0;
-	
-	while (selectionIndex < selectedRows.length && rowsIndex < rows.length) {
-		while (selectedRows[selectionIndex] > rows[rowsIndex]) {
-			selectedRows.splice(selectionIndex, 0, rows[rowsIndex]);
-			selectionIndex++;
-			rowsIndex++;
-		}
-		
-		if (selectedRows[selectionIndex] == rows[rowsIndex]) {
-			rowsIndex++;
-		}
-		selectionIndex++;
-	}
-	
-	if (rowsIndex < rows.length) {
-		selectedRows = selectedRows.concat(rows.slice(rowsIndex));
-	}
+  var rowsIndex = 0;
+  var selectionIndex = 0;
+
+  while (selectionIndex < selectedRows.length && rowsIndex < rows.length) {
+    while (selectedRows[selectionIndex] > rows[rowsIndex]) {
+      selectedRows.splice(selectionIndex, 0, rows[rowsIndex]);
+      selectionIndex++;
+      rowsIndex++;
+    }
+
+    if (selectedRows[selectionIndex] == rows[rowsIndex]) {
+      rowsIndex++;
+    }
+    selectionIndex++;
+  }
+
+  if (rowsIndex < rows.length) {
+    selectedRows = selectedRows.concat(rows.slice(rowsIndex));
+  }
 }
 
 function removeRowsFromSelection(rows) {
-	
-	var rowsIndex = 0;
-	var selectionIndex = 0;
-	
-	while (selectionIndex < selectedRows.length && rowsIndex < rows.length) {
-		while (selectedRows[selectionIndex] == rows[rowsIndex]) {
-			selectedRows.splice(selectionIndex, 1);
-			rowsIndex++;
-			if (rowsIndex == rows.length || selectionIndex == selectedRows.length) {
-				break;
-			}
-		}
-		selectionIndex++;
-	}
+
+  var rowsIndex = 0;
+  var selectionIndex = 0;
+
+  while (selectionIndex < selectedRows.length && rowsIndex < rows.length) {
+    while (selectedRows[selectionIndex] == rows[rowsIndex]) {
+      selectedRows.splice(selectionIndex, 1);
+      rowsIndex++;
+      if (rowsIndex == rows.length || selectionIndex == selectedRows.length) {
+        break;
+      }
+    }
+    selectionIndex++;
+  }
 }
 
 function getRowsInRange(startRow, endRow) {
-	
-	var rows = [];
-	
-	var step = 1;
-	if (endRow < startRow) {
-		step = -1;
-	}
-	
-	var startIndex = $.inArray(startRow, getSelectableRows());
-	var currentIndex = startIndex;
-	
-	while (getSelectableRows()[currentIndex] != endRow) {
-		currentIndex = currentIndex + step;
-		rows.push(getSelectableRows()[currentIndex]);
-	}
-	
-	if (step == -1) {
-		rows = rows.reverse();
-	}
-	
-	return rows;
+
+  var rows = [];
+
+  var step = 1;
+  if (endRow < startRow) {
+    step = -1;
+  }
+
+  var startIndex = $.inArray(startRow, getSelectableRows());
+  var currentIndex = startIndex;
+
+  while (getSelectableRows()[currentIndex] != endRow) {
+    currentIndex = currentIndex + step;
+    rows.push(getSelectableRows()[currentIndex]);
+  }
+
+  if (step == -1) {
+    rows = rows.reverse();
+  }
+
+  return rows;
 }
 
 function selectionUpdated() {
 
-	// Update the displayed rows
-	var rows = jsDataTable.rows()[0];
-	for (var i = 0; i < rows.length; i++) {
-		var row = jsDataTable.row(i);
-		if ($.inArray(row.data()[0], selectedRows) > -1) {
-			$(row.node()).addClass('selected');
-		} else {
-			$(row.node()).removeClass('selected');
-		}
-	}
-	
-	// Update the selected rows counter
-	$('#selectedRowsCount').html(selectedRows.length);
-	
-	if (typeof postSelectionUpdated == 'function') {
-		postSelectionUpdated();
-	}
+  // Update the displayed rows
+  var rows = jsDataTable.rows()[0];
+  for (var i = 0; i < rows.length; i++) {
+    var row = jsDataTable.row(i);
+    if ($.inArray(row.data()[0], selectedRows) > -1) {
+      $(row.node()).addClass('selected');
+    } else {
+      $(row.node()).removeClass('selected');
+    }
+  }
+
+  // Update the selected rows counter
+  $('#selectedRowsCount').html(selectedRows.length);
+
+  if (typeof postSelectionUpdated == 'function') {
+    postSelectionUpdated();
+  }
 }
 
 function clearSelection() {
-	jsDataTable.rows(selectedRows).deselect();
-	selectedRows = [];
-	selectionUpdated();
+  jsDataTable.rows(selectedRows).deselect();
+  selectedRows = [];
+  selectionUpdated();
 }
 
 function showInfoPopup(qcFlag, qcMessage, target) {
@@ -452,25 +452,25 @@ function showInfoPopup(qcFlag, qcMessage, target) {
     if (qcMessage != "") {
 
         var content = '';
-	    content += '<div class="qcInfoMessage ';
+      content += '<div class="qcInfoMessage ';
 
-	    switch (qcFlag) {
-	    case 3: {
-	    	content += 'questionable';
-	    	break;
-	    }
-	    case 4:
-	    case 44: {
-	    	content += 'bad';
-	    	break;
-    	}
-	    }
+      switch (qcFlag) {
+      case 3: {
+        content += 'questionable';
+        break;
+      }
+      case 4:
+      case 44: {
+        content += 'bad';
+        break;
+      }
+      }
 
-	    content += '">';
-	    content += qcMessage;
-	    content += '</div>';
+      content += '">';
+      content += qcMessage;
+      content += '</div>';
 
-    	$('#infoPopup')
+      $('#infoPopup')
           .html(content)
           .css({"left": 0, "top": 0})
           .offset({"left": $(target).position().left - $('#infoPopup').width() - 10, "top": $(target).offset().top - 3})
@@ -484,103 +484,103 @@ function hideInfoPopup() {
 }
 
 function drawPlot(index) {
-	
-	var plotVar = 'plot' + index;
-	
-	// Remove the existing plot
-	if (null != window[plotVar]) {
-		window[plotVar].destroy();
-	}
-	
-	var interactionModel = Dygraph.defaultInteractionModel;
-	interactionModel.dblclick = null;
 
-	var labels = getPlotLabels(index);
-	var xLabel = labels[0];
-	var yLabels = labels.slice(3);
-	var yLabel = yLabels[0];
-	
-	if (yLabels.length > 1) {
-		var yIds = JSON.parse($('#plotPageForm\\:plot' + index + 'YAxis').val());
-		yLabel = getVariableGroup(yIds[0]);
-	}
-	
-	
-	var graph_options = BASE_GRAPH_OPTIONS;
-	graph_options.labels = getPlotLabels(index);
-	graph_options.xlabel = xLabel;
-	graph_options.ylabel = yLabel;
-	graph_options.visibility = getPlotVisibility(index);
-	graph_options.interactionModel = interactionModel;
-	graph_options.width = $('#plot' + index + 'Panel').width();
-	graph_options.height = $('#plot' + index + 'Panel').height() - 40;
+  var plotVar = 'plot' + index;
 
-	var plotData = null;
-	// TODO 0 = date - but we need to make it a proper lookup
-	if ($('#plotPageForm\\:plot' + index + 'XAxis').val() == 0) {
-		plotData = makeJSDates(getPlotData(index));
-	} else {
-		plotData = getPlotData(index);
-	}
+  // Remove the existing plot
+  if (null != window[plotVar]) {
+    window[plotVar].destroy();
+  }
 
-	var plotHighlights = makeHighlights(index, plotData);
-	if (plotHighlights.length > 0) {
-		graph_options.underlayCallback = function(canvas, area, g) {
-			for (var i = 0; i < plotHighlights.length; i++) {
-				var xPoint = g.toDomXCoord(plotHighlights[i][0]);
-				var yPoint = g.toDomYCoord(plotHighlights[i][1]);
-				canvas.fillStyle = plotHighlights[i][2];
-				canvas.beginPath();
-				canvas.arc(xPoint, yPoint, PLOT_FLAG_SIZE, 0, 2 * Math.PI, false);
-				canvas.fill();
-			}
-		}
-	} else {
-		graph_options.underlayCallback = null;
-	}
+  var interactionModel = Dygraph.defaultInteractionModel;
+  interactionModel.dblclick = null;
 
-	window[plotVar] = new Dygraph (
-			document.getElementById('plot' + index + 'Container'),
-			plotData,
-			graph_options
-		);
+  var labels = getPlotLabels(index);
+  var xLabel = labels[0];
+  var yLabels = labels.slice(3);
+  var yLabel = yLabels[0];
+
+  if (yLabels.length > 1) {
+    var yIds = JSON.parse($('#plotPageForm\\:plot' + index + 'YAxis').val());
+    yLabel = getVariableGroup(yIds[0]);
+  }
+
+
+  var graph_options = BASE_GRAPH_OPTIONS;
+  graph_options.labels = getPlotLabels(index);
+  graph_options.xlabel = xLabel;
+  graph_options.ylabel = yLabel;
+  graph_options.visibility = getPlotVisibility(index);
+  graph_options.interactionModel = interactionModel;
+  graph_options.width = $('#plot' + index + 'Panel').width();
+  graph_options.height = $('#plot' + index + 'Panel').height() - 40;
+
+  var plotData = null;
+  // TODO 0 = date - but we need to make it a proper lookup
+  if ($('#plotPageForm\\:plot' + index + 'XAxis').val() == 0) {
+    plotData = makeJSDates(getPlotData(index));
+  } else {
+    plotData = getPlotData(index);
+  }
+
+  var plotHighlights = makeHighlights(index, plotData);
+  if (plotHighlights.length > 0) {
+    graph_options.underlayCallback = function(canvas, area, g) {
+      for (var i = 0; i < plotHighlights.length; i++) {
+        var xPoint = g.toDomXCoord(plotHighlights[i][0]);
+        var yPoint = g.toDomYCoord(plotHighlights[i][1]);
+        canvas.fillStyle = plotHighlights[i][2];
+        canvas.beginPath();
+        canvas.arc(xPoint, yPoint, PLOT_FLAG_SIZE, 0, 2 * Math.PI, false);
+        canvas.fill();
+      }
+    }
+  } else {
+    graph_options.underlayCallback = null;
+  }
+
+  window[plotVar] = new Dygraph (
+      document.getElementById('plot' + index + 'Container'),
+      plotData,
+      graph_options
+    );
 }
 
 function getPlotVisibility(index) {
-	
-	var labels = getPlotLabels(index);
-	
-	var visibility = [];
-	
-	for (var i = 1; i < labels.length; i++) {
-		switch (labels[i]) {
-		case 'ID':
-		case 'Manual Flag': {
-			visibility.push(false);
-			break;
-		}
-		default: {
-			visibility.push(true);
-		}
-		}
-	}
-	
-	return visibility;
+
+  var labels = getPlotLabels(index);
+
+  var visibility = [];
+
+  for (var i = 1; i < labels.length; i++) {
+    switch (labels[i]) {
+    case 'ID':
+    case 'Manual Flag': {
+      visibility.push(false);
+      break;
+    }
+    default: {
+      visibility.push(true);
+    }
+    }
+  }
+
+  return visibility;
 }
 
 function getPlotLabels(index) {
-	return JSON.parse($('#plotPageForm\\:plot' + index + 'Labels').val());
+  return JSON.parse($('#plotPageForm\\:plot' + index + 'Labels').val());
 }
 
 function getPlotData(index) {
-	var result = null;
-	
-	if (index == 1) {
-		result = JSON.parse($('#plotPageForm\\:plot1Data').val());
-	} else if (index == 2) {
-		result = JSON.parse($('#plotPageForm\\:plot2Data').val());
-	}
-	return result;
+  var result = null;
+
+  if (index == 1) {
+    result = JSON.parse($('#plotPageForm\\:plot1Data').val());
+  } else if (index == 2) {
+    result = JSON.parse($('#plotPageForm\\:plot2Data').val());
+  }
+  return result;
 }
 
 function getFlagText(flag) {
@@ -599,7 +599,7 @@ function getFlagText(flag) {
     } else if (flag == '4') {
         flagText = 'Bad';
     } else if (flag == '44') {
-    	flagText = 'Fatal';
+      flagText = 'Fatal';
     } else {
         flagText = 'Needs Flag';
     }
@@ -630,542 +630,542 @@ function getFlagClass(flag) {
 }
 
 function showVariableDialog(plotIndex) {
-	
-	variablesPlotIndex = plotIndex;
-	
-	var mode = getPlotMode(plotIndex);
-	
-	if (mode == 'plot') {
-		setupPlotVariables(plotIndex);
-	} else if (mode == 'map') {
-		setupMapVariables(plotIndex);
-	}
-	
-	PF('variableDialog').show();
-	resizeVariablesDialog();
+
+  variablesPlotIndex = plotIndex;
+
+  var mode = getPlotMode(plotIndex);
+
+  if (mode == 'plot') {
+    setupPlotVariables(plotIndex);
+  } else if (mode == 'map') {
+    setupMapVariables(plotIndex);
+  }
+
+  PF('variableDialog').show();
+  resizeVariablesDialog();
 }
 
 function setupPlotVariables(plotIndex) {
-	$("[id$=mapVarCheckbox]").hide();
-	$("[id$=AxisButton]").show();
-	updateXAxisButtons($('#plotPageForm\\:plot' + plotIndex + 'XAxis').val());
-	populateYAxisButtons(JSON.parse($('#plotPageForm\\:plot' + plotIndex + 'YAxis').val()));
+  $("[id$=mapVarCheckbox]").hide();
+  $("[id$=AxisButton]").show();
+  updateXAxisButtons($('#plotPageForm\\:plot' + plotIndex + 'XAxis').val());
+  populateYAxisButtons(JSON.parse($('#plotPageForm\\:plot' + plotIndex + 'YAxis').val()));
 }
 
 // Select the specified X Axis in the dialog
 function updateXAxisButtons(variable) {
-	
-	if (!variablesUpdating) {
-		variablesUpdating = true;
-		
-		for (var i = 0; i < variableCount; i++) {
-			var widget = PrimeFaces.widgets['xAxis-' + i];
-			if (null != widget) {
-				if (i == variable) {
-					widget.check();
-				} else {
-					widget.uncheck();
-				}
-			}
-		}
 
-		variablesUpdating = false;
-	}
+  if (!variablesUpdating) {
+    variablesUpdating = true;
+
+    for (var i = 0; i < variableCount; i++) {
+      var widget = PrimeFaces.widgets['xAxis-' + i];
+      if (null != widget) {
+        if (i == variable) {
+          widget.check();
+        } else {
+          widget.uncheck();
+        }
+      }
+    }
+
+    variablesUpdating = false;
+  }
 }
 
 function populateYAxisButtons(variables) {
-	if (!variablesUpdating) {
-		variablesUpdating = true;
-		
+  if (!variablesUpdating) {
+    variablesUpdating = true;
 
-		for (var i = 0; i < variableCount; i++) {
-			var widget = PrimeFaces.widgets['yAxis-' + i];
-			if (null != widget) {
-				if ($.inArray(i, variables) > -1) {
-					widget.check();
-				} else {
-					widget.uncheck();
-				}
-			}
-		}
-		
-		variablesUpdating = false;
-	}
+
+    for (var i = 0; i < variableCount; i++) {
+      var widget = PrimeFaces.widgets['yAxis-' + i];
+      if (null != widget) {
+        if ($.inArray(i, variables) > -1) {
+          widget.check();
+        } else {
+          widget.uncheck();
+        }
+      }
+    }
+
+    variablesUpdating = false;
+  }
 }
 
 function updateYAxisButtons(variable) {
-	if (!variablesUpdating) {
-		variablesUpdating = true;
-		
-		var finished = false;
-		var index = 0;
-		
-		while (!finished) {
-			var widget = PrimeFaces.widgets['yAxis-' + index];
-			if (null == widget) {
-				finished = true;
-			} else if (index != variable && !inSameGroup(index, variable)) {
-				widget.uncheck();
-			}
-			
-			index++;
-		}
+  if (!variablesUpdating) {
+    variablesUpdating = true;
 
-		// If no Y axis is selected, disabled the OK button
-		if ($('[id$=yAxisButton_input]:checked').length == 0) {
-			PF('variableOk').disable();
-		} else {
-			PF('variableOk').enable();
-		}
-		
-		variablesUpdating = false;
-	}
+    var finished = false;
+    var index = 0;
+
+    while (!finished) {
+      var widget = PrimeFaces.widgets['yAxis-' + index];
+      if (null == widget) {
+        finished = true;
+      } else if (index != variable && !inSameGroup(index, variable)) {
+        widget.uncheck();
+      }
+
+      index++;
+    }
+
+    // If no Y axis is selected, disabled the OK button
+    if ($('[id$=yAxisButton_input]:checked').length == 0) {
+      PF('variableOk').disable();
+    } else {
+      PF('variableOk').enable();
+    }
+
+    variablesUpdating = false;
+  }
 }
 
 // See if two ids are in the same variable group
 function inSameGroup(id1, id2) {
-	var result = false;
-	
-	if (id1 == id2) {
-		result = true;
-	} else {
-		for (var i = 0; i < variableGroups.length; i++) {
-			var groupMembers = variableGroups[i];
-			if ($.inArray(id1, groupMembers) > -1 && $.inArray(id2, groupMembers) > -1) {
-				result = true;
-			}
-		}
-	}
-	
-	return result;
+  var result = false;
+
+  if (id1 == id2) {
+    result = true;
+  } else {
+    for (var i = 0; i < variableGroups.length; i++) {
+      var groupMembers = variableGroups[i];
+      if ($.inArray(id1, groupMembers) > -1 && $.inArray(id2, groupMembers) > -1) {
+        result = true;
+      }
+    }
+  }
+
+  return result;
 }
 
 function getVariableGroup(varIndex) {
-	
-	var label = '';
-	for (var i = 0; i < variableGroups.length; i++) {
-	
-		if ($.inArray(varIndex, variableGroups[i]) > -1) {
-			label = variableGroupNames[i];
-			break
-		}
-	}
-	
-	return label;
+
+  var label = '';
+  for (var i = 0; i < variableGroups.length; i++) {
+
+    if ($.inArray(varIndex, variableGroups[i]) > -1) {
+      label = variableGroupNames[i];
+      break
+    }
+  }
+
+  return label;
 }
 
 function setupMapVariables(plotIndex) {
-	$("[id$=AxisButton]").hide();
-	$("[id$=mapVarCheckbox]").show();
-	updateMapCheckboxes($('#plotPageForm\\:map' + plotIndex + 'Variable').val());
+  $("[id$=AxisButton]").hide();
+  $("[id$=mapVarCheckbox]").show();
+  updateMapCheckboxes($('#plotPageForm\\:map' + plotIndex + 'Variable').val());
 }
 
 // Select the specified variable in the dialog
 function updateMapCheckboxes(variable) {
-	
-	if (!variablesUpdating) {
-		variablesUpdating = true;
-		
-		var finished = false;
-		var index = 0;
-		
-		while (!finished) {
-			var widget = PrimeFaces.widgets['mapVar-' + index];
-			if (null == widget) {
-				finished = true;
-			} else if (index == variable) {
-				widget.check();
-			} else {
-				widget.uncheck();
-			}
 
-			index++;
-		}
+  if (!variablesUpdating) {
+    variablesUpdating = true;
 
-		variablesUpdating = false;
-	}
+    var finished = false;
+    var index = 0;
+
+    while (!finished) {
+      var widget = PrimeFaces.widgets['mapVar-' + index];
+      if (null == widget) {
+        finished = true;
+      } else if (index == variable) {
+        widget.check();
+      } else {
+        widget.uncheck();
+      }
+
+      index++;
+    }
+
+    variablesUpdating = false;
+  }
 }
 
 function resizeVariablesDialog() {
-	var varList = $('#variablesList');
-	varList.width(200);
-	
-	var maxHeight = $(window).innerHeight() - 200;
+  var varList = $('#variablesList');
+  varList.width(200);
 
-	var varsPerColumn = Math.ceil(maxHeight / VARIABLES_DIALOG_ENTRY_HEIGHT);
-	
-	var columns = Math.ceil(variableCount / varsPerColumn);
+  var maxHeight = $(window).innerHeight() - 200;
 
-	if (columns == 1 && variableCount < 5) {
-		varsPerColumn = variableCount;
-	} else if (columns < 2 && variableCount > 5) {
-		columns = 2;
-		varsPerColumn = Math.ceil(variableCount / 2);
-	}
-	
-	varList.height(varsPerColumn * VARIABLES_DIALOG_ENTRY_HEIGHT);
-	
-	PF('variableDialog').jq.width(varList.prop('scrollWidth') + 50);
-	PF('variableDialog').initPosition();
-	
-	variablesDialogSized = true;
+  var varsPerColumn = Math.ceil(maxHeight / VARIABLES_DIALOG_ENTRY_HEIGHT);
+
+  var columns = Math.ceil(variableCount / varsPerColumn);
+
+  if (columns == 1 && variableCount < 5) {
+    varsPerColumn = variableCount;
+  } else if (columns < 2 && variableCount > 5) {
+    columns = 2;
+    varsPerColumn = Math.ceil(variableCount / 2);
+  }
+
+  varList.height(varsPerColumn * VARIABLES_DIALOG_ENTRY_HEIGHT);
+
+  PF('variableDialog').jq.width(varList.prop('scrollWidth') + 50);
+  PF('variableDialog').initPosition();
+
+  variablesDialogSized = true;
 }
 
 function applyVariables() {
-	updatePlotInputs(variablesPlotIndex);
+  updatePlotInputs(variablesPlotIndex);
 
-	var mode = getPlotMode(variablesPlotIndex);
+  var mode = getPlotMode(variablesPlotIndex);
 
-	if (mode == 'plot') {
-		$('#plotPageForm\\:plot' + variablesPlotIndex + 'GetData').click();
-	} else if (mode == 'map') {
-		initMap(variablesPlotIndex);
-	}
+  if (mode == 'plot') {
+    $('#plotPageForm\\:plot' + variablesPlotIndex + 'GetData').click();
+  } else if (mode == 'map') {
+    initMap(variablesPlotIndex);
+  }
 }
 
 function updatePlotInputs(plotIndex) {
-	var mode = getPlotMode(plotIndex);
+  var mode = getPlotMode(plotIndex);
 
-	if (mode == 'plot') {
-		
-		// If no X Axis is selected, keep the current selection
-		var xAxis = getSelectedXAxis();
-		if (-1 != xAxis) {
-			$('#plotPageForm\\:plot' + plotIndex + 'XAxis').val(getSelectedXAxis());
-		}
-		
-		$('#plotPageForm\\:plot' + plotIndex + 'YAxis').val(getSelectedYAxis());
-	} else if (mode == 'map') {
-		$('#plotPageForm\\:map' + plotIndex + 'Variable').val(getSelectedMapVar());
-	}
-	
+  if (mode == 'plot') {
+
+    // If no X Axis is selected, keep the current selection
+    var xAxis = getSelectedXAxis();
+    if (-1 != xAxis) {
+      $('#plotPageForm\\:plot' + plotIndex + 'XAxis').val(getSelectedXAxis());
+    }
+
+    $('#plotPageForm\\:plot' + plotIndex + 'YAxis').val(getSelectedYAxis());
+  } else if (mode == 'map') {
+    $('#plotPageForm\\:map' + plotIndex + 'Variable').val(getSelectedMapVar());
+  }
+
 }
 
 function getSelectedXAxis() {
-	
-	var result = -1;
-	
-	for (var i = 0; i < variableCount; i++) {
-		var widget = PrimeFaces.widgets['xAxis-' + i];
-		if (null != widget) {
-			if (widget.input.prop('checked')) {
-				result = i;
-				break;
-			}
-		}
-	}
-	
-	return result;
+
+  var result = -1;
+
+  for (var i = 0; i < variableCount; i++) {
+    var widget = PrimeFaces.widgets['xAxis-' + i];
+    if (null != widget) {
+      if (widget.input.prop('checked')) {
+        result = i;
+        break;
+      }
+    }
+  }
+
+  return result;
 }
 
 function getSelectedYAxis() {
-	
-	var result = '[';
 
-	for (var i = 0; i < variableCount; i++) {
-		var widget = PrimeFaces.widgets['yAxis-' + i];
-		if (null != widget && widget.input.prop('checked')) {
-			result += i;
-			result += ',';
-		}
-	}
+  var result = '[';
 
-	if (result.length > 1) {
-		result = result.substring(0, result.length - 1);
-	}
-	result += ']';
+  for (var i = 0; i < variableCount; i++) {
+    var widget = PrimeFaces.widgets['yAxis-' + i];
+    if (null != widget && widget.input.prop('checked')) {
+      result += i;
+      result += ',';
+    }
+  }
 
-	console.log(result);
-	
-	return result;
+  if (result.length > 1) {
+    result = result.substring(0, result.length - 1);
+  }
+  result += ']';
+
+  console.log(result);
+
+  return result;
 }
 
 function getSelectedMapVar() {
-	
-	var result = -1;
-	
-	var id = 0;
-	var finished = false;
-	
-	while (!finished) {
-		var widget = PrimeFaces.widgets['mapVar-' + id];
-		if (null == widget) {
-			finished = true;
-		} else {
-			if (widget.input.prop('checked')) {
-				result = id;
-				finished = true;
-			}
-		}
-		
-		id++;
-	}
-	
-	return result;
+
+  var result = -1;
+
+  var id = 0;
+  var finished = false;
+
+  while (!finished) {
+    var widget = PrimeFaces.widgets['mapVar-' + id];
+    if (null == widget) {
+      finished = true;
+    } else {
+      if (widget.input.prop('checked')) {
+        result = id;
+        finished = true;
+      }
+    }
+
+    id++;
+  }
+
+  return result;
 }
 
 function updatePlot1(data) {
-	if (data.status == "success") {
-		updatePlot(1);
-	}
+  if (data.status == "success") {
+    updatePlot(1);
+  }
 }
 
 function updatePlot2(data) {
-	if (data.status == "success") {
-		updatePlot(2);
-	}
+  if (data.status == "success") {
+    updatePlot(2);
+  }
 }
 
 function updateMap1(data) {
-	if (data.status == "success") {
-		drawMap(1);
-	}
+  if (data.status == "success") {
+    drawMap(1);
+  }
 }
 
 function updateMap2(data) {
-	if (data.status == "success") {
-		drawMap(2);
-	}
+  if (data.status == "success") {
+    drawMap(2);
+  }
 }
 
 function updatePlot(plotIndex) {
 
-	if (PrimeFaces.widgets['variableDialog']) {
-		PF('variableDialog').hide();
-	}
-	
-	var mode = getPlotMode(plotIndex);
-	
-	if (mode == "plot") {
-		drawPlot(plotIndex);
-	} else {
-		initMap(plotIndex);
-	}
+  if (PrimeFaces.widgets['variableDialog']) {
+    PF('variableDialog').hide();
+  }
+
+  var mode = getPlotMode(plotIndex);
+
+  if (mode == "plot") {
+    drawPlot(plotIndex);
+  } else {
+    initMap(plotIndex);
+  }
 }
 
 function redrawPlot(index) {
-	variablesPlotIndex = index;
-	applyVariables();
+  variablesPlotIndex = index;
+  applyVariables();
 }
 
 function initMap(index) {
-	
-	$('#map' + index + 'Container').width($('#plot' + index + 'Panel').width());
-	$('#map' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
-	
-	var mapVar = 'map' + index;
-	var extentVar = mapVar + 'Extent';
-	
-	var bounds = JSON.parse($('#plotPageForm\\:dataBounds').val());
-	
-	if (null == window[mapVar]) {
-		var initialView = new ol.View({
-    		center: ol.proj.fromLonLat([bounds[4], bounds[5]]),
-    		zoom: 4,
-    		minZoom: 2,
-		});
 
-		window[mapVar] = new ol.Map({
-	 		target: 'map' + index + 'Container',
-	 		layers: [
-	    		new ol.layer.Tile({
-	        		source: mapSource
-	    		}),
-	  		],
-    		controls: [
-    			new ol.control.Zoom()
-    		],
-	  		view: initialView
-		});
-		
-		window[extentVar] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
-		
-		
-		window[mapVar].on('moveend', function(event) {
-			mapMoveGetData(event);
-		});
-		window[mapVar].on('pointermove', function(event) {
-			displayMapFeatureInfo(event, window[mapVar].getEventPixel(event.originalEvent));
-		});
-		window[mapVar].on('click', function(event) {
-			mapClick(event, window[mapVar].getEventPixel(event.originalEvent));
-		});
-	}
+  $('#map' + index + 'Container').width($('#plot' + index + 'Panel').width());
+  $('#map' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
 
-	$('#plotPageForm\\:map' + index + 'UpdateScale').val(true);
-	redrawMap = true;
-	getMapData(index);
+  var mapVar = 'map' + index;
+  var extentVar = mapVar + 'Extent';
+
+  var bounds = JSON.parse($('#plotPageForm\\:dataBounds').val());
+
+  if (null == window[mapVar]) {
+    var initialView = new ol.View({
+        center: ol.proj.fromLonLat([bounds[4], bounds[5]]),
+        zoom: 4,
+        minZoom: 2,
+    });
+
+    window[mapVar] = new ol.Map({
+      target: 'map' + index + 'Container',
+      layers: [
+          new ol.layer.Tile({
+              source: mapSource
+          }),
+        ],
+        controls: [
+          new ol.control.Zoom()
+        ],
+        view: initialView
+    });
+
+    window[extentVar] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
+
+
+    window[mapVar].on('moveend', function(event) {
+      mapMoveGetData(event);
+    });
+    window[mapVar].on('pointermove', function(event) {
+      displayMapFeatureInfo(event, window[mapVar].getEventPixel(event.originalEvent));
+    });
+    window[mapVar].on('click', function(event) {
+      mapClick(event, window[mapVar].getEventPixel(event.originalEvent));
+    });
+  }
+
+  $('#plotPageForm\\:map' + index + 'UpdateScale').val(true);
+  redrawMap = true;
+  getMapData(index);
 }
 
 
 function mapMoveGetData(event) {
-	getMapData(getMapIndex(event));
-	redrawMap = false;
+  getMapData(getMapIndex(event));
+  redrawMap = false;
 }
 
 function getMapData(index) {
 
-	var mapVar = 'map' + index;
-	
-	var extent = ol.proj.transformExtent(window[mapVar].getView().calculateExtent(), window[mapVar].getView().getProjection(), "EPSG:4326");
-	$('#plotPageForm\\:map' + index + 'Bounds').val('[' + extent + ']');
-	$('#plotPageForm\\:map' + index + 'GetData').click();	
+  var mapVar = 'map' + index;
+
+  var extent = ol.proj.transformExtent(window[mapVar].getView().calculateExtent(), window[mapVar].getView().getProjection(), "EPSG:4326");
+  $('#plotPageForm\\:map' + index + 'Bounds').val('[' + extent + ']');
+  $('#plotPageForm\\:map' + index + 'GetData').click();
 }
 
 function drawMap(index) {
-	PF('variableDialog').hide();
+  PF('variableDialog').hide();
 
-	var mapVar = 'map' + variablesPlotIndex;
-	var dataLayerVar = mapVar + 'DataLayer';
-	var colorScaleVar = mapVar + 'ColorScale';
-	
-	if (null != window[dataLayerVar]) {
-		window[mapVar].removeLayer(window[dataLayerVar]);
-		window[dataLayerVar] = null;
-	}
+  var mapVar = 'map' + variablesPlotIndex;
+  var dataLayerVar = mapVar + 'DataLayer';
+  var colorScaleVar = mapVar + 'ColorScale';
 
-	var mapData = JSON.parse($('#plotPageForm\\:map' + variablesPlotIndex + 'Data').val());
+  if (null != window[dataLayerVar]) {
+    window[mapVar].removeLayer(window[dataLayerVar]);
+    window[dataLayerVar] = null;
+  }
 
-	var scaleLimits = JSON.parse($('#plotPageForm\\:map' + variablesPlotIndex + 'ScaleLimits').val());
-	window[colorScaleVar].setValueRange(scaleLimits[0], scaleLimits[1]);
+  var mapData = JSON.parse($('#plotPageForm\\:map' + variablesPlotIndex + 'Data').val());
 
-	var layerFeatures = new Array();
+  var scaleLimits = JSON.parse($('#plotPageForm\\:map' + variablesPlotIndex + 'ScaleLimits').val());
+  window[colorScaleVar].setValueRange(scaleLimits[0], scaleLimits[1]);
 
-	for (var i = 0; i < mapData.length; i++) {
-		var featureData = mapData[i];
-		
-		var feature = new ol.Feature({
-			geometry: new ol.geom.Point([featureData[0], featureData[1]]).transform(ol.proj.get("EPSG:4326"), mapSource.getProjection())
-		});
-		
-		feature.setStyle(new ol.style.Style({
-			image: new ol.style.Circle({
-				radius: 5,
-				fill: new ol.style.Fill({
-					color: window[colorScaleVar].getColor(featureData[5])
-				})
-			})
-		}));
-		
-		feature['data'] = featureData;
-		feature['tableRow'] = featureData[2];
-		
-		layerFeatures.push(feature);
-	}
-	
-	window[dataLayerVar] = new ol.layer.Vector({
-		source: new ol.source.Vector({
-			features: layerFeatures
-		})
-	})
-	
-	window[mapVar].addLayer(window[dataLayerVar]);
-	window[colorScaleVar].drawScale($('#map' + variablesPlotIndex + 'Scale'), scaleOptions);
-	
-	if (redrawMap) {
-		$('#plotPageForm\\:map' + variablesPlotIndex + 'UpdateScale').val(false);
+  var layerFeatures = new Array();
 
-		var bounds = JSON.parse($('#plotPageForm\\:map' + index + 'Bounds').val());
-		window['map' + index + 'Extent'] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", window[mapVar].getView().getProjection());
-		resetZoom(index);
-	}
+  for (var i = 0; i < mapData.length; i++) {
+    var featureData = mapData[i];
+
+    var feature = new ol.Feature({
+      geometry: new ol.geom.Point([featureData[0], featureData[1]]).transform(ol.proj.get("EPSG:4326"), mapSource.getProjection())
+    });
+
+    feature.setStyle(new ol.style.Style({
+      image: new ol.style.Circle({
+        radius: 5,
+        fill: new ol.style.Fill({
+          color: window[colorScaleVar].getColor(featureData[5])
+        })
+      })
+    }));
+
+    feature['data'] = featureData;
+    feature['tableRow'] = featureData[2];
+
+    layerFeatures.push(feature);
+  }
+
+  window[dataLayerVar] = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      features: layerFeatures
+    })
+  })
+
+  window[mapVar].addLayer(window[dataLayerVar]);
+  window[colorScaleVar].drawScale($('#map' + variablesPlotIndex + 'Scale'), scaleOptions);
+
+  if (redrawMap) {
+    $('#plotPageForm\\:map' + variablesPlotIndex + 'UpdateScale').val(false);
+
+    var bounds = JSON.parse($('#plotPageForm\\:map' + index + 'Bounds').val());
+    window['map' + index + 'Extent'] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", window[mapVar].getView().getProjection());
+    resetZoom(index);
+  }
 }
 
 function displayMapFeatureInfo(event, pixel) {
-	var index = getMapIndex(event);
-	
-	var feature = window['map' + index].forEachFeatureAtPixel(pixel, function(feature) {
-		return feature;
-	});
-	
-	var featureInfo = '';
-	
-	if (feature) {
-		featureInfo += '<b>Position:</b> '
-		featureInfo += feature['data'][0];
-		featureInfo += ' ';
-		featureInfo += feature['data'][1];
-		featureInfo += ' ';
-		featureInfo += ' <b>Value:</b> '
-		featureInfo += feature['data'][5];
-	}
-	
-	$('#map' + index + 'Value').html(featureInfo);
+  var index = getMapIndex(event);
+
+  var feature = window['map' + index].forEachFeatureAtPixel(pixel, function(feature) {
+    return feature;
+  });
+
+  var featureInfo = '';
+
+  if (feature) {
+    featureInfo += '<b>Position:</b> '
+    featureInfo += feature['data'][0];
+    featureInfo += ' ';
+    featureInfo += feature['data'][1];
+    featureInfo += ' ';
+    featureInfo += ' <b>Value:</b> '
+    featureInfo += feature['data'][5];
+  }
+
+  $('#map' + index + 'Value').html(featureInfo);
 }
 
 function mapClick(event, pixel) {
-	var index = getMapIndex(event);
-	var feature = window['map' + index].forEachFeatureAtPixel(pixel, function(feature) {
-		return feature;
-	});
-	
-	if (feature) {
-		scrollToTableRow(feature['data'][3]);
-	}
+  var index = getMapIndex(event);
+  var feature = window['map' + index].forEachFeatureAtPixel(pixel, function(feature) {
+    return feature;
+  });
+
+  if (feature) {
+    scrollToTableRow(feature['data'][3]);
+  }
 }
 
 function resetZoom(index) {
-	var mode = getPlotMode(index)
+  var mode = getPlotMode(index)
 
-	if (mode == 'map') {
-		var bounds = JSON.parse($('#plotPageForm\\:dataBounds').val());
-		window['map' + index + 'Extent'] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", window['map' + index].getView().getProjection());
-		window['map' + index].getView().fit(window['map' + index + 'Extent'], window['map' + index].getSize());
-	} else {
-		window['plot' + index].updateOptions({
-		    dateWindow: null,
-		    valueRange: null
-		});
-	}
+  if (mode == 'map') {
+    var bounds = JSON.parse($('#plotPageForm\\:dataBounds').val());
+    window['map' + index + 'Extent'] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", window['map' + index].getView().getProjection());
+    window['map' + index].getView().fit(window['map' + index + 'Extent'], window['map' + index].getSize());
+  } else {
+    window['plot' + index].updateOptions({
+        dateWindow: null,
+        valueRange: null
+    });
+  }
 }
 
 function getMapIndex(event) {
-	var containerName = event.target.getTarget();
-	return containerName.match(/map([0-9])/)[1];
+  var containerName = event.target.getTarget();
+  return containerName.match(/map([0-9])/)[1];
 
 }
 
 function toggleScale(index) {
-	$('#map' + index + 'Scale').toggle(100);
+  $('#map' + index + 'Scale').toggle(100);
 }
 
 function makeHighlights(index, plotData) {
-	var highlights = [];
-	
-	var currentFlag = FLAG_GOOD;
-	var highlightColor = null;
-	
-	for (var i = 0; i < plotData.length; i++) {
-		
-		if (Math.abs(plotData[i][PLOT_MANUAL_FLAG_INDEX]) != FLAG_GOOD) {
-		
-			switch (plotData[i][PLOT_MANUAL_FLAG_INDEX]) {
-			case FLAG_BAD:
-			case FLAG_FATAL: {
-				highlightColor = 'rgba(255, 0, 0, 1)';
-				break;
-			}
-			case FLAG_QUESTIONABLE: {
-				highlightColor = 'rgba(216, 177, 0, 1)';
-				break;
-			}
-			case FLAG_NEEDS_FLAG: {
-				highlightColor = 'rgba(129, 127, 255, 1)';
-				break;
-			}
-			case FLAG_IGNORED: {
-				highlightColor = 'rgba(225, 225, 225, 1)';
-				break;
-			}
-			}
-			
-			for (j = PLOT_FIRST_Y_INDEX; j < plotData[i].length; j++) {
-				if (plotData[i][j] != null) {
-					highlights.push([plotData[i][0], plotData[i][j], highlightColor]);
-				}
-			}
-		}
-	}
-		
-	return highlights;
+  var highlights = [];
+
+  var currentFlag = FLAG_GOOD;
+  var highlightColor = null;
+
+  for (var i = 0; i < plotData.length; i++) {
+
+    if (Math.abs(plotData[i][PLOT_MANUAL_FLAG_INDEX]) != FLAG_GOOD) {
+
+      switch (plotData[i][PLOT_MANUAL_FLAG_INDEX]) {
+      case FLAG_BAD:
+      case FLAG_FATAL: {
+        highlightColor = 'rgba(255, 0, 0, 1)';
+        break;
+      }
+      case FLAG_QUESTIONABLE: {
+        highlightColor = 'rgba(216, 177, 0, 1)';
+        break;
+      }
+      case FLAG_NEEDS_FLAG: {
+        highlightColor = 'rgba(129, 127, 255, 1)';
+        break;
+      }
+      case FLAG_IGNORED: {
+        highlightColor = 'rgba(225, 225, 225, 1)';
+        break;
+      }
+      }
+
+      for (j = PLOT_FIRST_Y_INDEX; j < plotData[i].length; j++) {
+        if (plotData[i][j] != null) {
+          highlights.push([plotData[i][0], plotData[i][j], highlightColor]);
+        }
+      }
+    }
+  }
+
+  return highlights;
 }
