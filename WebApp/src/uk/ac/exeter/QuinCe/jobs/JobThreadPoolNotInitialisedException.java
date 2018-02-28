@@ -8,15 +8,15 @@ package uk.ac.exeter.QuinCe.jobs;
  */
 public class JobThreadPoolNotInitialisedException extends Exception {
 
-	/**
-	 * The Serial Version UID
-	 */
-	private static final long serialVersionUID = -2087913958516852214L;
+  /**
+   * The Serial Version UID
+   */
+  private static final long serialVersionUID = -2087913958516852214L;
 
-	/**
-	 * Constructor
-	 */
-	public JobThreadPoolNotInitialisedException() {
-		super("The job thread pool has not been initialised");
-	}
+  /**
+   * Constructor
+   */
+  public JobThreadPoolNotInitialisedException() {
+    super("The job thread pool has not been initialised");
+  }
 }

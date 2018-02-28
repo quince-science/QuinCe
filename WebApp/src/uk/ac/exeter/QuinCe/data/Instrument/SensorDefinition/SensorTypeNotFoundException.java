@@ -9,17 +9,17 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
  */
 public class SensorTypeNotFoundException extends InstrumentException {
 
-	/**
-	 * The serial version UID
-	 */
-	private static final long serialVersionUID = 7707562190864340444L;
+  /**
+   * The serial version UID
+   */
+  private static final long serialVersionUID = 7707562190864340444L;
 
-	/**
-	 * Constructor
-	 * @param sensorName The sensor name
-	 */
-	public SensorTypeNotFoundException(String sensorName) {
-		super("The sensor type with name '" + sensorName + "' does not exist");
-	}
+  /**
+   * Constructor
+   * @param sensorName The sensor name
+   */
+  public SensorTypeNotFoundException(String sensorName) {
+    super("The sensor type with name '" + sensorName + "' does not exist");
+  }
 
 }

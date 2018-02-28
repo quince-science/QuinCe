@@ -14,28 +14,28 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 @WebListener
 public class JobRunScheduler extends BackgroundTask {
 
-	protected void doTask() throws BackgroundTaskException {
-		ResourceManager resourceManager = ResourceManager.getInstance();
-		try {
-			JobManager.resetInterruptedJobs(resourceManager);
-		} catch (Exception e) {
-			// We don't mind if this fails.
-		}
+  protected void doTask() throws BackgroundTaskException {
+    ResourceManager resourceManager = ResourceManager.getInstance();
+    try {
+      JobManager.resetInterruptedJobs(resourceManager);
+    } catch (Exception e) {
+      // We don't mind if this fails.
+    }
 
-		try {
-			JobManager.resetInterruptedJobs(resourceManager);
+    try {
+      JobManager.resetInterruptedJobs(resourceManager);
 
-			boolean ranJob = true;
-			while (ranJob) {
-				ranJob = JobManager.startNextJob(resourceManager, resourceManager.getConfig());
-			}
-		} catch (Exception e) {
-			throw new BackgroundTaskException(e);
-		}
-	}
+      boolean ranJob = true;
+      while (ranJob) {
+        ranJob = JobManager.startNextJob(resourceManager, resourceManager.getConfig());
+      }
+    } catch (Exception e) {
+      throw new BackgroundTaskException(e);
+    }
+  }
 
-	@Override
-	protected long getRunInterval() {
-		return 15;
-	}
+  @Override
+  protected long getRunInterval() {
+    return 15;
+  }
 }

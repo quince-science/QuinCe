@@ -12,19 +12,19 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
  */
 public class SeparatorValidator extends NewInstrumentValidator {
 
-	@Override
-	public void doValidation(NewInstrumentBean bean, Object value) throws ValidatorException {
+  @Override
+  public void doValidation(NewInstrumentBean bean, Object value) throws ValidatorException {
 
-		String separator = ((String) value).trim();
+    String separator = ((String) value).trim();
 
-		if (!FileDefinition.validateSeparator(separator)) {
-			throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "Unsupported separator", "Unsupported separator"));
+    if (!FileDefinition.validateSeparator(separator)) {
+      throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "Unsupported separator", "Unsupported separator"));
 
-		}
+    }
 
-		if (bean.getCurrentInstrumentFile().calculateColumnCount(separator) <= 1) {
-			throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "Cannot extract any columns using the specified separator", "Cannot extract any columns using the specified separator"));
-		}
-	}
+    if (bean.getCurrentInstrumentFile().calculateColumnCount(separator) <= 1) {
+      throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "Cannot extract any columns using the specified separator", "Cannot extract any columns using the specified separator"));
+    }
+  }
 
 }

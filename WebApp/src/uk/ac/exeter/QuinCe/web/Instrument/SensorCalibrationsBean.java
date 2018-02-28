@@ -25,51 +25,51 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 @SessionScoped
 public class SensorCalibrationsBean extends CalibrationBean {
 
-	/**
-	 * The navigation string for the sensor calibrations list
-	 */
-	private static final String NAV_LIST = "sensor_calibrations";
+  /**
+   * The navigation string for the sensor calibrations list
+   */
+  private static final String NAV_LIST = "sensor_calibrations";
 
-	/**
-	 * The sensor calibration being edited by the user
-	 */
-	private PolynomialSensorCalibration enteredCalibration = null;
+  /**
+   * The sensor calibration being edited by the user
+   */
+  private PolynomialSensorCalibration enteredCalibration = null;
 
-	/**
-	 * The sensor calibration database utility class
-	 */
-	private SensorCalibrationDB db = null;
+  /**
+   * The sensor calibration database utility class
+   */
+  private SensorCalibrationDB db = null;
 
-	/**
-	 * Constructor
-	 */
-	public SensorCalibrationsBean() {
-		super();
-		db = SensorCalibrationDB.getInstance();
-	}
+  /**
+   * Constructor
+   */
+  public SensorCalibrationsBean() {
+    super();
+    db = SensorCalibrationDB.getInstance();
+  }
 
-	@Override
-	public Calibration getEnteredCalibration() {
-		return enteredCalibration;
-	}
+  @Override
+  public Calibration getEnteredCalibration() {
+    return enteredCalibration;
+  }
 
-	@Override
-	protected void createEnteredCalibration() {
-		enteredCalibration = new PolynomialSensorCalibration(instrumentId);
-	}
+  @Override
+  protected void createEnteredCalibration() {
+    enteredCalibration = new PolynomialSensorCalibration(instrumentId);
+  }
 
-	@Override
-	protected String getListNavigation() {
-		return NAV_LIST;
-	}
+  @Override
+  protected String getListNavigation() {
+    return NAV_LIST;
+  }
 
-	@Override
-	protected CalibrationDB getDbInstance() {
-		return db;
-	}
+  @Override
+  protected CalibrationDB getDbInstance() {
+    return db;
+  }
 
-	@Override
-	protected String getCalibrationType() {
-		return SensorCalibrationDB.SENSOR_CALIBRATION_TYPE;
-	}
+  @Override
+  protected String getCalibrationType() {
+    return SensorCalibrationDB.SENSOR_CALIBRATION_TYPE;
+  }
 }

@@ -12,8 +12,8 @@ import uk.ac.exeter.QuinCe.User.User;
 @WebFilter("/jobs/*")
 public class JobsPermissionFilter extends PermissionsFilter {
 
-	@Override
-	public boolean hasPermission(User user) {
-		return user.getJobManager();
-	}
+  @Override
+  public boolean hasPermission(User user) {
+    return user.getJobManager();
+  }
 }

@@ -8,11 +8,11 @@ package uk.ac.exeter.QuinCe.web;
  */
 public class KeepAliveBean {
 
-	/**
-	 * An action method that pages can call to keep the user session alive.
-	 * The method does nothing.
-	 */
-	public void sessionTouch() {
-		// Do Nothing
-	}
+  /**
+   * An action method that pages can call to keep the user session alive.
+   * The method does nothing.
+   */
+  public void sessionTouch() {
+    // Do Nothing
+  }
 }

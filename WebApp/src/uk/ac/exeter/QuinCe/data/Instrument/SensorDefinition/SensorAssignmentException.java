@@ -9,17 +9,17 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
  */
 public class SensorAssignmentException extends InstrumentException {
 
-	/**
-	 * The serial version UID
-	 */
-	private static final long serialVersionUID = -8786897548326873126L;
+  /**
+   * The serial version UID
+   */
+  private static final long serialVersionUID = -8786897548326873126L;
 
-	/**
-	 * Constructor for a simple error message
-	 * @param message The error message
-	 */
-	public SensorAssignmentException(String message) {
-		super(message);
-	}
+  /**
+   * Constructor for a simple error message
+   * @param message The error message
+   */
+  public SensorAssignmentException(String message) {
+    super(message);
+  }
 
 }

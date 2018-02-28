@@ -24,20 +24,20 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  */
 public class InstrumentNameValidator implements Validator {
 
-	@Override
-	public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+  @Override
+  public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
 
-		String name = ((String) value).trim();
+    String name = ((String) value).trim();
 
-		HttpSession session = (HttpSession) context.getExternalContext().getSession(false);
-		User user = (User) session.getAttribute(LoginBean.USER_SESSION_ATTR);
+    HttpSession session = (HttpSession) context.getExternalContext().getSession(false);
+    User user = (User) session.getAttribute(LoginBean.USER_SESSION_ATTR);
 
-		try {
-			if (InstrumentDB.instrumentExists(ServletUtils.getDBDataSource(), user, name)) {
-				throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "An instrument with that name already exists", "An instrument with that name already exists"));
-			}
-		} catch (MissingParamException | DatabaseException | ResourceException e) {
-			throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_FATAL, "Unable to check instrument at this time. Please try again later.", "Unable to check instrument at this time. Please try again later."));
-		}
-	}
+    try {
+      if (InstrumentDB.instrumentExists(ServletUtils.getDBDataSource(), user, name)) {
+        throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "An instrument with that name already exists", "An instrument with that name already exists"));
+      }
+    } catch (MissingParamException | DatabaseException | ResourceException e) {
+      throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_FATAL, "Unable to check instrument at this time. Please try again later.", "Unable to check instrument at this time. Please try again later."));
+    }
+  }
 }

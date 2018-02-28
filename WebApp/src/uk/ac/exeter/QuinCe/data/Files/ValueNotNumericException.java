@@ -7,16 +7,16 @@ package uk.ac.exeter.QuinCe.data.Files;
  */
 public class ValueNotNumericException extends DataFileException {
 
-	/**
-	 * The serial version UID
-	 */
-	private static final long serialVersionUID = 3410974190721406299L;
+  /**
+   * The serial version UID
+   */
+  private static final long serialVersionUID = 3410974190721406299L;
 
-	/**
-	 * Simple constructor - no message, no cause
-	 */
-	public ValueNotNumericException() {
-		super("Value is not numeric");
-	}
+  /**
+   * Simple constructor - no message, no cause
+   */
+  public ValueNotNumericException() {
+    super("Value is not numeric");
+  }
 
 }

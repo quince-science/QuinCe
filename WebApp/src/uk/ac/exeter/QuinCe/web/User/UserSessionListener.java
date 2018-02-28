@@ -19,29 +19,29 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  */
 public class UserSessionListener implements HttpSessionListener {
 
-	@Override
-	public void sessionCreated(HttpSessionEvent event) {
-	}
+  @Override
+  public void sessionCreated(HttpSessionEvent event) {
+  }
 
-	@Override
-	public void sessionDestroyed(HttpSessionEvent event) {
-		HttpSession session = event.getSession();
+  @Override
+  public void sessionDestroyed(HttpSessionEvent event) {
+    HttpSession session = event.getSession();
 
-		// Save the user preferences
-		try {
-			UserPreferences prefs = (UserPreferences) session.getAttribute(LoginBean.USER_PREFS_ATTR);
-			if (null != prefs) {
-				UserDB.savePreferences(ServletUtils.getDBDataSource(), prefs);
-			}
-		} catch (MissingParamException | DatabaseException | ResourceException e) {
-			/*
-			 * Just log the error
-			 */
-			e.printStackTrace();
-		}
+    // Save the user preferences
+    try {
+      UserPreferences prefs = (UserPreferences) session.getAttribute(LoginBean.USER_PREFS_ATTR);
+      if (null != prefs) {
+        UserDB.savePreferences(ServletUtils.getDBDataSource(), prefs);
+      }
+    } catch (MissingParamException | DatabaseException | ResourceException e) {
+      /*
+       * Just log the error
+       */
+      e.printStackTrace();
+    }
 
-		session.removeAttribute(LoginBean.USER_SESSION_ATTR);
-    	session.setAttribute("SESSION_EXPIRED", "true");
-	}
+    session.removeAttribute(LoginBean.USER_SESSION_ATTR);
+      session.setAttribute("SESSION_EXPIRED", "true");
+  }
 
 }

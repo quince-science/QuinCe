@@ -12,13 +12,13 @@ import javax.faces.validator.ValidatorException;
  */
 public class InstrumentFileDescriptionValidator extends NewInstrumentValidator {
 
-	@Override
-	public void doValidation(NewInstrumentBean bean, Object value) throws ValidatorException {
+  @Override
+  public void doValidation(NewInstrumentBean bean, Object value) throws ValidatorException {
 
-		String description = ((String) value).trim();
+    String description = ((String) value).trim();
 
-		if (bean.getInstrumentFiles().containsFileDescription(description)) {
-			throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "This description is already being used by another file", "This description is already being used by another file"));
-		}
-	}
+    if (bean.getInstrumentFiles().containsFileDescription(description)) {
+      throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "This description is already being used by another file", "This description is already being used by another file"));
+    }
+  }
 }

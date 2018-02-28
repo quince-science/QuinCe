@@ -7,16 +7,16 @@ package uk.ac.exeter.QuinCe.data.Instrument;
  */
 public class FileSetException extends Exception {
 
-	/**
-	 * The serial version UID
-	 */
-	private static final long serialVersionUID = -6555293481544429846L;
+  /**
+   * The serial version UID
+   */
+  private static final long serialVersionUID = -6555293481544429846L;
 
-	/**
-	 * Basic constructor
-	 * @param message The error message
-	 */
-	public FileSetException(String message) {
-		super(message);
-	}
+  /**
+   * Basic constructor
+   * @param message The error message
+   */
+  public FileSetException(String message) {
+    super(message);
+  }
 }

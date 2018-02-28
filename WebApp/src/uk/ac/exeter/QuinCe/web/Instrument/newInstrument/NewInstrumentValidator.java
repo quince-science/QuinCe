@@ -16,35 +16,35 @@ import javax.faces.validator.ValidatorException;
  */
 public abstract class NewInstrumentValidator implements Validator {
 
-	@Override
-	public final void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+  @Override
+  public final void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
 
-		String description = ((String) value).trim();
+    String description = ((String) value).trim();
 
-		ValueExpression expression = component.getValueExpression("bean");
-		if (null == expression) {
-			throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_FATAL, "BEAN ATTRIBUTE MISSING", "BEAN ATTRIBUTE MISSING"));
-		}
+    ValueExpression expression = component.getValueExpression("bean");
+    if (null == expression) {
+      throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_FATAL, "BEAN ATTRIBUTE MISSING", "BEAN ATTRIBUTE MISSING"));
+    }
 
-		Object beanAttributeValue = expression.getValue(context.getELContext());
-		if (!(beanAttributeValue instanceof NewInstrumentBean)) {
-			throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_FATAL, "BEAN ATTRIBUTE NOT OF THE CORRECT TYPE", "BEAN ATTRIBUTE NOT OF THE CORRECT TYPE"));
-		}
+    Object beanAttributeValue = expression.getValue(context.getELContext());
+    if (!(beanAttributeValue instanceof NewInstrumentBean)) {
+      throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_FATAL, "BEAN ATTRIBUTE NOT OF THE CORRECT TYPE", "BEAN ATTRIBUTE NOT OF THE CORRECT TYPE"));
+    }
 
-		NewInstrumentBean bean = (NewInstrumentBean) beanAttributeValue;
+    NewInstrumentBean bean = (NewInstrumentBean) beanAttributeValue;
 
-		doValidation(bean, value);
+    doValidation(bean, value);
 
-		if (bean.getInstrumentFiles().containsFileDescription(description)) {
-			throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "This description is already being used by another file", "This description is already being used by another file"));
-		}
-	}
+    if (bean.getInstrumentFiles().containsFileDescription(description)) {
+      throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "This description is already being used by another file", "This description is already being used by another file"));
+    }
+  }
 
-	/**
-	 * Perform the validation
-	 * @param bean The new instrument bean
-	 * @param value The value being validated
-	 * @throws ValidatorException If the validation fails
-	 */
-	protected abstract void doValidation(NewInstrumentBean bean, Object value) throws ValidatorException;
+  /**
+   * Perform the validation
+   * @param bean The new instrument bean
+   * @param value The value being validated
+   * @throws ValidatorException If the validation fails
+   */
+  protected abstract void doValidation(NewInstrumentBean bean, Object value) throws ValidatorException;
 }
