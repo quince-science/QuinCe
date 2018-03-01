@@ -43,12 +43,12 @@
   padding: 5px 10px;
 }
 .runTypeFile .ui-g {
-	max-width: 400px;
+  max-width: 400px;
 }
 #uploadForm\:fileList_data button{
-	white-space: normal;
-	max-width: 200px;
+  white-space: normal;
+  max-width: 200px;
 }
 .runTypeFile >.ui-fieldset {
-	margin:  0 0 20px 0;
+  margin:  0 0 20px 0;
 }

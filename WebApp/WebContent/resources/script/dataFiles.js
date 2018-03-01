@@ -1,12 +1,12 @@
 // Hide dialog with escape key
 $(document).on('keydown', function(e) {
-	if (e.keyCode === 27) {
-		$.each(PrimeFaces.widgets, function(index, val) {
-			if (index.match(/dialog/i)) {
-				PF(index).hide();
-			}
-		})
-	}
+  if (e.keyCode === 27) {
+    $.each(PrimeFaces.widgets, function(index, val) {
+      if (index.match(/dialog/i)) {
+        PF(index).hide();
+      }
+    })
+  }
 });
 
 function renderMessages(messages) {
@@ -27,7 +27,7 @@ function renderMessages(messages) {
 }
 
 function reProcessUploadedFiles() {
-	$('#uploadForm\\:fileList_data>tr').each(function() {
-		extractNext();
-	});
+  $('#uploadForm\\:fileList_data>tr').each(function() {
+    extractNext();
+  });
 }
