@@ -82,3 +82,5 @@ do
 done <<< "$setup"
 
 rm NB-quince_is_not_setup 2>/dev/null
+
+exit 0

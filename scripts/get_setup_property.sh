@@ -11,7 +11,7 @@
 #
 ###############################################################
 
-if [ -f NB-quince_is_not_setup ]
+if grep -q "%db_username%" "WebApp/WebContent/META-INF/context.xml"
 then
   >&2 printf "NB! QuinCe is not setup.\n"
   >&2 cat NB-quince_is_not_setup
