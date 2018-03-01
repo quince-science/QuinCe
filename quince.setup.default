@@ -16,3 +16,6 @@
 %app.urlstub%=http://localhost:8080/QuinCe
 %git_test_branch%=master
 %slack_app_url%=https://hooks.slack.com/services/XXXXXXX/XXXXXXXXX/XXXXXXXXXXXXXXXXXXX
+%prod_backup_folder%=tagged_backups
+%prod_deploy_folder%=/home/tomcat/quince/webapps
+%git_deploy_branch%=master
