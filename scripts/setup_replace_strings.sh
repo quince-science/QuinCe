@@ -26,20 +26,20 @@ while getopts "v" opt; do
     ;;
   esac
 done
+setuptype=''
+inputstring=${@:$OPTIND:1}
+if [ -n "$inputstring" ]
+then
+  setuptype=".inputstring"
+fi
 
-setuptype=${@:$OPTIND:1}
-setupfile=quince.setup.default
-setup=$(cat $setupfile)
-if [ -e quince.setup ]
+# First get only default file
+setup=$(cat quince.setup.default)
+setupfile="quince.setup$setuptype"
+if [ -e $setupfile ]
 then
-  setupfile=quince.setup
   # using awk to keep properties in quince.setup.default not in quince.setup
-  setup=$(awk -F= '!a[$1]++' quince.setup quince.setup.default)
-elif [ -e "quince.setup.$setuptype" ]
-then
-  setupfile="quince.setup.$setuptype"
-  # using awk to keep properties in quince.setup.default not in quince.setup.$setuptype
-  setup=$(awk -F= '!a[$1]++' quince.setup.$setuptype quince.setup.default)
+  setup=$(awk -F= '!a[$1]++' $setupfile quince.setup.default)
 fi
 
 
