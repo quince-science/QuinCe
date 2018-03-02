@@ -7,6 +7,7 @@
 ######################################################################
 
 # setup using quince.setup
+scripts/setup_reverse_strings.sh
 scripts/setup_replace_strings.sh
 if [ $? -gt 0 ]
 then
@@ -30,16 +31,13 @@ echo " The branch will be completely reset to the remote origin."
 echo ""
 echo ""
 
-while true; do
-    read -p " Continue with branch $branch?" yn
-    echo ""
-    echo ""
-    case $yn in
-        [Yy]* ) break;;
-        [Nn]* ) echo "Exit deployment"; exit;;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
+read -p " Continue with branch $branch? (y/N)" yn
+echo ""
+echo ""
+case $yn in
+  [Yy]* ) ;;
+  * ) echo "Exit deployment"; exit;;
+esac
 
 git submodule init && git submodule update && git fetch && git reset --hard $branch
 if [ $? -gt 0 ]
@@ -67,7 +65,13 @@ fi
 echo ""
 echo ""
 
-echo "Run database upgrades"
+read -p " Run database upgrades? (y/N)" yn
+echo ""
+echo ""
+case $yn in
+  [Yy]* ) ;;
+  * ) echo "Exit deployment"; exit;;
+esac
 scripts/upgrade.sh -v
 if [ $? -gt 0 ]
 then
@@ -115,7 +119,13 @@ echo "Current .war - file backed up to $backup_folder/$tag.$timestamp.ROOT.war"
 echo ""
 echo ""
 
-echo "Deploy new .war file"
+read -p " Complete deployment of new .war file? (y/N)" yn
+echo ""
+echo ""
+case $yn in
+  [Yy]* ) ;;
+  * ) echo "Exit deployment"; exit;;
+esac
 cp build/libs/QuinCe.war $deploy_folder/ROOT.war
 if [ $? -gt 0 ]
 then
