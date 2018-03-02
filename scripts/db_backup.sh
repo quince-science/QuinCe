@@ -16,15 +16,15 @@ while getopts "v" opt; do
   esac
 done
 
-user=$(scripts/get_setup_property.sh username)
+user=$(scripts/get_setup_property.sh db_username)
 if [ $? -gt 0 ]
 then
   exit 1
 fi
-pw=$(scripts/get_setup_property.sh password)
-host=$(scripts/get_setup_property.sh host)
-port=$(scripts/get_setup_property.sh port)
-db=$(scripts/get_setup_property.sh database)
+pw=$(scripts/get_setup_property.sh db_password)
+host=$(scripts/get_setup_property.sh db_host)
+port=$(scripts/get_setup_property.sh db_port)
+db=$(scripts/get_setup_property.sh db_database)
 folder=$(scripts/get_setup_property.sh prod_backup_folder)
 current_tag=$(git describe --tags)
 mkdir -p $folder

@@ -72,9 +72,9 @@ scripts/setup_hide_changes.sh
 # SQL Commands                    #
 # Using settings from context.xml #
 ###################################
-username=scripts/get_setup_property.sh username
-password=scripts/get_setup_property.sh password
-database=scripts/get_setup_property.sh database
+username=scripts/get_setup_property.sh db_username
+password=scripts/get_setup_property.sh db_password
+database=scripts/get_setup_property.sh db_database
 
 # Depending on how the mysql privileges are setup, you might have to do this
 # differently:

@@ -19,13 +19,13 @@
 ############################################################
 
 # Get db username, password etc
-username=$(./scripts/get_setup_property.sh username)
+username=$(./scripts/get_setup_property.sh db_username)
 if [ -z $username ]
 then
   exit 1
 fi
-password=$(./scripts/get_setup_property.sh password)
-database=$(./scripts/get_setup_property.sh database)
+password=$(./scripts/get_setup_property.sh db_password)
+database=$(./scripts/get_setup_property.sh db_database)
 
 verbose=0
 
@@ -83,7 +83,7 @@ zcat < $file | \
 # Delete tempfile, don't display errors
 rm $tmpfile 2>/dev/null
 
-filestore=$(./scripts/get_setup_property.sh filestore)
+filestore=$(./scripts/get_setup_property.sh filestore_folder)
 
 # Filestore path on test server opdated daily from prod
 file=/data/shared/quince_backups/QUINCE_FILE_STORE/QUINCE_FILE_STORE/.
