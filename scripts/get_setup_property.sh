@@ -4,10 +4,12 @@
 #
 # This scripts gets a property from the quince setup
 #
-# Usage: ./get_setup_property.sh <propertyname>
+# Usage: ./get_setup_property.sh <propertyname> [<setuptype>]
 #
 # ...where propertyname can be one of username, password,
 # database, filestore.
+#
+# Fetches values from: quince.setup.default overridden by quince.setup[.other]
 #
 ###############################################################
 
@@ -18,28 +20,25 @@ then
   exit 1
 fi
 
-propertyvalue=''
-
-if [ $1 = 'username' ]
+setuptype=''
+if [ -n "$2" ]
 then
-  propertyvalue=$(grep -m 1 -o 'username=[\x27"][^\x27"]*[\x27"]' WebApp/WebContent/META-INF/context.xml|sed -e 's/^username=[\x27"]\(.*\)[\x27"]/\1/')
-
-elif [ $1 = 'password' ]
-then
-  propertyvalue=$(grep -m 1 -o 'password=[\x27"][^\x27"]*[\x27"]' WebApp/WebContent/META-INF/context.xml|sed -e 's/^password=[\x27"]\(.*\)[\x27"]/\1/')
-
-elif [ $1 = 'database' ]
-then
-  propertyvalue=$(grep -m 1 -o 'jdbc\:mysql\:\/\/localhost:3306\/[a-zA-Z0-9_]\+' WebApp/WebContent/META-INF/context.xml|sed -e 's:.*/\([^/]*\)$:\1:')
-elif [ $1 = 'filestore' ]
-then
-  propertyvalue=$(sed -n 's/^filestore *= *\(.*\)$/\1/p' configuration/quince.properties)
-else
-  propertyvalue=$(sed -n "s/^%$1% *= *\(.*\) *$/\1/p" quince.setup)
-  if [ -z $propertyvalue ]
-  then
-    propertyvalue=$(sed -n "s/^%$1% *= *\(.*\) *$/\1/p" quince.setup.default)
-  fi
+  setuptype=".$2"
 fi
 
+# First get only default file
+setup=$(cat quince.setup.default)
+
+setupfile="quince.setup$setuptype"
+if [ -e $setupfile ]
+then
+  # using awk to keep properties in quince.setup.default not in quince.setup
+  setup=$(awk -F= '!a[$1]++' $setupfile quince.setup.default)
+fi
+propertyvalue=$(sed -n "s/^%$1% *= *\(.*\) *$/\1/p" <<< "$setup" )
+
 echo $propertyvalue
+if [ -z "$propertyvalue" ]
+then
+  exit 1
+fi
