@@ -29,24 +29,23 @@ folder=$(scripts/get_setup_property.sh prod_backup_folder)
 current_tag=$(git describe --tags)
 mkdir -p $folder
 # Quit with error if backup already exists
-backup_file="$folder/$current_tag.sql.gz"
-if [ -e $backup_file ]
+backup_file="$folder/$current_tag.sql"
+if [ -e "${backup_file}.gz" ]
 then
-  >&2 printf "ERROR: Backup file $backup_file already exists\n"
+  >&2 printf "ERROR: Backup file ${backup_file}.gz already exists\n"
   exit 1
 fi
-mysqldump --port=$port --user=$user --password="$pw" $db | gzip - \
-  >$folder/$current_tag.sql.gz
+mysqldump --port=$port --user=$user --password="$pw" $db >$backup_file
 retval=$?
-
-if [ $verbose -eq 1 ]
+if [ $retval -eq 0 ]
 then
-  if [ $retval -eq 0 ]
+  gzip $backup_file
+  if [ $verbose -eq 1 ]
   then
-    echo "Database $db backed up to $folder/$current_tag.sql.gz"
-  else
-    >&2 printf "Database backup script failed\n"
+    echo "Database $db backed up to ${backup_file}.gz"
   fi
+else
+  >&2 printf "Database backup script failed\n"
 fi
 
 exit $retval
