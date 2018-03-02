@@ -100,7 +100,7 @@ echo ""
 echo "Backup currently deployed .war file"
 # backup previous war file:
 deploy_folder="$(scripts/get_setup_property.sh prod_deploy_folder)"
-backup_folder=$(scripts/get_setup_property.sh prod_backup_folder)
+backup_folder="$(scripts/get_setup_property.sh prod_backup_folder)"
 tag=$(git describe --tags)
 timestamp=$(date +%Y%m%d%H%M%S)
 mkdir -p $deploy_folder
