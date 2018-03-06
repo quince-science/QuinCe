@@ -98,10 +98,10 @@ fi
 # copied to.
 if [ ! $filestore -ef $file ]
 then
-  options=-rq
+  options='-rq --delete'
   if [ $verbose -eq 1 ]
   then
-    options=-rv
+    options='-rv --delete'
   fi
   # copy the filestore
   rsync $options $file $filestore
