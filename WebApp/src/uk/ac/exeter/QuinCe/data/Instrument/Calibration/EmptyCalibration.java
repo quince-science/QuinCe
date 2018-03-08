@@ -35,4 +35,9 @@ public class EmptyCalibration extends Calibration {
   public boolean coefficientsValid() {
     return false;
   }
+
+  @Override
+  public Double calibrateValue(Double rawValue) {
+    return rawValue;
+  }
 }

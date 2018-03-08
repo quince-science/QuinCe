@@ -123,4 +123,9 @@ public class ExternalStandard extends Calibration {
 
     return result;
   }
+
+  @Override
+  public Double calibrateValue(Double rawValue) {
+    return rawValue;
+  }
 }
