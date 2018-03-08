@@ -12,6 +12,7 @@ var DESELECT_ACTION = 0;
 var PLOT_POINT_SIZE = 2;
 var PLOT_HIGHLIGHT_SIZE = 5;
 var PLOT_FLAG_SIZE = 8;
+var PLOT_SELECTED_SIZE = 12;
 
 var PLOT_X_AXIS_INDEX = 0;
 var PLOT_MEASUREMENT_ID_INDEX = 1;
@@ -434,6 +435,10 @@ function selectionUpdated() {
   // Update the selected rows counter
   $('#selectedRowsCount').html(selectedRows.length);
 
+  // Redraw the plots to show selection
+  drawPlot(1);
+  drawPlot(2);
+  
   if (typeof postSelectionUpdated == 'function') {
     postSelectionUpdated();
   }
@@ -526,6 +531,19 @@ function drawPlot(index) {
   var plotHighlights = makeHighlights(index, plotData);
   if (plotHighlights.length > 0) {
     graph_options.underlayCallback = function(canvas, area, g) {
+      // Selected
+      for (var i = 0; i < plotHighlights.length; i++) {
+        if (plotHighlights[i][3]) {
+          var xPoint = g.toDomXCoord(plotHighlights[i][0]);
+          var yPoint = g.toDomYCoord(plotHighlights[i][1]);
+          canvas.fillStyle = 'rgba(225, 225, 0, 1)';
+          canvas.beginPath();
+          canvas.arc(xPoint, yPoint, PLOT_SELECTED_SIZE, 0, 2 * Math.PI, false);
+          canvas.fill();
+        }
+      }
+
+      // Flagged
       for (var i = 0; i < plotHighlights.length; i++) {
         var xPoint = g.toDomXCoord(plotHighlights[i][0]);
         var yPoint = g.toDomYCoord(plotHighlights[i][1]);
@@ -875,8 +893,6 @@ function getSelectedYAxis() {
   }
   result += ']';
 
-  console.log(result);
-
   return result;
 }
 
@@ -1136,8 +1152,10 @@ function makeHighlights(index, plotData) {
   var highlightColor = null;
 
   for (var i = 0; i < plotData.length; i++) {
-
-    if (Math.abs(plotData[i][PLOT_MANUAL_FLAG_INDEX]) != FLAG_GOOD) {
+    var selected = ($.inArray(plotData[i][PLOT_MEASUREMENT_ID_INDEX], selectedRows) > -1);
+    
+    
+    if (selected || Math.abs(plotData[i][PLOT_MANUAL_FLAG_INDEX]) != FLAG_GOOD) {
 
       switch (plotData[i][PLOT_MANUAL_FLAG_INDEX]) {
       case FLAG_BAD:
@@ -1157,11 +1175,14 @@ function makeHighlights(index, plotData) {
         highlightColor = 'rgba(225, 225, 225, 1)';
         break;
       }
+      default: {
+        highlightColor = 'rgba(255, 255, 255, 0)';
+      }
       }
 
       for (j = PLOT_FIRST_Y_INDEX; j < plotData[i].length; j++) {
         if (plotData[i][j] != null) {
-          highlights.push([plotData[i][0], plotData[i][j], highlightColor]);
+          highlights.push([plotData[i][0], plotData[i][j], highlightColor, selected]);
         }
       }
     }
