@@ -29,28 +29,28 @@ var BASE_GRAPH_OPTIONS = {
     pointSize: PLOT_POINT_SIZE,
     highlightCircleSize: PLOT_HIGHLIGHT_SIZE,
     axes: {
-        x: {
-          drawGrid: false
-        },
-        y: {
-          drawGrid: true,
-          gridLinePattern: [1, 3],
-          gridLineColor: 'rbg(200, 200, 200)',
-        }
+      x: {
+        drawGrid: false
+      },
+      y: {
+        drawGrid: true,
+        gridLinePattern: [1, 3],
+        gridLineColor: 'rbg(200, 200, 200)',
+      }
     },
-  clickCallback: function(e, x, points) {
-    scrollToTableRow(getRowId(e, x, points));
-  }
+    clickCallback: function(e, x, points) {
+      scrollToTableRow(getRowId(e, x, points));
+    }
 };
 
 var VARIABLES_DIALOG_ENTRY_HEIGHT = 35;
 
-// Controller for input updates
+//Controller for input updates
 var variablesUpdating = false;
 var variablesPlotIndex = 1;
 
 
-// The two plots
+//The two plots
 var plot1 = null;
 var plot2 = null;
 
@@ -73,14 +73,14 @@ var map2Extent = null;
 var redrawMap = true;
 
 var scaleOptions = {
-  outliers: 'b',
-  outlierSize: 5,
-  decimalPlaces: 3
+    outliers: 'b',
+    outlierSize: 5,
+    decimalPlaces: 3
 };
 
 var mapSource = new ol.source.Stamen({
-    layer: "terrain",
-    url: "https://stamen-tiles-{a-d}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png"
+  layer: "terrain",
+  url: "https://stamen-tiles-{a-d}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png"
 });
 
 //The data table
@@ -89,15 +89,15 @@ var jsDataTable = null;
 //Table selections
 var selectedRows = [];
 
-// The row number (in the data file) of the last selected/deselected row, and
-// which action was performed.
+//The row number (in the data file) of the last selected/deselected row, and
+//which action was performed.
 var lastClickedRow = -1;
 var lastClickedAction = DESELECT_ACTION;
 
-// The callback function for the DataTables drawing call
+//The callback function for the DataTables drawing call
 var dataTableDrawCallback = null;
 
-// Variables for highlighting selected row in table
+//Variables for highlighting selected row in table
 var tableScrollRow = null;
 var scrollEventTimer = null;
 var scrollEventTimeLimit = 300;
@@ -108,7 +108,7 @@ var scrollEventTimeLimit = 300;
 var resizeEventTimer = null;
 var tableSplitProportion = 0.5;
 
-// Page Load function - kicks everything off
+//Page Load function - kicks everything off
 $(function() {
   // Make the panel splits
   $('#plotPageContent').split({orientation: 'horizontal', onDragEnd: function(){scaleTableSplit()}});
@@ -175,62 +175,62 @@ function drawTable() {
 
   $('#tableContent').html(html);
 
-    jsDataTable = $('#dataTable').DataTable( {
-      ordering: false,
-      searching: false,
-      serverSide: true,
-      scroller: {
-        loadingIndicator: true
-      },
-      scrollY: calcTableScrollY(),
-      ajax: function ( data, callback, settings ) {
-        // Since we've done a major scroll, disable the short
-        // scroll timeout
-        clearTimeout(scrollEventTimer);
-        scrollEventTimer = null;
+  jsDataTable = $('#dataTable').DataTable( {
+    ordering: false,
+    searching: false,
+    serverSide: true,
+    scroller: {
+      loadingIndicator: true
+    },
+    scrollY: calcTableScrollY(),
+    ajax: function ( data, callback, settings ) {
+      // Since we've done a major scroll, disable the short
+      // scroll timeout
+      clearTimeout(scrollEventTimer);
+      scrollEventTimer = null;
 
-        // Store the callback
-        dataTableDrawCallback = callback;
+      // Store the callback
+      dataTableDrawCallback = callback;
 
-        // Fill in the form inputs
-        $('#plotPageForm\\:tableDataDraw').val(data.draw);
-        $('#plotPageForm\\:tableDataStart').val(data.start);
-        $('#plotPageForm\\:tableDataLength').val(data.length);
+      // Fill in the form inputs
+      $('#plotPageForm\\:tableDataDraw').val(data.draw);
+      $('#plotPageForm\\:tableDataStart').val(data.start);
+      $('#plotPageForm\\:tableDataLength').val(data.length);
 
-        // Submit the query to the server
-        $('#plotPageForm\\:tableGetData').click();
-      },
-      bInfo: false,
-      drawCallback: function (settings) {
-        if (null != tableScrollRow) {
-          highlightRow(tableScrollRow);
+      // Submit the query to the server
+      $('#plotPageForm\\:tableGetData').click();
+    },
+    bInfo: false,
+    drawCallback: function (settings) {
+      if (null != tableScrollRow) {
+        highlightRow(tableScrollRow);
         tableScrollRow = null;
-        }
-      },
-      rowCallback: function( row, data, index ) {
-        if ($.inArray(data[0], selectedRows) > -1) {
-                $(row).addClass('selected');
-            }
+      }
+    },
+    rowCallback: function( row, data, index ) {
+      if ($.inArray(data[0], selectedRows) > -1) {
+        $(row).addClass('selected');
+      }
 
-        // For some reason, the click handler is added twice
-        // on the first round of data loading (i.e. when the screen
-        // is first drawn). I can't find why, so for now I'll just
-        // remove all existing click handlers before adding this one.
-        $(row).off('click');
-            $(row).on('click', function(event) {
-              clickRowAction(data[0], event.shiftKey);
-            });
-        },
-      columnDefs: getColumnDefs()
-    });
+      // For some reason, the click handler is added twice
+      // on the first round of data loading (i.e. when the screen
+      // is first drawn). I can't find why, so for now I'll just
+      // remove all existing click handlers before adding this one.
+      $(row).off('click');
+      $(row).on('click', function(event) {
+        clickRowAction(data[0], event.shiftKey);
+      });
+    },
+    columnDefs: getColumnDefs()
+  });
 
-    renderTableColumns();
-    resizeContent();
-    clearSelection();
+  renderTableColumns();
+  resizeContent();
+  clearSelection();
 
-    // Large table scrolls trigger highlights when the table is redrawn.
-    // This handles small scrolls that don't trigger a redraw.
-    $('.dataTables_scrollBody').scroll(function() {
+  // Large table scrolls trigger highlights when the table is redrawn.
+  // This handles small scrolls that don't trigger a redraw.
+  $('.dataTables_scrollBody').scroll(function() {
     if (null != tableScrollRow) {
       if (scrollEventTimer) {
         clearTimeout(scrollEventTimer);
@@ -241,7 +241,7 @@ function drawTable() {
         tableScrollRow = null;
       }, scrollEventTimeLimit);
     }
-    });
+  });
 }
 
 /*
@@ -263,10 +263,10 @@ function tableDataDownload(data) {
   var status = data.status;
   if (status == "success") {
     dataTableDrawCallback( {
-            draw: $('#plotPageForm\\:tableDataDraw').val(),
-            data: JSON.parse($('#plotPageForm\\:tableJsonData').val()),
-            recordsTotal: $('#plotPageForm\\:recordCount').val(),
-            recordsFiltered: $('#plotPageForm\\:recordCount').val()
+      draw: $('#plotPageForm\\:tableDataDraw').val(),
+      data: JSON.parse($('#plotPageForm\\:tableJsonData').val()),
+      recordsTotal: $('#plotPageForm\\:recordCount').val(),
+      recordsFiltered: $('#plotPageForm\\:recordCount').val()
     });
   }
 }
@@ -279,10 +279,10 @@ function tableDataDownload(data) {
  */
 function getRowId(event, xValue, points) {
   var containerId = $(event.target).
-            parents().
-            filter(function() {
-              return this.id.match(/plot[1-2]Container/)
-            })[0]['id'];
+  parents().
+  filter(function() {
+    return this.id.match(/plot[1-2]Container/)
+  })[0]['id'];
 
   var plotIndex = containerId.substring(4, 5);
   var pointId = points[0]['idx'];
@@ -447,40 +447,40 @@ function clearSelection() {
 
 function showInfoPopup(qcFlag, qcMessage, target) {
 
-    $('#infoPopup').stop(true, true);
+  $('#infoPopup').stop(true, true);
 
-    if (qcMessage != "") {
+  if (qcMessage != "") {
 
-        var content = '';
-      content += '<div class="qcInfoMessage ';
+    var content = '';
+    content += '<div class="qcInfoMessage ';
 
-      switch (qcFlag) {
-      case 3: {
-        content += 'questionable';
-        break;
-      }
-      case 4:
-      case 44: {
-        content += 'bad';
-        break;
-      }
-      }
+    switch (qcFlag) {
+    case 3: {
+      content += 'questionable';
+      break;
+    }
+    case 4:
+    case 44: {
+      content += 'bad';
+      break;
+    }
+    }
 
-      content += '">';
-      content += qcMessage;
-      content += '</div>';
+    content += '">';
+    content += qcMessage;
+    content += '</div>';
 
-      $('#infoPopup')
-          .html(content)
-          .css({"left": 0, "top": 0})
-          .offset({"left": $(target).position().left - $('#infoPopup').width() - 10, "top": $(target).offset().top - 3})
-          .show('slide', {direction: 'right'}, 100);
-   }
- }
+    $('#infoPopup')
+    .html(content)
+    .css({"left": 0, "top": 0})
+    .offset({"left": $(target).position().left - $('#infoPopup').width() - 10, "top": $(target).offset().top - 3})
+    .show('slide', {direction: 'right'}, 100);
+  }
+}
 
 function hideInfoPopup() {
-    $('#infoPopup').stop(true, true);
-    $('#infoPopup').hide('slide', {direction: 'right'}, 100);
+  $('#infoPopup').stop(true, true);
+  $('#infoPopup').hide('slide', {direction: 'right'}, 100);
 }
 
 function drawPlot(index) {
@@ -543,7 +543,7 @@ function drawPlot(index) {
       document.getElementById('plot' + index + 'Container'),
       plotData,
       graph_options
-    );
+  );
 }
 
 function getPlotVisibility(index) {
@@ -584,49 +584,49 @@ function getPlotData(index) {
 }
 
 function getFlagText(flag) {
-    var flagText = "";
+  var flagText = "";
 
-    if (flag == '-1001') {
-        flagText = 'Needs Flag';
-    } else if (flag == '-1002') {
-        flagText = 'Ignore';
-    } else if (flag == '-2') {
-        flagText = 'Assumed Good';
-    } else if (flag == '2') {
-        flagText = 'Good';
-    } else if (flag == '3') {
-        flagText = 'Questionable';
-    } else if (flag == '4') {
-        flagText = 'Bad';
-    } else if (flag == '44') {
-      flagText = 'Fatal';
-    } else {
-        flagText = 'Needs Flag';
-    }
+  if (flag == '-1001') {
+    flagText = 'Needs Flag';
+  } else if (flag == '-1002') {
+    flagText = 'Ignore';
+  } else if (flag == '-2') {
+    flagText = 'Assumed Good';
+  } else if (flag == '2') {
+    flagText = 'Good';
+  } else if (flag == '3') {
+    flagText = 'Questionable';
+  } else if (flag == '4') {
+    flagText = 'Bad';
+  } else if (flag == '44') {
+    flagText = 'Fatal';
+  } else {
+    flagText = 'Needs Flag';
+  }
 
-    return flagText;
+  return flagText;
 }
 
 function getFlagClass(flag) {
-    var flagClass = "";
+  var flagClass = "";
 
-    if (flag == '-1001') {
-        flagClass = 'needsFlagging';
-    } else if (flag == '-1002') {
-        flagClass = 'ignore';
-    } else if (flag == '-2') {
-        flagClass = 'assumedGood';
-    } else if (flag == '2') {
-        flagClass = 'good';
-    } else if (flag == '3') {
-        flagClass = 'questionable';
-    } else if (flag == '4' || flag == '44') {
-        flagClass = 'bad';
-    } else {
-        flagClass = 'needsFlagging';
-    }
+  if (flag == '-1001') {
+    flagClass = 'needsFlagging';
+  } else if (flag == '-1002') {
+    flagClass = 'ignore';
+  } else if (flag == '-2') {
+    flagClass = 'assumedGood';
+  } else if (flag == '2') {
+    flagClass = 'good';
+  } else if (flag == '3') {
+    flagClass = 'questionable';
+  } else if (flag == '4' || flag == '44') {
+    flagClass = 'bad';
+  } else {
+    flagClass = 'needsFlagging';
+  }
 
-    return flagClass;
+  return flagClass;
 }
 
 function showVariableDialog(plotIndex) {
@@ -652,7 +652,7 @@ function setupPlotVariables(plotIndex) {
   populateYAxisButtons(JSON.parse($('#plotPageForm\\:plot' + plotIndex + 'YAxis').val()));
 }
 
-// Select the specified X Axis in the dialog
+//Select the specified X Axis in the dialog
 function updateXAxisButtons(variable) {
 
   if (!variablesUpdating) {
@@ -722,7 +722,7 @@ function updateYAxisButtons(variable) {
   }
 }
 
-// See if two ids are in the same variable group
+//See if two ids are in the same variable group
 function inSameGroup(id1, id2) {
   var result = false;
 
@@ -760,7 +760,7 @@ function setupMapVariables(plotIndex) {
   updateMapCheckboxes($('#plotPageForm\\:map' + plotIndex + 'Variable').val());
 }
 
-// Select the specified variable in the dialog
+//Select the specified variable in the dialog
 function updateMapCheckboxes(variable) {
 
   if (!variablesUpdating) {
@@ -960,22 +960,22 @@ function initMap(index) {
 
   if (null == window[mapVar]) {
     var initialView = new ol.View({
-        center: ol.proj.fromLonLat([bounds[4], bounds[5]]),
-        zoom: 4,
-        minZoom: 2,
+      center: ol.proj.fromLonLat([bounds[4], bounds[5]]),
+      zoom: 4,
+      minZoom: 2,
     });
 
     window[mapVar] = new ol.Map({
       target: 'map' + index + 'Container',
       layers: [
-          new ol.layer.Tile({
-              source: mapSource
-          }),
+        new ol.layer.Tile({
+          source: mapSource
+        }),
         ],
         controls: [
           new ol.control.Zoom()
-        ],
-        view: initialView
+          ],
+          view: initialView
     });
 
     window[extentVar] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
@@ -1082,12 +1082,12 @@ function displayMapFeatureInfo(event, pixel) {
 
   if (feature) {
     featureInfo += '<b>Position:</b> '
-    featureInfo += feature['data'][0];
+      featureInfo += feature['data'][0];
     featureInfo += ' ';
     featureInfo += feature['data'][1];
     featureInfo += ' ';
     featureInfo += ' <b>Value:</b> '
-    featureInfo += feature['data'][5];
+      featureInfo += feature['data'][5];
   }
 
   $('#map' + index + 'Value').html(featureInfo);
@@ -1113,8 +1113,8 @@ function resetZoom(index) {
     window['map' + index].getView().fit(window['map' + index + 'Extent'], window['map' + index].getSize());
   } else {
     window['plot' + index].updateOptions({
-        dateWindow: null,
-        valueRange: null
+      dateWindow: null,
+      valueRange: null
     });
   }
 }
