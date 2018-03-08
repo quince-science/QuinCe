@@ -495,6 +495,19 @@ function hideInfoPopup() {
 function drawPlot(index) {
 
   var plotVar = 'plot' + index;
+  
+  // Existing zoom information
+  var existingXLabel = null;
+  var existingYLabel = null;
+  var existingXZoom = null;
+  var existingYZoom = null;
+  
+  if (null != window[plotVar]) {
+    existingXLabel = window[plotVar].getOption('xlabel');
+    existingYLabel = window[plotVar].getOption('ylabel');
+    existingXZoom = window[plotVar].xAxisRange();
+    existingYZoom = window[plotVar].yAxisRange(0);
+  }
 
   // Remove the existing plot
   if (null != window[plotVar]) {
@@ -514,8 +527,7 @@ function drawPlot(index) {
     yLabel = getVariableGroup(yIds[0]);
   }
 
-
-  var graph_options = BASE_GRAPH_OPTIONS;
+  var graph_options = Object.assign({}, BASE_GRAPH_OPTIONS);
   graph_options.labels = getPlotLabels(index);
   graph_options.xlabel = xLabel;
   graph_options.ylabel = yLabel;
@@ -523,7 +535,17 @@ function drawPlot(index) {
   graph_options.interactionModel = interactionModel;
   graph_options.width = $('#plot' + index + 'Panel').width();
   graph_options.height = $('#plot' + index + 'Panel').height() - 40;
+  
+  // Preserve zoom settings where possible
+  if (null != existingXZoom && existingXLabel == xLabel) {
+    graph_options.dateWindow = existingXZoom;
+  }
 
+  if (null != existingYZoom && existingYLabel == yLabel) {
+    graph_options.valueRange = existingYZoom;
+  }
+
+  // Get the plot data
   var plotData = null;
   // TODO 0 = date - but we need to make it a proper lookup
   if ($('#plotPageForm\\:plot' + index + 'XAxis').val() == 0) {
