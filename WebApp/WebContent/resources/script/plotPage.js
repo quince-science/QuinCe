@@ -436,8 +436,12 @@ function selectionUpdated() {
   $('#selectedRowsCount').html(selectedRows.length);
 
   // Redraw the plots to show selection
-  drawPlot(1);
-  drawPlot(2);
+  if (null != plot1) {
+    drawPlot(1);
+  }
+  if (null != plot2) {
+    drawPlot(2);
+  }
 
   if (typeof postSelectionUpdated == 'function') {
     postSelectionUpdated();
