@@ -187,4 +187,17 @@ public class SensorAssignment {
   public void setMissingValue(String missingValue) {
     this.missingValue = missingValue;
   }
+
+  /**
+   * @param dataFile
+   * @param sensorName
+   * @return
+   */
+  public static String getTarget(String dataFile, String sensorName) {
+    return dataFile + ": " + sensorName;
+  }
+
+  public String getTarget() {
+    return getTarget(getDataFile(), getSensorName());
+  }
 }

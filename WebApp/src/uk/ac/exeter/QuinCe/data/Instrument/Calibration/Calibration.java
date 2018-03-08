@@ -305,4 +305,6 @@ public abstract class Calibration implements Comparable<Calibration> {
 
     return result;
   }
+
+  public abstract Double calibrateValue(Double rawValue);
 }

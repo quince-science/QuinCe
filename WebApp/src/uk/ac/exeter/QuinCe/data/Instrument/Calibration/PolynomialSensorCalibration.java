@@ -127,4 +127,15 @@ public class PolynomialSensorCalibration extends SensorCalibration {
       }
     }
   }
+
+  @Override
+  public Double calibrateValue(Double rawValue) {
+    int power = 0;
+    Double calibratedValue = 0d;
+    for (CalibrationCoefficient c : coefficients) {
+      calibratedValue += c.getValue() * Math.pow(rawValue, power);
+      power++;
+    }
+    return calibratedValue;
+  }
 }
