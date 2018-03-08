@@ -495,13 +495,13 @@ function hideInfoPopup() {
 function drawPlot(index) {
 
   var plotVar = 'plot' + index;
-  
+
   // Existing zoom information
   var existingXLabel = null;
   var existingYLabel = null;
   var existingXZoom = null;
   var existingYZoom = null;
-  
+
   if (null != window[plotVar]) {
     existingXLabel = window[plotVar].getOption('xlabel');
     existingYLabel = window[plotVar].getOption('ylabel');
@@ -535,7 +535,7 @@ function drawPlot(index) {
   graph_options.interactionModel = interactionModel;
   graph_options.width = $('#plot' + index + 'Panel').width();
   graph_options.height = $('#plot' + index + 'Panel').height() - 40;
-  
+
   // Preserve zoom settings where possible
   if (null != existingXZoom && existingXLabel == xLabel) {
     graph_options.dateWindow = existingXZoom;
