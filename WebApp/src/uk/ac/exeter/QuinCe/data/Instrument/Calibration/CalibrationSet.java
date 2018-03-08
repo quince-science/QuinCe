@@ -242,4 +242,13 @@ public class CalibrationSet extends TreeSet<Calibration> {
     }
     return result;
   }
+
+  public Calibration getTargetCalibration(String target) {
+    for (Calibration calibration : this) {
+      if (calibration.getTarget().equals(target)) {
+        return calibration;
+      }
+    }
+    return null;
+  }
 }

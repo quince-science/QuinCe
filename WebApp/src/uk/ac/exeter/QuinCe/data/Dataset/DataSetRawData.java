@@ -19,6 +19,8 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileLine;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -108,6 +110,12 @@ public abstract class DataSetRawData {
   protected List<Integer> linePositions = null;
 
   /**
+   * A calibration set for this DataSet, initialized with an empty
+   * calibrationSet
+   */
+  private CalibrationSet calibrationSet;
+
+  /**
    * Constructor - loads and extracts the data for the data set
    * @param dataSource A data source
    * @param dataSet The data set
@@ -136,6 +144,8 @@ public abstract class DataSetRawData {
       selectedRows.add(null);
       linePositions.add(NOT_STARTED_VALUE);
     }
+    setCalibrationSet(new SensorCalibrationDB()
+        .getCurrentCalibrations(dataSource, instrument.getDatabaseId()));
   }
 
   /**
@@ -806,7 +816,13 @@ public abstract class DataSetRawData {
     List<Double> rowValues = new ArrayList<Double>();
     for (int row : rows) {
       DataFileLine line = data.get(fileIndex).get(row);
-      rowValues.add(line.getFieldValue(assignment.getColumn(), assignment.getMissingValue()));
+      Double rawValue = line.getFieldValue(assignment.getColumn(), assignment.getMissingValue());
+      if (assignment.getPostCalibrated()
+          && calibrationSet.containsTarget(assignment.getTarget())) {
+        rawValue = calibrationSet.getTargetCalibration(assignment.getTarget())
+            .calibrateValue(rawValue);
+      }
+      rowValues.add(rawValue);
     }
 
     return calculateValue(rowValues);
@@ -836,5 +852,16 @@ public abstract class DataSetRawData {
     }
 
     return result;
+  }
+
+
+  /**
+   * Set the calibration set for this data set. The calibration set is used when
+   * calculating the calibrated data from the raw data.
+   *
+   * @param calibrationSet
+   */
+  private void setCalibrationSet(CalibrationSet calibrationSet) {
+    this.calibrationSet = calibrationSet;
   }
 }
