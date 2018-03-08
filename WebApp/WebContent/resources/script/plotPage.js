@@ -438,7 +438,7 @@ function selectionUpdated() {
   // Redraw the plots to show selection
   drawPlot(1);
   drawPlot(2);
-  
+
   if (typeof postSelectionUpdated == 'function') {
     postSelectionUpdated();
   }
@@ -536,7 +536,7 @@ function drawPlot(index) {
         if (plotHighlights[i][3]) {
           var xPoint = g.toDomXCoord(plotHighlights[i][0]);
           var yPoint = g.toDomYCoord(plotHighlights[i][1]);
-          canvas.fillStyle = 'rgba(225, 225, 0, 1)';
+          canvas.fillStyle = 'rgba(255, 221, 0, 1)';
           canvas.beginPath();
           canvas.arc(xPoint, yPoint, PLOT_SELECTED_SIZE, 0, 2 * Math.PI, false);
           canvas.fill();
@@ -545,12 +545,14 @@ function drawPlot(index) {
 
       // Flagged
       for (var i = 0; i < plotHighlights.length; i++) {
-        var xPoint = g.toDomXCoord(plotHighlights[i][0]);
-        var yPoint = g.toDomYCoord(plotHighlights[i][1]);
-        canvas.fillStyle = plotHighlights[i][2];
-        canvas.beginPath();
-        canvas.arc(xPoint, yPoint, PLOT_FLAG_SIZE, 0, 2 * Math.PI, false);
-        canvas.fill();
+        if (null != plotHighlights[i][2]) {
+          var xPoint = g.toDomXCoord(plotHighlights[i][0]);
+          var yPoint = g.toDomYCoord(plotHighlights[i][1]);
+          canvas.fillStyle = plotHighlights[i][2];
+          canvas.beginPath();
+          canvas.arc(xPoint, yPoint, PLOT_FLAG_SIZE, 0, 2 * Math.PI, false);
+          canvas.fill();
+        }
       }
     }
   } else {
@@ -1153,8 +1155,7 @@ function makeHighlights(index, plotData) {
 
   for (var i = 0; i < plotData.length; i++) {
     var selected = ($.inArray(plotData[i][PLOT_MEASUREMENT_ID_INDEX], selectedRows) > -1);
-    
-    
+
     if (selected || Math.abs(plotData[i][PLOT_MANUAL_FLAG_INDEX]) != FLAG_GOOD) {
 
       switch (plotData[i][PLOT_MANUAL_FLAG_INDEX]) {
@@ -1176,7 +1177,7 @@ function makeHighlights(index, plotData) {
         break;
       }
       default: {
-        highlightColor = 'rgba(255, 255, 255, 0)';
+        highlightColor = null;
       }
       }
 
