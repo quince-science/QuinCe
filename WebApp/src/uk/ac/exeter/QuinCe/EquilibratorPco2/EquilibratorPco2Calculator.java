@@ -78,11 +78,14 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
 
     double co2Calibrated = applyExternalStandards2d(date, "CO2", co2Dried);
 
-    double pCo2TEDry = calcPco2TEDry(co2Calibrated, equilibratorPressure);
+    //double pCo2TEDry = calcPco2TEDry(co2Calibrated, equilibratorPressure);
     double pH2O = calcPH2O(salinity, equilibratorTemperature);
-    double pCo2TEWet = calcPco2TEWet(pCo2TEDry, equilibratorPressure, pH2O);
-    double fCo2TE = calcFco2TE(pCo2TEWet, equilibratorPressure, equilibratorTemperature);
-    double fCo2 = calcFco2(fCo2TE, equilibratorTemperature, intakeTemperature);
+    double pCo2TEWet = calcPco2TEWet(co2Calibrated, equilibratorPressure, pH2O);
+//    double pCo2TEWet = calcPco2TEWet(pCo2TEDry, equilibratorPressure, pH2O);
+//    double fCo2TE = calcFco2TE(pCo2TEWet, equilibratorPressure, equilibratorTemperature);
+//    double fCo2 = calcFco2(fCo2TE, equilibratorTemperature, intakeTemperature);
+    double pco2SST = calcPco2SST(pCo2TEWet, equilibratorTemperature, intakeTemperature);
+    double fCo2 = calcFco2SST(pco2SST, equilibratorPressure, equilibratorTemperature);
 
     Map<String, Double> calculatedValues = new HashMap<String, Double>();
     calculatedValues.put("delta_temperature", Math.abs(intakeTemperature - equilibratorTemperature));
@@ -92,9 +95,9 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
     calculatedValues.put("ph2o", pH2O);
     calculatedValues.put("dried_co2", co2Dried);
     calculatedValues.put("calibrated_co2", co2Calibrated);
-    calculatedValues.put("pco2_te_dry", pCo2TEDry);
+   // calculatedValues.put("pco2_te_dry", pCo2TEDry);
     calculatedValues.put("pco2_te_wet", pCo2TEWet);
-    calculatedValues.put("fco2_te", fCo2TE);
+    //calculatedValues.put("fco2_te", fCo2TE);
     calculatedValues.put("fco2", fCo2);
 
     return calculatedValues;
@@ -146,10 +149,32 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
    * @param pH2O The water vapour pressure
    * @return pCO<sub>2</sub> in water at equlibrator temperature
    */
+/*
   private double calcPco2TEWet(double co2TEDry, double eqp, double pH2O) {
     double eqp_atm = eqp * PASCALS_TO_ATMOSPHERES * 100;
     return co2TEDry * (eqp_atm - pH2O);
   }
+ */
+  private double calcPco2TEWet(double co2, double eqp, double pH2O) {
+    double eqp_atm = eqp * PASCALS_TO_ATMOSPHERES * 100;
+    return co2 * (eqp_atm - pH2O);
+  }
+
+  private double calcPco2SST(double pco2TEWet, double eqt, double sst) {
+    double sst_kelvin = sst + 273.15;
+    double eqt_kelvin = eqt + 273.15;
+    return pco2TEWet * Math.exp(0.0423 * (sst_kelvin - eqt_kelvin));
+  }
+
+  private double calcFco2SST(double pco2SST, double co2Calibrated, double eqp, double eqt) {
+    double kelvin = eqt + 273.15;
+    double B = -1636.75 + 12.0408 * kelvin -0.0327957 * Math.pow(kelvin, 2) + (3.16528 * 1e-5) * Math.pow(kelvin, 3);
+    double delta = 57.7 - 0.118 * kelvin;
+    double eqpAtmospheres = (eqp * 100) * PASCALS_TO_ATMOSPHERES;
+
+    return pco2SST * Math.exp(((B + 2 * Math.pow(1 - co2Calibrated * 1e-6, 2) * delta) * eqpAtmospheres) / (82.0575 * kelvin));
+  }
+
 
   /**
    * Calculates fCO<sub>2</sub> at equilibrator temperature
@@ -162,8 +187,9 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
     double kelvin = eqt + 273.15;
     double B = -1636.75 + 12.0408 * kelvin -0.0327957 * Math.pow(kelvin, 2) + (3.16528 * 1e-5) * Math.pow(kelvin, 3);
     double delta = 57.7 - 0.118 * kelvin;
+    double eqpAtmospheres = (eqp * 100) * PASCALS_TO_ATMOSPHERES;
 
-    return pco2TEWet * Math.exp(((B + 2 * (delta * 1e-6)) * (eqp * 1e-6)) / (8.314472 * kelvin));
+    return pco2TEWet * Math.exp(((B + 2 * delta) * eqpAtmospheres) / (82.0575 * kelvin));
   }
 
   /**
