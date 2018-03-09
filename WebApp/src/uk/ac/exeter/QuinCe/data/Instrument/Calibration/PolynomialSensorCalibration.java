@@ -2,7 +2,9 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * A calibration that applies up to a fifth-order
@@ -132,8 +134,14 @@ public class PolynomialSensorCalibration extends SensorCalibration {
   public Double calibrateValue(Double rawValue) {
     int power = 0;
     Double calibratedValue = 0d;
-    for (CalibrationCoefficient c : coefficients) {
-      calibratedValue += c.getValue() * Math.pow(rawValue, power);
+
+    // The coefficients are stored from highest to lowest power, so iterate in
+    // reverse list order
+    ListIterator<CalibrationCoefficient> iterator = coefficients
+        .listIterator(coefficients.size());
+    while (iterator.hasPrevious()) {
+      calibratedValue += iterator.previous().getValue()
+          * Math.pow(rawValue, power);
       power++;
     }
     return calibratedValue;
