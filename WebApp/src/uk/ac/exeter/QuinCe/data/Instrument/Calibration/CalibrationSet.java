@@ -53,7 +53,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
     super();
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
     MissingParam.checkMissing(type, "type");
-    MissingParam.checkMissing(targets, "targets");
+    MissingParam.checkMissing(targets, "targets", true);
 
     this.instrumentId = instrumentId;
     this.type = type;
