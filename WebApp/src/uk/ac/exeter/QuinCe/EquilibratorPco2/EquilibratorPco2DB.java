@@ -99,9 +99,8 @@ public class EquilibratorPco2DB extends CalculationDB {
       stmt.setDouble(3, values.get("ph2o"));
       stmt.setDouble(4, values.get("dried_co2"));
       stmt.setDouble(5, values.get("calibrated_co2"));
-      stmt.setDouble(6, values.get("pco2_te_dry"));
       stmt.setDouble(7, values.get("pco2_te_wet"));
-      stmt.setDouble(8, values.get("fco2_te"));
+      stmt.setDouble(8, values.get("pco2_sst"));
       stmt.setDouble(9, values.get("fco2"));
       stmt.setLong(10, measurementId);
 
