@@ -307,4 +307,17 @@ public abstract class Calibration implements Comparable<Calibration> {
   }
 
   public abstract Double calibrateValue(Double rawValue);
+
+  /**
+   * Check that this calibration is valid, currently test that it is not an
+   * EmptyCalibration instance
+   *
+   * @return
+   */
+  public boolean isValid() {
+    if (this instanceof EmptyCalibration) {
+      return false;
+    }
+    return true;
+  }
 }

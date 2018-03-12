@@ -251,4 +251,17 @@ public class CalibrationSet extends TreeSet<Calibration> {
     }
     return null;
   }
+
+  /**
+   * Check that all calibrations in this set are valid
+   *
+   * @return
+   */
+  public boolean isValid() {
+    boolean valid = true;
+    for (Calibration calibration : this) {
+      valid = valid && calibration.isValid();
+    }
+    return valid;
+  }
 }

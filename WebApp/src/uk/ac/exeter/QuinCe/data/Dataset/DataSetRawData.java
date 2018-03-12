@@ -19,6 +19,7 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileLine;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationNotValidException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
@@ -144,8 +145,15 @@ public abstract class DataSetRawData {
       selectedRows.add(null);
       linePositions.add(NOT_STARTED_VALUE);
     }
-    setCalibrationSet(new SensorCalibrationDB()
-        .getCurrentCalibrations(dataSource, instrument.getDatabaseId()));
+    CalibrationSet calibrations = new SensorCalibrationDB()
+        .getMostRecentCalibrations(dataSource, instrument.getDatabaseId(),
+            dataSet.getStart());
+    if (calibrations.isValid()) {
+      setCalibrationSet(calibrations);
+    }
+    else {
+      throw new CalibrationNotValidException("Missing valid calibration");
+    }
   }
 
   /**
