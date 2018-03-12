@@ -44,7 +44,7 @@ function processNewDataSet(eventType) {
   }
   if (eventType == 'start') {
     var s = PF('pDataSetName').jq;
-    s.val(s.data('platform-code') + $.format.date(newDataSetItem['start'], 'yyyyMMdd'));
+    s.val(s.data('platform-code') + makeUTCyyyymmdd(newDataSetItem['start']));
     s.css('animationName', 'rowFlash').css('animationDuration', '1s');
   }
   newDataSetItem['content'] = PF('pDataSetName').jq.val().trim();

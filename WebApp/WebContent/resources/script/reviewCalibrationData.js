@@ -32,7 +32,7 @@ function getColumnDefs() {
         {"className": "numericCol", "targets": [3]},
         {"render":
           function (data, type, row) {
-            return $.format.date(data, 'yyyy-MM-dd HH:mm:ss');
+            return makeUTCDateTime(new Date(data));
           },
           "targets": 1
         },
