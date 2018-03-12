@@ -214,6 +214,10 @@ function qcFlagsAccepted() {
   }
 
   clearSelection();
+
+  // Reload the plots
+  $('#plotPageForm\\:plot1GetData').click();
+  $('#plotPageForm\\:plot2GetData').click();
 }
 
 function startUserQcFlags() {
@@ -268,6 +272,10 @@ function manualFlagsUpdated() {
   }
 
   clearSelection();
+
+  // Reload the plots
+  $('#plotPageForm\\:plot1GetData').click();
+  $('#plotPageForm\\:plot2GetData').click();
 }
 
 function getPlotMode(index) {
