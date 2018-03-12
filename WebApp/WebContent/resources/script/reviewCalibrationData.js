@@ -88,6 +88,9 @@ function storeCalibrationSelection() {
 
   clearSelection();
   PF('useDialog').hide();
+
+  // Reload the plot
+  $('#plotPageForm\\:plot1GetData').click();
 }
 
 function postSelectionUpdated() {
