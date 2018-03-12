@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -39,7 +40,8 @@ public abstract class CalibrationDB {
    */
   private static final String GET_RECENT_CALIBRATIONS_QUERY = "SELECT "
       + "target, deployment_date, coefficients, class FROM calibration WHERE "
-      + "instrument_id = ? AND type = ? ORDER BY deployment_date DESC";
+      + "instrument_id = ? AND type = ? AND deployment_date <= ? "
+      + "ORDER BY deployment_date DESC";
 
 
   /**
@@ -99,7 +101,9 @@ public abstract class CalibrationDB {
    * @throws RecordNotFoundException If any required records are missing
    * @throws MissingParamException If any internal calls are missing required parameters
    */
-  public CalibrationSet getCurrentCalibrations(DataSource dataSource, long instrumentId) throws CalibrationException, DatabaseException, MissingParamException, RecordNotFoundException {
+  public CalibrationSet getMostRecentCalibrations(DataSource dataSource,
+      long instrumentId, LocalDateTime date) throws CalibrationException,
+      DatabaseException, MissingParamException, RecordNotFoundException {
 
     CalibrationSet result = new CalibrationSet(instrumentId, getCalibrationType(), getTargets(dataSource, instrumentId));
 
@@ -112,7 +116,8 @@ public abstract class CalibrationDB {
       stmt = conn.prepareStatement(GET_RECENT_CALIBRATIONS_QUERY);
       stmt.setLong(1, instrumentId);
       stmt.setString(2, getCalibrationType());
-
+      // Get epoc milliseconds
+      stmt.setLong(3, date.toEpochSecond(ZoneOffset.UTC) * 1000);
       records = stmt.executeQuery();
       while (!result.isComplete() && records.next()) {
         String target = records.getString(1);
@@ -136,6 +141,30 @@ public abstract class CalibrationDB {
     }
 
     return result;
+  }
+
+  /**
+   * Get the most recent calibrations for each target
+   *
+   * @param dataSource
+   *          A data source
+   * @param instrumentId
+   *          The instrument ID
+   * @return The calibrations
+   * @throws CalibrationException
+   *           If the calibrations are internally inconsistent
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws RecordNotFoundException
+   *           If any required records are missing
+   * @throws MissingParamException
+   *           If any internal calls are missing required parameters
+   */
+  public CalibrationSet getCurrentCalibrations(DataSource dataSource,
+      long instrumentId) throws CalibrationException, DatabaseException,
+      MissingParamException, RecordNotFoundException {
+    return getMostRecentCalibrations(dataSource, instrumentId,
+        LocalDateTime.now());
   }
 
   /**
