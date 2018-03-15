@@ -34,7 +34,13 @@ public class DateTimeUtils {
   public static final long MILLIS_PER_DAY = 86400000;
 
   /**
-   * A formatter for generating date strings. The output format is {@code YYYY-MM-DD}.
+   * Default date-time format used for display
+   */
+  public static final String DISPLAY_DATE_TIME_FORMAT = "uuuu-MM-dd HH:mm:ss";
+
+  /**
+   * A formatter for generating date strings. The output format is
+   * {@code YYYY-MM-DD}.
    */
   private static SimpleDateFormat dateFormatter = null;
 
@@ -49,15 +55,22 @@ public class DateTimeUtils {
   private static java.time.format.DateTimeFormatter jsonFormatter = null;
 
   /**
-   * A formatter for parsing date/time strings returned by SQL queries.
-   * The format is {@code yyyy-MM-dd HH:mm:ss.S}.
+   * For formatting LocalDateTime - dates and parsing date time strings
+   */
+  private static java.time.format.DateTimeFormatter displayDateTimeFormatter = null;
+
+  /**
+   * A formatter for parsing date/time strings returned by SQL queries. The
+   * format is {@code yyyy-MM-dd HH:mm:ss.S}.
    */
   private static DateTimeFormatter sqlDateTimeFormatter = null;
 
   static {
-    dateTimeFormatter = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+    dateTimeFormatter = new SimpleDateFormat(DISPLAY_DATE_TIME_FORMAT);
     dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     jsonFormatter = java.time.format.DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
+    displayDateTimeFormatter = java.time.format.DateTimeFormatter
+        .ofPattern(DISPLAY_DATE_TIME_FORMAT).withZone(ZoneOffset.UTC);
   }
 
   /**
@@ -258,4 +271,16 @@ public class DateTimeUtils {
   public static long secondsBetween(LocalDateTime date1, LocalDateTime date2) {
     return ChronoUnit.SECONDS.between(date1, date2);
   }
+
+  /**
+   * Parses a date-time string on the general format YYYY-MM-DD HH:MM:SS to a
+   * LocalDateTime object
+   *
+   * @param dateTimeString
+   * @return
+   */
+  public static LocalDateTime parseDisplayDateTime(String dateTimeString) {
+    return LocalDateTime.parse(dateTimeString, displayDateTimeFormatter);
+  }
+
 }

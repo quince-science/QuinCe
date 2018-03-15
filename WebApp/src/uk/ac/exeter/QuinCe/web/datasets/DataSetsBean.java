@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
@@ -16,6 +17,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
@@ -27,7 +30,6 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
-import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Bean for handling the creation and management of data sets
@@ -78,6 +80,12 @@ public class DataSetsBean extends BaseManagedBean {
   private String platformCode = null;
 
   /**
+   * Says whether the dataset beeing defined has valid calibration. This
+   * defaults to true, but is actually checked when the form is submitted.
+   */
+  private boolean validCalibration = true;
+
+/**
    * Initialise/Reset the bean
    */
   @PostConstruct
@@ -393,4 +401,34 @@ public class DataSetsBean extends BaseManagedBean {
     }
   }
 
+  /**
+   * Check if this instrument has a valid calibration for the start-time of the
+   * data set the user wants to create.
+   */
+  public void checkValidCalibration() {
+    validCalibration = false;
+    Map<String, String> params = FacesContext.getCurrentInstance()
+        .getExternalContext().getRequestParameterMap();
+    String startTime = params.get("uploadForm:startDate_input");
+    // startTime not yet set
+    if ("".equals(startTime)) {
+      return;
+    }
+    try {
+      CalibrationSet calibrations = new SensorCalibrationDB()
+          .getMostRecentCalibrations(getDataSource(), getCurrentInstrumentId(),
+              DateTimeUtils.parseDisplayDateTime(startTime));
+      validCalibration = calibrations.isValid();
+    } catch (Exception e) {
+      validCalibration = false;
+    }
+  }
+
+  /**
+   * @return true if the time and instrument for this dataset has a valid
+   *         calibration, otherwise false
+   */
+  public boolean isValidCalibration() {
+    return validCalibration;
+  }
 }

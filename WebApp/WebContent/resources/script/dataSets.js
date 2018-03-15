@@ -36,8 +36,8 @@ function processNewDataSet(eventType) {
   } else {
     newDataSetItem['end'] = new Date(PF('pEndDate').getDate().toString().substring(0,24) + 'Z');
   }
-
-  if (validateNewDataSet()) {
+  let validData = validateNewDataSet();
+  if (validData) {
     newDataSetItem['className'] = 'goodNewDataSet';
   } else {
     newDataSetItem['className'] = 'badNewDataSet';
@@ -52,12 +52,21 @@ function processNewDataSet(eventType) {
   if (newDataSetItem['end'] > newDataSetItem['start']) {
     timeline.itemsData.getDataSet().add(newDataSetItem);
   }
+  if (eventType == 'submit' && validData) {
+    addDataSet();
+  }
 }
 
 function validateNewDataSet() {
 
   var result = true;
   var errorString = null;
+  const validCalibration = $('#uploadForm').data('validCalibration')
+
+  // Check that there is a valid calibration for the selected start time
+  if (!validCalibration) {
+    errorString = 'Data set is missing a valid calibration';
+  }
 
   // Check that there is a data set name
   if (newDataSetItem['content'].trim() == '') {
