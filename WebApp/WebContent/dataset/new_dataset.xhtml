@@ -20,6 +20,7 @@
 
   <ui:define name="content">
     <h:form id="uploadForm" method="post" charset="utf8">
+      <f:passThroughAttribute name="data-valid-calibration" value="#{dataSetsBean.validCalibration}" />
       <div class="fullPage">
         <div id="timelineContainer"></div>
         <script>
@@ -60,9 +61,19 @@
         <div id="errorList" class="errors hidden"></div>
       </div>
       <h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
-        <p:commandButton id="addButton" widgetVar="pAddButton" value="Add Data Set" ajax="false" action="#{dataSetsBean.addDataSet}"/>
+        <p:commandButton id="addButton" widgetVar="pAddButton"
+            value="Add Data Set"
+            onclick="checkCalibrationProcessForm(); return false;"
+            />
         <p:commandButton value="Cancel" ajax="false" action="#{dataSetsBean.goToList}" immediate="true"/>
       </h:panelGrid>
+      <p:remoteCommand name="checkCalibrationProcessForm"
+      actionListener="#{dataSetsBean.checkValidCalibration}"
+      update="uploadForm"
+      oncomplete="processNewDataSet('submit')"/>
+      <p:remoteCommand name="addDataSet"
+      actionListener="#{dataSetsBean.addDataSet}"
+      oncomplete="window.location.href='dataset_list.xhtml'"/>
     </h:form>
   </ui:define>
 </ui:composition>
