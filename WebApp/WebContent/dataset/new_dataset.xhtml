@@ -29,7 +29,10 @@
           var dataSetNames = JSON.parse('#{dataSetsBean.dataSetNamesJson}');
 
           var timeline = new vis.Timeline(timelineContainer, filesAndDataSets, groups, TIMELINE_OPTIONS);
-          PF('pAddButton').disable();
+          $( document ).ready(function() {
+            // Make sure DOM is loaded befor calling this
+            PF('pAddButton').disable();
+          });
         </script>
 
         <h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
