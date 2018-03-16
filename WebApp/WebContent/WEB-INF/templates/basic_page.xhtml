@@ -4,12 +4,14 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
   <h:head>
-    <title><ui:insert name="title">Welcome</ui:insert> - QuinCe</title>
+    <title><ui:insert name="title">Welcome</ui:insert> - #{utils.siteName}</title>
     <ui:insert name="localHead"/>
   </h:head>
   <h:body>
-      <h:outputStylesheet name="style/main.css"/>
-      <div class="pageTitle"><ui:insert name="pageTitle">Page Title</ui:insert></div>
+    <h:outputStylesheet name="style/main.css"/>
+    <div class="pageTitle">
+      <ui:insert name="pageTitle">#{utils.siteName}</ui:insert>
+    </div>
     <ui:insert name="content">No content supplied to template!</ui:insert>
   </h:body>
 </html>
