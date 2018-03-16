@@ -22,7 +22,10 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 @SessionScoped
 public class ServletUtilsBean{
 
-
+  /**
+   * Application site name
+   */
+  private final String siteName = "QuinCe";
 
   /**
    * Use this to get the GlobalSessionData object for this session.
@@ -52,5 +55,15 @@ public class ServletUtilsBean{
       }
     }
     return null;
+  }
+
+  /**
+   * The site name for the QuinCe application can be used throughout the
+   * application for labels and headers
+   *
+   * @return
+   */
+  public String getSiteName() {
+    return siteName;
   }
 }
