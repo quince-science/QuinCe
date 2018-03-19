@@ -1,4 +1,11 @@
 //************************************************
+// Global variables:
+//************************************************
+
+allTimesOK = false;
+
+
+//************************************************
 //
 // UPLOAD FILE PAGE
 //
@@ -299,7 +306,7 @@ function getFileIndex(fileName) {
 }
 
 function renderDateTimeAssignments() {
-  var allTimesOK = true;
+  allTimesOK = true;
 
   var assignments = JSON.parse($('#newInstrumentForm\\:fileSpecificAssignments').val());
 
@@ -615,7 +622,13 @@ function buildMainAssignmentMenu(file, column) {
   if (null != columnAssignment) {
     menuHtml += makeUnassignMenuItem(file, column, columnAssignment);
   } else {
-    menuHtml += makeParentMenuItem('DATETIMESUBMENU', 'Date/Time', file, column, 'dateTimeMenu');
+    if (allTimesOK) {
+      menuHtml += makeDisabledMenuItem('Date/Time');
+    }
+    else {
+      menuHtml += makeParentMenuItem('DATETIMESUBMENU', 'Date/Time', file,
+          column, 'dateTimeMenu');
+    }
 
     if (fileSpecificAssignments[file]['longitude']['valueColumn'] != -1) {
       menuHtml += makeDisabledMenuItem('Longitude');
