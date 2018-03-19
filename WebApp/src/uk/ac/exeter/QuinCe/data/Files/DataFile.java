@@ -487,7 +487,7 @@ public class DataFile {
     if (null != field && field.trim().length() > 0) {
       if (null == missingValue || !field.equals(missingValue)) {
         try {
-          result = Double.parseDouble(field);
+          result = Double.parseDouble(field.replace(",", ""));
         } catch (NumberFormatException e) {
           throw new ValueNotNumericException();
         }
