@@ -623,6 +623,7 @@ table.fileDates {
   width: 75%;
   margin-left: auto;
   margin-right: auto;
+  min-height: 450px;
 }
 
 .centeredCell {
