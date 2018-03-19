@@ -114,8 +114,7 @@
       <div class="sectionHeader">Job List</div>
       <div class="sectionContent">
         <h:form id="jobListForm" method="post" accept-charset="utf8">
-          <p:dataTable id="jobList" var="job" value="#{jobsBean.jobList}"
-            scrollable="true" scrollHeight="450px">
+          <p:dataTable id="jobList" var="job" value="#{jobsBean.jobList}">
             <p:column>
               <f:facet name="header">
                 Owner
