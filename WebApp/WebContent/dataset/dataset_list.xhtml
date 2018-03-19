@@ -64,7 +64,8 @@
         <h:inputHidden id="manualQcDatasetId" value="#{manualQcBean.datasetId}"/>
         <p:commandLink id="manualQcLink" ajax="false" action="#{manualQcBean.start}"/>
 
-        <p:dataTable id="datasets" value="#{dataSetsBean.dataSets}" var="dataset" styleClass="pageTable" scrollable="true" scrollHeight="450">
+        <p:dataTable id="datasets" value="#{dataSetsBean.dataSets}"
+            var="dataset" styleClass="pageTable">
           <p:column>
             <f:facet name="header">
               <h:outputText value="Name"/>
