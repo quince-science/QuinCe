@@ -137,7 +137,11 @@ public class FileDefinitionBuilder extends FileDefinition {
     String result = null;
 
     if (null != fileContents) {
-      result = HtmlUtils.makeJSONArray(fileContents.subList(0, MAX_DISPLAY_LINES - 1));
+      int lines = MAX_DISPLAY_LINES - 1;
+      if (lines > fileContents.size()) {
+        lines = fileContents.size();
+      }
+      result = HtmlUtils.makeJSONArray(fileContents.subList(0, lines));
     }
 
     return result;
