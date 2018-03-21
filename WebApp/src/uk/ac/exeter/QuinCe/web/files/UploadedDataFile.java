@@ -22,7 +22,6 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileMessage;
  */
 public class UploadedDataFile {
   private UploadedFile uploadedFile;
-  private int rowCount = 0;
   private boolean store = true;
   private DataFile dataFile = null;
   private ArrayList<FacesMessage> messages = new ArrayList<>();
@@ -42,28 +41,10 @@ public class UploadedDataFile {
   public void setUploadedFile(UploadedFile uploadedFile) {
     this.uploadedFile = uploadedFile;
     String[] fileLines = getLines();
-    rowCount = fileLines.length;
-    while ("".equals(fileLines[rowCount - 1])) {
-      rowCount--;
-    }
   }
   public String[] getLines() {
     String fileContent = new String(uploadedFile.getContents(), StandardCharsets.UTF_8);
     return fileContent.split("[\\r\\n]+");
-  }
-  /**
-   * Get number of rows in the file
-   * @return the rowCount
-   */
-  public int getRowCount() {
-    return rowCount;
-  }
-
-  /**
-   * @param rowCount the rowCount to set
-   */
-  public void setRowCount(int rowCount) {
-    this.rowCount = rowCount;
   }
 
   /**
