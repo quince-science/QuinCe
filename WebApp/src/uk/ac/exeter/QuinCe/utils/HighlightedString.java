@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.utils;
 
+import org.primefaces.json.JSONObject;
+
 /**
  * Class for a string with a highlighted region
  * @author Steve Jones
@@ -65,16 +67,10 @@ public class HighlightedString {
    * @return The string as a JSON object
    */
   public String getJson() {
-    StringBuilder json = new StringBuilder();
-
-    json.append("{\"string\":\"");
-    json.append(string.replaceAll(" ", "∙").replaceAll("\t", "⇥"));
-    json.append("\",\"highlightStart\":");
-    json.append(highlightStart);
-    json.append(",\"highlightEnd\":");
-    json.append(highlightEnd);
-    json.append('}');
-
+    JSONObject json = new JSONObject();
+    json.put("string", string.replaceAll(" ", "∙").replaceAll("\t", "⇥"));
+    json.put("highlightStart", highlightStart);
+    json.put("highlightEnd", highlightEnd);
     return json.toString();
   }
 
