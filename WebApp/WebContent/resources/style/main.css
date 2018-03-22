@@ -696,3 +696,13 @@ table.fileDates {
 form.inline {
   display: inline;
 }
+
+#applicationMenu > ul > li:last-child {
+  float: right;
+  border: none;
+  background: none;
+}
+
+#applicationMenu > ul > li:last-child a {
+  text-decoration: underline;
+}
