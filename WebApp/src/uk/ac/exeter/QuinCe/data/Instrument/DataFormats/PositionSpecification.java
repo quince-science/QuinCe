@@ -193,6 +193,8 @@ public abstract class PositionSpecification {
    */
   public void clearValueColumn() {
     valueColumn = -1;
+    clearHemisphereColumn();
+    format = FORMAT_UNKNOWN;
   }
 
   /**
