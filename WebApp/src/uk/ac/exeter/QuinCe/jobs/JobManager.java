@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -73,6 +74,11 @@ public class JobManager {
    * SQL statement to see if a job with a given ID exists
    */
   private static final String FIND_JOB_QUERY = "SELECT COUNT(*) FROM job WHERE id = ?";
+
+  /**
+   * Statement to retrieve the list of jobs
+   */
+  private static final String JOB_LIST_QUERY = "SELECT id, owner, class, submitted, status, started, ended, progress, stack_trace FROM job ORDER BY submitted DESC";
 
   /**
    * SQL statement for setting a job's status
@@ -804,6 +810,66 @@ public class JobManager {
 
     } catch (SQLException e) {
       throw new DatabaseException("Exception while retrieving job statistics", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
+    }
+
+    return result;
+  }
+
+  /**
+    * Retrieve summaries of the complete list of jobs in the system.
+    * @param dataSource A data source
+    * @return The list of jobs
+    * @throws DatabaseException If a database error occurs
+    * @throws MissingParamException If any requierd parameters are missing
+    */
+  @Deprecated
+  public static List<JobSummary> getJobList(DataSource dataSource) throws DatabaseException, MissingParamException {
+
+     MissingParam.checkMissing(dataSource, "dataSource");
+
+     List<JobSummary> result = new ArrayList<JobSummary>();
+
+     Connection conn = null;
+     PreparedStatement stmt = null;
+     ResultSet records = null;
+
+     try {
+
+       conn = dataSource.getConnection();
+       stmt = conn.prepareStatement(JOB_LIST_QUERY);
+
+       records = stmt.executeQuery();
+       while (records.next()) {
+         long id = records.getLong(1);
+         long userID = records.getLong(2);
+         User owner = UserDB.getUser(dataSource, userID);
+         String className = records.getString(3);
+         Date submitted = new Date(records.getTimestamp(4).getTime());
+         String status = records.getString(5);
+         Date started = null;
+
+         if (null != records.getTimestamp(6)) {
+           started = new Date(records.getTimestamp(6).getTime());
+         }
+
+         Date ended = null;
+
+         if (null != records.getTimestamp(7)) {
+           ended = new Date(records.getTimestamp(7).getTime());
+         }
+
+         double progress = records.getDouble(8);
+         String stackTrace = records.getString(9);
+
+        result.add(new JobSummary(id, owner, className, submitted, status, started, ended, progress, stackTrace));
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving job list", e);
     } finally {
       DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);

@@ -100,6 +100,13 @@ public class JobsBean extends BaseManagedBean {
       e.printStackTrace();
       jobCounts = null;
     }
+
+    try {
+      jobList = JobManager.getJobList(ServletUtils.getDBDataSource());
+    } catch (Exception e) {
+      e.printStackTrace();
+      jobList = null;
+    }
   }
 
   /**
