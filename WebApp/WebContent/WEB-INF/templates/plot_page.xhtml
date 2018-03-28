@@ -157,19 +157,23 @@
         </div>
         <div id="tableContent"></div>
       </div>
+    </h:form>
 
-      <p:toolbar id="footerToolbar" styleClass="plotPageFooter">
-        <f:facet name="left">
-          <ui:insert name="tableControls"></ui:insert>
-        </f:facet>
-        <f:facet name="right">
+    <p:toolbar id="footerToolbar" styleClass="plotPageFooter">
+      <f:facet name="left">
+        <ui:insert name="tableControls"></ui:insert>
+      </f:facet>
+      <f:facet name="right">
+        <h:form id="selectActionsForm" method="post" styleClass="inline">
           Selection: <span id="selectedRowsCount">0</span>
           <p:commandButton icon="clearSelectionButton" onclick="clearSelection();" styleClass="inlineButton tightButton"/>
           <ui:insert name="selectionActions">Selection actions here</ui:insert>
-          |
+        </h:form>
+        |
+        <h:form id="finishButtonForm" method="post" styleClass="inline">
           <ui:insert name="finishButton">Finish button here</ui:insert>
-        </f:facet>
-      </p:toolbar>
-    </h:form>
+        </h:form>
+      </f:facet>
+    </p:toolbar>
   </h:body>
 </html>

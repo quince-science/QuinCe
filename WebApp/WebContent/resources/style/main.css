@@ -692,3 +692,7 @@ table.fileDates {
    75% {background-color: #fd0;}
   100% {background-color: #fff;}
 }
+
+form.inline {
+  display: inline;
+}
