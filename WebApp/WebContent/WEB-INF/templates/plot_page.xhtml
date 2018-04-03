@@ -36,6 +36,12 @@
     <h:outputStylesheet name="style/main.css"/>
     <h:outputStylesheet name="style/plotPage.css"/>
 
+    <h:form id="selectionForm" method="post">
+      <h:inputHidden id="selectedRows" value="#{sessionScope[beanName].selectedRows}"/>
+      <ui:insert name="selectionFormEntries"/>
+      <ui:insert name="selectionDialog"/>
+    </h:form>
+
     <h:form id="plotPageForm" method="post">
       <h:inputHidden value="#{sessionScope[beanName].selectableRows}" id="selectableRows"/>
       <h:inputHidden value="#{sessionScope[beanName].tableJsonData}" id="tableJsonData"/>
@@ -140,9 +146,6 @@
           <p:commandButton value="Cancel" onclick="PF('variableDialog').hide();"/>
         </h:panelGrid>
       </p:dialog>
-
-      <h:inputHidden id="selectedRows" value="#{sessionScope[beanName].selectedRows}"/>
-      <ui:insert name="selectionDialog"/>
 
       <ui:insert name="formEntries"></ui:insert>
       <p:toolbar styleClass="plotPageHeader">

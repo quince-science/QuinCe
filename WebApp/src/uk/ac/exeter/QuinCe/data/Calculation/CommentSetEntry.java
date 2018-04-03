@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Calculation;
 
+import org.primefaces.json.JSONArray;
+
 import uk.ac.exeter.QCRoutines.messages.Flag;
 
 /**
@@ -90,6 +92,18 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
   @Override
   public int compareTo(CommentSetEntry o) {
     return comment.compareTo(o.comment);
+  }
+
+  /**
+   * Get the comment entry as a JSON array
+   * @return The JSON array
+   */
+  public JSONArray toJson() {
+    JSONArray json = new JSONArray();
+    json.put(comment);
+    json.put(flag.getFlagValue());
+    json.put(count);
+    return json;
   }
 
 }
