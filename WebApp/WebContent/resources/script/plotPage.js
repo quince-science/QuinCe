@@ -526,7 +526,7 @@ function drawPlot(index) {
   var yLabel = yLabels[0];
 
   if (yLabels.length > 1) {
-    var yIds = JSON.parse($('#plotPageForm\\:plot' + index + 'YAxis').val());
+    var yIds = JSON.parse($('#plot' + index + 'Form\\:yAxis').val());
     yLabel = getVariableGroup(yIds[0]);
   }
 
@@ -551,7 +551,7 @@ function drawPlot(index) {
   // Get the plot data
   var plotData = null;
   // TODO 0 = date - but we need to make it a proper lookup
-  if ($('#plotPageForm\\:plot' + index + 'XAxis').val() == 0) {
+  if ($('#plot' + index + 'Form\\:xAxis').val() == 0) {
     plotData = makeJSDates(getPlotData(index));
   } else {
     plotData = getPlotData(index);
@@ -618,18 +618,11 @@ function getPlotVisibility(index) {
 }
 
 function getPlotLabels(index) {
-  return JSON.parse($('#plotPageForm\\:plot' + index + 'Labels').val());
+  return JSON.parse($('#plot' + index + 'Form\\:plotLabels').val());
 }
 
 function getPlotData(index) {
-  var result = null;
-
-  if (index == 1) {
-    result = JSON.parse($('#plotPageForm\\:plot1Data').val());
-  } else if (index == 2) {
-    result = JSON.parse($('#plotPageForm\\:plot2Data').val());
-  }
-  return result;
+  return JSON.parse($('#plot' + index + 'Form\\:plotData').val());
 }
 
 function getFlagText(flag) {
@@ -697,8 +690,8 @@ function showVariableDialog(plotIndex) {
 function setupPlotVariables(plotIndex) {
   $("[id$=mapVarCheckbox]").hide();
   $("[id$=AxisButton]").show();
-  updateXAxisButtons($('#plotPageForm\\:plot' + plotIndex + 'XAxis').val());
-  populateYAxisButtons(JSON.parse($('#plotPageForm\\:plot' + plotIndex + 'YAxis').val()));
+  updateXAxisButtons($('#plot' + plotIndex + 'Form\\:xAxis').val());
+  populateYAxisButtons(JSON.parse($('#plot' + plotIndex + 'Form\\:yAxis').val()));
 }
 
 //Select the specified X Axis in the dialog
@@ -806,7 +799,7 @@ function getVariableGroup(varIndex) {
 function setupMapVariables(plotIndex) {
   $("[id$=AxisButton]").hide();
   $("[id$=mapVarCheckbox]").show();
-  updateMapCheckboxes($('#plotPageForm\\:map' + plotIndex + 'Variable').val());
+  updateMapCheckboxes($('#plot' + plotIndex + 'Form\\:mapVariable').val());
 }
 
 //Select the specified variable in the dialog
@@ -866,7 +859,10 @@ function applyVariables() {
   var mode = getPlotMode(variablesPlotIndex);
 
   if (mode == 'plot') {
-    $('#plotPageForm\\:plot' + variablesPlotIndex + 'GetData').click();
+    // Clear the current plot data
+  $('#plot' + variablesPlotIndex + 'Form\\:plotData').val("");
+  $('#plot' + variablesPlotIndex + 'Form\\:mapData').val("");
+  $('#plot' + variablesPlotIndex + 'Form\\:plotGetData').click();
   } else if (mode == 'map') {
     initMap(variablesPlotIndex);
   }
@@ -876,18 +872,16 @@ function updatePlotInputs(plotIndex) {
   var mode = getPlotMode(plotIndex);
 
   if (mode == 'plot') {
-
     // If no X Axis is selected, keep the current selection
     var xAxis = getSelectedXAxis();
     if (-1 != xAxis) {
-      $('#plotPageForm\\:plot' + plotIndex + 'XAxis').val(getSelectedXAxis());
+      $('#plot' + plotIndex + 'Form\\:xAxis').val(getSelectedXAxis());
     }
 
-    $('#plotPageForm\\:plot' + plotIndex + 'YAxis').val(getSelectedYAxis());
+    $('#plot' + plotIndex + 'Form\\:yAxis').val(getSelectedYAxis());
   } else if (mode == 'map') {
-    $('#plotPageForm\\:map' + plotIndex + 'Variable').val(getSelectedMapVar());
+    $('#plot' + plotIndex + 'Form\\:mapVariable').val(getSelectedMapVar());
   }
-
 }
 
 function getSelectedXAxis() {
@@ -1039,7 +1033,7 @@ function initMap(index) {
     });
   }
 
-  $('#plotPageForm\\:map' + index + 'UpdateScale').val(true);
+  $('#plot' + index + 'Form\\:mapUpdateScale').val(true);
   redrawMap = true;
   getMapData(index);
 }
@@ -1051,18 +1045,18 @@ function mapMoveGetData(event) {
 }
 
 function getMapData(index) {
-
   var mapVar = 'map' + index;
-
   var extent = ol.proj.transformExtent(window[mapVar].getView().calculateExtent(), window[mapVar].getView().getProjection(), "EPSG:4326");
-  $('#plotPageForm\\:map' + index + 'Bounds').val('[' + extent + ']');
-  $('#plotPageForm\\:map' + index + 'GetData').click();
+  $('#plot' + index + 'Form\\:mapBounds').val('[' + extent + ']');
+  $('#plot' + variablesPlotIndex + 'Form\\:plotData').val("");
+  $('#plot' + variablesPlotIndex + 'Form\\:mapData').val("");
+  $('#plot' + index + 'Form\\:mapGetData').click();
 }
 
 function drawMap(index) {
   PF('variableDialog').hide();
 
-  var mapVar = 'map' + variablesPlotIndex;
+  var mapVar = 'map' + index;
   var dataLayerVar = mapVar + 'DataLayer';
   var colorScaleVar = mapVar + 'ColorScale';
 
@@ -1071,9 +1065,9 @@ function drawMap(index) {
     window[dataLayerVar] = null;
   }
 
-  var mapData = JSON.parse($('#plotPageForm\\:map' + variablesPlotIndex + 'Data').val());
+  var mapData = JSON.parse($('#plot' + index + 'Form\\:mapData').val());
 
-  var scaleLimits = JSON.parse($('#plotPageForm\\:map' + variablesPlotIndex + 'ScaleLimits').val());
+  var scaleLimits = JSON.parse($('#plot' + index + 'Form\\:mapScaleLimits').val());
   window[colorScaleVar].setValueRange(scaleLimits[0], scaleLimits[1]);
 
   var layerFeatures = new Array();
@@ -1107,12 +1101,12 @@ function drawMap(index) {
   })
 
   window[mapVar].addLayer(window[dataLayerVar]);
-  window[colorScaleVar].drawScale($('#map' + variablesPlotIndex + 'Scale'), scaleOptions);
+  window[colorScaleVar].drawScale($('#map' + index + 'Scale'), scaleOptions);
 
   if (redrawMap) {
-    $('#plotPageForm\\:map' + variablesPlotIndex + 'UpdateScale').val(false);
+    $('#plot' + variablesPlotIndex + 'Form\\:mapUpdateScale').val(false);
 
-    var bounds = JSON.parse($('#plotPageForm\\:map' + index + 'Bounds').val());
+    var bounds = JSON.parse($('#plot' + index + 'Form\\:mapBounds').val());
     window['map' + index + 'Extent'] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", window[mapVar].getView().getProjection());
     resetZoom(index);
   }
