@@ -7,6 +7,9 @@ import java.util.Map;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
+import org.primefaces.json.JSONArray;
+import org.primefaces.json.JSONObject;
+
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
@@ -16,7 +19,6 @@ import uk.ac.exeter.QuinCe.data.Calculation.CommentSetEntry;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
-import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.PlotPageBean;
 import uk.ac.exeter.QuinCe.web.Variable;
 import uk.ac.exeter.QuinCe.web.VariableList;
@@ -101,25 +103,20 @@ public class ManualQcBean extends PlotPageBean {
     List<String> calculationHeadings = CalculationDBFactory.getCalculationDB().getCalculationColumnHeadings();
     calculationColumnCount = calculationHeadings.size();
 
-    StringBuilder headings = new StringBuilder();
-
-    headings.append('[');
+    JSONArray headings = new JSONArray();
 
     for (String heading : dataHeadings) {
-      headings.append('"');
-      headings.append(heading);
-      headings.append("\",");
+      headings.put(heading);
     }
 
     for (int i = 0; i < calculationHeadings.size(); i++) {
-      headings.append('"');
-      headings.append(calculationHeadings.get(i));
-      headings.append('"');
-
-      headings.append(',');
+      headings.put(calculationHeadings.get(i));
     }
 
-    headings.append("\"Automatic QC\",\"Automatic QC Message\",\"Manual QC\",\"Manual QC Message\"]");
+    headings.put("Automatic QC");
+    headings.put("Automatic QC Message");
+    headings.put("Manual QC");
+    headings.put("Manual QC Message");
 
     // Columns are zero-based, so we don't need to add one to get to the auto flag column
     autoFlagColumn = dataHeadings.size() + calculationHeadings.size();
@@ -170,8 +167,8 @@ public class ManualQcBean extends PlotPageBean {
       calculationData.add(calcRecord);
     }
 
-    StringBuilder json = new StringBuilder();
-    json.append('[');
+    JSONArray json = new JSONArray();
+
     int rowId = start - 1;
     for (int i = 0; i < datasetData.size(); i++) {
       rowId++;
@@ -179,67 +176,67 @@ public class ManualQcBean extends PlotPageBean {
       DataSetRawDataRecord dsData = datasetData.get(i);
       CalculationRecord calcData = calculationData.get(i);
 
-      json.append('{');
-      json.append(StringUtils.makeJsonField("DT_RowId", "row" + rowId, true));
-      json.append(',');
+      JSONObject obj = new JSONObject();
+
+      obj.put("DT_RowId", "row" + rowId);
 
       int columnIndex = 0;
-      json.append(StringUtils.makeJsonField(columnIndex, dsData.getId())); // ID
-      json.append(',');
+      obj.put(String.valueOf(columnIndex), dsData.getId()); // ID
 
       columnIndex++;
-      json.append(StringUtils.makeJsonField(columnIndex, DateTimeUtils.dateToLong(dsData.getDate()))); // Date
-      json.append(',');
+      obj.put(String.valueOf(columnIndex), DateTimeUtils.dateToLong(dsData.getDate())); // Date
 
       columnIndex++;
-      json.append(StringUtils.makeJsonField(columnIndex, dsData.getLongitude())); // Longitude
-      json.append(',');
+      obj.put(String.valueOf(columnIndex), dsData.getLongitude()); // Longitude
 
       columnIndex++;
-      json.append(StringUtils.makeJsonField(columnIndex, dsData.getLatitude())); // Latitude
-      json.append(',');
+      obj.put(String.valueOf(columnIndex), dsData.getLatitude()); // Latitude
 
+      // Sensor values
       for (Map.Entry<String, Double> entry : dsData.getSensorValues().entrySet()) {
         columnIndex++;
         Double value = entry.getValue();
         if (null == value) {
-          json.append(StringUtils.makeJsonNull(columnIndex));
+          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
         } else {
-          json.append(StringUtils.makeJsonField(columnIndex, entry.getValue()));
+          obj.put(String.valueOf(columnIndex), value);
         }
-        json.append(',');
       }
 
       List<String> calcColumns = calcData.getCalculationColumns();
 
       for (int j = 0; j < calcColumns.size(); j++) {
         columnIndex++;
-        json.append(StringUtils.makeJsonField(columnIndex, calcData.getNumericValue(calcColumns.get(j))));
-        json.append(',');
+        Double value = calcData.getNumericValue(calcColumns.get(j));
+        if (null == value) {
+          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
+        } else {
+          obj.put(String.valueOf(columnIndex), value);
+        }
       }
 
       columnIndex++;
-      json.append(StringUtils.makeJsonField(columnIndex, calcData.getAutoFlag()));
-      json.append(',');
+      obj.put(String.valueOf(columnIndex), calcData.getAutoFlag().getFlagValue());
 
       columnIndex++;
-      json.append(StringUtils.makeJsonField(columnIndex, calcData.getAutoQCMessagesString(), true));
-      json.append(',');
-
-      columnIndex++;
-      json.append(StringUtils.makeJsonField(columnIndex, calcData.getUserFlag()));
-      json.append(',');
-
-      columnIndex++;
-      json.append(StringUtils.makeJsonField(columnIndex, calcData.getUserMessage(), true));
-
-      json.append('}');
-      if (i < datasetData.size() - 1) {
-        json.append(',');
+      if (null == calcData.getAutoQCMessagesString()) {
+        obj.put(String.valueOf(columnIndex), JSONObject.NULL);
+      } else {
+        obj.put(String.valueOf(columnIndex), calcData.getAutoQCMessagesString());
       }
+
+      columnIndex++;
+      obj.put(String.valueOf(columnIndex), calcData.getUserFlag().getFlagValue());
+
+      columnIndex++;
+      if (null == calcData.getUserMessage()) {
+        obj.put(String.valueOf(columnIndex), JSONObject.NULL);
+      } else {
+        obj.put(String.valueOf(columnIndex), calcData.getUserMessage());
+      }
+
+      json.put(obj);
     }
-
-    json.append(']');
 
     return json.toString();
   }
@@ -319,20 +316,12 @@ public class ManualQcBean extends PlotPageBean {
 
     worstSelectedFlag = Flag.GOOD;
 
-    StringBuilder list = new StringBuilder();
-    list.append('[');
+    JSONArray json = new JSONArray();
 
     try {
       CommentSet comments = CalculationDBFactory.getCalculationDB().getCommentsForRows(getDataSource(), getSelectedRowsList());
       for (CommentSetEntry entry : comments) {
-        list.append("[\"");
-        list.append(entry.getComment());
-        list.append("\",");
-        list.append(entry.getFlag().getFlagValue());
-        list.append(",");
-        list.append(entry.getCount());
-        list.append("],");
-
+        json.put(entry.toJson());
         if (entry.getFlag().moreSignificantThan(worstSelectedFlag)) {
           worstSelectedFlag = entry.getFlag();
         }
@@ -340,17 +329,15 @@ public class ManualQcBean extends PlotPageBean {
 
     } catch (Exception e) {
       e.printStackTrace();
-      list.append("[\"Existing comments could not be retrieved\", 4, 1],");
+      JSONArray jsonEntry = new JSONArray();
+      jsonEntry.put("Existing comments could not be retrieved");
+      jsonEntry.put(4);
+      jsonEntry.put(1);
+      json.put(jsonEntry);
       worstSelectedFlag = Flag.BAD;
     }
 
-    // Remove the trailing comma from the last entry
-    if (list.charAt(list.length() - 1) == ',') {
-      list.deleteCharAt(list.length() - 1);
-    }
-    list.append(']');
-
-    userCommentList = list.toString();
+    userCommentList = json.toString();
   }
 
   /**

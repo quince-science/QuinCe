@@ -14,16 +14,6 @@
     <h:outputStylesheet name="style/manualQc.css"/>
   </ui:define>
 
-  <ui:define name="formEntries">
-    <p:commandLink id="acceptAutoQc" action="#{manualQcBean.acceptAutoQc}" ajax="true" process="selectedRows" update="@none" oncomplete="qcFlagsAccepted()"/>
-
-    <h:inputHidden id="userCommentList" value="#{manualQcBean.userCommentList}"/>
-    <h:inputHidden id="worstSelectedFlag" value="#{manualQcBean.worstSelectedFlag}"/>
-    <p:commandLink id="generateUserQcComments" action="#{manualQcBean.generateUserCommentList}" ajax="true" execute="selectedRows" update="userCommentList worstSelectedFlag" oncomplete="showFlagDialog()"/>
-
-    <p:commandLink id="applyManualFlag" action="#{manualQcBean.applyManualFlag}" ajax="true" execute="manualFlag manualComment" update="@none" oncomplete="manualFlagsUpdated()"/>
-  </ui:define>
-
   <ui:define name="dataSetName">#{manualQcBean.dataset.name} - Quality Control #{requestScope[beanName]}</ui:define>
 
   <ui:define name="plots">
@@ -65,6 +55,14 @@
         </f:facet>
       </p:toolbar>
     </div>
+  </ui:define>
+
+  <ui:define name="selectionFormEntries">
+    <h:inputHidden id="userCommentList" value="#{manualQcBean.userCommentList}"/>
+    <h:inputHidden id="worstSelectedFlag" value="#{manualQcBean.worstSelectedFlag}"/>
+    <p:commandLink id="acceptAutoQc" action="#{manualQcBean.acceptAutoQc}" ajax="true" process="selectedRows" update="@none" oncomplete="qcFlagsAccepted()"/>
+    <p:commandLink id="generateUserQcComments" action="#{manualQcBean.generateUserCommentList}" ajax="true" execute="selectedRows" update="userCommentList worstSelectedFlag" oncomplete="showFlagDialog()"/>
+    <p:commandLink id="applyManualFlag" action="#{manualQcBean.applyManualFlag}" ajax="true" execute="manualFlag manualComment" update="@none" oncomplete="manualFlagsUpdated()"/>
   </ui:define>
 
   <ui:define name="selectionDialog">
