@@ -42,18 +42,24 @@
       <ui:insert name="selectionDialog"/>
     </h:form>
 
-    <h:form id="plotPageForm" method="post">
-      <h:inputHidden value="#{sessionScope[beanName].selectableRows}" id="selectableRows"/>
+    <h:form id="tableForm" method="post">
+
       <h:inputHidden value="#{sessionScope[beanName].tableJsonData}" id="tableJsonData"/>
-      <h:inputHidden value="#{sessionScope[beanName].tableRowIds}" id="tableRowIds"/>
       <h:inputHidden value="#{sessionScope[beanName].recordCount}" id="recordCount"/>
       <h:inputHidden value="#{sessionScope[beanName].tableDataDraw}" id="tableDataDraw"/>
       <h:inputHidden value="#{sessionScope[beanName].tableDataStart}" id="tableDataStart"/>
       <h:inputHidden value="#{sessionScope[beanName].tableDataLength}" id="tableDataLength"/>
       <h:inputHidden value="#{sessionScope[beanName].additionalTableData}" id="additionalTableData"/>
       <h:commandLink id="tableGetData" action="#{sessionScope[beanName].generateTableData}">
-        <f:ajax execute="tableDataDraw tableDataStart tableDataLength" render="tableJsonData tableDataDraw tableRowIds recordCount selectableRows additionalTableData" onevent="tableDataDownload"/>
+        <f:ajax execute="tableDataDraw tableDataStart tableDataLength"
+          render="tableJsonData tableDataDraw recordCount additionalTableData"
+          onevent="tableDataDownload"/>
       </h:commandLink>
+    </h:form>
+
+    <h:form id="plotPageForm" method="post">
+      <h:inputHidden value="#{sessionScope[beanName].tableRowIds}" id="tableRowIds"/>
+      <h:inputHidden value="#{sessionScope[beanName].selectableRows}" id="selectableRows"/>
 
       <h:inputHidden value="#{sessionScope[beanName].plot1.XAxis}" id="plot1XAxis"/>
       <h:inputHidden value="#{sessionScope[beanName].plot1.YAxis}" id="plot1YAxis"/>
@@ -104,12 +110,18 @@
                   <h:outputText value="#{varGroup.variables[0].label}"/>
                 </div>
                 <div class="variableControls">
-                  <p:selectBooleanCheckbox widgetVar="mapVar-#{varGroup.variables[0].id}" id="mapVarCheckbox" onchange="updateMapCheckboxes(#{varGroup.variables[0].id})"/>
+                  <p:selectBooleanCheckbox widgetVar="mapVar-#{varGroup.variables[0].id}"
+                    id="mapVarCheckbox" onchange="updateMapCheckboxes(#{varGroup.variables[0].id})"/>
                   <ui:fragment rendered="#{varGroup.variables[0].canUseOnXAxis}">
-                    <p:selectBooleanButton widgetVar="xAxis-#{varGroup.variables[0].id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateXAxisButtons(#{varGroup.variables[0].id})"/>
+                    <p:selectBooleanButton widgetVar="xAxis-#{varGroup.variables[0].id}"
+                      onLabel="X" offLabel="X"
+                      styleClass="axisButton" id="xAxisButton"
+                      onchange="updateXAxisButtons(#{varGroup.variables[0].id})"/>
                   </ui:fragment>
                   <ui:fragment rendered="#{varGroup.variables[0].canUseOnYAxis}">
-                    <p:selectBooleanButton widgetVar="yAxis-#{varGroup.variables[0].id}" onLable="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateYAxisButtons(#{varGroup.variables[0].id})"/>
+                    <p:selectBooleanButton widgetVar="yAxis-#{varGroup.variables[0].id}"
+                      onLabel="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton"
+                      onchange="updateYAxisButtons(#{varGroup.variables[0].id})"/>
                   </ui:fragment>
                 </div>
               </div>

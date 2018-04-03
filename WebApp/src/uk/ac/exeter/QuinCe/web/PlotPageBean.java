@@ -2,6 +2,8 @@ package uk.ac.exeter.QuinCe.web;
 
 import java.util.List;
 
+import org.primefaces.json.JSONArray;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -203,12 +205,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @return The table row IDs
    */
   public String getTableRowIds() {
-    String result = "[]";
-    if (null != tableRowIdsJson) {
-      result = tableRowIdsJson;
-    }
-
-    return result;
+    return tableRowIdsJson;
   }
 
   /**
@@ -321,22 +318,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
    */
   public void generateTableData() {
     try {
-      if (null == tableRowIds) {
-        tableRowIds = loadRowIds();
-
-        StringBuilder json = new StringBuilder();
-        json.append('[');
-        for (int i = 0; i < tableRowIds.size(); i++) {
-          json.append(tableRowIds.get(i));
-          if (i < tableRowIds.size() - 1) {
-            json.append(',');
-          }
-        }
-        json.append(']');
-
-        tableRowIdsJson = json.toString();
-      }
-
       if (null == tableHeadings) {
         buildTableHeadings();
       }
@@ -441,7 +422,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
    */
   public String start() {
     try {
-      tableRowIds = null;
       dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
 
       variables = new VariableList();
@@ -453,6 +433,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
       plot1 = new Plot(this, dataBounds, getDefaultPlot1XAxis(), getDefaultPlot1YAxis(), getDefaultMap1Variable());
       plot2 = new Plot(this, dataBounds, getDefaultPlot2XAxis(), getDefaultPlot2YAxis(), getDefaultMap2Variable());
 
+
+      buildTableRowIds();
       tableHeadings = buildTableHeadings();
       selectableRows = buildSelectableRows();
     } catch (Exception e) {
@@ -492,6 +474,19 @@ public abstract class PlotPageBean extends BaseManagedBean {
    */
   public void setTableMode(String tableMode) {
     this.tableMode = tableMode;
+  }
+
+  /**
+   * Build the list of row IDs for the data being displayed
+   * @throws Exception If the row IDs cannot be retrieved
+   */
+  private void buildTableRowIds() throws Exception {
+    tableRowIds = loadRowIds();
+    JSONArray json = new JSONArray();
+    for (int i = 0; i < tableRowIds.size(); i++) {
+      json.put(tableRowIds.get(i));
+    }
+    tableRowIdsJson = json.toString();
   }
 
   /**

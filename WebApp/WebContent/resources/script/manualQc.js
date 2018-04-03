@@ -100,7 +100,7 @@ function renderTableColumns() {
   }
 
   // TODO This is an ugly hack to ensure the final fCO2 is always displayed.
-  var additionalData = JSON.parse($('#plotPageForm\\:additionalTableData').val());
+  var additionalData = JSON.parse($('#tableForm\\:additionalTableData').val());
   jsDataTable.columns(additionalData.flagColumns[0] - 1).visible(true, true);
 }
 
@@ -108,7 +108,7 @@ function renderTableColumns() {
  * Formats etc for table columns
  */
 function getColumnDefs() {
-  var additionalData = JSON.parse($('#plotPageForm\\:additionalTableData').val());
+  var additionalData = JSON.parse($('#tableForm\\:additionalTableData').val());
 
   sensorColumns = [];
   var colIndex = 3;
@@ -197,7 +197,7 @@ function acceptAutoQc() {
 }
 
 function qcFlagsAccepted() {
-  var additionalData = JSON.parse($('#plotPageForm\\:additionalTableData').val());
+  var additionalData = JSON.parse($('#tableForm\\:additionalTableData').val());
 
   var autoFlagColumn = additionalData.flagColumns[0];
   var autoMessageColumn = autoFlagColumn + 1;
@@ -257,7 +257,7 @@ function saveManualComment() {
 
 function manualFlagsUpdated() {
 
-  var additionalData = JSON.parse($('#plotPageForm\\:additionalTableData').val());
+  var additionalData = JSON.parse($('#tableForm\\:additionalTableData').val());
 
   var userFlagColumn= additionalData.flagColumns[1];
   var userMessageColumn = userFlagColumn + 1;
