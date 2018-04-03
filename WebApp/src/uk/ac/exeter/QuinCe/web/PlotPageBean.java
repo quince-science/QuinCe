@@ -596,6 +596,12 @@ public abstract class PlotPageBean extends BaseManagedBean {
   }
 
   /**
+   * Indicates whether or not the plot page contains two plots
+   * @return {@code true} if two plots are required; {@code false} if only one plot.
+   */
+  public abstract boolean getHasTwoPlots();
+
+  /**
    * Build the variable list for the plots
    * @param variables The list to be populated
    * @throws Exception If any errors occur

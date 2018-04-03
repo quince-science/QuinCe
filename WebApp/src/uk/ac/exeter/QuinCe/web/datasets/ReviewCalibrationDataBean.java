@@ -207,4 +207,9 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 
     return CalibrationDataDB.getJsonPlotData(getDataSource(), getDataset(), standardNames);
   }
+
+  @Override
+  public boolean getHasTwoPlots() {
+    return false;
+  }
 }

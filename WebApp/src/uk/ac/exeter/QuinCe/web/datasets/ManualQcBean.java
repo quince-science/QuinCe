@@ -424,4 +424,9 @@ public class ManualQcBean extends PlotPageBean {
   protected String getData(List<String> fields) throws Exception {
     return CalculationDBFactory.getCalculationDB().getJsonData(getDataSource(), getDataset(), fields, fields.get(0));
   }
+
+  @Override
+  public boolean getHasTwoPlots() {
+    return true;
+  }
 }
