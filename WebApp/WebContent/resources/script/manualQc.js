@@ -179,7 +179,7 @@ function updateFlagDialogControls() {
   var canSubmit = true;
 
   if (PF('flagMenu').input.val() != 2) {
-    if ($('#plotPageForm\\:manualComment').val().trim().length == 0) {
+    if ($('#selectionForm\\:manualComment').val().trim().length == 0) {
       canSubmit = false;
     }
   }
@@ -192,8 +192,8 @@ function updateFlagDialogControls() {
 }
 
 function acceptAutoQc() {
-  $('#plotPageForm\\:selectedRows').val(selectedRows);
-  $('#plotPageForm\\:acceptAutoQc').click();
+  $('#selectionForm\\:selectedRows').val(selectedRows);
+  $('#selectionForm\\:acceptAutoQc').click();
 }
 
 function qcFlagsAccepted() {
@@ -221,8 +221,8 @@ function qcFlagsAccepted() {
 }
 
 function startUserQcFlags() {
-  $('#plotPageForm\\:selectedRows').val(selectedRows);
-  $('#plotPageForm\\:generateUserQcComments').click();
+  $('#selectionForm\\:selectedRows').val(selectedRows);
+  $('#selectionForm\\:generateUserQcComments').click();
 }
 
 function showFlagDialog() {
@@ -233,7 +233,7 @@ function showFlagDialog() {
   $('#manualRowCount').html(woceRowHtml);
 
     var commentsString = '';
-    var comments = JSON.parse($('#plotPageForm\\:userCommentList').val());
+    var comments = JSON.parse($('#selectionForm\\:userCommentList').val());
     for (var i = 0; i < comments.length; i++) {
       var comment = comments[i];
       commentsString += comment[0];
@@ -242,16 +242,16 @@ function showFlagDialog() {
         commentsString += '\n';
       }
     }
-    $('#plotPageForm\\:manualComment').val(commentsString);
+    $('#selectionForm\\:manualComment').val(commentsString);
 
-    PF('flagMenu').selectValue($('#plotPageForm\\:worstSelectedFlag').val());
+    PF('flagMenu').selectValue($('#selectionForm\\:worstSelectedFlag').val());
     updateFlagDialogControls();
     PF('flagDialog').show();
 }
 
 function saveManualComment() {
-  $('#plotPageForm\\:selectedRows').val(selectedRows);
-  $('#plotPageForm\\:applyManualFlag').click();
+  $('#selectionForm\\:selectedRows').val(selectedRows);
+  $('#selectionForm\\:applyManualFlag').click();
   PF('flagDialog').hide();
 }
 
@@ -266,7 +266,7 @@ function manualFlagsUpdated() {
   for (var i = 0; i < rows.length; i++) {
     var row = jsDataTable.row(i);
     if ($.inArray(row.data()[0], selectedRows) > -1) {
-      jsDataTable.cell(i, userMessageColumn).data($('#plotPageForm\\:manualComment').val());
+      jsDataTable.cell(i, userMessageColumn).data($('#selectionForm\\:manualComment').val());
       jsDataTable.cell(i, userFlagColumn).data(PF('flagMenu').input.val());
     }
   }
