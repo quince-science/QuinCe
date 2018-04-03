@@ -29,7 +29,7 @@ function drawPage() {
 }
 
 function initPlot(index) {
-  var mode = $('[id^=plotPageForm\\:plot' + index + 'Mode]:checked').val();
+  var mode = $('[id^=plot' + index + 'Form\\:plotMode]:checked').val();
 
   var redraw = false;
 
@@ -216,8 +216,8 @@ function qcFlagsAccepted() {
   clearSelection();
 
   // Reload the plots
-  $('#plotPageForm\\:plot1GetData').click();
-  $('#plotPageForm\\:plot2GetData').click();
+  $('#plot1Form\\:plotGetData').click();
+  $('#plot2Form\\:plotGetData').click();
 }
 
 function startUserQcFlags() {
@@ -274,10 +274,10 @@ function manualFlagsUpdated() {
   clearSelection();
 
   // Reload the plots
-  $('#plotPageForm\\:plot1GetData').click();
-  $('#plotPageForm\\:plot2GetData').click();
+  $('#plot1Form\\:plotGetData').click();
+  $('#plot2Form\\:plotGetData').click();
 }
 
 function getPlotMode(index) {
-  return $('[id^=plotPageForm\\:plot' + index + 'Mode]:checked').val();
+  return $('[id^=plot' + index + 'Form\\:plotMode]:checked').val();
 }
