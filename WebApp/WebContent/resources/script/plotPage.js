@@ -194,12 +194,15 @@ function drawTable() {
       dataTableDrawCallback = callback;
 
       // Fill in the form inputs
-      $('#plotPageForm\\:tableDataDraw').val(data.draw);
-      $('#plotPageForm\\:tableDataStart').val(data.start);
-      $('#plotPageForm\\:tableDataLength').val(data.length);
+      $('#tableForm\\:tableDataDraw').val(data.draw);
+      $('#tableForm\\:tableDataStart').val(data.start);
+      $('#tableForm\\:tableDataLength').val(data.length);
+
+      // Clear the existing table data
+      $('#tableForm\\:tableJsonData').val("");
 
       // Submit the query to the server
-      $('#plotPageForm\\:tableGetData').click();
+      $('#tableForm\\:tableGetData').click();
     },
     bInfo: false,
     drawCallback: function (settings) {
@@ -264,10 +267,10 @@ function tableDataDownload(data) {
   var status = data.status;
   if (status == "success") {
     dataTableDrawCallback( {
-      draw: $('#plotPageForm\\:tableDataDraw').val(),
-      data: JSON.parse($('#plotPageForm\\:tableJsonData').val()),
-      recordsTotal: $('#plotPageForm\\:recordCount').val(),
-      recordsFiltered: $('#plotPageForm\\:recordCount').val()
+      draw: $('#tableForm\\:tableDataDraw').val(),
+      data: JSON.parse($('#tableForm\\:tableJsonData').val()),
+      recordsTotal: $('#tableForm\\:recordCount').val(),
+      recordsFiltered: $('#tableForm\\:recordCount').val()
     });
   }
 }
