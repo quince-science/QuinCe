@@ -15,7 +15,7 @@
   position: absolute;
   top: 35px;
   width: 100%;
-  height: calc(100% - 65px);
+  height: calc(100% - 73px); /* Also change in plotPage.js */
   overflow: hidden;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
