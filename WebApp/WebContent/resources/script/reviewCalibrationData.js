@@ -73,8 +73,8 @@ function showUseDialog() {
 }
 
 function storeCalibrationSelection() {
-  $('#plotPageForm\\:selectedRows').val(selectedRows);
-  $('#plotPageForm\\:setUseCalibrations').click();
+  $('#selectionForm\\:selectedRows').val(selectedRows);
+  $('#selectionForm\\:setUseCalibrations').click();
 
   // Update the table data
   var rows = jsDataTable.rows()[0];
@@ -90,7 +90,7 @@ function storeCalibrationSelection() {
   PF('useDialog').hide();
 
   // Reload the plot
-  $('#plotPageForm\\:plot1GetData').click();
+  $('#plot1Form\\:plotGetData').click();
 }
 
 function postSelectionUpdated() {
