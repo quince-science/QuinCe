@@ -132,7 +132,8 @@ function scaleTableSplit() {
 }
 
 function resizeContent() {
-  $('#plotPageContent').height(window.innerHeight - 65);
+  // Also change in plotPage.css
+  $('#plotPageContent').height(window.innerHeight - 73);
 
   $('#plotPageContent').split().position($('#plotPageContent').height() * tableSplitProportion);
 
