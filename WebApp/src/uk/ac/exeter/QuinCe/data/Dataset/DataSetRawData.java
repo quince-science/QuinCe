@@ -653,7 +653,7 @@ public abstract class DataSetRawData {
     DataSetRawDataRecord record;
 
     try {
-      record = new DataSetRawDataRecord(dataSet, getSelectedTime(), getSelectedLatitude(), getSelectedLongitude(), getSelectedRunType(), getSelectedRunTypeCategory());
+      record = new DataSetRawDataRecord(dataSet, getSelectedTime(), getSelectedLongitude(), getSelectedLatitude(), getSelectedRunType(), getSelectedRunTypeCategory());
 
       for (Map.Entry<SensorType, Set<SensorAssignment>> entry : instrument.getSensorAssignments().entrySet()) {
 
