@@ -35,6 +35,9 @@
       <h:inputHidden id="calibrationssInstrumentId" value="#{sensorCalibrationsBean.instrumentId}"/>
       <h:inputHidden id="calibrationsInstrumentName" value="#{sensorCalibrationsBean.instrumentName}"/>
       <p:commandLink id="showCalibrationsLink" ajax="false" action="#{sensorCalibrationsBean.start}"/>
+      <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel contentList">
+        <p:commandButton value="Add New Instrument" ajax="false" action="#{newInstrumentBean.start}"/>
+      </h:panelGrid>
 
       <p:dataTable id="instruments" var="instrument" value="#{instrumentListBean.instrumentList}" styleClass="pageTable">
         <p:column>
@@ -51,10 +54,6 @@
           <p:button value="View Deployments" styleClass="inlineButton" onclick="return goToStandards(#{instrument.id}, '#{instrument.name}')"/>
         </p:column>
       </p:dataTable>
-
-      <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
-        <p:commandButton value="Add New Instrument" ajax="false" action="#{newInstrumentBean.start}"/>
-      </h:panelGrid>
     </h:form>
   </ui:define>
 </ui:composition>

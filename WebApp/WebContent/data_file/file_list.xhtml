@@ -19,12 +19,13 @@
     </ui:fragment>
     <ui:fragment rendered="#{dataFilesBean.hasInstruments}">
       <h:form id="fileListForm" method="post" charset="utf8">
-        <h:panelGrid columns="2" cellpadding="5" class="buttonPanel">
+        <h:panelGrid columns="3" cellpadding="5" class="buttonPanel contentList">
           <p:outputLabel for="instrument" value="Select Instrument:"/>
           <p:selectOneMenu id="instrument" value="#{dataFilesBean.currentInstrumentId}">
             <f:selectItems value="#{dataFilesBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
             <p:ajax event="change" update="files"/>
           </p:selectOneMenu>
+          <p:button value="Upload New File(s)" ajax="false" outcome="upload" />
         </h:panelGrid>
 
         <p:dataTable id="files" value="#{dataFilesBean.listFiles}" var="file"
@@ -60,9 +61,6 @@
             <h:outputText value="#{file.recordCount}"/>
           </p:column>
         </p:dataTable>
-        <h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
-          <p:button value="Upload New File(s)" ajax="false" outcome="upload" />
-        </h:panelGrid>
       </h:form>
     </ui:fragment>
   </ui:define>
