@@ -105,6 +105,16 @@ input[type="submit"], input[type="button"], button {
   outline: none;
 }
 
+.contentList input[type="submit"],
+.contentList input[type="button"],
+.contentList button {
+  margin-top: 0;
+}
+
+.buttonPanel.contentList {
+  margin-bottom: 10px;
+}
+
 input[type="submit"].inline {
     margin-top: 0px;
     padding-top: 1px;
