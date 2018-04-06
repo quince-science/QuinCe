@@ -17,7 +17,7 @@ instrument_id=$4
 if [ -z $instrument_id ]
 then
   echo "Missing instrument ID"
-  echo "Run gradle task as: gradle delete_dataset -PinstrumentId=<id>"
+  echo "Run gradle task as: gradle delete_instrument -PinstrumentId=<id>"
   exit 1
 fi
 
