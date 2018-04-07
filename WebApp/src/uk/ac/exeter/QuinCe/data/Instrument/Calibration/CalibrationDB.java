@@ -43,6 +43,13 @@ public abstract class CalibrationDB {
       + "instrument_id = ? AND type = ? AND deployment_date <= ? "
       + "ORDER BY deployment_date DESC";
 
+  /**
+   * Query to determine whether a calibration already exists
+   * @see #calibrationExists(DataSource, Calibration)
+   */
+  private static final String CALIBRATION_EXISTS_QUERY = "SELECT "
+      + "COUNT(*) FROM calibration WHERE instrument_id = ? AND "
+      + "type = ? AND deployment_date = ? AND target = ?";
 
   /**
    * Empty constructor. These classes must be singletons so the
@@ -168,6 +175,50 @@ public abstract class CalibrationDB {
   }
 
   /**
+   * Determine whether or not a calibration exists that coincides with the
+   * specified calibration (checks instrument, type, target and deployment date).
+   * @param dataSource A data source
+   * @param calibration The calibration to be compared
+   * @return {@code true} if a calibration exists; {@code false} otherwise
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   */
+  public boolean calibrationExists(DataSource dataSource, Calibration calibration) throws DatabaseException, MissingParamException {
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(calibration, "calibration");
+
+    boolean result = false;
+
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      conn = dataSource.getConnection();
+      stmt = conn.prepareStatement(CALIBRATION_EXISTS_QUERY);
+      stmt.setLong(1, calibration.getInstrumentId());
+      stmt.setString(2, getCalibrationType());
+      stmt.setLong(3, DateTimeUtils.dateToLong(calibration.getDeploymentDate()));
+      stmt.setString(4, calibration.getTarget());
+
+      records = stmt.executeQuery();
+      records.next();
+      int recordCount = records.getInt(1);
+      if (recordCount != 0) {
+        result = true;
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving calibrations", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
+    }
+
+    return result;
+  }
+
+  /**
    * Get the list of possible calibration targets for a given instrument
    * @param dataSource A data source
    * @param instrumentId The instrument's database ID
@@ -199,8 +250,6 @@ public abstract class CalibrationDB {
    * @throws RecordNotFoundException If no external standard run types are found
    */
   public abstract List<String> getTargets(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException;
-
-
 
   /**
    * Get the calibration type for database actions
