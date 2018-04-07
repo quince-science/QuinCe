@@ -141,22 +141,18 @@ public abstract class CalibrationBean extends BaseManagedBean {
     String nav = getListNavigation();
 
     try {
-      storeEnteredCalibration();
-      loadCurrentCalibrations();
-      createEnteredCalibration();
+      if (getDbInstance().calibrationExists(getDataSource(), getEnteredCalibration())) {
+        setMessage(null, "A calibration already exists for this standard at this time");
+      } else {
+        getDbInstance().addCalibration(getDataSource(), getEnteredCalibration());
+        loadCurrentCalibrations();
+        createEnteredCalibration();
+      }
     } catch (Exception e) {
       nav = internalError(e);
     }
 
     return nav;
-  }
-
-  /**
-   * Store the entered calibration in the database
-   * @throws Exception If the calibration cannot be stored
-   */
-  protected void storeEnteredCalibration() throws Exception {
-    getDbInstance().addCalibration(getDataSource(), getEnteredCalibration());
   }
 
   /**
