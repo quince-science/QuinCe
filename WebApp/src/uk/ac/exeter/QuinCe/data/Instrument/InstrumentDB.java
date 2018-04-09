@@ -399,12 +399,14 @@ public class InstrumentDB {
     } else {
       stmt.setInt(stmtColumnIndex, column);
 
-      if (null == properties && stmtPropsIndex != 1) {
-        stmt.setNull(stmtPropsIndex, Types.VARCHAR);
-      } else {
-        StringWriter writer = new StringWriter();
-        properties.store(writer, null);
-        stmt.setString(stmtPropsIndex, writer.toString());
+      if (stmtPropsIndex != -1) {
+        if (null == properties || properties.size() == 0) {
+          stmt.setNull(stmtPropsIndex, Types.VARCHAR);
+        } else {
+          StringWriter writer = new StringWriter();
+          properties.store(writer, null);
+          stmt.setString(stmtPropsIndex, writer.toString());
+        }
       }
     }
   }
