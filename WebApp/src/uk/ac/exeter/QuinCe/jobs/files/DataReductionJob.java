@@ -95,6 +95,7 @@ public class DataReductionJob extends Job {
       } else {
 
         // Set up the Auto QC job
+        DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_AUTO_QC);
         Map<String, String> jobParams = new HashMap<String, String>();
         jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
         jobParams.put(AutoQCJob.PARAM_ROUTINES_CONFIG, ResourceManager.QC_ROUTINES_CONFIG);
@@ -105,6 +106,15 @@ public class DataReductionJob extends Job {
 
     } catch (Exception e) {
       DatabaseUtils.rollBack(conn);
+
+      try {
+        // Set the dataset to Error status
+        DataSetDB.setDatasetStatus(conn, Long.parseLong(parameters.get(ID_PARAM)), DataSet.STATUS_ERROR);
+        conn.commit();
+      } catch (Exception e1) {
+        e.printStackTrace();
+      }
+
       throw new JobFailedException(id, e);
     } finally {
       DatabaseUtils.closeConnection(conn);
