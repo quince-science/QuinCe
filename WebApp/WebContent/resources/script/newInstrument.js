@@ -137,16 +137,15 @@ function getHeaderMode() {
 }
 
 function disableSpinner(spinnerObject) {
-    spinnerObject.input.prop("disabled", true);
-    spinnerObject.jq.addClass("ui-state-disabled");
-    spinnerObject.upButton.unbind('mousedown.spinner')
-    spinnerObject.downButton.unbind('mousedown.spinner')
+  spinnerObject.input.prop("disabled", true);
+  spinnerObject.jq.addClass("ui-state-disabled");
+  $('#newInstrumentForm\\:headerLineCount').css('pointer-events','none');
 }
 
 function enableSpinner(spinnerObject) {
-   spinnerObject.input.prop("disabled", false);
-   spinnerObject.jq.removeClass("ui-state-disabled");
-   spinnerObject.bindEvents()
+  spinnerObject.input.prop("disabled", false);
+  spinnerObject.jq.removeClass("ui-state-disabled");
+  $('#newInstrumentForm\\:headerLineCount').css('pointer-events','all');
 }
 
 function numberOnly(event) {
