@@ -108,15 +108,22 @@
             <f:facet name="header">
               <h:outputText value="Actions"/>
             </f:facet>
-            <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
-              <h:graphicImage value="/resources/image/calibration.svg" styleClass="actionIcon" alt="Calibration" title="Calibration"/>
-            </p:commandLink>
-            <p:commandLink onclick="createDataReductionJob(#{dataset.id})">
-              <h:graphicImage value="/resources/image/calculate.svg" styleClass="actionIcon" alt="Data Reduction" title="Data Reduction"/>
-            </p:commandLink>
-            <p:commandLink onclick="goToQc(#{dataset.id})">
-              <h:graphicImage value="/resources/image/qc.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
-            </p:commandLink>
+            <ui:fragment rendered="#{dataset.status eq 4}">
+              <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
+                <h:graphicImage value="/resources/image/calibration.svg" styleClass="actionIcon" alt="Calibration" title="Calibration"/>
+              </p:commandLink>
+              <p:commandLink onclick="createDataReductionJob(#{dataset.id})">
+                <h:graphicImage value="/resources/image/calculate.svg" styleClass="actionIcon" alt="Data Reduction" title="Data Reduction"/>
+              </p:commandLink>
+              <p:commandLink onclick="goToQc(#{dataset.id})">
+                <h:graphicImage value="/resources/image/qc.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
+              </p:commandLink>
+            </ui:fragment>
+            <ui:fragment rendered="#{dataset.status ne 4}">
+              <h:graphicImage value="/resources/image/calibration_disabled.svg" styleClass="actionIcon" alt="Calibration" title="Calibration"/>
+              <h:graphicImage value="/resources/image/calculate_disabled.svg" styleClass="actionIcon" alt="Data Reduction" title="Data Reduction"/>
+              <h:graphicImage value="/resources/image/qc_disabled.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
+            </ui:fragment>
           </p:column>
         </p:dataTable>
 
