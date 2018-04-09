@@ -117,7 +117,7 @@ public abstract class CalibrationDB {
       stmt.setLong(1, instrumentId);
       stmt.setString(2, getCalibrationType());
       // Get epoc milliseconds
-      stmt.setLong(3, date.toEpochSecond(ZoneOffset.UTC) * 1000);
+      stmt.setLong(3, DateTimeUtils.dateToLong(date));
       records = stmt.executeQuery();
       while (!result.isComplete() && records.next()) {
         String target = records.getString(1);
