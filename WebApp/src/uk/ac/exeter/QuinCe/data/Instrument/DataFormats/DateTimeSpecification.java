@@ -910,6 +910,12 @@ public class DateTimeSpecification {
 
     if (null == year) {
       throw new DataFileException("Year column is empty");
+    } else if (year < 100) {
+      // If date is two digits, add 2000 to it. so 15 -> 2015
+      // This matches the Java specification of two-digit years
+      // It means we can't handle two-digit years before 2000, but
+      // I think we can safely say that's not supported.
+      year += 2000;
     }
 
     if (null == month) {
