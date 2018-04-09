@@ -109,7 +109,7 @@ public class ExtractDataSetJob extends Job {
 
       DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_DATA_REDUCTION);
       Map<String, String> jobParams = new HashMap<String, String>();
-      jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
+      jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
       JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), DataReductionJob.class.getCanonicalName(), jobParams);
 
       conn.commit();

@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,8 +17,12 @@ import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecordFactory;
 import uk.ac.exeter.QuinCe.data.Calculation.CommentSet;
 import uk.ac.exeter.QuinCe.data.Calculation.CommentSetEntry;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.web.PlotPageBean;
 import uk.ac.exeter.QuinCe.web.Variable;
@@ -246,6 +251,16 @@ public class ManualQcBean extends PlotPageBean {
    * @return Navigation to the data set list
    */
   public String finish() {
+    if (dirty) {
+      try {
+        DataSetDB.setDatasetStatus(getDataSource(), getDatasetId(), DataSet.STATUS_DATA_REDUCTION);
+        Map<String, String> jobParams = new HashMap<String, String>();
+        jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(getDatasetId()));
+        JobManager.addJob(getDataSource(), getUser(), DataReductionJob.class.getCanonicalName(), jobParams);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
     return NAV_DATASET_LIST;
   }
 

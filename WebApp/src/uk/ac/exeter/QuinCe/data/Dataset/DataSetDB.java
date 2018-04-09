@@ -255,12 +255,40 @@ public class DataSetDB {
   public static void setDatasetStatus(DataSource dataSource, DataSet dataSet, int status) throws MissingParamException, InvalidDataSetStatusException, DatabaseException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(dataSet, "dataSet");
 
     Connection conn = null;
 
     try {
       conn = dataSource.getConnection();
       setDatasetStatus(conn, dataSet, status);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while setting dataset status", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+  }
+
+  /**
+   * Set the status of a {@link DataSet}.
+   * @param dataSource A data source
+   * @param dataSetId The data set's database ID
+   * @param status The new status
+   * @throws MissingParamException If any required parameters are missing
+   * @throws InvalidDataSetStatusException If the status is invalid
+   * @throws DatabaseException If a database error occurs
+   * @throws RecordNotFoundException If the dataset cannot be found in the database
+   */
+  public static void setDatasetStatus(DataSource dataSource, long datasetId, int status) throws MissingParamException, InvalidDataSetStatusException, DatabaseException, RecordNotFoundException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkZeroPositive(datasetId, "datasetId");
+
+    Connection conn = null;
+
+    try {
+      conn = dataSource.getConnection();
+      setDatasetStatus(conn, datasetId, status);
     } catch (SQLException e) {
       throw new DatabaseException("Error while setting dataset status", e);
     } finally {
