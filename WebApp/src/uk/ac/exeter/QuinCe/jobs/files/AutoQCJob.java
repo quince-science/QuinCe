@@ -128,6 +128,7 @@ public class AutoQCJob extends Job {
 
     try {
       conn = dataSource.getConnection();
+      DataSetDB.setDatasetStatus(conn, datasetId, DataSet.STATUS_AUTO_QC);
 
       CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
 
