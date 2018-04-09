@@ -224,10 +224,21 @@ public class AutoQCJob extends Job {
         conn.rollback();
       } else {
         // Commit all the records
-        DataSetDB.setDatasetStatus(conn, datasetId, DataSet.STATUS_QC);
+        DataSetDB.setDatasetStatus(conn, datasetId, DataSet.STATUS_USER_QC);
         conn.commit();
       }
     } catch (Exception e) {
+      // Revert all changes
+      DatabaseUtils.rollBack(conn);
+
+      try {
+        // Set the dataset to Error status
+        DataSetDB.setDatasetStatus(conn, datasetId, DataSet.STATUS_ERROR);
+        conn.commit();
+      } catch (Exception e1) {
+        e.printStackTrace();
+      }
+
       throw new JobFailedException(id, e);
     } finally {
       DatabaseUtils.closeConnection(conn);
