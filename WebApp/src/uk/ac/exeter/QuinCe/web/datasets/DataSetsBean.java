@@ -431,4 +431,15 @@ public class DataSetsBean extends BaseManagedBean {
   public boolean isValidCalibration() {
     return validCalibration;
   }
+
+  /**
+   * Update the list of data sets
+   */
+  public void updateDatasetList() {
+    try {
+      loadDataSets();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 }
