@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -20,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -105,15 +107,23 @@ public class ExtractDataSetJob extends Job {
         record = rawData.getNextRecord();
       }
 
-      DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_WAITING_FOR_CALCULATION);
+      DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_DATA_REDUCTION);
+      Map<String, String> jobParams = new HashMap<String, String>();
+      jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
+      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), DataReductionJob.class.getCanonicalName(), jobParams);
 
       conn.commit();
 
     } catch (Exception e) {
       e.printStackTrace();
       try {
-        conn.rollback();
-      } catch (SQLException e1) {
+        // Revert all changes
+        DatabaseUtils.rollBack(conn);
+
+        // Set the dataset to Error status
+        DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_ERROR);
+        conn.commit();
+      } catch (Exception e1) {
         e1.printStackTrace();
       }
       throw new JobFailedException(id, e);

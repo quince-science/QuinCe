@@ -14,6 +14,17 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 public class DataSet {
 
   /**
+   * The numeric value for the error status.
+   * The data set will be given this status whenever a processing job fails.
+   */
+  public static final int STATUS_ERROR = -1;
+
+  /**
+   * The string for the error status
+   */
+  public static final String STATUS_ERROR_NAME = "ERROR";
+
+  /**
    * The numeric value for the data extraction status
    */
   public static final int STATUS_WAITING = 0;
@@ -34,24 +45,34 @@ public class DataSet {
   public static final String STATUS_DATA_EXTRACTION_NAME = "Data extraction";
 
   /**
-   * The numeric value for the data extraction status
+   * The numeric value for the data reduction status
    */
-  public static final int STATUS_WAITING_FOR_CALCULATION = 2;
+  public static final int STATUS_DATA_REDUCTION = 2;
 
   /**
    * The string for the data extraction status
    */
-  public static final String STATUS_WAITING_FOR_CALCULATION_NAME = "Waiting for calculation";
+  public static final String STATUS_DATA_REDUCTION_NAME = "Data reduction";
 
   /**
    * The numeric value for the data extraction status
    */
-  public static final int STATUS_QC = 3;
+  public static final int STATUS_AUTO_QC = 3;
 
   /**
    * The string for the data extraction status
    */
-  public static final String STATUS_QC_NAME = "Ready for QC";
+  public static final String STATUS_AUTO_QC_NAME = "Automatic QC";
+
+  /**
+   * The numeric value for the data extraction status
+   */
+  public static final int STATUS_USER_QC = 4;
+
+  /**
+   * The string for the data extraction status
+   */
+  public static final String STATUS_USER_QC_NAME = "Ready for QC";
 
   /**
    * The database ID
@@ -148,20 +169,28 @@ public class DataSet {
     String result;
 
     switch (statusValue) {
+    case STATUS_ERROR: {
+      result = STATUS_ERROR_NAME;
+      break;
+    }
     case STATUS_WAITING: {
-      result =STATUS_WAITING_NAME;
+      result = STATUS_WAITING_NAME;
       break;
     }
     case STATUS_DATA_EXTRACTION: {
       result = STATUS_DATA_EXTRACTION_NAME;
       break;
     }
-    case STATUS_WAITING_FOR_CALCULATION: {
-      result = STATUS_WAITING_FOR_CALCULATION_NAME;
+    case STATUS_DATA_REDUCTION: {
+      result = STATUS_DATA_REDUCTION_NAME;
       break;
     }
-    case STATUS_QC: {
-      result = STATUS_QC_NAME;
+    case STATUS_AUTO_QC: {
+      result = STATUS_AUTO_QC_NAME;
+      break;
+    }
+    case STATUS_USER_QC: {
+      result = STATUS_USER_QC_NAME;
       break;
     }
     default: {
@@ -308,9 +337,6 @@ public class DataSet {
    * @return {@code true} if the status is valid; {@code false} if it is not
    */
   public static boolean validateStatus(int status) {
-    return (status == STATUS_WAITING ||
-        status == STATUS_DATA_EXTRACTION ||
-        status == STATUS_WAITING_FOR_CALCULATION ||
-        status == STATUS_QC);
+    return (status >= -1 && status <= 4);
   }
 }
