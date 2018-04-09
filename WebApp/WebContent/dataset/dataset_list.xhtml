@@ -33,6 +33,14 @@
         $('#datasetListForm\\:autoQcLink').click();
         return false;
       }
+
+      function triggerUpdateList() {
+        $('#datasetListForm\\:updateList').click();
+    }
+
+      setInterval(function() {
+    triggerUpdateList();
+      }, 10000);
     </script>
   </ui:define>
 
@@ -65,6 +73,10 @@
 
         <h:inputHidden id="manualQcDatasetId" value="#{manualQcBean.datasetId}"/>
         <p:commandLink id="manualQcLink" ajax="false" action="#{manualQcBean.start}"/>
+
+        <h:commandLink id="updateList" action="#{dataSetsBean.updateDatasetList}">
+          <f:ajax render="datasets"/>
+        </h:commandLink>
 
         <p:dataTable id="datasets" value="#{dataSetsBean.dataSets}"
             var="dataset" styleClass="pageTable">
