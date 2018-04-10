@@ -97,6 +97,9 @@
               <h:outputText value="Status"/>
             </f:facet>
             <h:outputText value="#{dataset.statusName}"/>
+            <ui:fragment rendered="#{dataset.status eq 4}">
+              (<h:outputText value="#{dataset.needsFlagCount}"/> to flag)
+            </ui:fragment>
           </p:column>
           <p:column>
             <f:facet name="header">
