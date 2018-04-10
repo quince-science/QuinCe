@@ -362,4 +362,20 @@ public class DataSet {
 
     return result;
   }
+
+  /**
+   * Determine whether or not this dataset can be exported.
+   *
+   * <p>The data set can be exported if it meets the following
+   * criteria:</p>
+   * <ul>
+   *   <li>The dataset ready for user QC (not in any other state)</li>
+   *   <li>No rows need flagging</li>
+   * </ul>
+   *
+   * @return {@code true} if the dataset can be exported; {@code false} if it cannot
+   */
+  public boolean getCanBeExported() {
+    return (getStatus() == STATUS_USER_QC && needsFlagCount == 0);
+  }
 }
