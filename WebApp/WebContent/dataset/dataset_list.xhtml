@@ -121,6 +121,12 @@
               <h:graphicImage value="/resources/image/calculate_disabled.svg" styleClass="actionIcon" alt="Data Reduction" title="Data Reduction"/>
               <h:graphicImage value="/resources/image/qc_disabled.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
             </ui:fragment>
+            <ui:fragment rendered="#{dataset.canBeExported}">
+              <h:graphicImage value="/resources/image/export.svg" styleClass="actionIcon" alt="Export" title="Export"/>
+            </ui:fragment>
+            <ui:fragment rendered="#{!dataset.canBeExported}">
+              <h:graphicImage value="/resources/image/export_disabled.svg" styleClass="actionIcon" alt="Export" title="Export"/>
+            </ui:fragment>
           </p:column>
         </p:dataTable>
 
