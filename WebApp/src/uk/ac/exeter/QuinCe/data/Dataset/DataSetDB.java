@@ -12,6 +12,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -31,8 +32,14 @@ public class DataSetDB {
    * @see #getDataSets(DataSource, long)
    */
   private static final String GET_DATASETS_QUERY = "SELECT "
-      + "id, instrument_id, name, start, end, status, properties, last_touched "
-        + "FROM dataset WHERE instrument_id = ? ORDER BY start ASC";
+      + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, "
+      + "d.properties, d.last_touched, COUNT(c.user_flag) "
+      + "FROM dataset d "
+      + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
+      + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id AND c.user_flag = " + Flag.VALUE_NEEDED + " "
+      + "WHERE instrument_id = ? "
+      + "GROUP BY d.id "
+      + "ORDER BY start ASC";
 
   /**
    * Statement to add a new data set into the database
@@ -47,8 +54,13 @@ public class DataSetDB {
    * @see #getDataSet(DataSource, long)
    */
   private static final String GET_DATASET_QUERY = "SELECT "
-      + "id, instrument_id, name, start, end, status, properties, last_touched "
-      + "FROM dataset WHERE id = ?";
+      + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, "
+      + "d.properties, d.last_touched, COUNT(c.user_flag) "
+      + "FROM dataset d "
+      + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
+      + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id AND c.user_flag = " + Flag.VALUE_NEEDED + " "
+      + "WHERE d.id = ? "
+      + "GROUP BY d.id";
 
   /**
    * Statement to set a data set's status
@@ -121,8 +133,9 @@ public class DataSetDB {
     int status = record.getInt(6);
     Properties properties = null;
     LocalDateTime lastTouched = DateTimeUtils.longToDate(record.getLong(8));
+    int needsFlagCount = record.getInt(9);
 
-    return new DataSet(id, instrumentId, name, start, end, status, properties, lastTouched);
+    return new DataSet(id, instrumentId, name, start, end, status, properties, lastTouched, needsFlagCount);
   }
 
   /**
@@ -186,6 +199,7 @@ public class DataSetDB {
   public static DataSet getDataSet(DataSource dataSource, long id) throws DatabaseException, MissingParamException, RecordNotFoundException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkZeroPositive(id, "id");
 
     DataSet result = null;
     Connection conn = null;

@@ -115,6 +115,11 @@ public class DataSet {
   private int status = STATUS_WAITING;
 
   /**
+   * The number of records that need flagging
+   */
+  private int needsFlagCount = -1;
+
+  /**
    * Constructor for all fields
    * @param id The data set's database ID
    * @param instrumentId The database ID of the instrument to which the data set belongs
@@ -125,7 +130,7 @@ public class DataSet {
    * @param properties The additional properties
    * @param lastTouched The date that the data set was last accessed
    */
-  protected DataSet(long id, long instrumentId, String name, LocalDateTime start, LocalDateTime end, int status, Properties properties, LocalDateTime lastTouched) {
+  protected DataSet(long id, long instrumentId, String name, LocalDateTime start, LocalDateTime end, int status, Properties properties, LocalDateTime lastTouched, int needsFlagCount) {
     this.id = id;
     this.instrumentId = instrumentId;
     this.name = name;
@@ -134,6 +139,7 @@ public class DataSet {
     this.status = status;
     this.properties = properties;
     this.lastTouched = lastTouched;
+    this.needsFlagCount = needsFlagCount;
   }
 
   /**
@@ -338,5 +344,22 @@ public class DataSet {
    */
   public static boolean validateStatus(int status) {
     return (status >= -1 && status <= 4);
+  }
+
+  /**
+   * Get the number of records that need flagging by the user.
+   *
+   * This only gives a value if the dataset's status is {@line #STATUS_USER_QC};
+   * otherwise it returns {@code -1}.
+   * @return The number of records that need flagging
+   */
+  public int getNeedsFlagCount() {
+    int result = needsFlagCount;
+
+    if (getStatus() != STATUS_USER_QC) {
+      result = -1;
+    }
+
+    return result;
   }
 }
