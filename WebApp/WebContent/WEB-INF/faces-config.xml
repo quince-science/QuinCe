@@ -208,5 +208,9 @@
       <from-outcome>user_qc</from-outcome>
       <to-view-id>/dataset/manual_qc.xhtml</to-view-id>
     </navigation-case>
+    <navigation-case>
+      <from-outcome>export</from-outcome>
+      <to-view-id>/dataset/export.xhtml</to-view-id>
+    </navigation-case>
   </navigation-rule>
 </faces-config>
