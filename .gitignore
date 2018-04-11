@@ -5,6 +5,7 @@
 .project
 .settings
 .DS_Store
+.metadata
 /quince.setup*
 !/quince.setup.default
 

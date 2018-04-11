@@ -34,6 +34,12 @@
         return false;
       }
 
+      function exportDataset(id) {
+        $('#datasetListForm\\:exportDatasetId').val(id);
+        $('#datasetListForm\\:exportLink').click();
+        return false;
+      }
+
       setInterval(function() {
         updateList();
       }, 10000);
@@ -70,7 +76,11 @@
         <h:inputHidden id="manualQcDatasetId" value="#{manualQcBean.datasetId}"/>
         <p:commandLink id="manualQcLink" ajax="false" action="#{manualQcBean.start}"/>
 
-        <p:remoteCommand name="updateList" update="datasets" actionListener="#{dataSetsBean.updateDatasetList}"/>
+==== BASE ====
+        <h:commandLink id="updateList" action="#{dataSetsBean.updateDatasetList}">
+          <f:ajax render="datasets"/>
+        </h:commandLink>
+==== BASE ====
 
         <p:dataTable id="datasets" value="#{dataSetsBean.dataSets}"
             var="dataset" styleClass="pageTable">
@@ -122,7 +132,9 @@
               <h:graphicImage value="/resources/image/qc_disabled.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
             </ui:fragment>
             <ui:fragment rendered="#{dataset.canBeExported}">
-              <h:graphicImage value="/resources/image/export.svg" styleClass="actionIcon" alt="Export" title="Export"/>
+              <p:commandLink onclick="exportDataset(#{dataset.id})">
+                <h:graphicImage value="/resources/image/export.svg" styleClass="actionIcon" alt="Export" title="Export"/>
+              </p:commandLink>
             </ui:fragment>
             <ui:fragment rendered="#{!dataset.canBeExported}">
               <h:graphicImage value="/resources/image/export_disabled.svg" styleClass="actionIcon" alt="Export" title="Export"/>
