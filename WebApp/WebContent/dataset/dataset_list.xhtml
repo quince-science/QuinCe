@@ -76,11 +76,7 @@
         <h:inputHidden id="manualQcDatasetId" value="#{manualQcBean.datasetId}"/>
         <p:commandLink id="manualQcLink" ajax="false" action="#{manualQcBean.start}"/>
 
-==== BASE ====
-        <h:commandLink id="updateList" action="#{dataSetsBean.updateDatasetList}">
-          <f:ajax render="datasets"/>
-        </h:commandLink>
-==== BASE ====
+        <p:remoteCommand name="updateList" update="datasets" actionListener="#{dataSetsBean.updateDatasetList}"/>
 
         <p:dataTable id="datasets" value="#{dataSetsBean.dataSets}"
             var="dataset" styleClass="pageTable">
