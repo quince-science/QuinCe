@@ -34,12 +34,8 @@
         return false;
       }
 
-      function triggerUpdateList() {
-        $('#datasetListForm\\:updateList').click();
-    }
-
       setInterval(function() {
-    triggerUpdateList();
+    	updateList();
       }, 10000);
     </script>
   </ui:define>
@@ -74,9 +70,7 @@
         <h:inputHidden id="manualQcDatasetId" value="#{manualQcBean.datasetId}"/>
         <p:commandLink id="manualQcLink" ajax="false" action="#{manualQcBean.start}"/>
 
-        <h:commandLink id="updateList" action="#{dataSetsBean.updateDatasetList}">
-          <f:ajax render="datasets"/>
-        </h:commandLink>
+        <p:remoteCommand name="updateList" update="datasets" actionListener="#{dataSetsBean.updateDatasetList}"/>
 
         <p:dataTable id="datasets" value="#{dataSetsBean.dataSets}"
             var="dataset" styleClass="pageTable">
