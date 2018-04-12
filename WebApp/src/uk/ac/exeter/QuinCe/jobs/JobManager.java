@@ -68,7 +68,7 @@ public class JobManager {
   /**
    * SQL statement to create a job record
    */
-  private static final String CREATE_JOB_STATEMENT = "INSERT INTO job (owner, submitted, class, parameters) VALUES (?, ?, ?, ?)";
+  private static final String CREATE_JOB_STATEMENT = "INSERT INTO job (owner, created, class, parameters) VALUES (?, ?, ?, ?)";
 
   /**
    * SQL statement to see if a job with a given ID exists
@@ -118,7 +118,7 @@ public class JobManager {
   /**
    * SQL statement to retrieve the next queued job
    */
-  private static final String GET_NEXT_JOB_QUERY = "SELECT id, class, parameters FROM job WHERE status='WAITING' ORDER BY submitted ASC LIMIT 1";
+  private static final String GET_NEXT_JOB_QUERY = "SELECT id, class, parameters FROM job WHERE status='WAITING' ORDER BY created ASC LIMIT 1";
 
   /**
    * Statement to get the number of jobs of each status
