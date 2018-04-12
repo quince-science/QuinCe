@@ -128,6 +128,13 @@ flyway {
   baselineOnMigrate = true
 }
 
+// Make sure project is cleaned and build before running flywayMigrate task
+flywayMigrate {
+  dependsOn 'clean'
+  dependsOn 'war'
+  tasks.findByName('war').mustRunAfter 'clean'
+}
+
 spotless {
   // Blocks defining how to format different code types
   format 'java', {
