@@ -42,6 +42,8 @@ password_code            String         Code for resetting password
 password_code_time       DateTime       The time that the password reset code was generated
 permissions              Integer        A field for defining user permissions. Defined as a bitmask.
 preferences              String         The user's preferences
+created                  Timestamp      The time the record was created
+midified                 Timestamp      The time the record was last modified
 
 #### Permissions
 The permissions that can be applied to a user are as follows:
@@ -72,6 +74,8 @@ name                     String         The name of the instrument
 pre_flushing_time        Integer        The number of seconds' worth of measurements to discard at the start of each run type
 post_flushing_time       Integer        The number of seconds' worth of measurements to discard at the end of each run type
 averaging_mode           Integer        The method used for averaging measurements
+created                  Timestamp      The time the record was created
+midified                 Timestamp      The time the record was last modified
 
 ## `file_definition`
 This table defines the layout of data files used with a given instrument. This definition will be
@@ -101,10 +105,10 @@ column_header_rows           Integer        The number of column header rows in 
 column_count                 Integer        Number of colums in the file
 lon_format                   Integer        Format of the longitude
 lon_value_col                Integer        Column where the longitude value is stored
-lon_hemisphere_col           Integer        Column where the longitude hemisphere is stored 
+lon_hemisphere_col           Integer        Column where the longitude hemisphere is stored
 lat_format                   Integer        Format of the latitude
 lat_value_col                Integer        Column where the latitude value is stored
-lat_hemisphere_col           Integer        Column where the latitude hemisphere is stored 
+lat_hemisphere_col           Integer        Column where the latitude hemisphere is stored
 date_time_col                Integer        Column where a combined date/time string is stored
 date_time_props              String         Properties for the `date_time` column
 date_col                     Integer        Column where a date string is stored
@@ -121,6 +125,8 @@ time_props                   String         Properties for the `time` column
 hour_col                     Integer        Column where the hour is stored
 minute_col                   Integer        Column where the minute is stored
 second_col                   Integer        Column where the second is stored
+created                  Timestamp      The time the record was created
+midified                 Timestamp      The time the record was last modified
 
 #### `lon_format`
 The `lon_format` field will have one of the following values:
@@ -154,6 +160,8 @@ value_column             Integer        Position at which this value will be sto
 depends_question_answer  Boolean        Answer to the Depends Question (see `SensorType` class)
 missing_value            String         Value that indicates a missing value (`NaN`, `-999` etc.)
 post_calibrated          Boolean        Indicates whether values need to be calibrated by QuinCe
+created                  Timestamp      The time the record was created
+midified                 Timestamp      The time the record was last modified
 
 ## `run_type`
 Each instrument will have a number of run types, for measurements, gas standards etc.
@@ -169,6 +177,8 @@ Field                    Type           Description
 file_definition_id*      F_KEY          File Definition ID
 name*                    String         The value from the `run_type` column in the Columns table
 category_code            String         The run type category code
+created                  Timestamp      The time the record was created
+midified                 Timestamp      The time the record was last modified
 
 ## `calibration`
 Each calibration (gas standard, sensor calibration etc.) is stored in this table.
@@ -189,6 +199,8 @@ target*                  String         Name of the target of this calibration
 deployment_date*         DateTime       Date/time of calibration. Stored as a milliseconds value.
 values                   String         The values for the calibration. See above.
 class                    String         The Java class of the calibration
+created                  Timestamp      The time the record was created
+midified                 Timestamp      The time the record was last modified
 
 
 # Data Files
@@ -207,6 +219,8 @@ filename                 String         Original filename
 start_date               DateTime       Date/Time of the first record in the file
 end_date                 DateTime       Date/Time of the last record in the file
 record_count             Integer        Number of records in the file
+created                  Timestamp      The time the record was created
+midified                 Timestamp      The time the record was last modified
 
 ## `dataset`
 This table will define a data set. It will not contain any data,
@@ -223,6 +237,8 @@ end                      DateTime       The end date and time of the data set
 status                   Integer        The current processing state of the data set
 properties               String         Miscellaneous properties related to the data set
 last_touched             DateTime       Date/Time that the data set was last used
+created                  Timestamp      The time the record was created
+midified                 Timestamp      The time the record was last modified
 
 #### `status`
 As a voyage's data is processed, it will go through a number of stages. The actions that can be performed
@@ -249,6 +265,8 @@ latitude                 Float          The latitude at which the record was tak
 run_type                 String         The run type for this record
 diagnostic_values        String         A serialized Java `Properties` object containing values from the diagnostic sensors
 sensor_type_value**      Double         Values extracted from the data files
+created                  Timestamp      The time the record was created
+midified                 Timestamp      The time the record was last modified
 
 **One `sensor_type_value` field will be creted in the table for each sensor defined in the
 Sensors Configuration for the application (this implies that the database schema must be
@@ -270,6 +288,8 @@ time*                    DateTime       The date/time when the calibration data 
 calibration_value**      Double         The calibration value
 use                      Boolean        Indicates whether or not this calibration record should be used
 use_message              String         Reason for not using this calibration record
+created                  Timestamp      The time the record was created
+midified                 Timestamp      The time the record was last modified
 
 **One `calibration_value` field will exist for each type of calibration data that can be used. It is likely that
 only one or two sensor values will be present in each record.
@@ -303,7 +323,7 @@ Field                    Type           Description
 --------------------     ------------   -------------------------------------------------------------------------
 job_id*                  Integer        Job ID
 owner                    F_KEY          The user id of the owner of the job
-submitted                DateTime       The date and time on which the job was submitted
+created                  Timestamp       The date and time on which the job was created
 class                    String         The class name of the job to be run
 parameters               String         The parameters to be passed to the job when it is run
 status                   ENUM           The current status of the job (WAITING, RUNNING, FINISHED, ERROR, KILLED)
@@ -312,6 +332,7 @@ ended                    DateTime       The time when the job completed
 thread_name              String         The name of the thread which is running the job
 progress                 Float          The progress of the job, expressed as a percentage
 stack_trace              String         Used to store a stack trace in the event of an error
+midified                 Timestamp      The time the record was last modified
 
 #### `class`
 Each job will be executed by a specific Java class. Its name will be stored here.
