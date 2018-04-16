@@ -35,8 +35,8 @@
       }
 
       function exportDataset(id) {
-        $('#datasetListForm\\:exportDatasetId').val(id);
-        $('#datasetListForm\\:exportLink').click();
+        $('#exportForm\\:exportDatasetId').val(id);
+        $('#exportForm\\:exportLink').click();
         return false;
       }
 
@@ -54,6 +54,11 @@
     </ui:fragment>
 
     <ui:fragment rendered="#{dataSetsBean.hasInstruments}">
+      <h:form id="exportForm" method="post" charset="utf8">
+        <h:inputHidden id="exportDatasetId" value="#{exportBean.datasetId}"/>
+        <p:commandLink id="exportLink" ajax="false" action="#{exportBean.start}"/>
+      </h:form>
+
       <h:form id="datasetListForm" method="post" charset="utf8">
         <h:panelGrid columns="3" cellpadding="5" class="buttonPanel contentList">
           <p:outputLabel for="instrument" value="Select Instrument:"/>
@@ -75,9 +80,6 @@
 
         <h:inputHidden id="manualQcDatasetId" value="#{manualQcBean.datasetId}"/>
         <p:commandLink id="manualQcLink" ajax="false" action="#{manualQcBean.start}"/>
-
-        <h:inputHidden id="exportDatasetId" value="#{exportBean.datasetId}"/>
-        <p:commandLink id="exportLink" ajax="false" action="#{exportBean.start}"/>
 
         <p:remoteCommand name="updateList" update="datasets" actionListener="#{dataSetsBean.updateDatasetList}"/>
 
