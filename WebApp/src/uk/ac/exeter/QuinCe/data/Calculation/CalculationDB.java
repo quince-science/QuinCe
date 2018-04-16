@@ -807,4 +807,18 @@ public abstract class CalculationDB {
 
     return result;
   }
+
+  /**
+   * Check a list of column headings to ensure that they are all recognised
+   * as part of this calculation DB.
+   * @param headings The headings to be checked
+   * @throws CalculatorException If the heading is not recognised
+   */
+  public void validateColumnHeadings(List<String> headings) throws CalculatorException {
+    for (String heading : headings) {
+      if (!getCalculationColumnHeadings().contains(heading)) {
+        throw new CalculatorException("Unrecognised heading '" + heading + "'");
+      }
+    }
+  }
 }
