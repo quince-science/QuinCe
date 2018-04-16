@@ -124,17 +124,17 @@ public class ExportBean extends BaseManagedBean {
       byte[] fileContent = "I am an exported file".getBytes();
 
       FacesContext fc = FacesContext.getCurrentInstance();
-        ExternalContext ec = fc.getExternalContext();
+      ExternalContext ec = fc.getExternalContext();
 
-        ec.responseReset();
-        ec.setResponseContentType("text/csv");
-        ec.setResponseContentLength(fileContent.length); // Set it with the file size. This header is optional. It will work if it's omitted, but the download progress will be unknown.
-        ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + getExportFilename(exportOption) + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
+      ec.responseReset();
+      ec.setResponseContentType("text/csv");
+      ec.setResponseContentLength(fileContent.length); // Set it with the file size. This header is optional. It will work if it's omitted, but the download progress will be unknown.
+      ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + getExportFilename(exportOption) + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
 
-        OutputStream output = ec.getResponseOutputStream();
-        output.write(fileContent);
+      OutputStream output = ec.getResponseOutputStream();
+      output.write(fileContent);
 
-        fc.responseComplete();
+      fc.responseComplete();
     } catch (Exception e) {
       e.printStackTrace();
     }

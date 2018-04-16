@@ -1,14 +1,15 @@
 package uk.ac.exeter.QuinCe.data.Export;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
-import uk.ac.exeter.QuinCe.utils.StringUtils;
+import org.primefaces.json.JSONArray;
+
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * <p>
@@ -16,79 +17,28 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * </p>
  *
  * <p>
- *   The export options are provided in a CSV file. Each line in the file represents one export option,
- *   and contains the following columns:
+ *   The export options are provided in a JSON file. Each JSON entry represents one export option,
+ *   and contains the following items:
  * </p>
  * <ul>
  *   <li>
- *     <b>Name</b> - The display name of this export option.
+ *     <b>exportName</b> - The display name of this export option.
  *   </li>
  *   <li>
- *     <b>Separator</b> - The column separator in the exported file. Since the configuration file is CSV,
- *     a comma separator must be escaped ({@code \,}).
+ *     <b>Separator</b> - The column separator in the exported file. This must be a string, either
+ *      'comma' or 'tab'.
  *   </li>
  *   <li>
- *     <b>CO<sub>2</sub> Type</b> - The type of CO<sub>2</sub> measurements to be exported:
- *     0 = Water, 1 = Atmospheric, 3 = Both.
+ *     <b>Flags</b> - The flag values to be included in the export, as numeric values.
  *   </li>
  *   <li>
- *     <b>Column, Column...</b> - After the CO<sub>2</sub> type, the remaining columns list the data
- *     columns to be included in the output.
+ *     <b>Sensors</b> - The names of the sensor columns to be included in the output
+ *   </li>
+ *   <li>
+ *     <b>[Calculation Name]</b> - For each available calculation path, Any calculated value
+ *     can be included.
  *   </li>
  * </ul>
- *
- * <p>
- *   Supported column names are:
- * </p>
- * <ul>
- *   <li>{@code dateTime}</li>
- *   <li>{@code longitude}</li>
- *   <li>{@code latitude}</li>
- *   <li>{@code intakeTempMean}</li>
- *   <li>{@code intakeTemp1}</li>
- *   <li>{@code intakeTemp2}</li>
- *   <li>{@code intakeTemp3}</li>
- *   <li>{@code salinityMean}</li>
- *   <li>{@code salinity1}</li>
- *   <li>{@code salinity2}</li>
- *   <li>{@code salinity3}</li>
- *   <li>{@code eqtMean}</li>
- *   <li>{@code eqt1}</li>
- *   <li>{@code eqt2}</li>
- *   <li>{@code eqt3}</li>
- *   <li>{@code deltaT}</li>
- *   <li>{@code eqpMean}</li>
- *   <li>{@code eqp1}</li>
- *   <li>{@code eqp2}</li>
- *   <li>{@code eqp3}</li>
- *   <li>{@code airFlow1}</li>
- *   <li>{@code airFlow2}</li>
- *   <li>{@code airFlow3}</li>
- *   <li>{@code waterFlow1}</li>
- *   <li>{@code waterFlow2}</li>
- *   <li>{@code waterFlow3}</li>
- *   <li>{@code atmosPressure}</li>
- *   <li>{@code moistureMeasured}</li>
- *   <li>{@code moistureTrue}</li>
- *   <li>{@code pH2O}</li>
- *   <li>{@code co2Measured}</li>
- *   <li>{@code co2Dried}</li>
- *   <li>{@code co2Calibrated}</li>
- *   <li>{@code pCO2TEDry}</li>
- *   <li>{@code pCO2TEWet}</li>
- *   <li>{@code fCO2TE}</li>
- *   <li>{@code fCO2Final}</li>
- *   <li>{@code qcFlag}</li>
- *   <li>{@code qcMessage}</li>
- *   <li>{@code woceFlag}</li>
- *   <li>{@code woceMessage}</li>
- * </ul>
- *
- * <p>
- *   There is also a special column called {@code original}, which will grab the original file from disk
- *   and include it in the exported file. If this is included, the separator specified in the configuration
- *   will be ignored, and the separator from the original file will be used instead.
- * </p>
  *
  * <p>
  *   The export options are held in a list, kept in the same order as the options appear in the configuration file.
@@ -129,14 +79,14 @@ public class ExportConfig {
    *
    * @throws ExportException If the configuration file cannot be loaded or parsed
    */
-  private ExportConfig() throws ExportException {
+  private ExportConfig(ResourceManager resourceManager) throws ExportException {
     if (configFilename == null) {
       throw new ExportException("ExportConfig filename has not been set - must run init first");
     }
 
     options = new ArrayList<ExportOption>();
     try {
-      readFile();
+      readFile(resourceManager);
     } catch (FileNotFoundException e) {
       throw new ExportException("Could not find configuration file '" + configFilename + "'");
     }
@@ -147,9 +97,9 @@ public class ExportConfig {
    * @param configFile The full path to the export configuration file
    * @throws ExportException If the configuration file cannot be loaded or parsed
    */
-  public static void init(String configFile) throws ExportException {
+  public static void init(ResourceManager resourceManager, String configFile) throws ExportException {
     configFilename = configFile;
-    instance = new ExportConfig();
+    instance = new ExportConfig(resourceManager);
   }
 
   /**
@@ -171,49 +121,18 @@ public class ExportConfig {
    * @throws ExportException If the configuration file is invalid
    * @throws FileNotFoundException If the file specified in the {@link #init(String)} call does not exist
    */
-  private void readFile() throws ExportException, FileNotFoundException {
-
-    BufferedReader reader = new BufferedReader(new FileReader(configFilename));
-
-    String regex = "(?<!\\\\)" + Pattern.quote(",");
-    int lineCount = 0;
-
+  private void readFile(ResourceManager resourceManager) throws ExportException, FileNotFoundException {
     try {
-      String line = reader.readLine();
-      lineCount++;
-
-      while (null != line) {
-        if (!StringUtils.isComment(line)) {
-          List<String> fields = Arrays.asList(line.split(regex));
-          fields = StringUtils.trimList(fields);
-
-          String name = fields.get(0);
-          String separator = fields.get(1);
-          if (separator.equals("\\t")) {
-            separator = "\t";
-          }
-
-          int co2Type = Integer.parseInt(fields.get(2));
-
-          List<String> columns = fields.subList(3, fields.size());
-
-          options.add(new ExportOption(options.size(), name, separator, columns, co2Type));
-        }
-
-        line = reader.readLine();
-        lineCount++;
+      String fileContent = new String(Files.readAllBytes(Paths.get(configFilename)), StandardCharsets.UTF_8);
+      JSONArray jsonEntries = new JSONArray(fileContent);
+      for (int i = 0; i < jsonEntries.length(); i++) {
+        options.add(new ExportOption(resourceManager, i, jsonEntries.getJSONObject(i)));
       }
     } catch (Exception e) {
       if (e instanceof ExportException) {
         throw (ExportException) e;
       } else {
-        throw new ExportException("Error initialising export options (line " + lineCount + ")", e);
-      }
-    } finally {
-      try {
-        reader.close();
-      } catch (Exception e) {
-        // Shrug
+        throw new ExportException("Error initialising export options", e);
       }
     }
   }

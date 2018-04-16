@@ -237,4 +237,28 @@ public class SensorsConfiguration {
 
     return foundSensor;
   }
+
+  /**
+   * Check a list of sensor names to ensure they are all present in the sensor configuration.
+   * Note that this checks both sensor names and Required Group names
+   * @param names The names to check
+   * @throws SensorConfigurationException If any sensor names are not recognised
+   */
+  public void validateSensorNames(List<String> names) throws SensorConfigurationException {
+    for (String name : names) {
+      boolean found = false;
+
+      for (SensorType sensorType : sensorTypes) {
+        if (sensorType.getName().equalsIgnoreCase(name) ||
+            (null != sensorType.getRequiredGroup() && sensorType.getRequiredGroup().equalsIgnoreCase(name))) {
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        throw new SensorConfigurationException("Unrecognised sensor type '" + name + "'");
+      }
+    }
+  }
 }

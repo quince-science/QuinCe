@@ -81,7 +81,7 @@ public class ResourceManager implements ServletContextListener {
         }
 
         try {
-            String filePath = (String) servletContext.getInitParameter("configuration.path");
+            String filePath = servletContext.getInitParameter("configuration.path");
             configuration = loadConfiguration(filePath);
         } catch (IOException e) {
             throw new RuntimeException("Config failed: could not read config file", e);
@@ -117,13 +117,6 @@ public class ResourceManager implements ServletContextListener {
           throw new RuntimeException("Could not initialise QC Routines", e);
         }
 
-        // Initialise the file export options configuration
-        try {
-          ExportConfig.init(configuration.getProperty("export.configfile"));
-        } catch (ExportException e) {
-          throw new RuntimeException("Could not initialise export configuration", e);
-        }
-
         // Initialise the sensors configuration
         try {
           sensorsConfiguration = new SensorsConfiguration(new File(configuration.getProperty("sensors.configfile")));
@@ -136,6 +129,13 @@ public class ResourceManager implements ServletContextListener {
           runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(new File(configuration.getProperty("runtypes.configfile")));
         } catch (RunTypeCategoryException e) {
           throw new RuntimeException("Could not load sensors configuration", e);
+        }
+
+        // Initialise the file export options configuration
+        try {
+          ExportConfig.init(this, configuration.getProperty("export.configfile"));
+        } catch (ExportException e) {
+          throw new RuntimeException("Could not initialise export configuration", e);
         }
 
         instance = this;

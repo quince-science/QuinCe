@@ -28,4 +28,18 @@ public class CalculationDBFactory {
     return calculationDB;
   }
 
+  /**
+   * Get a CalculationDB instance matching the specified identifier
+   * @param identifier The identifier
+   * @return The instance
+   * @throws CalculatorException If the identifier is not recognised
+   */
+  public static CalculationDB getCalculationDB(String identifier) throws CalculatorException {
+    if (identifier.equalsIgnoreCase("equilibrator_pco2")) {
+      return new EquilibratorPco2DB();
+    } else {
+      throw new CalculatorException("Unknown calculation path '" + identifier + "'");
+    }
+  }
+
 }
