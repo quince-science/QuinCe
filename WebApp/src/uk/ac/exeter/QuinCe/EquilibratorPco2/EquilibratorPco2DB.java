@@ -24,8 +24,8 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.VariableList;
 import uk.ac.exeter.QuinCe.web.Variable;
+import uk.ac.exeter.QuinCe.web.VariableList;
 
 /**
  * Instance of {@link CalculationDB} for underway pCO2
@@ -191,7 +191,7 @@ public class EquilibratorPco2DB extends CalculationDB {
   public List<String> getCalculationColumnHeadings() {
     List<String> columnHeadings = new ArrayList<String>();
 
-    columnHeadings.add("ΔT");
+    columnHeadings.add("Delta T");
     columnHeadings.add("True Moisture");
     columnHeadings.add("pH2O");
     columnHeadings.add("Dried CO2");
@@ -208,7 +208,7 @@ public class EquilibratorPco2DB extends CalculationDB {
   public void populateVariableList(VariableList variables) throws MissingParamException {
     MissingParam.checkMissing(variables, "variables", true);
 
-    variables.addVariable("ΔT", new Variable(Variable.TYPE_CALCULATION, "ΔT", "delta_temperature"));
+    variables.addVariable("Delta T", new Variable(Variable.TYPE_CALCULATION, "ΔT", "delta_temperature"));
     variables.addVariable("xH2O", new Variable(Variable.TYPE_CALCULATION, "True xH2O", "true_moisture"));
     variables.addVariable("pH2O", new Variable(Variable.TYPE_CALCULATION, "pH2O", "ph2o"));
 
