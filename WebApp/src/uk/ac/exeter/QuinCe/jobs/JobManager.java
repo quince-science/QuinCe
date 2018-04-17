@@ -824,46 +824,46 @@ public class JobManager {
     * @param dataSource A data source
     * @return The list of jobs
     * @throws DatabaseException If a database error occurs
-    * @throws MissingParamException If any requierd parameters are missing
+    * @throws MissingParamException If any required parameters are missing
     */
   @Deprecated
   public static List<JobSummary> getJobList(DataSource dataSource) throws DatabaseException, MissingParamException {
 
-     MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(dataSource, "dataSource");
 
-     List<JobSummary> result = new ArrayList<JobSummary>();
+    List<JobSummary> result = new ArrayList<JobSummary>();
 
-     Connection conn = null;
-     PreparedStatement stmt = null;
-     ResultSet records = null;
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet records = null;
 
-     try {
+    try {
 
-       conn = dataSource.getConnection();
-       stmt = conn.prepareStatement(JOB_LIST_QUERY);
+      conn = dataSource.getConnection();
+      stmt = conn.prepareStatement(JOB_LIST_QUERY);
 
-       records = stmt.executeQuery();
-       while (records.next()) {
-         long id = records.getLong(1);
-         long userID = records.getLong(2);
-         User owner = UserDB.getUser(dataSource, userID);
-         String className = records.getString(3);
+      records = stmt.executeQuery();
+      while (records.next()) {
+        long id = records.getLong(1);
+        long userID = records.getLong(2);
+        User owner = UserDB.getUser(dataSource, userID);
+        String className = records.getString(3);
         Date created = new Date(records.getTimestamp(4).getTime());
-         String status = records.getString(5);
-         Date started = null;
+        String status = records.getString(5);
+        Date started = null;
 
-         if (null != records.getTimestamp(6)) {
-           started = new Date(records.getTimestamp(6).getTime());
-         }
+        if (null != records.getTimestamp(6)) {
+          started = new Date(records.getTimestamp(6).getTime());
+        }
 
-         Date ended = null;
+        Date ended = null;
 
-         if (null != records.getTimestamp(7)) {
-           ended = new Date(records.getTimestamp(7).getTime());
-         }
+        if (null != records.getTimestamp(7)) {
+          ended = new Date(records.getTimestamp(7).getTime());
+        }
 
-         double progress = records.getDouble(8);
-         String stackTrace = records.getString(9);
+        double progress = records.getDouble(8);
+        String stackTrace = records.getString(9);
 
         result.add(new JobSummary(id, owner, className, created, status,
             started, ended, progress, stackTrace));
