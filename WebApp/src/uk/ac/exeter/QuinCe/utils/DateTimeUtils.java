@@ -47,6 +47,7 @@ public class DateTimeUtils {
   /**
    * A formatter for generating date/time strings. The output format is {@code YYYY-MM-DD HH:mm:ss}.
    */
+  @Deprecated
   private static SimpleDateFormat dateTimeFormatter = null;
 
   /**
@@ -153,7 +154,7 @@ public class DateTimeUtils {
    * @return The formatted date/time
    */
   public static String formatDateTime(LocalDateTime dateTime) {
-    return dateTimeFormatter.format(dateTime);
+    return displayDateTimeFormatter.format(dateTime);
   }
 
   /**

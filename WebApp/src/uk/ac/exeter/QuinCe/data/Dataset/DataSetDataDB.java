@@ -32,8 +32,8 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.VariableList;
 import uk.ac.exeter.QuinCe.web.Variable;
+import uk.ac.exeter.QuinCe.web.VariableList;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -251,6 +251,18 @@ public class DataSetDataDB {
    */
   public static List<DataSetRawDataRecord> getMeasurements(Connection conn, DataSet dataSet) throws DatabaseException, MissingParamException {
     return getMeasurements(conn, dataSet, -1, -1);
+  }
+
+  /**
+   * Get all measurement records for a dataset
+   * @param conn A database connection
+   * @param dataSet The data set
+   * @return The measurement records
+     * @throws DatabaseException If a database error occurs
+     * @throws MissingParamException If any required parameters are missing
+   */
+  public static List<DataSetRawDataRecord> getMeasurements(DataSource dataSource, DataSet dataSet) throws DatabaseException, MissingParamException {
+    return getMeasurements(dataSource, dataSet, -1, -1);
   }
 
   /**

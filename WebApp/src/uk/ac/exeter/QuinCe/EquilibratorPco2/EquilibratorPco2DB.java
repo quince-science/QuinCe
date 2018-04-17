@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -189,19 +188,7 @@ public class EquilibratorPco2DB extends CalculationDB {
 
   @Override
   public List<String> getCalculationColumnHeadings() {
-    List<String> columnHeadings = new ArrayList<String>();
-
-    columnHeadings.add("Delta T");
-    columnHeadings.add("True Moisture");
-    columnHeadings.add("pH2O");
-    columnHeadings.add("Dried CO2");
-    columnHeadings.add("Calibrated CO2");
-    columnHeadings.add("pCO2 TE Dry");
-    columnHeadings.add("pCO2 TE Wet");
-    columnHeadings.add("fCO2 TE");
-    columnHeadings.add("fCO2 Final");
-
-    return columnHeadings;
+    return EquilibratorPco2CalculationRecord.calculationColumns;
   }
 
   @Override
