@@ -225,4 +225,40 @@ public class ExportOption {
     }
     }
   }
+
+  /**
+   * Get the list of sensor columns to be included in the export file
+   * @return The sensor columns
+   */
+  public List<String> getSensorColumns() {
+    return sensorColumns;
+  }
+
+  /**
+   * Get the list of columns required for the given calculation
+   * @param calculation The calculation name
+   * @return The list of columns
+   */
+  public List<String> getCalculationColumns(String calculation) {
+    return calculationColumns.get(calculation);
+  }
+
+  /**
+   * See if a given flag value can be included in this export,
+   * i.e. it is contained in the {@code flags} list
+   * @param flag The flag to be checked
+   * @return {@code true} if the flag can be included; {@code false} if it cannot
+   */
+  public boolean flagAllowed(Flag flag) {
+    boolean allowed = false;
+
+    for (Flag checkFlag : flags) {
+      if (Flag.getWoceValue(checkFlag.getFlagValue()) == Flag.getWoceValue(flag.getFlagValue())) {
+        allowed = true;
+        break;
+      }
+    }
+
+    return allowed;
+  }
 }
