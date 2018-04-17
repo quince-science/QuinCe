@@ -78,7 +78,7 @@ public class JobManager {
   /**
    * Statement to retrieve the list of jobs
    */
-  private static final String JOB_LIST_QUERY = "SELECT id, owner, class, submitted, status, started, ended, progress, stack_trace FROM job ORDER BY submitted DESC";
+  private static final String JOB_LIST_QUERY = "SELECT id, owner, class, created, status, started, ended, progress, stack_trace FROM job ORDER BY created DESC";
 
   /**
    * SQL statement for setting a job's status
@@ -848,7 +848,7 @@ public class JobManager {
          long userID = records.getLong(2);
          User owner = UserDB.getUser(dataSource, userID);
          String className = records.getString(3);
-         Date submitted = new Date(records.getTimestamp(4).getTime());
+        Date created = new Date(records.getTimestamp(4).getTime());
          String status = records.getString(5);
          Date started = null;
 
@@ -865,7 +865,8 @@ public class JobManager {
          double progress = records.getDouble(8);
          String stackTrace = records.getString(9);
 
-        result.add(new JobSummary(id, owner, className, submitted, status, started, ended, progress, stackTrace));
+        result.add(new JobSummary(id, owner, className, created, status,
+            started, ended, progress, stackTrace));
       }
 
     } catch (SQLException e) {
