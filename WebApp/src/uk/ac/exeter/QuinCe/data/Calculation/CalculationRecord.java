@@ -4,12 +4,14 @@ import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import uk.ac.exeter.QCRoutines.config.ColumnConfig;
+import uk.ac.exeter.QCRoutines.config.InvalidDataTypeException;
 import uk.ac.exeter.QCRoutines.data.DataColumn;
 import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QCRoutines.data.DataRecordException;
@@ -104,6 +106,11 @@ public abstract class CalculationRecord extends DataRecord {
   private String userMessage = null;
 
   /**
+   * The aliases of human-readable column headings to database column names
+   */
+  protected Map<String, String> columnAliases;
+
+  /**
    * Create an empty calculation record for a given measurement in a given data set
    * @param datasetId The dataset ID
    * @param measurementId The measurement ID
@@ -113,6 +120,7 @@ public abstract class CalculationRecord extends DataRecord {
     super(measurementId, columnConfig);
     this.datasetId = datasetId;
     calculationDB = getCalculationDB();
+    buildColumnAliases();
   }
 
   /**
@@ -356,9 +364,23 @@ public abstract class CalculationRecord extends DataRecord {
     }
   }
 
+  @Override
+  public Double getNumericValue(String columnName) throws NoSuchColumnException, InvalidDataTypeException {
+    String retrievalColumn = columnName;
+    if (columnAliases.containsKey(columnName)) {
+      retrievalColumn = columnAliases.get(columnName);
+    }
+    return super.getNumericValue(retrievalColumn);
+  }
+
   /**
    * Get the list of columns that contain calculation values
    * @return The column names
    */
   public abstract List<String> getCalculationColumns();
+
+  /**
+   * Build the set of human readable/database column aliases
+   */
+  protected abstract void buildColumnAliases();
 }

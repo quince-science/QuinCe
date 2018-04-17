@@ -1,6 +1,9 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
 import java.io.OutputStream;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.faces.bean.ManagedBean;
@@ -8,11 +11,20 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
+import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecordFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 @ManagedBean
@@ -33,6 +45,17 @@ public class ExportBean extends BaseManagedBean {
    * The chosen export option
    */
   private int chosenExportOption = -1;
+
+  /**
+   * Formatter for numeric values
+   * All values are displayed to 3 decimal places.
+   */
+  private static DecimalFormat numberFormatter;
+
+  static {
+    numberFormatter = new DecimalFormat("#.000");
+    numberFormatter.setRoundingMode(RoundingMode.HALF_UP);
+  }
 
   /**
    * Initialise the bean
@@ -120,8 +143,96 @@ public class ExportBean extends BaseManagedBean {
     try {
       ExportOption exportOption = getExportOptions().get(chosenExportOption);
 
-      //byte[] fileContent = DataSetDataDB.getCSVData(getDataSource(), getAppConfig(), dataset, exportOption).getBytes();
-      byte[] fileContent = "I am an exported file".getBytes();
+      // TODO This will get all sensor columns. When the sensor data storage is updated (Issue #576), this can be revised.
+      List<DataSetRawDataRecord> datasetData = DataSetDataDB.getMeasurements(getDataSource(), getDataset());
+
+      List<CalculationRecord> calculationData = new ArrayList<CalculationRecord>(datasetData.size());
+      for (DataSetRawDataRecord record : datasetData) {
+        CalculationRecord calcRecord = CalculationRecordFactory.makeCalculationRecord(getDatasetId(), record.getId());
+        CalculationDBFactory.getCalculationDB().getCalculationValues(getDataSource(), calcRecord);
+        calculationData.add(calcRecord);
+      }
+
+      StringBuilder output = new StringBuilder();
+
+      // The header
+      output.append("Date");
+      output.append(exportOption.getSeparator());
+      output.append("Longitude");
+      output.append(exportOption.getSeparator());
+      output.append("Latitude");
+      output.append(exportOption.getSeparator());
+
+      for (String sensorColumn : exportOption.getSensorColumns()) {
+        output.append(sensorColumn);
+        output.append(exportOption.getSeparator());
+      }
+
+      // TODO Replace when mutiple calculation paths are in place
+      List<String> calculationColumns = exportOption.getCalculationColumns("equilibrator_pco2");
+      for (int i = 0; i < calculationColumns.size(); i++) {
+        output.append(calculationColumns.get(i));
+        output.append(exportOption.getSeparator());
+      }
+
+      output.append("QC Flag");
+      output.append(exportOption.getSeparator());
+      output.append("QC Message");
+      output.append('\n');
+
+
+      for (int i = 0; i < datasetData.size(); i++) {
+
+        DataSetRawDataRecord sensorRecord = datasetData.get(i);
+        CalculationRecord calculationRecord = calculationData.get(i);
+
+        if (exportOption.flagAllowed(calculationRecord.getUserFlag())) {
+
+          output.append(DateTimeUtils.formatDateTime(sensorRecord.getDate()));
+          output.append(exportOption.getSeparator());
+          output.append(numberFormatter.format(sensorRecord.getLongitude()));
+          output.append(exportOption.getSeparator());
+          output.append(numberFormatter.format(sensorRecord.getLatitude()));
+          output.append(exportOption.getSeparator());
+
+          for (String sensorColumn : exportOption.getSensorColumns()) {
+            Double value = sensorRecord.getSensorValue(sensorColumn);
+            if (null == value) {
+              output.append("NaN");
+            } else {
+              output.append(numberFormatter.format(value));
+            }
+
+            output.append(exportOption.getSeparator());
+          }
+
+          for (String calculatedColumn : exportOption.getCalculationColumns("equilibrator_pco2")) {
+            Double value = calculationRecord.getNumericValue(calculatedColumn);
+            if (null == value) {
+              output.append("NaN");
+            } else {
+              output.append(numberFormatter.format(value));
+            }
+
+            output.append(exportOption.getSeparator());
+          }
+
+          output.append(Flag.getWoceValue(calculationRecord.getUserFlag().getFlagValue()));
+          output.append(exportOption.getSeparator());
+
+          String qcMessage = calculationRecord.getUserMessage();
+          if (null != qcMessage) {
+            if (qcMessage.length() > 0) {
+              output.append(StringEscapeUtils.escapeCsv(qcMessage.trim()));
+            }
+          }
+
+          output.append('\n');
+        }
+
+      }
+
+      byte[] fileContent = output.toString().getBytes();
 
       FacesContext fc = FacesContext.getCurrentInstance();
       ExternalContext ec = fc.getExternalContext();
@@ -131,8 +242,8 @@ public class ExportBean extends BaseManagedBean {
       ec.setResponseContentLength(fileContent.length); // Set it with the file size. This header is optional. It will work if it's omitted, but the download progress will be unknown.
       ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + getExportFilename(exportOption) + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
 
-      OutputStream output = ec.getResponseOutputStream();
-      output.write(fileContent);
+      OutputStream outputStream = ec.getResponseOutputStream();
+      outputStream.write(fileContent);
 
       fc.responseComplete();
     } catch (Exception e) {

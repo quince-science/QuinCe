@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.EquilibratorPco2;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
@@ -18,12 +19,12 @@ public class EquilibratorPco2CalculationRecord extends CalculationRecord {
   /**
    * The list of columns that contain calculation values
    */
-  private static List<String> calculationColumns = null;
+  protected static List<String> calculationColumns = null;
 
   static {
     // TODO These should be retrieved from the configuration somehow
     calculationColumns = new ArrayList<String>();
-    calculationColumns.add("Delta Temperature");
+    calculationColumns.add("Delta T");
     calculationColumns.add("True Moisture");
     calculationColumns.add("pH2O");
     calculationColumns.add("Dried CO2");
@@ -52,5 +53,19 @@ public class EquilibratorPco2CalculationRecord extends CalculationRecord {
   @Override
   public List<String> getCalculationColumns() {
     return calculationColumns;
+  }
+
+  @Override
+  protected void buildColumnAliases() {
+    columnAliases = new HashMap<String, String>();
+    columnAliases.put("Delta T", "Delta Temperature");
+    columnAliases.put("True xH2O", "True Moisture");
+    columnAliases.put("pH2O", "pH2O");
+    columnAliases.put("Dried CO2", "Dried CO2");
+    columnAliases.put("Calibrated CO2", "Calibrated CO2");
+    columnAliases.put("pCO2 TE Dry", "pCO2 TE Dry");
+    columnAliases.put("pCO2 TE Wet", "pCO2 TE Wet");
+    columnAliases.put("fCO2 TE", "fCO2 TE");
+    columnAliases.put("fCO2", "fCO2");
   }
 }
