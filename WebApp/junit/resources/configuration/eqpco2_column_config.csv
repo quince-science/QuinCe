@@ -46,8 +46,7 @@ True Moisture,N,Y,fCO2|3|4
 pH2O,N,Y,
 Dried CO2,N,Y,
 Calibrated CO2,N,Y,
-pCO2 TE Dry,N,Y,
 pCO2 TE Wet,N,Y,
-fCO2 TE,N,Y,
+pCO2 SST,N,Y,
 fCO2,N,Y,
 

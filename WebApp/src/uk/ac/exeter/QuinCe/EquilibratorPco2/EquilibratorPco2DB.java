@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +45,8 @@ public class EquilibratorPco2DB extends CalculationDB {
   private static final String STORE_CALCULATION_VALUES_STATEMENT = "UPDATE "
       + TABLE_NAME + " SET "
       + "delta_temperature = ?, true_moisture = ?, ph2o = ?, " // 3
-      + "dried_co2 = ?, calibrated_co2 = ?, pco2_te_dry = ?, " // 6
-      + "pco2_te_wet = ?, fco2_te = ?, fco2 = ? " // 9
+      + "dried_co2 = ?, calibrated_co2 = ?, " // 5
+      + "pco2_te_wet = ?, pco2_sst = ?, fco2 = ? " // 8
       + "WHERE measurement_id = ?";
 
   /**
@@ -54,8 +55,8 @@ public class EquilibratorPco2DB extends CalculationDB {
   private static final String CLEAR_CALCULATION_VALUES_STATEMENT = "UPDATE "
       + TABLE_NAME + " SET "
       + "delta_temperature = NULL, true_moisture = NULL, ph2o = NULL, " // 3
-      + "dried_co2 = NULL, calibrated_co2 = NULL, pco2_te_dry = NULL, " // 6
-      + "pco2_te_wet = NULL, fco2_te = NULL, fco2 = NULL " // 9
+      + "dried_co2 = NULL, calibrated_co2 = NULL, " // 5
+      + "pco2_te_wet = NULL, pco2_sst = NULL, fco2 = NULL " // 8
       + "WHERE measurement_id = ?";
 
   /**
@@ -63,9 +64,9 @@ public class EquilibratorPco2DB extends CalculationDB {
    */
   private static final String GET_CALCULATION_VALUES_STATEMENT = "SELECT "
       + "delta_temperature, true_moisture, ph2o, " // 3
-      + "dried_co2, calibrated_co2, pco2_te_dry, " // 6
-      + "pco2_te_wet, fco2_te, fco2, " // 9
-      + "auto_flag, auto_message, user_flag, user_message " // 13
+      + "dried_co2, calibrated_co2, " // 5
+      + "pco2_te_wet, pco2_sst, fco2, " // 9
+      + "auto_flag, auto_message, user_flag, user_message " // 12
       + "FROM " + TABLE_NAME
       + " WHERE measurement_id = ?";
 
@@ -99,10 +100,10 @@ public class EquilibratorPco2DB extends CalculationDB {
       stmt.setDouble(3, values.get("ph2o"));
       stmt.setDouble(4, values.get("dried_co2"));
       stmt.setDouble(5, values.get("calibrated_co2"));
-      stmt.setDouble(7, values.get("pco2_te_wet"));
-      stmt.setDouble(8, values.get("pco2_sst"));
-      stmt.setDouble(9, values.get("fco2"));
-      stmt.setLong(10, measurementId);
+      stmt.setDouble(6, values.get("pco2_te_wet"));
+      stmt.setDouble(7, values.get("pco2_sst"));
+      stmt.setDouble(8, values.get("fco2"));
+      stmt.setLong(9, measurementId);
 
       stmt.execute();
     } catch (SQLException e) {
@@ -137,10 +138,9 @@ public class EquilibratorPco2DB extends CalculationDB {
         values.put("ph2o", dbRecord.getDouble(3));
         values.put("dried_co2", dbRecord.getDouble(4));
         values.put("calibrated_co2", dbRecord.getDouble(5));
-        values.put("pco2_te_dry", dbRecord.getDouble(6));
-        values.put("pco2_te_wet", dbRecord.getDouble(7));
-        values.put("fco2_te", dbRecord.getDouble(8));
-        values.put("fco2", dbRecord.getDouble(9));
+        values.put("pco2_te_wet", dbRecord.getDouble(6));
+        values.put("pco2_sst", dbRecord.getDouble(7));
+        values.put("fco2", dbRecord.getDouble(8));
 
         for (int i = 1; i < record.getData().size(); i++) {
           DataColumn column = record.getData().get(i);
@@ -151,10 +151,10 @@ public class EquilibratorPco2DB extends CalculationDB {
           }
         }
 
-        record.setAutoFlag(new Flag(dbRecord.getInt(10)));
-        record.setMessages(RebuildCode.getMessagesFromRebuildCodes(dbRecord.getString(11)));
-        record.setUserFlag(new Flag(dbRecord.getInt(12)));
-        record.setUserMessage(dbRecord.getString(13));
+        record.setAutoFlag(new Flag(dbRecord.getInt(9)));
+        record.setMessages(RebuildCode.getMessagesFromRebuildCodes(dbRecord.getString(10)));
+        record.setUserFlag(new Flag(dbRecord.getInt(11)));
+        record.setUserMessage(dbRecord.getString(12));
       }
     } catch (SQLException|InvalidDataException|InvalidFlagException e) {
       throw new DatabaseException("Error retrieving calculations" , e);
@@ -200,9 +200,8 @@ public class EquilibratorPco2DB extends CalculationDB {
 
     variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "Dried CO2", "dried_co2"));
     variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "Calibrated CO2", "calibrated_co2"));
-    variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "pCO2 TE Dry", "pco2_te_dry"));
     variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "pCO2 TE Wet", "pco2_te_wet"));
-    variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "fCO2 TE", "fco2_te"));
+    variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "pCO2 SST", "pco2_sst"));
     variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "Final fCO2", "fco2"));
   }
 }
