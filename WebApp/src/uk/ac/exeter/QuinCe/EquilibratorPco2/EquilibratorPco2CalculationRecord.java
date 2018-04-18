@@ -29,9 +29,8 @@ public class EquilibratorPco2CalculationRecord extends CalculationRecord {
     calculationColumns.add("pH2O");
     calculationColumns.add("Dried CO2");
     calculationColumns.add("Calibrated CO2");
-    calculationColumns.add("pCO2 TE Dry");
     calculationColumns.add("pCO2 TE Wet");
-    calculationColumns.add("fCO2 TE");
+    calculationColumns.add("pCO2 SST");
     calculationColumns.add("fCO2");
   }
 
