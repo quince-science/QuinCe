@@ -178,7 +178,7 @@ public abstract class DataSetRawData {
       }
 
       // Copy lines until either the end of the file or we pass the data set's end date
-      while (currentLine < file.getLineCount()) {
+      while (currentLine < file.getContentLineCount()) {
         if (file.getDate(currentLine).isAfter(dataSet.getEnd())) {
           break;
         } else {
