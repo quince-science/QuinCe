@@ -11,8 +11,6 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 
-import org.apache.commons.lang3.StringEscapeUtils;
-
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
@@ -25,6 +23,7 @@ import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
 @ManagedBean
@@ -223,7 +222,7 @@ public class ExportBean extends BaseManagedBean {
           String qcMessage = calculationRecord.getUserMessage();
           if (null != qcMessage) {
             if (qcMessage.length() > 0) {
-              output.append(StringEscapeUtils.escapeCsv(qcMessage.trim()));
+              output.append(StringUtils.makeCsvString(qcMessage.trim()));
             }
           }
 
