@@ -71,6 +71,11 @@ public class DataFile {
   private TreeSet<DataFileMessage> messages;
 
   /**
+   * Max number of messages. Additional messages will be discarded.
+   */
+  private static final int MAX_MESSAGE_COUNT = 25;
+
+  /**
    * The date in the file header
    */
   private LocalDateTime headerDate = null;
@@ -299,13 +304,28 @@ public class DataFile {
     }
   }
 
-  /**
-   * Shortcut method for adding a message to the message list
-   * @param lineNumber The line number
+  /*
+   * Shortcut method for adding a message to the message list. When the list
+   * size reaches MAX_MESSAGE_COUNT messages, a final message saying "Too many
+   * messages..." is added, then no more messages are allowed.
+   *
+   * @param lineNumber The line number. Line number < 0 means no line number.
+   *
    * @param message The message text
    */
   private void addMessage(int lineNumber, String message) {
-    messages.add(new DataFileMessage(lineNumber, message));
+    if (messages.size() > MAX_MESSAGE_COUNT - 1) {
+      return;
+    }
+    if (messages.size() == MAX_MESSAGE_COUNT - 1) {
+      messages.add(new DataFileMessage("Too many messages..."));
+    } else {
+      if (lineNumber < 0) {
+        messages.add(new DataFileMessage(message));
+      } else {
+        messages.add(new DataFileMessage(lineNumber, message));
+      }
+    }
   }
 
   /**
@@ -313,7 +333,7 @@ public class DataFile {
    * @param message The message text
    */
   private void addMessage(String message) {
-    messages.add(new DataFileMessage(message));
+    addMessage(-2, message);
   }
 
   /**
