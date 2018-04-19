@@ -197,7 +197,7 @@ public class DataFile {
    * Get the number of rows in the file
    * @return The row count
    */
-  public int getLineCount() {
+  public int getContentLineCount() {
     return contents.size();
   }
 
@@ -209,7 +209,7 @@ public class DataFile {
   public int getRecordCount() throws DataFileException {
     if (-1 == recordCount) {
       loadContents();
-      recordCount = contents.size() - getFirstDataLine();
+      recordCount = getContentLineCount() - getFirstDataLine();
     }
 
     return recordCount;
@@ -227,7 +227,7 @@ public class DataFile {
 
     if (row < getFirstDataLine()) {
       throw new DataFileException("Requested row " + row + " is in the file header");
-    } else if (row > (contents.size() - 1)) {
+    } else if (row > (getContentLineCount() - 1)) {
       throw new DataFileException("Requested row " + row + " is in the file header");
     } else {
       result = StringUtils.trimList(Arrays.asList(contents.get(row).split(fileDefinition.getSeparator())));
@@ -262,7 +262,7 @@ public class DataFile {
       // (c) The Run Type is recognised
 
       LocalDateTime lastDateTime = null;
-      for (int lineNumber = firstDataLine; lineNumber < contents.size(); lineNumber++) {
+      for (int lineNumber = firstDataLine; lineNumber < getContentLineCount(); lineNumber++) {
         String line = contents.get(lineNumber);
 
         try {
@@ -387,7 +387,7 @@ public class DataFile {
       loadContents();
 
       try {
-        endDate = getDate(contents.size() - 1);
+        endDate = getDate(getContentLineCount() - 1);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -584,10 +584,10 @@ public class DataFile {
 
     StringBuilder result = new StringBuilder();
 
-    for (int i = 0; i < contents.size(); i++) {
+    for (int i = 0; i < getContentLineCount(); i++) {
       result.append(contents.get(i));
 
-      if (i < contents.size() - 1) {
+      if (i < getContentLineCount() - 1) {
         result.append('\n');
       }
     }
