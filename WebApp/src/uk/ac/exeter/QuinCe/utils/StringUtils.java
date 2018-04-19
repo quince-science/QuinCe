@@ -627,6 +627,14 @@ public final class StringUtils {
     result.append(listToDelimited(list, ","));
     result.append(']');
     return result.toString();
+  }
 
+  public static String makeCsvString(String text) {
+    StringBuilder csv = new StringBuilder();
+    csv.append('"');
+    csv.append(text.replaceAll("\"", "\"\""));
+    csv.append('"');
+
+    return csv.toString();
   }
 }
