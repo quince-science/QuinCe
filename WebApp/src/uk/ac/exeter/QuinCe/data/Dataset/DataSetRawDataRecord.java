@@ -7,7 +7,10 @@ import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Class to hold data for a single record extracted from raw data
@@ -242,12 +245,38 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
   }
 
   /**
-   * Get a sensor value
-   * @param sensorName The sensor name
+   * Get a sensor value, or a value from a sensor in a Required Group.
+   *
+   * <p>
+   *   If the supplied name is the name of a sensor, then its value is
+   *   retrieved directly. Otherwise, if it's the name of a Required
+   *   Group, the method finds sensors in that group and returns
+   *   the first value that it finds. Sensors are searched in the
+   *   order that they appear in the sensor configuration file.
+   * </p>
+   *
+   * @param name The sensor or Required Group name
    * @return The sensor value
    */
-  public Double getSensorValue(String sensorName) {
-    return sensorValues.get(sensorName);
+  public Double getSensorValue(String name) {
+    Double result = null;
+
+    if (sensorValues.containsKey(name)) {
+      result = sensorValues.get(name);
+    } else {
+      SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
+      for (SensorType sensor : sensorConfig.getSensorTypes()) {
+        if (null != sensor.getRequiredGroup() && sensor.getRequiredGroup().equalsIgnoreCase(name)) {
+          Double value = sensorValues.get(sensor.getName());
+          if (null != value) {
+            result = value;
+            break;
+          }
+        }
+      }
+    }
+
+    return result;
   }
 
   /**
