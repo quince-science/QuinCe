@@ -44,6 +44,9 @@ public class UploadedDataFile {
   }
   public String[] getLines() {
     String fileContent = new String(uploadedFile.getContents(), StandardCharsets.UTF_8);
+    if (null == fileContent || "".equals(fileContent.trim())) {
+      return null;
+    }
     return fileContent.split("[\\r\\n]+");
   }
 

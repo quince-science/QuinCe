@@ -18,6 +18,7 @@ import org.primefaces.model.UploadedFile;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Files.FileExistsException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -91,7 +92,11 @@ public class MultipleFileUploadBean extends FileUploadBean {
   public void extractFile(UploadedDataFile file) {
     try {
       FileDefinitionBuilder guessedFileLayout = new FileDefinitionBuilder(getCurrentInstrument().getFileDefinitions());
-      guessedFileLayout.setFileContents(Arrays.asList(file.getLines()));
+      String[] lines = file.getLines();
+      if (null == lines) {
+        throw new DataFileException("File contains no data");
+      }
+      guessedFileLayout.setFileContents(Arrays.asList(lines));
       guessedFileLayout.guessFileLayout();
       FileDefinition fileDefinition = getCurrentInstrument().getFileDefinitions()
           .getMatchingFileDefinition(guessedFileLayout).iterator().next();
@@ -101,8 +106,12 @@ public class MultipleFileUploadBean extends FileUploadBean {
           getAppConfig().getProperty("filestore"),
           fileDefinition,
           file.getName(),
-          Arrays.asList(file.getLines())
+          Arrays.asList(lines)
       ));
+      if (file.getDataFile().getFirstDataLine() >= file.getDataFile()
+          .getContentLineCount()) {
+        throw new DataFileException("File contains headers but no data");
+      }
       if (file.getDataFile().getMessageCount() > 0) {
         file.putMessage(file.getName() + " could not be processed (see messages below). Please fix these problems and upload the file again.", FacesMessage.SEVERITY_ERROR);
       } else if (
