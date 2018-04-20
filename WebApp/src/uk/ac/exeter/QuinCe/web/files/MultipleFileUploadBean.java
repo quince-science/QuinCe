@@ -114,6 +114,11 @@ public class MultipleFileUploadBean extends FileUploadBean {
       }
       if (file.getDataFile().getMessageCount() > 0) {
         file.putMessage(file.getName() + " could not be processed (see messages below). Please fix these problems and upload the file again.", FacesMessage.SEVERITY_ERROR);
+      } else if (null == file.getDataFile().getStartDate()
+          || null == file.getDataFile().getEndDate()) {
+        file.putMessage(file.getName()
+            + " has date issues, see messages below. Please fix these problems and upload the file again.",
+            FacesMessage.SEVERITY_ERROR);
       } else if (
           DataFileDB.fileExistsWithDates(
               getDataSource(),
@@ -124,6 +129,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
       ) {
         // TODO This is what the front end uses to detect that the file was not processed successfully.
         //This can be improved when overlapping files are implemented instead of being rejected.
+
         fileDefinition = null;
         file.setDataFile(null);
         file.putMessage("A file already exists that covers overlaps with this file. Please upload a different file.", FacesMessage.SEVERITY_ERROR);

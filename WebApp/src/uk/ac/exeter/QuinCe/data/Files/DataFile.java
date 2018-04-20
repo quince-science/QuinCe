@@ -387,11 +387,24 @@ public class DataFile {
    * @return The date, or null if the date cannot be retrieved
    */
   public LocalDateTime getStartDate() {
+    int firstDataLine = -1;
+    String message = "";
     if (null == startDate) {
       try {
-        startDate = getDate(getFirstDataLine());
-      } catch (Exception e) {
-        e.printStackTrace();
+        loadContents();
+        firstDataLine = getFirstDataLine();
+        startDate = getDate(firstDataLine);
+      } catch (DataFileException e) {
+        message = e.getMessage();
+      } catch (IndexOutOfBoundsException arrex) {
+        message = "Date column don't exist.";
+      }
+      if (!"".equals(message)) {
+        if (firstDataLine > -1) {
+          addMessage(firstDataLine, message);
+        } else {
+          addMessage(message);
+        }
       }
     }
 
@@ -403,17 +416,27 @@ public class DataFile {
    * @return The date, or null if the date cannot be retrieved
    * @throws DataFileException If the file contents could not be loaded
    */
-  public LocalDateTime getEndDate() throws DataFileException {
+  public LocalDateTime getEndDate() {
+    int lastLine = -1;
+    String message = "";
     if (null == endDate) {
-      loadContents();
-
       try {
-        endDate = getDate(getContentLineCount() - 1);
-      } catch (Exception e) {
-        e.printStackTrace();
+        loadContents();
+        lastLine = getContentLineCount() - 1;
+        endDate = getDate(lastLine);
+      } catch (DataFileException e) {
+        message = e.getMessage();
+      } catch (IndexOutOfBoundsException arrex) {
+        message = "Date column don't exist.";
       }
     }
-
+    if (!"".equals(message)) {
+      if (lastLine > -1) {
+        addMessage(lastLine, message);
+      } else {
+        addMessage(message);
+      }
+    }
     return endDate;
   }
 
