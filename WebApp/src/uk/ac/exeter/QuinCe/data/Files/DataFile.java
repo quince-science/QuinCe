@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -621,6 +622,17 @@ public class DataFile {
    */
   protected void setContents(String contents) {
     this.contents = Arrays.asList(contents.split("\n"));
+    // Remove empty lines at the end of the list
+    ListIterator<String> li = this.contents.listIterator(getContentLineCount());
+    while (li.hasPrevious()) {
+      int index = li.previousIndex();
+      if ("".equals(li.previous().trim())) {
+        this.contents.remove(index);
+      } else {
+        // When we reach a non empty line, we stop the search
+        break;
+      }
+    }
   }
 
   /**
