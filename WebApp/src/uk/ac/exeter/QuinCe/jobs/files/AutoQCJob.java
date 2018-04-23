@@ -195,7 +195,10 @@ public class AutoQCJob extends Job {
               Message databaseMessage = databaseMessages.get(i);
               boolean databaseMessageFound = false;
               for (Message recordMessage : qcRecord.getMessages()) {
-                databaseMessageFound = recordMessage.equals(databaseMessage);
+                if (recordMessage.equals(databaseMessage)) {
+                  databaseMessageFound = true;
+                  break;
+                }
               }
 
               if (!databaseMessageFound) {
