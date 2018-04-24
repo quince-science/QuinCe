@@ -112,12 +112,15 @@ public class MultipleFileUploadBean extends FileUploadBean {
           .getContentLineCount()) {
         throw new DataFileException("File contains headers but no data");
       }
-      if (file.getDataFile().getMessageCount() > 0) {
-        file.putMessage(file.getName() + " could not be processed (see messages below). Please fix these problems and upload the file again.", FacesMessage.SEVERITY_ERROR);
-      } else if (null == file.getDataFile().getStartDate()
+
+      if (null == file.getDataFile().getStartDate()
           || null == file.getDataFile().getEndDate()) {
         file.putMessage(file.getName()
             + " has date issues, see messages below. Please fix these problems and upload the file again.",
+            FacesMessage.SEVERITY_ERROR);
+      } else if (file.getDataFile().getMessageCount() > 0) {
+        file.putMessage(file.getName()
+            + " could not be processed (see messages below). Please fix these problems and upload the file again.",
             FacesMessage.SEVERITY_ERROR);
       } else if (
           DataFileDB.fileExistsWithDates(
@@ -137,7 +140,6 @@ public class MultipleFileUploadBean extends FileUploadBean {
     } catch (NoSuchElementException nose) {
       file.setDataFile(null);
       file.putMessage("The format of " + file.getName() + " was not recognised. Please upload a different file.", FacesMessage.SEVERITY_ERROR);
-      return;
     } catch (Exception e){
       file.setDataFile(null);
       file.putMessage("The file could not be processed: " + e.getMessage(), FacesMessage.SEVERITY_ERROR);

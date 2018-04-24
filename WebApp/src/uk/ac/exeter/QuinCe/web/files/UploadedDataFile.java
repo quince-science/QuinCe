@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.files;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
@@ -89,15 +90,29 @@ public class UploadedDataFile {
    * @return the startDate
    */
   public Date getStartDate() {
-    return null == dataFile ? null : Date.from(dataFile.getStartDate().atZone(ZoneId.of("UTC")).toInstant());
+    if (null == dataFile) {
+      return null;
+    }
+    LocalDateTime date = dataFile.getStartDate();
+    if (null == date) {
+      return null;
+    }
+    return Date.from(date.atZone(ZoneId.of("UTC")).toInstant());
   }
 
   /**
    * @return the endDate
    * @throws DataFileException
    */
-  public Date getEndDate() throws DataFileException {
-    return null == dataFile ? null : Date.from(dataFile.getEndDate().atZone(ZoneId.of("UTC")).toInstant());
+  public Date getEndDate() {
+    if (null == dataFile) {
+      return null;
+    }
+    LocalDateTime date = dataFile.getEndDate();
+    if (null == date) {
+      return null;
+    }
+    return Date.from(date.atZone(ZoneId.of("UTC")).toInstant());
   }
 
   /**
