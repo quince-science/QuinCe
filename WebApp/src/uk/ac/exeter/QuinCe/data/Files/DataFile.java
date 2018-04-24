@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -69,6 +70,11 @@ public class DataFile {
    * Messages generated regarding the file
    */
   private TreeSet<DataFileMessage> messages;
+
+  /**
+   * Max number of messages. Additional messages will be discarded.
+   */
+  private static final int MAX_MESSAGE_COUNT = 25;
 
   /**
    * The date in the file header
@@ -197,7 +203,7 @@ public class DataFile {
    * Get the number of rows in the file
    * @return The row count
    */
-  public int getLineCount() {
+  public int getContentLineCount() {
     return contents.size();
   }
 
@@ -209,7 +215,7 @@ public class DataFile {
   public int getRecordCount() throws DataFileException {
     if (-1 == recordCount) {
       loadContents();
-      recordCount = contents.size() - getFirstDataLine();
+      recordCount = getContentLineCount() - getFirstDataLine();
     }
 
     return recordCount;
@@ -227,7 +233,7 @@ public class DataFile {
 
     if (row < getFirstDataLine()) {
       throw new DataFileException("Requested row " + row + " is in the file header");
-    } else if (row > (contents.size() - 1)) {
+    } else if (row > (getContentLineCount() - 1)) {
       throw new DataFileException("Requested row " + row + " is in the file header");
     } else {
       result = StringUtils.trimList(Arrays.asList(contents.get(row).split(fileDefinition.getSeparator())));
@@ -262,7 +268,7 @@ public class DataFile {
       // (c) The Run Type is recognised
 
       LocalDateTime lastDateTime = null;
-      for (int lineNumber = firstDataLine; lineNumber < contents.size(); lineNumber++) {
+      for (int lineNumber = firstDataLine; lineNumber < getContentLineCount(); lineNumber++) {
         String line = contents.get(lineNumber);
 
         try {
@@ -299,13 +305,28 @@ public class DataFile {
     }
   }
 
-  /**
-   * Shortcut method for adding a message to the message list
-   * @param lineNumber The line number
+  /*
+   * Shortcut method for adding a message to the message list. When the list
+   * size reaches MAX_MESSAGE_COUNT messages, a final message saying "Too many
+   * messages..." is added, then no more messages are allowed.
+   *
+   * @param lineNumber The line number. Line number < 0 means no line number.
+   *
    * @param message The message text
    */
   private void addMessage(int lineNumber, String message) {
-    messages.add(new DataFileMessage(lineNumber, message));
+    if (messages.size() > MAX_MESSAGE_COUNT - 1) {
+      return;
+    }
+    if (messages.size() == MAX_MESSAGE_COUNT - 1) {
+      messages.add(new DataFileMessage("Too many messages..."));
+    } else {
+      if (lineNumber < 0) {
+        messages.add(new DataFileMessage(message));
+      } else {
+        messages.add(new DataFileMessage(lineNumber, message));
+      }
+    }
   }
 
   /**
@@ -313,7 +334,7 @@ public class DataFile {
    * @param message The message text
    */
   private void addMessage(String message) {
-    messages.add(new DataFileMessage(message));
+    addMessage(-2, message);
   }
 
   /**
@@ -366,11 +387,24 @@ public class DataFile {
    * @return The date, or null if the date cannot be retrieved
    */
   public LocalDateTime getStartDate() {
+    int firstDataLine = -1;
+    String message = "";
     if (null == startDate) {
       try {
-        startDate = getDate(getFirstDataLine());
-      } catch (Exception e) {
-        e.printStackTrace();
+        loadContents();
+        firstDataLine = getFirstDataLine();
+        startDate = getDate(firstDataLine);
+      } catch (DataFileException e) {
+        message = e.getMessage();
+      } catch (IndexOutOfBoundsException arrex) {
+        message = "Date column don't exist.";
+      }
+      if (!"".equals(message)) {
+        if (firstDataLine > -1) {
+          addMessage(firstDataLine, message);
+        } else {
+          addMessage(message);
+        }
       }
     }
 
@@ -382,17 +416,27 @@ public class DataFile {
    * @return The date, or null if the date cannot be retrieved
    * @throws DataFileException If the file contents could not be loaded
    */
-  public LocalDateTime getEndDate() throws DataFileException {
+  public LocalDateTime getEndDate() {
+    int lastLine = -1;
+    String message = "";
     if (null == endDate) {
-      loadContents();
-
       try {
-        endDate = getDate(contents.size() - 1);
-      } catch (Exception e) {
-        e.printStackTrace();
+        loadContents();
+        lastLine = getContentLineCount() - 1;
+        endDate = getDate(lastLine);
+      } catch (DataFileException e) {
+        message = e.getMessage();
+      } catch (IndexOutOfBoundsException arrex) {
+        message = "Date column don't exist.";
       }
     }
-
+    if (!"".equals(message)) {
+      if (lastLine > -1) {
+        addMessage(lastLine, message);
+      } else {
+        addMessage(message);
+      }
+    }
     return endDate;
   }
 
@@ -584,10 +628,10 @@ public class DataFile {
 
     StringBuilder result = new StringBuilder();
 
-    for (int i = 0; i < contents.size(); i++) {
+    for (int i = 0; i < getContentLineCount(); i++) {
       result.append(contents.get(i));
 
-      if (i < contents.size() - 1) {
+      if (i < getContentLineCount() - 1) {
         result.append('\n');
       }
     }
@@ -601,6 +645,17 @@ public class DataFile {
    */
   protected void setContents(String contents) {
     this.contents = Arrays.asList(contents.split("\n"));
+    // Remove empty lines at the end of the list
+    ListIterator<String> li = this.contents.listIterator(getContentLineCount());
+    while (li.hasPrevious()) {
+      int index = li.previousIndex();
+      if ("".equals(li.previous().trim())) {
+        this.contents.remove(index);
+      } else {
+        // When we reach a non empty line, we stop the search
+        break;
+      }
+    }
   }
 
   /**

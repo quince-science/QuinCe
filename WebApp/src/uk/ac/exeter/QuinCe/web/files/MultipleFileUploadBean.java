@@ -18,6 +18,7 @@ import org.primefaces.model.UploadedFile;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Files.FileExistsException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -91,7 +92,11 @@ public class MultipleFileUploadBean extends FileUploadBean {
   public void extractFile(UploadedDataFile file) {
     try {
       FileDefinitionBuilder guessedFileLayout = new FileDefinitionBuilder(getCurrentInstrument().getFileDefinitions());
-      guessedFileLayout.setFileContents(Arrays.asList(file.getLines()));
+      String[] lines = file.getLines();
+      if (null == lines) {
+        throw new DataFileException("File contains no data");
+      }
+      guessedFileLayout.setFileContents(Arrays.asList(lines));
       guessedFileLayout.guessFileLayout();
       FileDefinition fileDefinition = getCurrentInstrument().getFileDefinitions()
           .getMatchingFileDefinition(guessedFileLayout).iterator().next();
@@ -101,10 +106,22 @@ public class MultipleFileUploadBean extends FileUploadBean {
           getAppConfig().getProperty("filestore"),
           fileDefinition,
           file.getName(),
-          Arrays.asList(file.getLines())
+          Arrays.asList(lines)
       ));
-      if (file.getDataFile().getMessageCount() > 0) {
-        file.putMessage(file.getName() + " could not be processed (see messages below). Please fix these problems and upload the file again.", FacesMessage.SEVERITY_ERROR);
+      if (file.getDataFile().getFirstDataLine() >= file.getDataFile()
+          .getContentLineCount()) {
+        throw new DataFileException("File contains headers but no data");
+      }
+
+      if (null == file.getDataFile().getStartDate()
+          || null == file.getDataFile().getEndDate()) {
+        file.putMessage(file.getName()
+            + " has date issues, see messages below. Please fix these problems and upload the file again.",
+            FacesMessage.SEVERITY_ERROR);
+      } else if (file.getDataFile().getMessageCount() > 0) {
+        file.putMessage(file.getName()
+            + " could not be processed (see messages below). Please fix these problems and upload the file again.",
+            FacesMessage.SEVERITY_ERROR);
       } else if (
           DataFileDB.fileExistsWithDates(
               getDataSource(),
@@ -115,6 +132,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
       ) {
         // TODO This is what the front end uses to detect that the file was not processed successfully.
         //This can be improved when overlapping files are implemented instead of being rejected.
+
         fileDefinition = null;
         file.setDataFile(null);
         file.putMessage("A file already exists that covers overlaps with this file. Please upload a different file.", FacesMessage.SEVERITY_ERROR);
@@ -122,7 +140,6 @@ public class MultipleFileUploadBean extends FileUploadBean {
     } catch (NoSuchElementException nose) {
       file.setDataFile(null);
       file.putMessage("The format of " + file.getName() + " was not recognised. Please upload a different file.", FacesMessage.SEVERITY_ERROR);
-      return;
     } catch (Exception e){
       file.setDataFile(null);
       file.putMessage("The file could not be processed: " + e.getMessage(), FacesMessage.SEVERITY_ERROR);
