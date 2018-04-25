@@ -37,9 +37,9 @@ public class DataSetDB {
       + "FROM dataset d "
       + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
       + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id AND c.user_flag = " + Flag.VALUE_NEEDED + " "
-      + "WHERE instrument_id = ? "
+      + "WHERE d.instrument_id = ? "
       + "GROUP BY d.id "
-      + "ORDER BY start ASC";
+      + "ORDER BY d.start ASC";
 
   /**
    * Statement to add a new data set into the database
