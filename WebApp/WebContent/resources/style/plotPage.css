@@ -35,6 +35,15 @@
   overflow: hidden !important;
 }
 
+.plotLabels {
+  position: absolute;
+  bottom: 36px;
+  right: 0px;
+  padding: 2px;
+  background: #DDD;
+  margin: 0px;
+}
+
 #tableContent {
   overflow: hidden;
 }
