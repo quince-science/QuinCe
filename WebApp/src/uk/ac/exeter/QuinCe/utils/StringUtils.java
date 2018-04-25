@@ -632,7 +632,7 @@ public final class StringUtils {
   public static String makeCsvString(String text) {
     StringBuilder csv = new StringBuilder();
     csv.append('"');
-    csv.append(text.replaceAll("\"", "\"\""));
+    csv.append(text.replace("\"", "\"\"").replaceAll("[\\r\\n]+", "\\\\n"));
     csv.append('"');
 
     return csv.toString();
