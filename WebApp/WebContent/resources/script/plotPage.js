@@ -539,6 +539,7 @@ function drawPlot(index) {
   graph_options.interactionModel = interactionModel;
   graph_options.width = $('#plot' + index + 'Panel').width();
   graph_options.height = $('#plot' + index + 'Panel').height() - 40;
+  graph_options.labelsDiv = 'plot' + index + 'Label';
 
   // Preserve zoom settings where possible
   if (null != existingXZoom && existingXLabel == xLabel) {
