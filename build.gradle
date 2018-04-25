@@ -172,3 +172,43 @@ spotless {
     endWithNewline()
   }
 }
+
+// Delete a data set from the database
+task delete_dataset(type: Exec) {
+  java.util.regex.Pattern dbNamePattern = ~/([^\/?]*)\?/
+  java.util.regex.Matcher matcher = dbNamePattern.matcher(webContext.Resource.@url.toString())
+  if (!matcher.find()) {
+    throw new Exception("Cannot extract database name from URL")
+  }
+  
+  String dbName = webContext.Resource.@url.toString().substring(matcher.start(1), matcher.end(1))
+  String user = webContext.Resource.@username
+  String password = webContext.Resource.@password
+
+  String datasetId = ""
+  if (project.hasProperty("datasetId")) {
+    datasetId = project.getProperty("datasetId")
+  }
+
+  commandLine("./scripts/database_maintenance/delete_dataset.sh", dbName, user, password, datasetId)
+}
+
+// Delete a data set from the database
+task delete_instrument(type: Exec) {
+  java.util.regex.Pattern dbNamePattern = ~/([^\/?]*)\?/
+  java.util.regex.Matcher matcher = dbNamePattern.matcher(webContext.Resource.@url.toString())
+  if (!matcher.find()) {
+    throw new Exception("Cannot extract database name from URL")
+  }
+  
+  String dbName = webContext.Resource.@url.toString().substring(matcher.start(1), matcher.end(1))
+  String user = webContext.Resource.@username
+  String password = webContext.Resource.@password
+
+  String instrumentId = ""
+  if (project.hasProperty("instrumentId")) {
+    instrumentId = project.getProperty("instrumentId")
+  }
+
+  commandLine("./scripts/database_maintenance/delete_instrument.sh", dbName, user, password, instrumentId)
+}
