@@ -45,7 +45,7 @@ public class UploadedDataFile {
   }
   public String[] getLines() {
     String fileContent = new String(uploadedFile.getContents(), StandardCharsets.UTF_8);
-    if (null == fileContent || "".equals(fileContent.trim())) {
+    if (null == fileContent || fileContent.trim().length() == 0) {
       return null;
     }
     return fileContent.split("[\\r\\n]+");
@@ -90,14 +90,14 @@ public class UploadedDataFile {
    * @return the startDate
    */
   public Date getStartDate() {
-    if (null == dataFile) {
-      return null;
+    Date date = null;
+    if (null != dataFile) {
+      LocalDateTime localDate = dataFile.getStartDate();
+      if (null != localDate) {
+        date = Date.from(localDate.atZone(ZoneId.of("UTC")).toInstant());
+      }
     }
-    LocalDateTime date = dataFile.getStartDate();
-    if (null == date) {
-      return null;
-    }
-    return Date.from(date.atZone(ZoneId.of("UTC")).toInstant());
+    return date;
   }
 
   /**
@@ -105,14 +105,14 @@ public class UploadedDataFile {
    * @throws DataFileException
    */
   public Date getEndDate() {
-    if (null == dataFile) {
-      return null;
+    Date date = null;
+    if (null != dataFile) {
+      LocalDateTime localDate = dataFile.getEndDate();
+      if (null != localDate) {
+        date = Date.from(localDate.atZone(ZoneId.of("UTC")).toInstant());
+      }
     }
-    LocalDateTime date = dataFile.getEndDate();
-    if (null == date) {
-      return null;
-    }
-    return Date.from(date.atZone(ZoneId.of("UTC")).toInstant());
+    return date;
   }
 
   /**
