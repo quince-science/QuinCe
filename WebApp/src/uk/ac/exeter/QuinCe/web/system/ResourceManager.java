@@ -71,136 +71,136 @@ public class ResourceManager implements ServletContextListener {
   private static ResourceManager instance = null;
 
   @Override
-    public void contextInitialized(ServletContextEvent event) {
-        ServletContext servletContext = event.getServletContext();
-        String databaseName = servletContext.getInitParameter("database.name");
-        try {
-            dbDataSource = (DataSource) createInitialContext().lookup(databaseName);
-        } catch (NamingException e) {
-            throw new RuntimeException("Config failed: datasource not found", e);
-        }
+  public void contextInitialized(ServletContextEvent event) {
+    ServletContext servletContext = event.getServletContext();
+    String databaseName = servletContext.getInitParameter("database.name");
+    try {
+      dbDataSource = (DataSource) createInitialContext().lookup(databaseName);
+    } catch (NamingException e) {
+      throw new RuntimeException("Config failed: datasource not found", e);
+    }
 
-        try {
-            String filePath = servletContext.getInitParameter("configuration.path");
-            configuration = loadConfiguration(filePath);
-        } catch (IOException e) {
-            throw new RuntimeException("Config failed: could not read config file", e);
-        }
+    try {
+      String filePath = servletContext.getInitParameter("configuration.path");
+      configuration = loadConfiguration(filePath);
+    } catch (IOException e) {
+      throw new RuntimeException("Config failed: could not read config file", e);
+    }
 
 
-        // Initialise the job thread pool
-        try {
+    // Initialise the job thread pool
+    try {
       JobThreadPool.initialise(3);
     } catch (InvalidThreadCountException e) {
       // Do nothing for now
     }
 
-        // Initialise the column config
-        try {
-          ColumnConfig.init(configuration.getProperty("columns.configfile"));
-          columnConfig = ColumnConfig.getInstance();
-        } catch (ConfigException e) {
-          throw new RuntimeException("Could not initialise data column configuration", e);
-        }
+    // Initialise the column config
+    try {
+      ColumnConfig.init(configuration.getProperty("columns.configfile"));
+      columnConfig = ColumnConfig.getInstance();
+    } catch (ConfigException e) {
+      throw new RuntimeException("Could not initialise data column configuration", e);
+    }
 
-        // Initialise the Extraction Check Routines configuration
-        try {
-          RoutinesConfig.init(INITIAL_CHECK_ROUTINES_CONFIG, configuration.getProperty("extract_routines.configfile"));
-        } catch (ConfigException e) {
-          throw new RuntimeException("Could not initialise Extraction Check Routines", e);
-        }
+    // Initialise the Extraction Check Routines configuration
+    try {
+      RoutinesConfig.init(INITIAL_CHECK_ROUTINES_CONFIG, configuration.getProperty("extract_routines.configfile"));
+    } catch (ConfigException e) {
+      throw new RuntimeException("Could not initialise Extraction Check Routines", e);
+    }
 
-        // Initialise the QC Routines configuration
-        try {
-          RoutinesConfig.init(QC_ROUTINES_CONFIG, configuration.getProperty("qc_routines.configfile"));
-        } catch (ConfigException e) {
-          throw new RuntimeException("Could not initialise QC Routines", e);
-        }
+    // Initialise the QC Routines configuration
+    try {
+      RoutinesConfig.init(QC_ROUTINES_CONFIG, configuration.getProperty("qc_routines.configfile"));
+    } catch (ConfigException e) {
+      throw new RuntimeException("Could not initialise QC Routines", e);
+    }
 
-        // Initialise the sensors configuration
-        try {
-          sensorsConfiguration = new SensorsConfiguration(new File(configuration.getProperty("sensors.configfile")));
-        } catch (SensorConfigurationException e) {
-          throw new RuntimeException("Could not load sensors configuration", e);
-        }
+    // Initialise the sensors configuration
+    try {
+      sensorsConfiguration = new SensorsConfiguration(new File(configuration.getProperty("sensors.configfile")));
+    } catch (SensorConfigurationException e) {
+      throw new RuntimeException("Could not load sensors configuration", e);
+    }
 
-        // Initialise run type category configuration
-        try {
-          runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(new File(configuration.getProperty("runtypes.configfile")));
-        } catch (RunTypeCategoryException e) {
-          throw new RuntimeException("Could not load sensors configuration", e);
-        }
+    // Initialise run type category configuration
+    try {
+      runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(new File(configuration.getProperty("runtypes.configfile")));
+    } catch (RunTypeCategoryException e) {
+      throw new RuntimeException("Could not load sensors configuration", e);
+    }
 
-        // Initialise the file export options configuration
-        try {
-          ExportConfig.init(this, configuration.getProperty("export.configfile"));
-        } catch (ExportException e) {
-          throw new RuntimeException("Could not initialise export configuration", e);
-        }
+    // Initialise the file export options configuration
+    try {
+      ExportConfig.init(this, configuration.getProperty("export.configfile"));
+    } catch (ExportException e) {
+      throw new RuntimeException("Could not initialise export configuration", e);
+    }
 
-        instance = this;
+    instance = this;
   }
 
   protected InitialContext createInitialContext() throws NamingException {
     return new InitialContext();
   }
 
-    @Override
-    public void contextDestroyed(ServletContextEvent event) {
-        // NOOP.
-    }
+  @Override
+  public void contextDestroyed(ServletContextEvent event) {
+    // NOOP.
+  }
 
-    /**
-     * Retrieve the application's data source
-     * @return The data source
-     */
-    public DataSource getDBDataSource() {
-        return dbDataSource;
-    }
+  /**
+   * Retrieve the application's data source
+   * @return The data source
+   */
+  public DataSource getDBDataSource() {
+    return dbDataSource;
+  }
 
-    /**
-     * Retrieve the application configuration
-     * @return The application configuration
-     */
-    public Properties getConfig() {
-        return configuration;
-    }
+  /**
+   * Retrieve the application configuration
+   * @return The application configuration
+   */
+  public Properties getConfig() {
+    return configuration;
+  }
 
-    /**
-     * Retrieve the column configuration for the QC routines
-     * @return The column configuration
-     */
-    public ColumnConfig getColumnConfig() {
-      return columnConfig;
-    }
+  /**
+   * Retrieve the column configuration for the QC routines
+   * @return The column configuration
+   */
+  public ColumnConfig getColumnConfig() {
+    return columnConfig;
+  }
 
 
-    public SensorsConfiguration getSensorsConfiguration() {
-      return sensorsConfiguration;
-    }
+  public SensorsConfiguration getSensorsConfiguration() {
+    return sensorsConfiguration;
+  }
 
-    public RunTypeCategoryConfiguration getRunTypeCategoryConfiguration() {
-      return runTypeCategoryConfiguration;
-    }
+  public RunTypeCategoryConfiguration getRunTypeCategoryConfiguration() {
+    return runTypeCategoryConfiguration;
+  }
 
-    /**
-     * Load the application configuration
-     * @param filePath The path to the configuration file
-     * @return The configuration Properties object
-     * @throws FileNotFoundException If the file does not exist
-     * @throws IOException If the file cannot be read
-     */
-    protected Properties loadConfiguration(String filePath) throws FileNotFoundException, IOException {
-        Properties result = new Properties();
-        result.load(new FileInputStream(new File(filePath)));
-        return result;
-    }
+  /**
+   * Load the application configuration
+   * @param filePath The path to the configuration file
+   * @return The configuration Properties object
+   * @throws FileNotFoundException If the file does not exist
+   * @throws IOException If the file cannot be read
+   */
+  protected Properties loadConfiguration(String filePath) throws FileNotFoundException, IOException {
+    Properties result = new Properties();
+    result.load(new FileInputStream(new File(filePath)));
+    return result;
+  }
 
-    /**
-     * Retrieve the singleton instance of the Resource Manager
-     * @return The resource manager
-     */
-    public static ResourceManager getInstance() {
-        return instance;
-    }
+  /**
+   * Retrieve the singleton instance of the Resource Manager
+   * @return The resource manager
+   */
+  public static ResourceManager getInstance() {
+    return instance;
+  }
 }
