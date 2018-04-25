@@ -77,6 +77,11 @@ public class DataFile {
   private static final int MAX_MESSAGE_COUNT = 25;
 
   /**
+   * Row in the file where the error happened not set
+   */
+  private static final int ROW_NOT_SET = -1;
+
+  /**
    * The date in the file header
    */
   private LocalDateTime headerDate = null;
@@ -315,12 +320,9 @@ public class DataFile {
    * @param message The message text
    */
   private void addMessage(int lineNumber, String message) {
-    if (messages.size() > MAX_MESSAGE_COUNT - 1) {
-      return;
-    }
     if (messages.size() == MAX_MESSAGE_COUNT - 1) {
       messages.add(new DataFileMessage("Too many messages..."));
-    } else {
+    } else if (messages.size() < MAX_MESSAGE_COUNT - 1) {
       if (lineNumber < 0) {
         messages.add(new DataFileMessage(message));
       } else {
@@ -334,7 +336,7 @@ public class DataFile {
    * @param message The message text
    */
   private void addMessage(String message) {
-    addMessage(-2, message);
+    addMessage(ROW_NOT_SET, message);
   }
 
   /**
@@ -397,7 +399,7 @@ public class DataFile {
       } catch (DataFileException e) {
         message = e.getMessage();
       } catch (IndexOutOfBoundsException arrex) {
-        message = "Date column don't exist.";
+        message = "Date column doesn't exist.";
       }
       if (!"".equals(message)) {
         if (firstDataLine > -1) {
@@ -418,7 +420,7 @@ public class DataFile {
    */
   public LocalDateTime getEndDate() {
     int lastLine = -1;
-    String message = "";
+    String message = null;
     if (null == endDate) {
       try {
         loadContents();
@@ -430,7 +432,7 @@ public class DataFile {
         message = "Date column don't exist.";
       }
     }
-    if (!"".equals(message)) {
+    if (null != message) {
       if (lastLine > -1) {
         addMessage(lastLine, message);
       } else {
@@ -649,7 +651,7 @@ public class DataFile {
     ListIterator<String> li = this.contents.listIterator(getContentLineCount());
     while (li.hasPrevious()) {
       int index = li.previousIndex();
-      if ("".equals(li.previous().trim())) {
+      if (li.previous().trim().length() == 0) {
         this.contents.remove(index);
       } else {
         // When we reach a non empty line, we stop the search
