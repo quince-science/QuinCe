@@ -29,6 +29,7 @@ var BASE_GRAPH_OPTIONS = {
     animatedZooms: true,
     pointSize: PLOT_POINT_SIZE,
     highlightCircleSize: PLOT_HIGHLIGHT_SIZE,
+    selectMode: 'euclidian',
     axes: {
       x: {
         drawGrid: false
