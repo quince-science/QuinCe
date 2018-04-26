@@ -24,7 +24,7 @@ function makeUTCDateTime(date) {
 //in the UTC timezone
 function makeUTCyyyymmdd(date) {
   var string = date.getUTCFullYear();
-  string += new String(date.getUTCMonth()).padStart(2, '0');
+  string += new String(date.getUTCMonth() + 1).padStart(2, '0');
   string += new String(date.getUTCDate()).padStart(2, '0');
   
   return string;
