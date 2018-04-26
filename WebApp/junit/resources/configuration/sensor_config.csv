@@ -5,8 +5,8 @@
 Intake Temperature,Y,Y,,,,Y,Y,Y,N,Y,N
 Salinity,Y,Y,,,,Y,Y,Y,N,Y,N
 Equilibrator Temperature,Y,Y,,,,Y,Y,Y,N,Y,N
-Equilibrator Pressure (absolute),Y,Y,EqP,,,Y,Y,Y,N,Y,N
-Equilibrator Pressure (differential),Y,Y,EqP,Atmospheric Pressure,,Y,Y,Y,N,Y,N
+Equilibrator Pressure (absolute),Y,Y,Equilibrator Pressure,,,Y,Y,Y,N,Y,N
+Equilibrator Pressure (differential),Y,Y,Equilibrator Pressure,Atmospheric Pressure,,Y,Y,Y,N,Y,N
 Atmospheric Pressure,N,Y,,,,Y,Y,Y,N,Y,N
 xH2O,N,Y,,,,Y,Y,Y,N,Y,N
 CO2,Y,Y,,xH2O,Do values from the CO₂ require moisture adjustment?,Y,Y,N,Y,Y,Y
