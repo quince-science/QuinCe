@@ -1,0 +1,16 @@
+[
+  {
+  	"exportName": "SOCAT",
+  	"separator": "tab",
+  	"flags": [2, 3, 4],
+  	"sensors": ["Intake Temperature", "Salinity", "Equilibrator Temperature", "Equilibrator Pressure", "xH2O", "CO2"],
+  	"equilibrator_pco2": ["Delta T", "fCO2"]
+  },
+  {
+  	"exportName": "ICOS OTC",
+  	"separator": "comma",
+  	"flags": [2],
+  	"sensors": ["Intake Temperature", "Salinity", "Equilibrator Temperature", "Equilibrator Pressure", "xH2O", "CO2"],
+  	"equilibrator_pco2": ["Delta T", "pH2O", "fCO2"]
+  }
+]
