@@ -629,10 +629,27 @@ public final class StringUtils {
     return result.toString();
   }
 
+  /**
+   * Make a valid CSV String from the given text.
+   *
+   * This always performs three steps:
+   * <ul>
+   *   <li>Surround the value in quotes</li>
+   *   <li>Any " are replaced with "", per the CSV spec</li>
+   *   <li>Newlines are replaced with semi-colons</li>
+   * </ul>
+   *
+   * While these are not strictly necessary for all values,
+   * they are appropriate for this application and the
+   * target audiences of exported CSV files.
+   *
+   * @param text The value
+   * @return The CSV value
+   */
   public static String makeCsvString(String text) {
     StringBuilder csv = new StringBuilder();
     csv.append('"');
-    csv.append(text.replace("\"", "\"\"").replaceAll("[\\r\\n]+", "\\\\n"));
+    csv.append(text.replace("\"", "\"\"").replaceAll("[\\r\\n]+", "; "));
     csv.append('"');
 
     return csv.toString();
