@@ -7,7 +7,7 @@
 function makeUTCDateTime(date) {
   var string = date.getUTCFullYear();
   string += '-';
-  string += new String(date.getUTCMonth()).padStart(2, '0');
+  string += new String(date.getUTCMonth() + 1).padStart(2, '0');
   string += '-';
   string += new String(date.getUTCDate()).padStart(2, '0');
   string += ' ';
