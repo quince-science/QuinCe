@@ -13,7 +13,8 @@
 #
 # Usage:
 # scripts/db_restore_from_prod.sh [-v] [username]
-# v - Verbose output
+# -v - Verbose output
+# -u - run upgrade.sh after restoring
 # username - username used to log in to the poseidon server
 #
 ############################################################
@@ -28,10 +29,13 @@ password=$(./scripts/get_setup_property.sh db_password)
 database=$(./scripts/get_setup_property.sh db_database)
 
 verbose=0
+upgrade=0
 
-while getopts "v" opt; do
+while getopts "vu" opt; do
   case "$opt" in
   v)  verbose=1
+    ;;
+  u)  upgrade=1
     ;;
   esac
 done
@@ -105,4 +109,16 @@ then
   fi
   # copy the filestore
   rsync $options $file $filestore
+fi
+
+if [ $upgrade -eq 1 ]
+then
+  ./scripts/upgrade.sh
+else
+  echo ""
+  echo "######################################################################"
+  echo "# NB! Run upgrade.sh if there are database schema changes.           #"
+  echo "# Running scripts/db_restore_from_prod.sh -u always runs upgrade.sh. #"
+  echo "######################################################################"
+  echo ""
 fi
