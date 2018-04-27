@@ -14,8 +14,28 @@
 %db_port%=3306
 %db_host%=localhost
 %app.urlstub%=http://localhost:8080/QuinCe
-%git_test_branch%=master
 %slack_app_url%=https://hooks.slack.com/services/XXXXXXX/XXXXXXXXX/XXXXXXXXXXXXXXXXXXX
+
+###########################
+# Test server properties  #
+###########################
+
+# Which branch is checked out running full_restore_from_prod.sh
+%git_test_branch%=master
+
+# Which remote is used for full_restore_from_prod.sh
+%git_test_remote%=origin
+
+
+###########################
+# Prod server properties  #
+###########################
+
+# Folder backups are stored from the production server on deployment
 %prod_backup_folder%=tagged_backups
+
+# Folder where the output WAR file is copied after compilation setup
 %prod_deploy_folder%=/home/tomcat/quince/webapps
+
+# Branch used for deployment to production server
 %git_deploy_branch%=master

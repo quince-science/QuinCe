@@ -22,16 +22,17 @@ scripts/db_restore_from_prod.sh $ssh_user || \
   exit 1; # Failed to restore database from production database.
 
 branch=$(scripts/get_setup_property.sh git_test_branch)
+remote=$(scripts/get_setup_property.sh git_test_remote)
 
 # reset setup
 scripts/setup_reverse_strings.sh
 scripts/setup_show_changes.sh
 
 # Checkout latest updates
-git fetch
-git checkout $branch
-git reset --hard
+git fetch $remote
+git checkout $remote/$branch
 git submodule update --init
+git clean -qdf --exclude 'quince.*'
 
 # setup
 scripts/setup_replace_strings.sh
