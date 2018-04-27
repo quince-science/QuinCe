@@ -1,11 +1,17 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
   xmlns:h="http://xmlns.jcp.org/jsf/html"
   xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-  template="/WEB-INF/templates/basic_page.xhtml">
+  xmlns:c="http://java.sun.com/jsp/jstl/core"
+  template="/WEB-INF/templates/menu_page.xhtml">
 
+  <ui:define name="title">Credits</ui:define>
+  <ui:define name="localHead">
+    <c:set var="mainMenuActiveIndex" value="-1" scope="request"/>
+  </ui:define>
   <ui:define name="content">
-    <div id="contentbox" style="max-width: 600px">
-      <h1>Credits</h1>
+    <div class="pageTitle">Credits</div>
+    <div style="float: left; width: 50%">
+      <div class="sectionTitle">Software</div>
       <table>
         <tr>
           <td>
@@ -25,9 +31,6 @@
           <td>
             Action icons by <a href="https://thenounproject.com/Icons8/">Icons8</a> via <a href="https://thenounproject.com">The Noun Project</a>
           </td>
-          <td>
-            Other icons by <a href="https://useiconic.com/">Iconic</a>
-          </td>
         </tr>
         <tr>
           <td>
@@ -44,6 +47,9 @@
           </td>
         </tr>
       </table>
+    </div>
+    <div style="float: right; width: 50%">
+      <div class="sectionTitle">Support</div>
     </div>
   </ui:define>
 </ui:composition>

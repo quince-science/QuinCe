@@ -243,36 +243,6 @@ ul input {
   text-align: center;
 }
 
-canvas.statBar {
-  height: 16px;
-  width: 100%;
-  cursor: pointer;
-}
-
-#userSettingsMenu {
-  position: absolute;
-  top: 29px;
-  right: 0px;
-  padding: 0px;
-  width: 120px;
-  height: 94px;
-  border-style: solid;
-  border-color: #8CD5ED;
-  background: #DDE9ED;
-  z-index: 10;
-  overflow: hidden;
-  box-shadow: none;
-  border-width: 0px;
-  height: 0px;
-  transition: height 0.075s linear, box-shadow 0.075s linear, border-width 0.075s linear;
-}
-
-#userSettingsMenu.visible {
-  border-width: 2px;
-  box-shadow: -4px 6px 8px #000000;
-  height: 115px;
-}
-
 ul.menu {
   list-style-type: none;
   padding: 0px;
@@ -730,12 +700,18 @@ form.inline {
   display: inline;
 }
 
-#applicationMenu > ul > li:last-child {
+#applicationMenu > ul > li:nth-last-child(-n + 2) {
   float: right;
   border: none;
   background: none;
 }
 
-#applicationMenu > ul > li:last-child a {
+#applicationMenu > ul > li:nth-last-child(-n + 2) a {
   text-decoration: underline;
+}
+
+.creditsMenu {
+  font-size: 0.75em;
+  position: relative;
+  top: 6px;
 }
