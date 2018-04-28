@@ -41,6 +41,11 @@ while getopts "vh" opt; do
   esac
 done
 
+mysql -u$db_user -p"$db_password" $db_name << EOF
+  SELECT id, name FROM instrument;
+EOF
+echo ""
+
 instrument_id=${@:$OPTIND:1}
 
 # Print help and exit
