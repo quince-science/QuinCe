@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -197,7 +196,6 @@ public class EquilibratorPco2DB extends CalculationDB {
     variables.addVariable("Delta T", new Variable(Variable.TYPE_CALCULATION, "ΔT", "delta_temperature"));
     variables.addVariable("xH2O", new Variable(Variable.TYPE_CALCULATION, "True xH2O", "true_moisture"));
     variables.addVariable("pH2O", new Variable(Variable.TYPE_CALCULATION, "pH2O", "ph2o"));
-
     variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "Dried CO2", "dried_co2"));
     variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "Calibrated CO2", "calibrated_co2"));
     variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "pCO2 TE Wet", "pco2_te_wet"));
