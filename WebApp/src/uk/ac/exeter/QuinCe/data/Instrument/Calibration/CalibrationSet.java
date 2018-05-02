@@ -264,4 +264,13 @@ public class CalibrationSet extends TreeSet<Calibration> {
     }
     return valid;
   }
+
+  /**
+   * Get the names of the targets that can be stored in this
+   * calibration set
+   * @return
+   */
+  public Collection<String> getTargets() {
+    return targets;
+  }
 }
