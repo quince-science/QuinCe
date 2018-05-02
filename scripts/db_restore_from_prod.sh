@@ -81,7 +81,7 @@ fi
 # Restore database
 echo "drop database $database"|mysql -u$username -p$password
 echo "create database $database character set utf8" |mysql -u$username -p$password
-zcat < $file | \
+zcat < $file | sed 's/\/\*\!\([0-9]\+\) DEFINER=/\/* \1 DEFINER=/g' | \
   mysql -u$username -p$password $database --default-character-set utf8
 
 # Delete tempfile, don't display errors
