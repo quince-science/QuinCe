@@ -72,11 +72,11 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
     if (null == xH2O) {
       co2Dried = co2Measured;
     } else {
-      truexH2O = applyExternalStandards1d(date, "xH2O", xH2O);
+      truexH2O = applyExternalStandards(date, "xH2O", xH2O);
       co2Dried = calcDriedCo2(co2Measured, truexH2O);
     }
 
-    double co2Calibrated = applyExternalStandards2d(date, "CO2", co2Dried);
+    double co2Calibrated = applyExternalStandards(date, "CO2", co2Dried);
 
     double pH2O = calcPH2O(salinity, equilibratorTemperature);
     double pCo2TEWet = calcPco2TEWet(co2Calibrated, equilibratorPressure, pH2O);
