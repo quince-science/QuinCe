@@ -19,6 +19,11 @@
 #
 ############################################################
 
+# Environment variables required to make sed work with binary
+# values on a Mac
+export LC_CTYPE=C
+export LANG=C
+
 # Get db username, password etc
 username=$(./scripts/get_setup_property.sh db_username)
 if [ -z $username ]
