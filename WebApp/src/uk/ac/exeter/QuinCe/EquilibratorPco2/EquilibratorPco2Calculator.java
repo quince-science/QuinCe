@@ -72,6 +72,12 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
     if (null == xH2O) {
       co2Dried = co2Measured;
     } else {
+      /*
+       * This uses the same multiple standards as the CO2 adjustment.
+       * While it's not strictly necessary, since all standards will have
+       * zero xH2O, using the regression technique across all standards
+       * helps to smooth out any variability within the sensor.
+       */
       truexH2O = applyExternalStandards(date, "xH2O", xH2O);
       co2Dried = calcDriedCo2(co2Measured, truexH2O);
     }
