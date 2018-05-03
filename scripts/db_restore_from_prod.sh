@@ -19,11 +19,6 @@
 #
 ############################################################
 
-# Environment variables required to make sed work with binary
-# values on a Mac
-export LC_CTYPE=C
-export LANG=C
-
 # Get db username, password etc
 username=$(./scripts/get_setup_property.sh db_username)
 if [ -z $username ]
@@ -86,8 +81,21 @@ fi
 # Restore database
 echo "drop database $database"|mysql -u$username -p$password
 echo "create database $database character set utf8" |mysql -u$username -p$password
+
+# Environment variables required to make sed work with binary
+# values on a Mac
+old_ctype="$LC_TYPE"
+old_lang="$LANG"
+
+LC_CTYPE=C
+LANG=C
+
 zcat < $file | sed 's/\/\*\!\([0-9]\+\) DEFINER=/\/* \1 DEFINER=/g' | \
   mysql -u$username -p$password $database --default-character-set utf8
+
+LC_CTYPE="$old_ctype"
+LANG="$old_lang"
+
 
 # Delete tempfile, don't display errors
 rm $tmpfile 2>/dev/null
