@@ -1,6 +1,7 @@
 # Add a diagnostic column to the file_column table
 ALTER TABLE `file_column` ADD `diagnostic` BOOLEAN NOT NULL DEFAULT FALSE;
 
+# Table for diagnostic data - one record per sensor per measurement
 CREATE TABLE `diagnostic`.`diagnostic_data` (
   `file_definition_id` INT NOT NULL,
   `file_column` SMALLINT(3) NOT NULL,
@@ -18,3 +19,7 @@ CREATE TABLE `diagnostic`.`diagnostic_data` (
     REFERENCES `diagnostic`.`dataset_data` (`id`)
     ON DELETE RESTRICT
     ON UPDATE RESTRICT);
+
+# Remove the NOT NULL constraint on the value_column field - diagnostic
+# values don't need one
+ALTER TABLE `file_column` CHANGE `value_column` `value_column` SMALLINT(3) NULL;

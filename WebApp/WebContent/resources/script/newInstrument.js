@@ -673,29 +673,35 @@ function buildMainAssignmentMenu(file, column) {
       var entry = sensorAssignments[i];
       var menuDisabled = false;
 
-      // Core sensors can only have one column assigned in each file.
-      // Check the assignments individually to see if the assigned file is this one
-      if (entry['core']) {
-        for (var j = 0; j < entry['assignments'].length && !menuDisabled; j++) {
-          var fileIndex = getFileIndex(entry['assignments'][j]['file']);
-          if (fileIndex == file) {
-            menuDisabled = true;
-          }
-        }
-      } else if (!sensorAssignments[i]['many'] && sensorAssignments[i]['assignments'].length > 0) {
-        menuDisabled = true;
-      }
+      // Skip diagnostic sensors - they go in a submenu
+      if (entry['name'].substring(0, 11) != 'Diagnostic:') {
 
-      if (menuDisabled) {
-        menuHtml += makeDisabledMenuItem(sensorAssignments[i]['name']);
-      } else {
-        menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'], file, column);
+        // Core sensors can only have one column assigned in each file.
+        // Check the assignments individually to see if the assigned file is this one
+        if (entry['core']) {
+          for (var j = 0; j < entry['assignments'].length && !menuDisabled; j++) {
+            var fileIndex = getFileIndex(entry['assignments'][j]['file']);
+            if (fileIndex == file) {
+              menuDisabled = true;
+            }
+          }
+        } else if (!sensorAssignments[i]['many'] && sensorAssignments[i]['assignments'].length > 0) {
+          menuDisabled = true;
+        }
+
+        if (menuDisabled) {
+          menuHtml += makeDisabledMenuItem(sensorAssignments[i]['name']);
+        } else {
+          menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'], file, column);
+        }
       }
     }
 
-    menuHtml += '</ul>';
+    menuHtml += makeParentMenuItem('DIAGNOSTICSUBMENU', 'Diagnostics', file,
+                  column, 'diagnosticMenu');
   }
 
+  menuHtml += '</ul>';
 
   $('#mainAssignmentMenu').html(menuHtml);
 
@@ -728,6 +734,28 @@ function buildDateTimeAssignmentMenu(file, column) {
 
   // item hover styles
   $('#dateTimeMenu').find('.ui-menuitem-link').hover(
+      function() {$(this).addClass('ui-state-hover')},
+      function() {$(this).removeClass('ui-state-hover')}
+  );
+}
+
+function buildDiagnosticAssignmentMenu(file, column) {
+  var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
+  var menuHtml = '<ul class="ui-menu-list ui-helper-reset">';
+
+  for (var i = 0; i < sensorAssignments.length; i++) {
+    // Only use diagnostic entries
+    if (sensorAssignments[i]['name'].substring(0, 11) == 'Diagnostic:') {
+       menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'].substring(12), file, column);
+    }
+  }
+
+  menuHtml += '</ul>';
+
+  $('#diagnosticMenu').html(menuHtml);
+
+  // item hover styles
+  $('#diagnosticMenu').find('.ui-menuitem-link').hover(
       function() {$(this).addClass('ui-state-hover')},
       function() {$(this).removeClass('ui-state-hover')}
   );
@@ -769,10 +797,16 @@ function showMainAssignmentMenu(event, file, column) {
 
 function hideMainAssignmentMenu() {
   $('#mainAssignmentMenu').removeClass('ui-overlay-visible').addClass('ui-overlay-hidden');
+  hideDateTimeMenu();
+  hideDiagnosticMenu();
 }
 
 function hideDateTimeMenu() {
   $('#dateTimeMenu').removeClass('ui-overlay-visible').addClass('ui-overlay-hidden');
+}
+
+function hideDiagnosticMenu() {
+  $('#diagnosticMenu').removeClass('ui-overlay-visible').addClass('ui-overlay-hidden');
 }
 
 function positionMainAssignmentMenu(source, containerClass) {
@@ -802,6 +836,20 @@ function positionDateTimeAssignmentMenu() {
   var topPos = parseFloat(parentMenu.css('top'));
 
   $('#dateTimeMenu').css({'left': leftPos + 'px', 'top': topPos + 'px'});
+}
+
+function positionDiagnosticAssignmentMenu() {
+  var parentMenuItem = $('#DIAGNOSTICSUBMENU_menuItem')[0];
+  var parentMenu = $('#mainAssignmentMenu');
+
+  var leftPos = parseFloat(parentMenu.css('left')) + parentMenu.width() + 10;
+  if (leftPos + $('#diagnosticMenu').width() > $(window).width()) {
+    leftPos = parseFloat(parentMenu.css('left')) - $('#diagnosticMenu').width() - 10;
+  }
+
+  var bottomPos = parseFloat(parentMenu.css('bottom'));
+
+  $('#diagnosticMenu').css({'left': leftPos + 'px', 'bottom': bottomPos + 'px'});
 }
 
 function getColumnAssignment(fileIndex, column) {
@@ -860,6 +908,8 @@ function getColumnAssignment(fileIndex, column) {
 function startAssign(item, file, column) {
   if (item == 'DATETIMESUBMENU') {
     showDateTimeSubmenu(file, column);
+  } else if (item == 'DIAGNOSTICSUBMENU') {
+    showDiagnosticSubmenu(file, column);
   } else if (item.startsWith('DATETIME_')) {
     openDateTimeDialog(item, file, column);
   } else if (item == 'POS_longitude') {
@@ -1053,9 +1103,18 @@ function openHemisphereDialog(coordinate, file, column) {
 
 function showDateTimeSubmenu(file, column) {
   event.stopPropagation();
+  hideDiagnosticMenu();
   buildDateTimeAssignmentMenu(file, column);
   positionDateTimeAssignmentMenu();
   $('#dateTimeMenu').removeClass('ui-overlay-hidden').addClass('ui-overlay-visible');
+}
+
+function showDiagnosticSubmenu(file, column) {
+  event.stopPropagation();
+  hideDateTimeMenu();
+  buildDiagnosticAssignmentMenu(file, column);
+  positionDiagnosticAssignmentMenu();
+  $('#diagnosticMenu').removeClass('ui-overlay-hidden').addClass('ui-overlay-visible');
 }
 
 function openDateTimeDialog(item, file, column) {
@@ -1197,7 +1256,6 @@ function hideMenusAndDialogs(event) {
   PF('hemisphereAssignmentDialog').hide();
   PF('dateTimeAssignmentDialog').hide();
   hideMainAssignmentMenu();
-  hideDateTimeMenu();
 }
 
 function removeFile(fileName) {

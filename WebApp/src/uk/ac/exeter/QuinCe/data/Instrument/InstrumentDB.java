@@ -232,8 +232,6 @@ public class InstrumentDB {
           SensorType sensorType = sensorAssignmentsEntry.getKey();
 
           for (SensorAssignment assignment : sensorAssignmentsEntry.getValue()) {
-            databaseColumn++;
-            assignment.setDatabaseColumn(databaseColumn);
 
             PreparedStatement fileColumnStatement = conn.prepareStatement(CREATE_FILE_COLUMN_STATEMENT);
             fileColumnStatement.setLong(1, fileDefinitionIds.get(assignment.getDataFile()));
@@ -241,7 +239,15 @@ public class InstrumentDB {
             fileColumnStatement.setBoolean(3, assignment.isPrimary());
             fileColumnStatement.setString(4, sensorType.getName());
             fileColumnStatement.setString(5, assignment.getSensorName());
-            fileColumnStatement.setInt(6, databaseColumn);
+
+            if (sensorType.isDiagnostic()) {
+              fileColumnStatement.setNull(6, Types.INTEGER);
+            } else {
+              databaseColumn++;
+              assignment.setDatabaseColumn(databaseColumn);
+              fileColumnStatement.setInt(6, databaseColumn);
+            }
+
             fileColumnStatement.setBoolean(7, assignment.getDependsQuestionAnswer());
             fileColumnStatement.setString(8, assignment.getMissingValue());
             fileColumnStatement.setBoolean(9, assignment.getPostCalibrated());
