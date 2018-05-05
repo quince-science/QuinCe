@@ -122,7 +122,7 @@ public class ResourceManager implements ServletContextListener {
 
     // Initialise the sensors configuration
     try {
-      sensorsConfiguration = new SensorsConfiguration(new File(configuration.getProperty("sensors.configfile")));
+      sensorsConfiguration = new SensorsConfiguration(new File(configuration.getProperty("sensors.configfile")), getDiagnosticSensorTypes());
     } catch (SensorConfigurationException e) {
       throw new RuntimeException("Could not load sensors configuration", e);
     }

@@ -98,15 +98,16 @@ public class SensorsConfiguration {
    * Create an empty sensor configuration (with no assigned columns)
    * based on the specified configuration file
    * @param configFile The configuration file
+   * @param diagnosticSensors The names of the diagnostic sensor types that can be used
    * @throws SensorConfigurationException If the configuration is invalid
    */
-  public SensorsConfiguration(File configFile) throws SensorConfigurationException {
+  public SensorsConfiguration(File configFile, List<String> diagnosticSensors) throws SensorConfigurationException {
 
     if (!FileUtils.canAccessFile(configFile)) {
       throw new SensorConfigurationException("Cannot access config file '" + configFile.getAbsolutePath() + "'");
     }
 
-    buildSensorTypes(configFile);
+    buildSensorTypes(configFile, diagnosticSensors);
   }
 
   /**
@@ -129,10 +130,14 @@ public class SensorsConfiguration {
    * Build the map of sensor configurations from the supplied
    * configuration file. All map entries will contain {@code null}
    * to indicate that no assignments have been made.
+   *
+   * The diagnostic sensors will be added to the list automatically.
+   *
    * @param configFile The configuration file
+   * @param diagnosticSensors The names of the diagnostic sensor types that can be used
    * @throws SensorConfigurationException If the configuration is invalid
    */
-  private void buildSensorTypes(File configFile) throws SensorConfigurationException {
+  private void buildSensorTypes(File configFile, List<String> diagnosticSensors) throws SensorConfigurationException {
 
     sensorTypes = new ArrayList<SensorType>();
     BufferedReader reader = null;
@@ -177,7 +182,7 @@ public class SensorsConfiguration {
               boolean usedInCalculation = StringUtils.parseYNBoolean(fields.get(COL_USED_IN_CALCULATION));
               boolean externalStandards = StringUtils.parseYNBoolean(fields.get(COL_EXTERNAL_STANDARDS));
 
-              SensorType sensor = new SensorType(sensorName, required, named, requiredGroup, dependsOn, dependsQuestion, many, averaged, postCalibrated, coreSensor, usedInCalculation, externalStandards);
+              SensorType sensor = new SensorType(sensorName, required, named, requiredGroup, dependsOn, dependsQuestion, many, averaged, postCalibrated, coreSensor, usedInCalculation, false, externalStandards);
 
               sensorTypes.add(sensor);
 
@@ -192,6 +197,12 @@ public class SensorsConfiguration {
       }
 
       checkDependsOnConfiguration();
+
+      // Add the diagnostic sensor types
+      for (String diagnosticSensor : diagnosticSensors) {
+        sensorTypes.add(SensorType.makeDiagnosticSensorType(diagnosticSensor));
+      }
+
     } catch (IOException e) {
       throw new SensorConfigurationException("Error while reading config file", e);
     } finally {

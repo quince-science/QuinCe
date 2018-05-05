@@ -433,7 +433,6 @@ public class NewInstrumentBean extends FileUploadBean {
     currentInstrumentFile.setFileContents(getFileLines());
   }
 
-
   /**
    * Clear all data from the bean ready for a new
    * instrument to be defined
