@@ -71,10 +71,11 @@ public abstract class DataReductionCalculator {
    * @param recordDate The date of the record from which the sensor value was taken
    * @param sensorName The name of the sensor
    * @param originalValue The sensor value to be calibrated
+   * @param ignoreZero Indicates whether or not the zero standard should be ignored
    * @return The calibrated sensor value
    * @throws CalculatorException If there are not sufficient standard measurements
    */
-  protected double applyExternalStandards(LocalDateTime recordDate, String sensorName, double originalValue) throws CalculatorException {
+  protected double applyExternalStandards(LocalDateTime recordDate, String sensorName, double originalValue, boolean ignoreZero) throws CalculatorException {
 
     double calibratedValue;
 
@@ -84,15 +85,18 @@ public abstract class DataReductionCalculator {
       // standard at the record date
       Map<String, Double> standardMeasurements = new HashMap<String, Double>();
       for (String target : externalStandards.getTargets()) {
-        DataSetRawDataRecord priorCalibration = calibrations.getCalibrationBefore(recordDate, target);
-        DataSetRawDataRecord postCalibration = calibrations.getCalibrationAfter(recordDate, target);
-        standardMeasurements.put(target, calculateStandardValueAtDate(recordDate, target, "CO2", priorCalibration, postCalibration));
+        double concentration = externalStandards.getCalibrationValue(target, sensorName);
+        if (!ignoreZero || concentration > 0.0) {
+          DataSetRawDataRecord priorCalibration = calibrations.getCalibrationBefore(recordDate, target);
+          DataSetRawDataRecord postCalibration = calibrations.getCalibrationAfter(recordDate, target);
+          standardMeasurements.put(target, calculateStandardValueAtDate(recordDate, target, sensorName, priorCalibration, postCalibration));
+        }
       }
 
       // Make a regression of the offsets to calculate the offset at the measured concentration
       SimpleRegression regression = new SimpleRegression(true);
       for (String target : standardMeasurements.keySet()) {
-        regression.addData(standardMeasurements.get(target), externalStandards.getCalibrationValue(target, "CO2"));
+        regression.addData(standardMeasurements.get(target), externalStandards.getCalibrationValue(target, sensorName));
       }
 
       calibratedValue = regression.predict(originalValue);
