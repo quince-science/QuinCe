@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -193,6 +194,7 @@ public class ResourceManager implements ServletContextListener {
    */
   public List<String> getDiagnosticSensorTypes() {
     List<String> result = new ArrayList<String>(StringUtils.delimitedToList(configuration.getProperty("diagnostic_sensors"), ","));
+    Collections.sort(result);
     result.add("Other");
     return result;
   }
