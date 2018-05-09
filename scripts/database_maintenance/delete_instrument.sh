@@ -81,7 +81,7 @@ EOF
     if [ $verbose -eq 1 ]; then
       echo "Deleting filestore data"
     fi
-    rm "$filestore_folder/$instrument_id/"* 2>/dev/0
+    rm "$filestore_folder/$instrument_id/"* 2>/dev/null
     rmdir "$filestore_folder/$instrument_id"
   fi
 else
