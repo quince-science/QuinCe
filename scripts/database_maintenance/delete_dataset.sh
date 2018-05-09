@@ -67,4 +67,5 @@ then
     DELETE FROM calibration_data WHERE dataset_id = $dataset_id;
     DELETE FROM dataset WHERE id = $dataset_id;
 EOF
+
 fi
