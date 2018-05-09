@@ -133,33 +133,6 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
   }
 
   /**
-   * Set the diagnostic values contained in a String.
-   * The String should be formatted as per the output of {@link #getDiagnosticValuesString()}.
-   * @param valuesString The values string
-   * @throws DataSetException If the values string is invalid
-   */
-  public void setDiagnosticValues(String valuesString) throws DataSetException {
-
-    if (null != valuesString && valuesString.length() > 0) {
-      String[] entries = valuesString.split(";");
-      for (String entry : entries) {
-        String[] fields = entry.split(":");
-        if (fields.length != 2) {
-          throw new DataSetException("Invalid diagnostic values string");
-        } else {
-          try {
-            setSensorValue(fields[0], Double.parseDouble(fields[1]));
-          } catch (NumberFormatException e) {
-            throw new DataSetException("Invalid diagnostic values string");
-          }
-        }
-      }
-    }
-
-
-  }
-
-  /**
    * Determine whether or not this record is for a measurement
    * @return {@code true} if this is a measurement; {@code false} otherwise
    * @throws NoSuchCategoryException If the record's run type does not exist
@@ -224,24 +197,6 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
    */
   public String getRunType() {
     return runType;
-  }
-
-  /**
-   * Get the diagnostic values as a String
-   * @return The diagnostic values String
-   */
-  public String getDiagnosticValuesString() {
-
-    StringBuilder result = new StringBuilder();
-
-    for (Map.Entry<String, Double> entry : diagnosticValues.entrySet()) {
-      result.append(entry.getKey());
-      result.append(':');
-      result.append(entry.getValue());
-      result.append(';');
-    }
-
-    return result.toString();
   }
 
   /**

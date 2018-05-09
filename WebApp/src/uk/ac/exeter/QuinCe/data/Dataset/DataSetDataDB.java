@@ -92,11 +92,6 @@ public class DataSetDataDB {
   private static final String RUN_TYPE_COL = "run_type";
 
   /**
-   * The name of the diagnostic values column
-   */
-  private static final String DIAGNOSTIC_COL = "diagnostic_values";
-
-  /**
    * The name of the dataset ID column
    */
   private static final String DATASET_COL = "dataset_id";
@@ -138,9 +133,8 @@ public class DataSetDataDB {
       datasetDataStatement.setDouble(3, record.getLongitude());
       datasetDataStatement.setDouble(4, record.getLatitude());
       datasetDataStatement.setString(5, record.getRunType());
-      datasetDataStatement.setString(6, record.getDiagnosticValuesString());
 
-      int currentField = 6;
+      int currentField = 5;
       SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
       for (SensorType sensorType : sensorConfig.getSensorTypes()) {
         if (sensorType.isUsedInCalculation()) {
@@ -354,10 +348,10 @@ public class DataSetDataDB {
     double latitude = records.getDouble(baseColumns.get(LAT_COL));
     String runType = records.getString(baseColumns.get(RUN_TYPE_COL));
     RunTypeCategory runTypeCategory = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategory(runType);
-    String diagnosticValues = records.getString(baseColumns.get(DIAGNOSTIC_COL));
 
     result = new DataSetRawDataRecord(dataSet, id, date, longitude, latitude, runType, runTypeCategory);
-    result.setDiagnosticValues(diagnosticValues);
+
+    // TODO Add diagnostics here
 
     for (Map.Entry<Integer, String> entry : sensorColumns.entrySet()) {
       Double value = records.getDouble(entry.getKey());
@@ -404,10 +398,6 @@ public class DataSetDataDB {
         baseColumns.put(RUN_TYPE_COL, i);
         break;
       }
-      case DIAGNOSTIC_COL: {
-        baseColumns.put(DIAGNOSTIC_COL, i);
-        break;
-      }
       case DATASET_COL: {
         // Do nothing
         break;
@@ -444,7 +434,6 @@ public class DataSetDataDB {
     fieldNames.add("longitude");
     fieldNames.add("latitude");
     fieldNames.add("run_type");
-    fieldNames.add("diagnostic_values");
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
     for (SensorType sensorType : sensorConfig.getSensorTypes()) {
