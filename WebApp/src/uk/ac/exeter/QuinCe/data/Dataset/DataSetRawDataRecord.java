@@ -271,4 +271,12 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 
     return result;
   }
+
+  /**
+   * Get the set of diagnostic values
+   * @return The diagnostic values
+   */
+  public Map<String, Double> getDiagnosticValues() {
+    return diagnosticValues;
+  }
 }
