@@ -67,6 +67,13 @@ public class DataSetDataDB {
       + " FROM dataset_data WHERE dataset_id = ?";
 
   /**
+   * Statement to store a diagnostic value
+   */
+  private static final String STORE_DIAGNOSTIC_VALUE_STATEMENT = "INSERT INTO diagnostic_data"
+      + " (measurement_id, sensor_name, value) VALUES"
+      + " (?, ?, ?)";
+
+  /**
    * The name of the ID column
    */
   private static final String ID_COL = "id";
@@ -155,6 +162,7 @@ public class DataSetDataDB {
       createdKeys = datasetDataStatement.getGeneratedKeys();
       while (createdKeys.next()) {
         calculationDB.createCalculationRecord(conn, createdKeys.getLong(1));
+        storeDiagnosticValues(conn, createdKeys.getLong(1), record.getDiagnosticValues());
       }
 
     } catch (SQLException e) {
@@ -770,4 +778,36 @@ public class DataSetDataDB {
     return result;
   }
 
+  /**
+   * Store a set of diagnostic values
+   * @param conn A database connection
+   * @param measurementId The database ID of the measurement to which the values belong
+   * @param diagnosticValues The diagnostic values
+   * @throws DatabaseException If a database error occurs
+   */
+  private static void storeDiagnosticValues(Connection conn, long measurementId, Map<String, Double> diagnosticValues) throws DatabaseException {
+
+    PreparedStatement diagnosticStatement = null;
+
+    try {
+      diagnosticStatement = conn.prepareStatement(STORE_DIAGNOSTIC_VALUE_STATEMENT);
+
+      for (Map.Entry<String, Double> entry : diagnosticValues.entrySet()) {
+        diagnosticStatement.setLong(1, measurementId);
+        diagnosticStatement.setString(2, entry.getKey());
+
+        if (null == entry.getValue()) {
+          diagnosticStatement.setNull(3, Types.DOUBLE);
+        } else {
+          diagnosticStatement.setDouble(3, entry.getValue());
+        }
+
+        diagnosticStatement.execute();
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while storing diagnostic values", e);
+    } finally {
+      DatabaseUtils.closeStatements(diagnosticStatement);
+    }
+  }
 }
