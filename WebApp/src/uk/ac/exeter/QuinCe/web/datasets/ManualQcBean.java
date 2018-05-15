@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
+import uk.ac.exeter.QuinCe.data.Dataset.DiagnosticDataDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -157,7 +158,6 @@ public class ManualQcBean extends PlotPageBean {
 
   @Override
   protected String buildPlotLabels(int plotIndex) {
-    // TODO Auto-generated method stub
     return null;
   }
 
@@ -433,6 +433,7 @@ public class ManualQcBean extends PlotPageBean {
   protected void buildVariableList(VariableList variables) throws Exception {
     DataSetDataDB.populateVariableList(getDataSource(), getDataset(), variables);
     CalculationDBFactory.getCalculationDB().populateVariableList(variables);
+    DiagnosticDataDB.populateVariableList(getDataSource(), getDataset(), variables);
   }
 
   @Override

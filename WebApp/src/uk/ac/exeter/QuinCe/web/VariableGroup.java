@@ -16,6 +16,11 @@ public class VariableGroup {
   private String name;
 
   /**
+   * Indicates whether or not the title MUST be shown for this group
+   */
+  private boolean titleRequired = false;
+
+  /**
    * The variables within the group
    */
   private List<Variable> variables;
@@ -26,8 +31,14 @@ public class VariableGroup {
    * Initialise the group
    * @param name The group name
    */
-  protected VariableGroup(String name) {
+  public VariableGroup(String name) {
     this.name = name;
+    this.variables = new ArrayList<Variable>();
+  }
+
+  public VariableGroup(String name, boolean titleRequired) {
+    this.name = name;
+    this.titleRequired = titleRequired;
     this.variables = new ArrayList<Variable>();
   }
 
@@ -69,5 +80,13 @@ public class VariableGroup {
    */
   public List<Variable> getVariables() {
     return variables;
+  }
+
+  /**
+   * Determine whether or not the title MUST be shown for this group
+   * @return {@code true} if the title must be shown; {@code false} if it can be skipped
+   */
+  public boolean getTitleRequired() {
+    return titleRequired;
   }
 }

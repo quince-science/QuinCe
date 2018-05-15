@@ -27,6 +27,11 @@ public class Variable {
   public static final int TYPE_CALCULATION = 2;
 
   /**
+   * Indicator for Diagnostic types
+   */
+  public static final int TYPE_DIAGNOSTIC = 3;
+
+  /**
    * The ID of this tree entry
    */
   private int id = -1;
