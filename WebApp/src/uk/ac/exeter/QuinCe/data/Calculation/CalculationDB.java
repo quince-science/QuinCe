@@ -632,15 +632,14 @@ public abstract class CalculationDB {
         }
       }
 
-      Map<Long, Map<String, Double>> diagnosticData = DiagnosticDataDB.getDiagnosticValues(conn, dataset.getInstrumentId(), DataSetDataDB.getMeasurementIds(conn, dataset.getId()), diagnosticFields);
+==== BASE ====
+        sql.append('.');
+        sql.append(field);
+==== BASE ====
 
-      StringBuilder sql = new StringBuilder();
-
-      sql.append("SELECT ");
-      for (int i = 0; i < databaseFields.size(); i++) {
-        sql.append(databaseFields.get(i));
-
-        if (i < databaseFields.size() - 1) {
+==== BASE ====
+        if (i < fields.size() - 1) {
+==== BASE ====
           sql.append(',');
         }
       }
@@ -715,9 +714,17 @@ public abstract class CalculationDB {
           }
         }
 
-        json.put(recordJson);
+==== BASE ====
+        json.append("],");
       }
 
+      // Remove the trailing comma
+      if (hasRecords) {
+        json.deleteCharAt(json.length() - 1);
+      }
+      json.append(']');
+
+==== BASE ====
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting dataset records", e);
     } finally {
