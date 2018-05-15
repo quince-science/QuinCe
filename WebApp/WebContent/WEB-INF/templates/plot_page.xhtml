@@ -74,7 +74,7 @@
     <p:dialog widgetVar="variableDialog" modal="true" header="Variables" resizable="false">
       <div id="variablesList">
         <ui:repeat value="#{sessionScope[beanName].variablesList}" var="varGroup">
-          <ui:fragment rendered="#{varGroup.size eq 1 and varGroup.variables[0].visible}">
+          <ui:fragment rendered="#{varGroup.size eq 1 and !varGroup.titleRequired and varGroup.variables[0].visible}">
             <div class="variable singleVariable">
               <div class="varName">
                 <h:outputText value="#{varGroup.variables[0].label}"/>
@@ -96,7 +96,7 @@
               </div>
             </div>
           </ui:fragment>
-          <ui:fragment rendered="#{varGroup.size gt 1}">
+          <ui:fragment rendered="#{varGroup.size gt 1 or varGroup.titleRequired}">
             <div class="variableGroup">
               <div class="varGroupName">
                 <h:outputText value="#{varGroup.name}"/>
