@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.math3.stat.descriptive.rank.Percentile;
+import org.primefaces.json.JSONArray;
 
 import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
@@ -21,6 +22,7 @@ import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.RebuildCode;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DiagnosticDataDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -596,8 +598,8 @@ public abstract class CalculationDB {
    * @return The JSON array
    * @throws InstrumentException If the dataset's instrument cannot be retrieved
    * @throws RecordNotFoundException If the dataset does not exist
-     * @throws DatabaseException If a database error occurs
-     * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
    */
   public String getJsonData(DataSource dataSource, DataSet dataset, List<String> fields, String sortField, List<Double> bounds, boolean limitPoints) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
 
@@ -610,31 +612,35 @@ public abstract class CalculationDB {
     ResultSet records = null;
 
 
-    StringBuilder json = new StringBuilder();
+    JSONArray json = new JSONArray();
 
     try {
       conn = dataSource.getConnection();
 
       List<String> datasetFields = DataSetDataDB.extractDatasetFields(conn, dataset, fields);
+      List<String> diagnosticFields = DiagnosticDataDB.extractDiagnosticFields(conn, dataset.getInstrumentId(), fields);
       List<String> calculationFields = new ArrayList<String>(fields);
       calculationFields.removeAll(datasetFields);
+      calculationFields.removeAll(diagnosticFields);
+
+      List<String> databaseFields = new ArrayList<String>(datasetFields.size() + calculationFields.size());
+      for (String field : fields) {
+        if (datasetFields.contains(field)) {
+          databaseFields.add("d." + field);
+        } else if (calculationFields.contains(field)) {
+          databaseFields.add("c." + field);
+        }
+      }
+
+      Map<Long, Map<String, Double>> diagnosticData = DiagnosticDataDB.getDiagnosticValues(conn, DataSetDataDB.getMeasurementIds(conn, dataset.getId()), diagnosticFields);
 
       StringBuilder sql = new StringBuilder();
 
       sql.append("SELECT ");
-      for (int i = 0; i < fields.size(); i++) {
-        String field = fields.get(i);
+      for (int i = 0; i < databaseFields.size(); i++) {
+        sql.append(databaseFields.get(i));
 
-        if (datasetFields.contains(field)) {
-          sql.append('d');
-        } else {
-          sql.append('c');
-        }
-
-        sql.append('.');
-        sql.append(field);
-
-        if (i < fields.size() - 1) {
+        if (i < databaseFields.size() - 1) {
           sql.append(',');
         }
       }
@@ -688,35 +694,29 @@ public abstract class CalculationDB {
         }
       }
 
-      json.append('[');
-
-      boolean hasRecords = false;
       while (records.relative(everyNthRecord)) {
-        hasRecords = true;
 
-        json.append('[');
+        JSONArray recordJson = new JSONArray();
+        long measurementId = -1;
 
         for (int i = 0; i < fields.size(); i++) {
-
-          if (fields.get(i).equals("id") || fields.get(i).equals("date")) {
-            json.append(records.getLong(i + 1));
+          String field = fields.get(i);
+          if (field.equals("id")) {
+            measurementId = records.getLong(i + 1);
+            recordJson.put(measurementId);
+          } else if (field.equals("date")) {
+            recordJson.put(records.getLong(i + 1));
+          } else if (diagnosticFields.contains(field)) {
+            // The measurement ID is always before any diagnostic fields,
+            // so we can be sure it's populated.
+            recordJson.put(diagnosticData.get(measurementId).get(field));
           } else {
-            json.append(records.getDouble(i + 1));
-          }
-
-          if (i < fields.size() - 1) {
-            json.append(',');
+            recordJson.put(records.getDouble(i + 1));
           }
         }
 
-        json.append("],");
+        json.put(recordJson);
       }
-
-      // Remove the trailing comma
-      if (hasRecords) {
-        json.deleteCharAt(json.length() - 1);
-      }
-      json.append(']');
 
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting dataset records", e);
