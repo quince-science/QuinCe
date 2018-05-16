@@ -881,8 +881,6 @@ public abstract class CalculationDB {
     sql.append("AND dd.sensor_name = ?");
     addFlagCriteriaToRangeQuery(sql);
 
-    System.out.println(sql.toString());
-
     PreparedStatement stmt = conn.prepareStatement(sql.toString());
     stmt.setLong(1, datasetId);
     stmt.setString(2, field);
@@ -939,8 +937,6 @@ public abstract class CalculationDB {
     sql.append("ON ds.id = c.measurement_id ");
     sql.append("WHERE ds.dataset_id = ?");
     addFlagCriteriaToRangeQuery(sql);
-
-    System.out.println(sql.toString());
 
     PreparedStatement stmt = conn.prepareStatement(sql.toString());
     stmt.setLong(1, datasetId);
