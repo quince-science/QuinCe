@@ -240,4 +240,47 @@ public class DiagnosticDataDB {
 
     return matchedSensors;
   }
+
+  /**
+   * Determine whether a given field relates to a diagnostic sensor
+   * @param conn A database connection
+   * @param instrumentId The database ID of the instrument concerned
+   * @param field The field name
+   * @return {@code true} if the field is for a diagnostic sensor; {@code false} if it is not
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   */
+  public static boolean isDiagnosticField(Connection conn, long instrumentId, String field) throws MissingParamException, DatabaseException {
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+    MissingParam.checkMissing(field, "field");
+
+    boolean result = false;
+
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      stmt = conn.prepareStatement(GET_DIAGNOSTIC_SENSORS_QUERY);
+      stmt.setLong(1, instrumentId);
+
+      records = stmt.executeQuery();
+
+      while (records.next()) {
+        String sensor = records.getString(2);
+        if (field.equals(sensor)) {
+          result = true;
+          break;
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving diagnostic sensor names", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return result;
+  }
 }

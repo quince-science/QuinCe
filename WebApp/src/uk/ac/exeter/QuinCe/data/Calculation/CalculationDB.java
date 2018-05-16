@@ -803,7 +803,7 @@ public abstract class CalculationDB {
       if (datasetFields.size() > 0) {
         sql.append('d');
       } else {
-        sql.append('c');
+        stmt = makeCalculationRangeStatement(conn, dataset.getId(), field);
       }
 
       sql.append('.');
@@ -857,6 +857,112 @@ public abstract class CalculationDB {
     }
 
     return result;
+  }
+
+  // TODO Should this be moved to DiagnosticDataDB? Not sure.
+  /**
+   * Prepare an SQL statement to retrieve all a diagnostic sensor's values for a data set
+   * @param conn A database connection
+   * @param datasetId The data set's database ID
+   * @param field The sensor name
+   * @return The SQL statement
+   * @throws SQLException If the statement cannot be constructed
+   */
+  private PreparedStatement makeDiagnosticRangeStatement(Connection conn, long datasetId, String field) throws SQLException {
+
+    StringBuilder sql = new StringBuilder();
+
+    sql.append("SELECT value FROM diagnostic_data dd ");
+    sql.append("INNER JOIN dataset_data ds ON dd.measurement_id = ds.id ");
+    sql.append("INNER JOIN ");
+    sql.append(getCalculationTable());
+    sql.append(" c ON dd.measurement_id = c.measurement_id ");
+    sql.append("WHERE ds.dataset_id = ? ");
+    sql.append("AND dd.sensor_name = ?");
+    addFlagCriteriaToRangeQuery(sql);
+
+    System.out.println(sql.toString());
+
+    PreparedStatement stmt = conn.prepareStatement(sql.toString());
+    stmt.setLong(1, datasetId);
+    stmt.setString(2, field);
+
+
+    return stmt;
+  }
+
+  // TODO Should this be moved to DataSetDataDB? Not sure.
+  /**
+   * Prepare an SQL statement to retrieve all a sensor/field's values for a data set
+   * @param conn A database connection
+   * @param datasetId The data set's database ID
+   * @param field The sensor or field name
+   * @return The SQL statement
+   * @throws SQLException If the statement cannot be constructed
+   */
+  private PreparedStatement makeDatasetRangeStatement(Connection conn, long datasetId, String field) throws SQLException {
+
+    StringBuilder sql = new StringBuilder();
+
+    sql.append("SELECT ds.");
+    sql.append(field);
+    sql.append(" FROM dataset_data ds ");
+    sql.append(" INNER JOIN ");
+    sql.append(getCalculationTable());
+    sql.append(" c ON ds.id = c.measurement_id ");
+    sql.append("WHERE ds.dataset_id = ?");
+    addFlagCriteriaToRangeQuery(sql);
+
+    PreparedStatement stmt = conn.prepareStatement(sql.toString());
+    stmt.setLong(1, datasetId);
+
+    return stmt;
+  }
+
+  /**
+   * Prepare an SQL statement to retrieve all a calculation field's values for a data set
+   * @param conn A database connection
+   * @param datasetId The data set's database ID
+   * @param field The field name
+   * @return The SQL statement
+   * @throws SQLException If the statement cannot be constructed
+   */
+  private PreparedStatement makeCalculationRangeStatement(Connection conn, long datasetId, String field) throws SQLException {
+
+    StringBuilder sql = new StringBuilder();
+
+    sql.append("SELECT c.");
+    sql.append(field);
+    sql.append(" FROM ");
+    sql.append(getCalculationTable());
+    sql.append(" c INNER JOIN dataset_data ds ");
+    sql.append("ON ds.id = c.measurement_id ");
+    sql.append("WHERE ds.dataset_id = ?");
+    addFlagCriteriaToRangeQuery(sql);
+
+    System.out.println(sql.toString());
+
+    PreparedStatement stmt = conn.prepareStatement(sql.toString());
+    stmt.setLong(1, datasetId);
+
+    return stmt;
+  }
+
+  /**
+   * Range SQL queries are filtered by flag values.
+   * This method applies the filter to the SQL being built
+   * @param sql The value range SQL
+   */
+  private void addFlagCriteriaToRangeQuery(StringBuilder sql) {
+    sql.append(" AND c.user_flag IN (");
+    sql.append(Flag.VALUE_ASSUMED_GOOD);
+    sql.append(',');
+    sql.append(Flag.VALUE_GOOD);
+    sql.append(',');
+    sql.append(Flag.VALUE_QUESTIONABLE);
+    sql.append(',');
+    sql.append(Flag.VALUE_NEEDED);
+    sql.append(")");
   }
 
   /**
