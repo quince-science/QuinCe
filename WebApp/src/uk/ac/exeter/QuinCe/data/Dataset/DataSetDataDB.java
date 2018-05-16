@@ -569,10 +569,6 @@ public class DataSetDataDB {
           // Ignored
           break;
         }
-        case "diagnostic_values": {
-          // TODO Add these
-          break;
-        }
         default: {
           // Sensor value columns
           for (SensorType sensorType : sensorConfig.getSensorTypes()) {
@@ -642,10 +638,6 @@ public class DataSetDataDB {
           // Ignored
           break;
         }
-        case "diagnostic_values": {
-          // TODO Add these
-          break;
-        }
         default: {
           // Sensor value columns
           for (SensorType sensorType : sensorConfig.getSensorTypes()) {
@@ -676,9 +668,9 @@ public class DataSetDataDB {
    * @param dataSet The data set to which the fields belong
    * @param originalFields The list of fields
    * @return The fields that come from dataset data
-     * @throws DatabaseException If a database error occurs
-     * @throws MissingParamException If any required parameters are missing
-     * @throws RecordNotFoundException If the dataset or its instrument do not exist
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   * @throws RecordNotFoundException If the dataset or its instrument do not exist
    * @throws InstrumentException If the instrument details cannot be retrieved
    */
   public static List<String> extractDatasetFields(Connection conn, DataSet dataSet, List<String> originalFields) throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException {
@@ -700,10 +692,6 @@ public class DataSetDataDB {
         datasetFields.add(originalField);
         break;
       }
-      case "diagnostic_values": {
-        // TODO Handle diagnostic values somehow
-        break;
-      }
       default: {
         // Sensor value columns
         for (SensorType sensorType : sensorConfig.getSensorTypes()) {
@@ -722,6 +710,26 @@ public class DataSetDataDB {
     }
 
     return datasetFields;
+  }
+
+  /**
+   * Determine whether or not a given field is a dataset-level field
+   * @param conn A database connection
+   * @param dataset The dataset to which the field belongs
+   * @param field The field name
+   * @return {@code true} if the field is a dataset field; {@code false} if it is not
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   * @throws RecordNotFoundException If the dataset or its instrument do not exist
+   * @throws InstrumentException If the instrument details cannot be retrieved
+   */
+  public static boolean isDatasetField(Connection conn, DataSet dataset, String field) throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException {
+    List<String> fieldList = new ArrayList<String>(1);
+    fieldList.add(field);
+
+    List<String> detectedDatasetField = extractDatasetFields(conn, dataset, fieldList);
+
+    return (detectedDatasetField.size() > 0);
   }
 
   /**
