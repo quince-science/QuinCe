@@ -213,4 +213,8 @@
       <to-view-id>/dataset/export.xhtml</to-view-id>
     </navigation-case>
   </navigation-rule>
+  <component>
+    <component-type>org.primefaces.component.SelectOneMenu</component-type>
+    <component-class>uk.ac.exeter.QuinCe.web.ui.FastSelectOneMenu</component-class>
+  </component>
 </faces-config>
