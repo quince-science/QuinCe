@@ -194,7 +194,9 @@
 
     <p:toolbar id="footerToolbar" styleClass="plotPageFooter">
       <f:facet name="left">
-        <ui:insert name="tableControls"></ui:insert>
+        <h:form id="tableControlsForm" method="post" styleClass="inline">
+          <ui:insert name="tableControls"></ui:insert>
+        </h:form>
       </f:facet>
       <f:facet name="right">
         <h:form id="selectActionsForm" method="post" styleClass="inline">
