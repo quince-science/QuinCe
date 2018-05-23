@@ -100,6 +100,8 @@ function renderTableColumns() {
   if (tableMode != "diagnostics") {
     jsDataTable.columns($.inArray("fCO2", columnHeadings)).visible(true, true);
   }
+
+  jsDataTable.columns.adjust().draw();
 }
 
 /*
