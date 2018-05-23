@@ -67,20 +67,4 @@ then
     DELETE FROM calibration_data WHERE dataset_id = $dataset_id;
     DELETE FROM dataset WHERE id = $dataset_id;
 EOF
-
-  # Also delete files from the file store:
-  if [ -d "$filestore_folder" ] \
-      && [ -e "$filestore_folder/$instrument_id/$dataset_id" ] \
-      && [ "$instrument_id" -eq "$instrument_id" ] 2>/dev/null
-  then
-    if [ $verbose -eq 1 ]; then
-      echo "Deleting filestore dataset data"
-      echo "Instrument ID: $instrument_id Dataset ID: $dataset_id"
-    fi
-    rm "$filestore_folder/$instrument_id/$dataset_id"
-  else
-      echo "File $filestore_folder/$instrument_id/$dataset_id dont exist"
-      echo -e "$usage"
-      exit 1
-  fi
 fi
