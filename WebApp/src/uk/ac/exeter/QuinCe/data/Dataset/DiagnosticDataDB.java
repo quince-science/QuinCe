@@ -282,27 +282,12 @@ public class DiagnosticDataDB {
 
     List<String> matchedSensors = new ArrayList<String>();
 
-    PreparedStatement stmt = null;
-    ResultSet records = null;
+    List<String> sensors = getDiagnosticSensors(conn, instrumentId);
 
-    try {
-      stmt = conn.prepareStatement(GET_DIAGNOSTIC_SENSORS_QUERY);
-      stmt.setLong(1, instrumentId);
-
-      records = stmt.executeQuery();
-
-      while (records.next()) {
-        String sensor = records.getString(2);
-        if (fields.contains(sensor)) {
-          matchedSensors.add(sensor);
-        }
+    for (String sensor : sensors) {
+      if (fields.contains(sensor)) {
+        matchedSensors.add(sensor);
       }
-
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while retrieving diagnostic sensor names", e);
-    } finally {
-      DatabaseUtils.closeResultSets(records);
-      DatabaseUtils.closeStatements(stmt);
     }
 
     return matchedSensors;
@@ -322,33 +307,9 @@ public class DiagnosticDataDB {
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
     MissingParam.checkMissing(field, "field");
 
-    boolean result = false;
+    List<String> sensors = getDiagnosticSensors(conn, instrumentId);
 
-    PreparedStatement stmt = null;
-    ResultSet records = null;
-
-    try {
-      stmt = conn.prepareStatement(GET_DIAGNOSTIC_SENSORS_QUERY);
-      stmt.setLong(1, instrumentId);
-
-      records = stmt.executeQuery();
-
-      while (records.next()) {
-        String sensor = records.getString(2);
-        if (field.equals(sensor)) {
-          result = true;
-          break;
-        }
-      }
-
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while retrieving diagnostic sensor names", e);
-    } finally {
-      DatabaseUtils.closeResultSets(records);
-      DatabaseUtils.closeStatements(stmt);
-    }
-
-    return result;
+    return sensors.contains(field);
   }
 
   /**
