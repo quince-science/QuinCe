@@ -59,6 +59,11 @@ public class ManualQcBean extends PlotPageBean {
   private int calculationColumnCount = 0;
 
   /**
+   * The number of diagnostic columns
+   */
+  private int diagnosticColumnCount = 0;
+
+  /**
    * The column containing the auto QC flag
    */
   private int autoFlagColumn = 0;
@@ -108,6 +113,8 @@ public class ManualQcBean extends PlotPageBean {
     sensorColumnCount = dataHeadings.size() - 4; // Skip id, date, lat, lon
     List<String> calculationHeadings = CalculationDBFactory.getCalculationDB().getCalculationColumnHeadings();
     calculationColumnCount = calculationHeadings.size();
+    List<String> diagnosticHeadings = DiagnosticDataDB.getDiagnosticSensors(getDataSource(), getDataset().getInstrumentId());
+    diagnosticColumnCount = diagnosticHeadings.size();
 
     JSONArray headings = new JSONArray();
 
@@ -119,13 +126,17 @@ public class ManualQcBean extends PlotPageBean {
       headings.put(calculationHeadings.get(i));
     }
 
+    for (String heading : diagnosticHeadings) {
+      headings.put(heading);
+    }
+
     headings.put("Automatic QC");
     headings.put("Automatic QC Message");
     headings.put("Manual QC");
     headings.put("Manual QC Message");
 
     // Columns are zero-based, so we don't need to add one to get to the auto flag column
-    autoFlagColumn = dataHeadings.size() + calculationHeadings.size();
+    autoFlagColumn = dataHeadings.size() + calculationHeadings.size() + diagnosticHeadings.size();
     userFlagColumn = autoFlagColumn + 2;
 
     return headings.toString();
@@ -165,12 +176,17 @@ public class ManualQcBean extends PlotPageBean {
   protected String loadTableData(int start, int length) throws Exception {
     List<DataSetRawDataRecord> datasetData = DataSetDataDB.getMeasurements(getDataSource(), getDataset(), start, length);
 
+    List<Long> measurementIds = new ArrayList<Long>(datasetData.size());
     List<CalculationRecord> calculationData = new ArrayList<CalculationRecord>(datasetData.size());
     for (DataSetRawDataRecord record : datasetData) {
+      measurementIds.add(record.getId());
       CalculationRecord calcRecord = CalculationRecordFactory.makeCalculationRecord(getDatasetId(), record.getId());
       CalculationDBFactory.getCalculationDB().getCalculationValues(getDataSource(), calcRecord);
       calculationData.add(calcRecord);
     }
+
+    List<String> diagnosticHeadings = DiagnosticDataDB.getDiagnosticSensors(getDataSource(), getDataset().getInstrumentId());
+    Map<Long, Map<String, Double>> diagnosticData = DiagnosticDataDB.getDiagnosticValues(getDataSource(), getDataset().getInstrumentId(), measurementIds);
 
     JSONArray json = new JSONArray();
 
@@ -208,6 +224,7 @@ public class ManualQcBean extends PlotPageBean {
         }
       }
 
+      // Calculation values
       List<String> calcColumns = calcData.getCalculationColumns();
 
       for (int j = 0; j < calcColumns.size(); j++) {
@@ -217,6 +234,17 @@ public class ManualQcBean extends PlotPageBean {
           obj.put(String.valueOf(columnIndex), JSONObject.NULL);
         } else {
           obj.put(String.valueOf(columnIndex), value);
+        }
+      }
+
+      // Diagnostic values
+      Map<String, Double> diagnosticValues = diagnosticData.get(dsData.getId());
+      for (String column : diagnosticHeadings) {
+        columnIndex++;
+        if (null == diagnosticValues.get(column)) {
+          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
+        } else {
+          obj.put(String.valueOf(columnIndex), diagnosticValues.get(column));
         }
       }
 
@@ -266,16 +294,17 @@ public class ManualQcBean extends PlotPageBean {
 
   @Override
   public String getAdditionalTableData() {
-    StringBuilder json = new StringBuilder();
-    json.append("{\"sensorColumnCount\":");
-    json.append(sensorColumnCount);
-    json.append(",\"calculationColumnCount\":");
-    json.append(calculationColumnCount);
-    json.append(",\"flagColumns\":[");
-    json.append(autoFlagColumn);
-    json.append(',');
-    json.append(userFlagColumn);
-    json.append("]}");
+    JSONObject json = new JSONObject();
+
+    json.put("sensorColumnCount", sensorColumnCount);
+    json.put("calculationColumnCount", calculationColumnCount);
+    json.put("diagnosticColumnCount", diagnosticColumnCount);
+
+    JSONArray flagColumns = new JSONArray();
+    flagColumns.put(autoFlagColumn);
+    flagColumns.put(userFlagColumn);
+
+    json.put("flagColumns", flagColumns);
 
     return json.toString();
   }

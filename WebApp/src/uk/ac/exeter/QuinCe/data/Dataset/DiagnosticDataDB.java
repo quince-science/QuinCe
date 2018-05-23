@@ -43,7 +43,7 @@ public class DiagnosticDataDB {
       + "WHERE sensor_type LIKE 'Diagnostic: %' AND "
       + "file_definition_id IN "
       + "(SELECT file_definition_id FROM file_definition WHERE instrument_id = ?) "
-      + "ORDER BY sensor_name";
+      + "ORDER BY sensor_type, sensor_name";
 
   /**
    * Store a set of diagnostic values
@@ -125,6 +125,73 @@ public class DiagnosticDataDB {
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
     }
+  }
+
+  /**
+   * Retrieve a set of diagnostic data values for a set of measurements.
+   * The values are returned in a nested HashMap. The outer level
+   * is identified by the measurement id. Within each ID is a
+   * map of sensor name -> sensor value.
+   *
+   * @param dataSource A data source
+   * @param measurementIds The IDs of the measurements whose diagnostic data is to be retrieved
+   * @param sensors The sensors whose data is to be retrieved
+   * @return The diagnostic data values
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   */
+  public static Map<Long, Map<String, Double>> getDiagnosticValues(DataSource dataSource, List<Long> measurementIds, List<String> sensors) throws MissingParamException, DatabaseException {
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(measurementIds, "measurementIds", true);
+    MissingParam.checkMissing(sensors, "sensors", true);
+
+    Connection conn = null;
+    Map<Long, Map<String, Double>> result = null;
+
+    try {
+      conn = dataSource.getConnection();
+      result = getDiagnosticValues(conn, measurementIds, sensors);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving diagnostic data", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+
+    return result;
+  }
+
+  /**
+   * Retrieve a set of diagnostic data values for a set of measurements.
+   * The values are returned in a nested HashMap. The outer level
+   * is identified by the measurement id. Within each ID is a
+   * map of sensor name -> sensor value.
+   *
+   * @param dataSource A data source
+   * @param measurementIds The IDs of the measurements whose diagnostic data is to be retrieved
+   * @param sensors The sensors whose data is to be retrieved
+   * @return The diagnostic data values
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   */
+  public static Map<Long, Map<String, Double>> getDiagnosticValues(DataSource dataSource, long instrumentId, List<Long> measurementIds) throws MissingParamException, DatabaseException {
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(measurementIds, "measurementIds", true);
+
+    Connection conn = null;
+    List<String> sensors = null;
+    Map<Long, Map<String, Double>> result = null;
+
+    try {
+      conn = dataSource.getConnection();
+      sensors = getDiagnosticSensors(conn, instrumentId);
+      result = getDiagnosticValues(conn, measurementIds, sensors);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving diagnostic data", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+
+    return result;
   }
 
   /**
@@ -276,6 +343,69 @@ public class DiagnosticDataDB {
 
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving diagnostic sensor names", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the list of diagnostic sensors for a given instrument
+   * @param conn A database connection
+   * @param instrumentId The instrument's database ID
+   * @return The list of diagnostic sensors
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   */
+  public static List<String> getDiagnosticSensors(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException {
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(instrumentId, "instrumentId");
+
+    Connection conn = null;
+    List<String> result = null;
+
+    try {
+      conn = dataSource.getConnection();
+      result = getDiagnosticSensors(conn, instrumentId);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving diagnostic data", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the list of diagnostic sensors for a given instrument
+   * @param conn A database connection
+   * @param instrumentId The instrument's database ID
+   * @return The list of diagnostic sensors
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   */
+  public static List<String> getDiagnosticSensors(Connection conn, long instrumentId) throws MissingParamException, DatabaseException {
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+
+    List<String> result = new ArrayList<String>();
+
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      stmt = conn.prepareStatement(GET_DIAGNOSTIC_SENSORS_QUERY);
+      stmt.setLong(1, instrumentId);
+
+      records = stmt.executeQuery();
+
+      while (records.next()) {
+        result.add(records.getString(2));
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting diagnostic sensor names", e);
     } finally {
       DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);

@@ -1,5 +1,6 @@
 var sensorColums = [];
 var calculationColumns = [];
+var diagnosticColumns = [];
 
 var plotSplitProportion = 0.5;
 
@@ -91,17 +92,14 @@ function renderTableColumns() {
 
   var tableMode = PF('tableModeSelector').getJQ().find(':checked').val();
 
-  if (tableMode == "sensors") {
-    jsDataTable.columns(sensorColumns).visible(true, false);
-    jsDataTable.columns(calculationColumns).visible(false, false);
-  } else if (tableMode == "calculations") {
-    jsDataTable.columns(sensorColumns).visible(false, false);
-    jsDataTable.columns(calculationColumns).visible(true, false);
-  }
+  jsDataTable.columns(sensorColumns).visible(tableMode == "sensors", false);
+  jsDataTable.columns(calculationColumns).visible(tableMode == "calculations", false);
+  jsDataTable.columns(diagnosticColumns).visible(tableMode == "diagnostics", false);
 
   // TODO This is an ugly hack to ensure the final fCO2 is always displayed.
-  var additionalData = JSON.parse($('#tableForm\\:additionalTableData').val());
-  jsDataTable.columns(additionalData.flagColumns[0] - 1).visible(true, true);
+  if (tableMode != "diagnostics") {
+    jsDataTable.columns($.inArray("fCO2", columnHeadings)).visible(true, true);
+  }
 }
 
 /*
@@ -111,7 +109,7 @@ function getColumnDefs() {
   var additionalData = JSON.parse($('#tableForm\\:additionalTableData').val());
 
   sensorColumns = [];
-  var colIndex = 3;
+  var colIndex = 3; //Date/time, lon and lat are the first three columns so skip them
   for (i = 0; i < additionalData.sensorColumnCount; i++) {
     colIndex++;
     sensorColumns.push(colIndex);
@@ -123,7 +121,13 @@ function getColumnDefs() {
     calculationColumns.push(colIndex);
   }
 
-  var numericCols = $.merge($.merge([2, 3], sensorColumns), calculationColumns);
+  diagnosticColumns = [];
+  for (i = 0; i < additionalData.diagnosticColumnCount; i++) {
+    colIndex++;
+    diagnosticColumns.push(colIndex);
+  }
+
+  var numericCols = $.merge($.merge($.merge([2, 3], sensorColumns), calculationColumns), diagnosticColumns);
 
   return [
         {"className": "centreCol", "targets": additionalData.flagColumns},
