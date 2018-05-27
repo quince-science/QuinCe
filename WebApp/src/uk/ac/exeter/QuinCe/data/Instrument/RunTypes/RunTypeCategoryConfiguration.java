@@ -124,12 +124,16 @@ public class RunTypeCategoryConfiguration {
    * @param includeIgnored Specifies whether the IGNORED category should be included
    * @return The run type categories
    */
-  public List<RunTypeCategory> getCategories(boolean includeIgnored) {
+  public List<RunTypeCategory> getCategories(boolean includeIgnored, boolean includeAlias) {
     List<RunTypeCategory> result = new ArrayList<RunTypeCategory>(categories);
     result.add(RunTypeCategory.EXTERNAL_STANDARD_CATEGORY);
 
     if (includeIgnored) {
       result.add(RunTypeCategory.IGNORED_CATEGORY);
+    }
+
+    if (includeAlias) {
+      result.add(RunTypeCategory.ALIAS_CATEGORY);
     }
 
     return result;
@@ -147,6 +151,8 @@ public class RunTypeCategoryConfiguration {
 
     if (categoryCode.equalsIgnoreCase(RunTypeCategory.IGNORED_CATEGORY.getCode())) {
       result = RunTypeCategory.IGNORED_CATEGORY;
+    } else if (categoryCode.equalsIgnoreCase(RunTypeCategory.ALIAS_CATEGORY.getCode())) {
+        result = RunTypeCategory.ALIAS_CATEGORY;
     } else if (categoryCode.equalsIgnoreCase(RunTypeCategory.EXTERNAL_STANDARD_CATEGORY.getCode())) {
       result = RunTypeCategory.EXTERNAL_STANDARD_CATEGORY;
     } else {

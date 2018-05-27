@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +13,9 @@ import java.util.TreeMap;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
+
+import org.primefaces.json.JSONArray;
+import org.primefaces.json.JSONObject;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
@@ -27,6 +29,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
@@ -286,7 +290,7 @@ public class NewInstrumentBean extends FileUploadBean {
   /**
    * The file for which a run type is being assigned
    */
-  private String runTypeAssignFile = null;
+  private int runTypeAssignFile = -1;
 
   /**
    * The run type name to be assigned to a Run Type Category
@@ -298,6 +302,11 @@ public class NewInstrumentBean extends FileUploadBean {
    * run type is being assigned to
    */
   private String runTypeAssignCode = null;
+
+  /**
+   * The run type that the assigned run type is aliased to
+   */
+  private String runTypeAssignAliasTo = null;
 
   /**
    * The pre-flushing time
@@ -1428,14 +1437,14 @@ public class NewInstrumentBean extends FileUploadBean {
    * @throws ResourceException If the Resource Manager cannot be accessed
    */
   public List<RunTypeCategory> getRunTypeCategories() throws ResourceException {
-    return ServletUtils.getResourceManager().getRunTypeCategoryConfiguration().getCategories(true);
+    return ServletUtils.getResourceManager().getRunTypeCategoryConfiguration().getCategories(true, true);
   }
 
   /**
    * Get the file to which a run type is being assigned
    * @return The file
    */
-  public String getRunTypeAssignFile() {
+  public int getRunTypeAssignFile() {
     return runTypeAssignFile;
   }
 
@@ -1443,7 +1452,7 @@ public class NewInstrumentBean extends FileUploadBean {
    * Set the file to which a run type is being assigned
    * @param runTypeAssignFile The file
    */
-  public void setRunTypeAssignFile(String runTypeAssignFile) {
+  public void setRunTypeAssignFile(int runTypeAssignFile) {
     this.runTypeAssignFile = runTypeAssignFile;
   }
 
@@ -1480,6 +1489,22 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
+   * Get the name of the run type that the assigned run type is aliased to
+   * @return The aliased run type
+   */
+  public String getRunTypeAssignAliasTo() {
+    return runTypeAssignAliasTo;
+  }
+
+  /**
+   * Get the name of the run type that the assigned run type is aliased to
+   * @param runTypeAssignAliasTo The aliased run type
+   */
+  public void setRunTypeAssignAliasTo(String runTypeAssignAliasTo) {
+    this.runTypeAssignAliasTo = runTypeAssignAliasTo;
+  }
+
+  /**
    * Assign a run type to a Run Type Category
    * @throws NoSuchCategoryException If the chosen category does not exist
    */
@@ -1489,9 +1514,13 @@ public class NewInstrumentBean extends FileUploadBean {
     RunTypeCategory category = null;
     if (null != runTypeAssignCode && runTypeAssignCode.length() > 0) {
       category = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategory(runTypeAssignCode);
-    }
 
-    file.setRunTypeCategory(runTypeAssignName, category);
+      if (category.equals(RunTypeCategory.ALIAS_CATEGORY)) {
+        file.setRunTypeCategory(runTypeAssignName, runTypeAssignAliasTo);
+      } else {
+        file.setRunTypeCategory(runTypeAssignName, category);
+      }
+    }
   }
 
   /**
@@ -1501,7 +1530,7 @@ public class NewInstrumentBean extends FileUploadBean {
   public String getCategoryAssignments() {
 
     // Set up the category list
-    List<RunTypeCategory> categories = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategories(false);
+    List<RunTypeCategory> categories = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategories(false, false);
     TreeMap<RunTypeCategory, Integer> assignedCategories = new TreeMap<RunTypeCategory, Integer>();
 
     for (RunTypeCategory category : categories) {
@@ -1510,41 +1539,32 @@ public class NewInstrumentBean extends FileUploadBean {
 
     // Find all the assigned categories from each file
     for (FileDefinition file : instrumentFiles) {
-      TreeMap<String, RunTypeCategory> fileRunTypes = file.getRunTypes();
+      RunTypeAssignments fileRunTypes = file.getRunTypes();
       if (null != fileRunTypes) {
-        for (RunTypeCategory category : fileRunTypes.values()) {
-          if (!category.equals(RunTypeCategory.IGNORED_CATEGORY)) {
-            assignedCategories.put(category, assignedCategories.get(category) + 1);
+        for (RunTypeAssignment assignment : fileRunTypes.values()) {
+          if (!assignment.isAlias()) {
+            RunTypeCategory category = assignment.getCategory();
+            if (!category.equals(RunTypeCategory.IGNORED_CATEGORY)) {
+              assignedCategories.put(category, assignedCategories.get(category) + 1);
+            }
           }
         }
       }
     }
 
     // Make the JSON output
-    StringBuilder result = new StringBuilder();
+    JSONArray json = new JSONArray();
 
-    result.append('[');
-
-    int counter = 0;
     for (Map.Entry<RunTypeCategory, Integer> entry : assignedCategories.entrySet()) {
-      counter++;
+      JSONArray jsonEntry = new JSONArray();
+      jsonEntry.put(entry.getKey().getName());
+      jsonEntry.put(entry.getValue());
+      jsonEntry.put(entry.getKey().getMinCount());
 
-      result.append("[\"");
-      result.append(entry.getKey().getName());
-      result.append("\",");
-      result.append(entry.getValue());
-      result.append(',');
-      result.append(entry.getKey().getMinCount());
-      result.append(']');
-
-      if (counter < assignedCategories.size()) {
-        result.append(',');
-      }
+      json.put(jsonEntry);
     }
 
-    result.append(']');
-
-    return result.toString();
+    return json.toString();
   }
 
   /**
@@ -1560,53 +1580,41 @@ public class NewInstrumentBean extends FileUploadBean {
    * @return The run type assignments
    */
   public String getRunTypeAssignments() {
-    StringBuilder result = new StringBuilder();
+    JSONArray json = new JSONArray();
 
-    List<String> runTypeAssignments = new ArrayList<String>();
-
-    for (FileDefinition file : instrumentFiles) {
+    for (int i = 0; i < instrumentFiles.size(); i++) {
+      FileDefinition file = instrumentFiles.get(0);
       if (file.getRunTypeColumn() != -1) {
-        TreeMap<String, RunTypeCategory> runTypes = file.getRunTypes();
-        StringBuilder fileAssignments = new StringBuilder();
+        RunTypeAssignments assignments = file.getRunTypes();
 
-        fileAssignments.append("{\"file\":\"");
-        fileAssignments.append(file.getFileDescription());
-        fileAssignments.append("\",\"assignments\":[");
+        JSONObject fileAssignments = new JSONObject();
 
-        int entryCounter = 0;
-        for (Map.Entry<String, RunTypeCategory> entry : runTypes.entrySet()) {
-          entryCounter++;
+        fileAssignments.put("index", i);
 
-          fileAssignments.append("{\"runType\":\"");
-          fileAssignments.append(entry.getKey());
-          fileAssignments.append("\",\"category\":\"");
-          fileAssignments.append(entry.getValue().getCode());
-          fileAssignments.append("\"}");
+        JSONArray jsonAssignments = new JSONArray();
 
-          if (entryCounter < runTypes.size()) {
-            fileAssignments.append(',');
+        for (RunTypeAssignment assignment : assignments.values()) {
+          JSONObject jsonAssignment = new JSONObject();
+          jsonAssignment.put("runType", assignment.getRunType());
+
+          RunTypeCategory category = assignment.getCategory();
+          if (null == category) {
+            jsonAssignment.put("category", JSONObject.NULL);
+            jsonAssignment.put("aliasTo", assignment.getAliasTo());
+          } else {
+            jsonAssignment.put("category", assignment.getCategory().getCode());
+            jsonAssignment.put("aliasTo", JSONObject.NULL);
           }
+
+          jsonAssignments.put(jsonAssignment);
         }
 
-        fileAssignments.append("]}");
-
-        runTypeAssignments.add(fileAssignments.toString());
+        fileAssignments.put("assignments", jsonAssignments);
+        json.put(fileAssignments);
       }
     }
 
-
-    result.append("[");
-
-    for (int i = 0; i < runTypeAssignments.size(); i++) {
-      result.append(runTypeAssignments.get(i));
-      if (i < runTypeAssignments.size() - 1) {
-        result.append(',');
-      }
-    }
-
-    result.append(']');
-
-    return result.toString();
+    return json.toString();
   }
 
   /**

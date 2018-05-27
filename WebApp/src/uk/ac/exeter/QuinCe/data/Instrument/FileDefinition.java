@@ -5,11 +5,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -141,7 +142,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * The list of run type values for the instrument
    */
-  protected TreeMap<String, RunTypeCategory> runTypes = null;
+  protected RunTypeAssignments runTypes = null;
 
   /**
    * The file set of which this definition is a member
@@ -542,7 +543,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * {@code null}.
    * @return The run types
    */
-  public TreeMap<String, RunTypeCategory> getRunTypes() {
+  public RunTypeAssignments getRunTypes() {
     return runTypes;
   }
 
@@ -562,6 +563,17 @@ public class FileDefinition implements Comparable<FileDefinition> {
   }
 
   /**
+   * Get the list of run type values with the specified value excluded
+   * @param exclusion The value to exclude from the list
+   * @return The list of run types without the excluded value
+   */
+  public List<String> getRunTypeValuesWithExclusion(String exclusion) {
+    List<String> runTypeValues = getRunTypeValues();
+    runTypeValues.remove(exclusion);
+    return runTypeValues;
+  }
+
+  /**
    * Set the index of the column containing the run type
    * @param runTypeColumn The Run Type column
    */
@@ -577,7 +589,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
     if (runTypeColumn == -1) {
       runTypes = null;
     } else {
-      runTypes = new TreeMap<String, RunTypeCategory>();
+      runTypes = new RunTypeAssignments();
     }
   }
 
@@ -601,7 +613,20 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @param category The run type category
    */
   public void setRunTypeCategory(String runType, RunTypeCategory category) {
-    runTypes.put(runType, category);
+    runTypes.put(runType, new RunTypeAssignment(runType, category));
+  }
+
+  /**
+   * Set the run type category for a given run type
+   * @param runType The run type
+   * @param category The run type category
+   */
+  public void setRunTypeCategory(String runType, String alias) {
+    // TODO We should check to make sure that the aliased run type actually exists
+    //      and that it's not a circular alias
+    //      I'm not sure how hard this is at the minute so I'm ignoring it -
+    //      the UI should prevent it from happening anyway
+    runTypes.put(runType, new RunTypeAssignment(runType, alias));
   }
 
   /**
@@ -787,6 +812,6 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @throws FileDefinitionException If the Run Type is not recognised
    */
   public RunTypeCategory getRunTypeCategory(String line) throws FileDefinitionException {
-    return runTypes.get(getRunType(line));
+    return runTypes.get(getRunType(line)).getCategory();
   }
 }

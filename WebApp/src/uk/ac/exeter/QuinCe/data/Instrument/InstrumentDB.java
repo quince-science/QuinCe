@@ -26,7 +26,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LatitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionSpecification;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunType;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -99,8 +99,8 @@ public class InstrumentDB {
    * Statement for inserting run types
    */
   private static final String CREATE_RUN_TYPE_STATEMENT = "INSERT INTO run_type ("
-      + "file_definition_id, run_name, category_code" // 3
-      + ") VALUES (?, ?, ?)";
+      + "file_definition_id, run_name, category_code, alias_to" // 4
+      + ") VALUES (?, ?, ?, ?)";
 
   /**
    * Query for retrieving the list of instruments owned by a particular user
@@ -215,16 +215,9 @@ public class InstrumentDB {
 
             // Run Types
             if (null != file.getRunTypes()) {
-              for (Map.Entry<String, RunTypeCategory> entry : file.getRunTypes().entrySet()) {
-                RunType runType = new RunType(
-                    entry.getKey(),
-                    entry.getValue().getCode());
+              for (RunTypeAssignment assignment : file.getRunTypes().values()) {
                 PreparedStatement runTypeStatement =
-                    storeFileRunType(
-                        conn,
-                        fileId,
-                        runType
-                    );
+                    storeFileRunType(conn, fileId, assignment);
                 subStatements.add(runTypeStatement);
               }
             }
@@ -966,11 +959,18 @@ public class InstrumentDB {
   public static PreparedStatement storeFileRunType(
       Connection conn,
       long fileId,
-      RunType runType) throws SQLException {
+      RunTypeAssignment runType) throws SQLException {
     PreparedStatement runTypeStatement = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
     runTypeStatement.setLong(1, fileId);
-    runTypeStatement.setString(2, runType.getRunTypeName());
-    runTypeStatement.setString(3, runType.getRunTypeCategoryCode());
+    runTypeStatement.setString(2, runType.getRunType());
+
+    if (runType.isAlias()) {
+      runTypeStatement.setString(3, RunTypeCategory.ALIAS_CATEGORY.getCode());
+      runTypeStatement.setString(4, runType.getAliasTo());
+    } else {
+      runTypeStatement.setString(3, runType.getCategory().getCode());
+      runTypeStatement.setNull(4, Types.VARCHAR);
+    }
 
     runTypeStatement.execute();
     return runTypeStatement;
