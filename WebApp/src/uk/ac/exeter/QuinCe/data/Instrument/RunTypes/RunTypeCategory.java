@@ -28,6 +28,11 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
   public static RunTypeCategory EXTERNAL_STANDARD_CATEGORY = null;
 
   /**
+   * The special ALIAS run type category
+   */
+  public static RunTypeCategory ALIAS_CATEGORY = null;
+
+  /**
    * The category code
    */
   private String code;
@@ -53,6 +58,7 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
   static {
     try {
       IGNORED_CATEGORY = new RunTypeCategory("IGN", "IGNORED", 0, 0);
+      ALIAS_CATEGORY = new RunTypeCategory("ALIAS", "Alias", 0, 0);
       EXTERNAL_STANDARD_CATEGORY = new RunTypeCategory("EXT", "External Standard", 1, 0);
     } catch (InvalidCategoryTypeException e) {
       // Do nothing
