@@ -404,6 +404,12 @@ td.labels {
   font-weight: 700;
 }
 
+td.labelsNoPad {
+  text-align: right;
+  padding-right: 10px;
+  font-weight: 700;
+}
+
 table .numericCol {
   text-align: right;
 }
