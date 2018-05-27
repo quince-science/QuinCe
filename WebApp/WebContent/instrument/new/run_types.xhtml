@@ -27,8 +27,10 @@
       <h:inputHidden id="assignCategoryFile" value="#{newInstrumentBean.runTypeAssignFile}"/>
       <h:inputHidden id="assignCategoryRunType" value="#{newInstrumentBean.runTypeAssignName}"/>
       <h:inputHidden id="assignCategoryCode" value="#{newInstrumentBean.runTypeAssignCode}"/>
+      <h:inputHidden id="assignAliasTo" value="#{newInstrumentBean.runTypeAssignAliasTo}"/>
+
       <p:commandLink id="assignCategoryLink" style="invisible" ajax="true" action="#{newInstrumentBean.assignRunTypeCategory}"
-        process="assignCategoryFile assignCategoryRunType assignCategoryCode" update="assignedCategories" oncomplete="renderAssignedCategories();"/>
+        process="assignCategoryFile assignCategoryRunType assignCategoryCode assignAliasTo" update="assignedCategories" oncomplete="renderAssignedCategories();"/>
 
 
       <p:fieldset id="categoriesPanel" legend="Run Type Categories" style="margin-bottom: 20px">
@@ -42,18 +44,23 @@
         </div>
 
         <div id="runTypeFiles">
-          <ui:repeat value="#{newInstrumentBean.instrumentFiles}" var="file">
+          <ui:repeat value="#{newInstrumentBean.instrumentFiles}" var="file" varStatus="fileStatus">
             <div class="runTypeFile">
               <p:fieldset legend="#{file.fileDescription}">
                 <table class="form">
                     <ui:repeat value="#{file.runTypeValues}" var="runType">
                       <tr>
-                          <td class="labels">#{runType}</td>
-                          <td>
-                            <p:selectOneMenu widgetVar="#{file.fileDescription}-#{runType}-menu" onchange="setRunTypeCategory('#{file.fileDescription}', '#{runType}', event.target.value)">
-                                <f:selectItems value="#{newInstrumentBean.runTypeCategories}" var="category" itemValue="#{category.code}" itemLabel="#{category.name}"/>
-                            </p:selectOneMenu>
-                          </td>
+                        <td class="labels">#{runType}</td>
+                        <td>
+                          <p:selectOneMenu widgetVar="#{fileStatus.index}-#{runType}-menu" onchange="setRunTypeCategory('#{fileStatus.index}', '#{runType}')">
+                            <f:selectItems value="#{newInstrumentBean.runTypeCategories}" var="category" itemValue="#{category.code}" itemLabel="#{category.name}"/>
+                          </p:selectOneMenu>
+                        </td>
+                        <td id="#{fileStatus.index}-#{runType}-aliasMenu" class="hidden">
+                          <p:selectOneMenu widgetVar="#{fileStatus.index}-#{runType}-alias" onchange="setRunTypeCategory('#{fileStatus.index}', '#{runType}')">
+                            <f:selectItems value="#{file.getRunTypeValuesWithExclusion(runType)}" var="runTypeAlias"/>
+                          </p:selectOneMenu>
+                        </td>
                     </tr>
                   </ui:repeat>
                 </table>

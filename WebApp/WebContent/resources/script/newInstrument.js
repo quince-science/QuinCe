@@ -3,6 +3,7 @@
 //************************************************
 
 allTimesOK = false;
+drawingPage = false;
 
 
 //************************************************
@@ -1210,11 +1211,25 @@ function removeFile(fileName) {
 * RUN TYPES PAGE
 *
 *******************************************************/
-function setRunTypeCategory(file, runType, category) {
-  $('#newInstrumentForm\\:assignCategoryFile').val(file);
-  $('#newInstrumentForm\\:assignCategoryRunType').val(runType);
-  $('#newInstrumentForm\\:assignCategoryCode').val(category);
-  $('#newInstrumentForm\\:assignCategoryLink').click();
+function setRunTypeCategory(fileIndex, runType) {
+
+  if (!drawingPage) {
+    var runTypeCategory = PF(fileIndex + '-' + runType + '-menu').getSelectedValue();
+    var aliasTo = null;
+
+    if (runTypeCategory == 'ALIAS') {
+      $('#' + fileIndex + '-' + runType + '-aliasMenu').show();
+      aliasTo = PF(fileIndex + '-' + runType + '-alias').getSelectedValue();
+    } else {
+      $('#' + fileIndex + '-' + runType + '-aliasMenu').hide();
+    }
+
+    $('#newInstrumentForm\\:assignCategoryFile').val(fileIndex);
+    $('#newInstrumentForm\\:assignCategoryRunType').val(runType);
+    $('#newInstrumentForm\\:assignCategoryCode').val(runTypeCategory);
+    $('#newInstrumentForm\\:assignAliasTo').val(aliasTo);
+    $('#newInstrumentForm\\:assignCategoryLink').click();
+  }
 }
 
 function renderAssignedCategories() {
@@ -1254,12 +1269,23 @@ function renderAssignedCategories() {
 }
 
 function populateRunTypeMenus() {
+  drawingPage = true;
   var runTypeAssignments = JSON.parse($('#newInstrumentForm\\:assignedRunTypes').val());
   for (var i = 0; i < runTypeAssignments.length; i++) {
     var file = runTypeAssignments[i];
 
     for (var j = 0; j < file['assignments'].length; j++) {
-      PF(file["file"] + "-" + file["assignments"][j]["runType"] + "-menu").selectValue(file["assignments"][j]["category"]);
+      var category = file["assignments"][j]["category"];
+      if (null == category) {
+        // Alias
+          PF(file["index"] + "-" + file["assignments"][j]["runType"] + "-menu").selectValue('ALIAS');
+        $('#' + file["index"] + '-' + file["assignments"][j]["runType"] + '-aliasMenu').show();
+        PF(file["index"] + "-" + file["assignments"][j]["runType"] + "-alias").selectValue(file["assignments"][j]["aliasTo"]);
+      } else {
+        PF(file["index"] + "-" + file["assignments"][j]["runType"] + "-menu").selectValue(category);
+        $('#' + file["index"] + '-' + file["assignments"][j]["runType"] + '-aliasMenu').hide();
+      }
     }
   }
+  drawingPage = false;
 }
