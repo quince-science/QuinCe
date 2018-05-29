@@ -25,10 +25,21 @@
         <div id="timelineContainer"></div>
         <script>
           var groups = JSON.parse('#{dataSetsBean.fileDefinitionsJson}');
-          var filesAndDataSets =  new vis.DataSet(JSON.parse('#{dataSetsBean.timelineEntriesJson}'));
-          var dataSetNames = JSON.parse('#{dataSetsBean.dataSetNamesJson}');
+          var dataSetJSON = JSON.parse('#{dataSetsBean.timelineEntriesJson}');
+          // Treat dates as dates in the dataset
+          dataSetJSON.map(function (row) {
+            row.start = new Date(row.start);
+            row.end = new Date(row.end);
+          });
 
+          var filesAndDataSets =  new vis.DataSet(dataSetJSON);
+          var dataSetNames = JSON.parse('#{dataSetsBean.dataSetNamesJson}');
           var timeline = new vis.Timeline(timelineContainer, filesAndDataSets, groups, TIMELINE_OPTIONS);
+          timeline.on('click', function (event) {
+            if (event.item) {
+              setRangeFromClick(event.time, filesAndDataSets)
+            }
+          })
           $( document ).ready(function() {
             // Make sure DOM is loaded befor calling this
             PF('pAddButton').disable();

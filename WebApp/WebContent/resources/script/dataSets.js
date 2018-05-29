@@ -28,13 +28,13 @@ function processNewDataSet(eventType) {
   if (null == PF('pStartDate').getDate()) {
     newDataSetItem['start'] = null;
   } else {
-    newDataSetItem['start'] = new Date(PF('pStartDate').getDate().toString().substring(0,24) + 'Z');
+    newDataSetItem['start'] = getDateField('pStartDate');
   }
 
   if (null == PF('pEndDate').getDate()) {
     newDataSetItem['end'] = null;
   } else {
-    newDataSetItem['end'] = new Date(PF('pEndDate').getDate().toString().substring(0,24) + 'Z');
+    newDataSetItem['end'] = getDateField('pEndDate');
   }
   let validData = validateNewDataSet();
   if (validData) {
@@ -95,7 +95,8 @@ function validateNewDataSet() {
 
   // Check that we don't overlap any other data sets
   if (null == errorString) {
-    if (dataSetOverlaps(newDataSetItem['start'].getTime(), newDataSetItem['end'].getTime())) {
+    if (dataSetOverlaps(newDataSetItem['start'].getTime(),
+        newDataSetItem['end'].getTime())) {
       errorString = 'Data set overlaps with existing data set';
     }
   }
@@ -227,4 +228,65 @@ function hasAllFiles(newStart, newEnd) {
   }
 
   return result;
+}
+
+function setRangeFromClick(date, datasets) {
+  const data = datasets.get();
+  var min = new Date(-8640000000000000);
+  var max = new Date(8640000000000000);
+  var max_file_date = new Date(-8640000000000000);
+  var min_file_date = new Date(8640000000000000);
+  var inside_existing = false;
+  for (var i = 0; i < data.length; i++) {
+    var start = data[i].start;
+    var end = data[i].end;
+
+    if (data[i].type == 'range') {
+      if (start < min_file_date) {
+        min_file_date = start;
+      }
+      if (end > max_file_date) {
+        max_file_date = end;
+      }
+    }
+    if (data[i].type == "background" && data[i].className == 'timelineDataSet'){
+      if (start < date && date < end){
+        inside_existing = true;
+      }
+      else {
+        if (date < start && max > start) {
+          max = start
+        }
+        if (date > end && min < end) {
+          min = end
+        }
+      }
+    }
+  }
+  if (min < min_file_date) {
+    min = min_file_date
+  }
+  if (max > max_file_date) {
+    max = max_file_date
+  }
+  if (!inside_existing) {
+    setDateField('pStartDate', min);
+    setDateField('pEndDate', max);
+  }
+  else {
+    alert('You clicked on an area that already has a data set defined');
+  }
+}
+
+function getDateField(name) {
+  var date = PF(name).getDate();
+  if (date) {
+    date.setTime(date.getTime() - date.getTimezoneOffset() * 60 * 1000)
+  }
+  return date;
+}
+
+function setDateField(name, date) {
+  PF(name).setDate(new Date(date.getTime()
+      + date.getTimezoneOffset() * 60 * 1000));
 }
