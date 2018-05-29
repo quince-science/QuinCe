@@ -11,6 +11,10 @@
   border-color: #AED0EA;
 }
 
+.vis-range {
+  cursor: pointer;
+}
+
 .timelineDataSet {
   font-weight: 700;
   background-color: #226EA0 !important;
