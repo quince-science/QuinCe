@@ -1,5 +1,5 @@
 # Table for diagnostic data - one record per sensor per measurement
-CREATE TABLE `diagnostic`.`diagnostic_data` (
+CREATE TABLE `diagnostic_data` (
   `measurement_id` INT NOT NULL,
   `sensor_name` VARCHAR(100) NOT NULL,
   `value` DOUBLE NULL,
