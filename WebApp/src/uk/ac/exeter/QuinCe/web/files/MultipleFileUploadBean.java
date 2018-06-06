@@ -1,18 +1,15 @@
 package uk.ac.exeter.QuinCe.web.files;
 
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
 
 import org.primefaces.model.UploadedFile;
 
@@ -22,7 +19,6 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Files.FileExistsException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunType;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
@@ -144,6 +140,8 @@ public class MultipleFileUploadBean extends FileUploadBean {
       file.setDataFile(null);
       file.putMessage("The file could not be processed: " + e.getMessage(), FacesMessage.SEVERITY_ERROR);
     }
+
+    file.setProcessed(true);
   }
 
   /**
@@ -171,26 +169,18 @@ public class MultipleFileUploadBean extends FileUploadBean {
    * Called when run types have been updated. This will initiate
    * re-processing of the uploaded files.
    */
-  public void runTypesUpdated() {
-    Map<String,String> params = FacesContext
-        .getCurrentInstance()
-        .getExternalContext()
-        .getRequestParameterMap();
-    int fileIndex = Integer.parseInt(params.get("fileIndex"));
+  public void updateRunTypes(int fileIndex) {
     DataFile dataFile = dataFiles.get(fileIndex).getDataFile();
-    for(RunType runType: dataFile.getMissingRunTypes()) {
-      if (runType.getRunTypeCategoryCode() != null
-          && !"".equals(runType.getRunTypeCategoryCode())) {
-        try {
-          InstrumentDB.storeFileRunType(
-              getDataSource().getConnection(),
-              dataFile.getFileDefinition().getDatabaseId(),
-              runType);
-        } catch (SQLException e) {
-          e.printStackTrace();
-        }
-      }
+
+    try {
+      InstrumentDB.storeFileRunTypes(
+          getDataSource(),
+          dataFile.getFileDefinition().getDatabaseId(),
+          dataFile.getMissingRunTypes());
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+
     unsetDataFiles();
   }
 

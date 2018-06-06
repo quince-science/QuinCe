@@ -22,27 +22,62 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileMessage;
  *
  */
 public class UploadedDataFile {
+
+  /**
+   * The uploaded file
+   */
   private UploadedFile uploadedFile;
+
+  /**
+   * Indicates whether or not the file should be stored
+   */
   private boolean store = true;
+
+  /**
+   * The processed file
+   */
   private DataFile dataFile = null;
+
+  /**
+   * Error messages for the file
+   */
   private ArrayList<FacesMessage> messages = new ArrayList<>();
 
+  /**
+   * Indicates whether or not the file has been
+   * extracted and processed
+   */
+  private boolean processed = false;
+
+  /**
+   * Basic constructor - reads the file contents ready for processing
+   * @param file The uploaded file
+   */
   public UploadedDataFile(UploadedFile file) {
     setUploadedFile(file);
   }
+
   /**
-   * @return the uploadedFile
+   * Get the uploaded file
+   * @return The uploaded file
    */
   public UploadedFile getUploadedFile() {
     return uploadedFile;
   }
+
   /**
+   * Assign the uploaded file and extract its contents
    * @param uploadedFile the uploadedFile to set
    */
   public void setUploadedFile(UploadedFile uploadedFile) {
     this.uploadedFile = uploadedFile;
-    String[] fileLines = getLines();
+    getLines();
   }
+
+  /**
+   * Extract the file contents as individual lines
+   * @return The file lines
+   */
   public String[] getLines() {
     String fileContent = new String(uploadedFile.getContents(), StandardCharsets.UTF_8);
     if (null == fileContent || fileContent.trim().length() == 0) {
@@ -52,7 +87,8 @@ public class UploadedDataFile {
   }
 
   /**
-   * @return the base file name
+   * Get the filename of the file
+   * @return The filename
    */
   public String getName() {
     return uploadedFile.getFileName();
@@ -116,31 +152,6 @@ public class UploadedDataFile {
   }
 
   /**
-   * @return the messageClass
-   */
-  public String getMessageClass() {
-    String messageClass = "";
-    Severity level = null;
-    for (FacesMessage message: messages) {
-      if (level == null || message.getSeverity().compareTo(level) > 0) {
-        level = message.getSeverity();
-      }
-    }
-    messageClass = getSeverityLabel(level);
-    if ("".equals(messageClass) && dataFile != null && dataFile.getMessages().size() > 0) {
-      messageClass = getSeverityLabel(FacesMessage.SEVERITY_INFO);
-    }
-    return messageClass;
-  }
-
-  public String getMissingRunTypeClass() {
-    if (null != dataFile && dataFile.getMissingRunTypes().size() > 0) {
-      return "shown";
-    }
-    return "hidden";
-  }
-
-  /**
    * @param summary
    * @param severityError
    */
@@ -193,5 +204,40 @@ public class UploadedDataFile {
       severityClass = "info";
     }
     return severityClass;
+  }
+
+  /**
+   * Determine whether or not this file has been extraced
+   * and processed.
+   * @return {@code true} if the file has been processed; {@code false} if it has not
+   */
+  public boolean isProcessed() {
+    return processed;
+  }
+
+  /**
+   * Set the flag indicating whether or not the file has been processed
+   * @param processed The processed flag
+   */
+  public void setProcessed(boolean processed) {
+    this.processed = processed;
+  }
+
+  /**
+   * Determine whether or not error messages have been
+   * generated for this file
+   * @return {@code true} if there are messages; {@code false} if there are none
+   */
+  public boolean getHasMessages() {
+    return null != messages && messages.size() > 0;
+  }
+
+  /**
+   * Determine whether or not unrecognised run types have been detected
+   * in the file
+   * @return {@code true} if unrecognised run types have been found; {@code false} otherwise
+   */
+  public boolean getHasUnrecognisedRunTypes() {
+    return null != dataFile && dataFile.getMissingRunTypes().size() > 0;
   }
 }
