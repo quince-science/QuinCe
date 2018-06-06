@@ -2,7 +2,8 @@ package uk.ac.exeter.QuinCe.data.Instrument;
 
 import java.io.Serializable;
 
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunType;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 
 /**
  * Exception for missing run types in files.
@@ -17,9 +18,9 @@ public class MissingRunTypeException extends FileDefinitionException implements 
    */
   private static final long serialVersionUID = 790385140808465553L;
 
-  private RunType runType;
+  private RunTypeAssignment runType;
 
-  public RunType getRunType() {
+  public RunTypeAssignment getRunType() {
     return runType;
   }
 
@@ -29,6 +30,6 @@ public class MissingRunTypeException extends FileDefinitionException implements 
    */
   public MissingRunTypeException(String message, String runType) {
     super(message);
-    this.runType = new RunType(runType);
+    this.runType = new RunTypeAssignment(runType, RunTypeCategory.IGNORED_CATEGORY);
   }
 }

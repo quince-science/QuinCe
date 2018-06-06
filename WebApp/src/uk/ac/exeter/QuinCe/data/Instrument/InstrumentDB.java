@@ -956,10 +956,24 @@ public class InstrumentDB {
 
   }
 
+  /**
+   * Store a run type assignment for a file
+   * @param conn A database connection
+   * @param fileId The database ID of the file definition to which the run type is assigned
+   * @param runType The run type assignment
+   * @return The statement used to store the assignment, so it can be closed as part of a larger transaction
+   * @throws SQLException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   */
   public static PreparedStatement storeFileRunType(
       Connection conn,
       long fileId,
-      RunTypeAssignment runType) throws SQLException {
+      RunTypeAssignment runType) throws SQLException, MissingParamException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkPositive(fileId, "fileId");
+    MissingParam.checkMissing(runType, "runType");
+
     PreparedStatement runTypeStatement = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
     runTypeStatement.setLong(1, fileId);
     runTypeStatement.setString(2, runType.getRunType());
@@ -974,5 +988,44 @@ public class InstrumentDB {
 
     runTypeStatement.execute();
     return runTypeStatement;
+  }
+
+  /**
+   * Store a set of run type assignments for a file
+   * @param dataSource A data source
+   * @param fileId The file's database ID
+   * @param assignments The assignments to store
+   * @throws SQLException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   */
+  public static void storeFileRunTypes(
+      DataSource dataSource,
+      long fileId,
+      List<RunTypeAssignment> assignments) throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkPositive(fileId, "fileDefinitionId");
+    MissingParam.checkMissing(assignments, "runTypes", true);
+
+    List<PreparedStatement> stmts = new ArrayList<PreparedStatement>(assignments.size());
+    Connection conn = null;
+
+    try {
+      conn = dataSource.getConnection();
+      conn.setAutoCommit(false);
+
+      for (RunTypeAssignment assignment : assignments) {
+        stmts.add(storeFileRunType(conn, fileId, assignment));
+      }
+
+      conn.commit();
+    } catch (SQLException e) {
+      DatabaseUtils.rollBack(conn);
+      throw new DatabaseException("Error while storing run type assignments", e);
+    } finally {
+      DatabaseUtils.closeStatements(stmts);
+      DatabaseUtils.closeConnection(conn);
+    }
+
   }
 }

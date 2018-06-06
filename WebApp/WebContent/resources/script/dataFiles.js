@@ -26,8 +26,17 @@ function renderMessages(messages) {
   PF('msgDialog').show();
 }
 
-function reProcessUploadedFiles() {
+function reprocessUploadedFiles() {
   $('#uploadForm\\:fileList_data>tr').each(function() {
     extractNext();
   });
+}
+
+function runTypeChanged(rowIndex, runTypeIndex) {
+  var runType = PF('missingRunType_' + rowIndex + '_' + runTypeIndex).getSelectedValue();
+  if (runType == 'ALIAS') {
+    PF('alias_' + rowIndex + '_' + runTypeIndex).jq.show()
+  } else {
+    PF('alias_' + rowIndex + '_' + runTypeIndex).jq.hide()
+  }
 }
