@@ -16,7 +16,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunType;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
@@ -94,11 +94,11 @@ public class DataFile {
   /**
    * Run types in this file not defined in the file definition
    */
-  private Set<RunType> missingRunTypes = new HashSet<>();
+  private Set<RunTypeAssignment> missingRunTypes = new HashSet<RunTypeAssignment>();
 
 
-  public List<RunType> getMissingRunTypes() {
-    List<RunType> list = new ArrayList<>(missingRunTypes);
+  public List<RunTypeAssignment> getMissingRunTypes() {
+    List<RunTypeAssignment> list = new ArrayList<>(missingRunTypes);
     Collections.sort(list);
     return list;
   }
@@ -691,5 +691,24 @@ public class DataFile {
     loadContents();
     String fieldValue = fileDefinition.extractFields(contents.get(line)).get(field);
     return extractDoubleFieldValue(fieldValue, missingValue);
+  }
+
+  /**
+   * Get the list of run type values with the specified value excluded.
+   * This list will include all the run types from the stored file
+   * definition plus any missing run types (except that specified
+   * as the exclusion).
+   * @param exclusion The value to exclude from the list
+   * @return The list of run types without the excluded value
+   */
+  public List<String> getRunTypeValuesWithExclusion(String exclusion) {
+    List<String> runTypeValues = fileDefinition.getRunTypeValues();
+    for (RunTypeAssignment runTypeAssignment : missingRunTypes) {
+      if (!runTypeAssignment.getRunType().equals(exclusion)) {
+        runTypeValues.add(runTypeAssignment.getRunType());
+      }
+    }
+
+    return runTypeValues;
   }
 }

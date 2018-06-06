@@ -14,9 +14,12 @@ import uk.ac.exeter.QuinCe.User.UserPreferences;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.User.LoginBean;
+import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
+import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Several Managed Beans are used in the QuinCe application. This abstract class provides a
@@ -117,7 +120,7 @@ public abstract class BaseManagedBean {
    * @return The parameter value
    */
   public String getRequestParameter(String paramName) {
-    return (String) FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(paramName);
+    return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(paramName);
   }
 
   /**
@@ -365,5 +368,14 @@ public abstract class BaseManagedBean {
    */
   public void setForceInstrumentReload(boolean forceReload) {
     this.forceInstrumentReload = forceReload;
+  }
+
+  /**
+   * Get the list of available run type categories
+   * @return The run type categories
+   * @throws ResourceException If the Resource Manager cannot be accessed
+   */
+  public List<RunTypeCategory> getRunTypeCategories() throws ResourceException {
+    return ServletUtils.getResourceManager().getRunTypeCategoryConfiguration().getCategories(true, true);
   }
 }

@@ -393,6 +393,18 @@ div.fullPage {
   padding: 5px;
 }
 
+table.shrink {
+  table-layout: unset;
+}
+
+table.noborder {
+  border-width: 0px;
+}
+
+table.noborder td {
+  border-width: 0px;
+}
+
 table.form {
   width: 100%;
 }
@@ -700,6 +712,10 @@ table.fileDates {
 
 .ui-tabs .ui-tabs-nav li a.clickable {
   cursor: pointer;
+}
+
+.ui-datatable shrink {
+  width: unset;
 }
 
 @keyframes rowFlash {

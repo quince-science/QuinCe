@@ -44,9 +44,7 @@ import uk.ac.exeter.QuinCe.web.FileUploadBean;
 import uk.ac.exeter.QuinCe.web.Instrument.InstrumentListBean;
 import uk.ac.exeter.QuinCe.web.datasets.DataSetsBean;
 import uk.ac.exeter.QuinCe.web.files.DataFilesBean;
-import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
-import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Bean for collecting data about a new instrument
@@ -1429,15 +1427,6 @@ public class NewInstrumentBean extends FileUploadBean {
    */
   public String goToOtherInfo() {
     return NAV_OTHER_INFO;
-  }
-
-  /**
-   * Get the list of available run type categories
-   * @return The run type categories
-   * @throws ResourceException If the Resource Manager cannot be accessed
-   */
-  public List<RunTypeCategory> getRunTypeCategories() throws ResourceException {
-    return ServletUtils.getResourceManager().getRunTypeCategoryConfiguration().getCategories(true, true);
   }
 
   /**

@@ -1,5 +1,9 @@
 package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
 
+import java.util.List;
+
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
+
 /**
  * Stores details of the assignment of a given run type
  * to a run type category. Handles aliases to other run
@@ -16,12 +20,27 @@ package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
  */
 public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
+  /**
+   * The run type name
+   */
   private String runType;
 
+  /**
+   * The category to which the run type is assigned.
+   * If the run type is an alias, this will be {@code null}.
+   */
   private RunTypeCategory category;
 
+  /**
+   * Indicates whether or not this run type
+   * is an alias to another run type
+   */
   private boolean alias = false;
 
+  /**
+   * The run type to which this run type is
+   * aliased. {@code null} if it is not an alias
+   */
   private String aliasTo = null;
 
   /**
@@ -90,12 +109,28 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
   }
 
   /**
+   * Set the flag stating whether or not this run type is an alias
+   * @param alias The alias flag
+   */
+  public void setAlias(boolean alias) {
+    this.alias = alias;
+  }
+
+  /**
    * Get the run type to which this run type is aliased.
    * Returns {@code null} if this is not an alias
    * @return The alias
    */
   public String getAliasTo() {
     return aliasTo;
+  }
+
+  /**
+   * Set the run type to which this run type is aliased.
+   * @param aliasTo The alias
+   */
+  public void setAliasTo(String aliasTo) {
+    this.aliasTo = aliasTo;
   }
 
   @Override
@@ -134,5 +169,76 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
   @Override
   public int hashCode() {
     return runType.hashCode();
+  }
+
+  /**
+   * Get a human readable description of this assignment
+   * @return The assignment description
+   */
+  public String getAssignmentText() {
+    StringBuilder result = new StringBuilder();
+
+    if (alias) {
+      result.append("Alias to ");
+      result.append(aliasTo);
+    } else {
+      result.append(category.getName());
+    }
+
+    return result.toString();
+  }
+
+  /**
+   * Get the code for the assigned Run Type category.
+   * If no category is assigned, returns {@code null}
+   * @return The assigned category
+   */
+  public String getCategoryCode() {
+    String result = null;
+
+    if (null != category) {
+      if (isAlias()) {
+        result = "ALIAS";
+      } else {
+        result = category.getCode();
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Set a run type
+   * @param code
+   * @throws RunTypeCategoryException If the code is not recognised
+   */
+  public void setCategoryCode(String code) throws RunTypeCategoryException {
+    boolean categoryAssigned = false;
+
+    if (code.equals(RunTypeCategory.ALIAS_CATEGORY.getCode())) {
+      category = null;
+      alias = true;
+      categoryAssigned = true;
+    } else {
+      try {
+        List<RunTypeCategory> categories = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategories(true, true);
+        for (RunTypeCategory checkCategory : categories) {
+          if (checkCategory.getCode().equals(code)) {
+            category = checkCategory;
+            categoryAssigned = true;
+            break;
+          }
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+        throw e;
+      }
+    }
+
+    if (!categoryAssigned) {
+      RunTypeCategoryException e = new RunTypeCategoryException("Unrecognised run type '" + code + "'");
+      e.printStackTrace();
+      throw e;
+    }
   }
 }
