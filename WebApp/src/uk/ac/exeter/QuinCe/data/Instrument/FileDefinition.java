@@ -783,7 +783,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @return The run type
    * @throws FileDefinitionException If this file does not contain run types, the run type is not present, or the run type is not recognised
    */
-  public String getRunType(String line) throws FileDefinitionException {
+  public String getRunType(String line, boolean followAlias) throws FileDefinitionException {
     String result = null;
 
     if (!hasRunTypes()) {
@@ -797,7 +797,16 @@ public class FileDefinition implements Comparable<FileDefinition> {
             + runTypeValue + " on instrument to load this file.",
             runTypeValue);
         } else {
-          result = runTypeValue;
+          if (!followAlias) {
+            result = runTypeValue;
+          } else {
+            RunTypeAssignment assignment = runTypes.get(runTypeValue);
+            while (assignment.isAlias()) {
+              assignment = runTypes.get(assignment.getAliasTo());
+            }
+
+            result = assignment.getRunType();
+          }
         }
       }
     }
@@ -812,6 +821,6 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @throws FileDefinitionException If the Run Type is not recognised
    */
   public RunTypeCategory getRunTypeCategory(String line) throws FileDefinitionException {
-    return runTypes.get(getRunType(line)).getCategory();
+    return runTypes.getRunTypeCategory(getRunType(line, true));
   }
 }
