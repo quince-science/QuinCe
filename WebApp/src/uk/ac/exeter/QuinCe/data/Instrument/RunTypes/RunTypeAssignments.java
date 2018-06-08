@@ -30,6 +30,29 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
     return result;
   }
 
+  /**
+   * Get the category to which the specified run type is assigned.
+   * If the run type is an alias, category of the run type
+   * to which the specified type is aliased will be returned.
+   *
+   * If the specified run type is not found, {@code null} is returned.
+   *
+   * @return The assigned category
+   */
+  public RunTypeCategory getRunTypeCategory(String runType) {
+    RunTypeCategory result = null;
+
+    RunTypeAssignment assignment = get(runType);
+    if (null != assignment) {
+      result = assignment.getCategory();
+      if (assignment.isAlias()) {
+        result = getRunTypeCategory(assignment.getAliasTo());
+      }
+    }
+
+    return result;
+  }
+
   @Override
   public RunTypeAssignment put(String key, RunTypeAssignment assignment) {
     return super.put(key.toLowerCase(), assignment);

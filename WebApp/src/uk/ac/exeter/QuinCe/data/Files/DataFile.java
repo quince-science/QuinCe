@@ -466,7 +466,7 @@ public class DataFile {
 
     if (runTypeColumn > -1) {
       loadContents();
-      runType = fileDefinition.getRunType(contents.get(line));
+      runType = fileDefinition.getRunType(contents.get(line), true);
     }
 
     return runType;

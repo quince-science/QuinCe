@@ -93,7 +93,12 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Get the category to which this run type is assigned.
-   * If the run type is an alias, the category will be {@code null}.
+   * If the run type is an alias, returned category will be
+   * {@code null}.
+   *
+   * If you want to get the aliased category of a run type,
+   * use {@link RunTypeAssignments#getRunTypeCategory(String)}
+   *
    * @return The assigned category
    */
   public RunTypeCategory getCategory() {
