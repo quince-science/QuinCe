@@ -92,7 +92,7 @@ public class InstrumentDB {
    * Query to get all the run types used in a given file definition
    */
   private static final String GET_FILE_RUN_TYPES_QUERY = "SELECT "
-      + "run_name, category_code "
+      + "run_name, category_code, alias_to "
       + "FROM run_type WHERE file_definition_id = ?";
 
   /**
@@ -942,8 +942,13 @@ public class InstrumentDB {
       while (records.next()) {
         String runType = records.getString(1);
         String categoryCode = records.getString(2);
+        String aliasTo = records.getString(3);
 
-        file.setRunTypeCategory(runType, runTypeConfig.getCategory(categoryCode));
+        if (categoryCode.equals(RunTypeCategory.ALIAS_CATEGORY.getCode())) {
+          file.setRunTypeCategory(runType, aliasTo);
+        } else {
+          file.setRunTypeCategory(runType, runTypeConfig.getCategory(categoryCode));
+        }
       }
 
     } catch (SQLException e) {
