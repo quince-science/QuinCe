@@ -39,12 +39,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public abstract class CalculationDB {
 
   /**
-   * The statement for inserting a new calculation record.
-   * Created as required by {@link #createCalculationRecord(Connection, long)}.
-   */
-  private PreparedStatement insertStatement = null;
-
-  /**
    * Get the name of the database table where calculation data is stored
    * @return The table name
    */
@@ -62,8 +56,10 @@ public abstract class CalculationDB {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(measurementId, "measurementId");
 
+    PreparedStatement statement = null;
+
     try {
-      PreparedStatement statement = getInsertStatement(conn);
+      statement = getInsertStatement(conn);
 
       statement.setLong(1, measurementId);
       statement.setInt(2, Flag.VALUE_NOT_SET);
@@ -75,6 +71,8 @@ public abstract class CalculationDB {
 
     } catch (SQLException e) {
       throw new DatabaseException("Error while creating calculation record", e);
+    } finally {
+      DatabaseUtils.closeStatements(statement);
     }
   }
 
@@ -87,19 +85,15 @@ public abstract class CalculationDB {
    */
   private PreparedStatement getInsertStatement(Connection conn) throws MissingParamException, SQLException {
 
-    if (null == insertStatement) {
-      List<String> fields = new ArrayList<String>();
+    List<String> fields = new ArrayList<String>();
 
-      fields.add("measurement_id");
-      fields.add("auto_flag");
-      fields.add("auto_message");
-      fields.add("user_flag");
-      fields.add("user_message");
+    fields.add("measurement_id");
+    fields.add("auto_flag");
+    fields.add("auto_message");
+    fields.add("user_flag");
+    fields.add("user_message");
 
-      insertStatement = DatabaseUtils.createInsertStatement(conn, getCalculationTable(), fields);
-    }
-
-    return insertStatement;
+    return DatabaseUtils.createInsertStatement(conn, getCalculationTable(), fields);
   }
 
   /**

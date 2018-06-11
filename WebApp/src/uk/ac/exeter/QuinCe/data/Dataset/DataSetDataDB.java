@@ -116,7 +116,7 @@ public class DataSetDataDB {
    * @throws DatabaseException If a database error occurs
    * @throws NoSuchCategoryException If the record's Run Type is not recognised
    */
-  public static PreparedStatement storeRecord(Connection conn, DataSetRawDataRecord record, PreparedStatement datasetDataStatement) throws MissingParamException, DataSetException, DatabaseException, NoSuchCategoryException {
+  public static void storeRecord(Connection conn, DataSetRawDataRecord record) throws MissingParamException, DataSetException, DatabaseException, NoSuchCategoryException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(record, "record");
@@ -126,6 +126,7 @@ public class DataSetDataDB {
     }
 
     ResultSet createdKeys = null;
+    PreparedStatement datasetDataStatement = null;
 
     try {
       if (null == datasetDataStatement) {
@@ -165,10 +166,9 @@ public class DataSetDataDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error storing dataset record", e);
     } finally {
+      DatabaseUtils.closeStatements(datasetDataStatement);
       DatabaseUtils.closeResultSets(createdKeys);
     }
-
-    return datasetDataStatement;
   }
 
   /**

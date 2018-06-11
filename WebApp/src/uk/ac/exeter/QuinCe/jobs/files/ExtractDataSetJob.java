@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,10 +71,6 @@ public class ExtractDataSetJob extends Job {
 
     Connection conn = null;
 
-    // The statements for measurements and calibrations can be re-used for each record
-    PreparedStatement storeMeasurementStatement = null;
-    PreparedStatement storeCalibrationStatement = null;
-
     try {
       conn = dataSource.getConnection();
       conn.setAutoCommit(false);
@@ -98,9 +93,9 @@ public class ExtractDataSetJob extends Job {
       DataSetRawDataRecord record = rawData.getNextRecord();
       while (null != record) {
         if (record.isMeasurement()) {
-          storeMeasurementStatement = DataSetDataDB.storeRecord(conn, record, storeMeasurementStatement);
+          DataSetDataDB.storeRecord(conn, record);
         } else if (record.isCalibration()) {
-          storeCalibrationStatement = CalibrationDataDB.storeCalibrationRecord(conn, record, storeCalibrationStatement);
+          CalibrationDataDB.storeCalibrationRecord(conn, record);
         }
 
         // Read the next record
@@ -128,7 +123,6 @@ public class ExtractDataSetJob extends Job {
       }
       throw new JobFailedException(id, e);
     } finally {
-      DatabaseUtils.closeStatements(storeMeasurementStatement, storeCalibrationStatement);
       DatabaseUtils.closeConnection(conn);
     }
   }

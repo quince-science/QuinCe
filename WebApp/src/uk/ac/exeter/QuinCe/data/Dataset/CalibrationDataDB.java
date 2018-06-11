@@ -110,7 +110,7 @@ public class CalibrationDataDB {
    * @throws DatabaseException If a database error occurs
    * @throws NoSuchCategoryException If the record's Run Type is not recognised
    */
-  public static PreparedStatement storeCalibrationRecord(Connection conn, DataSetRawDataRecord record, PreparedStatement statement) throws MissingParamException, DataSetException, DatabaseException, NoSuchCategoryException {
+  public static PreparedStatement storeCalibrationRecord(Connection conn, DataSetRawDataRecord record) throws MissingParamException, DataSetException, DatabaseException, NoSuchCategoryException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(record, "record");
@@ -119,10 +119,10 @@ public class CalibrationDataDB {
       throw new DataSetException("Record is not a calibration record");
     }
 
+    PreparedStatement statement = null;
+
     try {
-      if (null == statement) {
-        statement = DatabaseUtils.createInsertStatement(conn, "calibration_data", createAllFieldsList());
-      }
+      statement = DatabaseUtils.createInsertStatement(conn, "calibration_data", createAllFieldsList());
 
       statement.setLong(1, record.getDatasetId());
       statement.setLong(2, DateTimeUtils.dateToLong(record.getDate()));
@@ -147,6 +147,8 @@ public class CalibrationDataDB {
       statement.execute();
     } catch (SQLException e) {
       throw new DatabaseException("Error storing dataset record", e);
+    } finally {
+      DatabaseUtils.closeStatements(statement);
     }
 
     return statement;
