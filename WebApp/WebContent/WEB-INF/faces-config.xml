@@ -217,4 +217,9 @@
     <component-type>org.primefaces.component.SelectOneMenu</component-type>
     <component-class>uk.ac.exeter.QuinCe.web.ui.FastSelectOneMenu</component-class>
   </component>
+  <factory>
+    <exception-handler-factory>
+      uk.ac.exeter.QuinCe.web.system.CustomExceptionHandlerFactory
+    </exception-handler-factory>
+  </factory>
 </faces-config>
