@@ -1724,12 +1724,12 @@ public class NewInstrumentBean extends FileUploadBean {
         sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow, averagingMode,
         platformCode);
       InstrumentDB.storeInstrument(getDataSource(), instrument);
+      setCurrentInstrumentId(instrument.getDatabaseId());
 
       // Reinitialise beans to update their instrument lists
       instrumentListBean.init();
       dataFilesBean.initialise();
       dataSetsBean.initialise();
-
     } catch (Exception e) {
       e.printStackTrace();
       throw e;
