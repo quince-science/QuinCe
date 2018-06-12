@@ -14,6 +14,9 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.primefaces.json.JSONArray;
+import org.primefaces.json.JSONObject;
+
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
@@ -25,7 +28,6 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.Variable;
 import uk.ac.exeter.QuinCe.web.VariableList;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -234,8 +236,7 @@ public class CalibrationDataDB {
       andFields.add("run_type");
     }
 
-    StringBuilder json = new StringBuilder();
-    json.append('[');
+    JSONArray json = new JSONArray();
 
     Connection conn = null;
     PreparedStatement stmt = null;
@@ -251,56 +252,42 @@ public class CalibrationDataDB {
       }
 
       records = stmt.executeQuery();
-      boolean hasRecords = false;
       int rowId = start - 1;
       while (records.next()) {
         rowId++;
-        hasRecords = true;
         int columnIndex = 0;
 
-        json.append('{');
-        json.append(StringUtils.makeJsonField("DT_RowId", "row" + rowId, true));
-        json.append(',');
+        JSONObject jsonRecord = new JSONObject();
+        jsonRecord.put("DT_RowId", "row" + rowId);
 
         columnIndex++;
-        json.append(StringUtils.makeJsonField(columnIndex - 1, records.getLong(columnIndex))); // id
-        json.append(',');
+        jsonRecord.put(String.valueOf(columnIndex - 1), records.getLong(columnIndex)); // id
 
         columnIndex++;
-        json.append(StringUtils.makeJsonField(columnIndex - 1, records.getLong(columnIndex))); //date
-        json.append(',');
+        jsonRecord.put(String.valueOf(columnIndex - 1), records.getLong(columnIndex)); // date
 
         columnIndex++;
-        json.append(StringUtils.makeJsonField(columnIndex - 1, records.getString(columnIndex))); //Run Type
-        json.append(',');
+        jsonRecord.put(String.valueOf(columnIndex - 1), records.getString(columnIndex)); //Run Type
 
         for (int i = 0; i < calibrationFields.size(); i++) {
           columnIndex++;
-          json.append(StringUtils.makeJsonField(columnIndex - 1, records.getDouble(columnIndex)));
-          json.append(',');
+          jsonRecord.put(String.valueOf(columnIndex - 1), records.getDouble(columnIndex));
         }
 
         columnIndex++;
-        json.append(StringUtils.makeJsonField(columnIndex - 1, records.getBoolean(columnIndex))); // Use?
-        json.append(',');
+        jsonRecord.put(String.valueOf(columnIndex - 1), records.getBoolean(columnIndex)); // Use?
 
         // Use message
         columnIndex++;
         String message = records.getString(columnIndex);
         if (null == message) {
-          json.append(StringUtils.makeJsonField(columnIndex - 1, "", true));
+          jsonRecord.put(String.valueOf(columnIndex - 1), "");
         } else {
-          json.append(StringUtils.makeJsonField(columnIndex - 1, message));
+          jsonRecord.put(String.valueOf(columnIndex - 1), message);
         }
 
-        json.append("},");
+        json.put(jsonRecord);
       }
-      // Remove the trailing comma from the last record
-      if (hasRecords) {
-        json.deleteCharAt(json.length() - 1);
-      }
-      json.append(']');
-
     } catch (SQLException e) {
       throw new DatabaseException("Error retrieving calibration data", e);
     } finally {
