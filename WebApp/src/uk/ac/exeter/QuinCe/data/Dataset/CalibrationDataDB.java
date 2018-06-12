@@ -248,12 +248,10 @@ public class CalibrationDataDB {
     ResultSet records = null;
 
     try {
-      CalibrationSet externalStandards = null;
-      DataSet dataSet = null;
-
       conn = dataSource.getConnection();
 
-      dataSet = DataSetDB.getDataSet(conn, datasetId);
+      CalibrationSet externalStandards = null;
+      DataSet dataSet = DataSetDB.getDataSet(conn, datasetId);
 
       stmt = DatabaseUtils.createSelectStatement(conn, "calibration_data", queryFields, andFields, start, length);
       stmt.setLong(1, datasetId);
@@ -344,8 +342,9 @@ public class CalibrationDataDB {
    * @return The standards data
    * @throws DatabaseException If a database error occurs
    * @throws MissingParamException If any required parameters are missing
+   * @throws RecordNotFoundException If the dataset doesn't exist in the database
    */
-  public static String getJsonPlotData(DataSource dataSource, DataSet dataset, List<String> standardNames) throws MissingParamException, DatabaseException {
+  public static String getJsonPlotData(DataSource dataSource, DataSet dataset, List<String> standardNames) throws MissingParamException, DatabaseException, RecordNotFoundException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(dataset, "dataset");
@@ -383,8 +382,7 @@ public class CalibrationDataDB {
       sql.append(')');
     }
 
-    StringBuilder json = new StringBuilder();
-    json.append('[');
+    JSONArray json = new JSONArray();
 
     Connection conn = null;
     PreparedStatement stmt = null;
@@ -393,36 +391,43 @@ public class CalibrationDataDB {
     try {
       conn = dataSource.getConnection();
 
+      CalibrationSet externalStandards = null;
+
       stmt = conn.prepareStatement(sql.toString());
       stmt.setLong(1, dataset.getId());
 
       records = stmt.executeQuery();
-      boolean hasRecords = false;
       while (records.next()) {
-        hasRecords = true;
+        // Get the external standards if we don't already have them
+        if (null == externalStandards) {
+          // The date is always the second field
+          LocalDateTime firstDate = DateTimeUtils.longToDate(records.getLong(2));
+          externalStandards = ExternalStandardDB.getInstance().getStandardsSet(conn, dataset.getInstrumentId(), firstDate);
 
-        json.append('[');
+          if (!externalStandards.isComplete()) {
+            throw new CalibrationException("No complete set of external standards available");
+          }
+        }
+
+        JSONArray jsonRecord = new JSONArray();
 
         int columnIndex = 0;
         columnIndex++;
         String runType = records.getString(columnIndex);
 
         columnIndex++;
-        json.append(records.getLong(columnIndex)); // date
-        json.append(',');
+        jsonRecord.put(records.getLong(columnIndex)); // date;
 
         columnIndex++;
-        json.append(records.getLong(columnIndex)); // id
-        json.append(',');
+        jsonRecord.put(records.getLong(columnIndex)); // id
 
         // The Use Record flag is converted to BAD or GOOD for the plot highlighting functions
         columnIndex++;
         if (records.getBoolean(columnIndex)) {
-          json.append(Flag.GOOD.getFlagValue());
+          jsonRecord.put(Flag.GOOD.getFlagValue());
         } else {
-          json.append(Flag.BAD.getFlagValue());
+          jsonRecord.put(Flag.BAD.getFlagValue());
         }
-        json.append(',');
 
         for (int i = 0; i < calibrationFields.size(); i++) {
           columnIndex++;
@@ -431,29 +436,16 @@ public class CalibrationDataDB {
 
           for (int j = 0; j < standardNames.size(); j++) {
             if (runType.equals(standardNames.get(j))) {
-              json.append(value);
+              double calibrationValue = externalStandards.getCalibrationValue(runType, "CO2");
+              jsonRecord.put(value - calibrationValue);
             } else {
-              json.append("null");
+              jsonRecord.put(JSONObject.NULL);
             }
-
-            if (j < standardNames.size() - 1) {
-              json.append(',');
-            }
-          }
-
-          if (i < calibrationFields.size() - 1) {
-            json.append(',');
           }
         }
 
-        json.append("],");
+        json.put(jsonRecord);
       }
-      // Remove the trailing comma from the last record
-      if (hasRecords) {
-        json.deleteCharAt(json.length() - 1);
-      }
-      json.append(']');
-
     } catch (SQLException e) {
       throw new DatabaseException("Error retrieving calibration data", e);
     } finally {
