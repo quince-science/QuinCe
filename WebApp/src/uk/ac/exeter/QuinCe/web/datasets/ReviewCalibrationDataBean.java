@@ -8,6 +8,8 @@ import java.util.Map;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
+import org.primefaces.json.JSONArray;
+
 import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
@@ -80,16 +82,15 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 
   @Override
   protected String buildTableHeadings() {
-    StringBuilder headings = new StringBuilder();
-
-    headings.append('[');
-    headings.append("\"ID\",");
-    headings.append("\"Date\",");
-    headings.append("\"Run Type\",");
-    headings.append("\"CO2\",");
-    headings.append("\"Use?\",");
-    headings.append("\"Use Message\"");
-    headings.append(']');
+    JSONArray headings = new JSONArray();
+    headings.put("ID");
+    headings.put("Date");
+    headings.put("Run Type");
+    headings.put("CO2");
+    headings.put("Standard Value");
+    headings.put("Offset");
+    headings.put("Use?");
+    headings.put("Use Message");
 
     return headings.toString();
   }
