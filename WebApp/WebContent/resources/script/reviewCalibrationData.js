@@ -118,3 +118,10 @@ function updateUseDialogControls() {
 function getPlotMode(index) {
   return 'plot';
 }
+
+function customiseGraphOptions(graph_options) {
+  graph_options.strokeWidth = 1.0;
+  graph_options.connectSeparatedPoints = true;
+  graph_options.drawAxesAtZero = true;
+  return graph_options;
+}
