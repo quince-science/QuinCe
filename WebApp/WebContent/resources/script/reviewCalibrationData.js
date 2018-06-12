@@ -19,7 +19,7 @@ function initPlot(index) {
  */
 function renderTableColumns() {
   jsDataTable.columns(0).visible(false, false);
-  jsDataTable.columns(5).visible(false, false);
+  jsDataTable.columns(7).visible(false, false);
 }
 
 /*
@@ -28,8 +28,8 @@ function renderTableColumns() {
 function getColumnDefs() {
   return [
         {"className": "noWrap", "targets": [0]},
-        {"className": "centreCol", "targets": [2, 4]},
-        {"className": "numericCol", "targets": [3]},
+        {"className": "centreCol", "targets": [2, 6]},
+        {"className": "numericCol", "targets": [3, 4, 5]},
         {"render":
           function (data, type, row) {
             return makeUTCDateTime(new Date(data));
@@ -40,18 +40,19 @@ function getColumnDefs() {
           function (data, type, row) {
             return data.toFixed(3);
           },
-          "targets": 3
+          "targets": [3, 4, 5]
         },
         {"render":
           function (data, type, row) {
-            var output = '<div onmouseover="showInfoPopup(' + 4 + ', \'' + row[5] + '\', this)" onmouseout="hideInfoPopup()" class="';
+            console.log(row);
+          var output = '<div onmouseover="showInfoPopup(' + 6 + ', \'' + row[7] + '\', this)" onmouseout="hideInfoPopup()" class="';
               output += data ? 'good' : 'bad';
               output += '">';
               output += data ? 'Yes' : 'No';
               output += '</div>';
               return output;
           },
-          "targets": 4
+          "targets": 6
         },
   ];
 }
@@ -81,8 +82,8 @@ function storeCalibrationSelection() {
   for (var i = 0; i < rows.length; i++) {
     var row = jsDataTable.row(i);
     if ($.inArray(row.data()[0], selectedRows) > -1) {
-      jsDataTable.cell(i, 4).data(PF('useCalibrationsWidget').getJQ().find(':checked').val() == 'true');
-      jsDataTable.cell(i, 5).data($(PF('useCalibrationsMessageWidget').jqId).val());
+      jsDataTable.cell(i, 6).data(PF('useCalibrationsWidget').getJQ().find(':checked').val() == 'true');
+      jsDataTable.cell(i, 7).data($(PF('useCalibrationsMessageWidget').jqId).val());
     }
   }
 
