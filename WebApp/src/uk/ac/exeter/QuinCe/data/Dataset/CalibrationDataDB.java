@@ -19,6 +19,9 @@ import org.primefaces.json.JSONObject;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -28,6 +31,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.Variable;
 import uk.ac.exeter.QuinCe.web.VariableList;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -214,8 +218,9 @@ public class CalibrationDataDB {
    * @return The standards data
    * @throws DatabaseException If a database error occurs
    * @throws MissingParamException If any required parameters are missing
+   * @throws RecordNotFoundException If the data set doesn't exist in the database
    */
-  public static String getJsonTableData(DataSource dataSource, long datasetId, String standardName, int start, int length) throws MissingParamException, DatabaseException {
+  public static String getJsonTableData(DataSource dataSource, long datasetId, String standardName, int start, int length) throws MissingParamException, DatabaseException, RecordNotFoundException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
@@ -243,7 +248,12 @@ public class CalibrationDataDB {
     ResultSet records = null;
 
     try {
+      CalibrationSet externalStandards = null;
+      DataSet dataSet = null;
+
       conn = dataSource.getConnection();
+
+      dataSet = DataSetDB.getDataSet(conn, datasetId);
 
       stmt = DatabaseUtils.createSelectStatement(conn, "calibration_data", queryFields, andFields, start, length);
       stmt.setLong(1, datasetId);
@@ -254,32 +264,58 @@ public class CalibrationDataDB {
       records = stmt.executeQuery();
       int rowId = start - 1;
       while (records.next()) {
+
+        // Get the external standards if we don't already have them
+        if (null == externalStandards) {
+          // The date is always the second field
+          LocalDateTime firstDate = DateTimeUtils.longToDate(records.getLong(2));
+          externalStandards = ExternalStandardDB.getInstance().getStandardsSet(conn, dataSet.getInstrumentId(), firstDate);
+
+          if (!externalStandards.isComplete()) {
+            throw new CalibrationException("No complete set of external standards available");
+          }
+        }
+
         rowId++;
         int columnIndex = 0;
+        int dbColumn = 0;
 
         JSONObject jsonRecord = new JSONObject();
         jsonRecord.put("DT_RowId", "row" + rowId);
 
         columnIndex++;
-        jsonRecord.put(String.valueOf(columnIndex - 1), records.getLong(columnIndex)); // id
+        dbColumn++;
+        jsonRecord.put(String.valueOf(columnIndex - 1), records.getLong(dbColumn)); // id
 
         columnIndex++;
-        jsonRecord.put(String.valueOf(columnIndex - 1), records.getLong(columnIndex)); // date
+        dbColumn++;
+        jsonRecord.put(String.valueOf(columnIndex - 1), records.getLong(dbColumn)); // date
 
         columnIndex++;
-        jsonRecord.put(String.valueOf(columnIndex - 1), records.getString(columnIndex)); //Run Type
+        dbColumn++;
+        String runType = records.getString(dbColumn);
+        jsonRecord.put(String.valueOf(columnIndex - 1), runType); //Run Type
 
         for (int i = 0; i < calibrationFields.size(); i++) {
           columnIndex++;
-          jsonRecord.put(String.valueOf(columnIndex - 1), records.getDouble(columnIndex));
+          dbColumn++;
+          jsonRecord.put(String.valueOf(columnIndex - 1), records.getDouble(dbColumn));
         }
 
+        double calibrationValue = externalStandards.getCalibrationValue(runType, "CO2");
         columnIndex++;
-        jsonRecord.put(String.valueOf(columnIndex - 1), records.getBoolean(columnIndex)); // Use?
+        jsonRecord.put(String.valueOf(columnIndex - 1), calibrationValue);
+        columnIndex++;
+        jsonRecord.put(String.valueOf(columnIndex - 1), records.getDouble(dbColumn) - calibrationValue);
+
+        columnIndex++;
+        dbColumn++;
+        jsonRecord.put(String.valueOf(columnIndex - 1), records.getBoolean(dbColumn)); // Use?
 
         // Use message
         columnIndex++;
-        String message = records.getString(columnIndex);
+        dbColumn++;
+        String message = records.getString(dbColumn);
         if (null == message) {
           jsonRecord.put(String.valueOf(columnIndex - 1), "");
         } else {
