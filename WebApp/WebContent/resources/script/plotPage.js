@@ -542,6 +542,11 @@ function drawPlot(index) {
   graph_options.height = $('#plot' + index + 'Panel').height() - 40;
   graph_options.labelsDiv = 'plot' + index + 'Label';
 
+  if (typeof customiseGraphOptions == 'function') {
+    graph_options = customiseGraphOptions(graph_options);
+  }
+
+
   // Preserve zoom settings where possible
   if (null != existingXZoom && existingXLabel == xLabel) {
     graph_options.dateWindow = existingXZoom;
