@@ -7,7 +7,7 @@ CREATE TABLE `diagnostic_data` (
   INDEX `DIAGNOSTIC_DATASETDATA_idx` (`measurement_id` ASC),
   CONSTRAINT `DIAGNOSTIC_DATASETDATA`
     FOREIGN KEY (`measurement_id`)
-    REFERENCES `diagnostic`.`dataset_data` (`id`)
+    REFERENCES `dataset_data` (`id`)
     ON DELETE RESTRICT
     ON UPDATE RESTRICT);
 
