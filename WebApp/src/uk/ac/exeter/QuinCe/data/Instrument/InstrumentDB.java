@@ -78,8 +78,8 @@ public class InstrumentDB {
   private static final String CREATE_FILE_COLUMN_STATEMENT = "INSERT INTO file_column ("
       + "file_definition_id, file_column, primary_sensor, sensor_type, " // 4
       + "sensor_name, value_column, depends_question_answer, " // 7
-      + "missing_value, post_calibrated, diagnostic" // 9
-      + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      + "missing_value, post_calibrated" // 9
+      + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   /**
    * Query to get all the run types of a given run type category
