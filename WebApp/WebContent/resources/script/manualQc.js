@@ -101,7 +101,7 @@ function renderTableColumns() {
     jsDataTable.columns($.inArray("fCO2", columnHeadings)).visible(true, true);
   }
 
-  jsDataTable.columns.adjust().draw();
+  jsDataTable.columns.adjust();
 }
 
 /*
