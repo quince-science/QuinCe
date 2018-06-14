@@ -49,7 +49,8 @@ function processNewDataSet(eventType) {
   }
   newDataSetItem['content'] = PF('pDataSetName').jq.val().trim();
   newDataSetItem['title'] = PF('pDataSetName').jq.val().trim();
-  if (newDataSetItem['end'] > newDataSetItem['start']) {
+  if (newDataSetItem['start'] && newDataSetItem['end']
+      && newDataSetItem['end'] > newDataSetItem['start']) {
     timeline.itemsData.getDataSet().add(newDataSetItem);
   }
   if (eventType == 'submit' && validData) {
