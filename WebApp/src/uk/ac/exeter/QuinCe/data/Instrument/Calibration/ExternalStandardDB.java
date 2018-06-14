@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -25,6 +27,11 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 public class ExternalStandardDB extends CalibrationDB {
 
   /**
+   * The calibration type for external standards
+   */
+  public static final String EXTERNAL_STANDARD_CALIBRATION_TYPE = "EXTERNAL_STANDARD";
+
+  /**
    * Query to get the most recent standards for an instrument before a given date
    */
   public static final String GET_STANDARD_SET_QUERY = "SELECT "
@@ -32,12 +39,8 @@ public class ExternalStandardDB extends CalibrationDB {
       + "FROM calibration c1 INNER JOIN "
         + "(SELECT MAX(deployment_date) deployment_date, target "
       + "FROM calibration WHERE deployment_date < ? GROUP BY target) "
-        + "AS c2 ON c1.target = c2.target AND c1.deployment_date = c2.deployment_date WHERE instrument_id = ?";
-
-  /**
-   * The calibration type for external standards
-   */
-  public static final String EXTERNAL_STANDARD_CALIBRATION_TYPE = "EXTERNAL_STANDARD";
+        + "AS c2 ON c1.target = c2.target AND c1.deployment_date = c2.deployment_date "
+        + "WHERE instrument_id = ? AND type = '" + EXTERNAL_STANDARD_CALIBRATION_TYPE + "'";
 
   /**
    * The singleton instance of the class
@@ -90,6 +93,36 @@ public class ExternalStandardDB extends CalibrationDB {
    * @throws MissingParamException If any required parameters are missing
    * @throws RecordNotFoundException If the instrument does not exist
    */
+  public CalibrationSet getStandardsSet(DataSource dataSource, long instrumentId, LocalDateTime date) throws DatabaseException, MissingParamException, RecordNotFoundException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+
+    CalibrationSet result = null;
+    Connection conn = null;
+
+    try {
+      conn = dataSource.getConnection();
+      result = getStandardsSet(conn, instrumentId, date);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving standards set", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+
+    return result;
+  }
+
+
+  /**
+   * Retrieve a CalibrationSet containing the external standards deployed immediately before the specified date
+   * @param conn A database connection
+   * @param instrumentId The instrument for which the standards should be retrieved
+   * @param date The date limit
+   * @return The external standards
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   * @throws RecordNotFoundException If the instrument does not exist
+   */
   public CalibrationSet getStandardsSet(Connection conn, long instrumentId, LocalDateTime date) throws DatabaseException, MissingParamException, RecordNotFoundException {
 
     MissingParam.checkMissing(conn, "conn");
@@ -128,5 +161,29 @@ public class ExternalStandardDB extends CalibrationDB {
   @Override
   public String getCalibrationType() {
     return EXTERNAL_STANDARD_CALIBRATION_TYPE;
+  }
+
+  /**
+   * Determine whether or not a set of standards contains
+   * a standard with zero concentration
+   * @param standards The standards to be checked
+   * @return {@code true} if there is at least one standard with zero concentration; {@code false} otherwise
+   */
+  public static boolean hasZeroStandard(CalibrationSet standards) {
+
+    boolean result = false;
+
+    for (Calibration calibration : standards) {
+      if (!(calibration instanceof ExternalStandard)) {
+        throw new CalibrationException("Calibration set contains non-external-standard");
+      } else {
+        if (((ExternalStandard) calibration).getConcentration() == 0.0) {
+          result = true;
+          break;
+        }
+      }
+    }
+
+    return result;
   }
 }

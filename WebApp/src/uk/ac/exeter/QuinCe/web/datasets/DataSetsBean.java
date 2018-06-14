@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
@@ -114,6 +115,8 @@ public class DataSetsBean extends BaseManagedBean {
     newDataSet = new DataSet(getCurrentInstrument().getDatabaseId());
     fileDefinitionsJson = null;
     timelineEntriesJson = null;
+    validCalibration = true;
+    validCalibrationMessage = null;
 
     return NAV_NEW_DATASET;
   }
@@ -422,12 +425,27 @@ public class DataSetsBean extends BaseManagedBean {
     // startTime not yet set
     if (startTime.length() > 0) {
       try {
+
+
+        // Check sensor calibration equations
         CalibrationSet calibrations = new SensorCalibrationDB()
             .getMostRecentCalibrations(getDataSource(), getCurrentInstrumentId(),
                 DateTimeUtils.parseDisplayDateTime(startTime));
 
-        validCalibration = calibrations.isValid();
-        validCalibrationMessage = "One or more sensor calibration equations are missing";
+        if (!calibrations.isValid()) {
+          validCalibration = false;
+          validCalibrationMessage = "One or more sensor calibration equations are missing";
+        } else {
+          // Check external standards
+          CalibrationSet externalStandards = ExternalStandardDB.getInstance().getStandardsSet(getDataSource(), getCurrentInstrumentId(), DateTimeUtils.parseDisplayDateTime(startTime));
+          if (!externalStandards.isComplete()) {
+            validCalibration = false;
+            validCalibrationMessage = "No complete set of external standards is available";
+          } else if (!ExternalStandardDB.hasZeroStandard(externalStandards)) {
+            validCalibration = false;
+            validCalibrationMessage = "One external standard must have a zero concentration";
+          }
+        }
       } catch (Exception e) {
         e.printStackTrace();
         validCalibration = false;
