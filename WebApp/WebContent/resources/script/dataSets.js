@@ -62,11 +62,11 @@ function validateNewDataSet() {
 
   var result = true;
   var errorString = null;
-  const validCalibration = $('#uploadForm').data('validCalibration')
+  const validCalibration = $('#uploadForm').data('validCalibration');
 
   // Check that there is a valid calibration for the selected start time
   if (!validCalibration) {
-    errorString = 'Data set is missing a valid calibration';
+    errorString = $('#uploadForm').data('validCalibrationMessage');
   }
 
   // Check that there is a data set name

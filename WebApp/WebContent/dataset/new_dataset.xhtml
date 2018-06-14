@@ -21,6 +21,7 @@
   <ui:define name="content">
     <h:form id="uploadForm" method="post" charset="utf8">
       <f:passThroughAttribute name="data-valid-calibration" value="#{dataSetsBean.validCalibration}" />
+      <f:passThroughAttribute name="data-valid-calibration-message" value="#{dataSetsBean.validCalibrationMessage}" />
       <div class="fullPage">
         <div id="timelineContainer"></div>
         <script>
