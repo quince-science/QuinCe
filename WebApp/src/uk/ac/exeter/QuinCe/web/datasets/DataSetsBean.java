@@ -80,10 +80,17 @@ public class DataSetsBean extends BaseManagedBean {
   private String platformCode = null;
 
   /**
-   * Says whether the dataset beeing defined has valid calibration. This
+   * Says whether the dataset being defined has valid calibrations,
+   * both for sensors and external standards. This
    * defaults to true, but is actually checked when the form is submitted.
    */
   private boolean validCalibration = true;
+
+  /**
+   * The message to be displayed if any calibrations
+   * are invalid
+   */
+  private String validCalibrationMessage = null;
 
 /**
    * Initialise/Reset the bean
@@ -403,24 +410,29 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Check if this instrument has a valid calibration for the start-time of the
-   * data set the user wants to create.
+   * data set the user wants to create. Checks both sensor calibrations
+   * and external standards.
    */
   public void checkValidCalibration() {
-    validCalibration = false;
+    validCalibration = true;
     Map<String, String> params = FacesContext.getCurrentInstance()
         .getExternalContext().getRequestParameterMap();
+
     String startTime = params.get("uploadForm:startDate_input");
     // startTime not yet set
-    if ("".equals(startTime)) {
-      return;
-    }
-    try {
-      CalibrationSet calibrations = new SensorCalibrationDB()
-          .getMostRecentCalibrations(getDataSource(), getCurrentInstrumentId(),
-              DateTimeUtils.parseDisplayDateTime(startTime));
-      validCalibration = calibrations.isValid();
-    } catch (Exception e) {
-      validCalibration = false;
+    if (startTime.length() > 0) {
+      try {
+        CalibrationSet calibrations = new SensorCalibrationDB()
+            .getMostRecentCalibrations(getDataSource(), getCurrentInstrumentId(),
+                DateTimeUtils.parseDisplayDateTime(startTime));
+
+        validCalibration = calibrations.isValid();
+        validCalibrationMessage = "One or more sensor calibration equations are missing";
+      } catch (Exception e) {
+        e.printStackTrace();
+        validCalibration = false;
+        validCalibrationMessage = "Error while checking calibrations";
+      }
     }
   }
 
@@ -430,6 +442,14 @@ public class DataSetsBean extends BaseManagedBean {
    */
   public boolean isValidCalibration() {
     return validCalibration;
+  }
+
+  /**
+   * Get the error message for invalid calibrations
+   * @return The error message
+   */
+  public String getValidCalibrationMessage() {
+    return validCalibrationMessage;
   }
 
   /**
