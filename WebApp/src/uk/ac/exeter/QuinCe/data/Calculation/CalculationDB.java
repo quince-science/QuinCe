@@ -632,7 +632,7 @@ public abstract class CalculationDB {
         }
       }
 
-      Map<Long, Map<String, Double>> diagnosticData = DiagnosticDataDB.getDiagnosticValues(conn, DataSetDataDB.getMeasurementIds(conn, dataset.getId()), diagnosticFields);
+      Map<Long, Map<String, Double>> diagnosticData = DiagnosticDataDB.getDiagnosticValues(conn, dataset.getInstrumentId(), DataSetDataDB.getMeasurementIds(conn, dataset.getId()), diagnosticFields);
 
       StringBuilder sql = new StringBuilder();
 
@@ -803,7 +803,7 @@ public abstract class CalculationDB {
       if (datasetFields.size() > 0) {
         sql.append('d');
       } else {
-        stmt = makeCalculationRangeStatement(conn, dataset.getId(), field);
+        sql.append('c');
       }
 
       sql.append('.');
@@ -868,7 +868,7 @@ public abstract class CalculationDB {
    * @return The SQL statement
    * @throws SQLException If the statement cannot be constructed
    */
-  private PreparedStatement makeDiagnosticRangeStatement(Connection conn, long datasetId, String field) throws SQLException {
+  private PreparedStatement makeDiagnosticRangeStatement(Connection conn, long datasetId, long sensorId) throws SQLException {
 
     StringBuilder sql = new StringBuilder();
 
@@ -878,12 +878,12 @@ public abstract class CalculationDB {
     sql.append(getCalculationTable());
     sql.append(" c ON dd.measurement_id = c.measurement_id ");
     sql.append("WHERE ds.dataset_id = ? ");
-    sql.append("AND dd.sensor_name = ?");
+    sql.append("AND dd.file_column_id = ?");
     addFlagCriteriaToRangeQuery(sql);
 
     PreparedStatement stmt = conn.prepareStatement(sql.toString());
     stmt.setLong(1, datasetId);
-    stmt.setString(2, field);
+    stmt.setLong(2, sensorId);
 
 
     return stmt;

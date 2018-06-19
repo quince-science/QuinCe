@@ -113,7 +113,7 @@ public class ManualQcBean extends PlotPageBean {
     sensorColumnCount = dataHeadings.size() - 4; // Skip id, date, lat, lon
     List<String> calculationHeadings = CalculationDBFactory.getCalculationDB().getCalculationColumnHeadings();
     calculationColumnCount = calculationHeadings.size();
-    List<String> diagnosticHeadings = DiagnosticDataDB.getDiagnosticSensors(getDataSource(), getDataset().getInstrumentId());
+    List<String> diagnosticHeadings = DiagnosticDataDB.getDiagnosticSensorNames(getDataSource(), getDataset().getInstrumentId());
     diagnosticColumnCount = diagnosticHeadings.size();
 
     JSONArray headings = new JSONArray();
@@ -185,8 +185,8 @@ public class ManualQcBean extends PlotPageBean {
       calculationData.add(calcRecord);
     }
 
-    List<String> diagnosticHeadings = DiagnosticDataDB.getDiagnosticSensors(getDataSource(), getDataset().getInstrumentId());
-    Map<Long, Map<String, Double>> diagnosticData = DiagnosticDataDB.getDiagnosticValues(getDataSource(), getDataset().getInstrumentId(), measurementIds);
+    List<String> diagnosticHeadings = DiagnosticDataDB.getDiagnosticSensorNames(getDataSource(), getDataset().getInstrumentId());
+    Map<Long, Map<String, Double>> diagnosticData = DiagnosticDataDB.getDiagnosticValues(getDataSource(), getDataset().getInstrumentId(), measurementIds, diagnosticHeadings);
 
     JSONArray json = new JSONArray();
 

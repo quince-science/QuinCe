@@ -44,9 +44,7 @@ import uk.ac.exeter.QuinCe.web.FileUploadBean;
 import uk.ac.exeter.QuinCe.web.Instrument.InstrumentListBean;
 import uk.ac.exeter.QuinCe.web.datasets.DataSetsBean;
 import uk.ac.exeter.QuinCe.web.files.DataFilesBean;
-import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
-import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Bean for collecting data about a new instrument
@@ -734,7 +732,11 @@ public class NewInstrumentBean extends FileUploadBean {
    * @throws Exception If any errors occur
    */
   public void storeSensorAssignment() throws Exception {
-    SensorAssignment assignment = new SensorAssignment(sensorAssignmentFile, sensorAssignmentColumn, sensorAssignmentName, sensorAssignmentPostCalibrated, sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer, sensorAssignmentMissingValue);
+    SensorAssignment assignment = new SensorAssignment(
+        sensorAssignmentFile, sensorAssignmentColumn, sensorAssignmentName,
+        sensorAssignmentPostCalibrated, sensorAssignmentPrimary,
+        sensorAssignmentDependsQuestionAnswer, sensorAssignmentMissingValue);
+
     sensorAssignments.addAssignment(sensorAssignmentSensorType, assignment);
 
     // Reset the assign dialog values, because it's so damn hard to do in Javascript

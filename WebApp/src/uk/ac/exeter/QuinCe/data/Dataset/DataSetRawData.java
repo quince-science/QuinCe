@@ -710,7 +710,7 @@ public abstract class DataSetRawData {
           record.setSensorValue(sensorType.getName(), finalSensorValue);
         } else {
           for (SensorAssignment assignment : assignments) {
-            record.setDiagnosticValue(assignment.getSensorName(), getSensorValue(assignment));
+            record.setDiagnosticValue(assignment.getDatabaseId(), getSensorValue(assignment));
           }
         }
 
