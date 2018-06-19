@@ -632,14 +632,15 @@ public abstract class CalculationDB {
         }
       }
 
-==== BASE ====
-        sql.append('.');
-        sql.append(field);
-==== BASE ====
+      Map<Long, Map<String, Double>> diagnosticData = DiagnosticDataDB.getDiagnosticValues(conn, dataset.getInstrumentId(), DataSetDataDB.getMeasurementIds(conn, dataset.getId()), diagnosticFields);
 
-==== BASE ====
-        if (i < fields.size() - 1) {
-==== BASE ====
+      StringBuilder sql = new StringBuilder();
+
+      sql.append("SELECT ");
+      for (int i = 0; i < databaseFields.size(); i++) {
+        sql.append(databaseFields.get(i));
+
+        if (i < databaseFields.size() - 1) {
           sql.append(',');
         }
       }
