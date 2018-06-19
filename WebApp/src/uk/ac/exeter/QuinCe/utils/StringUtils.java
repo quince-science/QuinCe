@@ -6,7 +6,9 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -57,30 +59,34 @@ public final class StringUtils {
 
   /**
    * Convert a list of objects to a delimited string
-   * @param list The list
+   * @param collection The list
    * @param delimiter The delimiter
    * @param surrounder The character to put at the start and end of each entry
    * @return The delimited string
    */
-  public static String listToDelimited(List<?> list, String delimiter, String surrounder) {
+  public static String listToDelimited(Collection<?> collection, String delimiter, String surrounder) {
 
     String result = null;
 
-    if (null != list) {
+    if (null != collection) {
       StringBuilder buildResult = new StringBuilder();
-      for (int i = 0; i < list.size(); i++) {
+
+      Iterator<?> i = collection.iterator();
+      int counter = 0;
+      while (i.hasNext()) {
+        Object item = i.next();
+        counter++;
 
         if (null != surrounder) {
           buildResult.append(surrounder);
-          buildResult.append(list.get(i).toString().replace(surrounder, "\\" + surrounder));
+          buildResult.append(item.toString().replace(surrounder, "\\" + surrounder));
           buildResult.append(surrounder);
         } else {
-          buildResult.append(list.get(i).toString());
+          buildResult.append(item.toString());
         }
 
-        if (i < (list.size() - 1)) {
+        if (counter < (collection.size())) {
           buildResult.append(delimiter);
-
         }
       }
       result = buildResult.toString();
