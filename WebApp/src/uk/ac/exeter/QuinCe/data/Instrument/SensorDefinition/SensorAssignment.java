@@ -1,11 +1,18 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+
 /**
  * Records the data file and column number that have been assigned a particular sensor role
  * @author Steve Jones
  *
  */
 public class SensorAssignment {
+
+  /**
+   * The database ID of this sensor assignment
+   */
+  private long databaseId = DatabaseUtils.NO_DATABASE_RECORD;
 
   /**
    * The data file
@@ -71,6 +78,7 @@ public class SensorAssignment {
 
   /**
    * Simple constructor
+   * @param databaseId The assignment's datbaase ID
    * @param dataFile The data file
    * @param fileColumn The column number in the file
    * @param databaseColumn The column where the sensor's data will be stored in the database
@@ -80,7 +88,8 @@ public class SensorAssignment {
    * @param dependsQuestionAnswer The answer to the Depends Question
    * @param missingValue The missing value String
    */
-  public SensorAssignment(String dataFile, int fileColumn, int databaseColumn, String sensorName, boolean postCalibrated, boolean primary, boolean dependsQuestionAnswer, String missingValue) {
+  public SensorAssignment(long databaseId, String dataFile, int fileColumn, int databaseColumn, String sensorName, boolean postCalibrated, boolean primary, boolean dependsQuestionAnswer, String missingValue) {
+    this.databaseId = databaseId;
     this.dataFile = dataFile;
     this.column = fileColumn;
     this.databaseColumn = databaseColumn;
@@ -89,6 +98,22 @@ public class SensorAssignment {
     this.primary = primary;
     this.dependsQuestionAnswer = dependsQuestionAnswer;
     this.missingValue = missingValue;
+  }
+
+  /**
+   * Get the database ID of this sensor assignment
+   * @return The assignment's database ID
+   */
+  public long getDatabaseId() {
+    return databaseId;
+  }
+
+  /**
+   * Set the database ID of this assignment
+   * @param databaseId The database ID
+   */
+  public void setDatabaseId(long databaseId) {
+    this.databaseId = databaseId;
   }
 
   /**

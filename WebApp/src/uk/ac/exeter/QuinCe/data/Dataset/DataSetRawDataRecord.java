@@ -67,7 +67,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
   /**
    * Map holding values from diagnostic sensors
    */
-  private Map<String, Double> diagnosticValues;
+  private Map<Long, Double> diagnosticValues;
 
   /**
    * Basic constructor for required information
@@ -88,7 +88,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
     this.runTypeCategory = runTypeCategory;
 
     sensorValues = new LinkedHashMap<String, Double>();
-    diagnosticValues = new HashMap<String, Double>();
+    diagnosticValues = new HashMap<Long, Double>();
   }
 
   /**
@@ -111,7 +111,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
     this.runTypeCategory = runTypeCategory;
 
     sensorValues = new LinkedHashMap<String, Double>();
-    diagnosticValues = new HashMap<String, Double>();
+    diagnosticValues = new HashMap<Long, Double>();
   }
 
   /**
@@ -125,11 +125,11 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
 
   /**
    * Set a diagnostic sensor value
-   * @param sensorName The sensor name
+   * @param sensorId The sensor's database ID
    * @param value The value
    */
-  public void setDiagnosticValue(String sensorName, Double value) {
-    diagnosticValues.put(sensorName, value);
+  public void setDiagnosticValue(long sensorId, Double value) {
+    diagnosticValues.put(sensorId, value);
   }
 
   /**
@@ -276,7 +276,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
    * Get the set of diagnostic values
    * @return The diagnostic values
    */
-  public Map<String, Double> getDiagnosticValues() {
+  public Map<Long, Double> getDiagnosticValues() {
     return diagnosticValues;
   }
 }
