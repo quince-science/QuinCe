@@ -406,7 +406,7 @@ public abstract class CalculationDB {
     String readSql = "SELECT measurement_id, auto_flag, auto_message FROM "
         + getCalculationTable()
         + " WHERE measurement_id IN ("
-        + StringUtils.listToDelimited(rows, ",")
+        + StringUtils.collectionToDelimited(rows, ",")
         + ")";
 
     String writeSql = "UPDATE "
@@ -491,7 +491,7 @@ public abstract class CalculationDB {
       String sql = "SELECT auto_message, user_message, user_flag FROM "
           + getCalculationTable()
           + " WHERE measurement_id IN ("
-          + StringUtils.listToDelimited(rows, ",")
+          + StringUtils.collectionToDelimited(rows, ",")
           + ")";
 
       stmt = conn.prepareStatement(sql);
@@ -554,7 +554,7 @@ public abstract class CalculationDB {
       String sql = "UPDATE "
           + getCalculationTable()
           + " SET user_flag = ?, user_message = ? WHERE measurement_id IN ("
-          + StringUtils.listToDelimited(rows, ",")
+          + StringUtils.collectionToDelimited(rows, ",")
           + ")";
 
       stmt = conn.prepareStatement(sql);

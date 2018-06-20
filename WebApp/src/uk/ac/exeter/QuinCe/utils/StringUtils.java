@@ -31,7 +31,7 @@ public final class StringUtils {
   }
 
   /**
-   * Converts a list of values to a single string,
+   * Converts a collection of values to a single string,
    * with a semi-colon delimiter.
    *
    * <b>Note that this does not handle semi-colons within the values themselves.</b>
@@ -39,12 +39,12 @@ public final class StringUtils {
    * @param list The list to be converted
    * @return The converted list
    */
-  public static String listToDelimited(List<?> list) {
-    return listToDelimited(list, ";", null);
+  public static String collectionToDelimited(Collection<?> list) {
+    return collectionToDelimited(list, ";", null);
   }
 
   /**
-   * Converts a list of values to a single string,
+   * Converts a collection of values to a single string,
    * with a specified delimiter.
    *
    * <b>Note that this does not handle the case where the delimiter is found within the values themselves.</b>
@@ -53,18 +53,18 @@ public final class StringUtils {
    * @param delimiter The delimiter to use
    * @return The converted list
    */
-  public static String listToDelimited(List<?> list, String delimiter) {
-    return listToDelimited(list, delimiter, null);
+  public static String collectionToDelimited(Collection<?> list, String delimiter) {
+    return collectionToDelimited(list, delimiter, null);
   }
 
   /**
-   * Convert a list of objects to a delimited string
+   * Convert a collection of objects to a delimited string
    * @param collection The list
    * @param delimiter The delimiter
    * @param surrounder The character to put at the start and end of each entry
    * @return The delimited string
    */
-  public static String listToDelimited(Collection<?> collection, String delimiter, String surrounder) {
+  public static String collectionToDelimited(Collection<?> collection, String delimiter, String surrounder) {
 
     String result = null;
 
@@ -630,7 +630,7 @@ public final class StringUtils {
   public static String intListToJsonArray(List<Integer> list) {
     StringBuilder result = new StringBuilder();
     result.append('[');
-    result.append(listToDelimited(list, ","));
+    result.append(collectionToDelimited(list, ","));
     result.append(']');
     return result.toString();
   }
