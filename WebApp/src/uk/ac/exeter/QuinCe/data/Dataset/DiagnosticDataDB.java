@@ -151,16 +151,7 @@ public class DiagnosticDataDB {
 
     try {
       conn = dataSource.getConnection();
-      Map<Long, String> idMap = getDiagnosticSensorIdMap(conn, instrumentId);
-
-      // Remove the sensor names we don't need
-      for (Map.Entry<Long, String> entry : idMap.entrySet()) {
-        if (!sensorNames.contains(entry.getValue())) {
-          idMap.remove(entry.getKey());
-        }
-      }
-
-      result = getDiagnosticValues(conn, measurementIds, idMap);
+      result = getDiagnosticValues(conn, instrumentId, measurementIds, sensorNames);
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving diagnostic data", e);
     } finally {
@@ -303,24 +294,16 @@ public class DiagnosticDataDB {
   }
 
   /**
-   * Determine whether a given field relates to a diagnostic sensor
+   * Get the database ID of a named diagnostic sensor. Returns {@code -1} if
+   * the sensor cannot be found.
+   *
    * @param conn A database connection
-   * @param instrumentId The database ID of the instrument concerned
-   * @param field The field name
-   * @return {@code true} if the field is for a diagnostic sensor; {@code false} if it is not
-   * @throws MissingParamException If any required parameters are missing
-   * @throws DatabaseException If a database error occurs
+   * @param instrumentId The database ID of the instrument to which the sensor belongs
+   * @param sensorName The name of the sensor
+   * @return The sensor's database ID
+   * @throws MissingParamException
+   * @throws DatabaseException
    */
-  public static boolean isDiagnosticField(Connection conn, long instrumentId, String field) throws MissingParamException, DatabaseException {
-    MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
-    MissingParam.checkMissing(field, "field");
-
-    List<String> sensors = getDiagnosticSensorNames(conn, instrumentId);
-
-    return sensors.contains(field);
-  }
-
   public static long getSensorId(Connection conn, long instrumentId, String sensorName) throws MissingParamException, DatabaseException {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
@@ -426,7 +409,7 @@ public class DiagnosticDataDB {
    * @throws MissingParamException If any required parameters are missing
    * @throws DatabaseException If a database error occurs
    */
-  public static Map<Long, String> getDiagnosticSensorIdMap(Connection conn, long instrumentId) throws MissingParamException, DatabaseException {
+  private static Map<Long, String> getDiagnosticSensorIdMap(Connection conn, long instrumentId) throws MissingParamException, DatabaseException {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 
