@@ -375,7 +375,7 @@ public class Plot {
    * @return the mapBounds
    */
   public String getMapBounds() {
-    return '[' + StringUtils.listToDelimited(mapBounds, ",") + ']';
+    return '[' + StringUtils.collectionToDelimited(mapBounds, ",") + ']';
   }
 
   /**
@@ -389,7 +389,7 @@ public class Plot {
    * @return the mapBounds
    */
   public String getMapScaleLimits() {
-    return '[' + StringUtils.listToDelimited(mapScaleLimits, ",") + ']';
+    return '[' + StringUtils.collectionToDelimited(mapScaleLimits, ",") + ']';
   }
 
   /**
