@@ -230,9 +230,9 @@ public class DiagnosticDataDB {
       sql.append("SELECT measurement_id, file_column_id, value "
           + "FROM diagnostic_data WHERE measurement_id IN (");
 
-      sql.append(StringUtils.listToDelimited(measurementIds, ","));
+      sql.append(StringUtils.collectionToDelimited(measurementIds, ","));
       sql.append(") AND file_column_id IN (");
-      sql.append(StringUtils.listToDelimited(sensorIds, ",", "'"));
+      sql.append(StringUtils.collectionToDelimited(sensorIds, ",", "'"));
       sql.append(") ORDER BY measurement_id");
 
       PreparedStatement stmt = null;

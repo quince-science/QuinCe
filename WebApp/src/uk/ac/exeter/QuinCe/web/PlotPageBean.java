@@ -584,7 +584,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @return The data bounds
    */
   public String getDataBounds() {
-    return '[' + StringUtils.listToDelimited(dataBounds, ",") + ']';
+    return '[' + StringUtils.collectionToDelimited(dataBounds, ",") + ']';
   }
 
   /**
