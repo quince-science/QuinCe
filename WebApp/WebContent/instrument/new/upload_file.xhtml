@@ -6,7 +6,6 @@
   xmlns:c="http://java.sun.com/jsp/jstl/core"
   template="/WEB-INF/templates/new_instrument.xhtml">
 
-  <ui:define name="title">New Instrument</ui:define>
   <ui:define name="instrumentHead">
     <c:set var="instrumentStep" value="1" scope="request"/>
     <script>
@@ -23,7 +22,7 @@
     </script>
   </ui:define>
   <ui:define name="new_instrument_content">
-    <h:form id="newInstrumentForm" method="post" charset="utf8" enctype="multipart/form-data">
+    <h:form id="newInstrumentForm" method="post"  onkeypress="if (event.keyCode == 13) { return false; }" charset="utf8" enctype="multipart/form-data">
 
       <h:inputHidden id="sampleFileContent" value="#{newInstrumentBean.currentInstrumentFile.filePreview}"/>
       <p:commandLink id="guessFileLayout" ajax="true" process="@this" update="headerType headerLineCount headerEndString separator columnHeaderRows columnCount sampleFileContent" action="#{newInstrumentBean.currentInstrumentFile.guessFileLayout}" oncomplete="updateFileContentDisplay()"/>
