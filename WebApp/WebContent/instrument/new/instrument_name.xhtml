@@ -5,8 +5,7 @@
   xmlns:p="http://primefaces.org/ui"
   xmlns:c="http://java.sun.com/jsp/jstl/core"
   template="/WEB-INF/templates/new_instrument.xhtml">
-  <ui:param name="pageTitle" value="New Instrument - #{utils.siteName}" />
-  <ui:define name="title">New Instrument</ui:define>
+  <ui:define name="pageTitle">New Instrument</ui:define>
   <ui:define name="instrumentHead">
     <script>
       $(document).ready(function (){
@@ -17,7 +16,7 @@
   </ui:define>
   <ui:define name="new_instrument_name">New Instrument</ui:define>
   <ui:define name="new_instrument_content">
-    <h:form id="newInstrumentForm" method="post" charset="utf8">
+    <h:form id="newInstrumentForm" method="post" onkeypress="if (event.keyCode == 13) { return false; }" charset="utf8">
       <div id="nameForm">
         <p:inputText id="instrumentName" widgetVar="instrumentName" value="#{newInstrumentBean.instrumentName}" placeholder="Name your instrument" styleClass="instrumentName" required="true" requiredMessage="You must enter an instrument name">
           <f:validator validatorId="instrumentNameValidator"/>
