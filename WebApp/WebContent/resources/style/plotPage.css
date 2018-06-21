@@ -154,6 +154,7 @@ tr.selected {
   font-style: italic;
   padding-right: 5px;
   flex-grow: 1;
+  white-space: nowrap;
 }
 
 .variableGroup {
@@ -163,8 +164,9 @@ tr.selected {
 .varGroupName {
   font-weight: 700;
   text-decoration: underline;
-  margin-bottom: 2px;
+  margin-bottom: 10px;
   height: 18px;
+  white-space: nowrap;
 }
 
 .varGroupMember {
@@ -173,6 +175,7 @@ tr.selected {
 
 .variableControls {
   margin-left: 5px;
+  white-space: nowrap;
 }
 
 .axisButton {
