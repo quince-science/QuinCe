@@ -12,7 +12,6 @@ var DESELECT_ACTION = 0;
 var PLOT_POINT_SIZE = 2;
 var PLOT_HIGHLIGHT_SIZE = 5;
 var PLOT_FLAG_SIZE = 8;
-var PLOT_SELECTED_SIZE = 12;
 
 var PLOT_X_AXIS_INDEX = 0;
 var PLOT_MEASUREMENT_ID_INDEX = 1;
@@ -570,22 +569,18 @@ function drawPlot(index) {
     graph_options.underlayCallback = function(canvas, area, g) {
       // Selected
       for (var i = 0; i < plotHighlights.length; i++) {
-        if (plotHighlights[i][3]) {
-          var xPoint = g.toDomXCoord(plotHighlights[i][0]);
-          var yPoint = g.toDomYCoord(plotHighlights[i][1]);
-          canvas.fillStyle = 'rgba(255, 221, 0, 1)';
-          canvas.beginPath();
-          canvas.arc(xPoint, yPoint, PLOT_SELECTED_SIZE, 0, 2 * Math.PI, false);
-          canvas.fill();
-        }
-      }
+      var fillStyle = null;
 
-      // Flagged
-      for (var i = 0; i < plotHighlights.length; i++) {
-        if (null != plotHighlights[i][2]) {
+        if (plotHighlights[i][3]) {
+          fillStyle = 'rgba(255, 221, 0, 1)';
+        } else if (null != plotHighlights[i][2]) {
+          fillStyle = plotHighlights[i][2];
+        }
+
+        if (null != fillStyle) {
           var xPoint = g.toDomXCoord(plotHighlights[i][0]);
           var yPoint = g.toDomYCoord(plotHighlights[i][1]);
-          canvas.fillStyle = plotHighlights[i][2];
+          canvas.fillStyle = fillStyle;
           canvas.beginPath();
           canvas.arc(xPoint, yPoint, PLOT_FLAG_SIZE, 0, 2 * Math.PI, false);
           canvas.fill();
