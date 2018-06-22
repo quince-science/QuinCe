@@ -729,17 +729,70 @@ public abstract class CalculationDB {
     return json.toString();
   }
 
+  /**
+   * Get the range of values from a specific field in a dataset.
+   * The returned range covers the 5th to 95th percentiles of the true range,
+   * to prevent outliers from skewing color scales based on the range.
+   *
+   * By default, only records with flags of GOOD or QUESTIONABLE are included in
+   * the range; if there are no records with these flags, all records will be included.
+   *
+   * @param dataSource A data source
+   * @param dataset The dataset
+   * @param field The field
+   * @return The value range
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If one or more parameters are missing
+   * @throws RecordNotFoundException If the dataset does not exist
+   * @throws InstrumentException If the instrument details cannot be retrieved
+   */
   public List<Double> getValueRange(DataSource dataSource, DataSet dataset, String field) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
-    double min = 0;
-    double max = 0;
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(dataset, "dataset");
+    MissingParam.checkMissing(field, "field");
 
+    List<Double> result = null;
     Connection conn = null;
-    PreparedStatement stmt = null;
-    ResultSet results = null;
 
     try {
       conn = dataSource.getConnection();
+      result = getValueRange(conn, dataset, field, true);
+    } catch (SQLException e) {
+      throw new DatabaseException("Excpeption while getting scale bounds", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
 
+
+    return result;
+  }
+
+  /**
+   * The real calculation method for getting the range of values for a field
+   * in a dataset (see {@link #getValueRange(DataSource, DataSet, String)}).
+   *
+   * This method should be called with {@code filterFlags} set to {@code true},
+   * which will force it to only check records with GOOD or QUESTIONABLE flags.
+   * If no records are found, it will call itself again with {@code filterFlags == false}
+   * to collect all records regardless of the flag.
+   *
+   * @param conn A database connection
+   * @param dataset The dataset
+   * @param field The field
+   * @param filterFlags Indicates whether or not on GOOD or QUESTIONABLE flags should be checked
+   * @return The value range
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If one or more parameters are missing
+   * @throws RecordNotFoundException If the dataset does not exist
+   * @throws InstrumentException If the instrument details cannot be retrieved
+   */
+  private List<Double> getValueRange(Connection conn, DataSet dataset, String field, boolean filterFlags) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
+    PreparedStatement stmt = null;
+    ResultSet results = null;
+
+    List<Double> result = new ArrayList<Double>(2);
+
+    try {
       List<String> fieldList = new ArrayList<String>(1);
       fieldList.add(field);
       List<String> datasetFields = DataSetDataDB.extractDatasetFields(conn, dataset, fieldList);
@@ -760,13 +813,15 @@ public abstract class CalculationDB {
       sql.append(getCalculationTable());
       sql.append(" c ON d.id = c.measurement_id WHERE d.dataset_id = ?");
 
-      sql.append(" AND c.user_flag IN (");
-      sql.append(Flag.VALUE_ASSUMED_GOOD);
-      sql.append(',');
-      sql.append(Flag.VALUE_GOOD);
-      sql.append(',');
-      sql.append(Flag.VALUE_QUESTIONABLE);
-      sql.append(")");
+      if (filterFlags) {
+        sql.append(" AND c.user_flag IN (");
+        sql.append(Flag.VALUE_ASSUMED_GOOD);
+        sql.append(',');
+        sql.append(Flag.VALUE_GOOD);
+        sql.append(',');
+        sql.append(Flag.VALUE_QUESTIONABLE);
+        sql.append(")");
+      }
 
       stmt = conn.prepareStatement(sql.toString());
       stmt.setLong(1, dataset.getId());
@@ -774,30 +829,32 @@ public abstract class CalculationDB {
 
       List<Double> values = new ArrayList<Double>();
 
+      boolean valuesFound = false;
       while(results.next()) {
+        valuesFound = true;
         values.add(results.getDouble(1));
       }
 
-      Percentile percentile = new Percentile();
+      if (valuesFound) {
+        Percentile percentile = new Percentile();
 
-      double[] array = values.stream().mapToDouble(d -> d).toArray();
+        double[] array = values.stream().mapToDouble(d -> d).toArray();
 
-      min = percentile.evaluate(array, 5);
-      max = percentile.evaluate(array, 95);
+        // The minimum and maximum are the 5th and 95th percentile points
+        result.add(percentile.evaluate(array, 5));
+        result.add(percentile.evaluate(array, 95));
+      } else {
+        // Get the values including all flags, because there are no
+        // records with good/questionable flags
+        result = getValueRange(conn, dataset, field, false);
+      }
 
     } catch (SQLException e) {
       throw new DatabaseException("Excpeption while getting scale bounds", e);
     } finally {
       DatabaseUtils.closeResultSets(results);
       DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
     }
-
-
-
-    List<Double> result = new ArrayList<Double>(2);
-    result.add(min);
-    result.add(max);
 
     return result;
   }
