@@ -144,6 +144,10 @@ function resizeContent() {
   if (typeof resizePlots == 'function') {
     resizePlots();
   }
+
+  if (PF('variableDialog') && PF('variableDialog').isVisible()) {
+    resizeVariablesDialog();
+  }
 }
 
 function makeJSDates(data) {
