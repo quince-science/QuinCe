@@ -145,7 +145,7 @@ function resizeContent() {
     resizePlots();
   }
 
-  if (PF('variableDialog') && PF('variableDialog').isVisible()) {
+  if (PrimeFaces.widgets['variableDialog'] && PF('variableDialog').isVisible()) {
     resizeVariablesDialog();
   }
 }
@@ -852,7 +852,7 @@ function resizeVariablesDialog() {
     varsPerColumn = Math.ceil(variableCount / 2);
   }
 
-  varList.height(varsPerColumn * VARIABLES_DIALOG_ENTRY_HEIGHT);
+  varList.height(varsPerColumn * VARIABLES_DIALOG_ENTRY_HEIGHT + 30);
 
   PF('variableDialog').jq.width(varList.prop('scrollWidth') + 50);
   PF('variableDialog').initPosition();
@@ -861,6 +861,9 @@ function resizeVariablesDialog() {
 }
 
 function applyVariables() {
+  if (PrimeFaces.widgets['variableDialog']) {
+    PF('variableDialog').hide();
+  }
   updatePlotInputs(variablesPlotIndex);
 
   var mode = getPlotMode(variablesPlotIndex);
@@ -873,6 +876,7 @@ function applyVariables() {
   } else if (mode == 'map') {
     initMap(variablesPlotIndex);
   }
+
 }
 
 function updatePlotInputs(plotIndex) {
@@ -1061,8 +1065,6 @@ function getMapData(index) {
 }
 
 function drawMap(index) {
-  PF('variableDialog').hide();
-
   var mapVar = 'map' + index;
   var dataLayerVar = mapVar + 'DataLayer';
   var colorScaleVar = mapVar + 'ColorScale';
