@@ -143,11 +143,11 @@ tr.selected {
 }
 
 .variable:last-of-type {
-  margin-bottom: 10px;
+  margin-bottom: 30px;
 }
 
 .singleVariable {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .varName {
@@ -174,8 +174,9 @@ tr.selected {
 }
 
 .variableControls {
+  display: flex;
+  align-content: center;
   margin-left: 5px;
-  white-space: nowrap;
 }
 
 .axisButton {
@@ -183,7 +184,6 @@ tr.selected {
   width: 16px;
   height: 16px;
   position: relative;
-  top: -5px;
 }
 
 .ui-selectbooleanbutton .ui-button-text {
