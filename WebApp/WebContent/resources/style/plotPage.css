@@ -161,6 +161,10 @@ tr.selected {
   margin-left: 10px;
 }
 
+.variableGroup:last-of-type {
+  margin-bottom: 30px;
+}
+
 .varGroupName {
   font-weight: 700;
   text-decoration: underline;
