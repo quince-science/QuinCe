@@ -13,11 +13,30 @@
   </ui:define>
   <ui:define name="pageTitle"></ui:define>
   <ui:define name="content">
-      <ui:fragment rendered="false">
-        <div style="text-align: right">
-            <h:link outcome="/credits.xhtml">Credits</h:link>
-        </div>
-    </ui:fragment>
+      <p:dialog widgetVar="cookieDialog" modal="true">
+        <p>
+          This site uses cookies to maintain information about
+          your login sessions.
+          <br/>
+          Cookies are not used for any other purpose.
+        </p>
+        <p>
+          The only personal information stored on this site
+          is your name and email address.
+          <br/>
+          These are used to identify you on the site and for no other purpose.
+          <br/>
+          Metadata related to datasets generated on this site are handled by
+          external systems.
+        </p>
+      </p:dialog>
+      <div style="text-align: right">
+          <p:commandLink onclick="PF('cookieDialog').show()">Cookies and Privacy Policy</p:commandLink>
+          <br/>
+          <ui:fragment rendered="false">
+            <p:link outcome="/credits.xhtml">Credits</p:link>
+          </ui:fragment>
+      </div>
       <div class="contentBox">
         <div id="logoTitle">
           <h:graphicImage id="logo" alt="logo" value="/resources/image/quince.png" style="margin-right: 20px;"/>
