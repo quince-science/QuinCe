@@ -22,8 +22,8 @@
     </script>
   </ui:define>
   <ui:define name="new_instrument_content">
-    <h:form id="newInstrumentForm" method="post"  onkeypress="if (event.keyCode == 13) { return false; }" charset="utf8" enctype="multipart/form-data">
-
+    <h:form id="newInstrumentForm" method="post" charset="utf8" enctype="multipart/form-data">
+      <p:defaultCommand target="useFile" />
       <h:inputHidden id="sampleFileContent" value="#{newInstrumentBean.currentInstrumentFile.filePreview}"/>
       <p:commandLink id="guessFileLayout" ajax="true" process="@this" update="headerType headerLineCount headerEndString separator columnHeaderRows columnCount sampleFileContent" action="#{newInstrumentBean.currentInstrumentFile.guessFileLayout}" oncomplete="updateFileContentDisplay()"/>
 
