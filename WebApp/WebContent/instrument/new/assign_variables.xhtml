@@ -43,7 +43,8 @@
     <div id="mainAssignmentMenu" class="ui-menu ui-widget ui-widget-content ui-corner-all ui-helper-clearfix ui-shadow ui-overlay-hidden" role="menu"></div>
     <div id="dateTimeMenu" class="ui-menu ui-widget ui-widget-content ui-corner-all ui-helper-clearfix ui-shadow ui-overlay-hidden" role="menu"></div>
 
-    <h:form id="newInstrumentForm" method="post" onkeypress="if (event.keyCode == 13) { return false; }" charset="utf8">
+    <h:form id="newInstrumentForm" method="post" charset="utf8">
+      <p:defaultCommand target="nextButton" />
       <h:inputHidden id="sensorAssignments" value="#{newInstrumentBean.sensorAssignments}"/>
       <h:inputHidden id="fileSpecificAssignments" value="#{newInstrumentBean.fileSpecificAssignments}"/>
 

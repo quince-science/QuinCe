@@ -10,7 +10,8 @@
     <c:set var="instrumentStep" value="3" scope="request"/>
   </ui:define>
   <ui:define name="new_instrument_content">
-    <h:form id="newInstrumentForm" method="post" onkeypress="if (event.keyCode == 13) { return false; }" charset="utf8">
+    <h:form id="newInstrumentForm" method="post" charset="utf8">
+      <p:defaultCommand target="nextButton" />
 
       <table class="form">
         <tr>

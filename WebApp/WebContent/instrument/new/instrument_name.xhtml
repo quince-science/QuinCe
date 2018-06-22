@@ -16,7 +16,8 @@
   </ui:define>
   <ui:define name="new_instrument_name">New Instrument</ui:define>
   <ui:define name="new_instrument_content">
-    <h:form id="newInstrumentForm" method="post" onkeypress="if (event.keyCode == 13) { return false; }" charset="utf8">
+    <h:form id="newInstrumentForm" method="post" charset="utf8">
+    <p:defaultCommand target="nextButton" />
       <div id="nameForm">
         <p:inputText id="instrumentName" widgetVar="instrumentName" value="#{newInstrumentBean.instrumentName}" placeholder="Name your instrument" styleClass="instrumentName" required="true" requiredMessage="You must enter an instrument name">
           <f:validator validatorId="instrumentNameValidator"/>
@@ -27,7 +28,7 @@
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="3" cellpadding="5" styleClass="buttonPanel">
         <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml"/>
-        <p:commandButton value="Next" ajax="false" action="#{newInstrumentBean.goToFiles}"/>
+        <p:commandButton id="nextButton" value="Next" ajax="false" action="#{newInstrumentBean.goToFiles}"/>
       </h:panelGrid>
     </h:form>
   </ui:define>
