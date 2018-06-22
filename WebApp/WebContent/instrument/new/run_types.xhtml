@@ -18,7 +18,8 @@
     </script>
   </ui:define>
   <ui:define name="new_instrument_content">
-    <h:form id="newInstrumentForm" method="post" onkeypress="if (event.keyCode == 13) { return false; }" charset="utf8">
+    <h:form id="newInstrumentForm" method="post" charset="utf8">
+      <p:defaultCommand target="nextButton" />
 
       <h:inputHidden id="assignedCategories" value="#{newInstrumentBean.categoryAssignments}"/>
       <h:inputHidden id="assignedRunTypes" value="#{newInstrumentBean.runTypeAssignments}"/>
