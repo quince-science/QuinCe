@@ -192,9 +192,9 @@ tr.selected {
   width: 350px;
   height: 50px;
   position: absolute;
-  bottom: 40px;
+  bottom: 45px;
   right: 35px;
-  background-color: white;
+  background-color: #8EAAC5EE;
 }
 
 .mapScaleControlContainer {
@@ -218,15 +218,6 @@ tr.selected {
   right: 8px;
   width: 23px;
   z-index: 100;
-}
-
-.mapScale {
-  width: 350px;
-  height: 50px;
-  position: absolute;
-  bottom: 45px;
-  right: 35px;
-  background: transparent;
 }
 
 .ol-control button {
