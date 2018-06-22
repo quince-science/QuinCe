@@ -1118,6 +1118,9 @@ function drawMap(index) {
     window['map' + index + 'Extent'] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", window[mapVar].getView().getProjection());
     resetZoom(index);
   }
+
+  // Destroy the plot, which is no longer visible
+  window['plot' + index] = null;
 }
 
 function displayMapFeatureInfo(event, pixel) {
