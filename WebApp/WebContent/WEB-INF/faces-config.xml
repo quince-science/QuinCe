@@ -135,6 +135,7 @@
     <navigation-case>
       <from-outcome>name</from-outcome>
       <to-view-id>/instrument/new/instrument_name.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
   </navigation-rule>
   <navigation-rule>
@@ -143,26 +144,32 @@
     <navigation-case>
       <from-outcome>instrument_list</from-outcome>
       <to-view-id>/instrument/instrument_list.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
     <navigation-case>
       <from-outcome>name</from-outcome>
       <to-view-id>/instrument/new/instrument_name.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
     <navigation-case>
       <from-outcome>upload_file</from-outcome>
       <to-view-id>/instrument/new/upload_file.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
     <navigation-case>
       <from-outcome>assign_variables</from-outcome>
       <to-view-id>/instrument/new/assign_variables.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
     <navigation-case>
       <from-outcome>run_types</from-outcome>
       <to-view-id>/instrument/new/run_types.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
     <navigation-case>
       <from-outcome>other_info</from-outcome>
       <to-view-id>/instrument/new/other_info.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
   </navigation-rule>
   <navigation-rule>
@@ -171,10 +178,12 @@
     <navigation-case>
       <from-outcome>instrument_list</from-outcome>
       <to-view-id>/instrument/instrument_list.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
     <navigation-case>
       <from-outcome>external_standards</from-outcome>
       <to-view-id>/instrument/external_standards.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
   </navigation-rule>
   <navigation-rule>
@@ -183,10 +192,12 @@
     <navigation-case>
       <from-outcome>upload</from-outcome>
       <to-view-id>/data_file/upload.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
     <navigation-case>
       <from-outcome>file_list</from-outcome>
       <to-view-id>/data_file/file_list.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
   </navigation-rule>
   <navigation-rule>
@@ -195,22 +206,27 @@
     <navigation-case>
       <from-outcome>new_dataset</from-outcome>
       <to-view-id>/dataset/new_dataset.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
     <navigation-case>
       <from-outcome>dataset_list</from-outcome>
       <to-view-id>/dataset/dataset_list.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
     <navigation-case>
       <from-outcome>calibration_data_plot</from-outcome>
       <to-view-id>/dataset/calibration_data.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
     <navigation-case>
       <from-outcome>user_qc</from-outcome>
       <to-view-id>/dataset/manual_qc.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
     <navigation-case>
       <from-outcome>export</from-outcome>
       <to-view-id>/dataset/export.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
   </navigation-rule>
   <component>
