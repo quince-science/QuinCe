@@ -5,6 +5,7 @@
   template="/WEB-INF/templates/basic_page.xhtml">
 
   <ui:define name="title">New Instrument</ui:define>
+  <ui:define name="pageTitle"><h:outputText value="#{newInstrumentBean.instrumentName}"/></ui:define>
   <ui:define name="localHead">
     <h:outputScript name="script/newInstrument.js"/>
     <h:outputStylesheet name="style/newInstrument.css"/>
@@ -13,7 +14,6 @@
 
   <ui:define name="content">
     <div id="content">
-      <div class="pageTitle"><ui:insert name="new_instrument_name"><h:outputText value="#{newInstrumentBean.instrumentName}"/></ui:insert></div>
       <div id="progress">
         <p:steps activeIndex="#{instrumentStep}" styleClass="custom">
           <p:menuitem value="Name"/>
