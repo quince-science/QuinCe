@@ -48,7 +48,7 @@ Equilibrator Pressure 1,N,Y,Mean Equilibrator Pressure|3|4
 Equilibrator Pressure 2,N,N,Mean Equilibrator Pressure|3|4
 Equilibrator Pressure 3,N,N,Mean Equilibrator Pressure|3|4
 xH2O,N,Y,True xH2O|3|4
-Atmospheric Pressure,N,Y,
+Ambient Pressure,N,Y,
 CO2,N,Y,
 Mean Intake Temp,N,Y,
 Mean Salinity,N,Y,
@@ -61,4 +61,3 @@ pH2O,N,Y,
 pCO2 TE Wet,N,Y,
 pCO2 SST,N,Y,
 fCO2,N,Y,
-
