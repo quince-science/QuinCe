@@ -793,38 +793,17 @@ public abstract class CalculationDB {
     List<Double> result = new ArrayList<Double>(2);
 
     try {
-      List<String> fieldList = new ArrayList<String>(1);
-      fieldList.add(field);
-      List<String> datasetFields = DataSetDataDB.extractDatasetFields(conn, dataset, fieldList);
-
-      StringBuilder sql = new StringBuilder();
-
-      sql.append("SELECT ");
-      if (datasetFields.size() > 0) {
-        sql.append('d');
+      if (DataSetDataDB.isDatasetField(conn, dataset, field)) {
+        stmt = makeDatasetRangeStatement(conn, dataset.getId(), field, filterFlags);
       } else {
-        sql.append('c');
+        long diagnosticSensorId = DiagnosticDataDB.getSensorId(conn, dataset.getInstrumentId(), field);
+        if (diagnosticSensorId > -1) {
+          stmt = makeDiagnosticRangeStatement(conn, dataset.getId(), diagnosticSensorId, filterFlags);
+        } else {
+          stmt = makeCalculationRangeStatement(conn, dataset.getId(), field, filterFlags);
+        }
       }
 
-      sql.append('.');
-      sql.append(field);
-
-      sql.append(" FROM dataset_data d INNER JOIN ");
-      sql.append(getCalculationTable());
-      sql.append(" c ON d.id = c.measurement_id WHERE d.dataset_id = ?");
-
-      if (filterFlags) {
-        sql.append(" AND c.user_flag IN (");
-        sql.append(Flag.VALUE_ASSUMED_GOOD);
-        sql.append(',');
-        sql.append(Flag.VALUE_GOOD);
-        sql.append(',');
-        sql.append(Flag.VALUE_QUESTIONABLE);
-        sql.append(")");
-      }
-
-      stmt = conn.prepareStatement(sql.toString());
-      stmt.setLong(1, dataset.getId());
       results = stmt.executeQuery();
 
       List<Double> values = new ArrayList<Double>();
@@ -868,7 +847,7 @@ public abstract class CalculationDB {
    * @return The SQL statement
    * @throws SQLException If the statement cannot be constructed
    */
-  private PreparedStatement makeDiagnosticRangeStatement(Connection conn, long datasetId, long sensorId) throws SQLException {
+  private PreparedStatement makeDiagnosticRangeStatement(Connection conn, long datasetId, long sensorId, boolean filterFlags) throws SQLException {
 
     StringBuilder sql = new StringBuilder();
 
@@ -879,12 +858,14 @@ public abstract class CalculationDB {
     sql.append(" c ON dd.measurement_id = c.measurement_id ");
     sql.append("WHERE ds.dataset_id = ? ");
     sql.append("AND dd.file_column_id = ?");
-    addFlagCriteriaToRangeQuery(sql);
+
+    if (filterFlags) {
+      addFlagCriteriaToRangeQuery(sql);
+    }
 
     PreparedStatement stmt = conn.prepareStatement(sql.toString());
     stmt.setLong(1, datasetId);
     stmt.setLong(2, sensorId);
-
 
     return stmt;
   }
@@ -898,7 +879,7 @@ public abstract class CalculationDB {
    * @return The SQL statement
    * @throws SQLException If the statement cannot be constructed
    */
-  private PreparedStatement makeDatasetRangeStatement(Connection conn, long datasetId, String field) throws SQLException {
+  private PreparedStatement makeDatasetRangeStatement(Connection conn, long datasetId, String field, boolean filterFlags) throws SQLException {
 
     StringBuilder sql = new StringBuilder();
 
@@ -909,7 +890,10 @@ public abstract class CalculationDB {
     sql.append(getCalculationTable());
     sql.append(" c ON ds.id = c.measurement_id ");
     sql.append("WHERE ds.dataset_id = ?");
-    addFlagCriteriaToRangeQuery(sql);
+
+    if (filterFlags) {
+      addFlagCriteriaToRangeQuery(sql);
+    }
 
     PreparedStatement stmt = conn.prepareStatement(sql.toString());
     stmt.setLong(1, datasetId);
@@ -925,7 +909,7 @@ public abstract class CalculationDB {
    * @return The SQL statement
    * @throws SQLException If the statement cannot be constructed
    */
-  private PreparedStatement makeCalculationRangeStatement(Connection conn, long datasetId, String field) throws SQLException {
+  private PreparedStatement makeCalculationRangeStatement(Connection conn, long datasetId, String field, boolean filterFlags) throws SQLException {
 
     StringBuilder sql = new StringBuilder();
 
@@ -936,7 +920,10 @@ public abstract class CalculationDB {
     sql.append(" c INNER JOIN dataset_data ds ");
     sql.append("ON ds.id = c.measurement_id ");
     sql.append("WHERE ds.dataset_id = ?");
-    addFlagCriteriaToRangeQuery(sql);
+
+    if (filterFlags) {
+      addFlagCriteriaToRangeQuery(sql);
+    }
 
     PreparedStatement stmt = conn.prepareStatement(sql.toString());
     stmt.setLong(1, datasetId);
