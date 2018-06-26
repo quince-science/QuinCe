@@ -59,7 +59,7 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
       equilibratorPressure = absoluteEquilibratorPressure;
     } else {
       double differential = measurement.getSensorValue("Equilibrator Pressure (differential)");
-      double atmospheric = measurement.getSensorValue("Atmospheric Pressure");
+      double atmospheric = measurement.getSensorValue("Ambient Pressure");
       equilibratorPressure = atmospheric + differential;
     }
 
