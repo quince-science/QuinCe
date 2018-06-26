@@ -39,7 +39,7 @@ Salinity,N,Y,fCO2|3|3
 Equilibrator Temperature,N,Y,fCO2|3|4
 Equilibrator Pressure,N,Y,fCO2|3|3
 xH2O,N,Y,True Moisture|3|4
-Atmospheric Pressure,N,Y,Equilibrator Pressure|3|4
+Ambient Pressure,N,Y,Equilibrator Pressure|3|4
 CO2,N,Y,fCO2|3|4
 Delta Temperature,N,Y,fCO2|3|4
 True Moisture,N,Y,fCO2|3|4
@@ -49,4 +49,3 @@ Calibrated CO2,N,Y,
 pCO2 TE Wet,N,Y,
 pCO2 SST,N,Y,
 fCO2,N,Y,
-
