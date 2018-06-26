@@ -111,6 +111,14 @@
   z-index: 1000;
 }
 
+#diagnosticMenu {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  font-size: 0.8em;
+  z-index: 1000;
+}
+
 .assignmentListEntry {
   --entry_color: #2779AA;
   display: flex;

@@ -199,7 +199,7 @@ public abstract class Calibration implements Comparable<Calibration> {
       values.add(coefficient.getValue());
     }
 
-    return StringUtils.listToDelimited(values, ";");
+    return StringUtils.collectionToDelimited(values, ";");
   }
 
   /**

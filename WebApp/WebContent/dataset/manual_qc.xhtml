@@ -91,7 +91,8 @@
       <p:selectOneButton value="#{manualQcBean.tableMode}" widgetVar="tableModeSelector" onchange="renderTableColumns()">
         <f:selectItem itemLabel="Sensors" itemValue="sensors"/>
         <f:selectItem itemLabel="Calculations" itemValue="calculations"/>
-        <f:ajax render="@none"/>
+        <f:selectItem itemLabel="Diagnostics" itemValue="diagnostics"/>
+        <f:ajax process="@this" render="@none"/>
       </p:selectOneButton>
   </ui:define>
   <ui:define name="selectionActions">

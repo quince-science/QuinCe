@@ -92,11 +92,6 @@ public class DataSetDataDB {
   private static final String RUN_TYPE_COL = "run_type";
 
   /**
-   * The name of the diagnostic values column
-   */
-  private static final String DIAGNOSTIC_COL = "diagnostic_values";
-
-  /**
    * The name of the dataset ID column
    */
   private static final String DATASET_COL = "dataset_id";
@@ -138,9 +133,8 @@ public class DataSetDataDB {
       datasetDataStatement.setDouble(3, record.getLongitude());
       datasetDataStatement.setDouble(4, record.getLatitude());
       datasetDataStatement.setString(5, record.getRunType());
-      datasetDataStatement.setString(6, record.getDiagnosticValuesString());
 
-      int currentField = 6;
+      int currentField = 5;
       SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
       for (SensorType sensorType : sensorConfig.getSensorTypes()) {
         if (sensorType.isUsedInCalculation()) {
@@ -161,6 +155,7 @@ public class DataSetDataDB {
       createdKeys = datasetDataStatement.getGeneratedKeys();
       while (createdKeys.next()) {
         calculationDB.createCalculationRecord(conn, createdKeys.getLong(1));
+        DiagnosticDataDB.storeDiagnosticValues(conn, createdKeys.getLong(1), record.getDiagnosticValues());
       }
 
     } catch (SQLException e) {
@@ -354,10 +349,10 @@ public class DataSetDataDB {
     double latitude = records.getDouble(baseColumns.get(LAT_COL));
     String runType = records.getString(baseColumns.get(RUN_TYPE_COL));
     RunTypeCategory runTypeCategory = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategory(runType);
-    String diagnosticValues = records.getString(baseColumns.get(DIAGNOSTIC_COL));
 
     result = new DataSetRawDataRecord(dataSet, id, date, longitude, latitude, runType, runTypeCategory);
-    result.setDiagnosticValues(diagnosticValues);
+
+    // TODO Add diagnostics here
 
     for (Map.Entry<Integer, String> entry : sensorColumns.entrySet()) {
       Double value = records.getDouble(entry.getKey());
@@ -404,10 +399,6 @@ public class DataSetDataDB {
         baseColumns.put(RUN_TYPE_COL, i);
         break;
       }
-      case DIAGNOSTIC_COL: {
-        baseColumns.put(DIAGNOSTIC_COL, i);
-        break;
-      }
       case DATASET_COL: {
         // Do nothing
         break;
@@ -444,7 +435,6 @@ public class DataSetDataDB {
     fieldNames.add("longitude");
     fieldNames.add("latitude");
     fieldNames.add("run_type");
-    fieldNames.add("diagnostic_values");
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
     for (SensorType sensorType : sensorConfig.getSensorTypes()) {
@@ -579,10 +569,6 @@ public class DataSetDataDB {
           // Ignored
           break;
         }
-        case "diagnostic_values": {
-          // TODO Add these
-          break;
-        }
         default: {
           // Sensor value columns
           for (SensorType sensorType : sensorConfig.getSensorTypes()) {
@@ -652,10 +638,6 @@ public class DataSetDataDB {
           // Ignored
           break;
         }
-        case "diagnostic_values": {
-          // TODO Add these
-          break;
-        }
         default: {
           // Sensor value columns
           for (SensorType sensorType : sensorConfig.getSensorTypes()) {
@@ -686,9 +668,9 @@ public class DataSetDataDB {
    * @param dataSet The data set to which the fields belong
    * @param originalFields The list of fields
    * @return The fields that come from dataset data
-     * @throws DatabaseException If a database error occurs
-     * @throws MissingParamException If any required parameters are missing
-     * @throws RecordNotFoundException If the dataset or its instrument do not exist
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   * @throws RecordNotFoundException If the dataset or its instrument do not exist
    * @throws InstrumentException If the instrument details cannot be retrieved
    */
   public static List<String> extractDatasetFields(Connection conn, DataSet dataSet, List<String> originalFields) throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException {
@@ -710,10 +692,6 @@ public class DataSetDataDB {
         datasetFields.add(originalField);
         break;
       }
-      case "diagnostic_values": {
-        // TODO Handle diagnostic values somehow
-        break;
-      }
       default: {
         // Sensor value columns
         for (SensorType sensorType : sensorConfig.getSensorTypes()) {
@@ -732,6 +710,26 @@ public class DataSetDataDB {
     }
 
     return datasetFields;
+  }
+
+  /**
+   * Determine whether or not a given field is a dataset-level field
+   * @param conn A database connection
+   * @param dataset The dataset to which the field belongs
+   * @param field The field name
+   * @return {@code true} if the field is a dataset field; {@code false} if it is not
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   * @throws RecordNotFoundException If the dataset or its instrument do not exist
+   * @throws InstrumentException If the instrument details cannot be retrieved
+   */
+  public static boolean isDatasetField(Connection conn, DataSet dataset, String field) throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException {
+    List<String> fieldList = new ArrayList<String>(1);
+    fieldList.add(field);
+
+    List<String> detectedDatasetField = extractDatasetFields(conn, dataset, fieldList);
+
+    return (detectedDatasetField.size() > 0);
   }
 
   /**
@@ -780,5 +778,4 @@ public class DataSetDataDB {
 
     return result;
   }
-
 }

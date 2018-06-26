@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.math3.stat.descriptive.rank.Percentile;
+import org.primefaces.json.JSONArray;
 
 import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
@@ -21,6 +22,7 @@ import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.messages.RebuildCode;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DiagnosticDataDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -404,7 +406,7 @@ public abstract class CalculationDB {
     String readSql = "SELECT measurement_id, auto_flag, auto_message FROM "
         + getCalculationTable()
         + " WHERE measurement_id IN ("
-        + StringUtils.listToDelimited(rows, ",")
+        + StringUtils.collectionToDelimited(rows, ",")
         + ")";
 
     String writeSql = "UPDATE "
@@ -489,7 +491,7 @@ public abstract class CalculationDB {
       String sql = "SELECT auto_message, user_message, user_flag FROM "
           + getCalculationTable()
           + " WHERE measurement_id IN ("
-          + StringUtils.listToDelimited(rows, ",")
+          + StringUtils.collectionToDelimited(rows, ",")
           + ")";
 
       stmt = conn.prepareStatement(sql);
@@ -552,7 +554,7 @@ public abstract class CalculationDB {
       String sql = "UPDATE "
           + getCalculationTable()
           + " SET user_flag = ?, user_message = ? WHERE measurement_id IN ("
-          + StringUtils.listToDelimited(rows, ",")
+          + StringUtils.collectionToDelimited(rows, ",")
           + ")";
 
       stmt = conn.prepareStatement(sql);
@@ -596,8 +598,8 @@ public abstract class CalculationDB {
    * @return The JSON array
    * @throws InstrumentException If the dataset's instrument cannot be retrieved
    * @throws RecordNotFoundException If the dataset does not exist
-     * @throws DatabaseException If a database error occurs
-     * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
    */
   public String getJsonData(DataSource dataSource, DataSet dataset, List<String> fields, String sortField, List<Double> bounds, boolean limitPoints) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
 
@@ -610,31 +612,35 @@ public abstract class CalculationDB {
     ResultSet records = null;
 
 
-    StringBuilder json = new StringBuilder();
+    JSONArray json = new JSONArray();
 
     try {
       conn = dataSource.getConnection();
 
       List<String> datasetFields = DataSetDataDB.extractDatasetFields(conn, dataset, fields);
+      List<String> diagnosticFields = DiagnosticDataDB.extractDiagnosticFields(conn, dataset.getInstrumentId(), fields);
       List<String> calculationFields = new ArrayList<String>(fields);
       calculationFields.removeAll(datasetFields);
+      calculationFields.removeAll(diagnosticFields);
+
+      List<String> databaseFields = new ArrayList<String>(datasetFields.size() + calculationFields.size());
+      for (String field : fields) {
+        if (datasetFields.contains(field)) {
+          databaseFields.add("d." + field);
+        } else if (calculationFields.contains(field)) {
+          databaseFields.add("c." + field);
+        }
+      }
+
+      Map<Long, Map<String, Double>> diagnosticData = DiagnosticDataDB.getDiagnosticValues(conn, dataset.getInstrumentId(), DataSetDataDB.getMeasurementIds(conn, dataset.getId()), diagnosticFields);
 
       StringBuilder sql = new StringBuilder();
 
       sql.append("SELECT ");
-      for (int i = 0; i < fields.size(); i++) {
-        String field = fields.get(i);
+      for (int i = 0; i < databaseFields.size(); i++) {
+        sql.append(databaseFields.get(i));
 
-        if (datasetFields.contains(field)) {
-          sql.append('d');
-        } else {
-          sql.append('c');
-        }
-
-        sql.append('.');
-        sql.append(field);
-
-        if (i < fields.size() - 1) {
+        if (i < databaseFields.size() - 1) {
           sql.append(',');
         }
       }
@@ -688,27 +694,28 @@ public abstract class CalculationDB {
         }
       }
 
-      json.append('[');
-
-      boolean hasRecords = false;
       while (records.relative(everyNthRecord)) {
-        hasRecords = true;
 
-        json.append('[');
+        JSONArray recordJson = new JSONArray();
+        long measurementId = -1;
 
         for (int i = 0; i < fields.size(); i++) {
-
-          if (fields.get(i).equals("id") || fields.get(i).equals("date")) {
-            json.append(records.getLong(i + 1));
+          String field = fields.get(i);
+          if (field.equals("id")) {
+            measurementId = records.getLong(i + 1);
+            recordJson.put(measurementId);
+          } else if (field.equals("date")) {
+            recordJson.put(records.getLong(i + 1));
+          } else if (diagnosticFields.contains(field)) {
+            // The measurement ID is always before any diagnostic fields,
+            // so we can be sure it's populated.
+            recordJson.put(diagnosticData.get(measurementId).get(field));
           } else {
-            json.append(records.getDouble(i + 1));
-          }
-
-          if (i < fields.size() - 1) {
-            json.append(',');
+            recordJson.put(records.getDouble(i + 1));
           }
         }
 
+==== BASE ====
         json.append("],");
       }
 
@@ -718,6 +725,7 @@ public abstract class CalculationDB {
       }
       json.append(']');
 
+==== BASE ====
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting dataset records", e);
     } finally {
@@ -793,38 +801,17 @@ public abstract class CalculationDB {
     List<Double> result = new ArrayList<Double>(2);
 
     try {
-      List<String> fieldList = new ArrayList<String>(1);
-      fieldList.add(field);
-      List<String> datasetFields = DataSetDataDB.extractDatasetFields(conn, dataset, fieldList);
-
-      StringBuilder sql = new StringBuilder();
-
-      sql.append("SELECT ");
-      if (datasetFields.size() > 0) {
-        sql.append('d');
+      if (DataSetDataDB.isDatasetField(conn, dataset, field)) {
+        stmt = makeDatasetRangeStatement(conn, dataset.getId(), field, filterFlags);
       } else {
-        sql.append('c');
+        long diagnosticSensorId = DiagnosticDataDB.getSensorId(conn, dataset.getInstrumentId(), field);
+        if (diagnosticSensorId > -1) {
+          stmt = makeDiagnosticRangeStatement(conn, dataset.getId(), diagnosticSensorId, filterFlags);
+        } else {
+          stmt = makeCalculationRangeStatement(conn, dataset.getId(), field, filterFlags);
+        }
       }
 
-      sql.append('.');
-      sql.append(field);
-
-      sql.append(" FROM dataset_data d INNER JOIN ");
-      sql.append(getCalculationTable());
-      sql.append(" c ON d.id = c.measurement_id WHERE d.dataset_id = ?");
-
-      if (filterFlags) {
-        sql.append(" AND c.user_flag IN (");
-        sql.append(Flag.VALUE_ASSUMED_GOOD);
-        sql.append(',');
-        sql.append(Flag.VALUE_GOOD);
-        sql.append(',');
-        sql.append(Flag.VALUE_QUESTIONABLE);
-        sql.append(")");
-      }
-
-      stmt = conn.prepareStatement(sql.toString());
-      stmt.setLong(1, dataset.getId());
       results = stmt.executeQuery();
 
       List<Double> values = new ArrayList<Double>();
@@ -857,6 +844,116 @@ public abstract class CalculationDB {
     }
 
     return result;
+  }
+
+  // TODO Should this be moved to DiagnosticDataDB? Not sure.
+  /**
+   * Prepare an SQL statement to retrieve all a diagnostic sensor's values for a data set
+   * @param conn A database connection
+   * @param datasetId The data set's database ID
+   * @param field The sensor name
+   * @return The SQL statement
+   * @throws SQLException If the statement cannot be constructed
+   */
+  private PreparedStatement makeDiagnosticRangeStatement(Connection conn, long datasetId, long sensorId, boolean filterFlags) throws SQLException {
+
+    StringBuilder sql = new StringBuilder();
+
+    sql.append("SELECT value FROM diagnostic_data dd ");
+    sql.append("INNER JOIN dataset_data ds ON dd.measurement_id = ds.id ");
+    sql.append("INNER JOIN ");
+    sql.append(getCalculationTable());
+    sql.append(" c ON dd.measurement_id = c.measurement_id ");
+    sql.append("WHERE ds.dataset_id = ? ");
+    sql.append("AND dd.file_column_id = ?");
+
+    if (filterFlags) {
+      addFlagCriteriaToRangeQuery(sql);
+    }
+
+    PreparedStatement stmt = conn.prepareStatement(sql.toString());
+    stmt.setLong(1, datasetId);
+    stmt.setLong(2, sensorId);
+
+    return stmt;
+  }
+
+  // TODO Should this be moved to DataSetDataDB? Not sure.
+  /**
+   * Prepare an SQL statement to retrieve all a sensor/field's values for a data set
+   * @param conn A database connection
+   * @param datasetId The data set's database ID
+   * @param field The sensor or field name
+   * @return The SQL statement
+   * @throws SQLException If the statement cannot be constructed
+   */
+  private PreparedStatement makeDatasetRangeStatement(Connection conn, long datasetId, String field, boolean filterFlags) throws SQLException {
+
+    StringBuilder sql = new StringBuilder();
+
+    sql.append("SELECT ds.");
+    sql.append(field);
+    sql.append(" FROM dataset_data ds ");
+    sql.append(" INNER JOIN ");
+    sql.append(getCalculationTable());
+    sql.append(" c ON ds.id = c.measurement_id ");
+    sql.append("WHERE ds.dataset_id = ?");
+
+    if (filterFlags) {
+      addFlagCriteriaToRangeQuery(sql);
+    }
+
+    PreparedStatement stmt = conn.prepareStatement(sql.toString());
+    stmt.setLong(1, datasetId);
+
+    return stmt;
+  }
+
+  /**
+   * Prepare an SQL statement to retrieve all a calculation field's values for a data set
+   * @param conn A database connection
+   * @param datasetId The data set's database ID
+   * @param field The field name
+   * @return The SQL statement
+   * @throws SQLException If the statement cannot be constructed
+   */
+  private PreparedStatement makeCalculationRangeStatement(Connection conn, long datasetId, String field, boolean filterFlags) throws SQLException {
+
+    StringBuilder sql = new StringBuilder();
+
+    sql.append("SELECT c.");
+    sql.append(field);
+    sql.append(" FROM ");
+    sql.append(getCalculationTable());
+    sql.append(" c INNER JOIN dataset_data ds ");
+    sql.append("ON ds.id = c.measurement_id ");
+    sql.append("WHERE ds.dataset_id = ?");
+
+    if (filterFlags) {
+      addFlagCriteriaToRangeQuery(sql);
+    }
+
+    PreparedStatement stmt = conn.prepareStatement(sql.toString());
+    stmt.setLong(1, datasetId);
+
+    return stmt;
+  }
+
+  /**
+   * Range SQL queries are filtered by flag values.
+   * This method applies the filter to the SQL being built
+   * @param sql The value range SQL
+   */
+  private void addFlagCriteriaToRangeQuery(StringBuilder sql) {
+    sql.append(" AND c.user_flag IN (");
+    sql.append(Flag.VALUE_ASSUMED_GOOD);
+    sql.append(',');
+    sql.append(Flag.VALUE_GOOD);
+    sql.append(',');
+    sql.append(Flag.VALUE_QUESTIONABLE);
+    sql.append(',');
+    sql.append(Flag.VALUE_NEEDED);
+    sql.append(")");
   }
 
   /**

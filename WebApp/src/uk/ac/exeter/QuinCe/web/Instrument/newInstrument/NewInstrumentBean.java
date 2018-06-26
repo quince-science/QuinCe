@@ -431,7 +431,6 @@ public class NewInstrumentBean extends FileUploadBean {
     currentInstrumentFile.setFileContents(getFileLines());
   }
 
-
   /**
    * Clear all data from the bean ready for a new
    * instrument to be defined
@@ -535,101 +534,45 @@ public class NewInstrumentBean extends FileUploadBean {
    * @throws SensorAssignmentException If the sensor assignments are internally invalid
    */
   public String getSensorAssignments() throws SensorAssignmentException {
-    StringBuilder json = new StringBuilder();
 
-    // Start the array of objects
-    json.append('[');
+    JSONArray json = new JSONArray();
 
-    int count = 0;
     for (SensorType sensorType : sensorAssignments.keySet()) {
-      json.append('{');
-
-      // Sensor Type name
-      json.append("\"name\": \"");
-      json.append(sensorType.getName());
-      json.append("\",");
-
-      // Is an assignment required?
-      json.append("\"required\":");
-      json.append(sensorAssignments.isAssignmentRequired(sensorType));
-      json.append(',');
-
-      // Is an assignment required?
-      json.append("\"named\":");
-      json.append(sensorType.canBeNamed());
-      json.append(',');
-
-      // Is this a core sensor?
-      json.append("\"core\":");
-      json.append(sensorType.isCoreSensor());
-      json.append(',');
-
-      // Are many assignments allowed for this sensor?
-      json.append("\"many\":");
-      json.append(sensorType.canHaveMany());
-      json.append(',');
-
-      // Will multiple sensors be averaged?
-      json.append("\"averaged\":");
-      json.append(sensorType.isAveraged());
-      json.append(',');
-
-      // Can sensors of this type be post-calibrated?
-      json.append("\"postCalibrated\":");
-      json.append(sensorType.canBePostCalibrated());
-      json.append(',');
-
-      // The Depends Question
-      json.append("\"dependsQuestion\":");
+      JSONObject sensorTypeJson = new JSONObject();
+      sensorTypeJson.put("name", sensorType.getName());
+      sensorTypeJson.put("required", sensorAssignments.isAssignmentRequired(sensorType));
+      sensorTypeJson.put("named", sensorType.canBeNamed());
+      sensorTypeJson.put("core", sensorType.isCoreSensor());
+      sensorTypeJson.put("many", sensorType.canHaveMany());
+      sensorTypeJson.put("averaged", sensorType.isAveraged());
+      sensorTypeJson.put("postCalibrated", sensorType.canBePostCalibrated());
       if (null == sensorType.getDependsQuestion()) {
-        json.append("null");
+        sensorTypeJson.put("dependsQuestion", JSONObject.NULL);
       } else {
-        json.append('"');
-        json.append(sensorType.getDependsQuestion());
-        json.append('"');
+        sensorTypeJson.put("dependsQuestion", sensorType.getDependsQuestion());
       }
-      json.append(',');
 
       // The columns assigned to the sensor type
       Set<SensorAssignment> assignments = sensorAssignments.get(sensorType);
-
-      json.append("\"assignments\":[");
-
+      JSONArray assignmentsJson = new JSONArray();
       if (null != assignments) {
-        int assignmentCount = 0;
         for (SensorAssignment assignment : assignments) {
-          json.append("{\"file\":\"");
-          json.append(assignment.getDataFile());
-          json.append("\",\"column\":");
-          json.append(assignment.getColumn());
-          json.append(",\"sensorName\":\"");
-          json.append(assignment.getSensorName());
-          json.append("\",\"postCalibrated\":");
-          json.append(assignment.getPostCalibrated());
-          json.append(",\"primary\":");
-          json.append(assignment.isPrimary());
-          json.append('}');
 
-          if (assignmentCount < assignments.size() - 1) {
-            json.append(',');
-          }
+          JSONObject assignmentJson = new JSONObject();
+          assignmentJson.put("file", assignment.getDataFile());
+          assignmentJson.put("column", assignment.getColumn());
+          assignmentJson.put("sensorName", assignment.getSensorName());
+          assignmentJson.put("postCalibrated", assignment.getPostCalibrated());
+          assignmentJson.put("primary", assignment.isPrimary());
 
-          assignmentCount++;
+          assignmentsJson.put(assignmentJson);
         }
       }
 
-      json.append(']');
+      sensorTypeJson.put("assignments", assignmentsJson);
 
-      // End the array, and add a comma if this isn't the last object
-      json.append('}');
-      if (count < sensorAssignments.size() - 1) {
-        json.append(',');
-      }
-      count++;
+      json.put(sensorTypeJson);
     }
-
-    // Finish the array
-    json.append(']');
 
     return json.toString();
   }
@@ -789,7 +732,11 @@ public class NewInstrumentBean extends FileUploadBean {
    * @throws Exception If any errors occur
    */
   public void storeSensorAssignment() throws Exception {
-    SensorAssignment assignment = new SensorAssignment(sensorAssignmentFile, sensorAssignmentColumn, sensorAssignmentName, sensorAssignmentPostCalibrated, sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer, sensorAssignmentMissingValue);
+    SensorAssignment assignment = new SensorAssignment(
+        sensorAssignmentFile, sensorAssignmentColumn, sensorAssignmentName,
+        sensorAssignmentPostCalibrated, sensorAssignmentPrimary,
+        sensorAssignmentDependsQuestionAnswer, sensorAssignmentMissingValue);
+
     sensorAssignments.addAssignment(sensorAssignmentSensorType, assignment);
 
     // Reset the assign dialog values, because it's so damn hard to do in Javascript
@@ -1545,12 +1492,12 @@ public class NewInstrumentBean extends FileUploadBean {
     JSONArray json = new JSONArray();
 
     for (Map.Entry<RunTypeCategory, Integer> entry : assignedCategories.entrySet()) {
-      JSONArray jsonEntry = new JSONArray();
-      jsonEntry.put(entry.getKey().getName());
-      jsonEntry.put(entry.getValue());
-      jsonEntry.put(entry.getKey().getMinCount());
+      JSONArray entryJson = new JSONArray();
+      entryJson.put(entry.getKey().getName());
+      entryJson.put(entry.getValue());
+      entryJson.put(entry.getKey().getMinCount());
 
-      json.put(jsonEntry);
+      json.put(entryJson);
     }
 
     return json.toString();

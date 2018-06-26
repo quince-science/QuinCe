@@ -9,6 +9,11 @@ import java.util.TreeMap;
  */
 public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
 
+  /**
+   * Serial version UID
+   */
+  private static final long serialVersionUID = -4123234930155566035L;
+
   public RunTypeAssignments() {
     super();
   }

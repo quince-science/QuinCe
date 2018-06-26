@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.primefaces.json.JSONArray;
+
 /**
  * A structure for instrument variables, used when
  * selecting variables for plots and maps
@@ -136,32 +138,15 @@ public class VariableList extends ArrayList<VariableGroup> {
    * @return The group details
    */
   protected String getGroupsJson() {
+    JSONArray json = new JSONArray();
 
-    StringBuilder json = new StringBuilder();
-
-    json.append('[');
-
-    for (int i = 0; i < size(); i++) {
-
-      json.append('[');
-
-      List<Variable> groupVariables = get(i).getVariables();
-      for (int j = 0; j < groupVariables.size(); j++) {
-        json.append(groupVariables.get(j).getId());
-        if (j < groupVariables.size() - 1) {
-          json.append(',');
-        }
+    for (VariableGroup group : this) {
+      JSONArray groupJson = new JSONArray();
+      for (Variable variable : group.getVariables()) {
+        groupJson.put(variable.getId());
       }
-
-      json.append(']');
-
-      if (i < size() - 1) {
-        json.append(',');
-      }
-
+      json.put(groupJson);
     }
-
-    json.append(']');
 
     return json.toString();
   }
@@ -171,21 +156,11 @@ public class VariableList extends ArrayList<VariableGroup> {
    * @return The group names
    */
   protected String getGroupNamesJson() {
-    StringBuilder json = new StringBuilder();
+    JSONArray json = new JSONArray();
 
-    json.append('[');
-
-    for (int i = 0; i < size(); i++) {
-      json.append('\'');
-      json.append(get(i).getName());
-      json.append('\'');
-
-      if (i < size() - 1) {
-        json.append(',');
-      }
+    for (VariableGroup group : this) {
+      json.put(group.getName());
     }
-
-    json.append(']');
 
     return json.toString();
   }
@@ -202,5 +177,24 @@ public class VariableList extends ArrayList<VariableGroup> {
     }
 
     return count;
+  }
+
+  /**
+   * Determine whether or not the named variable group
+   * is present in the list
+   * @param groupName The group name
+   * @return {@code true} if the group is defined in this list; {@code false} otherwise
+   */
+  public boolean containsGroup(String groupName) {
+    boolean result = false;
+
+    for (VariableGroup group : this) {
+      if (group.getName().equals(groupName)) {
+        result = true;
+        break;
+      }
+    }
+
+    return result;
   }
 }

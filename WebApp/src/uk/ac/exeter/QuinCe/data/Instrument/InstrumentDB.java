@@ -78,8 +78,8 @@ public class InstrumentDB {
   private static final String CREATE_FILE_COLUMN_STATEMENT = "INSERT INTO file_column ("
       + "file_definition_id, file_column, primary_sensor, sensor_type, " // 4
       + "sensor_name, value_column, depends_question_answer, " // 7
-      + "missing_value, post_calibrated" // 9
-      + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      + "missing_value, post_calibrated, diagnostic" // 9
+      + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   /**
    * Query to get all the run types of a given run type category
@@ -147,8 +147,8 @@ public class InstrumentDB {
    * SQL query to get the file column assignments for a file
    */
   private static final String GET_FILE_COLUMNS_QUERY = "SELECT "
-      + "file_column, primary_sensor, sensor_type, sensor_name, value_column, " // 5
-      + "depends_question_answer, missing_value, post_calibrated " // 8
+      + "id, file_column, primary_sensor, sensor_type, sensor_name, value_column, " // 6
+      + "depends_question_answer, missing_value, post_calibrated " // 9
         + "FROM file_column WHERE file_definition_id = ?";
 
   /**
@@ -179,7 +179,7 @@ public class InstrumentDB {
     PreparedStatement instrumentStatement = null;
     ResultSet instrumentKey = null;
     List<PreparedStatement> subStatements = new ArrayList<PreparedStatement>();
-    List<ResultSet> fileDefinitionKeys = new ArrayList<ResultSet>();
+    List<ResultSet> keyResultSets = new ArrayList<ResultSet>();
 
     try {
       conn = dataSource.getConnection();
@@ -205,7 +205,7 @@ public class InstrumentDB {
 
           fileStatement.execute();
           ResultSet fileKey = fileStatement.getGeneratedKeys();
-          fileDefinitionKeys.add(fileKey);
+          keyResultSets.add(fileKey);
 
           if (!fileKey.next()) {
             throw new DatabaseException("File Definition record was not created in the database");
@@ -232,22 +232,36 @@ public class InstrumentDB {
           SensorType sensorType = sensorAssignmentsEntry.getKey();
 
           for (SensorAssignment assignment : sensorAssignmentsEntry.getValue()) {
-            databaseColumn++;
-            assignment.setDatabaseColumn(databaseColumn);
 
-            PreparedStatement fileColumnStatement = conn.prepareStatement(CREATE_FILE_COLUMN_STATEMENT);
+            PreparedStatement fileColumnStatement = conn.prepareStatement(CREATE_FILE_COLUMN_STATEMENT, Statement.RETURN_GENERATED_KEYS);
             fileColumnStatement.setLong(1, fileDefinitionIds.get(assignment.getDataFile()));
             fileColumnStatement.setInt(2, assignment.getColumn());
             fileColumnStatement.setBoolean(3, assignment.isPrimary());
             fileColumnStatement.setString(4, sensorType.getName());
             fileColumnStatement.setString(5, assignment.getSensorName());
-            fileColumnStatement.setInt(6, databaseColumn);
+
+            if (sensorType.isDiagnostic()) {
+              fileColumnStatement.setNull(6, Types.INTEGER);
+            } else {
+              databaseColumn++;
+              assignment.setDatabaseColumn(databaseColumn);
+              fileColumnStatement.setInt(6, databaseColumn);
+            }
+
             fileColumnStatement.setBoolean(7, assignment.getDependsQuestionAnswer());
             fileColumnStatement.setString(8, assignment.getMissingValue());
             fileColumnStatement.setBoolean(9, assignment.getPostCalibrated());
 
             fileColumnStatement.execute();
+            ResultSet fileColumnKey = fileColumnStatement.getGeneratedKeys();
+            if (!fileColumnKey.next()) {
+              throw new DatabaseException("File Column record was not created in the database");
+            } else {
+              assignment.setDatabaseId(fileColumnKey.getLong(1));
+            }
+
             subStatements.add(fileColumnStatement);
+            keyResultSets.add(fileColumnKey);
           }
         }
       }
@@ -264,7 +278,7 @@ public class InstrumentDB {
 
       throw new DatabaseException("Exception while storing instrument", e, rollbackOK);
     } finally {
-      DatabaseUtils.closeResultSets(fileDefinitionKeys);
+      DatabaseUtils.closeResultSets(keyResultSets);
       DatabaseUtils.closeStatements(subStatements);
       DatabaseUtils.closeResultSets(instrumentKey);
       DatabaseUtils.closeStatements(instrumentStatement);
@@ -781,20 +795,21 @@ public class InstrumentDB {
         while (columns.next()) {
           columnsRead++;
 
-          int fileColumn = columns.getInt(1);
-          boolean primarySensor = columns.getBoolean(2);
-          String sensorType = columns.getString(3);
-          String sensorName = columns.getString(4);
-          int valueColumn = columns.getInt(5);
-          boolean dependsQuestionAnswer = columns.getBoolean(6);
-          String missingValue = columns.getString(7);
-          boolean postCalibrated = columns.getBoolean(8);
+          long assignmentId = columns.getLong(1);
+          int fileColumn = columns.getInt(2);
+          boolean primarySensor = columns.getBoolean(3);
+          String sensorType = columns.getString(4);
+          String sensorName = columns.getString(5);
+          int valueColumn = columns.getInt(6);
+          boolean dependsQuestionAnswer = columns.getBoolean(7);
+          String missingValue = columns.getString(8);
+          boolean postCalibrated = columns.getBoolean(9);
 
           if (sensorType.equals(FileDefinition.RUN_TYPE_COL_NAME)) {
             file.setRunTypeColumn(fileColumn);
             getFileRunTypes(conn, file, runTypeConfiguration);
           } else {
-            assignments.addAssignment(sensorType, new SensorAssignment(file.getFileDescription(), fileColumn, valueColumn, sensorName, postCalibrated, primarySensor, dependsQuestionAnswer, missingValue));
+            assignments.addAssignment(sensorType, new SensorAssignment(assignmentId, file.getFileDescription(), fileColumn, valueColumn, sensorName, postCalibrated, primarySensor, dependsQuestionAnswer, missingValue));
           }
         }
 
@@ -1031,6 +1046,5 @@ public class InstrumentDB {
       DatabaseUtils.closeStatements(stmts);
       DatabaseUtils.closeConnection(conn);
     }
-
   }
 }

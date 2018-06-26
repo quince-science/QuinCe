@@ -93,6 +93,11 @@ public class SensorType {
   private boolean usedInCalculation = true;
 
   /**
+   * Indicates whether or not this is a diagnostic sensor
+   */
+  private boolean diagnostic = false;
+
+  /**
    * Indicates whether or not this sensor's data is calibrated
    * using data
    */
@@ -105,11 +110,17 @@ public class SensorType {
    * @param named Whether or not sensors can be named
    * @param requiredGroup The Required Group that this sensor type belongs to
    * @param dependsOn The name of another sensor type that this sensor type depends on
-   * @param dependsQuestion The question that determines whether the {@link #dependsOn} criterion will be honoured.
+   * @param dependsQuestion The question that determines whether the {@link #dependsOn} criterion will be honoured
    * @param many Whether or not multiple instances of the sensor are allowed
+   * @param averaged Whether or not values from multiple sensors will be averaged
+   * @param postCalibrated Whether or not values from the sensor need a calibration to be applied
+   * @param coreSensor Whether or not this is a core sensor
+   * @param usedInCaclulation Whether or not the sensor is used during data reduction
+   * @param diagnostic Whether or not this is a diagnostic sensor
+   * @param externalStandards Whether or not this sensor is calibrated using external standards
    */
   protected SensorType(String name, boolean required, boolean named, String requiredGroup, String dependsOn, String dependsQuestion, boolean many, boolean averaged,
-      boolean postCalibrated, boolean coreSensor, boolean usedInCaclulation, boolean externalStandards) {
+      boolean postCalibrated, boolean coreSensor, boolean usedInCaclulation, boolean diagnostic, boolean externalStandards) {
     this.name = name;
     this.required = required;
     this.named = named;
@@ -130,6 +141,7 @@ public class SensorType {
     this.postCalibrated = postCalibrated;
     this.coreSensor = coreSensor;
     this.usedInCalculation = usedInCaclulation;
+    this.diagnostic = diagnostic;
     this.externalStandards = externalStandards;
   }
 
@@ -192,6 +204,14 @@ public class SensorType {
    */
   public boolean canHaveMany() {
     return many;
+  }
+
+  /**
+   * Determine whether or not this is a diagnostic sensor
+   * @return {@code true} if this is a diagnostic sensor; {@code false} if it is not.
+   */
+  public boolean isDiagnostic() {
+    return diagnostic;
   }
 
   /**
@@ -291,6 +311,17 @@ public class SensorType {
    */
   public static SensorType getRunTypeSensorType() {
     return new SensorType("Run Type", true, false, null, null, null, false,
-        false, false, false, false, false);
+        false, false, false, false, false, false);
+  }
+
+  /**
+   * Create a diagnostic sensor type with the given name.
+   * The name automatically has 'Diagnostic' prepended to it.
+   * @param name The sensor type name
+   * @return The diagnostic sensor type
+   */
+  protected static SensorType makeDiagnosticSensorType(String name) {
+    return new SensorType("Diagnostic: " + name, false, true, null, null, null, true, false,
+        false, false, false, true, false);
   }
 }
