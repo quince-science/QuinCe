@@ -15,11 +15,6 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public class User {
 
   /**
-   * Permissions bit for job managers
-   */
-  public static final int BIT_JOB_MANAGER = 1;
-
-  /**
    * Permissions bit for administrators
    */
   public static final int BIT_ADMIN_USER = 1;
@@ -210,7 +205,7 @@ public class User {
    * @return {@code true} if this user is a job manager; {@code false} if not
    */
   public boolean getJobManager() {
-    return (permissions & BIT_JOB_MANAGER) > 0;
+    return isAdminUser();
   }
 
   /**
