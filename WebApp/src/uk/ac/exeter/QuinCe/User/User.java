@@ -20,6 +20,11 @@ public class User {
   public static final int BIT_JOB_MANAGER = 1;
 
   /**
+   * Permissions bit for administrators
+   */
+  public static final int BIT_ADMIN_USER = 1;
+
+  /**
    * The user's database record ID
    */
   private int databaseId;
@@ -214,5 +219,13 @@ public class User {
    */
   public UserPreferences getPreferences() {
     return preferences;
+  }
+
+  /**
+   * Determine whether or not this is an administrator user
+   * @return {@code true} if this user is an administrator; {@code false} if not
+   */
+  public boolean isAdminUser() {
+    return (permissions & BIT_ADMIN_USER) > 0;
   }
 }
