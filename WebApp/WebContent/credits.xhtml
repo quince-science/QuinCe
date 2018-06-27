@@ -2,6 +2,7 @@
   xmlns:h="http://xmlns.jcp.org/jsf/html"
   xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
   xmlns:c="http://java.sun.com/jsp/jstl/core"
+  xmlns:p="http://primefaces.org/ui"
   template="/WEB-INF/templates/menu_page.xhtml">
 
   <ui:define name="title">Credits</ui:define>
@@ -36,7 +37,7 @@
             via <a href="https://openclipart.org/detail/26153/quince">openclipart.org</a>
           </li>
           <li>
-            Action icons by <a href="https://thenounproject.com/Icons8/">Icons8</a>
+            Icons by <a href="https://thenounproject.com/Icons8/">Icons8</a>
             via <a href="https://thenounproject.com">The Noun Project</a>
           </li>
           <li>
@@ -49,17 +50,32 @@
     </div>
     <div style="float: right; width: 50%">
       <div class="sectionTitle">Supporting Projects and Institutions</div>
-        <ul>
-          <li>
-            <a href="https://otc.icos-cp.eu/">ICOS Ocean Thematic Center</a>
-          </li>
-          <li>
-            <a href="https://www.uib.no/">University of Bergen</a>
-          </li>
-          <li>
-            <a href="https://www.exeter.ac.uk">University of Exeter</a>
-          </li>
-        </ul>
+        <table>
+          <tr>
+            <td align="center">
+              <p:graphicImage alt="ICOS OTC Logo" value="/resources/image/icos.jpg" height="60" style="margin-right: 20px;"/>
+            </td>
+            <td>
+              <a href="https://otc.icos-cp.eu/">ICOS Ocean Thematic Center</a>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+            <h:graphicImage alt="University of Bergen Logo" value="/resources/image/uib.png" height="60" style="margin-right: 20px;"/>
+            </td>
+            <td>
+              <a href="https://www.uib.no/">University of Bergen</a>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <h:graphicImage alt="University of Exeter Logo" value="/resources/image/exeter.jpg" height="60" style="margin-right: 20px;"/>
+            </td>
+            <td>
+              <a href="https://www.exeter.ac.uk">University of Exeter</a>
+            </td>
+          </tr>
+        </table>
     </div>
   </ui:define>
 </ui:composition>
