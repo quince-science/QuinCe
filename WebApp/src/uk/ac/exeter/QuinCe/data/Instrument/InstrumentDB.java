@@ -105,12 +105,23 @@ public class InstrumentDB {
   /**
    * Query for retrieving the list of instruments owned by a particular user
    */
-  private static final String GET_INSTRUMENT_LIST_QUERY = "SELECT i.id, i.name, SUM(c.post_calibrated) "
+  private static final String GET_SINGLE_USER_INSTRUMENT_LIST_QUERY = "SELECT i.id, i.name, SUM(c.post_calibrated) "
       + "FROM instrument AS i "
       + "INNER JOIN file_definition AS d ON i.id = d.instrument_id "
       + "INNER JOIN file_column AS c ON d.id = c.file_definition_id "
       + "WHERE i.owner = ? "
       + "GROUP BY i.id ORDER BY i.name ASC";
+
+  /**
+   * Query for retrieving the list of all instruments in the system, grouped by owner
+   */
+  private static final String GET_ALL_USERS_INSTRUMENT_LIST_QUERY = "SELECT "
+      + "i.id, CONCAT(u.surname, \", \", u.firstname, \" - \", i.name) AS name, SUM(c.post_calibrated) "
+      + "FROM instrument AS i "
+      + "INNER JOIN file_definition AS d ON i.id = d.instrument_id "
+      + "INNER JOIN file_column AS c ON d.id = c.file_definition_id "
+      + "INNER JOIN user AS u ON i.owner = u.id "
+      + "GROUP BY i.id ORDER BY name ASC";
 
   /**
    * Query for retrieving the stub for a specific instrument
@@ -423,6 +434,9 @@ public class InstrumentDB {
    * The list contains {@link InstrumentStub} objects, which just contain
    * the details required for lists of instruments in the UI.
    *
+   * If the specified owner is an administrator, the returned list
+   * will contain all instruments in the system
+   *
    * The list is ordered by the name of the instrument.
    *
    * @param dataSource A data source
@@ -437,15 +451,99 @@ public class InstrumentDB {
     MissingParam.checkMissing(owner, "owner");
 
     Connection conn = null;
-    PreparedStatement stmt = null;
-    ResultSet instruments = null;
-    List<InstrumentStub> instrumentList = new ArrayList<InstrumentStub>();
+    List<InstrumentStub> result = null;
 
     try {
       conn = dataSource.getConnection();
-      stmt = conn.prepareStatement(GET_INSTRUMENT_LIST_QUERY);
-      stmt.setLong(1, owner.getDatabaseID());
 
+      if (owner.isAdminUser()) {
+        result = getAllUsersInstrumentList(conn);
+      } else {
+        result = getInstrumentList(conn, owner.getDatabaseID());
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error retrieving instrument list", e);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the list of instruments for a single user.
+   *
+   * See {@link #getInstrumentList(DataSource, User)}
+   *
+   * @param conn A database connection
+   * @param ownerId The user's database ID
+   * @return The list of instruments
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurred
+   */
+  private static List<InstrumentStub> getInstrumentList(Connection conn, long ownerId) throws MissingParamException, DatabaseException {
+
+    PreparedStatement stmt = null;
+    List<InstrumentStub> instrumentList = null;
+
+    try {
+      stmt = conn.prepareStatement(GET_SINGLE_USER_INSTRUMENT_LIST_QUERY);
+      stmt.setLong(1, ownerId);
+      instrumentList = runInstrumentListQuery(conn,stmt);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving instrument list", e);
+    } finally {
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return instrumentList;
+  }
+
+  /**
+   * Get the list of instruments for a single user.
+   *
+   * See {@link #getInstrumentList(DataSource, User)}
+   *
+   * @param conn A database connection
+   * @param ownerId The user's database ID
+   * @return The list of instruments
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurred
+   */
+  private static List<InstrumentStub> getAllUsersInstrumentList(Connection conn) throws MissingParamException, DatabaseException {
+
+    PreparedStatement stmt = null;
+    List<InstrumentStub> instrumentList = null;
+
+    try {
+      stmt = conn.prepareStatement(GET_ALL_USERS_INSTRUMENT_LIST_QUERY);
+      instrumentList = runInstrumentListQuery(conn, stmt);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving instrument list", e);
+    } finally {
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return instrumentList;
+  }
+
+  /**
+   * Run a query to get a list of instruments. The query must produce three columns:
+   *
+   * <ol>
+   *   <li>Instrument ID</li>
+   *   <li>Instrument Name</li>
+   *   <li>Number of calibratable sensors</li>
+   * </ol>
+   *
+   * @param conn A database connection
+   * @param stmt The query to be executed
+   * @return The list of instruments
+   * @throws DatabaseException If the query fails
+   */
+  private static List<InstrumentStub> runInstrumentListQuery(Connection conn, PreparedStatement stmt) throws DatabaseException {
+
+    ResultSet instruments = null;
+    List<InstrumentStub> instrumentList = new ArrayList<InstrumentStub>();
+    try {
       instruments = stmt.executeQuery();
       while (instruments.next()) {
         boolean hasCalibratableSensors = (instruments.getInt(3) > 0);
@@ -456,12 +554,11 @@ public class InstrumentDB {
       throw new DatabaseException("Error while retrieving instrument list", e);
     } finally {
       DatabaseUtils.closeResultSets(instruments);
-      DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
     }
 
     return instrumentList;
   }
+
 
   /**
    * Get an stub object for a specified instrument
