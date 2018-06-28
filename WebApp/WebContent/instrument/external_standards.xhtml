@@ -51,7 +51,7 @@
       <div class="sectionTitle">
         Current Deployments
       </div>
-      <p:dataTable styleClass="pageTable" var="calibration" value="#{externalStandardsBean.currentCalibrations}">
+      <p:dataTable styleClass="pageBlock" var="calibration" value="#{externalStandardsBean.currentCalibrations}">
         <p:column headerText="External Standard">
           <h:outputText value="#{calibration.target}"/>
         </p:column>
@@ -62,7 +62,7 @@
           <h:outputText value="#{calibration.humanReadableCoefficients}"/>
         </p:column>
       </p:dataTable>
-      <p:messages styleClass="pageTable"/>
+      <p:messages styleClass="pageBlock"/>
       <h:panelGrid columns="1" styleClass="buttonPanel">
         <p:commandButton value="Back to Instruments List" action="/instrument/instrument_list.xhtml"/>
       </h:panelGrid>

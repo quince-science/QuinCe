@@ -84,7 +84,7 @@
         <p:remoteCommand name="updateList" update="datasets" actionListener="#{dataSetsBean.updateDatasetList}"/>
 
         <p:dataTable id="datasets" value="#{dataSetsBean.dataSets}"
-            var="dataset" styleClass="pageTable">
+            var="dataset" styleClass="pageBlock">
           <p:column>
             <f:facet name="header">
               <h:outputText value="Name"/>
