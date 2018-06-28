@@ -138,7 +138,9 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @return The navigation
    */
   public String addCalibration() {
-    String nav = getListNavigation();
+    // Null means we go back to the page we came from.
+    // Will be overridden if there's an error
+    String nav = null;
 
     try {
       if (getDbInstance().calibrationExists(getDataSource(), getEnteredCalibration())) {
