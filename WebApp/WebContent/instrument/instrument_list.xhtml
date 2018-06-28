@@ -39,7 +39,7 @@
         <p:commandButton value="Add New Instrument" ajax="false" action="#{newInstrumentBean.start}"/>
       </h:panelGrid>
 
-      <p:dataTable id="instruments" var="instrument" value="#{instrumentListBean.instrumentList}" styleClass="pageTable">
+      <p:dataTable id="instruments" var="instrument" value="#{instrumentListBean.instrumentList}" styleClass="pageBlock">
         <p:column>
           <f:facet name="header">Instrument Name</f:facet>
           <b><h:outputText value="#{instrument.name}"/></b>
