@@ -1,0 +1,10 @@
+sequenceDiagram
+  participant Q as Quince
+  participant EX as Export Script
+  participant CP as Carbon Portal
+  participant S as SOCAT
+  EX ->> Q:Get ID of dataset for export
+  EX ->> Q:Get dataset data
+  EX ->> EX:Generate metadata
+  EX ->> CP:Submit to Carbon Portal
+  EX ->> S:Submit to SOCAT
