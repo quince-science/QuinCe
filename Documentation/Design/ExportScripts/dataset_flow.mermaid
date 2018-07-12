@@ -1,0 +1,13 @@
+sequenceDiagram
+  participant PI as Principal Investigator
+  participant Q as QuinCe
+  participant OE as OTC Expert
+  participant EX as Carbon Portal/SOCAT
+  PI ->> Q:Create and QC dataset
+  loop QC Complete
+    Q ->> OE:Dataset submitted for checking
+    OE->>PI:Feedback
+    PI -->> Q:Adjustments if required
+  end
+  OE->>Q:Dataset cleared for export
+  Q->>EX:Publish dataset
