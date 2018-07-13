@@ -101,3 +101,173 @@ Expert check      This action will only be available to OTC experts. When a
 Archive           Hides the dataset from the main QuinCe interface.
 -------------------------------------------------------------------------------
 Table: Actions that can be performed on datasets {#tbl:actions}
+
+## Export API
+
+The QuinCe API will provide three functions related to exporting of data, matching the three communications between the export script and QuinCe shown in [@Fig:simple_script_flow]. Each of these calls must have the necessary authentication tokens to identify the script to QuinCe to ensure that the application is secure, and that the identity being used by the script has the necessary permissions to export datasets; these will not be discussed in this document. Similarly, the various error situations that can occur (e.g. requesting export of a dataset that has not passed quality control) will not be discussed here.
+
+### `exportList` {#export_list}
+
+__URL:__ `QuinCe/api/export/exportList`
+
+__HTTP Method:__ GET
+
+__Return:__ JSON
+
+__Parameters:__ None
+
+This call will retrieve a list of all the datasets that are ready to be exported. The datasets will be identified by their database ID, but extra information will be returned to allow the export script to decide how to process each dataset and to produce meaningful log messages as it runs. The dataset details will be returned as a JSON array of objects in the following form:
+
+```json
+[
+  {
+    "id": 34,
+    "name": "GVNA20180703",
+    "nrt": false,
+    "instrument": {
+      "name": "Black Pig",
+      "owner": "Horatio Pugwash"
+    }
+  },
+  {
+    "id": 42,
+    "name": "NRTPESC1531481725",
+    "nrt": true,
+    "instrument": {
+      "name": "Not The Pescod",
+      "owner": "Captain Birdseye"
+    }
+  }
+]
+```
+
+The `id` is the unique identifier for the dataset, which can be used by subsequent API calls to perform operations on individual datasets. `nrt` indicates whether or not a dataset contains near-real-time data, which may need to be processed in a different manner to those that have been fully quality controlled.
+
+The call will only provide details of datasets whose status is 'Ready to export'. Complete, quality controlled datasets will be set to this status once manual quality control is complete and (optionally) the dataset has passed inspection by an OTC expert. Near-real-time datasets will automatically have their status set to 'Ready to export' as soon as they are created.
+
+
+### `exportDataset`
+
+__URL:__ `QuinCe/api/export/exportDataset`
+
+__HTTP Method:__ GET
+
+__Return:__ ZIP archive
+
+__Parameters:__
+
+-------------------------------------------------------------------------------
+Parameter      Description
+-------------- ----------------------------------------------------------------
+`id`           The dataset ID
+
+`formats`      The export formats required as a comma-separated list
+
+`includeRaw`   Indicates whether the raw data files are required
+-------------------------------------------------------------------------------
+
+This call will get everything required to export a dataset and export it to an external repository, including all files and metadata information. The result will be a ZIP archive containing all requested data files plus a JSON file containing metadata information. The dataset is selected using its ID, as returned by the [`exportList`](#export_list) call. QuinCe will be able to export datasets in a variety of formats, since different repositories may require different formats. The `formats` parameter will contain a list of the required formats. Setting `includeRaw` to `true` will include the raw data files used to create the dataset in the output.
+
+The ZIP archive will be named as the dataset name with a `.zip` extension, and will be structured as follows:
+
+```
+GVNA20180703.zip
++-- manifest.json
++-- dataset
+|   +-- CarbonPortal
+|   |   +-- GVNA20180703.csv
+|   +-- SOCAT
+|       +-- GVNA20180703.tsv
++-- raw
+    +-- 20150117.cnv
+    +-- 20150118.cnv
+    +-- GO175_2015-103-0000dat.txt
+```
+
+The `dataset` folder will contain publication-ready dataset. It will contain one folder for each requested export format. Within each folder will be a single file containing the exported data, named with the dataset name and an extension suitable for the format (`.tsv`, `.csv` etc.).
+
+If `includeRaw` is `true` , the `raw` folder will contain all the raw files used to construct the dataset. These will have their original filenames as they were uploaded to QuinCe. If `includeRaw` is `false`, this folder will not be included in the archive.
+
+`manifest.json` will contain a JSON object containing details of the files included in the archive together with metadata for the dataset that can be used by the export script. It will be formatted as follows:
+
+```json
+{
+  "manifest": {
+    "raw": ["20150117.cnv", "20150118.cnv", "GO175_2015-103-0000dat.txt"],
+    "dataset": [
+      {
+        "format": "CarbonPortal",
+        "filename": "GVNA20180703.csv"
+      },
+      {
+        "format": "SOCAT",
+        "filename": "GVNA20180703.tsv"
+      }
+    ]
+  },
+  "metadata": {
+    "name": "GVNA20180703",
+    "nrt": false,
+    "startdate": "2018-07-03T12:03:34Z",
+    "enddate": "2018-07-10T03:12:56Z",
+    "records": 722,
+    "bounds": {
+      "north": 68.764,
+      "south": 52.455,
+      "east": 5.432,
+      "west": -70.345
+    },
+    "quince_information": "Processed by QuinCe version 1.0.0"
+  }
+}
+```
+
+When this call is made and the data files are returned, the status of the dataset in QuinCe will be set to 'Exporting', so multiple concurrent export requests are not made. The intention is that [`completeExport`](#complete_export) is called by the export script once it has finished processing the dataset. However, if that call is not made within a given time period (e.g. 30 minutes), QuinCe will assume that the export process failed and set the dataset's status back to 'Ready to export' so it is freed to be processed again.
+
+### `completeExport` {#complete_export}
+
+__URL:__ `QuinCe/api/export/completeExport`
+
+__HTTP Method:__ GET
+
+__Return:__ JSON
+
+__Parameters:__
+
+-------------------------------------------------------------------------------
+Parameter      Description
+-------------- ----------------------------------------------------------------
+`id`           The dataset ID
+-------------------------------------------------------------------------------
+
+This call will simply set the status of the specified dataset to 'Exported', to indicate to QuinCe and its users that it has been published. It will return a simple JSON object that indicates whether or not the change of status was successful:
+
+```json
+{
+  "succeeded": "true"
+}
+```
+
+### `abandonExport`
+
+__URL:__ `QuinCe/api/export/abandonExport`
+
+__HTTP Method:__ GET
+
+__Return:__ JSON
+
+__Parameters:__
+
+-------------------------------------------------------------------------------
+Parameter      Description
+-------------- ----------------------------------------------------------------
+`id`           The dataset ID
+-------------------------------------------------------------------------------
+
+This call can be used if the export script retrieves a dataset for publication, but is unable to complete the publication process. It will reset the dataset's status to 'Ready to export', so it can be processed in a subsequent call. The call will return a simple JSON object that indicates whether or not the change of status was successful:
+
+```json
+{
+  "succeeded": "true"
+}
+```
