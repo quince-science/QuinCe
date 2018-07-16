@@ -161,12 +161,10 @@ Parameter      Description
 -------------- ----------------------------------------------------------------
 `id`           The dataset ID
 
-`formats`      The export formats required as a comma-separated list
-
 `includeRaw`   Indicates whether the raw data files are required
 -------------------------------------------------------------------------------
 
-This call will get everything required to export a dataset and export it to an external repository, including all files and metadata information. The result will be a ZIP archive containing all requested data files plus a JSON file containing metadata information. The dataset is selected using its ID, as returned by the [`exportList`](#export_list) call. QuinCe will be able to export datasets in a variety of formats, since different repositories may require different formats. The `formats` parameter will contain a list of the required formats. Setting `includeRaw` to `true` will include the raw data files used to create the dataset in the output.
+This call will get everything required to export a dataset and publish it to an external repository, including all files and metadata information. The result will be a ZIP archive containing all requested data files plus a JSON file containing metadata information. The dataset is selected using its ID, as returned by the [`exportList`](#export_list) call. QuinCe will be able to export datasets in a variety of formats, since different repositories may require different formats. Setting `includeRaw` to `true` will include the raw data files used to create the dataset in the output.
 
 The ZIP archive will be named as the dataset name with a `.zip` extension, and will be structured as follows:
 
@@ -184,11 +182,11 @@ GVNA20180703.zip
     +-- GO175_2015-103-0000dat.txt
 ```
 
-The `dataset` folder will contain publication-ready dataset. It will contain one folder for each requested export format. Within each folder will be a single file containing the exported data, named with the dataset name and an extension suitable for the format (`.tsv`, `.csv` etc.).
+The `dataset` folder will contain one or more copies of the publication-ready dataset. The definition of each instrument in QuinCe will contain a list of the publication destinations for its datasets (Carbon Portal, SOCAT etc.). There will be one sub-folder for each of those destinations, containing the dataset file in the format required by that destination. The filename will be the dataset name and an extension suitable for the format (`.tsv`, `.csv` etc.).
 
 If `includeRaw` is `true` , the `raw` folder will contain all the raw files used to construct the dataset. These will have their original filenames as they were uploaded to QuinCe. If `includeRaw` is `false`, this folder will not be included in the archive.
 
-`manifest.json` will contain a JSON object containing details of the files included in the archive together with metadata for the dataset that can be used by the export script. It will be formatted as follows:
+`manifest.json` will contain a JSON object containing details of the files included in the archive together. It will also contain dataset-specific metadata that the export script can use to build the metadata documents required by the different publication destinations. The manifest will be formatted as follows:
 
 ```json
 {
@@ -196,11 +194,11 @@ If `includeRaw` is `true` , the `raw` folder will contain all the raw files used
     "raw": ["20150117.cnv", "20150118.cnv", "GO175_2015-103-0000dat.txt"],
     "dataset": [
       {
-        "format": "CarbonPortal",
+        "destination": "CarbonPortal",
         "filename": "GVNA20180703.csv"
       },
       {
-        "format": "SOCAT",
+        "destination": "SOCAT",
         "filename": "GVNA20180703.tsv"
       }
     ]
