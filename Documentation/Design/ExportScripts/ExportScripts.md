@@ -27,49 +27,45 @@ While a dataset is being processed, it is given various statuses to indicate pro
 
 ![Dataset Status and Actions](StatusActions.png "The dataset status and available actions displayed in QuinCe"){#fig:status_and_actions}
 
-The possible satuses for a dataset, and the actions that will be available on a dataset in each of those statuses, are listed in [@Tbl:statuses].
+The possible satuses for a dataset, and the actions that will be available on a dataset in each of those statuses, are listed in [@Tbl:statuses]. The effects of those actions are described in [@Tbl:actions].
 
--------------------------------------------------------------------------------
-Status            Meaning                              Available actions
--------           ------------------------------------ ------------------------
-Waiting           Waiting to be processed by           None
-                  background jobs
+----------------------------------------------------------------------------------------------------------------
+Status              Meaning                               Manual QC   Manual Export   Submit            Archive
+-------             ------------------------------------ ----------- --------------- ----------------- ---------
+Waiting             Waiting to be processed by           
+                    background jobs
   
-Data extraction   Data being extracted from raw files  None
+Data extraction     Data being extracted from raw files  
   
-Data reduction    Data reduction under way             None
+Data reduction      Data reduction under way             
   
-Automatic QC      Automatic QC under way               None
+Automatic QC        Automatic QC under way               
   
-Ready for QC      Automatic processing complete;       Manual QC
-                  Manual QC required
+Ready for QC        Automatic processing complete;        X
+                    Manual QC required
   
-QC Complete       All QC activities complete           Manual QC,
-                                                       Manual export,
-                                                       Submit for checking
+QC Complete         All QC activities complete            X             X             X[^submit_pi]
   
-Expert            Waiting for expert check             Manual QC,
-check                                                  Manual export,
-                                                       Expert check
+Expert check        Waiting for expert check              X             X             X[^submit_expert]
   
-Ready for         Dataset ready for automated export   Manual QC,
-export                                                 Manual export
+Ready for export    Dataset ready for automated export    X             X
 
-Exporting         Automatic export and publishing      None
-                  under way
+Exporting           Automatic export and publishing      
+                    under way
   
-Exported          Dataset has been exported            Manual QC,
-                                                       Manual export,
-                                                       Archive
+Exported            Dataset has been exported             X             X                                 X
   
-ERROR             Error encountered during             None[^errorstatus]
-                  any automatic processing
--------------------------------------------------------------------------------
+ERROR[^errorstatus] Error encountered during             
+                    any automatic processing
+----------------------------------------------------------------------------------------------------------------
 Table: Possible status values for datasets {#tbl:statuses}
+
+[^submit_pi]:When the PI has completed their quality control, they will Submit the dataset. For ICOS stations this will send the dataset to the OTC expert; for non-ICOS stations it will place the dataset in the 'Ready to export' state.
+
+[^submit_expert]:When the OTC expert has checked a dataset, they can submit it for export if it is satisfactory, or submit it for further QC by the PI if it is not.
 
 [^errorstatus]:If any automatic processing jobs fail, the dataset's status will be set to 'ERROR'. The cause and remedial action will need to be determined by the QuinCe support team, who will be notified of the problem automatically.
 
-The station PI and OTC expert will be able to perform various actions on a dataset at different times, depending on its current status. [@Tbl:actions] describes the possible actions.
 
 -------------------------------------------------------------------------------
 Action            Description
@@ -226,7 +222,7 @@ When this call is made and the data files are returned, the status of the datase
 
 __URL:__ `QuinCe/api/export/completeExport`
 
-__HTTP Method:__ GET
+__HTTP Method:__ POST
 
 __Return:__ JSON
 
@@ -250,7 +246,7 @@ This call will simply set the status of the specified dataset to 'Exported', to 
 
 __URL:__ `QuinCe/api/export/abandonExport`
 
-__HTTP Method:__ GET
+__HTTP Method:__ POST
 
 __Return:__ JSON
 
