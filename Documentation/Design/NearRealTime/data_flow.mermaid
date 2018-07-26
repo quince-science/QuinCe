@@ -1,0 +1,15 @@
+sequenceDiagram
+  participant ID as Incoming Data
+  participant AS as Acquisition Script
+  participant Q as QuinCe
+  participant FS as File Store
+  participant EX as External
+  ID->>AS: Acquire files
+  AS->>Q: Upload
+  Q->Q: Check files
+  Q->>AS: Send check result
+  alt Check failed
+    AS->>FS: Store in Failure archive
+  end
+  AS->>EX: Send file processing results
+  Q->>EX: Generate and publish NRT dataset
