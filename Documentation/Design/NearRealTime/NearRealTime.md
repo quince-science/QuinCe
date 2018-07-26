@@ -16,23 +16,7 @@ A new feature will be added to QuinCe whereby data files sent directly from inst
 
 NRT data transmitted from stations will arrive either by email, uploaded to an FTP server, or placed in some other location that can be read by the QuinCe system. The QuinCe application itself will not read these files; a separate script will be written that locates new files, submits them to QuinCe via an API, and then archives the files according to whether or not they were uploaded successfully. The QuinCe application will be responsible for receiving the uploaded files and reporting whether or not they can be successfully processed. Failed files will be stored for later examination by the user (successfully uploaded files will be stored within QuinCe). Messages regarding the results of the upload can be stored in a log file or emailed to interested parties. Meanwhile QuinCe will process the data to create and publish the NRT dataset.
 
-```{.mermaid width=1000}
-sequenceDiagram
-  participant ID as Incoming Data
-  participant AS as Acquisition Script
-  participant Q as QuinCe
-  participant FS as File Store
-  participant EX as External
-  ID->>AS: Acquire files
-  AS->>Q: Upload
-  Q->Q: Check files
-  Q->>AS: Send check result
-  alt Check failed
-    AS->>FS: Store in Failure archive
-  end
-  AS->>EX: Send file processing results
-  Q->>EX: Generate and publish NRT dataset
-```
+![Near real time data flow](data_flow.png)
 
 ## Data acquisition
 

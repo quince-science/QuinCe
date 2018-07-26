@@ -1,4 +1,6 @@
 #!/bin/bash
 
-# NOTE: This needs the mermaid-filter for Pandoc (https://github.com/raghur/mermaid-filter)
-pandoc -f markdown+smart+multiline_tables+footnotes -F mermaid-filter --toc -o ~/temp/NRT.pdf NearRealTime.md
+# Mermaid diagrams need to be built first
+#mmdc -w 1000 -i data_flow.mermaid -o data_flow.png
+
+pandoc -f markdown+smart+multiline_tables+footnotes --toc -o ~/temp/NRT.pdf NearRealTime.md
