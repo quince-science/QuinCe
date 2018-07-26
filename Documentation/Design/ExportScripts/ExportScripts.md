@@ -173,14 +173,19 @@ GVNA20180703.zip
 |   +-- SOCAT
 |       +-- GVNA20180703.tsv
 +-- raw
-    +-- 20150117.cnv
-    +-- 20150118.cnv
-    +-- GO175_2015-103-0000dat.txt
+|   +-- 20150117.cnv
+|   +-- 20150118.cnv
+|   +-- GO175_2015-103-0000dat.txt
++-- extra_docs
+    +-- report.doc
+    +-- sensor_params.xls
 ```
 
 The `dataset` folder will contain one or more copies of the publication-ready dataset. The definition of each instrument in QuinCe will contain a list of the publication destinations for its datasets (Carbon Portal, SOCAT etc.). There will be one sub-folder for each of those destinations, containing the dataset file in the format required by that destination. The filename will be the dataset name and an extension suitable for the format (`.tsv`, `.csv` etc.).
 
 If `includeRaw` is `true` , the `raw` folder will contain all the raw files used to construct the dataset. These will have their original filenames as they were uploaded to QuinCe. If `includeRaw` is `false`, this folder will not be included in the archive.
+
+If additional metadata documents were submitted by the PI that should be included with the dataset, these will be included in the `extra_docs` folder. How these are handled will depend on the requirements of the destination data centres.
 
 `manifest.json` will contain a JSON object containing details of the files included in the archive together. It will also contain dataset-specific metadata that the export script can use to build the metadata documents required by the different publication destinations. The manifest will be formatted as follows:
 
@@ -188,6 +193,7 @@ If `includeRaw` is `true` , the `raw` folder will contain all the raw files used
 {
   "manifest": {
     "raw": ["20150117.cnv", "20150118.cnv", "GO175_2015-103-0000dat.txt"],
+    "extraDocs": ["report.doc", "sensor_params.xls"],
     "dataset": [
       {
         "destination": "CarbonPortal",
