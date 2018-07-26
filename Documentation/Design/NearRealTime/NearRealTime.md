@@ -36,7 +36,7 @@ The script will need to check that retrieved files have not already been uploade
 
 The script will upload acquired files to QuinCe for processing, using a new API (described later in this document). QuinCe will perform some quick checks to ensure that the file can be processed, and will return a JSON string detailing the result of the checks and any message that should be passed to the user.
 
-It is possible that an uploaded file can be partially processed. In that case the status of the uploaded file will be `true` and the `message` field will describe the issues that prevented the full file from being processed.
+It is possible that an uploaded file can be partially processed. In that case the status of the uploaded file will be `true` and the `message` field will describe the issues that prevented the full file from being processed. This includes items that would normally result in the file being rejected (e.g. an unrecognised run type).
 
 If the file checks have failed, the script will store that file in a specified location for later review by the user.
 
@@ -130,4 +130,6 @@ An optional extra function will allow the results of the automatic quality contr
 
 ## Building a 'real' dataset
 
-* Re-upload files with issues
+* Use NRT data files (only allowed if they didn't have issues)
+* Re-upload files, replacing NRT data files. These are new versions of L0 data files.
+
