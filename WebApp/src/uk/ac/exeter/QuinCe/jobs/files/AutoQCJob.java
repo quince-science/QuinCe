@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
 import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QCRoutines.data.InvalidDataException;
@@ -99,6 +101,11 @@ public class AutoQCJob extends Job {
   public static final String PARAM_ROUTINES_CONFIG = "ROUTINES_CONFIG";
 
   /**
+   * Name of the job, used for reporting
+   */
+  private final String jobName = "Automatic Quality Control";
+
+  /**
    * Constructor that allows the {@link JobManager} to create an instance of this job.
    * @param resourceManager The application's resource manager
    * @param config The application configuration
@@ -125,10 +132,12 @@ public class AutoQCJob extends Job {
 
     Connection conn = null;
     long datasetId = Long.parseLong(parameters.get(ID_PARAM));
-
+    DataSet dataSet = null;
     try {
       conn = dataSource.getConnection();
-      DataSetDB.setDatasetStatus(conn, datasetId, DataSet.STATUS_AUTO_QC);
+      dataSet = DataSetDB.getDataSet(conn, datasetId);
+      dataSet.setStatus(DataSet.STATUS_AUTO_QC);
+      DataSetDB.updateDataSet(conn, dataSet);
 
       CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
 
@@ -228,7 +237,10 @@ public class AutoQCJob extends Job {
         conn.rollback();
       } else {
         // Commit all the records
-        DataSetDB.setDatasetStatus(conn, datasetId, DataSet.STATUS_USER_QC);
+        if (dataSet != null) {
+          dataSet.setStatus(DataSet.STATUS_USER_QC);
+          DataSetDB.updateDataSet(conn, dataSet);
+        }
         conn.commit();
       }
     } catch (Exception e) {
@@ -237,7 +249,17 @@ public class AutoQCJob extends Job {
 
       try {
         // Set the dataset to Error status
-        DataSetDB.setDatasetStatus(conn, datasetId, DataSet.STATUS_ERROR);
+        if (dataSet != null) {
+          dataSet.setStatus(DataSet.STATUS_ERROR);
+
+          StringBuffer message = new StringBuffer();
+          message.append(getJobName());
+          message.append(" - error: ");
+          message.append(e.getMessage());
+          dataSet.addMessage(message.toString(),
+              ExceptionUtils.getStackTrace(e));
+          DataSetDB.updateDataSet(conn, dataSet);
+        }
         conn.commit();
       } catch (Exception e1) {
         e.printStackTrace();
@@ -279,5 +301,10 @@ public class AutoQCJob extends Job {
     }
 
     return records;
+  }
+
+  @Override
+  public String getJobName() {
+    return jobName;
   }
 }

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import uk.ac.exeter.QuinCe.EquilibratorPco2.EquilibratorPco2Calculator;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
@@ -42,6 +44,11 @@ public class DataReductionJob extends Job {
   public static final String ID_PARAM = "id";
 
   /**
+   * Name of the job, used for reporting
+   */
+  private final String jobName = "Data Reduction";
+
+  /**
    * Constructor for a data reduction job to be run on a specific data file.
    * The job record must already have been created in the database.
    *
@@ -63,13 +70,16 @@ public class DataReductionJob extends Job {
 
     Connection conn = null;
     CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
+    DataSet dataSet = null;
 
     try {
       conn = dataSource.getConnection();
       conn.setAutoCommit(false);
 
-      DataSet dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
-      DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_DATA_REDUCTION);
+      dataSet = DataSetDB.getDataSet(conn,
+          Long.parseLong(parameters.get(ID_PARAM)));
+      dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
+      DataSetDB.updateDataSet(conn, dataSet);
       List<DataSetRawDataRecord> measurements = DataSetDataDB.getMeasurements(conn, dataSet);
       CalibrationDataSet calibrationRecords = CalibrationDataDB.getCalibrationRecords(conn, dataSet);
       CalibrationSet externalStandards = ExternalStandardDB.getInstance().getStandardsSet(conn, dataSet.getInstrumentId(), measurements.get(0).getDate());
@@ -96,7 +106,8 @@ public class DataReductionJob extends Job {
       } else {
 
         // Set up the Auto QC job
-        DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_AUTO_QC);
+        dataSet.setStatus(DataSet.STATUS_AUTO_QC);
+        DataSetDB.updateDataSet(conn, dataSet);
         Map<String, String> jobParams = new HashMap<String, String>();
         jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
         jobParams.put(AutoQCJob.PARAM_ROUTINES_CONFIG, ResourceManager.QC_ROUTINES_CONFIG);
@@ -109,9 +120,20 @@ public class DataReductionJob extends Job {
       DatabaseUtils.rollBack(conn);
 
       try {
-        // Set the dataset to Error status
-        DataSetDB.setDatasetStatus(conn, Long.parseLong(parameters.get(ID_PARAM)), DataSet.STATUS_ERROR);
-        conn.commit();
+        if (dataSet != null
+            && dataSet.getId() != DatabaseUtils.NO_DATABASE_RECORD) {
+          // Change dataset status to Error, and append an error message
+          StringBuffer message = new StringBuffer();
+          message.append(getJobName());
+          message.append(" - error: ");
+          message.append(e.getMessage());
+          dataSet.addMessage(message.toString(),
+              ExceptionUtils.getStackTrace(e));
+          dataSet.setStatus(DataSet.STATUS_ERROR);
+
+          DataSetDB.updateDataSet(conn, dataSet);
+          conn.commit();
+        }
       } catch (Exception e1) {
         e.printStackTrace();
       }
@@ -160,5 +182,10 @@ public class DataReductionJob extends Job {
     } catch (NumberFormatException e) {
       throw new InvalidJobParametersException(ID_PARAM + "is not numeric");
     }
+  }
+
+  @Override
+  public String getJobName() {
+    return jobName;
   }
 }

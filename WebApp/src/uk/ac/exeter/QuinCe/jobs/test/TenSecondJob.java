@@ -30,6 +30,11 @@ public class TenSecondJob extends Job {
   private int chunkCount = 1;
 
   /**
+   * Name of the job, used for reporting
+   */
+  private final String jobName = "Ten second test";
+
+  /**
    * Constructs a job object, and validates the parameters passed to it
    * @param resourceManager The system resource manager
    * @param config The application properties
@@ -72,5 +77,10 @@ public class TenSecondJob extends Job {
         throw new InvalidJobParametersException("It's not a number!");
       }
     }
+  }
+
+  @Override
+  public String getJobName() {
+    return jobName;
   }
 }
