@@ -29,6 +29,11 @@ public class SendEmailVerificationMailJob extends Job {
   public static final String EMAIL_KEY = "emailAddress";
 
   /**
+   * Name of the job, used for reporting
+   */
+  private final String jobName = "Email Verification";
+
+  /**
    * Job object constructor
    * @param resourceManager The application's resource manager
    * @param config The application configuration
@@ -125,5 +130,10 @@ public class SendEmailVerificationMailJob extends Job {
   protected String getFinishState() {
     // Since we ignore interrupts, we always return FINISHED
     return FINISHED_STATUS;
+  }
+
+  @Override
+  public String getJobName() {
+    return jobName;
   }
 }

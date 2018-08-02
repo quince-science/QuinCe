@@ -82,6 +82,7 @@
         <p:commandLink id="manualQcLink" ajax="false" action="#{manualQcBean.start}"/>
 
         <p:remoteCommand name="updateList" update="datasets" actionListener="#{dataSetsBean.updateDatasetList}"/>
+        <ui:include src="/WEB-INF/templates/dialog.xhtml" />
 
         <p:dataTable id="datasets" value="#{dataSetsBean.dataSets}"
             var="dataset" styleClass="pageBlock">
@@ -103,14 +104,27 @@
             </f:facet>
             <h:outputText value="#{dataset.end}"/>
           </p:column>
-          <p:column>
+          <p:column styleClass="centeredCell">
             <f:facet name="header">
               <h:outputText value="Status"/>
             </f:facet>
-            <h:outputText value="#{dataset.statusName}"/>
+            <h:outputText
+              rendered="#{dataset.status ne -1}"
+              value="#{dataset.statusName}"
+            />
             <ui:fragment rendered="#{dataset.status eq 4}">
               (<h:outputText value="#{dataset.needsFlagCount}"/> to flag)
             </ui:fragment>
+            <p:commandButton
+              rendered="#{dataset.status eq -1}"
+              icon="ui-icon-notice"
+              onclick="displayDialog(getMessagesHTML($(this).data('messages')))"
+              title="Errors"
+              value="Errors"
+              styleClass="inlineButton"
+            >
+              <f:passThroughAttribute name="data-messages" value="#{dataset.messagesAsJSONString}" />
+            </p:commandButton>
           </p:column>
           <p:column>
             <f:facet name="header">

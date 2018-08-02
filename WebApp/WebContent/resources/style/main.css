@@ -714,3 +714,10 @@ form.inline {
   position: relative;
   top: 6px;
 }
+
+/*****************************************
+* Default dialog style
+*****************************************/
+.messageDialog>.ui-dialog-content>.ui-scrollpanel {
+  padding: 10px
+}
