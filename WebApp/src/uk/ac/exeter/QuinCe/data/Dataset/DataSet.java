@@ -1,10 +1,15 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+
+import org.primefaces.json.JSONArray;
 
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.Message;
 
 /**
  * Object to represent a data set
@@ -115,22 +120,42 @@ public class DataSet {
   private int status = STATUS_WAITING;
 
   /**
+   * Messages from jobs handling this data set
+   */
+  private ArrayList<Message> messages = new ArrayList<>();
+
+  /**
    * The number of records that need flagging
    */
   private int needsFlagCount = -1;
 
+
   /**
    * Constructor for all fields
-   * @param id The data set's database ID
-   * @param instrumentId The database ID of the instrument to which the data set belongs
-   * @param name The name
-   * @param start The start date
-   * @param end The end date
-   * @param status The current status
-   * @param properties The additional properties
-   * @param lastTouched The date that the data set was last accessed
+   *
+   * @param id
+   *          The data set's database ID
+   * @param instrumentId
+   *          The database ID of the instrument to which the data set belongs
+   * @param name
+   *          The name
+   * @param start
+   *          The start date
+   * @param end
+   *          The end date
+   * @param status
+   *          The current status
+   * @param properties
+   *          The additional properties
+   * @param lastTouched
+   *          The date that the data set was last accessed
+   * @param messages
+   *          A list of messages concerning the dataset (errors etc)
    */
-  protected DataSet(long id, long instrumentId, String name, LocalDateTime start, LocalDateTime end, int status, Properties properties, LocalDateTime lastTouched, int needsFlagCount) {
+  protected DataSet(long id, long instrumentId, String name,
+      LocalDateTime start, LocalDateTime end, int status, Properties properties,
+      LocalDateTime lastTouched, int needsFlagCount,
+      List<Message> messages) {
     this.id = id;
     this.instrumentId = instrumentId;
     this.name = name;
@@ -140,6 +165,7 @@ public class DataSet {
     this.properties = properties;
     this.lastTouched = lastTouched;
     this.needsFlagCount = needsFlagCount;
+    this.messages = new ArrayList<>(messages);
   }
 
   /**
@@ -299,7 +325,7 @@ public class DataSet {
    * @param status The status
    * @throws InvalidDataSetStatusException If the status is invalid
    */
-  protected void setStatus(int status) throws InvalidDataSetStatusException {
+  public void setStatus(int status) throws InvalidDataSetStatusException {
     if (!validateStatus(status)) {
       throw new InvalidDataSetStatusException(status);
     }
@@ -377,5 +403,25 @@ public class DataSet {
    */
   public boolean getCanBeExported() {
     return (getStatus() == STATUS_USER_QC && needsFlagCount == 0);
+  }
+
+  public void addMessage(String message, String details) {
+    messages.add(new Message(message, details));
+  }
+
+  public List<Message> getMessages() {
+    return messages;
+  }
+
+  public String getMessagesAsJSONString() {
+    JSONArray json = new JSONArray();
+    for (Message message : getMessages()) {
+      json.put(message.getAsJSON());
+    }
+    return json.toString();
+  }
+
+  public int getMessageCount() {
+    return messages.size();
   }
 }

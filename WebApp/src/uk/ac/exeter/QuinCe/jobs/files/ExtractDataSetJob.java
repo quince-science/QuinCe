@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
@@ -51,6 +53,11 @@ public class ExtractDataSetJob extends Job {
   private Instrument instrument = null;
 
   /**
+   * Name of the job, used for reporting
+   */
+  private final String jobName = "Dataset Extraction";
+
+  /**
    * Initialise the job object so it is ready to run
    *
    * @param resourceManager The system resource manager
@@ -82,7 +89,8 @@ public class ExtractDataSetJob extends Job {
       reset(conn);
 
       // Set processing status
-      DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_DATA_EXTRACTION);
+      dataSet.setStatus(DataSet.STATUS_DATA_EXTRACTION);
+      DataSetDB.updateDataSet(conn, dataSet);
       conn.commit();
 
       // Get related data
@@ -102,7 +110,8 @@ public class ExtractDataSetJob extends Job {
         record = rawData.getNextRecord();
       }
 
-      DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_DATA_REDUCTION);
+      dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
+      DataSetDB.updateDataSet(conn, dataSet);
       Map<String, String> jobParams = new HashMap<String, String>();
       jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
       JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), DataReductionJob.class.getCanonicalName(), jobParams);
@@ -111,12 +120,17 @@ public class ExtractDataSetJob extends Job {
 
     } catch (Exception e) {
       e.printStackTrace();
+      DatabaseUtils.rollBack(conn);
       try {
-        // Revert all changes
-        DatabaseUtils.rollBack(conn);
-
         // Set the dataset to Error status
-        DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_ERROR);
+        dataSet.setStatus(DataSet.STATUS_ERROR);
+        // And add a (friendly) message...
+        StringBuffer message = new StringBuffer();
+        message.append(getJobName());
+        message.append(" - error: ");
+        message.append(e.getMessage());
+        dataSet.addMessage(message.toString(), ExceptionUtils.getStackTrace(e));
+        DataSetDB.updateDataSet(conn, dataSet);
         conn.commit();
       } catch (Exception e1) {
         e1.printStackTrace();
@@ -136,20 +150,34 @@ public class ExtractDataSetJob extends Job {
    * Reset the data set processing.
    *
    * Delete all related records and reset the status
-   * @throws MissingParamException If any of the parameters are invalid
-   * @throws InvalidDataSetStatusException If the method sets an invalid data set status
-   * @throws DatabaseException If a database error occurs
+   *
+   * @throws MissingParamException
+   *           If any of the parameters are invalid
+   * @throws InvalidDataSetStatusException
+   *           If the method sets an invalid data set status
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws RecordNotFoundException
+   *           If the record don't exist
    */
-  private void reset(Connection conn) throws MissingParamException, InvalidDataSetStatusException, DatabaseException {
+  private void reset(Connection conn)
+      throws MissingParamException, InvalidDataSetStatusException,
+      DatabaseException, RecordNotFoundException {
 
     try {
       CalibrationDataDB.deleteDatasetData(conn, dataSet);
       CalculationDBFactory.getCalculationDB().deleteDatasetCalculationData(conn, dataSet);
       DataSetDB.deleteDatasetData(conn, dataSet);
-      DataSetDB.setDatasetStatus(conn, dataSet, DataSet.STATUS_WAITING);
+      dataSet.setStatus(DataSet.STATUS_WAITING);
+      DataSetDB.updateDataSet(conn, dataSet);
       conn.commit();
     } catch (SQLException e) {
       throw new DatabaseException("Error while resetting dataset data", e);
     }
+  }
+
+  @Override
+  public String getJobName() {
+    return jobName;
   }
 }

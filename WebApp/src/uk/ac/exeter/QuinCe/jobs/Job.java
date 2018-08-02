@@ -278,4 +278,6 @@ public abstract class Job {
     return finishState;
 
   }
+
+  public abstract String getJobName();
 }
