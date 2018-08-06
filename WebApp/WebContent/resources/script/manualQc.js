@@ -291,3 +291,7 @@ function manualFlagsUpdated() {
 function getPlotMode(index) {
   return $('[id^=plot' + index + 'Form\\:plotMode]:checked').val();
 }
+
+function setPlotSelectMode(index) {
+  console.log($('[id^=plot' + index + 'Form\\:plotSelectMode]:checked').val());
+}
