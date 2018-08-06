@@ -16,8 +16,8 @@ CREATE TABLE `diagnostic_data` (
   CONSTRAINT `DIAGNOSTICDATA_DATASETDATA`
     FOREIGN KEY (`measurement_id`)
     REFERENCES `dataset_data` (`id`)
-    ON DELETE RESTRICT
-    ON UPDATE RESTRICT,
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
   CONSTRAINT `DIAGNOSTICDATA_FILECOLUMN`
     FOREIGN KEY (`file_column_id`)
     REFERENCES `file_column` (`id`)
