@@ -167,7 +167,7 @@ function updateColumnCount() {
 function updateUseFileButton() {
   var canUseFile = true;
 
-  if ($('#newInstrumentForm\\:msgFileDescription').is(':visible')) {
+  if ($('#newInstrumentForm\\:msgFileDescription').text().trim()) {
     canUseFile = false;
   }
 
