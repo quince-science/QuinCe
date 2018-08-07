@@ -18,7 +18,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  * @author Jonas F. Henriksen
  *
  */
-@ManagedBean(name = "utils", eager = true)
+@ManagedBean(name = "utils")
 @SessionScoped
 public class ServletUtilsBean{
 
