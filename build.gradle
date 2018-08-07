@@ -54,7 +54,7 @@ repositories {
 
 
 dependencies {
-	compile "org.primefaces:primefaces:6.0"
+	compile "org.primefaces:primefaces:6.2"
 	compile "org.primefaces.themes:cupertino:1.0.10"
 	compile 'joda-time:joda-time:2.7'
 	compile 'javax.el:javax.el-api:3.0.0'
