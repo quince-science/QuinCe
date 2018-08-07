@@ -143,28 +143,34 @@ tr.selected {
 }
 
 .variable:last-of-type {
-  margin-bottom: 10px;
+  margin-bottom: 30px;
 }
 
 .singleVariable {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .varName {
   font-style: italic;
   padding-right: 5px;
   flex-grow: 1;
+  white-space: nowrap;
 }
 
 .variableGroup {
   margin-left: 10px;
 }
 
+.variableGroup:last-of-type {
+  margin-bottom: 30px;
+}
+
 .varGroupName {
   font-weight: 700;
   text-decoration: underline;
-  margin-bottom: 2px;
+  margin-bottom: 10px;
   height: 18px;
+  white-space: nowrap;
 }
 
 .varGroupMember {
@@ -172,6 +178,8 @@ tr.selected {
 }
 
 .variableControls {
+  display: flex;
+  align-content: center;
   margin-left: 5px;
 }
 
@@ -180,7 +188,6 @@ tr.selected {
   width: 16px;
   height: 16px;
   position: relative;
-  top: -5px;
 }
 
 .ui-selectbooleanbutton .ui-button-text {
