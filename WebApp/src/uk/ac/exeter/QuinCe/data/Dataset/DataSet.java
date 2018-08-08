@@ -122,7 +122,7 @@ public class DataSet {
   /**
    * Messages from jobs handling this data set
    */
-  private ArrayList<Message> messages = new ArrayList<>();
+  private ArrayList<Message> messages = new ArrayList<Message>();
 
   /**
    * The number of records that need flagging
@@ -165,7 +165,7 @@ public class DataSet {
     this.properties = properties;
     this.lastTouched = lastTouched;
     this.needsFlagCount = needsFlagCount;
-    this.messages = new ArrayList<>(messages);
+    this.messages = new ArrayList<Message>(messages);
   }
 
   /**
