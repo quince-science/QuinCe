@@ -78,6 +78,8 @@ public class DataReductionJob extends Job {
 
       dataSet = DataSetDB.getDataSet(conn,
           Long.parseLong(parameters.get(ID_PARAM)));
+      // Clear messages before executing job
+      dataSet.clearMessages();
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
       DataSetDB.updateDataSet(conn, dataSet);
       List<DataSetRawDataRecord> measurements = DataSetDataDB.getMeasurements(conn, dataSet);
