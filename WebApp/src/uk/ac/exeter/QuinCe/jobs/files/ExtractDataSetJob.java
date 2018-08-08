@@ -84,10 +84,11 @@ public class ExtractDataSetJob extends Job {
 
       // Get the data set from the database
       dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
-
       // Reset the data set and all associated data
       reset(conn);
 
+      // Clear messages before executing job
+      dataSet.clearMessages();
       // Set processing status
       dataSet.setStatus(DataSet.STATUS_DATA_EXTRACTION);
       DataSetDB.updateDataSet(conn, dataSet);
