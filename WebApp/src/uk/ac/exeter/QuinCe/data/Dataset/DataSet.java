@@ -424,4 +424,11 @@ public class DataSet {
   public int getMessageCount() {
     return messages.size();
   }
+
+  /**
+   * Remove all messages from this dataset.
+   */
+  public void clearMessages() {
+    messages.clear();
+  }
 }
