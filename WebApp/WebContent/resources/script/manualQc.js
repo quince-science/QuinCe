@@ -293,5 +293,17 @@ function getPlotMode(index) {
 }
 
 function setPlotSelectMode(index) {
-  console.log($('[id^=plot' + index + 'Form\\:plotSelectMode]:checked').val());
+  var plot = window['plot' + index];
+  var newMode = $('[id^=plot' + index + 'Form\\:plotSelectMode]:checked').val();
+
+  var interactionModel = null;
+
+  if (newMode == 'select') {
+  interactionModel = {
+
+  }
+  }
+
+  drawPlot(index, interactionModel);
+
 }

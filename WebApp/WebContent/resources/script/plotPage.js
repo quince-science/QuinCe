@@ -501,7 +501,8 @@ function hideInfoPopup() {
   $('#infoPopup').hide('slide', {direction: 'right'}, 100);
 }
 
-function drawPlot(index) {
+function drawPlot(index, interactionModel) {
+
   var plotVar = 'plot' + index;
 
   // Existing zoom information
@@ -522,8 +523,12 @@ function drawPlot(index) {
     window[plotVar].destroy();
   }
 
-  var interactionModel = Dygraph.defaultInteractionModel;
-  interactionModel.dblclick = null;
+  // If no interaction model is supplied, use
+  // the default (minus double-click)
+  if (null == interactionModel) {
+  interactionModel = Dygraph.defaultInteractionModel;
+    interactionModel.dblclick = null;
+  }
 
   var labels = getPlotLabels(index);
   var xLabel = labels[0];
