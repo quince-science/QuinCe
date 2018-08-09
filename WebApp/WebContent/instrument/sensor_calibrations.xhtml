@@ -26,7 +26,10 @@
         <div class="dialogSection">
           <h:panelGrid columns="2" styleClass="buttonPanel">
             <p:outputLabel for="deploymentDate" value="Calibration Date:"/>
-            <p:calendar id="deploymentDate" value="#{sensorCalibrationsBean.enteredCalibration.deploymentDate}" maxLength="19" size="19" pattern="yyyy-MM-dd HH:mm:ss" navigator="true">
+            <p:calendar id="deploymentDate"  mode="inline
+                value="#{sensorCalibrationsBean.enteredCalibration.deploymentDate}"
+                maxLength="19" size="19" pattern="yyyy-MM-dd HH:mm:ss"
+                navigator="true">
               <f:converter converterId="localDateTimeConverter"/>
             </p:calendar>
 
