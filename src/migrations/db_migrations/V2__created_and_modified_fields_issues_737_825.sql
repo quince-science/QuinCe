@@ -1,3 +1,4 @@
+
 -- created - column
 ALTER TABLE calibration ADD COLUMN created TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE calibration_data ADD COLUMN created TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
@@ -74,3 +75,59 @@ ALTER TABLE user ADD COLUMN modified DATETIME;
 CREATE TRIGGER `user_insert_trigger` BEFORE INSERT ON  `user` FOR EACH ROW SET NEW.modified=NOW();
 CREATE TRIGGER `user_update_trigger` BEFORE UPDATE ON  `user` FOR EACH ROW SET NEW.modified=NOW();
 UPDATE user set modified=now();
+
+
+-- Rollback:
+/***************************************************************************************************
+DROP TRIGGER calibration_insert_trigger;
+DROP TRIGGER calibration_update_trigger;
+DROP TRIGGER calibration_data_insert_trigger;
+DROP TRIGGER calibration_data_update_trigger;
+DROP TRIGGER data_file_insert_trigger;
+DROP TRIGGER data_file_update_trigger;
+DROP TRIGGER dataset_insert_trigger;
+DROP TRIGGER dataset_update_trigger;
+DROP TRIGGER dataset_data_insert_trigger;
+DROP TRIGGER dataset_data_update_trigger;
+DROP TRIGGER equilibrator_pco2_insert_trigger;
+DROP TRIGGER equilibrator_pco2_update_trigger;
+DROP TRIGGER file_column_insert_trigger;
+DROP TRIGGER file_column_update_trigger;
+DROP TRIGGER file_definition_insert_trigger;
+DROP TRIGGER file_definition_update_trigger;
+DROP TRIGGER instrument_insert_trigger;
+DROP TRIGGER instrument_update_trigger;
+DROP TRIGGER job_insert_trigger;
+DROP TRIGGER job_update_trigger;
+DROP TRIGGER run_type_insert_trigger;
+DROP TRIGGER run_type_update_trigger;
+DROP TRIGGER user_insert_trigger;
+DROP TRIGGER user_update_trigger;
+
+ALTER TABLE calibration DROP COLUMN created;
+ALTER TABLE calibration_data DROP COLUMN created;
+ALTER TABLE data_file DROP COLUMN created;
+ALTER TABLE dataset DROP COLUMN created;
+ALTER TABLE dataset_data DROP COLUMN created;
+ALTER TABLE equilibrator_pco2 DROP COLUMN created;
+ALTER TABLE file_column DROP COLUMN created;
+ALTER TABLE file_definition DROP COLUMN created;
+ALTER TABLE instrument DROP COLUMN created;
+ALTER TABLE run_type DROP COLUMN created;
+ALTER TABLE user DROP COLUMN created;
+
+ALTER TABLE job CHANGE created submitted TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE calibration DROP COLUMN modified;
+ALTER TABLE calibration_data DROP COLUMN modified;
+ALTER TABLE data_file DROP COLUMN modified;
+ALTER TABLE dataset DROP COLUMN modified;
+ALTER TABLE dataset_data DROP COLUMN modified;
+ALTER TABLE equilibrator_pco2 DROP COLUMN modified;
+ALTER TABLE file_column DROP COLUMN modified;
+ALTER TABLE file_definition DROP COLUMN modified;
+ALTER TABLE instrument DROP COLUMN modified;
+ALTER TABLE job DROP COLUMN modified;
+ALTER TABLE run_type DROP COLUMN modified;
+ALTER TABLE user DROP COLUMN modified;
+***************************************************************************************************/
