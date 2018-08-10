@@ -125,7 +125,7 @@ flyway {
   user = webContext.Resource.@username
   password = webContext.Resource.@password
   locations = ["classpath:db_migrations"]
-  baselineOnMigrate = true
+  baselineOnMigrate = false
 }
 
 // Make sure project is cleaned and build before running flywayMigrate task
