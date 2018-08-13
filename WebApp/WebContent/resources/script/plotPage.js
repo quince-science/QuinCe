@@ -257,7 +257,7 @@ function drawTable() {
  * Calculate the value of the scrollY entry for the data table
  */
 function calcTableScrollY() {
-  return $(‘#tableContent’).height() - $(‘#footerToolbar’).outerHeight();
+  return $('#tableContent').height() - $('#footerToolbar').outerHeight();
  }
 
 function getSelectableRows() {
