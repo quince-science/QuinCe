@@ -13,6 +13,24 @@
     http://www.coreservlets.com/JSF-Tutorial/jsf2/ -->
   <display-name>QuinCe</display-name>
 
+  <!-- Jersey RESTful API servlet -->
+  <servlet>
+    <servlet-name>Jersey REST Service</servlet-name>
+    <servlet-class>
+      org.glassfish.jersey.servlet.ServletContainer
+    </servlet-class>
+    <init-param>
+      <param-name>jersey.config.server.provider.packages</param-name>
+      <param-value>uk.ac.exeter.QuinCe.api</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Jersey REST Service</servlet-name>
+    <url-pattern>/api/*</url-pattern>
+  </servlet-mapping>
+
+  <!-- JavaServer Faces -->
   <servlet>
     <servlet-name>Faces Servlet</servlet-name>
     <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
@@ -25,6 +43,8 @@
     <servlet-name>Faces Servlet</servlet-name>
     <url-pattern>*.xhtml</url-pattern>
   </servlet-mapping>
+
+  <!-- Logout Servlet -->
   <servlet>
     <servlet-name>Logout</servlet-name>
     <servlet-class>uk.ac.exeter.QuinCe.web.User.LogoutServlet</servlet-class>
@@ -33,6 +53,7 @@
     <servlet-name>Logout</servlet-name>
     <url-pattern>/logout</url-pattern>
   </servlet-mapping>
+
   <context-param>
     <param-name>javax.faces.PROJECT_STAGE</param-name>
     <param-value>Development</param-value>
@@ -66,7 +87,7 @@
 
   <context-param>
       <param-name>configuration.path</param-name>
-      <param-value>%quince_root_folder%/configuration/quince.properties</param-value>
+      <param-value>/Users/zuj007/Documents/QuinCe/quince_eclipse/QuinCe/configuration/quince.properties</param-value>
   </context-param>
 
   <context-param>
