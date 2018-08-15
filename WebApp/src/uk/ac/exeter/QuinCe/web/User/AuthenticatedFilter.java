@@ -62,37 +62,37 @@ public class AuthenticatedFilter implements Filter {
   @Override
   public void doFilter(ServletRequest req, ServletResponse res, FilterChain filterChain) throws IOException, ServletException {
     HttpServletRequest request = (HttpServletRequest) req;
-        HttpServletResponse response = (HttpServletResponse) res;
-        HttpSession session = request.getSession(false);
+    HttpServletResponse response = (HttpServletResponse) res;
+    HttpSession session = request.getSession(false);
 
-      String requestURL = request.getRequestURI();
-      if (requestURL.endsWith("/")) {
-        requestURL = requestURL.substring(0, requestURL.length() - 1);
+    String requestURL = request.getRequestURI();
+    if (requestURL.endsWith("/")) {
+      requestURL = requestURL.substring(0, requestURL.length() - 1);
+    }
+
+    if (null == session) {
+      if (requestURL.equals(request.getContextPath())) {
+        filterChain.doFilter(request, response);
+      } else {
+        response.sendRedirect(request.getContextPath());
       }
+    } else {
 
-        if (null == session) {
-          if (requestURL.equals(request.getContextPath())) {
-            filterChain.doFilter(request, response);
-          } else {
-            response.sendRedirect(request.getContextPath());
-          }
+      // Get the user's email address from the session (if possible)
+      User user = (User) session.getAttribute(LoginBean.USER_SESSION_ATTR);
+
+      if (user != null || isResourceRequest(request) || isAllowedPath(request)) {
+        filterChain.doFilter(request, response);
+      } else {
+        if (requestURL.equals(request.getContextPath())) {
+          session.removeAttribute("SESSION_EXPIRED");
+          filterChain.doFilter(request, response);
         } else {
-
-            // Get the user's email address from the session (if possible)
-            User user = (User) session.getAttribute(LoginBean.USER_SESSION_ATTR);
-
-            if (user != null || isResourceRequest(request) || isAllowedPath(request)) {
-              filterChain.doFilter(request, response);
-            } else {
-              if (requestURL.equals(request.getContextPath())) {
-                  session.removeAttribute("SESSION_EXPIRED");
-                  filterChain.doFilter(request, response);
-              } else {
-                  session.setAttribute("SESSION_EXPIRED", "true");
-                    response.sendRedirect(request.getContextPath());
-              }
-            }
+          session.setAttribute("SESSION_EXPIRED", "true");
+          response.sendRedirect(request.getContextPath());
         }
+      }
+    }
   }
 
   /**
@@ -124,12 +124,14 @@ public class AuthenticatedFilter implements Filter {
   private boolean isAllowedPath(HttpServletRequest request) {
     boolean allowed = false;
 
-    if (request.getRequestURI().equals(request.getContextPath() + "/")) {
+    String requestURI = request.getRequestURI();
+    if (requestURI.equals(request.getContextPath() + "/")) {
+      allowed = true;
+    } else if (requestURI.startsWith(request.getContextPath() + "/api/")) {
       allowed = true;
     } else {
       for (String allowedPath: allowedPaths) {
         String pathURIBase = request.getContextPath() + allowedPath;
-        String requestURI = request.getRequestURI();
         int sessionIdPos = requestURI.indexOf(";jsessionid");
         if (sessionIdPos != -1) {
           requestURI = requestURI.substring(0, sessionIdPos);
@@ -188,5 +190,4 @@ public class AuthenticatedFilter implements Filter {
   public void destroy() {
     // Do nothing
   }
-
 }
