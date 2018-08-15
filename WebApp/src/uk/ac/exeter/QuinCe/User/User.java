@@ -17,7 +17,15 @@ public class User {
   /**
    * Permissions bit for administrators
    */
-  public static final int BIT_ADMIN_USER = 1;
+  public static final int BIT_ADMIN_USER = 1 << 0;
+
+  /**
+   * Permissions bit for API users. Users with this
+   * bit set cannot log in to the main site.
+   *
+   * Users without this bit set cannot make API calls
+   */
+  public static final int BIT_API_USER = 1 << 1;
 
   /**
    * The user's database record ID
@@ -222,5 +230,9 @@ public class User {
    */
   public boolean isAdminUser() {
     return (permissions & BIT_ADMIN_USER) > 0;
+  }
+
+  public boolean isApiUser() {
+    return (permissions & BIT_API_USER) > 0;
   }
 }
