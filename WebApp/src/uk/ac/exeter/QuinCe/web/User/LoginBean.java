@@ -58,7 +58,6 @@ public class LoginBean extends BaseManagedBean {
    */
   public static final String USER_PREFS_ATTR = "UserPrefs";
 
-
   /**
    * The entered email address
    */
@@ -119,13 +118,20 @@ public class LoginBean extends BaseManagedBean {
     String result = AUTHENTICATION_FAILED_RESULT;
 
     try {
-      // Clear any existing user bean
-      int authenticateResult = UserDB.authenticate(ServletUtils.getDBDataSource(),
+      User user = UserDB.getUser(getDataSource(), emailAddress);
+      int authenticateResult;
+
+      if (user.isApiUser()) {
+        // API users are not allowed to log in
+        authenticateResult = UserDB.AUTHENTICATE_FAILED;
+      } else {
+        // Authenticate the user
+        authenticateResult = UserDB.authenticate(ServletUtils.getDBDataSource(),
           emailAddress, password.toCharArray());
+      }
 
       switch (authenticateResult) {
       case UserDB.AUTHENTICATE_OK: {
-        User user = UserDB.getUser(getDataSource(), emailAddress);
         getSession().setAttribute(USER_SESSION_ATTR, user);
         UserPreferences prefs = UserDB.getPreferences(getDataSource(), user.getDatabaseID());
         getSession().setAttribute(USER_PREFS_ATTR, prefs);
