@@ -87,7 +87,7 @@
 
   <context-param>
       <param-name>configuration.path</param-name>
-      <param-value>/Users/zuj007/Documents/QuinCe/quince_eclipse/QuinCe/configuration/quince.properties</param-value>
+      <param-value>%quince_root_folder%/configuration/quince.properties</param-value>
   </context-param>
 
   <context-param>
