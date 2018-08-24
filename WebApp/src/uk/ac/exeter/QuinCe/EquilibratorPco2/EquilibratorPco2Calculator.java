@@ -47,24 +47,45 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
   public Map<String, Double> performDataReduction(DataSetRawDataRecord measurement) throws CalculatorException {
 
     LocalDateTime date = measurement.getDate();
-    double intakeTemperature = measurement.getSensorValue("Intake Temperature");
-    double salinity = measurement.getSensorValue("Salinity");
-    double equilibratorTemperature = measurement.getSensorValue("Equilibrator Temperature");
+    Double intakeTemperature = measurement.getSensorValue("Intake Temperature");
+    if (null == intakeTemperature) {
+      throw new CalculatorException("Intake Temperature missing");
+    }
+
+    Double salinity = measurement.getSensorValue("Salinity");
+    if (null == salinity) {
+      throw new CalculatorException("Salinity missing");
+    }
+
+    Double equilibratorTemperature = measurement.getSensorValue("Equilibrator Temperature");
+    if (null == equilibratorTemperature) {
+      throw new CalculatorException("Equilibrator Temperature missing");
+    }
 
     // TODO We need some kind of flag we can run to check which equilibrator pressure to use. #577
-    double equilibratorPressure;
+    Double equilibratorPressure = null;
 
     Double absoluteEquilibratorPressure = measurement.getSensorValue("Equilibrator Pressure (absolute)");
     if (null != absoluteEquilibratorPressure) {
       equilibratorPressure = absoluteEquilibratorPressure;
     } else {
-      double differential = measurement.getSensorValue("Equilibrator Pressure (differential)");
-      double atmospheric = measurement.getSensorValue("Ambient Pressure");
-      equilibratorPressure = atmospheric + differential;
+      Double differential = measurement.getSensorValue("Equilibrator Pressure (differential)");
+      Double atmospheric = measurement.getSensorValue("Ambient Pressure");
+      if (null != differential && null != atmospheric) {
+        equilibratorPressure = atmospheric + differential;
+      }
+    }
+
+    if (null == equilibratorPressure) {
+      throw new CalculatorException("Equilibrator Pressure missing");
     }
 
     Double xH2O = measurement.getSensorValue("xH2O");
-    double co2Measured = measurement.getSensorValue("CO2");
+
+    Double co2Measured = measurement.getSensorValue("CO2");
+    if (null == co2Measured) {
+      throw new CalculatorException("CO2 value missing");
+    }
 
     Double truexH2O = null;
     double co2Dried;

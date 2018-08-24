@@ -295,7 +295,7 @@ public class AutoQCJob extends Job {
     for (long id : ids) {
       CalculationRecord record = CalculationRecordFactory.makeCalculationRecord(datasetId, id);
       record.loadData(conn);
-      if (!record.getUserFlag().equals(Flag.QUESTIONABLE) && !record.getUserFlag().equals(Flag.BAD) && !record.getUserFlag().equals(Flag.IGNORED)) {
+      if (!record.getAutoFlag().equals(Flag.FATAL) && !record.getUserFlag().equals(Flag.QUESTIONABLE) && !record.getUserFlag().equals(Flag.BAD) && !record.getUserFlag().equals(Flag.IGNORED)) {
         records.add(record);
       }
     }

@@ -361,6 +361,11 @@ public abstract class CalculationRecord extends DataRecord {
     super.addMessage(message);
     if (message.getFlag().moreSignificantThan(autoFlag)) {
       autoFlag = message.getFlag();
+
+      if (message.getFlag().equals(Flag.FATAL)) {
+        userFlag = autoFlag;
+        userMessage = message.getShortMessage();
+      }
     }
   }
 
