@@ -8,9 +8,15 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QCRoutines.messages.Message;
+import uk.ac.exeter.QCRoutines.messages.MissingValueMessage;
 import uk.ac.exeter.QuinCe.EquilibratorPco2.EquilibratorPco2Calculator;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecordFactory;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculatorException;
 import uk.ac.exeter.QuinCe.data.Calculation.DataReductionCalculator;
 import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataSet;
@@ -78,10 +84,12 @@ public class DataReductionJob extends Job {
 
       dataSet = DataSetDB.getDataSet(conn,
           Long.parseLong(parameters.get(ID_PARAM)));
+
       // Clear messages before executing job
       dataSet.clearMessages();
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
-      DataSetDB.updateDataSet(conn, dataSet);
+      DataSetDB.updateDataSet(dataSource.getConnection(), dataSet);
+
       List<DataSetRawDataRecord> measurements = DataSetDataDB.getMeasurements(conn, dataSet);
       CalibrationDataSet calibrationRecords = CalibrationDataDB.getCalibrationRecords(conn, dataSet);
       CalibrationSet externalStandards = ExternalStandardDB.getInstance().getStandardsSet(conn, dataSet.getInstrumentId(), measurements.get(0).getDate());
@@ -94,8 +102,15 @@ public class DataReductionJob extends Job {
       DataReductionCalculator calculator = new EquilibratorPco2Calculator(externalStandards, calibrationRecords);
 
       for (DataSetRawDataRecord measurement : measurements) {
-        Map<String, Double> calculatedValues = calculator.performDataReduction(measurement);
-        calculationDB.storeCalculationValues(conn, measurement.getId(), calculatedValues);
+        try {
+          Map<String, Double> calculatedValues = calculator.performDataReduction(measurement);
+          calculationDB.storeCalculationValues(conn, measurement.getId(), calculatedValues);
+        } catch (CalculatorException e) {
+          CalculationRecord record = CalculationRecordFactory.makeCalculationRecord(dataSet.getId(), measurement.getId());
+          record.loadData(conn);
+          record.addMessage(new MissingValueMessage(record.getLineNumber(), Message.NO_COLUMN_INDEX, e.getMessage(), Flag.FATAL));
+          CalculationDBFactory.getCalculationDB().storeQC(conn, record);
+        }
       }
 
       // If the thread was interrupted, undo everything
