@@ -110,6 +110,7 @@ public class DataReductionJob extends Job {
           record.loadData(conn);
           record.addMessage(new MissingValueMessage(record.getLineNumber(), Message.NO_COLUMN_INDEX, e.getMessage(), Flag.FATAL));
           CalculationDBFactory.getCalculationDB().storeQC(conn, record);
+          calculationDB.storeCalculationValues(conn, measurement.getId(), record.generateNullCalculationRecords());
         }
       }
 
