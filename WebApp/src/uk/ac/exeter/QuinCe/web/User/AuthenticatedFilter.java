@@ -35,7 +35,7 @@ import uk.ac.exeter.QuinCe.User.User;
  * @author Steve Jones
  *
  */
-@WebFilter("*")
+@WebFilter(servletNames = {"Faces Servlet", "Logout"})
 public class AuthenticatedFilter implements Filter {
 
   /**
