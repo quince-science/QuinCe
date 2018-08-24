@@ -388,4 +388,9 @@ public abstract class CalculationRecord extends DataRecord {
    * Build the set of human readable/database column aliases
    */
   protected abstract void buildColumnAliases();
+
+  /**
+   * Set all calculated values to NULL
+   */
+  public abstract Map<String, Double> generateNullCalculationRecords();
 }
