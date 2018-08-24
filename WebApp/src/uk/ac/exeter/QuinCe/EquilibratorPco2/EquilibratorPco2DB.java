@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,21 +86,15 @@ public class EquilibratorPco2DB extends CalculationDB {
     try {
       stmt = conn.prepareStatement(STORE_CALCULATION_VALUES_STATEMENT);
 
-      stmt.setDouble(1, values.get("delta_temperature"));
+      DatabaseUtils.setNullableValue(stmt, 1, values.get("delta_temperature"));
+      DatabaseUtils.setNullableValue(stmt, 2, values.get("true_moisture"));
+      DatabaseUtils.setNullableValue(stmt, 3, values.get("ph2o"));
+      DatabaseUtils.setNullableValue(stmt, 4, values.get("dried_co2"));
+      DatabaseUtils.setNullableValue(stmt, 5, values.get("calibrated_co2"));
+      DatabaseUtils.setNullableValue(stmt, 6, values.get("pco2_te_wet"));
+      DatabaseUtils.setNullableValue(stmt, 7, values.get("pco2_sst"));
+      DatabaseUtils.setNullableValue(stmt, 8, values.get("fco2"));
 
-      Double trueMoisture = values.get("true_moisture");
-      if (null == trueMoisture) {
-        stmt.setNull(2, Types.DOUBLE);
-      } else {
-        stmt.setDouble(2, trueMoisture);
-      }
-
-      stmt.setDouble(3, values.get("ph2o"));
-      stmt.setDouble(4, values.get("dried_co2"));
-      stmt.setDouble(5, values.get("calibrated_co2"));
-      stmt.setDouble(6, values.get("pco2_te_wet"));
-      stmt.setDouble(7, values.get("pco2_sst"));
-      stmt.setDouble(8, values.get("fco2"));
       stmt.setLong(9, measurementId);
 
       stmt.execute();
@@ -132,14 +125,14 @@ public class EquilibratorPco2DB extends CalculationDB {
         throw new RecordNotFoundException("Calculation data record not found", TABLE_NAME, record.getLineNumber());
       } else {
 
-        values.put("delta_temperature", dbRecord.getDouble(1));
-        values.put("true_moisture", dbRecord.getDouble(2));
-        values.put("ph2o", dbRecord.getDouble(3));
-        values.put("dried_co2", dbRecord.getDouble(4));
-        values.put("calibrated_co2", dbRecord.getDouble(5));
-        values.put("pco2_te_wet", dbRecord.getDouble(6));
-        values.put("pco2_sst", dbRecord.getDouble(7));
-        values.put("fco2", dbRecord.getDouble(8));
+        values.put("delta_temperature", DatabaseUtils.getNullableDouble(dbRecord, 1));
+        values.put("true_moisture", DatabaseUtils.getNullableDouble(dbRecord, 2));
+        values.put("ph2o", DatabaseUtils.getNullableDouble(dbRecord, 3));
+        values.put("dried_co2", DatabaseUtils.getNullableDouble(dbRecord, 4));
+        values.put("calibrated_co2", DatabaseUtils.getNullableDouble(dbRecord, 5));
+        values.put("pco2_te_wet", DatabaseUtils.getNullableDouble(dbRecord, 6));
+        values.put("pco2_sst", DatabaseUtils.getNullableDouble(dbRecord, 7));
+        values.put("fco2", DatabaseUtils.getNullableDouble(dbRecord, 8));
 
         for (int i = 1; i < record.getData().size(); i++) {
           DataColumn column = record.getData().get(i);

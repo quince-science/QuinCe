@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -309,6 +310,39 @@ public class DatabaseUtils {
     String result = null;
     if (null != fullName) {
       result = fullName.replaceAll(" ", "_").replaceAll("[\\(\\)]", "").toLowerCase();
+    }
+
+    return result;
+  }
+
+  /**
+   * Set a column value in a statement, handling null values as required
+   * @param stmt The statement
+   * @param column The column index
+   * @param value The value
+   * @throws SQLException If the value cannot be set
+   */
+  public static void setNullableValue(PreparedStatement stmt, int column, Double value) throws SQLException {
+    if (null == value) {
+      stmt.setNull(column, Types.DOUBLE);
+    } else {
+      stmt.setDouble(column, value);
+    }
+  }
+
+  /**
+   * Get a double value from a recordset, handling null values as null
+   * @param rs The recordset
+   * @param column The column index
+   * @return The column value
+   * @throws SQLException If the value cannot be retrieved
+   */
+  public static Double getNullableDouble(ResultSet rs, int column) throws SQLException {
+    Double result = null;
+
+    double value = rs.getDouble(column);
+    if (!rs.wasNull()) {
+      result = value;
     }
 
     return result;

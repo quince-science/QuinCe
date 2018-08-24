@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.EquilibratorPco2;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
@@ -66,5 +67,22 @@ public class EquilibratorPco2CalculationRecord extends CalculationRecord {
     columnAliases.put("pCO2 TE Wet", "pCO2 TE Wet");
     columnAliases.put("fCO2 TE", "fCO2 TE");
     columnAliases.put("fCO2", "fCO2");
+  }
+
+  @Override
+  public Map<String, Double> generateNullCalculationRecords() {
+
+    Map<String, Double> nullValues = new HashMap<String, Double>();
+
+    nullValues.put("delta_temperature", null);
+    nullValues.put("true_moisture", null);
+    nullValues.put("ph2o", null);
+    nullValues.put("dried_co2", null);
+    nullValues.put("calibrated_co2", null);
+    nullValues.put("pco2_te_wet", null);
+    nullValues.put("pco2_sst", null);
+    nullValues.put("fco2", null);
+
+    return nullValues;
   }
 }
