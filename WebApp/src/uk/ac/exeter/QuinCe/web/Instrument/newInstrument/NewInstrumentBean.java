@@ -1669,7 +1669,7 @@ public class NewInstrumentBean extends FileUploadBean {
       sensorAssignments.put(SensorType.getRunTypeSensorType(), hashSet);
       Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles,
         sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow, averagingMode,
-        platformCode);
+        platformCode, false);
       InstrumentDB.storeInstrument(getDataSource(), instrument);
       setCurrentInstrumentId(instrument.getDatabaseId());
 
