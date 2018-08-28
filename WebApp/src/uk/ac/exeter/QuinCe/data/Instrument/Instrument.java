@@ -66,6 +66,16 @@ public class Instrument {
   private String platformCode = null;
 
   /**
+   * Indicates whether or not this instrument supplies
+   * near-real-time data
+   *
+   * At the time of writing, the NRT flag can only be
+   * set manually on the database after the instrument
+   * is created. All calls within QuinCe set this to false.
+   */
+  private boolean nrt = false;
+
+  /**
    * Constructor for a complete instrument that's already in the database
    * @param databaseId The instrument's database ID
    * @param ownerId The instrument owner's database ID
@@ -77,8 +87,12 @@ public class Instrument {
    * @param minimumWaterFlow The minimum water flow
    * @param averagingMode The averaging mode
    * @param platformCode The platform code
+   * @param nrt Near real time flag
    */
-  public Instrument(long databaseId, long ownerId, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, int preFlushingTime, int postFlushingTime, int minimumWaterFlow, int averagingMode, String platformCode) {
+  public Instrument(long databaseId, long ownerId, String name,
+      InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments,
+      int preFlushingTime, int postFlushingTime, int minimumWaterFlow,
+      int averagingMode, String platformCode, boolean nrt) {
     this.databaseID = databaseId;
     this.ownerId = ownerId;
     this.name = name;
@@ -89,6 +103,7 @@ public class Instrument {
     this.minimumWaterFlow = minimumWaterFlow;
     this.averagingMode = averagingMode;
     this.setPlatformCode(platformCode);
+    this.nrt = nrt;
 
     //TODO Validate averaging mode
   }
@@ -105,7 +120,11 @@ public class Instrument {
    * @param averagingMode The averaging mode
    * @param platformCode The platform code
    */
-  public Instrument(User owner, String name, InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments, int preFlushingTime, int postFlushingTime, int minimumWaterFlow, int averagingMode, String platformCode) {
+  public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
+      SensorAssignments sensorAssignments, int preFlushingTime,
+      int postFlushingTime, int minimumWaterFlow, int averagingMode,
+      String platformCode, boolean nrt) {
+
     this.ownerId = owner.getDatabaseID();
     this.name = name;
     this.fileDefinitions = fileDefinitions;
@@ -115,6 +134,7 @@ public class Instrument {
     this.minimumWaterFlow = minimumWaterFlow;
     this.averagingMode = averagingMode;
     this.platformCode = platformCode;
+    this.nrt = nrt;
 
     //TODO Validate averaging mode
   }
@@ -245,5 +265,22 @@ public class Instrument {
    */
   public void setPlatformCode(String platformCode) {
     this.platformCode = platformCode;
+  }
+
+  /**
+   * Determine whether or not this instrument provides
+   * near-real-time data
+   * @return {@code true} if NRT data is provided; {@code false} if it is not
+   */
+  public boolean getNrt() {
+    return nrt;
+  }
+
+  /**
+   * Set the NRT flag
+   * @param nrt NRT flag
+   */
+  public void setNrt(boolean nrt) {
+    this.nrt = nrt;
   }
 }

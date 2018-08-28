@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.api.nrt.NrtInstrument;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
@@ -138,7 +139,8 @@ public class InstrumentDB {
    */
   private static final String GET_INSTRUMENT_QUERY = "SELECT "
       + "name, owner, " // 2
-      + "pre_flushing_time, post_flushing_time, minimum_water_flow, averaging_mode, platform_code " // 7
+      + "pre_flushing_time, post_flushing_time, minimum_water_flow, averaging_mode, " // 6
+      + "platform_code, nrt " // 7
       + "FROM instrument WHERE id = ?";
 
   /**
@@ -168,6 +170,16 @@ public class InstrumentDB {
   private static final String GET_CALIBRATABLE_SENSORS_QUERY = "SELECT CONCAT(f.description, ': ', c.sensor_name) AS sensor "
       + "FROM file_definition AS f INNER JOIN file_column AS c ON c.file_definition_id = f.id "
       + "WHERE f.instrument_id = ? AND c.post_calibrated = true ORDER BY sensor";
+
+  /**
+   * Query for retrieving the list of all instruments that provide NRT data
+   */
+  private static final String GET_NRT_INSTRUMENTS_QUERY = "SELECT "
+      + "i.id, i.name, CONCAT(u.surname, \", \", u.firstname) AS name "
+      + "FROM instrument AS i "
+      + "INNER JOIN user AS u ON i.owner = u.id "
+      + "WHERE i.nrt = 1 "
+      + "ORDER BY name ASC, i.name ASC";
 
   /**
    * Store a new instrument in the database
@@ -312,7 +324,8 @@ public class InstrumentDB {
     stmt.setInt(4, instrument.getPostFlushingTime()); // post_flushing_time
     stmt.setInt(5, instrument.getMinimumWaterFlow()); // minimum_water_flow
     stmt.setInt(6, instrument.getAveragingMode()); // averaging_mode
-    stmt.setString(7, instrument.getPlatformCode()); // averaging_mode
+    stmt.setString(7, instrument.getPlatformCode()); // platform_code
+    stmt.setBoolean(8, instrument.getNrt()); // nrt
 
     return stmt;
   }
@@ -498,7 +511,7 @@ public class InstrumentDB {
   }
 
   /**
-   * Get the list of instruments for a single user.
+   * Get the list of all instruments in the system
    *
    * See {@link #getInstrumentList(DataSource, User)}
    *
@@ -685,6 +698,7 @@ public class InstrumentDB {
       int minimumWaterFlow;
       int averagingMode;
       String platformCode;
+      boolean nrt;
       InstrumentFileSet files;
       SensorAssignments sensorAssignments;
 
@@ -708,6 +722,7 @@ public class InstrumentDB {
         minimumWaterFlow = instrumentRecord.getInt(5);
         averagingMode = instrumentRecord.getInt(6);
         platformCode = instrumentRecord.getString(7);
+        nrt = instrumentRecord.getBoolean(8);
 
 
         // Now get the file definitions
@@ -716,7 +731,7 @@ public class InstrumentDB {
         // Now the sensor assignments
         sensorAssignments = getSensorAssignments(conn, files, sensorConfiguration, runTypeConfiguration);
 
-        instrument = new Instrument(instrumentId, owner, name, files, sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow, averagingMode, platformCode);
+        instrument = new Instrument(instrumentId, owner, name, files, sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow, averagingMode, platformCode, nrt);
       }
 
     } catch (SQLException e) {
@@ -1143,5 +1158,48 @@ public class InstrumentDB {
       DatabaseUtils.closeStatements(stmts);
       DatabaseUtils.closeConnection(conn);
     }
+  }
+
+  /**
+   * Get the list of all instruments that provide NRT data
+   * @param dataSource A data source
+   * @return The NRT instruments
+   * @throws SQLException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   */
+  public static List<NrtInstrument> getNrtInstruments(DataSource dataSource) throws DatabaseException, MissingParamException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+
+    List<NrtInstrument> result = new ArrayList<NrtInstrument>();
+
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      conn = dataSource.getConnection();
+      stmt = conn.prepareStatement(GET_NRT_INSTRUMENTS_QUERY);
+      records = stmt.executeQuery();
+
+      while(records.next()) {
+        long id = records.getLong(1);
+        String instrument = records.getString(2);
+        String owner = records.getString(3);
+
+        result.add(new NrtInstrument(id, instrument, owner));
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving NRT instruments", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
+    }
+
+
+    return result;
+
   }
 }
