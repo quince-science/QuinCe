@@ -1519,7 +1519,7 @@ public class NewInstrumentBean extends FileUploadBean {
     JSONArray json = new JSONArray();
 
     for (int i = 0; i < instrumentFiles.size(); i++) {
-      FileDefinition file = instrumentFiles.get(0);
+      FileDefinition file = instrumentFiles.get(i);
       if (file.getRunTypeColumn() != -1) {
         RunTypeAssignments assignments = file.getRunTypes();
 
