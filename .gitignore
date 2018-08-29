@@ -8,6 +8,9 @@
 .metadata
 /quince.setup*
 !/quince.setup.default
+**/*.sqlite
+**/__pycache__
+.pydevproject
 
 # Ignore build-files from gradle. Make sure gradle-wrapper.jar is not ignored
 /.gradle/
