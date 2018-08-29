@@ -6,6 +6,7 @@
 # quince.setup file to your setup.
 #
 ################################################
+%quince_url%=https://quince.bcdc.no
 %quince_root_folder%=/home/centos/QuinCe
 %filestore_folder%=/home/centos/FILESTORE
 %db_username%=quince_dev
