@@ -1,7 +1,7 @@
 [QuinCe]
-url='http://localhost:8080/QuinCe'
+url='%quince_url%'
 user='api_user@bcdc.no'
 password='iamanapiuser'
 
 [Database]
-location="nrt.sqlite"
+location='nrt.sqlite'
