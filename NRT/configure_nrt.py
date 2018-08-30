@@ -18,12 +18,12 @@ def make_instrument_table(instruments, ids):
   instrument_index = 0
   id_index = 0
 
-  while (id_index < len(ids)):
+  while id_index < len(ids):
     current_id = ids[id_index]
-    while (instruments[instrument_index]["id"] < current_id):
+    while instruments[instrument_index]["id"] < current_id:
       instrument_index = instrument_index + 1
 
-    if (instruments[instrument_index]["id"] == current_id):
+    if instruments[instrument_index]["id"] == current_id:
       instrument = instruments[instrument_index]
       table_data.append([instrument["id"],
                          instrument["name"],
@@ -54,11 +54,11 @@ try:
   nrt_ids = get_ids(nrt_instruments)
 
   orphaned_ids = list(set(nrt_ids) - set(quince_ids))
-  if (len(orphaned_ids) > 0):
+  if len(orphaned_ids) > 0:
     print("The following instruments are no longer in QuinCe and will be removed:\n")
     make_instrument_table(nrt_instruments, orphaned_ids)
     go = input('Enter Y to proceed, or anything else to quit: ')
-    if (not go.lower() == "y"):
+    if not go.lower() == "y":
       quit()
     else:
       nrtdb.delete_instrument(dbconn, orphaned_ids)
