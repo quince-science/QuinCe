@@ -63,6 +63,8 @@ try:
     else:
       nrtdb.delete_instrument(dbconn, orphaned_ids)
 
+except urllib.error.URLError as e:
+  print(e)
 except urllib.error.HTTPError as e:
   print("%s %s" % (e.code, e.reason))
 
