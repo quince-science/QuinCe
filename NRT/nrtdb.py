@@ -40,12 +40,20 @@ def get_instruments(conn):
   return result
 
 # Delete an instrument
-def delete_instrument(conn, ids):
+def delete_instruments(conn, ids):
   c = conn.cursor()
   stmt = "DELETE FROM instrument WHERE id IN (%s)" % ",".join(map(str, ids))
   c.execute(stmt)
   conn.commit()
 
+# Add instruments with empty configuration
+def add_instruments(conn, instruments, ids):
+  c = conn.cursor()
+  for instrument in instruments:
+    if instrument["id"] in ids:
+      c.execute("INSERT INTO instrument(id, name, owner) VALUES (%d, '%s', '%s')"
+        % (instrument["id"], instrument["name"], instrument["owner"]))
+  conn.commit()
 
 # See if the database has been
 # initialised
