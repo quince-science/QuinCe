@@ -53,6 +53,7 @@ try:
   quince_ids = get_ids(quince_instruments)
   nrt_ids = get_ids(nrt_instruments)
 
+  # Remove old instruments from NRT
   orphaned_ids = list(set(nrt_ids) - set(quince_ids))
   if len(orphaned_ids) > 0:
     print("The following instruments are no longer in QuinCe and will be removed:\n")
@@ -61,7 +62,19 @@ try:
     if not go.lower() == "y":
       quit()
     else:
-      nrtdb.delete_instrument(dbconn, orphaned_ids)
+      nrtdb.delete_instruments(dbconn, orphaned_ids)
+
+  # Add new instruments from QuinCe
+  new_ids = list(set(quince_ids) - set(nrt_ids))
+  if len(new_ids) > 0:
+    print("The following instruments are new in QuinCe and will be added:\n")
+    make_instrument_table(quince_instruments, new_ids)
+    go = input('Enter Y to proceed, or anything else to quit: ')
+    if not go.lower() == "y":
+      quit()
+    else:
+      nrtdb.add_instruments(dbconn, quince_instruments, new_ids)
+
 
 except urllib.error.URLError as e:
   print(e)
