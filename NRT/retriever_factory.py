@@ -19,11 +19,11 @@ def ask_retriever_type():
   for clazz in DataRetriever.__subclasses__():
     entries.append(clazz.get_type())
 
-  
+
   selected = -1
   while selected == -1:
     print("Select source for NRT files:")
-    
+
     for i in range(0, len(entries)):
       print("  %d. %s" % (i + 1, entries[i]))
 
