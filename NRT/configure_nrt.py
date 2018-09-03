@@ -88,9 +88,11 @@ try:
       quit()
     else:
       retriever_type = retriever_factory.ask_retriever_type()
-      print(retriever_type)
+      retriever = retriever_factory.get_new_instance(retriever_type)
 
-
+      print()
+      retriever.enter_configuration()
+      nrtdb.store_configuration(dbconn, instrument["id"], retriever)
 
 
 except urllib.error.URLError as e:
