@@ -35,4 +35,18 @@ def ask_retriever_type():
     except ValueError:
       pass
 
-  return selected
+  return entries[selected - 1]
+
+# Get an empty Retriever instance of the specified type
+def get_new_instance(retriever_type):
+  result = None
+
+  for clazz in DataRetriever.__subclasses__():
+    if clazz.get_type() == retriever_type:
+      result = clazz()
+      break
+
+  if result is None:
+    raise ValueError("Cannot find retriever of type %s" % (retriever_type, ))
+
+  return result

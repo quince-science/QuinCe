@@ -51,8 +51,8 @@ def add_instruments(conn, instruments, ids):
   c = conn.cursor()
   for instrument in instruments:
     if instrument["id"] in ids:
-      c.execute("INSERT INTO instrument(id, name, owner, type, config) VALUES (%d, '%s', '%s', NULL, NULL)"
-        % (instrument["id"], instrument["name"], instrument["owner"]))
+      c.execute("INSERT INTO instrument(id, name, owner, type, config) VALUES (?, ?, ?)",
+          (instrument["id"], instrument["name"], instrument["owner"]))
   conn.commit()
 
 # List all instruments with no configuration
@@ -69,6 +69,13 @@ def get_unconfigured_instruments(conn):
     result.append(record)
 
   return result
+
+# Store the configuration for an instrument
+def store_configuration(conn, instrument_id, retriever):
+  c = conn.cursor()
+  c.execute("UPDATE instrument SET type=?, config=? WHERE id = ?",
+    (retriever.get_type(), retriever.get_configuration_json(), instrument_id))
+  conn.commit()
 
 # See if the database has been
 # initialised
