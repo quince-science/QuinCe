@@ -42,8 +42,9 @@ def get_instruments(conn):
 # Delete an instrument
 def delete_instruments(conn, ids):
   c = conn.cursor()
-  stmt = "DELETE FROM instrument WHERE id IN (%s)" % ",".join(map(str, ids))
-  c.execute(stmt)
+  for one_id in ids:
+    c.execute("DELETE FROM instrument WHERE id=?", (one_id, ))
+
   conn.commit()
 
 # Add instruments with empty configuration
@@ -51,7 +52,7 @@ def add_instruments(conn, instruments, ids):
   c = conn.cursor()
   for instrument in instruments:
     if instrument["id"] in ids:
-      c.execute("INSERT INTO instrument(id, name, owner, type, config) VALUES (?, ?, ?)",
+      c.execute("INSERT INTO instrument(id, name, owner, type, config) VALUES (?, ?, ?, NULL, NULL)",
           (instrument["id"], instrument["name"], instrument["owner"]))
   conn.commit()
 
