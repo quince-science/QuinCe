@@ -51,9 +51,24 @@ def add_instruments(conn, instruments, ids):
   c = conn.cursor()
   for instrument in instruments:
     if instrument["id"] in ids:
-      c.execute("INSERT INTO instrument(id, name, owner) VALUES (%d, '%s', '%s')"
+      c.execute("INSERT INTO instrument(id, name, owner, type, config) VALUES (%d, '%s', '%s', NULL, NULL)"
         % (instrument["id"], instrument["name"], instrument["owner"]))
   conn.commit()
+
+# List all instruments with no configuration
+def get_unconfigured_instruments(conn):
+  result = []
+
+  c = conn.cursor()
+  c.execute("SELECT id, name, owner FROM instrument WHERE type IS NULL")
+  for row in c:
+    record = {}
+    record["id"] = row[0]
+    record["name"] = row[1]
+    record["owner"] = row[2]
+    result.append(record)
+
+  return result
 
 # See if the database has been
 # initialised
@@ -71,7 +86,9 @@ def __init_db(conn):
   instrument_sql = ("CREATE TABLE instrument("
                    "id INTEGER, "
                    "name TEXT, "
-                   "owner TEXT)"
+                   "owner TEXT, "
+                   "type TEXT, "
+                   "config TEXT)"
                    )
 
   c = conn.cursor()
