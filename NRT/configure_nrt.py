@@ -2,7 +2,10 @@ import toml
 import urllib.error
 import base64
 from tabulate import tabulate
-import quince, nrtdb #Local modules
+
+# Local modules
+import quince, nrtdb
+import retriever_factory
 
 # Extract the list of IDs from a set of instruments
 def get_ids(instruments):
@@ -58,7 +61,7 @@ try:
   if len(orphaned_ids) > 0:
     print("The following instruments are no longer in QuinCe and will be removed:\n")
     make_instrument_table(nrt_instruments, orphaned_ids)
-    go = input('Enter Y to proceed, or anything else to quit: ')
+    go = input("Enter Y to proceed, or anything else to quit: ")
     if not go.lower() == "y":
       quit()
     else:
@@ -69,11 +72,25 @@ try:
   if len(new_ids) > 0:
     print("The following instruments are new in QuinCe and will be added:\n")
     make_instrument_table(quince_instruments, new_ids)
-    go = input('Enter Y to proceed, or anything else to quit: ')
+    go = input("Enter Y to proceed, or anything else to quit: ")
     if not go.lower() == "y":
       quit()
     else:
       nrtdb.add_instruments(dbconn, quince_instruments, new_ids)
+
+
+  unconfigured_instruments = nrtdb.get_unconfigured_instruments(dbconn)
+  for instrument in unconfigured_instruments:
+    print("The following instrument has not been configured:")
+    print("  ID: %d, Name: %s, Owner: %s" % (instrument["id"], instrument["name"], instrument["owner"]))
+    go = input("\nEnter Y to configure it now, or anything else to quit: ")
+    if not go.lower() == "y":
+      quit()
+    else:
+      retriever_type = retriever_factory.ask_retriever_type()
+      print(retriever_type)
+
+
 
 
 except urllib.error.URLError as e:
