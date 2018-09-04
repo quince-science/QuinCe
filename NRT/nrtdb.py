@@ -52,7 +52,7 @@ def add_instruments(conn, instruments, ids):
   c = conn.cursor()
   for instrument in instruments:
     if instrument["id"] in ids:
-      c.execute("INSERT INTO instrument(id, name, owner, type, config) VALUES (?, ?, ?, NULL, NULL)",
+      c.execute("INSERT INTO instrument(id, name, owner, type, config) VALUES (?, ?, ?, 'None', NULL)",
           (instrument["id"], instrument["name"], instrument["owner"]))
   conn.commit()
 

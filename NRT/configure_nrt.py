@@ -78,22 +78,22 @@ try:
     else:
       nrtdb.add_instruments(dbconn, quince_instruments, new_ids)
 
-
-  unconfigured_instruments = nrtdb.get_unconfigured_instruments(dbconn)
-  for instrument in unconfigured_instruments:
-    print("The following instrument has not been configured:")
-    print("  ID: %d, Name: %s, Owner: %s" % (instrument["id"], instrument["name"], instrument["owner"]))
-    go = input("\nEnter Y to configure it now, or anything else to quit: ")
-    if not go.lower() == "y":
-      quit()
-    else:
-      retriever_type = retriever_factory.ask_retriever_type()
-      retriever = retriever_factory.get_new_instance(retriever_type)
-
-      print()
-      retriever.enter_configuration()
-      nrtdb.store_configuration(dbconn, instrument["id"], retriever)
-
+#  unconfigured_instruments = nrtdb.get_unconfigured_instruments(dbconn)
+#  for instrument in unconfigured_instruments:
+#    print("The following instrument has not been configured:")
+#    print("  ID: %d, Name: %s, Owner: %s" % (instrument["id"], instrument["name"], instrument["owner"]))
+#    go = input("\nEnter Y to configure it now, or anything else to quit: ")
+#    if not go.lower() == "y":
+#      quit()
+#    else:
+#      retriever_type = retriever_factory.ask_retriever_type()
+#      if retriever_type is None:
+#        nrtdb.store_configuration(dbconn, instrument["id"], None)
+#      else:
+#        retriever = retriever_factory.get_new_instance(retriever_type)
+#        print()
+#        retriever.enter_configuration()
+#        nrtdb.store_configuration(dbconn, instrument["id"], retriever)
 
 except urllib.error.URLError as e:
   print(e)
