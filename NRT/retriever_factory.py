@@ -23,6 +23,7 @@ def ask_retriever_type():
   selected = -1
   while selected == -1:
     print("Select source for NRT files:")
+    print("  0. None")
 
     for i in range(0, len(entries)):
       print("  %d. %s" % (i + 1, entries[i]))
@@ -30,12 +31,16 @@ def ask_retriever_type():
     try:
       selection = input("Selection: ")
       selection = int(selection)
-      if selection > 0 and selection <= len(entries):
+      if selection > -1 and selection <= len(entries):
         selected = selection
     except ValueError:
       pass
 
-  return entries[selected - 1]
+  result = None
+  if selected > 0:
+    result = entries[selected - 1]
+
+  return result
 
 # Get an empty Retriever instance of the specified type
 def get_new_instance(retriever_type):
