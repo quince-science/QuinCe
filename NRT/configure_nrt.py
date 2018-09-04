@@ -1,4 +1,4 @@
-import toml
+import toml, json
 import urllib.error
 import base64
 from tabulate import tabulate
@@ -14,25 +14,30 @@ def get_ids(instruments):
     result.append(instrument["id"])
   return result
 
-def make_instrument_table(instruments, ids):
+def make_instrument_table(instruments, ids, showType):
 
-  table_data = [["ID", "Name", "Owner"]]
+  table_data = []
 
-  instrument_index = 0
-  id_index = 0
+  if showType:
+    table_data = [["ID", "Name", "Owner", "Type"]]
+  else:
+    table_data = [["ID", "Name", "Owner"]]
 
-  while id_index < len(ids):
-    current_id = ids[id_index]
-    while instruments[instrument_index]["id"] < current_id:
-      instrument_index = instrument_index + 1
+  for instrument in instruments:
+    draw = True
+    if ids is not None and instrument["id"] not in ids:
+      draw = False
 
-    if instruments[instrument_index]["id"] == current_id:
-      instrument = instruments[instrument_index]
-      table_data.append([instrument["id"],
-                         instrument["name"],
-                         instrument["owner"]])
-
-    id_index = id_index + 1
+    if draw:
+      if showType:
+        table_data.append([instrument["id"],
+                           instrument["name"],
+                           instrument["owner"],
+                           instrument["type"]])
+      else:
+        table_data.append([instrument["id"],
+                           instrument["name"],
+                           instrument["owner"]])
 
   print(tabulate(table_data, headers="firstrow"))
 
@@ -60,7 +65,7 @@ try:
   orphaned_ids = list(set(nrt_ids) - set(quince_ids))
   if len(orphaned_ids) > 0:
     print("The following instruments are no longer in QuinCe and will be removed:\n")
-    make_instrument_table(nrt_instruments, orphaned_ids)
+    make_instrument_table(nrt_instruments, orphaned_ids, False)
     go = input("Enter Y to proceed, or anything else to quit: ")
     if not go.lower() == "y":
       quit()
@@ -71,29 +76,61 @@ try:
   new_ids = list(set(quince_ids) - set(nrt_ids))
   if len(new_ids) > 0:
     print("The following instruments are new in QuinCe and will be added:\n")
-    make_instrument_table(quince_instruments, new_ids)
+    make_instrument_table(quince_instruments, new_ids, False)
     go = input("Enter Y to proceed, or anything else to quit: ")
     if not go.lower() == "y":
       quit()
     else:
       nrtdb.add_instruments(dbconn, quince_instruments, new_ids)
 
-#  unconfigured_instruments = nrtdb.get_unconfigured_instruments(dbconn)
-#  for instrument in unconfigured_instruments:
-#    print("The following instrument has not been configured:")
-#    print("  ID: %d, Name: %s, Owner: %s" % (instrument["id"], instrument["name"], instrument["owner"]))
-#    go = input("\nEnter Y to configure it now, or anything else to quit: ")
-#    if not go.lower() == "y":
-#      quit()
-#    else:
-#      retriever_type = retriever_factory.ask_retriever_type()
-#      if retriever_type is None:
-#        nrtdb.store_configuration(dbconn, instrument["id"], None)
-#      else:
-#        retriever = retriever_factory.get_new_instance(retriever_type)
-#        print()
-#        retriever.enter_configuration()
-#        nrtdb.store_configuration(dbconn, instrument["id"], retriever)
+  # Main configuration loop
+  quit = False
+  while not quit:
+    print()
+
+    instruments = nrtdb.get_instruments(dbconn)
+    make_instrument_table(instruments, None, True)
+
+    command = input("\nEnter instrument ID to configure, or Q to quit: ").lower()
+
+    if command == "q":
+      quit = True
+    else:
+      instrument_id = None
+      try:
+        instrument_id = int(command)
+      except:
+        pass
+
+      if instrument_id is not None:
+        instrument = nrtdb.get_instrument(dbconn, instrument_id)
+        if instrument is not None:
+          retriever = None
+
+          print()
+          print("Current configuration for instrument %d (%s):" % (instrument["id"], instrument["name"]))
+          print()
+
+          print("TYPE: %s" % (instrument["type"]))
+          if instrument["type"] != "None":
+            retriever = retriever_factory.get_instance(instrument["type"], json.loads(instrument["config"]))
+            retriever.print_configuration()
+
+          print()
+
+          change = input("Change configuration (y/n)? ").lower()
+
+          if change == "y":
+            new_type = retriever_factory.ask_retriever_type()
+            if new_type is None:
+              nrtdb.store_configuration(dbconn, instrument["id"], None)
+            else:
+              if new_type != instrument["type"]:
+                retriever = retriever_factory.get_new_instance(new_type)
+
+              print()
+              retriever.enter_configuration()
+              nrtdb.store_configuration(dbconn, instrument["id"], retriever)
 
 except urllib.error.URLError as e:
   print(e)

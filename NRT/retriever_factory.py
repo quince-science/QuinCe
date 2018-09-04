@@ -55,3 +55,16 @@ def get_new_instance(retriever_type):
     raise ValueError("Cannot find retriever of type %s" % (retriever_type, ))
 
   return result
+
+def get_instance(retriever_type, configuration):
+  result = None
+
+  for clazz in DataRetriever.__subclasses__():
+    if clazz.get_type() == retriever_type:
+      result = clazz(configuration)
+      break
+
+  if result is None:
+    raise ValueError("Cannot find retriever of type %s" % (retriever_type, ))
+
+  return result
