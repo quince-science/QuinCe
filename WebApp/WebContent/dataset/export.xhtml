@@ -33,6 +33,9 @@
               </tr>
             </c:forEach>
           </table>
+
+          <p:selectBooleanCheckbox id="includeRaw" value="#{exportBean.includeRawFiles}"/>
+          <p:outputLabel for="@previous" value=" Include raw data files in export?"/>
         </p:outputPanel>
       </div>
 
