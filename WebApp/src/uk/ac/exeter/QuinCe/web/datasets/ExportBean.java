@@ -46,6 +46,11 @@ public class ExportBean extends BaseManagedBean {
   private int chosenExportOption = -1;
 
   /**
+   * Indicates whether raw files should be included in the export
+   */
+  private boolean includeRawFiles = false;
+
+  /**
    * Formatter for numeric values
    * All values are displayed to 3 decimal places.
    */
@@ -238,8 +243,14 @@ public class ExportBean extends BaseManagedBean {
 
       ec.responseReset();
       ec.setResponseContentType("text/csv");
-      ec.setResponseContentLength(fileContent.length); // Set it with the file size. This header is optional. It will work if it's omitted, but the download progress will be unknown.
-      ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + getExportFilename(exportOption) + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
+
+      // Set it with the file size. This header is optional. It will work if it's omitted,
+      // but the download progress will be unknown.
+      ec.setResponseContentLength(fileContent.length);
+
+      // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE,
+      // it will use current request URL as file name instead.
+      ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + getExportFilename(exportOption) + "\"");
 
       OutputStream outputStream = ec.getResponseOutputStream();
       outputStream.write(fileContent);
@@ -268,5 +279,21 @@ public class ExportBean extends BaseManagedBean {
     }
 
     return fileName.toString();
+  }
+
+  /**
+   * Determine whether raw files should be included in the export
+   * @return {@code true} if raw files should be included; {@code false} if not
+   */
+  public boolean getIncludeRawFiles() {
+    return includeRawFiles;
+  }
+
+  /**
+   * Specify whether raw files should be included in the export
+   * @param includeRawFiles The raw files flag
+   */
+  public void setIncludeRawFiles(boolean includeRawFiles) {
+    this.includeRawFiles = includeRawFiles;
   }
 }
