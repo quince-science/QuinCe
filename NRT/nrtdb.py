@@ -22,20 +22,38 @@ def get_db_conn(location):
 def close(conn):
   conn.close()
 
-
-# Get the stored instrument IDs
+# Get the stored instruments
 def get_instruments(conn):
   result = []
 
   c = conn.cursor();
-  c.execute("SELECT id, name, owner FROM instrument ORDER BY id")
+  c.execute("SELECT id, name, owner, type FROM instrument ORDER BY id")
   for row in c:
     record = {}
     record["id"] = row[0]
     record["name"] = row[1]
     record["owner"] = row[2]
+    record["type"] = row[3]
 
     result.append(record)
+
+  return result
+
+# Get the stored instruments
+def get_instrument(conn, instrument_id):
+  result = None
+
+  c = conn.cursor();
+  c.execute("SELECT id, name, owner, type, config FROM instrument WHERE id = ?", (instrument_id, ))
+  for row in c:
+    record = {}
+    record["id"] = row[0]
+    record["name"] = row[1]
+    record["owner"] = row[2]
+    record["type"] = row[3]
+    record["config"] = row[4]
+
+    result = record
 
   return result
 
@@ -74,8 +92,12 @@ def get_unconfigured_instruments(conn):
 # Store the configuration for an instrument
 def store_configuration(conn, instrument_id, retriever):
   c = conn.cursor()
-  c.execute("UPDATE instrument SET type=?, config=? WHERE id = ?",
-    (retriever.get_type(), retriever.get_configuration_json(), instrument_id))
+  if retriever is None:
+    c.execute("UPDATE instrument SET type='None', config=NULL WHERE id = ?",
+      (instrument_id, ))
+  else:
+    c.execute("UPDATE instrument SET type=?, config=? WHERE id = ?",
+      (retriever.get_type(), retriever.get_configuration_json(), instrument_id))
   conn.commit()
 
 # See if the database has been

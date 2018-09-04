@@ -18,7 +18,6 @@ class DataRetriever(metaclass=ABCMeta):
   def print_configuration(self):
     table_data = []
 
-    print("Current configuration")
     for key, value in self.configuration.items():
       if value is None:
         value = "NOT SET"
