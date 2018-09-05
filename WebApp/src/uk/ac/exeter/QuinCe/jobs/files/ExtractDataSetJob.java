@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -99,8 +100,13 @@ public class ExtractDataSetJob extends Job {
 
       DataSetRawData rawData = DataSetRawDataFactory.getDataSetRawData(dataSource, dataSet, instrument);
 
+      LocalDateTime realStartTime = null;
+      LocalDateTime realEndTime = null;
+
       DataSetRawDataRecord record = rawData.getNextRecord();
+      realStartTime = record.getDate();
       while (null != record) {
+        realEndTime = record.getDate();
         if (record.isMeasurement()) {
           DataSetDataDB.storeRecord(conn, record);
         } else if (record.isCalibration()) {
@@ -110,6 +116,10 @@ public class ExtractDataSetJob extends Job {
         // Read the next record
         record = rawData.getNextRecord();
       }
+
+      // Adjust the Dataset limits to the actual extracted data
+      dataSet.setStart(realStartTime);
+      dataSet.setEnd(realEndTime);
 
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
       DataSetDB.updateDataSet(conn, dataSet);
