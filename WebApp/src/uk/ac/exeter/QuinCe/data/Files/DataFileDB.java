@@ -60,6 +60,16 @@ public class DataFileDB {
     + "VALUES (?, ?, ?, ?, ?)";
 
   /**
+   * Query to get a set of data files by their ID
+   */
+  private static final String GET_FILENAME_QUERY = "SELECT "
+      + "f.id, f.file_definition_id, f.filename, f.start_date, "
+      + "f.end_date, f.record_count, i.id FROM data_file AS f "
+      + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
+      + "INNER JOIN instrument AS i ON d.instrument_id = i.id "
+      + "WHERE f.id IN " + DatabaseUtils.IN_PARAMS_TOKEN;
+
+  /**
    * Query to find all the data files owned by a given user
    * @see #getUserFiles(DataSource, User)
    */
@@ -115,6 +125,16 @@ public class DataFileDB {
       + "(start_date <= ? AND end_date > ? OR "
       + "start_date < ? AND end_date >= ?) "
       + "ORDER BY start_date ASC";
+
+  /**
+   * Query to find files that fall wholly or partially within
+   * a date range for a given instrument.
+   * NOTE: start_date <= range_end and end_date >= range_start
+   */
+  private static final String GET_FILES_WITHIN_DATES_QUERY = "SELECT "
+      + "id FROM data_file WHERE file_definition_id in "
+      + "(SELECT id FROM file_definition WHERE instrument_id = ?) AND "
+      + "start_date <= ? AND end_date >= ?";
 
   /**
    * Store a file in the database and in the file store
@@ -389,6 +409,52 @@ public class DataFileDB {
   }
 
   /**
+   * Get the {@link DataFile} objects for a set of files
+   * @param conn A datbase connection
+   * @param appConfig The application configuration
+   * @param ids The file ids
+   * @return The DataFile objects
+   * @throws MissingParamException If any of the parameters are missing
+   * @throws DatabaseException If an error occurs during the search
+   * @throws RecordNotFoundException If any files are not in the database
+   */
+  public static List<DataFile> getDataFiles(Connection conn, Properties appConfig, List<Long> ids) throws DatabaseException, MissingParamException, RecordNotFoundException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(appConfig, "appConfig");
+    MissingParam.checkMissing(ids, "ids");
+
+    List<DataFile> files = new ArrayList<DataFile>(ids.size());
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+
+      stmt = conn.prepareStatement(DatabaseUtils.makeInStatementSql(GET_FILENAME_QUERY, ids.size()));
+      for (int i = 0; i < ids.size(); i++) {
+        stmt.setLong(i + 1, ids.get(i));
+      }
+
+      records = stmt.executeQuery();
+      while (records.next()) {
+        files.add(makeDataFile(records, appConfig.getProperty("filestore"), conn));
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting files", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    if (files.size() != ids.size()) {
+      throw new RecordNotFoundException("Could not locate all files");
+    }
+
+    return files;
+  }
+
+  /**
    * Build a {@link DataFile} object from a database record
    * @param record The database record
    * @param fileStore The file store location
@@ -640,5 +706,53 @@ public class DataFileDB {
     }
 
     return files;
+  }
+
+  /**
+   * Get the list of data files for a given instrument
+   * that encompass two dates
+   * @param dataSource A data source
+   * @param instrumentId The instrument ID
+   * @param start The start date
+   * @param end The end date
+   * @return
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   */
+  public static List<Long> getFilesWithinDates(Connection conn, long instrumentId,
+      LocalDateTime start, LocalDateTime end) throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+    MissingParam.checkMissing(start, "start");
+    MissingParam.checkMissing(end, "end");
+
+    if (end.equals(start) || end.isBefore(start) ) {
+      throw new IllegalArgumentException("End date must be after start date");
+    }
+
+    List<Long> ids = new ArrayList<Long>();
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      stmt = conn.prepareStatement(GET_FILES_WITHIN_DATES_QUERY);
+      stmt.setLong(1, instrumentId);
+      stmt.setLong(2, DateTimeUtils.dateToLong(end));
+      stmt.setLong(3,  DateTimeUtils.dateToLong(start));
+
+      records = stmt.executeQuery();
+      while (records.next()) {
+        ids.add(records.getLong(1));
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting files in date range", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return ids;
   }
 }
