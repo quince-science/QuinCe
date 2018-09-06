@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
+import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,9 +8,12 @@ import java.util.Properties;
 
 import org.primefaces.json.JSONArray;
 
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.Message;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * Object to represent a data set
@@ -430,5 +434,17 @@ public class DataSet {
    */
   public void clearMessages() {
     messages.clear();
+  }
+
+  /**
+   * Get a list of the raw data files used to construct
+   * this DataSet
+   * @param dataSource A data source
+   * @return The IDs of the files
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   */
+  public List<Long> getSourceFiles(Connection conn) throws MissingParamException, DatabaseException {
+    return DataFileDB.getFilesWithinDates(conn, instrumentId, start, end);
   }
 }
