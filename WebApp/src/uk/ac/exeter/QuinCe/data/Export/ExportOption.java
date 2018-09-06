@@ -261,4 +261,29 @@ public class ExportOption {
 
     return allowed;
   }
+
+  /**
+   * Get the file extension for this export option,
+   * based on the separator used
+   * @return The file extension
+   */
+  public String getFileExtension() {
+    String result;
+
+    switch (separator) {
+    case ",": {
+      result = ".csv";
+      break;
+    }
+    case "\t": {
+      result = ".tsv";
+      break;
+    }
+    default: {
+      result = ".txt";
+    }
+    }
+
+    return result;
+  }
 }

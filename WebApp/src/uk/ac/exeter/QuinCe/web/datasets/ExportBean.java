@@ -1,17 +1,19 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.math.RoundingMode;
+import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.config.InvalidDataTypeException;
 import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
@@ -27,12 +29,16 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
+import uk.ac.exeter.QuinCe.data.Files.DataFile;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 @ManagedBean
 @SessionScoped
@@ -153,11 +159,7 @@ public class ExportBean extends BaseManagedBean {
   public void exportDataset() {
 
     if (includeRawFiles) {
-      System.out.println("I will export a ZIP file");
-      FacesContext fc = FacesContext.getCurrentInstance();
-      ExternalContext ec = fc.getExternalContext();
-      HttpServletResponse response = (HttpServletResponse) ec.getResponse();
-      response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+      exportDatasetWithRawFiles();
     } else {
       exportSingleFile();
     }
@@ -170,7 +172,7 @@ public class ExportBean extends BaseManagedBean {
     try {
       ExportOption exportOption = getExportOptions().get(chosenExportOption);
 
-      byte[] fileContent = getDatasetExport(getDataSource(), getDataset(), exportOption);
+      byte[] fileContent = getDatasetExport(exportOption);
 
       FacesContext fc = FacesContext.getCurrentInstance();
       ExternalContext ec = fc.getExternalContext();
@@ -195,7 +197,94 @@ public class ExportBean extends BaseManagedBean {
     }
   }
 
-  private byte[] getDatasetExport(DataSource dataSource, DataSet dataSet, ExportOption exportOption) throws NoSuchColumnException, InvalidDataTypeException, MissingParamException, DatabaseException, RecordNotFoundException, MessageException {
+  /**
+   * Create a ZIP file containing a dataset and its source raw data files
+   */
+  private void exportDatasetWithRawFiles() {
+
+    Connection conn = null;
+
+    try {
+      conn = getDataSource().getConnection();
+
+      ByteArrayOutputStream zipOut = new ByteArrayOutputStream();
+      ZipOutputStream zip = new ZipOutputStream(zipOut);
+
+      ExportOption exportOption;
+      exportOption = getExportOptions().get(chosenExportOption);
+      String dirRoot = dataset.getName();
+
+      // Add the main dataset file
+      String datasetPath = dirRoot + "/dataset/" + exportOption.getName() +
+          "/" + dataset.getName() + exportOption.getFileExtension();
+
+      ZipEntry datasetEntry = new ZipEntry(datasetPath);
+      zip.putNextEntry(datasetEntry);
+      zip.write(getDatasetExport(exportOption));
+      zip.closeEntry();
+
+      List<Long> rawIds = getDataset().getSourceFiles(conn);
+      List<DataFile> files = DataFileDB.getDataFiles(conn, ResourceManager.getInstance().getConfig(), rawIds);
+
+      for (DataFile file : files) {
+        String filePath = dirRoot + "/raw/" + file.getFilename();
+
+        ZipEntry rawEntry = new ZipEntry(filePath);
+        zip.putNextEntry(rawEntry);
+        zip.write(file.getBytes());
+        zip.closeEntry();
+      }
+
+
+      // Write the response
+      zip.close();
+      byte[] outBytes = zipOut.toByteArray();
+      zipOut.close();
+
+      FacesContext fc = FacesContext.getCurrentInstance();
+      ExternalContext ec = fc.getExternalContext();
+
+      ec.responseReset();
+      ec.setResponseContentType("application/zip");
+
+      // Set it with the file size. This header is optional. It will work if it's omitted,
+      // but the download progress will be unknown.
+      ec.setResponseContentLength(outBytes.length);
+
+      // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE,
+      // it will use current request URL as file name instead.
+      ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + dataset.getName() + ".zip\"");
+
+      OutputStream outputStream = ec.getResponseOutputStream();
+      outputStream.write(outBytes);
+
+      fc.responseComplete();
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+
+
+  }
+
+  /**
+   * Obtain a dataset in the specified format as a byte array ready for export or
+   * storage
+   * @param dataSource A data source
+   * @param dataSet The dataset
+   * @param exportOption The export format
+   * @return The exported dataset
+   * @throws NoSuchColumnException
+   * @throws InvalidDataTypeException
+   * @throws MissingParamException
+   * @throws DatabaseException
+   * @throws RecordNotFoundException
+   * @throws MessageException
+   */
+  private byte[] getDatasetExport(ExportOption exportOption)
+      throws NoSuchColumnException, InvalidDataTypeException, MissingParamException, DatabaseException, RecordNotFoundException, MessageException {
     // TODO This will get all sensor columns. When the sensor data storage is updated (Issue #576), this can be revised.
     List<DataSetRawDataRecord> datasetData = DataSetDataDB.getMeasurements(getDataSource(), getDataset());
 
