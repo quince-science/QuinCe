@@ -87,19 +87,30 @@ public class FileStore {
    * @throws MissingParamException If any required parameters are missing
    */
   protected static void loadFileContents(String fileStore, DataFile dataFile) throws IOException, MissingParamException {
+    dataFile.setContents(new String(getBytes(fileStore, dataFile)));
+  }
+
+  /**
+   * Get the raw bytes for a file
+   * @param fileStore The file store
+   * @param dataFile The file to be retrieved
+   * @return The file bytes
+   * @throws IOException If the file cannot be read
+   */
+  protected static byte[] getBytes(String fileStore, DataFile dataFile) throws IOException {
+
+    byte[] fileData;
     File readFile = getFileObject(fileStore, dataFile);
 
     FileInputStream inputStream = null;
     try {
       inputStream = new FileInputStream(readFile);
       int fileLength = (int) readFile.length();
-      byte[] fileData = new byte[fileLength];
+      fileData = new byte[fileLength];
       int bytesRead = inputStream.read(fileData);
       if (bytesRead < fileLength) {
         throw new IOException("Too few bytes read from file " + readFile.getAbsolutePath() + ": got " + bytesRead + ", expected " + fileLength);
       }
-
-      dataFile.setContents(new String(fileData));
     } catch (IOException e) {
       throw e;
     } finally {
@@ -107,6 +118,8 @@ public class FileStore {
         inputStream.close();
       }
     }
+
+    return fileData;
   }
 
   /**
