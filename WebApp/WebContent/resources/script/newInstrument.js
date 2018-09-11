@@ -773,7 +773,7 @@ function makeDisabledMenuItem(label) {
 function makeMenuItem(item, label, file, column) {
   var menuItem = '<li class="ui-menuitem ui-widget ui-corner-all assignmentMenuEntry">';
   menuItem += '<div class="assignmentMenuEntryText">';
-  menuItem += '<a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text" onclick="startAssign(\'' + item + '\',' + file + ',' + column + ')">' + label + '</a>';
+  menuItem += '<a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text" onclick="startAssign(event, \'' + item + '\',' + file + ',' + column + ')">' + label + '</a>';
   menuItem += '</div></li>';
 
   return menuItem;
@@ -782,7 +782,7 @@ function makeMenuItem(item, label, file, column) {
 function makeParentMenuItem(item, label, file, column, subMenu) {
   var menuItem = '<li id="' + item + '_menuItem" class="ui-menuitem ui-widget ui-corner-all assignmentMenuEntry">';
   menuItem += '<div class="assignmentMenuEntryText">';
-  menuItem += '<a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text" onclick="startAssign(\'' + item + '\',' + file + ',' + column + ')">' + label + '</a>';
+  menuItem += '<a href="#" class="ui-menuitem-link ui-corner-all ui-menuitem-text" onclick="startAssign(event, \'' + item + '\',' + file + ',' + column + ')">' + label + '</a>';
   menuItem += '</div><div>▸</div></li>';
 
   return menuItem;
@@ -905,11 +905,11 @@ function getColumnAssignment(fileIndex, column) {
   return assigned;
 }
 
-function startAssign(item, file, column) {
+function startAssign(event, item, file, column) {
   if (item == 'DATETIMESUBMENU') {
-    showDateTimeSubmenu(file, column);
+    showDateTimeSubmenu(event, file, column);
   } else if (item == 'DIAGNOSTICSUBMENU') {
-    showDiagnosticSubmenu(file, column);
+    showDiagnosticSubmenu(event, file, column);
   } else if (item.startsWith('DATETIME_')) {
     openDateTimeDialog(item, file, column);
   } else if (item == 'POS_longitude') {
@@ -1101,7 +1101,7 @@ function openHemisphereDialog(coordinate, file, column) {
   PF('hemisphereAssignmentDialog').show();
 }
 
-function showDateTimeSubmenu(file, column) {
+function showDateTimeSubmenu(event, file, column) {
   event.stopPropagation();
   hideDiagnosticMenu();
   buildDateTimeAssignmentMenu(file, column);
@@ -1109,7 +1109,7 @@ function showDateTimeSubmenu(file, column) {
   $('#dateTimeMenu').removeClass('ui-overlay-hidden').addClass('ui-overlay-visible');
 }
 
-function showDiagnosticSubmenu(file, column) {
+function showDiagnosticSubmenu(event, file, column) {
   event.stopPropagation();
   hideDateTimeMenu();
   buildDiagnosticAssignmentMenu(file, column);
