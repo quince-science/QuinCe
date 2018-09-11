@@ -37,6 +37,7 @@ function initPlot(index) {
   if (mode == 'plot') {
     setupPlotVariables(index);
     $('#map' + index + 'ScaleControlContainer').hide();
+    $('#map' + index + 'Scale').hide();
     $('#map' + index + 'Container').hide();
     $('#plot' + index + 'Container').show();
 
@@ -48,6 +49,9 @@ function initPlot(index) {
     $('#plot' + index + 'Container').hide();
     $('#map' + index + 'Container').show();
     $('#map' + index + 'ScaleControlContainer').show();
+    if (window['map' + index + 'ScaleVisible']) {
+      $('#map' + index + 'Scale').show();
+    }
 
     if (null == window['map' + index]) {
       redraw = true;
