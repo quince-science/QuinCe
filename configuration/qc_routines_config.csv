@@ -2,7 +2,7 @@
 #ShipSpeed,150,750
 #TimeGap,7
 ConstantValue,Intake Temperature,120
-ConstantValue,Salinity,120
+#ConstantValue,Salinity,120
 ConstantValue,Equilibrator Temperature,120
 ConstantValue,Equilibrator Pressure,120
 ConstantValue,xH2O,120
