@@ -16,6 +16,19 @@
 %app.urlstub%=http://localhost:8080/QuinCe
 %slack_app_url%=https://hooks.slack.com/services/XXXXXXX/XXXXXXXXX/XXXXXXXXXXXXXXXXXXX
 
+####################
+# Email properties #
+####################
+%email_tls%=true
+%email_ssl%=false
+%email_hostname%=smtp
+%email_port%=25
+%email_username%=
+%email_password%=
+%email_fromname%=QuinCe
+%email_fromaddress%=quince@uib.no
+
+
 ###########################
 # Test server properties  #
 ###########################
