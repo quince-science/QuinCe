@@ -6,7 +6,9 @@ class FileConfiguration(DataRetriever):
   def __init__(self, configuration=None):
     super().__init__()
     if configuration is None:
-      pass
+      self.configuration["Source Dir"] = None
+      self.configuration["Success Dir"] = None
+      self.configuration["Failure Dir"] = None
     else:
       self.configuration = configuration
 
