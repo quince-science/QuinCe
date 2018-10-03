@@ -182,6 +182,20 @@ public class InstrumentDB {
       + "ORDER BY name ASC, i.name ASC";
 
   /**
+   * Query used to determine if an instrument with a specified ID
+   * exists in the database
+   */
+  private static final String INSTRUMENT_ID_EXISTS_QUERY = "SELECT "
+      + " id FROM instrument WHERE id = ?";
+
+  /**
+   * Query used to determine if an instrument with a specified ID
+   * allows NRT datasets
+   */
+  private static final String NRT_INSTRUMENT_QUERY = "SELECT "
+      + " nrt FROM instrument WHERE id = ?";
+
+  /**
    * Store a new instrument in the database
    * @param dataSource A data source
    * @param instrument The instrument
@@ -1201,5 +1215,73 @@ public class InstrumentDB {
 
     return result;
 
+  }
+
+  /**
+   * Determine whether an instrument with the specified ID exists
+   * @param conn A database connection
+   * @param id The instrument's database ID
+   * @return {@code true} if the instrument exists; {@code false} if it does not
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   */
+  public static boolean instrumentExists(Connection conn, long id) throws MissingParamException, DatabaseException {
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(id, "id");
+
+    boolean exists = false;
+
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      stmt = conn.prepareStatement(INSTRUMENT_ID_EXISTS_QUERY);
+      stmt.setLong(1, id);
+
+      records = stmt.executeQuery();
+      exists = records.next();
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while checking instrument exists", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return exists;
+  }
+
+  /**
+   * Determine whether an instrument with the specified ID exists
+   * @param conn A database connection
+   * @param id The instrument's database ID
+   * @return {@code true} if the instrument exists; {@code false} if it does not
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   */
+  public static boolean isNrtInstrument(Connection conn, long id) throws MissingParamException, DatabaseException {
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(id, "id");
+
+    boolean result = false;
+
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      stmt = conn.prepareStatement(NRT_INSTRUMENT_QUERY);
+      stmt.setLong(1, id);
+
+      records = stmt.executeQuery();
+      if (records.next()) {
+        result = records.getBoolean(1);
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while checking instrument exists", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return result;
   }
 }
