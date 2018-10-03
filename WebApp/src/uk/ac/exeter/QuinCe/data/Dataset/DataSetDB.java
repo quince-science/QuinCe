@@ -36,6 +36,21 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class DataSetDB {
 
   /**
+   * Query to get the defined data sets for a given instrument
+   * @see #getDataSets(DataSource, long)
+   */
+  private static final String GET_DATASETS_QUERY = "SELECT "
+      + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, "
+      + "d.nrt, d.properties, d.last_touched, COUNT(c.user_flag), "
+      + "COALESCE(d.messages_json, '[]') "
+      + "FROM dataset d "
+      + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
+      + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id AND c.user_flag = " + Flag.VALUE_NEEDED + " "
+      + "WHERE d.instrument_id = ? "
+      + "GROUP BY d.id "
+      + "ORDER BY d.start ASC";
+
+  /**
    * Statement to add a new data set into the database
    * @see #addDataSet(DataSource, DataSet)
    */
@@ -140,10 +155,11 @@ public class DataSetDB {
     LocalDateTime end = DateTimeUtils.longToDate(record.getLong(5));
     int status = record.getInt(6);
     LocalDateTime statusDate = DateTimeUtils.longToDate(record.getLong(7));
-    Properties properties = null; // 8
-    LocalDateTime lastTouched = DateTimeUtils.longToDate(record.getLong(9));
-    int needsFlagCount = record.getInt(10);
-    String json = record.getString(11);
+    boolean nrt = record.getBoolean(8);
+    Properties properties = null; // 9
+    LocalDateTime lastTouched = DateTimeUtils.longToDate(record.getLong(10));
+    int needsFlagCount = record.getInt(11);
+    String json = record.getString(12);
     JSONArray array = new JSONArray(json);
     ArrayList<Message> messages = new ArrayList<>();
     for (Object o: array) {
@@ -157,7 +173,7 @@ public class DataSetDB {
     }
 
     return new DataSet(id, instrumentId, name, start, end, status, statusDate,
-        properties, lastTouched, needsFlagCount, messages);
+        nrt, properties, lastTouched, needsFlagCount, messages);
   }
 
   /**
