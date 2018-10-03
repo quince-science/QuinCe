@@ -174,6 +174,11 @@ public class DataSet {
   private int status = STATUS_WAITING;
 
   /**
+   * Indicates whether or not this is a NRT dataset
+   */
+  private boolean nrt = false;
+
+  /**
    * The date that the status was set
    */
   private LocalDateTime statusDate = null;
@@ -187,7 +192,6 @@ public class DataSet {
    * The number of records that need flagging
    */
   private int needsFlagCount = -1;
-
 
   /**
    * Constructor for all fields
@@ -214,9 +218,8 @@ public class DataSet {
    *          A list of messages concerning the dataset (errors etc)
    */
   protected DataSet(long id, long instrumentId, String name,
-      LocalDateTime start, LocalDateTime end, int status,
-      LocalDateTime statusDate, Properties properties,
-      LocalDateTime lastTouched, int needsFlagCount,
+      LocalDateTime start, LocalDateTime end, int status, LocalDateTime statusDate,
+      boolean nrt, Properties properties, LocalDateTime lastTouched, int needsFlagCount,
       List<Message> messages) {
     this.id = id;
     this.instrumentId = instrumentId;
@@ -225,6 +228,7 @@ public class DataSet {
     this.end = end;
     this.status = status;
     this.statusDate = statusDate;
+    this.nrt = nrt;
     this.properties = properties;
     this.lastTouched = lastTouched;
     this.needsFlagCount = needsFlagCount;
@@ -539,5 +543,13 @@ public class DataSet {
    */
   public List<Long> getSourceFiles(Connection conn) throws MissingParamException, DatabaseException {
     return DataFileDB.getFilesWithinDates(conn, instrumentId, start, end);
+  }
+
+  /**
+   * Determine whether or not this is a NRT dataset
+   * @return {@code true} if this is an NRT dataset; {@code fals} if it is not
+   */
+  public boolean getNrt() {
+    return nrt;
   }
 }
