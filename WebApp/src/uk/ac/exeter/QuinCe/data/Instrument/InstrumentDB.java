@@ -55,8 +55,9 @@ public class InstrumentDB {
    */
   private static final String CREATE_INSTRUMENT_STATEMENT = "INSERT INTO instrument ("
       + "owner, name," // 2
-      + "pre_flushing_time, post_flushing_time, minimum_water_flow, averaging_mode, platform_code" // 7
-      + ") VALUES (?, ?, ?, ?, ?, ?, ?)";
+      + "pre_flushing_time, post_flushing_time, minimum_water_flow, averaging_mode, " // 6
+      + "platform_code, nrt" // 8
+      + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
   /**
    * Statement for inserting a file definition record
@@ -1257,8 +1258,9 @@ public class InstrumentDB {
    * @return {@code true} if the instrument exists; {@code false} if it does not
    * @throws MissingParamException If any required parameters are missing
    * @throws DatabaseException If a database error occurs
+   * @throws RecordNotFoundException If the instrument does not exist
    */
-  public static boolean isNrtInstrument(Connection conn, long id) throws MissingParamException, DatabaseException {
+  public static boolean isNrtInstrument(Connection conn, long id) throws MissingParamException, DatabaseException, RecordNotFoundException {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(id, "id");
 
@@ -1274,6 +1276,8 @@ public class InstrumentDB {
       records = stmt.executeQuery();
       if (records.next()) {
         result = records.getBoolean(1);
+      } else {
+        throw new RecordNotFoundException("Instrument " + id + " not found");
       }
     } catch (SQLException e) {
       throw new DatabaseException("Error while checking instrument exists", e);
