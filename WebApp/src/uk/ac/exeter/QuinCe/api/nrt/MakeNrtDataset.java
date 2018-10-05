@@ -1,6 +1,8 @@
 package uk.ac.exeter.QuinCe.api.nrt;
 
 import java.sql.Connection;
+import java.time.LocalDateTime;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 import javax.ws.rs.FormParam;
@@ -9,8 +11,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -63,11 +71,57 @@ public class MakeNrtDataset {
   /**
    * Attempt to create a NRT dataset for an instrument
    * @param conn A database connection
-   * @param instrument The instrument ID
+   * @param instrumentId The instrument ID
    * @return {@code true} if a new NRT dataset is created;
    *         {@code false} if no dataset is created.
+   * @throws DatabaseException
+   * @throws MissingParamException
+   * @throws RecordNotFoundException
    */
-  private boolean createNrtDataset(Connection conn, long instrument) {
-    return false;
+  private boolean createNrtDataset(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+
+    Properties appConfig = ResourceManager.getInstance().getConfig();
+
+    DataSet lastDataset = DataSetDB.getLastDataSet(conn, instrumentId);
+    DataSet nrtDataset = DataSetDB.getNrtDataSet(conn, instrumentId);
+
+    // If there's a NRT dataset, it should be the last one. If it isn't, delete it.
+    if (null != lastDataset && null != nrtDataset && !nrtDataset.equals(lastDataset)) {
+      DataSetDB.deleteNrtDataSet(conn, instrumentId);
+      nrtDataset = null;
+    }
+
+    boolean createDataset = true;
+
+    // If the last dataset is the NRT dataset, see if there's new
+    // data after it. If there isn't, we don't need to do anything
+    if (null != nrtDataset) {
+      if (!DataFileDB.completeFilesAfter(conn, appConfig, instrumentId, nrtDataset.getEnd())) {
+        createDataset = false;
+      } else {
+        DataSetDB.deleteNrtDataSet(conn, instrumentId);
+        lastDataset = DataSetDB.getLastDataSet(conn, instrumentId);
+      }
+    } else if (null != lastDataset) {
+      if (!DataFileDB.completeFilesAfter(conn, appConfig, instrumentId, lastDataset.getEnd())) {
+        createDataset = false;
+      }
+    } else {
+      if (!DataFileDB.completeFilesAfter(conn, appConfig, instrumentId, null)) {
+        createDataset = false;
+      }
+    }
+
+    if (createDataset) {
+      LocalDateTime nrtStartDate = null;
+      if (null != lastDataset) {
+        nrtStartDate = lastDataset.getEnd().plusSeconds(1);
+      }
+
+      // Create the dataset
+    }
+
+
+    return createDataset;
   }
 }
