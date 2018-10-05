@@ -6,8 +6,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -90,6 +93,17 @@ public class DataFileDB {
     + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
     + "INNER JOIN instrument AS i ON d.instrument_id = i.id "
     + "WHERE i.owner = ? AND d.instrument_id = ?";
+
+  /**
+   * Query to find all the data files owned by a given user
+   * @see #getUserFiles(DataSource, User)
+   */
+  private static final String GET_FILES_AFTER_DATE_QUERY = "SELECT "
+    + "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, f.record_count, i.id "
+    + "FROM data_file AS f "
+    + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
+    + "INNER JOIN instrument AS i ON d.instrument_id = i.id "
+    + "WHERE f.file_definition_id = ? AND f.end_date > ?";
 
   /**
    * Statement to delete the details of a data file
@@ -754,5 +768,87 @@ public class DataFileDB {
     }
 
     return ids;
+  }
+
+  /**
+   * Determine whether or not there is a complete set of files
+   * available after a given time, from which a dataset can be made.
+   * @param conn A database connection
+   * @param instrumentId The ID of the instrument for which files must be found
+   * @param time The time boundary
+   * @return {@code true} if a complete set of files is available; {@code false} if not
+   * @throws RecordNotFoundException
+   * @throws DatabaseException
+   * @throws MissingParamException
+   */
+  public static boolean completeFilesAfter(Connection conn, Properties appConfig, long instrumentId, LocalDateTime time) throws MissingParamException, DatabaseException, RecordNotFoundException {
+    boolean result = true;
+
+    // If no time is specified, we can use all files
+    if (null == time) {
+      time = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC);
+    }
+
+    List<PreparedStatement> statements = new ArrayList<PreparedStatement>();
+    List<ResultSet> resultSets = new ArrayList<ResultSet>();
+    try {
+      List<FileDefinition> fileDefinitions = InstrumentDB.getFileDefinitions(conn, instrumentId);
+      Map<FileDefinition, List<DataFile>> filesAfterDate = new HashMap<FileDefinition, List<DataFile>>();
+
+      // Get all the files after the specified date, grouped by file definition
+      for (FileDefinition fileDefinition : fileDefinitions) {
+        List<DataFile> foundFiles = new ArrayList<DataFile>();
+
+        PreparedStatement stmt = conn.prepareStatement(GET_FILES_AFTER_DATE_QUERY);
+        stmt.setLong(1, fileDefinition.getDatabaseId());
+        stmt.setLong(2, DateTimeUtils.dateToLong(time));
+
+        ResultSet records = stmt.executeQuery();
+        while (records.next()) {
+          foundFiles.add(makeDataFile(records, appConfig.getProperty("filestore"), conn));
+        }
+
+        statements.add(stmt);
+        resultSets.add(records);
+
+        // If no matching files are found, abort.
+        if (foundFiles.size() == 0) {
+          result = false;
+          break;
+        }
+
+        filesAfterDate.put(fileDefinition, foundFiles);
+      }
+
+      // If any file defs had no files, the result will be false
+      // and we don't go any further. Also if there's only one file
+      // definition we can skip this check
+      if (result && fileDefinitions.size() > 1) {
+
+        result = false;
+
+        List<DataFile> rootFiles = filesAfterDate.get(fileDefinitions.get(0));
+
+        for (DataFile rootFile : rootFiles) {
+          for (int i = 1; i < fileDefinitions.size() && !result; i++) {
+            List<DataFile> compareFiles = filesAfterDate.get(fileDefinitions.get(i));
+
+            for (int j = 0; j < compareFiles.size() && !result; j++) {
+              DataFile compareFile = compareFiles.get(j);
+              if (compareFile.getStartDate().compareTo(rootFile.getEndDate()) < 0 && compareFile.getEndDate().compareTo(rootFile.getStartDate()) > 0) {
+                result = true;
+              }
+            }
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving file info", e);
+    } finally {
+      DatabaseUtils.closeResultSets(resultSets);
+      DatabaseUtils.closeStatements(statements);
+    }
+
+    return result;
   }
 }
