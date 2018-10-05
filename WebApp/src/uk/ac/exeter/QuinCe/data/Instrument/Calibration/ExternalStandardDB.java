@@ -38,9 +38,11 @@ public class ExternalStandardDB extends CalibrationDB {
         + "c1.target, c1.deployment_date, c1.coefficients, c1.class "
       + "FROM calibration c1 INNER JOIN "
         + "(SELECT MAX(deployment_date) deployment_date, target "
-      + "FROM calibration WHERE deployment_date < ? GROUP BY target) "
-        + "AS c2 ON c1.target = c2.target AND c1.deployment_date = c2.deployment_date "
-        + "WHERE instrument_id = ? AND type = '" + EXTERNAL_STANDARD_CALIBRATION_TYPE + "'";
+      + "FROM calibration WHERE deployment_date < ? "
+      + "AND instrument_id = ? "
+      + "AND type = '" + EXTERNAL_STANDARD_CALIBRATION_TYPE + "' "
+      + "GROUP BY target) "
+      + "AS c2 ON c1.target = c2.target AND c1.deployment_date = c2.deployment_date";
 
   /**
    * The singleton instance of the class
