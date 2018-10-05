@@ -547,9 +547,21 @@ public class DataSet {
 
   /**
    * Determine whether or not this is a NRT dataset
-   * @return {@code true} if this is an NRT dataset; {@code fals} if it is not
+   * @return {@code true} if this is an NRT dataset; {@code false} if it is not
    */
-  public boolean getNrt() {
+  public boolean isNrt() {
     return nrt;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    // Compares database ID only
+    boolean result = false;
+
+    if (o instanceof DataSet) {
+      result = ((DataSet) o).id == id;
+    }
+
+    return result;
   }
 }

@@ -16,6 +16,7 @@ import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -72,7 +73,7 @@ public class DataSetDB {
   /**
    * Statement to delete all records for a given dataset
    */
-  private static final String DELETE_DATASET_QUERY = "DELETE FROM dataset_data "
+  private static final String DELETE_DATASET_DATA_QUERY = "DELETE FROM dataset_data "
       + "WHERE dataset_id = ?";
 
   /**
@@ -84,7 +85,7 @@ public class DataSetDB {
   private static String makeGetDatasetsQuery(String whereField) {
     StringBuilder sql = new StringBuilder("SELECT "
         + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
-        + "d.status_date, d.properties, d.last_touched, COUNT(c.user_flag), " // 10
+        + "d.status_date, d.nrt, d.properties, d.last_touched, COUNT(c.user_flag), " // 10
         + "COALESCE(d.messages_json, '[]') " // 11
         + "FROM dataset d "
         + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
@@ -106,14 +107,13 @@ public class DataSetDB {
    * @throws DatabaseException If a database error occurs
    * @throws MissingParamException If any required parameters are missing
    */
-  public static List<DataSet> getDataSets(DataSource dataSource, long instrumentId) throws DatabaseException, MissingParamException {
+  public static List<DataSet> getDataSets(Connection conn, long instrumentId) throws DatabaseException, MissingParamException {
 
-    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 
     List<DataSet> result = new ArrayList<DataSet>();
 
-    Connection conn = null;
     PreparedStatement stmt = null;
     ResultSet records = null;
 
@@ -134,7 +134,6 @@ public class DataSetDB {
     } finally {
       DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
     }
 
     return result;
@@ -426,7 +425,7 @@ public class DataSetDB {
     PreparedStatement stmt = null;
 
     try {
-      stmt = conn.prepareStatement(DELETE_DATASET_QUERY);
+      stmt = conn.prepareStatement(DELETE_DATASET_DATA_QUERY);
       stmt.setLong(1, dataSet.getId());
 
       stmt.execute();
@@ -452,6 +451,96 @@ public class DataSetDB {
       throws MissingParamException, DatabaseException, RecordNotFoundException {
     saveDataSet(conn, dataSet);
   }
+
+
+  /**
+   * Retrieve the most recent data set for an instrument
+   * @param conn A database connection
+   * @param instrument The instrument's database ID
+   * @return The most recent dataset, or {@code null} if there are no datasets
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   */
+  public static DataSet getNrtDataSet(Connection conn, long instrumentId) throws MissingParamException, DatabaseException {
+    DataSet result = null;
+
+    for (DataSet dataSet : getDataSets(conn, instrumentId)) {
+      if (dataSet.isNrt()) {
+        result = dataSet;
+        break;
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Delete all NRT datasets defined for a given instrument.
+   * In theory there should be only one, but this deletes
+   * all that it can find, just in case.
+   * @param conn A database connection
+   * @param instrumentId The instrument's database ID
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   */
+  public static void deleteNrtDataSet(Connection conn, long instrumentId) throws MissingParamException, DatabaseException {
+    for (DataSet dataSet : getDataSets(conn, instrumentId)) {
+      if (dataSet.isNrt()) {
+        deleteDataSet(conn, dataSet);
+      }
+    }
+  }
+
+  /**
+   * Delete a dataset and all related records
+   * @param conn A database connection
+   * @param dataSet The dataset to be deleted
+   * @throws DatabaseException
+   * @throws MissingParamException
+   */
+  public static void deleteDataSet(Connection conn, DataSet dataSet) throws MissingParamException, DatabaseException {
+
+    // Delete all related data
+    CalculationDBFactory.getCalculationDB().deleteDatasetCalculationData(conn, dataSet);
+    CalibrationDataDB.deleteDatasetData(conn, dataSet);
+    DataSetDB.deleteDatasetData(conn, dataSet);
+
+    boolean currentAutoCommitStatus = false;
+    PreparedStatement stmt = null;
+
+    try {
+      currentAutoCommitStatus = conn.getAutoCommit();
+      if (currentAutoCommitStatus) {
+        conn.setAutoCommit(false);
+      }
+
+      stmt = conn.prepareStatement(DELETE_DATASET_QUERY);
+      stmt.setLong(1, dataSet.getId());
+      stmt.execute();
+
+      if (currentAutoCommitStatus) {
+        // Return the connection to its non-transaction state
+        conn.commit();
+        conn.setAutoCommit(true);
+      }
+    } catch (SQLException e) {
+      if (currentAutoCommitStatus) {
+        try {
+          conn.rollback();
+          conn.setAutoCommit(true);
+        } catch (SQLException e2) {
+          e2.printStackTrace();
+        }
+      }
+    } finally {
+      DatabaseUtils.closeStatements(stmt);
+    }
+  }
+
 
   /**
    * Generate the metadata portion of the manifest
