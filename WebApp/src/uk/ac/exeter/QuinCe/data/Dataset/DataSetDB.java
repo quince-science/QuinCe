@@ -57,8 +57,8 @@ public class DataSetDB {
    */
   private static final String ADD_DATASET_STATEMENT = "INSERT INTO dataset "
       + "(instrument_id, name, start, end, status, status_date, "
-      + "properties, last_touched, messages_json) "
-      + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 9
+      ? "nrt, properties, last_touched, messages_json) "
+      + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 10
 
   /**
    * Statement to update a data set in the database
@@ -67,8 +67,8 @@ public class DataSetDB {
    */
   private static final String UPDATE_DATASET_STATEMENT = "Update dataset set "
       + "instrument_id = ?, name = ?, start = ?, end = ?, status = ?, " // 5
-      + "status_date = ?, properties = ?, last_touched = ?, " // 8
-      + "messages_json = ? WHERE id = ?"; // 10
+      + "status_date = ?, nrt = ?, properties = ?, last_touched = ?, " 9
+      + "messages_json = ? WHERE id = ?"; // 11
 
   /**
    * Statement to delete all records for a given dataset
@@ -76,7 +76,13 @@ public class DataSetDB {
   private static final String DELETE_DATASET_DATA_QUERY = "DELETE FROM dataset_data "
       + "WHERE dataset_id = ?";
 
-  /**
+   /**
+   * Statement to delete a dataset record
+   */
+  private static final String DELETE_DATASET_QUERY = "DELETE FROM dataset "
+      + "WHERE id = ?";
+
+ /**
    * Make an SQL query for retrieving complete datasets using
    * a specified WHERE clause
    * @param whereField The field to use in the WHERE clause
@@ -107,6 +113,35 @@ public class DataSetDB {
    * @throws DatabaseException If a database error occurs
    * @throws MissingParamException If any required parameters are missing
    */
+  public static List<DataSet> getDataSets(DataSource dataSource, long instrumentId) throws DatabaseException, MissingParamException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+
+    List<DataSet> result = null;
+    Connection conn = null;
+    try {
+
+      conn = dataSource.getConnection();
+      result = getDataSets(conn, instrumentId);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving data sets", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+
+    return result;
+  }
+
+
+  /**
+   * Get the list of data sets defined for a given instrument
+   * @param dataSource A data source
+   * @param instrumentId The instrument's database ID
+   * @return The list of data sets
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   */
   public static List<DataSet> getDataSets(Connection conn, long instrumentId) throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
@@ -118,9 +153,7 @@ public class DataSetDB {
     ResultSet records = null;
 
     try {
-
-      conn = dataSource.getConnection();
-      stmt = conn.prepareStatement(makeGetDatasetsQuery("instrument_id"));
+      stmt = conn.prepareStatement(GET_DATASETS_QUERY);
       stmt.setLong(1, instrumentId);
 
       records = stmt.executeQuery();
@@ -190,6 +223,21 @@ public class DataSetDB {
     saveDataSet(dataSource, dataSet);
   }
 
+  /**
+   * Store a new data set in the database.
+   *
+   * The created data set's ID is stored in the provided {@link DataSet} object
+   * @param dataSource A data source
+   * @param dataSet The data set to be stored
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   */
+  public static void addDataSet(Connection conn, DataSet dataSet) throws DatabaseException, MissingParamException {
+    // Make sure this inserts a new record
+    dataSet.setId(DatabaseUtils.NO_DATABASE_RECORD);
+    saveDataSet(conn, dataSet);
+  }
+
   private static void saveDataSet(DataSource dataSource, DataSet dataSet)
       throws DatabaseException, MissingParamException {
     MissingParam.checkMissing(dataSource, "dataSource");
@@ -232,8 +280,9 @@ public class DataSetDB {
       stmt.setLong(4, DateTimeUtils.dateToLong(dataSet.getEnd()));
       stmt.setInt(5, dataSet.getStatus());
       stmt.setLong(6, DateTimeUtils.dateToLong(dataSet.getStatusDate()));
-      stmt.setNull(7, Types.VARCHAR);
-      stmt.setLong(8, DateTimeUtils.dateToLong(LocalDateTime.now()));
+      stmt.setBoolean(7, dataSet.isNrt());
+      stmt.setNull(8, Types.VARCHAR);
+      stmt.setLong(9, DateTimeUtils.dateToLong(LocalDateTime.now()));
 
       if (dataSet.getMessageCount() > 0) {
         String jsonString = dataSet.getMessagesAsJSONString();

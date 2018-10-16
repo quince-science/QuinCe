@@ -146,9 +146,17 @@ public class DataFileDB {
    * NOTE: start_date <= range_end and end_date >= range_start
    */
   private static final String GET_FILES_WITHIN_DATES_QUERY = "SELECT "
-      + "id FROM data_file WHERE file_definition_id in "
+      + "id FROM data_file WHERE file_definition_id IN "
       + "(SELECT id FROM file_definition WHERE instrument_id = ?) AND "
       + "start_date <= ? AND end_date >= ?";
+
+  /**
+   * Query to get the last date covered by any file for an instrument
+   */
+  private static final String GET_LAST_FILE_DATE_QUERY = "SELECT "
+      + "end_date FROM data_file WHERE file_definition_id IN "
+      + "(SELECT id FROM file_definition WHERE instrument_id = ?) "
+      + "ORDER BY end_date DESC LIMIT 1";
 
   /**
    * Store a file in the database and in the file store
@@ -847,6 +855,41 @@ public class DataFileDB {
     } finally {
       DatabaseUtils.closeResultSets(resultSets);
       DatabaseUtils.closeStatements(statements);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the last date covered by any file for a given instrument
+   * @param conn A database connection
+   * @param instrumentId The instrument's database ID
+   * @return The last date, or {@code null} if there are no files
+   * @throws DatabaseException
+   * @throws MissingParamException
+   */
+  public static LocalDateTime getLastFileDate(Connection conn, long instrumentId) throws MissingParamException, DatabaseException {
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkPositive(instrumentId, "instrumentId");
+
+    LocalDateTime result = null;
+
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      stmt = conn.prepareStatement(GET_LAST_FILE_DATE_QUERY);
+      stmt.setLong(1, instrumentId);
+
+      records = stmt.executeQuery();
+      if (records.next()) {
+        result = DateTimeUtils.longToDate(records.getLong(1));
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting file dates", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
     }
 
     return result;
