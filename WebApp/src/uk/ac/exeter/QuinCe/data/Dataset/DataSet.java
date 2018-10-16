@@ -23,6 +23,11 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public class DataSet {
 
   /**
+   * The name to use for NRT datasets
+   */
+  public static final String NRT_DATASET_NAME = "Near Real Time Data";
+
+  /**
    * The numeric value for the error status.
    * The data set will be given this status whenever a processing job fails.
    */
@@ -195,27 +200,30 @@ public class DataSet {
 
   /**
    * Constructor for all fields
-   *
    * @param id
-   *          The data set's database ID
+   *    Data set's database ID
    * @param instrumentId
-   *          The database ID of the instrument to which the data set belongs
+   *    Database ID of the instrument to which the data set belongs
    * @param name
-   *          The name
+   *    Dataset name
    * @param start
-   *          The start date
+   *    Start date
    * @param end
-   *          The end date
+   *    End date
    * @param status
    *          The current status
    * @param status
    *          The date that the status was set
+   * @param nrt
+   *    Indicates whether or not this is a NRT dataset
    * @param properties
-   *          The additional properties
+   *    Additional properties
    * @param lastTouched
-   *          The date that the data set was last accessed
+   *    Date that the dataset was last accessed
+   * @param needsFlagCount
+   *    Number of records that need flagging by the user
    * @param messages
-   *          A list of messages concerning the dataset (errors etc)
+   *    List of messages concerning the dataset (errors etc)
    */
   protected DataSet(long id, long instrumentId, String name,
       LocalDateTime start, LocalDateTime end, int status, LocalDateTime statusDate,
@@ -242,6 +250,30 @@ public class DataSet {
   public DataSet(long instrumentId) {
     this.instrumentId = instrumentId;
     this.statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
+  }
+
+  /**
+   * Constructor for all fields
+   * @param id
+   *    Data set's database ID
+   * @param instrumentId
+   *    Database ID of the instrument to which the data set belongs
+   * @param name
+   *    Dataset name
+   * @param start
+   *    Start date
+   * @param end
+   *    End date
+   * @param nrt
+   *    Indicates whether or not this is a NRT dataset
+   */
+  public DataSet(long instrumentId, String name,
+      LocalDateTime start, LocalDateTime end, boolean nrt) {
+    this.instrumentId = instrumentId;
+    this.name = name;
+    this.start = start;
+    this.end = end;
+    this.nrt = nrt;
   }
 
   /**

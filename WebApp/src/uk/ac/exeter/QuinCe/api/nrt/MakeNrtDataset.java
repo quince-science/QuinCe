@@ -2,6 +2,8 @@ package uk.ac.exeter.QuinCe.api.nrt;
 
 import java.sql.Connection;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -15,10 +17,9 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -74,11 +75,9 @@ public class MakeNrtDataset {
    * @param instrumentId The instrument ID
    * @return {@code true} if a new NRT dataset is created;
    *         {@code false} if no dataset is created.
-   * @throws DatabaseException
-   * @throws MissingParamException
-   * @throws RecordNotFoundException
+   * @throws Exception Any errors are propagated upward
    */
-  private boolean createNrtDataset(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+  private boolean createNrtDataset(Connection conn, long instrumentId) throws Exception {
 
     Properties appConfig = ResourceManager.getInstance().getConfig();
 
@@ -118,9 +117,16 @@ public class MakeNrtDataset {
         nrtStartDate = lastDataset.getEnd().plusSeconds(1);
       }
 
-      // Create the dataset
-    }
+      LocalDateTime endDate = DataFileDB.getLastFileDate(conn, instrumentId);
+      DataSet newDataset = new DataSet(instrumentId, DataSet.NRT_DATASET_NAME, nrtStartDate, endDate, true);
+      DataSetDB.addDataSet(conn, newDataset);
 
+      // TODO This is a copy of the code in DataSetsBean.addDataSet. Does it need collapsing?
+      Map<String, String> params = new HashMap<String, String>();
+      params.put(ExtractDataSetJob.ID_PARAM, String.valueOf(newDataset.getId()));
+
+      JobManager.addJob(conn, InstrumentDB.getInstrumentOwner(conn, instrumentId), ExtractDataSetJob.class.getCanonicalName(), params);
+    }
 
     return createDataset;
   }
