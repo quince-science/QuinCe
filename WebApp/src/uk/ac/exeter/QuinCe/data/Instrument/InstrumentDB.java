@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.api.nrt.NrtInstrument;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
@@ -194,7 +195,13 @@ public class InstrumentDB {
    * allows NRT datasets
    */
   private static final String NRT_INSTRUMENT_QUERY = "SELECT "
-      + " nrt FROM instrument WHERE id = ?";
+      + "nrt FROM instrument WHERE id = ?";
+
+  /**
+   * Query to get the owner ID for an instrument
+   */
+  private static final String GET_INSTRUMENT_OWNER_QUERY = "SELECT "
+      + "owner FROM instrument WHERE id = ?";
 
   /**
    * Store a new instrument in the database
@@ -1281,6 +1288,45 @@ public class InstrumentDB {
       }
     } catch (SQLException e) {
       throw new DatabaseException("Error while checking instrument exists", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the user who owns a given instrument
+   * @param conn A database connection
+   * @param id The instrument's database ID
+   * @return The User object
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   * @throws RecordNotFoundException If the instrument does not exist
+   */
+  public static User getInstrumentOwner(Connection conn, long id) throws MissingParamException, DatabaseException, RecordNotFoundException {
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(id, "id");
+
+    User result = null;
+
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      stmt = conn.prepareStatement(GET_INSTRUMENT_OWNER_QUERY);
+      stmt.setLong(1, id);
+
+      records = stmt.executeQuery();
+      if (!records.next()) {
+        throw new RecordNotFoundException("Instrument " + id + " not found");
+      } else {
+        result = UserDB.getUser(conn, records.getLong(1));
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while looking up instrument ownder", e);
     } finally {
       DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);
