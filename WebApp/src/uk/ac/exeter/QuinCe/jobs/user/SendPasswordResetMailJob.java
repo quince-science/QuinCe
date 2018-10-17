@@ -3,15 +3,8 @@ package uk.ac.exeter.QuinCe.jobs.user;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.mail.EmailException;
-
 import uk.ac.exeter.QuinCe.User.User;
-import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
-import uk.ac.exeter.QuinCe.jobs.Job;
-import uk.ac.exeter.QuinCe.jobs.JobFailedException;
-import uk.ac.exeter.QuinCe.jobs.JobThread;
-import uk.ac.exeter.QuinCe.utils.EmailSender;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.User.ResetPasswordBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -21,12 +14,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
-public class SendPasswordResetMailJob extends Job {
-
-  /**
-   * The key for the email address in the job parameters
-   */
-  public static final String EMAIL_KEY = "emailAddress";
+public class SendPasswordResetMailJob extends SendCodeJob {
 
   /**
    * Name of the job, used for reporting
@@ -47,93 +35,32 @@ public class SendPasswordResetMailJob extends Job {
   }
 
   @Override
-  protected void execute(JobThread thread) throws JobFailedException {
-
-    StringBuffer emailText = new StringBuffer();
-    emailText.append("Click the link\n\n");
-    emailText.append(buildLink(config));
-    emailText.append("\n");
-
-    try {
-      EmailSender.sendEmail(config, parameters.get(EMAIL_KEY), "Reset your QuinCe password", emailText.toString());
-    } catch (EmailException e) {
-      throw new JobFailedException(id, e);
-    }
-  }
-
-  @Override
-  /**
-   * Validate the job parameters. In this case, make sure a URL stub and user ID is given.
-   *
-   * For the moment, we don't verify the URL stub - we just make sure we've got a string.
-   */
-  protected void validateParameters() throws InvalidJobParametersException {
-    if (parameters.size() != 1) {
-      throw new InvalidJobParametersException("Incorrect number of parameters");
-    }
-
-    User dbUser;
-    try {
-      dbUser = UserDB.getUser(dataSource, parameters.get(EMAIL_KEY));
-      if (null == dbUser) {
-        throw new InvalidJobParametersException("The specified user doesn't exist in the database");
-      } else if (null == dbUser.getPasswordResetCode()) {
-        throw new InvalidJobParametersException("The specified user doesn't have a password reset code");
-      }
-    } catch (Exception e) {
-      throw new InvalidJobParametersException("Unhandled exception while validating parameters", e);
-    }
-  }
-
-  /**
-   * Construct the email verification link that the user will click in the email
-   * @param config The application configuration
-   * @return The link
-   * @throws JobFailedException If the link cannot be built
-   */
-  private String buildLink(Properties config) throws JobFailedException {
-
-    String emailAddress = parameters.get(EMAIL_KEY);
-
-    StringBuffer link = new StringBuffer();
-
-    User dbUser;
-    try {
-      dbUser = UserDB.getUser(dataSource, emailAddress);
-      if (null == dbUser) {
-        throw new JobFailedException(id, "User doesn't exist");
-      } else {
-        String resetCode = dbUser.getPasswordResetCode();
-        if (null == resetCode) {
-          throw new JobFailedException(id, "The user doesn't have a password reset code");
-        } else {
-          link.append(config.getProperty("app.urlstub"));
-          link.append(ResetPasswordBean.PATH);
-          link.append('?');
-          link.append(ResetPasswordBean.USER_PARAM);
-          link.append('=');
-          link.append(emailAddress);
-          link.append('&');
-          link.append(ResetPasswordBean.CODE_PARAM);
-          link.append('=');
-          link.append(resetCode);
-        }
-      }
-    } catch (Exception e) {
-      throw new JobFailedException(id, e);
-    }
-
-    return link.toString();
-  }
-
-  @Override
-  protected String getFinishState() {
-    // Since we ignore interrupts, we always return FINISHED
-    return FINISHED_STATUS;
-  }
-
-  @Override
   public String getJobName() {
     return jobName;
+  }
+
+  @Override
+  protected String getSubject() {
+    return "Reset QuinCe password";
+  }
+
+  @Override
+  protected String getEmailText() {
+    return "Click the link below to reset your QuinCe password. If you did not request this link, you can safely ignore it.";
+  }
+
+  @Override
+  protected String getCodeDescription() {
+    return "Password reset code";
+  }
+
+  @Override
+  protected String getCode(User user) {
+    return user.getPasswordResetCode();
+  }
+
+  @Override
+  protected String getUrlPath() {
+    return ResetPasswordBean.PATH;
   }
 }
