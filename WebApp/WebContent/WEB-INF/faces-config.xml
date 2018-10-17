@@ -28,12 +28,6 @@
     <managed-bean-scope>request</managed-bean-scope>
   </managed-bean>
   <managed-bean>
-    <description>Email verification code sender</description>
-    <managed-bean-name>sendEmailCodeBean</managed-bean-name>
-    <managed-bean-class>uk.ac.exeter.QuinCe.web.User.SendEmailCodeBean</managed-bean-class>
-    <managed-bean-scope>request</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
     <description>Handles editing of the user profile</description>
     <managed-bean-name>userProfileBean</managed-bean-name>
     <managed-bean-class>uk.ac.exeter.QuinCe.web.User.UserProfileBean</managed-bean-class>
@@ -92,6 +86,10 @@
       <from-outcome>AuthenticationSuccess</from-outcome>
       <to-view-id>/dataset/dataset_list.xhtml</to-view-id>
     </navigation-case>
+    <navigation-case>
+      <from-outcome>LostPassword</from-outcome>
+      <to-view-id>/user/lost_password.xhtml</to-view-id>
+    </navigation-case>
   </navigation-rule>
   <navigation-rule>
     <display-name>SignupForm</display-name>
@@ -114,18 +112,6 @@
     <from-view-id>/user/signup_complete.xhtml</from-view-id>
     <navigation-case>
       <from-outcome>Done</from-outcome>
-      <to-view-id>/index.html</to-view-id>
-    </navigation-case>
-  </navigation-rule>
-  <navigation-rule>
-    <display-name>SendEmailCode</display-name>
-    <from-view-id>/user/verify_email.xhtml</from-view-id>
-    <navigation-case>
-      <from-outcome>Success</from-outcome>
-      <to-view-id>/user/code_sent.xhtml</to-view-id>
-    </navigation-case>
-    <navigation-case>
-      <from-outcome>ValidationFailed</from-outcome>
       <to-view-id>/index.html</to-view-id>
     </navigation-case>
   </navigation-rule>
