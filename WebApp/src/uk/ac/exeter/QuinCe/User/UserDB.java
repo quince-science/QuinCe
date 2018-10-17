@@ -69,6 +69,11 @@ public class UserDB {
   private static final String CLEAR_EMAIL_CODE_STATEMENT = "UPDATE user SET email_code = NULL, email_code_time = NULL WHERE email = ?";
 
   /**
+   * SQL statement to remove a password reset code
+   */
+  private static final String CLEAR_PASSWORD_RESET_CODE_STATEMENT = "UPDATE user SET password_code = NULL, password_code_time = NULL WHERE email = ?";
+
+  /**
    * Statement to store a user's preferences
    */
   private static final String STORE_PREFERENCES_STATEMENT = "UPDATE user SET preferences = ? "
@@ -534,51 +539,35 @@ public class UserDB {
    * authenticated before the new one is stored.
    * @param dataSource A data source
    * @param user The user whose password is to be changed
-   * @param oldPassword The user's old password
    * @param newPassword The user's new password
-   * @return {@code true} if the password was changed successfully; {@code false} otherwise.
    * @throws DatabaseException If an error occurred
    * @throws MissingParamException If any of the parameters are null
    */
-  public static boolean changePassword(DataSource dataSource, User user, char[] oldPassword, char[] newPassword) throws DatabaseException, MissingParamException {
+  public static void changePassword(DataSource dataSource, User user, char[] newPassword) throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(user, "user");
-    MissingParam.checkMissing(oldPassword, "oldPassword", true);
     MissingParam.checkMissing(newPassword, "newPassword");
 
-    // First we authenticate the user with their current password. If that works, we can set
-    // the new password
-    boolean result = false;
+    Connection conn = null;
+    PreparedStatement stmt = null;
 
-    int authenticationResult = authenticate(dataSource, user.getEmailAddress(), oldPassword);
+    try {
+      SaltAndHashedPassword generatedPassword = generateHashedPassword(newPassword);
 
-    if (AUTHENTICATE_OK == authenticationResult) {
-      Connection conn = null;
-      PreparedStatement stmt = null;
+      conn = dataSource.getConnection();
+      stmt = conn.prepareStatement(CHANGE_PASSWORD_STATEMENT);
+      stmt.setBytes(1, generatedPassword.salt);
+      stmt.setBytes(2, generatedPassword.hashedPassword);
+      stmt.setInt(3, user.getDatabaseID());
+      stmt.execute();
 
-      try {
-        SaltAndHashedPassword generatedPassword = generateHashedPassword(newPassword);
-
-        conn = dataSource.getConnection();
-        stmt = conn.prepareStatement(CHANGE_PASSWORD_STATEMENT);
-        stmt.setBytes(1, generatedPassword.salt);
-        stmt.setBytes(2, generatedPassword.hashedPassword);
-        stmt.setInt(3, user.getDatabaseID());
-        stmt.execute();
-        result = true;
-
-      } catch (SQLException|InvalidKeySpecException|NoSuchAlgorithmException e) {
-        result = false;
-
-        throw new DatabaseException("An error occurred while updating the password", e);
-      } finally {
-        DatabaseUtils.closeStatements(stmt);
-        DatabaseUtils.closeConnection(conn);
-      }
+    } catch (SQLException|InvalidKeySpecException|NoSuchAlgorithmException e) {
+      throw new DatabaseException("An error occurred while updating the password", e);
+    } finally {
+      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
     }
-
-    return result;
   }
 
   /**
@@ -627,6 +616,34 @@ public class UserDB {
     try {
       conn = dataSource.getConnection();
       stmt = conn.prepareStatement(CLEAR_EMAIL_CODE_STATEMENT);
+      stmt.setString(1, email);
+      stmt.execute();
+    } catch (SQLException e) {
+      throw new DatabaseException("An error occurred while clearing the code", e);
+    } finally {
+      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
+    }
+  }
+
+  /**
+   * Remove the email verification code for a user. Note that we do not check whether
+   * the specified user exists.
+   * @param dataSource A data source
+   * @param email The user's email address
+   * @throws MissingParamException If any parameters are missing
+   * @throws DatabaseException If an error occurs while updating the database
+   */
+  public static void clearPasswordResetCode(DataSource dataSource, String email) throws MissingParamException, DatabaseException {
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(email, "email");
+
+    Connection conn = null;
+    PreparedStatement stmt = null;
+
+    try {
+      conn = dataSource.getConnection();
+      stmt = conn.prepareStatement(CLEAR_PASSWORD_RESET_CODE_STATEMENT);
       stmt.setString(1, email);
       stmt.execute();
     } catch (SQLException e) {

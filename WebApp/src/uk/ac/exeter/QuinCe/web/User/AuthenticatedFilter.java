@@ -137,7 +137,6 @@ public class AuthenticatedFilter implements Filter {
 
         boolean pathMatched = false;
 
-
         // Allowed paths with . in are complete, so don't try adding a suffix
         if (allowedPath.contains(".") && requestURI.equals(pathURIBase)) {
           pathMatched = true;
@@ -171,6 +170,9 @@ public class AuthenticatedFilter implements Filter {
     allowedPaths.add("/user/signup");
     allowedPaths.add("/user/signup_complete");
     allowedPaths.add("/user/verify_email");
+    allowedPaths.add("/user/lost_password");
+    allowedPaths.add("/user/reset_password");
+    allowedPaths.add("/user/password_changed");
     allowedPaths.add("/credits");
     allowedPaths.add("/favicon.ico");
 
