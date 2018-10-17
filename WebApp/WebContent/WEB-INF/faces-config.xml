@@ -28,12 +28,6 @@
     <managed-bean-scope>request</managed-bean-scope>
   </managed-bean>
   <managed-bean>
-    <description>Handles editing of the user profile</description>
-    <managed-bean-name>userProfileBean</managed-bean-name>
-    <managed-bean-class>uk.ac.exeter.QuinCe.web.User.UserProfileBean</managed-bean-class>
-    <managed-bean-scope>view</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
     <description>Handles everything to do with the Jobs list page</description>
     <managed-bean-name>jobsBean</managed-bean-name>
     <managed-bean-class>uk.ac.exeter.QuinCe.web.jobs.JobsBean</managed-bean-class>
@@ -89,6 +83,22 @@
     <navigation-case>
       <from-outcome>LostPassword</from-outcome>
       <to-view-id>/user/lost_password.xhtml</to-view-id>
+    </navigation-case>
+  </navigation-rule>
+  <navigation-rule>
+    <display-name>LostPasswordForm</display-name>
+    <from-view-id>/user/lost_password.xhtml</from-view-id>
+    <navigation-case>
+      <from-outcome>LostPasswordLinkSent</from-outcome>
+      <to-view-id>/user/lost_password_link_sent.xhtml</to-view-id>
+    </navigation-case>
+  </navigation-rule>
+  <navigation-rule>
+    <display-name>ResetPassword</display-name>
+    <from-view-id>/user/reset_password.xhtml</from-view-id>
+    <navigation-case>
+      <from-outcome>PasswordChanged</from-outcome>
+      <to-view-id>/user/password_changed.xhtml</to-view-id>
     </navigation-case>
   </navigation-rule>
   <navigation-rule>

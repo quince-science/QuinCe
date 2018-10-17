@@ -8,7 +8,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 public class VerifyEmailBean extends BaseManagedBean {
 
   /**
-   * The URL for the email code verificatoin bean
+   * The URL for the email code verification bean
    */
   public static final String PATH = "/user/verify_email.jsf";
 
