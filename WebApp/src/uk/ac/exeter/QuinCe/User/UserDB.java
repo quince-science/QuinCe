@@ -537,25 +537,23 @@ public class UserDB {
   /**
    * Changes a user's password. The user's old password must be
    * authenticated before the new one is stored.
-   * @param dataSource A data source
+   * @param conn A database connection
    * @param user The user whose password is to be changed
    * @param newPassword The user's new password
    * @throws DatabaseException If an error occurred
    * @throws MissingParamException If any of the parameters are null
    */
-  public static void changePassword(DataSource dataSource, User user, char[] newPassword) throws DatabaseException, MissingParamException {
+  public static void changePassword(Connection conn, User user, char[] newPassword) throws DatabaseException, MissingParamException {
 
-    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(user, "user");
     MissingParam.checkMissing(newPassword, "newPassword");
 
-    Connection conn = null;
     PreparedStatement stmt = null;
 
     try {
       SaltAndHashedPassword generatedPassword = generateHashedPassword(newPassword);
 
-      conn = dataSource.getConnection();
       stmt = conn.prepareStatement(CHANGE_PASSWORD_STATEMENT);
       stmt.setBytes(1, generatedPassword.salt);
       stmt.setBytes(2, generatedPassword.hashedPassword);
@@ -566,7 +564,6 @@ public class UserDB {
       throw new DatabaseException("An error occurred while updating the password", e);
     } finally {
       DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
     }
   }
 
@@ -634,15 +631,13 @@ public class UserDB {
    * @throws MissingParamException If any parameters are missing
    * @throws DatabaseException If an error occurs while updating the database
    */
-  public static void clearPasswordResetCode(DataSource dataSource, String email) throws MissingParamException, DatabaseException {
-    MissingParam.checkMissing(dataSource, "dataSource");
+  public static void clearPasswordResetCode(Connection conn, String email) throws MissingParamException, DatabaseException {
+    MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(email, "email");
 
-    Connection conn = null;
     PreparedStatement stmt = null;
 
     try {
-      conn = dataSource.getConnection();
       stmt = conn.prepareStatement(CLEAR_PASSWORD_RESET_CODE_STATEMENT);
       stmt.setString(1, email);
       stmt.execute();
@@ -650,7 +645,6 @@ public class UserDB {
       throw new DatabaseException("An error occurred while clearing the code", e);
     } finally {
       DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
     }
   }
 

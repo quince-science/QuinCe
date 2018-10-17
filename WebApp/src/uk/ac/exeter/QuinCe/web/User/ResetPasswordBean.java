@@ -1,9 +1,13 @@
 package uk.ac.exeter.QuinCe.web.User;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
 import uk.ac.exeter.QuinCe.User.UserDB;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
@@ -129,8 +133,17 @@ public class ResetPasswordBean extends BaseManagedBean {
     if (!validate()) {
       result = null;
     } else {
-      UserDB.changePassword(getDataSource(), UserDB.getUser(getDataSource(), email), password1.toCharArray());
-      UserDB.clearPasswordResetCode(getDataSource(), email);
+
+      Connection conn = null;
+      try {
+        conn = getDataSource().getConnection();
+        conn.setAutoCommit(false);
+        UserDB.changePassword(conn, UserDB.getUser(conn, email), password1.toCharArray());
+        UserDB.clearPasswordResetCode(conn, email);
+        conn.commit();
+      } catch (SQLException e) {
+        DatabaseUtils.rollBack(conn);
+      }
     }
 
     return result;
