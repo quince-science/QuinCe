@@ -517,6 +517,9 @@ public class UserDB {
 
           if (Arrays.equals(storedPassword, hashedPassword)) {
             authenticationResult = AUTHENTICATE_OK;
+
+            // Clear the password reset code - since we've authenticated, it's no longer needed
+            clearPasswordResetCode(conn, email);
           }
         }
       }
