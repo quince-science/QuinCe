@@ -154,7 +154,19 @@ public class AutoQCJob extends Job {
       List<Routine> routines = RoutinesConfig.getInstance(parameters.get(PARAM_ROUTINES_CONFIG)).getRoutines();
 
       for (Routine routine : routines) {
-        routine.processRecords((List<DataRecord>) records, null);
+        int recordsUpdated = Integer.MAX_VALUE;
+
+        while (recordsUpdated > 0) {
+          List<DataRecord> recordsToProcess = new ArrayList<DataRecord>(records.size());
+          for (DataRecord record : records) {
+            if (!containsMessageFromRoutine(record, routine)) {
+              recordsToProcess.add(record);
+            }
+          }
+
+          routine.processRecords(recordsToProcess, null);
+          recordsUpdated = countMessagesFromRoutine(recordsToProcess, routine);
+        }
       }
 
       // Record the messages from the QC in the database
@@ -271,6 +283,43 @@ public class AutoQCJob extends Job {
     }
   }
 
+  /**
+   * Count the number of records that contain messages from a specified QC routine
+   * @param recordsToProcess The records to be counted
+   * @param routine The routine
+   * @return The number of records with messages from the routine
+   */
+  private int countMessagesFromRoutine(List<DataRecord> records, Routine routine) {
+    int count = 0;
+
+    for (DataRecord record : records) {
+      if (containsMessageFromRoutine(record, routine)) {
+        count++;
+      }
+    }
+
+    return count;
+  }
+
+  /**
+   * Determine whether or not a record contains QC messages from a specified QC routine
+   * @param record The record to be checked
+   * @param routine The routine
+   * @return {@code true} if any messages from the routine exist; {@code false} otherwise
+   */
+  private boolean containsMessageFromRoutine(DataRecord record, Routine routine) {
+    boolean messageFound = false;
+
+    for (Message message : record.getMessages()) {
+      if (message.getClass().equals(routine.getMessageClass())) {
+        messageFound = true;
+        break;
+      }
+    }
+
+    return messageFound;
+  }
+
   @Override
   protected void validateParameters() throws InvalidJobParametersException {
     // TODO Auto-generated method stub
@@ -295,7 +344,9 @@ public class AutoQCJob extends Job {
     for (long id : ids) {
       CalculationRecord record = CalculationRecordFactory.makeCalculationRecord(datasetId, id);
       record.loadData(conn);
-      if (!record.getAutoFlag().equals(Flag.FATAL) && !record.getUserFlag().equals(Flag.QUESTIONABLE) && !record.getUserFlag().equals(Flag.BAD) && !record.getUserFlag().equals(Flag.IGNORED)) {
+
+      // Skip any records where the user has explicitly set the flag. We trust their judgement.
+      if (!record.getUserFlag().equals(Flag.BAD) && !record.getUserFlag().equals(Flag.QUESTIONABLE) && !record.getUserFlag().equals(Flag.GOOD)) {
         records.add(record);
       }
     }
