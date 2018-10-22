@@ -256,10 +256,10 @@ function setRangeFromClick(date, datasets) {
       }
       else {
         if (date < start && max > start) {
-          max = start
+          max = new Date(start.getTime() - 1000)
         }
         if (date > end && min < end) {
-          min = end
+          min = new Date(end.getTime() + 1000)
         }
       }
     }
