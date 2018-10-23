@@ -422,8 +422,61 @@ public class DataSetDB {
     }
   }
 
+  /**
+   * Update a dataset in the database
+   * @param conn A database connection
+   * @param dataSet The updated dataset
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws RecordNotFoundException
+   *           If the dataset is not already in the database
+   */
   public static void updateDataSet(Connection conn, DataSet dataSet)
       throws MissingParamException, DatabaseException, RecordNotFoundException {
     saveDataSet(conn, dataSet);
   }
+
+  /**
+   * Generate the metadata portion of the manifest
+   * @return
+   * @throws DatabaseException
+   * @throws MissingParamException
+   * @throws RecordNotFoundException
+   */
+  public static JSONObject getMetadataJson(DataSource dataSource, DataSet dataset) throws DatabaseException, MissingParamException, RecordNotFoundException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(dataset, "dataset");
+
+    JSONObject result = new JSONObject();
+    result.put("name", dataset.getName());
+    result.put("startdate", DateTimeUtils.toJsonDate(dataset.getStart()));
+    result.put("enddate", DateTimeUtils.toJsonDate(dataset.getEnd()));
+
+    Connection conn = null;
+
+    try {
+      conn = dataSource.getConnection();
+
+      int recordCount = DataSetDataDB.getMeasurementIds(conn, dataset.getId()).size();
+      result.put("records", recordCount);
+
+      List<Double> bounds = DataSetDataDB.getDataBounds(conn, dataset);
+      JSONObject boundsObject = new JSONObject();
+      boundsObject.put("west", bounds.get(0));
+      boundsObject.put("south", bounds.get(1));
+      boundsObject.put("east", bounds.get(2));
+      boundsObject.put("north", bounds.get(3));
+      result.put("bounds", boundsObject);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving metadata", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+
+    return result;
+  }
+
 }

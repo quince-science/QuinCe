@@ -745,24 +745,50 @@ public class DataSetDataDB {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(dataset, "dataset");
 
-    List<Double> result = new ArrayList<Double>(6);
+    List<Double> result = null;
 
     Connection conn = null;
+    try {
+      conn = dataSource.getConnection();
+      result = getDataBounds(conn, dataset);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting dataset bounds", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the geographical bounds of a data set
+   * @param dataSource A data source
+   * @param dataset The dataset
+   * @return The bounds
+     * @throws DatabaseException If a database error occurs
+     * @throws MissingParamException If any required parameters are missing
+   */
+  public static List<Double> getDataBounds(Connection conn, DataSet dataset) throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(dataset, "dataset");
+
+    List<Double> result = new ArrayList<Double>(6);
+
     PreparedStatement stmt = null;
     ResultSet records = null;
 
     try {
-      conn = dataSource.getConnection();
       stmt = conn.prepareStatement(GET_BOUNDS_QUERY);
       stmt.setLong(1, dataset.getId());
 
       records = stmt.executeQuery();
 
       records.next();
-      result.add(records.getDouble(1));
-      result.add(records.getDouble(2));
-      result.add(records.getDouble(3));
-      result.add(records.getDouble(4));
+      result.add(records.getDouble(1)); // West
+      result.add(records.getDouble(2)); // South
+      result.add(records.getDouble(3)); // East
+      result.add(records.getDouble(4)); // North
 
       // Mid point
       result.add((records.getDouble(3) - records.getDouble(1)) / 2 + records.getDouble(1));
@@ -773,7 +799,6 @@ public class DataSetDataDB {
     } finally {
       DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
     }
 
     return result;
