@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -14,6 +15,9 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+
+import org.primefaces.json.JSONArray;
+import org.primefaces.json.JSONObject;
 
 import uk.ac.exeter.QCRoutines.config.InvalidDataTypeException;
 import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
@@ -235,6 +239,12 @@ public class ExportBean extends BaseManagedBean {
         zip.closeEntry();
       }
 
+      // Manifest
+      JSONObject manifest = makeManifest(exportOption, files);
+      ZipEntry manifestEntry = new ZipEntry(dirRoot + "/manifest.json");
+      zip.putNextEntry(manifestEntry);
+      zip.write(manifest.toString().getBytes());
+      zip.closeEntry();
 
       // Write the response
       zip.close();
@@ -411,5 +421,36 @@ public class ExportBean extends BaseManagedBean {
    */
   public void setIncludeRawFiles(boolean includeRawFiles) {
     this.includeRawFiles = includeRawFiles;
+  }
+
+  /**
+   * Create the contents of the manifest.json file
+   * @return
+   */
+  private JSONObject makeManifest(ExportOption exportOption, List<DataFile> rawFiles) throws Exception {
+    JSONObject result = new JSONObject();
+
+    JSONObject manifest = new JSONObject();
+    JSONArray raw = new JSONArray();
+    for (DataFile file : rawFiles) {
+      raw.put(file.getFilename());
+    }
+    manifest.put("raw", raw);
+
+    JSONArray datasetArray = new JSONArray();
+    JSONObject datasetObject = new JSONObject();
+    datasetObject.put("destination", exportOption.getName());
+    datasetObject.put("filename", dataset.getName() + exportOption.getFileExtension());
+    datasetArray.put(datasetObject);
+    manifest.put("dataset", datasetArray);
+
+    JSONObject metadata = DataSetDB.getMetadataJson(getDataSource(), dataset);
+    Properties appConfig = ResourceManager.getInstance().getConfig();
+
+    metadata.put("quince_information", "Data processed using QuinCe version " + appConfig.getProperty("version"));
+    manifest.put("metadata", metadata);
+
+    result.put("manifest", manifest);
+    return result;
   }
 }
