@@ -124,6 +124,11 @@ public class DataSet {
   private int status = STATUS_WAITING;
 
   /**
+   * The date that the status was set
+   */
+  private LocalDateTime statusDate = null;
+
+  /**
    * Messages from jobs handling this data set
    */
   private ArrayList<Message> messages = new ArrayList<Message>();
@@ -149,6 +154,8 @@ public class DataSet {
    *          The end date
    * @param status
    *          The current status
+   * @param status
+   *          The date that the status was set
    * @param properties
    *          The additional properties
    * @param lastTouched
@@ -157,7 +164,8 @@ public class DataSet {
    *          A list of messages concerning the dataset (errors etc)
    */
   protected DataSet(long id, long instrumentId, String name,
-      LocalDateTime start, LocalDateTime end, int status, Properties properties,
+      LocalDateTime start, LocalDateTime end, int status,
+      LocalDateTime statusDate, Properties properties,
       LocalDateTime lastTouched, int needsFlagCount,
       List<Message> messages) {
     this.id = id;
@@ -166,6 +174,7 @@ public class DataSet {
     this.start = start;
     this.end = end;
     this.status = status;
+    this.statusDate = statusDate;
     this.properties = properties;
     this.lastTouched = lastTouched;
     this.needsFlagCount = needsFlagCount;
@@ -178,6 +187,7 @@ public class DataSet {
    */
   public DataSet(long instrumentId) {
     this.instrumentId = instrumentId;
+    this.statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
   }
 
   /**
@@ -335,6 +345,15 @@ public class DataSet {
     }
 
     this.status = status;
+    statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
+  }
+
+  /**
+   * Get the date that the dataset's status was set
+   * @return The status date
+   */
+  public LocalDateTime getStatusDate() {
+    return statusDate;
   }
 
   /**
