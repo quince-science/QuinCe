@@ -37,11 +37,12 @@ public class DataSetDB {
    */
   private static final String GET_DATASETS_QUERY = "SELECT "
       + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, "
-      + "d.properties, d.last_touched, COUNT(c.user_flag), "
+      + "d.status_date, d.properties, d.last_touched, COUNT(c.user_flag), "
       + "COALESCE(d.messages_json, '[]') "
       + "FROM dataset d "
       + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
-      + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id AND c.user_flag = " + Flag.VALUE_NEEDED + " "
+      + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id "
+      + "AND c.user_flag = " + Flag.VALUE_NEEDED + " "
       + "WHERE d.instrument_id = ? "
       + "GROUP BY d.id "
       + "ORDER BY d.start ASC";
@@ -51,8 +52,9 @@ public class DataSetDB {
    * @see #addDataSet(DataSource, DataSet)
    */
   private static final String ADD_DATASET_STATEMENT = "INSERT INTO dataset "
-      + "(instrument_id, name, start, end, status, properties, last_touched, "
-      + "messages_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"; // 9
+      + "(instrument_id, name, start, end, status, status_date, "
+      + "properties, last_touched, messages_json) "
+      + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 9
 
   /**
    * Statement to update a data set in the database
@@ -60,8 +62,9 @@ public class DataSetDB {
    * @see #addDataSet(DataSource, DataSet)
    */
   private static final String UPDATE_DATASET_STATEMENT = "Update dataset set "
-      + " instrument_id = ?, name = ?, start = ?, end = ?, status = ?, " // 5
-      + " properties = ?, last_touched = ?, messages_json = ? WHERE id = ?"; // 9
+      + "instrument_id = ?, name = ?, start = ?, end = ?, status = ?, " // 5
+      + "status_date = ?, properties = ?, last_touched = ?, " // 8
+      + "messages_json = ? WHERE id = ?"; // 10
 
   /**
    * Query to get a single data set by its ID
@@ -69,12 +72,13 @@ public class DataSetDB {
    * @see #getDataSet(DataSource, long)
    */
   private static final String GET_DATASET_QUERY = "SELECT "
-      + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, "
-      + "d.properties, d.last_touched, COUNT(c.user_flag), "
-      + "COALESCE(d.messages_json, '[]') "
+      + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
+      + "d.status_date, d.properties, d.last_touched, COUNT(c.user_flag), " // 10
+      + "COALESCE(d.messages_json, '[]') " // 11
       + "FROM dataset d "
       + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
-      + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id AND c.user_flag = " + Flag.VALUE_NEEDED + " "
+      + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id "
+      + "AND c.user_flag = " + Flag.VALUE_NEEDED + " "
       + "WHERE d.id = ? "
       + "GROUP BY d.id";
 
@@ -140,10 +144,11 @@ public class DataSetDB {
     LocalDateTime start = DateTimeUtils.longToDate(record.getLong(4));
     LocalDateTime end = DateTimeUtils.longToDate(record.getLong(5));
     int status = record.getInt(6);
-    Properties properties = null;
-    LocalDateTime lastTouched = DateTimeUtils.longToDate(record.getLong(8));
-    int needsFlagCount = record.getInt(9);
-    String json = record.getString(10);
+    LocalDateTime statusDate = DateTimeUtils.longToDate(record.getLong(7));
+    Properties properties = null; // 8
+    LocalDateTime lastTouched = DateTimeUtils.longToDate(record.getLong(9));
+    int needsFlagCount = record.getInt(10);
+    String json = record.getString(11);
     JSONArray array = new JSONArray(json);
     ArrayList<Message> messages = new ArrayList<>();
     for (Object o: array) {
@@ -156,8 +161,8 @@ public class DataSetDB {
       }
     }
 
-    return new DataSet(id, instrumentId, name, start, end, status, properties,
-        lastTouched, needsFlagCount, messages);
+    return new DataSet(id, instrumentId, name, start, end, status, statusDate,
+        properties, lastTouched, needsFlagCount, messages);
   }
 
   /**
@@ -215,19 +220,20 @@ public class DataSetDB {
       stmt.setString(2, dataSet.getName());
       stmt.setLong(3, DateTimeUtils.dateToLong(dataSet.getStart()));
       stmt.setLong(4, DateTimeUtils.dateToLong(dataSet.getEnd()));
-      stmt.setLong(5, dataSet.getStatus());
-      stmt.setNull(6, Types.VARCHAR);
-      stmt.setLong(7, DateTimeUtils.dateToLong(LocalDateTime.now()));
+      stmt.setInt(5, dataSet.getStatus());
+      stmt.setLong(6, DateTimeUtils.dateToLong(dataSet.getStatusDate()));
+      stmt.setNull(7, Types.VARCHAR);
+      stmt.setLong(8, DateTimeUtils.dateToLong(LocalDateTime.now()));
 
       if (dataSet.getMessageCount() > 0) {
         String jsonString = dataSet.getMessagesAsJSONString();
-        stmt.setString(8, jsonString);
+        stmt.setString(9, jsonString);
       } else {
-        stmt.setNull(8, Types.VARCHAR);
+        stmt.setNull(9, Types.VARCHAR);
       }
 
       if (DatabaseUtils.NO_DATABASE_RECORD != dataSet.getId()) {
-        stmt.setLong(9, dataSet.getId());
+        stmt.setLong(10, dataSet.getId());
       }
 
       stmt.execute();
