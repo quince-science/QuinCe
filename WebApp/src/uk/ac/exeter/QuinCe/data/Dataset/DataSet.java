@@ -94,9 +94,19 @@ public class DataSet {
   public static final String STATUS_READY_FOR_SUBMISSION_NAME = "Ready for Submission";
 
   /**
+   * The numeric value for the waiting for approval status
+   */
+  public static final int STATUS_WAITING_FOR_APPROVAL = 6;
+
+  /**
+   * The string for the waiting for approval status
+   */
+  public static final String STATUS_WAITING_FOR_APPROVAL_NAME = "Waiting for Approval";
+
+  /**
    * The numeric value for the ready for export status
    */
-  public static final int STATUS_READY_FOR_EXPORT = 6;
+  public static final int STATUS_READY_FOR_EXPORT = 7;
 
   /**
    * The string for the ready for export status
@@ -106,7 +116,7 @@ public class DataSet {
   /**
    * The numeric value for the exporting status
    */
-  public static final int STATUS_EXPORTING = 7;
+  public static final int STATUS_EXPORTING = 8;
 
   /**
    * The string for the exporting status
@@ -116,7 +126,7 @@ public class DataSet {
   /**
    * The numeric value for the export complete status
    */
-  public static final int STATUS_EXPORT_COMPLETE = 8;
+  public static final int STATUS_EXPORT_COMPLETE = 9;
 
   /**
    * The string for the export complete status
@@ -281,6 +291,10 @@ public class DataSet {
     }
     case STATUS_READY_FOR_SUBMISSION: {
       result = STATUS_READY_FOR_SUBMISSION_NAME;
+      break;
+    }
+    case STATUS_WAITING_FOR_APPROVAL: {
+      result = STATUS_WAITING_FOR_APPROVAL_NAME;
       break;
     }
     case STATUS_READY_FOR_EXPORT: {
