@@ -251,6 +251,9 @@ public class AutoQCJob extends Job {
         // Commit all the records
         if (dataSet != null) {
           dataSet.setStatus(DataSet.STATUS_USER_QC);
+          if (dataSet.getNeedsFlagCount() == 0) {
+            dataSet.setStatus(DataSet.STATUS_READY_FOR_EXPORT);
+          }
           DataSetDB.updateDataSet(conn, dataSet);
         }
         conn.commit();
