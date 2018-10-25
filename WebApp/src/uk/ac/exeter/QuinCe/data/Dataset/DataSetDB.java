@@ -466,8 +466,28 @@ public class DataSetDB {
    * @throws RecordNotFoundException
    */
   public static JSONObject getMetadataJson(DataSource dataSource, DataSet dataset) throws DatabaseException, MissingParamException, RecordNotFoundException {
+    Connection conn = null;
 
-    MissingParam.checkMissing(dataSource, "dataSource");
+    try {
+      conn = dataSource.getConnection();
+      return getMetadataJson(conn, dataset);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving metadata", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+  }
+
+  /**
+   * Generate the metadata portion of the manifest
+   * @return
+   * @throws DatabaseException
+   * @throws MissingParamException
+   * @throws RecordNotFoundException
+   */
+  public static JSONObject getMetadataJson(Connection conn, DataSet dataset) throws DatabaseException, MissingParamException, RecordNotFoundException {
+
+    MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(dataset, "dataset");
 
     JSONObject result = new JSONObject();
@@ -475,26 +495,16 @@ public class DataSetDB {
     result.put("startdate", DateTimeUtils.toJsonDate(dataset.getStart()));
     result.put("enddate", DateTimeUtils.toJsonDate(dataset.getEnd()));
 
-    Connection conn = null;
+    int recordCount = DataSetDataDB.getMeasurementIds(conn, dataset.getId()).size();
+    result.put("records", recordCount);
 
-    try {
-      conn = dataSource.getConnection();
-
-      int recordCount = DataSetDataDB.getMeasurementIds(conn, dataset.getId()).size();
-      result.put("records", recordCount);
-
-      List<Double> bounds = DataSetDataDB.getDataBounds(conn, dataset);
-      JSONObject boundsObject = new JSONObject();
-      boundsObject.put("west", bounds.get(0));
-      boundsObject.put("south", bounds.get(1));
-      boundsObject.put("east", bounds.get(2));
-      boundsObject.put("north", bounds.get(3));
-      result.put("bounds", boundsObject);
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while retrieving metadata", e);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
-    }
+    List<Double> bounds = DataSetDataDB.getDataBounds(conn, dataset);
+    JSONObject boundsObject = new JSONObject();
+    boundsObject.put("west", bounds.get(0));
+    boundsObject.put("south", bounds.get(1));
+    boundsObject.put("east", bounds.get(2));
+    boundsObject.put("north", bounds.get(3));
+    result.put("bounds", boundsObject);
 
     return result;
   }
