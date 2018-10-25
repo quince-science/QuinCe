@@ -35,10 +35,16 @@
       }
 
       function exportDataset(id) {
-        $('#exportForm\\:exportDatasetId').val(id);
-        $('#exportForm\\:exportLink').click();
-        return false;
-      }
+          $('#exportForm\\:exportDatasetId').val(id);
+          $('#exportForm\\:exportLink').click();
+          return false;
+        }
+
+      function submitForApproval(id) {
+          $('#datasetListForm\\:datasetId').val(id);
+          $('#datasetListForm\\:approvalLink').click();
+          return false;
+        }
 
       setInterval(function() {
         updateList();
@@ -77,6 +83,7 @@
         <h:inputHidden id="datasetId" value="#{dataSetsBean.datasetId}"/>
         <p:commandLink id="dataReductionLink" ajax="false" action="#{dataSetsBean.submitDataReductionJob}"/>
         <p:commandLink id="autoQcLink" ajax="false" action="#{dataSetsBean.submitAutoQcJob}"/>
+        <p:commandLink id="approvalLink" ajax="false" action="#{dataSetsBean.submitForApproval}"/>
 
         <h:inputHidden id="manualQcDatasetId" value="#{manualQcBean.datasetId}"/>
         <p:commandLink id="manualQcLink" ajax="false" action="#{manualQcBean.start}"/>
@@ -156,7 +163,7 @@
               <h:graphicImage value="/resources/image/export_disabled.svg" styleClass="actionIcon" alt="Export" title="Export"/>
             </ui:fragment>
             <ui:fragment rendered="#{dataset.status eq DataSet.STATUS_READY_FOR_SUBMISSION}">
-              <p:commandLink onclick="exportDataset(#{dataset.id})">
+              <p:commandLink onclick="submitForApproval(#{dataset.id})">
                 <h:graphicImage value="/resources/image/submit.svg" styleClass="actionIcon" alt="Submit" title="Submit"/>
               </p:commandLink>
             </ui:fragment>
