@@ -42,7 +42,13 @@
 
       function submitForApproval(id) {
           $('#datasetListForm\\:datasetId').val(id);
-          $('#datasetListForm\\:approvalLink').click();
+          $('#datasetListForm\\:submitLink').click();
+          return false;
+        }
+
+      function approve(id) {
+          $('#datasetListForm\\:datasetId').val(id);
+          $('#datasetListForm\\:approveLink').click();
           return false;
         }
 
@@ -83,7 +89,8 @@
         <h:inputHidden id="datasetId" value="#{dataSetsBean.datasetId}"/>
         <p:commandLink id="dataReductionLink" ajax="false" action="#{dataSetsBean.submitDataReductionJob}"/>
         <p:commandLink id="autoQcLink" ajax="false" action="#{dataSetsBean.submitAutoQcJob}"/>
-        <p:commandLink id="approvalLink" ajax="false" action="#{dataSetsBean.submitForApproval}"/>
+        <p:commandLink id="submitLink" ajax="false" action="#{dataSetsBean.submitForApproval}"/>
+        <p:commandLink id="approveLink" ajax="false" action="#{dataSetsBean.approve}"/>
 
         <h:inputHidden id="manualQcDatasetId" value="#{manualQcBean.datasetId}"/>
         <p:commandLink id="manualQcLink" ajax="false" action="#{manualQcBean.start}"/>
@@ -169,6 +176,16 @@
             </ui:fragment>
             <ui:fragment rendered="#{dataset.status ne DataSet.STATUS_READY_FOR_SUBMISSION}">
                 <h:graphicImage value="/resources/image/submit_disabled.svg" styleClass="actionIcon" alt="Submit" title="Submit"/>
+            </ui:fragment>
+            <ui:fragment rendered="#{dataSetsBean.approvalUser}">
+              <ui:fragment rendered="#{dataset.status eq DataSet.STATUS_WAITING_FOR_APPROVAL}">
+                <p:commandLink onclick="approve(#{dataset.id})">
+                  <h:graphicImage value="/resources/image/approve.svg" styleClass="actionIcon" alt="Approve" title="Approve"/>
+                </p:commandLink>
+              </ui:fragment>
+              <ui:fragment rendered="#{dataset.status ne DataSet.STATUS_WAITING_FOR_APPROVAL}">
+                  <h:graphicImage value="/resources/image/approve_disabled.svg" styleClass="actionIcon" alt="Approve" title="Approve"/>
+              </ui:fragment>
             </ui:fragment>
           </p:column>
         </p:dataTable>
