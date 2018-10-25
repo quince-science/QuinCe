@@ -385,6 +385,17 @@ public class DataSetsBean extends BaseManagedBean {
   }
 
   /**
+   * Submit the data set for approval
+   */
+  public void submitForApproval() {
+    try {
+      DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_WAITING_FOR_APPROVAL);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
    * Submit the data set for data reduction
    */
   public void submitDataReductionJob() {
