@@ -155,6 +155,14 @@
             <ui:fragment rendered="#{!dataset.canBeExported}">
               <h:graphicImage value="/resources/image/export_disabled.svg" styleClass="actionIcon" alt="Export" title="Export"/>
             </ui:fragment>
+            <ui:fragment rendered="#{dataset.status eq DataSet.STATUS_READY_FOR_SUBMISSION}">
+              <p:commandLink onclick="exportDataset(#{dataset.id})">
+                <h:graphicImage value="/resources/image/submit.svg" styleClass="actionIcon" alt="Submit" title="Submit"/>
+              </p:commandLink>
+            </ui:fragment>
+            <ui:fragment rendered="#{dataset.status ne DataSet.STATUS_READY_FOR_SUBMISSION}">
+                <h:graphicImage value="/resources/image/submit_disabled.svg" styleClass="actionIcon" alt="Submit" title="Submit"/>
+            </ui:fragment>
           </p:column>
         </p:dataTable>
 

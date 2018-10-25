@@ -64,52 +64,62 @@ public class DataSet {
   public static final String STATUS_DATA_REDUCTION_NAME = "Data reduction";
 
   /**
-   * The numeric value for the data extraction status
+   * The numeric value for the automatic QC status
    */
   public static final int STATUS_AUTO_QC = 3;
 
   /**
-   * The string for the data extraction status
+   * The string for the automatic QC status
    */
   public static final String STATUS_AUTO_QC_NAME = "Automatic QC";
 
   /**
-   * The numeric value for the data extraction status
+   * The numeric value for the user QC status
    */
   public static final int STATUS_USER_QC = 4;
 
   /**
-   * The string for the data extraction status
+   * The string for the user QC status
    */
   public static final String STATUS_USER_QC_NAME = "Ready for QC";
 
   /**
-   * The numeric value for the data extraction status
+   * The numeric value for the ready for submission status
    */
-  public static final int STATUS_READY_FOR_EXPORT = 5;
+  public static final int STATUS_READY_FOR_SUBMISSION = 5;
 
   /**
-   * The string for the data extraction status
+   * The string for the ready for submission status
    */
-  public static final String STATUS_READY_FOR_EXPORT_NAME = "Ready for Export";
+  public static final String STATUS_READY_FOR_SUBMISSION_NAME = "Ready for Submission";
 
   /**
-   * The numeric value for the data extraction status
+   * The numeric value for the ready for export status
    */
-  public static final int STATUS_EXPORTING = 6;
+  public static final int STATUS_READY_FOR_EXPORT = 6;
 
   /**
-   * The string for the data extraction status
+   * The string for the ready for export status
+   */
+  public static final String STATUS_READY_FOR_EXPORT_NAME = "Waiting for Automatic Export";
+
+  /**
+   * The numeric value for the exporting status
+   */
+  public static final int STATUS_EXPORTING = 7;
+
+  /**
+   * The string for the exporting status
    */
   public static final String STATUS_EXPORTING_NAME = "Automatic export in progress";
 
   /**
-   * The numeric value for the data extraction status
+   * The numeric value for the export complete status
    */
-  public static final int STATUS_EXPORT_COMPLETE = 7;
+  public static final int STATUS_EXPORT_COMPLETE = 8;
 
   /**
-   * The string for the data extraction status
+   * The string for the export complete status
    */
   public static final String STATUS_EXPORT_COMPLETE_NAME = "Automatic export complete";
 
@@ -267,6 +277,10 @@ public class DataSet {
     }
     case STATUS_USER_QC: {
       result = STATUS_USER_QC_NAME;
+      break;
+    }
+    case STATUS_READY_FOR_SUBMISSION: {
+      result = STATUS_READY_FOR_SUBMISSION_NAME;
       break;
     }
     case STATUS_READY_FOR_EXPORT: {
