@@ -389,6 +389,7 @@ public class DataSetsBean extends BaseManagedBean {
    */
   public void submitDataReductionJob() {
     try {
+      DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_DATA_REDUCTION);
       Map<String, String> jobParams = new HashMap<String, String>();
       jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(datasetId));
       JobManager.addJob(getDataSource(), getUser(), DataReductionJob.class.getCanonicalName(), jobParams);
