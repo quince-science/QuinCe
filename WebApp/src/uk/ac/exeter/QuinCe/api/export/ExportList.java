@@ -21,7 +21,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 @Path("/export/exportList")
-public class GetExportList {
+public class ExportList {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
