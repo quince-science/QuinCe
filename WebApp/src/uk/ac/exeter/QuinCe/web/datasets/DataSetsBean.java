@@ -396,6 +396,17 @@ public class DataSetsBean extends BaseManagedBean {
   }
 
   /**
+   * Approve the data set for export
+   */
+  public void approve() {
+    try {
+      DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_READY_FOR_EXPORT);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
    * Submit the data set for data reduction
    */
   public void submitDataReductionJob() {
