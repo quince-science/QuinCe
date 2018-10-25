@@ -84,6 +84,36 @@ public class DataSet {
   public static final String STATUS_USER_QC_NAME = "Ready for QC";
 
   /**
+   * The numeric value for the data extraction status
+   */
+  public static final int STATUS_READY_FOR_EXPORT = 5;
+
+  /**
+   * The string for the data extraction status
+   */
+  public static final String STATUS_READY_FOR_EXPORT_NAME = "Ready for Export";
+
+  /**
+   * The numeric value for the data extraction status
+   */
+  public static final int STATUS_EXPORTING = 6;
+
+  /**
+   * The string for the data extraction status
+   */
+  public static final String STATUS_EXPORTING_NAME = "Automatic export in progress";
+
+  /**
+   * The numeric value for the data extraction status
+   */
+  public static final int STATUS_EXPORT_COMPLETE = 7;
+
+  /**
+   * The string for the data extraction status
+   */
+  public static final String STATUS_EXPORT_COMPLETE_NAME = "Automatic export complete";
+
+  /**
    * The database ID
    */
   private long id = DatabaseUtils.NO_DATABASE_RECORD;
@@ -239,6 +269,18 @@ public class DataSet {
       result = STATUS_USER_QC_NAME;
       break;
     }
+    case STATUS_READY_FOR_EXPORT: {
+      result = STATUS_READY_FOR_EXPORT_NAME;
+      break;
+    }
+    case STATUS_EXPORTING: {
+      result = STATUS_EXPORTING_NAME;
+      break;
+    }
+    case STATUS_EXPORT_COMPLETE: {
+      result = STATUS_EXPORT_COMPLETE_NAME;
+      break;
+    }
     default: {
       result = "UNKNOWN";
     }
@@ -392,20 +434,24 @@ public class DataSet {
    * @return {@code true} if the status is valid; {@code false} if it is not
    */
   public static boolean validateStatus(int status) {
-    return (status >= -1 && status <= 4);
+    return (status >= STATUS_ERROR && status <= STATUS_EXPORT_COMPLETE);
   }
 
   /**
    * Get the number of records that need flagging by the user.
    *
-   * This only gives a value if the dataset's status is {@line #STATUS_USER_QC};
+   * This only gives a value if the dataset's status is
+   * {@line #STATUS_USER_QC} or later;
    * otherwise it returns {@code -1}.
    * @return The number of records that need flagging
    */
   public int getNeedsFlagCount() {
     int result = needsFlagCount;
 
-    if (getStatus() != STATUS_USER_QC) {
+    // Status values increase through processing.
+    // This value isn't available before automatic
+    // QC is finished
+    if (getStatus() < STATUS_USER_QC) {
       result = -1;
     }
 
@@ -425,7 +471,7 @@ public class DataSet {
    * @return {@code true} if the dataset can be exported; {@code false} if it cannot
    */
   public boolean getCanBeExported() {
-    return (getStatus() == STATUS_USER_QC && needsFlagCount == 0);
+    return (getStatus() >= STATUS_USER_QC && needsFlagCount == 0);
   }
 
   public void addMessage(String message, String details) {
