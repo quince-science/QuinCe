@@ -378,4 +378,14 @@ public abstract class BaseManagedBean {
   public List<RunTypeCategory> getRunTypeCategories() throws ResourceException {
     return ServletUtils.getResourceManager().getRunTypeCategoryConfiguration().getCategories(true, true);
   }
+
+  /**
+   * Determine whether or not the current user can
+   * approve datasets for export
+   * @return {@code true} if the user can approve datasets;
+   *         {@code false} if not
+   */
+  public boolean isApprovalUser() {
+    return getUser().isAdminUser();
+  }
 }
