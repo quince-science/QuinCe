@@ -84,6 +84,7 @@
         <p:remoteCommand name="updateList" update="datasets" actionListener="#{dataSetsBean.updateDatasetList}"/>
         <ui:include src="/WEB-INF/templates/dialog.xhtml" />
 
+        <p:importConstants type="uk.ac.exeter.QuinCe.data.Dataset.DataSet" var="DataSet"/>
         <p:dataTable id="datasets" value="#{dataSetsBean.dataSets}"
             var="dataset" styleClass="pageBlock">
           <p:column>
@@ -109,14 +110,14 @@
               <h:outputText value="Status"/>
             </f:facet>
             <h:outputText
-              rendered="#{dataset.status ne -1}"
+              rendered="#{dataset.status ne DataSet.STATUS_ERROR}"
               value="#{dataset.statusName}"
             />
-            <ui:fragment rendered="#{dataset.status eq 4}">
+            <ui:fragment rendered="#{dataset.status eq DataSet.STATUS_USER_QC}">
               (<h:outputText value="#{dataset.needsFlagCount}"/> to flag)
             </ui:fragment>
             <p:commandButton
-              rendered="#{dataset.status eq -1}"
+              rendered="#{dataset.status eq DataSet.STATUS_ERROR}"
               icon="ui-icon-notice"
               onclick="displayDialog(getMessagesHTML($(this).data('messages')))"
               title="Errors"
@@ -130,7 +131,7 @@
             <f:facet name="header">
               <h:outputText value="Actions"/>
             </f:facet>
-            <ui:fragment rendered="#{dataset.status eq 4}">
+            <ui:fragment rendered="#{dataset.status eq DataSet.STATUS_USER_QC}">
               <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
                 <h:graphicImage value="/resources/image/calibration.svg" styleClass="actionIcon" alt="Calibration" title="Calibration"/>
               </p:commandLink>
@@ -141,7 +142,7 @@
                 <h:graphicImage value="/resources/image/qc.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
               </p:commandLink>
             </ui:fragment>
-            <ui:fragment rendered="#{dataset.status ne 4}">
+            <ui:fragment rendered="#{dataset.status ne DataSet.STATUS_USER_QC}">
               <h:graphicImage value="/resources/image/calibration_disabled.svg" styleClass="actionIcon" alt="Calibration" title="Calibration"/>
               <h:graphicImage value="/resources/image/calculate_disabled.svg" styleClass="actionIcon" alt="Data Reduction" title="Data Reduction"/>
               <h:graphicImage value="/resources/image/qc_disabled.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
