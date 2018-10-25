@@ -176,7 +176,7 @@ public class ExportBean extends BaseManagedBean {
     try {
       ExportOption exportOption = getExportOptions().get(chosenExportOption);
 
-      byte[] fileContent = getDatasetExport(exportOption);
+      byte[] fileContent = getDatasetExport(getDataSource().getConnection(), dataset, exportOption);
 
       FacesContext fc = FacesContext.getCurrentInstance();
       ExternalContext ec = fc.getExternalContext();
@@ -210,46 +210,9 @@ public class ExportBean extends BaseManagedBean {
 
     try {
       conn = getDataSource().getConnection();
+      ExportOption exportOption = getExportOptions().get(chosenExportOption);
 
-      ByteArrayOutputStream zipOut = new ByteArrayOutputStream();
-      ZipOutputStream zip = new ZipOutputStream(zipOut);
-
-      ExportOption exportOption;
-      exportOption = getExportOptions().get(chosenExportOption);
-      String dirRoot = dataset.getName();
-
-      // Add the main dataset file
-      String datasetPath = dirRoot + "/dataset/" + exportOption.getName() +
-          "/" + dataset.getName() + exportOption.getFileExtension();
-
-      ZipEntry datasetEntry = new ZipEntry(datasetPath);
-      zip.putNextEntry(datasetEntry);
-      zip.write(getDatasetExport(exportOption));
-      zip.closeEntry();
-
-      List<Long> rawIds = getDataset().getSourceFiles(conn);
-      List<DataFile> files = DataFileDB.getDataFiles(conn, ResourceManager.getInstance().getConfig(), rawIds);
-
-      for (DataFile file : files) {
-        String filePath = dirRoot + "/raw/" + file.getFilename();
-
-        ZipEntry rawEntry = new ZipEntry(filePath);
-        zip.putNextEntry(rawEntry);
-        zip.write(file.getBytes());
-        zip.closeEntry();
-      }
-
-      // Manifest
-      JSONObject manifest = makeManifest(exportOption, files);
-      ZipEntry manifestEntry = new ZipEntry(dirRoot + "/manifest.json");
-      zip.putNextEntry(manifestEntry);
-      zip.write(manifest.toString().getBytes());
-      zip.closeEntry();
-
-      // Write the response
-      zip.close();
-      byte[] outBytes = zipOut.toByteArray();
-      zipOut.close();
+      byte[] outBytes = buildExportZip(conn, dataset, exportOption);
 
       FacesContext fc = FacesContext.getCurrentInstance();
       ExternalContext ec = fc.getExternalContext();
@@ -293,15 +256,15 @@ public class ExportBean extends BaseManagedBean {
    * @throws RecordNotFoundException
    * @throws MessageException
    */
-  private byte[] getDatasetExport(ExportOption exportOption)
+  private static byte[] getDatasetExport(Connection conn, DataSet dataset, ExportOption exportOption)
       throws NoSuchColumnException, InvalidDataTypeException, MissingParamException, DatabaseException, RecordNotFoundException, MessageException {
     // TODO This will get all sensor columns. When the sensor data storage is updated (Issue #576), this can be revised.
-    List<DataSetRawDataRecord> datasetData = DataSetDataDB.getMeasurements(getDataSource(), getDataset());
+    List<DataSetRawDataRecord> datasetData = DataSetDataDB.getMeasurements(conn, dataset);
 
     List<CalculationRecord> calculationData = new ArrayList<CalculationRecord>(datasetData.size());
     for (DataSetRawDataRecord record : datasetData) {
-      CalculationRecord calcRecord = CalculationRecordFactory.makeCalculationRecord(getDatasetId(), record.getId());
-      CalculationDBFactory.getCalculationDB().getCalculationValues(getDataSource(), calcRecord);
+      CalculationRecord calcRecord = CalculationRecordFactory.makeCalculationRecord(dataset.getId(), record.getId());
+      CalculationDBFactory.getCalculationDB().getCalculationValues(conn, calcRecord);
       calculationData.add(calcRecord);
     }
 
@@ -331,7 +294,6 @@ public class ExportBean extends BaseManagedBean {
     output.append(exportOption.getSeparator());
     output.append("QC Message");
     output.append('\n');
-
 
     for (int i = 0; i < datasetData.size(); i++) {
 
@@ -427,7 +389,7 @@ public class ExportBean extends BaseManagedBean {
    * Create the contents of the manifest.json file
    * @return
    */
-  private JSONObject makeManifest(ExportOption exportOption, List<DataFile> rawFiles) throws Exception {
+  private static JSONObject makeManifest(Connection conn, DataSet dataset, List<ExportOption> exportOptions, List<DataFile> rawFiles) throws Exception {
     JSONObject result = new JSONObject();
 
     JSONObject manifest = new JSONObject();
@@ -438,13 +400,16 @@ public class ExportBean extends BaseManagedBean {
     manifest.put("raw", raw);
 
     JSONArray datasetArray = new JSONArray();
-    JSONObject datasetObject = new JSONObject();
-    datasetObject.put("destination", exportOption.getName());
-    datasetObject.put("filename", dataset.getName() + exportOption.getFileExtension());
-    datasetArray.put(datasetObject);
+    for (ExportOption exportOption : exportOptions) {
+      JSONObject datasetObject = new JSONObject();
+      datasetObject.put("destination", exportOption.getName());
+      datasetObject.put("filename", dataset.getName() + exportOption.getFileExtension());
+      datasetArray.put(datasetObject);
+    }
+
     manifest.put("dataset", datasetArray);
 
-    JSONObject metadata = DataSetDB.getMetadataJson(getDataSource(), dataset);
+    JSONObject metadata = DataSetDB.getMetadataJson(conn, dataset);
     Properties appConfig = ResourceManager.getInstance().getConfig();
 
     metadata.put("quince_information", "Data processed using QuinCe version " + appConfig.getProperty("version"));
@@ -452,5 +417,57 @@ public class ExportBean extends BaseManagedBean {
 
     result.put("manifest", manifest);
     return result;
+  }
+
+  public static byte[] buildExportZip(Connection conn, DataSet dataset, ExportOption exportOption) throws Exception {
+    ByteArrayOutputStream zipOut = new ByteArrayOutputStream();
+    ZipOutputStream zip = new ZipOutputStream(zipOut);
+
+    String dirRoot = dataset.getName();
+
+    List<ExportOption> exportOptions;
+    if (null != exportOption) {
+      exportOptions = new ArrayList<ExportOption>(1);
+      exportOptions.add(exportOption);
+    } else {
+      exportOptions = ExportConfig.getInstance().getOptions();
+    }
+
+    for (ExportOption option : exportOptions) {
+      // Add the main dataset file
+      String datasetPath = dirRoot + "/dataset/" + option.getName() +
+          "/" + dataset.getName() + option.getFileExtension();
+
+      ZipEntry datasetEntry = new ZipEntry(datasetPath);
+      zip.putNextEntry(datasetEntry);
+      zip.write(getDatasetExport(conn, dataset, option));
+      zip.closeEntry();
+    }
+
+    List<Long> rawIds = dataset.getSourceFiles(conn);
+    List<DataFile> files = DataFileDB.getDataFiles(conn, ResourceManager.getInstance().getConfig(), rawIds);
+
+    for (DataFile file : files) {
+      String filePath = dirRoot + "/raw/" + file.getFilename();
+
+      ZipEntry rawEntry = new ZipEntry(filePath);
+      zip.putNextEntry(rawEntry);
+      zip.write(file.getBytes());
+      zip.closeEntry();
+    }
+
+    // Manifest
+    JSONObject manifest = makeManifest(conn, dataset, exportOptions, files);
+    ZipEntry manifestEntry = new ZipEntry(dirRoot + "/manifest.json");
+    zip.putNextEntry(manifestEntry);
+    zip.write(manifest.toString().getBytes());
+    zip.closeEntry();
+
+    // Write the response
+    zip.close();
+    byte[] outBytes = zipOut.toByteArray();
+    zipOut.close();
+
+    return outBytes;
   }
 }
