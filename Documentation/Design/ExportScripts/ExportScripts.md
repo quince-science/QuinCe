@@ -100,7 +100,20 @@ Table: Actions that can be performed on datasets {#tbl:actions}
 
 ## Export API
 
-The QuinCe API will provide three functions related to exporting of data, matching the three communications between the export script and QuinCe shown in [@Fig:simple_script_flow]. Each of these calls must have the necessary authentication tokens to identify the script to QuinCe to ensure that the application is secure, and that the identity being used by the script has the necessary permissions to export datasets; these will not be discussed in this document. Similarly, the various error situations that can occur (e.g. requesting export of a dataset that has not passed quality control) will not be discussed here.
+The QuinCe API will provide three functions related to exporting of data, matching the three communications between the export script and QuinCe shown in [@Fig:simple_script_flow]. Each of these calls must have the necessary authentication tokens to identify the script to QuinCe to ensure that the application is secure, and that the identity being used by the script has the necessary permissions to export datasets.
+
+Each API call will return a response code according to the success or failure of the API call. Each call will check the authentication, which will return the following response codes if authentication fails:
+
+-------------------------------------------------------------------------------
+Response Code    Meaning
+-------------    --------------------------------------------------------------
+404              Requested API call does not exist
+
+401              Authentication failed
+
+403              Specified user does not have API access
+-------------------------------------------------------------------------------
+
 
 ### `exportList` {#export_list}
 
@@ -108,9 +121,9 @@ __URL:__ `QuinCe/api/export/exportList`
 
 __HTTP Method:__ GET
 
-__Return:__ JSON
-
 __Parameters:__ None
+
+__Return:__ JSON
 
 This call will retrieve a list of all the datasets that are ready to be exported. The datasets will be identified by their database ID, but extra information will be returned to allow the export script to decide how to process each dataset and to produce meaningful log messages as it runs. The dataset details will be returned as a JSON array of objects in the following form:
 
@@ -139,7 +152,7 @@ This call will retrieve a list of all the datasets that are ready to be exported
 
 The `id` is the unique identifier for the dataset, which can be used by subsequent API calls to perform operations on individual datasets. `nrt` indicates whether or not a dataset contains near-real-time data, which may need to be processed in a different manner to those that have been fully quality controlled.
 
-The call will only provide details of datasets whose status is 'Ready to export'. Complete, quality controlled datasets will be set to this status once manual quality control is complete and (optionally) the dataset has passed inspection by an OTC expert. Near-real-time datasets will automatically have their status set to 'Ready to export' as soon as they are created.
+The call will only provide details of datasets whose status is 'Ready to export'. Complete, quality controlled datasets will be set to this status once manual quality control is complete and (optionally) the dataset has passed inspection by an OTC expert. Near-real-time datasets will automatically have their status set to 'Ready to export' as soon as they are created. If there are no datasets with this status, the returned JSON array will be empty.
 
 
 ### `exportDataset`
@@ -158,6 +171,16 @@ Parameter      Description
 `id`           The dataset ID
 
 `includeRaw`   Indicates whether the raw data files are required
+-------------------------------------------------------------------------------
+
+__Response Codes:__
+
+-------------------------------------------------------------------------------
+Response Code Meaning
+------------- -----------------------------------------------------------------
+404           The requested dataset does not exist
+
+403           The dataset is not in the 'Ready to export' status
 -------------------------------------------------------------------------------
 
 This call will get everything required to export a dataset and publish it to an external repository, including all files and metadata information. The result will be a ZIP archive containing all requested data files plus a JSON file containing metadata information. The dataset is selected using its ID, as returned by the [`exportList`](#export_list) call. QuinCe will be able to export datasets in a variety of formats, since different repositories may require different formats. Setting `includeRaw` to `true` will include the raw data files used to create the dataset in the output.
@@ -230,7 +253,7 @@ __URL:__ `QuinCe/api/export/completeExport`
 
 __HTTP Method:__ POST
 
-__Return:__ JSON
+__Return:__ Nothin
 
 __Parameters:__
 
@@ -240,13 +263,19 @@ Parameter      Description
 `id`           The dataset ID
 -------------------------------------------------------------------------------
 
-This call will simply set the status of the specified dataset to 'Exported', to indicate to QuinCe and its users that it has been published. It will return a simple JSON object that indicates whether or not the change of status was successful:
+__Response Codes:__
 
-```json
-{
-  "succeeded": "true"
-}
-```
+-------------------------------------------------------------------------------
+Response Code Meaning
+------------- -----------------------------------------------------------------
+200           The dataset was updated successfully
+
+404           The dataset does not exist
+
+403           The dataset is not marked as being exported
+-------------------------------------------------------------------------------
+
+This call will simply set the status of the specified dataset to 'Exported', to indicate to QuinCe and its users that it has been published. It will return a simple JSON object that indicates whether or not the change of status was successful:
 
 ### `abandonExport`
 
@@ -264,10 +293,16 @@ Parameter      Description
 `id`           The dataset ID
 -------------------------------------------------------------------------------
 
-This call can be used if the export script retrieves a dataset for publication, but is unable to complete the publication process. It will reset the dataset's status to 'Ready to export', so it can be processed in a subsequent call. The call will return a simple JSON object that indicates whether or not the change of status was successful:
+__Response Codes:__
 
-```json
-{
-  "succeeded": "true"
-}
-```
+-------------------------------------------------------------------------------
+Response Code Meaning
+------------- -----------------------------------------------------------------
+200           The dataset was updated successfully
+
+404           The dataset does not exist
+
+403           The dataset is not marked as being exported
+-------------------------------------------------------------------------------
+
+This call can be used if the export script retrieves a dataset for publication, but is unable to complete the publication process. It will reset the dataset's status to 'Ready to export', so it can be processed in a subsequent call. The call will return a simple JSON object that indicates whether or not the change of status was successful:
