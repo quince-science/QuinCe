@@ -403,7 +403,8 @@ public class ExportBean extends BaseManagedBean {
     for (ExportOption exportOption : exportOptions) {
       JSONObject datasetObject = new JSONObject();
       datasetObject.put("destination", exportOption.getName());
-      datasetObject.put("filename", dataset.getName() + exportOption.getFileExtension());
+      datasetObject.put("filename",
+          dataset.getName() + exportOption.getFileExtension());
       datasetArray.put(datasetObject);
     }
 
@@ -412,14 +413,31 @@ public class ExportBean extends BaseManagedBean {
     JSONObject metadata = DataSetDB.getMetadataJson(conn, dataset);
     Properties appConfig = ResourceManager.getInstance().getConfig();
 
-    metadata.put("quince_information", "Data processed using QuinCe version " + appConfig.getProperty("version"));
+    metadata.put("quince_information",
+        "Data processed using QuinCe version " + appConfig.getProperty("version"));
     manifest.put("metadata", metadata);
 
     result.put("manifest", manifest);
     return result;
   }
 
-  public static byte[] buildExportZip(Connection conn, DataSet dataset, ExportOption exportOption) throws Exception {
+  /**
+   * Build a ZIP file containining a full dataset export, including
+   * the raw files used to build the dataset and a manifest containing
+   * metadata and details of the files.
+   *
+   * The {@code exportOption} defines the export format to be used. If
+   * this is {@code null}, all formats will be exported.
+   *
+   * @param conn A database connection
+   * @param dataset The dataset to export
+   * @param exportOption The export option to use
+   * @return The export ZIP file
+   * @throws Exception All exceptions are propagated upwards
+   */
+  public static byte[] buildExportZip(Connection conn,
+      DataSet dataset, ExportOption exportOption) throws Exception {
+
     ByteArrayOutputStream zipOut = new ByteArrayOutputStream();
     ZipOutputStream zip = new ZipOutputStream(zipOut);
 
@@ -445,7 +463,8 @@ public class ExportBean extends BaseManagedBean {
     }
 
     List<Long> rawIds = dataset.getSourceFiles(conn);
-    List<DataFile> files = DataFileDB.getDataFiles(conn, ResourceManager.getInstance().getConfig(), rawIds);
+    List<DataFile> files = DataFileDB.getDataFiles(conn,
+        ResourceManager.getInstance().getConfig(), rawIds);
 
     for (DataFile file : files) {
       String filePath = dirRoot + "/raw/" + file.getFilename();
