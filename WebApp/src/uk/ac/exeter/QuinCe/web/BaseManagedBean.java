@@ -386,6 +386,6 @@ public abstract class BaseManagedBean {
    *         {@code false} if not
    */
   public boolean isApprovalUser() {
-    return getUser().isAdminUser();
+    return getUser().isApprovalUser();
   }
 }
