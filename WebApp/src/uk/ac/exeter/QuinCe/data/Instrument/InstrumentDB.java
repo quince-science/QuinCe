@@ -456,7 +456,7 @@ public class InstrumentDB {
     try {
       conn = dataSource.getConnection();
 
-      if (owner.isAdminUser()) {
+      if (owner.isAdminUser() || owner.isApprovalUser()) {
         result = getAllUsersInstrumentList(conn);
       } else {
         result = getInstrumentList(conn, owner.getDatabaseID());
