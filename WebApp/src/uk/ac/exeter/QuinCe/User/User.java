@@ -28,6 +28,13 @@ public class User {
   public static final int BIT_API_USER = 1 << 1;
 
   /**
+   * Permissions bit for Approval users.
+   *
+   * Users with this bit can approve datasets for export
+   */
+  public static final int BIT_APPROVAL_USER = 1 << 2;
+
+  /**
    * The user's database record ID
    */
   private int databaseId;
@@ -232,7 +239,20 @@ public class User {
     return (permissions & BIT_ADMIN_USER) > 0;
   }
 
+  /**
+   * Determine whether or not this is an API user
+   * @return {@code true} if this user can access the API; {@code false} if not
+   */
   public boolean isApiUser() {
     return (permissions & BIT_API_USER) > 0;
+  }
+
+  /**
+   * Determine whether or not this is an approval user
+   * @return {@code true} if this user can approve datasets for export;
+   *         {@code false} if not
+   */
+  public boolean isApprovalUser() {
+    return (permissions & BIT_APPROVAL_USER) > 0;
   }
 }
