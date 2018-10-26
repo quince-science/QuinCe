@@ -32,7 +32,7 @@ public class ExportList {
     RunTypeCategoryConfiguration runTypeConfig = resourceManager.getRunTypeCategoryConfiguration();
 
     Connection conn = resourceManager.getDBDataSource().getConnection();
-    List<DataSet> datasets = DataSetDB.getExportableDatasets(conn);
+    List<DataSet> datasets = DataSetDB.getDatasetsWithStatus(conn, DataSet.STATUS_READY_FOR_EXPORT);
 
     JSONArray json = new JSONArray();
 

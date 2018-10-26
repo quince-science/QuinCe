@@ -85,7 +85,7 @@ public class DataSetDB {
   /**
    * Query to get all exportable data sets
    */
-  private static final String GET_EXPORTABLE_DATASETS_QUERY = "SELECT "
+  private static final String GET_DATASETS_WITH_STATUS_QUERY = "SELECT "
       + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
       + "d.status_date, d.properties, d.last_touched, COUNT(c.user_flag), " // 10
       + "COALESCE(d.messages_json, '[]') " // 11
@@ -93,8 +93,7 @@ public class DataSetDB {
       + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
       + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id "
       + "AND c.user_flag = " + Flag.VALUE_NEEDED + " "
-      + "WHERE d.status = " + DataSet.STATUS_READY_FOR_EXPORT + " "
-      + "GROUP BY d.id";
+      + "WHERE d.status = ? GROUP BY d.id";
 
   /**
    * Statement to delete all records for a given dataset
@@ -515,7 +514,7 @@ public class DataSetDB {
    * @throws DatabaseException If a database error occurs
    * @throws MissingParamException If any required parameters are missing
    */
-  public static List<DataSet> getExportableDatasets(Connection conn) throws MissingParamException, DatabaseException {
+  public static List<DataSet> getDatasetsWithStatus(Connection conn, int status) throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
 
@@ -525,7 +524,8 @@ public class DataSetDB {
     ResultSet records = null;
 
     try {
-      stmt = conn.prepareStatement(GET_EXPORTABLE_DATASETS_QUERY);
+      stmt = conn.prepareStatement(GET_DATASETS_WITH_STATUS_QUERY);
+      stmt.setInt(1, status);
       records = stmt.executeQuery();
       while (records.next()) {
         dataSets.add(dataSetFromRecord(records));
