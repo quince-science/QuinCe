@@ -17,6 +17,19 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.ExportBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+/**
+ * API call to export a dataset as a ZIP file.
+ *
+ * The ZIP will contain:
+ * <ul>
+ *   <li>The dataset in all available export formats</li>
+ *   <li>The raw data files used to build the datases</li>
+ *   <li>A manifest containing file lists and metadata</li>
+ * </ul>
+ *
+ * @author zuj007
+ *
+ */
 @Path("/export/exportDataset")
 public class ExportDataset {
 
