@@ -405,10 +405,8 @@ public class DataSetDB {
       int status) throws MissingParamException, InvalidDataSetStatusException,
       DatabaseException, RecordNotFoundException {
     DataSet dataSet = getDataSet(conn, datasetId);
-    if (dataSet.getStatus() != status) {
-      dataSet.setStatus(status);
-      updateDataSet(conn, dataSet);
-    }
+    dataSet.setStatus(status);
+    updateDataSet(conn, dataSet);
   }
 
   /**
