@@ -32,22 +32,6 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 public class DataSetDB {
 
   /**
-   * Query to get the defined data sets for a given instrument
-   * @see #getDataSets(DataSource, long)
-   */
-  private static final String GET_DATASETS_QUERY = "SELECT "
-      + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, "
-      + "d.status_date, d.properties, d.last_touched, COUNT(c.user_flag), "
-      + "COALESCE(d.messages_json, '[]') "
-      + "FROM dataset d "
-      + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
-      + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id "
-      + "AND c.user_flag = " + Flag.VALUE_NEEDED + " "
-      + "WHERE d.instrument_id = ? "
-      + "GROUP BY d.id "
-      + "ORDER BY d.start ASC";
-
-  /**
    * Statement to add a new data set into the database
    * @see #addDataSet(DataSource, DataSet)
    */
@@ -67,39 +51,33 @@ public class DataSetDB {
       + "messages_json = ? WHERE id = ?"; // 10
 
   /**
-   * Query to get a single data set by its ID
-   *
-   * @see #getDataSet(DataSource, long)
-   */
-  private static final String GET_DATASET_QUERY = "SELECT "
-      + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
-      + "d.status_date, d.properties, d.last_touched, COUNT(c.user_flag), " // 10
-      + "COALESCE(d.messages_json, '[]') " // 11
-      + "FROM dataset d "
-      + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
-      + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id "
-      + "AND c.user_flag = " + Flag.VALUE_NEEDED + " "
-      + "WHERE d.id = ? "
-      + "GROUP BY d.id";
-
-  /**
-   * Query to get all exportable data sets
-   */
-  private static final String GET_DATASETS_WITH_STATUS_QUERY = "SELECT "
-      + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
-      + "d.status_date, d.properties, d.last_touched, COUNT(c.user_flag), " // 10
-      + "COALESCE(d.messages_json, '[]') " // 11
-      + "FROM dataset d "
-      + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
-      + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id "
-      + "AND c.user_flag = " + Flag.VALUE_NEEDED + " "
-      + "WHERE d.status = ? GROUP BY d.id";
-
-  /**
    * Statement to delete all records for a given dataset
    */
   private static final String DELETE_DATASET_QUERY = "DELETE FROM dataset_data "
       + "WHERE dataset_id = ?";
+
+  /**
+   * Make an SQL query for retrieving complete datasets using
+   * a specified WHERE clause
+   * @param whereField The field to use in the WHERE clause
+   * @return The query SQL
+   */
+  private static String makeGetDatasetsQuery(String whereField) {
+    StringBuilder sql = new StringBuilder("SELECT "
+        + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
+        + "d.status_date, d.properties, d.last_touched, COUNT(c.user_flag), " // 10
+        + "COALESCE(d.messages_json, '[]') " // 11
+        + "FROM dataset d "
+        + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
+        + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id "
+        + "AND c.user_flag = " + Flag.VALUE_NEEDED + " "
+        + "WHERE d.");
+
+    sql.append(whereField);
+    sql.append(" = ? GROUP BY d.id ORDER BY d.start ASC");
+
+    return sql.toString();
+  }
 
   /**
    * Get the list of data sets defined for a given instrument
@@ -123,7 +101,7 @@ public class DataSetDB {
     try {
 
       conn = dataSource.getConnection();
-      stmt = conn.prepareStatement(GET_DATASETS_QUERY);
+      stmt = conn.prepareStatement(makeGetDatasetsQuery("instrument_id"));
       stmt.setLong(1, instrumentId);
 
       records = stmt.executeQuery();
@@ -315,7 +293,7 @@ public class DataSetDB {
     ResultSet record = null;
 
     try {
-      stmt = conn.prepareStatement(GET_DATASET_QUERY);
+      stmt = conn.prepareStatement(makeGetDatasetsQuery("id"));
       stmt.setLong(1, id);
 
       record = stmt.executeQuery();
@@ -524,7 +502,7 @@ public class DataSetDB {
     ResultSet records = null;
 
     try {
-      stmt = conn.prepareStatement(GET_DATASETS_WITH_STATUS_QUERY);
+      stmt = conn.prepareStatement(makeGetDatasetsQuery("status"));
       stmt.setInt(1, status);
       records = stmt.executeQuery();
       while (records.next()) {

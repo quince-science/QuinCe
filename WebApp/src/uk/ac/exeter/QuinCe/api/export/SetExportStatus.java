@@ -13,6 +13,11 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+/**
+ * Abstract API call to set a dataset's status
+ * @author zuj007
+ *
+ */
 public abstract class SetExportStatus {
 
   @POST
