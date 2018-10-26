@@ -20,6 +20,12 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+/**
+ * API call to get a list of all datasets
+ * ready for export
+ * @author zuj007
+ *
+ */
 @Path("/export/exportList")
 public class ExportList {
 
