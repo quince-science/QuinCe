@@ -19,7 +19,7 @@ public class ResetPasswordBean extends BaseManagedBean {
   /**
    * The URL for the password reset code verification bean
    */
-  public static final String PATH = "/user/reset_password.jsf";
+  public static final String PATH = "/user/reset_password.xhtml";
 
   /**
    * The user parameter
