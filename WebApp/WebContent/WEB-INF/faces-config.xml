@@ -71,6 +71,7 @@
     <navigation-case>
       <from-outcome>SignUp</from-outcome>
       <to-view-id>/user/signup.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
     <navigation-case>
       <from-outcome>AuthenticationFailed</from-outcome>
@@ -83,6 +84,7 @@
     <navigation-case>
       <from-outcome>LostPassword</from-outcome>
       <to-view-id>/user/lost_password.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
   </navigation-rule>
   <navigation-rule>
@@ -91,6 +93,7 @@
     <navigation-case>
       <from-outcome>LostPasswordLinkSent</from-outcome>
       <to-view-id>/user/lost_password_link_sent.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
   </navigation-rule>
   <navigation-rule>
@@ -115,6 +118,7 @@
     <navigation-case>
       <from-outcome>Success</from-outcome>
       <to-view-id>/user/signup_complete.xhtml</to-view-id>
+      <redirect/>
     </navigation-case>
   </navigation-rule>
   <navigation-rule>
@@ -123,6 +127,7 @@
     <navigation-case>
       <from-outcome>Done</from-outcome>
       <to-view-id>/index.html</to-view-id>
+      <redirect/>
     </navigation-case>
   </navigation-rule>
   <navigation-rule>
