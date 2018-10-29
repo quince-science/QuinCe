@@ -172,6 +172,7 @@ public class AuthenticatedFilter implements Filter {
     allowedPaths.add("/user/verify_email");
     allowedPaths.add("/user/lost_password");
     allowedPaths.add("/user/reset_password");
+    allowedPaths.add("/user/lost_password_link_sent");
     allowedPaths.add("/user/password_changed");
     allowedPaths.add("/credits");
     allowedPaths.add("/favicon.ico");
