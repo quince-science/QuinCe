@@ -37,7 +37,9 @@ public abstract class SendCodeJob extends Job {
    * @throws MissingParamException If any required parameters are missing
    * @throws InvalidJobParametersException If the job parameters are invalid
    */
-  public SendCodeJob(ResourceManager resourceManager, Properties config, long id, Map<String, String> params) throws MissingParamException, InvalidJobParametersException {
+  public SendCodeJob(ResourceManager resourceManager, Properties config,
+      long id, Map<String, String> params)
+          throws MissingParamException, InvalidJobParametersException {
     super(resourceManager, config, id, params);
   }
 
@@ -50,7 +52,8 @@ public abstract class SendCodeJob extends Job {
     emailText.append("\n");
 
     try {
-      EmailSender.sendEmail(config, parameters.get(EMAIL_KEY), getSubject(), emailText.toString());
+      EmailSender.sendEmail(config, parameters.get(EMAIL_KEY),
+          getSubject(), emailText.toString());
     } catch (EmailException e) {
       throw new JobFailedException(id, e);
     }
