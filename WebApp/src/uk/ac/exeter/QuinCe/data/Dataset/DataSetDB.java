@@ -37,27 +37,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class DataSetDB {
 
   /**
-   * Query to get the defined data sets for a given instrument
-   * @see #getDataSets(DataSource, long)
-   */
-  private static final String GET_DATASETS_QUERY = "SELECT "
-      + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, "
-      + "d.nrt, d.properties, d.last_touched, COUNT(c.user_flag), "
-      + "COALESCE(d.messages_json, '[]') "
-      + "FROM dataset d "
-      + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
-      + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id AND c.user_flag = " + Flag.VALUE_NEEDED + " "
-      + "WHERE d.instrument_id = ? "
-      + "GROUP BY d.id "
-      + "ORDER BY d.start ASC";
-
-  /**
    * Statement to add a new data set into the database
    * @see #addDataSet(DataSource, DataSet)
    */
   private static final String ADD_DATASET_STATEMENT = "INSERT INTO dataset "
       + "(instrument_id, name, start, end, status, status_date, "
-      ? "nrt, properties, last_touched, messages_json) "
+      + "nrt, properties, last_touched, messages_json) "
       + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 10
 
   /**
@@ -67,7 +52,7 @@ public class DataSetDB {
    */
   private static final String UPDATE_DATASET_STATEMENT = "Update dataset set "
       + "instrument_id = ?, name = ?, start = ?, end = ?, status = ?, " // 5
-      + "status_date = ?, nrt = ?, properties = ?, last_touched = ?, " 9
+      + "status_date = ?, nrt = ?, properties = ?, last_touched = ?, " // 9
       + "messages_json = ? WHERE id = ?"; // 11
 
   /**
@@ -133,7 +118,6 @@ public class DataSetDB {
     return result;
   }
 
-
   /**
    * Get the list of data sets defined for a given instrument
    * @param dataSource A data source
@@ -153,7 +137,7 @@ public class DataSetDB {
     ResultSet records = null;
 
     try {
-      stmt = conn.prepareStatement(GET_DATASETS_QUERY);
+      stmt = conn.prepareStatement(makeGetDatasetsQuery("instrument_id"));
       stmt.setLong(1, instrumentId);
 
       records = stmt.executeQuery();
@@ -286,13 +270,13 @@ public class DataSetDB {
 
       if (dataSet.getMessageCount() > 0) {
         String jsonString = dataSet.getMessagesAsJSONString();
-        stmt.setString(9, jsonString);
+        stmt.setString(10, jsonString);
       } else {
-        stmt.setNull(9, Types.VARCHAR);
+        stmt.setNull(10, Types.VARCHAR);
       }
 
       if (DatabaseUtils.NO_DATABASE_RECORD != dataSet.getId()) {
-        stmt.setLong(10, dataSet.getId());
+        stmt.setLong(11, dataSet.getId());
       }
 
       stmt.execute();
@@ -501,12 +485,32 @@ public class DataSetDB {
     saveDataSet(conn, dataSet);
   }
 
-
   /**
    * Retrieve the most recent data set for an instrument
    * @param conn A database connection
    * @param instrument The instrument's database ID
    * @return The most recent dataset, or {@code null} if there are no datasets
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   */
+  public static DataSet getLastDataSet(Connection conn, long instrumentId) throws MissingParamException, DatabaseException {
+    DataSet result = null;
+
+    List<DataSet> datasets = getDataSets(conn, instrumentId);
+    if (datasets.size() > 0) {
+      result = datasets.get(datasets.size() - 1);
+    }
+
+    return result;
+  }
+
+  /**
+   * Retrieve the NRT data set for an instrument
+   * @param conn A database connection
+   * @param instrument The instrument's database ID
+   * @return The NRT dataset, or {@code null} if there there isn't one
    * @throws MissingParamException
    *           If any required parameters are missing
    * @throws DatabaseException

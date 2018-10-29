@@ -23,11 +23,6 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public class DataSet {
 
   /**
-   * The name to use for NRT datasets
-   */
-  public static final String NRT_DATASET_NAME = "Near Real Time Data";
-
-  /**
    * The numeric value for the error status.
    * The data set will be given this status whenever a processing job fails.
    */
@@ -179,14 +174,14 @@ public class DataSet {
   private int status = STATUS_WAITING;
 
   /**
-   * Indicates whether or not this is a NRT dataset
-   */
-  private boolean nrt = false;
-
-  /**
    * The date that the status was set
    */
   private LocalDateTime statusDate = null;
+
+  /**
+   * Indicates whether or not this is a NRT dataset
+   */
+  private boolean nrt = false;
 
   /**
    * Messages from jobs handling this data set
@@ -274,6 +269,7 @@ public class DataSet {
     this.start = start;
     this.end = end;
     this.nrt = nrt;
+    this.statusDate = DateTimeUtils.longToDate(System.currentTimeMillis());
   }
 
   /**

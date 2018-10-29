@@ -13,9 +13,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
@@ -33,11 +35,11 @@ public class MakeNrtDataset {
   /**
    * Main API method. Performs checks then tries to
    * create the NRT dataset.
-   * @param instrument The instrument ID ({@code instrument} parameter)
+   * @param instrumentId The instrument ID ({@code instrument} parameter)
    * @return The response
    */
   @POST
-  public Response makeNrtDataset(@FormParam("instrument") long instrument) {
+  public Response makeNrtDataset(@FormParam("instrument") long instrumentId) {
 
     Response response;
 
@@ -46,10 +48,15 @@ public class MakeNrtDataset {
       DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
       conn = dataSource.getConnection();
 
-      if (!InstrumentDB.instrumentExists(conn, instrument)) {
+      if (!InstrumentDB.instrumentExists(conn, instrumentId)) {
         response = Response.status(Status.NOT_FOUND).build();
       } else {
-        if (!InstrumentDB.isNrtInstrument(conn, instrument)) {
+        ResourceManager resourceManager = ResourceManager.getInstance();
+
+        Instrument instrument = InstrumentDB.getInstrument(conn, instrumentId,
+            resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
+
+        if (!instrument.getNrt()) {
           response = Response.status(Status.FORBIDDEN).build();
         } else {
           if (createNrtDataset(conn, instrument)) {
@@ -77,16 +84,16 @@ public class MakeNrtDataset {
    *         {@code false} if no dataset is created.
    * @throws Exception Any errors are propagated upward
    */
-  private boolean createNrtDataset(Connection conn, long instrumentId) throws Exception {
+  private boolean createNrtDataset(Connection conn, Instrument instrument) throws Exception {
 
     Properties appConfig = ResourceManager.getInstance().getConfig();
 
-    DataSet lastDataset = DataSetDB.getLastDataSet(conn, instrumentId);
-    DataSet nrtDataset = DataSetDB.getNrtDataSet(conn, instrumentId);
+    DataSet lastDataset = DataSetDB.getLastDataSet(conn, instrument.getDatabaseId());
+    DataSet nrtDataset = DataSetDB.getNrtDataSet(conn, instrument.getDatabaseId());
 
     // If there's a NRT dataset, it should be the last one. If it isn't, delete it.
     if (null != lastDataset && null != nrtDataset && !nrtDataset.equals(lastDataset)) {
-      DataSetDB.deleteNrtDataSet(conn, instrumentId);
+      DataSetDB.deleteNrtDataSet(conn, instrument.getDatabaseId());
       nrtDataset = null;
     }
 
@@ -95,18 +102,18 @@ public class MakeNrtDataset {
     // If the last dataset is the NRT dataset, see if there's new
     // data after it. If there isn't, we don't need to do anything
     if (null != nrtDataset) {
-      if (!DataFileDB.completeFilesAfter(conn, appConfig, instrumentId, nrtDataset.getEnd())) {
+      if (!DataFileDB.completeFilesAfter(conn, appConfig, instrument.getDatabaseId(), nrtDataset.getEnd())) {
         createDataset = false;
       } else {
-        DataSetDB.deleteNrtDataSet(conn, instrumentId);
-        lastDataset = DataSetDB.getLastDataSet(conn, instrumentId);
+        DataSetDB.deleteNrtDataSet(conn, instrument.getDatabaseId());
+        lastDataset = DataSetDB.getLastDataSet(conn, instrument.getDatabaseId());
       }
     } else if (null != lastDataset) {
-      if (!DataFileDB.completeFilesAfter(conn, appConfig, instrumentId, lastDataset.getEnd())) {
+      if (!DataFileDB.completeFilesAfter(conn, appConfig, instrument.getDatabaseId(), lastDataset.getEnd())) {
         createDataset = false;
       }
     } else {
-      if (!DataFileDB.completeFilesAfter(conn, appConfig, instrumentId, null)) {
+      if (!DataFileDB.completeFilesAfter(conn, appConfig, instrument.getDatabaseId(), null)) {
         createDataset = false;
       }
     }
@@ -117,17 +124,27 @@ public class MakeNrtDataset {
         nrtStartDate = lastDataset.getEnd().plusSeconds(1);
       }
 
-      LocalDateTime endDate = DataFileDB.getLastFileDate(conn, instrumentId);
-      DataSet newDataset = new DataSet(instrumentId, DataSet.NRT_DATASET_NAME, nrtStartDate, endDate, true);
+      LocalDateTime endDate = DataFileDB.getLastFileDate(conn, instrument.getDatabaseId());
+      String nrtDatasetName = buildNrtDatasetName(instrument);
+      DataSet newDataset = new DataSet(instrument.getDatabaseId(), nrtDatasetName, nrtStartDate, endDate, true);
       DataSetDB.addDataSet(conn, newDataset);
 
       // TODO This is a copy of the code in DataSetsBean.addDataSet. Does it need collapsing?
       Map<String, String> params = new HashMap<String, String>();
       params.put(ExtractDataSetJob.ID_PARAM, String.valueOf(newDataset.getId()));
 
-      JobManager.addJob(conn, InstrumentDB.getInstrumentOwner(conn, instrumentId), ExtractDataSetJob.class.getCanonicalName(), params);
+      JobManager.addJob(conn, UserDB.getUser(conn, instrument.getOwnerId()),
+          ExtractDataSetJob.class.getCanonicalName(), params);
     }
 
     return createDataset;
   }
+
+  private String buildNrtDatasetName(Instrument instrument) {
+    StringBuilder result = new StringBuilder("NRT");
+    result.append(instrument.getPlatformCode());
+    result.append(System.currentTimeMillis());
+    return result.toString();
+  }
+
 }
