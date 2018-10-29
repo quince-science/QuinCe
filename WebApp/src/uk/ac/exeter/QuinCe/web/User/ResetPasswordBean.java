@@ -63,7 +63,8 @@ public class ResetPasswordBean extends BaseManagedBean {
 
     if (!verified) {
       try {
-        int codeOK = UserDB.checkPasswordResetCode(ServletUtils.getDBDataSource(), getRequestParameter(USER_PARAM), getRequestParameter(CODE_PARAM));
+        int codeOK = UserDB.checkPasswordResetCode(ServletUtils.getDBDataSource(),
+            getRequestParameter(USER_PARAM), getRequestParameter(CODE_PARAM));
         verified = (codeOK == UserDB.CODE_OK);
 
         switch (codeOK) {

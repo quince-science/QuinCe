@@ -110,7 +110,8 @@ public class LoginBean extends BaseManagedBean {
 
   /**
    * Authenticate the user.
-   * @return The authentication result. One of {@link #AUTHENTICATION_OK_RESULT} or {@link #AUTHENTICATION_FAILED_RESULT}.
+   * @return The authentication result. One of {@link #AUTHENTICATION_OK_RESULT} or
+   *         {@link #AUTHENTICATION_FAILED_RESULT}.
    * @see UserDB#authenticate(javax.sql.DataSource, String, char[])
    */
   public String authenticate() {
@@ -119,7 +120,8 @@ public class LoginBean extends BaseManagedBean {
 
     try {
       // Clear any existing user bean
-      int authenticateResult = UserDB.authenticate(ServletUtils.getDBDataSource(), emailAddress, password.toCharArray());
+      int authenticateResult = UserDB.authenticate(ServletUtils.getDBDataSource(),
+          emailAddress, password.toCharArray());
 
       switch (authenticateResult) {
       case UserDB.AUTHENTICATE_OK: {
@@ -135,7 +137,8 @@ public class LoginBean extends BaseManagedBean {
         break;
       }
       case UserDB.AUTHENTICATE_EMAIL_CODE_SET: {
-        setMessage(null, "Your account has not yet been activated. Please use the link in your activation email.");
+        setMessage(null, "Your account has not yet been activated. Please use the "
+            + "link in your activation email.");
         break;
       }
       }
@@ -179,7 +182,8 @@ public class LoginBean extends BaseManagedBean {
       UserDB.generatePasswordResetCode(getDataSource(), user);
       Map<String, String> emailJobParams = new HashMap<String, String>(1);
       emailJobParams.put(SendPasswordResetMailJob.EMAIL_KEY, emailAddress);
-      JobManager.addInstantJob(ServletUtils.getResourceManager(), ServletUtils.getAppConfig(), user, "uk.ac.exeter.QuinCe.jobs.user.SendPasswordResetMailJob", emailJobParams);
+      JobManager.addInstantJob(ServletUtils.getResourceManager(), ServletUtils.getAppConfig(), user,
+          "uk.ac.exeter.QuinCe.jobs.user.SendPasswordResetMailJob", emailJobParams);
     }
 
     return result;

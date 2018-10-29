@@ -30,7 +30,8 @@ public class SendPasswordResetMailJob extends SendCodeJob {
    * @throws MissingParamException If any required parameters are missing
    * @throws InvalidJobParametersException If the job parameters are invalid
    */
-  public SendPasswordResetMailJob(ResourceManager resourceManager, Properties config, long id, Map<String, String> params) throws MissingParamException, InvalidJobParametersException {
+  public SendPasswordResetMailJob(ResourceManager resourceManager, Properties config, long id, Map<String,
+      String> params) throws MissingParamException, InvalidJobParametersException {
     super(resourceManager, config, id, params);
   }
 
@@ -46,7 +47,8 @@ public class SendPasswordResetMailJob extends SendCodeJob {
 
   @Override
   protected String getEmailText() {
-    return "Click the link below to reset your QuinCe password. If you did not request this link, you can safely ignore it.";
+    return "Click the link below to reset your QuinCe password. If you did not request this link,"
+        + " you can safely ignore it.";
   }
 
   @Override
