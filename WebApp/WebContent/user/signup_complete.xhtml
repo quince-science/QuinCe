@@ -4,7 +4,7 @@
   xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
   template="/WEB-INF/templates/basic_page.xhtml">
 
-  <ui:define name="title">Registration Successful</ui:define>
+  <ui:define name="pageTitle"></ui:define>
 
   <ui:define name="content">
     <div class="contentBox">
@@ -13,8 +13,8 @@
         You will shortly receive an email. Click on the link in the email to activate your account.
       </div>
       <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
-              <p:button id="okButton" value="OK" outcome="/index.xhtml"/>
-            </h:panelGrid>
+        <p:button id="okButton" value="OK" outcome="/index.xhtml"/>
+      </h:panelGrid>
     </div>
   </ui:define>
 </ui:composition>
