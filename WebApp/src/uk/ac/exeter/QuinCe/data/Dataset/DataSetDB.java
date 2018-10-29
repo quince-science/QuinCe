@@ -16,6 +16,9 @@ import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -23,6 +26,7 @@ import uk.ac.exeter.QuinCe.utils.Message;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Methods for manipulating data sets in the database
@@ -435,12 +439,15 @@ public class DataSetDB {
 
   /**
    * Generate the metadata portion of the manifest
-   * @return
-   * @throws DatabaseException
-   * @throws MissingParamException
-   * @throws RecordNotFoundException
+   * @return The metadata
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   * @throws RecordNotFoundException If the dataset doesn't exist
+   * @throws InstrumentException If the instrument details cannot be retrieved
    */
-  public static JSONObject getMetadataJson(DataSource dataSource, DataSet dataset) throws DatabaseException, MissingParamException, RecordNotFoundException {
+  public static JSONObject getMetadataJson(DataSource dataSource, DataSet dataset) throws DatabaseException,
+    MissingParamException, RecordNotFoundException, InstrumentException {
+
     Connection conn = null;
 
     try {
@@ -455,20 +462,27 @@ public class DataSetDB {
 
   /**
    * Generate the metadata portion of the manifest
-   * @return
-   * @throws DatabaseException
-   * @throws MissingParamException
-   * @throws RecordNotFoundException
+   * @return The metadata
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   * @throws RecordNotFoundException If the dataset doesn't exist
+   * @throws InstrumentException If the instrument details cannot be retrieved
    */
-  public static JSONObject getMetadataJson(Connection conn, DataSet dataset) throws DatabaseException, MissingParamException, RecordNotFoundException {
+  public static JSONObject getMetadataJson(Connection conn, DataSet dataset) throws DatabaseException,
+    MissingParamException, RecordNotFoundException, InstrumentException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(dataset, "dataset");
+
+    ResourceManager resourceManager = ResourceManager.getInstance();
+    Instrument instrument = InstrumentDB.getInstrument(conn, dataset.getInstrumentId(),
+        resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
 
     JSONObject result = new JSONObject();
     result.put("name", dataset.getName());
     result.put("startdate", DateTimeUtils.toJsonDate(dataset.getStart()));
     result.put("enddate", DateTimeUtils.toJsonDate(dataset.getEnd()));
+    result.put("platformCode", instrument.getPlatformCode());
 
     int recordCount = DataSetDataDB.getMeasurementIds(conn, dataset.getId()).size();
     result.put("records", recordCount);
@@ -492,7 +506,8 @@ public class DataSetDB {
    * @throws DatabaseException If a database error occurs
    * @throws MissingParamException If any required parameters are missing
    */
-  public static List<DataSet> getDatasetsWithStatus(Connection conn, int status) throws MissingParamException, DatabaseException {
+  public static List<DataSet> getDatasetsWithStatus(Connection conn, int status)
+      throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
 
