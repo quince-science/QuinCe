@@ -395,7 +395,11 @@ public class ExportBean extends BaseManagedBean {
     JSONObject manifest = new JSONObject();
     JSONArray raw = new JSONArray();
     for (DataFile file : rawFiles) {
-      raw.put(file.getFilename());
+      JSONObject fileJson = new JSONObject();
+      fileJson.put("filename", file.getFilename());
+      fileJson.put("startDate", DateTimeUtils.toJsonDate(file.getStartDate()));
+      fileJson.put("endDate", DateTimeUtils.toJsonDate(file.getEndDate()));
+      raw.put(fileJson);
     }
     manifest.put("raw", raw);
 
