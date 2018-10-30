@@ -27,6 +27,9 @@ class DataRetriever(metaclass=ABCMeta):
     for key, value in self.configuration.items():
       if value is None:
         value = "NOT SET"
+      elif key.lower() == "password":
+        value = "***"
+
       table_data.append([key, value])
 
     print(tabulate(table_data))
@@ -38,18 +41,26 @@ class DataRetriever(metaclass=ABCMeta):
 
     for key, existing_value in self.configuration.items():
       new_value = None
+      if existing_value is None:
+        existing_value = "NOT SET"
+      elif key.lower() == "password":
+        existing_value = "***"
 
       while new_value is None:
-        input_value = input("%s [%s]: " % (key, existing_value if existing_value is not None else "NOT SET")).strip()
+
+        input_value = input("%s [%s]: " % (key, existing_value)).strip()
         if input_value == "":
-          if existing_value is not None:
+          if key.lower() == "password":
+            new_value = self.configuration[key]
+          elif existing_value is not None:
             new_value = existing_value
         else:
           new_value = input_value
 
       self.configuration[key] = new_value
 
-    self._test_configuration()
+    print()
+    return self._test_configuration()
 
   # Get the configuration as a JSON object
   def get_configuration_json(self):
