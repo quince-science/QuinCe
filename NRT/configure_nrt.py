@@ -133,8 +133,12 @@ try:
               if new_type != instrument["type"]:
                 retriever = retriever_factory.get_new_instance(new_type)
 
-              print()
-              retriever.enter_configuration()
+
+              config_ok = False
+              while not config_ok:
+                print()
+                config_ok = retriever.enter_configuration()
+
               nrtdb.store_configuration(dbconn, instrument["id"], retriever)
 
 except urllib.error.URLError as e:
