@@ -37,6 +37,7 @@
 %nrt_ftp_server%=localhost
 %nrt_ftp_user%=api_user
 %nrt_ftp_password%=iamanapiuser
+%nrt_ftp_folder%=NRT
 
 ###########################
 # Test server properties  #
