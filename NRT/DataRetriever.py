@@ -12,7 +12,13 @@ class DataRetriever(metaclass=ABCMeta):
   @staticmethod
   @abstractmethod
   def get_type():
-    pass
+    raise NotImplementedError("get_type not implemented")
+
+  # Test the configuration to make sure everything works
+  @abstractmethod
+  def _test_configuration(self):
+    raise NotImplementedError("_test_configuration not implemented")
+
 
   # Print the current configuration values
   def print_configuration(self):
@@ -43,5 +49,8 @@ class DataRetriever(metaclass=ABCMeta):
 
       self.configuration[key] = new_value
 
+    self._test_configuration()
+
+  # Get the configuration as a JSON object
   def get_configuration_json(self):
     return json.dumps(self.configuration)

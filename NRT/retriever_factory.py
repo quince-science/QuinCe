@@ -1,5 +1,5 @@
 from DataRetriever import DataRetriever
-import EmailRetriever, FileRetriever
+import ImapRetriever
 
 # Factory for DataRetriever instances
 
