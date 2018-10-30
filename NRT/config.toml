@@ -1,7 +1,12 @@
 [QuinCe]
 url='%quince_url%'
-user='api_user@bcdc.no'
-password='iamanapiuser'
+user='%nrt_api_user%'
+password='%nrt_api_password%'
 
 [Database]
 location='nrt.sqlite'
+
+[FTP]
+server='%nrt_ftp_server%'
+user='%nrt_ftp_user%'
+password='%nrt_ftp_password%'
