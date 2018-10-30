@@ -29,6 +29,14 @@
 %email_fromname%=QuinCe
 %email_fromaddress%=quince@uib.no
 
+###########################
+# NRT Properties          #
+###########################
+%nrt_api_user%=api_user@bcdc.no
+%nrt_api_password%=iamanapiuser
+%nrt_ftp_server%=localhost
+%nrt_ftp_user%=api_user
+%nrt_ftp_password%=iamanapiuser
 
 ###########################
 # Test server properties  #
