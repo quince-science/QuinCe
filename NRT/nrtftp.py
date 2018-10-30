@@ -18,6 +18,15 @@ def get_ftp_folder(ftpconn, ftp_config, instrument_id):
   if not ftpconn.isdir(folder):
     ftpconn.mkdir(folder)
 
+  if not ftpconn.isdir(folder + "/inbox"):
+    ftpconn.mkdir(folder + "/inbox")
+
+  if not ftpconn.isdir(folder + "/succeeded"):
+    ftpconn.mkdir(folder + "/succeeded")
+
+  if not ftpconn.isdir(folder + "/failed"):
+    ftpconn.mkdir(folder + "/failed")
+
   return folder
 
 # Create the FTP folders for the specified IDs
