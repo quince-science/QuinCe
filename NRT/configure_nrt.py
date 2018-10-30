@@ -4,7 +4,7 @@ import base64
 from tabulate import tabulate
 
 # Local modules
-import quince, nrtdb
+import quince, nrtdb, nrtftp
 import retriever_factory
 
 # Extract the list of IDs from a set of instruments
@@ -14,6 +14,7 @@ def get_ids(instruments):
     result.append(instrument["id"])
   return result
 
+# Draw the table of instruments
 def make_instrument_table(instruments, ids, showType):
 
   table_data = []
@@ -44,11 +45,14 @@ def make_instrument_table(instruments, ids, showType):
 #######################################################
 
 dbconn = None
+ftpconn = None
 
 try:
   with open("config.toml", "r") as config_file:
     config = toml.loads(config_file.read())
 
+  print("Connecting to FTP servers...")
+  ftpconn = nrtftp.connect_ftp(config["FTP"])
   dbconn = nrtdb.get_db_conn(config["Database"]["location"])
 
   print("Getting QuinCe instruments...")
@@ -82,6 +86,7 @@ try:
       quit()
     else:
       nrtdb.add_instruments(dbconn, quince_instruments, new_ids)
+      nrtftp.add_instruments(ftpconn, config["FTP"], new_ids)
 
   # Main configuration loop
   quit = False
@@ -139,3 +144,6 @@ except urllib.error.HTTPError as e:
 
 if dbconn is not None:
   nrtdb.close(dbconn)
+
+if ftpconn is not None:
+  ftpconn.close()
