@@ -11,6 +11,7 @@
 **/*.sqlite
 **/__pycache__
 .pydevproject
+.log
 
 # Ignore build-files from gradle. Make sure gradle-wrapper.jar is not ignored
 /.gradle/
