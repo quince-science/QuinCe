@@ -34,7 +34,8 @@ def make_instrument_table(instruments, ids, showType):
         table_data.append([instrument["id"],
                            instrument["name"],
                            instrument["owner"],
-                           instrument["type"]])
+                           "None" if instrument["type"] is None
+                             else instrument["type"]])
       else:
         table_data.append([instrument["id"],
                            instrument["name"],
@@ -117,7 +118,7 @@ try:
           print()
 
           print("TYPE: %s" % (instrument["type"]))
-          if instrument["type"] != "None":
+          if instrument["type"] is not None:
             retriever = retriever_factory.get_instance(instrument["type"], json.loads(instrument["config"]))
             retriever.print_configuration()
 
