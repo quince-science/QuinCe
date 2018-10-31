@@ -5,7 +5,7 @@ from tabulate import tabulate
 
 # Local modules
 import quince, nrtdb, nrtftp
-import retriever_factory
+import RetrieverFactory
 
 # Extract the list of IDs from a set of instruments
 def get_ids(instruments):
@@ -119,7 +119,7 @@ try:
 
           print("TYPE: %s" % (instrument["type"]))
           if instrument["type"] is not None:
-            retriever = retriever_factory.get_instance(instrument["type"], json.loads(instrument["config"]))
+            retriever = RetrieverFactory.get_instance(instrument["type"], json.loads(instrument["config"]))
             retriever.print_configuration()
 
           print()
@@ -127,12 +127,12 @@ try:
           change = input("Change configuration (y/n)? ").lower()
 
           if change == "y":
-            new_type = retriever_factory.ask_retriever_type()
+            new_type = RetrieverFactory.ask_retriever_type()
             if new_type is None:
               nrtdb.store_configuration(dbconn, instrument["id"], None)
             else:
               if new_type != instrument["type"]:
-                retriever = retriever_factory.get_new_instance(new_type)
+                retriever = RetrieverFactory.get_new_instance(new_type)
 
 
               config_ok = False
