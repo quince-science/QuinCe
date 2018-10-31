@@ -3,7 +3,7 @@ import logging
 import toml, json
 
 # Local modules
-import nrtdb
+import retriever_factory, nrtdb
 
 dbconn = None
 ftpconn = None
@@ -27,3 +27,8 @@ for instrument_id in instruments:
 
   if instrument["type"] is None:
     log_instrument(instrument_id, logging.ERROR, "Configuration type not set")
+  else:
+    retriever = retriever_factory.get_instance(instrument["type"],
+      instrument["config"])
+
+    print(retriever)
