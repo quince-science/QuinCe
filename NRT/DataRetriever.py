@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from tabulate import tabulate
-import json
+import json, getpass
 
 class DataRetriever(metaclass=ABCMeta):
 
@@ -48,12 +48,14 @@ class DataRetriever(metaclass=ABCMeta):
 
       while new_value is None:
 
-        input_value = input("%s [%s]: " % (key, existing_value)).strip()
+        if key.lower() == "password":
+          input_value = getpass.getpass("%s [%s]: " % (key, existing_value)).strip()
+        else:
+          input_value = input("%s [%s]: " % (key, existing_value)).strip()
+
         if input_value == "":
-          if key.lower() == "password":
+          if existing_value is not None:
             new_value = self.configuration[key]
-          elif existing_value is not None:
-            new_value = existing_value
         else:
           new_value = input_value
 
