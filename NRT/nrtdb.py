@@ -39,12 +39,25 @@ def get_instruments(conn):
 
   return result
 
-# Get the stored instruments
+# Get the IDs of the stored instruments
+def get_instrument_ids(conn):
+  result = []
+
+  c = conn.cursor();
+  c.execute("SELECT id FROM instrument ORDER BY id")
+  for row in c:
+    result.append(row[0])
+
+  return result
+
+# Get a stored instrument
 def get_instrument(conn, instrument_id):
   result = None
 
   c = conn.cursor();
-  c.execute("SELECT id, name, owner, type, config FROM instrument WHERE id = ?", (instrument_id, ))
+  c.execute("SELECT id, name, owner, type, config FROM instrument WHERE id = ?",
+    (instrument_id, ))
+
   for row in c:
     record = {}
     record["id"] = row[0]
@@ -93,7 +106,7 @@ def get_unconfigured_instruments(conn):
 def store_configuration(conn, instrument_id, retriever):
   c = conn.cursor()
   if retriever is None:
-    c.execute("UPDATE instrument SET type='None', config=NULL WHERE id = ?",
+    c.execute("UPDATE instrument SET type=NULL, config=NULL WHERE id = ?",
       (instrument_id, ))
   else:
     c.execute("UPDATE instrument SET type=?, config=? WHERE id = ?",
