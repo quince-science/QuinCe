@@ -1,0 +1,41 @@
+[input]
+  [[input.tables]]
+    name = "IcosData"
+    mapping = ["TimeStamp", "Longitude", "Latitude", "Li7000H2O", "Li7000CO2",
+             "DrainTemperature", "ColumnTemperature", "VaisalaPressure",
+             "SmartTrakFlow", "WaterFlow", "SBE21Serial", "SBE21Salinity",
+             "SBE21Temperature", "SBE38Serial", "SBE38Temperature",
+             "AA4330FSerial", "AA4330FOxygen", "AA4330FAirSat",
+             "AA4330FTemperature", "FLRTSerial", "FLRTChla", "AWSAirPressure",
+             "AWSTemperature", "AWSWindDir", "AWSWindSpeed", "OctansHeave",
+             "SolinoidState", "Multiplexer"]
+
+  [[input.tables]]
+    name = "IcosCalData"
+    mapping = ["TimeStamp", "Longitude", "Latitude", "Li7000H2O", "Li7000CO2",
+             "DrainTemperature", "", "VaisalaPressure",
+             "SmartTrakFlow", "WaterFlow", "", "",
+             "", "", "",
+             "", "", "",
+             "", "", "", "AWSAirPressure",
+             "", "", "", "",
+             "SolinoidState", "Multiplexer"]
+
+    [[input.tables.ignore]]
+      column = "Multiplexer"
+      value = "1"
+
+[output]
+
+  # The column headers for the output file
+  columns = ["TimeStamp", "Longitude", "Latitude", "Li7000H2O", "Li7000CO2",
+             "DrainTemperature", "ColumnTemperature", "VaisalaPressure",
+             "SmartTrakFlow", "WaterFlow", "SBE21Serial", "SBE21Salinity",
+             "SBE21Temperature", "SBE38Serial", "SBE38Temperature",
+             "AA4330FSerial", "AA4330FOxygen", "AA4330FAirSat",
+             "AA4330FTemperature", "FLRTSerial", "FLRTChla", "AWSAirPressure",
+             "AWSTemperature", "AWSWindDir", "AWSWindSpeed", "OctansHeave",
+             "SolinoidState", "Multiplexer"]
+  
+  # Value to store in empty columns
+  empty_col_value = -999
