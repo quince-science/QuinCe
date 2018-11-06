@@ -156,7 +156,8 @@ function dataSetOverlaps(newStart, newEnd) {
         var itemEnd = new Date(item['end']).getTime();
 
         var overlap = true;
-        if (itemEnd < newStart || itemStart > newEnd) {
+        if (item['className'] == 'timelineNrtDataSet' ||
+            itemEnd <= newStart || itemStart >= newEnd) {
           overlap = false;
         }
 
