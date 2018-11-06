@@ -265,7 +265,13 @@ public class DataSetsBean extends BaseManagedBean {
           entriesJson.append(dataSet.getName());
           entriesJson.append("\",\"title\":\"");
           entriesJson.append(dataSet.getName());
-          entriesJson.append("\",\"className\":\"timelineDataSet\"}");
+          entriesJson.append("\",\"className\":\"");
+          if (dataSet.isNrt()) {
+            entriesJson.append("timelineNrtDataSet");
+          } else {
+            entriesJson.append("timelineDataSet");
+          }
+          entriesJson.append("\"}");
 
           if (i < dataSets.size() - 1) {
             entriesJson.append(',');
