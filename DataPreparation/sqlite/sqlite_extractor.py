@@ -1,6 +1,9 @@
 import sys, os
 import toml
 
+# Local modules
+from DatabaseExtractor import DatabaseExtractor
+
 def check_output_config(config):
   result = True
 
@@ -49,3 +52,35 @@ except IndexError:
 if not check_output_config(config):
   exit()
 
+out_chan = open(out_file, "w")
+for i in range(0, len(config["output"]["columns"])):
+  out_chan.write(config["output"]["columns"][i])
+
+  if i < (len(config["output"]["columns"]) - 1):
+    out_chan.write(",")
+
+out_chan.write("\n")
+
+extractor = DatabaseExtractor(sqlite_file, config)
+
+table_id = extractor.get_next_row_table()
+while table_id is not None:
+
+  row = extractor.get_mapped_row(table_id)
+  for i in range(0, len(row)):
+    value = row[i]
+    if value is None:
+      out_chan.write(str(config["output"]["empty_col_value"]))
+    else:
+      out_chan.write(str(row[i]))
+    
+    if i < (len(row) - 1):
+      out_chan.write(",")
+  
+  out_chan.write("\n")
+
+  extractor.load_next_row(table_id)
+  table_id = extractor.get_next_row_table()
+
+out_chan.close()
+extractor.disconnect()
