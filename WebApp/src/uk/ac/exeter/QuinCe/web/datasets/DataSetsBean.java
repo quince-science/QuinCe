@@ -326,6 +326,10 @@ public class DataSetsBean extends BaseManagedBean {
   public String addDataSet() {
 
     try {
+      // Delete any existing NRT dataset. The odds are that the new
+      // dataset will replace it
+      DataSetDB.deleteNrtDataSet(getDataSource(), newDataSet.getInstrumentId());
+
       DataSetDB.addDataSet(getDataSource(), newDataSet);
 
       Map<String, String> params = new HashMap<String, String>();
