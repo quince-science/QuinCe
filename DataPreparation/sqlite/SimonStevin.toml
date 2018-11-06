@@ -1,6 +1,7 @@
 [input]
   [[input.tables]]
     name = "IcosData"
+    datecol = 0
     mapping = ["TimeStamp", "Longitude", "Latitude", "Li7000H2O", "Li7000CO2",
              "DrainTemperature", "ColumnTemperature", "VaisalaPressure",
              "SmartTrakFlow", "WaterFlow", "SBE21Serial", "SBE21Salinity",
@@ -12,14 +13,10 @@
 
   [[input.tables]]
     name = "IcosCalData"
+    datecol = 0
     mapping = ["TimeStamp", "Longitude", "Latitude", "Li7000H2O", "Li7000CO2",
-             "DrainTemperature", "", "VaisalaPressure",
-             "SmartTrakFlow", "WaterFlow", "", "",
-             "", "", "",
-             "", "", "",
-             "", "", "", "AWSAirPressure",
-             "", "", "", "",
-             "SolinoidState", "Multiplexer"]
+             "DrainTemperature", "VaisalaPressure", "SmartTrakFlow", "WaterFlow",
+             "AWSAirPressure", "", "SolinoidState", "Multiplexer"]
 
     [[input.tables.ignore]]
       column = "Multiplexer"
