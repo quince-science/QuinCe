@@ -533,6 +533,32 @@ public class DataSetDB {
    * Delete all NRT datasets defined for a given instrument.
    * In theory there should be only one, but this deletes
    * all that it can find, just in case.
+   * @param dataSource A data source
+   * @param instrumentId The instrument's database ID
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   */
+  public static void deleteNrtDataSet(DataSource dataSource, long instrumentId)
+      throws MissingParamException, DatabaseException {
+
+    Connection conn = null;
+
+    try {
+      conn = dataSource.getConnection();
+      deleteNrtDataSet(conn, instrumentId);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while deleting NRT dataset", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+  }
+
+  /**
+   * Delete all NRT datasets defined for a given instrument.
+   * In theory there should be only one, but this deletes
+   * all that it can find, just in case.
    * @param conn A database connection
    * @param instrumentId The instrument's database ID
    * @throws MissingParamException
@@ -540,7 +566,8 @@ public class DataSetDB {
    * @throws DatabaseException
    *           If a database error occurs
    */
-  public static void deleteNrtDataSet(Connection conn, long instrumentId) throws MissingParamException, DatabaseException {
+  public static void deleteNrtDataSet(Connection conn, long instrumentId)
+      throws MissingParamException, DatabaseException {
     for (DataSet dataSet : getDataSets(conn, instrumentId)) {
       if (dataSet.isNrt()) {
         deleteDataSet(conn, dataSet);
