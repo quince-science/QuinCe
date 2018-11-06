@@ -59,12 +59,12 @@ class DatabaseExtractor:
 
   # Create the table cursors to be used during extraction
   def make_cursors(self):
-    for table in self._config["input"]["tables"]:
+    for i in range(0, len(self._config["input"]["tables"])):
+      table = self._config["input"]["tables"][i]
       cursor = self._conn.execute("SELECT * FROM " + table["name"])
       self._cursors.append(cursor)
-      
-      row = cursor.fetchone()
-      self._next_rows.append(row)
+      self._next_rows.append(None)
+      self.load_next_row(i)
 
 
   # Get the next row chosen from all
@@ -91,8 +91,30 @@ class DatabaseExtractor:
 
   # Load the next row from the specified table
   def load_next_row(self, table_id):
-    self._next_rows[table_id] = self._cursors[table_id].fetchone()
+    row_found = False
 
+    while not row_found:
+      next_row = self._cursors[table_id].fetchone()
+      if next_row is None or not self._ignore_row(table_id, next_row):
+        self._next_rows[table_id] = next_row
+        row_found = True
+
+  # Determine whether a row should be ignored
+  def _ignore_row(self, table_id, row):
+    result = False
+
+    table_config = self._config["input"]["tables"][table_id]
+
+    if "ignore" in table_config.keys():
+      ignore_col = table_config["ignore"]["column_index"]
+      ignore_val = table_config["ignore"]["value"]
+
+      result = (row[ignore_col] == ignore_val)
+
+    return result
+
+  # Get the current row from the specified table,
+  # with values mapped to the output columns
   def get_mapped_row(self, table_id):
     row = self._next_rows[table_id]
 

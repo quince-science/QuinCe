@@ -18,9 +18,9 @@
              "DrainTemperature", "VaisalaPressure", "SmartTrakFlow", "WaterFlow",
              "AWSAirPressure", "", "SolinoidState", "Multiplexer"]
 
-    [[input.tables.ignore]]
-      column = "Multiplexer"
-      value = "1"
+    [input.tables.ignore]
+      column_index = 12
+      value = 1
 
 [output]
 
