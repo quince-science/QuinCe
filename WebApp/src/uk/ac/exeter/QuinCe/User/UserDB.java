@@ -188,28 +188,29 @@ public class UserDB {
       throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkMissing(email, "email");
 
     PreparedStatement stmt = null;
     ResultSet record = null;
     User foundUser = null;
 
-    try {
-      stmt = conn.prepareStatement(USER_SEARCH_BY_EMAIL_STATEMENT);
-      stmt.setString(1, email);
-      record = stmt.executeQuery();
+    if (null != email) {
+      try {
+        stmt = conn.prepareStatement(USER_SEARCH_BY_EMAIL_STATEMENT);
+        stmt.setString(1, email);
+        record = stmt.executeQuery();
 
-      if (record.first()) {
-        foundUser = new User(record.getInt(1), record.getString(2),
-            record.getString(3), record.getString(4), record.getInt(9), record.getString(10));
-        foundUser.setEmailVerificationCode(record.getString(5), record.getTimestamp(6));
-        foundUser.setPasswordResetCode(record.getString(7), record.getTimestamp(8));
+        if (record.first()) {
+          foundUser = new User(record.getInt(1), record.getString(2),
+              record.getString(3), record.getString(4), record.getInt(9), record.getString(10));
+          foundUser.setEmailVerificationCode(record.getString(5), record.getTimestamp(6));
+          foundUser.setPasswordResetCode(record.getString(7), record.getTimestamp(8));
+        }
+      } catch (SQLException e) {
+        throw new DatabaseException("An error occurred while searching for the user", e);
+      } finally {
+        DatabaseUtils.closeResultSets(record);
+        DatabaseUtils.closeStatements(stmt);
       }
-    } catch (SQLException e) {
-      throw new DatabaseException("An error occurred while searching for the user", e);
-    } finally {
-      DatabaseUtils.closeResultSets(record);
-      DatabaseUtils.closeStatements(stmt);
     }
 
     return foundUser;
