@@ -45,9 +45,9 @@
         <h:form id="loginform" method="post" accept-charset="utf8">
           <h:panelGrid columns="2" styleClass="inputForm" columnClasses="inputLabels,inputInputs" cellpadding="5">
             <h:outputLabel for="email" value="Email Address"/>
-            <p:inputText id="email" value="#{loginBean.emailAddress}" styleClass="inputFormInput"/>
+            <p:inputText id="email" value="#{loginBean.emailAddress}" styleClass="inputFormInput" required="true" requiredMessage="Email address is required"/>
             <h:outputLabel for="password" value="Password"/>
-            <p:password id="password" value="#{loginBean.password}" styleClass="inputFormInput"/>
+            <p:password id="password" value="#{loginBean.password}" styleClass="inputFormInput" required="true" requiredMessage="Password is required"/>
           </h:panelGrid>
           <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
             <p:commandButton value="Log In" action="#{loginBean.authenticate}"/>
