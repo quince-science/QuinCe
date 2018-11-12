@@ -668,6 +668,7 @@ public class DataSetDB {
     result.put("startdate", DateTimeUtils.toJsonDate(dataset.getStart()));
     result.put("enddate", DateTimeUtils.toJsonDate(dataset.getEnd()));
     result.put("platformCode", instrument.getPlatformCode());
+    result.put("nrt", dataset.isNrt());
 
     int recordCount = DataSetDataDB.getMeasurementIds(conn, dataset.getId()).size();
     result.put("records", recordCount);
