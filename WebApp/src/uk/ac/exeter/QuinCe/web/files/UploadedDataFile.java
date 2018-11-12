@@ -50,6 +50,12 @@ public class UploadedDataFile {
   private boolean processed = false;
 
   /**
+   * The database ID of the existing file that this file will replace
+   * -1 indicates that this is a completely new file
+   */
+  private long replaceFile = -1;
+
+  /**
    * Basic constructor - reads the file contents ready for processing
    * @param file The uploaded file
    */
@@ -239,5 +245,29 @@ public class UploadedDataFile {
    */
   public boolean getHasUnrecognisedRunTypes() {
     return null != dataFile && dataFile.getMissingRunTypes().size() > 0;
+  }
+
+  /**
+   * Determine whether or not this file will replace an existing file
+   * @return {@code true} if this is a replacement file; {@code false} if it is not
+   */
+  public boolean isReplacement() {
+    return (replaceFile != -1);
+  }
+
+  /**
+   * Set the ID of the data file that this file will replace
+   * @param oldId
+   */
+  public void setReplacementFile(long oldId) {
+    this.replaceFile = oldId;
+  }
+
+  /**
+   * Get the ID of the file that this file will replace
+   * @return
+   */
+  public long getReplacementFile() {
+    return replaceFile;
   }
 }

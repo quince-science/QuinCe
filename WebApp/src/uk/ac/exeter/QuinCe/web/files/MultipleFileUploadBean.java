@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.FileUploadBean;
 import uk.ac.exeter.QuinCe.web.Instrument.newInstrument.FileDefinitionBuilder;
 
@@ -70,14 +71,15 @@ public class MultipleFileUploadBean extends FileUploadBean {
   /**
    * Store selected files. This moves the file(s) to the file store, and updates the database with file
    * info.
-   * @throws MissingParamException
-   * @throws FileExistsException
-   * @throws DatabaseException
+   * @throws MissingParamException If any required parameters are missing
+   * @throws FileExistsException If a new file attempts to replace an existing one
+   * @throws DatabaseException If a database error occurs
+   * @throws RecordNotFoundException If a replacement file does not already exist in the database
    */
-  public void store() throws MissingParamException, FileExistsException, DatabaseException {
+  public void store() throws MissingParamException, FileExistsException, DatabaseException, RecordNotFoundException {
     for (UploadedDataFile file: dataFiles) {
       if (file.isStore() && null != file.getDataFile()) {
-        DataFileDB.storeFile(getDataSource(), getAppConfig(), file.getDataFile());
+        DataFileDB.storeFile(getDataSource(), getAppConfig(), file.getDataFile(), file.getReplacementFile());
       }
     }
   }
@@ -118,20 +120,47 @@ public class MultipleFileUploadBean extends FileUploadBean {
         file.putMessage(file.getName()
             + " could not be processed (see messages below). Please fix these problems and upload the file again.",
             FacesMessage.SEVERITY_ERROR);
-      } else if (
-          DataFileDB.fileExistsWithDates(
-              getDataSource(),
-              fileDefinition.getDatabaseId(),
-              file.getDataFile().getStartDate(),
-              file.getDataFile().getEndDate()
-          )
-      ) {
-        // TODO This is what the front end uses to detect that the file was not processed successfully.
-        //This can be improved when overlapping files are implemented instead of being rejected.
+      } else {
+        List<DataFile> overlappingFiles = DataFileDB.getFilesWithinDates(getDataSource(), fileDefinition,
+            file.getDataFile().getStartDate(), file.getDataFile().getEndDate());
 
-        fileDefinition = null;
-        file.setDataFile(null);
-        file.putMessage("A file already exists that covers overlaps with this file. Please upload a different file.", FacesMessage.SEVERITY_ERROR);
+        boolean fileOK = true;
+        String fileMessage = null;
+
+        if (overlappingFiles.size() > 0 && overlappingFiles.size() > 1) {
+          fileOK = false;
+          fileMessage = "This file overlaps one or more existing files";
+        } else if (overlappingFiles.size() == 1) {
+          DataFile existingFile = overlappingFiles.get(0);
+          DataFile newFile = file.getDataFile();
+
+          if (!existingFile.getFilename().equals(newFile.getFilename())) {
+            fileOK = false;
+            fileMessage = "This file overlaps an existing file with a different name";
+          } else {
+            String oldContents = existingFile.getContents();
+            String newContents = newFile.getContents();
+
+            if (newContents.length() < oldContents.length()) {
+              fileOK = false;
+              fileMessage = "This file would replace an existing file with fewer records";
+            } else {
+              String oldPartOfNewContents = newContents.substring(0, oldContents.length());
+              if (!oldPartOfNewContents.equals(oldContents)) {
+                fileOK = false;
+                fileMessage = "This file would update an existing file but change existing data";
+              } else {
+                file.setReplacementFile(existingFile.getDatabaseId());
+              }
+            }
+          }
+        }
+
+        if (!fileOK) {
+          fileDefinition = null;
+          file.setDataFile(null);
+          file.putMessage(fileMessage, FacesMessage.SEVERITY_ERROR);
+        }
       }
     } catch (NoSuchElementException nose) {
       file.setDataFile(null);

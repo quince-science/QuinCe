@@ -35,6 +35,7 @@ public class DataFilesBean extends FileUploadBean {
   /**
    * Navigation to the file upload page
    */
+  @Deprecated
   public static final String NAV_UPLOAD = "upload";
 
   /**
@@ -45,11 +46,13 @@ public class DataFilesBean extends FileUploadBean {
   /**
    * The data file object
    */
+  @Deprecated
   private DataFile dataFile = null;
 
   /**
    * The file definitions that match the uploaded file
    */
+  @Deprecated
   private List<FileDefinition> matchedFileDefinitions = null;
 
   @Override
@@ -70,6 +73,7 @@ public class DataFilesBean extends FileUploadBean {
    * Start the file upload procedure
    * @return Navigation to the upload page
    */
+  @Deprecated
   public String beginUpload() {
     initialise();
     return NAV_UPLOAD;
@@ -78,6 +82,7 @@ public class DataFilesBean extends FileUploadBean {
   /**
    * Extract and process the uploaded file's contents
    */
+  @Deprecated
   public void extractFile() {
     matchedFileDefinitions = null;
     dataFile = null;
@@ -127,6 +132,7 @@ public class DataFilesBean extends FileUploadBean {
    * @param fileDescription The file description
    * @throws FileDefinitionException If the file definition does not match the file contents
    */
+  @Deprecated
   public void setFileDefinition(String fileDescription) throws FileDefinitionException {
     dataFile.setFileDefinition(getCurrentInstrument().getFileDefinitions().get(fileDescription));
   }
@@ -135,6 +141,7 @@ public class DataFilesBean extends FileUploadBean {
    * Get the list of file definitions that match the uploaded file
    * @return The matched file definitions
    */
+  @Deprecated
   public List<FileDefinition> getMatchedFileDefinitions() {
     return matchedFileDefinitions;
   }
@@ -151,6 +158,7 @@ public class DataFilesBean extends FileUploadBean {
    * Get the messages generated for this file as a JSON string
    * @return The messages in JSON format
    */
+  @Deprecated
   public String getFileMessages() {
     StringBuilder json = new StringBuilder();
 
@@ -183,6 +191,7 @@ public class DataFilesBean extends FileUploadBean {
    * Get the file format description
    * @return The file format description
    */
+  @Deprecated
   public String getFileType() {
     String result = null;
 
@@ -197,6 +206,7 @@ public class DataFilesBean extends FileUploadBean {
    * Get the date of the first record in the file
    * @return The start date
    */
+  @Deprecated
   public LocalDateTime getFileStartDate() {
     LocalDateTime result = null;
 
@@ -212,6 +222,7 @@ public class DataFilesBean extends FileUploadBean {
    * @return The end date
    * @throws DataFileException If the end date cannot be retrieved
    */
+  @Deprecated
   public LocalDateTime getFileEndDate() throws DataFileException {
     LocalDateTime result = null;
 
@@ -227,6 +238,7 @@ public class DataFilesBean extends FileUploadBean {
    * @return The record count
    * @throws DataFileException If the count cannot be calculated
    */
+  @Deprecated
   public int getFileRecordCount() throws DataFileException {
     int result = -1;
 
@@ -241,6 +253,7 @@ public class DataFilesBean extends FileUploadBean {
    * Dummy method for (not) setting file messages
    * @param dummy Parameter
    */
+  @Deprecated
   public void setFileMessages(String dummy) {
     // Do nothing
   }
@@ -249,6 +262,7 @@ public class DataFilesBean extends FileUploadBean {
    * Dummy method for (not) setting file messages
    * @param dummy Parameter
    */
+  @Deprecated
   public void setFileType(String dummy) {
     // Do nothing
   }
@@ -257,6 +271,7 @@ public class DataFilesBean extends FileUploadBean {
    * Dummy method for (not) setting file messages
    * @param dummy Parameter
    */
+  @Deprecated
   public void setFileStartDate(LocalDateTime dummy) {
     // Do nothing
   }
@@ -265,6 +280,7 @@ public class DataFilesBean extends FileUploadBean {
    * Dummy method for (not) setting file messages
    * @param dummy Parameter
    */
+  @Deprecated
   public void setFileEndDate(LocalDateTime dummy) {
     // Do nothing
   }
@@ -273,6 +289,7 @@ public class DataFilesBean extends FileUploadBean {
    * Dummy method for (not) setting file messages
    * @param dummy Parameter
    */
+  @Deprecated
   public void setFileRecordCount(String dummy) {
     // Do nothing
   }
@@ -284,9 +301,11 @@ public class DataFilesBean extends FileUploadBean {
    * @throws FileExistsException If the file already exists
    * @throws DatabaseException If a database error occurs
    */
+  @Deprecated
   public String storeFile() throws MissingParamException, FileExistsException, DatabaseException {
-    DataFileDB.storeFile(getDataSource(), getAppConfig(), dataFile);
-    return NAV_FILE_LIST;
+    throw new RuntimeException("This method is deprecated");
+    //DataFileDB.storeFile(getDataSource(), getAppConfig(), dataFile);
+    //return NAV_FILE_LIST;
   }
 
   /**
