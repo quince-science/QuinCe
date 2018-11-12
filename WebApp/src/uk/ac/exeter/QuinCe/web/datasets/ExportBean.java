@@ -300,7 +300,14 @@ public class ExportBean extends BaseManagedBean {
       DataSetRawDataRecord sensorRecord = datasetData.get(i);
       CalculationRecord calculationRecord = calculationData.get(i);
 
-      if (exportOption.flagAllowed(calculationRecord.getUserFlag())) {
+      Flag recordFlag;
+      if (dataset.isNrt()) {
+        recordFlag = calculationRecord.getAutoFlag();
+      } else {
+        recordFlag = calculationRecord.getUserFlag();
+      }
+
+      if (exportOption.flagAllowed(recordFlag)) {
 
         output.append(DateTimeUtils.formatDateTime(sensorRecord.getDate()));
         output.append(exportOption.getSeparator());
@@ -331,10 +338,21 @@ public class ExportBean extends BaseManagedBean {
           output.append(exportOption.getSeparator());
         }
 
-        output.append(Flag.getWoceValue(calculationRecord.getUserFlag().getFlagValue()));
+        if (dataset.isNrt()) {
+          output.append(Flag.getWoceValue(calculationRecord.getAutoFlag().getFlagValue()));
+        } else {
+          output.append(Flag.getWoceValue(calculationRecord.getUserFlag().getFlagValue()));
+        }
+
         output.append(exportOption.getSeparator());
 
-        String qcMessage = calculationRecord.getUserMessage();
+        String qcMessage = null;
+        if (dataset.isNrt()) {
+          qcMessage = calculationRecord.getAutoQCMessagesString();
+        } else {
+          qcMessage = calculationRecord.getUserMessage();
+        }
+
         if (null != qcMessage) {
           if (qcMessage.length() > 0) {
             output.append(StringUtils.makeCsvString(qcMessage.trim()));
@@ -428,7 +446,7 @@ public class ExportBean extends BaseManagedBean {
   }
 
   /**
-   * Build a ZIP file containining a full dataset export, including
+   * Build a ZIP file containing a full dataset export, including
    * the raw files used to build the dataset and a manifest containing
    * metadata and details of the files.
    *
