@@ -309,7 +309,7 @@ public abstract class CalculationRecord extends DataRecord {
     for (int i = 0; i < messages.size(); i++) {
       result.append(messages.get(i).getShortMessage());
       if (i < messages.size() - 1) {
-        result.append(',');
+        result.append(';');
       }
     }
 
