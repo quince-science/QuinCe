@@ -531,7 +531,7 @@ public class DataSet {
    * @return {@code true} if the dataset can be exported; {@code false} if it cannot
    */
   public boolean getCanBeExported() {
-    return (getStatus() >= STATUS_USER_QC && needsFlagCount == 0);
+    return (getStatus() >= STATUS_USER_QC && (needsFlagCount == 0 || isNrt()));
   }
 
   public void addMessage(String message, String details) {
