@@ -154,6 +154,12 @@ public class MultipleFileUploadBean extends FileUploadBean {
               }
             }
           }
+        } else if (DataFileDB.hasFileWithName(getDataSource(), getCurrentInstrument().getDatabaseId(),
+            file.getName())) {
+
+          // We don't allow duplicate filenames
+          fileOK = false;
+          fileMessage = "A file with that name already exists";
         }
 
         if (!fileOK) {
@@ -165,7 +171,8 @@ public class MultipleFileUploadBean extends FileUploadBean {
     } catch (NoSuchElementException nose) {
       file.setDataFile(null);
       file.putMessage("The format of " + file.getName() + " was not recognised. Please upload a different file.", FacesMessage.SEVERITY_ERROR);
-    } catch (Exception e){
+    } catch (Exception e) {
+      e.printStackTrace();
       file.setDataFile(null);
       file.putMessage("The file could not be processed: " + e.getMessage(), FacesMessage.SEVERITY_ERROR);
     }
