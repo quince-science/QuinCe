@@ -176,6 +176,10 @@ public class DataFileDB {
       + "(SELECT id FROM file_definition WHERE instrument_id = ?) "
       + "ORDER BY end_date DESC LIMIT 1";
 
+  private static final String FIND_FILE_BY_NAME_QUERY = "SELECT "
+      + "id FROM data_file WHERE filename = ? AND file_definition_id IN "
+      + "(SELECT id FROM file_definition WHERE instrument_id = ?)";
+
   /**
    * Store a file in the database and in the file store
    * @param dataSource A data source
@@ -1044,6 +1048,48 @@ public class DataFileDB {
     } finally {
       DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);
+    }
+
+    return result;
+  }
+
+  /**
+   * Determine whether or not an instrument has a file with the specified name
+   * @param dataSource A data source
+   * @param instrumentId The instrument's database ID
+   * @param filename The filename
+   * @return {@code true} if a file exists; {@code false} if it does not
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   */
+  public static boolean hasFileWithName(DataSource dataSource, long instrumentId, String filename) throws DatabaseException, MissingParamException {
+    boolean result = false;
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+    MissingParam.checkMissing(filename, "filename");
+
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      conn = dataSource.getConnection();
+      stmt = conn.prepareStatement(FIND_FILE_BY_NAME_QUERY);
+      stmt.setString(1, filename);
+      stmt.setLong(2, instrumentId);
+
+      records = stmt.executeQuery();
+      if (records.next()) {
+        result = true;
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while searching for file", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
     }
 
     return result;
