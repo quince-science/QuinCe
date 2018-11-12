@@ -141,9 +141,9 @@ public class MultipleFileUploadBean extends FileUploadBean {
             String oldContents = existingFile.getContents();
             String newContents = newFile.getContents();
 
-            if (newContents.length() < oldContents.length()) {
+            if (newContents.length() <= oldContents.length()) {
               fileOK = false;
-              fileMessage = "This file would replace an existing file with fewer records";
+              fileMessage = "This file would replace an existing file with identical or fewer records";
             } else {
               String oldPartOfNewContents = newContents.substring(0, oldContents.length());
               if (!oldPartOfNewContents.equals(oldContents)) {
