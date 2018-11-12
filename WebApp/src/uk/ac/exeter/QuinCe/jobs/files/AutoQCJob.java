@@ -250,10 +250,15 @@ public class AutoQCJob extends Job {
       } else {
         // Commit all the records
         if (dataSet != null) {
-          dataSet.setStatus(DataSet.STATUS_USER_QC);
-          if (dataSet.getNeedsFlagCount() == 0) {
-            dataSet.setStatus(DataSet.STATUS_READY_FOR_SUBMISSION);
+          if (dataSet.isNrt()) {
+            dataSet.setStatus(DataSet.STATUS_READY_FOR_EXPORT);
+          } else {
+            dataSet.setStatus(DataSet.STATUS_USER_QC);
+            if (dataSet.getNeedsFlagCount() == 0) {
+              dataSet.setStatus(DataSet.STATUS_READY_FOR_SUBMISSION);
+            }
           }
+
           DataSetDB.updateDataSet(conn, dataSet);
         }
         conn.commit();
