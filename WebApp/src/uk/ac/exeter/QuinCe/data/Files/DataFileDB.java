@@ -56,11 +56,19 @@ public class DataFileDB {
 
   /**
    * Statement to add a data file to the database
-   * @see #storeFile(DataSource, Properties, DataFile)
+   * @see #storeNewFile(DataSource, Properties, DataFile)
    */
   private static final String ADD_FILE_STATEMENT = "INSERT INTO data_file "
       + "(file_definition_id, filename, start_date, end_date, record_count) "
     + "VALUES (?, ?, ?, ?, ?)";
+
+  /**
+   * Statement to add a data file to the database
+   * @see #replaceFile(DataSource, Properties, DataFile, long)
+   */
+  private static final String REPLACE_FILE_STATEMENT = "UPDATE data_file "
+      + "SET filename = ?, start_date = ?, end_date = ?, record_count = ? "
+      + "WHERE id = ?";
 
   /**
    * Query to get a set of data files by their ID
@@ -81,7 +89,7 @@ public class DataFileDB {
     + "FROM data_file AS f "
     + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
     + "INNER JOIN instrument AS i ON d.instrument_id = i.id "
-    + "WHERE i.owner = ?";
+    + "WHERE i.owner = ? ORDER BY f.start_date ASC";
 
   /**
    * Query to find all the data files owned by a given user
@@ -92,7 +100,7 @@ public class DataFileDB {
     + "FROM data_file AS f "
     + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
     + "INNER JOIN instrument AS i ON d.instrument_id = i.id "
-    + "WHERE i.owner = ? AND d.instrument_id = ?";
+    + "WHERE i.owner = ? AND d.instrument_id = ? ORDER BY f.start_date ASC";
 
   /**
    * Query to find all the data files owned by a given user
@@ -117,8 +125,8 @@ public class DataFileDB {
    * @see #makeFileInfo(ResultSet, Connection)
    * @see #fileExists(Connection, long)
    */
-  private static final String FIND_FILE_BY_ID_QUERY = "SELECT f.id, i.id, i.name, f.filename, f.start_date, f.record_count, f.current_job, f.delete_flag FROM instrument AS i INNER JOIN data_file AS f ON i.id = f.instrument_id"
-      + " WHERE f.id = ?";
+  private static final String FIND_FILE_BY_ID_QUERY = "SELECT "
+      + "id FROM data_file WHERE id = ?";
 
   /**
    * Query to determine if a file exists covering two dates
@@ -151,6 +159,16 @@ public class DataFileDB {
       + "start_date <= ? AND end_date >= ?";
 
   /**
+   * Query to get data files for a file definition that encompass given dates
+   */
+  private static final String GET_FILEDEF_FILES_WITHIN_DATES_QUERY = "SELECT "
+      + "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, f.record_count, i.id "
+      + "FROM data_file AS f "
+      + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
+      + "INNER JOIN instrument AS i ON d.instrument_id = i.id "
+      + "WHERE d.id = ? AND start_date <= ? AND end_date >= ?";
+
+  /**
    * Query to get the last date covered by any file for an instrument
    */
   private static final String GET_LAST_FILE_DATE_QUERY = "SELECT "
@@ -166,25 +184,59 @@ public class DataFileDB {
    * @throws MissingParamException If any of the parameters are missing
    * @throws FileExistsException If the file already exists in the system
    * @throws DatabaseException If an error occurs while storing the file
+   * @throws RecordNotFoundException
    * @see #ADD_FILE_STATEMENT
    * @see FileStore#storeFile(String, DataFile)
    */
-  public static void storeFile(DataSource dataSource, Properties appConfig, DataFile dataFile) throws MissingParamException, FileExistsException, DatabaseException {
+  public static void storeFile(DataSource dataSource, Properties appConfig,
+      DataFile dataFile,long replacementId)
+      throws MissingParamException, FileExistsException, DatabaseException, RecordNotFoundException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(appConfig, "appConfig");
     MissingParam.checkMissing(dataFile, "dataFile");
 
     Connection conn = null;
-    PreparedStatement stmt = null;
-    ResultSet generatedKeys = null;
-
 
     try {
       conn = dataSource.getConnection();
 
-      if (fileExistsWithDates(conn, dataFile.getFileDefinition().getDatabaseId(), dataFile.getStartDate(), dataFile.getEndDate())) {
-        throw new FileExistsException(dataFile.getFileDescription(), dataFile.getStartDate(), dataFile.getEndDate());
+      if (replacementId > -1) {
+        if (!fileExists(conn, replacementId)) {
+          throw new RecordNotFoundException("Tried to replace a file that doesn't exist (id "
+            + replacementId + ")");
+        }
+
+        replaceFile(conn, appConfig, dataFile, replacementId);
+      } else {
+        storeNewFile(conn, appConfig, dataFile);
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while storing file", e);
+    }
+  }
+
+    /**
+     * Store a file in the database and in the file store
+     * @param dataSource A data source
+     * @param appConfig The application configuration
+     * @param dataFile The data file
+     * @throws FileExistsException If the file already exists in the system
+     * @throws DatabaseException If an error occurs while storing the file
+     * @see #ADD_FILE_STATEMENT
+     * @see FileStore#storeFile(String, DataFile)
+     */
+  private static void storeNewFile(Connection conn, Properties appConfig, DataFile dataFile)
+      throws DatabaseException, FileExistsException {
+
+    PreparedStatement stmt = null;
+    ResultSet generatedKeys = null;
+
+    try {
+      if (fileExistsWithDates(conn, dataFile.getFileDefinition().getDatabaseId(),
+          dataFile.getStartDate(), dataFile.getEndDate())) {
+        throw new FileExistsException(dataFile.getFileDescription(),
+            dataFile.getStartDate(), dataFile.getEndDate());
       }
 
       conn.setAutoCommit(false);
@@ -207,6 +259,8 @@ public class DataFileDB {
 
         conn.commit();
       }
+    } catch (FileExistsException e) {
+      throw e;
     } catch (Exception e) {
       try {
         DatabaseUtils.rollBack(conn);
@@ -223,6 +277,54 @@ public class DataFileDB {
   }
 
   /**
+   * Store a file in the database and in the file store
+   * @param dataSource A data source
+   * @param appConfig The application configuration
+   * @param dataFile The data file
+   * @throws FileExistsException If the file already exists in the system
+   * @throws DatabaseException If an error occurs while storing the file
+   * @see #ADD_FILE_STATEMENT
+   * @see FileStore#storeFile(String, DataFile)
+   */
+  private static void replaceFile(Connection conn, Properties appConfig, DataFile dataFile, long replacementId)
+    throws DatabaseException, FileExistsException {
+
+    PreparedStatement stmt = null;
+
+    try {
+      conn.setAutoCommit(false);
+      stmt = conn.prepareStatement(REPLACE_FILE_STATEMENT);
+      stmt.setString(1, dataFile.getFilename());
+      stmt.setLong(2, DateTimeUtils.dateToLong(dataFile.getStartDate()));
+      stmt.setLong(3, DateTimeUtils.dateToLong(dataFile.getEndDate()));
+      stmt.setInt(4, dataFile.getRecordCount());
+      stmt.setLong(5, replacementId);
+
+      stmt.execute();
+
+      // Set the database ID on the file now the replacement has succeeded
+      dataFile.setDatabaseId(replacementId);
+
+      // Store the file - automatically replaces the old one
+      FileStore.storeFile(appConfig.getProperty("filestore"), dataFile);
+
+
+      conn.commit();
+    } catch (Exception e) {
+      try {
+        DatabaseUtils.rollBack(conn);
+      } catch (Exception e2) {
+        //Do nothing
+      }
+
+      throw new DatabaseException("An error occurred while storing the file", e);
+    } finally {
+      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
+    }
+  }
+
+/**
    * Determine whether a file of a given type already exists covering at
    * least part of the specified date range
    * @param dataSource A data source
@@ -326,7 +428,7 @@ public class DataFileDB {
         result = true;
       }
     } catch (SQLException e) {
-      throw new DatabaseException("An error occurred while search for the data file", e);
+      throw new DatabaseException("An error occurred while checking file existence", e);
     } finally {
       DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);
@@ -729,6 +831,58 @@ public class DataFileDB {
 
     return files;
   }
+
+  /**
+   * Get the list of data files of a given file definition
+   * that encompass two dates
+   * @param dataSource A data source
+   * @param instrumentId The file definition
+   * @param start The start date
+   * @param end The end date
+   * @return
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   */
+  public static List<DataFile> getFilesWithinDates(DataSource dataSource, FileDefinition fileDefinition,
+      LocalDateTime start, LocalDateTime end) throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(fileDefinition, "fileDefinition");
+    MissingParam.checkMissing(start, "start");
+    MissingParam.checkMissing(end, "end");
+
+    if (end.equals(start) || end.isBefore(start) ) {
+      throw new IllegalArgumentException("End date must be after start date");
+    }
+
+    List<DataFile> files = new ArrayList<DataFile>();
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      conn = dataSource.getConnection();
+      stmt = conn.prepareStatement(GET_FILEDEF_FILES_WITHIN_DATES_QUERY);
+      stmt.setLong(1, fileDefinition.getDatabaseId());
+      stmt.setLong(2, DateTimeUtils.dateToLong(end));
+      stmt.setLong(3,  DateTimeUtils.dateToLong(start));
+
+      records = stmt.executeQuery();
+      while (records.next()) {
+        files.add(makeDataFile(records, ResourceManager.getInstance().getConfig().getProperty("filestore"),
+            fileDefinition));
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting files in date range", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return files;
+  }
+
 
   /**
    * Get the list of data files for a given instrument
