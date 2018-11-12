@@ -387,9 +387,11 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Create the contents of the manifest.json file
-   * @return
+   * @return The manifest JSON
    */
-  private static JSONObject makeManifest(Connection conn, DataSet dataset, List<ExportOption> exportOptions, List<DataFile> rawFiles) throws Exception {
+  private static JSONObject makeManifest(Connection conn, DataSet dataset,
+      List<ExportOption> exportOptions, List<DataFile> rawFiles) throws Exception {
+
     JSONObject result = new JSONObject();
 
     JSONObject manifest = new JSONObject();
