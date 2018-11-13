@@ -6,7 +6,7 @@ import java.util.Properties;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.web.User.VerifyEmailBean;
+import uk.ac.exeter.QuinCe.web.User.ResetPasswordBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -14,11 +14,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
-public class SendEmailVerificationMailJob extends SendCodeJob {
+public class SendPasswordResetMailJob extends SendCodeJob {
+
   /**
    * Name of the job, used for reporting
    */
-  private final String jobName = "Email Verification";
+  private final String jobName = "Lost Password Code";
 
   /**
    * Job object constructor
@@ -29,7 +30,8 @@ public class SendEmailVerificationMailJob extends SendCodeJob {
    * @throws MissingParamException If any required parameters are missing
    * @throws InvalidJobParametersException If the job parameters are invalid
    */
-  public SendEmailVerificationMailJob(ResourceManager resourceManager, Properties config, long id, Map<String, String> params) throws MissingParamException, InvalidJobParametersException {
+  public SendPasswordResetMailJob(ResourceManager resourceManager, Properties config, long id, Map<String,
+      String> params) throws MissingParamException, InvalidJobParametersException {
     super(resourceManager, config, id, params);
   }
 
@@ -40,26 +42,27 @@ public class SendEmailVerificationMailJob extends SendCodeJob {
 
   @Override
   protected String getSubject() {
-    return "Activate your QuinCe account";
+    return "Reset QuinCe password";
   }
 
   @Override
   protected String getEmailText() {
-    return "Your QuinCe account has been created. Click the link below to activate it.";
+    return "Click the link below to reset your QuinCe password. If you did not request this link,"
+        + " you can safely ignore it.";
   }
 
   @Override
   protected String getCodeDescription() {
-    return "Email verification code";
+    return "Password reset code";
   }
 
   @Override
   protected String getCode(User user) {
-    return user.getEmailVerificationCode();
+    return user.getPasswordResetCode();
   }
 
   @Override
   protected String getUrlPath() {
-    return VerifyEmailBean.PATH;
+    return ResetPasswordBean.PATH;
   }
 }

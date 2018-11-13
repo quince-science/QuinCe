@@ -30,7 +30,7 @@ setuptype=''
 inputstring=${@:$OPTIND:1}
 if [ -n "$inputstring" ]
 then
-  setuptype=".inputstring"
+  setuptype=".$inputstring"
 fi
 
 # First get only default file
