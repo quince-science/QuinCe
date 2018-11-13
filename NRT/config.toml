@@ -11,3 +11,7 @@ server='%nrt_ftp_server%'
 user='%nrt_ftp_user%'
 password='%nrt_ftp_password%'
 dir='%nrt_ftp_folder%'
+
+[Logging]
+# DEBUG=10, INFO=20, WARNING=30, ERROR=40, CRITICAL=50
+level=10
