@@ -48,7 +48,7 @@ def get_new_instance(retriever_type):
 
   for clazz in DataRetriever.__subclasses__():
     if clazz.get_type() == retriever_type:
-      result = clazz()
+      result = clazz(None, None)
       break
 
   if result is None:
@@ -56,12 +56,12 @@ def get_new_instance(retriever_type):
 
   return result
 
-def get_instance(retriever_type, configuration):
+def get_instance(retriever_type, instrument_id, logger, configuration):
   result = None
 
   for clazz in DataRetriever.__subclasses__():
     if clazz.get_type() == retriever_type:
-      result = clazz(configuration)
+      result = clazz(instrument_id, logger, configuration)
       break
 
   if result is None:
