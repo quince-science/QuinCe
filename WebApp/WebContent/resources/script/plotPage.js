@@ -18,7 +18,6 @@ var PLOT_MEASUREMENT_ID_INDEX = 1;
 var PLOT_MANUAL_FLAG_INDEX = 2;
 var PLOT_FIRST_Y_INDEX = 3;
 
-
 var BASE_GRAPH_OPTIONS = {
     drawPoints: true,
     strokeWidth: 0.0,
@@ -61,9 +60,11 @@ var map2 = null;
 
 var map1ColorScale = new ColorScale([[0,'#FFFFD4'],[0.25,'#FED98E'],[0.5,'#FE9929'],[0.75,'#D95F0E'],[1,'#993404']]);
 map1ColorScale.setFont('Noto Sans', 11);
+var map1ScaleVisible = true;
 
 var map2ColorScale = new ColorScale([[0,'#FFFFD4'],[0.25,'#FED98E'],[0.5,'#FE9929'],[0.75,'#D95F0E'],[1,'#993404']]);
 map2ColorScale.setFont('Noto Sans', 11);
+var map2ScaleVisible = true;
 
 var map1DataLayer = null;
 var map2DataLayer = null;
@@ -501,7 +502,6 @@ function hideInfoPopup() {
 }
 
 function drawPlot(index) {
-
   var plotVar = 'plot' + index;
 
   // Existing zoom information
@@ -548,7 +548,6 @@ function drawPlot(index) {
   if (typeof customiseGraphOptions == 'function') {
     graph_options = customiseGraphOptions(graph_options);
   }
-
 
   // Preserve zoom settings where possible
   if (null != existingXZoom && existingXLabel == xLabel) {
@@ -870,9 +869,9 @@ function applyVariables() {
 
   if (mode == 'plot') {
     // Clear the current plot data
-  $('#plot' + variablesPlotIndex + 'Form\\:plotData').val("");
-  $('#plot' + variablesPlotIndex + 'Form\\:mapData').val("");
-  $('#plot' + variablesPlotIndex + 'Form\\:plotGetData').click();
+    $('#plot' + variablesPlotIndex + 'Form\\:plotData').val("");
+    $('#plot' + variablesPlotIndex + 'Form\\:mapData').val("");
+    $('#plot' + variablesPlotIndex + 'Form\\:plotGetData').click();
   } else if (mode == 'map') {
     initMap(variablesPlotIndex);
   }
@@ -1179,7 +1178,10 @@ function getMapIndex(event) {
 }
 
 function toggleScale(index) {
-  $('#map' + index + 'Scale').toggle(100);
+  $('#map' + index + 'Scale').toggle(100, function() {
+    window['map' + index + 'ScaleVisible'] =
+      ($('#map' + index + 'Scale').css('display') === 'block');
+  });
 }
 
 function makeHighlights(index, plotData) {

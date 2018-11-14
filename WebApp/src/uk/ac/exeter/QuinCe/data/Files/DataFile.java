@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Files;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -659,6 +660,17 @@ public class DataFile {
       }
     }
   }
+
+
+  /**
+   * Get the raw bytes for a file
+   * @return The file
+   * @throws IOException If the file cannot be read
+   */
+  public byte[] getBytes() throws IOException {
+    return FileStore.getBytes(fileStore, this);
+  }
+
 
   /**
    * Load the contents of the data file from disk, if they are not already loaded

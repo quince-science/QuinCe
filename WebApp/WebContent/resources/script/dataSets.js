@@ -156,7 +156,7 @@ function dataSetOverlaps(newStart, newEnd) {
         var itemEnd = new Date(item['end']).getTime();
 
         var overlap = true;
-        if (itemEnd <= newStart || itemStart >= newEnd) {
+        if (itemEnd < newStart || itemStart > newEnd) {
           overlap = false;
         }
 
@@ -256,10 +256,10 @@ function setRangeFromClick(date, datasets) {
       }
       else {
         if (date < start && max > start) {
-          max = start
+          max = new Date(start.getTime() - 1000)
         }
         if (date > end && min < end) {
-          min = end
+          min = new Date(end.getTime() + 1000)
         }
       }
     }

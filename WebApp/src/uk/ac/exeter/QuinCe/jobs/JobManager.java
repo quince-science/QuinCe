@@ -575,6 +575,8 @@ public class JobManager {
       stmt.setString(2, StringUtils.stackTraceToString(error));
       stmt.setLong(3, jobID);
       stmt.execute();
+
+      System.out.println(StringUtils.stackTraceToString(error));
     } catch (SQLException e) {
       throw new DatabaseException("An error occurred while setting the error state of the job", e);
     } finally {
