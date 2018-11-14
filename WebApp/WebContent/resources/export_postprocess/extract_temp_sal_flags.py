@@ -20,5 +20,7 @@ try:
         df['Salinity error']=df.apply(lambda row: get_error(row,salinity_err_msg),axis=1)
 
         df.to_csv(outputfile)
+    else:
+        print('< Excpected inputfile and outputfile as system arguments. > \n< Please try again adding \'read_from_file\' \'write_to_file\' at the end of your command. >')
 except Exception as e:
     print('Failed to extract temperature and salinity flags:,', e)
