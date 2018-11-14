@@ -52,9 +52,19 @@ public class ExportOption {
   private List<String> sensorColumns;
 
   /**
+   * The column headings to use for the sensors
+   */
+  private List<String> sensorColumnHeadings;
+
+  /**
    * The calculation columns to be exported for the different calculation paths
    */
   private TreeMap<String, List<String>> calculationColumns;
+
+  /**
+   * The column headings for the calculation columns
+   */
+  private TreeMap<String, List<String>> calculationColumnHeadings;
 
   static {
     FIXED_KEYS = new ArrayList<String>(4);
@@ -62,6 +72,7 @@ public class ExportOption {
     FIXED_KEYS.add("separator");
     FIXED_KEYS.add("flags");
     FIXED_KEYS.add("sensors");
+    FIXED_KEYS.add("sensors_headings");
   }
 
   /**
@@ -73,6 +84,7 @@ public class ExportOption {
   public ExportOption(ResourceManager resourceManager, int index, JSONObject json) throws ExportException {
     this.index = index;
     this.calculationColumns = new TreeMap<String, List<String>>();
+    this.calculationColumnHeadings = new TreeMap<String, List<String>>();
     parseJson(resourceManager, json);
   }
 
@@ -174,6 +186,17 @@ public class ExportOption {
       } catch (SensorConfigurationException e) {
         throw new ExportConfigurationException(index, "Error parsing sensors entry: " + e.getMessage());
       }
+
+      JSONArray sensorColumnHeadingsEntry = json.getJSONArray("sensors_headings");
+      sensorColumnHeadings = new ArrayList<String>(sensorColumns.size());
+      for (int i = 0; i < sensorColumnHeadingsEntry.length(); i++) {
+        sensorColumnHeadings.add(sensorColumnHeadingsEntry.getString(i).trim());
+      }
+
+      if (sensorColumnHeadings.size() != sensorColumns.size()) {
+        throw new ExportConfigurationException(index,
+            "Number of column headings does not match number of columns");
+      }
     } catch (JSONException e) {
       throw new ExportConfigurationException(index, "Missing or invalid sensor columns entry");
     }
@@ -185,25 +208,41 @@ public class ExportOption {
 
         CalculationDB calculationDb = null;
 
-        try {
-          calculationDb = CalculationDBFactory.getCalculationDB(key);
-        } catch (CalculatorException e) {
-          throw new ExportConfigurationException(index, "Unrecognised calculation idendtifier '" + key + "'");
-        }
-
-        try {
-          JSONArray calculationColumnsEntry = json.getJSONArray(key);
-          List<String> calculationColumnNames = new ArrayList<String>();
-          for (int i = 0; i < calculationColumnsEntry.length(); i++) {
-            calculationColumnNames.add(calculationColumnsEntry.getString(i));
+        if (key.endsWith("_columns")) {
+          String calculationIdentifier = key.substring(0, key.length() - 8);
+          try {
+            calculationDb = CalculationDBFactory.getCalculationDB(key.substring(0, key.length() - 8));
+          } catch (CalculatorException e) {
+            throw new ExportConfigurationException(index, "Unrecognised calculation idendtifier '" + calculationIdentifier + "'");
           }
 
-          calculationDb.validateColumnHeadings(calculationColumnNames);
-          this.calculationColumns.put(key, calculationColumnNames);
-        } catch (JSONException e) {
-          throw new ExportConfigurationException(index, "Invalid calculation columns entry '" + key + "'");
-        } catch (CalculatorException e) {
-          throw new ExportConfigurationException(index, e);
+          try {
+            JSONArray calculationColumnsEntry = json.getJSONArray(key);
+            List<String> calculationColumnNames = new ArrayList<String>();
+            for (int i = 0; i < calculationColumnsEntry.length(); i++) {
+              calculationColumnNames.add(calculationColumnsEntry.getString(i));
+            }
+
+            calculationDb.validateColumnHeadings(calculationColumnNames);
+            this.calculationColumns.put(calculationIdentifier, calculationColumnNames);
+
+            JSONArray calculationColumnHeadingsEntry = json.getJSONArray(calculationIdentifier + "_headings");
+            List<String> calculationColumnHeadings = new ArrayList<String>(calculationColumnNames.size());
+            for (int i = 0; i < calculationColumnHeadingsEntry.length(); i++) {
+              calculationColumnHeadings.add(calculationColumnHeadingsEntry.getString(i));
+            }
+
+            if (calculationColumnHeadings.size() != calculationColumnNames.size()) {
+              throw new ExportConfigurationException(index,
+                  "Number of column headings does not match number of columns for " + calculationIdentifier);
+            } else {
+              this.calculationColumnHeadings.put(calculationIdentifier, calculationColumnHeadings);
+            }
+          } catch (JSONException e) {
+            throw new ExportConfigurationException(index, "Invalid calculation columns entry '" + key + "'");
+          } catch (CalculatorException e) {
+            throw new ExportConfigurationException(index, e);
+          }
         }
       }
     }
@@ -239,12 +278,29 @@ public class ExportOption {
   }
 
   /**
+   * Get the list of sensor column headings
+   * @return The sensor column headings
+   */
+  public List<String> getSensorColumnHeadings() {
+    return sensorColumnHeadings;
+  }
+
+  /**
    * Get the list of columns required for the given calculation
    * @param calculation The calculation name
    * @return The list of columns
    */
   public List<String> getCalculationColumns(String calculation) {
     return calculationColumns.get(calculation);
+  }
+
+  /**
+   * Get the list of column headings for the given calculation
+   * @param calculation The calculation name
+   * @return The column headings
+   */
+  public List<String> getCalculationColumnHeadings(String calculation) {
+    return calculationColumnHeadings.get(calculation);
   }
 
   /**

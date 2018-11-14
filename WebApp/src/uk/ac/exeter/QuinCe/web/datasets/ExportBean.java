@@ -278,15 +278,15 @@ public class ExportBean extends BaseManagedBean {
     output.append("Latitude");
     output.append(exportOption.getSeparator());
 
-    for (String sensorColumn : exportOption.getSensorColumns()) {
-      output.append(sensorColumn);
+    for (String sensorColumnHeading : exportOption.getSensorColumnHeadings()) {
+      output.append(sensorColumnHeading);
       output.append(exportOption.getSeparator());
     }
 
     // TODO Replace when mutiple calculation paths are in place
-    List<String> calculationColumns = exportOption.getCalculationColumns("equilibrator_pco2");
-    for (int i = 0; i < calculationColumns.size(); i++) {
-      output.append(calculationColumns.get(i));
+    List<String> calculationColumnHeadings = exportOption.getCalculationColumnHeadings("equilibrator_pco2");
+    for (int i = 0; i < calculationColumnHeadings.size(); i++) {
+      output.append(calculationColumnHeadings.get(i));
       output.append(exportOption.getSeparator());
     }
 
