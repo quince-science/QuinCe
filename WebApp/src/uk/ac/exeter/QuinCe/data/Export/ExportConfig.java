@@ -25,18 +25,24 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *     <b>exportName</b> - The display name of this export option.
  *   </li>
  *   <li>
- *     <b>Separator</b> - The column separator in the exported file. This must be a string, either
+ *     <b>separator</b> - The column separator in the exported file. This must be a string, either
  *      'comma' or 'tab'.
  *   </li>
  *   <li>
- *     <b>Flags</b> - The flag values to be included in the export, as numeric values.
+ *     <b>flags</b> - The flag values to be included in the export, as numeric values.
  *   </li>
  *   <li>
- *     <b>Sensors</b> - The names of the sensor columns to be included in the output
+ *     <b>sensors</b> - The names of the sensor columns to be included in the output
+ *   </li>
+ *   <li>
+ *     <b>sensors_titles</b> - The column headers to use for the sensors
  *   </li>
  *   <li>
  *     <b>[Calculation Name]</b> - For each available calculation path, Any calculated value
  *     can be included.
+ *   </li>
+ *   <li>
+ *     <b>[Calculation Name]_titles</b> - The headers to use for the calculation columns
  *   </li>
  * </ul>
  *
