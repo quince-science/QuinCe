@@ -40,7 +40,8 @@ class ImapConfiguration(DataRetriever):
         port=self.configuration["Port"])
 
     except:
-      self.log(logging.CRITICAL, "Cannot connect to IMAP server: " + traceback.format_exc())
+      self.log(logging.CRITICAL, "Cannot connect to IMAP server: "
+        + traceback.format_exc())
       config_ok = False
 
     # Authenticate
@@ -61,7 +62,8 @@ class ImapConfiguration(DataRetriever):
           config_ok = False
 
     except:
-      self.log(logging.CRITICAL, "Cannot log in to IMAP server: " + traceback.format_exc())
+      self.log(logging.CRITICAL, "Cannot log in to IMAP server: "
+        + traceback.format_exc())
       config_ok = False
 
     # Shut everything down
@@ -117,8 +119,9 @@ class ImapConfiguration(DataRetriever):
         self.log(logging.DEBUG, "Processing email ID " + \
           str(self.message_ids[self.current_index]))
 
-        message_content = self.imapconn.fetch(self.message_ids[self.current_index], "RFC822") \
-              [self.message_ids[self.current_index]][b"RFC822"]
+        message_content = self.imapconn.fetch( \
+          self.message_ids[self.current_index], "RFC822") \
+          [self.message_ids[self.current_index]][b"RFC822"]
 
         message = email.message_from_bytes(message_content)
 
