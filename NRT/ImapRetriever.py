@@ -114,6 +114,8 @@ class ImapConfiguration(DataRetriever):
       file_found = False
       self.current_index = self.current_index + 1
       while not file_found and self.current_index < len(self.message_ids):
+        self.log(logging.DEBUG, "Processing email ID " + \
+          str(self.message_ids[self.current_index]))
 
         message_content = self.imapconn.fetch(self.message_ids[self.current_index], "RFC822") \
               [self.message_ids[self.current_index]][b"RFC822"]
@@ -126,6 +128,7 @@ class ImapConfiguration(DataRetriever):
               content_disposition.startswith("attachment"):
 
             filename = self._extract_filename(part.get_filename())
+            self.log(logging.DEBUG, "Extracting attachment " + filename)
             contents = part.get_payload(decode=True)
             self._add_file(filename, contents)
             file_found = True
@@ -153,6 +156,9 @@ class ImapConfiguration(DataRetriever):
   # clean them up accordingly
   def _cleanup_success(self):
     try:
+      self.log(logging.DEBUG, "Moving email "
+        + str(self.message_ids[self.current_index]) + " to downloaded folder")
+
       self.imapconn.move(self.message_ids[self.current_index],
         self.configuration["Downloaded Folder"])
     except:
@@ -164,4 +170,9 @@ class ImapConfiguration(DataRetriever):
   def _cleanup_fail(self):
     # We don't do anything - we'll try to process
     # the mail again next time round
+    pass
+
+  # The file(s) were not processed
+  def _cleanup_not_processed(self):
+    # No action required
     pass
