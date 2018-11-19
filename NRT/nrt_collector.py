@@ -1,6 +1,9 @@
 
 import logging
 import toml, json
+from zipfile import ZipFile
+from io import BytesIO
+import ntpath
 
 # Local modules
 import RetrieverFactory, nrtdb, nrtftp
@@ -8,6 +11,30 @@ import RetrieverFactory, nrtdb, nrtftp
 dbconn = None
 ftpconn = None
 logger = None
+
+# Upload a file to the FTP server. If it's a ZIP file,
+# extract it and upload the contents as individual files
+def upload_file(ftp_config, instrument_id, filename, contents):
+  upload_result = -1
+
+  if not str.endswith(filename, ".zip"):
+    upload_result = nrtftp.upload_file(ftpconn, ftp_config,
+            instrument_id, filename, contents)
+  else:
+    with ZipFile(BytesIO(contents), 'r') as unzip:
+      for name in unzip.namelist():
+        log_instrument(instrument_id, logging.DEBUG, "Uploading "
+          + "ZIP entry " + name)
+        upload_result = nrtftp.upload_file(ftpconn, ftp_config,
+          instrument_id, ntpath.basename(name), unzip.read(name))
+
+        # If any file fails to upload, stop
+        if upload_result != nrtftp.UPLOAD_OK:
+          break
+
+  return upload_result
+
+
 
 # Log a message for a specific instrument
 def log_instrument(instrument_id, level, message):
@@ -56,8 +83,8 @@ for instrument_id in instruments:
           log_instrument(instrument_id, logging.DEBUG, "Uploading " + file["filename"] \
             + " to FTP server")
 
-          upload_result = nrtftp.upload_file(ftpconn, config["FTP"],
-            instrument_id, file["filename"], file["contents"])
+          upload_result = upload_file(config["FTP"], instrument_id,
+            file["filename"], file["contents"])
 
           if upload_result == nrtftp.NOT_INITIALISED:
             log_instrument(instrument_id, logging.ERROR, "FTP not initialised")
@@ -70,8 +97,8 @@ for instrument_id in instruments:
             log_instrument(instrument_id, logging.DEBUG, "File uploaded OK")
             retriever.file_succeeded()
           else:
-            log_instrumetn(instrument_id, logging.CRITICAL, "Unrecognised "
-              + "upload result " + upload_result)
+            log_instrument(instrument_id, logging.CRITICAL, "Unrecognised "
+              + "upload result " + str(upload_result))
             exit()
 
       retriever.shutdown()
