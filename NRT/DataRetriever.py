@@ -9,6 +9,8 @@ class DataRetriever(metaclass=ABCMeta):
     self.instrument_id = instrument_id
     self.logger = logger
     self.configuration = {}
+
+    # This will be an array of {filename, file_contents}
     self.current_files = []
 
   # Log a message for a specific instrument
@@ -57,6 +59,12 @@ class DataRetriever(metaclass=ABCMeta):
   @abstractmethod
   def _cleanup_fail(self):
     raise NotImplementedError("_cleanup_fail not implemented")
+
+  # The file(s) were not processed this time;
+  # clean them up so they can be reprocessed later
+  @abstractmethod
+  def _cleanup_not_processed(self):
+    raise NotImplementedError("_cleanup_not_processed not implemented")
 
   # Print the current configuration values
   def print_configuration(self):
@@ -129,4 +137,9 @@ class DataRetriever(metaclass=ABCMeta):
   # The file(s) failed to process
   def file_failed(self):
     self._cleanup_fail()
+    self.current_files = []
+
+  # The file(s) were not processed
+  def file_not_processed(self):
+    self._cleanup_not_processed()
     self.current_files = []
