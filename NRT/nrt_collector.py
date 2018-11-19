@@ -3,7 +3,7 @@ import logging
 import toml, json
 
 # Local modules
-import RetrieverFactory, nrtdb
+import RetrieverFactory, nrtdb, nrtftp
 
 dbconn = None
 ftpconn = None
@@ -27,6 +27,9 @@ logger.setLevel(level=config["Logging"]["level"])
 dbconn = nrtdb.get_db_conn(config["Database"]["location"])
 instruments = nrtdb.get_instrument_ids(dbconn)
 
+# Connect to FTP server
+ftpconn = nrtftp.connect_ftp(config["FTP"])
+
 # Loop through each instrument
 for instrument_id in instruments:
   log_instrument(instrument_id, logging.INFO, "Processing instrument")
@@ -49,7 +52,26 @@ for instrument_id in instruments:
 
       # Loop through all files returned by the retriever one by one
       while retriever.load_next_file():
-        print("FILE")
-        retriever.file_failed()
+        for file in retriever.current_files:
+          log_instrument(instrument_id, logging.DEBUG, "Uploading " + file["filename"] \
+            + " to FTP server")
+
+          upload_result = nrtftp.upload_file(ftpconn, config["FTP"],
+            instrument_id, file["filename"], file["contents"])
+
+          if upload_result == nrtftp.NOT_INITIALISED:
+            log_instrument(instrument_id, logging.ERROR, "FTP not initialised")
+            retriever.file_failed()
+          elif upload_result == nrtftp.FILE_EXISTS:
+            log_instrument(instrument_id, logging.DEBUG, "File exists on FTP "
+              + "server - will retry later")
+            retriever.file_not_processed()
+          elif upload_result == nrtftp.UPLOAD_OK:
+            log_instrument(instrument_id, logging.DEBUG, "File uploaded OK")
+            retriever.file_succeeded()
+          else:
+            log_instrumetn(instrument_id, logging.CRITICAL, "Unrecognised "
+              + "upload result " + upload_result)
+            exit()
 
       retriever.shutdown()
