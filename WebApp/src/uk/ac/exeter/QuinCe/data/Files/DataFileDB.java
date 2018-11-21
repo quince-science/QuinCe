@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -296,24 +297,39 @@ public class DataFileDB {
     PreparedStatement stmt = null;
 
     try {
-      conn.setAutoCommit(false);
-      stmt = conn.prepareStatement(REPLACE_FILE_STATEMENT);
-      stmt.setString(1, dataFile.getFilename());
-      stmt.setLong(2, DateTimeUtils.dateToLong(dataFile.getStartDate()));
-      stmt.setLong(3, DateTimeUtils.dateToLong(dataFile.getEndDate()));
-      stmt.setInt(4, dataFile.getRecordCount());
-      stmt.setLong(5, replacementId);
+      boolean storeFile = true;
 
-      stmt.execute();
+      if (replacementId > -1) {
+        // Get the existing file. If it's identical to the current file,
+        // we don't need to do anything
+        List<Long> idList = new ArrayList<Long>(1);
+        idList.add(replacementId);
+        DataFile fileToReplace = getDataFiles(conn, appConfig, idList).get(0);
 
-      // Set the database ID on the file now the replacement has succeeded
-      dataFile.setDatabaseId(replacementId);
+        byte[] existingFile = fileToReplace.getBytes();
+        byte[] newFile = dataFile.getContents().getBytes();
+        storeFile = !Arrays.equals(existingFile, newFile);
+      }
 
-      // Store the file - automatically replaces the old one
-      FileStore.storeFile(appConfig.getProperty("filestore"), dataFile);
+      if (storeFile) {
+        conn.setAutoCommit(false);
+        stmt = conn.prepareStatement(REPLACE_FILE_STATEMENT);
+        stmt.setString(1, dataFile.getFilename());
+        stmt.setLong(2, DateTimeUtils.dateToLong(dataFile.getStartDate()));
+        stmt.setLong(3, DateTimeUtils.dateToLong(dataFile.getEndDate()));
+        stmt.setInt(4, dataFile.getRecordCount());
+        stmt.setLong(5, replacementId);
 
+        stmt.execute();
 
-      conn.commit();
+        // Set the database ID on the file now the replacement has succeeded
+        dataFile.setDatabaseId(replacementId);
+
+        // Store the file - automatically replaces the old one
+        FileStore.storeFile(appConfig.getProperty("filestore"), dataFile);
+
+        conn.commit();
+      }
     } catch (Exception e) {
       try {
         DatabaseUtils.rollBack(conn);
