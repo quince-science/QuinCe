@@ -257,7 +257,7 @@ public abstract class UploadedDataFile {
     return replaceFile;
   }
 
-  protected void extractFile(Instrument instrument, Properties appConfig) {
+  protected void extractFile(Instrument instrument, Properties appConfig, boolean allowExactDuplicate) {
     try {
       DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
 
@@ -313,10 +313,15 @@ public abstract class UploadedDataFile {
             String oldContents = existingFile.getContents();
             String newContents = newFile.getContents();
 
-            if (newContents.length() <= oldContents.length()) {
+            if (newContents.length() < oldContents.length()) {
               fileOK = false;
-              fileMessage = "This file would replace an existing file with identical or fewer records";
-            } else {
+              fileMessage = "This file would replace an existing file with fewer records";
+            } else if (!allowExactDuplicate && newContents.length() == oldContents.length()) {
+              fileOK = false;
+              fileMessage = "This is an exact copy of an existing file";
+            }
+
+            if (fileOK) {
               String oldPartOfNewContents = newContents.substring(0, oldContents.length());
               if (!oldPartOfNewContents.equals(oldContents)) {
                 fileOK = false;

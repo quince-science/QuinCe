@@ -69,7 +69,7 @@
                   <div class="tablespinner loading"/>
                 </ui:fragment>
                 <h:outputText value="#{uploadedFile.dataFile.recordCount}" rendered="#{uploadedFile.processed}"/>
-                <h:outputText value=" (Updated file)" rendered="#{uploadedFile.replacement}" styleClass="note"></h:outputText>
+                <h:outputText value=" (Updated file)" rendered="#{uploadedFile.processed} and #{uploadedFile.replacement}" styleClass="note"></h:outputText>
               </p:column>
               <p:column headerText="Store file to database">
                 <ui:fragment rendered="#{!uploadedFile.processed}">

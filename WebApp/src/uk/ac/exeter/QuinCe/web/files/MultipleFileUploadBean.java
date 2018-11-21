@@ -82,7 +82,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
    * Extract and process the uploaded file's contents
    */
   public void extractFile(UploadedDataFile file) {
-    file.extractFile(getCurrentInstrument(), getAppConfig());
+    file.extractFile(getCurrentInstrument(), getAppConfig(), false);
   }
 
   /**
