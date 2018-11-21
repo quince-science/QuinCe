@@ -1,32 +1,40 @@
 package uk.ac.exeter.QuinCe.web.files;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Properties;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.application.FacesMessage.Severity;
+import javax.sql.DataSource;
 
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
-import org.primefaces.model.UploadedFile;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
+import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Files.DataFileMessage;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.web.Instrument.newInstrument.FileDefinitionBuilder;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * @author Jonas F. Henriksen
  *
  */
-public class UploadedDataFile {
+public abstract class UploadedDataFile {
 
   /**
-   * The uploaded file
+   * The contents of the file split into lines
    */
-  private UploadedFile uploadedFile;
+  private String[] fileLines = null;
 
   /**
    * Indicates whether or not the file should be stored
@@ -56,49 +64,27 @@ public class UploadedDataFile {
   private long replaceFile = -1;
 
   /**
-   * Basic constructor - reads the file contents ready for processing
-   * @param file The uploaded file
-   */
-  public UploadedDataFile(UploadedFile file) {
-    setUploadedFile(file);
-  }
-
-  /**
-   * Get the uploaded file
-   * @return The uploaded file
-   */
-  public UploadedFile getUploadedFile() {
-    return uploadedFile;
-  }
-
-  /**
-   * Assign the uploaded file and extract its contents
-   * @param uploadedFile the uploadedFile to set
-   */
-  public void setUploadedFile(UploadedFile uploadedFile) {
-    this.uploadedFile = uploadedFile;
-    getLines();
-  }
-
-  /**
    * Extract the file contents as individual lines
    * @return The file lines
    */
   public String[] getLines() {
-    String fileContent = new String(uploadedFile.getContents(), StandardCharsets.UTF_8);
-    if (null == fileContent || fileContent.trim().length() == 0) {
-      return null;
+    if (null == fileLines) {
+      String fileContent = getFileContents();
+      if (null == fileContent || fileContent.trim().length() == 0) {
+        fileLines = null;
+      } else {
+        fileLines = fileContent.split("[\\r\\n]+");
+      }
     }
-    return fileContent.split("[\\r\\n]+");
+
+    return fileLines;
   }
 
   /**
    * Get the filename of the file
    * @return The filename
    */
-  public String getName() {
-    return uploadedFile.getFileName();
-  }
+  public abstract String getName();
 
   /**
    * @return indication whether this file should be stored in the database
@@ -270,4 +256,105 @@ public class UploadedDataFile {
   public long getReplacementFile() {
     return replaceFile;
   }
+
+  protected void extractFile(Instrument instrument, Properties appConfig) {
+    try {
+      DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
+
+      FileDefinitionBuilder guessedFileLayout = new FileDefinitionBuilder(instrument.getFileDefinitions());
+      String[] lines = getLines();
+      if (null == lines) {
+        throw new DataFileException("File contains no data");
+      }
+      guessedFileLayout.setFileContents(Arrays.asList(lines));
+      guessedFileLayout.guessFileLayout();
+      FileDefinition fileDefinition = instrument.getFileDefinitions()
+          .getMatchingFileDefinition(guessedFileLayout).iterator().next();
+      // TODO Handle multiple matched definitions
+
+      setDataFile(new DataFile(
+          appConfig.getProperty("filestore"),
+          fileDefinition,
+          getName(),
+          Arrays.asList(lines)
+      ));
+      if (getDataFile().getFirstDataLine() >= getDataFile()
+          .getContentLineCount()) {
+        throw new DataFileException("File contains headers but no data");
+      }
+
+      if (null == getDataFile().getStartDate()
+          || null == getDataFile().getEndDate()) {
+        putMessage(getName()
+            + " has date issues, see messages below. Please fix these problems and upload the file again.",
+            FacesMessage.SEVERITY_ERROR);
+      } else if (getDataFile().getMessageCount() > 0) {
+        putMessage(getName()
+            + " could not be processed (see messages below). Please fix these problems and upload the file again.",
+            FacesMessage.SEVERITY_ERROR);
+      } else {
+        List<DataFile> overlappingFiles = DataFileDB.getFilesWithinDates(dataSource, fileDefinition,
+            getDataFile().getStartDate(), getDataFile().getEndDate());
+
+        boolean fileOK = true;
+        String fileMessage = null;
+
+        if (overlappingFiles.size() > 0 && overlappingFiles.size() > 1) {
+          fileOK = false;
+          fileMessage = "This file overlaps one or more existing files";
+        } else if (overlappingFiles.size() == 1) {
+          DataFile existingFile = overlappingFiles.get(0);
+          DataFile newFile = getDataFile();
+
+          if (!existingFile.getFilename().equals(newFile.getFilename())) {
+            fileOK = false;
+            fileMessage = "This file overlaps an existing file with a different name";
+          } else {
+            String oldContents = existingFile.getContents();
+            String newContents = newFile.getContents();
+
+            if (newContents.length() <= oldContents.length()) {
+              fileOK = false;
+              fileMessage = "This file would replace an existing file with identical or fewer records";
+            } else {
+              String oldPartOfNewContents = newContents.substring(0, oldContents.length());
+              if (!oldPartOfNewContents.equals(oldContents)) {
+                fileOK = false;
+                fileMessage = "This file would update an existing file but change existing data";
+              } else {
+                setReplacementFile(existingFile.getDatabaseId());
+              }
+            }
+          }
+        } else if (DataFileDB.hasFileWithName(dataSource, instrument.getDatabaseId(),
+            getName())) {
+
+          // We don't allow duplicate filenames
+          fileOK = false;
+          fileMessage = "A file with that name already exists";
+        }
+
+        if (!fileOK) {
+          fileDefinition = null;
+          setDataFile(null);
+          putMessage(fileMessage, FacesMessage.SEVERITY_ERROR);
+        }
+      }
+    } catch (NoSuchElementException nose) {
+      setDataFile(null);
+      putMessage("The format of " + getName() + " was not recognised. Please upload a different file.", FacesMessage.SEVERITY_ERROR);
+    } catch (Exception e) {
+      e.printStackTrace();
+      setDataFile(null);
+      putMessage("The file could not be processed: " + e.getMessage(), FacesMessage.SEVERITY_ERROR);
+    }
+
+    setProcessed(true);
+  }
+
+  /**
+   * Get the contents of the file
+   * @return The file contents
+   */
+  protected abstract String getFileContents();
 }
