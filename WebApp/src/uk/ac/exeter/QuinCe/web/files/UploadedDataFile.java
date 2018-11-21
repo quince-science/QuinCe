@@ -257,6 +257,12 @@ public abstract class UploadedDataFile {
     return replaceFile;
   }
 
+  /**
+   * Extract the file contents and ensure that it doesn't clash with existing files
+   * @param instrument The instrument to which the file belongs
+   * @param appConfig The application configuration
+   * @param allowExactDuplicate Indicates whether exact duplicate files are accepted
+   */
   protected void extractFile(Instrument instrument, Properties appConfig, boolean allowExactDuplicate) {
     try {
       DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
@@ -319,9 +325,7 @@ public abstract class UploadedDataFile {
             } else if (!allowExactDuplicate && newContents.length() == oldContents.length()) {
               fileOK = false;
               fileMessage = "This is an exact copy of an existing file";
-            }
-
-            if (fileOK) {
+            } else {
               String oldPartOfNewContents = newContents.substring(0, oldContents.length());
               if (!oldPartOfNewContents.equals(oldContents)) {
                 fileOK = false;
