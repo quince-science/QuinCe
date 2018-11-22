@@ -102,3 +102,9 @@ for instrument_id in instruments:
             exit()
 
       retriever.shutdown()
+
+if ftpconn is not None:
+  ftpconn.close()
+
+if dbconn is not None:
+  dbconn.close()
