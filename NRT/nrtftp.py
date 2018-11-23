@@ -61,3 +61,22 @@ def upload_file(ftpconn, ftp_config, instrument_id, filename, contents):
     ftpconn.putfo(BytesIO(contents), destination_file)
 
   return upload_result
+
+# Get the list of instrument folders
+def get_instrument_folders(ftpconn, ftp_config):
+  folder_list = ftpconn.listdir(ftp_config["dir"])
+  return folder_list
+
+# Get the list of files waiting to be uploaded for an instrument
+def get_instrument_files(ftpconn, ftp_config, instrument_id):
+  inbox = get_instrument_folder(ftp_config, instrument_id) + "inbox/"
+  return ftpconn.listdir(inbox)
+
+# Get a file from the inbox for an instrument
+def get_file(ftpconn, ftp_config, instrument_id, file):
+  file_path = get_instrument_folder(ftp_config, instrument_id) + "inbox/" \
+    + file
+
+  result = BytesIO()
+  ftpconn.getfo(file_path, result)
+  return result
