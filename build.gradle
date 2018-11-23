@@ -78,7 +78,8 @@ dependencies {
 	// Jersey RESTful API
 	compile 'org.glassfish.jersey.containers:jersey-container-servlet:2.27'
 	compile 'org.glassfish.jersey.inject:jersey-hk2:2.27'
-	compile 'org.glassfish.jersey.media:jersey-media-moxy:2.27'
+    compile 'org.glassfish.jersey.media:jersey-media-moxy:2.27'
+    compile 'org.glassfish.jersey.media:jersey-media-multipart:2.27'
 
 	// gretty plugin handling the tomcat server
 	gretty 'org.apache.tomcat:tomcat-dbcp:8.0.1'
