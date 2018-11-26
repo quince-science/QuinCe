@@ -101,5 +101,5 @@ def _move_file(ftpconn, ftp_config, instrument_id, file, destination):
     ftpconn.remove(dest_path)
   except IOError:
     pass
-    
+
   ftpconn.rename(source_path, dest_path)
