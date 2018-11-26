@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response.Status;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -24,10 +25,11 @@ public abstract class SetExportStatus {
   public Response setExportStatus(@FormParam("id") long id) throws Exception {
 
     Status responseCode = Status.OK;
+    Connection conn = null;
 
     try {
       DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
-      Connection conn = dataSource.getConnection();
+      conn = dataSource.getConnection();
       DataSet dataset = DataSetDB.getDataSet(conn, id);
       if (dataset.getStatus() != DataSet.STATUS_EXPORTING) {
         responseCode = Status.FORBIDDEN;
@@ -36,6 +38,8 @@ public abstract class SetExportStatus {
       }
     } catch (RecordNotFoundException e) {
       responseCode = Status.NOT_FOUND;
+    } finally {
+    	DatabaseUtils.closeConnection(conn);
     }
 
     return Response.status(responseCode).build();
