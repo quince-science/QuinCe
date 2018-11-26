@@ -79,4 +79,27 @@ def get_file(ftpconn, ftp_config, instrument_id, file):
 
   result = BytesIO()
   ftpconn.getfo(file_path, result)
-  return result
+  return result.getvalue()
+
+# Move a file to the Succeeded folder
+def upload_succeeded(ftpconn, ftp_config, instrument_id, file):
+  _move_file(ftpconn, ftp_config, instrument_id, file, "succeeded")
+
+
+# Move a file to the Failed folder
+def upload_failed(ftpconn, ftp_config, instrument_id, file):
+  _move_file(ftpconn, ftp_config, instrument_id, file, "failed")
+
+# Move a file from the inbox to the specified folder
+def _move_file(ftpconn, ftp_config, instrument_id, file, destination):
+  source_path = get_instrument_folder(ftp_config, instrument_id) + "inbox/" \
+    + file
+  dest_path = get_instrument_folder(ftp_config, instrument_id) + destination \
+    + "/" + file
+
+  try:
+    ftpconn.remove(dest_path)
+  except IOError:
+    pass
+    
+  ftpconn.rename(source_path, dest_path)

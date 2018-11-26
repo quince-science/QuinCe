@@ -12,6 +12,7 @@ import java.util.Properties;
 import javax.faces.application.FacesMessage;
 import javax.faces.application.FacesMessage.Severity;
 import javax.sql.DataSource;
+import javax.ws.rs.core.Response.Status;
 
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
@@ -32,6 +33,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public abstract class UploadedDataFile {
 
   /**
+   * HTTP Status Code to use for files that can't be processed
+   * due to data issues (not defined in the {#Status} class).
+   */
+  private static final int UNPROCESSABLE_STATUS = 422;
+
+  /**
    * The contents of the file split into lines
    */
   private String[] fileLines = null;
@@ -50,6 +57,11 @@ public abstract class UploadedDataFile {
    * Error messages for the file
    */
   private ArrayList<FacesMessage> messages = new ArrayList<>();
+
+  /**
+   * Return status code for the uploaded file (for use with API calls)
+   */
+  private int statusCode = Status.OK.getStatusCode();
 
   /**
    * Indicates whether or not the file has been
@@ -147,8 +159,9 @@ public abstract class UploadedDataFile {
    * @param summary
    * @param severityError
    */
-  public void putMessage(String summary, Severity severityError) {
+  public void putMessage(int statusCode, String summary, Severity severityError) {
     messages.add(new FacesMessage(severityError, summary, ""));
+    this.statusCode = statusCode;
     setStore(false);
   }
 
@@ -263,7 +276,7 @@ public abstract class UploadedDataFile {
    * @param appConfig The application configuration
    * @param allowExactDuplicate Indicates whether exact duplicate files are accepted
    */
-  protected void extractFile(Instrument instrument, Properties appConfig, boolean allowExactDuplicate) {
+  public void extractFile(Instrument instrument, Properties appConfig, boolean allowExactDuplicate) {
     try {
       DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
 
@@ -291,11 +304,11 @@ public abstract class UploadedDataFile {
 
       if (null == getDataFile().getStartDate()
           || null == getDataFile().getEndDate()) {
-        putMessage(getName()
+        putMessage(UNPROCESSABLE_STATUS, getName()
             + " has date issues, see messages below. Please fix these problems and upload the file again.",
             FacesMessage.SEVERITY_ERROR);
       } else if (getDataFile().getMessageCount() > 0) {
-        putMessage(getName()
+        putMessage(UNPROCESSABLE_STATUS, getName()
             + " could not be processed (see messages below). Please fix these problems and upload the file again.",
             FacesMessage.SEVERITY_ERROR);
       } else {
@@ -304,10 +317,12 @@ public abstract class UploadedDataFile {
 
         boolean fileOK = true;
         String fileMessage = null;
+        int fileStatus = Status.OK.getStatusCode();
 
         if (overlappingFiles.size() > 0 && overlappingFiles.size() > 1) {
           fileOK = false;
           fileMessage = "This file overlaps one or more existing files";
+          fileStatus = Status.CONFLICT.getStatusCode();
         } else if (overlappingFiles.size() == 1) {
           DataFile existingFile = overlappingFiles.get(0);
           DataFile newFile = getDataFile();
@@ -315,6 +330,7 @@ public abstract class UploadedDataFile {
           if (!existingFile.getFilename().equals(newFile.getFilename())) {
             fileOK = false;
             fileMessage = "This file overlaps an existing file with a different name";
+            fileStatus = Status.CONFLICT.getStatusCode();
           } else {
             String oldContents = existingFile.getContents();
             String newContents = newFile.getContents();
@@ -322,43 +338,54 @@ public abstract class UploadedDataFile {
             if (newContents.length() < oldContents.length()) {
               fileOK = false;
               fileMessage = "This file would replace an existing file with fewer records";
+              fileStatus = Status.CONFLICT.getStatusCode();
             } else if (!allowExactDuplicate && newContents.length() == oldContents.length()) {
               fileOK = false;
               fileMessage = "This is an exact copy of an existing file";
+              fileStatus = Status.CONFLICT.getStatusCode();
             } else {
               String oldPartOfNewContents = newContents.substring(0, oldContents.length());
               if (!oldPartOfNewContents.equals(oldContents)) {
                 fileOK = false;
                 fileMessage = "This file would update an existing file but change existing data";
+                fileStatus = Status.CONFLICT.getStatusCode();
               } else {
                 setReplacementFile(existingFile.getDatabaseId());
               }
             }
           }
-        } else if (DataFileDB.hasFileWithName(dataSource, instrument.getDatabaseId(),
-            getName())) {
+        } else if (DataFileDB.hasFileWithName(dataSource, instrument.getDatabaseId(), getName())) {
 
           // We don't allow duplicate filenames
           fileOK = false;
           fileMessage = "A file with that name already exists";
+          fileStatus = Status.CONFLICT.getStatusCode();
         }
 
         if (!fileOK) {
           fileDefinition = null;
           setDataFile(null);
-          putMessage(fileMessage, FacesMessage.SEVERITY_ERROR);
+          putMessage(fileStatus, fileMessage, FacesMessage.SEVERITY_ERROR);
         }
       }
     } catch (NoSuchElementException nose) {
       setDataFile(null);
-      putMessage("The format of " + getName() + " was not recognised. Please upload a different file.", FacesMessage.SEVERITY_ERROR);
+      putMessage(Status.BAD_REQUEST.getStatusCode(), "The format of " + getName() + " was not recognised. Please upload a different file.", FacesMessage.SEVERITY_ERROR);
     } catch (Exception e) {
       e.printStackTrace();
       setDataFile(null);
-      putMessage("The file could not be processed: " + e.getMessage(), FacesMessage.SEVERITY_ERROR);
+      putMessage(Status.INTERNAL_SERVER_ERROR.getStatusCode(), "The file could not be processed: " + e.getMessage(), FacesMessage.SEVERITY_ERROR);
     }
 
     setProcessed(true);
+  }
+
+  /**
+   * Get the HTTP response status code
+   * @return The status code
+   */
+  public int getStatusCode() {
+    return statusCode;
   }
 
   /**
