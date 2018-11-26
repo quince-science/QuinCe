@@ -18,11 +18,12 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * API call to get a list of all datasets
- * ready for export
+ * API call to get a list of all datasets ready for export
+ * 
  * @author zuj007
  *
  */
@@ -33,31 +34,41 @@ public class ExportList {
   @Produces(MediaType.APPLICATION_JSON)
   public String getExportList() throws Exception {
 
-    ResourceManager resourceManager = ResourceManager.getInstance();
-    SensorsConfiguration sensorConfig = resourceManager.getSensorsConfiguration();
-    RunTypeCategoryConfiguration runTypeConfig = resourceManager.getRunTypeCategoryConfiguration();
+    String result = null;
+    Connection conn = null;
 
-    Connection conn = resourceManager.getDBDataSource().getConnection();
-    List<DataSet> datasets = DataSetDB.getDatasetsWithStatus(conn, DataSet.STATUS_READY_FOR_EXPORT);
+    try {
+      ResourceManager resourceManager = ResourceManager.getInstance();
+      SensorsConfiguration sensorConfig = resourceManager.getSensorsConfiguration();
+      RunTypeCategoryConfiguration runTypeConfig = resourceManager.getRunTypeCategoryConfiguration();
 
-    JSONArray json = new JSONArray();
+      conn = resourceManager.getDBDataSource().getConnection();
+      List<DataSet> datasets = DataSetDB.getDatasetsWithStatus(conn, DataSet.STATUS_READY_FOR_EXPORT);
 
-    for (DataSet dataset : datasets) {
-      JSONObject datasetJson = new JSONObject();
+      JSONArray json = new JSONArray();
 
-      datasetJson.put("id", dataset.getId());
-      datasetJson.put("name", dataset.getName());
+      for (DataSet dataset : datasets) {
+        JSONObject datasetJson = new JSONObject();
 
-      Instrument instrument = InstrumentDB.getInstrument(
-          conn, dataset.getInstrumentId(), sensorConfig, runTypeConfig);
-      JSONObject instrumentJson = new JSONObject();
-      instrumentJson.put("name", instrument.getName());
-      instrumentJson.put("user", UserDB.getUser(conn, instrument.getOwnerId()).getFullName());
-      datasetJson.put("instrument", instrumentJson);
+        datasetJson.put("id", dataset.getId());
+        datasetJson.put("name", dataset.getName());
 
-      json.put(datasetJson);
+        Instrument instrument = InstrumentDB.getInstrument(conn, dataset.getInstrumentId(), sensorConfig,
+            runTypeConfig);
+        JSONObject instrumentJson = new JSONObject();
+        instrumentJson.put("name", instrument.getName());
+        instrumentJson.put("user", UserDB.getUser(conn, instrument.getOwnerId()).getFullName());
+        datasetJson.put("instrument", instrumentJson);
+
+        json.put(datasetJson);
+      }   
+      result = json.toString();
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      DatabaseUtils.closeConnection(conn);
     }
 
-    return json.toString();
+    return result;
   }
 }
