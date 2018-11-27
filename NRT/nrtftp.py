@@ -23,7 +23,7 @@ def get_instrument_folder(ftp_config, instrument_id):
 
 # Initialise the FTP folder for an instrument
 def init_ftp_folder(ftpconn, ftp_config, instrument_id):
-  folder = get_instrment_folder(ftp_config, instrument_id)
+  folder = get_instrument_folder(ftp_config, instrument_id)
 
   # Create the folder if it doesn't exist
   if not ftpconn.isdir(folder):

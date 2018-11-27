@@ -23,7 +23,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * API call to get a list of all datasets ready for export
- * 
+ *
  * @author zuj007
  *
  */
@@ -61,7 +61,7 @@ public class ExportList {
         datasetJson.put("instrument", instrumentJson);
 
         json.put(datasetJson);
-      }   
+      }
       result = json.toString();
     } catch (Exception e) {
       throw e;

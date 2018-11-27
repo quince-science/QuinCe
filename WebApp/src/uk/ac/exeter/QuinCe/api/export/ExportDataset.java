@@ -38,7 +38,7 @@ public class ExportDataset {
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   public Response getDatasetZip(@FormParam("id") long id) throws Exception {
 
-	Connection conn = null;
+  Connection conn = null;
     Response response;
     Status responseCode = Status.OK;
     byte[] zip = null;
@@ -56,7 +56,7 @@ public class ExportDataset {
     } catch (RecordNotFoundException e) {
       responseCode = Status.NOT_FOUND;
     } finally {
-    	DatabaseUtils.closeConnection(conn);
+      DatabaseUtils.closeConnection(conn);
     }
 
     if (!responseCode.equals(Status.OK)) {
