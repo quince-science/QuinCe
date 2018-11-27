@@ -5,11 +5,11 @@ from io import BytesIO
 # Local modules
 import nrtftp, quince
 
-ftpconn = None
-
 # Log a message for a specific instrument
 def log_instrument(logger, instrument_id, level, message):
   logger.log(level, str(instrument_id) + ":" + message)
+
+##########################################################
 
 def main():
   # Read in the config
@@ -53,7 +53,8 @@ def main():
           nrtftp.upload_failed(ftpconn, config["FTP"], instrument_id, file)
 
   # Close down
-  ftpconn.close()
+  if ftpconn is not None:
+    ftpconn.close()
 
 
 if __name__ == '__main__':

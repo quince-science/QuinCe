@@ -39,7 +39,7 @@ public abstract class SetExportStatus {
     } catch (RecordNotFoundException e) {
       responseCode = Status.NOT_FOUND;
     } finally {
-    	DatabaseUtils.closeConnection(conn);
+      DatabaseUtils.closeConnection(conn);
     }
 
     return Response.status(responseCode).build();
