@@ -131,7 +131,9 @@
               <f:facet name="header">
                 Submitted
               </f:facet>
-              #{job.created}
+              <h:outputText value="#{job.created}">
+                <f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" />
+              </h:outputText>
             </p:column>
             <p:column>
               <f:facet name="header">
