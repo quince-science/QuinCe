@@ -2,8 +2,9 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.TreeSet;
+import java.util.Map;
 
 /**
  * Represents a set of calibration data records for a data set. This is
@@ -11,12 +12,7 @@ import java.util.TreeSet;
  * @author Steve Jones
  *
  */
-public class CalibrationDataSet extends TreeSet<DataSetRawDataRecord> {
-
-  /**
-   * Serial version UID
-   */
-  private static final long serialVersionUID = -5614215614210710902L;
+public class CalibrationDataSet {
 
   /**
    * Parameter to indicate searches must find the record before a date
@@ -29,16 +25,48 @@ public class CalibrationDataSet extends TreeSet<DataSetRawDataRecord> {
   public static final int AFTER = 1;
 
   /**
-   * Get the calibration record that relates to the specified calibration target, and
-   * which was recorded immediately before the specified date
-   * @param recordDate The date
-   * @param calibrationTarget The calibration target
-   * @return The matching record
+   * The calibration records grouped by run type
    */
-  public DataSetRawDataRecord getCalibrationBefore(LocalDateTime recordDate, String calibrationTarget) {
-    // Make a random access version of the record set
-    List<DataSetRawDataRecord> recordsList = getRecordsWithRunType(calibrationTarget);
-    return searchForClosest(recordsList, recordDate, BEFORE);
+  private Map<String, List<DataSetRawDataRecord>> records;
+
+  /**
+   * A cache for records found by the {{@link #getSurroundingCalibrations(LocalDateTime, String)} method
+   */
+  private Map<String, List<DataSetRawDataRecord>> foundRecords;
+
+  /**
+   * Indicates whether or not records have been added to this data set
+   */
+  private boolean hasData = false;
+
+  /**
+   * Basic constructor
+   */
+  protected CalibrationDataSet() {
+    records = new HashMap<String, List<DataSetRawDataRecord>>();
+    foundRecords = new HashMap<String, List<DataSetRawDataRecord>>();
+  }
+
+  /**
+   * Add a measurement to the data set
+   * @param measurement The measurement
+   */
+  protected void add(DataSetRawDataRecord measurement) {
+    String runType = measurement.getRunType().toLowerCase();
+    if (!records.containsKey(runType)) {
+      records.put(runType, new ArrayList<DataSetRawDataRecord>());
+    }
+
+    records.get(runType).add(measurement);
+    hasData = true;
+  }
+
+  /**
+   * Indicates whether or not records have been added to the data set
+   * @return {@code true} if there are records; {@code false} if not
+   */
+  public boolean hasData() {
+    return hasData;
   }
 
   /**
@@ -48,75 +76,74 @@ public class CalibrationDataSet extends TreeSet<DataSetRawDataRecord> {
    * @param calibrationTarget The calibration target
    * @return The matching record
    */
-  public DataSetRawDataRecord getCalibrationAfter(LocalDateTime recordDate, String calibrationTarget) {
-    // Make a random access version of the record set
-    List<DataSetRawDataRecord> recordsList = getRecordsWithRunType(calibrationTarget);
-    return searchForClosest(recordsList, recordDate, AFTER);
+/*  public DataSetRawDataRecord getCalibrationBefore(LocalDateTime recordDate, String calibrationTarget) {
+    return searchForClosest(records.get(calibrationTarget.toLowerCase()), recordDate, BEFORE);
   }
-
+*/
   /**
-   * Get a list of the records that have the specified run type
-   * @param runType The run type
-   * @return The matching records
+   * Get the calibration record that relates to the specified calibration target, and
+   * which was recorded immediately before the specified date
+   * @param recordDate The date
+   * @param calibrationTarget The calibration target
+   * @return The matching record
    */
-  private List<DataSetRawDataRecord> getRecordsWithRunType(String runType) {
+/*  public DataSetRawDataRecord getCalibrationAfter(LocalDateTime recordDate, String calibrationTarget) {
+    return searchForClosest(records.get(calibrationTarget.toLowerCase()), recordDate, AFTER);
+  }
+*/
 
-    List<DataSetRawDataRecord> result = new ArrayList<DataSetRawDataRecord>();
+  public List<DataSetRawDataRecord> getSurroundingCalibrations(LocalDateTime date, String target) {
+    List<DataSetRawDataRecord> result = null;
 
-    for (DataSetRawDataRecord record : this) {
-      if (record.getRunType().equalsIgnoreCase(runType)) {
-        result.add(record);
+    String key = target.toLowerCase();
+    boolean needSearch = false;
+
+    if (!foundRecords.containsKey(key)) {
+      needSearch = true;
+    } else {
+      // See if the cached records encompass the new date
+      List<DataSetRawDataRecord> records = foundRecords.get(key);
+      if (records.get(0).getDate().isBefore(date) && records.get(1).getDate().isAfter(date)) {
+        result = records;
+      } else {
+        needSearch = true;
       }
+    }
+
+    if (needSearch) {
+      result = findSurroundingCalibrations(date, key);
+      foundRecords.put(key, result);
     }
 
     return result;
   }
 
   /**
-   * Find a record immediately preceding or following a given date in a list of records
-   * @param records The records to be searched
+   * Search for the calibration records either side of a given date for a given calibration target
+   * Returns a list of two records (before and after) with the relevant record set to null if there
+   * is no before/after record
    * @param date The date
-   * @param direction The search direction. {@link #BEFORE} indicates that the record must precede the date;
-   *            {@link #AFTER} that the record must follow the date
-   * @return The matched record, or {@code null} if no matching record is found
+   * @param target The calibration target
+   * @return The surrounding records
    */
-  private DataSetRawDataRecord searchForClosest(List<DataSetRawDataRecord> records, LocalDateTime date, int direction) {
+  private List<DataSetRawDataRecord> findSurroundingCalibrations(LocalDateTime date, String target) {
+    List<DataSetRawDataRecord> result = new ArrayList<DataSetRawDataRecord>(2);
 
-    DataSetRawDataRecord result = null;
-
-    // TODO This should be done as a binary search. See issue #590
-    int position;
-
-    if (direction == BEFORE) {
-      position = records.size();
+    List<DataSetRawDataRecord> calibrationRecords = records.get(target);
+    if (calibrationRecords.get(0).getDate().isAfter(date)) {
+      // All calibrations are after the target date
+      result.add(null);
+      result.add(calibrationRecords.get(0));
+    } else if (calibrationRecords.get(calibrationRecords.size() - 1).getDate().isBefore(date)) {
+      // All calibrations are before the target date
+      result.add(calibrationRecords.get(calibrationRecords.size() - 1));
+      result.add(null);
     } else {
-      position = -1;
-    }
-
-    boolean searchEnded = false;
-    while (!searchEnded) {
-
-      position += direction;
-      if (direction == BEFORE) {
-        if (position < 0) {
-          searchEnded = true;
-        } else {
-          DataSetRawDataRecord record = records.get(position);
-          if (record.compareTo(date) < 0) {
-            result = record;
-            searchEnded = true;
-          }
-
-        }
-      } else {
-        if (position >= records.size()) {
-          searchEnded = true;
-        } else {
-          DataSetRawDataRecord record = records.get(position);
-          if (record.compareTo(date) > 0) {
-            result = record;
-            searchEnded = true;
-          }
+      // TODO This should be a binary search (issue #1032)
+      for (int i = 0; i < calibrationRecords.size(); i++) {
+        if (calibrationRecords.get(i).getDate().isAfter(date)) {
+          result.add(calibrationRecords.get(i - 1));
+          result.add(calibrationRecords.get(i));
         }
       }
     }
