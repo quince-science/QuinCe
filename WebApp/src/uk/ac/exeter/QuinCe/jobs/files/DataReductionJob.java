@@ -75,6 +75,7 @@ public class DataReductionJob extends Job {
   protected void execute(JobThread thread) throws JobFailedException {
 
     Connection conn = null;
+    Connection statusConn = null;
     CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
     DataSet dataSet = null;
 
@@ -88,7 +89,10 @@ public class DataReductionJob extends Job {
       // Clear messages before executing job
       dataSet.clearMessages();
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
-      DataSetDB.updateDataSet(dataSource.getConnection(), dataSet);
+
+      statusConn = dataSource.getConnection();
+      DataSetDB.updateDataSet(statusConn, dataSet);
+      statusConn.close();
 
       List<DataSetRawDataRecord> measurements = DataSetDataDB.getMeasurements(conn, dataSet);
       CalibrationDataSet calibrationRecords = CalibrationDataDB.getCalibrationRecords(conn, dataSet);
@@ -158,7 +162,7 @@ public class DataReductionJob extends Job {
 
       throw new JobFailedException(id, e);
     } finally {
-      DatabaseUtils.closeConnection(conn);
+      DatabaseUtils.closeConnection(conn, statusConn);
     }
   }
 
