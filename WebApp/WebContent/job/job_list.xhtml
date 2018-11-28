@@ -150,13 +150,17 @@
               <f:facet name="header">
                 Started
               </f:facet>
-              #{job.started}
+              <h:outputText value="#{job.started}">
+                <f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" />
+              </h:outputText>
             </p:column>
             <p:column>
               <f:facet name="header">
                 Ended
               </f:facet>
-              #{job.ended}
+              <h:outputText value="#{job.ended}">
+                <f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" />
+              </h:outputText>
             </p:column>
             <p:column>
               <f:facet name="header">
