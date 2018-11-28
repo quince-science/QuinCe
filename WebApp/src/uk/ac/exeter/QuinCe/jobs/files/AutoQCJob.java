@@ -126,7 +126,6 @@ public class AutoQCJob extends Job {
    * @param thread The thread that is running this job
    * @see FileJob#FILE_ID_KEY
    */
-  @SuppressWarnings("unchecked")
   @Override
   protected void execute(JobThread thread) throws JobFailedException {
 
@@ -135,6 +134,7 @@ public class AutoQCJob extends Job {
     DataSet dataSet = null;
     try {
       conn = dataSource.getConnection();
+      conn.setAutoCommit(false);
       dataSet = DataSetDB.getDataSet(conn, datasetId);
       dataSet.setStatus(DataSet.STATUS_AUTO_QC);
       DataSetDB.updateDataSet(conn, dataSet);
@@ -170,8 +170,6 @@ public class AutoQCJob extends Job {
       }
 
       // Record the messages from the QC in the database
-      conn = dataSource.getConnection();
-      conn.setAutoCommit(false);
       for (DataRecord record : records) {
 
         if (thread.isInterrupted()) {
