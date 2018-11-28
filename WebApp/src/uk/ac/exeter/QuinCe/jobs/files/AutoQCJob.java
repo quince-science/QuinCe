@@ -134,6 +134,7 @@ public class AutoQCJob extends Job {
     DataSet dataSet = null;
     try {
       conn = dataSource.getConnection();
+      conn.setAutoCommit(false);
       dataSet = DataSetDB.getDataSet(conn, datasetId);
       dataSet.setStatus(DataSet.STATUS_AUTO_QC);
       DataSetDB.updateDataSet(conn, dataSet);
@@ -169,8 +170,6 @@ public class AutoQCJob extends Job {
       }
 
       // Record the messages from the QC in the database
-      conn = dataSource.getConnection();
-      conn.setAutoCommit(false);
       for (DataRecord record : records) {
 
         if (thread.isInterrupted()) {
