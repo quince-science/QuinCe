@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Calculation;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
@@ -40,7 +41,7 @@ public abstract class DataReductionCalculator {
    * @throws CalculatorException If the set of calibration records is empty
    */
   protected DataReductionCalculator(CalibrationSet externalStandards, CalibrationDataSet calibrations) throws CalculatorException {
-    if (null == calibrations || calibrations.size() == 0) {
+    if (null == calibrations || !calibrations.hasData()) {
       throw new CalculatorException("No calibration records supplied to calculator");
     }
 
@@ -87,8 +88,9 @@ public abstract class DataReductionCalculator {
       for (String target : externalStandards.getTargets()) {
         double concentration = externalStandards.getCalibrationValue(target, sensorName);
         if (!ignoreZero || concentration > 0.0) {
-          DataSetRawDataRecord priorCalibration = calibrations.getCalibrationBefore(recordDate, target);
-          DataSetRawDataRecord postCalibration = calibrations.getCalibrationAfter(recordDate, target);
+          List<DataSetRawDataRecord> beforeAndAfter = calibrations.getSurroundingCalibrations(recordDate, target);
+          DataSetRawDataRecord priorCalibration = beforeAndAfter.get(0);
+          DataSetRawDataRecord postCalibration = beforeAndAfter.get(1);
           standardMeasurements.put(target, calculateStandardValueAtDate(recordDate, target, sensorName, priorCalibration, postCalibration));
         }
       }
