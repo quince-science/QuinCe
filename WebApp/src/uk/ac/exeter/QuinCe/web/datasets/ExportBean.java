@@ -263,8 +263,8 @@ public class ExportBean extends BaseManagedBean {
 
     List<CalculationRecord> calculationData = new ArrayList<CalculationRecord>(datasetData.size());
     for (DataSetRawDataRecord record : datasetData) {
-      CalculationRecord calcRecord = CalculationRecordFactory.makeCalculationRecord(dataset.getId(), record.getId());
-      CalculationDBFactory.getCalculationDB().getCalculationValues(conn, calcRecord);
+      CalculationRecord calcRecord = CalculationRecordFactory.makeCalculationRecord(getDatasetId(), record.getId());
+      CalculationDBFactory.getCalculationDB().loadCalculationValues(getDataSource(), calcRecord);
       calculationData.add(calcRecord);
     }
 

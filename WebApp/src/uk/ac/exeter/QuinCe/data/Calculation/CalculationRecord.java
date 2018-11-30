@@ -267,7 +267,7 @@ public abstract class CalculationRecord extends DataRecord {
    * @throws NoSuchColumnException If the automatic QC messages cannot be parsed
    */
   private void loadCalculationData(Connection conn) throws InvalidDataException, MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException, MessageException {
-    calculationDB.getCalculationValues(conn, this);
+    calculationDB.loadCalculationValues(conn, this);
   }
 
   /**
