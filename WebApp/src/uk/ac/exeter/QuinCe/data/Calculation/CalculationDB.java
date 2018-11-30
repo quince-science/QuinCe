@@ -8,12 +8,14 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 import org.primefaces.json.JSONArray;
 
+import uk.ac.exeter.QCRoutines.data.InvalidDataException;
 import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
@@ -53,7 +55,8 @@ public abstract class CalculationDB {
    * @throws DatabaseException If a database error occurs
    * @throws MissingParamException If any required parameters are missing
    */
-  public void createCalculationRecord(Connection conn, long measurementId) throws DatabaseException, MissingParamException {
+  public void createCalculationRecord(Connection conn, long measurementId)
+      throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(measurementId, "measurementId");
@@ -105,7 +108,8 @@ public abstract class CalculationDB {
    * @throws MissingParamException If any required parameters are missing
    * @throws DatabaseException If a database error occurs
    */
-  public void deleteDatasetCalculationData(Connection conn, DataSet dataSet) throws MissingParamException, DatabaseException {
+  public void deleteDatasetCalculationData(Connection conn, DataSet dataSet)
+      throws MissingParamException, DatabaseException {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(dataSet, "dataSet");
 
@@ -113,7 +117,8 @@ public abstract class CalculationDB {
 
     try {
       // TODO I think this could be done better. But maybe not.
-      String deleteStatement = "DELETE c.* FROM " + getCalculationTable() + " AS c INNER JOIN dataset_data AS d ON c.measurement_id = d.id WHERE d.dataset_id = ?";
+      String deleteStatement = "DELETE c.* FROM " + getCalculationTable()
+      + " AS c INNER JOIN dataset_data AS d ON c.measurement_id = d.id WHERE d.dataset_id = ?";
 
       stmt = conn.prepareStatement(deleteStatement);
       stmt.setLong(1, dataSet.getId());
@@ -136,7 +141,8 @@ public abstract class CalculationDB {
    * @throws RecordNotFoundException If the measurement does not exist
    * @throws InvalidFlagException The the flag value is invalid
    */
-  public Flag getAutoQCFlag(Connection conn, long measurementId) throws MissingParamException, DatabaseException, RecordNotFoundException, InvalidFlagException {
+  public Flag getAutoQCFlag(Connection conn, long measurementId)
+      throws MissingParamException, DatabaseException, RecordNotFoundException, InvalidFlagException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(measurementId, "measurementId");
@@ -154,7 +160,8 @@ public abstract class CalculationDB {
 
       record = stmt.executeQuery();
       if (!record.next()) {
-        throw new RecordNotFoundException("Cannot find calculation record", getCalculationTable(), measurementId);
+        throw new RecordNotFoundException("Cannot find calculation record", getCalculationTable(),
+            measurementId);
       } else {
         result = new Flag(record.getInt(1));
       }
@@ -178,7 +185,8 @@ public abstract class CalculationDB {
    * @throws DatabaseException If a database error occurs
    * @throws RecordNotFoundException If the measurement cannot be found
    */
-  public List<Message> getQCMessages(Connection conn, long measurementId) throws MessageException, DatabaseException, RecordNotFoundException, MissingParamException {
+  public List<Message> getQCMessages(Connection conn, long measurementId)
+      throws MessageException, DatabaseException, RecordNotFoundException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(measurementId, "measurementId");
@@ -197,7 +205,8 @@ public abstract class CalculationDB {
       record = stmt.executeQuery();
 
       if (!record.next()) {
-        throw new RecordNotFoundException("Cannot find calculation record", getCalculationTable(), measurementId);
+        throw new RecordNotFoundException("Cannot find calculation record", getCalculationTable(),
+            measurementId);
       } else {
         result = RebuildCode.getMessagesFromRebuildCodes(record.getString(1));
       }
@@ -219,7 +228,8 @@ public abstract class CalculationDB {
    * @throws MissingParamException If any required parameters are missing
    * @throws DatabaseException If a database error occurs
    */
-  public void storeQC(Connection conn, CalculationRecord record) throws MissingParamException, DatabaseException, MessageException {
+  public void storeQC(Connection conn, CalculationRecord record)
+      throws MissingParamException, DatabaseException, MessageException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(record, "record");
@@ -269,7 +279,8 @@ public abstract class CalculationDB {
    * @throws MissingParamException If any required parameters are missing
    * @throws DatabaseException If a database error occurs
    */
-  public abstract void storeCalculationValues(Connection conn, long measurementId, Map<String, Double> values) throws MissingParamException, DatabaseException;
+  public abstract void storeCalculationValues(Connection conn, long measurementId, Map<String, Double> values)
+      throws MissingParamException, DatabaseException;
 
   /**
    * Add the calculation values to a {@link CalculationRecord}
@@ -282,7 +293,9 @@ public abstract class CalculationDB {
    * @throws MessageException If the automatic QC messages cannot be parsed
    * @throws NoSuchColumnException If the automatic QC messages cannot be parsed
    */
-  public Map<String, Double> getCalculationValues(DataSource dataSource, CalculationRecord record) throws MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException, MessageException {
+  public Map<String, Double> getCalculationValues(DataSource dataSource, CalculationRecord record)
+      throws MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException,
+        MessageException {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(record, "record");
 
@@ -307,9 +320,11 @@ public abstract class CalculationDB {
    * @throws DatabaseException If a database error occurs
    * @throws RecordNotFoundException If the record does not exist
    * @throws MessageException If the automatic QC messages cannot be parsed
-   * @throws NoSuchColumnException If the automatic QC messages cannot be parsed
+   * @throws NoSuchColumnException If the record structure does not match the application's configuration
    */
-  public abstract Map<String, Double> getCalculationValues(Connection conn, CalculationRecord record) throws MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException, MessageException;
+  public abstract Map<String, Double> getCalculationValues(Connection conn, CalculationRecord record)
+      throws MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException,
+        MessageException;
 
   /**
    * Clear the calculation values for a given measurement. This method
@@ -319,7 +334,8 @@ public abstract class CalculationDB {
    * @throws MissingParamException If any required parameters are missing
    * @throws DatabaseException If a database error occurs
    */
-  public abstract void clearCalculationValues(Connection conn, long measurementId) throws MissingParamException, DatabaseException;
+  public abstract void clearCalculationValues(Connection conn, long measurementId)
+      throws MissingParamException, DatabaseException;
 
   /**
    * Get the list of column headings for calculation fields
@@ -344,7 +360,8 @@ public abstract class CalculationDB {
      * @throws DatabaseException If a database error occurs
      * @throws MissingParamException If any required parameters are missing
      */
-  public List<Long> getSelectableMeasurementIds(DataSource dataSource, long datasetId) throws MissingParamException, DatabaseException {
+  public List<Long> getSelectableMeasurementIds(DataSource dataSource, long datasetId)
+      throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
@@ -395,7 +412,8 @@ public abstract class CalculationDB {
      * @throws MissingParamException If any required parameters are missing
      * @throws MessageException If the automatic QC messages cannot be extracted
    */
-  public void acceptAutoQc(DataSource dataSource, List<Long> rows) throws MissingParamException, DatabaseException, MessageException {
+  public void acceptAutoQc(DataSource dataSource, List<Long> rows)
+      throws MissingParamException, DatabaseException, MessageException {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(rows, "rows", true);
 
@@ -474,7 +492,8 @@ public abstract class CalculationDB {
    * @throws MessageException If a QC message cannot be reconstructed from its rebuild code
    * @throws MissingParamException If any required parameters are missing
    */
-  public CommentSet getCommentsForRows(DataSource dataSource, List<Long> rows) throws DatabaseException, InvalidFlagException, MessageException, MissingParamException {
+  public CommentSet getCommentsForRows(DataSource dataSource, List<Long> rows)
+      throws DatabaseException, InvalidFlagException, MessageException, MissingParamException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(rows, "rows");
@@ -534,7 +553,8 @@ public abstract class CalculationDB {
      * @throws MissingParamException If any required parameters are missing
      * @throws InvalidFlagException If the flag value is invalid
    */
-  public void applyManualFlag(DataSource dataSource, List<Long> rows, int flag, String comment) throws DatabaseException, MissingParamException, InvalidFlagException {
+  public void applyManualFlag(DataSource dataSource, List<Long> rows, int flag, String comment)
+      throws DatabaseException, MissingParamException, InvalidFlagException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(rows, "rows");
@@ -583,7 +603,8 @@ public abstract class CalculationDB {
      * @throws DatabaseException If a database error occurs
      * @throws MissingParamException If any required parameters are missing
    */
-  public String getJsonData(DataSource dataSource, DataSet dataset, List<String> fields, String sortField) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
+  public String getJsonData(DataSource dataSource, DataSet dataset, List<String> fields, String sortField)
+      throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
     return getJsonData(dataSource, dataset, fields, sortField, null, false);
   }
 
@@ -601,7 +622,9 @@ public abstract class CalculationDB {
    * @throws DatabaseException If a database error occurs
    * @throws MissingParamException If any required parameters are missing
    */
-  public String getJsonData(DataSource dataSource, DataSet dataset, List<String> fields, String sortField, List<Double> bounds, boolean limitPoints) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
+  public String getJsonData(DataSource dataSource, DataSet dataset, List<String> fields, String sortField,
+      List<Double> bounds, boolean limitPoints)
+          throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(dataset, "dataset");
@@ -618,7 +641,8 @@ public abstract class CalculationDB {
       conn = dataSource.getConnection();
 
       List<String> datasetFields = DataSetDataDB.extractDatasetFields(conn, dataset, fields);
-      List<String> diagnosticFields = DiagnosticDataDB.extractDiagnosticFields(conn, dataset.getInstrumentId(), fields);
+      List<String> diagnosticFields = DiagnosticDataDB.extractDiagnosticFields(conn,
+          dataset.getInstrumentId(), fields);
       List<String> calculationFields = new ArrayList<String>(fields);
       calculationFields.removeAll(datasetFields);
       calculationFields.removeAll(diagnosticFields);
@@ -632,7 +656,8 @@ public abstract class CalculationDB {
         }
       }
 
-      Map<Long, Map<String, Double>> diagnosticData = DiagnosticDataDB.getDiagnosticValues(conn, dataset.getInstrumentId(), DataSetDataDB.getMeasurementIds(conn, dataset.getId()), diagnosticFields);
+      Map<Long, Map<String, Double>> diagnosticData =DiagnosticDataDB.getDiagnosticValues(conn,
+          dataset.getInstrumentId(), DataSetDataDB.getMeasurementIds(conn, dataset.getId()), diagnosticFields);
 
       StringBuilder sql = new StringBuilder();
 
@@ -746,7 +771,8 @@ public abstract class CalculationDB {
    * @throws RecordNotFoundException If the dataset does not exist
    * @throws InstrumentException If the instrument details cannot be retrieved
    */
-  public List<Double> getValueRange(DataSource dataSource, DataSet dataset, String field) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
+  public List<Double> getValueRange(DataSource dataSource, DataSet dataset, String field)
+      throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(dataset, "dataset");
     MissingParam.checkMissing(field, "field");
@@ -786,7 +812,8 @@ public abstract class CalculationDB {
    * @throws RecordNotFoundException If the dataset does not exist
    * @throws InstrumentException If the instrument details cannot be retrieved
    */
-  private List<Double> getValueRange(Connection conn, DataSet dataset, String field, boolean filterFlags) throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
+  private List<Double> getValueRange(Connection conn, DataSet dataset, String field, boolean filterFlags)
+      throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
     PreparedStatement stmt = null;
     ResultSet results = null;
 
@@ -847,7 +874,8 @@ public abstract class CalculationDB {
    * @return The SQL statement
    * @throws SQLException If the statement cannot be constructed
    */
-  private PreparedStatement makeDiagnosticRangeStatement(Connection conn, long datasetId, long sensorId, boolean filterFlags) throws SQLException {
+  private PreparedStatement makeDiagnosticRangeStatement(Connection conn, long datasetId, long sensorId,
+      boolean filterFlags) throws SQLException {
 
     StringBuilder sql = new StringBuilder();
 
@@ -879,7 +907,8 @@ public abstract class CalculationDB {
    * @return The SQL statement
    * @throws SQLException If the statement cannot be constructed
    */
-  private PreparedStatement makeDatasetRangeStatement(Connection conn, long datasetId, String field, boolean filterFlags) throws SQLException {
+  private PreparedStatement makeDatasetRangeStatement(Connection conn, long datasetId, String field,
+      boolean filterFlags) throws SQLException {
 
     StringBuilder sql = new StringBuilder();
 
@@ -909,7 +938,8 @@ public abstract class CalculationDB {
    * @return The SQL statement
    * @throws SQLException If the statement cannot be constructed
    */
-  private PreparedStatement makeCalculationRangeStatement(Connection conn, long datasetId, String field, boolean filterFlags) throws SQLException {
+  private PreparedStatement makeCalculationRangeStatement(Connection conn, long datasetId, String field,
+      boolean filterFlags) throws SQLException {
 
     StringBuilder sql = new StringBuilder();
 
@@ -961,4 +991,20 @@ public abstract class CalculationDB {
       }
     }
   }
+
+  /**
+   * Load the calculation values into a set of records
+   * @param conn A database connection
+   * @param datasetId The ID of the dataset to which the records belong
+   * @param records The records to be populated
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   * @throws InvalidDataException If non-numeric values are found
+   * @throws NoSuchColumnException If the record structure does not match the application configuration
+   * @throws MessageException If the QC message cannot be parsed
+   * @throws InvalidFlagException If the QC flags are invalid
+   */
+  public abstract void loadCalculationValues(Connection conn, long datasetId,
+      TreeMap<Long, CalculationRecord> records) throws MissingParamException, DatabaseException,
+      InvalidDataException, NoSuchColumnException, MessageException, InvalidFlagException;
 }
