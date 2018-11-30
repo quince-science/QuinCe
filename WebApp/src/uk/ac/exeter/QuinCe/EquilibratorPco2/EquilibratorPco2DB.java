@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import uk.ac.exeter.QCRoutines.data.DataColumn;
 import uk.ac.exeter.QCRoutines.data.InvalidDataException;
@@ -60,14 +61,25 @@ public class EquilibratorPco2DB extends CalculationDB {
   /**
    * The query to retrieve calculation values
    */
-  private static final String GET_CALCULATION_VALUES_STATEMENT = "SELECT "
-      + "delta_temperature, true_moisture, ph2o, " // 3
-      + "dried_co2, calibrated_co2, " // 5
-      + "pco2_te_wet, pco2_sst, fco2, " // 9
-      + "auto_flag, auto_message, user_flag, user_message " // 12
+  private static final String GET_CALCULATION_VALUES_QUERY = "SELECT "
+      + "measurement_id, delta_temperature, true_moisture, ph2o, " // 4
+      + "dried_co2, calibrated_co2, " // 6
+      + "pco2_te_wet, pco2_sst, fco2, " // 10
+      + "auto_flag, auto_message, user_flag, user_message " // 13
       + "FROM " + TABLE_NAME
       + " WHERE measurement_id = ?";
 
+  /**
+   * The query to retrieve calculation values
+   */
+  private static final String GET_DATASET_CALCULATION_VALUES_QUERY = "SELECT "
+      + "measurement_id, delta_temperature, true_moisture, ph2o, " // 4
+      + "dried_co2, calibrated_co2, " // 6
+      + "pco2_te_wet, pco2_sst, fco2, " // 10
+      + "auto_flag, auto_message, user_flag, user_message " // 13
+      + "FROM " + TABLE_NAME
+      + " WHERE measurement_id IN "
+      + "(SELECT id FROM dataset_data WHERE dataset_id = ?)";
 
   @Override
   public String getCalculationTable() {
@@ -113,10 +125,10 @@ public class EquilibratorPco2DB extends CalculationDB {
 
     PreparedStatement stmt = null;
     ResultSet dbRecord = null;
-    Map<String, Double> values = new HashMap<String, Double>();
+    Map<String, Double> values = null;
 
     try {
-      stmt = conn.prepareStatement(GET_CALCULATION_VALUES_STATEMENT);
+      stmt = conn.prepareStatement(GET_CALCULATION_VALUES_QUERY);
       stmt.setLong(1, record.getLineNumber());
 
       dbRecord = stmt.executeQuery();
@@ -125,28 +137,7 @@ public class EquilibratorPco2DB extends CalculationDB {
         throw new RecordNotFoundException("Calculation data record not found", TABLE_NAME, record.getLineNumber());
       } else {
 
-        values.put("delta_temperature", DatabaseUtils.getNullableDouble(dbRecord, 1));
-        values.put("true_moisture", DatabaseUtils.getNullableDouble(dbRecord, 2));
-        values.put("ph2o", DatabaseUtils.getNullableDouble(dbRecord, 3));
-        values.put("dried_co2", DatabaseUtils.getNullableDouble(dbRecord, 4));
-        values.put("calibrated_co2", DatabaseUtils.getNullableDouble(dbRecord, 5));
-        values.put("pco2_te_wet", DatabaseUtils.getNullableDouble(dbRecord, 6));
-        values.put("pco2_sst", DatabaseUtils.getNullableDouble(dbRecord, 7));
-        values.put("fco2", DatabaseUtils.getNullableDouble(dbRecord, 8));
-
-        for (int i = 1; i < record.getData().size(); i++) {
-          DataColumn column = record.getData().get(i);
-          String fieldName = DatabaseUtils.getDatabaseFieldName(column.getName());
-          Double value = values.get(fieldName);
-          if (null != value) {
-            column.setValue(String.valueOf(value));
-          }
-        }
-
-        record.setAutoFlag(new Flag(dbRecord.getInt(9)));
-        record.setMessages(RebuildCode.getMessagesFromRebuildCodes(dbRecord.getString(10)));
-        record.setUserFlag(new Flag(dbRecord.getInt(11)));
-        record.setUserMessage(dbRecord.getString(12));
+        values = loadCalculationValuesFromResultSet(record, dbRecord);
       }
     } catch (SQLException|InvalidDataException|InvalidFlagException e) {
       throw new DatabaseException("Error retrieving calculations" , e);
@@ -194,5 +185,81 @@ public class EquilibratorPco2DB extends CalculationDB {
     variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "pCO2 TE Wet", "pco2_te_wet"));
     variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "pCO2 SST", "pco2_sst"));
     variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "Final fCO2", "fco2"));
+  }
+
+  @Override
+  public void loadCalculationValues(Connection conn, long datasetId,
+      TreeMap<Long, CalculationRecord> records) throws MissingParamException, DatabaseException,
+      InvalidDataException, NoSuchColumnException, MessageException, InvalidFlagException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(datasetId, "datasetId");
+    MissingParam.checkMissing(records, "records");
+
+    PreparedStatement stmt = null;
+    ResultSet dbRecords = null;
+
+    try {
+      stmt = conn.prepareStatement(GET_DATASET_CALCULATION_VALUES_QUERY);
+      stmt.setLong(1, datasetId);
+
+      dbRecords = stmt.executeQuery();
+      while (dbRecords.next()) {
+        long recordId = dbRecords.getLong(1);
+        CalculationRecord record = records.get(recordId);
+        if (null != record) {
+          loadCalculationValuesFromResultSet(record, dbRecords);
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while loading calculation data", e);
+    } finally {
+      DatabaseUtils.closeResultSets(dbRecords);
+      DatabaseUtils.closeStatements(stmt);
+    }
+  }
+
+  /**
+   * Load calculation values from a ResultSet into a CalculationRecord
+   * @param record The CalculationRecord
+   * @param dbRecord The ResultSet
+   * @return The loaded values
+   * @throws SQLException
+   * @throws InvalidDataException
+   * @throws NoSuchColumnException
+   * @throws MessageException
+   * @throws InvalidFlagException
+   */
+  private Map<String, Double> loadCalculationValuesFromResultSet(CalculationRecord record,
+      ResultSet dbRecord) throws SQLException, InvalidDataException, NoSuchColumnException,
+      MessageException, InvalidFlagException {
+
+    Map<String, Double> values = new HashMap<String, Double>();
+
+    values.put("delta_temperature", DatabaseUtils.getNullableDouble(dbRecord, 2));
+    values.put("true_moisture", DatabaseUtils.getNullableDouble(dbRecord, 3));
+    values.put("ph2o", DatabaseUtils.getNullableDouble(dbRecord, 4));
+    values.put("dried_co2", DatabaseUtils.getNullableDouble(dbRecord, 5));
+    values.put("calibrated_co2", DatabaseUtils.getNullableDouble(dbRecord, 6));
+    values.put("pco2_te_wet", DatabaseUtils.getNullableDouble(dbRecord, 7));
+    values.put("pco2_sst", DatabaseUtils.getNullableDouble(dbRecord, 8));
+    values.put("fco2", DatabaseUtils.getNullableDouble(dbRecord, 9));
+
+    for (int i = 1; i < record.getData().size(); i++) {
+      DataColumn column = record.getData().get(i);
+      String fieldName = DatabaseUtils.getDatabaseFieldName(column.getName());
+      Double value = values.get(fieldName);
+      if (null != value) {
+        column.setValue(String.valueOf(value));
+      }
+    }
+
+    record.setAutoFlag(new Flag(dbRecord.getInt(10)));
+    record.setMessages(RebuildCode.getMessagesFromRebuildCodes(dbRecord.getString(11)));
+    record.setUserFlag(new Flag(dbRecord.getInt(12)));
+    record.setUserMessage(dbRecord.getString(13));
+
+    return values;
   }
 }
