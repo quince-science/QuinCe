@@ -108,6 +108,8 @@ public abstract class CalculationRecord extends DataRecord {
   /**
    * The aliases of human-readable column headings to database column names
    */
+  // TODO Factor out so it's not copied in every instance of this class (can be per calculation type)
+  //      See issue #1033
   protected Map<String, String> columnAliases;
 
   /**
@@ -230,7 +232,15 @@ public abstract class CalculationRecord extends DataRecord {
   private void loadSensorData(Connection conn) throws MissingParamException, DatabaseException, RecordNotFoundException, InvalidDataException {
     dataSet = DataSetDB.getDataSet(conn, datasetId);
     DataSetRawDataRecord sensorData = DataSetDataDB.getMeasurement(conn, dataSet, lineNumber);
+    insertSensorData(sensorData);
+  }
 
+  /**
+   * Insert sensor data into the record
+   * @param sensorData The sensor data
+   * @throws InvalidDataException If any data type is invalid
+   */
+  public void insertSensorData(DataSetRawDataRecord sensorData) throws InvalidDataException {
     date = sensorData.getDate();
     longitude = sensorData.getLongitude();
     latitude = sensorData.getLatitude();
@@ -245,7 +255,6 @@ public abstract class CalculationRecord extends DataRecord {
       }
     }
   }
-
 
   /**
    * Load the calculation data for the measurement
