@@ -373,7 +373,7 @@ public class AutoQCJob extends Job {
     for (long id : ids) {
       CalculationRecord record = records.get(id);
       if (record.getUserFlag().equals(Flag.BAD) || record.getUserFlag().equals(Flag.QUESTIONABLE) ||
-          !record.getUserFlag().equals(Flag.GOOD)) {
+          record.getUserFlag().equals(Flag.GOOD)) {
 
         records.remove(id);
       }
