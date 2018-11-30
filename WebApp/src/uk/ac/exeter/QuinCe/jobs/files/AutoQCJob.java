@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -13,6 +14,7 @@ import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QCRoutines.data.InvalidDataException;
 import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.routines.Routine;
@@ -23,6 +25,7 @@ import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecordFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -144,7 +147,7 @@ public class AutoQCJob extends Job {
       // TODO This should be replaced with something that gets all the records in one query.
       //      This will need changes to how the CalculationRecords are built
       List<Long> measurementIds = DataSetDataDB.getMeasurementIds(conn, datasetId);
-      List<? extends DataRecord> records = getRecords(conn, datasetId, measurementIds);
+      List<? extends DataRecord> records = getRecords(conn, dataSet, measurementIds);
 
       // Remove any existing automatic QC flags or records
       for (DataRecord record : records) {
@@ -334,7 +337,7 @@ public class AutoQCJob extends Job {
   /**
    * Get the calculation records for a set of measurements. QUESTIONABLE, BAD or IGNORED records
    * are not included.
-   * @param datasetId The dataset ID
+   * @param dataset The dataset ID
    * @param ids The measurement IDs
    * @return The calculation records
    * @throws MissingParamException If any required parameters are missing
@@ -342,22 +345,41 @@ public class AutoQCJob extends Job {
    * @throws RecordNotFoundException If the record is not in the database
    * @throws InvalidDataException If a field cannot be added to the record
    * @throws MessageException If the automatic QC messages cannot be parsed
-   * @throws NoSuchColumnException If the automatic QC messages cannot be parsed
+   * @throws NoSuchColumnException If the record structure does not match the application configuration
+   * @throws InvalidFlagException If the QC flags are invalid
    */
-  private List<CalculationRecord> getRecords(Connection conn, long datasetId, List<Long> ids) throws MissingParamException, InvalidDataException, NoSuchColumnException, DatabaseException, RecordNotFoundException, MessageException {
-    List<CalculationRecord> records = new ArrayList<CalculationRecord>(ids.size());
+  private List<CalculationRecord> getRecords(Connection conn, DataSet dataSet, List<Long> ids)
+      throws MissingParamException, InvalidDataException, NoSuchColumnException, DatabaseException,
+      RecordNotFoundException, MessageException, InvalidFlagException {
 
+    TreeMap<Long, CalculationRecord> records = new TreeMap<Long, CalculationRecord>();
+
+    // Create empty calculation records
     for (long id : ids) {
-      CalculationRecord record = CalculationRecordFactory.makeCalculationRecord(datasetId, id);
-      record.loadData(conn);
+      CalculationRecord record = CalculationRecordFactory.makeCalculationRecord(dataSet.getId(), id);
+      records.put(id, record);
+    }
 
-      // Skip any records where the user has explicitly set the flag. We trust their judgement.
-      if (!record.getUserFlag().equals(Flag.BAD) && !record.getUserFlag().equals(Flag.QUESTIONABLE) && !record.getUserFlag().equals(Flag.GOOD)) {
-        records.add(record);
+    // Load the sensor data
+    List<DataSetRawDataRecord> sensorRecords = DataSetDataDB.getMeasurements(conn, dataSet);
+    for (DataSetRawDataRecord sensorRecord : sensorRecords) {
+      records.get(sensorRecord.getId()).insertSensorData(sensorRecord);
+    }
+
+    // Add the calculation values
+    CalculationDBFactory.getCalculationDB().loadCalculationValues(conn, dataSet.getId(), records);
+
+    // Skip any records where the user has explicitly set the flag. We trust their judgment.
+    for (long id : ids) {
+      CalculationRecord record = records.get(id);
+      if (record.getUserFlag().equals(Flag.BAD) || record.getUserFlag().equals(Flag.QUESTIONABLE) ||
+          !record.getUserFlag().equals(Flag.GOOD)) {
+
+        records.remove(id);
       }
     }
 
-    return records;
+    return new ArrayList<CalculationRecord>(records.values());
   }
 
   @Override
