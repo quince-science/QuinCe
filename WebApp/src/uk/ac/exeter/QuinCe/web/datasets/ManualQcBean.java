@@ -181,7 +181,7 @@ public class ManualQcBean extends PlotPageBean {
     for (DataSetRawDataRecord record : datasetData) {
       measurementIds.add(record.getId());
       CalculationRecord calcRecord = CalculationRecordFactory.makeCalculationRecord(getDatasetId(), record.getId());
-      CalculationDBFactory.getCalculationDB().getCalculationValues(getDataSource(), calcRecord);
+      CalculationDBFactory.getCalculationDB().loadCalculationValues(getDataSource(), calcRecord);
       calculationData.add(calcRecord);
     }
 

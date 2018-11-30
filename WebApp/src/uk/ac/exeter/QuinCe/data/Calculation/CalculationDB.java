@@ -293,7 +293,7 @@ public abstract class CalculationDB {
    * @throws MessageException If the automatic QC messages cannot be parsed
    * @throws NoSuchColumnException If the automatic QC messages cannot be parsed
    */
-  public Map<String, Double> getCalculationValues(DataSource dataSource, CalculationRecord record)
+  public void loadCalculationValues(DataSource dataSource, CalculationRecord record)
       throws MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException,
         MessageException {
     MissingParam.checkMissing(dataSource, "dataSource");
@@ -303,7 +303,7 @@ public abstract class CalculationDB {
 
     try {
       conn = dataSource.getConnection();
-      return getCalculationValues(conn, record);
+      loadCalculationValues(conn, record);
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting calculation values", e);
     } finally {
@@ -322,7 +322,7 @@ public abstract class CalculationDB {
    * @throws MessageException If the automatic QC messages cannot be parsed
    * @throws NoSuchColumnException If the record structure does not match the application's configuration
    */
-  public abstract Map<String, Double> getCalculationValues(Connection conn, CalculationRecord record)
+  public abstract void loadCalculationValues(Connection conn, CalculationRecord record)
       throws MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException,
         MessageException;
 
