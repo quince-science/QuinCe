@@ -19,5 +19,12 @@
     "flags": [2,3,4],
     "sensors": ["Intake Temperature", "Salinity"],
     "equilibrator_pco2": []
+  },
+  {
+    "exportName": "Copernicus",
+    "separator": "comma",
+    "flags": [2,3,4],
+    "sensors": ["Intake Temperature", "Salinity"],
+    "equilibrator_pco2": ["pCO2 SST"]
   }
 ]
