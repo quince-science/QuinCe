@@ -13,9 +13,9 @@
   	"separator": "comma",
   	"flags": [2],
     "sensors": ["Intake Temperature", "Salinity", "Equilibrator Temperature", "Equilibrator Pressure", "xH2O", "CO2"],
-    "sensors_headings": ["Intake Temperature", "Salinity", "Equilibrator Temperature", "Equilibrator Pressure", "xH2O", "xCO2water_equ_dry"],
+    "sensors_headings": ["Temp", "P_sal", "Temp_in_eq", "Press_eq", "xH2OEquilSamp", "xCO2_dryWater"],
     "equilibrator_pco2_columns": ["pCO2 TE Wet", "pCO2 SST", "fCO2"],
-    "equilibrator_pco2_headings": ["pCO2water_equ_wet", "pCO2water_sst_wet", "fCO2water_sst_wet"]
+    "equilibrator_pco2_headings": ["pCO2_eqT", "pCO2", "fCO2"]
   },
   {
     "exportName": "SST+Salinity QC",
