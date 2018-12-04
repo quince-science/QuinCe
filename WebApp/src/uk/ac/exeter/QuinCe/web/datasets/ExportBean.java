@@ -285,9 +285,11 @@ public class ExportBean extends BaseManagedBean {
 
     // TODO Replace when mutiple calculation paths are in place
     List<String> calculationColumnHeadings = exportOption.getCalculationColumnHeadings("equilibrator_pco2");
-    for (int i = 0; i < calculationColumnHeadings.size(); i++) {
-      output.append(calculationColumnHeadings.get(i));
-      output.append(exportOption.getSeparator());
+    if (null != calculationColumnHeadings) {
+      for (int i = 0; i < calculationColumnHeadings.size(); i++) {
+        output.append(calculationColumnHeadings.get(i));
+        output.append(exportOption.getSeparator());
+      }
     }
 
     output.append("QC Flag");
@@ -346,15 +348,18 @@ public class ExportBean extends BaseManagedBean {
           output.append(exportOption.getSeparator());
         }
 
-        for (String calculatedColumn : exportOption.getCalculationColumns("equilibrator_pco2")) {
-          Double value = calculationRecord.getNumericValue(calculatedColumn);
-          if (null == value) {
-            output.append("NaN");
-          } else {
-            output.append(numberFormatter.format(value));
-          }
+        List<String> calculationColumns = exportOption.getCalculationColumns("equilibrator_pco2");
+        if (null != calculationColumns) {
+          for (String calculatedColumn : calculationColumns) {
+            Double value = calculationRecord.getNumericValue(calculatedColumn);
+            if (null == value) {
+              output.append("NaN");
+            } else {
+              output.append(numberFormatter.format(value));
+            }
 
-          output.append(exportOption.getSeparator());
+            output.append(exportOption.getSeparator());
+          }
         }
 
         if (dataset.isNrt()) {
