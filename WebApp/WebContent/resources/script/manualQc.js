@@ -299,11 +299,60 @@ function setPlotSelectMode(index) {
   var interactionModel = null;
 
   if (newMode == 'select') {
-  interactionModel = {
-
-  }
+    interactionModel = {
+      mousedown: selectModeMouseDown,
+      mouseup: selectModeMouseUp,
+      mousemove: selectModeMouseMove
+    }
   }
 
   drawPlot(index, interactionModel);
 
+}
+
+function selectModeMouseDown(event, g, context) {
+  context.isZooming = true;
+  context.dragStartX = dragGetX(g, event);
+  context.dragStartY = dragGetY(g, event);
+  context.dragEndX = context.dragStartX;
+  context.dragEndY = context.dragStartY;
+  context.prevEndX = null;
+  context.prevEndY = null;
+}
+
+function selectModeMouseMove(event, g, context) {
+  if (context.isZooming) {
+    context.dragEndX = dragGetX(g, event);
+    context.dragEndY = dragGetY(g, event);
+    drawSelectRect(g, context);
+    context.prevEndX = context.dragEndX;
+    context.prevEndY = context.dragEndY;
+  }
+}
+
+function selectModeMouseUp(event, g, context) {
+  g.clearZoomRect_();
+}
+
+function drawSelectRect(graph, context) {
+  var ctx = graph.canvas_ctx_;
+
+  if (null != context.prevEndX && null != context.prevEndY) {
+    ctx.clearRect(context.dragStartX, context.dragStartY,
+      (context.prevEndX - context.dragStartX),
+      (context.prevEndY - context.dragStartY))
+  }
+
+  ctx.fillStyle = "rgba(128,128,128,0.33)";
+  ctx.fillRect(context.dragStartX, context.dragStartY,
+    (context.dragEndX - context.dragStartX),
+    (context.dragEndY - context.dragStartY))
+}
+
+function dragGetX(graph, event) {
+  return  event.clientX - graph.canvas_.getBoundingClientRect().left;
+}
+
+function dragGetY(graph, event) {
+  return event.clientY - graph.canvas_.getBoundingClientRect().top;
 }
