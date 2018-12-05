@@ -585,6 +585,15 @@ table.fileDates {
   margin-top: 15px;
 }
 
+/* Used when h:panelGrid doesn't do the job well enough */
+.dialogTable {
+
+}
+
+table.dialogTable td.dialogTableCell {
+  padding-right: 20px;
+}
+
 .variableText {
   display: inline;
 }

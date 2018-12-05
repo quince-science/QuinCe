@@ -6,7 +6,7 @@
   xmlns:c="http://java.sun.com/jsp/jstl/core"
   template="/WEB-INF/templates/basic_page.xhtml">
 
-  <ui:define name="title">Sensor Calibrations - #{externalStandardsBean.instrumentName}</ui:define>
+  <ui:define name="title">Sensor Calibrations - #{sensorCalibrationsBean.instrumentName}</ui:define>
   <ui:define name="localHead">
     <script>
       function showCalibrationDialog() {
@@ -19,32 +19,41 @@
     </script>
   </ui:define>
 
-  <ui:define name="pageTitle">Sensor Calibrations - #{externalStandardsBean.instrumentName}</ui:define>
+  <ui:define name="pageTitle">Sensor Calibrations - #{sensorCalibrationsBean.instrumentName}</ui:define>
   <ui:define name="content">
     <h:form id="standardsForm" method="post" charset="utf8">
       <p:dialog header="Add Calibration" widgetVar="calibrationDialog" modal="true">
         <div class="dialogSection">
-          <h:panelGrid columns="2" styleClass="buttonPanel">
-            <p:outputLabel for="deploymentDate" value="Calibration Date:"/>
-            <p:calendar id="deploymentDate"  mode="inline"
-                value="#{sensorCalibrationsBean.enteredCalibration.deploymentDate}"
-                maxLength="19" size="19" pattern="yyyy-MM-dd HH:mm:ss"
-                navigator="true">
-              <f:converter converterId="localDateTimeConverter"/>
-            </p:calendar>
-
-            <p:outputLabel for="standard" value="Sensor:"/>
-            <p:selectOneMenu id="standard" value="#{sensorCalibrationsBean.enteredCalibration.target}">
-              <f:selectItems value="#{sensorCalibrationsBean.targets}"/>
-            </p:selectOneMenu>
-          </h:panelGrid>
-          <table class="form">
-            <ui:repeat value="#{sensorCalibrationsBean.enteredCalibration.coefficients}" var="coefficient">
-              <tr>
-                <td><p:outputLabel value="#{coefficient.name}"/></td>
-                <td><p:inputNumber value="#{coefficient.value}" size="12" decimalPlaces="8"/></td>
-              </tr>
-            </ui:repeat>
+          <!-- I was using a panelGrid but it doesn't play
+               nicely with complex divs. Since all it did was draw
+               a table, I don't feel too bad about doing it manually. -->
+          <table class="dialogTable">
+            <tr>
+              <td class="dialogTableCell">
+                <p:outputLabel for="deploymentDate" value="Calibration Date:"/>
+                <p:calendar id="deploymentDate"  mode="inline"
+                    value="#{sensorCalibrationsBean.enteredCalibration.deploymentDate}"
+                    pattern="yyyy-MM-dd HH:mm:ss"
+                    navigator="true">
+                  <f:converter converterId="localDateTimeConverter"/>
+                </p:calendar>
+              </td>
+              <td style="display: flex; flex-direction: column">
+                <p:outputLabel for="standard" value="Sensor:"/>
+                <p:selectOneMenu id="standard" value="#{sensorCalibrationsBean.enteredCalibration.target}">
+                  <f:selectItems value="#{sensorCalibrationsBean.targets}"/>
+                </p:selectOneMenu>
+                <p:outputLabel value="Calibration Coefficients:" style="margin-top: 40px;"/>
+                <table class="form">
+                  <ui:repeat value="#{sensorCalibrationsBean.enteredCalibration.coefficients}" var="coefficient">
+                    <tr>
+                      <td><p:outputLabel value="#{coefficient.name}"/></td>
+                      <td><p:inputNumber value="#{coefficient.value}" size="12" decimalPlaces="8"/></td>
+                    </tr>
+                  </ui:repeat>
+                </table>
+              </td>
+            </tr>
           </table>
         </div>
         <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
