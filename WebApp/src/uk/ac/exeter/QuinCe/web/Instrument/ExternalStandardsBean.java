@@ -1,5 +1,9 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
@@ -47,6 +51,8 @@ public class ExternalStandardsBean extends CalibrationBean {
   @Override
   protected void createEnteredCalibration() {
     enteredStandard = new ExternalStandard(instrumentId);
+    // Today at midnight
+    enteredStandard.setDeploymentDate(LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS));
   }
 
   @Override

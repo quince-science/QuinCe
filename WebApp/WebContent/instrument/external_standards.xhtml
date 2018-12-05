@@ -24,21 +24,29 @@
     <h:form id="standardsForm" method="post" charset="utf8">
       <p:dialog header="Add Deployment" widgetVar="deploymentDialog" modal="true">
         <div class="dialogSection">
-          <h:panelGrid columns="2" styleClass="buttonPanel">
-            <p:outputLabel for="deploymentDate" value="Deployment Date:"/>
-            <p:calendar id="deploymentDate" mode="inline"
-                value="#{externalStandardsBean.enteredCalibration.deploymentDate}"
-                maxLength="19" size="19" pattern="yyyy-MM-dd HH:mm:ss" navigator="true">
-              <f:converter converterId="localDateTimeConverter"/>
-            </p:calendar>
-
-            <p:outputLabel for="standard" value="Standard:"/>
-            <p:selectOneMenu id="standard" value="#{externalStandardsBean.enteredCalibration.target}">
-              <f:selectItems value="#{externalStandardsBean.targets}"/>
-            </p:selectOneMenu>
-            <p:outputLabel for="concentration" value="Concentration:"/>
-            <p:inputNumber id="concentration" value="#{externalStandardsBean.enteredCalibration.concentration}" size="12" decimalPlaces="5"/>
-          </h:panelGrid>
+          <!-- I was using a panelGrid but it doesn't play
+               nicely with complex divs. Since all it did was draw
+               a table, I don't feel too bad about doing it manually. -->
+          <table class="dialogTable">
+            <tr>
+              <td class="dialogTableCell">
+                <p:outputLabel for="deploymentDate" value="Deployment Date:"/>
+                <p:calendar id="deploymentDate" mode="inline"
+                    value="#{externalStandardsBean.enteredCalibration.deploymentDate}"
+                    pattern="yyyy-MM-dd HH:mm:ss" navigator="true">
+                  <f:converter converterId="localDateTimeConverter"/>
+                </p:calendar>
+              </td>
+              <td style="display: flex; flex-direction: column">
+                <p:outputLabel for="standard" value="Standard:"/>
+                <p:selectOneMenu id="standard" value="#{externalStandardsBean.enteredCalibration.target}">
+                  <f:selectItems value="#{externalStandardsBean.targets}"/>
+                </p:selectOneMenu>
+                <p:outputLabel for="concentration" value="Concentration:" style="margin-top: 40px;"/>
+                <p:inputNumber id="concentration" value="#{externalStandardsBean.enteredCalibration.concentration}" size="12" decimalPlaces="5"/>
+              </td>
+            </tr>
+          </table>
         </div>
         <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
           <p:commandButton widgetVar="addDeploymentButton" value="Add" ajax="false" action="#{externalStandardsBean.addCalibration}"/>
