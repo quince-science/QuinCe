@@ -1,5 +1,9 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
@@ -56,6 +60,8 @@ public class SensorCalibrationsBean extends CalibrationBean {
   @Override
   protected void createEnteredCalibration() {
     enteredCalibration = new PolynomialSensorCalibration(instrumentId);
+    // Today at midnight
+    enteredCalibration.setDeploymentDate(LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS));
   }
 
   @Override
