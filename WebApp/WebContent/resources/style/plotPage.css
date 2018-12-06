@@ -230,3 +230,19 @@ tr.selected {
 .ol-control button {
   min-width: 0px;
 }
+
+.selectModeButtons .ui-button:nth-child(1) {
+  background-image: url("#{resource['image/zoom_button.svg']}") !important;
+  background-size: 20px;
+  background-repeat: no-repeat;
+  width: 46.77px !important;
+  height: 29.22px !important;
+}
+
+.selectModeButtons .ui-button:nth-child(2) {
+  background-image: url("#{resource['image/mark_button.svg']}") !important;
+  background-size: 20px;
+  background-repeat: no-repeat;
+  width: 46.77px !important;
+  height: 29.22px !important;
+}

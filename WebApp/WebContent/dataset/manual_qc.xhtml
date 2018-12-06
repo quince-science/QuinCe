@@ -58,6 +58,10 @@
         </p:selectOneButton>
         <p:commandButton icon="selectVariableButton" onclick="showVariableDialog(2)" styleClass="inlineButton tightButton plotFooterButton"/>
         <p:commandButton icon="zoomOutButton" onclick="resetZoom(2)" styleClass="inlineButton tightButton plotFooterButton"/>
+        <p:selectOneButton id="plotSelectMode" widgetVar="plot2SelectMode" value="zoom" styleClass="selectModeButtons" onchange="setPlotSelectMode(2)">
+          <f:selectItem itemLabel=" " itemValue="zoom"/>
+          <f:selectItem itemLabel=" " itemValue="select"/>
+        </p:selectOneButton>
       </f:facet>
     </p:toolbar>
   </ui:define>
