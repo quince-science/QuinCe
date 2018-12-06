@@ -23,8 +23,12 @@
       <div id="plot1Label" class="plotLabels"></div>
       <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
         <f:facet name="left">
-          <p:commandButton icon="selectVariableButton" onclick="showVariableDialog(1)" styleClass="inlineButton tightButton"/>
-          <p:commandButton icon="zoomOutButton" onclick="resetZoom(1)" styleClass="inlineButton tightButton"/>
+          <p:commandButton icon="selectVariableButton" onclick="showVariableDialog(1)" styleClass="inlineButton tightButton plotFooterButton"/>
+          <p:commandButton icon="zoomOutButton" onclick="resetZoom(1)" styleClass="inlineButton tightButton plotFooterButton"/>
+          <p:selectOneButton id="plotSelectMode" widgetVar="plot1SelectMode" value="zoom" styleClass="selectModeButtons" onchange="setPlotSelectMode(1)">
+            <f:selectItem itemLabel=" " itemValue="zoom"/>
+            <f:selectItem itemLabel=" " itemValue="select"/>
+          </p:selectOneButton>
         </f:facet>
       </p:toolbar>
     </div>

@@ -501,7 +501,7 @@ function hideInfoPopup() {
   $('#infoPopup').hide('slide', {direction: 'right'}, 100);
 }
 
-function drawPlot(index, interactionModel) {
+function drawPlot(index) {
 
   var plotVar = 'plot' + index;
 
@@ -525,10 +525,7 @@ function drawPlot(index, interactionModel) {
 
   // If no interaction model is supplied, use
   // the default (minus double-click)
-  if (null == interactionModel) {
-  interactionModel = Dygraph.defaultInteractionModel;
-    interactionModel.dblclick = null;
-  }
+  var interactionModel = getInteractionModel(index);
 
   var labels = getPlotLabels(index);
   var xLabel = labels[0];
@@ -1232,4 +1229,121 @@ function makeHighlights(index, plotData) {
   }
 
   return highlights;
+}
+
+function getPlotMode(index) {
+  var mode = $('[id^=plot' + index + 'Form\\:plotMode]:checked').val();
+  if (mode === undefined) {
+    mode = $('[id^=plot' + index + 'Form\\:plotMode]').val();
+  }
+
+  return mode;
+}
+
+function getInteractionModel(index) {
+  var plot = window['plot' + index];
+  var selectMode = $('[id^=plot' + index + 'Form\\:plotSelectMode]:checked').val();
+
+  var interactionModel = null;
+
+  if (selectMode == 'select') {
+    interactionModel = {
+      mousedown: selectModeMouseDown,
+      mouseup: selectModeMouseUp,
+      mousemove: selectModeMouseMove
+    }
+  } else {
+    interactionModel = Dygraph.defaultInteractionModel;
+    interactionModel.dblclick = null;
+  }
+
+  return interactionModel;
+}
+
+function setPlotSelectMode(index) {
+  drawPlot(index);
+}
+
+function selectModeMouseDown(event, g, context) {
+  context.isZooming = true;
+  context.dragStartX = dragGetX(g, event);
+  context.dragStartY = dragGetY(g, event);
+  context.dragEndX = context.dragStartX;
+  context.dragEndY = context.dragStartY;
+  context.prevEndX = null;
+  context.prevEndY = null;
+}
+
+function selectModeMouseMove(event, g, context) {
+  if (context.isZooming) {
+    context.dragEndX = dragGetX(g, event);
+    context.dragEndY = dragGetY(g, event);
+    drawSelectRect(g, context);
+    context.prevEndX = context.dragEndX;
+    context.prevEndY = context.dragEndY;
+  }
+}
+
+function selectModeMouseUp(event, g, context) {
+  g.clearZoomRect_();
+  var minX = g.toDataXCoord(context.dragStartX);
+  var maxX = g.toDataXCoord(context.dragEndX);
+  if (maxX < minX) {
+    minX = maxX;
+    maxX = g.toDataXCoord(context.dragStartX);
+  }
+
+  var minY = g.toDataYCoord(context.dragStartY);
+  var maxY = g.toDataYCoord(context.dragEndY);
+  if (maxY < minY) {
+    minY = maxY;
+    maxY = g.toDataYCoord(context.dragStartY);
+  }
+
+  var plotId = g.maindiv_.id.substring(4,5);
+  selectPointsInRect(getPlotData(plotId), minX, maxX, minY, maxY);
+}
+
+function drawSelectRect(graph, context) {
+  var ctx = graph.canvas_ctx_;
+
+  if (null != context.prevEndX && null != context.prevEndY) {
+    ctx.clearRect(context.dragStartX, context.dragStartY,
+      (context.prevEndX - context.dragStartX),
+      (context.prevEndY - context.dragStartY))
+  }
+
+  ctx.fillStyle = "rgba(128,128,128,0.33)";
+  ctx.fillRect(context.dragStartX, context.dragStartY,
+    (context.dragEndX - context.dragStartX),
+    (context.dragEndY - context.dragStartY))
+}
+
+function dragGetX(graph, event) {
+  return  event.clientX - graph.canvas_.getBoundingClientRect().left;
+}
+
+function dragGetY(graph, event) {
+  return event.clientY - graph.canvas_.getBoundingClientRect().top;
+}
+
+function selectPointsInRect(data, minX, maxX, minY, maxY) {
+  var pointsToSelect = [];
+
+  for (var i = 0; i < data.length; i++) {
+    if (data[i][0] > maxX) {
+      break;
+    } else if (data[i][0] >= minX) {
+      // See if any of the Y values are in range
+      for (var y = 3; y < data[i].length; y++) {
+        if (data[i][y] >= minY && data[i][y] <= maxY) {
+          pointsToSelect.push(data[i][1]);
+          break;
+        }
+      }
+    }
+  }
+
+  addRowsToSelection(pointsToSelect);
+  selectionUpdated();
 }
