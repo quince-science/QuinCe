@@ -332,6 +332,22 @@ function selectModeMouseMove(event, g, context) {
 
 function selectModeMouseUp(event, g, context) {
   g.clearZoomRect_();
+  var minX = g.toDataXCoord(context.dragStartX);
+  var maxX = g.toDataXCoord(context.dragEndX);
+  if (maxX < minX) {
+    minX = maxX;
+    maxX = g.toDataXCoord(context.dragStartX);
+  }
+
+  var minY = g.toDataYCoord(context.dragStartY);
+  var maxY = g.toDataYCoord(context.dragEndY);
+  if (maxY < minY) {
+    minY = maxY;
+    maxY = g.toDataYCoord(context.dragStartY);
+  }
+
+  var plotId = g.maindiv_.id.substring(4,5);
+  selectPointsInRect(getPlotData(plotId), minX, maxX, minY, maxY);
 }
 
 function drawSelectRect(graph, context) {
@@ -355,4 +371,25 @@ function dragGetX(graph, event) {
 
 function dragGetY(graph, event) {
   return event.clientY - graph.canvas_.getBoundingClientRect().top;
+}
+
+function selectPointsInRect(data, minX, maxX, minY, maxY) {
+  var pointsToSelect = [];
+
+  for (var i = 0; i < data.length; i++) {
+    if (data[i][0] > maxX) {
+      break;
+    } else if (data[i][0] >= minX) {
+      // See if any of the Y values are in range
+      for (var y = 3; y < data[i].length; y++) {
+        if (data[i][y] >= minY && data[i][y] <= maxY) {
+          pointsToSelect.push(data[i][1]);
+          break;
+        }
+      }
+    }
+  }
+
+  addRowsToSelection(pointsToSelect);
+  selectionUpdated();
 }
