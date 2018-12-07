@@ -119,6 +119,10 @@ public class ExportOption {
     // Export name
     try {
       this.name = json.getString("exportName").trim();
+      if (name.contains("/")) {
+        throw new ExportConfigurationException(index, "Export option name cannot contain '/'");
+      }
+
       if (name.length() == 0) {
         throw new ExportConfigurationException(index, "exportName cannot be empty");
       }
