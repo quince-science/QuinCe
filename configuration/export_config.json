@@ -14,7 +14,7 @@
     "equilibrator_pco2": ["Delta T", "pH2O", "fCO2"]
   },
   {
-    "exportName": "SST/Salinity QC",
+    "exportName": "SST+Salinity QC",
     "separator": "comma",
     "flags": [2,3,4],
     "sensors": ["Intake Temperature", "Salinity"],
