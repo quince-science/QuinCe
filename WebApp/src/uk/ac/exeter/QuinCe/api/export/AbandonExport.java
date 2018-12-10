@@ -7,7 +7,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 /**
  * API call to report to QuinCe that an
  * export has been abandoned.
- * @author zuj007
+ * @author Steve Jones
  *
  */
 @Path("/export/abandonExport")

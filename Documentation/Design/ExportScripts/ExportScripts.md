@@ -32,30 +32,30 @@ The possible satuses for a dataset, and the actions that will be available on a 
 ----------------------------------------------------------------------------------------------------------------
 Status              Meaning                               Manual QC   Manual Export   Submit            Archive
 -------             ------------------------------------ ----------- --------------- ----------------- ---------
-Waiting             Waiting to be processed by           
+Waiting             Waiting to be processed by
                     background jobs
-  
-Data extraction     Data being extracted from raw files  
-  
-Data reduction      Data reduction under way             
-  
-Automatic QC        Automatic QC under way               
-  
+
+Data extraction     Data being extracted from raw files
+
+Data reduction      Data reduction under way
+
+Automatic QC        Automatic QC under way
+
 Ready for QC        Automatic processing complete;        X
                     Manual QC required
-  
+
 QC Complete         All QC activities complete            X             X             X[^submit_pi]
-  
+
 Expert check        Waiting for expert check              X             X             X[^submit_expert]
-  
+
 Ready for export    Dataset ready for automated export    X             X
 
-Exporting           Automatic export and publishing      
+Exporting           Automatic export and publishing
                     under way
-  
+
 Exported            Dataset has been exported             X             X                                 X
-  
-ERROR[^errorstatus] Error encountered during             
+
+ERROR[^errorstatus] Error encountered during
                     any automatic processing
 ----------------------------------------------------------------------------------------------------------------
 Table: Possible status values for datasets {#tbl:statuses}
@@ -71,17 +71,17 @@ Table: Possible status values for datasets {#tbl:statuses}
 Action            Description
 ---------         -------------------------------------------------------------
 Manual QC         The user can examine the dataset and manually set QC flags
-  
+
 Manual export     The user can export the dataset for examination offline and
                   to allow them to submit datasets to repositories that are not
                   supported by the automated export script. The PI will be
                   responsible for ensuring that the dataset is in a suitable
                   state for publication.
-  
+
 Submit for        (ICOS stations) Once manual QC is complete and all required
 checking          flags have been assigned, the PI must explicitly trigger an
                   action to submit the dataset to the OTC expert for checking.
-  
+
 Automatic export  (Non-ICOS stations) Since the expert check is not required,
                   the user will be given a separate action to signal that the
                   dataset is ready to be published to data repositories through
