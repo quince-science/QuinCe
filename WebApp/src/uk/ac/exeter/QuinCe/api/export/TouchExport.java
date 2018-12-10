@@ -7,7 +7,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 /**
  * API call to 'touch' a dataset that's
  * being exported to ensure that it doesn't time out
- * @author zuj007
+ * @author Steve Jones
  *
  */
 @Path("/export/touchExport")
