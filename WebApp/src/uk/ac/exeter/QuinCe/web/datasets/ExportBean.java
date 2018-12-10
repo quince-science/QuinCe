@@ -317,7 +317,26 @@ public class ExportBean extends BaseManagedBean {
         output.append(exportOption.getSeparator());
 
         for (String sensorColumn : exportOption.getSensorColumns()) {
-          Double value = sensorRecord.getSensorValue(sensorColumn);
+
+          Double value = null;
+
+          // This is a horrible hack. Equilibrator Pressure should be dealt with as a calculated
+          // value. This will be sorted out by issue #1049.
+          if (sensorColumn.equals("Equilibrator Pressure")) {
+            Double absoluteEquilibratorPressure = sensorRecord.getSensorValue("Equilibrator Pressure (absolute)");
+            if (null != absoluteEquilibratorPressure) {
+              value = absoluteEquilibratorPressure;
+            } else {
+              Double differential = sensorRecord.getSensorValue("Equilibrator Pressure (differential)");
+              Double atmospheric = sensorRecord.getSensorValue("Ambient Pressure");
+              if (null != differential && null != atmospheric) {
+                value = atmospheric + differential;
+              }
+            }
+          } else {
+            value = sensorRecord.getSensorValue(sensorColumn);
+          }
+
           if (null == value) {
             output.append("NaN");
           } else {
