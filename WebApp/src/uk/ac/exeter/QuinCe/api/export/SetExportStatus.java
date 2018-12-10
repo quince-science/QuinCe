@@ -16,7 +16,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Abstract API call to set a dataset's status
- * @author zuj007
+ * @author Steve Jones
  *
  */
 public abstract class SetExportStatus {

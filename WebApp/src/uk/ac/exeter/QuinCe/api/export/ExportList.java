@@ -24,7 +24,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 /**
  * API call to get a list of all datasets ready for export
  *
- * @author zuj007
+ * @author Steve Jones
  *
  */
 @Path("/export/exportList")

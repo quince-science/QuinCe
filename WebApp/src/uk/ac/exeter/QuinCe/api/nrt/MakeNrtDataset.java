@@ -26,7 +26,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * API Method to create NRT datasets
- * @author zuj007
+ * @author Steve Jones
  *
  */
 @Path("/nrt/MakeNrtDataset")

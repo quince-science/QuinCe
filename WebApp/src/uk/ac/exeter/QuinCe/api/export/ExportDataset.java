@@ -28,7 +28,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *   <li>A manifest containing file lists and metadata</li>
  * </ul>
  *
- * @author zuj007
+ * @author Steve Jones
  *
  */
 @Path("/export/exportDataset")
