@@ -11,7 +11,9 @@ function start() {
    * PrimeFaces then drops their onclick handlers. So they're
    * enabled when the page loads, and this will disable them.
    */
-  postSelectionUpdated();
+  if (canEdit) {
+    postSelectionUpdated();
+  }
   $('#plots').split({orientation: 'vertical', onDragEnd: function(){resizePlots()}});
   plotSplitProportion = 0.5;
   drawPage();
