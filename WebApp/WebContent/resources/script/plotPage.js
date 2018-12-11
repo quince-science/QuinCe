@@ -19,28 +19,28 @@ var PLOT_MANUAL_FLAG_INDEX = 2;
 var PLOT_FIRST_Y_INDEX = 3;
 
 var BASE_GRAPH_OPTIONS = {
-    drawPoints: true,
-    strokeWidth: 0.0,
-    labelsUTC: true,
-    labelsSeparateLine: true,
-    digitsAfterDecimal: 2,
-    animatedZooms: true,
-    pointSize: PLOT_POINT_SIZE,
-    highlightCircleSize: PLOT_HIGHLIGHT_SIZE,
-    selectMode: 'euclidian',
-    axes: {
-      x: {
-        drawGrid: false
-      },
-      y: {
-        drawGrid: true,
-        gridLinePattern: [1, 3],
-        gridLineColor: 'rbg(200, 200, 200)',
-      }
+  drawPoints: true,
+  strokeWidth: 0.0,
+  labelsUTC: true,
+  labelsSeparateLine: true,
+  digitsAfterDecimal: 2,
+  animatedZooms: true,
+  pointSize: PLOT_POINT_SIZE,
+  highlightCircleSize: PLOT_HIGHLIGHT_SIZE,
+  selectMode: 'euclidian',
+  axes: {
+    x: {
+      drawGrid: false
     },
-    clickCallback: function(e, x, points) {
-      scrollToTableRow(getRowId(e, x, points));
+    y: {
+      drawGrid: true,
+      gridLinePattern: [1, 3],
+      gridLineColor: 'rbg(200, 200, 200)',
     }
+  },
+  clickCallback: function(e, x, points) {
+    scrollToTableRow(getRowId(e, x, points));
+  }
 };
 
 var VARIABLES_DIALOG_ENTRY_HEIGHT = 35;
@@ -523,10 +523,7 @@ function drawPlot(index) {
     window[plotVar].destroy();
   }
 
-  // If no interaction model is supplied, use
-  // the default (minus double-click)
   var interactionModel = getInteractionModel(index);
-
   var labels = getPlotLabels(index);
   var xLabel = labels[0];
   var yLabels = labels.slice(3);
@@ -1240,6 +1237,7 @@ function getPlotMode(index) {
   return mode;
 }
 
+// Get the interaction model for a plot
 function getInteractionModel(index) {
   var plot = window['plot' + index];
   var selectMode = $('[id^=plot' + index + 'Form\\:plotSelectMode]:checked').val();
@@ -1253,7 +1251,10 @@ function getInteractionModel(index) {
       mousemove: selectModeMouseMove
     }
   } else {
-    interactionModel = Dygraph.defaultInteractionModel;
+  // Use the default interaction model, but without
+  // double-click. We use the clickCallback property defined
+  // in BASE_GRAPH_OPTIONS above
+  interactionModel = Dygraph.defaultInteractionModel;
     interactionModel.dblclick = null;
   }
 
@@ -1301,7 +1302,20 @@ function selectModeMouseUp(event, g, context) {
   }
 
   var plotId = g.maindiv_.id.substring(4,5);
-  selectPointsInRect(getPlotData(plotId), minX, maxX, minY, maxY);
+
+  // If we've only moved the mouse by a small amount,
+  // interpret it as a click
+  var xDragDistance = Math.abs(context.dragEndX - context.dragStartX);
+  var yDragDistance = Math.abs(context.dragEndY - context.dragStartY);
+
+  if (xDragDistance <= 3 && yDragDistance <= 3) {
+  var closestPoint = g.findClosestPoint(context.dragEndX, context.dragEndY, undefined);
+    var pointId = closestPoint.point['idx'];
+    var row = getPlotData(plotId)[pointId][1];
+    scrollToTableRow(row);
+  } else {
+    selectPointsInRect(getPlotData(plotId), minX, maxX, minY, maxY);
+  }
 }
 
 function drawSelectRect(graph, context) {
