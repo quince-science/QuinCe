@@ -615,4 +615,13 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @throws Exception If an error occurs
    */
   protected abstract String getData(List<String> fields) throws Exception;
+
+  /**
+   * Indicates whether or not changes can be made to the data
+   * @return {@code true} if data can be edited; {@code false} if not
+   */
+  public boolean getCanEdit() {
+    // NRT data sets cannot be edited
+    return !getDataset().isNrt();
+  }
 }

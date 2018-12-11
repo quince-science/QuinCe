@@ -31,12 +31,16 @@
           <f:selectItem itemLabel=" " itemValue="plot"/>
           <f:selectItem itemLabel=" " itemValue="map"/>
         </p:selectOneButton>
-        <p:commandButton icon="selectVariableButton" onclick="showVariableDialog(1)" styleClass="inlineButton tightButton plotFooterButton"/>
-        <p:commandButton icon="zoomOutButton" onclick="resetZoom(1)" styleClass="inlineButton tightButton plotFooterButton"/>
-        <p:selectOneButton id="plotSelectMode" widgetVar="plot1SelectMode" value="zoom" styleClass="selectModeButtons" onchange="setPlotSelectMode(1)">
-          <f:selectItem itemLabel=" " itemValue="zoom"/>
-          <f:selectItem itemLabel=" " itemValue="select"/>
-        </p:selectOneButton>
+        <div class="plotFooterButtonContainer">
+          <p:commandButton icon="selectVariableButton" onclick="showVariableDialog(1)" styleClass="inlineButton tightButton plotFooterButton"/>
+          <p:commandButton icon="zoomOutButton" onclick="resetZoom(1)" styleClass="inlineButton tightButton plotFooterButton"/>
+        </div>
+        <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
+          <p:selectOneButton id="plotSelectMode" widgetVar="plot1SelectMode" value="zoom" styleClass="selectModeButtons" onchange="setPlotSelectMode(1)">
+            <f:selectItem itemLabel=" " itemValue="zoom"/>
+            <f:selectItem itemLabel=" " itemValue="select"/>
+          </p:selectOneButton>
+        </ui:fragment>
       </f:facet>
     </p:toolbar>
   </ui:define>
@@ -56,12 +60,16 @@
           <f:selectItem itemLabel=" " itemValue="plot"/>
           <f:selectItem itemLabel=" " itemValue="map"/>
         </p:selectOneButton>
-        <p:commandButton icon="selectVariableButton" onclick="showVariableDialog(2)" styleClass="inlineButton tightButton plotFooterButton"/>
-        <p:commandButton icon="zoomOutButton" onclick="resetZoom(2)" styleClass="inlineButton tightButton plotFooterButton"/>
-        <p:selectOneButton id="plotSelectMode" widgetVar="plot2SelectMode" value="zoom" styleClass="selectModeButtons" onchange="setPlotSelectMode(2)">
-          <f:selectItem itemLabel=" " itemValue="zoom"/>
-          <f:selectItem itemLabel=" " itemValue="select"/>
-        </p:selectOneButton>
+        <div class="plotFooterButtonContainer">
+          <p:commandButton icon="selectVariableButton" onclick="showVariableDialog(2)" styleClass="inlineButton tightButton plotFooterButton"/>
+          <p:commandButton icon="zoomOutButton" onclick="resetZoom(2)" styleClass="inlineButton tightButton plotFooterButton"/>
+        </div>
+        <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
+          <p:selectOneButton id="plotSelectMode" widgetVar="plot2SelectMode" value="zoom" styleClass="selectModeButtons" onchange="setPlotSelectMode(2)">
+            <f:selectItem itemLabel=" " itemValue="zoom"/>
+            <f:selectItem itemLabel=" " itemValue="select"/>
+          </p:selectOneButton>
+        </ui:fragment>
       </f:facet>
     </p:toolbar>
   </ui:define>

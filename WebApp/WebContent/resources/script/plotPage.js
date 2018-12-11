@@ -228,7 +228,9 @@ function drawTable() {
       // remove all existing click handlers before adding this one.
       $(row).off('click');
       $(row).on('click', function(event) {
+        if (canEdit) {
         clickRowAction(data[0], event.shiftKey);
+        }
       });
     },
     columnDefs: getColumnDefs()
@@ -452,7 +454,7 @@ function selectionUpdated() {
     drawPlot(2);
   }
 
-  if (typeof postSelectionUpdated == 'function') {
+  if (canEdit && typeof postSelectionUpdated == 'function') {
     postSelectionUpdated();
   }
 }

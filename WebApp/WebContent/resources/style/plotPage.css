@@ -105,9 +105,16 @@ tr.selected {
   height: 29.22px !important;
 }
 
-.plotFooterButton {
+.plotFooterButtonContainer {
+  display: inline;
+  position:relative;
+}
+
+/* These buttons are sometimes mixed in with PrimeFaces stuff,
+   which breaks the layout. This fixes the CSS when PF stuff is
+   present (i.e. we aren't the only thing in the plot footer */
+.plotFooterButtonContainer:not(:only-child) {
   top: -10px !important;
-  height: 32px !important;
 }
 
 .selectVariableButton {

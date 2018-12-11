@@ -27,6 +27,7 @@
       var variableGroups = #{sessionScope[beanName].variableGroups};
       var variableGroupNames = #{sessionScope[beanName].variableGroupNames};
       var variableCount = #{sessionScope[beanName].variableCount};
+      var canEdit = #{sessionScope[beanName].canEdit};
     </script>
   </h:head>
   <h:body class="fullPage">
@@ -199,12 +200,14 @@
         </h:form>
       </f:facet>
       <f:facet name="right">
-        <h:form id="selectActionsForm" method="post" styleClass="inline">
-          Selection: <span id="selectedRowsCount">0</span>
-          <p:commandButton icon="clearSelectionButton" onclick="clearSelection();" styleClass="inlineButton tightButton"/>
-          <ui:insert name="selectionActions">Selection actions here</ui:insert>
-        </h:form>
-        |
+        <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
+          <h:form id="selectActionsForm" method="post" styleClass="inline">
+            Selection: <span id="selectedRowsCount">0</span>
+            <p:commandButton icon="clearSelectionButton" onclick="clearSelection();" styleClass="inlineButton tightButton"/>
+            <ui:insert name="selectionActions">Selection actions here</ui:insert>
+          </h:form>
+          |
+        </ui:fragment>
         <h:form id="finishButtonForm" method="post" styleClass="inline">
           <ui:insert name="finishButton">Finish button here</ui:insert>
         </h:form>
