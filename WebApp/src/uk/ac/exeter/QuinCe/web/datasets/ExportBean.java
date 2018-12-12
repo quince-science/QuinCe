@@ -278,16 +278,18 @@ public class ExportBean extends BaseManagedBean {
     output.append("Latitude");
     output.append(exportOption.getSeparator());
 
-    for (String sensorColumn : exportOption.getSensorColumns()) {
-      output.append(sensorColumn);
+    for (String sensorColumnHeading : exportOption.getSensorColumnHeadings()) {
+      output.append(sensorColumnHeading);
       output.append(exportOption.getSeparator());
     }
 
     // TODO Replace when mutiple calculation paths are in place
-    List<String> calculationColumns = exportOption.getCalculationColumns("equilibrator_pco2");
-    for (int i = 0; i < calculationColumns.size(); i++) {
-      output.append(calculationColumns.get(i));
-      output.append(exportOption.getSeparator());
+    List<String> calculationColumnHeadings = exportOption.getCalculationColumnHeadings("equilibrator_pco2");
+    if (null != calculationColumnHeadings) {
+      for (int i = 0; i < calculationColumnHeadings.size(); i++) {
+        output.append(calculationColumnHeadings.get(i));
+        output.append(exportOption.getSeparator());
+      }
     }
 
     output.append("QC Flag");
@@ -317,7 +319,26 @@ public class ExportBean extends BaseManagedBean {
         output.append(exportOption.getSeparator());
 
         for (String sensorColumn : exportOption.getSensorColumns()) {
-          Double value = sensorRecord.getSensorValue(sensorColumn);
+
+          Double value = null;
+
+          // This is a horrible hack. Equilibrator Pressure should be dealt with as a calculated
+          // value. This will be sorted out by issue #1049.
+          if (sensorColumn.equals("Equilibrator Pressure")) {
+            Double absoluteEquilibratorPressure = sensorRecord.getSensorValue("Equilibrator Pressure (absolute)");
+            if (null != absoluteEquilibratorPressure) {
+              value = absoluteEquilibratorPressure;
+            } else {
+              Double differential = sensorRecord.getSensorValue("Equilibrator Pressure (differential)");
+              Double atmospheric = sensorRecord.getSensorValue("Ambient Pressure");
+              if (null != differential && null != atmospheric) {
+                value = atmospheric + differential;
+              }
+            }
+          } else {
+            value = sensorRecord.getSensorValue(sensorColumn);
+          }
+
           if (null == value) {
             output.append("NaN");
           } else {
@@ -327,15 +348,18 @@ public class ExportBean extends BaseManagedBean {
           output.append(exportOption.getSeparator());
         }
 
-        for (String calculatedColumn : exportOption.getCalculationColumns("equilibrator_pco2")) {
-          Double value = calculationRecord.getNumericValue(calculatedColumn);
-          if (null == value) {
-            output.append("NaN");
-          } else {
-            output.append(numberFormatter.format(value));
-          }
+        List<String> calculationColumns = exportOption.getCalculationColumns("equilibrator_pco2");
+        if (null != calculationColumns) {
+          for (String calculatedColumn : calculationColumns) {
+            Double value = calculationRecord.getNumericValue(calculatedColumn);
+            if (null == value) {
+              output.append("NaN");
+            } else {
+              output.append(numberFormatter.format(value));
+            }
 
-          output.append(exportOption.getSeparator());
+            output.append(exportOption.getSeparator());
+          }
         }
 
         if (dataset.isNrt()) {

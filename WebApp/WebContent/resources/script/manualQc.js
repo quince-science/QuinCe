@@ -287,7 +287,3 @@ function manualFlagsUpdated() {
   $('#plot1Form\\:plotGetData').click();
   $('#plot2Form\\:plotGetData').click();
 }
-
-function getPlotMode(index) {
-  return $('[id^=plot' + index + 'Form\\:plotMode]:checked').val();
-}

@@ -27,10 +27,10 @@ Outlier,Ambient Pressure,3
 Outlier,CO2,3
 Outlier,Delta Temperature,3
 HighDelta,Intake Temperature,3
-HighDelta,Salinity,3
+#HighDelta,Salinity,3
 HighDelta,Equilibrator Temperature,3
 HighDelta,Equilibrator Pressure,50
 HighDelta,xH2O,5
 HighDelta,Ambient Pressure,50
 HighDelta,CO2,20
-HighDelta,Delta Temperature,0.5
+#HighDelta,Delta Temperature,0.5
