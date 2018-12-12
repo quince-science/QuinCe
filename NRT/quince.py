@@ -16,7 +16,7 @@ def get_instruments(config):
   request.add_header("Authorization", "Basic %s" % base64_auth_string.decode("utf-8"))
 
   conn = urllib.request.urlopen(request)
-  instruments = conn.read()
+  instruments = conn.read().decode("utf-8")
   conn.close()
 
   return json.loads(instruments)
