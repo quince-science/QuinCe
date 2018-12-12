@@ -119,13 +119,12 @@ public class EquilibratorPco2DB extends CalculationDB {
 
   // TODO In the long run a lot of this can be factored out. Or it may become obsolete with per-field QC flags.
   @Override
-  public Map<String, Double> getCalculationValues(Connection conn, CalculationRecord record) throws MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException, MessageException {
+  public void loadCalculationValues(Connection conn, CalculationRecord record) throws MissingParamException, DatabaseException, RecordNotFoundException, NoSuchColumnException, MessageException {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(record, "record");
 
     PreparedStatement stmt = null;
     ResultSet dbRecord = null;
-    Map<String, Double> values = null;
 
     try {
       stmt = conn.prepareStatement(GET_CALCULATION_VALUES_QUERY);
@@ -136,8 +135,7 @@ public class EquilibratorPco2DB extends CalculationDB {
       if (!dbRecord.next()) {
         throw new RecordNotFoundException("Calculation data record not found", TABLE_NAME, record.getLineNumber());
       } else {
-
-        values = loadCalculationValuesFromResultSet(record, dbRecord);
+        loadCalculationValuesFromResultSet(record, dbRecord);
       }
     } catch (SQLException|InvalidDataException|InvalidFlagException e) {
       throw new DatabaseException("Error retrieving calculations" , e);
@@ -145,8 +143,6 @@ public class EquilibratorPco2DB extends CalculationDB {
       DatabaseUtils.closeResultSets(dbRecord);
       DatabaseUtils.closeStatements(stmt);
     }
-
-    return values;
   }
 
   @Override
