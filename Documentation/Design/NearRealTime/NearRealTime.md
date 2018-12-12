@@ -56,15 +56,15 @@ QuinCe will perform some initial checks on the files (described below), and then
 {
   "instrument_id" : 7,
   "files": [
-  	{
-  	  "filename": "file1.csv",
-  	  "ok": true,
-  	  "messages": []
-  	}
-  	{
-  	  "filename": "file2.csv",
-  	  "ok": false,
-  	  "messages": [
+    {
+      "filename": "file1.csv",
+      "ok": true,
+      "messages": []
+    }
+    {
+      "filename": "file2.csv",
+      "ok": false,
+      "messages": [
         {
           "line": 22,
           "message": "Invalid date"
@@ -73,8 +73,8 @@ QuinCe will perform some initial checks on the files (described below), and then
           "line": 43,
           "message": "Incorrect number of columns"
         }
-  	  ]
-  	}
+      ]
+    }
   ]
 }
 ```
