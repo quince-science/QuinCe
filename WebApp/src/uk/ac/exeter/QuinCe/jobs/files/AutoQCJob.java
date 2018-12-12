@@ -141,6 +141,7 @@ public class AutoQCJob extends Job {
       dataSet = DataSetDB.getDataSet(conn, datasetId);
       dataSet.setStatus(DataSet.STATUS_AUTO_QC);
       DataSetDB.updateDataSet(conn, dataSet);
+      boolean userQcNeeded = false;
 
       CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
 
@@ -242,6 +243,9 @@ public class AutoQCJob extends Job {
 
         if (writeRecord) {
           calculationDB.storeQC(conn, (CalculationRecord) record);
+          if (qcRecord.getUserFlag().equals(Flag.NEEDED)) {
+            userQcNeeded = true;
+          }
         }
       }
 
@@ -254,8 +258,9 @@ public class AutoQCJob extends Job {
           if (dataSet.isNrt()) {
             dataSet.setStatus(DataSet.STATUS_READY_FOR_EXPORT);
           } else {
-            dataSet.setStatus(DataSet.STATUS_USER_QC);
-            if (dataSet.getNeedsFlagCount() == 0) {
+            if (userQcNeeded) {
+              dataSet.setStatus(DataSet.STATUS_USER_QC);
+            } else {
               dataSet.setStatus(DataSet.STATUS_READY_FOR_SUBMISSION);
             }
           }
