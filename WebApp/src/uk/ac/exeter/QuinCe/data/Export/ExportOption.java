@@ -213,7 +213,8 @@ public class ExportOption {
           try {
             calculationDb = CalculationDBFactory.getCalculationDB(key.substring(0, key.length() - 8));
           } catch (CalculatorException e) {
-            throw new ExportConfigurationException(index, "Unrecognised calculation idendtifier '" + calculationIdentifier + "'");
+            throw new ExportConfigurationException(index, "Unrecognised calculation idendtifier '"
+                + calculationIdentifier + "'");
           }
 
           try {
