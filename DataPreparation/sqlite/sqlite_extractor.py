@@ -11,24 +11,24 @@ def check_output_config(config):
   try:
     out_cols = config["output"]["columns"]
     if (type(out_cols) is not list):
-    	print("Output columns must be a list/array")
-    	result = False
+      print("Output columns must be a list/array")
+      result = False
     
     if result:
       if (len(out_cols) == 0):
         print("No output columns specified")
         result = False
   except KeyError:
-  	print("Output columns not specified in config")
-  	result = False
+    print("Output columns not specified in config")
+    result = False
 
   # Empty column value
   if result:
-  	try:
-  	  empty_value = config["output"]["empty_col_value"]
-  	except KeyError:
-  	  print("Empty column value not specified")
-  	  result = False
+    try:
+      empty_value = config["output"]["empty_col_value"]
+    except KeyError:
+      print("Empty column value not specified")
+      result = False
 
   return result
 

@@ -31,13 +31,6 @@ class DatabaseExtractor:
     
       self._date_columns.append(table["datecol"])
 
-      # Make sure the number of table mappings matches
-      # the number of output columns
-#      if len(table["mapping"]) != len(self._config["output"]["columns"]):
-#        print("Mapping list for table " + table["name"] + 
-#                 " is not the same length as the output mappings")
-#        result = False
-
       # Make sure the mapping names exist in the output column list
       for mapping_column in table["mapping"]:
         if len(mapping_column) > 0 and \
