@@ -243,9 +243,9 @@ public class AutoQCJob extends Job {
 
         if (writeRecord) {
           calculationDB.storeQC(conn, (CalculationRecord) record);
-          if (qcRecord.getUserFlag().equals(Flag.NEEDED)) {
-            userQcNeeded = true;
-          }
+        }
+        if (qcRecord.getUserFlag().equals(Flag.NEEDED)) {
+          userQcNeeded = true;
         }
       }
 
