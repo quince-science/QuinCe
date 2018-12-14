@@ -200,14 +200,17 @@
         </h:form>
       </f:facet>
       <f:facet name="right">
+        <ui:fragment rendered="#{!sessionScope[beanName].canEdit}">
+          <span class="instructions">NRT Dataset - cannot be edited</span>
+        </ui:fragment>
         <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
           <h:form id="selectActionsForm" method="post" styleClass="inline">
             Selection: <span id="selectedRowsCount">0</span>
             <p:commandButton icon="clearSelectionButton" onclick="clearSelection();" styleClass="inlineButton tightButton"/>
             <ui:insert name="selectionActions">Selection actions here</ui:insert>
           </h:form>
-          |
         </ui:fragment>
+        |
         <h:form id="finishButtonForm" method="post" styleClass="inline">
           <ui:insert name="finishButton">Finish button here</ui:insert>
         </h:form>
