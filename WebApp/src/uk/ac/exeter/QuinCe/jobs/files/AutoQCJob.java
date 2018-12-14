@@ -126,7 +126,6 @@ public class AutoQCJob extends Job {
    * @param thread The thread that is running this job
    * @see FileJob#FILE_ID_KEY
    */
-  @SuppressWarnings("unchecked")
   @Override
   protected void execute(JobThread thread) throws JobFailedException {
 
