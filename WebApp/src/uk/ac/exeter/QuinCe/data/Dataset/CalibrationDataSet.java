@@ -103,7 +103,11 @@ public class CalibrationDataSet {
     } else {
       // See if the cached records encompass the new date
       List<DataSetRawDataRecord> records = foundRecords.get(key);
-      if (records.get(0).getDate().isBefore(date) && records.get(1).getDate().isAfter(date)) {
+
+      boolean firstRecordBefore = (null == records.get(0) || records.get(0).getDate().isBefore(date));
+      boolean lastRecordAfter = (null == records.get(1) || records.get(1).getDate().isAfter(date));
+
+      if (firstRecordBefore && lastRecordAfter) {
         result = records;
       } else {
         needSearch = true;
