@@ -128,4 +128,10 @@ public class ExternalStandard extends Calibration {
   public Double calibrateValue(Double rawValue) {
     return rawValue;
   }
+
+  @Override
+  public List<CalibrationCoefficient> getEditableCoefficients() {
+    // Only the CO2 concentration is editable, and it's the first coefficient.
+    return getCoefficients().subList(0, 1);
+  }
 }

@@ -1,6 +1,8 @@
 package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +46,7 @@ public abstract class Calibration implements Comparable<Calibration> {
    * in which case the time portion will be set to midnight.
    * @see #hasTime
    */
-  private LocalDateTime deploymentDate = null;
+  private LocalDateTime deploymentDate = LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
 
   /**
    * The part of the instrument to which this calibration applies.
@@ -94,16 +96,6 @@ public abstract class Calibration implements Comparable<Calibration> {
    */
   public String getType() {
     return type;
-  }
-
-  /**
-   * Indicates whether or not the {@code deploymentDate} should
-   * have a time component. Most calibrations do not have a time,
-   * so the default method returns {@code false}.
-   * @see #deploymentDate
-   */
-  protected boolean hasTime() {
-    return false;
   }
 
   /**
@@ -225,6 +217,15 @@ public abstract class Calibration implements Comparable<Calibration> {
   }
 
   /**
+   * Get the list of coefficients that are user-editable.
+   * For most calibrations this will be the complete set
+   * @return The user-editable calibration coefficients
+   */
+  public List<CalibrationCoefficient> getEditableCoefficients() {
+    return getCoefficients();
+  }
+
+  /**
    * Set the coefficients for this calibration
    * @param coefficients The coefficients
    * @throws CalibrationException If an incorrect number of coefficients is supplied
@@ -306,6 +307,11 @@ public abstract class Calibration implements Comparable<Calibration> {
     return result;
   }
 
+  /**
+   * Calibrate a single value using this calibration
+   * @param rawValue The value to be calibrated
+   * @return The calibrated value
+   */
   public abstract Double calibrateValue(Double rawValue);
 
   /**

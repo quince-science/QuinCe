@@ -1,9 +1,5 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
-
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
@@ -35,47 +31,39 @@ public class SensorCalibrationsBean extends CalibrationBean {
   private static final String NAV_LIST = "sensor_calibrations";
 
   /**
-   * The sensor calibration being edited by the user
-   */
-  private PolynomialSensorCalibration enteredCalibration = null;
-
-  /**
-   * The sensor calibration database utility class
-   */
-  private SensorCalibrationDB db = null;
-
-  /**
    * Constructor
    */
   public SensorCalibrationsBean() {
     super();
-    db = SensorCalibrationDB.getInstance();
   }
 
   @Override
-  public Calibration getEnteredCalibration() {
-    return enteredCalibration;
-  }
-
-  @Override
-  protected void createEnteredCalibration() {
-    enteredCalibration = new PolynomialSensorCalibration(instrumentId);
-    // Today at midnight
-    enteredCalibration.setDeploymentDate(LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS));
-  }
-
-  @Override
-  protected String getListNavigation() {
+  protected String getPageNavigation() {
     return NAV_LIST;
   }
 
   @Override
   protected CalibrationDB getDbInstance() {
-    return db;
+    return SensorCalibrationDB.getInstance();
   }
 
   @Override
   protected String getCalibrationType() {
     return SensorCalibrationDB.SENSOR_CALIBRATION_TYPE;
+  }
+
+  @Override
+  public String getHumanReadableCalibrationType() {
+    return "Sensor Calibrations";
+  }
+
+  @Override
+  protected Calibration initNewCalibration() {
+    return new PolynomialSensorCalibration(instrumentId);
+  }
+
+  @Override
+  public String getTargetLabel() {
+    return "Sensor";
   }
 }
