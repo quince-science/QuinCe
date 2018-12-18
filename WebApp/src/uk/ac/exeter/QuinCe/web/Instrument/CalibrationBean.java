@@ -252,4 +252,12 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @return The target label
    */
   public abstract String getTargetLabel();
+
+  /**
+   * Get the label used to describe the coefficients
+   * @return The coefficients label
+   */
+  public String getCoefficientsLabel() {
+    return "Coefficients";
+  }
 }

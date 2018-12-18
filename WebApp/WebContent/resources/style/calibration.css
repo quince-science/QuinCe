@@ -13,5 +13,39 @@
 }
 
 .deploymentPanel {
+  width: 650px;
   margin: auto;
 }
+
+#deploymentPanelContent {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+#deploymentCalendar {
+  display: inline;
+  margin-right: 25px;
+}
+
+#deploymentFields {
+  display: flex;
+  flex-direction: column;
+}
+
+#targetField {
+  margin-bottom: 20px;
+}
+
+#coefficientFields {
+  margin-top: 10px;  
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: [label] auto [value] 100%;
+  grid-column-gap: 10px;
+  grid-row-gap: 10px;
+  align-items: center;
+  justify-content: start;
+}
+
