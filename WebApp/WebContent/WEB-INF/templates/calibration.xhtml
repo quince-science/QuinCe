@@ -1,0 +1,71 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:h="http://xmlns.jcp.org/jsf/html"
+  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+  xmlns:p="http://primefaces.org/ui"
+  template="/WEB-INF/templates/basic_page.xhtml">
+
+  <ui:define name="title">#{sessionScope[beanName].humanReadableCalibrationType}
+   - #{sessionScope[beanName].instrumentName}</ui:define>
+  <ui:define name="pageTitle">#{sessionScope[beanName].humanReadableCalibrationType}
+   - #{sessionScope[beanName].instrumentName}</ui:define>
+  <ui:define name="localHead">
+    <h:outputScript name="script/vis-timeline-graph2d.min.js"/>
+    <h:outputStylesheet name="style/vis-timeline-graph2d.min.css"/>
+    <h:outputStylesheet name="style/calibration.css"/>
+  </ui:define>
+
+  <ui:define name="content">
+    <div class="fullPage">
+      <h:form id="uploadForm" method="post" charset="utf8">
+        <div id="timelineContainer"></div>
+        <script>
+          var TIMELINE_OPTIONS = {
+            showCurrentTime: false,
+            selectable: false,
+            editable: false,
+            moment: function(date) {
+              return vis.moment(date).utc();
+            }
+          };
+
+          var targets = JSON.parse('#{sessionScope[beanName].targetsJson}');
+          var calibrationsJson = JSON.parse('#{sessionScope[beanName].calibrationsJson}');
+          // Treat dates as dates in the dataset
+          calibrationsJson.map(function (item) {
+            item.start = new Date(item.start);
+          });
+
+          var calibrations =  new vis.DataSet(calibrationsJson);
+          var timeline = new vis.Timeline(timelineContainer, calibrations, targets, TIMELINE_OPTIONS);
+        </script>
+
+        <p:panel header="New Deployment" styleClass="deploymentPanel">
+          <div class="deploymentCalendar">
+            <p:calendar id="deploymentDate" mode="inline"
+              value="#{sessionScope[beanName].newCalibration.deploymentDate}"
+              pattern="yyyy-MM-dd HH:mm:ss" navigator="true">
+              <f:converter converterId="localDateTimeConverter"/>
+            </p:calendar>
+          </div>
+          <p:outputLabel for="target" value="#{sessionScope[beanName].targetLabel}:"></p:outputLabel>
+          <p:selectOneMenu id="target" value="#{sessionScope[beanName].newCalibration.target}">
+            <f:selectItems value="#{sessionScope[beanName].targets}"/>
+          </p:selectOneMenu>
+
+          <ui:repeat value="#{sessionScope[beanName].newCalibration.editableCoefficients}" var="coefficient">
+            <p:outputLabel for="value" value="#{coefficient.name}"/>
+            <p:inputNumber id="value" value="#{coefficient.value}" size="12" decimalPlaces="5"/>
+          </ui:repeat>
+
+          <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+            <p:commandButton widgetVar="addDeploymentButton" value="Add" ajax="false" action="#{sessionScope[beanName].addCalibration}"/>
+          </h:panelGrid>
+        </p:panel>
+        <h:panelGrid columns="1" styleClass="buttonPanel">
+          <p:commandButton value="Back to Instruments List" action="/instrument/instrument_list.xhtml"/>
+        </h:panelGrid>
+      </h:form>
+    </div>
+  </ui:define>
+</ui:composition>
