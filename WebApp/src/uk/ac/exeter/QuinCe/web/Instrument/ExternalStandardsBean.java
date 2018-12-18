@@ -58,4 +58,9 @@ public class ExternalStandardsBean extends CalibrationBean {
   public String getTargetLabel() {
     return "Standard";
   }
+
+  @Override
+  public String getCoefficientsLabel() {
+    return "Concentration";
+  }
 }
