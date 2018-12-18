@@ -145,7 +145,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
       } else {
         getDbInstance().addCalibration(getDataSource(), getNewCalibration());
         loadCalibrations();
-        initNewCalibration();
+        newCalibration = initNewCalibration();
       }
     } catch (Exception e) {
       nav = internalError(e);
