@@ -1,12 +1,9 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
-
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandard;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
@@ -26,47 +23,39 @@ public class ExternalStandardsBean extends CalibrationBean {
   private static final String NAV_LIST = "external_standards";
 
   /**
-   * The external standard being edited by the user
-   */
-  private ExternalStandard enteredStandard = null;
-
-  /**
-   * The external standards database utility class
-   */
-  private ExternalStandardDB db = null;
-
-  /**
    * Constructor
    */
   public ExternalStandardsBean() {
     super();
-    db = ExternalStandardDB.getInstance();
   }
 
   @Override
-  protected String getListNavigation() {
+  protected String getPageNavigation() {
     return NAV_LIST;
   }
 
   @Override
-  protected void createEnteredCalibration() {
-    enteredStandard = new ExternalStandard(instrumentId);
-    // Today at midnight
-    enteredStandard.setDeploymentDate(LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS));
-  }
-
-  @Override
-  public ExternalStandard getEnteredCalibration() {
-    return enteredStandard;
-  }
-
-  @Override
   protected CalibrationDB getDbInstance() {
-    return db;
+    return ExternalStandardDB.getInstance();
   }
 
   @Override
   protected String getCalibrationType() {
     return ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE;
+  }
+
+  @Override
+  public String getHumanReadableCalibrationType() {
+    return "Gas Standards";
+  }
+
+  @Override
+  protected Calibration initNewCalibration() {
+    return new ExternalStandard(instrumentId);
+  }
+
+  @Override
+  public String getTargetLabel() {
+    return "Standard";
   }
 }
