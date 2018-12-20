@@ -20,3 +20,7 @@ To run a migration, use the upgrade-script:
 ```
 $ ./scripts/upgrade.sh
 ```
+
+For junit test, equivalent files (with H2 database syntax) must exist in 
+`WebApp/junit/resources/db_migrations`
+
