@@ -189,3 +189,9 @@ spotless {
     endWithNewline()
   }
 }
+
+tasks.register("migrationCheck") {
+	doLast {
+		println 'Hello, World!'
+	}
+}
