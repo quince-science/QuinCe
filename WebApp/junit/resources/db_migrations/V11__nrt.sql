@@ -1,0 +1,3 @@
+ALTER TABLE `instrument` ADD `nrt` BOOLEAN NOT NULL DEFAULT FALSE AFTER `platform_code`;
+ALTER TABLE `dataset` ADD `nrt` BOOLEAN NOT NULL DEFAULT FALSE AFTER `status`;
+
