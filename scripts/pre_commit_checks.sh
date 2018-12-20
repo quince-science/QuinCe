@@ -6,4 +6,3 @@
 
 ./gradlew spotlessCheck
 ./gradlew migrationCheck
-
