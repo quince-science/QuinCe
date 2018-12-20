@@ -20,7 +20,7 @@ buildscript {
 
 // Flyway database migration plugin:
 plugins {
-    id "org.flywaydb.flyway" version "5.0.7"
+    id "org.flywaydb.flyway" version "5.2.4"
     id "com.diffplug.gradle.spotless" version "3.10.0"
 }
 
@@ -38,7 +38,6 @@ gretty {
   enableNaming = true
 }
 
-
 repositories {
     // Use jcenter for resolving your dependencies.
     // You can declare any Maven/Ivy/file repository here.
@@ -51,7 +50,6 @@ repositories {
 		url "http://repository.primefaces.org"
 	}
 }
-
 
 dependencies {
 	compile "org.primefaces:primefaces:6.2"
@@ -78,8 +76,8 @@ dependencies {
 	// Jersey RESTful API
 	compile 'org.glassfish.jersey.containers:jersey-container-servlet:2.27'
 	compile 'org.glassfish.jersey.inject:jersey-hk2:2.27'
-    compile 'org.glassfish.jersey.media:jersey-media-moxy:2.27'
-    compile 'org.glassfish.jersey.media:jersey-media-multipart:2.27'
+	compile 'org.glassfish.jersey.media:jersey-media-moxy:2.27'
+	compile 'org.glassfish.jersey.media:jersey-media-multipart:2.27'
 
 	// gretty plugin handling the tomcat server
 	gretty 'org.apache.tomcat:tomcat-dbcp:8.0.1'
@@ -87,7 +85,9 @@ dependencies {
 
 	// Use JUnit test framework
 	testImplementation 'junit:junit:4.12'
-	compile 'org.mockito:mockito-core:2.15.0'
+	testImplementation 'com.h2database:h2:1.4.197'
+	testImplementation 'org.flywaydb.flyway-test-extensions:flyway-spring-test:5.2.1'
+	testImplementation 'org.mockito:mockito-core:2.15.0'
 }
 
 sourceSets {
