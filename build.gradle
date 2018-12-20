@@ -191,7 +191,29 @@ spotless {
 }
 
 tasks.register("migrationCheck") {
+	description = 'Check that database migrations for the app also exist in the junit test config'
 	doLast {
-		println 'Hello, World!'
+		def appMigrationFiles = []
+		File appMigrationsDir = new File('./src/migrations/db_migrations')
+		appMigrationsDir.eachFileRecurse { file ->
+		  if (file.name.endsWith("sql")) {
+		    appMigrationFiles << file.getName()
+		  }
+		}
+		
+		def testMigrationFiles = []
+		File testMigrationsDir = new File('./WebApp/junit/resources/db_migrations')
+		testMigrationsDir.eachFileRecurse { file ->
+		  if (file.name.endsWith("sql")) {
+		    testMigrationFiles << file.getName()
+		  }
+		}
+		
+		Arrays.sort(appMigrationFiles)
+		Arrays.sort(testMigrationFiles)
+		
+		if (!testMigrationFiles.equals(appMigrationFiles)) {
+		  throw new GradleException('Mismatched database migration files in test folder')
+		}
 	}
 }
