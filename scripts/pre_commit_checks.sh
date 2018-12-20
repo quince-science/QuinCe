@@ -5,3 +5,5 @@
 ######################################################
 
 ./gradlew spotlessCheck
+./gradlew migrationCheck
+
