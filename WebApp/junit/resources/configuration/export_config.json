@@ -3,14 +3,27 @@
   	"exportName": "SOCAT",
   	"separator": "tab",
   	"flags": [2, 3, 4],
-  	"sensors": ["Intake Temperature", "Salinity", "Equilibrator Temperature", "Equilibrator Pressure", "xH2O", "CO2"],
-  	"equilibrator_pco2": ["Delta T", "fCO2"]
+    "sensors": ["Intake Temperature", "Salinity", "Equilibrator Temperature", "Equilibrator Pressure", "xH2O", "CO2"],
+    "sensors_headings": ["Intake Temperature", "Salinity", "Equilibrator Temperature", "Equilibrator Pressure", "xH2O", "CO2"],
+    "equilibrator_pco2_columns": ["Delta T", "fCO2"],
+    "equilibrator_pco2_headings": ["Delta T", "fCO2"]
   },
   {
   	"exportName": "ICOS OTC",
   	"separator": "comma",
   	"flags": [2],
-  	"sensors": ["Intake Temperature", "Salinity", "Equilibrator Temperature", "Equilibrator Pressure", "xH2O", "CO2"],
-  	"equilibrator_pco2": ["Delta T", "pH2O", "fCO2"]
+    "sensors": ["Intake Temperature", "Salinity", "Equilibrator Temperature", "Equilibrator Pressure", "xH2O", "CO2"],
+    "sensors_headings": ["Temp", "P_sal", "Temp_in_eq", "Press_eq", "xH2OEquilSamp", "xCO2_dryWater"],
+    "equilibrator_pco2_columns": ["pCO2 TE Wet", "pCO2 SST", "fCO2"],
+    "equilibrator_pco2_headings": ["pCO2_eqT", "pCO2", "fCO2"]
+  },
+  {
+    "exportName": "SST+Salinity QC",
+    "separator": "comma",
+    "flags": [2,3,4],
+    "sensors": ["Intake Temperature", "Salinity"],
+    "sensors_headings": ["Intake Temperature", "Salinity"],
+    "equilibrator_pco2_columns": [],
+    "equilibrator_pco2_headings": []
   }
 ]
