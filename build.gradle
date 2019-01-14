@@ -88,6 +88,9 @@ dependencies {
 	testImplementation 'com.h2database:h2:1.4.197'
 	testImplementation 'org.flywaydb.flyway-test-extensions:flyway-spring-test:5.2.1'
 	testImplementation 'org.mockito:mockito-core:2.15.0'
+
+	// JUnit resources
+	testCompile files('WebApp/junit')
 }
 
 sourceSets {
