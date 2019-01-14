@@ -11,6 +11,8 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
+import uk.ac.exeter.QuinCe.User.UserDB;
+
 /**
  * Base class for all database tests. Provides base setup and useful methods
  * @author Steve Jones
@@ -23,6 +25,14 @@ public abstract class DBTest {
 
   @Autowired
   protected ApplicationContext context;
+
+  /**
+   * Create a test user
+   * @throws Exception On all errors
+   */
+  public void createUser() throws Exception {
+    UserDB.createUser(getDataSource(), "test@test.com", "test".toCharArray(), "Testy", "McTestFace", false);
+  }
 
   /**
    * Get a data source
