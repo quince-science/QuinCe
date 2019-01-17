@@ -325,7 +325,7 @@ public class DatabaseUtils {
    * @throws SQLException If the value cannot be set
    */
   public static void setNullableValue(PreparedStatement stmt, int column, Double value) throws SQLException {
-    if (null == value) {
+    if (null == value || value.isNaN()) {
       stmt.setNull(column, Types.DOUBLE);
     } else {
       stmt.setDouble(column, value);
