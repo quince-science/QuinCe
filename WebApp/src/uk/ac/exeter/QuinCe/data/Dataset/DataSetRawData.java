@@ -514,7 +514,7 @@ public abstract class DataSetRawData {
               } else {
                 while (getLine(fileIndex, nextLineIndex).isIgnored()) {
                   nextLineIndex.increment();
-                  if (nextLineIndex.greaterThan(getFileSize(fileIndex))) {
+                  if (nextLineIndex.greaterThanOrEqualTo(getFileSize(fileIndex))) {
                     result = EOF;
                     finished = true;
                     preFlushingTimeProcessed = true;
@@ -558,7 +558,7 @@ public abstract class DataSetRawData {
       while (!finished) {
 
         int nextLineIndex = previousLineIndex + 1;
-        if (nextLineIndex > getFileSize(fileIndex)) {
+        if (nextLineIndex >= getFileSize(fileIndex)) {
           inPostFlushing = (DateTimeUtils.secondsBetween(lineDate, previousDate) <= instrument.getPostFlushingTime());
           finished = true;
         } else {
@@ -615,7 +615,7 @@ public abstract class DataSetRawData {
       LocalDateTime currentTime = getLine(fileIndex, lineIndex).getDate();
       while (DateTimeUtils.secondsBetween(lastTime, currentTime) < instrument.getPreFlushingTime()) {
         lineIndex.increment();
-        if (lineIndex.greaterThan(getFileSize(fileIndex))) {
+        if (lineIndex.greaterThanOrEqualTo(getFileSize(fileIndex))) {
           lineIndex.setValue(EOF.getValue());
           break;
         } else {
