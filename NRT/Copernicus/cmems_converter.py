@@ -5,24 +5,29 @@ import numpy as np
 from io import BytesIO
 from zipfile import ZipFile
 from netCDF4 import Dataset
+from xml.etree import ElementTree as ET
+from re import match
 
 TIME_BASE = datetime.datetime(1950, 1, 1, 0, 0, 0)
 QC_LONG_NAME = "quality flag"
 QC_CONVENTIONS = "OceanSITES reference table 2"
 QC_VALID_MIN = 0
 QC_VALID_MAX = 9
-QC_FLAG_VALUES = [0, 1, 2, 3, 4, 5, 7, 8, 9]
+QC_FLAG_VALUES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 QC_FLAG_MEANINGS = "no_qc_performed good_data probably_good_data " \
  + "bad_data_that_are_potentially_correctable bad_data value_changed " \
  + "not_used nominal_value interpolated_value missing_value"
 DM_LONG_NAME = "method of data processing"
 DM_CONVENTIONS = "OceanSITES reference table 5"
-DM_FLAG_VALUES = ["R", "P", "D", "M"]
-DM_FLAG_MEANINGS = "realtime post-recovery delayed-mode mixed"
+DM_FLAG_VALUES = "R, P, D, M"
+DM_FLAG_MEANINGS = "real-time provisional delayed-mode mixed"
 
-def buildnetcdfs(datasetname, csv, xml):
-  
+def buildnetcdfs(datasetname, csv, xmlcontent):
+
   result = []
+
+  # Parse the XML file
+  xml = ET.fromstring(xmlcontent)
 
   csvlines = str.split(csv, "\n")
   currentline = 1
@@ -38,7 +43,7 @@ def buildnetcdfs(datasetname, csv, xml):
 
     if linedate != currentdate:
       if currentdate is not None:
-        result.append(makenetcdf_(dailylines))
+        result.append(makenetcdf_(datasetname, dailylines, xml))
 
       currentdate = linedate
       dailylines = []
@@ -48,11 +53,11 @@ def buildnetcdfs(datasetname, csv, xml):
 
   # Make the last netCDF
   if len(dailylines) > 0:
-    result.append(makenetcdf_(dailylines))
+    result.append(makenetcdf_(datasetname, dailylines, xml))
 
   return result
 
-def makenetcdf_(lines):
+def makenetcdf_(datasetname, lines, xml):
   filedate = getlinedate_(lines[0])
   ncbytes = None
 
@@ -66,7 +71,7 @@ def makenetcdf_(lines):
   # Time, lat and lon dimensions are created per record
   timedim = nc.createDimension("TIME", None)
   timevar = nc.createVariable("TIME", "d", ("TIME"))
-  timevar.long_name = "time"
+  timevar.long_name = "Time"
   timevar.standard_name = "time"
   timevar.units = "days since 1950-01-01T00:00:00Z"
   timevar.valid_min = 0;
@@ -77,7 +82,7 @@ def makenetcdf_(lines):
   latvar = nc.createVariable("LATITUDE", "f", ("LATITUDE"))
   latvar.long_name = "Latitude of each location"
   latvar.standard_name = "latitude"
-  latvar.units = "degrees_north"
+  latvar.units = "degree_north"
   latvar.valid_min = -90
   latvar.valid_max = 90
   latvar.axis = "Y"
@@ -88,7 +93,7 @@ def makenetcdf_(lines):
   lonvar = nc.createVariable("LONGITUDE", "f", ("LONGITUDE"))
   lonvar.long_name = "Longitude of each location"
   lonvar.standard_name = "longitude"
-  lonvar.units = "degrees_east"
+  lonvar.units = "degree_east"
   lonvar.valid_min = -180
   lonvar.valid_max = 180
   lonvar.axis = "X"
@@ -131,11 +136,11 @@ def makenetcdf_(lines):
 
 
   # Now we create the variables
-  depthvar = nc.createVariable("DEPTH", "f", ("TIME", "DEPTH"), \
+  depthvar = nc.createVariable("DEPH", "f", ("TIME", "DEPTH"), \
     fill_value = -9999)
-  depthvar.long_name = "Depth of each measurement"
+  depthvar.long_name = "Depth"
   depthvar.standard_name = "depth"
-  depthvar.units = "meters"
+  depthvar.units = "m"
   depthvar.positive = "down"
   depthvar.valid_min = 0
   depthvar.valid_max = 12000
@@ -145,12 +150,12 @@ def makenetcdf_(lines):
 
   positionvar = nc.createVariable("POSITIONING_SYSTEM", "c", ("TIME", "DEPTH"),\
     fill_value = " ")
-  
+
   sstvar = nc.createVariable("TEMP", "f", ("TIME", "DEPTH"), \
     fill_value = -9999)
   sstvar.long_name = "Sea temperature"
   sstvar.standard_name = "sea_water_temperature"
-  sstvar.units = "degrees_c"
+  sstvar.units = "degrees_C"
 
   sssvar = nc.createVariable("PSAL", "f", ("TIME", "DEPTH"), \
     fill_value = -9999)
@@ -161,8 +166,8 @@ def makenetcdf_(lines):
   pco2var = nc.createVariable("PCO2", "f", ("TIME", "DEPTH"), \
     fill_value = -9999)
   pco2var.long_name = "CO2 partial pressure"
-  pco2var.standard_name = "surface_partial_pressure_of_carbon_dioxide_in_air"
-  pco2var.units = "ppm"
+  pco2var.standard_name = "surface_partial_pressure_of_carbon_dioxide_in_sea_water"
+  pco2var.units = "µatm"
 
   pco2qcvar = nc.createVariable("PCO2_QC", "b", ("TIME", "DEPTH"), \
     fill_value="-128")
@@ -194,7 +199,7 @@ def makenetcdf_(lines):
     depths[i, 0] = 5
     positions[i, 0] = "G"
     dms[i, 0] = "R"
-    
+
     if fields[3] == "":
       temps[i, 0] = -9999
     else:
@@ -212,7 +217,7 @@ def makenetcdf_(lines):
 
     if len(fields[6]) == 0:
       pco2qcs[i, 0] = -128
-    else:  
+    else:
       pco2qcs[i, 0] = makeqcvalue_(int(fields[6]))
 
   depthvar[:,:] = depths
@@ -228,19 +233,32 @@ def makenetcdf_(lines):
   # Global attributes
   nc.data_type = "OceanSITES trajectory data"
   nc.format_version = "1.2"
+  nc.Conventions = "CF-1.6 OceanSITES-Manual-1.2 Copernicus-InSituTAC-SRD-1.3 "\
+    + "Copernicus-InSituTAC-ParametersList-3.1.0"
   nc.data_mode = "R"
   nc.geospatial_lat_min = str(minlat)
   nc.geospatial_lat_max = str(maxlat)
   nc.geospatial_lon_min = str(minlon)
   nc.geospatial_lon_max = str(maxlon)
   nc.date_update = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+  nc.update_interval = "daily"
   nc.data_assembly_centre = "BERGEN"
-  nc.platform_code = " "
-  nc.site_code = " "
+
+  # For buoys -> Mooring observation. Can get this from the metadata xml
+  # /metadata/variable[3]/observationType (replace 3 with pCO2)
+  nc.source_platform_category_code = "32"
+  nc.source = "vessel of opportunity"
+
+  platform_code = getplatformcode_(datasetname)
+  nc.platform_code = platform_code
+  nc.site_code = platform_code
+
+  nc.citation = "These data were collected and made freely available by the " \
+    + "Copernicus project and the programs that contribute to it."
 
   # Write the netCDF
   nc.close()
-  
+
   # Read the netCDF file into memory
   with open(ncpath, "rb") as ncfile:
     ncbytes = ncfile.read()
@@ -286,10 +304,31 @@ def makeqcvalue_(flag):
 
   return result
 
-
 def getlinedate_(line):
   datefield = str.split(line, ",")[0]
   return datefield[0:4] + datefield[5:7] + datefield[8:10]
+
+def getplatformcode_(datasetname):
+  platform_code = None
+
+  # NRT data sets
+  # Named as NRT[Platform][milliseconds]
+  # Milliseconds is currently a 13 digit number. At the time of writing it
+  # will be ~316 years before that changes.
+  matched = match("^NRT(.....*)[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$",
+    datasetname)
+  if matched is None:
+    # Normal data sets - standard EXPO codes
+    matched = match("^(.....*)[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$",
+      datasetname)
+
+  if matched is None:
+    raise ValueError("Cannot parse dataset name")
+  else:
+    platform_code = matched.group(1)
+
+  return platform_code
+
 
 def main():
   zipfile = sys.argv[1]
@@ -306,7 +345,6 @@ def main():
 
   with open(xmlfile, "r") as xmlchan:
     xml = xmlchan.read()
-
 
   netcdfs = buildnetcdfs(datasetname, csv, xml)
 
