@@ -23,7 +23,7 @@
     "flags": [2,3,4],
     "sensors": ["Intake Temperature", "Salinity"],
     "sensors_headings": ["Intake Temperature", "Salinity"],
-    "equilibrator_pco2": []
+    "equilibrator_pco2": [],
     "equilibrator_pco2_headings": []
   },
   {
@@ -32,7 +32,7 @@
     "flags": [2,3,4],
     "sensors": ["Intake Temperature", "Salinity"],
     "sensors_headings": ["Intake Temperature", "Salinity"],
-    "equilibrator_pco2": ["pCO2 SST"]
+    "equilibrator_pco2": ["pCO2 SST"],
     "equilibrator_pco2_headings": ["pCO2 SST"]
   }
 ]
