@@ -43,7 +43,7 @@ public class DiagnosticDataDB {
       + "id, sensor_type, sensor_name FROM file_column "
       + "WHERE sensor_type LIKE 'Diagnostic: %' AND "
       + "file_definition_id IN "
-      + "(SELECT file_definition_id FROM file_definition WHERE instrument_id = ?) "
+      + "(SELECT id FROM file_definition WHERE instrument_id = ?) "
       + "ORDER BY sensor_type, sensor_name";
 
   /**
