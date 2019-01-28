@@ -110,8 +110,8 @@ sourceSets {
     }
 }
 
-compileJava { 
-  options.encoding = "UTF-8" 
+compileJava {
+  options.encoding = "UTF-8"
 }
 
 eclipse {
@@ -203,7 +203,7 @@ tasks.register("migrationCheck") {
 		    appMigrationFiles << file.getName()
 		  }
 		}
-		
+
 		def testMigrationFiles = []
 		File testMigrationsDir = new File('./WebApp/junit/resources/db_migrations')
 		testMigrationsDir.eachFileRecurse { file ->
@@ -211,12 +211,28 @@ tasks.register("migrationCheck") {
 		    testMigrationFiles << file.getName()
 		  }
 		}
-		
+
 		Arrays.sort(appMigrationFiles)
 		Arrays.sort(testMigrationFiles)
-		
-		if (!testMigrationFiles.equals(appMigrationFiles)) {
-		  throw new GradleException('Mismatched database migration files in test folder')
-		}
+
+    def listsMatch = true
+
+    for (appFile in appMigrationFiles) {
+      if (!testMigrationFiles.contains(appFile)) {
+        listsMatch = false
+        println("Missing test migration for " + appFile)
+      }
+    }
+
+    for (testFile in testMigrationFiles) {
+      if (!appMigrationFiles.contains(testFile)) {
+        listsMatch = false
+        println("Extra test migration file " + testFile + " should not exist")
+      }
+    }
+
+    if (!listsMatch) {
+      throw new GradleException("Database migrations mismatch")
+    }
 	}
 }
