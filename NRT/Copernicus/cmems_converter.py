@@ -2,6 +2,7 @@ import sys, os
 import tempfile
 import datetime
 import numpy as np
+import csv
 from io import BytesIO
 from zipfile import ZipFile
 from netCDF4 import Dataset
@@ -13,6 +14,7 @@ QC_LONG_NAME = "quality flag"
 QC_CONVENTIONS = "OceanSITES reference table 2"
 QC_VALID_MIN = 0
 QC_VALID_MAX = 9
+QC_FILL_VALUE = -128
 QC_FLAG_VALUES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 QC_FLAG_MEANINGS = "no_qc_performed good_data probably_good_data " \
  + "bad_data_that_are_potentially_correctable bad_data value_changed " \
@@ -21,6 +23,12 @@ DM_LONG_NAME = "method of data processing"
 DM_CONVENTIONS = "OceanSITES reference table 5"
 DM_FLAG_VALUES = "R, P, D, M"
 DM_FLAG_MEANINGS = "real-time provisional delayed-mode mixed"
+
+PLATFORM_CODES = {
+  "31" : "research vessel",
+  "32" : "vessel of opportunity",
+  "34" : "vessel at fixed position"
+}
 
 def buildnetcdfs(datasetname, csv, xmlcontent):
 
@@ -134,8 +142,18 @@ def makenetcdf_(datasetname, lines, xml):
   latvar[:] = lats
   lonvar[:] = lons
 
+  # QC flags for dimension variables. Assume all are good
+  timeqcvar = nc.createVariable("TIME_QC", "b", ("TIME"), \
+   fill_value = QC_FILL_VALUE)
+  assignqcvarattributes_(timeqcvar)
+  timeqcvar[:] = 1
 
-  # Now we create the variables
+  positionqcvar = nc.createVariable("POSITION_QC", "b", ("POSITION"), \
+   fill_value = QC_FILL_VALUE)
+  assignqcvarattributes_(positionqcvar)
+  positionqcvar[:] = 1
+
+  # Now we create the data variables
   depthvar = nc.createVariable("DEPH", "f", ("TIME", "DEPTH"), \
     fill_value = -9999)
   depthvar.long_name = "Depth"
@@ -157,11 +175,25 @@ def makenetcdf_(datasetname, lines, xml):
   sstvar.standard_name = "sea_water_temperature"
   sstvar.units = "degrees_C"
 
+  # SST is not explicitly QCed with a flag, so set to Unknown.
+  # Once we have per-sensor QC flags we can fill this in properly
+  sstqcvar = nc.createVariable("TEMP_QC", "b", ("TIME", "DEPTH"), \
+   fill_value = QC_FILL_VALUE)
+  assignqcvarattributes_(sstqcvar)
+  sstqcvar[:] = 0
+
   sssvar = nc.createVariable("PSAL", "f", ("TIME", "DEPTH"), \
     fill_value = -9999)
   sssvar.long_name = "Practical salinity"
   sssvar.standard_name = "sea_water_practical_salinity"
   sssvar.units = "0.001"
+
+  # SSS is not explicitly QCed with a flag, so set to Unknown.
+  # Once we have per-sensor QC flags we can fill this in properly
+  sssqcvar = nc.createVariable("PSAL_QC", "b", ("TIME", "DEPTH"), \
+   fill_value = QC_FILL_VALUE)
+  assignqcvarattributes_(sssqcvar)
+  sssqcvar[:] = 0
 
   pco2var = nc.createVariable("PCO2", "f", ("TIME", "DEPTH"), \
     fill_value = -9999)
@@ -169,10 +201,12 @@ def makenetcdf_(datasetname, lines, xml):
   pco2var.standard_name = "surface_partial_pressure_of_carbon_dioxide_in_sea_water"
   pco2var.units = "µatm"
 
+  # We do have QC flags for the pco2
   pco2qcvar = nc.createVariable("PCO2_QC", "b", ("TIME", "DEPTH"), \
     fill_value="-128")
-  assignqcvarattributes(pco2qcvar)
+  assignqcvarattributes_(pco2qcvar)
 
+  # Dimension variables for data variables
   sstdmvar = nc.createVariable("TEMP_DM", "c", ("TIME", "DEPTH"), \
     fill_value = " ")
   assigndmvarattributes_(sstdmvar)
@@ -244,14 +278,15 @@ def makenetcdf_(datasetname, lines, xml):
   nc.update_interval = "daily"
   nc.data_assembly_centre = "BERGEN"
 
-  # For buoys -> Mooring observation. Can get this from the metadata xml
-  # /metadata/variable[3]/observationType (replace 3 with pCO2)
-  nc.source_platform_category_code = "32"
-  nc.source = "vessel of opportunity"
-
   platform_code = getplatformcode_(datasetname)
   nc.platform_code = platform_code
   nc.site_code = platform_code
+
+  # For buoys -> Mooring observation. Can get this from the metadata xml
+  # /metadata/variable[3]/observationType (replace 3 with pCO2)
+  platform_category_code = getplatformcategorycode_(platform_code)
+  nc.source_platform_category_code = platform_category_code
+  nc.source = PLATFORM_CODES[platform_category_code]
 
   nc.citation = "These data were collected and made freely available by the " \
     + "Copernicus project and the programs that contribute to it."
@@ -268,13 +303,26 @@ def makenetcdf_(datasetname, lines, xml):
 
   return [filedate, ncbytes]
 
+def getplatformcategorycode_(platform_code):
+  result = None
+
+  with open("ship_categories.csv") as infile:
+    reader = csv.reader(infile)
+    lookups = {rows[0]:rows[1] for rows in reader}
+    try:
+      result = lookups[platform_code]
+    except KeyError:
+      print("PLATFORM CODE '" + platform_code + "' not found in ship categories")
+
+  return result
+
 def assigndmvarattributes_(dmvar):
   dmvar.long_name = DM_LONG_NAME
   dmvar.conventions = DM_CONVENTIONS
   dmvar.flag_values = DM_FLAG_VALUES
   dmvar.flag_meanings = DM_FLAG_MEANINGS
 
-def assignqcvarattributes(qcvar):
+def assignqcvarattributes_(qcvar):
   qcvar.long_name = QC_LONG_NAME
   qcvar.conventions = QC_CONVENTIONS
   qcvar.valid_min = QC_VALID_MIN
