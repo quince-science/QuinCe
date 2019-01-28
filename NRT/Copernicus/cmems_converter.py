@@ -278,6 +278,10 @@ def makenetcdf_(datasetname, lines, xml):
   nc.update_interval = "daily"
   nc.data_assembly_centre = "BERGEN"
 
+  nc.last_latitude_observation = lats[-1]
+  nc.last_longitude_observation = lons[-1]
+  nc.last_date_observation = times[-1]
+
   platform_code = getplatformcode_(datasetname)
   nc.platform_code = platform_code
   nc.site_code = platform_code
