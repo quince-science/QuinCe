@@ -34,7 +34,7 @@ def extract_zip(dataset_zip,dataset_name):
 
 def get_file_from_zip(zip_folder,file):
     ''' opens zip folder and returns file '''
-    with ZipFile(io.BytesIO(zip_folder),'r') as zip: file = zip.extract(file)
+    with ZipFile(io.BytesIO(zip_folder),'r') as zip: file = zip.extract(file, path='tmp')
     return file
 
 def get_export_destination(datafilenames):
@@ -81,8 +81,6 @@ def build_metadataL0(manifest,zipfolder,datafile,
     now = datetime.datetime.now()
     creationDate = now.strftime('%Y-%m-%d');
     objectSpecification = 'objectSpecification_website';
-    isNextVersionOf = isNextVersionOf;
-    preExistingDoi = preExistingDoi;
     additional_information = (
         [manifest['manifest']['metadata']['quince_information']])
 
@@ -147,7 +145,6 @@ def build_metadataL2NRT(
     startdate = manifest['manifest']['metadata']['startdate']
     enddate = manifest['manifest']['metadata']['enddate']
     bounds = manifest['manifest']['metadata']['bounds']
-    #print(startdate)
 
     #get template from folder
     list_of_template_filenames = os.listdir('oap_metadata_templates')
@@ -155,12 +152,12 @@ def build_metadataL2NRT(
     [s for s in list_of_template_filenames if platformcode in s]
 
     if len(candidate_filenames) == 0:
-        print('template is missing')        
+        logging.warning('oap metadata template is missing')        
     else:
         template_filename = candidate_filenames[0]
         if len(candidate_filenames) > 1:
-            print('Multiple templates exist')
-            print('Using: ',template_filename)
+            logging.warning('Multiple oap metadata templates exist')
+            logging.debug('Using: ',template_filename)
         logging.info('metadata template: {:s}'.format(template_filename))
 
     #load template
@@ -185,7 +182,7 @@ def build_metadataL2NRT(
     west_loc.text = str(bounds['west'])
     expo_loc.text=expocode
 
-    metaL2='tmp/metaL2.xml'
+    metaL2='tmp/' + expocode + '/metaL2.xml'
     tree.write(metaL2)
 
     return metaL2

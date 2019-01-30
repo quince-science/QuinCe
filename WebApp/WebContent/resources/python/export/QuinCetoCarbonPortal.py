@@ -18,9 +18,9 @@ from py_func.copernicus import upload_to_copernicus
 #logging.basicConfig(filename = 'logfile.log', stream=sys.stdout,level = logging.DEBUG, filemode = 'w')
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-config_file_quince = '/home/mve036/Dropbox/QuinCE_CP/config_quince.toml'
-config_file_copernicus = '/home/mve036/Dropbox/QuinCE_CP/config_copernicus.toml'
-config_file_carbon = '/home/mve036/Dropbox/QuinCE_CP/config_carbon.toml'
+config_file_quince = 'config_quince.toml'
+config_file_copernicus = 'config_copernicus.toml'
+config_file_carbon = 'config_carbon.toml'
 
 with open(config_file_quince) as f: config_quince = toml.load(f)
 with open(config_file_copernicus) as f: config_copernicus = toml.load(f)
@@ -28,17 +28,15 @@ with open(config_file_carbon) as f: config_carbon = toml.load(f)
 
 def main():
     try:
-        logging.info('Making connection with QuinCe:')
-        logging.info('Obtaining IDs of datasets ready for export')
+        logging.debug('Making connection with QuinCe:')
+        logging.debug('Obtaining IDs of datasets ready for export')
         # Get list of datasets ready to be submitted from QuinCe
 
         export_list = get_export_list(config_quince)
         upload_status = {}
 
-        logging.info('Making connection with Carbon Portal')
-        #  username: uploader@OTC    password: 928e9e17712b
-        auth_cookie = get_new_auth_cookie(config_carbon)
-        
+        #logging.info('Making connection with Carbon Portal')
+        #auth_cookie = get_new_auth_cookie(config_carbon)
         for datasetNr, dataset in enumerate(export_list):  #for each L0
 
             dataset_name = dataset['name']       
@@ -56,7 +54,6 @@ def main():
             destinations = get_export_destination(datafilenames)
 
             #--- Make connection with Carbon Portal to report what we want to upload
-           
             if 'ICOS OTC' in destinations:
                 file = dataset_name + '/dataset/ICOS OTC/' + destinations['ICOS OTC']
                 hashsum = get_hashsum(dataset_zip,file)
@@ -70,6 +67,7 @@ def main():
                     #print('... if filname already exists; ')
                       # communicate that this is updated version  
                       # isNextVersionOf = PID, preExistingDoi?
+
 
             #--- Generating metadata for raw files and datafiles
             for file in raw_filenames:
@@ -85,6 +83,7 @@ def main():
                         .format(file))
                 
                     #response=upload_data(data,hashsum,auth_cookie)
+
 
             logging.info(
                 'Generating metadata associated with, \'{:}\''
@@ -116,7 +115,6 @@ def main():
                 logging.info(result)
                 upload_status.update(result)
                 
-            
         #report to QuinCe about upload process Abandon/complete
         # 
         print( ' *** Reached end of script *** ')
@@ -136,7 +134,7 @@ def main():
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
     finally:
-        report_abandon_export(config_quince)
+        report_abandon_export(config_quince,dataset_id)
 
 if __name__ == '__main__':
     main()

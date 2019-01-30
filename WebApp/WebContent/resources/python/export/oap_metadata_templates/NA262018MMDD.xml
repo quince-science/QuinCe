@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <person>
+    <name>Meike Becker</name>
+    <organization>University of Bergen</organization>
+    <deliverypoint1 />
+    <deliverypoint2 />
+    <phone>004755582672</phone>
+    <email>meike.becker@uib.no</email>
+    <ID>0000-0001-7650-0923</ID>
+    <IDtype>orcid</IDtype>
+    <role>investigator</role>
+  </person>
+  <person>
+    <name>Are Olsen</name>
+    <organization>University of Bergen</organization>
+    <deliverypoint1 />
+    <deliverypoint2 />
+    <phone>004755584781</phone>
+    <email>are.olsen@uib.no</email>
+    <IDtype>orcid</IDtype>
+    <role>investigator</role>
+  </person>
+  <datasubmitter>
+    <name>Meike Becker</name>
+    <organization>University of Bergen</organization>
+    <deliverypoint1>Jahnebakken 5</deliverypoint1>
+    <deliverypoint2 />
+    <city>Bergen</city>
+    <zip>5007</zip>
+    <country>NOR</country>
+    <phone>004755582672</phone>
+    <email>meike.becker@uib.no</email>
+    <ID>0000-0001-7650-0923</ID>
+    <IDtype>orcid</IDtype>
+  </datasubmitter>
+  <title>Underway fCO2 measurements from the VOS Nuka Arctica in 2018</title>
+  <abstract>The data-set covers the North Sea, the northern North Atlantic and Greenlands west coast. The data was measured in the year 2018 on the voluntary observing ship Nuka Arctica with a transect about every other week.</abstract>
+  <expocode>26NA2018MMDD</expocode>
+  <cruiseID>NUKA2018</cruiseID>
+  <reference>Olsen et al., Biogeosciences, 5, 535-547, (2008); Pierrot et al., Deep Sea Res. II, 56, 512-522 (2009) ;Wanninkhof and Thoning, Marine Chemistry 44, 189-205, 1993</reference>
+  <citation>Olsen, Are</citation>
+  <suppleInfo>Besides the fCO2 we also measure oxygen on this line.</suppleInfo>
+  <startdate>Mon Jan 01 00:00:00 GMT+100 2018</startdate>
+  <enddate>Sat Jan 27 00:00:00 GMT+100 2018</enddate>
+  <westbd>-70</westbd>
+  <eastbd>15</eastbd>
+  <northbd>-78</northbd>
+  <southbd>50</southbd>
+  <geographicName>North Sea, northern North Atlantic, Greenland west coast</geographicName>
+  <fundingAgency>
+    <agency>NFR</agency>
+    <title>ICOS</title>
+  </fundingAgency>
+  <variable>
+    <fullname>pCO2</fullname>
+    <abbrev>pCO2</abbrev>
+    <insitu>in-situ observation</insitu>
+    <measured>measured</measured>
+    <standard>
+      <frequency>3</frequency>
+      <crm />
+    </standard>
+    <poison />
+  </variable>
+  <variable>
+    <fullname>pCO2</fullname>
+    <abbrev>pCO2</abbrev>
+    <standard>
+      <crm />
+    </standard>
+    <poison />
+  </variable>
+  <variable>
+    <fullname>pCO2</fullname>
+    <abbrev>pCO2</abbrev>
+    <observationType>SURFACE UNDERWAY</observationType>
+    <insitu>in-situ observation</insitu>
+    <unit>muatm</unit>
+    <measured>calculated</measured>
+    <samplingInstrument>GO system</samplingInstrument>
+    <analyzingInstrument>LICOR 6262</analyzingInstrument>
+    <detailedInfo>Infrared analysis of headspace in equilibrium with flowing seawater</detailedInfo>
+    <standard>
+      <frequency>3</frequency>
+      <crm />
+    </standard>
+    <poison />
+    <uncertainty>2 muatm</uncertainty>
+    <flag>WOCE quality flags</flag>
+    <methodReference>Pierrot et al., Deep Sea Res. II, 56, 512-522 (2009)</methodReference>
+    <researcherName>Meike Becker</researcherName>
+    <researcherInstitution>University of Bergen</researcherInstitution>
+  </variable>
+  <variable>
+    <fullname>Temperature, insitu</fullname>
+    <abbrev>T</abbrev>
+    <observationType>SURFACE UNDERWAY</observationType>
+    <insitu>in-situ observation</insitu>
+    <unit>?C</unit>
+    <measured>measured</measured>
+    <analyzingInstrument>Intake temperature sensor, Hart Scientific</analyzingInstrument>
+    <detailedInfo>Probe: 5610-9, thermometer:1524
+Resolution 0.001
+
+Factory calibrated against a NIST tracable thermometer. Regular zero point calibrations as well as checks against equilibrator thermometer</detailedInfo>
+    <standard>
+      <crm />
+    </standard>
+    <poison />
+    <uncertainty>±0.01</uncertainty>
+    <flag>WOCE quality flags</flag>
+    <researcherName>Meike Becker</researcherName>
+    <researcherInstitution>University of Bergen</researcherInstitution>
+  </variable>
+</metadata>
