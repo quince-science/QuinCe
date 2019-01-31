@@ -6,6 +6,7 @@ CREATE TABLE sensor_types (
 	depends_on INT NULL,
 	depends_question TEXT NULL,
 	internal_calibration TINYINT NOT NULL DEFAULT 0,
+	diagnostic TINYINT NOT NULL DEFAULT 0,
 	PRIMARY KEY (id),
 	UNIQUE SENSORTYPENAME (name))
   ENGINE = InnoDB;
@@ -61,3 +62,17 @@ UPDATE sensor_types
 UPDATE sensor_types
 	SET depends_question = 'Do values from CO₂ require moisture adjustment?'
 	WHERE name = 'CO₂ in gas';
+
+-- Diagnostic sensors
+INSERT INTO sensor_types (name, required_group, depends_on, depends_question, internal_calibration, diagnostic)
+	VALUES ('Diagnostic Temperature', NULL, NULL, NULL, 0, 1);
+INSERT INTO sensor_types (name, required_group, depends_on, depends_question, internal_calibration, diagnostic)
+	VALUES ('Diagnostic Pressure', NULL, NULL, NULL, 0, 1);
+INSERT INTO sensor_types (name, required_group, depends_on, depends_question, internal_calibration, diagnostic)
+	VALUES ('Diagnostic Air Flow', NULL, NULL, NULL, 0, 1);
+INSERT INTO sensor_types (name, required_group, depends_on, depends_question, internal_calibration, diagnostic)
+	VALUES ('Diagnostic Water Flow', NULL, NULL, NULL, 0, 1);
+INSERT INTO sensor_types (name, required_group, depends_on, depends_question, internal_calibration, diagnostic)
+	VALUES ('Diagnostic Voltage', NULL, NULL, NULL, 0, 1);
+INSERT INTO sensor_types (name, required_group, depends_on, depends_question, internal_calibration, diagnostic)
+	VALUES ('Diagnostic Misc', NULL, NULL, NULL, 0, 1);
