@@ -34,10 +34,12 @@ SELECT id INTO @eqpId FROM sensor_types WHERE name = 'Equilibrator Pressure';
 -- Equilibrator Pressure (absolute)
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
   VALUES ('Equilibrator Pressure (absolute)', (SELECT @eqpId), NULL, NULL, 0);
+SELECT id INTO @eqpAbsId FROM sensor_types WHERE name = 'Equilibrator Pressure (absolute)';
 
 -- Equilibrator Pressure (differential)
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
   VALUES ('Equilibrator Pressure (differential)', (SELECT @eqpId), NULL, NULL, 0);
+SELECT id INTO @eqpDiffId FROM sensor_types WHERE name = 'Equilibrator Pressure (differential)';
 
 -- Ambient Pressure
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
@@ -54,6 +56,10 @@ INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_c
   VALUES ('CO₂ in gas', NULL, NULL, NULL, 1);
 SELECT id INTO @co2Id FROM sensor_types WHERE name = 'CO₂ in gas';
 
+-- Run Type - requirement triggered by internal_calibration field
+INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('Run Type', NULL, NULL, NULL, 0);
+SELECT id INTO @runTypeId FROM sensor_types WHERE name = 'Run Type';
 
 -- Atmospheric Pressure
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
@@ -77,17 +83,27 @@ UPDATE sensor_types
 -- Diagnostic sensors
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
   VALUES ('Diagnostic Temperature', NULL, NULL, NULL, 0, 1);
+SELECT id INTO @diagTempId FROM sensor_types WHERE name = 'Diagnostic Temperature';
+
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
   VALUES ('Diagnostic Pressure', NULL, NULL, NULL, 0, 1);
+SELECT id INTO @diagPresId FROM sensor_types WHERE name = 'Diagnostic Pressure';
+
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
   VALUES ('Diagnostic Air Flow', NULL, NULL, NULL, 0, 1);
+SELECT id INTO @diagAirId FROM sensor_types WHERE name = 'Diagnostic Air Flow';
+
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
   VALUES ('Diagnostic Water Flow', NULL, NULL, NULL, 0, 1);
+SELECT id INTO @diagWaterId FROM sensor_types WHERE name = 'Diagnostic Water Flow';
+
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
   VALUES ('Diagnostic Voltage', NULL, NULL, NULL, 0, 1);
+SELECT id INTO @diagVoltId FROM sensor_types WHERE name = 'Diagnostic Voltage';
+
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
   VALUES ('Diagnostic Misc', NULL, NULL, NULL, 0, 1);
-
+SELECT id INTO @diagMiscId FROM sensor_types WHERE name = 'Diagnostic Misc';
 
 -- ----------------------------
 -- Variable definition
@@ -135,3 +151,43 @@ INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_casca
 
 INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
   VALUES ((SELECT @varId), (SELECT @co2Id), 1, 3, 4);
+
+
+-- --------------------------------
+-- Rejig file_column table
+
+-- Rename existing sensor type column
+ALTER TABLE file_column CHANGE COLUMN sensor_type sensor_type_old varchar(100);
+
+-- Create new sensor_type foreign key column (no constraints yet)
+ALTER TABLE file_column ADD COLUMN sensor_type INT NULL AFTER `primary_sensor`;
+
+-- Migrate all values
+UPDATE file_column SET sensor_type = (SELECT @sstId) WHERE sensor_type_old = 'Intake Temperature';
+UPDATE file_column SET sensor_type = (SELECT @salinityId) WHERE sensor_type_old = 'Salinity';
+UPDATE file_column SET sensor_type = (SELECT @eqtId) WHERE sensor_type_old = 'Equilibrator Temperature';
+UPDATE file_column SET sensor_type = (SELECT @eqpAbsId) WHERE sensor_type_old = 'Equilibrator Pressure (absolute)';
+UPDATE file_column SET sensor_type = (SELECT @eqpDiffId) WHERE sensor_type_old = 'Equilibrator Pressure (differential)';
+UPDATE file_column SET sensor_type = (SELECT @ambientId) WHERE sensor_type_old = 'Ambient Pressure';
+UPDATE file_column SET sensor_type = (SELECT @xh2oId) WHERE sensor_type_old = 'xH2O';
+UPDATE file_column SET sensor_type = (SELECT @co2Id) WHERE sensor_type_old = 'CO2';
+UPDATE file_column SET sensor_type = (SELECT @runTypeId) WHERE sensor_type_old = 'Run Type';
+UPDATE file_column SET sensor_type = (SELECT @diagTempId) WHERE sensor_type_old = 'Diagnostic: Temperature';
+UPDATE file_column SET sensor_type = (SELECT @diagPresId) WHERE sensor_type_old = 'Diagnostic: Pressure';
+UPDATE file_column SET sensor_type = (SELECT @diagAirId) WHERE sensor_type_old = 'Diagnostic: Air Flow';
+UPDATE file_column SET sensor_type = (SELECT @diagWaterId) WHERE sensor_type_old = 'Diagnostic: Water Flow';
+UPDATE file_column SET sensor_type = (SELECT @diagVoltId) WHERE sensor_type_old = 'Diagnostic: Voltage';
+
+-- Apply constraints to new sensor type column
+ALTER TABLE file_column
+CHANGE COLUMN sensor_type sensor_type INT(11) NOT NULL ,
+ADD INDEX FILECOLUMN_SENSORTYPE_idx (sensor_type ASC);
+ALTER TABLE file_column
+ADD CONSTRAINT FILECOLUMN_SENSORTYPE
+  FOREIGN KEY (sensor_type)
+  REFERENCES sensor_types(id)
+  ON DELETE RESTRICT
+  ON UPDATE RESTRICT;
+
+-- Remove the old column
+ALTER TABLE file_column DROP COLUMN sensor_type_old;
