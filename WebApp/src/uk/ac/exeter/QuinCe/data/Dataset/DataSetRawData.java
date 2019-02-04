@@ -612,18 +612,22 @@ public abstract class DataSetRawData {
       LocalDateTime lastTime = getLine(fileIndex, lineIndex).getDate();
 
       lineIndex.increment();
-      LocalDateTime currentTime = getLine(fileIndex, lineIndex).getDate();
-      while (DateTimeUtils.secondsBetween(lastTime, currentTime) < instrument.getPreFlushingTime()) {
-        lineIndex.increment();
-        if (lineIndex.greaterThanOrEqualTo(getFileSize(fileIndex))) {
-          lineIndex.setValue(EOF.getValue());
-          break;
-        } else {
-          DataFileLine newLine = getLine(fileIndex, lineIndex);
-          currentTime = newLine.getDate();
-          if (!newLine.getRunType().equals(runType)) {
-            withinRunType = false;
+      if (lineIndex.greaterThanOrEqualTo(getFileSize(fileIndex))) {
+        lineIndex.setValue(EOF.getValue());
+      } else {
+        LocalDateTime currentTime = getLine(fileIndex, lineIndex).getDate();
+        while (DateTimeUtils.secondsBetween(lastTime, currentTime) < instrument.getPreFlushingTime()) {
+          lineIndex.increment();
+          if (lineIndex.greaterThanOrEqualTo(getFileSize(fileIndex))) {
+            lineIndex.setValue(EOF.getValue());
             break;
+          } else {
+            DataFileLine newLine = getLine(fileIndex, lineIndex);
+            currentTime = newLine.getDate();
+            if (!newLine.getRunType().equals(runType)) {
+              withinRunType = false;
+              break;
+            }
           }
         }
       }
