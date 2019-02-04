@@ -3,7 +3,7 @@
   	"exportName": "SOCAT",
   	"separator": "tab",
   	"flags": [2, 3, 4],
-    "sensors": ["Intake Temperature", "Salinity", "Equilibrator Temperature", "Equilibrator Pressure", "xH2O", "CO2"],
+    "sensors": ["Intake Temperature", "Salinity", "Equilibrator Temperature", "Equilibrator Pressure", "xH₂O in gas", "CO₂ in gas"],
     "sensors_headings": ["Intake Temperature", "Salinity", "Equilibrator Temperature", "Equilibrator Pressure", "xH2O", "CO2"],
     "equilibrator_pco2_columns": ["Delta T", "fCO2"],
     "equilibrator_pco2_headings": ["Delta T", "fCO2"]

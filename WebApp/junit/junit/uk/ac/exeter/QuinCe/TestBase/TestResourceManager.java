@@ -1,4 +1,4 @@
-package junit.uk.ac.exeter.QuinCe.web.system.ResourceManager;
+package junit.uk.ac.exeter.QuinCe.TestBase;
 
 import java.io.File;
 
@@ -16,7 +16,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author zuj007
  *
  */
-public class LocalTestResourceManager extends ResourceManager {
+public class TestResourceManager extends ResourceManager {
 
   /**
    * The dummy test database name
@@ -24,11 +24,17 @@ public class LocalTestResourceManager extends ResourceManager {
   protected static final String DATABASE_NAME = "test.database";
 
   /**
+   * The data source to use with this ResourceManager
+   */
+  private DataSource dataSource;
+
+  /**
    * The configuration file name
    */
   protected static final String CONFIG_PATH = "./WebApp/junit/resources/configuration/quince.properties";
 
-  public LocalTestResourceManager() {
+  public TestResourceManager(DataSource dataSource) {
+    this.dataSource = dataSource;
     initFileStore();
   }
 
@@ -50,9 +56,7 @@ public class LocalTestResourceManager extends ResourceManager {
   @Override
   protected InitialContext createInitialContext() throws NamingException {
 
-    DataSource dataSource = Mockito.mock(DataSource.class);
     InitialContext context = Mockito.mock(InitialContext.class);
-
     Mockito.doReturn(dataSource).when(context).lookup(DATABASE_NAME);
     return context;
   }

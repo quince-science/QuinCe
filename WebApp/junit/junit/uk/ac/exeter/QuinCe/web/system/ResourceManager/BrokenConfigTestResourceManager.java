@@ -4,7 +4,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
-public class BrokenConfigTestResourceManager extends LocalTestResourceManager {
+import javax.sql.DataSource;
+
+import junit.uk.ac.exeter.QuinCe.TestBase.TestResourceManager;
+
+public class BrokenConfigTestResourceManager extends TestResourceManager {
 
   /**
    * The configuration directory
@@ -51,8 +55,8 @@ public class BrokenConfigTestResourceManager extends LocalTestResourceManager {
    */
   private int failureFile = FAILURE_FILE_NONE;
 
-  public BrokenConfigTestResourceManager(int failureFile) {
-    super();
+  public BrokenConfigTestResourceManager(DataSource dataSource, int failureFile) {
+    super(dataSource);
     this.failureFile = failureFile;
   }
 

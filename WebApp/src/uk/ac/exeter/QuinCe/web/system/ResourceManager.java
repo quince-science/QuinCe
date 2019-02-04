@@ -4,9 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 
 import javax.naming.InitialContext;
@@ -27,7 +24,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationE
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
-import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Utility class for handling resources required by the web application.
@@ -123,7 +119,7 @@ public class ResourceManager implements ServletContextListener {
 
     // Initialise the sensors configuration
     try {
-      sensorsConfiguration = new SensorsConfiguration(new File(configuration.getProperty("sensors.configfile")), getDiagnosticSensorTypes());
+      sensorsConfiguration = new SensorsConfiguration(getDBDataSource());
     } catch (SensorConfigurationException e) {
       throw new RuntimeException("Could not load sensors configuration", e);
     }
@@ -184,19 +180,6 @@ public class ResourceManager implements ServletContextListener {
 
   public RunTypeCategoryConfiguration getRunTypeCategoryConfiguration() {
     return runTypeCategoryConfiguration;
-  }
-
-  /**
-   * Get the list of available diagnostic sensor types.
-   * This reads the comma-separated list from the quince.properties file,
-   * and adds the 'Other' option
-   * @return The diagnostic sensor types
-   */
-  public List<String> getDiagnosticSensorTypes() {
-    List<String> result = new ArrayList<String>(StringUtils.delimitedToList(configuration.getProperty("diagnostic_sensors"), ","));
-    Collections.sort(result);
-    result.add("Other");
-    return result;
   }
 
   /**
