@@ -1,24 +1,24 @@
 package junit.uk.ac.exeter.QuinCe.User;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.flywaydb.test.annotation.FlywayTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.DBTest;
 import uk.ac.exeter.QuinCe.User.UserDB;
 
 public class UserDBTest extends DBTest {
 
-  @Before
-  public void initialize() throws Exception {
-    createUser();
+  private void createUser() throws Exception {
+    UserDB.createUser(getDataSource(), "test@test.com",
+      "test".toCharArray(), "Testy", "McTestFace", false);
   }
 
   @FlywayTest
   @Test
   public void authenticateSuccessfulTest() throws Exception {
+    createUser();
     assertEquals(UserDB.AUTHENTICATE_OK, UserDB.authenticate(getDataSource(), "test@test.com", "test".toCharArray()));
   }
 

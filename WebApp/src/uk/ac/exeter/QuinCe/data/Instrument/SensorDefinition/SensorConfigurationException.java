@@ -15,6 +15,11 @@ public class SensorConfigurationException extends InstrumentException {
   private static final long serialVersionUID = -7348012628281277079L;
 
   /**
+   * The database ID of the invalid sensor type
+   */
+  private long id = -1;
+
+  /**
    * Simple constructor with an error message
    * @param message The error message
    */
@@ -31,11 +36,25 @@ public class SensorConfigurationException extends InstrumentException {
   }
 
   /**
-   * Constructor for an error on a given line of the configuration file
-   * @param lineNumber The line number on which the error was found
+   * Exception for a specific sensor type
+   * @param id The sensor type's ID
    * @param message The error message
    */
-  public SensorConfigurationException(int lineNumber, String message) {
-    super("Error in sensor configuration, line " + lineNumber + ": " + message);
+  public SensorConfigurationException(long id, String message) {
+    super(message);
+    this.id = id;
+  }
+
+  @Override
+  public String getMessage() {
+    StringBuilder message = new StringBuilder();
+
+    if (id != -1) {
+      message.append("Sensor Type " + id + ": ");
+    }
+
+    message.append(super.getMessage());
+
+    return message.toString();
   }
 }

@@ -84,7 +84,9 @@ dependencies {
 	gretty 'org.apache.tomcat:tomcat:8.0.1'
 
 	// Use JUnit test framework
-	testImplementation 'junit:junit:4.12'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.0+'
+	testImplementation 'org.junit.jupiter:junit-jupiter-params:5.3.0+'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.0+'
 	testImplementation 'com.h2database:h2:1.4.197'
 	testImplementation 'org.flywaydb.flyway-test-extensions:flyway-spring-test:5.2.1'
 	testImplementation 'org.mockito:mockito-core:2.15.0'
@@ -112,6 +114,10 @@ sourceSets {
 
 compileJava {
   options.encoding = "UTF-8"
+}
+
+test {
+  useJUnitPlatform()
 }
 
 eclipse {
