@@ -51,10 +51,6 @@ INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_c
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
   VALUES ('CO₂ in gas', NULL, NULL, NULL, 1);
 
--- Run Type - requirement triggered by internal_calibration field
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
-  VALUES ('Run Type', NULL, NULL, NULL, 0);
-
 -- Atmospheric Pressure
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
   VALUES ('Atmospheric Pressure', NULL, NULL, NULL, 0);
@@ -89,14 +85,14 @@ INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_c
 
 ------------------------------
 -- Variable definition
-CREATE TABLE measured_variables (
+CREATE TABLE variables (
   id INT NOT NULL AUTO_INCREMENT,
   name VARCHAR(100) NOT NULL,
   PRIMARY KEY (id),
   UNIQUE VARNAME_UNIQUE (name)
   ) ENGINE = InnoDB;
 
-INSERT INTO measured_variables (name) VALUES ('Underway Marine pCO₂');
+INSERT INTO variables (name) VALUES ('Underway Marine pCO₂');
 
 CREATE TABLE variable_sensors (
   variable_id INT NOT NULL,
@@ -107,7 +103,7 @@ CREATE TABLE variable_sensors (
   PRIMARY KEY (variable_id, sensor_type),
   CONSTRAINT VARSENSOR_VARIABLE
     FOREIGN KEY (variable_id)
-    REFERENCES measured_variables (id)
+    REFERENCES variables (id)
     ON DELETE RESTRICT
     ON UPDATE RESTRICT,
   CONSTRAINT VARSENSOR_SENSOR
@@ -118,34 +114,53 @@ CREATE TABLE variable_sensors (
 
 INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
   VALUES (
-    (SELECT id FROM measured_variables),
+    (SELECT id FROM variables),
     (SELECT id FROM sensor_types WHERE name = 'Intake Temperature'),
     0, 3, 4);
 
 INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
   VALUES (
-    (SELECT id FROM measured_variables),
+    (SELECT id FROM variables),
     (SELECT id FROM sensor_types WHERE name = 'Salinity'),
     0, 2, 3);
 
 INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
   VALUES (
-    (SELECT id FROM measured_variables),
+    (SELECT id FROM variables),
     (SELECT id FROM sensor_types WHERE name = 'Equilibrator Temperature'),
     0, 3, 4);
 
 INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
   VALUES (
-    (SELECT id FROM measured_variables),
+    (SELECT id FROM variables),
     (SELECT id FROM sensor_types WHERE name = 'Equilibrator Pressure'),
     0, 3, 4);
 
 INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_cascade, bad_cascade)
   VALUES (
-    (SELECT id FROM measured_variables),
+    (SELECT id FROM variables),
     (SELECT id FROM sensor_types WHERE name = 'CO₂ in gas'),
     0, 3, 4);
 
+-- --------------------------------
+-- Link instruments to variables
+
+CREATE TABLE instrument_variables (
+  instrument_id INT NOT NULL,
+  variable_id INT(11) NOT NULL,
+  CONSTRAINT INSTRVAR_INSTRUMENT
+    FOREIGN KEY (instrument_id)
+    REFERENCES instrument (id)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT INSTRVAR_VARIABLE
+    FOREIGN KEY (variable_id)
+    REFERENCES variables (id)
+    ON DELETE RESTRICT
+    ON UPDATE RESTRICT);
+
+INSERT INTO instrument_variables (instrument_id, variable_id)
+  SELECT id, 1 FROM instrument;
 
 -- --------------------------------
 -- Rejig file_column table
@@ -165,22 +180,18 @@ UPDATE file_column SET sensor_type = (SELECT id FROM sensor_types WHERE name = '
 UPDATE file_column SET sensor_type = (SELECT id FROM sensor_types WHERE name = 'Ambient Pressure') WHERE sensor_type_old = 'Ambient Pressure';
 UPDATE file_column SET sensor_type = (SELECT id FROM sensor_types WHERE name = 'xH₂O in gas') WHERE sensor_type_old = 'xH2O';
 UPDATE file_column SET sensor_type = (SELECT id FROM sensor_types WHERE name = 'CO₂ in gas') WHERE sensor_type_old = 'CO2';
-UPDATE file_column SET sensor_type = (SELECT id FROM sensor_types WHERE name = 'Run Type') WHERE sensor_type_old = 'Run Type';
 UPDATE file_column SET sensor_type = (SELECT id FROM sensor_types WHERE name = 'Diagnostic Temperature') WHERE sensor_type_old = 'Diagnostic: Temperature';
 UPDATE file_column SET sensor_type = (SELECT id FROM sensor_types WHERE name = 'Diagnostic Pressure') WHERE sensor_type_old = 'Diagnostic: Pressure';
 UPDATE file_column SET sensor_type = (SELECT id FROM sensor_types WHERE name = 'Diagnostic Air Flow') WHERE sensor_type_old = 'Diagnostic: Air Flow';
 UPDATE file_column SET sensor_type = (SELECT id FROM sensor_types WHERE name = 'Diagnostic Water Flow') WHERE sensor_type_old = 'Diagnostic: Water Flow';
 UPDATE file_column SET sensor_type = (SELECT id FROM sensor_types WHERE name = 'Diagnostic Voltage') WHERE sensor_type_old = 'Diagnostic: Voltage';
 
+
+-- Run Type sensor has a special fixed ID
+UPDATE file_column SET sensor_type = -1 WHERE sensor_type_old = 'Run Type';
+
 -- Apply constraints to new sensor type column
 ALTER TABLE file_column ALTER COLUMN sensor_type SET NOT NULL;
-
-ALTER TABLE file_column
-ADD CONSTRAINT FILECOLUMN_SENSORTYPE
-  FOREIGN KEY (sensor_type)
-  REFERENCES sensor_types(id)
-  ON DELETE RESTRICT
-  ON UPDATE RESTRICT;
 
 -- Remove the old column
 ALTER TABLE file_column DROP COLUMN sensor_type_old;
