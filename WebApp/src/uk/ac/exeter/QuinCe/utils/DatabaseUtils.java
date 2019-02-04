@@ -349,4 +349,40 @@ public class DatabaseUtils {
 
     return result;
   }
+
+  /**
+   * Get an integer value from a recordset, handling null values as null
+   * @param rs The recordset
+   * @param column The column index
+   * @return The column value
+   * @throws SQLException If the value cannot be retrieved
+   */
+  public static Integer getNullableInt(ResultSet rs, int column) throws SQLException {
+    Integer result = null;
+
+    int value = rs.getInt(column);
+    if (!rs.wasNull()) {
+      result = value;
+    }
+
+    return result;
+  }
+
+  /**
+   * Get a long value from a recordset, handling null values as null
+   * @param rs The recordset
+   * @param column The column index
+   * @return The column value
+   * @throws SQLException If the value cannot be retrieved
+   */
+  public static Long getNullableLong(ResultSet rs, int column) throws SQLException {
+    Long result = null;
+
+    long value = rs.getInt(column);
+    if (!rs.wasNull()) {
+      result = value;
+    }
+
+    return result;
+  }
 }
