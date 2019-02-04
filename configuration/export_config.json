@@ -12,7 +12,7 @@
   	"exportName": "ICOS OTC",
   	"separator": "comma",
   	"flags": [2],
-    "sensors": ["Intake Temperature", "Salinity", "Equilibrator Temperature", "Equilibrator Pressure", "xH2O", "CO2"],
+    "sensors": ["Intake Temperature", "Salinity", "Equilibrator Temperature", "Equilibrator Pressure", "xH₂O in gas", "CO₂ in gas"],
     "sensors_headings": ["Temp [degC]", "P_sal [psu]", "Temp_in_eq [degC]", "Press_eq [hPa]", "xH2OEquilSamp [mmol/mol]", "xCO2_dryWater [ppm]"],
     "equilibrator_pco2_columns": ["pCO2 TE Wet", "pCO2 SST", "fCO2"],
     "equilibrator_pco2_headings": ["pCO2_eqT [ppm]", "pCO2 [ppm]", "fCO2 [uatm]"]
