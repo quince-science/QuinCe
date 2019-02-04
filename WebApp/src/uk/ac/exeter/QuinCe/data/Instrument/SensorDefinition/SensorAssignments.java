@@ -1,10 +1,13 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Map of sensors to their assignments in an instrument's data files.
@@ -17,20 +20,29 @@ import java.util.Set;
  * @author Steve Jones
  *
  */
-public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssignment>> {
+public class SensorAssignments {
 
   /**
-   * The serial version UID
+   * The assignments
    */
-  private static final long serialVersionUID = -7045591929422515240L;
+  private TreeMap<SensorType, Set<SensorAssignment>> sensorAssignments;
 
   /**
-   * Simple constructor
+   * Indicators for required sensor types
    */
-  protected SensorAssignments(List<SensorType> sensorTypes) {
-    super(sensorTypes.size());
-    for (SensorType type : sensorTypes) {
-      put(type, new HashSet<SensorAssignment>());
+  private Map<SensorType, Boolean> requiredSensors;
+
+  /**
+   * Simple constructor - take in a map of Sensor Types and flags
+   * indicating whether or not they are required
+   * @param sensorTypes The
+   */
+  protected SensorAssignments(Map<SensorType, Boolean> sensorTypes) {
+    this.requiredSensors = sensorTypes;
+
+    sensorAssignments = new TreeMap<SensorType, Set<SensorAssignment>>();
+    for (SensorType type : sensorTypes.keySet()) {
+      sensorAssignments.put(type, new HashSet<SensorAssignment>());
     }
   }
 
@@ -71,13 +83,13 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
   public boolean isAssignmentRequired(SensorType sensorType) throws SensorAssignmentException {
     boolean required = false;
 
-    if (!containsKey(sensorType)) {
+    if (!requiredSensors.containsKey(sensorType)) {
       throw new SensorAssignmentException("The specified sensor was not found");
     }
 
     if (!sensorAssigned(sensorType, true)) {
-      if (sensorType.isRequired()) {
-        if (!groupAssigned(sensorType.getRequiredGroup())) {
+      if (isRequired(sensorType)) {
+        if (!isSiblingAssigned(sensorType, true)) {
           required = true;
         }
       } else if (hasDependent(sensorType)) {
@@ -86,30 +98,6 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
     }
 
     return required;
-  }
-
-  /**
-   * Determines whether or not a named Required Group has been assigned
-   * within any of its member sensor types.
-   * @param requiredGroup The Required Group
-   * @return {@code true} if a sensor has been assigned; {@code false} if no sensor has been assigned.
-   */
-  private boolean groupAssigned(String requiredGroup) {
-    boolean result = false;
-
-    if (null != requiredGroup) {
-      for (SensorType sensorType : keySet()) {
-        String sensorGroup = sensorType.getRequiredGroup();
-        if (null != sensorGroup && sensorGroup.equalsIgnoreCase(requiredGroup)) {
-          Set<SensorAssignment> assignments = get(sensorType);
-          if (null != assignments && assignments.size() > 0) {
-            result = true;
-            break;
-          }
-        }
-      }
-    }
-    return result;
   }
 
   /**
@@ -127,7 +115,7 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
   private boolean hasDependent(SensorType sensorType) {
     boolean result = false;
 
-    for (SensorType testType : keySet()) {
+    for (SensorType testType : requiredSensors.keySet()) {
       if (result) {
         break;
       // A sensor can't depend on itself
@@ -136,13 +124,13 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
         // See if the test sensor *may* depend on this sensor
         boolean potentiallyDependent = false;
 
-        String dependsOn = testType.getDependsOn();
+        long dependsOn = testType.getDependsOn();
 
-        // If the dependsOn isn't null...
-        if (null != dependsOn) {
+        // If the dependsOn is set...
+        if (dependsOn != SensorType.NO_DEPENDS_ON) {
 
           // ...and it matches this sensor...
-          if (testType.getDependsOn().equalsIgnoreCase(sensorType.getName())) {
+          if (dependsOn == sensorType.getId()) {
 
             // If the sensor is assigned then it might be dependent
             if (sensorAssigned(testType, false)) {
@@ -150,7 +138,7 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 
             // If the sensor is required, and IS NOT part of a required group, then it
               // might be dependent
-            } else if (testType.isRequired() && null == testType.getRequiredGroup()) {
+            } else if (isRequired(testType) && !testType.hasParent()) {
               potentiallyDependent = true;
             }
           }
@@ -163,7 +151,7 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
             result = true;
           } else {
             // Check the assignments and the answers to the Depends Question
-            Set<SensorAssignment> testAssignments = get(testType);
+            Set<SensorAssignment> testAssignments = sensorAssignments.get(testType);
             if (null != testAssignments) {
               for (SensorAssignment assignment : testAssignments) {
                 if (assignment.getDependsQuestionAnswer()) {
@@ -186,30 +174,30 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
    * @param assignment The assignment details
    * @throws SensorTypeNotFoundException If the named sensor does not exist
    */
-  public void addAssignment(String sensorType, SensorAssignment assignment) throws SensorTypeNotFoundException {
-    Set<SensorAssignment> assignments = get(getSensorType(sensorType));
+  public void addAssignment(long sensorType, SensorAssignment assignment) throws SensorTypeNotFoundException {
+    Set<SensorAssignment> assignments = sensorAssignments.get(getSensorType(sensorType));
     assignments.add(assignment);
   }
 
   /**
    * Get the {@link SensorType} object for a given sensor name
-   * @param sensorName The sensor name
+   * @param sensorId The sensor's database ID
    * @return The SensorType object
    * @throws SensorTypeNotFoundException If the sensor type does not exist
    */
-  public SensorType getSensorType(String sensorName) throws SensorTypeNotFoundException {
+  public SensorType getSensorType(long sensorId) throws SensorTypeNotFoundException {
 
     SensorType result = null;
 
-    for (SensorType sensorType : keySet()) {
-      if (sensorType.getName().equals(sensorName)) {
+    for (SensorType sensorType : requiredSensors.keySet()) {
+      if (sensorType.getId() == sensorId) {
         result = sensorType;
         break;
       }
     }
 
     if (null == result) {
-      throw new SensorTypeNotFoundException(sensorName);
+      throw new SensorTypeNotFoundException(sensorId);
     }
 
     return result;
@@ -230,7 +218,7 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 
     boolean assigned = false;
 
-    Set<SensorAssignment> assignments = get(sensorType);
+    Set<SensorAssignment> assignments = sensorAssignments.get(sensorType);
     if (null != assignments) {
       if (!primaryOnly) {
         assigned = (assignments.size() > 0);
@@ -260,7 +248,7 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
 
     boolean assignmentRemoved = false;
 
-    for (Map.Entry<SensorType, Set<SensorAssignment>> entry : entrySet()) {
+    for (Map.Entry<SensorType, Set<SensorAssignment>> entry : sensorAssignments.entrySet()) {
 
       Set<SensorAssignment> assignments = entry.getValue();
       for (SensorAssignment assignment : assignments) {
@@ -281,7 +269,7 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
    * @param fileDescription The file description
    */
   public void removeFileAssignments(String fileDescription) {
-    for (Map.Entry<SensorType, Set<SensorAssignment>> entry : entrySet()) {
+    for (Map.Entry<SensorType, Set<SensorAssignment>> entry : sensorAssignments.entrySet()) {
 
       Set<SensorAssignment> assignments = entry.getValue();
       for (SensorAssignment assignment : assignments) {
@@ -296,13 +284,14 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
    * Determines whether or not a Core Sensor has been assigned within a given file
    * @param file The file to be checked
    * @return {@code true} if the file has had a core sensor assigned; {@code false} if it has not
+   * @throws DatabaseException If a database error occurs
    */
-  public boolean coreSensorAssigned(String file) {
+  public boolean coreSensorAssigned(String file) throws DatabaseException {
     boolean result = false;
 
-    for (SensorType sensorType : keySet()) {
-      if (sensorType.isCoreSensor()) {
-        for (SensorAssignment assignment : get(sensorType)) {
+    for (SensorType sensorType : requiredSensors.keySet()) {
+      if (getSensorsConfiguration().isCoreSensor(ResourceManager.getInstance().getDBDataSource(), sensorType)) {
+        for (SensorAssignment assignment : sensorAssignments.get(sensorType)) {
           if (assignment.getDataFile().equals(file)) {
             result = true;
             break;
@@ -312,5 +301,58 @@ public class SensorAssignments extends LinkedHashMap<SensorType, Set<SensorAssig
     }
 
     return result;
+  }
+
+  /**
+   * Determine whether or not a sensor type is required.
+   * If the sensor type has a parent, that is checked too
+   *
+   * @param sensorType The sensor type
+   * @return {@code true} if the sensor type is required; {@code false} if it is not
+   */
+  private boolean isRequired(SensorType sensorType) {
+
+    boolean required = requiredSensors.containsKey(sensorType);
+
+    // See if the parent is required
+    if (!required && sensorType.hasParent()) {
+      required = isRequired(getSensorsConfiguration().getParent(sensorType));
+    }
+
+    return required;
+  }
+
+  /**
+   * Determine whether or not the any siblings of the supplied SensorType
+   * have been assigned. A sibling is defined as a SensorType with the same
+   * parent type.
+   *
+   * Returns {@code false} if there are no siblings.
+   *
+   * @param sensorType The sensor whose siblings are to be checked
+   * @param primaryOnly If {@code true}, only return {@code true} if a sibling has
+   *                    had a primary sensor assigned
+   * @return {@code true} if a sibling has been assigned; {@code false} if not
+   */
+  private boolean isSiblingAssigned(SensorType sensorType, boolean primaryOnly) {
+    boolean siblingAssigned = false;
+
+    List<SensorType> siblings = getSensorsConfiguration().getSiblings(sensorType);
+    for (SensorType sibling : siblings) {
+      if (sensorAssigned(sibling, primaryOnly)) {
+        siblingAssigned = true;
+        break;
+      }
+    }
+
+    return siblingAssigned;
+  }
+
+  /**
+   * Get the sensors configuration for the application
+   * @return The sensors configuration
+   */
+  private SensorsConfiguration getSensorsConfiguration() {
+    return ResourceManager.getInstance().getSensorsConfiguration();
   }
 }

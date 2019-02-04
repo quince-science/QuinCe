@@ -159,4 +159,16 @@ public class MissingParam {
       throw new ParameterException(parameterName, "is not a list of integers");
     }
   }
+
+  /**
+   * Check that a Long value is either {@code null} or positive
+   * @param parameter The parameter
+   * @param parameterName The parameter name
+   * @throws MissingParamException If the parameter is not null and not positive
+   */
+  public static void checkNullPositive(Long parameter, String parameterName) throws MissingParamException {
+    if (null != parameter) {
+      checkPositive(parameter, parameterName);
+    }
+  }
 }

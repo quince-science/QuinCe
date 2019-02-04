@@ -14,6 +14,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -602,8 +603,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * </p>
    * @param sensorAssignments The sensor assignments for the current instrument
    * @return {@code true} if a Run Type column is required; {@code false} otherwise.
+   * @throws DatabaseException If a database error occurs
    */
-  public boolean requiresRunTypeColumn(SensorAssignments sensorAssignments) {
+  public boolean requiresRunTypeColumn(SensorAssignments sensorAssignments) throws DatabaseException {
     return sensorAssignments.coreSensorAssigned(fileDescription);
   }
 
