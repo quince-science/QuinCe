@@ -15,11 +15,19 @@ public class SensorTypeNotFoundException extends InstrumentException {
   private static final long serialVersionUID = 7707562190864340444L;
 
   /**
-   * Constructor
+   * Sensor name not found
    * @param sensorName The sensor name
    */
   public SensorTypeNotFoundException(String sensorName) {
     super("The sensor type with name '" + sensorName + "' does not exist");
+  }
+
+  /**
+   * Sensor ID not found
+   * @param sensorId The sensor ID
+   */
+  public SensorTypeNotFoundException(long sensorId) {
+    super("The sensor type with ID " + sensorId + " does not exist");
   }
 
 }
