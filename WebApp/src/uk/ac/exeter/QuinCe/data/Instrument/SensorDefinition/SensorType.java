@@ -1,12 +1,37 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
+import uk.ac.exeter.QuinCe.utils.MissingParam;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * Defines an individual sensor type for an instrument
  * @author Steve Jones
  */
-public class SensorType {
+public class SensorType implements Comparable<SensorType> {
+
+  /**
+   * Value to use when a SensorType has no parent
+   */
+  public static final long NO_PARENT = -1000;
+
+  /**
+   * Value to use when a SensorType does not depend on another sensor
+   */
+  public static final long NO_DEPENDS_ON = -1000;
+
+  /**
+   * Special ID for the Run Type sensor
+   */
+  public static final long RUN_TYPE_ID = -1;
+
+  /**
+   * The database ID of this sensor type
+   */
+  private long id;
 
   /**
    * The name of the sensor type
@@ -14,35 +39,9 @@ public class SensorType {
   private String name;
 
   /**
-   * Specifies whether or not the sensor is required in the instrument.
-   *
-   * <p>
-   *   Setting a {@link #requiredGroup} overrides the behaviour of this flag.
-   * </p>
+   * The parent sensor type, if applicable
    */
-  private boolean required;
-
-  /**
-   * Specifies whether or not sensors assigned to this sensor type
-   * can be given names
-   */
-  private boolean named;
-
-  /**
-   * The name of the group of sensors to which this sensor belongs.
-   *
-   * <p>
-   *   Some sensors can be defined together in groups, where at least
-   *   one sensor in the group must be present. This names the group -
-   *   any sensors with the same name will be in the same group.
-   * </p>
-   *
-   * <p>
-   *   Setting a value in the {@code requiredGroup} overrides the behaviour
-   *   of the {@link #required} flag.
-   * </p>
-   */
-  private String requiredGroup = null;
+  private long parent;
 
   /**
    * Specifies the name of another sensor that must also be present if
@@ -55,7 +54,7 @@ public class SensorType {
    *   the true pressure to be calculated.
    * </p>
    */
-  private String dependsOn = null;
+  private long dependsOn;
 
   /**
    * Specifies a question to ask that determines whether the {@link #dependsOn} criterion
@@ -63,34 +62,7 @@ public class SensorType {
    * is {@code true}, then the {@link #dependsOn} criterion will be enforced. If false, it will not.
    * If the question is empty or null, then the criterion will always be enforced.
    */
-  private String dependsQuestion = null;
-
-  /**
-   * Indicates whether multiple instances of a sensor can be configured for an instrument
-   */
-  private boolean many = true;
-
-  /**
-   * Indicates whether multiple sensor values will be averaged
-   */
-  private boolean averaged = true;
-
-  /**
-   * Indicates whether or not sensors can be post-calibrated by QuinCe
-   */
-  private boolean postCalibrated = true;
-
-  /**
-   * Indicates whether or not this is a core sensor (if so, a Run Type must
-   * be assigned from the same file).
-   */
-  private boolean coreSensor = false;
-
-  /**
-   * Indicates whether or not this sensor is used in calculations.
-   * Other sensors are for diagnostic purposes only
-   */
-  private boolean usedInCalculation = true;
+  private String dependsQuestion;
 
   /**
    * Indicates whether or not this is a diagnostic sensor
@@ -98,51 +70,132 @@ public class SensorType {
   private boolean diagnostic = false;
 
   /**
-   * Indicates whether or not this sensor's data is calibrated
-   * using data
+   * Indicates whether or not this sensor has calibration data collected internall by the instrument
    */
-  private boolean externalStandards = false;
+  private boolean internalCalibration = false;
 
   /**
-   * Simple constructor - sets all values
-   * @param name The name of the sensor type
-   * @param required Whether or not the sensor type is required
-   * @param named Whether or not sensors can be named
-   * @param requiredGroup The Required Group that this sensor type belongs to
-   * @param dependsOn The name of another sensor type that this sensor type depends on
-   * @param dependsQuestion The question that determines whether the {@link #dependsOn} criterion will be honoured
-   * @param many Whether or not multiple instances of the sensor are allowed
-   * @param averaged Whether or not values from multiple sensors will be averaged
-   * @param postCalibrated Whether or not values from the sensor need a calibration to be applied
-   * @param coreSensor Whether or not this is a core sensor
-   * @param usedInCaclulation Whether or not the sensor is used during data reduction
-   * @param diagnostic Whether or not this is a diagnostic sensor
-   * @param externalStandards Whether or not this sensor is calibrated using external standards
+   * Create a SensorType object. Only minimal checking is performed
+   * @param id
+   * @param name
+   * @param parent
+   * @param dependsOn2
+   * @param dependsQuestion2
+   * @param internalCalibration
+   * @param diagnostic2
+   * @throws MissingParamException If the ID is not a positive number
    */
-  protected SensorType(String name, boolean required, boolean named, String requiredGroup, String dependsOn, String dependsQuestion, boolean many, boolean averaged,
-      boolean postCalibrated, boolean coreSensor, boolean usedInCaclulation, boolean diagnostic, boolean externalStandards) {
-    this.name = name;
-    this.required = required;
-    this.named = named;
+  public SensorType(long id, String name, Long parent, Long dependsOn, String dependsQuestion,
+    boolean internalCalibration, boolean diagnostic)
+    throws MissingParamException, SensorConfigurationException {
 
-    if (null != requiredGroup && requiredGroup.trim().length() > 0) {
-      this.requiredGroup = requiredGroup;
+    MissingParam.checkPositive(id, "id");
+    MissingParam.checkMissing(name, "sensorName", false);
+    MissingParam.checkNullPositive(parent, "parent");
+    MissingParam.checkNullPositive(dependsOn, "dependsOn");
+
+    this.id = id;
+    this.name = name;
+
+    if (null == parent) {
+      this.parent = NO_PARENT;
+    } else if (parent == id) {
+      throw new SensorConfigurationException(id,
+          "A sensor type cannot be its own parent");
+    } else {
+      this.parent = parent;
     }
-    if (null != dependsOn && dependsOn.trim().length() > 0) {
+
+    if (null == dependsOn) {
+      this.dependsOn = NO_DEPENDS_ON;
+    } else if (dependsOn == id) {
+      throw new SensorConfigurationException(id,
+          "A sensor type cannot depend on itself");
+    } else {
       this.dependsOn = dependsOn;
     }
 
-    if (null != dependsQuestion && dependsQuestion.trim().length() > 0) {
-      this.dependsQuestion = dependsQuestion;
+    if (null == dependsQuestion || dependsQuestion.trim().length() == 0) {
+      this.dependsQuestion = null;
+    } else if (!this.dependsOnOtherType()) {
+      throw new SensorConfigurationException(id,
+          "Cannot have a Depends Question without depending on another sensor type");
+    } else {
+      this.dependsQuestion = dependsQuestion.trim();
     }
 
-    this.many = many;
-    this.averaged = averaged;
-    this.postCalibrated = postCalibrated;
-    this.coreSensor = coreSensor;
-    this.usedInCalculation = usedInCaclulation;
+    this.internalCalibration = internalCalibration;
     this.diagnostic = diagnostic;
-    this.externalStandards = externalStandards;
+  }
+
+  /**
+   * Internal constructor for special sensor types
+   * @param id The sensor ID
+   * @param name The sensor name
+   */
+  private SensorType(long id, String name) {
+    this.id = id;
+    this.name = name;
+    this.parent = NO_PARENT;
+    this.dependsOn = NO_DEPENDS_ON;
+    this.dependsQuestion = null;
+    this.internalCalibration = false;
+    this.diagnostic = false;
+  }
+
+  /**
+   * Build a new SensorType object from a database record
+   * @param record The database record
+   * @throws SQLException If the record cannot be read
+   * @throws SensorConfigurationException If the record is invalid
+   */
+  protected SensorType(ResultSet record)
+    throws SQLException, SensorConfigurationException {
+
+    this.id = record.getLong(1);
+    this.name = record.getString(2);
+
+    Long parent = DatabaseUtils.getNullableLong(record, 3);
+    if (null == parent) {
+      this.parent = NO_PARENT;
+    } else if (parent == id) {
+      throw new SensorConfigurationException(id,
+          "A sensor type cannot be its own parent");
+    } else {
+      this.parent = parent;
+    }
+
+    Long dependsOn = DatabaseUtils.getNullableLong(record, 4);
+    if (null == dependsOn) {
+      this.dependsOn = NO_DEPENDS_ON;
+    } else if (dependsOn == id) {
+      throw new SensorConfigurationException(id,
+          "A sensor type cannot depend on itself");
+    } else {
+      this.dependsOn = dependsOn;
+    }
+
+    String dependsQuestion = record.getString(5);
+    if (null == dependsQuestion || dependsQuestion.trim().length() == 0) {
+      this.dependsQuestion = null;
+    } else if (!this.dependsOnOtherType()) {
+      throw new SensorConfigurationException(id,
+          "Cannot have a Depends Question without depending on another sensor type");
+    } else {
+      this.dependsQuestion = dependsQuestion.trim();
+    }
+
+    this.internalCalibration = record.getBoolean(6);
+    this.diagnostic = record.getBoolean(7);
+  }
+
+
+  /**
+   * Get the database ID of this type
+   * @return The database ID
+   */
+  public long getId() {
+    return id;
   }
 
   /**
@@ -154,38 +207,35 @@ public class SensorType {
   }
 
   /**
-   * Get the name of the sensor type that must exist in conjunction
-   * with this sensor type
-   * @return The name of the sensor type that this sensor type depends on
+   * Get the ID of this type's parent
+   * @return The parent ID
    */
-  public String getDependsOn() {
+  public long getParent() {
+    return parent;
+  }
+
+  /**
+   * Determine whether or not this type has a parent
+   * @return {@code true} if the type has a parent; {@code false} if not.
+   */
+  public boolean hasParent() {
+    return parent != NO_PARENT;
+  }
+
+  /**
+   * Get the ID of the type that this type depends on
+   * @return The ID of the type that this type depends on
+   */
+  public long getDependsOn() {
     return dependsOn;
   }
 
   /**
-   * Get the flag indicating whether or not this sensor
-   * type is required.
-   * @return The required flag
+   * Determine whether or not this type depends on another type
+   * @return {@code true} if this type depends on another type; {@code false} if not
    */
-  public boolean isRequired() {
-    return required;
-  }
-
-  /**
-   * Determine whether or not sensors assigned to this type can be named
-   * @return {@code true} if the sensor can be named; {@code false} otherwise
-   */
-  public boolean canBeNamed() {
-    return named;
-  }
-
-  /**
-   * Get the name of the Required Group
-   * that this sensor type belongs to
-   * @return The Required Group
-   */
-  public String getRequiredGroup() {
-    return requiredGroup;
+  public boolean dependsOnOtherType() {
+    return dependsOn != NO_DEPENDS_ON;
   }
 
   /**
@@ -199,11 +249,11 @@ public class SensorType {
   }
 
   /**
-   * Determine whether or not multiple instances of this sensor are allowed.
-   * @return {@code true} if multiple instances are allowed; {@code false} if only one instance is allowed
+   * Determines whether or not this sensor type has a Depends Question
+   * @return {@code true} if there is a Depends Question; {@code false} if there is not
    */
-  public boolean canHaveMany() {
-    return many;
+  public boolean hasDependsQuestion() {
+    return (dependsQuestion != null);
   }
 
   /**
@@ -215,59 +265,11 @@ public class SensorType {
   }
 
   /**
-   * Equality is based on the sensor name only
+   * Determine whether or not this sensor type is internally calibrated
+   * @return {@code true} if the type is internall calibrated; {@code false} if not
    */
-  @Override
-  public boolean equals(Object o) {
-    boolean equal = false;
-
-    if (null != o && o instanceof SensorType) {
-      equal = ((SensorType) o).name.equalsIgnoreCase(this.name);
-    }
-
-    return equal;
-  }
-
-  /**
-   * Determines whether or not this sensor type has a Depends Question
-   * @return {@code true} if there is a Depends Question; {@code false} if there is not
-   */
-  public boolean hasDependsQuestion() {
-    return (dependsQuestion != null);
-  }
-
-  /**
-   * Determines whether or not multiple sensor values will be averaged
-   * @return {@code true} if the values will be averaged; {@code false} if they will not
-   */
-  public boolean isAveraged() {
-    return averaged;
-  }
-
-  /**
-   * Determines whether sensors of this type can be post-calibrated by QuinCe
-   * @return {@code true} if the sensors can be post-calibrated; {@code false} if they cannot
-   */
-  public boolean canBePostCalibrated() {
-    return postCalibrated;
-  }
-
-  /**
-   * Determines whether sensors of this type are Core sensors, meaning that a Run Type
-   * must be present in the same file.
-   * @return {@code true} if this is a core sensor; {@code false} if it is not
-   */
-  public boolean isCoreSensor() {
-    return coreSensor;
-  }
-
-  /**
-   * Determines whether or not sensors of this type are used in calculations,
-   * or used only for diagnostic purposes
-   * @return {@code true} if the sensors are used in calculations; {@code false} otherwise.
-   */
-  public boolean isUsedInCalculation() {
-    return usedInCalculation;
+  public boolean hasInternalCalibration() {
+    return internalCalibration;
   }
 
   /**
@@ -290,38 +292,35 @@ public class SensorType {
    */
   public String getDatabaseFieldName() {
     String result = null;
-    if (usedInCalculation) {
+
+    // TODO See what we do with this
+    // if (usedInCalculation) {
       result = DatabaseUtils.getDatabaseFieldName(name);
-    }
+    // }
 
     return result;
   }
 
-  /**
-   * Determine whether or not this sensor is calibrated using external standards
-   * @return {@code true} if the sensor is calibrated from external standards; {@code false} if it is not.
-   */
-  public boolean hasExternalStandards() {
-    return externalStandards;
+  protected static SensorType createRunTypeSensor() {
+    return new SensorType(RUN_TYPE_ID, "Run Type");
   }
 
   /**
-   * Get a sensor type for the Run Type
-   * @return the SensorType
+   * Equality is based on the sensor name only
    */
-  public static SensorType getRunTypeSensorType() {
-    return new SensorType("Run Type", true, false, null, null, null, false,
-        false, false, false, false, false, false);
+  @Override
+  public boolean equals(Object o) {
+    boolean equal = false;
+
+    if (null != o && o instanceof SensorType) {
+      equal = ((SensorType) o).name.equalsIgnoreCase(this.name);
+    }
+
+    return equal;
   }
 
-  /**
-   * Create a diagnostic sensor type with the given name.
-   * The name automatically has 'Diagnostic' prepended to it.
-   * @param name The sensor type name
-   * @return The diagnostic sensor type
-   */
-  protected static SensorType makeDiagnosticSensorType(String name) {
-    return new SensorType("Diagnostic: " + name, false, true, null, null, null, true, false,
-        false, false, false, true, false);
+  @Override
+  public int compareTo(SensorType o) {
+    return name.compareTo(o.name);
   }
 }

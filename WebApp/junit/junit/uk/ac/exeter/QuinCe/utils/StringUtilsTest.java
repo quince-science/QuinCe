@@ -1,8 +1,9 @@
 package junit.uk.ac.exeter.QuinCe.utils;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
