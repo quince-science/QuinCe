@@ -69,8 +69,13 @@ def makenetcdf_(datasetname, lines, xml):
   filedate = getlinedate_(lines[0])
   ncbytes = None
 
+
+  platform_code = getplatformcode_(datasetname)
+  filenameroot = "GL_LATEST_TS_" + getplatformdatatype_(platform_code) + "_" \
+    + platform_code + "_" + filedate
+
   # Open a new netCDF file
-  ncpath = tempfile.gettempdir() + "/" + filedate + ".nc"
+  ncpath = tempfile.gettempdir() + "/" + filenameroot + ".nc"
   nc = Dataset(ncpath, format="NETCDF4", mode="w")
 
   # The DEPTH dimension is singular. Assume 5m for ships
@@ -78,16 +83,18 @@ def makenetcdf_(datasetname, lines, xml):
 
   # Time, lat and lon dimensions are created per record
   timedim = nc.createDimension("TIME", None)
-  timevar = nc.createVariable("TIME", "d", ("TIME"))
+  timevar = nc.createVariable("TIME", "d", ("TIME"), fill_value = 999999.0)
   timevar.long_name = "Time"
   timevar.standard_name = "time"
   timevar.units = "days since 1950-01-01T00:00:00Z"
-  timevar.valid_min = 0;
+  timevar.valid_min = -90000;
   timevar.valid_max = 90000;
   timevar.axis = "T"
 
   latdim = nc.createDimension("LATITUDE", len(lines))
-  latvar = nc.createVariable("LATITUDE", "f", ("LATITUDE"))
+  latvar = nc.createVariable("LATITUDE", "f", ("LATITUDE"),
+    fill_value = 99999.0)
+
   latvar.long_name = "Latitude of each location"
   latvar.standard_name = "latitude"
   latvar.units = "degree_north"
@@ -98,7 +105,9 @@ def makenetcdf_(datasetname, lines, xml):
   latvar.coordinate_reference_frame = "urn:ogc:crs:EPSG::4326"
 
   londim = nc.createDimension("LONGITUDE", len(lines))
-  lonvar = nc.createVariable("LONGITUDE", "f", ("LONGITUDE"))
+  lonvar = nc.createVariable("LONGITUDE", "f", ("LONGITUDE"),
+    fill_value = 99999.0)
+
   lonvar.long_name = "Longitude of each location"
   lonvar.standard_name = "longitude"
   lonvar.units = "degree_east"
@@ -117,12 +126,17 @@ def makenetcdf_(datasetname, lines, xml):
   maxlat = -90
 
   # Fill in dimension variables
+
   times = [0] * len(lines)
   lats = [0] * len(lines)
   lons = [0] * len(lines)
   for i in range(0, len(lines)):
     fields = str.split(lines[i], ",")
     times[i] = maketimefield_(fields[0])
+    if i == 0:
+      starttime = maketimeobject_(fields[0])
+    elif i == len(lines) - 1:
+      endtime = maketimeobject_(fields[0])
 
     lats[i] = float(fields[2])
     if lats[i] < minlat:
@@ -155,19 +169,27 @@ def makenetcdf_(datasetname, lines, xml):
 
   # Now we create the data variables
   depthvar = nc.createVariable("DEPH", "f", ("TIME", "DEPTH"), \
-    fill_value = -9999)
+    fill_value = -99999.0)
   depthvar.long_name = "Depth"
   depthvar.standard_name = "depth"
   depthvar.units = "m"
   depthvar.positive = "down"
-  depthvar.valid_min = 0
-  depthvar.valid_max = 12000
+  depthvar.valid_min = -12000.0
+  depthvar.valid_max = 12000.0
   depthvar.axis = "Z"
   depthvar.reference = "sea_level"
   depthvar.coordinate_reference_frame = "urn:ogc:crs:EPSG::5113"
 
+  depthqcvar = nc.createVariable("DEPH_QC", "b", ("TIME", "DEPTH"), \
+    fill_value = QC_FILL_VALUE)
+  assignqcvarattributes_(depthqcvar)
+  depthqcvar[:] = 7
+
   positionvar = nc.createVariable("POSITIONING_SYSTEM", "c", ("TIME", "DEPTH"),\
     fill_value = " ")
+  positionvar.longname = "Positioning system"
+  positionvar.flag_values = "A, G, L, N, U"
+  positionvar.flag_meanings = "Argos, GPS, Loran, Nominal, Unknown"
 
   sstvar = nc.createVariable("TEMP", "f", ("TIME", "DEPTH"), \
     fill_value = -9999)
@@ -207,6 +229,10 @@ def makenetcdf_(datasetname, lines, xml):
   assignqcvarattributes_(pco2qcvar)
 
   # Dimension variables for data variables
+  depthdmvar = nc.createVariable("DEPH_DM", "c", ("TIME", "DEPTH"), \
+    fill_value = " ")
+  assigndmvarattributes_(depthdmvar)
+
   sstdmvar = nc.createVariable("TEMP_DM", "c", ("TIME", "DEPTH"), \
     fill_value = " ")
   assigndmvarattributes_(sstdmvar)
@@ -260,40 +286,74 @@ def makenetcdf_(datasetname, lines, xml):
   sssvar[:,:] = sals
   pco2var[:,:] = pco2s
   pco2qcvar[:,:] = pco2qcs
+  depthdmvar[:,:] = dms
   sstdmvar[:,:] = dms
   sssdmvar[:,:] = dms
   pco2dmvar[:,:] = dms
 
   # Global attributes
+  nc.id = filenameroot
+
   nc.data_type = "OceanSITES trajectory data"
+  nc.netcdf_version = "4"
   nc.format_version = "1.2"
   nc.Conventions = "CF-1.6 OceanSITES-Manual-1.2 Copernicus-InSituTAC-SRD-1.3 "\
     + "Copernicus-InSituTAC-ParametersList-3.1.0"
+
+  nc.cdm_data_type = "Trajectory"
   nc.data_mode = "R"
+  nc.area = "Global Ocean"
+
   nc.geospatial_lat_min = str(minlat)
   nc.geospatial_lat_max = str(maxlat)
   nc.geospatial_lon_min = str(minlon)
   nc.geospatial_lon_max = str(maxlon)
-  nc.date_update = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-  nc.update_interval = "daily"
-  nc.data_assembly_centre = "BERGEN"
+  nc.geospation_vertical_min = "5.00"
+  nc.geospation_vertical_max = "5.00"
 
   nc.last_latitude_observation = lats[-1]
   nc.last_longitude_observation = lons[-1]
-  nc.last_date_observation = times[-1]
+  nc.last_date_observation = endtime.strftime("%Y-%m-%dT%H:%M:%SZ")
+  nc.time_coverage_start = starttime.strftime("%Y-%m-%dT%H:%M:%SZ")
+  nc.time_coverage_end = endtime.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-  platform_code = getplatformcode_(datasetname)
+  datasetdate = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+  nc.date_update = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+  nc.history = datasetdate + " : Creation"
+
+  nc.update_interval = "daily"
+
+  nc.data_assembly_center = "BERGEN"
+  nc.institution = "University of Bergen / Geophysical Institute"
+  nc.institution_edmo_code = "4595"
+  nc.institution_references = " "
+  nc.contact = "steve.jones@uib.no"
+  nc.title = "Global Ocean NRT Carbon insitu observations"
+  nc.author = "cmems-service"
+  nc.naming_authority = "Copernicus"
+
   nc.platform_code = platform_code
   nc.site_code = platform_code
 
   # For buoys -> Mooring observation. Can get this from the metadata xml
   # /metadata/variable[3]/observationType (replace 3 with pCO2)
   platform_category_code = getplatformcategorycode_(platform_code)
+  nc.platform_name = getplatformname_(platform_code)
   nc.source_platform_category_code = platform_category_code
   nc.source = PLATFORM_CODES[platform_category_code]
 
+  nc.quality_control_indicator = "6" # "Not used"
+  nc.quality_index = "0"
+
+  nc.comment = " "
+  nc.summary = " "
+  nc.reference = "http://marine.copernicus.eu/, https://www.icos-cp.eu/"
   nc.citation = "These data were collected and made freely available by the " \
     + "Copernicus project and the programs that contribute to it."
+  nc.distribution_statement = "These data follow Copernicus standards; they " \
+    + "are public and free of charge. User assumes all risk for use of data. " \
+    + "User must display citation in any publication or product using data. " \
+    + "User must contact PI prior to any commercial use of data."
 
   # Write the netCDF
   nc.close()
@@ -305,14 +365,40 @@ def makenetcdf_(datasetname, lines, xml):
   # Delete the temp netCDF file
   os.remove(ncpath)
 
-  return [filedate, ncbytes]
+  return [filenameroot, ncbytes]
 
 def getplatformcategorycode_(platform_code):
   result = None
 
   with open("ship_categories.csv") as infile:
     reader = csv.reader(infile)
+    lookups = {rows[0]:rows[2] for rows in reader}
+    try:
+      result = lookups[platform_code]
+    except KeyError:
+      print("PLATFORM CODE '" + platform_code + "' not found in ship categories")
+
+  return result
+
+def getplatformname_(platform_code):
+  result = None
+
+  with open("ship_categories.csv") as infile:
+    reader = csv.reader(infile)
     lookups = {rows[0]:rows[1] for rows in reader}
+    try:
+      result = lookups[platform_code]
+    except KeyError:
+      print("PLATFORM CODE '" + platform_code + "' not found in ship categories")
+
+  return result
+
+def getplatformdatatype_(platform_code):
+  result = None
+
+  with open("ship_categories.csv") as infile:
+    reader = csv.reader(infile)
+    lookups = {rows[0]:rows[3] for rows in reader}
     try:
       result = lookups[platform_code]
     except KeyError:
@@ -335,12 +421,18 @@ def assignqcvarattributes_(qcvar):
   qcvar.flag_meanings = QC_FLAG_MEANINGS
 
 def maketimefield_(timestr):
+  timeobj = maketimeobject_(timestr)
+
+  diff = timeobj - TIME_BASE
+  return diff.days + diff.seconds / 86400
+
+def maketimeobject_(timestr):
   timeobj = datetime.datetime(int(timestr[0:4]), int(timestr[5:7]), \
     int(timestr[8:10]), int(timestr[11:13]), int(timestr[14:16]), \
     int(timestr[17:19]))
 
-  diff = timeobj - TIME_BASE
-  return diff.days + diff.seconds / 86400
+  return timeobj
+
 
 def makeqcvalue_(flag):
   result = 9 # Missing
