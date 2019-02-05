@@ -1,2 +1,3 @@
-NODC Code,category_code
-NRTA,34
+NODC Code,Name,Category Code,Data Type
+NRTA,TEST SHIP,32,VOS
+58GS,G O Sars,32,VOS
