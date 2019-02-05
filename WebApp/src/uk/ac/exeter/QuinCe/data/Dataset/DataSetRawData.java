@@ -447,7 +447,7 @@ public abstract class DataSetRawData {
         result = new ExtendedMutableInt(0);
       } else {
         result = currentLineIndex.incrementedClone();
-        if (result.greaterThan(fileLastLine)) {
+        if (result.greaterThanOrEqualTo(fileLastLine)) {
           result = EOF;
         }
       }
@@ -467,7 +467,7 @@ public abstract class DataSetRawData {
         nextLineIndex = currentLineIndex.incrementedClone();
       }
 
-      if (nextLineIndex.greaterThan(fileLastLine)) {
+      if (nextLineIndex.greaterThanOrEqualTo(fileLastLine)) {
         result = EOF;
         finished = true;
       } else {
@@ -493,7 +493,7 @@ public abstract class DataSetRawData {
           // We're in a new Run Type. Skip any Ignored lines
           while (!finished && getLine(fileIndex, nextLineIndex).isIgnored()) {
             nextLineIndex.increment();
-            if (nextLineIndex.greaterThan(fileLastLine)) {
+            if (nextLineIndex.greaterThanOrEqualTo(fileLastLine)) {
               result = EOF;
               finished = true;
             }
