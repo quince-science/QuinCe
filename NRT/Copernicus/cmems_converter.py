@@ -27,7 +27,7 @@ DM_FLAG_MEANINGS = "real-time provisional delayed-mode mixed"
 PLATFORM_CODES = {
   "31" : "research vessel",
   "32" : "vessel of opportunity",
-  "34" : "vessel at fixed position"
+  "41" : "moored surface buoy"
 }
 
 def buildnetcdfs(datasetname, csv, xmlcontent):
