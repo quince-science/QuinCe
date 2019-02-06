@@ -8,6 +8,7 @@ var FLAG_IGNORED = -1002;
 
 var SELECT_ACTION = 1;
 var DESELECT_ACTION = 0;
+var SELECTION_POINT = -100;
 
 var PLOT_POINT_SIZE = 2;
 var PLOT_HIGHLIGHT_SIZE = 5;
@@ -17,6 +18,20 @@ var PLOT_X_AXIS_INDEX = 0;
 var PLOT_MEASUREMENT_ID_INDEX = 1;
 var PLOT_MANUAL_FLAG_INDEX = 2;
 var PLOT_FIRST_Y_INDEX = 3;
+
+var MAP_MEASUREMENT_ID_INDEX = 3;
+var MAP_MANUAL_FLAG_INDEX = 4;
+
+// Colors used to highlight points in plot, depending on quality flag or
+// selection
+var HIGHLIGHT_COLORS = {};
+HIGHLIGHT_COLORS[FLAG_BAD] = 'rgba(255, 0, 0, 1)';
+HIGHLIGHT_COLORS[FLAG_FATAL] = 'rgba(255, 0, 0, 1)';
+HIGHLIGHT_COLORS[FLAG_QUESTIONABLE] = 'rgba(216, 177, 0, 1)';
+HIGHLIGHT_COLORS[FLAG_NEEDS_FLAG] = 'rgba(129, 127, 255, 1)';
+HIGHLIGHT_COLORS[FLAG_IGNORED] = 'rgba(225, 225, 225, 1)';
+HIGHLIGHT_COLORS[SELECTION_POINT] = 'rgba(255, 221, 0, 1)';
+
 
 var BASE_GRAPH_OPTIONS = {
   drawPoints: true,
@@ -453,6 +468,12 @@ function selectionUpdated() {
   if (null != plot2) {
     drawPlot(2);
   }
+  if (null != map1) {
+    drawMap(1);
+  }
+  if (null != map2) {
+    drawMap(2);
+  }
 
   if (canEdit && typeof postSelectionUpdated == 'function') {
     postSelectionUpdated();
@@ -568,15 +589,15 @@ function drawPlot(index) {
     plotData = getPlotData(index);
   }
 
-  var plotHighlights = makeHighlights(index, plotData);
+  var plotHighlights = makeHighlights(plotData);
   if (plotHighlights.length > 0) {
     graph_options.underlayCallback = function(canvas, area, g) {
       // Selected
       for (var i = 0; i < plotHighlights.length; i++) {
-      var fillStyle = null;
+        var fillStyle = null;
 
         if (plotHighlights[i][3]) {
-          fillStyle = 'rgba(255, 221, 0, 1)';
+          fillStyle = HIGHLIGHT_COLORS[SELECTION_POINT];
         } else if (null != plotHighlights[i][2]) {
           fillStyle = plotHighlights[i][2];
         }
@@ -600,6 +621,7 @@ function drawPlot(index) {
       plotData,
       graph_options
   );
+  window['map' + index] = null;
 }
 
 function getPlotVisibility(index) {
@@ -867,13 +889,13 @@ function applyVariables() {
   updatePlotInputs(variablesPlotIndex);
 
   var mode = getPlotMode(variablesPlotIndex);
-
   if (mode == 'plot') {
     // Clear the current plot data
     $('#plot' + variablesPlotIndex + 'Form\\:plotData').val("");
-    $('#plot' + variablesPlotIndex + 'Form\\:mapData').val("");
     $('#plot' + variablesPlotIndex + 'Form\\:plotGetData').click();
   } else if (mode == 'map') {
+    $('#plot' + variablesPlotIndex + 'Form\\:mapData').val("");
+    $('#plot' + variablesPlotIndex + 'Form\\:mapGetData').click();
     initMap(variablesPlotIndex);
   }
 
@@ -1001,7 +1023,7 @@ function redrawPlot(index) {
 }
 
 function initMap(index) {
-
+  $('#map' + index +'Container').empty()
   $('#map' + index + 'Container').width($('#plot' + index + 'Panel').width());
   $('#map' + index + 'Container').height($('#plot' + index + 'Panel').height() - 40);
 
@@ -1068,13 +1090,13 @@ function drawMap(index) {
   var mapVar = 'map' + index;
   var dataLayerVar = mapVar + 'DataLayer';
   var colorScaleVar = mapVar + 'ColorScale';
-
   if (null != window[dataLayerVar]) {
     window[mapVar].removeLayer(window[dataLayerVar]);
     window[dataLayerVar] = null;
   }
-
   var mapData = JSON.parse($('#plot' + index + 'Form\\:mapData').val());
+
+  var plotHighlights = makeMapHighlights(mapData);
 
   var scaleLimits = JSON.parse($('#plot' + index + 'Form\\:mapScaleLimits').val());
   window[colorScaleVar].setValueRange(scaleLimits[0], scaleLimits[1]);
@@ -1087,15 +1109,29 @@ function drawMap(index) {
     var feature = new ol.Feature({
       geometry: new ol.geom.Point([featureData[0], featureData[1]]).transform(ol.proj.get("EPSG:4326"), mapSource.getProjection())
     });
-
-    feature.setStyle(new ol.style.Style({
-      image: new ol.style.Circle({
-        radius: 5,
-        fill: new ol.style.Fill({
-          color: window[colorScaleVar].getColor(featureData[5])
+    var stroke = null
+    if (mapData[i][MAP_MEASUREMENT_ID_INDEX] in plotHighlights) {
+      var color = plotHighlights[mapData[i][MAP_MEASUREMENT_ID_INDEX]][0]
+      if (plotHighlights[mapData[i][MAP_MEASUREMENT_ID_INDEX]][1]) {
+        // Point is selected
+        color = HIGHLIGHT_COLORS[SELECTION_POINT]
+      }
+      stroke = new ol.style.Stroke({
+        color: color,
+        width: 2
+      });
+    }
+    feature.setStyle(
+      new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: 5,
+          fill: new ol.style.Fill({
+            color: window[colorScaleVar].getColor(featureData[5])
+          }),
+          stroke: stroke
         })
       })
-    }));
+    );
 
     feature['data'] = featureData;
     feature['tableRow'] = featureData[2];
@@ -1185,7 +1221,7 @@ function toggleScale(index) {
   });
 }
 
-function makeHighlights(index, plotData) {
+function makeHighlights(plotData) {
   var highlights = [];
 
   var currentFlag = FLAG_GOOD;
@@ -1195,35 +1231,43 @@ function makeHighlights(index, plotData) {
     var selected = ($.inArray(plotData[i][PLOT_MEASUREMENT_ID_INDEX], selectedRows) > -1);
 
     if (selected || Math.abs(plotData[i][PLOT_MANUAL_FLAG_INDEX]) != FLAG_GOOD) {
-
-      switch (plotData[i][PLOT_MANUAL_FLAG_INDEX]) {
-      case FLAG_BAD:
-      case FLAG_FATAL: {
-        highlightColor = 'rgba(255, 0, 0, 1)';
-        break;
+      highlightColor = null;
+      if (plotData[i][PLOT_MANUAL_FLAG_INDEX] in HIGHLIGHT_COLORS ) {
+        highlightColor = HIGHLIGHT_COLORS[plotData[i][PLOT_MANUAL_FLAG_INDEX]]
       }
-      case FLAG_QUESTIONABLE: {
-        highlightColor = 'rgba(216, 177, 0, 1)';
-        break;
-      }
-      case FLAG_NEEDS_FLAG: {
-        highlightColor = 'rgba(129, 127, 255, 1)';
-        break;
-      }
-      case FLAG_IGNORED: {
-        highlightColor = 'rgba(225, 225, 225, 1)';
-        break;
-      }
-      default: {
-        highlightColor = null;
-      }
-      }
-
       for (j = PLOT_FIRST_Y_INDEX; j < plotData[i].length; j++) {
         if (plotData[i][j] != null) {
-          highlights.push([plotData[i][0], plotData[i][j], highlightColor, selected]);
+          highlights.push([
+            plotData[i][0],
+            plotData[i][j],
+            highlightColor,
+            selected
+          ])
         }
       }
+    }
+  }
+
+  return highlights;
+}
+function makeMapHighlights(mapData) {
+  var highlights = {};
+
+  var currentFlag = FLAG_GOOD;
+  var highlightColor = null;
+
+  for (var i = 0; i < mapData.length; i++) {
+    var selected = ($.inArray(mapData[i][MAP_MEASUREMENT_ID_INDEX], selectedRows) > -1);
+
+    if (selected || Math.abs(mapData[i][MAP_MANUAL_FLAG_INDEX]) != FLAG_GOOD) {
+      highlightColor = null;
+      if (mapData[i][MAP_MANUAL_FLAG_INDEX] in HIGHLIGHT_COLORS ) {
+        highlightColor = HIGHLIGHT_COLORS[mapData[i][MAP_MANUAL_FLAG_INDEX]]
+      }
+      highlights[mapData[i][MAP_MEASUREMENT_ID_INDEX]] = [
+        highlightColor,
+        selected
+      ]
     }
   }
 
