@@ -90,7 +90,7 @@ INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_c
 SELECT id INTO @diagPresId FROM sensor_types WHERE name = 'Diagnostic Pressure';
 
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
-  VALUES ('Diagnostic Air Flow', NULL, NULL, NULL, 0, 1);
+  VALUES ('Diagnostic Gas Flow', NULL, NULL, NULL, 0, 1);
 SELECT id INTO @diagAirId FROM sensor_types WHERE name = 'Diagnostic Air Flow';
 
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
