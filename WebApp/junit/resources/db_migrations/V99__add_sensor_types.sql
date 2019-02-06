@@ -75,7 +75,7 @@ INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_c
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
   VALUES ('Diagnostic Pressure', NULL, NULL, NULL, 0, 1);
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
-  VALUES ('Diagnostic Air Flow', NULL, NULL, NULL, 0, 1);
+  VALUES ('Diagnostic Gas Flow', NULL, NULL, NULL, 0, 1);
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
   VALUES ('Diagnostic Water Flow', NULL, NULL, NULL, 0, 1);
 INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
