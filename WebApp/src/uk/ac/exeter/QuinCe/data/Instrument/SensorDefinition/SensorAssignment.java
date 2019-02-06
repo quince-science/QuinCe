@@ -214,14 +214,21 @@ public class SensorAssignment {
   }
 
   /**
-   * @param dataFile
-   * @param sensorName
-   * @return
+   * Get the human-readable string describing an assignment to
+   * a data file and named sensor
+   *
+   * @param dataFile The data file name
+   * @param sensorName The sensor name
+   * @return The description
    */
   public static String getTarget(String dataFile, String sensorName) {
     return dataFile + ": " + sensorName;
   }
 
+  /**
+   * Get the human-readable string describing this assignment
+   * @return The assignment description
+   */
   public String getTarget() {
     return getTarget(getDataFile(), getSensorName());
   }
