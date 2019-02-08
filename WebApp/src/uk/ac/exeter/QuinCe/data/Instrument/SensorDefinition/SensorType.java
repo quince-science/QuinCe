@@ -412,4 +412,9 @@ public class SensorType implements Comparable<SensorType> {
   public boolean isSystemType() {
     return systemType;
   }
+
+  @Override
+  public String toString() {
+    return "Sensor Type: " + getName();
+  }
 }
