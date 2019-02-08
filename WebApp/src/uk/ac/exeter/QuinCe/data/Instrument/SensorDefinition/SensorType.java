@@ -323,4 +323,9 @@ public class SensorType implements Comparable<SensorType> {
   public int compareTo(SensorType o) {
     return name.compareTo(o.name);
   }
+
+  @Override
+  public String toString() {
+    return "Sensor Type: " + getName();
+  }
 }
