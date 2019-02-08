@@ -1,1 +1,0 @@
-INSERT INTO sensor_types (name, parent) VALUES ('Test Orphan', null)
