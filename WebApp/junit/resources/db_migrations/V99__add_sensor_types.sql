@@ -140,7 +140,7 @@ INSERT INTO variable_sensors (variable_id, sensor_type, core, questionable_casca
   VALUES (
     (SELECT id FROM variables),
     (SELECT id FROM sensor_types WHERE name = 'CO₂ in gas'),
-    0, 3, 4);
+    1, 3, 4);
 
 -- --------------------------------
 -- Link instruments to variables
@@ -195,3 +195,6 @@ ALTER TABLE file_column ALTER COLUMN sensor_type SET NOT NULL;
 
 -- Remove the old column
 ALTER TABLE file_column DROP COLUMN sensor_type_old;
+
+-- Remove the post_calibrated field - no longer used
+ALTER TABLE file_column DROP COLUMN post_calibrated;
