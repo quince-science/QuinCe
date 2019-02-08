@@ -71,8 +71,7 @@ def makenetcdf_(datasetname, lines, xml):
 
 
   platform_code = getplatformcode_(datasetname)
-  filenameroot = "GL_LATEST_TS_" + getplatformdatatype_(platform_code) + "_" \
-    + platform_code + "_" + filedate
+  filenameroot = "GL_TS_TS_" + getplatformcallsign_(platform_code) + "_" + filedate
 
   # Open a new netCDF file
   ncpath = tempfile.gettempdir() + "/" + filenameroot + ".nc"
@@ -308,8 +307,8 @@ def makenetcdf_(datasetname, lines, xml):
   nc.geospatial_lat_max = str(maxlat)
   nc.geospatial_lon_min = str(minlon)
   nc.geospatial_lon_max = str(maxlon)
-  nc.geospation_vertical_min = "5.00"
-  nc.geospation_vertical_max = "5.00"
+  nc.geospatial_vertical_min = "5.00"
+  nc.geospatial_vertical_max = "5.00"
 
   nc.last_latitude_observation = lats[-1]
   nc.last_longitude_observation = lons[-1]
@@ -328,12 +327,12 @@ def makenetcdf_(datasetname, lines, xml):
   nc.institution_edmo_code = "4595"
   nc.institution_references = " "
   nc.contact = "steve.jones@uib.no"
-  nc.title = "Global Ocean NRT Carbon insitu observations"
+  nc.title = "Global Ocean - In Situ near-real time carbon observation"
   nc.author = "cmems-service"
   nc.naming_authority = "Copernicus"
 
-  nc.platform_code = platform_code
-  nc.site_code = platform_code
+  nc.platform_code = getplatformcallsign_(platform_code)
+  nc.site_code = getplatformcallsign_(platform_code)
 
   # For buoys -> Mooring observation. Can get this from the metadata xml
   # /metadata/variable[3]/observationType (replace 3 with pCO2)
@@ -386,6 +385,19 @@ def getplatformname_(platform_code):
   with open("ship_categories.csv") as infile:
     reader = csv.reader(infile)
     lookups = {rows[0]:rows[1] for rows in reader}
+    try:
+      result = lookups[platform_code]
+    except KeyError:
+      print("PLATFORM CODE '" + platform_code + "' not found in ship categories")
+
+  return result
+
+def getplatformcallsign_(platform_code):
+  result = None
+
+  with open("ship_categories.csv") as infile:
+    reader = csv.reader(infile)
+    lookups = {rows[0]:rows[4] for rows in reader}
     try:
       result = lookups[platform_code]
     except KeyError:
