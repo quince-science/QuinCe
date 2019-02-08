@@ -202,3 +202,6 @@ UPDATE file_column SET sensor_type = -1 WHERE sensor_type_old = 'Run Type';
 
 -- Remove the old column
 ALTER TABLE file_column DROP COLUMN sensor_type_old;
+
+-- Remove the post_calibrated field - no longer used
+ALTER TABLE file_column DROP COLUMN post_calibrated;

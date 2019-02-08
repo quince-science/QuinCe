@@ -13,7 +13,7 @@ public class SensorAssignmentTest {
 
   private SensorAssignment getNoIdFalsesAssignment() {
     return new SensorAssignment("Data File", 1, "Sensor",
-      false, false, false, "NaN");
+      false, false, "NaN");
   }
 
   @Test
@@ -26,14 +26,13 @@ public class SensorAssignmentTest {
   public void noIdConstructorTest() {
 
     SensorAssignment assignment = new SensorAssignment("Data File", 1, "Sensor",
-      false, false, false, "NaN");
+      false, false, "NaN");
 
     assertEquals(DatabaseUtils.NO_DATABASE_RECORD, assignment.getDatabaseId());
     assertEquals("Data File", assignment.getDataFile());
     assertEquals(1, assignment.getColumn());
     assertEquals(-1, assignment.getDatabaseColumn());
     assertEquals("Sensor", assignment.getSensorName());
-    assertFalse(assignment.getPostCalibrated());
     assertFalse(assignment.isPrimary());
     assertFalse(assignment.getDependsQuestionAnswer());
     assertEquals("NaN", assignment.getMissingValue());
@@ -42,14 +41,13 @@ public class SensorAssignmentTest {
   @Test
   public void idConstructorTest() {
     SensorAssignment assignment = new SensorAssignment(1, "Data File", 4, 2,
-      "Sensor", false, false, false, "NaN");
+      "Sensor", false, false, "NaN");
 
     assertEquals(1, assignment.getDatabaseId());
     assertEquals("Data File", assignment.getDataFile());
     assertEquals(4, assignment.getColumn());
     assertEquals(2, assignment.getDatabaseColumn());
     assertEquals("Sensor", assignment.getSensorName());
-    assertFalse(assignment.getPostCalibrated());
     assertFalse(assignment.isPrimary());
     assertFalse(assignment.getDependsQuestionAnswer());
     assertEquals("NaN", assignment.getMissingValue());
@@ -58,9 +56,8 @@ public class SensorAssignmentTest {
   @Test
   public void noIdTrueValuesConstructorTest() {
     SensorAssignment assignment = new SensorAssignment("Data File", 1, "Sensor",
-      true, true, true, "NaN");
+      true, true, "NaN");
 
-    assertTrue(assignment.getPostCalibrated());
     assertTrue(assignment.isPrimary());
     assertTrue(assignment.getDependsQuestionAnswer());
 }
@@ -68,9 +65,8 @@ public class SensorAssignmentTest {
   @Test
   public void idTrueValuesConstructorTest() {
     SensorAssignment assignment = new SensorAssignment(1, "Data File", 4, 2,
-      "Sensor", true, true, true, "NaN");
+      "Sensor", true, true, "NaN");
 
-    assertTrue(assignment.getPostCalibrated());
     assertTrue(assignment.isPrimary());
     assertTrue(assignment.getDependsQuestionAnswer());
 }
@@ -78,7 +74,7 @@ public class SensorAssignmentTest {
   @Test
   public void nullSensorNameTest() {
     SensorAssignment assignment = new SensorAssignment("Data File", 1, null,
-      false, false, false, "Missing");
+      false, false, "Missing");
 
     assertEquals("", assignment.getSensorName());
   }
@@ -115,5 +111,26 @@ public class SensorAssignmentTest {
   public void getTargetTest() {
     SensorAssignment assignment = getNoIdFalsesAssignment();
     assertEquals("Data File: Sensor", assignment.getTarget());
+  }
+
+  @Test
+  public void constructor1MissingValueTest() {
+    SensorAssignment assignment = new SensorAssignment("Data File", 1, "Sensor",
+      false, false, null);
+    assertEquals("", assignment.getMissingValue());
+  }
+
+  @Test
+  public void constructor2MissingValueTest() {
+    SensorAssignment assignment = new SensorAssignment(1, "Data File", 1, 1,
+      "Sensor", false, false, null);
+    assertEquals("", assignment.getMissingValue());
+  }
+
+  @Test
+  public void setNullMissingValueTest() {
+    SensorAssignment assignment = getNoIdFalsesAssignment();
+    assignment.setMissingValue(null);
+    assertEquals("", assignment.getMissingValue());
   }
 }
