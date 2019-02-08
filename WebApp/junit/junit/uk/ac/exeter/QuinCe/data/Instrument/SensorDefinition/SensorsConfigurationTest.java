@@ -6,18 +6,18 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.DBTest;
-import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 
 /**
@@ -29,10 +29,14 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration
  */
 public class SensorsConfigurationTest extends DBTest {
 
+  private SensorsConfiguration getConfig() throws SensorConfigurationException {
+    return new SensorsConfiguration(getDataSource());
+  }
+
   @FlywayTest
   @Test
-  public void testLoadConfiguration() throws Exception {
-    SensorsConfiguration config = new SensorsConfiguration(getDataSource());
+  public void testLoadConfiguration() throws SensorConfigurationException  {
+    SensorsConfiguration config = getConfig();
     assertNotNull(config);
 
     boolean runTypeFound = false;
@@ -49,32 +53,31 @@ public class SensorsConfigurationTest extends DBTest {
   }
 
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/nonExistentParent"
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/nonExistentParent"
   })
   @Test
   public void nonExistentParentTest() {
     assertThrows(SensorConfigurationException.class, () -> {
-      new SensorsConfiguration(getDataSource());
+      getConfig();
     });
   }
 
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/nonExistentDependsOn"
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/nonExistentDependsOn"
   })
   @Test
   public void nonExistentDependsOnTest() {
     assertThrows(SensorConfigurationException.class, () -> {
-      new SensorsConfiguration(getDataSource());
+      getConfig();
     });
   }
 
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/sensorTypesList"
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/sensorTypesList"
   })
   @Test
   public void sensorTypesListTest() throws SensorConfigurationException {
-    SensorsConfiguration config = new SensorsConfiguration(getDataSource());
-    List<SensorType> types = config.getSensorTypes();
+    List<SensorType> types = getConfig().getSensorTypes();
 
     // NOTE that the special "Run Type" type will be at the end of the list
 
@@ -97,32 +100,24 @@ public class SensorsConfigurationTest extends DBTest {
 
   @FlywayTest(locationsForMigrate = {
     "resources/sql/testbase/user",
-    "resources/sql/data/Instrument/SensorDefinition/newSensorAssignments"
+    "resources/sql/testbase/instrument",
   })
   @Test
   public void newSensorAssignments() throws Exception {
-    // Mock an Instrument that matches the partial instrument stored in the database
-    Instrument mockInstrument = Mockito.mock(Instrument.class);
-    Mockito.when(mockInstrument.getDatabaseId()).thenReturn(1L);
-
-    SensorsConfiguration config = new SensorsConfiguration(getDataSource());
-
     // We're not actually testing the SensorAssignments object - that's done
     // in other tests. Here we just need to know that we get something
-    assertNotNull(config.getNewSensorAssigments(getDataSource(), mockInstrument));
+    assertNotNull(getConfig().getNewSensorAssigments(getDataSource(), 1));
   }
 
   @FlywayTest
   @Test
   public void missingSensorNameTest() throws SensorConfigurationException {
-    SensorsConfiguration config = new SensorsConfiguration(getDataSource());
-
     List<String> names = new ArrayList<String>(2);
     names.add("Intake Temperature");
     names.add("Flurble");
 
     assertThrows(SensorConfigurationException.class, () -> {
-      config.validateSensorNames(names);
+      getConfig().validateSensorNames(names);
     });
   }
 
@@ -130,22 +125,19 @@ public class SensorsConfigurationTest extends DBTest {
   @FlywayTest
   @Test
   public void validSensorNameTest() throws SensorConfigurationException {
-    SensorsConfiguration config = new SensorsConfiguration(getDataSource());
-
     List<String> names = new ArrayList<String>(2);
     names.add("Intake Temperature");
     names.add("Salinity");
     names.add("Run Type"); // Include the special Run Type for giggles
-    config.validateSensorNames(names);
+    getConfig().validateSensorNames(names);
   }
 
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/getParentWithoutParent"
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/getParentWithoutParent"
   })
   @Test
   public void getParentWithoutParent() throws SensorConfigurationException {
-    SensorsConfiguration config = new SensorsConfiguration(getDataSource());
-
+    SensorsConfiguration config = getConfig();
     SensorType orphan = null;
 
     // Get the 'child' type
@@ -160,12 +152,11 @@ public class SensorsConfigurationTest extends DBTest {
   }
 
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/getParentWithParent"
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/getParentWithParent"
   })
   @Test
   public void getParentWithParent() throws SensorConfigurationException {
-    SensorsConfiguration config = new SensorsConfiguration(getDataSource());
-
+    SensorsConfiguration config = getConfig();
     SensorType child = null;
 
     // Get the 'child' type
@@ -180,12 +171,11 @@ public class SensorsConfigurationTest extends DBTest {
   }
 
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/getSiblingWithNoParent"
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/getSiblingWithNoParent"
   })
   @Test
   public void getSiblingsWithNoParent() throws SensorConfigurationException {
-    SensorsConfiguration config = new SensorsConfiguration(getDataSource());
-
+    SensorsConfiguration config = getConfig();
     SensorType orphan = null;
 
     // Get the 'child' type
@@ -201,12 +191,11 @@ public class SensorsConfigurationTest extends DBTest {
 
 
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/getSiblingWithParentNoSiblings"
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/getSiblingWithParentNoSiblings"
   })
   @Test
   public void getSiblingsWithParentNoSiblings() throws SensorConfigurationException {
-    SensorsConfiguration config = new SensorsConfiguration(getDataSource());
-
+    SensorsConfiguration config = getConfig();
     SensorType child = null;
 
     // Get the 'child' type
@@ -222,13 +211,12 @@ public class SensorsConfigurationTest extends DBTest {
 
 
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/getSiblingWithParentAndSiblings"
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/getSiblingWithParentAndSiblings"
   })
   @Test
   public void getSiblingsWithParentAndSiblings() throws SensorConfigurationException {
-    SensorsConfiguration config = new SensorsConfiguration(getDataSource());
-
-    SensorType child = null;
+   SensorsConfiguration config = getConfig();
+   SensorType child = null;
 
     // Get the 'child' type
     for (SensorType type : config.getSensorTypes()) {
@@ -239,5 +227,22 @@ public class SensorsConfigurationTest extends DBTest {
     }
 
     assertEquals(2, config.getSiblings(child).size());
+  }
+
+  @Test
+  public void getSensorTypeTest() throws SensorConfigurationException {
+    try {
+      getConfig().getSensorType(1);
+    } catch (SensorTypeNotFoundException e) {
+      // This exception should not be thrown
+      fail("SensorTypeNotFoundException thrown when it shouldn't have been");
+    }
+  }
+
+  @Test
+  public void getInvalidSensorTypeTest() {
+    assertThrows(SensorTypeNotFoundException.class, () -> {
+      getConfig().getSensorType(-1000);
+    });
   }
 }

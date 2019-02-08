@@ -35,12 +35,6 @@ public class SensorAssignment {
   private String sensorName;
 
   /**
-   * Indicates whether or not values from this
-   * sensor require post-calibration adjustments applied to them
-   */
-  private boolean postCalibrated;
-
-  /**
    * The answer to the Depends Question
    * @see SensorType#getDependsQuestion
    */
@@ -66,14 +60,15 @@ public class SensorAssignment {
    * @param dependsQuestionAnswer The answer to the Depends Question
    * @param missingValue The missing value String
    */
-  public SensorAssignment(String dataFile, int column, String sensorName, boolean postCalibrated, boolean primary, boolean dependsQuestionAnswer, String missingValue) {
+  public SensorAssignment(String dataFile, int column, String sensorName,
+    boolean primary, boolean dependsQuestionAnswer, String missingValue) {
+
     this.dataFile = dataFile;
     this.column = column;
     this.sensorName = sensorName;
-    this.postCalibrated = postCalibrated;
     this.primary = primary;
     this.dependsQuestionAnswer = dependsQuestionAnswer;
-    this.missingValue = missingValue;
+    setMissingValue(missingValue);
   }
 
   /**
@@ -88,16 +83,18 @@ public class SensorAssignment {
    * @param dependsQuestionAnswer The answer to the Depends Question
    * @param missingValue The missing value String
    */
-  public SensorAssignment(long databaseId, String dataFile, int fileColumn, int databaseColumn, String sensorName, boolean postCalibrated, boolean primary, boolean dependsQuestionAnswer, String missingValue) {
+  public SensorAssignment(long databaseId, String dataFile, int fileColumn,
+    int databaseColumn, String sensorName, boolean primary,
+    boolean dependsQuestionAnswer, String missingValue) {
+
     this.databaseId = databaseId;
     this.dataFile = dataFile;
     this.column = fileColumn;
     this.databaseColumn = databaseColumn;
     this.sensorName = sensorName;
-    this.postCalibrated = postCalibrated;
     this.primary = primary;
     this.dependsQuestionAnswer = dependsQuestionAnswer;
-    this.missingValue = missingValue;
+    setMissingValue(missingValue);
   }
 
   /**
@@ -144,15 +141,6 @@ public class SensorAssignment {
     }
 
     return result;
-  }
-
-  /**
-   * Determine whether or not values from this
-   * sensor require post-calibration adjustments applied to them
-   * @return {@code true} if calibration adjustments are required; {@code false} if they are not
-   */
-  public boolean getPostCalibrated() {
-    return postCalibrated;
   }
 
   /**
@@ -210,7 +198,11 @@ public class SensorAssignment {
    * @param missingValue The missing value String
    */
   public void setMissingValue(String missingValue) {
-    this.missingValue = missingValue;
+    if (null == missingValue) {
+      this.missingValue = "";
+    } else {
+      this.missingValue = missingValue;
+    }
   }
 
   /**
@@ -231,5 +223,59 @@ public class SensorAssignment {
    */
   public String getTarget() {
     return getTarget(getDataFile(), getSensorName());
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + column;
+    result = prime * result + ((dataFile == null) ? 0 : dataFile.hashCode());
+    result = prime * result + databaseColumn;
+    result = prime * result + (int) (databaseId ^ (databaseId >>> 32));
+    result = prime * result + (dependsQuestionAnswer ? 1231 : 1237);
+    result = prime * result
+      + ((missingValue == null) ? 0 : missingValue.hashCode());
+    result = prime * result + (primary ? 1231 : 1237);
+    result = prime * result
+      + ((sensorName == null) ? 0 : sensorName.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    SensorAssignment other = (SensorAssignment) obj;
+    if (column != other.column)
+      return false;
+    if (dataFile == null) {
+      if (other.dataFile != null)
+        return false;
+    } else if (!dataFile.equals(other.dataFile))
+      return false;
+    if (databaseColumn != other.databaseColumn)
+      return false;
+    if (databaseId != other.databaseId)
+      return false;
+    if (dependsQuestionAnswer != other.dependsQuestionAnswer)
+      return false;
+    if (missingValue == null) {
+      if (other.missingValue != null)
+        return false;
+    } else if (!missingValue.equals(other.missingValue))
+      return false;
+    if (primary != other.primary)
+      return false;
+    if (sensorName == null) {
+      if (other.sensorName != null)
+        return false;
+    } else if (!sensorName.equals(other.sensorName))
+      return false;
+    return true;
   }
 }
