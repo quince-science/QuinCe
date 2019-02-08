@@ -12,7 +12,6 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -44,8 +43,7 @@ public class SensorsConfiguration {
    * Query to get core sensor types
    */
   private static final String GET_CORE_TYPES_QUERY = "SELECT "
-    + "id FROM sensor_types WHERE id NOT IN "
-    + "(SELECT DISTINCT sensor_type FROM variable_sensors WHERE core = 0)";
+    + "sensor_type FROM variable_sensors WHERE core = 1";
 
   private static final String GET_INSTRUMENT_SENSOR_TYPES_QUERY = "SELECT DISTINCT "
     + "sensor_type FROM variable_sensors "
@@ -174,19 +172,40 @@ public class SensorsConfiguration {
    * @throws DatabaseException
    * @throws SensorConfigurationException
    */
-  public SensorAssignments getNewSensorAssigments(DataSource dataSource, Instrument instrument)
+  public SensorAssignments getNewSensorAssigments(DataSource dataSource, long instrumentId)
     throws MissingParamException, DatabaseException {
 
-    HashMap<SensorType, Boolean> requiredTypes = new HashMap<SensorType, Boolean>();
-
     MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkMissing(instrument, "instrument");
+    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 
     Connection conn = null;
 
     try {
       conn = dataSource.getConnection();
+      return getNewSensorAssigments(conn, instrumentId);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while building sensor assignments list", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
 
+  }
+
+    /**
+     * Get an empty map of sensor types ready to have columns assigned
+     * @return An empty sensor types/assignments map
+     * @throws MissingParamException
+     * @throws DatabaseException
+     * @throws SensorConfigurationException
+     */
+    public SensorAssignments getNewSensorAssigments(Connection conn, long instrumentId)
+      throws MissingParamException, DatabaseException {
+    HashMap<SensorType, Boolean> requiredTypes = new HashMap<SensorType, Boolean>();
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+
+    try {
       // All non-core sensors are not required
       // (base state - some will be made required later)
       for (SensorType type : getNonCoreSensors(conn)) {
@@ -194,7 +213,7 @@ public class SensorsConfiguration {
       }
 
       // Get all required sensors for the instrument's variables
-      for (SensorType type : getRequiredSensors(conn, instrument.getDatabaseId())) {
+      for (SensorType type : getRequiredSensors(conn, instrumentId)) {
         requiredTypes.put(type, true);
         for (SensorType child : getChildren(type)) {
           requiredTypes.put(child, true);
@@ -202,8 +221,6 @@ public class SensorsConfiguration {
       }
 
       return new SensorAssignments(requiredTypes);
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while building sensor assignments list", e);
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
@@ -216,7 +233,7 @@ public class SensorsConfiguration {
    * @param parent The parent sensor type
    * @return The child types
    */
-  private List<SensorType> getChildren(SensorType parent) {
+  public List<SensorType> getChildren(SensorType parent) {
     List<SensorType> children = new ArrayList<SensorType>();
 
     for (SensorType type : sensorTypes.values()) {
@@ -240,6 +257,15 @@ public class SensorsConfiguration {
       result = sensorTypes.get(child.getParent());
     }
     return result;
+  }
+
+  /**
+   * Determine whether a given SensorType has children
+   * @param sensorType The SensorType
+   * @return {@code true} if the SensorType has children; {@code false} if not
+   */
+  public boolean isParent(SensorType sensorType) {
+    return getChildren(sensorType).size() > 0;
   }
 
   /**
@@ -333,7 +359,21 @@ public class SensorsConfiguration {
     }
 
     return core;
+  }
 
+  /**
+   * Get the {@link SensorType} object for a given sensor ID
+   * @param sensorId The sensor's database ID
+   * @return The SensorType object
+   * @throws SensorTypeNotFoundException If the sensor type does not exist
+   */
+  public SensorType getSensorType(long sensorId) throws SensorTypeNotFoundException {
+    SensorType result = sensorTypes.get(sensorId);
+    if (null == result) {
+      throw new SensorTypeNotFoundException(sensorId);
+    }
+
+    return result;
   }
 
   /**
