@@ -272,7 +272,7 @@ public class InstrumentDB {
         // Sensor assignments
         int databaseColumn = -1;
 
-        for (Map.Entry<SensorType, Set<SensorAssignment>> sensorAssignmentsEntry : instrument.getSensorAssignments().entrySet()) {
+        for (Map.Entry<SensorType, Set<SensorAssignment>> sensorAssignmentsEntry : instrument.getSensorAssignments().getAssignments().entrySet()) {
 
           SensorType sensorType = sensorAssignmentsEntry.getKey();
 
@@ -282,7 +282,7 @@ public class InstrumentDB {
             fileColumnStatement.setLong(1, fileDefinitionIds.get(assignment.getDataFile()));
             fileColumnStatement.setInt(2, assignment.getColumn());
             fileColumnStatement.setBoolean(3, assignment.isPrimary());
-            fileColumnStatement.setString(4, sensorType.getName());
+            fileColumnStatement.setLong(4, sensorType.getId());
             fileColumnStatement.setString(5, assignment.getSensorName());
 
             if (sensorType.isDiagnostic()) {
@@ -295,7 +295,6 @@ public class InstrumentDB {
 
             fileColumnStatement.setBoolean(7, assignment.getDependsQuestionAnswer());
             fileColumnStatement.setString(8, assignment.getMissingValue());
-            fileColumnStatement.setBoolean(9, assignment.getPostCalibrated());
 
             fileColumnStatement.execute();
             ResultSet fileColumnKey = fileColumnStatement.getGeneratedKeys();
@@ -751,7 +750,7 @@ public class InstrumentDB {
         files = getFileDefinitions(conn, instrumentId);
 
         // Now the sensor assignments
-        sensorAssignments = getSensorAssignments(conn, files, sensorConfiguration, runTypeConfiguration);
+        sensorAssignments = getSensorAssignments(conn, instrumentId, files, sensorConfiguration, runTypeConfiguration);
 
         instrument = new Instrument(instrumentId, owner, name, files, sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow, averagingMode, platformCode, nrt);
       }
@@ -908,10 +907,11 @@ public class InstrumentDB {
    * @throws DatabaseException If a database error occurs
    * @throws RecordNotFoundException If any required records are not found
    * @throws InstrumentException If any instrument values are invalid
+   * @throws MissingParamException If any internal calls are missing required parameters
    */
-  private static SensorAssignments getSensorAssignments(Connection conn, InstrumentFileSet files, SensorsConfiguration sensorConfiguration, RunTypeCategoryConfiguration
-      runTypeConfiguration) throws DatabaseException, RecordNotFoundException, InstrumentException {
-    SensorAssignments assignments = sensorConfiguration.getNewSensorAssigments();
+  private static SensorAssignments getSensorAssignments(Connection conn, long instrumentId, InstrumentFileSet files, SensorsConfiguration sensorConfiguration, RunTypeCategoryConfiguration
+      runTypeConfiguration) throws DatabaseException, RecordNotFoundException, InstrumentException, MissingParamException {
+    SensorAssignments assignments = sensorConfiguration.getNewSensorAssigments(conn, instrumentId);
 
     List<PreparedStatement> stmts = new ArrayList<PreparedStatement>();
     List<ResultSet> records = new ArrayList<ResultSet>();
@@ -932,18 +932,17 @@ public class InstrumentDB {
           long assignmentId = columns.getLong(1);
           int fileColumn = columns.getInt(2);
           boolean primarySensor = columns.getBoolean(3);
-          String sensorType = columns.getString(4);
+          long sensorType = columns.getLong(4);
           String sensorName = columns.getString(5);
           int valueColumn = columns.getInt(6);
           boolean dependsQuestionAnswer = columns.getBoolean(7);
           String missingValue = columns.getString(8);
-          boolean postCalibrated = columns.getBoolean(9);
 
-          if (sensorType.equals(FileDefinition.RUN_TYPE_COL_NAME)) {
+          if (sensorType == SensorType.RUN_TYPE_ID) {
             file.setRunTypeColumn(fileColumn);
             getFileRunTypes(conn, file, runTypeConfiguration);
           } else {
-            assignments.addAssignment(sensorType, new SensorAssignment(assignmentId, file.getFileDescription(), fileColumn, valueColumn, sensorName, postCalibrated, primarySensor, dependsQuestionAnswer, missingValue));
+            assignments.addAssignment(sensorType, new SensorAssignment(assignmentId, file.getFileDescription(), fileColumn, valueColumn, sensorName, primarySensor, dependsQuestionAnswer, missingValue));
           }
         }
 

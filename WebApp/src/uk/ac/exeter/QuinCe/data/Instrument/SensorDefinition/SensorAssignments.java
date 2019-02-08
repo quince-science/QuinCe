@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.sql.DataSource;
+
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -30,7 +32,7 @@ public class SensorAssignments {
   /**
    * Indicators for required sensor types
    */
-  private Map<SensorType, Boolean> requiredSensors;
+  private Map<SensorType, Boolean> sensorsRequired;
 
   /**
    * Simple constructor - take in a map of Sensor Types and flags
@@ -38,12 +40,20 @@ public class SensorAssignments {
    * @param sensorTypes The
    */
   protected SensorAssignments(Map<SensorType, Boolean> sensorTypes) {
-    this.requiredSensors = sensorTypes;
+    this.sensorsRequired = sensorTypes;
 
     sensorAssignments = new TreeMap<SensorType, Set<SensorAssignment>>();
     for (SensorType type : sensorTypes.keySet()) {
       sensorAssignments.put(type, new HashSet<SensorAssignment>());
     }
+  }
+
+  /**
+   * Get the full set of assignments
+   * @return The assignments
+   */
+  public TreeMap<SensorType, Set<SensorAssignment>> getAssignments() {
+    return sensorAssignments;
   }
 
   /**
@@ -60,44 +70,82 @@ public class SensorAssignments {
    *     If a primary sensor has been assigned, then no further assignment is needed
    *   </li>
    *   <li>
-   *     If the sensor is part of a required group, and none of the sensors
-   *     in that group have had a sensor assigned, then an assignment is needed.
-   *     If any of the sensors in the group have been assigned, then no
-   *     assignment is needed for this sensor.
+   *     If the sensor has children, and one of the children has been assigned
+   *     as a primary sensor, then assignment is not required
    *   </li>
    *   <li>
-   *     If the sensor is not part of a required group, but its required
-   *     flag is set, then a sensor assignment is required.
+   *     If the sensor has a parent, and one of its sibling sensor types is
+   *     assigned as a primary sensor, then this does not need to be assigned
    *   </li>
    *   <li>
-   *     If another sensor type depends on this sensor type, then a
-   *     sensor assignment is required. This determination may be based on
-   *     the answer to {@link SensorType#getDependsQuestion()}.
+   *     If no other sensor type depends on this sensor, then assignment is not
+   *     required.
    *   </li>
    * </ul>
+   *
+   * In all other cases, assignment is required
+   *
    * @param sensorType The sensor type to be checked
    * @return {@code true} if a column must be assigned to the sensor; {@code false}
    * if no assignment is needed.
    * @throws SensorAssignmentException If the specified sensor type does not exist
    */
   public boolean isAssignmentRequired(SensorType sensorType) throws SensorAssignmentException {
-    boolean required = false;
-
-    if (!requiredSensors.containsKey(sensorType)) {
+    if (!sensorsRequired.containsKey(sensorType)) {
       throw new SensorAssignmentException("The specified sensor was not found");
     }
 
-    if (!sensorAssigned(sensorType, true)) {
-      if (isRequired(sensorType)) {
-        if (!isSiblingAssigned(sensorType, true)) {
+    boolean required = sensorsRequired.get(sensorType);
+
+    // If the sensor has a primary assignment, then it's not required
+    // in any other circumstances
+    if (sensorAssigned(sensorType, true)) {
+      required = false;
+    } else {
+      if (!required) {
+        if (hasDependent(sensorType)) {
           required = true;
         }
-      } else if (hasDependent(sensorType)) {
-        required = true;
+      } else {
+        if (sensorAssigned(sensorType, true)) {
+          required = false;
+        } else if (getSensorsConfiguration().isParent(sensorType) && isChildAssigned(sensorType)) {
+          required = false;
+        } else if (sensorType.hasParent() && isSiblingAssigned(sensorType, true)) {
+          required = false;
+        }
       }
     }
 
     return required;
+  }
+
+  /**
+   * Determine whether or not any children of a parent SensorType have been
+   * assigned as a primary sensor.
+   *
+   * @param parent The SensorType whose children are to be checked
+   * @return {@code true} if any children have been assigned; {@code false} if not
+   * @throws SensorAssignmentException If the SensorType is not a parent
+   */
+  private boolean isChildAssigned(SensorType parent)
+    throws SensorAssignmentException {
+
+    boolean childAssigned = false;
+
+    if (!getSensorsConfiguration().isParent(parent)) {
+      throw new SensorAssignmentException("SensorType '" + parent.getName() +
+        "' has no children");
+    }
+
+    for (SensorType child : getSensorsConfiguration().getChildren(parent)) {
+      if (sensorAssigned(child, true)) {
+        childAssigned = true;
+        break;
+      }
+    }
+
+    return childAssigned;
   }
 
   /**
@@ -109,13 +157,14 @@ public class SensorAssignments {
    * The logic of this is quite nasty. Follow the code comments.
    *
    * @param sensorType The sensor type that other sensors may depend on
-   * @return {@code true} if any other sensor types depend on the supplied sensor type; {@code false} if there are no dependents
+   * @return {@code true} if any other sensor types depend on the supplied
+   *         sensor type; {@code false} if there are no dependents
    * @see SensorType#getDependsQuestion()
    */
   private boolean hasDependent(SensorType sensorType) {
     boolean result = false;
 
-    for (SensorType testType : requiredSensors.keySet()) {
+    for (SensorType testType : sensorsRequired.keySet()) {
       if (result) {
         break;
       // A sensor can't depend on itself
@@ -173,34 +222,54 @@ public class SensorAssignments {
    * @param sensorType The sensor type
    * @param assignment The assignment details
    * @throws SensorTypeNotFoundException If the named sensor does not exist
+   * @throws SensorAssignmentException
    */
-  public void addAssignment(long sensorType, SensorAssignment assignment) throws SensorTypeNotFoundException {
-    Set<SensorAssignment> assignments = sensorAssignments.get(getSensorType(sensorType));
+  public void addAssignment(long sensorId, SensorAssignment assignment)
+    throws SensorTypeNotFoundException, SensorAssignmentException {
+
+    SensorType sensorType = getSensorsConfiguration().getSensorType(sensorId);
+
+    if (getSensorsConfiguration().isParent(sensorType)) {
+      throw new SensorAssignmentException("Cannot assign parent sensor types");
+    }
+
+    if (isAssigned(assignment.getDataFile(), assignment.getColumn())) {
+      throw new SensorAssignmentException("File '" + assignment.getDataFile() +
+        "', column " + assignment.getColumn() + " has already been assigned");
+    }
+
+    Set<SensorAssignment> assignments = sensorAssignments.get(sensorType);
+    if (null == assignments) {
+      // The sensor is not valid for this instrument, so it has not
+      // been added to the assignments list
+      throw new SensorAssignmentException(sensorType + " is not valid for this instrument");
+    }
     assignments.add(assignment);
   }
 
   /**
-   * Get the {@link SensorType} object for a given sensor name
-   * @param sensorId The sensor's database ID
-   * @return The SensorType object
-   * @throws SensorTypeNotFoundException If the sensor type does not exist
+   * Determine whether or not a given column in a given file has already
+   * been assigned
+   * @param file The file
+   * @param column The column
+   * @return {@code true} if the file and column have been assigned;
+   *         {@code false} if not
    */
-  public SensorType getSensorType(long sensorId) throws SensorTypeNotFoundException {
+  private boolean isAssigned(String file, int column) {
+    boolean assigned = false;
 
-    SensorType result = null;
+    for (Set<SensorAssignment> set : sensorAssignments.values()) {
+      for (SensorAssignment assignment : set) {
+        if (assignment.getDataFile().equals(file) &&
+          assignment.getColumn() == column) {
 
-    for (SensorType sensorType : requiredSensors.keySet()) {
-      if (sensorType.getId() == sensorId) {
-        result = sensorType;
-        break;
+          assigned = true;
+          break;
+        }
       }
     }
 
-    if (null == result) {
-      throw new SensorTypeNotFoundException(sensorId);
-    }
-
-    return result;
+    return assigned;
   }
 
   /**
@@ -286,15 +355,21 @@ public class SensorAssignments {
    * @return {@code true} if the file has had a core sensor assigned; {@code false} if it has not
    * @throws DatabaseException If a database error occurs
    */
-  public boolean coreSensorAssigned(String file) throws DatabaseException {
+  public boolean coreSensorAssigned(String file, boolean primaryOnly) throws DatabaseException {
     boolean result = false;
 
-    for (SensorType sensorType : requiredSensors.keySet()) {
-      if (getSensorsConfiguration().isCoreSensor(ResourceManager.getInstance().getDBDataSource(), sensorType)) {
+    DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
+
+    for (SensorType sensorType : sensorsRequired.keySet()) {
+      if (getSensorsConfiguration().isCoreSensor(dataSource, sensorType)) {
         for (SensorAssignment assignment : sensorAssignments.get(sensorType)) {
           if (assignment.getDataFile().equals(file)) {
-            result = true;
-            break;
+            if (assignment.isPrimary() ||
+                !assignment.isPrimary() && !primaryOnly) {
+
+              result = true;
+              break;
+            }
           }
         }
       }
@@ -312,7 +387,7 @@ public class SensorAssignments {
    */
   private boolean isRequired(SensorType sensorType) {
 
-    boolean required = requiredSensors.containsKey(sensorType);
+    boolean required = sensorsRequired.get(sensorType);
 
     // See if the parent is required
     if (!required && sensorType.hasParent()) {
