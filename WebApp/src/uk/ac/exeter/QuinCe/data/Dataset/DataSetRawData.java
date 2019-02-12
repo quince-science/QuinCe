@@ -677,12 +677,12 @@ public abstract class DataSetRawData {
     try {
       record = new DataSetRawDataRecord(dataSet, getSelectedTime(), getSelectedLongitude(), getSelectedLatitude(), getSelectedRunType(), getSelectedRunTypeCategory());
 
-      for (Map.Entry<SensorType, Set<SensorAssignment>> entry : instrument.getSensorAssignments().entrySet()) {
+      for (Map.Entry<SensorType, Set<SensorAssignment>> entry : instrument.getSensorAssignments().getAssignments().entrySet()) {
 
         SensorType sensorType = entry.getKey();
         Set<SensorAssignment> assignments = entry.getValue();
 
-        if (sensorType.isUsedInCalculation()) {
+        if (instrument.getSensorAssignments().isRequired(sensorType)) {
 
           double primarySensorTotal = 0.0;
           int primarySensorCount = 0;
@@ -829,8 +829,7 @@ public abstract class DataSetRawData {
     for (int row : rows) {
       DataFileLine line = data.get(fileIndex).get(row);
       Double rawValue = line.getFieldValue(assignment.getColumn(), assignment.getMissingValue());
-      if (assignment.getPostCalibrated()
-          && calibrationSet.containsTarget(assignment.getTarget())) {
+      if (calibrationSet.containsTarget(assignment.getTarget())) {
         rawValue = calibrationSet.getTargetCalibration(assignment.getTarget())
             .calibrateValue(rawValue);
       }
