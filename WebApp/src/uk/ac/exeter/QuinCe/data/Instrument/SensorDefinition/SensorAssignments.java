@@ -218,16 +218,16 @@ public class SensorAssignments {
   }
 
   /**
-   * Add a sensor assignment using the name of a sensor
-   * @param sensorType The sensor type
+   * Add a sensor assignment using the ID of a sensor type
+   * @param sensorTypeId The sensor type
    * @param assignment The assignment details
    * @throws SensorTypeNotFoundException If the named sensor does not exist
    * @throws SensorAssignmentException
    */
-  public void addAssignment(long sensorId, SensorAssignment assignment)
+  public void addAssignment(long sensorTypeId, SensorAssignment assignment)
     throws SensorTypeNotFoundException, SensorAssignmentException {
 
-    SensorType sensorType = getSensorsConfiguration().getSensorType(sensorId);
+    SensorType sensorType = getSensorsConfiguration().getSensorType(sensorTypeId);
 
     if (getSensorsConfiguration().isParent(sensorType)) {
       throw new SensorAssignmentException("Cannot assign parent sensor types");
@@ -245,6 +245,18 @@ public class SensorAssignments {
       throw new SensorAssignmentException(sensorType + " is not valid for this instrument");
     }
     assignments.add(assignment);
+  }
+
+  /**
+   * Add a sensor assignment using the name of a sensor type
+   * @param typeName The sensor type name
+   * @param assignment The assignment details
+   * @throws SensorTypeNotFoundException If the named sensor does not exist
+   * @throws SensorAssignmentException
+   */
+  public void addAssignment(String typeName, SensorAssignment assignment) throws SensorTypeNotFoundException, SensorAssignmentException {
+    SensorType sensorType = getSensorsConfiguration().getSensorType(typeName);
+    addAssignment(sensorType.getId(), assignment);
   }
 
   /**
@@ -385,7 +397,7 @@ public class SensorAssignments {
    * @param sensorType The sensor type
    * @return {@code true} if the sensor type is required; {@code false} if it is not
    */
-  private boolean isRequired(SensorType sensorType) {
+  public boolean isRequired(SensorType sensorType) {
 
     boolean required = sensorsRequired.get(sensorType);
 

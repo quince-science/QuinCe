@@ -16,6 +16,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  *
@@ -49,6 +50,10 @@ public class SensorsConfiguration {
     + "sensor_type FROM variable_sensors "
     + "WHERE variable_id IN "
     + "(SELECT variable_id FROM instrument_variables WHERE instrument_id = ?)";
+
+  private static final String GET_VARIABLES_SENSOR_TYPES_QUERY = "SELECT DISTINCT "
+    + "sensor_type FROM variable_sensors "
+    + "WHERE variable_id IN " + DatabaseUtils.IN_PARAMS_TOKEN;
 
   /**
    * The set of sensors defined for the instrument with
@@ -191,15 +196,16 @@ public class SensorsConfiguration {
 
   }
 
-    /**
-     * Get an empty map of sensor types ready to have columns assigned
-     * @return An empty sensor types/assignments map
-     * @throws MissingParamException
-     * @throws DatabaseException
-     * @throws SensorConfigurationException
-     */
-    public SensorAssignments getNewSensorAssigments(Connection conn, long instrumentId)
-      throws MissingParamException, DatabaseException {
+  /**
+   * Get an empty map of sensor types ready to have columns assigned
+   * @return An empty sensor types/assignments map
+   * @throws MissingParamException
+   * @throws DatabaseException
+   * @throws SensorConfigurationException
+   */
+  public SensorAssignments getNewSensorAssigments(Connection conn, long instrumentId)
+    throws MissingParamException, DatabaseException {
+
     HashMap<SensorType, Boolean> requiredTypes = new HashMap<SensorType, Boolean>();
 
     MissingParam.checkMissing(conn, "conn");
@@ -214,6 +220,69 @@ public class SensorsConfiguration {
 
       // Get all required sensors for the instrument's variables
       for (SensorType type : getRequiredSensors(conn, instrumentId)) {
+        requiredTypes.put(type, true);
+        for (SensorType child : getChildren(type)) {
+          requiredTypes.put(child, true);
+        }
+      }
+
+      return new SensorAssignments(requiredTypes);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+
+  }
+
+  /**
+   * Get an empty map of sensor types ready to have columns assigned
+   * @return An empty sensor types/assignments map
+   * @throws MissingParamException
+   * @throws DatabaseException
+   * @throws SensorConfigurationException
+   */
+  public SensorAssignments getNewSensorAssigments(DataSource dataSource, List<Long> variableIds)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(variableIds, "variableIds");
+
+    Connection conn = null;
+
+    try {
+      conn = dataSource.getConnection();
+      return getNewSensorAssigments(conn, variableIds);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while building sensor assignments list", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+
+  }
+
+  /**
+   * Get an empty map of sensor types ready to have columns assigned
+   * @return An empty sensor types/assignments map
+   * @throws MissingParamException
+   * @throws DatabaseException
+   * @throws SensorConfigurationException
+   */
+  public SensorAssignments getNewSensorAssigments(Connection conn, List<Long> variableIds)
+    throws MissingParamException, DatabaseException {
+
+    HashMap<SensorType, Boolean> requiredTypes = new HashMap<SensorType, Boolean>();
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(variableIds, "variableIds");
+
+    try {
+      // All non-core sensors are not required
+      // (base state - some will be made required later)
+      for (SensorType type : getNonCoreSensors(conn)) {
+        requiredTypes.put(type, false);
+      }
+
+      // Get all required sensors for the instrument's variables
+      for (SensorType type : getRequiredSensors(conn, variableIds)) {
         requiredTypes.put(type, true);
         for (SensorType child : getChildren(type)) {
           requiredTypes.put(child, true);
@@ -377,6 +446,28 @@ public class SensorsConfiguration {
   }
 
   /**
+   * Get the {@link SensorType} object with the given name
+   * @param sensorId The sensor type's name
+   * @return The SensorType object
+   * @throws SensorTypeNotFoundException If the sensor type does not exist
+   */
+  public SensorType getSensorType(String typeName) throws SensorTypeNotFoundException {
+    SensorType result = null;
+
+    for (SensorType type: sensorTypes.values()) {
+      if (type.getName().equals(typeName)) {
+        result = type;
+        break;
+      }
+    }
+
+    if (null == result) {
+      throw new SensorTypeNotFoundException(typeName);
+    }
+    return result;
+  }
+
+  /**
    * Get a list of all the required sensor types for a given instrument,
    * based on the variables that it measures
    * @param conn A database connection
@@ -405,5 +496,67 @@ public class SensorsConfiguration {
     }
 
     return result;
+  }
+
+  /**
+   * Get a list of all the required sensor types for a given instrument,
+   * based on the variables that it measures
+   * @param conn A database connection
+   * @param instrumentId The instrument's database ID
+   * @return The required sensor types
+   * @throws DatabaseException
+   */
+  private List<SensorType> getRequiredSensors(Connection conn, List<Long> variableIds) throws DatabaseException {
+
+    List<SensorType> result = new ArrayList<SensorType>();
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      stmt = conn.prepareStatement(DatabaseUtils.makeInStatementSql(GET_VARIABLES_SENSOR_TYPES_QUERY, variableIds.size()));
+      for (int i = 0; i < variableIds.size(); i++) {
+        stmt.setLong(i + 1, variableIds.get(i));
+      }
+
+      records = stmt.executeQuery();
+      while (records.next()) {
+        result.add(sensorTypes.get(records.getLong(1)));
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving instrument sensor types", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return result;
+  }
+
+  /**
+   * Determine whether or not a given sensor type is required for an instrument
+   * @param conn A database connection
+   * @param instrumentId The instrument for which sensor types are being checked
+   * @param sensorType The sensor type
+   * @return {@code true} if the sensor is required; {@code false} if not
+   * @throws DatabaseException If a database error occurs
+   */
+  public boolean isRequired(Connection conn, long instrumentId, SensorType sensorType) throws DatabaseException {
+
+    // TODO This is very inefficient and will result in many database queries
+    //      during data extraction. It should be fixed when the migration is complete though
+    boolean required = false;
+
+    List<SensorType> sensorTypes = getRequiredSensors(conn, instrumentId);
+    if (sensorTypes.contains(sensorType)) {
+      required = true;
+    } else if (sensorType.hasParent()) {
+      SensorsConfiguration sensorsConfig = ResourceManager.getInstance().getSensorsConfiguration();
+      SensorType parent = sensorsConfig.getParent(sensorType);
+      if (sensorTypes.contains(parent)) {
+        required = true;
+      }
+    }
+
+    return required;
   }
 }
