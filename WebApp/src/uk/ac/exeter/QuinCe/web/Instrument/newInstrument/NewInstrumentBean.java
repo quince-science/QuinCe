@@ -1296,7 +1296,7 @@ public class NewInstrumentBean extends FileUploadBean {
         }
 
         // If the run type column is no longer required, unassign it
-        if (!fileDefinition.requiresRunTypeColumn(sensorAssignments)) {
+        if (!sensorAssignments.runTypeRequired(fileDefinition.getFileDescription())) {
           fileDefinition.setRunTypeColumn(-1);
         }
       }
