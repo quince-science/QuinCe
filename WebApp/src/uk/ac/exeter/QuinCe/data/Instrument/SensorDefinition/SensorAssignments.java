@@ -430,4 +430,28 @@ public class SensorAssignments {
   private SensorsConfiguration getSensorsConfiguration() {
     return ResourceManager.getInstance().getSensorsConfiguration();
   }
+
+  /**
+   * Determine whether or not the special Run Type SensorType is required
+   * for a given file. This is {@code true} if any SensorType is assigned
+   * that where {@link SensorType#hasInternalCalibration()} is {@code true}.
+   * @param fileDescription The file
+   * @return {@code true} if Run Type is required; {@code false} if not
+   */
+  public boolean runTypeRequired(String fileDescription) {
+    boolean required = false;
+
+    for (SensorType type : sensorAssignments.keySet()) {
+      if (type.hasInternalCalibration()) {
+        for (SensorAssignment assignment : sensorAssignments.get(type)) {
+          if (assignment.getDataFile().equals(fileDescription)) {
+            required = true;
+            break;
+          }
+        }
+      }
+    }
+
+    return required;
+  }
 }
