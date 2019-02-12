@@ -70,7 +70,7 @@ public class SensorType implements Comparable<SensorType> {
   private boolean diagnostic = false;
 
   /**
-   * Indicates whether or not this sensor has calibration data collected internall by the instrument
+   * Indicates whether or not this sensor has calibration data collected internally by the instrument
    */
   private boolean internalCalibration = false;
 
