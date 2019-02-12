@@ -159,6 +159,14 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
   }
 
   /**
+   * Get the dataset to which this record belongs
+   * @return The dataset
+   */
+  public DataSet getDataSet() {
+    return dataSet;
+  }
+
+  /**
    * Get the database ID of the dataset to which this record
    * belongs
    * @return The dataset ID
@@ -221,11 +229,13 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
     } else {
       SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
       for (SensorType sensor : sensorConfig.getSensorTypes()) {
-        if (null != sensor.getRequiredGroup() && sensor.getRequiredGroup().equalsIgnoreCase(name)) {
-          Double value = sensorValues.get(sensor.getName());
-          if (null != value) {
-            result = value;
-            break;
+        if (sensor.getName().equals(name) && sensorConfig.isParent(sensor)) {
+          for (SensorType child : sensorConfig.getChildren(sensor)) {
+            Double value = sensorValues.get(child.getName());
+            if (null != value) {
+              result = value;
+              break;
+            }
           }
         }
       }

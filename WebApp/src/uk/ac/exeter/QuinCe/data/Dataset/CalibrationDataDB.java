@@ -116,7 +116,9 @@ public class CalibrationDataDB {
    * @throws DatabaseException If a database error occurs
    * @throws NoSuchCategoryException If the record's Run Type is not recognised
    */
-  public static PreparedStatement storeCalibrationRecord(Connection conn, DataSetRawDataRecord record) throws MissingParamException, DataSetException, DatabaseException, NoSuchCategoryException {
+  public static PreparedStatement storeCalibrationRecord(Connection conn,
+    DataSetRawDataRecord record)
+      throws MissingParamException, DataSetException, DatabaseException, NoSuchCategoryException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(record, "record");
@@ -128,7 +130,8 @@ public class CalibrationDataDB {
     PreparedStatement statement = null;
 
     try {
-      statement = DatabaseUtils.createInsertStatement(conn, "calibration_data", createAllFieldsList());
+      statement = DatabaseUtils.createInsertStatement(conn, "calibration_data",
+        createAllFieldsList(conn, record.getDataSet().getInstrumentId()));
 
       statement.setLong(1, record.getDatasetId());
       statement.setLong(2, DateTimeUtils.dateToLong(record.getDate()));
@@ -139,7 +142,7 @@ public class CalibrationDataDB {
       int currentField = 5;
       SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
       for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-        if (sensorType.isUsedInCalculation()) {
+        if (sensorConfig.isRequired(conn, record.getDataSet().getInstrumentId(), sensorType)) {
           currentField++;
           Double sensorValue = record.getSensorValue(sensorType.getName());
           if (null == sensorValue) {
@@ -163,8 +166,9 @@ public class CalibrationDataDB {
   /**
    * Generate a list of all the fields in the {@code calibration_data} table
    * @return The field list
+   * @throws DatabaseException If a database error occurs
    */
-  private static List<String> createAllFieldsList() {
+  private static List<String> createAllFieldsList(Connection conn, long instrumentId) throws DatabaseException {
     List<String> fieldNames = new ArrayList<String>();
 
     fieldNames.add("dataset_id");
@@ -175,7 +179,7 @@ public class CalibrationDataDB {
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
     for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-      if (sensorType.isUsedInCalculation()) {
+      if (sensorConfig.isRequired(conn, instrumentId, sensorType)) {
         fieldNames.add(sensorType.getDatabaseFieldName());
       }
     }
@@ -467,7 +471,7 @@ public class CalibrationDataDB {
     List<String> calibrationFields = new ArrayList<String>();
     SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
     for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-      if (sensorType.hasExternalStandards()) {
+      if (sensorType.hasInternalCalibration()) {
         calibrationFields.add(sensorType.getDatabaseFieldName());
       }
     }
@@ -482,7 +486,7 @@ public class CalibrationDataDB {
     List<String> calibrationFields = new ArrayList<String>();
     SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
     for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-      if (sensorType.hasExternalStandards()) {
+      if (sensorType.hasInternalCalibration()) {
         calibrationFields.add(sensorType.getName());
       }
     }
@@ -640,7 +644,7 @@ public class CalibrationDataDB {
             default: {
               // This is a sensor field. Get the sensor name from the sensors configuration
               for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-                if (sensorType.isUsedInCalculation()) {
+                if (sensorConfig.isRequired(conn, dataSet.getInstrumentId(), sensorType)) {
                   if (columnName.equals(sensorType.getDatabaseFieldName())) {
                     calibrationColumns.put(i, sensorType.getName());
                   }
