@@ -67,7 +67,7 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
       json.append(",\"dateTime\":");
       json.append(file.getDateTimeSpecification().getJsonString());
       json.append(",\"runTypeColRequired\":");
-      json.append(file.requiresRunTypeColumn(sensorAssignments));
+      json.append(sensorAssignments.runTypeRequired(file.getFileDescription()));
       json.append(",\"runTypeCol\":");
       json.append(file.getRunTypeColumn());
       json.append('}');
