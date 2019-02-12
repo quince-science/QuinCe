@@ -55,7 +55,11 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *   <li>Diagnostic Water Flow <i>(14)</i></li>
  *   <li>Diagnostic Voltage <i>(15)</i></li>
  *   <li>Diagnostic Misc <i>(16)</i></li>
- *  </ul>
+ * </ul>
+ *
+ * There is also the special Run Type SensorType, which is added in the code
+ * and required if xH2O or CO2 are defined because they are registered as
+ * being internall calibrated
  *
  * Equilibrator Pressure (differential) depends on Ambient Pressure.
  * CO₂ in gas optionally depends on xH₂O in gas.
@@ -68,6 +72,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *   <li>Equilibrator Temperature</li>
  *   <li>Equilibrator Pressure</li>
  *   <li>CO₂ in gas <i>(core)</i></li>
+ *   <li>Run Type</li>
  * <ul>
  *
  *
@@ -478,5 +483,41 @@ public class SensorAssignmentsTest extends DBTest {
     assertThrows(SensorAssignmentException.class, () -> {
       assignments.addAssignment(unobtaniumId, makeAssignment(DATA_FILE_NAME, 1, true));
     });
+  }
+
+  @Test
+  public void runTypeNotRequiredNoInternalCalibTest() throws Exception {
+    // Run type is not required if no sensor with internal calibration is
+    // assigned
+    assignments.addAssignment(intakeTemperatureId, makeAssignment(DATA_FILE_NAME, 1, true));
+
+    assertFalse(assignments.runTypeRequired(DATA_FILE_NAME));
+    assertFalse(assignments.runTypeRequired(DATA_FILE_2_NAME));
+  }
+
+  @Test
+  public void runTypeRequiredOneInternalCalibTest() throws Exception {
+    assignments.addAssignment(xh2oId, makeAssignment(DATA_FILE_NAME, 1, true));
+
+    assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
+    assertFalse(assignments.runTypeRequired(DATA_FILE_2_NAME));
+  }
+
+  @Test
+  public void runTypeRequiredTwoInternalCalibTest() throws Exception {
+    assignments.addAssignment(xh2oId, makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments.addAssignment(xh2oId, makeAssignment(DATA_FILE_2_NAME, 1, true));
+
+    assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
+    assertTrue(assignments.runTypeRequired(DATA_FILE_2_NAME));
+  }
+
+
+  @Test
+  public void runTypeRequiredBothInternalCalibTest() throws Exception {
+    assignments.addAssignment(xh2oId, makeAssignment(DATA_FILE_NAME, 1, true));
+    assignments.addAssignment(co2Id, makeAssignment(DATA_FILE_NAME, 2, true));
+
+    assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
   }
 }
