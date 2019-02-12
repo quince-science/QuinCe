@@ -205,6 +205,18 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
   }
 
   /**
+   * Add a sensor assignment using the name of a sensor type
+   * @param typeName The sensor type name
+   * @param assignment The assignment details
+   * @throws SensorTypeNotFoundException If the named sensor does not exist
+   * @throws SensorAssignmentException
+   */
+  public void addAssignment(String typeName, SensorAssignment assignment) throws SensorTypeNotFoundException, SensorAssignmentException {
+    SensorType sensorType = getSensorsConfiguration().getSensorType(typeName);
+    addAssignment(sensorType.getId(), assignment);
+  }
+
+  /**
    * Determine whether or not a given column in a given file has already
    * been assigned
    * @param file The file
