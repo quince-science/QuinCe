@@ -211,26 +211,21 @@ public class SensorsConfiguration {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 
-    try {
-      // All non-core sensors are not required
-      // (base state - some will be made required later)
-      for (SensorType type : getNonCoreSensors(conn)) {
-        requiredTypes.put(type, false);
-      }
-
-      // Get all required sensors for the instrument's variables
-      for (SensorType type : getRequiredSensors(conn, instrumentId)) {
-        requiredTypes.put(type, true);
-        for (SensorType child : getChildren(type)) {
-          requiredTypes.put(child, true);
-        }
-      }
-
-      return new SensorAssignments(requiredTypes);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
+    // All non-core sensors are not required
+    // (base state - some will be made required later)
+    for (SensorType type : getNonCoreSensors(conn)) {
+      requiredTypes.put(type, false);
     }
 
+    // Get all required sensors for the instrument's variables
+    for (SensorType type : getRequiredSensors(conn, instrumentId)) {
+      requiredTypes.put(type, true);
+      for (SensorType child : getChildren(type)) {
+        requiredTypes.put(child, true);
+      }
+    }
+
+    return new SensorAssignments(requiredTypes);
   }
 
   /**

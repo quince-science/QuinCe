@@ -19,4 +19,13 @@ public class MissingParamException extends ParameterException {
   public MissingParamException(String varName) {
     super(varName, "parameter is null");
   }
+
+  /**
+   * Missing parameter with a specific message
+   * @param varName Parameter name
+   * @param message Message
+   */
+  public MissingParamException(String varName, String message) {
+    super(varName, message);
+  }
 }
