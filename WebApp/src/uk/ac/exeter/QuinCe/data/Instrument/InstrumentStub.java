@@ -4,7 +4,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
-import uk.ac.exeter.QuinCe.web.system.ServletUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * A stub object for an instrument, containing only information
@@ -25,21 +25,14 @@ public class InstrumentStub {
   private String name;
 
   /**
-   * Indicates whether or not the instrument has sensors that require
-   * calibration within QuinCe
-   */
-  private boolean calibratableSensors;
-
-  /**
    * Simple constructor
    * @param id The instrument's database ID
    * @param name The instrument's name
    * @param calibratableSensors Indicates the presence of sensors requiring calibration
    */
-  public InstrumentStub(long id, String name, boolean calibratableSensors) {
+  public InstrumentStub(long id, String name) {
     this.id = id;
     this.name = name;
-    this.calibratableSensors = calibratableSensors;
   }
 
   /**
@@ -52,7 +45,9 @@ public class InstrumentStub {
    * @throws InstrumentException If any instrument details are invalid
    */
   public Instrument getFullInstrument() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException, InstrumentException {
-    return InstrumentDB.getInstrument(ServletUtils.getDBDataSource(), id, ServletUtils.getResourceManager().getSensorsConfiguration(), ServletUtils.getResourceManager().getRunTypeCategoryConfiguration());
+    ResourceManager resourceManager = ResourceManager.getInstance();
+    return InstrumentDB.getInstrument(resourceManager.getDBDataSource(), id,
+      resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
   }
 
   ///////// *** GETTERS AND SETTERS *** ///////////
@@ -70,14 +65,5 @@ public class InstrumentStub {
    */
   public String getName() {
     return name;
-  }
-
-  /**
-   * Determine whether or not the instrument has sensors that require
-   * calibration within QuinCe
-   * @return {@code true} if the instrument has sensors that need calibrating; {@code false if not}.
-   */
-  public boolean getCalibratableSensors() {
-    return calibratableSensors;
   }
 }
