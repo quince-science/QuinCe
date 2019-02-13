@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.utils;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Collection;
 
 /**
@@ -28,6 +30,26 @@ public class MissingParam {
    */
   public static void checkMissing(char[] parameter, String parameterName) throws MissingParamException {
     checkMissing(parameter, parameterName, false);
+  }
+
+  /**
+   * Check that a database connection is not null and not closed
+   * @param conn The database connection
+   * @param parameterName The parameter name
+   * @throws MissingParamException If the connection is null or closed
+   */
+  public static void checkMissing(Connection conn, String parameterName) throws MissingParamException {
+    if (null == conn) {
+      throw new MissingParamException(parameterName);
+    } else {
+      try {
+        if (conn.isClosed()) {
+          throw new MissingParamException(parameterName, "Database connection is closed");
+        }
+      } catch (SQLException e) {
+        throw new MissingParamException(parameterName, "Error while checking database connection status");
+      }
+    }
   }
 
   /**
