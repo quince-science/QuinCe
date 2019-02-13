@@ -108,33 +108,24 @@ public class InstrumentDB {
   /**
    * Query for retrieving the list of instruments owned by a particular user
    */
-  private static final String GET_SINGLE_USER_INSTRUMENT_LIST_QUERY = "SELECT i.id, i.name, SUM(c.post_calibrated) "
-      + "FROM instrument AS i "
-      + "INNER JOIN file_definition AS d ON i.id = d.instrument_id "
-      + "INNER JOIN file_column AS c ON d.id = c.file_definition_id "
-      + "WHERE i.owner = ? "
-      + "GROUP BY i.id ORDER BY i.name ASC";
+  private static final String GET_SINGLE_USER_INSTRUMENT_LIST_QUERY = "SELECT "
+      + "id, name FROM instrument "
+      + "WHERE owner = ? ORDER BY name ASC";
 
   /**
    * Query for retrieving the list of all instruments in the system, grouped by owner
    */
   private static final String GET_ALL_USERS_INSTRUMENT_LIST_QUERY = "SELECT "
-      + "i.id, CONCAT(u.surname, \", \", u.firstname, \" - \", i.name) AS name, SUM(c.post_calibrated) "
+      + "i.id, CONCAT(u.surname, \", \", u.firstname, \" - \", i.name) AS name "
       + "FROM instrument AS i "
-      + "INNER JOIN file_definition AS d ON i.id = d.instrument_id "
-      + "INNER JOIN file_column AS c ON d.id = c.file_definition_id "
       + "INNER JOIN user AS u ON i.owner = u.id "
       + "GROUP BY i.id ORDER BY name ASC";
 
   /**
    * Query for retrieving the stub for a specific instrument
    */
-  private static final String GET_INSTRUMENT_STUB_QUERY = "SELECT i.name, SUM(c.post_calibrated) "
-      + "FROM instrument AS i "
-      + "INNER JOIN file_definition AS d ON i.id = d.instrument_id "
-      + "INNER JOIN file_column AS c ON d.id = c.file_definition_id "
-      + "WHERE i.id = ? "
-      + "GROUP BY i.id";
+  private static final String GET_INSTRUMENT_STUB_QUERY = "SELECT name "
+      + "FROM instrument WHERE i.id = ? ";
 
   /**
    * SQL query to get an instrument's base record
@@ -163,7 +154,7 @@ public class InstrumentDB {
    */
   private static final String GET_FILE_COLUMNS_QUERY = "SELECT "
       + "id, file_column, primary_sensor, sensor_type, sensor_name, value_column, " // 6
-      + "depends_question_answer, missing_value, post_calibrated " // 9
+      + "depends_question_answer, missing_value " // 8
         + "FROM file_column WHERE file_definition_id = ?";
 
   /**
@@ -521,7 +512,7 @@ public class InstrumentDB {
     try {
       stmt = conn.prepareStatement(GET_SINGLE_USER_INSTRUMENT_LIST_QUERY);
       stmt.setLong(1, ownerId);
-      instrumentList = runInstrumentListQuery(conn,stmt);
+      instrumentList = runInstrumentListQuery(conn, stmt);
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving instrument list", e);
     } finally {
@@ -580,8 +571,7 @@ public class InstrumentDB {
     try {
       instruments = stmt.executeQuery();
       while (instruments.next()) {
-        boolean hasCalibratableSensors = (instruments.getInt(3) > 0);
-        InstrumentStub record = new InstrumentStub(instruments.getLong(1), instruments.getString(2), hasCalibratableSensors);
+        InstrumentStub record = new InstrumentStub(instruments.getLong(1), instruments.getString(2));
         instrumentList.add(record);
       }
     } catch (SQLException e) {
@@ -618,8 +608,7 @@ public class InstrumentDB {
       if (!record.next()) {
         throw new RecordNotFoundException("Instrument not found", "instrument", instrumentId);
       } else {
-        boolean hasCalibratableSensors = (record.getInt(2) > 0);
-        result = new InstrumentStub(instrumentId, record.getString(1), hasCalibratableSensors);
+        result = new InstrumentStub(instrumentId, record.getString(1));
       }
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving instrument list", e);
@@ -909,9 +898,19 @@ public class InstrumentDB {
    * @throws InstrumentException If any instrument values are invalid
    * @throws MissingParamException If any internal calls are missing required parameters
    */
-  private static SensorAssignments getSensorAssignments(Connection conn, long instrumentId, InstrumentFileSet files, SensorsConfiguration sensorConfiguration, RunTypeCategoryConfiguration
-      runTypeConfiguration) throws DatabaseException, RecordNotFoundException, InstrumentException, MissingParamException {
+  private static SensorAssignments getSensorAssignments(Connection conn,
+    long instrumentId, InstrumentFileSet files, SensorsConfiguration sensorConfiguration,
+    RunTypeCategoryConfiguration runTypeConfiguration) throws DatabaseException,
+      RecordNotFoundException, InstrumentException, MissingParamException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+    MissingParam.checkMissing(files, "files");
+
+
     SensorAssignments assignments = sensorConfiguration.getNewSensorAssigments(conn, instrumentId);
+
+
 
     List<PreparedStatement> stmts = new ArrayList<PreparedStatement>();
     List<ResultSet> records = new ArrayList<ResultSet>();
