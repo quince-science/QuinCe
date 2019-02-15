@@ -15,6 +15,7 @@ import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.Test;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.DBTest;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
@@ -103,11 +104,25 @@ public class SensorsConfigurationTest extends DBTest {
     "resources/sql/testbase/instrument",
   })
   @Test
-  public void newSensorAssignments() throws Exception {
+  public void newSensorAssignmentsTest() throws Exception {
     // We're not actually testing the SensorAssignments object - that's done
     // in other tests. Here we just need to know that we get something
-    assertNotNull(getConfig().getNewSensorAssigments(getDataSource(), 1));
-  }
+
+    SensorAssignments assignments = getConfig().getNewSensorAssigments(getDataSource(), 1);
+
+    assertNotNull(assignments);
+
+    // Ensure that the Run Type is in the assignments
+    boolean runTypeSensorTypeFound = false;
+    for (SensorType sensorType : assignments.getAssignments().keySet()) {
+      if (sensorType.getId() == SensorType.RUN_TYPE_ID) {
+        runTypeSensorTypeFound = true;
+        break;
+      }
+    }
+
+    assertTrue(runTypeSensorTypeFound);
+}
 
   @FlywayTest
   @Test
@@ -229,6 +244,7 @@ public class SensorsConfigurationTest extends DBTest {
     assertEquals(2, config.getSiblings(child).size());
   }
 
+  @FlywayTest
   @Test
   public void getSensorTypeTest() throws SensorConfigurationException {
     try {
@@ -239,6 +255,7 @@ public class SensorsConfigurationTest extends DBTest {
     }
   }
 
+  @FlywayTest
   @Test
   public void getInvalidSensorTypeTest() {
     assertThrows(SensorTypeNotFoundException.class, () -> {
