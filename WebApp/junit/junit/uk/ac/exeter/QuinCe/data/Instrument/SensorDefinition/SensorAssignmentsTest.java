@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -173,8 +174,8 @@ public class SensorAssignmentsTest extends DBTest {
       equilibratorPressureDifferentialId);
   }
 
-  @BeforeEach
-  public void testInit() throws Exception {
+  @BeforeAll
+  public void sensorConfigInit() throws Exception {
     initResourceManager();
     config = ResourceManager.getInstance().getSensorsConfiguration();
 
@@ -187,7 +188,10 @@ public class SensorAssignmentsTest extends DBTest {
     ambientPressureId = getSensorTypeId("Ambient Pressure");
     xh2oId = getSensorTypeId("xH₂O in gas");
     co2Id = getSensorTypeId("CO₂ in gas");
+  }
 
+  @BeforeEach
+  public void assignmentsInit() throws Exception {
     assignments = config.getNewSensorAssigments(getDataSource(), 1);
   }
 
