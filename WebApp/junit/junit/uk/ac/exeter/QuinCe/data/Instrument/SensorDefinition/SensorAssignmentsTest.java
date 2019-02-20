@@ -6,8 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import org.flywaydb.test.annotation.FlywayTest;
@@ -19,7 +21,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.DBTest;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -87,7 +88,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 @FlywayTest(locationsForMigrate = {
   "resources/sql/testbase/user",
   "resources/sql/testbase/instrument",
-  "resources/sql/data/Instrument/SensorDefinition/SensorAssignmentsTest/classMigrations"
+  "resources/sql/testbase/variable"
 })
 @TestInstance(Lifecycle.PER_CLASS)
 public class SensorAssignmentsTest extends DBTest {
@@ -97,10 +98,11 @@ public class SensorAssignmentsTest extends DBTest {
   private static final String DATA_FILE_NAME = "Data File";
   private static final String DATA_FILE_2_NAME = "Second File";
 
-  // Created by classInit()
+  // Created by sensorConfigInit()
   private SensorsConfiguration config = null;
+  private List<Long> varIds = null;
 
-  // Created by createEmptySensorAssignments()
+  // Created by assignmentsInit()
   private SensorAssignments assignments = null;
 
   // Sensor type IDs. Populated by classInit()
@@ -121,7 +123,7 @@ public class SensorAssignmentsTest extends DBTest {
   private int countAllAssignments() {
     int count = 0;
 
-    for (Set<SensorAssignment> assignmentSet : assignments.getAssignments().values()) {
+    for (Set<SensorAssignment> assignmentSet : assignments.values()) {
       count += assignmentSet.size();
     }
 
@@ -178,6 +180,8 @@ public class SensorAssignmentsTest extends DBTest {
   public void sensorConfigInit() throws Exception {
     initResourceManager();
     config = ResourceManager.getInstance().getSensorsConfiguration();
+    varIds = new ArrayList<Long>(1);
+    varIds.add(1L);
 
     intakeTemperatureId = getSensorTypeId("Intake Temperature");
     salinityId = getSensorTypeId("Salinity");
@@ -192,7 +196,7 @@ public class SensorAssignmentsTest extends DBTest {
 
   @BeforeEach
   public void assignmentsInit() throws Exception {
-    assignments = config.getNewSensorAssigments(getDataSource(), 1);
+    assignments = new SensorAssignments(getDataSource().getConnection(), varIds);
   }
 
   @AfterEach
@@ -209,7 +213,7 @@ public class SensorAssignmentsTest extends DBTest {
   @Test
   public void basicAssignmentTest() throws Exception {
     assignments.addAssignment(intakeTemperatureId, makeAssignment(DATA_FILE_NAME, 1, true));
-    TreeMap<SensorType, Set<SensorAssignment>> allAssignments = assignments.getAssignments();
+    Map<SensorType, Set<SensorAssignment>> allAssignments = assignments;
     Set<SensorAssignment> sensorAssignments = allAssignments.get(config.getSensorType(1));
     assertEquals(1, sensorAssignments.size());
     assertEquals(makeAssignment(DATA_FILE_NAME, 1, true), sensorAssignments.toArray()[0]);
@@ -219,6 +223,22 @@ public class SensorAssignmentsTest extends DBTest {
   public void assignToInvalidSensorTypeTest() {
     assertThrows(SensorTypeNotFoundException.class, () -> {
       assignments.addAssignment(INVALID_SENSOR_ID, makeAssignment(DATA_FILE_NAME, 1, true));
+    });
+  }
+
+  @Test
+  public void assignByNameTest() throws Exception {
+    assignments.addAssignment("Intake Temperature", makeAssignment(DATA_FILE_NAME, 1, true));
+    Map<SensorType, Set<SensorAssignment>> allAssignments = assignments;
+    Set<SensorAssignment> sensorAssignments = allAssignments.get(config.getSensorType(1));
+    assertEquals(1, sensorAssignments.size());
+    assertEquals(makeAssignment(DATA_FILE_NAME, 1, true), sensorAssignments.toArray()[0]);
+  }
+
+  @Test
+  public void assignByNonExistentNameTest() throws Exception {
+    assertThrows(SensorTypeNotFoundException.class, () -> {
+      assignments.addAssignment("Flurble", makeAssignment(DATA_FILE_NAME, 1, true));
     });
   }
 
@@ -445,16 +465,6 @@ public class SensorAssignmentsTest extends DBTest {
   }
 
   @Test
-  public void assignmentRequiredNonExistentSensorTypeTest() {
-    SensorType nonExistentSensor = Mockito.mock(SensorType.class);
-    Mockito.when(nonExistentSensor.getId()).thenReturn(-1000L);
-
-    assertThrows(SensorAssignmentException.class, () -> {
-      assignments.isAssignmentRequired(nonExistentSensor);
-    });
-  }
-
-  @Test
   public void coreSensorAssignedPrimaryTest() throws Exception {
     assignments.addAssignment(co2Id, makeAssignment(DATA_FILE_NAME, 1, true));
     assertTrue(assignments.coreSensorAssigned(DATA_FILE_NAME, true));
@@ -483,9 +493,9 @@ public class SensorAssignmentsTest extends DBTest {
   public void assignCoreSensorForDisallowedVariableTest() throws Exception {
     // You're not allowed to assign a core sensor for a
     // variable that your instrument doesn't measure.
-    long unobtaniumId = getSensorTypeId("Unobtanium");
+    long testSensorId = getSensorTypeId("testSensor");
     assertThrows(SensorAssignmentException.class, () -> {
-      assignments.addAssignment(unobtaniumId, makeAssignment(DATA_FILE_NAME, 1, true));
+      assignments.addAssignment(testSensorId, makeAssignment(DATA_FILE_NAME, 1, true));
     });
   }
 

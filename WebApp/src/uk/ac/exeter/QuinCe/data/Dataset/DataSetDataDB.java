@@ -23,9 +23,12 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -110,8 +113,12 @@ public class DataSetDataDB {
    * @throws DataSetException If a non-measurement record is supplied
    * @throws DatabaseException If a database error occurs
    * @throws NoSuchCategoryException If the record's Run Type is not recognised
+   * @throws VariableNotFoundException
+   * @throws SensorConfigurationException
    */
-  public static void storeRecord(Connection conn, DataSetRawDataRecord record) throws MissingParamException, DataSetException, DatabaseException, NoSuchCategoryException {
+  public static void storeRecord(Connection conn, DataSetRawDataRecord record)
+    throws MissingParamException, DataSetException, DatabaseException,
+      NoSuchCategoryException, SensorConfigurationException, VariableNotFoundException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(record, "record");
@@ -136,8 +143,10 @@ public class DataSetDataDB {
 
       int currentField = 5;
       SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
+      long instrumentId = record.getDataSet().getInstrumentId();
+
       for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-        if (sensorConfig.isRequired(conn, record.getDataSet().getInstrumentId(), sensorType)) {
+        if (sensorConfig.requiredForVariables(sensorType, InstrumentVariable.getIDsList(InstrumentDB.getVariables(conn, instrumentId)))) {
           currentField++;
           Double sensorValue = record.getSensorValue(sensorType.getName());
           if (null == sensorValue) {
@@ -376,11 +385,14 @@ public class DataSetDataDB {
    * @param sensorColumns The mapping of sensor columns
    * @throws SQLException If the column details cannot be read
    * @throws DatabaseException If a database error occurs
+   * @throws VariableNotFoundException
+   * @throws MissingParamException
+   * @throws SensorConfigurationException
    */
   private static void calculateColumnIndices(Connection conn, long instrumentId,
       ResultSetMetaData rsmd, SensorAssignments sensorAssignments,
       Map<String, Integer> baseColumns, Map<Integer, String> sensorColumns)
-        throws SQLException, DatabaseException {
+        throws SQLException, DatabaseException, SensorConfigurationException, MissingParamException, VariableNotFoundException {
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
 
@@ -414,8 +426,9 @@ public class DataSetDataDB {
       default: {
         // This is a sensor field. Get the sensor name from the sensors configuration
         for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-          if (sensorConfig.isRequired(conn, instrumentId, sensorType) &&
-            sensorAssignments.getAssignments().get(sensorType).size() > 0) {
+          if (sensorConfig.requiredForVariables(sensorType,
+            InstrumentVariable.getIDsList(InstrumentDB.getVariables(conn, instrumentId))) &&
+            sensorAssignments.get(sensorType).size() > 0) {
 
             if (columnName.equals(sensorType.getDatabaseFieldName())) {
               sensorColumns.put(i, sensorType.getName());
@@ -436,10 +449,12 @@ public class DataSetDataDB {
    * @throws MissingParamException If any required parameters are missing
    * @throws SQLException If the statement cannot be created
    * @throws DatabaseException If a database error occurs
+   * @throws VariableNotFoundException
+   * @throws SensorConfigurationException
    */
   private static PreparedStatement createInsertRecordStatement(Connection conn,
     DataSetRawDataRecord record)
-      throws MissingParamException, SQLException, DatabaseException {
+      throws MissingParamException, SQLException, DatabaseException, SensorConfigurationException, VariableNotFoundException {
 
     List<String> fieldNames = new ArrayList<String>();
 
@@ -451,7 +466,9 @@ public class DataSetDataDB {
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
     for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-      if (sensorConfig.isRequired(conn, record.getDataSet().getInstrumentId(), sensorType)) {
+      if (sensorConfig.requiredForVariables(sensorType,
+        InstrumentVariable.getIDsList(InstrumentDB.getVariables(conn, record.getDataSet().getInstrumentId())))) {
+
         fieldNames.add(sensorType.getDatabaseFieldName());
       }
     }
@@ -588,7 +605,7 @@ public class DataSetDataDB {
         default: {
           // Sensor value columns
           for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-            if (sensorAssignments.getAssignments().get(sensorType).size() > 0) {
+            if (sensorAssignments.get(sensorType).size() > 0) {
               if (columnName.equals(sensorType.getDatabaseFieldName())) {
                 result.add(sensorType.getName());
                 break;
@@ -658,7 +675,7 @@ public class DataSetDataDB {
         default: {
           // Sensor value columns
           for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-            if (sensorAssignments.getAssignments().get(sensorType).size() > 0) {
+            if (sensorAssignments.get(sensorType).size() > 0) {
               if (columnName.equals(sensorType.getDatabaseFieldName())) {
                 // TODO Eventually this will use the sensor name as the label, and the sensor type as the group
                 variables.addVariable(sensorType.getName(), new Variable(Variable.TYPE_SENSOR, sensorType.getName(), columnName));
@@ -713,7 +730,7 @@ public class DataSetDataDB {
       default: {
         // Sensor value columns
         for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-          if (sensorAssignments.getAssignments().get(sensorType).size() > 0) {
+          if (sensorAssignments.get(sensorType).size() > 0) {
             if (originalField.equals(sensorType.getDatabaseFieldName())) {
               // TODO Eventually this will use the sensor name as the label, and the sensor type as the group
               datasetFields.add(originalField);
