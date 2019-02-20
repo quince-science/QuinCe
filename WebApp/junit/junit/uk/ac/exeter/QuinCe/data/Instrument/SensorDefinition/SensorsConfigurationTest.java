@@ -21,10 +21,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.DBTest;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -644,6 +646,39 @@ public class SensorsConfigurationTest extends DBTest {
   public void variableWithNonCoreChildTest() {
     assertThrows(SensorConfigurationException.class, () -> {
       getConfig();
+    });
+  }
+
+  @FlywayTest
+  @Test
+  public void getInstrumentVariableTest() throws Exception {
+    InstrumentVariable variable = getConfig().getInstrumentVariable(1L);
+    assertEquals(1L, variable.getId());
+  }
+
+  @FlywayTest
+  @Test
+  public void getNonExistentInstrumentVariableTest() throws Exception {
+    assertThrows(VariableNotFoundException.class, () -> {
+      getConfig().getInstrumentVariable(-1000L);
+    });
+  }
+
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/testbase/variable"
+  })
+  @Test
+  public void getInstrumentVariablesTest() throws Exception {
+    List<InstrumentVariable> variables = getConfig().getInstrumentVariables(bothVarsList);
+    for (InstrumentVariable variable : variables) {
+      assertTrue(variable.getId() == 1L || variable.getId() == 2L);
+    }
+  }
+
+  @Test
+  public void getNonExistentInstrumentVariablesTest() throws Exception {
+    assertThrows(VariableNotFoundException.class, () -> {
+      getConfig().getInstrumentVariables(invalidVarList);
     });
   }
 }
