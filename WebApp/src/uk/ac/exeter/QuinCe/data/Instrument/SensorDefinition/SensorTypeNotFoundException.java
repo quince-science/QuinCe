@@ -3,7 +3,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 
 /**
- * Exception for named sensor types that can't be found
+ * Exception for sensor types that can't be found
  * @author Steve Jones
  *
  */
