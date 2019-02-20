@@ -20,7 +20,6 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  *
@@ -545,29 +544,18 @@ public class SensorsConfiguration {
    * @return The SensorTypes required by the variables
    * @throws SensorConfigurationException If any variable IDs do not exist
    */
-  public Set<SensorType> getSensorTypes(List<Long> variableIds,
-    boolean replaceParentsWithChildren) throws SensorConfigurationException {
+==== BASE ====
+  private List<SensorType> getRequiredSensors(Connection conn, List<Long> variableIds) throws DatabaseException {
 
-    Set<SensorType> sensorTypes = new HashSet<SensorType>();
+    List<SensorType> result = new ArrayList<SensorType>();
+    PreparedStatement stmt = null;
+    ResultSet records = null;
 
-    for (long varId : variableIds) {
-      InstrumentVariable variable = instrumentVariables.get(varId);
-      if (null == variable) {
-        throw new SensorConfigurationException("Unknown variable ID " + varId);
-      } else {
-        if (!replaceParentsWithChildren) {
-          sensorTypes.addAll(variable.getAllSensorTypes());
-        } else {
-          for (SensorType tempType : variable.getAllSensorTypes()) {
-            if (!isParent(tempType)) {
-              sensorTypes.add(tempType);
-            } else {
-              sensorTypes.addAll(getChildren(tempType));
-            }
-          }
-        }
+    try {
+      stmt = conn.prepareStatement(DatabaseUtils.makeInStatementSql(GET_VARIABLES_SENSOR_TYPES_QUERY, variableIds.size()));
+      for (int i = 0; i < variableIds.size(); i++) {
+        stmt.setLong(i + 1, variableIds.get(i));
       }
-    }
 
     return sensorTypes;
   }
@@ -588,15 +576,10 @@ public class SensorsConfiguration {
    */
   private void checkParentsAndChildren() throws SensorConfigurationException {
 
-    for (SensorType sensorType : getSensorTypes()) {
-      // Parents must have more than one child
-      if (isParent(sensorType)) {
-        List<SensorType> children = getChildren(sensorType);
-        if (children.size() <= 1) {
-          throw new SensorConfigurationException(
-            "SensorType " + sensorType.getId() + " must have more than one child"
-          );
-        }
+    // TODO This is very inefficient and will result in many database queries
+    //      during data extraction. It should be fixed when the migration is complete though
+    boolean required = false;
+==== BASE ====
 
         if (hasParent(sensorType)) {
           throw new SensorConfigurationException(
@@ -610,6 +593,7 @@ public class SensorsConfiguration {
           );
         }
       }
+      variables.add(variable);
     }
   }
 
