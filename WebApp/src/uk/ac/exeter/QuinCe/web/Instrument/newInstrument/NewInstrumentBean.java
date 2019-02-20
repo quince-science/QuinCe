@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,9 +37,11 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -444,7 +447,11 @@ public class NewInstrumentBean extends FileUploadBean {
    */
   private void clearAllData() throws Exception {
 
+    Connection conn = null;
+
     try {
+      conn = getDataSource().getConnection();
+
       instrumentName = null;
       instrumentFiles = new NewInstrumentFileSet();
 
@@ -452,7 +459,7 @@ public class NewInstrumentBean extends FileUploadBean {
       instrumentVariables = new ArrayList<Long>(1);
       instrumentVariables.add(1L);
 
-      sensorAssignments = ResourceManager.getInstance().getSensorsConfiguration().getNewSensorAssigments(getDataSource(), instrumentVariables);
+      sensorAssignments = new SensorAssignments(conn, instrumentVariables);
       resetSensorAssignmentValues();
       resetPositionAssignmentValues();
       resetDateTimeAssignmentValues();
@@ -461,6 +468,8 @@ public class NewInstrumentBean extends FileUploadBean {
     } catch (Exception e) {
       e.printStackTrace();
       throw e;
+    } finally {
+      DatabaseUtils.closeConnection(conn);
     }
   }
 
@@ -552,18 +561,19 @@ public class NewInstrumentBean extends FileUploadBean {
    * @throws SensorAssignmentException If the sensor assignments are internally invalid
    * @throws DatabaseException If a database error occurs
    * @throws JSONException If the JSON construction is invalid
+   * @throws SensorConfigurationException
    */
-  public String getSensorAssignments() throws SensorAssignmentException, JSONException, DatabaseException {
+  public String getSensorAssignments() throws SensorAssignmentException, JSONException, DatabaseException, SensorConfigurationException {
 
     JSONArray json = new JSONArray();
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
 
-    for (SensorType sensorType : sensorAssignments.getAssignments().keySet()) {
+    for (SensorType sensorType : sensorAssignments.keySet()) {
       JSONObject sensorTypeJson = new JSONObject();
       sensorTypeJson.put("name", sensorType.getName());
       sensorTypeJson.put("required", sensorAssignments.isAssignmentRequired(sensorType));
-      sensorTypeJson.put("core", sensorConfig.isCoreSensor(getDataSource(), sensorType));
+      sensorTypeJson.put("core", sensorConfig.isCoreSensor(sensorType));
       if (null == sensorType.getDependsQuestion()) {
         sensorTypeJson.put("dependsQuestion", JSONObject.NULL);
       } else {
@@ -571,7 +581,7 @@ public class NewInstrumentBean extends FileUploadBean {
       }
 
       // The columns assigned to the sensor type
-      Set<SensorAssignment> assignments = sensorAssignments.getAssignments().get(sensorType);
+      Set<SensorAssignment> assignments = sensorAssignments.get(sensorType);
       JSONArray assignmentsJson = new JSONArray();
       if (null != assignments) {
         for (SensorAssignment assignment : assignments) {
@@ -1675,6 +1685,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
     try {
 
+      SensorsConfiguration sensorConfig =
+        ResourceManager.getInstance().getSensorsConfiguration();
+
       /*
        * Adding a Run Type sensor assignment
        */
@@ -1684,9 +1697,12 @@ public class NewInstrumentBean extends FileUploadBean {
           getRunTypeColumn(), "Run Type", true, false, null);
 
       sensorAssignments.addAssignment(SensorType.RUN_TYPE_ID, sensorAssignment);
-      Instrument instrument = new Instrument(getUser(), instrumentName, instrumentFiles,
-        sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow, averagingMode,
-        platformCode, false);
+
+      Instrument instrument = new Instrument(getUser(), instrumentName,
+        instrumentFiles, sensorConfig.getInstrumentVariables(instrumentVariables),
+        sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow,
+        averagingMode, platformCode, false);
+
       InstrumentDB.storeInstrument(getDataSource(), instrument);
       setCurrentInstrumentId(instrument.getDatabaseId());
 

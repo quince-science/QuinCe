@@ -31,16 +31,19 @@ import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Database methods dealing with instruments
@@ -135,6 +138,12 @@ public class InstrumentDB {
       + "pre_flushing_time, post_flushing_time, minimum_water_flow, averaging_mode, " // 6
       + "platform_code, nrt " // 7
       + "FROM instrument WHERE id = ?";
+
+  /**
+   * Query to get the variables measured by an instrument
+   */
+  private static final String GET_INSTRUMENT_VARIABLES_QUERY = "SELECT "
+    + "variable_id FROM instrument_variables WHERE instrument_id = ?";
 
   /**
    * SQL query to get the file definitions for an instrument
@@ -263,7 +272,7 @@ public class InstrumentDB {
         // Sensor assignments
         int databaseColumn = -1;
 
-        for (Map.Entry<SensorType, Set<SensorAssignment>> sensorAssignmentsEntry : instrument.getSensorAssignments().getAssignments().entrySet()) {
+        for (Map.Entry<SensorType, Set<SensorAssignment>> sensorAssignmentsEntry : instrument.getSensorAssignments().entrySet()) {
 
           SensorType sensorType = sensorAssignmentsEntry.getKey();
 
@@ -715,6 +724,7 @@ public class InstrumentDB {
       String platformCode;
       boolean nrt;
       InstrumentFileSet files;
+      List<InstrumentVariable> variables;
       SensorAssignments sensorAssignments;
 
 
@@ -739,14 +749,18 @@ public class InstrumentDB {
         platformCode = instrumentRecord.getString(7);
         nrt = instrumentRecord.getBoolean(8);
 
-
         // Now get the file definitions
         files = getFileDefinitions(conn, instrumentId);
+
+        // The variables
+        variables = getVariables(conn, instrumentId);
 
         // Now the sensor assignments
         sensorAssignments = getSensorAssignments(conn, instrumentId, files, sensorConfiguration, runTypeConfiguration);
 
-        instrument = new Instrument(instrumentId, owner, name, files, sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow, averagingMode, platformCode, nrt);
+        instrument = new Instrument(instrumentId, owner, name, files, variables,
+          sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow,
+          averagingMode, platformCode, nrt);
       }
 
     } catch (SQLException e) {
@@ -892,6 +906,43 @@ public class InstrumentDB {
   }
 
   /**
+   * Get the variables measured by an instrument
+   * @param conn A database connection
+   * @param instrumentId The instrument's database ID
+   * @return The variables
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   * @throws VariableNotFoundException If an invalid variable is configured for the instrument
+   */
+  public static List<InstrumentVariable> getVariables(Connection conn, long instrumentId)
+    throws MissingParamException, VariableNotFoundException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+
+    List<InstrumentVariable> variables = new ArrayList<InstrumentVariable>();
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      stmt = conn.prepareStatement(GET_INSTRUMENT_VARIABLES_QUERY);
+      stmt.setLong(1, instrumentId);
+      records = stmt.executeQuery();
+      while (records.next()) {
+        variables.add(sensorConfig.getInstrumentVariable(records.getLong(1)));
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting instrument variables", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return variables;
+  }
+
+  /**
    * Get the sensor and file column configuration for an instrument
    * @param conn A database connection
    * @param files The instrument's files
@@ -912,10 +963,9 @@ public class InstrumentDB {
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
     MissingParam.checkMissing(files, "files");
 
-
-    SensorAssignments assignments = sensorConfiguration.getNewSensorAssigments(conn, instrumentId);
-
-
+    SensorAssignments assignments =
+      SensorAssignments.makeSensorAssignmentsFromVariables(
+        conn, getVariables(conn, instrumentId));
 
     List<PreparedStatement> stmts = new ArrayList<PreparedStatement>();
     List<ResultSet> records = new ArrayList<ResultSet>();
