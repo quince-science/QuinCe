@@ -22,12 +22,18 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
-public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>> {
+==== BASE ====
+public class SensorAssignments {
+==== BASE ====
 
   /**
-   * The database IDs of the variables that this set of assignments is targeting
+==== BASE ====
+   * The assignments
+==== BASE ====
    */
-  private List<Long> variableIDs;
+==== BASE ====
+  private TreeMap<SensorType, Set<SensorAssignment>> sensorAssignments;
+==== BASE ====
 
   /**
    * The serial version UID
@@ -35,36 +41,22 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
   private static final long serialVersionUID = 7750520470025596480L;
 
   /**
-   * Build the list of assignments based on the supplied list of variable IDs
-   * @throws DatabaseException If any database lookups fail
-   * @throws SensorConfigurationException If any variables can't be found
-   * @throws SensorTypeNotFoundException If any internally listed SensorTypes
-   *                                     don't exist
+==== BASE ====
+   * Simple constructor - take in a map of Sensor Types and flags
+   * indicating whether or not they are required
+   * @param sensorTypes The
+==== BASE ====
    */
-  public SensorAssignments(Connection conn, List<Long> variableIDs)
-    throws DatabaseException, SensorConfigurationException, SensorTypeNotFoundException {
+==== BASE ====
+  protected SensorAssignments(Map<SensorType, Boolean> sensorTypes) {
+    this.sensorsRequired = sensorTypes;
+==== BASE ====
 
-    super();
-
-    this.variableIDs = variableIDs;
-
-    populateAssignments(conn);
-  }
-
-  /**
-   * Make a SensorAssignments using a list of InstrumentVariable objects instead
-   * of their IDs. This can't be a constructor because of type erasure.
-   * @param conn A database connection
-   * @param variables The instrument variables
-   * @return The SensorAssignments object
-   */
-  public static SensorAssignments makeSensorAssignmentsFromVariables(
-    Connection conn, List<InstrumentVariable> variables)
-      throws DatabaseException, SensorConfigurationException, SensorTypeNotFoundException {
-
-    List<Long> ids = new ArrayList<Long>(variables.size());
-    for (InstrumentVariable variable : variables) {
-      ids.add(variable.getId());
+==== BASE ====
+    sensorAssignments = new TreeMap<SensorType, Set<SensorAssignment>>();
+    for (SensorType type : sensorTypes.keySet()) {
+      sensorAssignments.put(type, new HashSet<SensorAssignment>());
+==== BASE ====
     }
 
     return new SensorAssignments(conn, ids);
@@ -151,8 +143,9 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
   }
 
   /**
-   * See if a SensorType has been assigned. Optionally only check for
-   * primary assignments. Check children or siblings as appropriate.
+==== BASE ====
+   * Determines whether or not any of the sensor types in the
+   * collection depends on the supplied sensor type.
    *
    * @param sensorType The SensorType
    * @param primaryOnly If only primary assignments are to be checked
@@ -167,14 +160,22 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
    * See if a SensorType has been assigned. Optionally only check for
    * primary assignments. Check children or siblings as appropriate.
    *
-   * @param sensorType The SensorType
-   * @param primaryOnly If only primary assignments are to be checked
-   * @return {@code true} if the sensor has been assigned; {@code false} if not
+   * The logic of this is quite nasty. Follow the code comments.
+   *
+   * @param sensorType The sensor type that other sensors may depend on
+   * @return {@code true} if any other sensor types depend on the supplied
+   *         sensor type; {@code false} if there are no dependents
+   * @see SensorType#getDependsQuestion()
+==== BASE ====
    */
   private boolean isAssigned(SensorType sensorType, String dataFileName, boolean primaryOnly, boolean includeRelations) {
     boolean assigned = false;
 
-    SensorsConfiguration sensorConfig = getSensorConfig();
+    for (SensorType testType : sensorsRequired.keySet()) {
+      if (result) {
+        break;
+      // A sensor can't depend on itself
+      } else if (!testType.equals(sensorType)) {
 
     if (includeRelations) {
       if (sensorConfig.isParent(sensorType)) {
@@ -193,11 +194,7 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
             break;
           }
         }
-      } else {
-        assigned = checkAssignment(sensorType, dataFileName, primaryOnly);
       }
-    } else {
-      assigned = checkAssignment(sensorType, dataFileName, primaryOnly);
     }
 
 
@@ -416,11 +413,10 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
    * @param primaryOnly If {@code true}, only primary assignments are considered;
    *        secondary assignments will return {@code false}.
    * @return {@code true} if the file has had a core sensor assigned; {@code false} if it has not
-   * @throws SensorConfigurationException If the sensor configuration is invalid
+==== BASE ====
+   * @throws DatabaseException If a database error occurs
    */
-  public boolean coreSensorAssigned(String dataFileName, boolean primaryOnly)
-    throws SensorConfigurationException {
-
+  public boolean coreSensorAssigned(String file, boolean primaryOnly) throws DatabaseException {
     boolean result = false;
 
     List<SensorType> coreSensors = getSensorConfig().getCoreSensors(variableIDs);

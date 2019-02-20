@@ -369,6 +369,38 @@ public class SensorType implements Comparable<SensorType> {
   }
 
   /**
+   * See if this SensorType matches the passed in Sensor Type,
+   * checking parents and children as appropriate
+   * @param o The SensorType to compare
+   * @return {@code true} if this SensorType equals the passed in SensorType,
+   *         or its parent/children match. {@code false} if no matches are found
+   */
+  public boolean equalsIncludingRelations(SensorType o) {
+    boolean result = false;
+
+    if (equals(o)) {
+      result = true;
+    } else {
+      SensorsConfiguration config =
+        ResourceManager.getInstance().getSensorsConfiguration();
+
+      if (config.hasParent(this)) {
+        result = config.getParent(this).equals(o);
+      } else if (config.isParent(this)) {
+        for (SensorType child : config.getChildren(this)) {
+          if (child.equals(o)) {
+            result = true;
+            break;
+          }
+        }
+
+      }
+    }
+
+    return result;
+  }
+
+  /**
    * Equality is based on the sensor name only
    */
   @Override
