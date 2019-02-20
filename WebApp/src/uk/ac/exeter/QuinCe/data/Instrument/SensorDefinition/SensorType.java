@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Defines an individual sensor type for an instrument
@@ -303,6 +304,38 @@ public class SensorType implements Comparable<SensorType> {
 
   protected static SensorType createRunTypeSensor() {
     return new SensorType(RUN_TYPE_ID, "Run Type");
+  }
+
+  /**
+   * See if this SensorType matches the passed in Sensor Type,
+   * checking parents and children as appropriate
+   * @param o The SensorType to compare
+   * @return {@code true} if this SensorType equals the passed in SensorType,
+   *         or its parent/children match. {@code false} if no matches are found
+   */
+  public boolean equalsIncludingRelations(SensorType o) {
+    boolean result = false;
+
+    if (equals(o)) {
+      result = true;
+    } else {
+      SensorsConfiguration config =
+        ResourceManager.getInstance().getSensorsConfiguration();
+
+      if (config.hasParent(this)) {
+        result = config.getParent(this).equals(o);
+      } else if (config.isParent(this)) {
+        for (SensorType child : config.getChildren(this)) {
+          if (child.equals(o)) {
+            result = true;
+            break;
+          }
+        }
+
+      }
+    }
+
+    return result;
   }
 
   /**
