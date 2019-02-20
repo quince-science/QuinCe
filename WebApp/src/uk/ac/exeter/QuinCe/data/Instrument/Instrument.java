@@ -1,8 +1,11 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
 
+import java.util.List;
+
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
@@ -34,6 +37,11 @@ public class Instrument {
    * The instrument's file format definitions
    */
   private InstrumentFileSet fileDefinitions = null;
+
+  /**
+   * The variables measured by this instrument
+   */
+  private List<InstrumentVariable> variables = null;
 
   /**
    * The assignment of columns in data files to sensors
@@ -81,6 +89,7 @@ public class Instrument {
    * @param ownerId The instrument owner's database ID
    * @param name The instrument name
    * @param fileDefinitions The file format definitions
+   * @param variables The variables measured by this instrument
    * @param sensorAssignments The sensor assignments
    * @param preFlushingTime The pre-flushing time
    * @param postFlushingTime The post-flushing time
@@ -90,13 +99,16 @@ public class Instrument {
    * @param nrt Near real time flag
    */
   public Instrument(long databaseId, long ownerId, String name,
-      InstrumentFileSet fileDefinitions, SensorAssignments sensorAssignments,
-      int preFlushingTime, int postFlushingTime, int minimumWaterFlow,
-      int averagingMode, String platformCode, boolean nrt) {
+      InstrumentFileSet fileDefinitions, List<InstrumentVariable> variables,
+      SensorAssignments sensorAssignments, int preFlushingTime,
+      int postFlushingTime, int minimumWaterFlow, int averagingMode,
+      String platformCode, boolean nrt) {
+
     this.databaseID = databaseId;
     this.ownerId = ownerId;
     this.name = name;
     this.fileDefinitions = fileDefinitions;
+    this.variables = variables;
     this.sensorAssignments = sensorAssignments;
     this.preFlushingTime = preFlushingTime;
     this.postFlushingTime = postFlushingTime;
@@ -113,6 +125,7 @@ public class Instrument {
    * @param owner The instrument's owner
    * @param name The instrument name
    * @param fileDefinitions The file format definitions
+   * @param variables The variables measured by this instrument
    * @param sensorAssignments The sensor assignments
    * @param preFlushingTime The pre-flushing time
    * @param postFlushingTime The post-flushing time
@@ -121,13 +134,14 @@ public class Instrument {
    * @param platformCode The platform code
    */
   public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
-      SensorAssignments sensorAssignments, int preFlushingTime,
-      int postFlushingTime, int minimumWaterFlow, int averagingMode,
-      String platformCode, boolean nrt) {
+      List<InstrumentVariable> variables, SensorAssignments sensorAssignments,
+      int preFlushingTime, int postFlushingTime, int minimumWaterFlow,
+      int averagingMode, String platformCode, boolean nrt) {
 
     this.ownerId = owner.getDatabaseID();
     this.name = name;
     this.fileDefinitions = fileDefinitions;
+    this.variables = variables;
     this.sensorAssignments = sensorAssignments;
     this.preFlushingTime = preFlushingTime;
     this.postFlushingTime = postFlushingTime;
@@ -282,5 +296,13 @@ public class Instrument {
    */
   public void setNrt(boolean nrt) {
     this.nrt = nrt;
+  }
+
+  /**
+   * Get the variables measured by this instrument
+   * @return
+   */
+  public List<InstrumentVariable> getVariables() {
+    return variables;
   }
 }

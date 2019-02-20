@@ -677,12 +677,12 @@ public abstract class DataSetRawData {
     try {
       record = new DataSetRawDataRecord(dataSet, getSelectedTime(), getSelectedLongitude(), getSelectedLatitude(), getSelectedRunType(), getSelectedRunTypeCategory());
 
-      for (Map.Entry<SensorType, Set<SensorAssignment>> entry : instrument.getSensorAssignments().getAssignments().entrySet()) {
+      for (Map.Entry<SensorType, Set<SensorAssignment>> entry : instrument.getSensorAssignments().entrySet()) {
 
         SensorType sensorType = entry.getKey();
         Set<SensorAssignment> assignments = entry.getValue();
 
-        if (instrument.getSensorAssignments().isRequired(sensorType)) {
+        if (instrument.getSensorAssignments().isAssignmentRequired(sensorType)) {
 
           double primarySensorTotal = 0.0;
           int primarySensorCount = 0;
