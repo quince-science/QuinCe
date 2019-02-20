@@ -210,4 +210,10 @@ public class SensorTypeTest extends BaseTest {
     assertTrue(type.compareTo(type2) > 0);
     assertTrue(type.compareTo(type) == 0);
   }
+
+  @Test
+  public void toStringTest() throws Exception {
+    SensorType type = getBasicSensorType();
+    assertEquals("Sensor Type: Name", type.toString());
+  }
 }

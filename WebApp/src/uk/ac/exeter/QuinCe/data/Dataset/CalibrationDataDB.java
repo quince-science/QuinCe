@@ -24,8 +24,11 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -115,10 +118,12 @@ public class CalibrationDataDB {
    * @throws DataSetException If a non-measurement record is supplied
    * @throws DatabaseException If a database error occurs
    * @throws NoSuchCategoryException If the record's Run Type is not recognised
+   * @throws VariableNotFoundException If the variables are not properly configured
+   * @throws SensorConfigurationException If the variables are not properly configured
    */
   public static PreparedStatement storeCalibrationRecord(Connection conn,
     DataSetRawDataRecord record)
-      throws MissingParamException, DataSetException, DatabaseException, NoSuchCategoryException {
+      throws MissingParamException, DataSetException, DatabaseException, NoSuchCategoryException, VariableNotFoundException, SensorConfigurationException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(record, "record");
@@ -141,8 +146,9 @@ public class CalibrationDataDB {
 
       int currentField = 5;
       SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
+      long instrumentId = record.getDataSet().getInstrumentId();
       for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-        if (sensorConfig.isRequired(conn, record.getDataSet().getInstrumentId(), sensorType)) {
+        if (sensorConfig.requiredForVariables(sensorType, InstrumentVariable.getIDsList(InstrumentDB.getVariables(conn, instrumentId)))) {
           currentField++;
           Double sensorValue = record.getSensorValue(sensorType.getName());
           if (null == sensorValue) {
@@ -167,8 +173,11 @@ public class CalibrationDataDB {
    * Generate a list of all the fields in the {@code calibration_data} table
    * @return The field list
    * @throws DatabaseException If a database error occurs
+   * @throws VariableNotFoundException
+   * @throws MissingParamException
+   * @throws SensorConfigurationException
    */
-  private static List<String> createAllFieldsList(Connection conn, long instrumentId) throws DatabaseException {
+  private static List<String> createAllFieldsList(Connection conn, long instrumentId) throws DatabaseException, SensorConfigurationException, MissingParamException, VariableNotFoundException {
     List<String> fieldNames = new ArrayList<String>();
 
     fieldNames.add("dataset_id");
@@ -179,7 +188,9 @@ public class CalibrationDataDB {
 
     SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
     for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-      if (sensorConfig.isRequired(conn, instrumentId, sensorType)) {
+      if (sensorConfig.requiredForVariables(sensorType,
+        InstrumentVariable.getIDsList(InstrumentDB.getVariables(conn, instrumentId)))) {
+
         fieldNames.add(sensorType.getDatabaseFieldName());
       }
     }
@@ -644,7 +655,9 @@ public class CalibrationDataDB {
             default: {
               // This is a sensor field. Get the sensor name from the sensors configuration
               for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-                if (sensorConfig.isRequired(conn, dataSet.getInstrumentId(), sensorType)) {
+                if (sensorConfig.requiredForVariables(sensorType,
+                  InstrumentVariable.getIDsList(InstrumentDB.getVariables(conn, dataSet.getInstrumentId())))) {
+
                   if (columnName.equals(sensorType.getDatabaseFieldName())) {
                     calibrationColumns.put(i, sensorType.getName());
                   }
