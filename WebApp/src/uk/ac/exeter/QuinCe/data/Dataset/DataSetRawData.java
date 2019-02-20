@@ -734,7 +734,7 @@ public abstract class DataSetRawData {
 
       record = new DataSetRawDataRecord(dataSet, getSelectedTime(), longitude, latitude, getSelectedRunType(), runTypeCategory);
 
-      for (Map.Entry<SensorType, Set<SensorAssignment>> entry : instrument.getSensorAssignments().getAssignments().entrySet()) {
+      for (Map.Entry<SensorType, Set<SensorAssignment>> entry : instrument.getSensorAssignments().entrySet()) {
 
         SensorType sensorType = entry.getKey();
         Set<SensorAssignment> assignments = entry.getValue();
