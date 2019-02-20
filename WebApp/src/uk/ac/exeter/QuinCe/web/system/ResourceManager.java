@@ -20,7 +20,6 @@ import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
@@ -120,7 +119,7 @@ public class ResourceManager implements ServletContextListener {
     // Initialise the sensors configuration
     try {
       sensorsConfiguration = new SensorsConfiguration(getDBDataSource());
-    } catch (SensorConfigurationException e) {
+    } catch (Exception e) {
       throw new RuntimeException("Could not load sensors configuration", e);
     }
 
@@ -201,5 +200,12 @@ public class ResourceManager implements ServletContextListener {
    */
   public static ResourceManager getInstance() {
     return instance;
+  }
+
+  /**
+   * Destroy the current ResourceManager instance
+   */
+  public static void destroy() {
+    instance = null;
   }
 }
