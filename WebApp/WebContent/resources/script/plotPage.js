@@ -1031,40 +1031,38 @@ function initMap(index) {
   var extentVar = mapVar + 'Extent';
 
   var bounds = JSON.parse($('#plotPageForm\\:dataBounds').val());
+  window[mapVar] = null;
+  var initialView = new ol.View({
+    center: ol.proj.fromLonLat([bounds[4], bounds[5]]),
+    zoom: 4,
+    minZoom: 2,
+  });
 
-  if (null == window[mapVar]) {
-    var initialView = new ol.View({
-      center: ol.proj.fromLonLat([bounds[4], bounds[5]]),
-      zoom: 4,
-      minZoom: 2,
-    });
-
-    window[mapVar] = new ol.Map({
-      target: 'map' + index + 'Container',
-      layers: [
-        new ol.layer.Tile({
-          source: mapSource
-        }),
+  window[mapVar] = new ol.Map({
+    target: 'map' + index + 'Container',
+    layers: [
+      new ol.layer.Tile({
+        source: mapSource
+      }),
+      ],
+      controls: [
+        new ol.control.Zoom()
         ],
-        controls: [
-          new ol.control.Zoom()
-          ],
-          view: initialView
-    });
+        view: initialView
+  });
 
-    window[extentVar] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
+  window[extentVar] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
 
 
-    window[mapVar].on('moveend', function(event) {
-      mapMoveGetData(event);
-    });
-    window[mapVar].on('pointermove', function(event) {
-      displayMapFeatureInfo(event, window[mapVar].getEventPixel(event.originalEvent));
-    });
-    window[mapVar].on('click', function(event) {
-      mapClick(event, window[mapVar].getEventPixel(event.originalEvent));
-    });
-  }
+  window[mapVar].on('moveend', function(event) {
+    mapMoveGetData(event);
+  });
+  window[mapVar].on('pointermove', function(event) {
+    displayMapFeatureInfo(event, window[mapVar].getEventPixel(event.originalEvent));
+  });
+  window[mapVar].on('click', function(event) {
+    mapClick(event, window[mapVar].getEventPixel(event.originalEvent));
+  });
 
   $('#plot' + index + 'Form\\:mapUpdateScale').val(true);
   redrawMap = true;
