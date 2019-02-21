@@ -121,7 +121,7 @@ public class LoginBean extends BaseManagedBean {
       User user = UserDB.getUser(getDataSource(), emailAddress);
       int authenticateResult;
 
-      if (user.isApiUser()) {
+      if (null != user && user.isApiUser()) {
         // API users are not allowed to log in
         authenticateResult = UserDB.AUTHENTICATE_FAILED;
       } else {
