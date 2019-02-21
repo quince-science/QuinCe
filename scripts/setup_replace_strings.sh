@@ -35,11 +35,21 @@ fi
 
 # First get only default file
 setup=$(cat quince.setup.default)
+
+
 setupfile="quince.setup$setuptype"
 if [ -e $setupfile ]
 then
   # using awk to keep properties in quince.setup.default not in quince.setup
   setup=$(awk -F= '!a[$1]++' $setupfile quince.setup.default)
+fi
+
+# If %quince_version% don't exist, append quince version from current git tag
+git_tag=$(git describe --tag --abbrev=0)
+if [ -z $(echo "$setup" | grep -e '^%quince_version%') ]
+then
+  setup="$setup
+  %quince_version%=$git_tag"
 fi
 
 

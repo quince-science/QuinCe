@@ -447,7 +447,7 @@ public abstract class DataSetRawData {
         result = new ExtendedMutableInt(0);
       } else {
         result = currentLineIndex.incrementedClone();
-        if (result.greaterThan(fileLastLine)) {
+        if (result.greaterThanOrEqualTo(fileLastLine)) {
           result = EOF;
         }
       }
@@ -467,7 +467,7 @@ public abstract class DataSetRawData {
         nextLineIndex = currentLineIndex.incrementedClone();
       }
 
-      if (nextLineIndex.greaterThan(fileLastLine)) {
+      if (nextLineIndex.greaterThanOrEqualTo(fileLastLine)) {
         result = EOF;
         finished = true;
       } else {
@@ -493,7 +493,7 @@ public abstract class DataSetRawData {
           // We're in a new Run Type. Skip any Ignored lines
           while (!finished && getLine(fileIndex, nextLineIndex).isIgnored()) {
             nextLineIndex.increment();
-            if (nextLineIndex.greaterThan(fileLastLine)) {
+            if (nextLineIndex.greaterThanOrEqualTo(fileLastLine)) {
               result = EOF;
               finished = true;
             }
@@ -514,7 +514,7 @@ public abstract class DataSetRawData {
               } else {
                 while (getLine(fileIndex, nextLineIndex).isIgnored()) {
                   nextLineIndex.increment();
-                  if (nextLineIndex.greaterThan(getFileSize(fileIndex))) {
+                  if (nextLineIndex.greaterThanOrEqualTo(getFileSize(fileIndex))) {
                     result = EOF;
                     finished = true;
                     preFlushingTimeProcessed = true;
@@ -558,7 +558,7 @@ public abstract class DataSetRawData {
       while (!finished) {
 
         int nextLineIndex = previousLineIndex + 1;
-        if (nextLineIndex > getFileSize(fileIndex)) {
+        if (nextLineIndex >= getFileSize(fileIndex)) {
           inPostFlushing = (DateTimeUtils.secondsBetween(lineDate, previousDate) <= instrument.getPostFlushingTime());
           finished = true;
         } else {
@@ -612,18 +612,22 @@ public abstract class DataSetRawData {
       LocalDateTime lastTime = getLine(fileIndex, lineIndex).getDate();
 
       lineIndex.increment();
-      LocalDateTime currentTime = getLine(fileIndex, lineIndex).getDate();
-      while (DateTimeUtils.secondsBetween(lastTime, currentTime) < instrument.getPreFlushingTime()) {
-        lineIndex.increment();
-        if (lineIndex.greaterThan(getFileSize(fileIndex))) {
-          lineIndex.setValue(EOF.getValue());
-          break;
-        } else {
-          DataFileLine newLine = getLine(fileIndex, lineIndex);
-          currentTime = newLine.getDate();
-          if (!newLine.getRunType().equals(runType)) {
-            withinRunType = false;
+      if (lineIndex.greaterThanOrEqualTo(getFileSize(fileIndex))) {
+        lineIndex.setValue(EOF.getValue());
+      } else {
+        LocalDateTime currentTime = getLine(fileIndex, lineIndex).getDate();
+        while (DateTimeUtils.secondsBetween(lastTime, currentTime) < instrument.getPreFlushingTime()) {
+          lineIndex.increment();
+          if (lineIndex.greaterThanOrEqualTo(getFileSize(fileIndex))) {
+            lineIndex.setValue(EOF.getValue());
             break;
+          } else {
+            DataFileLine newLine = getLine(fileIndex, lineIndex);
+            currentTime = newLine.getDate();
+            if (!newLine.getRunType().equals(runType)) {
+              withinRunType = false;
+              break;
+            }
           }
         }
       }

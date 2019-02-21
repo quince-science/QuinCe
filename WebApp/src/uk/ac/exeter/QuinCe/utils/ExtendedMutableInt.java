@@ -33,6 +33,15 @@ public class ExtendedMutableInt extends MutableInt {
   }
 
   /**
+   * See if the value of this object is greater than or equal to the specified value
+   * @param otherValue The value to compare
+   * @return {@code this >= otherValue}
+   */
+  public boolean greaterThanOrEqualTo(int otherValue) {
+    return (getValue() >= otherValue);
+  }
+
+  /**
    * Create a new {@code ExtendedMutableInt} object with
    * a value one higher than this object's value.
    * @return The new object

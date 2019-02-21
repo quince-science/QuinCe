@@ -12,5 +12,5 @@ then
   exit 1
 else
   echo "Creating symlink for pre-commit hook"
-  ln -s ../../scripts/check_code_with_spotlessCheck.sh .git/hooks/pre-commit
+  ln -s ../../scripts/pre_commit_checks.sh .git/hooks/pre-commit
 fi

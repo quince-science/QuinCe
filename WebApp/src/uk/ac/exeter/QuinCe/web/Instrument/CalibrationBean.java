@@ -1,12 +1,16 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
 import java.util.List;
+import java.util.TreeMap;
+
+import org.primefaces.json.JSONArray;
+import org.primefaces.json.JSONObject;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
@@ -29,15 +33,19 @@ public abstract class CalibrationBean extends BaseManagedBean {
   private String instrumentName;
 
   /**
-   * List of the most recent calibrations for each target
+   * The currently defined calibrations
    */
-  private CalibrationSet currentCalibrations;
+  private TreeMap<String, List<Calibration>> calibrations = null;
+
+  /**
+   * The newly entered calibration
+   */
+  private Calibration newCalibration;
 
   /**
    * Empty constructor
    */
   public CalibrationBean() {
-
   }
 
   /**
@@ -45,7 +53,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @return The navigation string
    */
   public String start() {
-    String nav = getListNavigation();
+    String nav = getPageNavigation();
 
     boolean ok = true;
 
@@ -64,8 +72,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     if (ok) {
       try {
-        createEnteredCalibration();
-        loadCurrentCalibrations();
+        loadCalibrations();
+        newCalibration = initNewCalibration();
       } catch (Exception e) {
         nav = internalError(e);
       }
@@ -107,22 +115,11 @@ public abstract class CalibrationBean extends BaseManagedBean {
   }
 
   /**
-   * Get the calibration object for new calibrations entered on the page
-   * @return The entered calibration
-   */
-  public abstract Calibration getEnteredCalibration();
-
-  /**
-   * Create a new, empty calibration object ready to be populated
-   */
-  protected abstract void createEnteredCalibration();
-
-  /**
    * Get the navigation string that will navigate to
    * the list of calibrations
    * @return The list navigation string
    */
-  protected abstract String getListNavigation();
+  protected abstract String getPageNavigation();
 
   /**
    * Get a list of all possible targets for the calibration type
@@ -143,12 +140,12 @@ public abstract class CalibrationBean extends BaseManagedBean {
     String nav = null;
 
     try {
-      if (getDbInstance().calibrationExists(getDataSource(), getEnteredCalibration())) {
+      if (getDbInstance().calibrationExists(getDataSource(), getNewCalibration())) {
         setMessage(null, "A calibration already exists for this standard at this time");
       } else {
-        getDbInstance().addCalibration(getDataSource(), getEnteredCalibration());
-        loadCurrentCalibrations();
-        createEnteredCalibration();
+        getDbInstance().addCalibration(getDataSource(), getNewCalibration());
+        loadCalibrations();
+        newCalibration = initNewCalibration();
       }
     } catch (Exception e) {
       nav = internalError(e);
@@ -171,24 +168,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @throws CalibrationException If the calibrations are internally inconsistent
    * @throws MissingParamException If any internal calls are missing required parameters
    */
-  private void loadCurrentCalibrations() throws MissingParamException, CalibrationException, DatabaseException, RecordNotFoundException {
-    currentCalibrations = getDbInstance().getCurrentCalibrations(getDataSource(), instrumentId);
-  }
-
-  /**
-   * Get the current calibrations
-   * @return The current calibrations
-   * @throws RecordNotFoundException If any required database records are missing
-   * @throws DatabaseException If a database error occurs
-   * @throws CalibrationException If the calibrations are internally inconsistent
-   * @throws MissingParamException If any internal calls are missing required parameters
-   */
-  public List<Calibration> getCurrentCalibrations() throws MissingParamException, CalibrationException, DatabaseException, RecordNotFoundException {
-    if (null == currentCalibrations) {
-      loadCurrentCalibrations();
-    }
-
-    return currentCalibrations.asList();
+  private void loadCalibrations() throws MissingParamException, CalibrationException, DatabaseException, RecordNotFoundException {
+    calibrations = getDbInstance().getCalibrations(getDataSource(), instrumentId);
   }
 
   /**
@@ -196,4 +177,87 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @return The calibration type
    */
   protected abstract String getCalibrationType();
+
+  /**
+   * Get the human-readable calibration type for the calibrations being edited
+   * @return The human-readable calibration type
+   */
+  public abstract String getHumanReadableCalibrationType();
+
+  /**
+   * Individual targets are represented as groups on the page.
+   * Get the JSON for these groups
+   * @return The targets JSON
+   */
+  public String getTargetsJson() {
+    JSONArray groups = new JSONArray();
+
+    int counter = 0;
+
+    for (String target : calibrations.keySet()) {
+      JSONObject group = new JSONObject();
+      group.put("id", counter);
+      group.put("order", counter);
+      group.put("content", target);
+
+      groups.put(group);
+      counter++;
+    }
+
+    return groups.toString();
+  }
+
+  /**
+   * Generate a new, empty calibration
+   */
+  protected abstract Calibration initNewCalibration();
+
+  /**
+   * Get the JSON for the individual calibrations
+   * @return The calibrations JSON
+   */
+  public String getCalibrationsJson() {
+    JSONArray items = new JSONArray();
+
+    int groupId = 0;
+    for (String key: calibrations.keySet()) {
+
+      for (Calibration calibration : calibrations.get(key)) {
+        JSONObject calibrationJson = new JSONObject();
+        calibrationJson.put("type", "box");
+        calibrationJson.put("group", groupId);
+        calibrationJson.put("start", DateTimeUtils.toJsonDate(calibration.getDeploymentDate()));
+        calibrationJson.put("content", calibration.getHumanReadableCoefficients());
+        calibrationJson.put("title", calibration.getHumanReadableCoefficients());
+
+        items.put(calibrationJson);
+      }
+
+      groupId++;
+    }
+
+    return items.toString();
+  }
+
+  /**
+   * Get the new calibration deployment details
+   * @return The new calibration
+   */
+  public Calibration getNewCalibration() {
+    return newCalibration;
+  }
+
+  /**
+   * Get the label to use for the calibration target
+   * @return The target label
+   */
+  public abstract String getTargetLabel();
+
+  /**
+   * Get the label used to describe the coefficients
+   * @return The coefficients label
+   */
+  public String getCoefficientsLabel() {
+    return "Coefficients";
+  }
 }
