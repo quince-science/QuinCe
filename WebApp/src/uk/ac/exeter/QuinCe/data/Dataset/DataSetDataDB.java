@@ -428,7 +428,7 @@ public class DataSetDataDB {
         for (SensorType sensorType : sensorConfig.getSensorTypes()) {
           if (sensorConfig.requiredForVariables(sensorType,
             InstrumentVariable.getIDsList(InstrumentDB.getVariables(conn, instrumentId))) &&
-            sensorAssignments.get(sensorType).size() > 0) {
+            sensorAssignments.getAssignmentCount(sensorType) > 0) {
 
             if (columnName.equals(sensorType.getDatabaseFieldName())) {
               sensorColumns.put(i, sensorType.getName());
@@ -605,7 +605,7 @@ public class DataSetDataDB {
         default: {
           // Sensor value columns
           for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-            if (sensorAssignments.get(sensorType).size() > 0) {
+            if (sensorAssignments.getAssignmentCount(sensorType) > 0) {
               if (columnName.equals(sensorType.getDatabaseFieldName())) {
                 result.add(sensorType.getName());
                 break;
@@ -675,7 +675,7 @@ public class DataSetDataDB {
         default: {
           // Sensor value columns
           for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-            if (sensorAssignments.get(sensorType).size() > 0) {
+            if (sensorAssignments.getAssignmentCount(sensorType) > 0) {
               if (columnName.equals(sensorType.getDatabaseFieldName())) {
                 // TODO Eventually this will use the sensor name as the label, and the sensor type as the group
                 variables.addVariable(sensorType.getName(), new Variable(Variable.TYPE_SENSOR, sensorType.getName(), columnName));
@@ -730,7 +730,7 @@ public class DataSetDataDB {
       default: {
         // Sensor value columns
         for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-          if (sensorAssignments.get(sensorType).size() > 0) {
+          if (sensorAssignments.getAssignmentCount(sensorType) > 0) {
             if (originalField.equals(sensorType.getDatabaseFieldName())) {
               // TODO Eventually this will use the sensor name as the label, and the sensor type as the group
               datasetFields.add(originalField);

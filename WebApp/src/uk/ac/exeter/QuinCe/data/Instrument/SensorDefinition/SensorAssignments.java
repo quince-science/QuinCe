@@ -32,7 +32,7 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
   /**
    * The serial version UID
    */
-  private static final long serialVersionUID = -7045591929422515240L;
+  private static final long serialVersionUID = 7750520470025596480L;
 
   /**
    * Build the list of assignments based on the supplied list of variable IDs
@@ -428,5 +428,21 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
     }
 
     return required;
+  }
+
+  /**
+   * Get the number of columns assigned to a given SensorType.
+   * If the SensorType is not found, returns 0
+   * @param sensorType The SensorType
+   * @return The number of assigned columns
+   */
+  public int getAssignmentCount(SensorType sensorType) {
+    int count = 0;
+
+    if (containsKey(sensorType)) {
+      count = get(sensorType).size();
+    }
+
+    return count;
   }
 }
