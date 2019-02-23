@@ -294,10 +294,13 @@ public class SensorType implements Comparable<SensorType> {
   public String getDatabaseFieldName() {
     String result = null;
 
-    // TODO See what we do with this
-    // if (usedInCalculation) {
+    // TODO These are temporary until the sensor values are moved to
+    // a different table in future updates.
+    if (name.equals("CO₂ in gas")) {
+      result = "co2";
+    } else {
       result = DatabaseUtils.getDatabaseFieldName(name);
-    // }
+    }
 
     return result;
   }
