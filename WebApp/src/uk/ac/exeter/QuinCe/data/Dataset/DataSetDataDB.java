@@ -426,9 +426,11 @@ public class DataSetDataDB {
       default: {
         // This is a sensor field. Get the sensor name from the sensors configuration
         for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-          if (sensorConfig.requiredForVariables(sensorType,
-            InstrumentVariable.getIDsList(InstrumentDB.getVariables(conn, instrumentId))) &&
-            sensorAssignments.getAssignmentCount(sensorType) > 0) {
+//          if (sensorConfig.requiredForVariables(sensorType,
+//            InstrumentVariable.getIDsList(InstrumentDB.getVariables(conn, instrumentId))) &&
+//            sensorAssignments.getAssignmentCount(sensorType) > 0) {
+
+          if (sensorAssignments.getAssignmentCount(sensorType) > 0) {
 
             if (columnName.equals(sensorType.getDatabaseFieldName())) {
               sensorColumns.put(i, sensorType.getName());
