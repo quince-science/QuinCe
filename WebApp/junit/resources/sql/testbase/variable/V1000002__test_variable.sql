@@ -2,10 +2,10 @@
 INSERT INTO variables (name) VALUES ('testVar');
 
 -- pH sensor type
-INSERT INTO sensor_types (name) VALUES ('testSensor');
+INSERT INTO sensor_types (name, vargroup) VALUES ('testSensor', 'testGroup');
 
 -- An unused sensor type
-INSERT INTO sensor_types (name) VALUES ('Unused sensor');
+INSERT INTO sensor_types (name, vargroup) VALUES ('Unused sensor', 'Unusded group');
 
 -- Variables for pH - SST, Salinity and the pH
 INSERT INTO variable_sensors VALUES (
