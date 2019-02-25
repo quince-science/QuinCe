@@ -40,6 +40,11 @@ public class SensorType implements Comparable<SensorType> {
   private String name;
 
   /**
+   * The variable group to which this SensorType belongs
+   */
+  private String group;
+
+  /**
    * The parent sensor type, if applicable
    */
   private long parent;
@@ -86,17 +91,19 @@ public class SensorType implements Comparable<SensorType> {
    * @param diagnostic2
    * @throws MissingParamException If the ID is not a positive number
    */
-  public SensorType(long id, String name, Long parent, Long dependsOn, String dependsQuestion,
-    boolean internalCalibration, boolean diagnostic)
+  public SensorType(long id, String name, String group, Long parent, Long dependsOn,
+    String dependsQuestion, boolean internalCalibration, boolean diagnostic)
     throws MissingParamException, SensorConfigurationException {
 
     MissingParam.checkPositive(id, "id");
-    MissingParam.checkMissing(name, "sensorName", false);
+    MissingParam.checkMissing(name, "name", false);
+    MissingParam.checkMissing(group, "group", false);
     MissingParam.checkNullPositive(parent, "parent");
     MissingParam.checkNullPositive(dependsOn, "dependsOn");
 
     this.id = id;
     this.name = name;
+    this.group = group;
 
     if (null == parent) {
       this.parent = NO_PARENT;
@@ -134,9 +141,10 @@ public class SensorType implements Comparable<SensorType> {
    * @param id The sensor ID
    * @param name The sensor name
    */
-  private SensorType(long id, String name) {
+  private SensorType(long id, String name, String group) {
     this.id = id;
     this.name = name;
+    this.group = group;
     this.parent = NO_PARENT;
     this.dependsOn = NO_DEPENDS_ON;
     this.dependsQuestion = null;
@@ -155,8 +163,9 @@ public class SensorType implements Comparable<SensorType> {
 
     this.id = record.getLong(1);
     this.name = record.getString(2);
+    this.group = record.getString(3);
 
-    Long parent = DatabaseUtils.getNullableLong(record, 3);
+    Long parent = DatabaseUtils.getNullableLong(record, 4);
     if (null == parent) {
       this.parent = NO_PARENT;
     } else if (parent == id) {
@@ -166,7 +175,7 @@ public class SensorType implements Comparable<SensorType> {
       this.parent = parent;
     }
 
-    Long dependsOn = DatabaseUtils.getNullableLong(record, 4);
+    Long dependsOn = DatabaseUtils.getNullableLong(record, 5);
     if (null == dependsOn) {
       this.dependsOn = NO_DEPENDS_ON;
     } else if (dependsOn == id) {
@@ -176,7 +185,7 @@ public class SensorType implements Comparable<SensorType> {
       this.dependsOn = dependsOn;
     }
 
-    String dependsQuestion = record.getString(5);
+    String dependsQuestion = record.getString(6);
     if (null == dependsQuestion || dependsQuestion.trim().length() == 0) {
       this.dependsQuestion = null;
     } else if (!this.dependsOnOtherType()) {
@@ -186,8 +195,8 @@ public class SensorType implements Comparable<SensorType> {
       this.dependsQuestion = dependsQuestion.trim();
     }
 
-    this.internalCalibration = record.getBoolean(6);
-    this.diagnostic = record.getBoolean(7);
+    this.internalCalibration = record.getBoolean(7);
+    this.diagnostic = record.getBoolean(8);
   }
 
 
@@ -205,6 +214,14 @@ public class SensorType implements Comparable<SensorType> {
    */
   public String getName() {
     return name;
+  }
+
+  /**
+   * Get the group to which this SensorType belongs
+   * @return The group
+   */
+  public String getGroup() {
+    return group;
   }
 
   /**
@@ -306,7 +323,7 @@ public class SensorType implements Comparable<SensorType> {
   }
 
   protected static SensorType createRunTypeSensor() {
-    return new SensorType(RUN_TYPE_ID, "Run Type");
+    return new SensorType(RUN_TYPE_ID, "Run Type", "Run Type");
   }
 
   /**
