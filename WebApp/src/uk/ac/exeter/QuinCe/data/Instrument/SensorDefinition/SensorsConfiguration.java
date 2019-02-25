@@ -32,8 +32,8 @@ public class SensorsConfiguration {
    * Query to load all sensor types from the database
    */
   private static final String GET_SENSOR_TYPES_QUERY = "SELECT "
-      + "id, name, parent, depends_on, depends_question, " // 5
-      + "internal_calibration, diagnostic " // 7
+      + "id, name, vargroup, parent, depends_on, depends_question, " // 6
+      + "internal_calibration, diagnostic " // 8
       + "FROM sensor_types";
 
   /**

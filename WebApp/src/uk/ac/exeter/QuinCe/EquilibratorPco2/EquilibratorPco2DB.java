@@ -173,14 +173,14 @@ public class EquilibratorPco2DB extends CalculationDB {
   public void populateVariableList(VariableList variables) throws MissingParamException {
     MissingParam.checkMissing(variables, "variables", true);
 
-    variables.addVariable("Delta T", new Variable(Variable.TYPE_CALCULATION, "ΔT", "delta_temperature"));
-    variables.addVariable("xH2O", new Variable(Variable.TYPE_CALCULATION, "True xH2O", "true_moisture"));
-    variables.addVariable("pH2O", new Variable(Variable.TYPE_CALCULATION, "pH2O", "ph2o"));
-    variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "Dried CO2", "dried_co2"));
-    variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "Calibrated CO2", "calibrated_co2"));
-    variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "pCO2 TE Wet", "pco2_te_wet"));
-    variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "pCO2 SST", "pco2_sst"));
-    variables.addVariable("CO2", new Variable(Variable.TYPE_CALCULATION, "Final fCO2", "fco2"));
+    variables.addVariable("Temperature", new Variable(Variable.TYPE_CALCULATION, "ΔT", "delta_temperature"));
+    variables.addVariable("Moisture", new Variable(Variable.TYPE_CALCULATION, "True xH2O", "true_moisture"));
+    variables.addVariable("pH₂O", new Variable(Variable.TYPE_CALCULATION, "pH2O", "ph2o"));
+    variables.addVariable("CO₂", new Variable(Variable.TYPE_CALCULATION, "Dried CO2", "dried_co2"));
+    variables.addVariable("CO₂", new Variable(Variable.TYPE_CALCULATION, "Calibrated CO2", "calibrated_co2"));
+    variables.addVariable("CO₂", new Variable(Variable.TYPE_CALCULATION, "pCO2 TE Wet", "pco2_te_wet"));
+    variables.addVariable("CO₂", new Variable(Variable.TYPE_CALCULATION, "pCO2 SST", "pco2_sst"));
+    variables.addVariable("CO₂", new Variable(Variable.TYPE_CALCULATION, "Final fCO2", "fco2"));
   }
 
   @Override

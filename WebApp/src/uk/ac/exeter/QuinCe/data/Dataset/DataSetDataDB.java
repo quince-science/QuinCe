@@ -680,7 +680,7 @@ public class DataSetDataDB {
             if (sensorAssignments.getAssignmentCount(sensorType) > 0) {
               if (columnName.equals(sensorType.getDatabaseFieldName())) {
                 // TODO Eventually this will use the sensor name as the label, and the sensor type as the group
-                variables.addVariable(sensorType.getName(), new Variable(Variable.TYPE_SENSOR, sensorType.getName(), columnName));
+                variables.addVariable(sensorType.getGroup(), new Variable(Variable.TYPE_SENSOR, sensorType.getName(), columnName));
                 break;
               }
             }
