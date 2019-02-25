@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS sensor_types;
 CREATE TABLE sensor_types (
   id INT NOT NULL AUTO_INCREMENT,
   name VARCHAR(100) NOT NULL,
+  vargroup VARCHAR(100) NOT NULL,
   parent INT NULL,
   depends_on INT NULL,
   depends_question TEXT NULL,
@@ -18,53 +19,53 @@ CREATE TABLE sensor_types (
   ENGINE = InnoDB;
 
 -- Intake temp
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
-  VALUES ('Intake Temperature', NULL, NULL, NULL, 0);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('Intake Temperature', 'Temperature', NULL, NULL, NULL, 0);
 SELECT id INTO @sstId FROM sensor_types WHERE name = 'Intake Temperature';
 
 -- Salinity
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
-  VALUES ('Salinity', NULL, NULL, NULL, 0);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('Salinity', 'Salinity', NULL, NULL, NULL, 0);
 SELECT id INTO @salinityId FROM sensor_types WHERE name = 'Salinity';
 
 -- Equilibrator Temperature
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
-  VALUES ('Equilibrator Temperature', NULL, NULL, NULL, 0);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('Equilibrator Temperature', 'Temperature', NULL, NULL, NULL, 0);
 SELECT id INTO @eqtId FROM sensor_types WHERE name = 'Equilibrator Temperature';
 
 -- Equilibrator Pressure - parent of the two pressure types
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
-  VALUES ('Equilibrator Pressure', NULL, NULL, NULL, 0);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('Equilibrator Pressure', 'Pressure', NULL, NULL, NULL, 0);
 SELECT id INTO @eqpId FROM sensor_types WHERE name = 'Equilibrator Pressure';
 
 -- Equilibrator Pressure (absolute)
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
-  VALUES ('Equilibrator Pressure (absolute)', (SELECT @eqpId), NULL, NULL, 0);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('Equilibrator Pressure (absolute)', 'Pressure', (SELECT @eqpId), NULL, NULL, 0);
 SELECT id INTO @eqpAbsId FROM sensor_types WHERE name = 'Equilibrator Pressure (absolute)';
 
 -- Equilibrator Pressure (differential)
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
-  VALUES ('Equilibrator Pressure (differential)', (SELECT @eqpId), NULL, NULL, 0);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('Equilibrator Pressure (differential)', 'Pressure', (SELECT @eqpId), NULL, NULL, 0);
 SELECT id INTO @eqpDiffId FROM sensor_types WHERE name = 'Equilibrator Pressure (differential)';
 
 -- Ambient Pressure
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
-  VALUES ('Ambient Pressure', NULL, NULL, NULL, 0);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('Ambient Pressure', 'Pressure', NULL, NULL, NULL, 0);
 SELECT id INTO @ambientId FROM sensor_types WHERE name = 'Ambient Pressure';
 
 -- xH2O in gas
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
-  VALUES ('xH₂O in gas', NULL, NULL, NULL, 1);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('xH₂O in gas', 'Moisture', NULL, NULL, NULL, 1);
 SELECT id INTO @xh2oId FROM sensor_types WHERE name = 'xH₂O in gas';
 
 -- CO2 (Licor etc)
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
-  VALUES ('CO₂ in gas', NULL, NULL, NULL, 1);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('CO₂ in gas', 'CO₂', NULL, NULL, NULL, 1);
 SELECT id INTO @co2Id FROM sensor_types WHERE name = 'CO₂ in gas';
 
 -- Atmospheric Pressure
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration)
-  VALUES ('Atmospheric Pressure', NULL, NULL, NULL, 0);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('Atmospheric Pressure', 'Pressure', NULL, NULL, NULL, 0);
 
 -- Equilibrator Pressure (differential) depends on Ambient Pressure
 UPDATE sensor_types
@@ -81,28 +82,28 @@ UPDATE sensor_types
   WHERE name = 'CO₂ in gas';
 
 -- Diagnostic sensors
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
-  VALUES ('Diagnostic Temperature', NULL, NULL, NULL, 0, 1);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration, diagnostic)
+  VALUES ('Diagnostic Temperature', 'Temperature', NULL, NULL, NULL, 0, 1);
 SELECT id INTO @diagTempId FROM sensor_types WHERE name = 'Diagnostic Temperature';
 
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
-  VALUES ('Diagnostic Pressure', NULL, NULL, NULL, 0, 1);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration, diagnostic)
+  VALUES ('Diagnostic Pressure', 'Pressure', NULL, NULL, NULL, 0, 1);
 SELECT id INTO @diagPresId FROM sensor_types WHERE name = 'Diagnostic Pressure';
 
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
-  VALUES ('Diagnostic Gas Flow', NULL, NULL, NULL, 0, 1);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration, diagnostic)
+  VALUES ('Diagnostic Gas Flow', 'Other', NULL, NULL, NULL, 0, 1);
 SELECT id INTO @diagAirId FROM sensor_types WHERE name = 'Diagnostic Air Flow';
 
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
-  VALUES ('Diagnostic Water Flow', NULL, NULL, NULL, 0, 1);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration, diagnostic)
+  VALUES ('Diagnostic Water Flow', 'Other', NULL, NULL, NULL, 0, 1);
 SELECT id INTO @diagWaterId FROM sensor_types WHERE name = 'Diagnostic Water Flow';
 
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
-  VALUES ('Diagnostic Voltage', NULL, NULL, NULL, 0, 1);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration, diagnostic)
+  VALUES ('Diagnostic Voltage', 'Other', NULL, NULL, NULL, 0, 1);
 SELECT id INTO @diagVoltId FROM sensor_types WHERE name = 'Diagnostic Voltage';
 
-INSERT INTO sensor_types (name, parent, depends_on, depends_question, internal_calibration, diagnostic)
-  VALUES ('Diagnostic Misc', NULL, NULL, NULL, 0, 1);
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration, diagnostic)
+  VALUES ('Diagnostic Misc', 'Other', NULL, NULL, NULL, 0, 1);
 SELECT id INTO @diagMiscId FROM sensor_types WHERE name = 'Diagnostic Misc';
 
 -- ----------------------------
