@@ -315,6 +315,8 @@ public class SensorType implements Comparable<SensorType> {
     // a different table in future updates.
     if (name.equals("CO₂ in gas")) {
       result = "co2";
+    } else if (name.equals("xH₂O in gas")) {
+      result = "xh2o";
     } else {
       result = DatabaseUtils.getDatabaseFieldName(name);
     }
