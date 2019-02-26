@@ -292,15 +292,18 @@ public abstract class CalibrationDB {
    */
   public List<String> getTargets(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
     Connection conn = null;
+    List<String> result = null;
 
     try {
       conn = dataSource.getConnection();
-      return getTargets(conn, instrumentId);
+      result = getTargets(conn, instrumentId);
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting calibration targets", e);
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
+
+    return result;
   }
 
   /**

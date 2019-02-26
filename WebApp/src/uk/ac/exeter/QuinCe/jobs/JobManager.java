@@ -317,15 +317,20 @@ public class JobManager {
    * @throws NoSuchJobException If the job mysteriously vanishes between being created and run
    */
   public static void addInstantJob(ResourceManager resourceManager, Properties config, User owner, String jobClass, Map<String,String> parameters) throws DatabaseException, MissingParamException, NoSuchUserException, JobClassNotFoundException, InvalidJobClassTypeException, InvalidJobConstructorException, JobException, JobThreadPoolNotInitialisedException, NoSuchJobException, JobFailedException {
-    DataSource dataSource = resourceManager.getDBDataSource();
-    long jobID = addJob(dataSource, owner, jobClass, parameters);
-    JobThread jobThread = JobThreadPool.getInstance().getInstantJobThread(JobManager.getJob(resourceManager, config, jobID));
+
+    Connection conn = null;
+
     try {
-      logJobStarted(dataSource.getConnection(), jobID, jobThread.getName());
+      conn = resourceManager.getDBDataSource().getConnection();
+      long jobID = addJob(conn, owner, jobClass, parameters);
+      JobThread jobThread = JobThreadPool.getInstance().getInstantJobThread(JobManager.getJob(resourceManager, config, jobID));
+      logJobStarted(conn, jobID, jobThread.getName());
+      jobThread.start();
     } catch (SQLException e) {
       throw new DatabaseException("An error occurred while updating the job status", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
     }
-    jobThread.start();
   }
 
   /**
@@ -341,12 +346,14 @@ public class JobManager {
   public static void setStatus(DataSource dataSource, long jobID, String status) throws MissingParamException, UnrecognisedStatusException, NoSuchJobException, DatabaseException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
-
+    Connection conn = null;
     try {
-      Connection conn = dataSource.getConnection();
+      conn = dataSource.getConnection();
       setStatus(conn, jobID, status);
     } catch (SQLException e) {
       throw new DatabaseException("An error occurred while obtaining a database connection", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
     }
   }
 
@@ -1238,9 +1245,9 @@ public class JobManager {
 
       conn.commit();
     } catch (SQLException e) {
+      DatabaseUtils.rollBack(conn);
       throw new DatabaseException("An error occurred while killing job '" + jobId + "'");
     } finally {
-      DatabaseUtils.rollBack(conn);
       DatabaseUtils.closeConnection(conn);
     }
   }

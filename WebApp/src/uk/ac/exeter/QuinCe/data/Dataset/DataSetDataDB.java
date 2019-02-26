@@ -223,16 +223,19 @@ public class DataSetDataDB {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(dataSet, "dataSet");
 
+    List<DataSetRawDataRecord> result = null;
     Connection conn = null;
 
     try {
       conn = dataSource.getConnection();
-      return getMeasurements(conn, dataSet, start, length);
+      result = getMeasurements(conn, dataSet, start, length);
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting measurement IDs", e);
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
+
+    return result;
   }
 
 
@@ -459,16 +462,19 @@ public class DataSetDataDB {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
 
+    List<Long> result = null;
     Connection conn = null;
 
     try {
       conn = dataSource.getConnection();
-      return getMeasurementIds(conn, datasetId);
+      result = getMeasurementIds(conn, datasetId);
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting measurement IDs", e);
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
+
+    return result;
   }
 
   /**
@@ -587,6 +593,7 @@ public class DataSetDataDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting column names", e);
     } finally {
+      DatabaseUtils.closeResultSets(columns);
       DatabaseUtils.closeConnection(conn);
     }
 
@@ -657,6 +664,7 @@ public class DataSetDataDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting column names", e);
     } finally {
+      DatabaseUtils.closeResultSets(columns);
       DatabaseUtils.closeConnection(conn);
     }
   }

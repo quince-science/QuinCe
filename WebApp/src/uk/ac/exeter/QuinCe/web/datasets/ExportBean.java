@@ -173,10 +173,14 @@ public class ExportBean extends BaseManagedBean {
    * Export a dataset file by itself
    */
   private void exportSingleFile() {
+
+    Connection conn = null;
+
     try {
+      conn = getDataSource().getConnection();
       ExportOption exportOption = getExportOptions().get(chosenExportOption);
 
-      byte[] fileContent = getDatasetExport(getDataSource().getConnection(), dataset, exportOption);
+      byte[] fileContent = getDatasetExport(conn, dataset, exportOption);
 
       FacesContext fc = FacesContext.getCurrentInstance();
       ExternalContext ec = fc.getExternalContext();
@@ -198,6 +202,8 @@ public class ExportBean extends BaseManagedBean {
       fc.responseComplete();
     } catch (Exception e) {
       e.printStackTrace();
+    } finally {
+      DatabaseUtils.closeConnection(conn);
     }
   }
 
@@ -238,8 +244,6 @@ public class ExportBean extends BaseManagedBean {
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
-
-
   }
 
   /**

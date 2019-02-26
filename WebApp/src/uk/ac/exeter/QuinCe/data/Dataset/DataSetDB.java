@@ -106,7 +106,6 @@ public class DataSetDB {
     List<DataSet> result = null;
     Connection conn = null;
     try {
-
       conn = dataSource.getConnection();
       result = getDataSets(conn, instrumentId);
     } catch (SQLException e) {
@@ -633,16 +632,19 @@ public class DataSetDB {
   public static JSONObject getMetadataJson(DataSource dataSource, DataSet dataset) throws DatabaseException,
     MissingParamException, RecordNotFoundException, InstrumentException {
 
+    JSONObject result = null;
     Connection conn = null;
 
     try {
       conn = dataSource.getConnection();
-      return getMetadataJson(conn, dataset);
+      result = getMetadataJson(conn, dataset);
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving metadata", e);
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
+
+    return result;
   }
 
   /**

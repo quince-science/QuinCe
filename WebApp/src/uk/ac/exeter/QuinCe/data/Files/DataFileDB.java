@@ -218,6 +218,8 @@ public class DataFileDB {
       }
     } catch (SQLException e) {
       throw new DatabaseException("Error while storing file", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
     }
   }
 
@@ -686,14 +688,9 @@ public class DataFileDB {
       conn.commit();
 
     } catch (SQLException e) {
+      DatabaseUtils.rollBack(conn);
       throw new DatabaseException("An error occurred while deleting the data file", e);
     } finally {
-      try {
-        conn.rollback();
-      } catch (SQLException e2) {
-        // Not much we can do
-      }
-
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
     }
@@ -898,6 +895,7 @@ public class DataFileDB {
     } finally {
       DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
     }
 
     return files;
