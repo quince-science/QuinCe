@@ -21,8 +21,8 @@ public class ExternalStandard extends Calibration {
 
   static {
     valueNames = new ArrayList<String>(1);
-    valueNames.add("CO2");
-    valueNames.add("xH2O");
+    valueNames.add("CO₂ in gas");
+    valueNames.add("xH₂O in gas");
   }
 
   /**
