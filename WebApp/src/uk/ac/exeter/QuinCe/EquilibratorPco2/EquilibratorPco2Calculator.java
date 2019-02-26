@@ -80,9 +80,9 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
       throw new CalculatorException("Equilibrator Pressure missing");
     }
 
-    Double xH2O = measurement.getSensorValue("xH2O");
+    Double xH2O = measurement.getSensorValue("xH₂O in gas");
 
-    Double co2Measured = measurement.getSensorValue("CO2");
+    Double co2Measured = measurement.getSensorValue("CO₂ in gas");
     if (null == co2Measured) {
       throw new CalculatorException("CO2 value missing");
     }
@@ -99,11 +99,11 @@ public class EquilibratorPco2Calculator extends DataReductionCalculator {
        * zero xH2O, using the regression technique across all standards
        * helps to smooth out any variability within the sensor.
        */
-      truexH2O = applyExternalStandards(date, "xH2O", xH2O, false);
+      truexH2O = applyExternalStandards(date, "xH₂O in gas", xH2O, false);
       co2Dried = calcDriedCo2(co2Measured, truexH2O);
     }
 
-    double co2Calibrated = applyExternalStandards(date, "CO2", co2Dried, true);
+    double co2Calibrated = applyExternalStandards(date, "CO₂ in gas", co2Dried, true);
 
     double pH2O = calcPH2O(salinity, equilibratorTemperature);
     double pCo2TEWet = calcPco2TEWet(co2Calibrated, equilibratorPressure, pH2O);
