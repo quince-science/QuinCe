@@ -187,7 +187,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 
   @Override
   protected List<Variable> getDefaultPlot1YAxis() {
-    return variables.getGroup("CO2").getVariables();
+    return variables.getGroup("CO₂").getVariables();
   }
 
   @Override

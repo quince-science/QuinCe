@@ -479,13 +479,20 @@ public class CalibrationDataDB {
    * @return The calibration fields
    */
   private static List<String> getCalibrationFields() {
+    // TODO Restrict this to CO2 for now (which is current behaviour).
+    // We'll expand to include xH2O down the line
+
     List<String> calibrationFields = new ArrayList<String>();
+    calibrationFields.add("co2");
+
+    /*
     SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
     for (SensorType sensorType : sensorConfig.getSensorTypes()) {
       if (sensorType.hasInternalCalibration()) {
         calibrationFields.add(sensorType.getDatabaseFieldName());
       }
     }
+    */
     return calibrationFields;
   }
 
@@ -494,13 +501,21 @@ public class CalibrationDataDB {
    * @return The calibration fields
    */
   private static List<String> getCalibrationFieldNames() {
+
+    // TODO Restrict this to CO2 for now (which is current behaviour).
+    // We'll expand to include xH2O down the line
+
     List<String> calibrationFields = new ArrayList<String>();
+    calibrationFields.add("CO₂");
+
+    /*
     SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
     for (SensorType sensorType : sensorConfig.getSensorTypes()) {
       if (sensorType.hasInternalCalibration()) {
-        calibrationFields.add(sensorType.getName());
+        calibrationFields.add(sensorType.getGroup());
       }
     }
+    */
     return calibrationFields;
   }
 
