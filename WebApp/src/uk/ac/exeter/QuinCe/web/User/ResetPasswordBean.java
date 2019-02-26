@@ -143,7 +143,10 @@ public class ResetPasswordBean extends BaseManagedBean {
         UserDB.clearPasswordResetCode(conn, email);
         conn.commit();
       } catch (SQLException e) {
+        e.printStackTrace();
         DatabaseUtils.rollBack(conn);
+      } finally {
+        DatabaseUtils.closeConnection(conn);
       }
     }
 

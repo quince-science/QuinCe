@@ -324,8 +324,8 @@ public class InstrumentDB {
       throw new DatabaseException("Exception while storing instrument", e, rollbackOK);
     } finally {
       DatabaseUtils.closeResultSets(keyResultSets);
-      DatabaseUtils.closeStatements(subStatements);
       DatabaseUtils.closeResultSets(instrumentKey);
+      DatabaseUtils.closeStatements(subStatements);
       DatabaseUtils.closeStatements(instrumentStatement);
       DatabaseUtils.closeConnection(conn);
     }
@@ -498,6 +498,8 @@ public class InstrumentDB {
       }
     } catch (SQLException e) {
       throw new DatabaseException("Error retrieving instrument list", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
     }
 
     return result;
@@ -676,16 +678,19 @@ public class InstrumentDB {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkPositive(instrumentID, "instrumentID");
 
+    Instrument result = null;
     Connection conn = null;
 
     try {
       conn = dataSource.getConnection();
-      return getInstrument(conn, instrumentID, sensorConfiguration, runTypeConfiguration);
+      result = getInstrument(conn, instrumentID, sensorConfiguration, runTypeConfiguration);
     } catch (SQLException e) {
       throw new DatabaseException("Error while updating record counts", e);
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
+
+    return result;
   }
 
 
