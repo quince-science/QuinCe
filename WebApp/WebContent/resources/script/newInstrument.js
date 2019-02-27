@@ -659,41 +659,18 @@ function buildMainAssignmentMenu(file, column) {
       }
     }
 
+    var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
+    for (var i = 0; i < sensorAssignments.length; i++) {
+      if (!sensorAssignments[i]['diagnostic']) {
+        menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'], file, column);
+      }
+    }
+
     if (fileSpecificAssignments[file]['runTypeColRequired']) {
       if (fileSpecificAssignments[file]['runTypeCol'] > -1) {
         menuHtml += makeDisabledMenuItem('Run Type');
       } else {
         menuHtml += makeMenuItem('OTHER_runType', 'Run Type', file, column);
-      }
-    }
-
-    var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
-    for (var i = 0; i < sensorAssignments.length; i++) {
-
-      var entry = sensorAssignments[i];
-      var menuDisabled = false;
-
-      // Skip diagnostic sensors - they go in a submenu
-      if (entry['name'].substring(0, 11) != 'Diagnostic:') {
-
-        // Core sensors can only have one column assigned in each file.
-        // Check the assignments individually to see if the assigned file is this one
-        if (entry['core']) {
-          for (var j = 0; j < entry['assignments'].length && !menuDisabled; j++) {
-            var fileIndex = getFileIndex(entry['assignments'][j]['file']);
-            if (fileIndex == file) {
-              menuDisabled = true;
-            }
-          }
-        } else if (!sensorAssignments[i]['many'] && sensorAssignments[i]['assignments'].length > 0) {
-          menuDisabled = true;
-        }
-
-        if (menuDisabled) {
-          menuHtml += makeDisabledMenuItem(sensorAssignments[i]['name']);
-        } else {
-          menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'], file, column);
-        }
       }
     }
 
@@ -745,8 +722,8 @@ function buildDiagnosticAssignmentMenu(file, column) {
 
   for (var i = 0; i < sensorAssignments.length; i++) {
     // Only use diagnostic entries
-    if (sensorAssignments[i]['name'].substring(0, 11) == 'Diagnostic:') {
-       menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'].substring(12), file, column);
+    if (sensorAssignments[i]['diagnostic']) {
+       menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'].substring(11), file, column);
     }
   }
 

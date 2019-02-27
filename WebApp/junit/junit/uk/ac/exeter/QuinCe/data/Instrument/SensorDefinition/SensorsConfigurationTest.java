@@ -140,17 +140,33 @@ public class SensorsConfigurationTest extends DBTest {
   @FlywayTest
   @Test
   public void sensorTypesListTest() throws Exception {
+
+    // Get the list from the configuration
     List<SensorType> types = getConfig().getSensorTypes();
 
-    // Extract the names in list order
+    // Extract the non-diagnostic names in list order
     List<String> names = new ArrayList<String>(types.size());
     for (SensorType type : types) {
-      names.add(type.getName());
+      if (!type.isDiagnostic()) {
+        names.add(type.getName());
+      }
     }
 
+    // Extract the diagnostic names in list order
+    List<String> diagnosticNames = new ArrayList<String>(types.size());
+    for (SensorType type : types) {
+      if (type.isDiagnostic()) {
+        diagnosticNames.add(type.getName());
+      }
+    }
+
+    Collections.sort(names);
+    Collections.sort(diagnosticNames);
+
     // Sort the names into alphabetical order
-    List<String> sortedNames = new ArrayList<String>(names);
-    Collections.sort(sortedNames);
+    List<String> sortedNames = new ArrayList<String>(names.size() + diagnosticNames.size());
+    sortedNames.addAll(names);
+    sortedNames.addAll(diagnosticNames);
 
     // Check that the lists are equal
     for (int i = 0; i < names.size(); i++) {
