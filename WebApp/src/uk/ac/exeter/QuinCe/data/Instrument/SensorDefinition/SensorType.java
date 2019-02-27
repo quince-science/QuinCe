@@ -376,7 +376,19 @@ public class SensorType implements Comparable<SensorType> {
 
   @Override
   public int compareTo(SensorType o) {
-    return name.compareTo(o.name);
+
+    int result = 0;
+
+    // Diagnostic types go last
+    if (!diagnostic && o.diagnostic) {
+      result = -1;
+    } else if (diagnostic && !o.diagnostic) {
+      result = 1;
+    } else {
+      result = name.compareTo(o.name);
+    }
+
+    return result;
   }
 
   @Override
