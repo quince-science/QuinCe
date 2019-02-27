@@ -46,8 +46,7 @@
         </p:column>
         <p:column styleClass="centeredCell">
           <f:facet name="header">Sensor Calibrations</f:facet>
-          <p:button rendered="#{instrument.calibratableSensors}" value="View Calibrations" styleClass="inlineButton" onclick="return goToCalibrations(#{instrument.id}, '#{instrument.name}')"/>
-          <h:outputText styleClass="note" rendered="#{!instrument.calibratableSensors}" value="No sensors require calibration"/>
+          <span class="note" style="color: red">Sensor calibrations link will go here</span>
         </p:column>
         <p:column styleClass="centeredCell">
           <f:facet name="header">External Standard Deployments</f:facet>
