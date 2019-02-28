@@ -153,11 +153,6 @@ public class NewInstrumentBean extends FileUploadBean {
   private String sensorAssignmentSensorType = null;
 
   /**
-   * Sensor assignment - must post-calibration be applied?
-   */
-  private boolean sensorAssignmentPostCalibrated = false;
-
-  /**
    * Sensor assignment - the answer to the Depends Question
    * @see SensorType#getDependsQuestion()
    */
@@ -687,22 +682,6 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Get the sensor assignment post-calibration flag
-   * @return The post-calibration flag
-   */
-  public boolean getSensorAssignmentPostCalibrated() {
-    return sensorAssignmentPostCalibrated;
-  }
-
-  /**
-   * Set the sensor assignment post-calibration flag
-   * @param sensorAssignmentPostCalibrated The post-calibration flag
-   */
-  public void setSensorAssignmentPostCalibrated(boolean sensorAssignmentPostCalibrated) {
-    this.sensorAssignmentPostCalibrated = sensorAssignmentPostCalibrated;
-  }
-
-  /**
    * Get the answer to the sensor assignment's Depends Question
    * @return The answer to the Depends Question
    * @see SensorType#getDependsQuestion()
@@ -776,7 +755,6 @@ public class NewInstrumentBean extends FileUploadBean {
     sensorAssignmentName = null;
     sensorAssignmentSensorType = null;
     sensorAssignmentPrimary = true;
-    sensorAssignmentPostCalibrated = false;
     sensorAssignmentDependsQuestionAnswer = false;
     sensorAssignmentMissingValue = null;
   }

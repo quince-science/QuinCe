@@ -85,7 +85,7 @@
         <div id="sensorAssignmentNameContainer" class="dialogSection">
           <table>
             <tr>
-              <td><p:outputLabel value="Sensor Name:"/></td>
+              <td><p:outputLabel value="Sensor Name: "/></td>
               <td><p:inputText id="sensorAssignmentName" widgetVar="sensorName" value="#{newInstrumentBean.sensorAssignmentName}" size="20" onkeyup="checkSensorName()"/></td>
             </tr>
             <tr>
@@ -96,23 +96,12 @@
         </div>
         <div id="sensorAssignmentPrimaryContainer" class="dialogSection">
           <div class="hidden">
-            <p:outputLabel value="Is this a primary or fallback sensor?"/> <i>??</i>
+            <p:outputLabel value="Is this a primary or fallback sensor? "/> <i>??</i>
           </div>
           <div class="hidden">
             <p:selectOneRadio id="sensorAssignmentPrimary" widgetVar="primary" value="#{newInstrumentBean.sensorAssignmentPrimary}">
               <f:selectItem itemLabel="Primary" itemValue="true"/>
               <f:selectItem itemLabel="Fallback" itemValue="false"/>
-            </p:selectOneRadio>
-          </div>
-        </div>
-        <div id="sensorAssignmentPostCalibration" class="dialogSection">
-          <div>
-            <p:outputLabel value="Should calibration adjustments be applied to this sensor?"/> <i>??</i>
-          </div>
-          <div>
-            <p:selectOneRadio id="sensorAssignmentPostCalibrated" value="#{newInstrumentBean.sensorAssignmentPostCalibrated}">
-              <f:selectItem itemLabel="Yes" itemValue="true"/>
-              <f:selectItem itemLabel="No" itemValue="false"/>
             </p:selectOneRadio>
           </div>
         </div>
@@ -129,7 +118,7 @@
         <div class="dialogSection">
           <table>
             <tr>
-              <td><p:outputLabel value="'Missing' Value"/></td>
+              <td><p:outputLabel value="'Missing' Value: "/></td>
               <td><p:inputText id="sensorAssignmentMissingValue" value="#{newInstrumentBean.sensorAssignmentMissingValue}"/></td>
             </tr>
           </table>
@@ -137,11 +126,11 @@
 
         <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
           <p:commandButton widgetVar="sensorAssignmentAssignButton" value="Assign" ajax="true" action="#{newInstrumentBean.storeSensorAssignment}"
-            process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue"
-            update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue sensorAssignments fileSpecificAssignments"
+            process="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue"
+            update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue sensorAssignments fileSpecificAssignments"
             oncomplete="sensorAssigned();"/>
           <p:commandButton value="Cancel" ajax="true" action="#{newInstrumentBean.resetSensorAssignmentValues}" process="@none"
-            update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentPostCalibrated sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue" oncomplete="PF('sensorAssignmentDialog').hide();"/>
+            update="sensorAssignmentFile sensorAssignmentColumn sensorAssignmentSensorType sensorAssignmentPrimary sensorAssignmentName sensorAssignmentDependsQuestionAnswer sensorAssignmentMissingValue" oncomplete="PF('sensorAssignmentDialog').hide();"/>
         </h:panelGrid>
 
       </p:dialog>
