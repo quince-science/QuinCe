@@ -20,7 +20,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import junit.uk.ac.exeter.QuinCe.TestBase.DBTest;
+import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -37,7 +37,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
-public class SensorsConfigurationTest extends DBTest {
+public class SensorsConfigurationTest extends BaseTest {
 
   private static List<Long> var1List = null;
   private static List<Long> var2List = null;
