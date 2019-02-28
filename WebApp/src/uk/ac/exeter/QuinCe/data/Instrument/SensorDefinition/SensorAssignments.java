@@ -86,10 +86,20 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
 
     for (SensorType type: sensorConfig.getNonCoreSensors(conn)) {
       put(type, new HashSet<SensorAssignment>());
+
+      // Add the Run Type if required
+      if (type.hasInternalCalibration()) {
+        put(SensorType.createRunTypeSensor(), new HashSet<SensorAssignment>());
+      }
     }
 
     for (SensorType coreType : sensorConfig.getCoreSensors(variableIDs)) {
       put(coreType, new HashSet<SensorAssignment>());
+
+      // Add the Run Type if required
+      if (coreType.hasInternalCalibration()) {
+        put(SensorType.createRunTypeSensor(), new HashSet<SensorAssignment>());
+      }
     }
   }
 

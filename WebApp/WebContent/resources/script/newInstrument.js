@@ -920,12 +920,7 @@ function openAssignSensorDialog(sensor, file, column) {
   $('#sensorAssignmentColumnName').text(filesAndColumns[file]['columns'][column]);
   $('#sensorAssignmentSensorTypeText').text(sensor);
 
-  if (canBeNamed(sensor)) {
-    $('#sensorAssignmentNameContainer').show();
-    $('#newInstrumentForm\\:sensorAssignmentName').val(filesAndColumns[file]['columns'][column]);
-  } else {
-    $('#sensorAssignmentNameContainer').hide();
-  }
+  $('#newInstrumentForm\\:sensorAssignmentName').val(filesAndColumns[file]['columns'][column]);
 
   var dependsQuestion = getDependsQuestion(sensor);
   if (null == dependsQuestion) {
@@ -939,12 +934,6 @@ function openAssignSensorDialog(sensor, file, column) {
     $('#sensorAssignmentPrimaryContainer').show();
   } else {
     $('#sensorAssignmentPrimaryContainer').hide();
-  }
-
-  if (canBePostCalibrated(sensor)) {
-    $('#sensorAssignmentPostCalibration').show();
-  } else {
-    $('#sensorAssignmentPostCalibration').hide();
   }
 
   PF('sensorAssignmentAssignButton').enable();
@@ -978,22 +967,6 @@ function usePrimary(sensor) {
     var assignment = assignments[i];
     if (assignment['name'] == sensor) {
       result = assignment['many'] && assignment['averaged'];
-      break;
-    }
-  }
-
-  return result;
-}
-
-function canBePostCalibrated(sensor) {
-  var result = true;
-
-  var assignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
-
-  for (var i = 0; i < assignments.length; i++) {
-    var assignment = assignments[i];
-    if (assignment['name'] == sensor) {
-      result = assignment['postCalibrated'];
       break;
     }
   }
