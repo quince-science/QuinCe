@@ -64,6 +64,13 @@ public class InstrumentDB {
       + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
   /**
+   * Statement for inserting an instrument variable record
+   */
+  private static final String CREATE_INSTRUMENT_VARIABLE_STATEMENT = "INSERT INTO "
+    + "instrument_variables (instrument_id, variable_id) " // 2
+    + "VALUES (?, ?)";
+
+  /**
    * Statement for inserting a file definition record
    */
   private static final String CREATE_FILE_DEFINITION_STATEMENT = "INSERT INTO file_definition ("
@@ -84,8 +91,8 @@ public class InstrumentDB {
   private static final String CREATE_FILE_COLUMN_STATEMENT = "INSERT INTO file_column ("
       + "file_definition_id, file_column, primary_sensor, sensor_type, " // 4
       + "sensor_name, value_column, depends_question_answer, " // 7
-      + "missing_value, post_calibrated" // 9
-      + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      + "missing_value" // 9
+      + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
   /**
    * Query to get all the run types of a given run type category
@@ -237,11 +244,20 @@ public class InstrumentDB {
       if (!instrumentKey.next()) {
         throw new DatabaseException("Instrument record was not created in the database");
       } else {
-        // Store the database IDs for all the file definitions
-        Map<String, Long> fileDefinitionIds = new HashMap<String, Long>(instrument.getFileDefinitions().size());
-
         long instrumentId = instrumentKey.getLong(1);
         instrument.setDatabaseId(instrumentId);
+
+        // Store the instrument's variables
+        for (InstrumentVariable variable : instrument.getVariables()) {
+          PreparedStatement variableStmt = conn.prepareStatement(CREATE_INSTRUMENT_VARIABLE_STATEMENT);
+          variableStmt.setLong(1, instrumentId);
+          variableStmt.setLong(2, variable.getId());
+          variableStmt.execute();
+          subStatements.add(variableStmt);
+        }
+
+        // Store the database IDs for all the file definitions
+        Map<String, Long> fileDefinitionIds = new HashMap<String, Long>(instrument.getFileDefinitions().size());
 
         // Now store the file definitions
         for (FileDefinition file : instrument.getFileDefinitions()) {
