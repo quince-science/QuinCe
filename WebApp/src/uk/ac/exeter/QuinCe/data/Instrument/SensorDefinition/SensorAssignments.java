@@ -114,7 +114,7 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
     }
 
     // If it's required and primary not assigned, return true
-    return (required && !isAssigned(sensorType, true));
+    return (required && !isAssigned(sensorType, true, true));
   }
 
   /**
@@ -131,7 +131,7 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
 
     Set<SensorType> dependents = getDependents(sensorType);
     for (SensorType dependent : dependents) {
-      if (isAssigned(dependent, false)) {
+      if (isAssigned(dependent, false, false)) {
         result = true;
         break;
       }
@@ -146,10 +146,11 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
    *
    * @param sensorType The SensorType
    * @param primaryOnly If only primary assignments are to be checked
+   * @param includeRelations Indicates whether to look at relations when checking for assignment
    * @return {@code true} if the sensor has been assigned; {@code false} if not
    */
-  private boolean isAssigned(SensorType sensorType, boolean primaryOnly) {
-    return isAssigned(sensorType, null, primaryOnly);
+  private boolean isAssigned(SensorType sensorType, boolean primaryOnly, boolean includeRelations) {
+    return isAssigned(sensorType, null, primaryOnly, includeRelations);
   }
 
   /**
@@ -160,26 +161,30 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
    * @param primaryOnly If only primary assignments are to be checked
    * @return {@code true} if the sensor has been assigned; {@code false} if not
    */
-  private boolean isAssigned(SensorType sensorType, String dataFileName, boolean primaryOnly) {
+  private boolean isAssigned(SensorType sensorType, String dataFileName, boolean primaryOnly, boolean includeRelations) {
     boolean assigned = false;
 
     SensorsConfiguration sensorConfig = getSensorConfig();
 
-    if (sensorConfig.isParent(sensorType)) {
-      for (SensorType child : sensorConfig.getChildren(sensorType)) {
-        if (checkAssignment(child, dataFileName, primaryOnly)) {
-          assigned = true;
-          break;
+    if (includeRelations) {
+      if (sensorConfig.isParent(sensorType)) {
+        for (SensorType child : sensorConfig.getChildren(sensorType)) {
+          if (checkAssignment(child, dataFileName, primaryOnly)) {
+            assigned = true;
+            break;
+          }
         }
-      }
-    } else if (sensorType.hasParent()) {
-      for (SensorType child : sensorConfig.getChildren(
-        sensorConfig.getParent(sensorType))) {
+      } else if (sensorType.hasParent()) {
+        for (SensorType child : sensorConfig.getChildren(
+          sensorConfig.getParent(sensorType))) {
 
-        if (checkAssignment(child, dataFileName, primaryOnly)) {
-          assigned = true;
-          break;
+          if (checkAssignment(child, dataFileName, primaryOnly)) {
+            assigned = true;
+            break;
+          }
         }
+      } else {
+        assigned = checkAssignment(sensorType, dataFileName, primaryOnly);
       }
     } else {
       assigned = checkAssignment(sensorType, dataFileName, primaryOnly);
@@ -255,14 +260,14 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
    *
    * @param sensorType The sensor type that other sensors may depend on
    * @return {@code true} if any other sensor types depend on the supplied sensor type; {@code false} if there are no dependents
-   * @throws SensorConfigurationException If the internal configuration is invalud
+   * @throws SensorConfigurationException If the internal configuration is invalid
    */
   public Set<SensorType> getDependents(SensorType sensorType)
     throws SensorConfigurationException {
 
     Set<SensorType> dependents = new HashSet<SensorType>();
 
-    for (SensorType testType : getSensorConfig().getSensorTypes(variableIDs, true)) {
+    for (SensorType testType : getSensorConfig().getSensorTypes()) {
       // A sensor can't depend on itself
       if (!testType.equals(sensorType)) {
 
@@ -398,7 +403,7 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
 
     List<SensorType> coreSensors = getSensorConfig().getCoreSensors(variableIDs);
     for (SensorType coreType : coreSensors) {
-      if (isAssigned(coreType, dataFileName, primaryOnly)) {
+      if (isAssigned(coreType, dataFileName, primaryOnly, true)) {
         result = true;
         break;
       }

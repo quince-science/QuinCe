@@ -22,7 +22,9 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import junit.uk.ac.exeter.QuinCe.TestBase.DBTest;
+import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
+import junit.uk.ac.exeter.QuinCe.TestBase.TestLineException;
+import junit.uk.ac.exeter.QuinCe.TestBase.TestSetLine;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
@@ -88,10 +90,11 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 @FlywayTest(locationsForMigrate = {
   "resources/sql/testbase/user",
   "resources/sql/testbase/instrument",
-  "resources/sql/testbase/variable"
+  "resources/sql/testbase/variable",
+  "resources/sql/data/Instrument/SensorDefinition/SensorAssignmentsTest/isAssignmentRequired"
 })
 @TestInstance(Lifecycle.PER_CLASS)
-public class SensorAssignmentsTest extends DBTest {
+public class SensorAssignmentsTest extends BaseTest {
 
   private static final long INVALID_SENSOR_ID = -1000L;
 
@@ -108,11 +111,7 @@ public class SensorAssignmentsTest extends DBTest {
   // Sensor type IDs. Populated by classInit()
   private long intakeTemperatureId = -1L;
   private long salinityId = -1L;
-  private long atmosphericPressureId = -1L;
   private long equilibratorPressureParentId = -1L;
-  private long equilibratorPressureAbsoluteId = -1L;
-  private long equilibratorPressureDifferentialId = -1L;
-  private long ambientPressureId = -1L;
   private long xh2oId = -1L;
   private long co2Id = -1L;
 
@@ -164,18 +163,6 @@ public class SensorAssignmentsTest extends DBTest {
     return result;
   }
 
-  /**
-   * Get the SensorType IDs of the two child Equilibrator Pressure
-   * types
-   * @return The IDs
-   */
-  @SuppressWarnings("unused")
-  private Stream<Long> getEquilibratorPressureChildIds() {
-    return Stream.of(
-      equilibratorPressureAbsoluteId,
-      equilibratorPressureDifferentialId);
-  }
-
   @BeforeAll
   public void sensorConfigInit() throws Exception {
     initResourceManager();
@@ -185,11 +172,7 @@ public class SensorAssignmentsTest extends DBTest {
 
     intakeTemperatureId = getSensorTypeId("Intake Temperature");
     salinityId = getSensorTypeId("Salinity");
-    atmosphericPressureId = getSensorTypeId("Atmospheric Pressure");
     equilibratorPressureParentId = getSensorTypeId("Equilibrator Pressure");
-    equilibratorPressureAbsoluteId = getSensorTypeId("Equilibrator Pressure (absolute)");
-    equilibratorPressureDifferentialId = getSensorTypeId("Equilibrator Pressure (differential)");
-    ambientPressureId = getSensorTypeId("Ambient Pressure");
     xh2oId = getSensorTypeId("xH₂O in gas");
     co2Id = getSensorTypeId("CO₂ in gas");
   }
@@ -243,166 +226,12 @@ public class SensorAssignmentsTest extends DBTest {
   }
 
   @Test
-  public void simpleSensorRequiredTest() throws Exception {
-    assertTrue(assignments.isAssignmentRequired(config.getSensorType(intakeTemperatureId)));
-  }
-
-  @Test
-  public void simpleSensorNotRequiredTest() throws Exception {
-    // Atmospheric pressure is not required
-    assertFalse(assignments.isAssignmentRequired(config.getSensorType(atmosphericPressureId)));
-  }
-
-  @Test
-  public void parentRequiredTest() throws Exception {
-    assertTrue(assignments.isAssignmentRequired(config.getSensorType(equilibratorPressureParentId)));
-  }
-
-  @ParameterizedTest
-  @MethodSource("getEquilibratorPressureChildIds")
-  public void childrenRequiredTest(long id) throws Exception {
-    assertTrue(assignments.isAssignmentRequired(config.getSensorType(id)));
-  }
-
-  @Test
   public void assignParentTest() {
 
     // Parents cannot be assigned; only their children
     assertThrows(SensorAssignmentException.class, () -> {
       assignments.addAssignment(equilibratorPressureParentId, makeAssignment(DATA_FILE_NAME, 1, true));
     });
-  }
-
-  @Test
-  public void assignChildTest() throws Exception {
-    assignments.addAssignment(equilibratorPressureAbsoluteId, makeAssignment(DATA_FILE_NAME, 1, true));
-
-    // Once one child is assigned, the parent and all siblings are not required
-    assertFalse(assignments.isAssignmentRequired(config.getSensorType(equilibratorPressureParentId)));
-    assertFalse(assignments.isAssignmentRequired(config.getSensorType(equilibratorPressureAbsoluteId)));
-    assertFalse(assignments.isAssignmentRequired(config.getSensorType(equilibratorPressureDifferentialId)));
-  }
-
-  @Test
-  public void assignSecondaryChildTest() throws Exception {
-    assignments.addAssignment(equilibratorPressureAbsoluteId, makeAssignment(DATA_FILE_NAME, 1, false));
-
-    // A secondary assignment to a child
-    // Means all are still required
-    assertTrue(assignments.isAssignmentRequired(config.getSensorType(equilibratorPressureParentId)));
-    assertTrue(assignments.isAssignmentRequired(config.getSensorType(equilibratorPressureAbsoluteId)));
-    assertTrue(assignments.isAssignmentRequired(config.getSensorType(equilibratorPressureDifferentialId)));
-  }
-
-  /* **********************
-   * Basic dependency tests
-   * **********************
-   *
-   *  If differential EqP is assigned, Ambient Pressure is required.
-   * Otherwise it isn't.
-   */
-
-  @Test
-  public void dependentNotRequiredTest() throws Exception {
-    // Differential EqP is not assigned, therefore Ambient Pressure is not required
-    assertFalse(assignments.isAssignmentRequired(config.getSensorType(ambientPressureId)));
-  }
-
-  @Test
-  public void dependentRequiredPrimaryTest() throws Exception {
-    // Differential EqP is assigned, therefore Ambient Pressure is required
-    assignments.addAssignment(equilibratorPressureDifferentialId, makeAssignment(DATA_FILE_NAME, 1, true));
-    assertTrue(assignments.isAssignmentRequired(config.getSensorType(ambientPressureId)));
-  }
-
-  @Test
-  public void dependentRequiredSecondaryTest() throws Exception {
-    // Secondary Differential EqP is defined, but Ambient Pressure is still required
-    assignments.addAssignment(equilibratorPressureDifferentialId, makeAssignment(DATA_FILE_NAME, 1, false));
-    assertTrue(assignments.isAssignmentRequired(config.getSensorType(ambientPressureId)));
-  }
-
-  /* **********************
-   * Depends Question tests
-   * **********************
-   *
-   * CO2 depends on xh2oId only if the dependsQuestion answer is true in its assignment
-   */
-  @Test
-  public void dependsQuestionDependentNoAssignmentTest() throws Exception {
-    // Just testing that xh2oId isn't required by default
-    assertFalse(assignments.isAssignmentRequired(config.getSensorType(xh2oId)));
-  }
-
-  @Test
-  public void dependsQuestionFalseTest() throws Exception {
-    // CO2 is assigned, but the Depends Question answer is false.
-    // Therefore xh2oId is not required
-    SensorAssignment co2Assignment = new SensorAssignment(DATA_FILE_NAME,
-      1, "Assignment", true, false, "NaN");
-
-    assignments.addAssignment(co2Id, co2Assignment);
-    assertFalse(assignments.isAssignmentRequired(config.getSensorType(xh2oId)));
-  }
-
-  @Test
-  public void dependsQuestionTrueTest() throws Exception {
-    // CO2 is assigned, and the Depends Question answer is true.
-    // Therefore xh2oId is required
-    SensorAssignment co2Assignment = new SensorAssignment(DATA_FILE_NAME,
-      1, "Assignment", true, true, "NaN");
-
-    assignments.addAssignment(co2Id, co2Assignment);
-    assertTrue(assignments.isAssignmentRequired(config.getSensorType(xh2oId)));
-  }
-
-  @Test
-  public void dependsQuestionAllAssignedTest() throws Exception {
-    // CO2 is assigned, and the Depends Question answer is true.
-    // Primary xh2oId is assigned. Therefore is isn't required
-    SensorAssignment co2Assignment = new SensorAssignment(DATA_FILE_NAME,
-      1, "Assignment", true, true, "NaN");
-
-    assignments.addAssignment(co2Id, co2Assignment);
-    assignments.addAssignment(xh2oId, makeAssignment(DATA_FILE_NAME, 2, true));
-    assertFalse(assignments.isAssignmentRequired(config.getSensorType(xh2oId)));
-}
-
-  @Test
-  public void dependsQuestionTrueSecondaryTest() throws Exception {
-    // Secondary CO2 is assigned, and the Depends Question answer is true.
-    // Therefore xh2oId is required
-    SensorAssignment co2Assignment = new SensorAssignment(DATA_FILE_NAME,
-      1, "Assignment", false, true, "NaN");
-
-    assignments.addAssignment(co2Id, co2Assignment);
-    assertTrue(assignments.isAssignmentRequired(config.getSensorType(xh2oId)));
-  }
-
-  @Test
-  public void dependsQuestionTrueSecondaryDependentTest() throws Exception {
-    // CO2 is assigned, and the Depends Question answer is true.
-    // Secondary xh2oId is assigned. Therefore xh2oId is still required
-    SensorAssignment co2Assignment = new SensorAssignment(DATA_FILE_NAME,
-      2, "Assignment", true, true, "NaN");
-
-    assignments.addAssignment(co2Id, co2Assignment);
-    assignments.addAssignment(xh2oId, makeAssignment(DATA_FILE_NAME, 1, false));
-    assertTrue(assignments.isAssignmentRequired(config.getSensorType(xh2oId)));
-  }
-
-  @Test
-  public void primaryAssignedTest() throws Exception {
-    // Assigning a primary sensor means it's no longer required
-    assignments.addAssignment(intakeTemperatureId, makeAssignment(DATA_FILE_NAME, 1, true));
-    assertFalse(assignments.isAssignmentRequired(config.getSensorType(1)));
-  }
-
-  @Test
-  public void secondaryAssignedTest() throws Exception {
-    // Assigning just a secondary sensor means it's still required
-    assignments.addAssignment(intakeTemperatureId, makeAssignment(DATA_FILE_NAME, 1, false));
-    assertTrue(assignments.isAssignmentRequired(config.getSensorType(1)));
   }
 
   @Test
@@ -526,12 +355,156 @@ public class SensorAssignmentsTest extends DBTest {
     assertTrue(assignments.runTypeRequired(DATA_FILE_2_NAME));
   }
 
-
   @Test
   public void runTypeRequiredBothInternalCalibTest() throws Exception {
     assignments.addAssignment(xh2oId, makeAssignment(DATA_FILE_NAME, 1, true));
     assignments.addAssignment(co2Id, makeAssignment(DATA_FILE_NAME, 2, true));
 
     assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
+  }
+
+  /* *************************************************************************
+   *
+   * isAssignmentRequired tests. This uses a TestSet CSV file.
+   *
+   * The test is below. Utility methods used by the test are under that.
+   *
+   * Note that not all possible combinations are tested at this time - just
+   * the ones that we know to be in use (or are most likely to be used in
+   * the near future)
+   *
+   */
+  @ParameterizedTest
+  @MethodSource("getAssignmentRequiredTestSet")
+  public void isAssignmentRequiredTests(TestSetLine line) throws TestLineException {
+
+    try {
+      assignMainSensorType(line);
+      assignRelation(line);
+      assignDependent(line);
+      assignDependentSibling(line);
+
+      assertEquals(assignments.isAssignmentRequired(getMainSensorType(line)),
+        getExpectedAssignmentRequired(line),
+        "Test failed for test set line " + line.getLineNumber());
+    } catch (Exception e) {
+      throw new TestLineException(line, e);
+    }
+
+  }
+
+  private static final int SENSOR_TYPE_COL = 0;
+  private static final int SENSOR_ASSIGN_PRIMARY_COL = 1;
+  private static final int SENSOR_ASSIGN_SECONDARY_COL = 2;
+  private static final int RELATION_COL = 3;
+  private static final int SIBLING_ASSIGNED_PRIMARY_COL = 4;
+  private static final int SIBLING_ASSIGNED_SECONDARY_COL = 5;
+  private static final int DEPENDENT_COL = 6;
+  private static final int HAS_DEPENDS_QUESTION_COL = 7;
+  private static final int DEPENDENT_ASSIGNED_PRIMARY_COL = 8;
+  private static final int DEPENDENT_ASSIGNED_PRIMARY_DEPENDS_QUESTION_ANSWER_COL = 9;
+  private static final int DEPENDENT_ASSIGNED_SECONDARY_COL = 10;
+  private static final int DEPENDENT_ASSIGNED_SECONDARY_DEPENDS_QUESTION_ANSWER_COL = 11;
+  private static final int DEPENDENT_SIBLING_COL = 12;
+  private static final int DEPENDENT_SIBLING_ASSIGNED_PRIMARY_COL = 13;
+  private static final int DEPENDENT_SIBLING_ASSIGNED_SECONDARY_COL = 14;
+  private static final int IS_ASSIGNMENT_REQUIRED_COL = 15;
+
+
+  @SuppressWarnings("unused")
+  private Stream<TestSetLine> getAssignmentRequiredTestSet() throws Exception {
+    return getTestSet("isAssignmentRequired");
+  }
+
+  private SensorType getMainSensorType(TestSetLine line) throws Exception {
+    return config.getSensorType(line.getStringField(SENSOR_TYPE_COL));
+  }
+
+  /**
+   * Assign the main sensor type for a line
+   * @param line The line
+   * @throws Exception If the assignment(s) fail
+   */
+  private void assignMainSensorType(TestSetLine line) throws Exception {
+    if (line.getBooleanField(SENSOR_ASSIGN_PRIMARY_COL)) {
+      assignments.addAssignment(getMainSensorType(line).getId(), makeAssignment(DATA_FILE_NAME, 1, true));
+    }
+    if (line.getBooleanField(SENSOR_ASSIGN_SECONDARY_COL)) {
+      assignments.addAssignment(getMainSensorType(line).getId(), makeAssignment(DATA_FILE_NAME, 2, false));
+    }
+  }
+
+  /**
+   * Assign the relation to the main sensor type
+   * @param line The line
+   * @throws Exception If the assignment(s) fail
+   */
+  private void assignRelation(TestSetLine line) throws Exception {
+    if (!line.isFieldEmpty(RELATION_COL)) {
+      String relationTypeName = line.getStringField(RELATION_COL);
+      if (line.getBooleanField(SIBLING_ASSIGNED_PRIMARY_COL)) {
+        assignments.addAssignment(getSensorTypeId(relationTypeName), makeAssignment(DATA_FILE_NAME, 3, true));
+      }
+      if (line.getBooleanField(SIBLING_ASSIGNED_SECONDARY_COL)) {
+        assignments.addAssignment(getSensorTypeId(relationTypeName), makeAssignment(DATA_FILE_NAME, 4, false));
+      }
+    }
+  }
+
+  /**
+   * Assign the relation to the main sensor type
+   * @param line The line
+   * @throws Exception If the assignment(s) fail
+   */
+  private void assignDependent(TestSetLine line) throws Exception {
+    if (!line.isFieldEmpty(DEPENDENT_COL)) {
+      String dependentTypeName = line.getStringField(DEPENDENT_COL);
+      if (line.getBooleanField(DEPENDENT_ASSIGNED_PRIMARY_COL)) {
+
+        boolean dependsQuestionAnswer = false;
+        if (line.getBooleanField(HAS_DEPENDS_QUESTION_COL)) {
+          dependsQuestionAnswer = line.getBooleanField(DEPENDENT_ASSIGNED_PRIMARY_DEPENDS_QUESTION_ANSWER_COL);
+        }
+
+        SensorAssignment assignment = new SensorAssignment(DATA_FILE_NAME, 5, "Assignment", true, dependsQuestionAnswer, null);
+        assignments.addAssignment(getSensorTypeId(dependentTypeName), assignment);
+      }
+      if (line.getBooleanField(DEPENDENT_ASSIGNED_SECONDARY_COL)) {
+
+        boolean dependsQuestionAnswer = false;
+        if (line.getBooleanField(HAS_DEPENDS_QUESTION_COL)) {
+          dependsQuestionAnswer = line.getBooleanField(DEPENDENT_ASSIGNED_SECONDARY_DEPENDS_QUESTION_ANSWER_COL);
+        }
+
+        SensorAssignment assignment = new SensorAssignment(DATA_FILE_NAME, 6, "Assignment", true, dependsQuestionAnswer, null);
+        assignments.addAssignment(getSensorTypeId(dependentTypeName), assignment);
+      }
+    }
+  }
+
+  /**
+   * Assign the relation to the main sensor type
+   * @param line The line
+   * @throws Exception If the assignment(s) fail
+   */
+  private void assignDependentSibling(TestSetLine line) throws Exception {
+    if (!line.isFieldEmpty(DEPENDENT_SIBLING_COL)) {
+      String dependentSiblingTypeName = line.getStringField(DEPENDENT_SIBLING_COL);
+      if (line.getBooleanField(DEPENDENT_SIBLING_ASSIGNED_PRIMARY_COL)) {
+        assignments.addAssignment(getSensorTypeId(dependentSiblingTypeName), makeAssignment(DATA_FILE_NAME, 7, true));
+      }
+      if (line.getBooleanField(DEPENDENT_SIBLING_ASSIGNED_SECONDARY_COL)) {
+        assignments.addAssignment(getSensorTypeId(dependentSiblingTypeName), makeAssignment(DATA_FILE_NAME, 8, false));
+      }
+    }
+  }
+
+  /**
+   * Get the expected isAssignmentRequired result for a line
+   * @param line The line
+   * @return The expected result
+   */
+  private boolean getExpectedAssignmentRequired(TestSetLine line) {
+    return line.getBooleanField(IS_ASSIGNMENT_REQUIRED_COL);
   }
 }
