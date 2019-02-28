@@ -10,12 +10,12 @@ import java.sql.ResultSet;
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.Test;
 
-import junit.uk.ac.exeter.QuinCe.TestBase.DBTest;
+import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
-public class InstrumentStubTest extends DBTest {
+public class InstrumentStubTest extends BaseTest {
 
   private static final String TEST_INSTRUMENT_NAME = "Test Instrument";
 

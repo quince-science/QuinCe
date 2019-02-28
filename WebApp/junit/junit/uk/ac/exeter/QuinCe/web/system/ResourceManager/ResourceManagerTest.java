@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.Test;
 
-import junit.uk.ac.exeter.QuinCe.TestBase.DBTest;
+import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestResourceManager;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPoolNotInitialisedException;
@@ -15,7 +15,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 /**
  * Tests for building the resource manager
  */
-public class ResourceManagerTest extends DBTest {
+public class ResourceManagerTest extends BaseTest {
 
   /**
    * Check that the ResourceManager can be constructed
