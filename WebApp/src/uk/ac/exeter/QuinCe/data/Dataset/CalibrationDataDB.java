@@ -148,13 +148,18 @@ public class CalibrationDataDB {
       SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
       long instrumentId = record.getDataSet().getInstrumentId();
       for (SensorType sensorType : sensorConfig.getSensorTypes()) {
+
+        // TODO requiredForVariables check will be removed later in the migration
         if (sensorConfig.requiredForVariables(sensorType, InstrumentVariable.getIDsList(InstrumentDB.getVariables(conn, instrumentId)))) {
-          currentField++;
-          Double sensorValue = record.getSensorValue(sensorType.getName());
-          if (null == sensorValue) {
-            statement.setNull(currentField, Types.DOUBLE);
-          } else {
-            statement.setDouble(currentField, sensorValue);
+
+          if (!sensorConfig.isParent(sensorType)) {
+            currentField++;
+            Double sensorValue = record.getSensorValue(sensorType.getName());
+            if (null == sensorValue) {
+              statement.setNull(currentField, Types.DOUBLE);
+            } else {
+              statement.setDouble(currentField, sensorValue);
+            }
           }
         }
       }
@@ -191,7 +196,9 @@ public class CalibrationDataDB {
       if (sensorConfig.requiredForVariables(sensorType,
         InstrumentVariable.getIDsList(InstrumentDB.getVariables(conn, instrumentId)))) {
 
-        fieldNames.add(sensorType.getDatabaseFieldName());
+        if (!sensorConfig.isParent(sensorType)) {
+          fieldNames.add(sensorType.getDatabaseFieldName());
+        }
       }
     }
 
