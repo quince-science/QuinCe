@@ -732,6 +732,18 @@ public abstract class DataSetRawData {
         SensorType sensorType = entry.getKey();
         Set<SensorAssignment> assignments = entry.getValue();
 
+        // TODO We don't handle diagnostics at this point in the migration.
+        // They'll be added back in later
+        if (!sensorType.isDiagnostic()) {
+          for (SensorAssignment assignment : assignments) {
+            Double sensorValue = getSensorValue(assignment);
+            record.setSensorValue(sensorType.getName(), sensorValue);
+          }
+        }
+
+        // This is the old algorithm that does some of the primary/
+        // secondary sensor stuff. This may be needed later in the migration.
+        /*
         if (instrument.getSensorAssignments().isAssignmentRequired(sensorType)) {
 
           double primarySensorTotal = 0.0;
@@ -768,7 +780,7 @@ public abstract class DataSetRawData {
             record.setDiagnosticValue(assignment.getDatabaseId(), getSensorValue(assignment));
           }
         }
-
+        */
       }
     } catch (DataFileException e) {
       throw e;
