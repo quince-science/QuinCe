@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.Instrument;
 
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.primefaces.json.JSONArray;
@@ -126,7 +127,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @return The targets
    * @throws Exception If the list of targets cannot be retrieved
    */
-  public List<String> getTargets() throws Exception {
+  public Map<String, String> getTargets() throws Exception {
     return getDbInstance().getTargets(getDataSource(), instrumentId);
   };
 
