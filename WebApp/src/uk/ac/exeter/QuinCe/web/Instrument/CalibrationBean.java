@@ -34,9 +34,19 @@ public abstract class CalibrationBean extends BaseManagedBean {
   private String instrumentName;
 
   /**
+   * The calibration database handler
+   */
+  private CalibrationDB dbInstance = null;
+
+  /**
    * The currently defined calibrations
    */
   private TreeMap<String, List<Calibration>> calibrations = null;
+
+  /**
+   * The calibration target names lookup
+   */
+  private Map<String, String> calibrationTargets = null;
 
   /**
    * The newly entered calibration
@@ -73,6 +83,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     if (ok) {
       try {
+        dbInstance = getDbInstance();
         loadCalibrations();
         newCalibration = initNewCalibration();
       } catch (Exception e) {
@@ -128,7 +139,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @throws Exception If the list of targets cannot be retrieved
    */
   public Map<String, String> getTargets() throws Exception {
-    return getDbInstance().getTargets(getDataSource(), instrumentId);
+    return calibrationTargets;
   };
 
   /**
@@ -141,10 +152,10 @@ public abstract class CalibrationBean extends BaseManagedBean {
     String nav = null;
 
     try {
-      if (getDbInstance().calibrationExists(getDataSource(), getNewCalibration())) {
+      if (dbInstance.calibrationExists(getDataSource(), getNewCalibration())) {
         setMessage(null, "A calibration already exists for this standard at this time");
       } else {
-        getDbInstance().addCalibration(getDataSource(), getNewCalibration());
+        dbInstance.addCalibration(getDataSource(), getNewCalibration());
         loadCalibrations();
         newCalibration = initNewCalibration();
       }
@@ -170,7 +181,8 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @throws MissingParamException If any internal calls are missing required parameters
    */
   private void loadCalibrations() throws MissingParamException, CalibrationException, DatabaseException, RecordNotFoundException {
-    calibrations = getDbInstance().getCalibrations(getDataSource(), instrumentId);
+    calibrations = dbInstance.getCalibrations(getDataSource(), instrumentId);
+    calibrationTargets = dbInstance.getTargets(getDataSource(), instrumentId);
   }
 
   /**
@@ -190,7 +202,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * Get the JSON for these groups
    * @return The targets JSON
    */
-  public String getTargetsJson() {
+  public String getTargetsJson() throws Exception {
     JSONArray groups = new JSONArray();
 
     int counter = 0;
@@ -199,7 +211,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
       JSONObject group = new JSONObject();
       group.put("id", counter);
       group.put("order", counter);
-      group.put("content", target);
+      group.put("content", getTargets().get(target));
 
       groups.put(group);
       counter++;
