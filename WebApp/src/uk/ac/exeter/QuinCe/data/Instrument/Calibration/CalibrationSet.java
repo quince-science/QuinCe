@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.Calibration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -40,7 +41,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
   /**
    * The set of targets that can be contained in this set
    */
-  private Collection<String> targets;
+  private Map<String, String> targets;
 
   /**
    * Initialise an empty calibration set
@@ -49,7 +50,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
    * @param targets The set of targets for the calibration set
    * @throws MissingParamException If any required paramters are missing
    */
-  protected CalibrationSet(long instrumentId, String type, Collection<String> targets) throws MissingParamException {
+  protected CalibrationSet(long instrumentId, String type, Map<String, String> targets) throws MissingParamException {
     super();
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
     MissingParam.checkMissing(type, "type");
@@ -59,7 +60,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
     this.type = type;
     this.targets = targets;
 
-    for (String target : targets) {
+    for (String target : targets.keySet()) {
       add(new EmptyCalibration(instrumentId, type, target));
     }
   }
@@ -74,7 +75,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
       throw new CalibrationException("Incorrect calibration type");
     }
 
-    if (!targets.contains(calibration.getTarget())) {
+    if (!targets.containsKey(calibration.getTarget())) {
       throw new CalibrationException("Calibration with target '" + calibration.getTarget() + "' is not allowed in this set");
     }
 
@@ -270,7 +271,7 @@ public class CalibrationSet extends TreeSet<Calibration> {
    * calibration set
    * @return
    */
-  public Collection<String> getTargets() {
+  public Map<String, String> getTargets() {
     return targets;
   }
 }
