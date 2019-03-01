@@ -177,7 +177,7 @@ public class InstrumentDB {
    * Query to get the list of sensors that require calibration for a given instrument
    */
   private static final String GET_CALIBRATABLE_SENSORS_QUERY = "SELECT "
-    + "c.id AS id, f.description AS file, c.sensor_name AS sensor "
+    + "c.id AS id, c.sensor_type as sensor_type, f.description AS file, c.sensor_name AS sensor "
     + "FROM file_definition AS f INNER JOIN file_column AS c ON c.file_definition_id = f.id "
     + "WHERE f.instrument_id = ? ORDER BY file, sensor";
 
@@ -1131,10 +1131,12 @@ public class InstrumentDB {
 
       records = stmt.executeQuery();
       while (records.next()) {
-        if (files.size() > 1) {
-          result.put(records.getString(1), records.getString(2) + ": " + records.getString(3));
-        } else {
-          result.put(records.getString(1), records.getString(3));
+        if (records.getLong(2) != SensorType.RUN_TYPE_ID) {
+          if (files.size() > 1) {
+            result.put(records.getString(1), records.getString(3) + ": " + records.getString(4));
+          } else {
+            result.put(records.getString(1), records.getString(4));
+          }
         }
       }
     } catch (SQLException e) {
