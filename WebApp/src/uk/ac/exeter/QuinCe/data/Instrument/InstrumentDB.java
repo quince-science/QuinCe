@@ -9,8 +9,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -176,9 +176,10 @@ public class InstrumentDB {
   /**
    * Query to get the list of sensors that require calibration for a given instrument
    */
-  private static final String GET_CALIBRATABLE_SENSORS_QUERY = "SELECT CONCAT(f.description, ': ', c.sensor_name) AS sensor "
-      + "FROM file_definition AS f INNER JOIN file_column AS c ON c.file_definition_id = f.id "
-      + "WHERE f.instrument_id = ? AND c.post_calibrated = true ORDER BY sensor";
+  private static final String GET_CALIBRATABLE_SENSORS_QUERY = "SELECT "
+    + "c.id AS id, f.description AS file, c.sensor_name AS sensor "
+    + "FROM file_definition AS f INNER JOIN file_column AS c ON c.file_definition_id = f.id "
+    + "WHERE f.instrument_id = ? ORDER BY file, sensor";
 
   /**
    * Query for retrieving the list of all instruments that provide NRT data
@@ -1110,10 +1111,11 @@ public class InstrumentDB {
    * @return The list of calibratable sensors
    * @throws MissingParamException If any required parameters are missing
    * @throws DatabaseException If a database error occurs
+   * @throws RecordNotFoundException
    */
-  public static List<String> getCalibratableSensors(Connection conn, long instrumentId) throws MissingParamException, DatabaseException {
+  public static Map<String, String> getCalibratableSensors(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
 
-    List<String> result = new ArrayList<String>();
+    Map<String, String> result = new LinkedHashMap<String, String>();
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkPositive(instrumentId, "instrumentId");
@@ -1122,12 +1124,18 @@ public class InstrumentDB {
     ResultSet records = null;
 
     try {
+      InstrumentFileSet files = getFileDefinitions(conn, instrumentId);
+
       stmt = conn.prepareStatement(GET_CALIBRATABLE_SENSORS_QUERY);
       stmt.setLong(1, instrumentId);
 
       records = stmt.executeQuery();
       while (records.next()) {
-        result.add(records.getString(1));
+        if (files.size() > 1) {
+          result.put(records.getString(1), records.getString(2) + ": " + records.getString(3));
+        } else {
+          result.put(records.getString(1), records.getString(3));
+        }
       }
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting run types", e);
@@ -1137,7 +1145,7 @@ public class InstrumentDB {
     }
 
 
-    return Collections.unmodifiableList(result);
+    return result;
   }
 
   /**
