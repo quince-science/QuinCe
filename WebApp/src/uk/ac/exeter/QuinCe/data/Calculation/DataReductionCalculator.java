@@ -85,7 +85,7 @@ public abstract class DataReductionCalculator {
       // For each external standard target, calculate the offset from the external
       // standard at the record date
       Map<String, Double> standardMeasurements = new HashMap<String, Double>();
-      for (String target : externalStandards.getTargets()) {
+      for (String target : externalStandards.getTargets().keySet()) {
         double concentration = externalStandards.getCalibrationValue(target, sensorName);
         if (!ignoreZero || concentration > 0.0) {
           List<DataSetRawDataRecord> beforeAndAfter = calibrations.getSurroundingCalibrations(recordDate, target);

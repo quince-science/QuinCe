@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import javax.sql.DataSource;
@@ -290,9 +291,9 @@ public abstract class CalibrationDB {
    * @throws DatabaseException If a database error occurs
    * @throws RecordNotFoundException If no external standard run types are found
    */
-  public List<String> getTargets(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+  public Map<String, String> getTargets(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
     Connection conn = null;
-    List<String> result = null;
+    Map<String, String> result = null;
 
     try {
       conn = dataSource.getConnection();
@@ -315,7 +316,7 @@ public abstract class CalibrationDB {
    * @throws DatabaseException If a database error occurs
    * @throws RecordNotFoundException If no external standard run types are found
    */
-  public abstract List<String> getTargets(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException;
+  public abstract Map<String, String> getTargets(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException;
 
   /**
    * Get the calibration type for database actions

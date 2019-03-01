@@ -5,8 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
@@ -76,13 +77,18 @@ public class ExternalStandardDB extends CalibrationDB {
   }
 
   @Override
-  public List<String> getTargets(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+  public Map<String, String> getTargets(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
     List<String> standardNames = InstrumentDB.getRunTypes(conn, instrumentId, RunTypeCategory.EXTERNAL_STANDARD_CATEGORY.getCode());
     if (standardNames.size() == 0) {
       throw new RecordNotFoundException("No external standard names found for instrument " + instrumentId);
     }
 
-    return Collections.unmodifiableList(standardNames);
+    Map<String, String> result = new TreeMap<String, String>();
+    for (String name : standardNames) {
+      result.put(name, name);
+    }
+
+    return result;
   }
 
   /**
