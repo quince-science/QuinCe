@@ -56,7 +56,8 @@
               <div id="targetField" class="fields">
                 <p:outputLabel for="target" value="#{sessionScope[beanName].targetLabel}:"></p:outputLabel>
                 <p:selectOneMenu id="target" autoWidth="false" value="#{sessionScope[beanName].newCalibration.target}">
-                  <f:selectItems value="#{sessionScope[beanName].targets}"/>
+                  <f:selectItems value="#{sessionScope[beanName].targets.entrySet()}" var="entry"
+                    itemValue="#{entry.key}" itemLabel="#{entry.value}"/>
                 </p:selectOneMenu>
               </div>
 
