@@ -315,15 +315,13 @@ public abstract class Calibration implements Comparable<Calibration> {
   public abstract Double calibrateValue(Double rawValue);
 
   /**
-   * Check that this calibration is valid, currently test that it is not an
-   * EmptyCalibration instance
+   * Check that this calibration is valid.
+   * Most calibrations are valid all the time, so that's the
+   * default response. Otherwise this method is overridden
    *
    * @return
    */
   public boolean isValid() {
-    if (this instanceof EmptyCalibration) {
-      return false;
-    }
     return true;
   }
 }

@@ -40,4 +40,16 @@ public class EmptyCalibration extends Calibration {
   public Double calibrateValue(Double rawValue) {
     return rawValue;
   }
+
+  @Override
+  public boolean isValid() {
+    boolean result = false;
+
+    // Sensor calibrations can be empty. Others cannot.
+    if (type.equals(SensorCalibrationDB.SENSOR_CALIBRATION_TYPE)) {
+      result = true;
+    }
+
+    return result;
+  }
 }
