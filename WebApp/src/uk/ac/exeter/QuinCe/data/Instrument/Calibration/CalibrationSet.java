@@ -122,6 +122,21 @@ public class CalibrationSet extends TreeSet<Calibration> {
   }
 
   /**
+   * Determines whether or not a {@code Calibration} for the
+   * specified target (as a database ID) has been added to the set. The method
+   * does not check whether or not the target is in the list
+   * of allowed targets.
+   *
+   * Empty calibrations are not detected by this method.
+   *
+   * @param target The target to find
+   * @return {@code true} if a calibration for the target is found; {@code false} otherwise
+   */
+  public boolean containsTarget(long target) {
+    return containsTarget(String.valueOf(target));
+  }
+
+  /**
    * Get the contents of the calibration set as a {@link List}.
    *
    * Required for JSF.
