@@ -894,8 +894,8 @@ public abstract class DataSetRawData {
     for (int row : rows) {
       DataFileLine line = data.get(fileIndex).get(row);
       Double rawValue = line.getFieldValue(assignment.getColumn(), assignment.getMissingValue());
-      if (calibrationSet.containsTarget(assignment.getTarget())) {
-        rawValue = calibrationSet.getTargetCalibration(assignment.getTarget())
+      if (calibrationSet.containsTarget(assignment.getDatabaseId())) {
+        rawValue = calibrationSet.getTargetCalibration(String.valueOf(assignment.getDatabaseId()))
             .calibrateValue(rawValue);
       }
       rowValues.add(rawValue);
