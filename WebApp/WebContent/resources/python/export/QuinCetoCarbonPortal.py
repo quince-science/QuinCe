@@ -10,8 +10,8 @@ import sys
 import os
 
 from py_func.quince_comm import get_export_list, get_export_dataset, report_complete_export, report_abandon_export, report_touch_export
-from py_func.meta_handling import extract_zip, get_file_from_zip, get_export_destination, get_hashsum, build_metadataL0, build_metadataL2NRT
-from py_func.carbon import get_new_auth_cookie, upload_data
+from py_func.meta_handling import process_dataset, extract_zip, get_file_from_zip, get_export_destination, get_hashsum, build_metadata_L0, build_metadata_L2NRT, process_L0_data, process_L2_data
+from py_func.carbon import get_new_auth_cookie, upload_data, cp_init, send_L0_to_cp, send_L2_to_cp
 from py_func.copernicus import upload_to_copernicus
 
 
@@ -21,10 +21,12 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 config_file_quince = 'config_quince.toml'
 config_file_copernicus = 'config_copernicus.toml'
 config_file_carbon = 'config_carbon.toml'
+config_file_meta = 'config_meta.toml'
 
 with open(config_file_quince) as f: config_quince = toml.load(f)
 with open(config_file_copernicus) as f: config_copernicus = toml.load(f)
 with open(config_file_carbon) as f: config_carbon = toml.load(f)
+with open(config_file_meta) as f: config_meta = toml.load(f)
 
 def main():
     try:
@@ -34,86 +36,36 @@ def main():
 
         export_list = get_export_list(config_quince)
         upload_status = {}
+        
+        for datasetNr, dataset in enumerate(export_list):  
 
-        #logging.info('Making connection with Carbon Portal')
-        #auth_cookie = get_new_auth_cookie(config_carbon)
-        for datasetNr, dataset in enumerate(export_list):  #for each L0
-
-            dataset_name = dataset['name']       
-            dataset_id = dataset['id']
-
-            logging.info(
-                'Processing dataset {:s} / {:s}  : {:s},QuinCe-id: {:s}'
-                .format(str(datasetNr+1),str(len(export_list)),
-                dataset_name,str(dataset_id)))
-            
-            dataset_zip = get_export_dataset(config_quince,str(dataset_id))            
-            [manifest,
-            datafilenames,
-            raw_filenames] = extract_zip(dataset_zip,dataset_name)
-            destinations = get_export_destination(datafilenames)
+            [dataset_zip,
+            manifest, 
+            data_filenames, 
+            raw_filenames,
+            destinations] = process_dataset(dataset,config_quince)
 
             #--- Make connection with Carbon Portal to report what we want to upload
             if 'ICOS OTC' in destinations:
-                file = dataset_name + '/dataset/ICOS OTC/' + destinations['ICOS OTC']
-                hashsum = get_hashsum(dataset_zip,file)
-                logging.info('Sending hashsum and filename to CP')
-                # WRITE THIS FUNCTION
+                cp_response_init, auth_cookie = cp_init(dataset['name'],destinations['ICOS OTC'],dataset_zip,config_carbon)
+                
+            #--- Processing L0 files
+            for index, filename in enumerate(raw_filenames):
 
-                    #print('check hashsum')
-                    #print('... if hashsum already exists; abort loop over dataset')  
-                      # Report to quince that dataset exist, check that raw data matches(?)
-                    #print('check filename')
-                    #print('... if filname already exists; ')
-                      # communicate that this is updated version  
-                      # isNextVersionOf = PID, preExistingDoi?
-
-
-            #--- Generating metadata for raw files and datafiles
-            for file in raw_filenames:
-                logging.info(
-                    'Building L0 metadata-package for raw file: {:s}'
-                    .format(file))
-                metaL0 = build_metadataL0(manifest,dataset_zip,file)
-                fileL0 = get_file_from_zip(dataset_zip,file)
+                meta_L0, file_L0, hashsum_L0 = process_L0_data(filename,manifest,dataset_zip,config_meta,index)
 
                 if 'ICOS OTC' in destinations:
-                    logging.info(
-                        'Sending metadata and raw dataset {:s} to Carbon Portal'
-                        .format(file))
-                
-                    #response=upload_data(data,hashsum,auth_cookie)
-
-
-            logging.info(
-                'Generating metadata associated with, \'{:}\''
-                .format(dataset_name ))
-            metaL2 = build_metadataL2NRT(manifest)
-
-            #--- Sending raw data, datafiles and metadata
-
+                    cp_response_L0 = send_L0_to_cp(meta_L0,file_L0,hashsum_L0,auth_cookie)
+                    
+            #--- Processing L2 files
             if 'ICOS OTC' in destinations:                       
-                logging.info(
-                    'Sending L2 metadata and datasets {:s} to Carbon Portal.'
-                    .format(file))
-                #result=upload_data(data_filenames, hashsum, auth_cookie):
-                #logging.info('Results of upload: {:s}'.format(result))
-                
+                meta_L2, file_L2, hashsum_L2 = process_L2_data(filename,manifest,dataset_zip)
+
+                cp_response_L2 = send_L2_to_cp(meta_L2,file_L2,hashsum_L2,auth_cookie)                
 
             if 'Copernicus' in destinations:
-                logging.info(
-                    'Creating netcdf-files based on {:s} to send to Copernicus'
-                    .format(file))
-                csv_file = get_file_from_zip(dataset_zip, dataset_name
-                    + '/dataset/Copernicus/' + destinations['Copernicus'])
-                logging.info(
-                    'Sending netcdf-files based on {:s} to send to Copernicus'
-                    .format(file))
-                result = upload_to_copernicus(
-                    csv_file,metaL2,dataset_name,config_copernicus)
-                logging.info('Copernicus upload results:')
-                logging.info(result)
-                upload_status.update(result)
+                result_copernicus_upload_L2 = send_to_copernicus(filename, dataset_zip,dataset['name'],destination['Copernicus'],meta_L2,config_copernicus)
+  
                 
         #report to QuinCe about upload process Abandon/complete
         # 
@@ -134,7 +86,7 @@ def main():
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
     finally:
-        report_abandon_export(config_quince,dataset_id)
+        report_abandon_export(config_quince,dataset['id'])
 
 if __name__ == '__main__':
     main()

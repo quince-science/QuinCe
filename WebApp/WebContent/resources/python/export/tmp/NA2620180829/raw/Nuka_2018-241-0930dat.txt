@@ -1,0 +1,5 @@
+Type	error	PC Date	PC Time	GPS date	gps time	latitude	longitude	equ temp	std val	CO2 mv	CO2 um/m	H2O mv	H2O mm/m	licor temp	licor press	 atm press	equ press	H2O flow	licor flow	equ pump	vent flow	atm cond	equ cond	drip 1	Aux. H2Oflow	cond temp	dry box temp	deck box temp	Fluke Temp2	Oxygen	Saturation	Optode Temp	WB Pressure	O2_Cal_status
+GO TO SLEEP	0	29/08/18	09:33:08	//	09:33:08	57.0475	10.0546										0.07	2.94	-2.10	124.00	22.45	9.89	9.89	9.89	3.96	16.742	264.110	88.389	17.482	1017.12	2
+STD1	0	29/08/18	09:37:35	//	09:37:36	57.0477	10.0535	19.49	0.00	7.92	1.11	-13.79	-0.09	33.92	1016.90	1013.84	-0.01	0.05	80.81	124.00	-55.17	9.89	9.89	9.89	4.08	12.62	28.44	35.09	16.762	262.320	88.204	17.710	1017.20	2
+STD2	0	29/08/18	09:42:05	//	09:42:06	57.0475	10.0546	19.92	189.97	1233.40	188.35	-22.83	-0.14	33.92	1017.00	1013.93	-0.01	0.05	70.29	124.00	-55.17	9.89	9.89	9.89	4.12	16.19	27.69	35.20	16.752	283.912	97.038	18.506	1017.22	2
+SHUT DOWN	0	29/08/18	09:42:22	//	09:42:22	57.0475	10.0546
