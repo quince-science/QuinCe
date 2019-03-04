@@ -2,6 +2,28 @@ import urllib
 import http.cookiejar
 import json
 import logging
+from py_func.meta_handling import get_hashsum
+
+
+def cp_init(dataset_name,destination,dataset_zip,config_carbon):
+    ''' 
+    Initiates contact with Carbon Portal. Sends login information, hashsum and retrieves authentication cookie from Carbon Portal.
+    '''
+    auth_cookie = get_new_auth_cookie(config_carbon)
+    filename = dataset_name + '/dataset/ICOS OTC/' + destination
+    hashsum = get_hashsum(dataset_zip,filename)
+    logging.info('Sending hashsum and filename to CP')
+
+        #print('check hashsum')
+        #print('... if hashsum already exists; abort loop over dataset')  
+          # Report to quince that dataset exist, check that raw data matches(?)
+        #print('check filename')
+        #print('... if filname already exists; ')
+          # communicate that this is updated version  
+          # isNextVersionOf = PID, preExistingDoi?
+
+    response = 'temp'
+    return response, auth_cookie
 
 def get_new_auth_cookie(config):   
     '''
@@ -53,4 +75,21 @@ def upload_data(filenames, hashsum, auth_cookie):
         response = opener.open(req)
         results[filename]=response.read()
     return results
-   
+
+def send_L0_to_cp(meta_L0,file_L0,hashsum,auth_cookie):
+    logging.info(
+        'Sending metadata and L0 dataset {:s} to Carbon Portal'
+        .format(file_L0))
+    response = 'temp'            
+    #response = upload_data(data,hashsum,auth_cookie)
+
+    return response
+
+def send_L2_to_cp(meta_L2,file_L2,hashsum,auth_cookie):
+    logging.info(
+        'Sending metadata and L2 dataset {:s} to Carbon Portal'
+        .format(file_L2))
+    response = 'temp'            
+    #response = upload_data(data,hashsum,auth_cookie)
+
+    return response

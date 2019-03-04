@@ -42,6 +42,7 @@ def get_export_list(config):
     logging.info('Retrieving exportList  from QuinCe')
 
     export_list = make_quince_call(config,'exportList')
+    logging.info('{} dataset(s) ready for export'.format(export_list.decode('utf8').count('id')))
 
     return json.loads(export_list.decode('utf-8'))
 
