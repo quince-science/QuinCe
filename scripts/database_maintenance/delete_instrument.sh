@@ -78,6 +78,7 @@ then
     DELETE FROM file_column WHERE file_definition_id IN (SELECT id FROM file_definition WHERE instrument_id = $instrument_id);
     DELETE FROM file_definition WHERE instrument_id = $instrument_id;
 
+    DELETE FROM instrument_variables WHERE instrument_id = $instrument_id;
     DELETE FROM instrument WHERE id = $instrument_id;
 EOF
   # Also delete files from the file store:
