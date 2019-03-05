@@ -132,12 +132,18 @@ public class ManualQcBean extends PlotPageBean {
 
     headings.put("Automatic QC");
     headings.put("Automatic QC Message");
-    headings.put("Manual QC");
-    headings.put("Manual QC Message");
 
     // Columns are zero-based, so we don't need to add one to get to the auto flag column
     autoFlagColumn = dataHeadings.size() + calculationHeadings.size() + diagnosticHeadings.size();
-    userFlagColumn = autoFlagColumn + 2;
+
+    if (!getDataset().isNrt()) {
+      headings.put("Manual QC");
+      headings.put("Manual QC Message");
+      userFlagColumn = autoFlagColumn + 2;
+    } else {
+      userFlagColumn = -1;
+    }
+
 
     return headings.toString();
   }
@@ -258,14 +264,16 @@ public class ManualQcBean extends PlotPageBean {
         obj.put(String.valueOf(columnIndex), calcData.getAutoQCMessagesString());
       }
 
-      columnIndex++;
-      obj.put(String.valueOf(columnIndex), calcData.getUserFlag().getFlagValue());
+      if (!getDataset().isNrt()) {
+        columnIndex++;
+        obj.put(String.valueOf(columnIndex), calcData.getUserFlag().getFlagValue());
 
-      columnIndex++;
-      if (null == calcData.getUserMessage()) {
-        obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-      } else {
-        obj.put(String.valueOf(columnIndex), calcData.getUserMessage());
+        columnIndex++;
+        if (null == calcData.getUserMessage()) {
+          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
+        } else {
+          obj.put(String.valueOf(columnIndex), calcData.getUserMessage());
+        }
       }
 
       json.put(obj);

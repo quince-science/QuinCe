@@ -308,7 +308,12 @@ public class Plot {
       // TODO Remove the magic strings. Make PSF fields in CalculationDB
       fields.add(xAxis.getFieldName());
       fields.add("id");
-      fields.add("user_flag");
+      if (parentBean.getDataset().isNrt()) {
+        fields.add("auto_flag");
+      } else {
+        fields.add("user_flag");
+      }
+
 
       if (null != yAxis) {
         for (Variable variable : yAxis) {
@@ -324,7 +329,11 @@ public class Plot {
       fields.add("latitude");
       fields.add("date");
       fields.add("id");
-      fields.add("user_flag");
+      if (parentBean.getDataset().isNrt()) {
+        fields.add("auto_flag");
+      } else {
+        fields.add("user_flag");
+      }
       fields.add(mapVariable.getFieldName());
     }
     }
