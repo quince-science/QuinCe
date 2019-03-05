@@ -54,6 +54,11 @@ public class ExportBean extends BaseManagedBean {
   private static final String NAV_EXPORT_PAGE = "export";
 
   /**
+   * The string to use for missing values
+   */
+  private static final String MISSING_VALUE = "NaN";
+
+  /**
    * The database ID of the dataset to be exported
    */
   private DataSet dataset = null;
@@ -75,7 +80,7 @@ public class ExportBean extends BaseManagedBean {
   private static DecimalFormat numberFormatter;
 
   static {
-    numberFormatter = new DecimalFormat("#.000");
+    numberFormatter = new DecimalFormat("#0.000");
     numberFormatter.setRoundingMode(RoundingMode.HALF_UP);
   }
 
@@ -357,7 +362,7 @@ public class ExportBean extends BaseManagedBean {
           for (String calculatedColumn : calculationColumns) {
             Double value = calculationRecord.getNumericValue(calculatedColumn);
             if (null == value) {
-              output.append("NaN");
+              output.append(MISSING_VALUE);
             } else {
               output.append(numberFormatter.format(value));
             }
