@@ -1,32 +1,17 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
-import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataFactory;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
-import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -77,6 +62,7 @@ public class ExtractDataSetJob extends Job {
   @Override
   protected void execute(JobThread thread) throws JobFailedException {
 
+    /*
     Connection conn = null;
 
     try {
@@ -162,6 +148,8 @@ public class ExtractDataSetJob extends Job {
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
+
+    */
   }
 
   @Override
@@ -187,6 +175,7 @@ public class ExtractDataSetJob extends Job {
       throws MissingParamException, InvalidDataSetStatusException,
       DatabaseException, RecordNotFoundException {
 
+    /*
     try {
       CalibrationDataDB.deleteDatasetData(conn, dataSet);
       CalculationDBFactory.getCalculationDB().deleteDatasetCalculationData(conn, dataSet);
@@ -197,6 +186,8 @@ public class ExtractDataSetJob extends Job {
     } catch (SQLException e) {
       throw new DatabaseException("Error while resetting dataset data", e);
     }
+
+    */
   }
 
   @Override
