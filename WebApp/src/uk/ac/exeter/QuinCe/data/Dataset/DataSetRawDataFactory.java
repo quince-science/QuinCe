@@ -12,6 +12,7 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 /**
  * Factory class for {@link DataSetRawData} objects
  */
+@Deprecated
 public class DataSetRawDataFactory {
 
   /**
