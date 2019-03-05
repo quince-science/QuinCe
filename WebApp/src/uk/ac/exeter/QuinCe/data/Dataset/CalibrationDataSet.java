@@ -12,6 +12,7 @@ import java.util.Map;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class CalibrationDataSet {
 
   /**
