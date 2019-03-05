@@ -17,6 +17,8 @@
 #
 ############################################################
 
+# Reset the files we'll be editing
+./scripts/setup_reverse_strings.sh
 
 verbose=0
 setuptype=''
