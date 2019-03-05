@@ -27,6 +27,7 @@ import uk.ac.exeter.QuinCe.web.VariableList;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class DiagnosticDataDB {
 
   /**
