@@ -6,7 +6,6 @@ import csv
 from io import BytesIO
 from zipfile import ZipFile
 from netCDF4 import Dataset
-from xml.etree import ElementTree as ET
 from re import match
 
 TIME_BASE = datetime.datetime(1950, 1, 1, 0, 0, 0)
@@ -30,12 +29,9 @@ PLATFORM_CODES = {
   "41" : "moored surface buoy"
 }
 
-def buildnetcdfs(datasetname, csv, xmlcontent):
+def buildnetcdfs(datasetname, csv):
 
   result = []
-
-  # Parse the XML file
-  xml = ET.fromstring(xmlcontent)
 
   csvlines = str.split(csv, "\n")
   currentline = 1
@@ -51,7 +47,7 @@ def buildnetcdfs(datasetname, csv, xmlcontent):
 
     if linedate != currentdate:
       if currentdate is not None:
-        result.append(makenetcdf_(datasetname, dailylines, xml))
+        result.append(makenetcdf_(datasetname, dailylines))
 
       currentdate = linedate
       dailylines = []
@@ -61,11 +57,11 @@ def buildnetcdfs(datasetname, csv, xmlcontent):
 
   # Make the last netCDF
   if len(dailylines) > 0:
-    result.append(makenetcdf_(datasetname, dailylines, xml))
+    result.append(makenetcdf_(datasetname, dailylines))
 
   return result
 
-def makenetcdf_(datasetname, lines, xml):
+def makenetcdf_(datasetname, lines):
   filedate = getlinedate_(lines[0])
   ncbytes = None
 
@@ -334,8 +330,7 @@ def makenetcdf_(datasetname, lines, xml):
   nc.platform_code = getplatformcallsign_(platform_code)
   nc.site_code = getplatformcallsign_(platform_code)
 
-  # For buoys -> Mooring observation. Can get this from the metadata xml
-  # /metadata/variable[3]/observationType (replace 3 with pCO2)
+  # For buoys -> Mooring observation.
   platform_category_code = getplatformcategorycode_(platform_code)
   nc.platform_name = getplatformname_(platform_code)
   nc.source_platform_category_code = platform_category_code
@@ -488,21 +483,16 @@ def getplatformcode_(datasetname):
 
 def main():
   zipfile = sys.argv[1]
-  xmlfile = sys.argv[2]
 
   datasetname = os.path.splitext(zipfile)[0]
   datasetpath = datasetname + "/dataset/Copernicus/" + datasetname + ".csv"
 
   csv = None
-  xml = None
 
   with ZipFile(zipfile, "r") as unzip:
   	csv = unzip.read(datasetpath).decode("utf-8")
 
-  with open(xmlfile, "r") as xmlchan:
-    xml = xmlchan.read()
-
-  netcdfs = buildnetcdfs(datasetname, csv, xml)
+  netcdfs = buildnetcdfs(datasetname, csv)
 
   for i in range(0, len(netcdfs)):
     with open(netcdfs[i][0] + ".nc", "wb") as outchan:
