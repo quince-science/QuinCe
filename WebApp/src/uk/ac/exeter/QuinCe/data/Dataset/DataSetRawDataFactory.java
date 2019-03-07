@@ -4,6 +4,8 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -27,8 +29,13 @@ public class DataSetRawDataFactory {
    * @throws RecordNotFoundException If no data files are found within the data set
    * @throws DataFileException If the data cannot be extracted from the files
    * @throws DataSetException If a suitable object cannot be created
+   * @throws InstrumentException
+   * @throws CalibrationException
    */
-  public static DataSetRawData getDataSetRawData(DataSource dataSource, DataSet dataSet, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException, DataFileException, DataSetException {
+  public static DataSetRawData getDataSetRawData(DataSource dataSource,
+    DataSet dataSet, Instrument instrument) throws MissingParamException,
+    DatabaseException, RecordNotFoundException, DataFileException,
+    DataSetException, CalibrationException, InstrumentException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(dataSet, "dataSet");

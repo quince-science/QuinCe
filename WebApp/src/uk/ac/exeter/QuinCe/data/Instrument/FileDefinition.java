@@ -26,6 +26,17 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
+   * Special column ID for longitude, because it's not defined in the
+   * file_column dataset
+   */
+  public static final long LONGITUDE_COLUMN_ID = -1000L;
+
+  /**
+   * Special column ID for latitude
+   */
+  public static final long LATITUDE_COLUMN_ID = -1001L;
+
+  /**
    * The name of the Run Type column
    */
   public static final String RUN_TYPE_COL_NAME = "Run Type";
@@ -532,6 +543,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * Get the column containing the Run Type
    * @return The Run Type column
    */
+  @Deprecated
   public int getRunTypeColumn() {
     return runTypeColumn;
   }
@@ -542,6 +554,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * {@code null}.
    * @return The run types
    */
+  @Deprecated
   public RunTypeAssignments getRunTypes() {
     return runTypes;
   }
@@ -566,6 +579,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @param exclusion The value to exclude from the list
    * @return The list of run types without the excluded value
    */
+  @Deprecated
   public List<String> getRunTypeValuesWithExclusion(String exclusion) {
     List<String> runTypeValues = getRunTypeValues();
     runTypeValues.remove(exclusion);
@@ -576,6 +590,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * Set the index of the column containing the run type
    * @param runTypeColumn The Run Type column
    */
+  @Deprecated
   public void setRunTypeColumn(int runTypeColumn) {
     this.runTypeColumn = runTypeColumn;
     initialiseRunTypes();
@@ -584,6 +599,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Initialise the run types data structure
    */
+  @Deprecated
   public void initialiseRunTypes() {
     if (runTypeColumn == -1) {
       runTypes = null;
@@ -597,6 +613,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @param runType The run type
    * @param category The run type category
    */
+  @Deprecated
   public void setRunTypeCategory(String runType, RunTypeCategory category) {
     runTypes.put(runType, new RunTypeAssignment(runType, category));
   }
@@ -606,6 +623,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @param runType The run type
    * @param category The run type category
    */
+  @Deprecated
   public void setRunTypeCategory(String runType, String alias) {
     // TODO We should check to make sure that the aliased run type actually exists
     //      and that it's not a circular alias
@@ -758,6 +776,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * Determine whether or not this file contains Run Types
    * @return {@code true} if the file contains Run Types; {@code false} if not
    */
+  @Deprecated
   public boolean hasRunTypes() {
     return (runTypeColumn > -1);
   }
@@ -768,6 +787,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @return The run type
    * @throws FileDefinitionException If this file does not contain run types, the run type is not present, or the run type is not recognised
    */
+  @Deprecated
   public String getRunType(String line, boolean followAlias) throws FileDefinitionException {
     String result = null;
 
@@ -805,6 +825,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @return The Run Type Category
    * @throws FileDefinitionException If the Run Type is not recognised
    */
+  @Deprecated
   public RunTypeCategory getRunTypeCategory(String line) throws FileDefinitionException {
     return runTypes.getRunTypeCategory(getRunType(line, true));
   }
