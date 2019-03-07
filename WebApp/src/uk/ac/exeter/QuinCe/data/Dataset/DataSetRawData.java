@@ -19,6 +19,8 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileLine;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationNotValidException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
@@ -132,8 +134,12 @@ public abstract class DataSetRawData {
    * @throws DatabaseException If a database error occurs
    * @throws MissingParamException If any required parameters are missing
    * @throws DataFileException If the data cannot be extracted from the files
+   * @throws InstrumentException
+   * @throws CalibrationException
    */
-  protected DataSetRawData(DataSource dataSource, DataSet dataSet, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException, DataFileException {
+  protected DataSetRawData(DataSource dataSource, DataSet dataSet, Instrument instrument)
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+      DataFileException, CalibrationException, InstrumentException {
 
     this.dataSet = dataSet;
     this.instrument = instrument;

@@ -385,4 +385,22 @@ public class DatabaseUtils {
 
     return result;
   }
+
+  /**
+   * Set a double value that may be null
+   * @param stmt
+   * @param parameter
+   * @param value
+   * @throws SQLException
+   */
+  public static void setNullableDouble(PreparedStatement stmt, int parameter,
+    Double value) throws SQLException {
+
+    if (null == value) {
+      stmt.setNull(parameter, Types.DOUBLE);
+    } else {
+      stmt.setDouble(parameter, value.doubleValue());
+    }
+
+  }
 }

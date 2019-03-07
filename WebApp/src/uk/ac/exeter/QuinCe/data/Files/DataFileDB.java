@@ -19,6 +19,7 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -899,7 +900,6 @@ public class DataFileDB {
     return files;
   }
 
-
   /**
    * Get the list of data files for a given instrument
    * that encompass two dates
@@ -958,8 +958,13 @@ public class DataFileDB {
    * @throws RecordNotFoundException
    * @throws DatabaseException
    * @throws MissingParamException
+   * @throws InstrumentException
    */
-  public static boolean completeFilesAfter(Connection conn, Properties appConfig, long instrumentId, LocalDateTime time) throws MissingParamException, DatabaseException, RecordNotFoundException {
+  public static boolean completeFilesAfter(Connection conn, Properties appConfig,
+    long instrumentId, LocalDateTime time)
+      throws MissingParamException, DatabaseException, RecordNotFoundException,
+        InstrumentException {
+
     boolean result = true;
 
     // If no time is specified, we can use all files

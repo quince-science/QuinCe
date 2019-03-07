@@ -12,6 +12,7 @@ import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -117,10 +118,11 @@ public abstract class CalibrationDB {
    * @throws DatabaseException If a database error occurs
    * @throws RecordNotFoundException If any required records are missing
    * @throws MissingParamException If any internal calls are missing required parameters
+   * @throws InstrumentException
    */
   public CalibrationSet getMostRecentCalibrations(DataSource dataSource,
       long instrumentId, LocalDateTime date) throws CalibrationException,
-      DatabaseException, MissingParamException, RecordNotFoundException {
+      DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
 
     CalibrationSet result = new CalibrationSet(instrumentId, getCalibrationType(), getTargets(dataSource, instrumentId));
 
@@ -171,10 +173,12 @@ public abstract class CalibrationDB {
    *           If any required records are missing
    * @throws MissingParamException
    *           If any internal calls are missing required parameters
+   * @throws InstrumentException
    */
   public CalibrationSet getCurrentCalibrations(DataSource dataSource,
       long instrumentId) throws CalibrationException, DatabaseException,
-      MissingParamException, RecordNotFoundException {
+      MissingParamException, RecordNotFoundException, InstrumentException {
+
     return getMostRecentCalibrations(dataSource, instrumentId,
         LocalDateTime.now());
   }
@@ -291,7 +295,10 @@ public abstract class CalibrationDB {
    * @throws DatabaseException If a database error occurs
    * @throws RecordNotFoundException If no external standard run types are found
    */
-  public Map<String, String> getTargets(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+  public Map<String, String> getTargets(DataSource dataSource, long instrumentId)
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+      InstrumentException {
+
     Connection conn = null;
     Map<String, String> result = null;
 
@@ -316,7 +323,9 @@ public abstract class CalibrationDB {
    * @throws DatabaseException If a database error occurs
    * @throws RecordNotFoundException If no external standard run types are found
    */
-  public abstract Map<String, String> getTargets(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException;
+  public abstract Map<String, String> getTargets(Connection conn, long instrumentId)
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+      InstrumentException;
 
   /**
    * Get the calibration type for database actions
