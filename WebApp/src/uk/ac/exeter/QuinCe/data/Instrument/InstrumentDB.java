@@ -798,8 +798,9 @@ public class InstrumentDB {
    * @throws MissingParamException If any required parameters are missing
    * @throws DatabaseException If a database error occurs
    * @throws RecordNotFoundException If no file definitions are stored for the instrument
+   * @throws InstrumentException
    */
-  public static InstrumentFileSet getFileDefinitions(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+  public static InstrumentFileSet getFileDefinitions(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 
@@ -831,6 +832,12 @@ public class InstrumentDB {
         DateTimeSpecification dateTimeSpec = buildDateTimeSpecification(records);
 
         fileSet.add(new FileDefinition(id, description, separator, headerType, headerLines, headerEndString, columnHeaderRows, columnCount, lonSpec, latSpec, dateTimeSpec, fileSet));
+
+        // Load in the sensors configuration. As part of this, the file definitions
+        // will be updated with column information.
+        getSensorAssignments(conn, instrumentId, fileSet,
+          ResourceManager.getInstance().getSensorsConfiguration(),
+          ResourceManager.getInstance().getRunTypeCategoryConfiguration());
       }
 
     } catch (SQLException|IOException|PositionException|DateTimeSpecificationException e) {
@@ -843,6 +850,8 @@ public class InstrumentDB {
     if (fileSet.size() == 0) {
       throw new RecordNotFoundException("No file definitions found for instrument " + instrumentId);
     }
+
+
     return fileSet;
   }
 
@@ -1112,8 +1121,12 @@ public class InstrumentDB {
    * @throws MissingParamException If any required parameters are missing
    * @throws DatabaseException If a database error occurs
    * @throws RecordNotFoundException
+   * @throws InstrumentException
    */
-  public static Map<String, String> getCalibratableSensors(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
+  public static Map<String, String> getCalibratableSensors(
+    Connection conn, long instrumentId)
+      throws MissingParamException, DatabaseException, RecordNotFoundException,
+        InstrumentException {
 
     Map<String, String> result = new LinkedHashMap<String, String>();
 
