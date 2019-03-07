@@ -10,6 +10,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,15 @@ public class DataSetDataDB {
   private static final String GET_BOUNDS_QUERY = "SELECT"
       + " MIN(longitude), MIN(latitude), MAX(longitude), MAX(latitude)"
       + " FROM dataset_data WHERE dataset_id = ?";
+
+  /**
+   * Statement to store a sensor value
+   */
+  private static final String STORE_SENSOR_VALUE_STATEMENT = "INSERT INTO "
+   + "sensor_values (dataset_id, file_column, date, value) "
+   + "VALUES (?, ?, ?, ?)";
+
+
 
   /**
    * The name of the ID column
@@ -850,5 +860,56 @@ public class DataSetDataDB {
     }
 
     return result;
+  }
+
+  public static void storeSensorValues(Connection conn,
+    Collection<SensorValue> sensorValues)
+      throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(sensorValues, "sensorValues");
+
+    List<PreparedStatement> stmts = new ArrayList<PreparedStatement>();
+
+    int maxPacketSize = Integer.parseInt(
+      ResourceManager.getInstance().getConfig().getProperty("database.max_packet_size"));
+    String sqlStart = "INSERT INTO sensor_values VALUES ";
+
+    try {
+      StringBuilder sql = new StringBuilder(sqlStart);
+
+      for (SensorValue value : sensorValues) {
+        StringBuilder valueSql = value.getSqlValues();
+
+        // See if we're going to make the query too big. If so,
+        // send it and start a new one
+        if ((sql.length() + valueSql.length()) > maxPacketSize) {
+
+          // Drop the last comma
+          sql.setLength(sql.length() - 1);
+
+          PreparedStatement stmt = conn.prepareStatement(sql.toString());
+          stmt.execute();
+          stmts.add(stmt);
+
+          sql = new StringBuilder(sqlStart);
+        }
+
+        sql.append(value.getSqlValues());
+        sql.append(',');
+      }
+
+      // Drop the last comma
+      sql.setLength(sql.length() - 1);
+
+      PreparedStatement stmt = conn.prepareStatement(sql.toString());
+      stmt.execute();
+      stmts.add(stmt);
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error storing sensor values", e);
+    } finally {
+      DatabaseUtils.closeStatements(stmts);
+    }
   }
 }

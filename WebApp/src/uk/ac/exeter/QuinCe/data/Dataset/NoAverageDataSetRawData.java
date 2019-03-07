@@ -40,8 +40,14 @@ public class NoAverageDataSetRawData extends DataSetRawData {
    * @throws DatabaseException If a database error occurs
    * @throws MissingParamException If any required parameters are missing
    * @throws DataFileException If the data cannot be extracted from the files
+   * @throws InstrumentException
+   * @throws CalibrationException
    */
-  public NoAverageDataSetRawData(DataSource dataSource, DataSet dataSet, Instrument instrument) throws MissingParamException, DatabaseException, RecordNotFoundException, DataFileException {
+  public NoAverageDataSetRawData(DataSource dataSource, DataSet dataSet,
+    Instrument instrument)
+      throws MissingParamException, DatabaseException, RecordNotFoundException,
+        DataFileException, CalibrationException, InstrumentException {
+
     super(dataSource, dataSet, instrument);
   }
 

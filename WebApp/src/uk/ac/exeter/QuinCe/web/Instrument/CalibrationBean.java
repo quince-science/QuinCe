@@ -7,6 +7,7 @@ import java.util.TreeMap;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
@@ -179,8 +180,12 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * @throws DatabaseException If a database error occurs
    * @throws CalibrationException If the calibrations are internally inconsistent
    * @throws MissingParamException If any internal calls are missing required parameters
+   * @throws InstrumentException
    */
-  private void loadCalibrations() throws MissingParamException, CalibrationException, DatabaseException, RecordNotFoundException {
+  private void loadCalibrations() throws MissingParamException,
+    CalibrationException, DatabaseException, RecordNotFoundException,
+    InstrumentException {
+
     calibrations = dbInstance.getCalibrations(getDataSource(), instrumentId);
     calibrationTargets = dbInstance.getTargets(getDataSource(), instrumentId);
   }

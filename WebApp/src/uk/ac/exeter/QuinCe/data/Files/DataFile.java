@@ -454,7 +454,11 @@ public class DataFile {
    */
   public LocalDateTime getDate(int line) throws DataFileException, DateTimeSpecificationException {
     loadContents();
-    return fileDefinition.getDateTimeSpecification().getDateTime(headerDate, fileDefinition.extractFields(contents.get(line)));
+    return getDate(fileDefinition.extractFields(contents.get(line)));
+  }
+
+  public LocalDateTime getDate(List<String> line) throws DataFileException {
+    return fileDefinition.getDateTimeSpecification().getDateTime(headerDate, line);
   }
 
   /**
@@ -536,6 +540,9 @@ public class DataFile {
     return result;
   }
 
+  public double getLatitude(List<String> line) throws PositionException {
+    return fileDefinition.getLatitudeSpecification().getValue(line);
+  }
   /**
    * Get a {@link Double} value from a field.
    * <p>
@@ -734,6 +741,14 @@ public class DataFile {
     return result;
   }
 
+  public String getStringValue(List<String> line, int field, String missingValue) {
+    String result = line.get(field).trim();
+    if (result.equals(missingValue)) {
+      result = null;
+    }
+    return result;
+  }
+
   /**
    * Get the list of run type values with the specified value excluded.
    * This list will include all the run types from the stored file
@@ -751,5 +766,16 @@ public class DataFile {
     }
 
     return runTypeValues;
+  }
+
+  /**
+   * Get a line from the file as a list of field values
+   * @param line The line number
+   * @return The line fields
+   * @throws DataFileException
+   */
+  public List<String> getLine(int line) throws DataFileException {
+    loadContents();
+    return fileDefinition.extractFields(contents.get(line));
   }
 }
