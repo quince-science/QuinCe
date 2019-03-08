@@ -51,9 +51,9 @@ public class DateTimeUtils {
   private static SimpleDateFormat dateTimeFormatter = null;
 
   /**
-   * A formatter for generating JSON format dates
+   * A formatter for generating ISO format dates
    */
-  private static java.time.format.DateTimeFormatter jsonFormatter = null;
+  private static java.time.format.DateTimeFormatter isoDateTimeFormatter = null;
 
   /**
    * For formatting LocalDateTime - dates and parsing date time strings
@@ -69,7 +69,7 @@ public class DateTimeUtils {
   static {
     dateTimeFormatter = new SimpleDateFormat(DISPLAY_DATE_TIME_FORMAT);
     dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-    jsonFormatter = java.time.format.DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
+    isoDateTimeFormatter = java.time.format.DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
     displayDateTimeFormatter = java.time.format.DateTimeFormatter
         .ofPattern(DISPLAY_DATE_TIME_FORMAT).withZone(ZoneOffset.UTC);
   }
@@ -255,12 +255,12 @@ public class DateTimeUtils {
   }
 
   /**
-   * Generate a JSON-formatted date string for a given date
+   * Generate an ISOformatted date string for a given date
    * @param date The date
-   * @return The JSON string
+   * @return The ISO date string
    */
-  public static String toJsonDate(LocalDateTime date) {
-    return jsonFormatter.format(date);
+  public static String toIsoDate(LocalDateTime date) {
+    return isoDateTimeFormatter.format(date);
   }
 
   /**

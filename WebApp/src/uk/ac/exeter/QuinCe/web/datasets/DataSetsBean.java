@@ -235,9 +235,9 @@ public class DataSetsBean extends BaseManagedBean {
         entriesJson.append("\"type\":\"range\", \"group\":");
         entriesJson.append(definitionIds.get(file.getFileDefinition().getFileDescription()));
         entriesJson.append(",\"start\":\"");
-        entriesJson.append(DateTimeUtils.toJsonDate(file.getStartDate()));
+        entriesJson.append(DateTimeUtils.toIsoDate(file.getStartDate()));
         entriesJson.append("\",\"end\":\"");
-        entriesJson.append(DateTimeUtils.toJsonDate(file.getEndDate()));
+        entriesJson.append(DateTimeUtils.toIsoDate(file.getEndDate()));
         entriesJson.append("\",\"content\":\"");
         entriesJson.append(file.getFilename());
         entriesJson.append("\",\"title\":\"");
@@ -258,9 +258,9 @@ public class DataSetsBean extends BaseManagedBean {
           entriesJson.append('{');
           entriesJson.append("\"type\":\"background\",");
           entriesJson.append("\"start\":\"");
-          entriesJson.append(DateTimeUtils.toJsonDate(dataSet.getStart()));
+          entriesJson.append(DateTimeUtils.toIsoDate(dataSet.getStart()));
           entriesJson.append("\",\"end\":\"");
-          entriesJson.append(DateTimeUtils.toJsonDate(dataSet.getEnd()));
+          entriesJson.append(DateTimeUtils.toIsoDate(dataSet.getEnd()));
           entriesJson.append("\",\"content\":\"");
           entriesJson.append(dataSet.getName());
           entriesJson.append("\",\"title\":\"");

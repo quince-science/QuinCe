@@ -226,7 +226,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
         JSONObject calibrationJson = new JSONObject();
         calibrationJson.put("type", "box");
         calibrationJson.put("group", groupId);
-        calibrationJson.put("start", DateTimeUtils.toJsonDate(calibration.getDeploymentDate()));
+        calibrationJson.put("start", DateTimeUtils.toIsoDate(calibration.getDeploymentDate()));
         calibrationJson.put("content", calibration.getHumanReadableCoefficients());
         calibrationJson.put("title", calibration.getHumanReadableCoefficients());
 
