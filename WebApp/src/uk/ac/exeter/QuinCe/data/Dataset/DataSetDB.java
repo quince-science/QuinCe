@@ -667,8 +667,8 @@ public class DataSetDB {
 
     JSONObject result = new JSONObject();
     result.put("name", dataset.getName());
-    result.put("startdate", DateTimeUtils.toJsonDate(dataset.getStart()));
-    result.put("enddate", DateTimeUtils.toJsonDate(dataset.getEnd()));
+    result.put("startdate", DateTimeUtils.toIsoDate(dataset.getStart()));
+    result.put("enddate", DateTimeUtils.toIsoDate(dataset.getEnd()));
     result.put("platformCode", instrument.getPlatformCode());
     result.put("nrt", dataset.isNrt());
 
