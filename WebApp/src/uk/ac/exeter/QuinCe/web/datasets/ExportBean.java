@@ -280,7 +280,7 @@ public class ExportBean extends BaseManagedBean {
     StringBuilder output = new StringBuilder();
 
     // The header
-    output.append("Date");
+    output.append("Timestamp");
     output.append(exportOption.getSeparator());
     output.append("Longitude");
     output.append(exportOption.getSeparator());
@@ -320,7 +320,7 @@ public class ExportBean extends BaseManagedBean {
 
       if (exportOption.flagAllowed(recordFlag)) {
 
-        output.append(DateTimeUtils.formatDateTime(sensorRecord.getDate()));
+        output.append(DateTimeUtils.toIsoDate(sensorRecord.getDate()));
         output.append(exportOption.getSeparator());
         output.append(numberFormatter.format(sensorRecord.getLongitude()));
         output.append(exportOption.getSeparator());
@@ -450,8 +450,8 @@ public class ExportBean extends BaseManagedBean {
     for (DataFile file : rawFiles) {
       JSONObject fileJson = new JSONObject();
       fileJson.put("filename", file.getFilename());
-      fileJson.put("startDate", DateTimeUtils.toJsonDate(file.getStartDate()));
-      fileJson.put("endDate", DateTimeUtils.toJsonDate(file.getEndDate()));
+      fileJson.put("startDate", DateTimeUtils.toIsoDate(file.getStartDate()));
+      fileJson.put("endDate", DateTimeUtils.toIsoDate(file.getEndDate()));
       raw.put(fileJson);
     }
     manifest.put("raw", raw);
