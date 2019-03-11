@@ -64,7 +64,7 @@ public class BaseTest {
   }
 
   @AfterAll
-  public static void destroyResourceManager() {
+  public static void globalTeardown() {
     ResourceManager.destroy();
   }
 

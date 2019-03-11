@@ -8,23 +8,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import org.flywaydb.test.annotation.FlywayTest;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class InstrumentStubTest extends BaseTest {
 
   private static final String TEST_INSTRUMENT_NAME = "Test Instrument";
-
-  @AfterAll
-  public static void destroyResourceManager() {
-    ResourceManager.destroy();
-  }
 
   @Test
   public void constructorTest() {
