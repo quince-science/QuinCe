@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,6 +16,9 @@ import java.util.Map;
 import java.util.Properties;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * Miscellaneous string utilities
@@ -388,33 +392,12 @@ public final class StringUtils {
    */
   public static String getPropertiesAsJson(Properties properties) {
 
-
-    StringBuilder result = new StringBuilder();
-    if (null == properties) {
-      result.append("null");
-    } else {
-
-      result.append('{');
-
-      int propCount = 0;
-      for (String prop : properties.stringPropertyNames()) {
-        propCount++;
-        result.append('"');
-        result.append(prop);
-        result.append("\":\"");
-        result.append(properties.getProperty(prop));
-        result.append('"');
-
-        if (propCount < properties.size()) {
-          result.append(',');
-        }
-      }
-
-
-      result.append('}');
+    String result = "null";
+    if (null != properties) {
+      Gson json = new Gson();
+      result = json.toJson(properties);
     }
-
-    return result.toString();
+    return result;
   }
 
   /**
@@ -619,7 +602,11 @@ public final class StringUtils {
    * @return The integer list
    */
   public static List<Integer> jsonArrayToIntList(String jsonArray) {
-    return delimitedToIntegerList(jsonArray.substring(1, jsonArray.length() - 1), ",");
+    Type listType = new TypeToken<List<Integer>>() {
+    }.getType();
+
+    List<Integer> list = new Gson().fromJson(jsonArray, listType);
+    return list;
   }
 
   /**
@@ -628,11 +615,8 @@ public final class StringUtils {
    * @return The JSON array
    */
   public static String intListToJsonArray(List<Integer> list) {
-    StringBuilder result = new StringBuilder();
-    result.append('[');
-    result.append(collectionToDelimited(list, ","));
-    result.append(']');
-    return result.toString();
+    Gson json = new Gson();
+    return json.toJson(list);
   }
 
   /**
