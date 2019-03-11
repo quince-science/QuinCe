@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.Test;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
@@ -15,6 +16,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 /**
  * Tests for building the resource manager
  */
+@FlywayTest
 public class ResourceManagerTest extends BaseTest {
 
   /**
