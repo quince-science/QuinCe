@@ -73,6 +73,9 @@ dependencies {
 	compile 'org.apache.myfaces.core:myfaces-impl:2.2.8'
 	compile 'org.apache.myfaces.core:myfaces-bundle:2.2.8'
 
+  // Google's json library
+  compile 'com.google.code.gson:gson:2.8.5'
+
 	// Jersey RESTful API
 	compile 'org.glassfish.jersey.containers:jersey-container-servlet:2.27'
 	compile 'org.glassfish.jersey.inject:jersey-hk2:2.27'
@@ -88,6 +91,9 @@ dependencies {
 	testImplementation 'com.h2database:h2:1.4.197'
 	testImplementation 'org.flywaydb.flyway-test-extensions:flyway-spring-test:5.2.1'
 	testImplementation 'org.mockito:mockito-core:2.15.0'
+	// Test library for json data
+	testImplementation 'org.skyscreamer:jsonassert:1.5.0'
+
 
 	// JUnit resources
 	testCompile files('WebApp/junit')
