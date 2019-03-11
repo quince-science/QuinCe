@@ -133,7 +133,7 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   @AfterEach
-  public void destroyResourceManager() {
+  public void localDestroyResourceManager() {
     ResourceManager.destroy();
   }
 
