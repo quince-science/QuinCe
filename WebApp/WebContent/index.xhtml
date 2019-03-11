@@ -51,10 +51,10 @@
           </h:panelGrid>
           <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
             <p:commandButton value="Log In" action="#{loginBean.authenticate}"/>
-            <p:commandButton value="Sign Up" action="#{loginBean.signUp}"/>
           </h:panelGrid>
-          <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
-            <p:commandLink value="Lost Password" action="#{loginBean.startLostPassword}" styleClass="rightText"/>
+          <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+            <p:commandLink value="Sign Up" action="#{loginBean.signUp}" immediate="true"/>
+            <p:commandLink value="Lost Password" action="#{loginBean.startLostPassword}" styleClass="rightText" immediate="true"/>
           </h:panelGrid>
         </h:form>
       </div>
