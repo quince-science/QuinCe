@@ -10,6 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,7 +20,6 @@ import java.util.Set;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
@@ -27,6 +29,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -39,10 +42,10 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 public class SensorsConfigurationTest extends BaseTest {
 
-  private static List<Long> var1List = null;
-  private static List<Long> var2List = null;
-  private static List<Long> bothVarsList = null;
-  private static List<Long> invalidVarList = null;
+  private List<Long> var1List = null;
+  private List<Long> var2List = null;
+  private List<Long> bothVarsList = null;
+  private List<Long> invalidVarList = null;
 
   /**
    * Build a SensorsConfiguration
@@ -63,20 +66,70 @@ public class SensorsConfigurationTest extends BaseTest {
     return ResourceManager.getInstance().getSensorsConfiguration();
   }
 
-  @BeforeAll
-  public static void initClass() {
+  private void initVarList() throws Exception {
+
+    initResourceManager();
+
     var1List = new ArrayList<Long>(1);
-    var1List.add(1L);
 
-    var2List = new ArrayList<Long>(1);
-    var2List.add(2L);
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet record = null;
 
-    bothVarsList = new ArrayList<Long>(2);
-    bothVarsList.add(1L);
-    bothVarsList.add(2L);
+    try {
+      conn = ResourceManager.getInstance().getDBDataSource().getConnection();
+      stmt = conn.prepareStatement("SELECT id FROM variables "
+        + "WHERE name = 'Underway Marine pCO₂'");
+
+      record = stmt.executeQuery();
+      if (!record.next()) {
+        throw new DatabaseException("'Underway Marine pCO₂' variable does not exist");
+      } else {
+        var1List.add(record.getLong(1));
+      }
+    } catch (SQLException e) {
+      throw e;
+    } finally {
+      DatabaseUtils.closeResultSets(record);
+      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
+    }
 
     invalidVarList = new ArrayList<Long>(1);
     invalidVarList.add(-1000L);
+  }
+
+  private void initTestVarList() throws Exception {
+
+    var2List = new ArrayList<Long>(1);
+    bothVarsList = new ArrayList<Long>(2);
+
+    bothVarsList.addAll(var1List);
+
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet record = null;
+
+
+    try {
+      conn = ResourceManager.getInstance().getDBDataSource().getConnection();
+      stmt = conn.prepareStatement("SELECT id FROM variables "
+        + "WHERE name = 'testVar'");
+
+      record = stmt.executeQuery();
+      if (!record.next()) {
+        throw new DatabaseException("'testVar' variable does not exist");
+      } else {
+        var2List.add(record.getLong(1));
+        bothVarsList.add(record.getLong(1));
+      }
+    } catch (SQLException e) {
+      throw e;
+    } finally {
+      DatabaseUtils.closeResultSets(record);
+      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
+    }
   }
 
   @AfterEach
@@ -419,6 +472,8 @@ public class SensorsConfigurationTest extends BaseTest {
   })
   @Test
   public void multipleVariableConfigurationTest() throws Exception {
+    initVarList();
+    initTestVarList();
     SensorsConfiguration config = getConfig();
     assertNotNull(config);
 
@@ -436,6 +491,7 @@ public class SensorsConfigurationTest extends BaseTest {
   @FlywayTest
   @Test
   public void getSensorTypesWithParentTest() throws Exception {
+    initVarList();
     SensorsConfiguration config = getConfig();
 
     Set<SensorType> sensorTypes = config.getSensorTypes(var1List, false);
@@ -450,6 +506,7 @@ public class SensorsConfigurationTest extends BaseTest {
   @FlywayTest
   @Test
   public void getSensorTypesWithChildrenTest() throws Exception {
+    initVarList();
     SensorsConfiguration config = getConfig();
 
     Set<SensorType> sensorTypes = config.getSensorTypes(var1List, true);
@@ -464,6 +521,7 @@ public class SensorsConfigurationTest extends BaseTest {
   @FlywayTest
   @Test
   public void getCoreSensorTest() throws Exception {
+    initVarList();
     SensorsConfiguration config = getConfig();
     List<SensorType> coreSensors = config.getCoreSensors(var1List);
     assertEquals(1, coreSensors.size());
@@ -475,6 +533,8 @@ public class SensorsConfigurationTest extends BaseTest {
   })
   @Test
   public void getMultipleCoreSensorsTest() throws Exception {
+    initVarList();
+    initTestVarList();
     SensorsConfiguration config = getConfig();
     List<SensorType> coreSensors = config.getCoreSensors(bothVarsList);
 
@@ -490,6 +550,7 @@ public class SensorsConfigurationTest extends BaseTest {
   @FlywayTest
   @Test
   public void getCoreSensorInvalidVariableTst() throws Exception {
+    initVarList();
     SensorsConfiguration config = getConfig();
 
     assertThrows(SensorConfigurationException.class, () -> {
@@ -502,6 +563,8 @@ public class SensorsConfigurationTest extends BaseTest {
   })
   @Test
   public void getNonCoreSensorsTest() throws Exception {
+    initVarList();
+    initTestVarList();
     SensorsConfiguration config = getConfig();
 
     Connection conn = null;
@@ -557,6 +620,8 @@ public class SensorsConfigurationTest extends BaseTest {
   })
   @Test
   public void requiredForVarNonCoreOneVarTest() throws Exception {
+    initVarList();
+    initTestVarList();
     SensorsConfiguration config = getResourceManagerConfig();
     SensorType sensorType = config.getSensorType("Equilibrator Temperature");
 
@@ -570,6 +635,8 @@ public class SensorsConfigurationTest extends BaseTest {
   })
   @Test
   public void requiredForVarCoreOneVarTest() throws Exception {
+    initVarList();
+    initTestVarList();
     SensorsConfiguration config = getResourceManagerConfig();
     SensorType sensorType = config.getSensorType("CO₂ in gas");
 
@@ -583,6 +650,8 @@ public class SensorsConfigurationTest extends BaseTest {
   })
   @Test
   public void requiredForVarTwoVarsTest() throws Exception {
+    initVarList();
+    initTestVarList();
     SensorsConfiguration config = getResourceManagerConfig();
     SensorType sensorType = config.getSensorType("Salinity");
 
@@ -596,6 +665,8 @@ public class SensorsConfigurationTest extends BaseTest {
   })
   @Test
   public void requiredForVarNoVarsTest() throws Exception {
+    initVarList();
+    initTestVarList();
     SensorsConfiguration config = getResourceManagerConfig();
     SensorType sensorType = config.getSensorType("Atmospheric Pressure");
 
@@ -607,6 +678,7 @@ public class SensorsConfigurationTest extends BaseTest {
   @FlywayTest
   @Test
   public void requiredForVarParentsAndChildrenTest() throws Exception {
+    initVarList();
     SensorsConfiguration config = getResourceManagerConfig();
     SensorType parentType = config.getSensorType("Equilibrator Pressure");
     SensorType childType = config.getSensorType("Equilibrator Pressure (absolute)");
@@ -618,6 +690,7 @@ public class SensorsConfigurationTest extends BaseTest {
   @FlywayTest
   @Test
   public void requiredForVarInvalidVarTest() throws Exception {
+    initVarList();
     SensorsConfiguration config = getConfig();
     SensorType sensorType = config.getSensorType("Salinity");
 
@@ -629,6 +702,7 @@ public class SensorsConfigurationTest extends BaseTest {
   @FlywayTest
   @Test
   public void getSensorTypesInvalidVarTest() throws Exception {
+    initVarList();
     SensorsConfiguration config = getConfig();
     assertThrows(SensorConfigurationException.class, () -> {
       config.getSensorTypes(invalidVarList, false);
@@ -685,6 +759,8 @@ public class SensorsConfigurationTest extends BaseTest {
   })
   @Test
   public void getInstrumentVariablesTest() throws Exception {
+    initVarList();
+    initTestVarList();
     List<InstrumentVariable> variables = getConfig().getInstrumentVariables(bothVarsList);
     for (InstrumentVariable variable : variables) {
       assertTrue(variable.getId() == 1L || variable.getId() == 2L);
@@ -693,6 +769,7 @@ public class SensorsConfigurationTest extends BaseTest {
 
   @Test
   public void getNonExistentInstrumentVariablesTest() throws Exception {
+    initVarList();
     assertThrows(VariableNotFoundException.class, () -> {
       getConfig().getInstrumentVariables(invalidVarList);
     });

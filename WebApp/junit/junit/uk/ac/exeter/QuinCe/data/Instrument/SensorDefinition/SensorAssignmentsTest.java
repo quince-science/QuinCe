@@ -6,6 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +18,6 @@ import java.util.stream.Stream;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -31,6 +34,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -163,12 +168,34 @@ public class SensorAssignmentsTest extends BaseTest {
     return result;
   }
 
-  @BeforeAll
+  @BeforeEach
   public void sensorConfigInit() throws Exception {
     initResourceManager();
     config = ResourceManager.getInstance().getSensorsConfiguration();
     varIds = new ArrayList<Long>(1);
-    varIds.add(1L);
+
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet record = null;
+
+    try {
+      conn = ResourceManager.getInstance().getDBDataSource().getConnection();
+      stmt = conn.prepareStatement("SELECT id FROM variables "
+        + "WHERE name = 'Underway Marine pCO₂'");
+
+      record = stmt.executeQuery();
+      if (!record.next()) {
+        throw new DatabaseException("'Underway Marine pCO₂' variable does not exist");
+      } else {
+        varIds.add(record.getLong(1));
+      }
+    } catch (SQLException e) {
+      throw e;
+    } finally {
+      DatabaseUtils.closeResultSets(record);
+      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
+    }
 
     intakeTemperatureId = getSensorTypeId("Intake Temperature");
     salinityId = getSensorTypeId("Salinity");
@@ -185,6 +212,7 @@ public class SensorAssignmentsTest extends BaseTest {
   @AfterEach
   public void destroySensorAssignments() {
     assignments = null;
+    ResourceManager.destroy();
   }
 
   @Test
