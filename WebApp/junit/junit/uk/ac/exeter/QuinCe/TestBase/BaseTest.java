@@ -13,6 +13,7 @@ import javax.servlet.ServletContextEvent;
 import javax.sql.DataSource;
 
 import org.flywaydb.test.FlywayTestExecutionListener;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -60,6 +61,11 @@ public class BaseTest {
 
     servletContextEvent = Mockito.mock(ServletContextEvent.class);
     Mockito.doReturn(servletContext).when(servletContextEvent).getServletContext();
+  }
+
+  @AfterAll
+  public static void destroyResourceManager() {
+    ResourceManager.destroy();
   }
 
   /**
