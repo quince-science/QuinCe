@@ -9,5 +9,5 @@
   <Resource name="jdbc/QuinCeDB" auth="Container" type="javax.sql.DataSource"
      maxTotal="100" maxIdle="30" maxWaitMillis="10000" removeAbandoned="true"
      username="%db_username%" password="%db_password%" driverClassName="com.mysql.jdbc.Driver"
-     url="jdbc:mysql://%db_host%:%db_port%/%db_database%?useUnicode=true&amp;characterEncoding=utf-8" />
+     url="jdbc:mysql://%db_host%:%db_port%/%db_database%?useUnicode=true&amp;characterEncoding=utf-8&amp;rewriteBatchedStatements=true" />
 </Context>
