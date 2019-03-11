@@ -869,47 +869,29 @@ public class DataSetDataDB {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(sensorValues, "sensorValues");
 
-    List<PreparedStatement> stmts = new ArrayList<PreparedStatement>();
-
-    int maxPacketSize = Integer.parseInt(
-      ResourceManager.getInstance().getConfig().getProperty("database.max_packet_size"));
-    String sqlStart = "INSERT INTO sensor_values VALUES ";
+    PreparedStatement stmt = null;
 
     try {
-      StringBuilder sql = new StringBuilder(sqlStart);
+      stmt = conn.prepareStatement(STORE_SENSOR_VALUE_STATEMENT);
 
       for (SensorValue value : sensorValues) {
-        StringBuilder valueSql = value.getSqlValues();
-
-        // See if we're going to make the query too big. If so,
-        // send it and start a new one
-        if ((sql.length() + valueSql.length()) > maxPacketSize) {
-
-          // Drop the last comma
-          sql.setLength(sql.length() - 1);
-
-          PreparedStatement stmt = conn.prepareStatement(sql.toString());
-          stmt.execute();
-          stmts.add(stmt);
-
-          sql = new StringBuilder(sqlStart);
+        stmt.setLong(1, value.getDatasetId());
+        stmt.setLong(2, value.getColumnId());
+        stmt.setLong(3, DateTimeUtils.dateToLong(value.getTime()));
+        if (null == value.getValue()) {
+          stmt.setNull(4, Types.VARCHAR);
+        } else {
+          stmt.setString(4, value.getValue());
         }
 
-        sql.append(value.getSqlValues());
-        sql.append(',');
+        stmt.addBatch();
       }
 
-      // Drop the last comma
-      sql.setLength(sql.length() - 1);
-
-      PreparedStatement stmt = conn.prepareStatement(sql.toString());
-      stmt.execute();
-      stmts.add(stmt);
-
+      stmt.executeBatch();
     } catch (SQLException e) {
       throw new DatabaseException("Error storing sensor values", e);
     } finally {
-      DatabaseUtils.closeStatements(stmts);
+      DatabaseUtils.closeStatements(stmt);
     }
   }
 }
