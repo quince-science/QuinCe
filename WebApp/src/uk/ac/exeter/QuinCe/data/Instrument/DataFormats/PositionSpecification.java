@@ -2,6 +2,9 @@ package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
 
 import java.util.List;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 /**
  * Abstract class for position specifications. Longitudinal and latitudinal
  * positions share much similar functionality.
@@ -153,11 +156,12 @@ public abstract class PositionSpecification {
   }
 
   /**
-   * Get the JSON representation of this specification.
+   * Get this representation as a GSON JsonObject
    *
    * <p>
-   *   The JSON string is as follows:
+   * The JSON format is as follows:
    * </p>
+   *
    * <pre>
    *   {
    *     "format": <position format>,
@@ -166,26 +170,20 @@ public abstract class PositionSpecification {
    *   }
    * </pre>
    * <p>
-   *   The format will be the integer value corresponding
-   *   to the chosen format. The JSON processor will need
-   *   to know how to translate these.
+   * The format will be the integer value corresponding to the chosen format.
+   * The JSON processor will need to know how to translate these.
    * </p>
    *
    * @return The JSON string
    */
-  public String getJsonString() {
-    StringBuilder json = new StringBuilder();
-    json.append('{');
-    json.append("\"format\":");
-    json.append(format);
-    json.append(",\"valueColumn\":");
-    json.append(valueColumn);
-    json.append(",\"hemisphereRequired\":");
-    json.append(hemisphereRequired());
-    json.append(",\"hemisphereColumn\":");
-    json.append(hemisphereColumn);
-    json.append('}');
-    return json.toString();
+  public JsonObject getJsonObject() {
+
+    JsonObject json = new JsonObject();
+    json.addProperty("format", format);
+    json.addProperty("valueColumn", valueColumn);
+    json.addProperty("hemisphereRequired", hemisphereRequired());
+    json.addProperty("hemisphereColumn", hemisphereColumn);
+    return json;
   }
 
   /**

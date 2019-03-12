@@ -1,5 +1,9 @@
 package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
@@ -51,35 +55,21 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
    * @throws DateTimeSpecificationException If an error occurs while generating the date/time string
    */
   public String getFileSpecificAssignments(SensorAssignments sensorAssignments) throws DateTimeSpecificationException {
-    StringBuilder json = new StringBuilder();
+    JsonArray json = new JsonArray();
 
-    json.append('[');
-
-    int count = 0;
     for (FileDefinition file : this) {
-      count++;
-
-      json.append('{');
-      json.append("\"longitude\":");
-      json.append(file.getLongitudeSpecification().getJsonString());
-      json.append(",\"latitude\":");
-      json.append(file.getLatitudeSpecification().getJsonString());
-      json.append(",\"dateTime\":");
-      json.append(file.getDateTimeSpecification().getJsonString());
-      json.append(",\"runTypeColRequired\":");
-      json.append(file.requiresRunTypeColumn(sensorAssignments));
-      json.append(",\"runTypeCol\":");
-      json.append(file.getRunTypeColumn());
-      json.append('}');
-
-      if (count < size()) {
-        json.append(',');
-      }
+      JsonObject object = new JsonObject();
+      object.add("longitude", file.getLongitudeSpecification().getJsonObject());
+      object.add("latitude", file.getLatitudeSpecification().getJsonObject());
+      object.add("datetime", file.getDateTimeSpecification().getJsonArray());
+      object.addProperty("runTypeColRequired",
+          file.requiresRunTypeColumn(sensorAssignments));
+      object.addProperty("runTypeCol", file.getRunTypeColumn());
+      json.add(object);
     }
 
-    json.append(']');
-
-    return json.toString();
+    Gson gson = new Gson();
+    return gson.toJson(json);
   }
 
   /**
@@ -87,29 +77,16 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
    * @return The file names
    */
   public String getFilesAndColumns() {
-    StringBuilder json = new StringBuilder();
+    JsonArray json = new JsonArray();
 
-    json.append('[');
-
-    int count = 0;
     for (FileDefinition file : this) {
       FileDefinitionBuilder fileBuilder = (FileDefinitionBuilder) file;
-      count++;
-
-      json.append('{');
-
-      json.append("'description':'");
-      json.append(fileBuilder.getFileDescription());
-      json.append("','columns':");
-      json.append(fileBuilder.getFileColumns());
-      json.append('}');
-
-      if (count < size()) {
-        json.append(',');
-      }
+      JsonObject object = new JsonObject();
+      object.addProperty("description", fileBuilder.getFileDescription());
+      object.addProperty("columns", fileBuilder.getFileColumns());
+      json.add(object);
     }
-
-    json.append(']');
-    return json.toString();
+    Gson gson = new Gson();
+    return gson.toJson(json);
   }
 }

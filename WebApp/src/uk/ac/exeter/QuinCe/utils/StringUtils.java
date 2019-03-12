@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
 /**
@@ -365,6 +366,12 @@ public final class StringUtils {
       result = json.toJson(properties);
     }
     return result;
+  }
+
+  public static JsonElement getPropertiesAsJsonElement(Properties properties) {
+
+    Gson json = new Gson();
+    return json.toJsonTree(properties);
   }
 
   /**

@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Files.ValueNotNumericException;
@@ -230,53 +233,55 @@ public class DateTimeSpecification {
   }
 
   /**
-   * Get the JSON representation of this specification.
+   * Get this representation as a GSON JsonArray
    *
    * <p>
-   *   The JSON string is as follows:
+   * The JSON format is as follows:
    * </p>
+   *
    * <pre>
+   * [
    *   {
+   *     "id": <integer>,
+   *     "name": <string name>,
+   *     "column": <integer>,
+   *     "properties": {
+   *      ...
+   *     }
+   *   },
+   *   {
+   *   ...
    *   }
+   * ]
+   * Where the properties are single dimension string - value properties.
    * </pre>
    * <p>
-   *   The format will be the integer value corresponding
-   *   to the chosen format. The JSON processor will need
-   *   to know how to translate these.
+   * The format will be the integer value corresponding to the chosen format.
+   * The JSON processor will need to know how to translate these.
    * </p>
    *
    * @return The JSON string
-   * @throws DateTimeSpecificationException If an error occurs while building the string
+   * @throws DateTimeSpecificationException
+   *           If an error occurs while building the Json
    */
-  //TODO Make JSON string in comment
-  public String getJsonString() throws DateTimeSpecificationException {
-    StringBuilder json = new StringBuilder();
-
-    json.append('[');
+  public JsonArray getJsonArray() throws DateTimeSpecificationException {
+    JsonArray json = new JsonArray();
 
     List<Integer> entries = getAvailableEntries();
     for (int i = 0; i < entries.size(); i++) {
       DateTimeColumnAssignment assignment = assignments.get(entries.get(i));
-
-      json.append("{\"id\":");
-      json.append(i);
-      json.append(",\"name\":\"");
-      json.append(getAssignmentName(entries.get(i)));
-      json.append("\",\"column\":");
-      json.append(assignment.getColumn());
-      json.append(",\"properties\":");
-      json.append(StringUtils.getPropertiesAsJson(assignment.getProperties()));
-      json.append("}");
-
-      if (i < entries.size() - 1) {
-        json.append(',');
-      }
+      JsonObject object = new JsonObject();
+      object.addProperty("id", i);
+      object.addProperty("name", getAssignmentName(entries.get(i)));
+      object.addProperty("column", assignment.getColumn());
+      object.add("properties",
+          StringUtils.getPropertiesAsJsonElement(assignment.getProperties()));
+      json.add(object);
     }
 
-    json.append(']');
-
-    return json.toString();
+    return json;
   }
+
 
   /**
    * Determine whether or not this specification has had both
