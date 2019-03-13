@@ -14,11 +14,7 @@ def get_retriever_types():
 
 # Ask the user to select a retriever type
 def ask_retriever_type():
-  entries = []
-
-  for clazz in DataRetriever.__subclasses__():
-    entries.append(clazz.get_type())
-
+  entries = get_retriever_types()
 
   selected = -1
   while selected == -1:
