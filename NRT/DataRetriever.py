@@ -107,7 +107,6 @@ class DataRetriever(metaclass=ABCMeta):
 
       self.configuration[key] = new_value
 
-    print()
     return self.test_configuration()
 
   # Get the configuration as a JSON object

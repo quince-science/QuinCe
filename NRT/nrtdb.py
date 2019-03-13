@@ -27,13 +27,14 @@ def get_instruments(conn):
   result = []
 
   c = conn.cursor();
-  c.execute("SELECT id, name, owner, type FROM instrument ORDER BY id")
+  c.execute("SELECT id, name, owner, type, preprocessor FROM instrument ORDER BY id")
   for row in c:
     record = {}
     record["id"] = row[0]
     record["name"] = row[1]
     record["owner"] = row[2]
     record["type"] = row[3]
+    record["preprocessor"] = row[4]
 
     result.append(record)
 
@@ -83,7 +84,8 @@ def add_instruments(conn, instruments, ids):
   c = conn.cursor()
   for instrument in instruments:
     if instrument["id"] in ids:
-      c.execute("INSERT INTO instrument(id, name, owner, type, config) VALUES (?, ?, ?, 'None', NULL)",
+      c.execute("INSERT INTO instrument(id, name, owner, type, preprocessor, config)" \
+        " VALUES (?, ?, ?, 'None', 'None', NULL)",
           (instrument["id"], instrument["name"], instrument["owner"]))
   conn.commit()
 
@@ -103,14 +105,16 @@ def get_unconfigured_instruments(conn):
   return result
 
 # Store the configuration for an instrument
-def store_configuration(conn, instrument_id, retriever):
+def store_configuration(conn, instrument_id, retriever, preprocessor):
   c = conn.cursor()
   if retriever is None:
-    c.execute("UPDATE instrument SET type=NULL, config=NULL WHERE id = ?",
+    c.execute("UPDATE instrument SET type=NULL, config=NULL, preprocessor=NULL, WHERE id = ?",
       (instrument_id, ))
   else:
-    c.execute("UPDATE instrument SET type=?, config=? WHERE id = ?",
-      (retriever.get_type(), retriever.get_configuration_json(), instrument_id))
+    print(retriever.get_type(), retriever.get_configuration_json(), instrument_id, preprocessor)
+    c.execute("UPDATE instrument SET type=?, config=?, preprocessor=? WHERE id = ?",
+      (retriever.get_type(), retriever.get_configuration_json(), preprocessor, instrument_id))
+
   conn.commit()
 
 # See if the database has been
@@ -131,6 +135,7 @@ def __init_db(conn):
                    "name TEXT, "
                    "owner TEXT, "
                    "type TEXT, "
+                   "preprocessor TEXT, "
                    "config TEXT)"
                    )
 

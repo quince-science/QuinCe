@@ -6,7 +6,7 @@ from tabulate import tabulate
 
 # Local modules
 import quince, nrtdb, nrtftp
-import RetrieverFactory
+import RetrieverFactory, PreprocessorFactory
 
 # Extract the list of IDs from a set of instruments
 def get_ids(instruments):
@@ -21,7 +21,7 @@ def make_instrument_table(instruments, ids, showType):
   table_data = []
 
   if showType:
-    table_data = [["ID", "Name", "Owner", "Type"]]
+    table_data = [["ID", "Name", "Owner", "Type", "Preprocessor"]]
   else:
     table_data = [["ID", "Name", "Owner"]]
 
@@ -36,7 +36,8 @@ def make_instrument_table(instruments, ids, showType):
                            instrument["name"],
                            instrument["owner"],
                            "None" if instrument["type"] is None
-                             else instrument["type"]])
+                             else instrument["type"],
+                           instrument["preprocessor"]])
       else:
         table_data.append([instrument["id"],
                            instrument["name"],
@@ -47,6 +48,9 @@ def make_instrument_table(instruments, ids, showType):
 #######################################################
 
 def main():
+  ftpconn = None
+  dbconn = None
+
   try:
     # Blank logger - sends everything to /dev/null
     logging.basicConfig(filename=os.devnull)
@@ -77,7 +81,7 @@ def main():
       make_instrument_table(nrt_instruments, orphaned_ids, False)
       go = input("Enter Y to proceed, or anything else to quit: ")
       if not go.lower() == "y":
-        quit()
+        exit()
       else:
         nrtdb.delete_instruments(dbconn, orphaned_ids)
 
@@ -88,7 +92,7 @@ def main():
       make_instrument_table(quince_instruments, new_ids, False)
       go = input("Enter Y to proceed, or anything else to quit: ")
       if not go.lower() == "y":
-        quit()
+        exit()
       else:
         nrtdb.add_instruments(dbconn, quince_instruments, new_ids)
         nrtftp.add_instruments(ftpconn, config["FTP"], new_ids)
@@ -127,6 +131,9 @@ def main():
               retriever = RetrieverFactory.get_instance(instrument["type"], \
                 instrument["id"], logger, json.loads(instrument["config"]))
               retriever.print_configuration()
+              print()
+
+              print("PREPROCESSOR: %s" % instrument["preprocessor"])
 
             print()
 
@@ -146,7 +153,10 @@ def main():
                   print()
                   config_ok = retriever.enter_configuration()
 
-                nrtdb.store_configuration(dbconn, instrument["id"], retriever)
+                print()
+                preprocessor = PreprocessorFactory.ask_preprocessor()
+
+                nrtdb.store_configuration(dbconn, instrument["id"], retriever, preprocessor)
 
   except urllib.error.URLError as e:
     print(e)
