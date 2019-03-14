@@ -14,13 +14,16 @@ def cp_init(dataset_name,destination,dataset_zip,config_carbon):
     hashsum = get_hashsum(dataset_zip,filename)
     logging.info('Sending hashsum and filename to CP')
 
-        #print('check hashsum')
-        #print('... if hashsum already exists; abort loop over dataset')  
+    
+
+        #check hashsum
+
+        #... if hashsum already exists; abort loop over dataset  
           # Report to quince that dataset exist, check that raw data matches(?)
-        #print('check filename')
-        #print('... if filname already exists; ')
-          # communicate that this is updated version  
-          # isNextVersionOf = PID, preExistingDoi?
+        
+        #check filename
+        #... if filname already exists; communicate that this is updated version, upload new version with new hashsum
+          # isNextVersionOf = PID
 
     response = 'temp'
     return response, auth_cookie
@@ -58,7 +61,7 @@ def get_new_auth_cookie(config):
     return None
 
  
-def upload_data(filenames, hashsum, auth_cookie):   
+def upload_data(filename, hashsum, auth_cookie):   
     '''
     uploads metadata to Carbon Portal
     error 401 :  authentication cookie has expired
@@ -67,14 +70,11 @@ def upload_data(filenames, hashsum, auth_cookie):
     return: http response
     '''
     #Constructing and running request
-    results={}
-    for filename in filenames:
-        data = json.dumps(metadata_filename) #transforming dictionary-object to json-object
-        headers = { 'Content-Type': 'application/json' , 'Cookie': auth_cookie }
-        req = urllib.request.Request(metadata_url, data=data, headers=headers)# ,method='POST') # https://docs.python.org/2/library/urllib2.html#urllib2.Request
-        response = opener.open(req)
-        results[filename]=response.read()
-    return results
+    data = json.dumps(metadata_filename) #transforming dictionary-object to json-object
+    headers = { 'Content-Type': 'application/json' , 'Cookie': auth_cookie }
+    req = urllib.request.Request(metadata_url, data=data, headers=headers)# ,method='POST') # https://docs.python.org/2/library/urllib2.html#urllib2.Request
+    response = opener.open(req)
+    return response.read()
 
 def send_L0_to_cp(meta_L0,file_L0,hashsum,auth_cookie):
     logging.info(

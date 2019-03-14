@@ -1,4 +1,8 @@
-server='localhost'
+[Copernicus]
+nrt_server='' 
+my_server=''
 user=''
 password=''
-dir=''
+nrt_dir='/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/NRT_201904/latest'
+dnt_dir='/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/DNT'
+my_dir=''
