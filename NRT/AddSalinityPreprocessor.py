@@ -6,6 +6,6 @@ class AddSalinityPreprocessor(Preprocessor):
     return "Add Fixed Salinity"
 
   def preprocess(self, data):
-  	dataframe = pd.read_csv(data, sep="\t")
-  	dataframe = dataframe.assign(Salinity=35)
-  	return pd.to_csv(dataframe, sep="\t")
+    dataframe = pd.read_csv(data, sep="\t")
+    dataframe = dataframe.assign(Salinity=35)
+    return pd.to_csv(dataframe, sep="\t")
