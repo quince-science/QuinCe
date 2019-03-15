@@ -324,7 +324,7 @@ public class CalibrationDataDB {
           jsonRecord.put(String.valueOf(columnIndex - 1), records.getDouble(dbColumn));
         }
 
-        double calibrationValue = externalStandards.getCalibrationValue(runType, "CO2");
+        double calibrationValue = externalStandards.getCalibrationValue(runType, "CO₂ in gas");
         columnIndex++;
         jsonRecord.put(String.valueOf(columnIndex - 1), calibrationValue);
         columnIndex++;
@@ -460,7 +460,7 @@ public class CalibrationDataDB {
 
           for (int j = 0; j < standardNames.size(); j++) {
             if (runType.equals(standardNames.get(j))) {
-              double calibrationValue = externalStandards.getCalibrationValue(runType, "CO2");
+              double calibrationValue = externalStandards.getCalibrationValue(runType, "CO₂ in gas");
               jsonRecord.put(value - calibrationValue);
             } else {
               jsonRecord.put(JSONObject.NULL);
