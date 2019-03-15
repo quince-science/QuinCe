@@ -567,6 +567,7 @@ public class NewInstrumentBean extends FileUploadBean {
       sensorTypeJson.put("name", sensorType.getName());
       sensorTypeJson.put("required", sensorAssignments.isAssignmentRequired(sensorType));
       sensorTypeJson.put("diagnostic", sensorType.isDiagnostic());
+      sensorTypeJson.put("systemType", sensorType.isSystemType());
       if (null == sensorType.getDependsQuestion()) {
         sensorTypeJson.put("dependsQuestion", JSONObject.NULL);
       } else {
