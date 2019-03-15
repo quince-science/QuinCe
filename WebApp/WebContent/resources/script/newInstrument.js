@@ -661,7 +661,7 @@ function buildMainAssignmentMenu(file, column) {
 
     var sensorAssignments = JSON.parse($('#newInstrumentForm\\:sensorAssignments').val());
     for (var i = 0; i < sensorAssignments.length; i++) {
-      if (!sensorAssignments[i]['diagnostic']) {
+      if (!sensorAssignments[i]['diagnostic'] && !sensorAssignments[i]['systemType']) {
         menuHtml += makeMenuItem(sensorAssignments[i]['name'], sensorAssignments[i]['name'], file, column);
       }
     }
