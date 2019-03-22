@@ -71,7 +71,7 @@ def makenetcdf_(datasetname, lines):
 
   # Open a new netCDF file
   ncpath = tempfile.gettempdir() + "/" + filenameroot + ".nc"
-  nc = Dataset(ncpath, format="NETCDF4", mode="w")
+  nc = Dataset(ncpath, format="NETCDF4_CLASSIC", mode="w")
 
   # The DEPTH dimension is singular. Assume 5m for ships
   depthdim = nc.createDimension("DEPTH", 1)
@@ -290,7 +290,7 @@ def makenetcdf_(datasetname, lines):
   nc.id = filenameroot
 
   nc.data_type = "OceanSITES trajectory data"
-  nc.netcdf_version = "4"
+  nc.netcdf_version = "netCDF-4 classic model"
   nc.format_version = "1.2"
   nc.Conventions = "CF-1.6 OceanSITES-Manual-1.2 Copernicus-InSituTAC-SRD-1.3 "\
     + "Copernicus-InSituTAC-ParametersList-3.1.0"
