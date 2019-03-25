@@ -44,4 +44,4 @@ def upload_file(config, instrument_id, filename, contents):
   files = {"file" : (filename, contents)}
   params = {"instrument" : instrument_id}
   response = requests.post(url, data=params, files=files, auth=(user, password))
-  return response.status_code
+  return response
