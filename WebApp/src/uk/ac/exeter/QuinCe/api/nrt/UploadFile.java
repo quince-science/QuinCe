@@ -6,8 +6,10 @@ import javax.sql.DataSource;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -33,11 +35,13 @@ public class UploadFile {
    */
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Produces(MediaType.TEXT_PLAIN)
   public Response uploadFile(@FormDataParam("instrument") long instrumentId,
       @FormDataParam("file") InputStream is,
       @FormDataParam("file") FormDataContentDisposition fileDetail) {
 
     int result = Status.OK.getStatusCode();
+    String resultBody = null;
 
     try {
       ResourceManager resourceManager = ResourceManager.getInstance();
@@ -48,6 +52,7 @@ public class UploadFile {
       // We don't allow uploads for non-NRT instruments
       if (!instrument.getNrt()) {
         result = Status.FORBIDDEN.getStatusCode();
+        resultBody = "Not an NRT instrument";
       } else {
         UploadedDataFile upload = new APIUploadedDataFile(fileDetail.getFileName(), is);
 
@@ -57,6 +62,7 @@ public class UploadFile {
         // See if extraction was successful
         if (!upload.isStore()) {
           result = upload.getStatusCode();
+          resultBody = upload.getMessages();
         } else {
           DataFileDB.storeFile(dataSource, resourceManager.getConfig(), upload.getDataFile(),
               upload.getReplacementFile());
@@ -64,8 +70,14 @@ public class UploadFile {
       }
     } catch (Exception e) {
       result = Status.INTERNAL_SERVER_ERROR.getStatusCode();
+      resultBody = e.getMessage();
     }
 
-    return Response.status(result).build();
+    ResponseBuilder responseBuilder = Response.status(result);
+    if (null != resultBody) {
+      responseBuilder = responseBuilder.entity(resultBody);
+    }
+
+    return responseBuilder.build();
   }
 }
