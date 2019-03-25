@@ -6,23 +6,24 @@ from io import BytesIO
 import ntpath
 
 # Local modules
-import RetrieverFactory, nrtdb, nrtftp
+import nrtdb, nrtftp
+import RetrieverFactory, PreprocessorFactory
 
 # Upload a file to the FTP server. If it's a ZIP file,
 # extract it and upload the contents as individual files
-def upload_file(logger, ftpconn, ftp_config, instrument_id, filename, contents):
+def upload_file(logger, ftpconn, ftp_config, instrument_id, preprocessor, filename, contents):
   upload_result = -1
 
   if not str.endswith(filename, ".zip"):
     upload_result = nrtftp.upload_file(ftpconn, ftp_config,
-            instrument_id, filename, contents)
+            instrument_id, filename, preprocessor.preprocess(BytesIO(contents)))
   else:
     with ZipFile(BytesIO(contents), 'r') as unzip:
       for name in unzip.namelist():
         log_instrument(logger, instrument_id, logging.DEBUG, "Uploading "
           + "ZIP entry " + name)
         upload_result = nrtftp.upload_file(ftpconn, ftp_config,
-          instrument_id, ntpath.basename(name), unzip.read(name))
+          instrument_id, ntpath.basename(name), preprocessor.preprocess(BytesIO(unzip.read(name))))
 
         # If any file fails to upload, stop
         if upload_result != nrtftp.UPLOAD_OK:
@@ -81,15 +82,17 @@ def main():
           log_instrument(logger, instrument_id, logging.ERROR, \
             "Could not initialise retriever")
         else:
+          preprocessor = PreprocessorFactory.get_new_instance(instrument["preprocessor"])
 
           # Loop through all files returned by the retriever one by one
           while retriever.load_next_file():
             for file in retriever.current_files:
+
               log_instrument(logger, instrument_id, logging.DEBUG, \
                 "Uploading " + file["filename"] + " to FTP server")
 
               upload_result = upload_file(logger, ftpconn, config["FTP"], \
-                instrument_id, file["filename"], file["contents"])
+                instrument_id, preprocessor, file["filename"], file["contents"])
 
               if upload_result == nrtftp.NOT_INITIALISED:
                 log_instrument(logger, instrument_id, logging.ERROR, \

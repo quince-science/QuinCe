@@ -1,3 +1,4 @@
+from io import BytesIO
 import pandas as pd
 from Preprocessor import Preprocessor
 
@@ -8,4 +9,4 @@ class AddSalinityPreprocessor(Preprocessor):
   def preprocess(self, data):
     dataframe = pd.read_csv(data, sep="\t")
     dataframe = dataframe.assign(Salinity=35)
-    return pd.to_csv(dataframe, sep="\t")
+    return dataframe.to_csv(sep="\t").encode("utf-8")
