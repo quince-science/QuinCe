@@ -23,6 +23,7 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Files.DataFileMessage;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
 import uk.ac.exeter.QuinCe.web.Instrument.newInstrument.FileDefinitionBuilder;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -280,20 +281,27 @@ public abstract class UploadedDataFile {
     try {
       DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
 
-      FileDefinitionBuilder guessedFileLayout = new FileDefinitionBuilder(instrument.getFileDefinitions());
+      InstrumentFileSet fileDefinitions = instrument.getFileDefinitions();
       String[] lines = getLines();
       if (null == lines) {
         throw new DataFileException("File contains no data");
       }
-      guessedFileLayout.setFileContents(Arrays.asList(lines));
-      guessedFileLayout.guessFileLayout();
-      FileDefinition fileDefinition = instrument.getFileDefinitions()
-          .getMatchingFileDefinition(guessedFileLayout).iterator().next();
-      // TODO Handle multiple matched definitions
+
+      FileDefinitionBuilder layoutGuesser =
+        new FileDefinitionBuilder("Guesser", fileDefinitions);
+
+      layoutGuesser.setFileContents(Arrays.asList(lines));
+      layoutGuesser.guessFileLayout();
+
+      // See if any of the known definitions match the guessed layout
+      FileDefinition matchedDefinition =
+        fileDefinitions.getMatchingFileDefinition(layoutGuesser).iterator().next();
+      // TODO We're assuming we'll get one match. No matches will throw a NoSuchElementException
+      //      (handled below), and multiple matches just choose the first one
 
       setDataFile(new DataFile(
           appConfig.getProperty("filestore"),
-          fileDefinition,
+          matchedDefinition,
           getName(),
           Arrays.asList(lines)
       ));
@@ -312,7 +320,7 @@ public abstract class UploadedDataFile {
             + " could not be processed (see messages below). Please fix these problems and upload the file again.",
             FacesMessage.SEVERITY_ERROR);
       } else {
-        List<DataFile> overlappingFiles = DataFileDB.getFilesWithinDates(dataSource, fileDefinition,
+        List<DataFile> overlappingFiles = DataFileDB.getFilesWithinDates(dataSource, matchedDefinition,
             getDataFile().getStartDate(), getDataFile().getEndDate());
 
         boolean fileOK = true;
@@ -363,7 +371,7 @@ public abstract class UploadedDataFile {
         }
 
         if (!fileOK) {
-          fileDefinition = null;
+          matchedDefinition = null;
           setDataFile(null);
           putMessage(fileStatus, fileMessage, FacesMessage.SEVERITY_ERROR);
         }

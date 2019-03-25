@@ -209,7 +209,7 @@ public class FileDefinitionBuilder extends FileDefinition {
    */
   public static FileDefinitionBuilder copy(FileDefinitionBuilder source) {
 
-    FileDefinitionBuilder dest = new FileDefinitionBuilder(source.getFileDescription(), (NewInstrumentFileSet) source.getFileSet());
+    FileDefinitionBuilder dest = new FileDefinitionBuilder(source.getFileDescription(), source.getFileSet());
 
     try {
       dest.setHeaderType(source.getHeaderType());

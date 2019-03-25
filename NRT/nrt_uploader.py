@@ -43,13 +43,16 @@ def main():
           + file)
 
         upload_result = quince.upload_file(config, instrument_id, file, file_content)
-        if upload_result == 200:
+        status_code = upload_result.status_code
+        if status_code == 200:
           log_instrument(logger, instrument_id, logging.DEBUG, \
             "Upload succeeded")
           nrtftp.upload_succeeded(ftpconn, config["FTP"], instrument_id, file)
         else:
           log_instrument(logger, instrument_id, logging.ERROR, \
-            "Upload failed (status code " + str(upload_result) + ")")
+            "Upload failed (status code " + str(status_code) + ")")
+          log_instrument(logger, instrument_id, logging.ERROR, upload_result.text)
+
           nrtftp.upload_failed(ftpconn, config["FTP"], instrument_id, file)
 
   # Close down
