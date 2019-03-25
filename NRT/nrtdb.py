@@ -56,7 +56,7 @@ def get_instrument(conn, instrument_id):
   result = None
 
   c = conn.cursor();
-  c.execute("SELECT id, name, owner, type, config FROM instrument WHERE id = ?",
+  c.execute("SELECT id, name, owner, type, preprocessor, config FROM instrument WHERE id = ?",
     (instrument_id, ))
 
   for row in c:
@@ -65,7 +65,8 @@ def get_instrument(conn, instrument_id):
     record["name"] = row[1]
     record["owner"] = row[2]
     record["type"] = row[3]
-    record["config"] = row[4]
+    record["preprocessor"] = row[4]
+    record["config"] = row[5]
 
     result = record
 
