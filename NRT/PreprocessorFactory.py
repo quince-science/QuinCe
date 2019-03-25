@@ -34,3 +34,16 @@ def ask_preprocessor():
   result = entries[selected]
 
   return result
+
+def get_new_instance(preprocessor_type):
+  result = None
+
+  for clazz in Preprocessor.__subclasses__():
+    if clazz.get_name() == preprocessor_type:
+      result = clazz()
+      break
+
+  if result is None:
+    raise ValueError("Cannot find retriever of type %s" % (preprocessor_type, ))
+
+  return result
