@@ -284,7 +284,7 @@ public abstract class UploadedDataFile {
       InstrumentFileSet fileDefinitions = instrument.getFileDefinitions();
       String[] lines = getLines();
       if (null == lines) {
-        throw new DataFileException("File contains no data");
+        throw new DataFileException(DataFileException.NO_FILE_ID, DataFileException.NO_LINE_NUMBER, "File contains no data");
       }
 
       FileDefinitionBuilder layoutGuesser =
@@ -307,7 +307,7 @@ public abstract class UploadedDataFile {
       ));
       if (getDataFile().getFirstDataLine() >= getDataFile()
           .getContentLineCount()) {
-        throw new DataFileException("File contains headers but no data");
+        throw new DataFileException(DataFileException.NO_FILE_ID, DataFileException.NO_LINE_NUMBER, "File contains headers but no data");
       }
 
       if (null == getDataFile().getStartDate()

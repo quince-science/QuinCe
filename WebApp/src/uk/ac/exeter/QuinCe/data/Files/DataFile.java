@@ -16,6 +16,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
 import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeColumnAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecification;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
@@ -238,9 +239,9 @@ public class DataFile {
     List<String> result;
 
     if (row < getFirstDataLine()) {
-      throw new DataFileException("Requested row " + row + " is in the file header");
+      throw new DataFileException(databaseId, row, "Requested row is in the file header");
     } else if (row > (getContentLineCount() - 1)) {
-      throw new DataFileException("Requested row " + row + " is in the file header");
+      throw new DataFileException(databaseId, row, "Requested row is in the file header");
     } else {
       result = StringUtils.trimList(Arrays.asList(contents.get(row).split(fileDefinition.getSeparator())));
     }
@@ -284,7 +285,7 @@ public class DataFile {
               addMessage(lineNumber, "Date/Time is not monotonic");
             }
           }
-        } catch (DataFileException e) {
+        } catch (DateTimeSpecificationException e) {
           addMessage(lineNumber, e.getMessage());
         }
 
@@ -393,15 +394,17 @@ public class DataFile {
     int firstDataLine = -1;
     String message = "";
     if (null == startDate) {
+
       try {
         loadContents();
         firstDataLine = getFirstDataLine();
         startDate = getDate(firstDataLine);
-      } catch (DataFileException e) {
-        message = e.getMessage();
       } catch (IndexOutOfBoundsException arrex) {
         message = "Date column doesn't exist.";
+      } catch (Exception e) {
+        message = e.getMessage();
       }
+
       if (!"".equals(message)) {
         if (firstDataLine > -1) {
           addMessage(firstDataLine, message);
@@ -427,10 +430,10 @@ public class DataFile {
         loadContents();
         lastLine = getContentLineCount() - 1;
         endDate = getDate(lastLine);
-      } catch (DataFileException e) {
-        message = e.getMessage();
       } catch (IndexOutOfBoundsException arrex) {
         message = "Date column don't exist.";
+      } catch (Exception e) {
+        message = e.getMessage();
       }
     }
     if (null != message) {
@@ -449,7 +452,7 @@ public class DataFile {
    * @return The date
    * @throws DataFileException If any date/time fields are empty
    */
-  public LocalDateTime getDate(int line) throws DataFileException {
+  public LocalDateTime getDate(int line) throws DataFileException, DateTimeSpecificationException {
     loadContents();
     return fileDefinition.getDateTimeSpecification().getDateTime(headerDate, fileDefinition.extractFields(contents.get(line)));
   }
@@ -499,9 +502,18 @@ public class DataFile {
    * @throws DataFileException If the file contents cannot be extracted
    * @throws PositionException If the longitude is invalid
    */
-  public double getLongitude(int line) throws DataFileException, PositionException {
-    loadContents();
-    return fileDefinition.getLongitudeSpecification().getValue(fileDefinition.extractFields(contents.get(line)));
+  public double getLongitude(int line) throws DataFileException {
+
+    double result = -999.9;
+
+    try {
+      loadContents();
+      result = fileDefinition.getLongitudeSpecification().getValue(fileDefinition.extractFields(contents.get(line)));
+    } catch (PositionException e) {
+      throw new DataFileException(databaseId, line, e);
+    }
+
+    return result;
   }
 
   /**
@@ -512,8 +524,16 @@ public class DataFile {
    * @throws PositionException If the latitude is invalid
    */
   public double getLatitude(int line) throws DataFileException, PositionException {
-    loadContents();
-    return fileDefinition.getLatitudeSpecification().getValue(fileDefinition.extractFields(contents.get(line)));
+    double result = -999.9;
+
+    try {
+      loadContents();
+      result = fileDefinition.getLatitudeSpecification().getValue(fileDefinition.extractFields(contents.get(line)));
+    } catch (PositionException e) {
+      throw new DataFileException(databaseId, line, e);
+    }
+
+    return result;
   }
 
   /**
@@ -685,7 +705,7 @@ public class DataFile {
           throw new Exception("Could not extract file header date");
         }
       } catch (Exception e) {
-        throw new DataFileException("Error while loading file contents", e);
+        throw new DataFileException(databaseId, DataFileException.NO_LINE_NUMBER, "Error while loading file contents", e);
       }
     }
   }
@@ -702,7 +722,16 @@ public class DataFile {
   public Double getDoubleValue(int line, int field, String missingValue) throws DataFileException {
     loadContents();
     String fieldValue = fileDefinition.extractFields(contents.get(line)).get(field);
-    return extractDoubleFieldValue(fieldValue, missingValue);
+
+    Double result = null;
+
+    try {
+      result = extractDoubleFieldValue(fieldValue, missingValue);
+    } catch (ValueNotNumericException e) {
+      throw new DataFileException(databaseId, line, e);
+    }
+
+    return result;
   }
 
   /**

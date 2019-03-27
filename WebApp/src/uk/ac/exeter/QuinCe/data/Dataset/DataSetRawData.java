@@ -22,6 +22,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationNotValidException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -95,6 +96,11 @@ public abstract class DataSetRawData {
   private List<FileDefinition> fileDefinitions;
 
   /**
+   * The data files in the data set
+   */
+  private List<DataFile> dataFiles;
+
+  /**
    * The data extracted from the data files that are encompassed by the data set
    */
   protected List<List<DataFileLine>> data;
@@ -139,7 +145,7 @@ public abstract class DataSetRawData {
     for (FileDefinition fileDefinition : instrument.getFileDefinitions()) {
       fileDefinitions.add(fileDefinition);
 
-      List<DataFile> dataFiles = DataFileDB.getFiles(dataSource, fileDefinition, dataSet.getStart(), dataSet.getEnd());
+      dataFiles = DataFileDB.getFiles(dataSource, fileDefinition, dataSet.getStart(), dataSet.getEnd());
       data.add(extractData(dataFiles));
 
       selectedRows.add(null);
@@ -168,23 +174,29 @@ public abstract class DataSetRawData {
 
     // Loop through each file
     for (DataFile file : dataFiles) {
-      // Size the data array
-      fileData.ensureCapacity(fileData.size() + file.getRecordCount());
 
-      // Skip any lines before the data set start date
-      int currentLine = file.getFirstDataLine();
-      while (file.getDate(currentLine).isBefore(dataSet.getStart())) {
-        currentLine++;
-      }
+      int currentLine = DataFileException.NO_LINE_NUMBER;
+      try {
+        // Size the data array
+        fileData.ensureCapacity(fileData.size() + file.getRecordCount());
 
-      // Copy lines until either the end of the file or we pass the data set's end date
-      while (currentLine < file.getContentLineCount()) {
-        if (file.getDate(currentLine).isAfter(dataSet.getEnd())) {
-          break;
-        } else {
-          fileData.add(new DataFileLine(file, currentLine));
+        // Skip any lines before the data set start date
+        currentLine = file.getFirstDataLine();
+        while (file.getDate(currentLine).isBefore(dataSet.getStart())) {
           currentLine++;
         }
+
+        // Copy lines until either the end of the file or we pass the data set's end date
+        while (currentLine < file.getContentLineCount()) {
+          if (file.getDate(currentLine).isAfter(dataSet.getEnd())) {
+            break;
+          } else {
+            fileData.add(new DataFileLine(file, currentLine));
+            currentLine++;
+          }
+        }
+      } catch (DateTimeSpecificationException e) {
+        throw new DataFileException(file.getDatabaseId(), currentLine, e);
       }
     }
 
@@ -549,33 +561,37 @@ public abstract class DataSetRawData {
       inPostFlushing = false;
     } else {
 
-      LocalDateTime lineDate = getLine(fileIndex, line).getDate();
+      try {
+        LocalDateTime lineDate = getLine(fileIndex, line).getDate();
 
-      boolean finished = false;
-      int previousLineIndex = line.getValue();
-      LocalDateTime previousDate = lineDate;
+        boolean finished = false;
+        int previousLineIndex = line.getValue();
+        LocalDateTime previousDate = lineDate;
 
-      while (!finished) {
+        while (!finished) {
 
-        int nextLineIndex = previousLineIndex + 1;
-        if (nextLineIndex >= getFileSize(fileIndex)) {
-          inPostFlushing = (DateTimeUtils.secondsBetween(lineDate, previousDate) <= instrument.getPostFlushingTime());
-          finished = true;
-        } else {
-          DataFileLine nextLine = getLine(fileIndex, nextLineIndex);
-          LocalDateTime nextDate = nextLine.getDate();
-
-          if (!nextLine.getRunType().equals(runType)) {
+          int nextLineIndex = previousLineIndex + 1;
+          if (nextLineIndex >= getFileSize(fileIndex)) {
             inPostFlushing = (DateTimeUtils.secondsBetween(lineDate, previousDate) <= instrument.getPostFlushingTime());
             finished = true;
-          } else if (DateTimeUtils.secondsBetween(lineDate, nextDate) > instrument.getPostFlushingTime()) {
-            inPostFlushing = false;
-            finished = true;
           } else {
-            previousLineIndex = nextLineIndex;
-            previousDate = nextDate;
+            DataFileLine nextLine = getLine(fileIndex, nextLineIndex);
+            LocalDateTime nextDate = nextLine.getDate();
+
+            if (!nextLine.getRunType().equals(runType)) {
+              inPostFlushing = (DateTimeUtils.secondsBetween(lineDate, previousDate) <= instrument.getPostFlushingTime());
+              finished = true;
+            } else if (DateTimeUtils.secondsBetween(lineDate, nextDate) > instrument.getPostFlushingTime()) {
+              inPostFlushing = false;
+              finished = true;
+            } else {
+              previousLineIndex = nextLineIndex;
+              previousDate = nextDate;
+            }
           }
         }
+      } catch (DateTimeSpecificationException e) {
+        throw new DataFileException(dataFiles.get(fileIndex).getDatabaseId(), line.intValue(), e);
       }
     }
 
@@ -609,28 +625,33 @@ public abstract class DataSetRawData {
     boolean withinRunType = true;
 
     if (instrument.getPreFlushingTime() > 0) {
-      LocalDateTime lastTime = getLine(fileIndex, lineIndex).getDate();
+      try {
+        LocalDateTime lastTime = getLine(fileIndex, lineIndex).getDate();
 
-      lineIndex.increment();
-      if (lineIndex.greaterThanOrEqualTo(getFileSize(fileIndex))) {
-        lineIndex.setValue(EOF.getValue());
-      } else {
-        LocalDateTime currentTime = getLine(fileIndex, lineIndex).getDate();
-        while (DateTimeUtils.secondsBetween(lastTime, currentTime) < instrument.getPreFlushingTime()) {
-          lineIndex.increment();
-          if (lineIndex.greaterThanOrEqualTo(getFileSize(fileIndex))) {
-            lineIndex.setValue(EOF.getValue());
-            break;
-          } else {
-            DataFileLine newLine = getLine(fileIndex, lineIndex);
-            currentTime = newLine.getDate();
-            if (!newLine.getRunType().equals(runType)) {
-              withinRunType = false;
+        lineIndex.increment();
+        if (lineIndex.greaterThanOrEqualTo(getFileSize(fileIndex))) {
+          lineIndex.setValue(EOF.getValue());
+        } else {
+          LocalDateTime currentTime = getLine(fileIndex, lineIndex).getDate();
+          while (DateTimeUtils.secondsBetween(lastTime, currentTime) < instrument.getPreFlushingTime()) {
+            lineIndex.increment();
+            if (lineIndex.greaterThanOrEqualTo(getFileSize(fileIndex))) {
+              lineIndex.setValue(EOF.getValue());
               break;
+            } else {
+              DataFileLine newLine = getLine(fileIndex, lineIndex);
+              currentTime = newLine.getDate();
+              if (!newLine.getRunType().equals(runType)) {
+                withinRunType = false;
+                break;
+              }
             }
           }
         }
+      } catch (DateTimeSpecificationException e) {
+        throw new DataFileException(dataFiles.get(fileIndex).getDatabaseId(), lineIndex.intValue(), e);
       }
+
     }
 
     return withinRunType;
@@ -674,6 +695,10 @@ public abstract class DataSetRawData {
 
     DataSetRawDataRecord record;
 
+    // TODO This fileId will be set each time a value is read, so any exceptions
+    // will contain the correct file ID. This will be written properly for v2.0.0
+    long fileId = -1;
+
     try {
       record = new DataSetRawDataRecord(dataSet, getSelectedTime(), getSelectedLongitude(), getSelectedLatitude(), getSelectedRunType(), getSelectedRunTypeCategory());
 
@@ -691,6 +716,7 @@ public abstract class DataSetRawData {
           int fallbackSensorCount = 0;
 
           for (SensorAssignment assignment : assignments) {
+            fileId = getFileId(assignment);
             Double sensorValue = getSensorValue(assignment);
             if (null != sensorValue) {
               if (assignment.isPrimary()) {
@@ -719,8 +745,10 @@ public abstract class DataSetRawData {
         }
 
       }
+    } catch (DataFileException e) {
+      throw e;
     } catch (Exception e) {
-      throw new DataFileException(e);
+      throw new DataFileException(fileId, DataFileException.NO_LINE_NUMBER, e);
     }
 
     return record;
@@ -731,7 +759,7 @@ public abstract class DataSetRawData {
    * @return The date/time
    * @throws DataFileException If the date/time cannot be extracted
    */
-  protected abstract LocalDateTime getSelectedTime() throws DataFileException;
+  protected abstract LocalDateTime getSelectedTime() throws DataFileException, DateTimeSpecificationException;
 
   /**
    * Get the longitude for the currently selected line(s)
@@ -838,6 +866,16 @@ public abstract class DataSetRawData {
     }
 
     return calculateValue(rowValues);
+  }
+
+  /**
+   * Get the data file ID for a given sensor assignment
+   * @param assignment The sensor assignment
+   * @return The data file ID
+   */
+  private long getFileId(SensorAssignment assignment) {
+    int fileIndex = getFileDefinition(assignment.getDataFile());
+    return dataFiles.get(fileIndex).getDatabaseId();
   }
 
   /**

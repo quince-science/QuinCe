@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinitionException;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 
@@ -55,7 +56,7 @@ public class DataFileLine {
    * @return The date
    * @throws DataFileException If the date cannot be extracted
    */
-  public LocalDateTime getDate() throws DataFileException {
+  public LocalDateTime getDate() throws DataFileException, DateTimeSpecificationException {
     return file.getDate(line);
   }
 
