@@ -231,71 +231,86 @@ public abstract class DataSetRawData {
    */
   public DataSetRawDataRecord getNextRecord() throws DataSetException, DataFileException {
 
-    boolean found = false;
+    DataSetRawDataRecord record = null;
 
-    // If there is a previous selection, find the file with
-    // the smallest increment to the next row, and start searching from there. This
-    // ensures we maximise the number of records from the file.
-    //
-    // Only records from files with Run Types (i.e. those containing the base fundamental measurements)
-    // are checked, otherwise the same fundamental measurement will be used multiple times.
-    boolean begin = true;
-    int currentFile = 0;
+    // If a record is found but errors, then we search for another one.
+    // If a record is not found at all, it doesn't matter.
+    boolean finishedSearch = false;
 
-    try {
-      long smallestIncrement = Long.MAX_VALUE;
-      int smallestIncrementFile = 0;
-      for (int i = 0; i < fileDefinitions.size(); i++) {
-        if (fileDefinitions.get(i).hasRunTypes()) {
-          int currentRow = linePositions.get(i);
+    while (!finishedSearch) {
+      finishedSearch = true;
+      boolean found = false;
 
-          if (currentRow != NOT_STARTED_VALUE && currentRow + 1 < getFileSize(i)) {
-            DataFileLine currentLine = getLine(i, currentRow);
-            DataFileLine nextLine = getLine(i, currentRow + 1);
+      // If there is a previous selection, find the file with
+      // the smallest increment to the next row, and start searching from there. This
+      // ensures we maximise the number of records from the file.
+      //
+      // Only records from files with Run Types (i.e. those containing the base fundamental measurements)
+      // are checked, otherwise the same fundamental measurement will be used multiple times.
+      boolean begin = true;
+      int currentFile = 0;
 
-            long increment = ChronoUnit.SECONDS.between(currentLine.getDate(), nextLine.getDate());
-            if (increment < smallestIncrement) {
-              smallestIncrement = increment;
-              smallestIncrementFile = i;
+      try {
+        long smallestIncrement = Long.MAX_VALUE;
+        int smallestIncrementFile = 0;
+        for (int i = 0; i < fileDefinitions.size(); i++) {
+          if (fileDefinitions.get(i).hasRunTypes()) {
+            int currentRow = linePositions.get(i);
+
+            if (currentRow != NOT_STARTED_VALUE && currentRow + 1 < getFileSize(i)) {
+              DataFileLine currentLine = getLine(i, currentRow);
+              DataFileLine nextLine = getLine(i, currentRow + 1);
+
+              long increment = ChronoUnit.SECONDS.between(currentLine.getDate(), nextLine.getDate());
+              if (increment < smallestIncrement) {
+                smallestIncrement = increment;
+                smallestIncrementFile = i;
+              }
             }
           }
         }
+
+        currentFile = smallestIncrementFile;
+      } catch (Exception e) {
+        throw new DataSetException(e);
       }
 
-      currentFile = smallestIncrementFile;
-    } catch (Exception e) {
-      throw new DataSetException(e);
-    }
+      while (begin || !allRowsMatch()) {
 
-    while (begin || !allRowsMatch()) {
+        if (!selectNextRow(currentFile)) {
+          // We've gone off the end of this file, so we can't select a record
+          // across all files
+          break;
+        } else {
+          // If the rows aren't equal, then reset and continue from here
+          if (!selectedRowsMatch(currentFile)) {
+            resetOtherFiles(currentFile);
+          }
 
-      if (!selectNextRow(currentFile)) {
-        // We've gone off the end of this file, so we can't select a record
-        // across all files
-        break;
-      } else {
-        // If the rows aren't equal, then reset and continue from here
-        if (!selectedRowsMatch(currentFile)) {
-          resetOtherFiles(currentFile);
+          // Select the next file
+          currentFile++;
+          if (currentFile == fileDefinitions.size()) {
+            currentFile = 0;
+          }
         }
 
-        // Select the next file
-        currentFile++;
-        if (currentFile == fileDefinitions.size()) {
-          currentFile = 0;
-        }
+        begin = false;
       }
 
-      begin = false;
-    }
+      if (allRowsMatch()) {
+        found = true;
+      }
 
-    if (allRowsMatch()) {
-      found = true;
-    }
+      if (found) {
+        try {
+          record = createRecord();
+        } catch (DataFileException e) {
 
-    DataSetRawDataRecord record = null;
-    if (found) {
-      record = createRecord();
+          // Creating that record failed. Log the message and try another one.
+          System.out.println(e.getMessage());
+          finishedSearch = false;
+        }
+      }
     }
 
     return record;
@@ -709,7 +724,6 @@ public abstract class DataSetRawData {
        longitude = getSelectedLongitude();
        latitude = getSelectedLatitude();
       }
-
 
       record = new DataSetRawDataRecord(dataSet, getSelectedTime(), longitude, latitude, getSelectedRunType(), runTypeCategory);
 

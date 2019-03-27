@@ -104,9 +104,16 @@ public class ExtractDataSetJob extends Job {
       LocalDateTime realEndTime = null;
 
       DataSetRawDataRecord record = rawData.getNextRecord();
-      realStartTime = record.getDate();
       while (null != record) {
-        realEndTime = record.getDate();
+
+        if (null != realStartTime && null != record.getDate()) {
+          realStartTime = record.getDate();
+        }
+
+        if (null != record.getDate()) {
+          realEndTime = record.getDate();
+        }
+
         if (record.isMeasurement()) {
           DataSetDataDB.storeRecord(conn, record);
         } else if (record.isCalibration()) {
@@ -118,8 +125,13 @@ public class ExtractDataSetJob extends Job {
       }
 
       // Adjust the Dataset limits to the actual extracted data
-      dataSet.setStart(realStartTime);
-      dataSet.setEnd(realEndTime);
+      if (null != realStartTime) {
+        dataSet.setStart(realStartTime);
+      }
+
+      if (null != realEndTime) {
+        dataSet.setEnd(realEndTime);
+      }
 
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
       DataSetDB.updateDataSet(conn, dataSet);
