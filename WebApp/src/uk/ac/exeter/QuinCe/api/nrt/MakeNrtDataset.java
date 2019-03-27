@@ -119,7 +119,9 @@ public class MakeNrtDataset {
     }
 
     if (createDataset) {
-      LocalDateTime nrtStartDate = null;
+      // Default to 1st Jan 1900. The real dataset date will be adjusted
+      // when the records are extracted
+      LocalDateTime nrtStartDate = LocalDateTime.of(1900, 1, 1, 0, 0, 0);
       if (null != lastDataset) {
         nrtStartDate = lastDataset.getEnd().plusSeconds(1);
       }

@@ -106,7 +106,7 @@ public class ExtractDataSetJob extends Job {
       DataSetRawDataRecord record = rawData.getNextRecord();
       while (null != record) {
 
-        if (null != realStartTime && null != record.getDate()) {
+        if (null == realStartTime && null != record.getDate()) {
           realStartTime = record.getDate();
         }
 
