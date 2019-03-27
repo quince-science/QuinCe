@@ -700,7 +700,18 @@ public abstract class DataSetRawData {
     long fileId = -1;
 
     try {
-      record = new DataSetRawDataRecord(dataSet, getSelectedTime(), getSelectedLongitude(), getSelectedLatitude(), getSelectedRunType(), getSelectedRunTypeCategory());
+      RunTypeCategory runTypeCategory = getSelectedRunTypeCategory();
+
+      // Only get the position for measurements
+      Double longitude = null;
+      Double latitude = null;
+      if (runTypeCategory.isMeasurementType()) {
+       longitude = getSelectedLongitude();
+       latitude = getSelectedLatitude();
+      }
+
+
+      record = new DataSetRawDataRecord(dataSet, getSelectedTime(), longitude, latitude, getSelectedRunType(), runTypeCategory);
 
       for (Map.Entry<SensorType, Set<SensorAssignment>> entry : instrument.getSensorAssignments().entrySet()) {
 

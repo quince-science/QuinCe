@@ -42,12 +42,12 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
   /**
    * The longitude
    */
-  private double longitude;
+  private Double longitude;
 
   /**
    * The latitude
    */
-  private double latitude;
+  private Double latitude;
 
   /**
    * The Run Type of the record
@@ -78,7 +78,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
    * @param runType The Run Type
    * @param runTypeCategory The Run Type Category
    */
-  public DataSetRawDataRecord(DataSet dataSet, LocalDateTime date, double longitude, double latitude, String runType, RunTypeCategory runTypeCategory) {
+  public DataSetRawDataRecord(DataSet dataSet, LocalDateTime date, Double longitude, Double latitude, String runType, RunTypeCategory runTypeCategory) {
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
     this.dataSet = dataSet;
     this.date = date;
@@ -101,7 +101,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
    * @param runType The Run Type
    * @param runTypeCategory The Run Type Category
    */
-  public DataSetRawDataRecord(DataSet dataSet, long id, LocalDateTime date, double longitude, double latitude, String runType, RunTypeCategory runTypeCategory) {
+  public DataSetRawDataRecord(DataSet dataSet, long id, LocalDateTime date, Double longitude, Double latitude, String runType, RunTypeCategory runTypeCategory) {
     this.id = id;
     this.dataSet = dataSet;
     this.date = date;
@@ -179,7 +179,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
    * Get the longitude
    * @return The longitude
    */
-  public double getLongitude() {
+  public Double getLongitude() {
     return longitude;
   }
 
@@ -187,7 +187,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
    * Get the latitude
    * @return The latitude
    */
-  public double getLatitude() {
+  public Double getLatitude() {
     return latitude;
   }
 
