@@ -10,6 +10,7 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Files.DataFileLine;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -172,7 +173,7 @@ public class NoAverageDataSetRawData extends DataSetRawData {
   }
 
   @Override
-  protected LocalDateTime getSelectedTime() throws DataFileException {
+  protected LocalDateTime getSelectedTime() throws DataFileException, DateTimeSpecificationException {
     return getLine(getCoreFileIndex(), selectedRows.get(getCoreFileIndex()).get(0)).getDate();
   }
 

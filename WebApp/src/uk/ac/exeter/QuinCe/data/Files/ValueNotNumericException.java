@@ -5,7 +5,7 @@ package uk.ac.exeter.QuinCe.data.Files;
  * @author Steve Jones
  *
  */
-public class ValueNotNumericException extends DataFileException {
+public class ValueNotNumericException extends Exception {
 
   /**
    * The serial version UID

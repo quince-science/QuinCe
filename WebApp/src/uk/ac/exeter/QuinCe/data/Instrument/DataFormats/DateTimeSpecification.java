@@ -679,12 +679,12 @@ public class DateTimeSpecification {
    * @return The date/time
    * @throws DataFileException If the date/time in the line is missing or invalid
    */
-  public LocalDateTime getDateTime(LocalDateTime headerDate, List<String> line) throws DataFileException {
+  public LocalDateTime getDateTime(LocalDateTime headerDate, List<String> line) throws DateTimeSpecificationException {
     LocalDateTime result = null;
 
     if (isAssigned(HOURS_FROM_START)) {
       if (null == headerDate) {
-        throw new DataFileException("File header date is null");
+        throw new DateTimeSpecificationException("File header date is null");
       }
       result = getHoursFromStartDate(headerDate, line);
     } else if (isAssigned(DATE_TIME)) {
@@ -724,7 +724,7 @@ public class DateTimeSpecification {
    * @return The date
    * @throws DataFileException If the hours column is empty
    */
-  private LocalDateTime getHoursFromStartDate(LocalDateTime headerDate, List<String> line) throws DataFileException {
+  private LocalDateTime getHoursFromStartDate(LocalDateTime headerDate, List<String> line) throws DateTimeSpecificationException {
 
     DateTimeColumnAssignment assignment = getAssignment(HOURS_FROM_START);
     Double hours;
@@ -732,11 +732,11 @@ public class DateTimeSpecification {
     try {
       hours = DataFile.extractDoubleFieldValue(line.get(assignment.getColumn()), null);
     } catch (ValueNotNumericException e) {
-      throw new DataFileException("Hours column is not numeric");
+      throw new DateTimeSpecificationException("Hours column is not numeric");
     }
 
     if (null == hours) {
-      throw new DataFileException("Hours column is empty");
+      throw new DateTimeSpecificationException("Hours column is empty");
     }
 
     long wholeHours = hours.longValue();
@@ -748,7 +748,7 @@ public class DateTimeSpecification {
     try {
       result = headerDate.plusSeconds(lineSeconds);
     } catch (DateTimeException e) {
-      throw new DataFileException("Invalid hours value: " + e.getMessage());
+      throw new DateTimeSpecificationException("Invalid hours value: " + e.getMessage());
     }
 
     return result;
@@ -760,19 +760,19 @@ public class DateTimeSpecification {
    * @return The date/time
    * @throws DataFileException If the date/time field is empty or cannot be parsed
    */
-  private LocalDateTime getDateTime(List<String> line) throws DataFileException {
+  private LocalDateTime getDateTime(List<String> line) throws DateTimeSpecificationException {
     LocalDateTime result;
 
     DateTimeColumnAssignment assignment = getAssignment(DATE_TIME);
     String fieldValue = DataFile.extractStringFieldValue(line.get(assignment.getColumn()), null);
 
     if (null == fieldValue) {
-      throw new DataFileException("Date/time column is empty");
+      throw new DateTimeSpecificationException("Date/time column is empty");
     } else {
       try {
         result = LocalDateTime.parse(fieldValue, assignment.getFormatter());
       } catch (DateTimeParseException e) {
-        throw new DataFileException("Invalid date/time value '" + fieldValue + "'");
+        throw new DateTimeSpecificationException("Invalid date/time value '" + fieldValue + "'");
       }
     }
 
@@ -785,7 +785,7 @@ public class DateTimeSpecification {
    * @return The date/time
    * @throws DataFileException If any required fields are empty
    */
-  private LocalDateTime getYearJDayTime(List<String> line) throws DataFileException {
+  private LocalDateTime getYearJDayTime(List<String> line) throws DateTimeSpecificationException {
     int yearField = getAssignment(YEAR).getColumn();
     int jdayTimeField = getAssignment(JDAY_TIME).getColumn();
 
@@ -794,16 +794,21 @@ public class DateTimeSpecification {
     try {
       year = DataFile.extractIntFieldValue(line.get(yearField), null);
     } catch (ValueNotNumericException e) {
-      throw new DataFileException("Year column is not numeric");
+      throw new DateTimeSpecificationException("Year column is not numeric");
     }
 
     if (null == year) {
-      throw new DataFileException("Year column is empty");
+      throw new DateTimeSpecificationException("Year column is empty");
     }
 
-    Double jdayTime = DataFile.extractDoubleFieldValue(line.get(jdayTimeField), null);
-    if (null == jdayTime) {
-      throw new DataFileException("Julian date/time column is empty");
+    Double jdayTime = null;
+    try {
+      jdayTime = DataFile.extractDoubleFieldValue(line.get(jdayTimeField), null);
+      if (null == jdayTime) {
+        throw new DateTimeSpecificationException("Julian date/time column is empty");
+      }
+    } catch (ValueNotNumericException e) {
+      throw new DateTimeSpecificationException("Julian date/time value is not numeric");
     }
 
     LocalDateTime result;
@@ -816,7 +821,7 @@ public class DateTimeSpecification {
       double secondsFraction = jdayTime - days;
       result = result.plusSeconds((int) (secondsFraction * 86400));
     } catch (DateTimeException e) {
-      throw new DataFileException("Invalid date/time value: " + e.getMessage());
+      throw new DateTimeSpecificationException("Invalid date/time value: " + e.getMessage());
     }
 
     return result;
@@ -828,19 +833,19 @@ public class DateTimeSpecification {
    * @return The date
    * @throws DataFileException If the date field is empty or invalid
    */
-  private LocalDate getDate(List<String> line) throws DataFileException {
+  private LocalDate getDate(List<String> line) throws DateTimeSpecificationException {
     LocalDate result;
 
     DateTimeColumnAssignment assignment = getAssignment(DATE);
     String fieldValue = DataFile.extractStringFieldValue(line.get(assignment.getColumn()), null);
 
     if (null == fieldValue) {
-      throw new DataFileException("Date column is empty");
+      throw new DateTimeSpecificationException("Date column is empty");
     } else {
       try {
         result = LocalDate.parse(fieldValue, assignment.getFormatter());
       } catch (DateTimeParseException e) {
-        throw new DataFileException("Invalid date value '" + fieldValue + "': " + e.getMessage());
+        throw new DateTimeSpecificationException("Invalid date value '" + fieldValue + "': " + e.getMessage());
       }
     }
 
@@ -853,7 +858,7 @@ public class DateTimeSpecification {
    * @return The date
    * @throws DataFileException If any date fields are empty or invalid
    */
-  private LocalDate getYearJDay(List<String> line) throws DataFileException {
+  private LocalDate getYearJDay(List<String> line) throws DateTimeSpecificationException {
     int yearField = getAssignment(YEAR).getColumn();
     int jdayField = getAssignment(JDAY).getColumn();
 
@@ -864,22 +869,22 @@ public class DateTimeSpecification {
       year = DataFile.extractIntFieldValue(line.get(yearField), null);
       jday = DataFile.extractIntFieldValue(line.get(jdayField), null);
     } catch (ValueNotNumericException e) {
-      throw new DataFileException("One or more date values is not numeric");
+      throw new DateTimeSpecificationException("One or more date values is not numeric");
     }
 
     if (null == year) {
-      throw new DataFileException("Year column is empty");
+      throw new DateTimeSpecificationException("Year column is empty");
     }
 
     if (null == jday) {
-      throw new DataFileException("Julian day column is empty");
+      throw new DateTimeSpecificationException("Julian day column is empty");
     }
 
     LocalDate result;
     try {
       result = LocalDate.ofYearDay(year, jday);
     } catch (DateTimeException e) {
-      throw new DataFileException("Invalid date/time: " + e.getMessage());
+      throw new DateTimeSpecificationException("Invalid date/time: " + e.getMessage());
     }
 
     return result;
@@ -891,7 +896,7 @@ public class DateTimeSpecification {
    * @return The date
    * @throws DataFileException If the date fields are empty or invalid
    */
-  private LocalDate getYMDDate(List<String> line) throws DataFileException {
+  private LocalDate getYMDDate(List<String> line) throws DateTimeSpecificationException {
     int yearField = getAssignment(YEAR).getColumn();
     int monthField = getAssignment(MONTH).getColumn();
     int dayField = getAssignment(DAY).getColumn();
@@ -905,11 +910,11 @@ public class DateTimeSpecification {
       month = DataFile.extractIntFieldValue(line.get(monthField), null);
       day = DataFile.extractIntFieldValue(line.get(dayField), null);
     } catch (ValueNotNumericException e) {
-      throw new DataFileException("One or more date values is not numeric");
+      throw new DateTimeSpecificationException("One or more date values is not numeric");
     }
 
     if (null == year) {
-      throw new DataFileException("Year column is empty");
+      throw new DateTimeSpecificationException("Year column is empty");
     } else if (year < 100) {
       // If date is two digits, add 2000 to it. so 15 -> 2015
       // This matches the Java specification of two-digit years
@@ -919,18 +924,18 @@ public class DateTimeSpecification {
     }
 
     if (null == month) {
-      throw new DataFileException("Month column is empty");
+      throw new DateTimeSpecificationException("Month column is empty");
     }
 
     if (null == day) {
-      throw new DataFileException("Day column is empty");
+      throw new DateTimeSpecificationException("Day column is empty");
     }
 
     LocalDate result;
     try {
       result = LocalDate.of(year, month, day);
     } catch (DateTimeException e) {
-      throw new DataFileException("Invalid date value: " + e.getMessage());
+      throw new DateTimeSpecificationException("Invalid date value: " + e.getMessage());
     }
 
     return result;
@@ -942,19 +947,19 @@ public class DateTimeSpecification {
    * @return The time
    * @throws DataFileException If the time field is empty or invalid
    */
-  private LocalTime getTime(List<String> line) throws DataFileException {
+  private LocalTime getTime(List<String> line) throws DateTimeSpecificationException {
     LocalTime result;
 
     DateTimeColumnAssignment assignment = getAssignment(TIME);
     String fieldValue = DataFile.extractStringFieldValue(line.get(assignment.getColumn()), null);
 
     if (null == fieldValue) {
-      throw new DataFileException("Time column is empty");
+      throw new DateTimeSpecificationException("Time column is empty");
     } else {
       try {
         result = LocalTime.parse(fieldValue, assignment.getFormatter());
       } catch (DateTimeParseException e) {
-        throw new DataFileException("Invalid time value '" + fieldValue + "'");
+        throw new DateTimeSpecificationException("Invalid time value '" + fieldValue + "'");
       }
     }
 
@@ -967,7 +972,7 @@ public class DateTimeSpecification {
    * @return The time
    * @throws DataFileException If any fields are empty or invalid
    */
-  private LocalTime getHMSTime(List<String> line) throws DataFileException {
+  private LocalTime getHMSTime(List<String> line) throws DateTimeSpecificationException {
     int hourField = getAssignment(HOUR).getColumn();
     int minuteField = getAssignment(MINUTE).getColumn();
     int secondField = getAssignment(SECOND).getColumn();
@@ -981,26 +986,26 @@ public class DateTimeSpecification {
       minute = DataFile.extractIntFieldValue(line.get(minuteField), null);
       second = DataFile.extractIntFieldValue(line.get(secondField), null);
     } catch (ValueNotNumericException e) {
-      throw new DataFileException("One or more time values are not numeric");
+      throw new DateTimeSpecificationException("One or more time values are not numeric");
     }
 
     if (null == hour) {
-      throw new DataFileException("Hour column is empty");
+      throw new DateTimeSpecificationException("Hour column is empty");
     }
 
     if (null == minute) {
-      throw new DataFileException("Minute column is empty");
+      throw new DateTimeSpecificationException("Minute column is empty");
     }
 
     if (null == second) {
-      throw new DataFileException("Second column is empty");
+      throw new DateTimeSpecificationException("Second column is empty");
     }
 
     LocalTime result;
     try {
       result = LocalTime.of(hour, minute, second);
     } catch (DateTimeException e) {
-      throw new DataFileException("Invalid time value: " + e.getMessage());
+      throw new DateTimeSpecificationException("Invalid time value: " + e.getMessage());
     }
 
     return result;
