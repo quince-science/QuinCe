@@ -71,11 +71,11 @@ public class LatitudeSpecification extends PositionSpecification {
       }
       }
     } catch (NumberFormatException e) {
-      throw new PositionException("Invalid latitude value " + line.get(getValueColumn()));
+      throw new PositionException("Invalid latitude value '" + line.get(getValueColumn()) + "'");
     }
 
     if (value < -90 || value > 90) {
-      throw new PositionException("Invalid latitude value " + value);
+      throw new PositionException("Invalid latitude value '" + value + "'");
     }
 
     return value;
@@ -106,7 +106,7 @@ public class LatitudeSpecification extends PositionSpecification {
       break;
     }
     default: {
-      throw new PositionException("Invalid hemisphere value " + hemisphere);
+      throw new PositionException("Invalid hemisphere value '" + hemisphere + "'");
     }
     }
 
