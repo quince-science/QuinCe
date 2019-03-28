@@ -8,6 +8,7 @@ location='nrt.sqlite'
 
 [FTP]
 server='%nrt_ftp_server%'
+user='%nrt_ftp_user%'
 private_key_file='%nrt_ftp_keyfile%'
 private_key_pass='%nrt_ftp_keyfile_pass%'
 dir='%nrt_ftp_folder%'
