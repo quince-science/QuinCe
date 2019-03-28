@@ -9,7 +9,8 @@ FILE_EXISTS = 2
 # Get a connection to the FTP server
 def connect_ftp(ftp_config):
   return pysftp.Connection(host=ftp_config["server"],
-      username=ftp_config["user"], password=ftp_config["password"])
+      private_key=ftp_config["private_key_file"],
+      private_key_pass=ftp_config["private_key_pass"])
 
 # Generate the FTP folder name for an instrument
 def get_instrument_folder(ftp_config, instrument_id):
