@@ -52,10 +52,6 @@ public class SensorsConfiguration {
     + "FROM variables v INNER JOIN variable_sensors s ON v.id = s.variable_id "
     + "ORDER BY v.id";
 
-  private static final String GET_VARIABLES_SENSOR_TYPES_QUERY = "SELECT DISTINCT "
-    + "sensor_type FROM variable_sensors "
-    + "WHERE variable_id IN " + DatabaseUtils.IN_PARAMS_TOKEN;
-
   /**
    * The set complete set of sensor types
    */
@@ -250,68 +246,6 @@ public class SensorsConfiguration {
   }
 
   /**
-   * Get an empty map of sensor types ready to have columns assigned
-   * @return An empty sensor types/assignments map
-   * @throws MissingParamException
-   * @throws DatabaseException
-   * @throws SensorConfigurationException
-   */
-  public SensorAssignments getNewSensorAssigments(DataSource dataSource, long instrumentId)
-    throws MissingParamException, DatabaseException {
-
-    MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
-
-    Connection conn = null;
-
-    try {
-      conn = dataSource.getConnection();
-      return getNewSensorAssigments(conn, instrumentId);
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while building sensor assignments list", e);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
-    }
-
-  }
-
-    /**
-     * Get an empty map of sensor types ready to have columns assigned
-     * @return An empty sensor types/assignments map
-     * @throws MissingParamException
-     * @throws DatabaseException
-     * @throws SensorConfigurationException
-     */
-    public SensorAssignments getNewSensorAssigments(Connection conn, long instrumentId)
-      throws MissingParamException, DatabaseException {
-    HashMap<SensorType, Boolean> requiredTypes = new HashMap<SensorType, Boolean>();
-
-    MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
-
-    try {
-      // All non-core sensors are not required
-      // (base state - some will be made required later)
-      for (SensorType type : getNonCoreSensors(conn)) {
-        requiredTypes.put(type, false);
-      }
-
-      // Get all required sensors for the instrument's variables
-      for (SensorType type : getRequiredSensors(conn, instrumentId)) {
-        requiredTypes.put(type, true);
-        for (SensorType child : getChildren(type)) {
-          requiredTypes.put(child, true);
-        }
-      }
-
-      return new SensorAssignments(requiredTypes);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
-    }
-
-  }
-
-  /**
    * Get all the child types of a given sensor type.
    * If there are no children, the list will be empty
    * @param parent The parent sensor type
@@ -484,14 +418,10 @@ public class SensorsConfiguration {
   }
 
   /**
-==== BASE ====
-   * Get a list of all the required sensor types for a given instrument,
-   * based on the variables that it measures
-   * @param conn A database connection
-   * @param instrumentId The instrument's database ID
-   * @return The required sensor types
-   * @throws DatabaseException
-==== BASE ====
+   * Get the {@link SensorType} object with the given name
+   * @param sensorId The sensor type's name
+   * @return The SensorType object
+   * @throws SensorTypeNotFoundException If the sensor type does not exist
    */
   public SensorType getSensorType(String typeName) throws SensorTypeNotFoundException {
     SensorType result = null;
@@ -544,18 +474,29 @@ public class SensorsConfiguration {
    * @return The SensorTypes required by the variables
    * @throws SensorConfigurationException If any variable IDs do not exist
    */
-==== BASE ====
-  private List<SensorType> getRequiredSensors(Connection conn, List<Long> variableIds) throws DatabaseException {
+  public Set<SensorType> getSensorTypes(List<Long> variableIds,
+    boolean replaceParentsWithChildren) throws SensorConfigurationException {
 
-    List<SensorType> result = new ArrayList<SensorType>();
-    PreparedStatement stmt = null;
-    ResultSet records = null;
+    Set<SensorType> sensorTypes = new HashSet<SensorType>();
 
-    try {
-      stmt = conn.prepareStatement(DatabaseUtils.makeInStatementSql(GET_VARIABLES_SENSOR_TYPES_QUERY, variableIds.size()));
-      for (int i = 0; i < variableIds.size(); i++) {
-        stmt.setLong(i + 1, variableIds.get(i));
+    for (long varId : variableIds) {
+      InstrumentVariable variable = instrumentVariables.get(varId);
+      if (null == variable) {
+        throw new SensorConfigurationException("Unknown variable ID " + varId);
+      } else {
+        if (!replaceParentsWithChildren) {
+          sensorTypes.addAll(variable.getAllSensorTypes());
+        } else {
+          for (SensorType tempType : variable.getAllSensorTypes()) {
+            if (!isParent(tempType)) {
+              sensorTypes.add(tempType);
+            } else {
+              sensorTypes.addAll(getChildren(tempType));
+            }
+          }
+        }
       }
+    }
 
     return sensorTypes;
   }
@@ -576,10 +517,15 @@ public class SensorsConfiguration {
    */
   private void checkParentsAndChildren() throws SensorConfigurationException {
 
-    // TODO This is very inefficient and will result in many database queries
-    //      during data extraction. It should be fixed when the migration is complete though
-    boolean required = false;
-==== BASE ====
+    for (SensorType sensorType : getSensorTypes()) {
+      // Parents must have more than one child
+      if (isParent(sensorType)) {
+        List<SensorType> children = getChildren(sensorType);
+        if (children.size() <= 1) {
+          throw new SensorConfigurationException(
+            "SensorType " + sensorType.getId() + " must have more than one child"
+          );
+        }
 
         if (hasParent(sensorType)) {
           throw new SensorConfigurationException(
@@ -593,7 +539,6 @@ public class SensorsConfiguration {
           );
         }
       }
-      variables.add(variable);
     }
   }
 
@@ -610,6 +555,25 @@ public class SensorsConfiguration {
     }
     return result;
   }
-==== BASE ====
-==== BASE ====
+
+  /**
+   * Get a list of InstrumentVaraiables using their IDs
+   * @param variableId The variable IDs
+   * @return The InstrumentVariable objects
+   * @throws VariableNotFoundException If any IDs aren't found
+   */
+  public List<InstrumentVariable> getInstrumentVariables(List<Long> variableIds) throws VariableNotFoundException {
+
+    List<InstrumentVariable> variables = new ArrayList<InstrumentVariable>(variableIds.size());
+    for (long id : variableIds) {
+      InstrumentVariable variable = instrumentVariables.get(id);
+      if (null == variable) {
+        throw new VariableNotFoundException(id);
+      }
+      variables.add(variable);
+    }
+
+    return variables;
+
+  }
 }
