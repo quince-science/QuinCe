@@ -322,7 +322,7 @@ public class DataFilesBean extends FileUploadBean {
     List<DataFile> result;
 
     if (null != getCurrentInstrument()) {
-      result = DataFileDB.getUserFiles(getDataSource(), getAppConfig(), getUser(), getCurrentInstrument().getDatabaseId());
+      result = DataFileDB.getFiles(getDataSource(), getAppConfig(), getCurrentInstrument().getDatabaseId());
     } else {
       result = new ArrayList<DataFile>();
     }
