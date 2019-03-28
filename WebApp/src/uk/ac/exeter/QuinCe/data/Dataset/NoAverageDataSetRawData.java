@@ -10,6 +10,8 @@ import javax.sql.DataSource;
 import uk.ac.exeter.QuinCe.data.Files.DataFileException;
 import uk.ac.exeter.QuinCe.data.Files.DataFileLine;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.DateTimeSpecificationException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;

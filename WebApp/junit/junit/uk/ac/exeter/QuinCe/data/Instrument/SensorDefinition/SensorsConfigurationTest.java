@@ -196,7 +196,6 @@ public class SensorsConfigurationTest extends BaseTest {
 
     // Get the list from the configuration
     List<SensorType> types = getConfig().getSensorTypes();
-==== BASE ====
 
     // Extract the non-diagnostic names in list order
     List<String> names = new ArrayList<String>(types.size());
@@ -376,13 +375,49 @@ public class SensorsConfigurationTest extends BaseTest {
     assertEquals(2, config.getSiblings(child).size());
   }
 
-==== BASE ====
-==== BASE ====
+  /**
+   * Check that a parent SensorType is correctly identified
+   * @throws Exception
+   */
   @FlywayTest
   @Test
-==== BASE ====
-  public void getSensorTypeTest() throws SensorConfigurationException {
-==== BASE ====
+  public void isParentForParentTest() throws Exception {
+    SensorsConfiguration config = getConfig();
+    SensorType equilibratorPressure = config.getSensorType("Equilibrator Pressure");
+    assertTrue(config.isParent(equilibratorPressure));
+  }
+
+  /**
+   * Check that a non-parent SensorType is correctly identified
+   * @throws Exception
+   */
+  @FlywayTest
+  @Test
+  public void isParentForNonParentTest() throws Exception {
+    SensorsConfiguration config = getConfig();
+    SensorType equilibratorPressure = config.getSensorType("Salinity");
+    assertFalse(config.isParent(equilibratorPressure));
+  }
+
+  /**
+   * Check that a non-parent SensorType is correctly identified
+   * @throws Exception
+   */
+  @FlywayTest
+  @Test
+  public void isParentForChildTest() throws Exception {
+    SensorsConfiguration config = getConfig();
+    SensorType equilibratorPressure = config.getSensorType("Equilibrator Pressure (absolute)");
+    assertFalse(config.isParent(equilibratorPressure));
+  }
+
+  /**
+   * Get a SensorType by its ID
+   * @throws Exception
+   */
+  @FlywayTest
+  @Test
+  public void getSensorTypeByIdTest() throws Exception {
     try {
       getConfig().getSensorType(1L);
     } catch (SensorTypeNotFoundException e) {
