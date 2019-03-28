@@ -35,8 +35,8 @@
 %nrt_api_user%=api_user@bcdc.no
 %nrt_api_password%=iamanapiuser
 %nrt_ftp_server%=localhost
-%nrt_ftp_user%=api_user
-%nrt_ftp_password%=iamanapiuser
+%nrt_ftp_keyfile%=id_rsa
+%nrt_ftp_keyfile_pass%=
 %nrt_ftp_folder%=NRT
 
 ###########################
