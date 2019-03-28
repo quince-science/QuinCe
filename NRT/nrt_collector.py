@@ -1,13 +1,26 @@
-
 import logging
 import toml, json
 from zipfile import ZipFile
 from io import BytesIO
 import ntpath
+import re
 
 # Local modules
 import nrtdb, nrtftp
 import RetrieverFactory, PreprocessorFactory
+
+IGNORE_REGEXPS = [".*err.txt"]
+
+# See if a file should be ignored based on its filename
+def ignore_file(filename):
+  ignore_file = False
+
+  for expr in IGNORE_REGEXPS:
+    if re.match(expr, filename):
+      ignore_file = True
+      break
+
+  return ignore_file
 
 # Upload a file to the FTP server. If it's a ZIP file,
 # extract it and upload the contents as individual files
@@ -15,19 +28,21 @@ def upload_file(logger, ftpconn, ftp_config, instrument_id, preprocessor, filena
   upload_result = -1
 
   if not str.endswith(filename, ".zip"):
-    upload_result = nrtftp.upload_file(ftpconn, ftp_config,
+    if not ignore_file(filename):
+      upload_result = nrtftp.upload_file(ftpconn, ftp_config,
             instrument_id, filename, preprocessor.preprocess(BytesIO(contents)))
   else:
     with ZipFile(BytesIO(contents), 'r') as unzip:
       for name in unzip.namelist():
-        log_instrument(logger, instrument_id, logging.DEBUG, "Uploading "
-          + "ZIP entry " + name)
-        upload_result = nrtftp.upload_file(ftpconn, ftp_config,
-          instrument_id, ntpath.basename(name), preprocessor.preprocess(BytesIO(unzip.read(name))))
+        if not ignore_file(name):
+          log_instrument(logger, instrument_id, logging.DEBUG, "Uploading "
+            + "ZIP entry " + name)
+          upload_result = nrtftp.upload_file(ftpconn, ftp_config,
+            instrument_id, ntpath.basename(name), preprocessor.preprocess(BytesIO(unzip.read(name))))
 
-        # If any file fails to upload, stop
-        if upload_result != nrtftp.UPLOAD_OK:
-          break
+          # If any file fails to upload, stop
+          if upload_result != nrtftp.UPLOAD_OK:
+            break
 
   return upload_result
 
