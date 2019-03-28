@@ -457,7 +457,7 @@ public class DataFile {
     return getDate(fileDefinition.extractFields(contents.get(line)));
   }
 
-  public LocalDateTime getDate(List<String> line) throws DataFileException {
+  public LocalDateTime getDate(List<String> line) throws DataFileException, DateTimeSpecificationException {
     return fileDefinition.getDateTimeSpecification().getDateTime(headerDate, line);
   }
 
@@ -520,6 +520,10 @@ public class DataFile {
     return result;
   }
 
+  public double getLongitude(List<String> line) throws PositionException {
+    return fileDefinition.getLongitudeSpecification().getValue(line);
+  }
+
   /**
    * Get the latitude for a given line
    * @param line The line
@@ -543,6 +547,7 @@ public class DataFile {
   public double getLatitude(List<String> line) throws PositionException {
     return fileDefinition.getLatitudeSpecification().getValue(line);
   }
+
   /**
    * Get a {@link Double} value from a field.
    * <p>
