@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
@@ -110,16 +111,25 @@ public class ExtractDataSetJob extends Job {
           LocalDateTime time = file.getDate(line);
 
           // Position
+          // TODO Flag position errors as QC errors when we get to that
           if (null != fileDefinition.getLongitudeSpecification()) {
-            double longitude = file.getLongitude(line);
-            sensorValues.add(new SensorValue(dataSet.getId(),
-              FileDefinition.LONGITUDE_COLUMN_ID, time, String.valueOf(longitude)));
+            try {
+              double longitude = file.getLongitude(line);
+              sensorValues.add(new SensorValue(dataSet.getId(),
+                FileDefinition.LONGITUDE_COLUMN_ID, time, String.valueOf(longitude)));
+            } catch (PositionException e) {
+              System.out.println("File " + file.getDatabaseId() + ", Line " + currentLine + ": PositionException: " + e.getMessage());
+            }
           }
 
           if (null != fileDefinition.getLongitudeSpecification()) {
-            double latitude = file.getLatitude(line);
-            sensorValues.add(new SensorValue(dataSet.getId(),
-              FileDefinition.LATITUDE_COLUMN_ID, time, String.valueOf(latitude)));
+            try {
+              double latitude = file.getLatitude(line);
+              sensorValues.add(new SensorValue(dataSet.getId(),
+                FileDefinition.LATITUDE_COLUMN_ID, time, String.valueOf(latitude)));
+            } catch (PositionException e) {
+              System.out.println("File " + file.getDatabaseId() + ", Line " + currentLine + ": PositionException: " + e.getMessage());
+            }
           }
 
           // Assigned columns
