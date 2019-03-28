@@ -1018,12 +1018,7 @@ public class InstrumentDB {
           boolean dependsQuestionAnswer = columns.getBoolean(7);
           String missingValue = columns.getString(8);
 
-          if (sensorType == SensorType.RUN_TYPE_ID) {
-            file.setRunTypeColumn(fileColumn);
-            getFileRunTypes(conn, file, runTypeConfiguration);
-          } else {
-            assignments.addAssignment(sensorType, new SensorAssignment(assignmentId, file.getFileDescription(), fileColumn, valueColumn, sensorName, primarySensor, dependsQuestionAnswer, missingValue));
-          }
+          assignments.addAssignment(sensorType, new SensorAssignment(assignmentId, file.getFileDescription(), fileColumn, valueColumn, sensorName, primarySensor, dependsQuestionAnswer, missingValue));
         }
 
         if (columnsRead == 0) {
