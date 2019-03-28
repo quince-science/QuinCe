@@ -45,3 +45,14 @@ def upload_file(config, instrument_id, filename, contents):
   params = {"instrument" : instrument_id}
   response = requests.post(url, data=params, files=files, auth=(user, password))
   return response
+
+# Trigger creation of an NRT dataset
+def make_nrt_dataset(config, instrument_id):
+  quince_url = config["QuinCe"]["url"]
+  user = config["QuinCe"]["user"]
+  password = config["QuinCe"]["password"]
+
+  url = quince_url + "/api/nrt/MakeNrtDataset"
+  params = {"instrument" : instrument_id}
+  response = requests.post(url, data=params, auth=(user, password))
+  return response
