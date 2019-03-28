@@ -85,23 +85,23 @@ public class DataFileDB {
    * Query to find all the data files owned by a given user
    * @see #getUserFiles(DataSource, User)
    */
-  private static final String GET_USER_FILES_QUERY = "SELECT "
+  private static final String GET_FILES_QUERY = "SELECT "
     + "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, f.record_count, i.id "
     + "FROM data_file AS f "
     + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
     + "INNER JOIN instrument AS i ON d.instrument_id = i.id "
-    + "WHERE i.owner = ? ORDER BY f.start_date ASC";
+    + "ORDER BY f.start_date ASC";
 
   /**
    * Query to find all the data files owned by a given user
    * @see #getUserFiles(DataSource, User)
    */
-  private static final String GET_USER_FILES_BY_INSTRUMENT_QUERY = "SELECT "
+  private static final String GET_FILES_BY_INSTRUMENT_QUERY = "SELECT "
     + "f.id, f.file_definition_id, f.filename, f.start_date, f.end_date, f.record_count, i.id "
     + "FROM data_file AS f "
     + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
     + "INNER JOIN instrument AS i ON d.instrument_id = i.id "
-    + "WHERE i.owner = ? AND d.instrument_id = ? ORDER BY f.start_date ASC";
+    + "WHERE d.instrument_id = ? ORDER BY f.start_date ASC";
 
   /**
    * Query to find all the data files owned by a given user
@@ -515,7 +515,7 @@ public class DataFileDB {
    * @see #GET_USER_FILES_BY_INSTRUMENT_QUERY
    * @see #makeDataFile(ResultSet, String, Connection)
    */
-  public static List<DataFile> getUserFiles(DataSource dataSource, Properties appConfig, User user, Long instrumentId) throws DatabaseException {
+  public static List<DataFile> getFiles(DataSource dataSource, Properties appConfig, Long instrumentId) throws DatabaseException {
 
     Connection conn = null;
     PreparedStatement stmt = null;
@@ -526,15 +526,13 @@ public class DataFileDB {
       conn = dataSource.getConnection();
 
       if (null != instrumentId) {
-        stmt = conn.prepareStatement(GET_USER_FILES_BY_INSTRUMENT_QUERY);
+        stmt = conn.prepareStatement(GET_FILES_BY_INSTRUMENT_QUERY);
       } else {
-        stmt = conn.prepareStatement(GET_USER_FILES_QUERY);
+        stmt = conn.prepareStatement(GET_FILES_QUERY);
       }
 
-      stmt.setLong(1, user.getDatabaseID());
-
       if (null != instrumentId) {
-        stmt.setLong(2, instrumentId);
+        stmt.setLong(1, instrumentId);
       }
 
       records = stmt.executeQuery();

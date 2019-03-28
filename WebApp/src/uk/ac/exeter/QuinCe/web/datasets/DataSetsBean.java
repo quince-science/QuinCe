@@ -223,7 +223,7 @@ public class DataSetsBean extends BaseManagedBean {
       fileDefinitionsJson = fdJson.toString();
 
       // Now the actual files
-      List<DataFile> dataFiles = DataFileDB.getUserFiles(getDataSource(), getAppConfig(), getUser(), getCurrentInstrument().getDatabaseId());
+      List<DataFile> dataFiles = DataFileDB.getFiles(getDataSource(), getAppConfig(), getCurrentInstrument().getDatabaseId());
 
       StringBuilder entriesJson = new StringBuilder();
       entriesJson.append('[');
