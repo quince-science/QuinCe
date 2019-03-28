@@ -57,7 +57,7 @@ public class UploadFile {
         UploadedDataFile upload = new APIUploadedDataFile(fileDetail.getFileName(), is);
 
         // Extract and check the file
-        upload.extractFile(instrument, resourceManager.getConfig(), true);
+        upload.extractFile(instrument, resourceManager.getConfig(), true, true);
 
         // See if extraction was successful
         if (!upload.isStore()) {
