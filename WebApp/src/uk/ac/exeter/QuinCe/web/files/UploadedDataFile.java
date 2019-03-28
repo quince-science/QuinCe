@@ -277,103 +277,117 @@ public abstract class UploadedDataFile {
    * @param appConfig The application configuration
    * @param allowExactDuplicate Indicates whether exact duplicate files are accepted
    */
-  public void extractFile(Instrument instrument, Properties appConfig, boolean allowExactDuplicate) {
+  public void extractFile(Instrument instrument, Properties appConfig, boolean allowExactDuplicate, boolean allowEmpty) {
+    boolean fileEmpty = false;
+
     try {
       DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
 
       InstrumentFileSet fileDefinitions = instrument.getFileDefinitions();
       String[] lines = getLines();
       if (null == lines) {
-        throw new DataFileException(DataFileException.NO_FILE_ID, DataFileException.NO_LINE_NUMBER, "File contains no data");
+        if (allowEmpty) {
+          fileEmpty = true;
+        } else {
+          throw new DataFileException(DataFileException.NO_FILE_ID, DataFileException.NO_LINE_NUMBER, "File contains no data");
+        }
       }
 
-      FileDefinitionBuilder layoutGuesser =
-        new FileDefinitionBuilder("Guesser", fileDefinitions);
+      if (!fileEmpty) {
+        FileDefinitionBuilder layoutGuesser =
+          new FileDefinitionBuilder("Guesser", fileDefinitions);
 
-      layoutGuesser.setFileContents(Arrays.asList(lines));
-      layoutGuesser.guessFileLayout();
+        layoutGuesser.setFileContents(Arrays.asList(lines));
+        layoutGuesser.guessFileLayout();
 
-      // See if any of the known definitions match the guessed layout
-      FileDefinition matchedDefinition =
-        fileDefinitions.getMatchingFileDefinition(layoutGuesser).iterator().next();
-      // TODO We're assuming we'll get one match. No matches will throw a NoSuchElementException
-      //      (handled below), and multiple matches just choose the first one
+        // See if any of the known definitions match the guessed layout
+        FileDefinition matchedDefinition =
+          fileDefinitions.getMatchingFileDefinition(layoutGuesser).iterator().next();
+        // TODO We're assuming we'll get one match. No matches will throw a NoSuchElementException
+        //      (handled below), and multiple matches just choose the first one
 
-      setDataFile(new DataFile(
-          appConfig.getProperty("filestore"),
-          matchedDefinition,
-          getName(),
-          Arrays.asList(lines)
-      ));
-      if (getDataFile().getFirstDataLine() >= getDataFile()
-          .getContentLineCount()) {
-        throw new DataFileException(DataFileException.NO_FILE_ID, DataFileException.NO_LINE_NUMBER, "File contains headers but no data");
-      }
-
-      if (null == getDataFile().getStartDate()
-          || null == getDataFile().getEndDate()) {
-        putMessage(UNPROCESSABLE_STATUS, getName()
-            + " has date issues, see messages below. Please fix these problems and upload the file again.",
-            FacesMessage.SEVERITY_ERROR);
-      } else if (getDataFile().getMessageCount() > 0) {
-        putMessage(UNPROCESSABLE_STATUS, getName()
-            + " could not be processed (see messages below). Please fix these problems and upload the file again.",
-            FacesMessage.SEVERITY_ERROR);
-      } else {
-        List<DataFile> overlappingFiles = DataFileDB.getFilesWithinDates(dataSource, matchedDefinition,
-            getDataFile().getStartDate(), getDataFile().getEndDate());
-
-        boolean fileOK = true;
-        String fileMessage = null;
-        int fileStatus = Status.OK.getStatusCode();
-
-        if (overlappingFiles.size() > 0 && overlappingFiles.size() > 1) {
-          fileOK = false;
-          fileMessage = "This file overlaps one or more existing files";
-          fileStatus = Status.CONFLICT.getStatusCode();
-        } else if (overlappingFiles.size() == 1) {
-          DataFile existingFile = overlappingFiles.get(0);
-          DataFile newFile = getDataFile();
-
-          if (!existingFile.getFilename().equals(newFile.getFilename())) {
-            fileOK = false;
-            fileMessage = "This file overlaps an existing file with a different name";
-            fileStatus = Status.CONFLICT.getStatusCode();
+        setDataFile(new DataFile(
+            appConfig.getProperty("filestore"),
+            matchedDefinition,
+            getName(),
+            Arrays.asList(lines)
+        ));
+        if (getDataFile().getFirstDataLine() >= getDataFile()
+            .getContentLineCount()) {
+          if (allowEmpty) {
+            fileEmpty = true;
           } else {
-            String oldContents = existingFile.getContents();
-            String newContents = newFile.getContents();
-
-            if (newContents.length() < oldContents.length()) {
-              fileOK = false;
-              fileMessage = "This file would replace an existing file with fewer records";
-              fileStatus = Status.CONFLICT.getStatusCode();
-            } else if (!allowExactDuplicate && newContents.length() == oldContents.length()) {
-              fileOK = false;
-              fileMessage = "This is an exact copy of an existing file";
-              fileStatus = Status.CONFLICT.getStatusCode();
-            } else {
-              String oldPartOfNewContents = newContents.substring(0, oldContents.length());
-              if (!oldPartOfNewContents.equals(oldContents)) {
-                fileOK = false;
-                fileMessage = "This file would update an existing file but change existing data";
-                fileStatus = Status.CONFLICT.getStatusCode();
-              } else {
-                setReplacementFile(existingFile.getDatabaseId());
-              }
-            }
+            throw new DataFileException(DataFileException.NO_FILE_ID, DataFileException.NO_LINE_NUMBER, "File contains headers but no data");
           }
-        } else if (DataFileDB.hasFileWithName(dataSource, instrument.getDatabaseId(), getName())) {
-
-          // We don't allow duplicate filenames
-          fileOK = false;
-          fileMessage = "A file with that name already exists";
-          fileStatus = Status.CONFLICT.getStatusCode();
         }
 
-        if (!fileOK) {
-          matchedDefinition = null;
-          setDataFile(null);
-          putMessage(fileStatus, fileMessage, FacesMessage.SEVERITY_ERROR);
+        if (!fileEmpty) {
+          if (null == getDataFile().getStartDate()
+              || null == getDataFile().getEndDate()) {
+            putMessage(UNPROCESSABLE_STATUS, getName()
+                + " has date issues, see messages below. Please fix these problems and upload the file again.",
+                FacesMessage.SEVERITY_ERROR);
+          } else if (getDataFile().getMessageCount() > 0) {
+            putMessage(UNPROCESSABLE_STATUS, getName()
+                + " could not be processed (see messages below). Please fix these problems and upload the file again.",
+                FacesMessage.SEVERITY_ERROR);
+          } else {
+            List<DataFile> overlappingFiles = DataFileDB.getFilesWithinDates(dataSource, matchedDefinition,
+                getDataFile().getStartDate(), getDataFile().getEndDate());
+
+            boolean fileOK = true;
+            String fileMessage = null;
+            int fileStatus = Status.OK.getStatusCode();
+
+            if (overlappingFiles.size() > 0 && overlappingFiles.size() > 1) {
+              fileOK = false;
+              fileMessage = "This file overlaps one or more existing files";
+              fileStatus = Status.CONFLICT.getStatusCode();
+            } else if (overlappingFiles.size() == 1) {
+              DataFile existingFile = overlappingFiles.get(0);
+              DataFile newFile = getDataFile();
+
+              if (!existingFile.getFilename().equals(newFile.getFilename())) {
+                fileOK = false;
+                fileMessage = "This file overlaps an existing file with a different name";
+                fileStatus = Status.CONFLICT.getStatusCode();
+              } else {
+                String oldContents = existingFile.getContents();
+                String newContents = newFile.getContents();
+
+                if (newContents.length() < oldContents.length()) {
+                  fileOK = false;
+                  fileMessage = "This file would replace an existing file with fewer records";
+                  fileStatus = Status.CONFLICT.getStatusCode();
+                } else if (!allowExactDuplicate && newContents.length() == oldContents.length()) {
+                  fileOK = false;
+                  fileMessage = "This is an exact copy of an existing file";
+                  fileStatus = Status.CONFLICT.getStatusCode();
+                } else {
+                  String oldPartOfNewContents = newContents.substring(0, oldContents.length());
+                  if (!oldPartOfNewContents.equals(oldContents)) {
+                    fileOK = false;
+                    fileMessage = "This file would update an existing file but change existing data";
+                    fileStatus = Status.CONFLICT.getStatusCode();
+                  } else {
+                    setReplacementFile(existingFile.getDatabaseId());
+                  }
+                }
+              }
+            } else if (DataFileDB.hasFileWithName(dataSource, instrument.getDatabaseId(), getName())) {
+
+              // We don't allow duplicate filenames
+              fileOK = false;
+              fileMessage = "A file with that name already exists";
+              fileStatus = Status.CONFLICT.getStatusCode();
+            }
+
+            if (!fileOK) {
+              matchedDefinition = null;
+              setDataFile(null);
+              putMessage(fileStatus, fileMessage, FacesMessage.SEVERITY_ERROR);
+            }
+          }
         }
       }
     } catch (NoSuchElementException nose) {

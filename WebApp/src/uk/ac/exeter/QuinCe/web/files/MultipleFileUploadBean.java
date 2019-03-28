@@ -56,7 +56,7 @@ public class MultipleFileUploadBean extends FileUploadBean {
   public void extractNext() {
     for (UploadedDataFile file: dataFiles) {
       if (file.getDataFile() == null && file.isStore()) {
-        file.extractFile(getCurrentInstrument(), getAppConfig(), false);
+        file.extractFile(getCurrentInstrument(), getAppConfig(), false, false);
         break;
       }
     }
