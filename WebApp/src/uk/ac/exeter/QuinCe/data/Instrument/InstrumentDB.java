@@ -1166,6 +1166,7 @@ public class InstrumentDB {
    * @throws DatabaseException If a database error occurs
    * @throws InstrumentException If a stored run type category is not configured
    */
+  @Deprecated
   private static void getFileRunTypes(Connection conn, FileDefinition file, RunTypeCategoryConfiguration runTypeConfig) throws DatabaseException, InstrumentException {
     PreparedStatement stmt = null;
     ResultSet records = null;
