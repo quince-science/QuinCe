@@ -74,8 +74,9 @@ public class DataSetDataDB {
    * Statement to store a sensor value
    */
   private static final String STORE_SENSOR_VALUE_STATEMENT = "INSERT INTO "
-   + "sensor_values (dataset_id, file_column, date, value) "
-   + "VALUES (?, ?, ?, ?)";
+   + "sensor_values (dataset_id, file_column, date, value, "
+   + "auto_qc, user_qc_flag, user_qc_message) "
+   + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
   /**
    * Statement to remove all sensor values for a data set
@@ -894,6 +895,10 @@ public class DataSetDataDB {
         } else {
           stmt.setString(4, value.getValue());
         }
+
+        stmt.setString(5, value.getAutoQcResult().toJson());
+        stmt.setInt(6, value.getUserQcFlag().getFlagValue());
+        stmt.setString(7, value.getUserQcMessage());
 
         stmt.addBatch();
       }
