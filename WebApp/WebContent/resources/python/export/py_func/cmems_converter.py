@@ -71,7 +71,7 @@ def makenetcdf_(datasetname, lines):
 
   # Open a new netCDF file
   ncpath = tempfile.gettempdir() + "/" + filenameroot + ".nc"
-  nc = Dataset(ncpath, format="NETCDF4", mode="w")
+  nc = Dataset(ncpath, format="NETCDF4_CLASSIC", mode="w")
 
   # The DEPTH dimension is singular. Assume 5m for ships
   depthdim = nc.createDimension("DEPTH", 1)
@@ -212,16 +212,16 @@ def makenetcdf_(datasetname, lines):
   assignqcvarattributes_(sssqcvar)
   sssqcvar[:] = 0
 
-  pco2var = nc.createVariable("PCO2", "f", ("TIME", "DEPTH"), \
+  fco2var = nc.createVariable("FCO2", "f", ("TIME", "DEPTH"), \
     fill_value = -9999)
-  pco2var.long_name = "CO2 partial pressure"
-  pco2var.standard_name = "surface_partial_pressure_of_carbon_dioxide_in_sea_water"
-  pco2var.units = "µatm"
+  fco2var.long_name = "fugacity_of_CO2_in_sea_water"
+  fco2var.standard_name = "fugacity_of_CO2"
+  fco2var.units = "µatm"
 
-  # We do have QC flags for the pco2
-  pco2qcvar = nc.createVariable("PCO2_QC", "b", ("TIME", "DEPTH"), \
+  # We do have QC flags for the fco2
+  fco2qcvar = nc.createVariable("FCO2_QC", "b", ("TIME", "DEPTH"), \
     fill_value="-128")
-  assignqcvarattributes_(pco2qcvar)
+  assignqcvarattributes_(fco2qcvar)
 
   # Dimension variables for data variables
   depthdmvar = nc.createVariable("DEPH_DM", "c", ("TIME", "DEPTH"), \
@@ -236,17 +236,17 @@ def makenetcdf_(datasetname, lines):
     fill_value = " ")
   assigndmvarattributes_(sssdmvar)
 
-  pco2dmvar = nc.createVariable("PCO2_DM", "c", ("TIME", "DEPTH"), \
+  fco2dmvar = nc.createVariable("FCO2_DM", "c", ("TIME", "DEPTH"), \
     fill_value = " ")
-  assigndmvarattributes_(pco2dmvar)
+  assigndmvarattributes_(fco2dmvar)
 
   # And populate them
   depths = np.empty([len(lines), 1])
   positions = np.empty([len(lines), 1], dtype="object")
   temps = np.empty([len(lines), 1])
   sals = np.empty([len(lines), 1])
-  pco2s = np.empty([len(lines), 1])
-  pco2qcs = np.empty([len(lines), 1])
+  fco2s = np.empty([len(lines), 1])
+  fco2qcs = np.empty([len(lines), 1])
   dms = np.empty([len(lines), 1], dtype="object")
 
   for i in range(0, len(lines)):
@@ -266,31 +266,31 @@ def makenetcdf_(datasetname, lines):
       sals[i, 0] = fields[4]
 
     if fields[5] == "":
-      pco2s[i, 0] = -9999
+      fco2s[i, 0] = -9999
     else:
-      pco2s[i, 0] = fields[5]
+      fco2s[i, 0] = fields[5]
 
     if len(fields[6]) == 0:
-      pco2qcs[i, 0] = -128
+      fco2qcs[i, 0] = -128
     else:
-      pco2qcs[i, 0] = makeqcvalue_(int(fields[6]))
+      fco2qcs[i, 0] = makeqcvalue_(int(fields[6]))
 
   depthvar[:,:] = depths
   positionvar[:,:] = positions
   sstvar[:,:] = temps
   sssvar[:,:] = sals
-  pco2var[:,:] = pco2s
-  pco2qcvar[:,:] = pco2qcs
+  fco2var[:,:] = fco2s
+  fco2qcvar[:,:] = fco2qcs
   depthdmvar[:,:] = dms
   sstdmvar[:,:] = dms
   sssdmvar[:,:] = dms
-  pco2dmvar[:,:] = dms
+  fco2dmvar[:,:] = dms
 
   # Global attributes
   nc.id = filenameroot
 
   nc.data_type = "OceanSITES trajectory data"
-  nc.netcdf_version = "4"
+  nc.netcdf_version = "netCDF-4 classic model"
   nc.format_version = "1.2"
   nc.Conventions = "CF-1.6 OceanSITES-Manual-1.2 Copernicus-InSituTAC-SRD-1.3 "\
     + "Copernicus-InSituTAC-ParametersList-3.1.0"
@@ -312,9 +312,9 @@ def makenetcdf_(datasetname, lines):
   nc.time_coverage_start = starttime.strftime("%Y-%m-%dT%H:%M:%SZ")
   nc.time_coverage_end = endtime.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-  datasetdate = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-  nc.date_update = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-  nc.history = datasetdate + " : Creation"
+  #datasetdate = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+  #nc.date_update = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+  #nc.history = datasetdate + " : Creation"
 
   nc.update_interval = "daily"
 

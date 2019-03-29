@@ -1,7 +1,7 @@
 [CARBON]
 auth_url='https://cpauth.icos-cp.eu/password/login'
-auth_mail=''
-auth_pwd=''
+auth_mail='uploader@OTC'
+auth_pwd='dNpBetalZc6j0L54'
 metadata_url = 'https://meta.icos-cp.eu/upload'
 metadata_filename = 'metatest'
 file_upload_url='https://data.icos-cp.eu/tryingest' #+<data object id>  

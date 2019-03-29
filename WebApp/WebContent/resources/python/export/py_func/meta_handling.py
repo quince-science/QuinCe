@@ -163,8 +163,8 @@ def build_metadata_L2NRT(
     template_filename = candidate_filenames[0]
     if len(candidate_filenames) > 1:
       logging.warning('Multiple oap metadata templates exist')
-      logging.debug('Using: ',template_filename)
-    logging.info('metadata template: {:s}'.format(template_filename))
+      logging.warning('Using: ',template_filename)
+    logging.debug('metadata template: {:s}'.format(template_filename))
 
   #load template
   tree = ET.parse('oap_metadata_templates/' + template_filename)
