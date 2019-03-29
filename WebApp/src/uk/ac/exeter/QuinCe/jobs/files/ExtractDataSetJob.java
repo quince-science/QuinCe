@@ -91,6 +91,7 @@ public class ExtractDataSetJob extends Job {
 
       // Reset the data set and all associated data
       reset(conn);
+      conn.commit();
 
       Instrument instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(),
         ResourceManager.getInstance().getSensorsConfiguration(),
@@ -229,19 +230,8 @@ public class ExtractDataSetJob extends Job {
       throws MissingParamException, InvalidDataSetStatusException,
       DatabaseException, RecordNotFoundException {
 
-    /*
-    try {
-      CalibrationDataDB.deleteDatasetData(conn, dataSet);
-      CalculationDBFactory.getCalculationDB().deleteDatasetCalculationData(conn, dataSet);
-      DataSetDB.deleteDatasetData(conn, dataSet);
-      dataSet.setStatus(DataSet.STATUS_WAITING);
-      DataSetDB.updateDataSet(conn, dataSet);
-      conn.commit();
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while resetting dataset data", e);
-    }
-
-    */
+    DataSetDataDB.deleteSensorValues(conn, dataSet.getId());
+    DataSetDB.setDatasetStatus(conn, dataSet.getId(), DataSet.STATUS_WAITING);
   }
 
   @Override
