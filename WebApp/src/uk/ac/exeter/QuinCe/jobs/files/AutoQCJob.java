@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
 import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QCRoutines.data.InvalidDataException;
@@ -18,12 +16,10 @@ import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
 import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QCRoutines.routines.Routine;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecordFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
@@ -32,7 +28,6 @@ import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -131,6 +126,9 @@ public class AutoQCJob extends Job {
    */
   @Override
   protected void execute(JobThread thread) throws JobFailedException {
+
+    System.out.println("Auto QC job!");
+/*
 
     Connection conn = null;
     long datasetId = Long.parseLong(parameters.get(ID_PARAM));
@@ -295,6 +293,8 @@ public class AutoQCJob extends Job {
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
+
+*/
   }
 
   /**
