@@ -101,6 +101,12 @@ public class ExtractDataSetJob extends Job {
 
       List<SensorValue> sensorValues = new ArrayList<SensorValue>();
 
+      // Collect the true start and end times of the dataset based on the
+      // actual data
+      LocalDateTime realStartTime = null;
+      LocalDateTime realEndTime = dataSet.getEnd();
+
+
       for (DataFile file : files) {
         FileDefinition fileDefinition = file.getFileDefinition();
 
@@ -110,39 +116,51 @@ public class ExtractDataSetJob extends Job {
           List<String> line = file.getLine(currentLine);
           LocalDateTime time = file.getDate(line);
 
-          // Position
-          // TODO Flag position errors as QC errors when we get to that
-          if (null != fileDefinition.getLongitudeSpecification()) {
-            try {
-              double longitude = file.getLongitude(line);
-              sensorValues.add(new SensorValue(dataSet.getId(),
-                FileDefinition.LONGITUDE_COLUMN_ID, time, String.valueOf(longitude)));
-            } catch (PositionException e) {
-              System.out.println("File " + file.getDatabaseId() + ", Line " + currentLine + ": PositionException: " + e.getMessage());
+          if (
+              (time.equals(dataSet.getStart()) || time.isAfter(dataSet.getStart())) &&
+              (time.isBefore(dataSet.getEnd()) || time.isEqual(dataSet.getEnd()))
+            ) {
+
+            if (null == realStartTime && null != time) {
+              realStartTime = time;
             }
-          }
 
-          if (null != fileDefinition.getLongitudeSpecification()) {
-            try {
-              double latitude = file.getLatitude(line);
-              sensorValues.add(new SensorValue(dataSet.getId(),
-                FileDefinition.LATITUDE_COLUMN_ID, time, String.valueOf(latitude)));
-            } catch (PositionException e) {
-              System.out.println("File " + file.getDatabaseId() + ", Line " + currentLine + ": PositionException: " + e.getMessage());
-            }
-          }
+            realEndTime = time;
 
-          // Assigned columns
-          for (Entry<SensorType, Set<SensorAssignment>> entry :
-            instrument.getSensorAssignments().entrySet()) {
-
-            for (SensorAssignment assignment : entry.getValue()) {
-              if (assignment.getDataFile().equals(fileDefinition.getFileDescription())) {
-
+            // Position
+            // TODO Flag position errors as QC errors when we get to that
+            if (null != fileDefinition.getLongitudeSpecification()) {
+              try {
+                double longitude = file.getLongitude(line);
                 sensorValues.add(new SensorValue(dataSet.getId(),
-                  assignment.getDatabaseId(), time,
-                  file.getStringValue(line, assignment.getColumn(),
-                    assignment.getMissingValue())));
+                  FileDefinition.LONGITUDE_COLUMN_ID, time, String.valueOf(longitude)));
+              } catch (PositionException e) {
+                System.out.println("File " + file.getDatabaseId() + ", Line " + currentLine + ": PositionException: " + e.getMessage());
+              }
+            }
+
+            if (null != fileDefinition.getLongitudeSpecification()) {
+              try {
+                double latitude = file.getLatitude(line);
+                sensorValues.add(new SensorValue(dataSet.getId(),
+                  FileDefinition.LATITUDE_COLUMN_ID, time, String.valueOf(latitude)));
+              } catch (PositionException e) {
+                System.out.println("File " + file.getDatabaseId() + ", Line " + currentLine + ": PositionException: " + e.getMessage());
+              }
+            }
+
+            // Assigned columns
+            for (Entry<SensorType, Set<SensorAssignment>> entry :
+              instrument.getSensorAssignments().entrySet()) {
+
+              for (SensorAssignment assignment : entry.getValue()) {
+                if (assignment.getDataFile().equals(fileDefinition.getFileDescription())) {
+
+                  sensorValues.add(new SensorValue(dataSet.getId(),
+                    assignment.getDatabaseId(), time,
+                    file.getStringValue(line, assignment.getColumn(),
+                      assignment.getMissingValue())));
+                }
               }
             }
           }
@@ -151,79 +169,7 @@ public class ExtractDataSetJob extends Job {
         }
       }
 
-
       DataSetDataDB.storeSensorValues(conn, sensorValues);
-
-      conn.commit();
-    } catch (Exception e) {
-      e.printStackTrace();
-      DatabaseUtils.rollBack(conn);
-      try {
-        // Set the dataset to Error status
-        dataSet.setStatus(DataSet.STATUS_ERROR);
-        // And add a (friendly) message...
-        StringBuffer message = new StringBuffer();
-        message.append(getJobName());
-        message.append(" - error: ");
-        message.append(e.getMessage());
-        dataSet.addMessage(message.toString(), ExceptionUtils.getStackTrace(e));
-        DataSetDB.updateDataSet(conn, dataSet);
-        conn.commit();
-      } catch (Exception e1) {
-        e1.printStackTrace();
-      }
-      throw new JobFailedException(id, e);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
-    }
-
-    /*
-    Connection conn = null;
-
-    try {
-      conn = dataSource.getConnection();
-      conn.setAutoCommit(false);
-
-      // Get the data set from the database
-      dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
-      // Reset the data set and all associated data
-      reset(conn);
-
-      // Clear messages before executing job
-      dataSet.clearMessages();
-      // Set processing status
-      dataSet.setStatus(DataSet.STATUS_DATA_EXTRACTION);
-      DataSetDB.updateDataSet(conn, dataSet);
-      conn.commit();
-
-      // Get related data
-      instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
-
-      DataSetRawData rawData = DataSetRawDataFactory.getDataSetRawData(dataSource, dataSet, instrument);
-
-      LocalDateTime realStartTime = null;
-      LocalDateTime realEndTime = null;
-
-      DataSetRawDataRecord record = rawData.getNextRecord();
-      while (null != record) {
-
-        if (null == realStartTime && null != record.getDate()) {
-          realStartTime = record.getDate();
-        }
-
-        if (null != record.getDate()) {
-          realEndTime = record.getDate();
-        }
-
-        if (record.isMeasurement()) {
-          DataSetDataDB.storeRecord(conn, record);
-        } else if (record.isCalibration()) {
-          CalibrationDataDB.storeCalibrationRecord(conn, record);
-        }
-
-        // Read the next record
-        record = rawData.getNextRecord();
-      }
 
       // Adjust the Dataset limits to the actual extracted data
       if (null != realStartTime) {
@@ -234,14 +180,9 @@ public class ExtractDataSetJob extends Job {
         dataSet.setEnd(realEndTime);
       }
 
-      dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
       DataSetDB.updateDataSet(conn, dataSet);
-      Map<String, String> jobParams = new HashMap<String, String>();
-      jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
-      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), DataReductionJob.class.getCanonicalName(), jobParams);
 
       conn.commit();
-
     } catch (Exception e) {
       e.printStackTrace();
       DatabaseUtils.rollBack(conn);
@@ -263,8 +204,6 @@ public class ExtractDataSetJob extends Job {
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
-
-    */
   }
 
   @Override
