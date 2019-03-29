@@ -490,7 +490,7 @@ def main():
   csv = None
 
   with ZipFile(zipfile, "r") as unzip:
-  	csv = unzip.read(datasetpath).decode("utf-8")
+    csv = unzip.read(datasetpath).decode("utf-8")
 
   netcdfs = buildnetcdfs(datasetname, csv)
 
