@@ -312,9 +312,9 @@ def makenetcdf_(datasetname, lines):
   nc.time_coverage_start = starttime.strftime("%Y-%m-%dT%H:%M:%SZ")
   nc.time_coverage_end = endtime.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-  datasetdate = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-  nc.date_update = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-  nc.history = datasetdate + " : Creation"
+  #datasetdate = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+  #nc.date_update = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+  #nc.history = datasetdate + " : Creation"
 
   nc.update_interval = "daily"
 
