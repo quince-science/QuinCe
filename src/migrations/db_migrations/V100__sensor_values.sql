@@ -4,8 +4,7 @@ CREATE TABLE sensor_values (
   file_column INT NOT NULL,
   date BIGINT(20) NOT NULL,
   value VARCHAR(100) NULL,
-  auto_qc_flag SMALLINT(2) DEFAULT -1000,
-  auto_qc_message VARCHAR(255),
+  auto_qc TEXT,
   user_qc_flag SMALLINT(2) DEFAULT -1000,
   user_qc_message VARCHAR(255),
   CONSTRAINT SENSORVALUE_DATASET
