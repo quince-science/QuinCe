@@ -1,5 +1,5 @@
 [QuinCe]
 url='http://localhost:8080/QuinCe'
-user=''
-password=''
+user='api_user@bcdc.no'
+password='iamanapiuser'
 

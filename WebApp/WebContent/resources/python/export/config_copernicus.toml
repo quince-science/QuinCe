@@ -1,8 +1,8 @@
 [Copernicus]
-nrt_server='' 
-my_server=''
-user=''
-password=''
+nrt_server='nrt.cmems-du.eu' 
+my_server='my.cmems-du.eu'
+user='cmems_ins_bergen'
+password='F2TKt-9U'
 nrt_dir='/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/NRT_201904/latest'
 dnt_dir='/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/DNT'
 my_dir=''

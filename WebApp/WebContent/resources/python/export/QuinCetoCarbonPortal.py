@@ -18,7 +18,7 @@ from py_func.copernicus import send_to_copernicus
 
 #logging.basicConfig(filename = 'logfile.log', 
 #stream=sys.stdout,level = logging.DEBUG, filemode = 'w')
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 config_file_quince = 'config_quince.toml'
 config_file_copernicus = 'config_copernicus.toml'
@@ -85,17 +85,26 @@ def main():
             file_L2,
             hashsum_L2,
             auth_cookie)
+        
+          upload_status[datasetNr]['result_copernicus_upload_L2'] = (
+            send_to_copernicus(
+            'NRTNRTA1542040749136.csv',
+            dataset_zip,
+            dataset['name'],
+            destinations['ICOS OTC'],
+            config_copernicus,
+            'nrt_server')) #,delete_file=True)
 
 
         if 'Copernicus' in data_filename:  
-          upload_status[dataset]['result_copernicus_upload_L2'] = 
+          upload_status[datasetNr]['result_copernicus_upload_L2'] = (
             send_to_copernicus(
             data_filename, 
             dataset_zip,
             dataset['name'],
             destinations['Copernicus'],
             config_copernicus,
-            'nrt_server') #,delete_file=True)
+            'nrt_server')) #,delete_file=True)
 
     #report to QuinCe about upload process Abandon/complete
     #report_abandon_export(config_quince,dataset['id'])
