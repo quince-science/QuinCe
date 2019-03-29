@@ -121,7 +121,7 @@ def makenetcdf_(datasetname, lines):
   maxlat = -90
 
   # Fill in dimension variables
-
+  print(len(lines))
   times = [0] * len(lines)
   lats = [0] * len(lines)
   lons = [0] * len(lines)
@@ -130,7 +130,8 @@ def makenetcdf_(datasetname, lines):
     times[i] = maketimefield_(fields[0])
     if i == 0:
       starttime = maketimeobject_(fields[0])
-    elif i == len(lines) - 1:
+    
+    if i == len(lines) - 1:
       endtime = maketimeobject_(fields[0])
 
     lats[i] = float(fields[2])
