@@ -85,16 +85,6 @@ def main():
             file_L2,
             hashsum_L2,
             auth_cookie)
-        
-          upload_status[datasetNr]['result_copernicus_upload_L2'] = (
-            send_to_copernicus(
-            'NRTNRTA1542040749136.csv',
-            dataset_zip,
-            dataset['name'],
-            destinations['ICOS OTC'],
-            config_copernicus,
-            'nrt_server')) #,delete_file=True)
-
 
         if 'Copernicus' in data_filename:  
           upload_status[datasetNr]['result_copernicus_upload_L2'] = (

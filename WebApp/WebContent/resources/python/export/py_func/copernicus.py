@@ -101,9 +101,9 @@ def send_to_copernicus(
 
   '''
 
-#  csv_file = get_file_from_zip(dataset_zip, dataset_name
-#     + '/dataset/Copernicus/' + destination)
-  csv_file = 'NRTNRTA1542040749136.csv'
+  csv_file = get_file_from_zip(dataset_zip, dataset_name
+     + '/dataset/Copernicus/' + destination)
+#  csv_file = 'NRTNRTA1542040749136.csv'
 
   logging.info(
   'Creating netcdf-files based on {:s} to send to Copernicus'
@@ -425,7 +425,7 @@ def evaluate_response_file(dnt_upload_list,ftp,folder_date,upload_response_log,u
 
   response_received = False
   loop_iter = 0
-  while response_received == False and loop_iter < 20 :
+  while response_received == False and loop_iter < 50 :
     loop_iter += 1
     time.sleep(10)
     logging.debug('waiting ' + str(loop_iter*10))
