@@ -77,7 +77,11 @@ public class DataSetDataDB {
    + "sensor_values (dataset_id, file_column, date, value) "
    + "VALUES (?, ?, ?, ?)";
 
-
+  /**
+   * Statement to remove all sensor values for a data set
+   */
+  private static final String DELETE_SENSOR_VALUES_STATEMENT = "DELETE FROM "
+    + "sensor_values WHERE dataset_id = ?";
 
   /**
    * The name of the ID column
@@ -823,8 +827,8 @@ public class DataSetDataDB {
    * @param dataSource A data source
    * @param dataset The dataset
    * @return The bounds
-     * @throws DatabaseException If a database error occurs
-     * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
    */
   public static List<Double> getDataBounds(Connection conn, DataSet dataset) throws MissingParamException, DatabaseException {
 
@@ -862,6 +866,13 @@ public class DataSetDataDB {
     return result;
   }
 
+  /**
+   * Store a set of sensor values in the database
+   * @param conn A database connection
+   * @param sensorValues The sensor values
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   */
   public static void storeSensorValues(Connection conn,
     Collection<SensorValue> sensorValues)
       throws MissingParamException, DatabaseException {
@@ -888,6 +899,33 @@ public class DataSetDataDB {
       }
 
       stmt.executeBatch();
+    } catch (SQLException e) {
+      throw new DatabaseException("Error storing sensor values", e);
+    } finally {
+      DatabaseUtils.closeStatements(stmt);
+    }
+  }
+
+  /**
+   * Remove all sensor values for a dataset
+   * @param conn A database connection
+   * @param datasetId The dataset's database ID
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   */
+  public static void deleteSensorValues(Connection conn, long datasetId)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(datasetId, "datasetId");
+
+    PreparedStatement stmt = null;
+
+    try {
+      stmt = conn.prepareStatement(DELETE_SENSOR_VALUES_STATEMENT);
+
+      stmt.setLong(1, datasetId);
+      stmt.execute();
     } catch (SQLException e) {
       throw new DatabaseException("Error storing sensor values", e);
     } finally {
