@@ -1,36 +1,47 @@
-#Class,Option,Option....
-#ShipSpeed,150,750
-#TimeGap,7
+#Class,Sensor Type,Option,Option....
 ConstantValue,Intake Temperature,120
-#ConstantValue,Salinity,120
+ConstantValue,Salinity,120
 ConstantValue,Equilibrator Temperature,120
-ConstantValue,Equilibrator Pressure,120
-ConstantValue,xH2O,120
+ConstantValue,Equilibrator Pressure (absolute),120
+ConstantValue,Equilibrator Pressure (differential),120
+ConstantValue,xH₂O in gas,120
 ConstantValue,Ambient Pressure,120
-ConstantValue,CO2,120
+ConstantValue,CO₂ in gas,120
 RangeCheck,Intake Temperature,-5,40,-10,50
 RangeCheck,Salinity,0,42,0,50
 RangeCheck,Equilibrator Temperature,-5,40,-10,50
-RangeCheck,Equilibrator Pressure,-3,1100,-5,1250
+RangeCheck,Equilibrator Pressure (absolute),-3,1100,-5,1250
+RangeCheck,Equilibrator Pressure (differential),-3,1100,-5,1250
 RangeCheck,Ambient Pressure,900,1100,750,1250
-RangeCheck,xH2O,0,100,0,100
-RangeCheck,CO2,80,1200,0,50000
-RangeCheck,Delta Temperature,-1,1,-2,2
-RangeCheck,True Moisture,0,100,0,100
+RangeCheck,xH₂O in gas,0,100,0,100
+RangeCheck,CO₂ in gas,80,1200,0,50000
 RangeCheck,pH2O,0,0.1,0,0.1
 Outlier,Intake Temperature,3
 Outlier,Salinity,3
 Outlier,Equilibrator Temperature,3
-Outlier,Equilibrator Pressure,3
-Outlier,xH2O,3
+Outlier,Equilibrator Pressure (absolute),3
+Outlier,Equilibrator Pressure (differential),3
+Outlier,xH₂O in gas,3
 Outlier,Ambient Pressure,3
-Outlier,CO2,3
-Outlier,Delta Temperature,3
+Outlier,CO₂ in gas,3
 HighDelta,Intake Temperature,3
-#HighDelta,Salinity,3
+HighDelta,Salinity,3
 HighDelta,Equilibrator Temperature,3
-HighDelta,Equilibrator Pressure,50
-HighDelta,xH2O,5
+HighDelta,Equilibrator Pressure (absolute),50
+HighDelta,Equilibrator Pressure (differential),50
+HighDelta,xH₂O in gas,5
 HighDelta,Ambient Pressure,50
-HighDelta,CO2,20
+HighDelta,CO₂ in gas,20
+
+#######
+# QC routines not migrated from SOCAT routines.
+# Will need looking at separately; may not be needed
+#ShipSpeed,150,750
+#TimeGap,7
+
+# QC routines originally placed on calculated values.
+# Will find another way to do them.
+#RangeCheck,True Moisture,0,100,0,100
+#Outlier,Delta Temperature,3
+#RangeCheck,Delta Temperature,-1,1,-2,2
 #HighDelta,Delta Temperature,0.5
