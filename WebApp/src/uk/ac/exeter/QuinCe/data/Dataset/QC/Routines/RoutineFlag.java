@@ -15,12 +15,24 @@ public class RoutineFlag extends Flag {
   private Class<? extends Routine> routineClass;
 
   /**
+   * The value required by the routine
+   */
+  private String requiredValue;
+
+  /**
+   * The actual value
+   */
+  private String actualValue;
+
+  /**
    * Basic constructor
    * @param routine The routine that generated this flag
    * @param flag The flag
    */
-  public RoutineFlag(Routine routine, Flag flag) {
+  public RoutineFlag(Routine routine, Flag flag, String requiredValue, String actualValue) {
     super(flag);
     this.routineClass = routine.getClass();
+    this.requiredValue = requiredValue;
+    this.actualValue = actualValue;
   }
 }
