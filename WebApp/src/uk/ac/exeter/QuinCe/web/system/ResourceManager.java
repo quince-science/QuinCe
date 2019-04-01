@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QCRoutines.config.ColumnConfig;
 import uk.ac.exeter.QCRoutines.config.ConfigException;
-import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
@@ -64,6 +64,8 @@ public class ResourceManager implements ServletContextListener {
 
   private RunTypeCategoryConfiguration runTypeCategoryConfiguration;
 
+  private QCRoutinesConfiguration qcRoutinesConfiguration;
+
   /**
    * The singleton instance of the resource manage
    */
@@ -86,7 +88,6 @@ public class ResourceManager implements ServletContextListener {
       throw new RuntimeException("Config failed: could not read config file", e);
     }
 
-
     // Initialise the job thread pool
     try {
       JobThreadPool.initialise(1);
@@ -102,20 +103,6 @@ public class ResourceManager implements ServletContextListener {
       throw new RuntimeException("Could not initialise data column configuration", e);
     }
 
-    // Initialise the Extraction Check Routines configuration
-    try {
-      RoutinesConfig.init(INITIAL_CHECK_ROUTINES_CONFIG, configuration.getProperty("extract_routines.configfile"));
-    } catch (ConfigException e) {
-      throw new RuntimeException("Could not initialise Extraction Check Routines", e);
-    }
-
-    // Initialise the QC Routines configuration
-    try {
-      RoutinesConfig.init(QC_ROUTINES_CONFIG, configuration.getProperty("qc_routines.configfile"));
-    } catch (ConfigException e) {
-      throw new RuntimeException("Could not initialise QC Routines", e);
-    }
-
     // Initialise the sensors configuration
     try {
       sensorsConfiguration = new SensorsConfiguration(getDBDataSource());
@@ -128,6 +115,13 @@ public class ResourceManager implements ServletContextListener {
       runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(new File(configuration.getProperty("runtypes.configfile")));
     } catch (RunTypeCategoryException e) {
       throw new RuntimeException("Could not load sensors configuration", e);
+    }
+
+    // Initialise the QC Routines configuration
+    try {
+      qcRoutinesConfiguration = new QCRoutinesConfiguration(sensorsConfiguration, configuration.getProperty("qc_routines.configfile"));
+    } catch (Exception e) {
+      throw new RuntimeException("Could not initialise QC Routines", e);
     }
 
     // Initialise the file export options configuration
@@ -179,6 +173,10 @@ public class ResourceManager implements ServletContextListener {
 
   public RunTypeCategoryConfiguration getRunTypeCategoryConfiguration() {
     return runTypeCategoryConfiguration;
+  }
+
+  public QCRoutinesConfiguration getQcRoutinesConfiguration() {
+    return qcRoutinesConfiguration;
   }
 
   /**
