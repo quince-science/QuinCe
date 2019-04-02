@@ -1,10 +1,12 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQcResult;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineFlag;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * Represents a single sensor value
@@ -12,6 +14,16 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineFlag;
  *
  */
 public class SensorValue {
+
+  /**
+   * Indicatest that this value has not be stored in the database
+   */
+  public static final long NO_RECORD = -1;
+
+  /**
+   * The database ID of this value
+   */
+  private final long databaseId;
 
   /**
    * The ID of the dataset that the sensor value is in
@@ -33,22 +45,27 @@ public class SensorValue {
   /**
    * The automatic QC result
    */
-  private AutoQcResult autoQc = null;
+  private AutoQCResult autoQC = null;
 
   /**
    * The user QC flag
    */
-  private Flag userQcFlag = Flag.NOT_SET;
+  private Flag userQCFlag = Flag.NOT_SET;
 
   /**
    * The user QC message
    */
-  private String userQcMessage = null;
+  private String userQCMessage = null;
 
   /**
    * The value (can be null)
    */
   private final String value;
+
+  /**
+   * Indicates whether the value needs to be saved to the database
+   */
+  private boolean dirty;
 
   /**
    * Build a sensor value with default QC flags
@@ -57,12 +74,16 @@ public class SensorValue {
    * @param time
    * @param value
    */
-  public SensorValue(long datasetId, long columnId, LocalDateTime time, String value) {
+  public SensorValue(long datasetId, long columnId,
+    LocalDateTime time, String value) {
+
+    this.databaseId = NO_RECORD;
     this.datasetId = datasetId;
     this.columnId = columnId;
     this.time = time;
     this.value = value;
-    this.autoQc = new AutoQcResult();
+    this.autoQC = new AutoQCResult();
+    this.dirty = true;
   }
 
   /**
@@ -72,22 +93,25 @@ public class SensorValue {
    * @param time
    * @param value
    */
-  public SensorValue(long datasetId, long columnId, LocalDateTime time, String value,
-    Flag autoQcFlag, AutoQcResult autoQc, Flag userQcFlag, String userQcMessage) {
+  public SensorValue(long valueId, long datasetId, long columnId,
+    LocalDateTime time, String value, AutoQCResult autoQc,
+    Flag userQcFlag, String userQcMessage) {
 
+    this.databaseId = NO_RECORD;
     this.datasetId = datasetId;
     this.columnId = columnId;
     this.time = time;
     this.value = value;
 
     if (null == autoQc) {
-      this.autoQc = new AutoQcResult();
+      this.autoQC = new AutoQCResult();
     } else {
-      this.autoQc = autoQc;
+      this.autoQC = autoQc;
     }
 
-    this.userQcFlag = userQcFlag;
-    this.userQcMessage = userQcMessage;
+    this.userQCFlag = userQcFlag;
+    this.userQCMessage = userQcMessage;
+    this.dirty = true;
   }
 
   /**
@@ -152,34 +176,103 @@ public class SensorValue {
    * @return The automatic QC flag
    */
   public Flag getAutoQcFlag() {
-    return autoQc.getOverallFlag();
+    return autoQC.getOverallFlag();
   }
 
   /**
    * Get the complete automatic QC result
    * @return The automatic QC result
    */
-  public AutoQcResult getAutoQcResult() {
-    return autoQc;
+  public AutoQCResult getAutoQcResult() {
+    return autoQC;
   }
 
   /**
    * Get the QC flag set by the user
    * @return The user QC flag
    */
-  public Flag getUserQcFlag() {
-    return userQcFlag;
+  public Flag getUserQCFlag() {
+    return userQCFlag;
   }
 
   /**
    * Get the QC message entered by the user
    * @return The user QC message
    */
-  public String getUserQcMessage() {
-    return userQcMessage;
+  public String getUserQCMessage() {
+    return userQCMessage;
   }
 
-  public void addAutoQcFlag(RoutineFlag flag) {
-    autoQc.add(flag);
+  /**
+   * Reset the automatic QC result
+   * @throws RecordNotFoundException If the value has not yet been stored
+   *         in the database
+   */
+  public void clearAutomaticQC() throws RecordNotFoundException {
+    if (!isInDatabase()) {
+      throw new RecordNotFoundException(
+        "SensorValue has not been stored in the database");
+    }
+    autoQC = new AutoQCResult();
+    dirty = true;
+  }
+
+  /**
+   * Add a flag from an automatic QC routine to the automatic QC result
+   * @param flag The flag
+   * @throws RecordNotFoundException If the value has not yet been stored
+   *         in the database
+   */
+  public void addAutoQCFlag(RoutineFlag flag) throws RecordNotFoundException {
+    if (!isInDatabase()) {
+      throw new RecordNotFoundException(
+        "SensorValue has not been stored in the database");
+    }
+    autoQC.add(flag);
+    dirty = true;
+  }
+
+  /**
+   * Set the User QC information
+   * @param flag The user QC flag
+   * @param message The user QC message
+   * @throws RecordNotFoundException If the value has not yet been stored
+   *         in the database
+   */
+  public void setUserQC(Flag flag, String message) throws RecordNotFoundException {
+    if (!isInDatabase()) {
+      throw new RecordNotFoundException(
+        "SensorValue has not been stored in the database");
+    }
+    userQCFlag = flag;
+    userQCMessage = message;
+    dirty = true;
+  }
+
+  /**
+   * Determine whether or not this value needs to be saved to the database
+   * @return {@code true} if the value needs to be saved; {@code false} otherwise
+   */
+  public boolean isDirty() {
+    return dirty;
+  }
+
+  /**
+   * Determine whether or not this value is stored in the database
+   * @return {@code true} if the value is in the database; {@code false} if
+   *         it is a new record and is yet to be saved
+   */
+  public boolean isInDatabase() {
+    return (databaseId != NO_RECORD);
+  }
+
+  /**
+   * Clear the {@code dirty} flag on a collection of SensorValues
+   * @param sensorValues The values to be cleared
+   */
+  public static void clearDirtyFlag(Collection<SensorValue> sensorValues) {
+    for (SensorValue value : sensorValues) {
+      value.dirty = false;
+    }
   }
 }
