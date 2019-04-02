@@ -6,7 +6,7 @@ import java.util.List;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
-public class HighDelta extends Routine {
+public class HighDeltaRoutine extends Routine {
 
   /**
    * The maximum delta between values, in units per minute
@@ -18,7 +18,7 @@ public class HighDelta extends Routine {
    * @param parameters The parameters
    * @throws QCRoutinesConfigurationException If the parameters are invalid
    */
-  public HighDelta(List<String> parameters)
+  public HighDeltaRoutine(List<String> parameters)
     throws RoutineException {
     super(parameters);
   }
@@ -30,7 +30,7 @@ public class HighDelta extends Routine {
     }
 
     try {
-      maxDelta = Double.parseDouble(parameters.get(1));
+      maxDelta = Double.parseDouble(parameters.get(0));
     } catch (NumberFormatException e) {
       throw new RoutineException("Max delta parameter must be numeric");
     }

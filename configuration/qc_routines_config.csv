@@ -15,7 +15,6 @@ RangeCheck,Equilibrator Pressure (differential),-3,1100,-5,1250
 RangeCheck,Ambient Pressure,900,1100,750,1250
 RangeCheck,xH₂O in gas,0,100,0,100
 RangeCheck,CO₂ in gas,80,1200,0,50000
-RangeCheck,pH2O,0,0.1,0,0.1
 Outlier,Intake Temperature,3
 Outlier,Salinity,3
 Outlier,Equilibrator Temperature,3
@@ -45,3 +44,4 @@ HighDelta,CO₂ in gas,20
 #Outlier,Delta Temperature,3
 #RangeCheck,Delta Temperature,-1,1,-2,2
 #HighDelta,Delta Temperature,0.5
+#RangeCheck,pH2O,0,0.1,0,0.1
