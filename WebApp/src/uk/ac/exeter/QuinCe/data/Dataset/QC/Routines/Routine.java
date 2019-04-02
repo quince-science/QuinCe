@@ -34,7 +34,7 @@ public abstract class Routine {
    * @param flag The flag
    */
   protected void addFlag(SensorValue value, Flag flag, String requiredValue, String actualValue) {
-    value.addAutoQcFlag(new RoutineFlag(this, flag, requiredValue, actualValue));
+    value.addAutoQCFlag(new RoutineFlag(this, flag, requiredValue, actualValue));
   }
 
   /**
