@@ -90,9 +90,8 @@ public class InstrumentDB {
    */
   private static final String CREATE_FILE_COLUMN_STATEMENT = "INSERT INTO file_column ("
       + "file_definition_id, file_column, primary_sensor, sensor_type, " // 4
-      + "sensor_name, value_column, depends_question_answer, " // 7
-      + "missing_value" // 9
-      + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+      + "sensor_name, depends_question_answer, missing_value" // 7
+      + ") VALUES (?, ?, ?, ?, ?, ?, ?)";
 
   /**
    * Query to get all the run types of a given run type category
@@ -169,8 +168,8 @@ public class InstrumentDB {
    * SQL query to get the file column assignments for a file
    */
   private static final String GET_FILE_COLUMNS_QUERY = "SELECT "
-      + "id, file_column, primary_sensor, sensor_type, sensor_name, value_column, " // 6
-      + "depends_question_answer, missing_value " // 8
+      + "id, file_column, primary_sensor, sensor_type, sensor_name, " // 5
+      + "depends_question_answer, missing_value " // 7
         + "FROM file_column WHERE file_definition_id = ?";
 
   /**
@@ -286,9 +285,6 @@ public class InstrumentDB {
           }
         }
 
-        // Sensor assignments
-        int databaseColumn = -1;
-
         for (Map.Entry<SensorType, Set<SensorAssignment>> sensorAssignmentsEntry : instrument.getSensorAssignments().entrySet()) {
 
           SensorType sensorType = sensorAssignmentsEntry.getKey();
@@ -301,17 +297,8 @@ public class InstrumentDB {
             fileColumnStatement.setBoolean(3, assignment.isPrimary());
             fileColumnStatement.setLong(4, sensorType.getId());
             fileColumnStatement.setString(5, assignment.getSensorName());
-
-            if (sensorType.isDiagnostic()) {
-              fileColumnStatement.setNull(6, Types.INTEGER);
-            } else {
-              databaseColumn++;
-              assignment.setDatabaseColumn(databaseColumn);
-              fileColumnStatement.setInt(6, databaseColumn);
-            }
-
-            fileColumnStatement.setBoolean(7, assignment.getDependsQuestionAnswer());
-            fileColumnStatement.setString(8, assignment.getMissingValue());
+            fileColumnStatement.setBoolean(6, assignment.getDependsQuestionAnswer());
+            fileColumnStatement.setString(7, assignment.getMissingValue());
 
             fileColumnStatement.execute();
             ResultSet fileColumnKey = fileColumnStatement.getGeneratedKeys();
@@ -1014,11 +1001,10 @@ public class InstrumentDB {
           boolean primarySensor = columns.getBoolean(3);
           long sensorType = columns.getLong(4);
           String sensorName = columns.getString(5);
-          int valueColumn = columns.getInt(6);
-          boolean dependsQuestionAnswer = columns.getBoolean(7);
-          String missingValue = columns.getString(8);
+          boolean dependsQuestionAnswer = columns.getBoolean(6);
+          String missingValue = columns.getString(7);
 
-          assignments.addAssignment(sensorType, new SensorAssignment(assignmentId, file.getFileDescription(), fileColumn, valueColumn, sensorName, primarySensor, dependsQuestionAnswer, missingValue));
+          assignments.addAssignment(sensorType, new SensorAssignment(assignmentId, file.getFileDescription(), fileColumn, sensorName, primarySensor, dependsQuestionAnswer, missingValue));
         }
 
         if (columnsRead == 0) {
