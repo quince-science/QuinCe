@@ -4,6 +4,7 @@ import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
  * The base class for a QC routine. These classes will be called
@@ -33,8 +34,14 @@ public abstract class Routine {
    * @param value The value
    * @param flag The flag
    */
-  protected void addFlag(SensorValue value, Flag flag, String requiredValue, String actualValue) {
-    value.addAutoQCFlag(new RoutineFlag(this, flag, requiredValue, actualValue));
+  protected void addFlag(SensorValue value, Flag flag,
+    String requiredValue, String actualValue) throws RoutineException {
+
+    try {
+      value.addAutoQCFlag(new RoutineFlag(this, flag, requiredValue, actualValue));
+    } catch (RecordNotFoundException e) {
+      throw new RoutineException("Sensor Value ID is not stored in database");
+    }
   }
 
   /**
@@ -43,7 +50,8 @@ public abstract class Routine {
    * @param value The value
    * @param flag The flag
    */
-  protected void addFlag(SensorValue value, Flag flag, Double requiredValue, Double actualValue) {
+  protected void addFlag(SensorValue value, Flag flag,
+    Double requiredValue, Double actualValue) throws RoutineException {
     addFlag(value, flag, String.valueOf(requiredValue), String.valueOf(actualValue));
   }
 
@@ -53,7 +61,8 @@ public abstract class Routine {
    * @param value The value
    * @param flag The flag
    */
-  protected void addFlag(SensorValue value, Flag flag, Double requiredValue, long actualValue) {
+  protected void addFlag(SensorValue value, Flag flag,
+    Double requiredValue, long actualValue) throws RoutineException {
     addFlag(value, flag, String.valueOf(requiredValue), String.valueOf(actualValue));
   }
 
@@ -63,7 +72,8 @@ public abstract class Routine {
    * @param value The value
    * @param flag The flag
    */
-  protected void addFlag(SensorValue value, Flag flag, String requiredValue, Double actualValue) {
+  protected void addFlag(SensorValue value, Flag flag,
+    String requiredValue, Double actualValue) throws RoutineException {
     addFlag(value, flag, requiredValue, String.valueOf(actualValue));
   }
 
