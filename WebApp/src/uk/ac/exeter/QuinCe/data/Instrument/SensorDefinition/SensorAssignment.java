@@ -25,11 +25,6 @@ public class SensorAssignment {
   private int column;
 
   /**
-   * The column in which the data will be stored in the database
-   */
-  private int databaseColumn = -1;
-
-  /**
    * The name of the sensor
    */
   private String sensorName;
@@ -84,13 +79,12 @@ public class SensorAssignment {
    * @param missingValue The missing value String
    */
   public SensorAssignment(long databaseId, String dataFile, int fileColumn,
-    int databaseColumn, String sensorName, boolean primary,
-    boolean dependsQuestionAnswer, String missingValue) {
+    String sensorName, boolean primary, boolean dependsQuestionAnswer,
+    String missingValue) {
 
     this.databaseId = databaseId;
     this.dataFile = dataFile;
     this.column = fileColumn;
-    this.databaseColumn = databaseColumn;
     this.sensorName = sensorName;
     this.primary = primary;
     this.dependsQuestionAnswer = dependsQuestionAnswer;
@@ -170,22 +164,6 @@ public class SensorAssignment {
   }
 
   /**
-   * Get the column index where this sensor's data will be stored in the database
-   * @return The database column index
-   */
-  public int getDatabaseColumn() {
-    return databaseColumn;
-  }
-
-  /**
-   * Set the column index where this sensor's data will be stored in the database
-   * @param databaseColumn The database column index
-   */
-  public void setDatabaseColumn(int databaseColumn) {
-    this.databaseColumn = databaseColumn;
-  }
-
-  /**
    * Get the missing value String
    * @return The missing value String
    */
@@ -231,7 +209,6 @@ public class SensorAssignment {
     int result = 1;
     result = prime * result + column;
     result = prime * result + ((dataFile == null) ? 0 : dataFile.hashCode());
-    result = prime * result + databaseColumn;
     result = prime * result + (int) (databaseId ^ (databaseId >>> 32));
     result = prime * result + (dependsQuestionAnswer ? 1231 : 1237);
     result = prime * result
@@ -257,8 +234,6 @@ public class SensorAssignment {
       if (other.dataFile != null)
         return false;
     } else if (!dataFile.equals(other.dataFile))
-      return false;
-    if (databaseColumn != other.databaseColumn)
       return false;
     if (databaseId != other.databaseId)
       return false;

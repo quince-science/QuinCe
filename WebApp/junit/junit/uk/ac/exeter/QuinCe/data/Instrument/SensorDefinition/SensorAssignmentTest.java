@@ -31,7 +31,6 @@ public class SensorAssignmentTest {
     assertEquals(DatabaseUtils.NO_DATABASE_RECORD, assignment.getDatabaseId());
     assertEquals("Data File", assignment.getDataFile());
     assertEquals(1, assignment.getColumn());
-    assertEquals(-1, assignment.getDatabaseColumn());
     assertEquals("Sensor", assignment.getSensorName());
     assertFalse(assignment.isPrimary());
     assertFalse(assignment.getDependsQuestionAnswer());
@@ -40,13 +39,12 @@ public class SensorAssignmentTest {
 
   @Test
   public void idConstructorTest() {
-    SensorAssignment assignment = new SensorAssignment(1, "Data File", 4, 2,
+    SensorAssignment assignment = new SensorAssignment(1, "Data File", 4,
       "Sensor", false, false, "NaN");
 
     assertEquals(1, assignment.getDatabaseId());
     assertEquals("Data File", assignment.getDataFile());
     assertEquals(4, assignment.getColumn());
-    assertEquals(2, assignment.getDatabaseColumn());
     assertEquals("Sensor", assignment.getSensorName());
     assertFalse(assignment.isPrimary());
     assertFalse(assignment.getDependsQuestionAnswer());
@@ -64,7 +62,7 @@ public class SensorAssignmentTest {
 
   @Test
   public void idTrueValuesConstructorTest() {
-    SensorAssignment assignment = new SensorAssignment(1, "Data File", 4, 2,
+    SensorAssignment assignment = new SensorAssignment(1, "Data File", 4,
       "Sensor", true, true, "NaN");
 
     assertTrue(assignment.isPrimary());
@@ -84,13 +82,6 @@ public class SensorAssignmentTest {
     SensorAssignment assignment = getNoIdFalsesAssignment();
     assignment.setDatabaseId(77);
     assertEquals(77, assignment.getDatabaseId());
-  }
-
-  @Test
-  public void setDatabaseColumnTest() {
-    SensorAssignment assignment = getNoIdFalsesAssignment();
-    assignment.setDatabaseColumn(77);
-    assertEquals(77, assignment.getDatabaseColumn());
   }
 
   @Test
@@ -122,7 +113,7 @@ public class SensorAssignmentTest {
 
   @Test
   public void constructor2MissingValueTest() {
-    SensorAssignment assignment = new SensorAssignment(1, "Data File", 1, 1,
+    SensorAssignment assignment = new SensorAssignment(1, "Data File", 1,
       "Sensor", false, false, null);
     assertEquals("", assignment.getMissingValue());
   }
