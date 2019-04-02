@@ -389,12 +389,16 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
   public void removeFileAssignments(String fileDescription) {
     for (Map.Entry<SensorType, Set<SensorAssignment>> entry : entrySet()) {
 
+      Set<SensorAssignment> assignmentsToRemove = new HashSet<SensorAssignment>();
+
       Set<SensorAssignment> assignments = entry.getValue();
       for (SensorAssignment assignment : assignments) {
         if (assignment.getDataFile().equalsIgnoreCase(fileDescription)) {
-          assignments.remove(assignment);
+          assignmentsToRemove.add(assignment);
         }
       }
+
+      assignments.removeAll(assignmentsToRemove);
     }
   }
 
