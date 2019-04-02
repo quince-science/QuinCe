@@ -13,4 +13,5 @@ CREATE TABLE sensor_values (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 
-    
+-- Remove value_column from file_column table - no longer used
+ALTER TABLE file_column DROP COLUMN value_column;
