@@ -6,7 +6,23 @@ import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
-public class AutoQcResult extends ArrayList<RoutineFlag> {
+public class AutoQCResult extends ArrayList<RoutineFlag> {
+
+  /**
+   * Create an empty AutoQCResult
+   */
+  public AutoQCResult() {
+    super();
+  }
+
+  /**
+   * Rebuild an AutoQCResult from a JSON string
+   * @param json The JSON string
+   */
+  public AutoQCResult(String json) {
+    super();
+    System.out.println("I need to do a thing here");
+  }
 
   /**
    * Return the overall flag that results from a set of flags

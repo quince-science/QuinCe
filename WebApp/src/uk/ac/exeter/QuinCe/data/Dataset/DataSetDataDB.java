@@ -19,6 +19,8 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -73,16 +75,25 @@ public class DataSetDataDB {
   /**
    * Statement to store a sensor value
    */
-  private static final String STORE_SENSOR_VALUE_STATEMENT = "INSERT INTO "
+  private static final String STORE_NEW_SENSOR_VALUE_STATEMENT = "INSERT INTO "
    + "sensor_values (dataset_id, file_column, date, value, "
    + "auto_qc, user_qc_flag, user_qc_message) "
    + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+  private static final String UPDATE_SENSOR_VALUE_STATEMENT = "UPDATE sensor_values "
+    + "SET auto_qc=?, user_qc_flag=?, user_qc_message=? WHERE value_id = ?";
 
   /**
    * Statement to remove all sensor values for a data set
    */
   private static final String DELETE_SENSOR_VALUES_STATEMENT = "DELETE FROM "
     + "sensor_values WHERE dataset_id = ?";
+
+  private static final String GET_SENSOR_VALUES_BY_COLUMN_QUERY = "SELECT "
+    + "id, file_column, date, value, auto_qc, " // 5
+    + "user_qc_flag, user_qc_message " // 7
+    + "FROM sensor_values FROM sensor_values WHERE dataset_id = ? "
+    + "ORDER BY file_column, date";
 
   /**
    * The name of the ID column
@@ -881,34 +892,51 @@ public class DataSetDataDB {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(sensorValues, "sensorValues");
 
-    PreparedStatement stmt = null;
+    PreparedStatement addStmt = null;
+    PreparedStatement updateStmt = null;
 
     try {
-      stmt = conn.prepareStatement(STORE_SENSOR_VALUE_STATEMENT);
+      addStmt = conn.prepareStatement(STORE_NEW_SENSOR_VALUE_STATEMENT);
+      updateStmt = conn.prepareStatement(UPDATE_SENSOR_VALUE_STATEMENT);
 
       for (SensorValue value : sensorValues) {
-        stmt.setLong(1, value.getDatasetId());
-        stmt.setLong(2, value.getColumnId());
-        stmt.setLong(3, DateTimeUtils.dateToLong(value.getTime()));
-        if (null == value.getValue()) {
-          stmt.setNull(4, Types.VARCHAR);
-        } else {
-          stmt.setString(4, value.getValue());
+        if (value.isDirty()) {
+
+          if (!value.isInDatabase()) {
+            addStmt.setLong(1, value.getDatasetId());
+            addStmt.setLong(2, value.getColumnId());
+            addStmt.setLong(3, DateTimeUtils.dateToLong(value.getTime()));
+            if (null == value.getValue()) {
+              addStmt.setNull(4, Types.VARCHAR);
+            } else {
+              addStmt.setString(4, value.getValue());
+            }
+
+            addStmt.setString(5, value.getAutoQcResult().toJson());
+            addStmt.setInt(6, value.getUserQCFlag().getFlagValue());
+            addStmt.setString(7, value.getUserQCMessage());
+
+            addStmt.addBatch();
+          } else {
+            updateStmt.setString(1, value.getAutoQcResult().toJson());
+            updateStmt.setInt(2, value.getUserQCFlag().getFlagValue());
+            updateStmt.setString(3, value.getUserQCMessage());
+            updateStmt.setLong(4, value.getDatasetId());
+
+            updateStmt.addBatch();
+          }
         }
-
-        stmt.setString(5, value.getAutoQcResult().toJson());
-        stmt.setInt(6, value.getUserQcFlag().getFlagValue());
-        stmt.setString(7, value.getUserQcMessage());
-
-        stmt.addBatch();
       }
 
-      stmt.executeBatch();
+      addStmt.executeBatch();
     } catch (SQLException e) {
       throw new DatabaseException("Error storing sensor values", e);
     } finally {
-      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeStatements(addStmt, updateStmt);
     }
+
+    // Clear the dirty flag on all the sensor values
+    SensorValue.clearDirtyFlag(sensorValues);
   }
 
   /**
@@ -937,4 +965,63 @@ public class DataSetDataDB {
       DatabaseUtils.closeStatements(stmt);
     }
   }
+
+  public static Map<Long, List<SensorValue>> getSensorValuesByColumn(
+    Connection conn, long datasetId)
+      throws RecordNotFoundException, DatabaseException, MissingParamException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(datasetId, "datasetId");
+
+    Map<Long, List<SensorValue>> values = new HashMap<Long, List<SensorValue>>();
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+
+      stmt = conn.prepareStatement(GET_SENSOR_VALUES_BY_COLUMN_QUERY);
+      stmt.setLong(1, datasetId);
+
+      records = stmt.executeQuery();
+
+      long currentFileId = -1;
+      List<SensorValue> currentSensorValues = new ArrayList<SensorValue>();
+
+      while (records.next()) {
+
+        long valueId = records.getLong(1);
+        long fileColumnId = records.getLong(2);
+        LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
+        String value = records.getString(4);
+        AutoQCResult autoQC = new AutoQCResult(records.getString(5));
+        Flag userQCFlag = new Flag(records.getInt(6));
+        String userQCMessage = records.getString(7);
+
+        if (fileColumnId != currentFileId) {
+          values.put(currentFileId, currentSensorValues);
+          currentFileId = fileColumnId;
+          currentSensorValues = new ArrayList<SensorValue>();
+        }
+
+        currentSensorValues.add(new SensorValue(valueId, datasetId, fileColumnId,
+          time, value, autoQC, userQCFlag, userQCMessage));
+      }
+
+      if (currentFileId == -1) {
+        throw new RecordNotFoundException(
+          "No sensor values found for dataset " + datasetId);
+      } else {
+        values.put(currentFileId, currentSensorValues);
+      }
+
+    } catch (Exception e) {
+      throw new DatabaseException("Error while retrieving sensor values", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return values;
+  }
+
 }

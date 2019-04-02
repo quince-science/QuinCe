@@ -7,7 +7,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
-import uk.ac.exeter.QCRoutines.config.RoutinesConfig;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import uk.ac.exeter.QCRoutines.data.DataRecord;
 import uk.ac.exeter.QCRoutines.data.InvalidDataException;
 import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
@@ -20,35 +21,27 @@ import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecordFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * <p>
- *   This {@link Job} class runs a set of QC routines on the records for a given data file.
- * </p>
- *
- * <p>
- *   This job can be run more than once during file processing, since certain QC routines
- *   are more suited to different stages. For example, certain QC failures will mean that
- *   data reduction cannot be completed (e.g. missing required values), while others merely
- *   indicate that the calculated values may not be trustworthy. The job's parameters
- *   will indicate where the calculations are in a file's processing, and which job
- *   should be run next.
- * </p>
- *
- * <p>
- *   Records that have already had their WOCE flag to {@link Flag#FATAL}, {@link Flag#BAD} or {@link Flag#IGNORED}
- *   are excluded from the QC checks.
+ *   This {@link Job} class runs a set of QC routines on the sensor values for
+ *   a given data set.
  * </p>
  *
  * <p>
@@ -67,18 +60,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *
  * <p>
  *   If the {@code AutoQCJob} has been run before, some WOCE Flags and Comments will have already been set by the user.
- *   These will be dealt with as follows:
+ *   If the user QC flag is anything other than {@link Flag#ASSUMED_GOOD} or {@link Flag#NEEDED}, it will not be checked.
  * </p>
- *
- * <ul>
- *   <li>
- *     If the QC results have not changed from their previous value, the WOCE flags are kept unchanged.
- *   </li>
- *   <li>
- *     If the QC results are different, the WOCE flag is replaced with {@link Flag#ASSUMED_GOOD} or {@link Flag#NEEDED}
- *     as described above. The user will have to re-examine these records and set the WOCE Flag and Comment once more.
- *   </li>
- * </ul>
  *
  * @author Steve Jones
  * @see Flag
@@ -92,16 +75,19 @@ public class AutoQCJob extends Job {
   public static final String ID_PARAM = "id";
 
   /**
-   * The name of the job parameter that contains the path to the configuration
-   * for the QC Routines
-   * @see RoutinesConfig
-   */
-  public static final String PARAM_ROUTINES_CONFIG = "ROUTINES_CONFIG";
-
-  /**
    * Name of the job, used for reporting
    */
   private final String jobName = "Automatic Quality Control";
+
+  /**
+   * The data set being processed by the job
+   */
+  private DataSet dataSet = null;
+
+  /**
+   * The instrument to which the data set belongs
+   */
+  private Instrument instrument = null;
 
   /**
    * Constructor that allows the {@link JobManager} to create an instance of this job.
@@ -126,6 +112,46 @@ public class AutoQCJob extends Job {
    */
   @Override
   protected void execute(JobThread thread) throws JobFailedException {
+
+    Connection conn = null;
+
+    try {
+      conn = dataSource.getConnection();
+      conn.setAutoCommit(false);
+
+      // Get the data set from the database
+      dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
+
+      instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(),
+        ResourceManager.getInstance().getSensorsConfiguration(),
+        ResourceManager.getInstance().getRunTypeCategoryConfiguration());
+
+      Map<Long, List<SensorValue>> sensorValues =
+        DataSetDataDB.getSensorValuesByColumn(conn, dataSet.getId());
+
+
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      DatabaseUtils.rollBack(conn);
+      try {
+        // Set the dataset to Error status
+        dataSet.setStatus(DataSet.STATUS_ERROR);
+        // And add a (friendly) message...
+        StringBuffer message = new StringBuffer();
+        message.append(getJobName());
+        message.append(" - error: ");
+        message.append(e.getMessage());
+        dataSet.addMessage(message.toString(), ExceptionUtils.getStackTrace(e));
+        DataSetDB.updateDataSet(conn, dataSet);
+        conn.commit();
+      } catch (Exception e1) {
+        e1.printStackTrace();
+      }
+      throw new JobFailedException(id, e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
 
     System.out.println("Auto QC job!");
 /*
