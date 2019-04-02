@@ -188,7 +188,6 @@ public class ExtractDataSetJob extends Job {
       DataSetDB.updateDataSet(conn, dataSet);
       Map<String, String> jobParams = new HashMap<String, String>();
       jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
-      jobParams.put(AutoQCJob.PARAM_ROUTINES_CONFIG, ResourceManager.QC_ROUTINES_CONFIG);
       JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), AutoQCJob.class.getCanonicalName(), jobParams);
 
       conn.commit();
