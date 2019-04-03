@@ -93,7 +93,9 @@ public abstract class Routine {
    * Get the short form message for this routine
    * @return The short QC message
    */
-  public abstract String getShortMessage();
+  public static String getShortMessage() {
+    return "DEFAULT SHORT MESSAGE. YOU SHOULD NOT BE SEEING THIS!";
+  }
 
   /**
    * Get the long form message for this routine
@@ -101,5 +103,7 @@ public abstract class Routine {
    * @param actualValue The actual data value
    * @return The short QC message
    */
-  public abstract String getLongMessage(String requiredValue, String actualValue);
+  public static String getLongMessage(String requiredValue, String actualValue) {
+    return "DEFAULT LONG MESSAGE. YOU SHOULD NOT BE SEEING THIS!";
+  }
 }

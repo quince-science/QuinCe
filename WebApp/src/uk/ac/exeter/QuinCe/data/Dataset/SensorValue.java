@@ -5,6 +5,7 @@ import java.util.Collection;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineFlag;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
@@ -50,7 +51,7 @@ public class SensorValue {
   /**
    * The user QC flag
    */
-  private Flag userQCFlag = Flag.NOT_SET;
+  private Flag userQCFlag = Flag.ASSUMED_GOOD;
 
   /**
    * The user QC message
@@ -93,11 +94,11 @@ public class SensorValue {
    * @param time
    * @param value
    */
-  public SensorValue(long valueId, long datasetId, long columnId,
+  public SensorValue(long databaseId, long datasetId, long columnId,
     LocalDateTime time, String value, AutoQCResult autoQc,
     Flag userQcFlag, String userQcMessage) {
 
-    this.databaseId = NO_RECORD;
+    this.databaseId = databaseId;
     this.datasetId = datasetId;
     this.columnId = columnId;
     this.time = time;
@@ -111,7 +112,7 @@ public class SensorValue {
 
     this.userQCFlag = userQcFlag;
     this.userQCMessage = userQcMessage;
-    this.dirty = true;
+    this.dirty = false;
   }
 
   /**
@@ -150,12 +151,14 @@ public class SensorValue {
    * Get the value as a Double. No error checking is performed.
    * Returns {@code null} if the value is {@code null}.
    *
+   * All commas are removed from number before parsing
+   *
    * @return The value as a Double
    */
   public Double getDoubleValue() {
     Double result = Double.NaN;
     if (null != value) {
-      result = new Double(value);
+      result = Double.parseDouble(value.replaceAll(",", ""));
     }
 
     return result;
@@ -200,7 +203,7 @@ public class SensorValue {
    * @return The user QC message
    */
   public String getUserQCMessage() {
-    return userQCMessage;
+    return null == userQCMessage ? "" : userQCMessage;
   }
 
   /**
@@ -214,6 +217,13 @@ public class SensorValue {
         "SensorValue has not been stored in the database");
     }
     autoQC = new AutoQCResult();
+
+    // Reset the user QC if it hasn't been set by the user
+    if (userQCFlag.equals(Flag.ASSUMED_GOOD) || userQCFlag.equals(Flag.NEEDED)) {
+      userQCFlag = Flag.ASSUMED_GOOD;
+      userQCMessage = null;
+    }
+
     dirty = true;
   }
 
@@ -223,12 +233,20 @@ public class SensorValue {
    * @throws RecordNotFoundException If the value has not yet been stored
    *         in the database
    */
-  public void addAutoQCFlag(RoutineFlag flag) throws RecordNotFoundException {
+  public void addAutoQCFlag(RoutineFlag flag)
+    throws RecordNotFoundException, RoutineException {
     if (!isInDatabase()) {
       throw new RecordNotFoundException(
         "SensorValue has not been stored in the database");
     }
     autoQC.add(flag);
+
+    // Update the user QC if it hasn't been set by the user
+    if (userQCFlag.equals(Flag.ASSUMED_GOOD) || userQCFlag.equals(Flag.NEEDED)) {
+      userQCFlag = Flag.NEEDED;
+      userQCMessage = autoQC.getAllMessages();
+    }
+
     dirty = true;
   }
 
@@ -274,5 +292,13 @@ public class SensorValue {
     for (SensorValue value : sensorValues) {
       value.dirty = false;
     }
+  }
+
+  /**
+   * Get the database ID of this sensor value
+   * @return The database ID
+   */
+  public long getDatabaseId() {
+    return databaseId;
   }
 }

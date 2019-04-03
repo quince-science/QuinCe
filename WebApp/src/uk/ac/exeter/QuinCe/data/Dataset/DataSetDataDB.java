@@ -81,7 +81,7 @@ public class DataSetDataDB {
    + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
   private static final String UPDATE_SENSOR_VALUE_STATEMENT = "UPDATE sensor_values "
-    + "SET auto_qc=?, user_qc_flag=?, user_qc_message=? WHERE value_id = ?";
+    + "SET auto_qc=?, user_qc_flag=?, user_qc_message=? WHERE id = ?";
 
   /**
    * Statement to remove all sensor values for a data set
@@ -92,7 +92,7 @@ public class DataSetDataDB {
   private static final String GET_SENSOR_VALUES_BY_COLUMN_QUERY = "SELECT "
     + "id, file_column, date, value, auto_qc, " // 5
     + "user_qc_flag, user_qc_message " // 7
-    + "FROM sensor_values FROM sensor_values WHERE dataset_id = ? "
+    + "FROM sensor_values WHERE dataset_id = ? "
     + "ORDER BY file_column, date";
 
   /**
@@ -879,7 +879,14 @@ public class DataSetDataDB {
   }
 
   /**
-   * Store a set of sensor values in the database
+   * Store a set of sensor values in the database.
+   *
+   * Values will only be stored if their {@code dirty} flag is set.
+   *
+   * If a sensor value has a database ID, it will be updated. Otherwise
+   * it will be stored as a new record. Note that the new records will not
+   * be given an ID; they must be re-read from the database afterwards.
+   *
    * @param conn A database connection
    * @param sensorValues The sensor values
    * @throws DatabaseException If a database error occurs
@@ -921,7 +928,7 @@ public class DataSetDataDB {
             updateStmt.setString(1, value.getAutoQcResult().toJson());
             updateStmt.setInt(2, value.getUserQCFlag().getFlagValue());
             updateStmt.setString(3, value.getUserQCMessage());
-            updateStmt.setLong(4, value.getDatasetId());
+            updateStmt.setLong(4, value.getDatabaseId());
 
             updateStmt.addBatch();
           }
@@ -929,6 +936,7 @@ public class DataSetDataDB {
       }
 
       addStmt.executeBatch();
+      updateStmt.executeBatch();
     } catch (SQLException e) {
       throw new DatabaseException("Error storing sensor values", e);
     } finally {
@@ -984,7 +992,7 @@ public class DataSetDataDB {
 
       records = stmt.executeQuery();
 
-      long currentFileId = -1;
+      long currentColumnId = -1;
       List<SensorValue> currentSensorValues = new ArrayList<SensorValue>();
 
       while (records.next()) {
@@ -993,13 +1001,16 @@ public class DataSetDataDB {
         long fileColumnId = records.getLong(2);
         LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
         String value = records.getString(4);
-        AutoQCResult autoQC = new AutoQCResult(records.getString(5));
+        AutoQCResult autoQC = AutoQCResult.buildFromJson(records.getString(5));
         Flag userQCFlag = new Flag(records.getInt(6));
         String userQCMessage = records.getString(7);
 
-        if (fileColumnId != currentFileId) {
-          values.put(currentFileId, currentSensorValues);
-          currentFileId = fileColumnId;
+        if (fileColumnId != currentColumnId) {
+          if (currentColumnId != -1) {
+            values.put(currentColumnId, currentSensorValues);
+          }
+
+          currentColumnId = fileColumnId;
           currentSensorValues = new ArrayList<SensorValue>();
         }
 
@@ -1007,11 +1018,11 @@ public class DataSetDataDB {
           time, value, autoQC, userQCFlag, userQCMessage));
       }
 
-      if (currentFileId == -1) {
+      if (currentColumnId == -1) {
         throw new RecordNotFoundException(
           "No sensor values found for dataset " + datasetId);
       } else {
-        values.put(currentFileId, currentSensorValues);
+        values.put(currentColumnId, currentSensorValues);
       }
 
     } catch (Exception e) {
