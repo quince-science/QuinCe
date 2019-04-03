@@ -122,13 +122,21 @@ public class RangeCheckRoutine extends Routine {
     }
   }
 
-  @Override
-  public String getShortMessage() {
+  /**
+   * Get the short form QC message
+   * @return The short QC message
+   */
+  public static String getShortMessage() {
     return "Out of range";
   }
 
-  @Override
-  public String getLongMessage(String requiredValue, String actualValue) {
+  /**
+   * Get the long form QC message
+   * @param requiredValue The value required by the routine
+   * @param actualValue The value received by the routine
+   * @return The long form message
+   */
+  public static String getLongMessage(String requiredValue, String actualValue) {
     return "Out of range - Should be in " + requiredValue + ", actual value is " + actualValue;
   }
 }

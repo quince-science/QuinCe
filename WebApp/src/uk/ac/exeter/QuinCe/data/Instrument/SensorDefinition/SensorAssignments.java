@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -463,5 +464,30 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
     }
 
     return count;
+  }
+
+  /**
+   * Get the sensor assignment with a given File Column database ID
+   * @param columnId The file column database ID
+   * @return The sensor assignment
+   * @throws RecordNotFoundException If there is no assignment with the specified ID
+   */
+  public SensorType getSensorTypeForDBColumn(long columnId) throws RecordNotFoundException {
+    SensorType result = null;
+
+    for (SensorType sensorType : keySet()) {
+      for (SensorAssignment assignment : get(sensorType)) {
+        if (assignment.getDatabaseId() == columnId) {
+          result = sensorType;
+          break;
+        }
+      }
+
+      if (null != result) {
+        break;
+      }
+    }
+
+    return result;
   }
 }

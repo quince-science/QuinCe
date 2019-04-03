@@ -437,7 +437,6 @@ public class DataSetsBean extends BaseManagedBean {
     try {
       Map<String, String> jobParams = new HashMap<String, String>();
       jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(datasetId));
-      jobParams.put(AutoQCJob.PARAM_ROUTINES_CONFIG, ResourceManager.QC_ROUTINES_CONFIG);
       JobManager.addJob(getDataSource(), getUser(), AutoQCJob.class.getCanonicalName(), jobParams);
     } catch (Exception e) {
       e.printStackTrace();

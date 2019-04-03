@@ -175,7 +175,7 @@ public class ResourceManager implements ServletContextListener {
     return runTypeCategoryConfiguration;
   }
 
-  public QCRoutinesConfiguration getQcRoutinesConfiguration() {
+  public QCRoutinesConfiguration getQCRoutinesConfiguration() {
     return qcRoutinesConfiguration;
   }
 
