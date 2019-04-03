@@ -79,13 +79,21 @@ public class OutlierRoutine extends Routine {
     }
   }
 
-  @Override
-  public String getShortMessage() {
+  /**
+   * Get the short form QC message
+   * @return The short QC message
+   */
+  public static String getShortMessage() {
     return "Standard deviation is too large";
   }
 
-  @Override
-  public String getLongMessage(String requiredValue, String actualValue) {
+  /**
+   * Get the long form QC message
+   * @param requiredValue The value required by the routine
+   * @param actualValue The value received by the routine
+   * @return The long form message
+   */
+  public static String getLongMessage(String requiredValue, String actualValue) {
     return "Standard deviation is " + actualValue + ", should be <= " + requiredValue;
   }
 }

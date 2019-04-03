@@ -69,26 +69,6 @@ public class Flag implements Comparable<Flag> {
   protected static final String TEXT_BAD = "Bad";
 
   /**
-   * The special value for a fatal flag
-   */
-  public static final int VALUE_FATAL = 44;
-
-  /**
-   * The text value for a fatal flag
-   */
-  protected static final String TEXT_FATAL = "Fatal";
-
-  /**
-   * The special value for an unset flag
-   */
-  public static final int VALUE_NOT_SET = -1000;
-
-  /**
-   * The text value for an unset flag
-   */
-  protected static final String TEXT_NOT_SET = "Not Set";
-
-  /**
    * The special value for a needed flag
    */
   public static final int VALUE_NEEDED = -10;
@@ -97,17 +77,6 @@ public class Flag implements Comparable<Flag> {
    * The text value for a needed flag
    */
   protected static final String TEXT_NEEDED = "Needed";
-
-  /**
-   * The special value for an Ignored flag
-   */
-  public static final int VALUE_IGNORED = -1002;
-
-  /**
-   * The text value for an Ignored flag
-   */
-  protected static final String TEXT_IGNORED = "Ignored";
-
   /**
    *  An instance of a Good flag
    */
@@ -129,24 +98,9 @@ public class Flag implements Comparable<Flag> {
   public static final Flag BAD = makeBadFlag();
 
   /**
-   * An instance of a Fatal flag
-   */
-  public static final Flag FATAL = makeFatalFlag();
-
-  /**
-   *  An instance of a Not Set flag
-   */
-  public static final Flag NOT_SET = makeNotSetFlag();
-
-  /**
    *  An instance of a Not Set flag
    */
   public static final Flag NEEDED = makeNeededFlag();
-
-  /**
-   * An instance of an Ignored flag
-   */
-  public static final Flag IGNORED = makeIgnoredFlag();
 
   /**
    * The WOCE value for this flag
@@ -207,20 +161,8 @@ public class Flag implements Comparable<Flag> {
       result = TEXT_BAD;
       break;
     }
-    case VALUE_FATAL: {
-      result = TEXT_FATAL;
-      break;
-    }
-    case VALUE_NOT_SET: {
-      result = TEXT_NOT_SET;
-      break;
-    }
     case VALUE_NEEDED: {
       result = TEXT_NEEDED;
-      break;
-    }
-    case VALUE_IGNORED: {
-      result = TEXT_IGNORED;
       break;
     }
     default: {
@@ -240,8 +182,7 @@ public class Flag implements Comparable<Flag> {
    */
   public static boolean isValidFlagValue(int value) {
     return (value == VALUE_GOOD || value == VALUE_ASSUMED_GOOD || value == VALUE_QUESTIONABLE ||
-        value == VALUE_BAD || value == VALUE_FATAL || value == VALUE_NOT_SET || value == VALUE_NEEDED ||
-        value == VALUE_IGNORED);
+        value == VALUE_BAD || value == VALUE_NEEDED);
   }
 
   /**
@@ -305,36 +246,6 @@ public class Flag implements Comparable<Flag> {
   }
 
   /**
-   * Create an instance of a Fatal flag
-   * @return A Fatal flag
-   */
-  private static Flag makeFatalFlag() {
-    Flag flag = null;
-    try {
-      flag = new Flag(VALUE_FATAL);
-    } catch (InvalidFlagException e) {
-      // This won't be thrown; do nothing
-    }
-
-    return flag;
-  }
-
-  /**
-   * Create an instance of a Not Set flag
-   * @return A Not Set flag
-   */
-  private static Flag makeNotSetFlag() {
-    Flag flag = null;
-    try {
-      flag = new Flag(VALUE_NOT_SET);
-    } catch (InvalidFlagException e) {
-      // This won't be thrown; do nothing
-    }
-
-    return flag;
-  }
-
-  /**
    * Create an instance of a Not Set flag
    * @return A Not Set flag
    */
@@ -342,21 +253,6 @@ public class Flag implements Comparable<Flag> {
     Flag flag = null;
     try {
       flag = new Flag(VALUE_NEEDED);
-    } catch (InvalidFlagException e) {
-      // This won't be thrown; do nothing
-    }
-
-    return flag;
-  }
-
-  /**
-   * Create an instance of an Ignored flag
-   * @return An Ignored flag
-   */
-  private static Flag makeIgnoredFlag() {
-    Flag flag = null;
-    try {
-      flag = new Flag(VALUE_IGNORED);
     } catch (InvalidFlagException e) {
       // This won't be thrown; do nothing
     }
@@ -436,8 +332,7 @@ public class Flag implements Comparable<Flag> {
       result = 3;
       break;
     }
-    case VALUE_BAD:
-    case VALUE_FATAL: {
+    case VALUE_BAD: {
       result = 4;
       break;
     }
