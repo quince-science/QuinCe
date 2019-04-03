@@ -71,15 +71,21 @@ public class HighDeltaRoutine extends Routine {
     }
   }
 
-  @Override
-  public String getShortMessage() {
+  /**
+   * Get the short form QC message
+   * @return The short QC message
+   */
+  public static String getShortMessage() {
     return "Changes too quickly";
   }
 
-  @Override
-  public String getLongMessage(String requiredValue, String actualValue) {
-    // TODO Auto-generated method stub
-    return null;
+  /**
+   * Get the long form QC message
+   * @param requiredValue The value required by the routine
+   * @param actualValue The value received by the routine
+   * @return The long form message
+   */
+  public static String getLongMessage(String requiredValue, String actualValue) {
+    return "Changes too quickly - " + actualValue + "/min, limit is " + requiredValue + "/min";
   }
-
 }

@@ -67,6 +67,7 @@ public class QCRoutinesConfiguration {
    * @throws QCRoutinesConfigurationException If the configuration is invalid
    */
   private void init(SensorsConfiguration sensorsConfig, String configFilename) throws QCRoutinesConfigurationException {
+
     try {
       BufferedReader reader = new BufferedReader(new FileReader(configFilename));
       try {
@@ -80,13 +81,13 @@ public class QCRoutinesConfiguration {
 
             // The first field is the class name. Grab it and remove
             // it from the list, so what's left is the parameters.
-            String className = fields.get(0);
+            String routineName = fields.get(0);
             String sensorTypeName = fields.get(1);
             List<String> parameters = fields.subList(2, fields.size());
 
-            String fullClassName = ROUTINE_CLASS_ROOT + className + ROUTINE_CLASS_TAIL;
+            String fullClassName = getFullClassName(routineName);
 
-            if (className.equalsIgnoreCase("")) {
+            if (routineName.equalsIgnoreCase("")) {
               throw new QCRoutinesConfigurationException(configFilename, currentLine, "Routine class name cannot be empty");
             } else if (sensorTypeName.equalsIgnoreCase("")) {
               throw new QCRoutinesConfigurationException(configFilename, currentLine, "Sensor Type name cannot be empty");
@@ -124,6 +125,65 @@ public class QCRoutinesConfiguration {
     } catch (IOException e) {
       throw new QCRoutinesConfigurationException(configFilename, "I/O Error while reading file", e);
     }
+  }
 
+  /**
+   * Get the QC routines for a given sensor type
+   * @param sensorType The sensor type
+   * @return The routines to be run
+   */
+  public List<Routine> getRoutines(SensorType sensorType) {
+    List<Routine> result = routines.get(sensorType);
+    if (null == result) {
+      result = new ArrayList<Routine>();
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the full class name from a routine name
+   * @param routineName The routine name
+   * @return The full class name
+   */
+  private static String getFullClassName(String routineName) {
+    return ROUTINE_CLASS_ROOT + routineName + ROUTINE_CLASS_TAIL;
+  }
+
+  /**
+   * Get the shortcut name of a concrete Routine class, for storage in the database.
+   *
+   * This is the class name without the package prefix, and with the word 'Routine'
+   * stripped off the end
+   *
+   * @param clazz The class
+   * @return The shortcut name.
+   */
+  public static String getRoutineName(Class<? extends Routine> clazz) {
+    return clazz.getSimpleName().replaceAll("Routine$", "");
+  }
+
+  /**
+   * Get the shortcut name of a concrete Routine instance, for storage in the database.
+   *
+   * This is the class name without the package prefix, and with the word 'Routine'
+   * stripped off the end
+   *
+   * @param routine The instance
+   * @return The shortcut name.
+   */
+  public static String getRoutineName(Routine routine) {
+    return getRoutineName(routine.getClass());
+  }
+
+  /**
+   * Get the Class object for a routine given its name
+   * @param routineName The routine name
+   * @return The Routine class
+   * @throws ClassNotFoundException If the class does not exist
+   */
+  @SuppressWarnings("unchecked")
+  public static Class<? extends Routine> getRoutineClass(String routineName) throws ClassNotFoundException {
+    return (Class<? extends Routine>) Class.forName(getFullClassName(routineName));
   }
 }

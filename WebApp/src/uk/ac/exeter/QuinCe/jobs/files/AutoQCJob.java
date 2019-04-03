@@ -5,28 +5,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TreeMap;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import uk.ac.exeter.QCRoutines.data.DataRecord;
-import uk.ac.exeter.QCRoutines.data.InvalidDataException;
-import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
 import uk.ac.exeter.QCRoutines.messages.Message;
-import uk.ac.exeter.QCRoutines.messages.MessageException;
-import uk.ac.exeter.QCRoutines.routines.Routine;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecordFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.QCRoutinesConfiguration;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.Routine;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -126,10 +119,29 @@ public class AutoQCJob extends Job {
         ResourceManager.getInstance().getSensorsConfiguration(),
         ResourceManager.getInstance().getRunTypeCategoryConfiguration());
 
+      SensorAssignments sensorAssignments = instrument.getSensorAssignments();
+
+      QCRoutinesConfiguration qcRoutinesConfig =
+        ResourceManager.getInstance().getQCRoutinesConfiguration();
+
+      // Get the sensor values grouped by data file column
       Map<Long, List<SensorValue>> sensorValues =
         DataSetDataDB.getSensorValuesByColumn(conn, dataSet.getId());
 
+      // Run the routines for each column
+      for (Map.Entry<Long, List<SensorValue>> entry : sensorValues.entrySet()) {
+        SensorType sensorType = sensorAssignments.getSensorTypeForDBColumn(entry.getKey());
+        for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
+          routine.qcValues(entry.getValue());
+        }
+      }
 
+      // Store all the sensor values
+      List<SensorValue> allValues = new ArrayList<SensorValue>();
+      sensorValues.values().forEach(allValues::addAll);
+      DataSetDataDB.storeSensorValues(conn, allValues);
+
+      conn.commit();
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -152,265 +164,11 @@ public class AutoQCJob extends Job {
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
-
-    System.out.println("Auto QC job!");
-/*
-
-    Connection conn = null;
-    long datasetId = Long.parseLong(parameters.get(ID_PARAM));
-    DataSet dataSet = null;
-    try {
-      conn = dataSource.getConnection();
-      conn.setAutoCommit(false);
-      dataSet = DataSetDB.getDataSet(conn, datasetId);
-      dataSet.setStatus(DataSet.STATUS_AUTO_QC);
-      DataSetDB.updateDataSet(conn, dataSet);
-      boolean userQcNeeded = false;
-
-      CalculationDB calculationDB = CalculationDBFactory.getCalculationDB();
-
-      // TODO This should be replaced with something that gets all the records in one query.
-      //      This will need changes to how the CalculationRecords are built
-      List<Long> measurementIds = DataSetDataDB.getMeasurementIds(conn, datasetId);
-      List<? extends DataRecord> records = getRecords(conn, dataSet, measurementIds);
-
-      // Remove any existing automatic QC flags or records
-      for (DataRecord record : records) {
-        ((CalculationRecord) record).clearAutoQCData();
-      }
-
-      List<Routine> routines = RoutinesConfig.getInstance(parameters.get(PARAM_ROUTINES_CONFIG)).getRoutines();
-
-      for (Routine routine : routines) {
-        int recordsUpdated = Integer.MAX_VALUE;
-
-        while (recordsUpdated > 0) {
-          List<DataRecord> recordsToProcess = new ArrayList<DataRecord>(records.size());
-          for (DataRecord record : records) {
-            if (!containsMessageFromRoutine(record, routine)) {
-              recordsToProcess.add(record);
-            }
-          }
-
-          routine.processRecords(recordsToProcess, null);
-          recordsUpdated = countMessagesFromRoutine(recordsToProcess, routine);
-        }
-      }
-
-      // Record the messages from the QC in the database
-      for (DataRecord record : records) {
-
-        if (thread.isInterrupted()) {
-          break;
-        }
-
-        CalculationRecord qcRecord = (CalculationRecord) record;
-        boolean writeRecord = false;
-
-        int messageCount = qcRecord.getMessages().size();
-
-        Flag previousQCFlag = calculationDB.getAutoQCFlag(conn, qcRecord.getLineNumber());
-        if (previousQCFlag.equals(Flag.NOT_SET)) {
-          writeRecord = true;
-        }
-
-        if (messageCount == 0) {
-          if (!previousQCFlag.isGood()) {
-            qcRecord.setAutoFlag(Flag.GOOD);
-            qcRecord.setUserFlag(Flag.ASSUMED_GOOD);
-            qcRecord.setUserMessage(null);
-            writeRecord = true;
-          } else {
-            Flag userFlag = qcRecord.getUserFlag();
-            if (!userFlag.equals(Flag.ASSUMED_GOOD) && !userFlag.equals(Flag.GOOD)) {
-              qcRecord.setUserFlag(Flag.ASSUMED_GOOD);
-              qcRecord.setUserMessage(null);
-              writeRecord = true;
-            }
-          }
-        } else {
-
-          // Compare the QC comment (which is the Rebuild Codes for the
-          // messages) with the new rebuild codes. If they're the same,
-          // take no action. Otherwise reset the QC & WOCE flags and comments
-          boolean messagesMatch = true;
-          List<Message> databaseMessages = calculationDB.getQCMessages(conn, qcRecord.getLineNumber());
-          if (databaseMessages.size() != qcRecord.getMessages().size()) {
-            messagesMatch = false;
-          } else {
-            for (int i = 0; i < databaseMessages.size() && messagesMatch; i++) {
-              Message databaseMessage = databaseMessages.get(i);
-              boolean databaseMessageFound = false;
-              for (Message recordMessage : qcRecord.getMessages()) {
-                if (recordMessage.equals(databaseMessage)) {
-                  databaseMessageFound = true;
-                  break;
-                }
-              }
-
-              if (!databaseMessageFound) {
-                messagesMatch = false;
-              }
-            }
-          }
-
-          if (!messagesMatch) {
-            if (qcRecord.getAutoFlag().equals(Flag.FATAL)) {
-              qcRecord.setUserFlag(Flag.FATAL);
-            } else {
-              qcRecord.setUserFlag(Flag.NEEDED);
-            }
-            qcRecord.setUserMessage(qcRecord.getMessageSummaries());
-            writeRecord = true;
-          }
-        }
-
-        if (writeRecord) {
-          calculationDB.storeQC(conn, (CalculationRecord) record);
-        }
-        if (qcRecord.getUserFlag().equals(Flag.NEEDED)) {
-          userQcNeeded = true;
-        }
-      }
-
-      // If the thread was interrupted, undo everything
-      if (thread.isInterrupted()) {
-        conn.rollback();
-      } else {
-        // Commit all the records
-        if (dataSet != null) {
-          if (dataSet.isNrt()) {
-            dataSet.setStatus(DataSet.STATUS_READY_FOR_EXPORT);
-          } else {
-            if (userQcNeeded) {
-              dataSet.setStatus(DataSet.STATUS_USER_QC);
-            } else {
-              dataSet.setStatus(DataSet.STATUS_READY_FOR_SUBMISSION);
-            }
-          }
-
-          DataSetDB.updateDataSet(conn, dataSet);
-        }
-        conn.commit();
-      }
-    } catch (Exception e) {
-      // Revert all changes
-      DatabaseUtils.rollBack(conn);
-
-      try {
-        // Set the dataset to Error status
-        if (dataSet != null) {
-          dataSet.setStatus(DataSet.STATUS_ERROR);
-
-          StringBuffer message = new StringBuffer();
-          message.append(getJobName());
-          message.append(" - error: ");
-          message.append(e.getMessage());
-          dataSet.addMessage(message.toString(),
-              ExceptionUtils.getStackTrace(e));
-          DataSetDB.updateDataSet(conn, dataSet);
-        }
-        conn.commit();
-      } catch (Exception e1) {
-        e.printStackTrace();
-      }
-
-      throw new JobFailedException(id, e);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
-    }
-
-*/
-  }
-
-  /**
-   * Count the number of records that contain messages from a specified QC routine
-   * @param recordsToProcess The records to be counted
-   * @param routine The routine
-   * @return The number of records with messages from the routine
-   */
-  private int countMessagesFromRoutine(List<DataRecord> records, Routine routine) {
-    int count = 0;
-
-    for (DataRecord record : records) {
-      if (containsMessageFromRoutine(record, routine)) {
-        count++;
-      }
-    }
-
-    return count;
-  }
-
-  /**
-   * Determine whether or not a record contains QC messages from a specified QC routine
-   * @param record The record to be checked
-   * @param routine The routine
-   * @return {@code true} if any messages from the routine exist; {@code false} otherwise
-   */
-  private boolean containsMessageFromRoutine(DataRecord record, Routine routine) {
-    boolean messageFound = false;
-
-    for (Message message : record.getMessages()) {
-      if (message.getClass().equals(routine.getMessageClass())) {
-        messageFound = true;
-        break;
-      }
-    }
-
-    return messageFound;
   }
 
   @Override
   protected void validateParameters() throws InvalidJobParametersException {
     // TODO Auto-generated method stub
-  }
-
-  /**
-   * Get the calculation records for a set of measurements. QUESTIONABLE, BAD or IGNORED records
-   * are not included.
-   * @param dataset The dataset ID
-   * @param ids The measurement IDs
-   * @return The calculation records
-   * @throws MissingParamException If any required parameters are missing
-   * @throws DatabaseException If a database error occurs
-   * @throws RecordNotFoundException If the record is not in the database
-   * @throws InvalidDataException If a field cannot be added to the record
-   * @throws MessageException If the automatic QC messages cannot be parsed
-   * @throws NoSuchColumnException If the record structure does not match the application configuration
-   * @throws InvalidFlagException If the QC flags are invalid
-   */
-  private List<CalculationRecord> getRecords(Connection conn, DataSet dataSet, List<Long> ids)
-      throws MissingParamException, InvalidDataException, NoSuchColumnException, DatabaseException,
-      RecordNotFoundException, MessageException, InvalidFlagException {
-
-    TreeMap<Long, CalculationRecord> records = new TreeMap<Long, CalculationRecord>();
-
-    // Create empty calculation records
-    for (long id : ids) {
-      CalculationRecord record = CalculationRecordFactory.makeCalculationRecord(dataSet.getId(), id);
-      records.put(id, record);
-    }
-
-    // Load the sensor data
-    List<DataSetRawDataRecord> sensorRecords = DataSetDataDB.getMeasurements(conn, dataSet);
-    for (DataSetRawDataRecord sensorRecord : sensorRecords) {
-      records.get(sensorRecord.getId()).insertSensorData(sensorRecord);
-    }
-
-    // Add the calculation values
-    CalculationDBFactory.getCalculationDB().loadCalculationValues(conn, dataSet.getId(), records);
-
-    // Skip any records where the user has explicitly set the flag. We trust their judgment.
-    for (long id : ids) {
-      CalculationRecord record = records.get(id);
-      if (record.getUserFlag().equals(Flag.BAD) || record.getUserFlag().equals(Flag.QUESTIONABLE) ||
-          record.getUserFlag().equals(Flag.GOOD)) {
-
-        records.remove(id);
-      }
-    }
-
-    return new ArrayList<CalculationRecord>(records.values());
   }
 
   @Override
