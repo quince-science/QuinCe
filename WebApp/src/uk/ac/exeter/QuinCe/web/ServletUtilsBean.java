@@ -47,17 +47,6 @@ public class ServletUtilsBean{
     return ServletUtils.getResourceManager().getRunTypeCategoryConfiguration().getCategories(true, true);
   }
 
-  public RunTypeCategory getRunTypeCategory(String runTypeCategoryCode) throws ResourceException {
-    if (runTypeCategoryCode != null) {
-      for (RunTypeCategory category: getRunTypeCategories()) {
-        if (runTypeCategoryCode.equals(category.getCode())) {
-          return category;
-        }
-      }
-    }
-    return null;
-  }
-
   /**
    * The site name for the QuinCe application can be used throughout the
    * application for labels and headers

@@ -152,7 +152,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
     } else if (null == category) {
       result = runType + " not assigned";
     } else {
-      result = runType + " assigned to " + category.getName();
+      result = runType + " assigned to " + category.getDescription();
     }
 
     return result;
@@ -187,7 +187,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
       result.append("Alias to ");
       result.append(aliasTo);
     } else {
-      result.append(category.getName());
+      result.append(category.getDescription());
     }
 
     return result.toString();
@@ -198,14 +198,14 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
    * If no category is assigned, returns {@code null}
    * @return The assigned category
    */
-  public String getCategoryCode() {
-    String result = null;
+  public long getCategoryCode() {
+    long result = RunTypeCategory.NOT_ASSIGNED;
 
     if (null != category) {
       if (isAlias()) {
-        result = "ALIAS";
+        result = RunTypeCategory.ALIAS.getType();
       } else {
-        result = category.getCode();
+        result = category.getType();
       }
     }
 
@@ -217,10 +217,10 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
    * @param code
    * @throws RunTypeCategoryException If the code is not recognised
    */
-  public void setCategoryCode(String code) throws RunTypeCategoryException {
+  public void setCategoryCode(long type) throws RunTypeCategoryException {
     boolean categoryAssigned = false;
 
-    if (code.equals(RunTypeCategory.ALIAS_CATEGORY.getCode())) {
+    if (type == RunTypeCategory.ALIAS.getType()) {
       category = null;
       alias = true;
       categoryAssigned = true;
@@ -228,7 +228,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
       try {
         List<RunTypeCategory> categories = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategories(true, true);
         for (RunTypeCategory checkCategory : categories) {
-          if (checkCategory.getCode().equals(code)) {
+          if (type == checkCategory.getType()) {
             category = checkCategory;
             categoryAssigned = true;
             break;
@@ -241,7 +241,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
     }
 
     if (!categoryAssigned) {
-      RunTypeCategoryException e = new RunTypeCategoryException("Unrecognised run type '" + code + "'");
+      RunTypeCategoryException e = new RunTypeCategoryException("Unrecognised run type '" + type + "'");
       e.printStackTrace();
       throw e;
     }

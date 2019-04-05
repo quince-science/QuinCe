@@ -691,6 +691,12 @@ public class CalibrationDataDB {
           }
         }
 
+        // TODO v2
+        // The code below is broken. Since it's not being used any more
+        // it's commented out. Once the new data reduction
+        // routines are built, this whole method will be replaced.
+        /*
+
         long id = records.getLong(idCol);
         LocalDateTime date = DateTimeUtils.longToDate(records.getLong(dateCol));
         double longitude = DataSetRawDataRecord.NO_POSITION;
@@ -705,6 +711,8 @@ public class CalibrationDataDB {
         }
 
         result.add(measurement);
+
+        */
       }
 
       return result;
@@ -726,7 +734,7 @@ public class CalibrationDataDB {
    */
   public static void populateVariableList(DataSource dataSource, DataSet dataset, VariableList variables) throws Exception {
     for (String fieldName : getCalibrationFieldNames()) {
-      for (String runType : InstrumentDB.getRunTypes(dataSource, dataset.getInstrumentId(), "EXT")) {
+      for (String runType : InstrumentDB.getRunTypes(dataSource, dataset.getInstrumentId(), RunTypeCategory.INTERNAL_CALIBRATION.getType())) {
         variables.addVariable(fieldName, new Variable(Variable.TYPE_SENSOR, runType, runType, false, true, true));
       }
     }

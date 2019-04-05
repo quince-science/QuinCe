@@ -19,7 +19,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
@@ -112,9 +111,9 @@ public class ResourceManager implements ServletContextListener {
 
     // Initialise run type category configuration
     try {
-      runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(new File(configuration.getProperty("runtypes.configfile")));
-    } catch (RunTypeCategoryException e) {
-      throw new RuntimeException("Could not load sensors configuration", e);
+      runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(dbDataSource.getConnection());
+    } catch (Exception e) {
+      throw new RuntimeException("Could not load run type categories", e);
     }
 
     // Initialise the QC Routines configuration
