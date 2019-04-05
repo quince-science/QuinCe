@@ -8,119 +8,84 @@ package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
 public class RunTypeCategory implements Comparable<RunTypeCategory> {
 
   /**
-   * Measurement category identifier
+   * Code to indicate that a run type has not been assigned.
+   * Has no associated RunTypeCategory object.
    */
-  public static final int TYPE_MEASUREMENT = 0;
+  public static final long NOT_ASSIGNED = -999L;
 
   /**
-   * Calibration category identifier
+   * Category value for ignored run types
    */
-  public static final int TYPE_CALIBRATION = 1;
+  public static final long IGNORED_TYPE = -1L;
+
+  /**
+   * Category value for ignored run types
+   */
+  public static final long ALIAS_TYPE = -2L;
+
+  /**
+   * Category value for internal calibration run types
+   */
+  public static final long INTERNAL_CALIBRATION_TYPE = -3L;
 
   /**
    * The special IGNORED run type category
    */
-  public static RunTypeCategory IGNORED_CATEGORY = null;
+  public static RunTypeCategory IGNORED = null;
 
   /**
    * The special External Standard run type category
    */
-  public static RunTypeCategory EXTERNAL_STANDARD_CATEGORY = null;
+  public static RunTypeCategory INTERNAL_CALIBRATION = null;
 
   /**
    * The special ALIAS run type category
    */
-  public static RunTypeCategory ALIAS_CATEGORY = null;
-
-  /**
-   * The category code
-   */
-  private String code;
-
-  /**
-   * The category name
-   */
-  private String name;
+  public static RunTypeCategory ALIAS = null;
 
   /**
    * The category type
    */
-  private int type;
+  private final long type;
 
   /**
-   * Some applications require that there is a minimum number
-   * of run types for a given category in a single instrument.
-   * For example, an underway surface ocean pCO₂ instrument
-   * needs at least three gas standards.
+   * The description of this category. Usually a variable name,
+   * expect for the special types
    */
-  private int minCount;
+  private final String description;
 
+  // Set up the special alias types
   static {
-    try {
-      IGNORED_CATEGORY = new RunTypeCategory("IGN", "IGNORED", 0, 0);
-      ALIAS_CATEGORY = new RunTypeCategory("ALIAS", "Alias", 0, 0);
-      EXTERNAL_STANDARD_CATEGORY = new RunTypeCategory("EXT", "External Standard", 1, 0);
-    } catch (InvalidCategoryTypeException e) {
-      // Do nothing
-    }
+    IGNORED = new RunTypeCategory(IGNORED_TYPE, "Ignored");
+    ALIAS = new RunTypeCategory(ALIAS_TYPE, "Alias");
+    INTERNAL_CALIBRATION = new RunTypeCategory(INTERNAL_CALIBRATION_TYPE, "Internal Calibration");
   }
 
   /**
    * Basic constructor
-   * @param code The category code
-   * @param name The category name
-   * @param type The category type
-   * @param minCount The minimum number of run types required for this category
+   * @param code The category code - either a variable ID, or a special code as above
+   * @param name The category description - usually the variable name
    * @throws InvalidCategoryTypeException If the type is invalid
    */
-  protected RunTypeCategory(String code, String name, int type, int minCount) throws InvalidCategoryTypeException {
-    this.code = code;
-    this.name = name;
-
-    if (type != TYPE_MEASUREMENT && type != TYPE_CALIBRATION) {
-      throw new InvalidCategoryTypeException(type);
-    }
-
+  protected RunTypeCategory(long type, String description) {
     this.type = type;
-    this.minCount = minCount;
-  }
-
-  /**
-   * Get the category code
-   * @return The code
-   */
-  public String getCode() {
-    return code;
-  }
-
-  /**
-   * Get the category name
-   * @return The name
-   */
-  public String getName() {
-    return name;
+    this.description = description;
   }
 
   /**
    * Get the category type
-   * @return The type
+   * @return The category type
    */
-  public int getType() {
+  public long getType() {
     return type;
   }
 
   /**
-   * Get the minimum number of run types of this category
-   * required by the application
-   * @return The minimum run type count
+   * Get the category description
+   * @return The category description
    */
-  public int getMinCount() {
-    return minCount;
-  }
-
-  @Override
-  public int compareTo(RunTypeCategory o) {
-    return code.compareTo(o.code);
+  public String getDescription() {
+    return description;
   }
 
   /**
@@ -128,17 +93,16 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
    * @return {@code true} if this is a measurement type; {@code false} otherwise
    */
   public boolean isMeasurementType() {
-    return type == TYPE_MEASUREMENT;
+    return type > 0;
   }
 
   @Override
   public boolean equals(Object o) {
-
     boolean equals = false;
 
     if (o instanceof RunTypeCategory) {
       RunTypeCategory oRunTypeCategory = (RunTypeCategory) o;
-      equals = oRunTypeCategory.code.equals(code) && oRunTypeCategory.name.equals(name);
+      equals = oRunTypeCategory.type == type;
     }
 
     return equals;
@@ -146,6 +110,11 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
 
   @Override
   public String toString() {
-    return code + ":" + name;
+    return type + ":" + description;
+  }
+
+  @Override
+  public int compareTo(RunTypeCategory o) {
+    return description.compareTo(o.description);
   }
 }

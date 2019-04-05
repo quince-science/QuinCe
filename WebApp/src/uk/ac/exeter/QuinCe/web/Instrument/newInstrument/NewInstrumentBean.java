@@ -299,7 +299,7 @@ public class NewInstrumentBean extends FileUploadBean {
    * The code of the Run Type Category that the
    * run type is being assigned to
    */
-  private String runTypeAssignCode = null;
+  private long runTypeAssignCode = RunTypeCategory.IGNORED_TYPE;
 
   /**
    * The run type that the assigned run type is aliased to
@@ -1415,7 +1415,7 @@ public class NewInstrumentBean extends FileUploadBean {
    * Get the code of the Run Type Category that a run type is being assigned to
    * @return The Run Type Category code
    */
-  public String getRunTypeAssignCode() {
+  public long getRunTypeAssignCode() {
     return runTypeAssignCode;
   }
 
@@ -1423,7 +1423,7 @@ public class NewInstrumentBean extends FileUploadBean {
    * Set the code of the Run Type Category that a run type is being assigned to
    * @param runTypeAssignCode The Run Type Category code
    */
-  public void setRunTypeAssignCode(String runTypeAssignCode) {
+  public void setRunTypeAssignCode(long runTypeAssignCode) {
     this.runTypeAssignCode = runTypeAssignCode;
   }
 
@@ -1451,14 +1451,12 @@ public class NewInstrumentBean extends FileUploadBean {
     FileDefinition file = instrumentFiles.get(runTypeAssignFile);
 
     RunTypeCategory category = null;
-    if (null != runTypeAssignCode && runTypeAssignCode.length() > 0) {
-      category = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategory(runTypeAssignCode);
+    category = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategory(runTypeAssignCode);
 
-      if (category.equals(RunTypeCategory.ALIAS_CATEGORY)) {
-        file.setRunTypeCategory(runTypeAssignName, runTypeAssignAliasTo);
-      } else {
-        file.setRunTypeCategory(runTypeAssignName, category);
-      }
+    if (category.equals(RunTypeCategory.ALIAS)) {
+      file.setRunTypeCategory(runTypeAssignName, runTypeAssignAliasTo);
+    } else {
+      file.setRunTypeCategory(runTypeAssignName, category);
     }
   }
 
@@ -1483,7 +1481,7 @@ public class NewInstrumentBean extends FileUploadBean {
         for (RunTypeAssignment assignment : fileRunTypes.values()) {
           if (!assignment.isAlias()) {
             RunTypeCategory category = assignment.getCategory();
-            if (!category.equals(RunTypeCategory.IGNORED_CATEGORY)) {
+            if (!category.equals(RunTypeCategory.IGNORED)) {
               assignedCategories.put(category, assignedCategories.get(category) + 1);
             }
           }
@@ -1496,9 +1494,8 @@ public class NewInstrumentBean extends FileUploadBean {
 
     for (Map.Entry<RunTypeCategory, Integer> entry : assignedCategories.entrySet()) {
       JSONArray entryJson = new JSONArray();
-      entryJson.put(entry.getKey().getName());
+      entryJson.put(entry.getKey().getDescription());
       entryJson.put(entry.getValue());
-      entryJson.put(entry.getKey().getMinCount());
 
       json.put(entryJson);
     }
@@ -1541,7 +1538,7 @@ public class NewInstrumentBean extends FileUploadBean {
             jsonAssignment.put("category", JSONObject.NULL);
             jsonAssignment.put("aliasTo", assignment.getAliasTo());
           } else {
-            jsonAssignment.put("category", assignment.getCategory().getCode());
+            jsonAssignment.put("category", assignment.getCategory().getType());
             jsonAssignment.put("aliasTo", JSONObject.NULL);
           }
 
@@ -1569,7 +1566,7 @@ public class NewInstrumentBean extends FileUploadBean {
    */
   private void clearRunTypeAssignments() {
     runTypeAssignName = null;
-    runTypeAssignCode = null;
+    runTypeAssignCode = RunTypeCategory.IGNORED_TYPE;
   }
 
   /**
