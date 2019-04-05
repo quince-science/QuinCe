@@ -294,7 +294,7 @@ public class DataFile {
         if (fileDefinition.hasRunTypes()) {
           try {
             RunTypeCategory runType = fileDefinition.getRunTypeCategory(line);
-            if (runType.equals(RunTypeCategory.IGNORED_CATEGORY)) {
+            if (runType.equals(RunTypeCategory.IGNORED)) {
               checkColumnCount = false;
             }
           } catch (FileDefinitionException e) {

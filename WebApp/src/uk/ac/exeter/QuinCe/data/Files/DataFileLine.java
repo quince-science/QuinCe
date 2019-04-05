@@ -81,7 +81,7 @@ public class DataFileLine {
     // for a measurement. So we only check files that have them.
     if (fileDefinition.hasRunTypes()) {
       RunTypeCategory runType = file.getRunTypeCategory(line);
-      ignored = runType.equals(RunTypeCategory.IGNORED_CATEGORY);
+      ignored = runType.equals(RunTypeCategory.IGNORED);
     }
 
     return ignored;

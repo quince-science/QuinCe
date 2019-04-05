@@ -392,10 +392,12 @@ public class DataSetDataDB {
     LocalDateTime date = DateTimeUtils.longToDate(records.getLong(baseColumns.get(DATE_COL)));
     double longitude = records.getDouble(baseColumns.get(LON_COL));
     double latitude = records.getDouble(baseColumns.get(LAT_COL));
-    String runType = records.getString(baseColumns.get(RUN_TYPE_COL));
+    long runType = records.getLong(baseColumns.get(RUN_TYPE_COL));
     RunTypeCategory runTypeCategory = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategory(runType);
 
-    result = new DataSetRawDataRecord(dataSet, id, date, longitude, latitude, runType, runTypeCategory);
+    // TODO v2 This code will be removed when the new data reduction routine is written.
+    //         Commented out so things compile during this intermediate stage.
+    //result = new DataSetRawDataRecord(dataSet, id, date, longitude, latitude, runType, runTypeCategory);
 
     // TODO Add diagnostics here
 
