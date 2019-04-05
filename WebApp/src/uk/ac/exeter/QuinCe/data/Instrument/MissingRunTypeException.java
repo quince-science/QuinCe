@@ -30,6 +30,6 @@ public class MissingRunTypeException extends FileDefinitionException implements 
    */
   public MissingRunTypeException(String message, String runType) {
     super(message);
-    this.runType = new RunTypeAssignment(runType, RunTypeCategory.IGNORED_CATEGORY);
+    this.runType = new RunTypeAssignment(runType, RunTypeCategory.IGNORED);
   }
 }

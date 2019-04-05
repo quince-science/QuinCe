@@ -78,7 +78,7 @@ public class ExternalStandardDB extends CalibrationDB {
 
   @Override
   public Map<String, String> getTargets(Connection conn, long instrumentId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-    List<String> standardNames = InstrumentDB.getRunTypes(conn, instrumentId, RunTypeCategory.EXTERNAL_STANDARD_CATEGORY.getCode());
+    List<String> standardNames = InstrumentDB.getRunTypes(conn, instrumentId, RunTypeCategory.INTERNAL_CALIBRATION.getType());
     if (standardNames.size() == 0) {
       throw new RecordNotFoundException("No external standard names found for instrument " + instrumentId);
     }

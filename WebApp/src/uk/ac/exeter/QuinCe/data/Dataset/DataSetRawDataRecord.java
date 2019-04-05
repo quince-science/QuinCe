@@ -139,7 +139,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
    * @throws NoSuchCategoryException If the record's run type does not exist
    */
   public boolean isMeasurement() throws NoSuchCategoryException {
-    return runTypeCategory.getType() == RunTypeCategory.TYPE_MEASUREMENT;
+    return runTypeCategory.isMeasurementType();
   }
 
   /**
@@ -148,7 +148,7 @@ public class DataSetRawDataRecord implements Comparable<DataSetRawDataRecord> {
    * @throws NoSuchCategoryException If the record's run type does not exist
    */
   public boolean isCalibration() throws NoSuchCategoryException {
-    return runTypeCategory.getType() == RunTypeCategory.TYPE_CALIBRATION;
+    return runTypeCategory.equals(RunTypeCategory.INTERNAL_CALIBRATION);
   }
 
   /**

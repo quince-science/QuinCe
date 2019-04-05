@@ -210,6 +210,9 @@ public class InstrumentDB {
   private static final String GET_INSTRUMENT_OWNER_QUERY = "SELECT "
       + "owner FROM instrument WHERE id = ?";
 
+  private static final String GET_ALL_VARIABLES_QUERY = "SELECT "
+    + "id, name FROM variables";
+
   /**
    * Store a new instrument in the database
    * @param dataSource A data source
@@ -1030,7 +1033,7 @@ public class InstrumentDB {
    * @throws MissingParamException If any required parameters are missing
    * @throws DatabaseException If a database error occurs
    */
-  public static List<String> getRunTypes(DataSource dataSource, long instrumentId, String categoryCode) throws MissingParamException, DatabaseException {
+  public static List<String> getRunTypes(DataSource dataSource, long instrumentId, long categoryType) throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     List<String> runTypes = null;
@@ -1039,7 +1042,7 @@ public class InstrumentDB {
     try {
 
       conn = dataSource.getConnection();
-      runTypes = getRunTypes(conn, instrumentId, categoryCode);
+      runTypes = getRunTypes(conn, instrumentId, categoryType);
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting run types", e);
     } finally {
@@ -1058,11 +1061,11 @@ public class InstrumentDB {
    * @throws MissingParamException If any required parameters are missing
    * @throws DatabaseException If a database error occurs
    */
-  public static List<String> getRunTypes(Connection conn, long instrumentId, String categoryCode) throws MissingParamException, DatabaseException {
+  public static List<String> getRunTypes(Connection conn, long instrumentId, long categoryType) throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkPositive(instrumentId, "instrumentId");
-    MissingParam.checkMissing(categoryCode, "categoryCode");
+    MissingParam.checkZeroPositive(categoryType, "categoryType");
 
     List<String> runTypes = new ArrayList<String>();
 
@@ -1072,7 +1075,7 @@ public class InstrumentDB {
     try {
       stmt = conn.prepareStatement(GET_RUN_TYPES_QUERY);
       stmt.setLong(1, instrumentId);
-      stmt.setString(2, categoryCode);
+      stmt.setLong(2, categoryType);
 
       records = stmt.executeQuery();
       while (records.next()) {
@@ -1164,10 +1167,10 @@ public class InstrumentDB {
       records = stmt.executeQuery();
       while (records.next()) {
         String runType = records.getString(1);
-        String categoryCode = records.getString(2);
+        long categoryCode = records.getLong(2);
         String aliasTo = records.getString(3);
 
-        if (categoryCode.equals(RunTypeCategory.ALIAS_CATEGORY.getCode())) {
+        if (categoryCode == RunTypeCategory.ALIAS.getType()) {
           file.setRunTypeCategory(runType, aliasTo);
         } else {
           file.setRunTypeCategory(runType, runTypeConfig.getCategory(categoryCode));
@@ -1207,10 +1210,10 @@ public class InstrumentDB {
     runTypeStatement.setString(2, runType.getRunType());
 
     if (runType.isAlias()) {
-      runTypeStatement.setString(3, RunTypeCategory.ALIAS_CATEGORY.getCode());
+      runTypeStatement.setLong(3, RunTypeCategory.ALIAS.getType());
       runTypeStatement.setString(4, runType.getAliasTo());
     } else {
-      runTypeStatement.setString(3, runType.getCategory().getCode());
+      runTypeStatement.setLong(3, runType.getCategory().getType());
       runTypeStatement.setNull(4, Types.VARCHAR);
     }
 
@@ -1407,5 +1410,39 @@ public class InstrumentDB {
     }
 
     return result;
+  }
+
+  /**
+   * Get all the variables registered in the application
+   * @param conn A database connection
+   * @return The variables
+   * @throws DatabaseException If the variables cannot be retrieved
+   * @throws MissingParamException If any required parameters are missing
+   */
+  public static Map<Long, String> getAllVariables(Connection conn)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+
+    Map<Long, String> variables = new HashMap<Long, String>();
+
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      stmt = conn.prepareStatement(GET_ALL_VARIABLES_QUERY);
+      records = stmt.executeQuery();
+      while (records.next()) {
+        variables.put(records.getLong(1), records.getString(2));
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while reading variables", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return variables;
   }
 }
