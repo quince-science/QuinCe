@@ -1075,7 +1075,6 @@ public class InstrumentDB {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkPositive(instrumentId, "instrumentId");
-    MissingParam.checkZeroPositive(categoryType, "categoryType");
 
     List<String> runTypes = new ArrayList<String>();
 
