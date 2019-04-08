@@ -1,3 +1,5 @@
+ALIAS_RUN_TYPE = '-2';
+
 // Hide dialog with escape key
 $(document).on('keydown', function(e) {
   if (e.keyCode === 27) {
@@ -34,7 +36,7 @@ function reprocessUploadedFiles() {
 
 function runTypeChanged(rowIndex, runTypeIndex) {
   var runType = PF('missingRunType_' + rowIndex + '_' + runTypeIndex).getSelectedValue();
-  if (runType == 'ALIAS') {
+  if (runType == ALIAS_RUN_TYPE) {
     PF('alias_' + rowIndex + '_' + runTypeIndex).jq.show()
   } else {
     PF('alias_' + rowIndex + '_' + runTypeIndex).jq.hide()

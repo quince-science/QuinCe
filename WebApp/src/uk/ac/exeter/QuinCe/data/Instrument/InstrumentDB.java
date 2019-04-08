@@ -29,6 +29,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionException;
 import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.PositionSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
@@ -821,7 +822,11 @@ public class InstrumentDB {
         LatitudeSpecification latSpec = buildLatitudeSpecification(records);
         DateTimeSpecification dateTimeSpec = buildDateTimeSpecification(records);
 
-        fileSet.add(new FileDefinition(id, description, separator, headerType, headerLines, headerEndString, columnHeaderRows, columnCount, lonSpec, latSpec, dateTimeSpec, fileSet));
+        FileDefinition fileDefinition = new FileDefinition(id, description,
+          separator, headerType, headerLines, headerEndString, columnHeaderRows,
+          columnCount, lonSpec, latSpec, dateTimeSpec, fileSet);
+
+        fileSet.add(fileDefinition);
 
         // Load in the sensors configuration. As part of this, the file definitions
         // will be updated with column information.
@@ -1008,6 +1013,11 @@ public class InstrumentDB {
           String missingValue = columns.getString(7);
 
           assignments.addAssignment(sensorType, new SensorAssignment(assignmentId, file.getFileDescription(), fileColumn, sensorName, primarySensor, dependsQuestionAnswer, missingValue));
+
+          // Add the run type assignments to the file definition
+          if (sensorType == SensorType.RUN_TYPE_ID) {
+            addFileRunTypes(conn, file, fileColumn);
+          }
         }
 
         if (columnsRead == 0) {
@@ -1148,34 +1158,49 @@ public class InstrumentDB {
   }
 
   /**
-   * Load the run types for a file from the database
+   * Load the run types for a file definition from the database
    * @param conn A database connection
    * @param file The file whose run types are to be retrieved
    * @param runTypeConfig The run types configuration
    * @throws DatabaseException If a database error occurs
    * @throws InstrumentException If a stored run type category is not configured
    */
-  @Deprecated
-  private static void getFileRunTypes(Connection conn, FileDefinition file, RunTypeCategoryConfiguration runTypeConfig) throws DatabaseException, InstrumentException {
+  private static void addFileRunTypes(Connection conn, FileDefinition file, int column) throws DatabaseException, InstrumentException {
     PreparedStatement stmt = null;
     ResultSet records = null;
+
+    RunTypeCategoryConfiguration runTypeConfig =
+      ResourceManager.getInstance().getRunTypeCategoryConfiguration();
 
     try {
       stmt = conn.prepareStatement(GET_FILE_RUN_TYPES_QUERY);
       stmt.setLong(1, file.getDatabaseId());
 
       records = stmt.executeQuery();
+      RunTypeAssignments runTypes = null;
+
       while (records.next()) {
-        String runType = records.getString(1);
+
+        if (null == runTypes) {
+          runTypes = new RunTypeAssignments(column);
+        }
+
+        String runName = records.getString(1);
         long categoryCode = records.getLong(2);
         String aliasTo = records.getString(3);
 
+        RunTypeAssignment assignment = null;
+
         if (categoryCode == RunTypeCategory.ALIAS.getType()) {
-          file.setRunTypeCategory(runType, aliasTo);
+          assignment = new RunTypeAssignment(runName, aliasTo);
         } else {
-          file.setRunTypeCategory(runType, runTypeConfig.getCategory(categoryCode));
+          assignment = new RunTypeAssignment(runName, runTypeConfig.getCategory(categoryCode));
         }
+
+        runTypes.put(runName, assignment);
       }
+
+      file.setRunTypes(runTypes);
 
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving run types", e);
@@ -1207,7 +1232,7 @@ public class InstrumentDB {
 
     PreparedStatement runTypeStatement = conn.prepareStatement(CREATE_RUN_TYPE_STATEMENT);
     runTypeStatement.setLong(1, fileId);
-    runTypeStatement.setString(2, runType.getRunType());
+    runTypeStatement.setString(2, runType.getRunName());
 
     if (runType.isAlias()) {
       runTypeStatement.setLong(3, RunTypeCategory.ALIAS.getType());

@@ -12,7 +12,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.DataFormats.LongitudeSpecification;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
 import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -141,13 +140,6 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * The Date/Time specification
    */
   private DateTimeSpecification dateTimeSpecification;
-
-  /**
-   * The column containing the run type. Only required if this file
-   * contains a Core Sensor
-   * @see SensorType#isCoreSensor()
-   */
-  private int runTypeColumn = -1;
 
   /**
    * The list of run type values for the instrument
@@ -540,21 +532,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
   }
 
   /**
-   * Get the column containing the Run Type
-   * @return The Run Type column
-   */
-  @Deprecated
-  public int getRunTypeColumn() {
-    return runTypeColumn;
-  }
-
-  /**
    * Get the assigned run types for this file. If the
    * {@link #runTypeColumn} is {@code -1}, this will return
    * {@code null}.
    * @return The run types
    */
-  @Deprecated
   public RunTypeAssignments getRunTypes() {
     return runTypes;
   }
@@ -579,7 +561,6 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @param exclusion The value to exclude from the list
    * @return The list of run types without the excluded value
    */
-  @Deprecated
   public List<String> getRunTypeValuesWithExclusion(String exclusion) {
     List<String> runTypeValues = getRunTypeValues();
     runTypeValues.remove(exclusion);
@@ -587,24 +568,28 @@ public class FileDefinition implements Comparable<FileDefinition> {
   }
 
   /**
-   * Set the index of the column containing the run type
-   * @param runTypeColumn The Run Type column
+   * Get the run type column for this file. Returns -1
+   * if the column is not assigned
+   * @return The run type column
    */
-  @Deprecated
-  public void setRunTypeColumn(int runTypeColumn) {
-    this.runTypeColumn = runTypeColumn;
-    initialiseRunTypes();
+  public int getRunTypeColumn() {
+    int result = -1;
+
+    if (null != runTypes) {
+      result = runTypes.getColumn();
+    }
+
+    return result;
   }
 
   /**
-   * Initialise the run types data structure
+   * Set the Run Type column, and initialise the assignments
    */
-  @Deprecated
-  public void initialiseRunTypes() {
+  public void setRunTypeColumn(int runTypeColumn) {
     if (runTypeColumn == -1) {
       runTypes = null;
     } else {
-      runTypes = new RunTypeAssignments();
+      runTypes = new RunTypeAssignments(runTypeColumn);
     }
   }
 
@@ -613,7 +598,6 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @param runType The run type
    * @param category The run type category
    */
-  @Deprecated
   public void setRunTypeCategory(String runType, RunTypeCategory category) {
     runTypes.put(runType, new RunTypeAssignment(runType, category));
   }
@@ -623,13 +607,21 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @param runType The run type
    * @param category The run type category
    */
-  @Deprecated
   public void setRunTypeCategory(String runType, String alias) {
     // TODO We should check to make sure that the aliased run type actually exists
     //      and that it's not a circular alias
     //      I'm not sure how hard this is at the minute so I'm ignoring it -
     //      the UI should prevent it from happening anyway
     runTypes.put(runType, new RunTypeAssignment(runType, alias));
+  }
+
+  /**
+   * Insert the complete set of run types associated with this file definition.
+   * Replaces any existing run types.
+   * @param runTypes The run types
+   */
+  public void setRunTypes(RunTypeAssignments runTypes) {
+    this.runTypes = runTypes;
   }
 
   /**
@@ -776,9 +768,8 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * Determine whether or not this file contains Run Types
    * @return {@code true} if the file contains Run Types; {@code false} if not
    */
-  @Deprecated
   public boolean hasRunTypes() {
-    return (runTypeColumn > -1);
+    return null != runTypes;
   }
 
   /**
@@ -787,32 +778,15 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @return The run type
    * @throws FileDefinitionException If this file does not contain run types, the run type is not present, or the run type is not recognised
    */
-  @Deprecated
-  public String getRunType(String line, boolean followAlias) throws FileDefinitionException {
-    String result = null;
+  public RunTypeAssignment getRunType(String line, boolean followAlias) throws FileDefinitionException {
+    RunTypeAssignment result = null;
 
     if (!hasRunTypes()) {
       throw new FileDefinitionException("File does not contain run types");
     } else {
-      String runTypeValue = extractFields(line).get(runTypeColumn).toUpperCase();
+      String runTypeValue = extractFields(line).get(runTypes.getColumn());
       if (null != runTypeValue && runTypeValue.length() > 0) {
-        if (!runTypes.containsKey(runTypeValue)) {
-          throw new MissingRunTypeException("Unrecognised run type '"
-            + runTypeValue + "'. Please register new run type "
-            + runTypeValue + " on instrument to load this file.",
-            runTypeValue);
-        } else {
-          if (!followAlias) {
-            result = runTypeValue;
-          } else {
-            RunTypeAssignment assignment = runTypes.get(runTypeValue);
-            while (assignment.isAlias()) {
-              assignment = runTypes.get(assignment.getAliasTo());
-            }
-
-            result = assignment.getRunType();
-          }
-        }
+        result = runTypes.get(runTypeValue, followAlias);
       }
     }
 
@@ -825,8 +799,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @return The Run Type Category
    * @throws FileDefinitionException If the Run Type is not recognised
    */
-  @Deprecated
   public RunTypeCategory getRunTypeCategory(String line) throws FileDefinitionException {
-    return runTypes.getRunTypeCategory(getRunType(line, true));
+    return getRunType(line, true).getCategory();
   }
 }
