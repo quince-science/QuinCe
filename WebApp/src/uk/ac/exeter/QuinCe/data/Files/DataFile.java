@@ -474,7 +474,7 @@ public class DataFile {
 
     if (runTypeColumn > -1) {
       loadContents();
-      runType = fileDefinition.getRunType(contents.get(line), true);
+      runType = fileDefinition.getRunType(contents.get(line), true).getRunName();
     }
 
     return runType;
@@ -765,8 +765,8 @@ public class DataFile {
   public List<String> getRunTypeValuesWithExclusion(String exclusion) {
     List<String> runTypeValues = fileDefinition.getRunTypeValues();
     for (RunTypeAssignment runTypeAssignment : missingRunTypes) {
-      if (!runTypeAssignment.getRunType().equals(exclusion)) {
-        runTypeValues.add(runTypeAssignment.getRunType());
+      if (!runTypeAssignment.getRunName().equals(exclusion)) {
+        runTypeValues.add(runTypeAssignment.getRunName());
       }
     }
 

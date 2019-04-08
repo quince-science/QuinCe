@@ -109,7 +109,7 @@
                         >
                           <tr>
                           <td class="labelsNoPad">
-                              <h:outputText value="#{runType.runType}"/>
+                              <h:outputText value="#{runType.runName}"/>
                             </td>
                             <td>
                               <p:selectOneMenu
@@ -117,7 +117,7 @@
                                 value="#{runType.categoryCode}"
                                 onchange="runTypeChanged(#{rowIndex}, #{missingRunTypeStatus.index})"
                               >
-                                <f:selectItems value="#{fileUpload.runTypeCategories}" var="category" itemValue="#{category.code}" itemLabel="#{category.name}"/>
+                                <f:selectItems value="#{fileUpload.runTypeCategories}" var="category" itemValue="#{category.type}" itemLabel="#{category.description}"/>
                               </p:selectOneMenu>
                             </td>
                             <td>
@@ -126,7 +126,7 @@
                                 value="#{runType.aliasTo}"
                                 styleClass="hidden"
                               >
-                                <f:selectItems value="#{uploadedFile.dataFile.getRunTypeValuesWithExclusion(runType.runType)}" var="runTypeAlias"/>
+                                <f:selectItems value="#{uploadedFile.dataFile.getRunTypeValuesWithExclusion(runType.runName)}" var="runTypeAlias"/>
                               </p:selectOneMenu>
                             </td>
                           </tr>
@@ -150,7 +150,7 @@
                         >
                           <tr>
                             <td class="labels">
-                              <h:outputText value="#{runType.runType}"/>
+                              <h:outputText value="#{runType.runName}"/>
                             </td>
                             <td>
                               <h:outputText value="#{runType.assignmentText}"/>

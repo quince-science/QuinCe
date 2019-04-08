@@ -2,8 +2,13 @@ package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
 
 import java.util.TreeMap;
 
+import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
+
 /**
- * Holder for a set of run type assignments for a file
+ * Holder for a set of run type assignments for a file definition.
+ * This class does not reference the file definition to which it belongs -
+ * it is stored as a field of the FileDefinition class.
+ *
  * @author zuj007
  *
  */
@@ -14,8 +19,14 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
    */
   private static final long serialVersionUID = -4123234930155566035L;
 
-  public RunTypeAssignments() {
+  /**
+   * The Run Type column in the parent file definition
+   */
+  private int column;
+
+  public RunTypeAssignments(int column) {
     super();
+    this.column = column;
   }
 
   /**
@@ -25,14 +36,8 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
    * @param key The key
    * @return The converted key
    */
-  private Object convertKey(Object key) {
-    Object result = key;
-
-    if (key instanceof String) {
-      result = ((String) key).toLowerCase();
-    }
-
-    return result;
+  private static String convertKey(Object key) {
+    return key.toString().toLowerCase();
   }
 
   /**
@@ -58,6 +63,14 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
     return result;
   }
 
+  /**
+   * Get the Run Type column for the parent file definition
+   * @return The run type column
+   */
+  public int getColumn() {
+    return column;
+  }
+
   @Override
   public RunTypeAssignment put(String key, RunTypeAssignment assignment) {
     return super.put(key.toLowerCase(), assignment);
@@ -65,11 +78,52 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
 
   @Override
   public RunTypeAssignment get(Object key) {
-    return super.get(convertKey(key));
+    RunTypeAssignment result = null;
+
+    try {
+      result = get(convertKey(key), true);
+    } catch (MissingRunTypeException e) {
+      // Do nothing - we'll return null
+    }
+
+    return result;
   }
 
   @Override
   public boolean containsKey(Object key) {
     return super.containsKey(convertKey(key));
+  }
+
+  /**
+   * Get the run type for a given run name, following aliases if required
+   * @param runName The run name
+   * @param followAlias Indicates whether or not aliases should be followed
+   * @return The Run Type
+   */
+  public RunTypeAssignment get(String runName, boolean followAlias)
+    throws MissingRunTypeException {
+
+    RunTypeAssignment result = null;
+    String searchKey = convertKey(runName);
+
+    if (!containsKey(searchKey)) {
+      throw new MissingRunTypeException("Unrecognised run type '"
+        + runName + "'. Please register new run type "
+        + runName + " on instrument to load this file.",
+        runName);
+    } else {
+      if (!followAlias) {
+        result = super.get(searchKey);
+      } else {
+        RunTypeAssignment assignment = super.get(searchKey);
+        while (assignment.isAlias()) {
+          assignment = get(assignment.getAliasTo());
+        }
+
+        result = assignment;
+      }
+    }
+
+    return result;
   }
 }

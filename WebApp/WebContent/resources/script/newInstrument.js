@@ -5,6 +5,7 @@
 allTimesOK = false;
 drawingPage = false;
 
+ALIAS_RUN_TYPE = '-2';
 
 //************************************************
 //
@@ -1225,7 +1226,7 @@ function setRunTypeCategory(fileIndex, runType) {
     var runTypeCategory = PF(fileIndex + '-' + runType + '-menu').getSelectedValue();
     var aliasTo = null;
 
-    if (runTypeCategory == 'ALIAS') {
+    if (runTypeCategory == ALIAS_RUN_TYPE) {
       $('#' + fileIndex + '-' + runType + '-aliasMenu').show();
       aliasTo = PF(fileIndex + '-' + runType + '-alias').getSelectedValue();
     } else {
