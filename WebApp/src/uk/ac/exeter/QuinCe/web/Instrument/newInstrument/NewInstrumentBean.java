@@ -1520,7 +1520,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
     for (int i = 0; i < instrumentFiles.size(); i++) {
       FileDefinition file = instrumentFiles.get(i);
-      if (file.getRunTypeColumn() != -1) {
+      if (file.hasRunTypes()) {
         RunTypeAssignments assignments = file.getRunTypes();
 
         JSONObject fileAssignments = new JSONObject();
@@ -1531,7 +1531,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
         for (RunTypeAssignment assignment : assignments.values()) {
           JSONObject jsonAssignment = new JSONObject();
-          jsonAssignment.put("runType", assignment.getRunType());
+          jsonAssignment.put("runType", assignment.getRunName());
 
           RunTypeCategory category = assignment.getCategory();
           if (null == category) {

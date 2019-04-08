@@ -23,7 +23,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
   /**
    * The run type name
    */
-  private String runType;
+  private String runName;
 
   /**
    * The category to which the run type is assigned.
@@ -47,8 +47,8 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
    * Create an empty assignment for a run type
    * @param runType The run type
    */
-  public RunTypeAssignment(String runType) {
-    this.runType = runType.toLowerCase();
+  public RunTypeAssignment(String runName) {
+    this.runName = runName.toLowerCase();
     this.category = null;
   }
 
@@ -57,8 +57,8 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
    * @param runType The run type
    * @param category The category
    */
-  public RunTypeAssignment(String runType, RunTypeCategory category) {
-    this.runType = runType.toLowerCase();
+  public RunTypeAssignment(String runName, RunTypeCategory category) {
+    this.runName = runName.toLowerCase();
     this.category = category;
   }
 
@@ -67,8 +67,8 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
    * @param runType The run type
    * @param aliasTo The run type to which is it aliased
    */
-  public RunTypeAssignment(String runType, String aliasTo) {
-    this.runType = runType.toLowerCase();
+  public RunTypeAssignment(String runName, String aliasTo) {
+    this.runName = runName.toLowerCase();
     this.category = null;
     this.alias = true;
     this.aliasTo = aliasTo;
@@ -84,11 +84,11 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
   }
 
   /**
-   * Get the run type that this assignment is for
-   * @return The run type
+   * Get the run name that this assignment is for
+   * @return The run name
    */
-  public String getRunType() {
-    return runType;
+  public String getRunName() {
+    return runName;
   }
 
   /**
@@ -140,7 +140,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   @Override
   public int compareTo(RunTypeAssignment o) {
-    return runType.compareTo(o.runType);
+    return runName.compareTo(o.runName);
   }
 
   @Override
@@ -148,11 +148,11 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
     String result;
 
     if (alias) {
-      result = runType + " aliased to " + aliasTo;
+      result = runName + " aliased to " + aliasTo;
     } else if (null == category) {
-      result = runType + " not assigned";
+      result = runName + " not assigned";
     } else {
-      result = runType + " assigned to " + category.getDescription();
+      result = runName + " assigned to " + category.getDescription();
     }
 
     return result;
@@ -165,7 +165,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
     if (!(o instanceof RunTypeAssignment)) {
       result = false;
     } else {
-      result = runType.equals(((RunTypeAssignment) o).runType);
+      result = runName.equals(((RunTypeAssignment) o).runName);
     }
 
     return result;
@@ -173,7 +173,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   @Override
   public int hashCode() {
-    return runType.hashCode();
+    return runName.hashCode();
   }
 
   /**

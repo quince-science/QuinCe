@@ -53,7 +53,7 @@
                         <td class="labelsNoPad">#{runType}</td>
                         <td>
                           <p:selectOneMenu widgetVar="#{fileStatus.index}-#{runType}-menu" onchange="setRunTypeCategory('#{fileStatus.index}', '#{runType}')">
-                            <f:selectItems value="#{newInstrumentBean.runTypeCategories}" var="category" itemValue="#{category.code}" itemLabel="#{category.name}"/>
+                            <f:selectItems value="#{newInstrumentBean.runTypeCategories}" var="category" itemValue="#{category.type}" itemLabel="#{category.description}"/>
                           </p:selectOneMenu>
                         </td>
                         <td id="#{fileStatus.index}-#{runType}-aliasMenu" class="hidden">
