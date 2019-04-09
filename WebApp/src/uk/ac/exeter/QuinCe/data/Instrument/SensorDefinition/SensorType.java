@@ -30,6 +30,11 @@ public class SensorType implements Comparable<SensorType> {
   public static final long RUN_TYPE_ID = -1;
 
   /**
+   * The special Run Type sensor type
+   */
+  public static SensorType RUN_TYPE_SENSOR_TYPE;
+
+  /**
    * The database ID of this sensor type
    */
   private long id;
@@ -85,6 +90,10 @@ public class SensorType implements Comparable<SensorType> {
    * by the application
    */
   private boolean systemType = false;
+
+  static {
+    RUN_TYPE_SENSOR_TYPE = new SensorType(RUN_TYPE_ID, "Run Type", "Run Type");
+  }
 
   /**
    * Create a SensorType object. Only minimal checking is performed
@@ -332,10 +341,6 @@ public class SensorType implements Comparable<SensorType> {
     return result;
   }
 
-  protected static SensorType createRunTypeSensor() {
-    return new SensorType(RUN_TYPE_ID, "Run Type", "Run Type");
-  }
-
   /**
    * See if this SensorType matches the passed in Sensor Type,
    * checking parents and children as appropriate
@@ -369,14 +374,14 @@ public class SensorType implements Comparable<SensorType> {
   }
 
   /**
-   * Equality is based on the sensor name only
+   * Equality is based on the sensor type ID
    */
   @Override
   public boolean equals(Object o) {
     boolean equal = false;
 
     if (null != o && o instanceof SensorType) {
-      equal = ((SensorType) o).name.equalsIgnoreCase(this.name);
+      equal = ((SensorType) o).id == this.id;
     }
 
     return equal;

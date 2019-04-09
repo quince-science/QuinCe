@@ -5,8 +5,11 @@ import java.util.List;
 
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
 /**
@@ -304,5 +307,18 @@ public class Instrument {
    */
   public List<InstrumentVariable> getVariables() {
     return variables;
+  }
+
+  /**
+   * Get the Run Type category for a given Run Type value
+   * @param runTypeValue The Run Type value
+   * @return The Run Type category
+   */
+  public RunTypeCategory getRunTypeCategory(String runTypeValue) {
+    // TODO Maybe we can build a lookup table for this, since the values
+    //      are fixed once the instrument's loaded from the database
+    List<SensorAssignment> runTypeAssignments = getSensorAssignments().get(SensorType.RUN_TYPE_SENSOR_TYPE);
+    FileDefinition fileDef = getFileDefinitions().get(runTypeAssignments.get(0).getDataFile());
+    return fileDef.getRunTypes().getRunTypeCategory(runTypeValue);
   }
 }
