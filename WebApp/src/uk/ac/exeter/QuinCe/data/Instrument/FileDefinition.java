@@ -779,12 +779,22 @@ public class FileDefinition implements Comparable<FileDefinition> {
    * @throws FileDefinitionException If this file does not contain run types, the run type is not present, or the run type is not recognised
    */
   public RunTypeAssignment getRunType(String line, boolean followAlias) throws FileDefinitionException {
+      return getRunType(extractFields(line), followAlias);
+  }
+
+  /**
+   * Get the run type from a data line
+   * @param line The line
+   * @return The run type
+   * @throws FileDefinitionException If this file does not contain run types, the run type is not present, or the run type is not recognised
+   */
+  public RunTypeAssignment getRunType(List<String> line, boolean followAlias) throws FileDefinitionException {
     RunTypeAssignment result = null;
 
     if (!hasRunTypes()) {
       throw new FileDefinitionException("File does not contain run types");
     } else {
-      String runTypeValue = extractFields(line).get(runTypes.getColumn());
+      String runTypeValue = line.get(runTypes.getColumn());
       if (null != runTypeValue && runTypeValue.length() > 0) {
         result = runTypes.get(runTypeValue, followAlias);
       }
