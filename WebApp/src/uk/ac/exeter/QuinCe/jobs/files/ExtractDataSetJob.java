@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -148,14 +147,14 @@ public class ExtractDataSetJob extends Job {
             }
 
             // Assigned columns
-            for (Entry<SensorType, Set<SensorAssignment>> entry :
+            for (Entry<SensorType, List<SensorAssignment>> entry :
               instrument.getSensorAssignments().entrySet()) {
 
               for (SensorAssignment assignment : entry.getValue()) {
                 if (assignment.getDataFile().equals(fileDefinition.getFileDescription())) {
 
                   // For run types, follow all aliases
-                  if (entry.getKey().getId() == SensorType.RUN_TYPE_ID) {
+                  if (entry.getKey().equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
                     sensorValues.add(new SensorValue(dataSet.getId(),
                       assignment.getDatabaseId(), time,
                       file.getFileDefinition().getRunType(line, true).getRunName()));

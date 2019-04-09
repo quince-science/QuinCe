@@ -8,7 +8,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import javax.faces.bean.ManagedBean;
@@ -575,7 +574,7 @@ public class NewInstrumentBean extends FileUploadBean {
       }
 
       // The columns assigned to the sensor type
-      Set<SensorAssignment> assignments = sensorAssignments.get(sensorType);
+      List<SensorAssignment> assignments = sensorAssignments.get(sensorType);
       JSONArray assignmentsJson = new JSONArray();
       if (null != assignments) {
         for (SensorAssignment assignment : assignments) {

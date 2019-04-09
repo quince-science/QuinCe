@@ -13,7 +13,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import org.flywaydb.test.annotation.FlywayTest;
@@ -127,7 +126,7 @@ public class SensorAssignmentsTest extends BaseTest {
   private int countAllAssignments() {
     int count = 0;
 
-    for (Set<SensorAssignment> assignmentSet : assignments.values()) {
+    for (List<SensorAssignment> assignmentSet : assignments.values()) {
       count += assignmentSet.size();
     }
 
@@ -224,8 +223,8 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void basicAssignmentTest() throws Exception {
     assignments.addAssignment(intakeTemperatureId, makeAssignment(DATA_FILE_NAME, 1, true));
-    Map<SensorType, Set<SensorAssignment>> allAssignments = assignments;
-    Set<SensorAssignment> sensorAssignments = allAssignments.get(config.getSensorType(1));
+    Map<SensorType, List<SensorAssignment>> allAssignments = assignments;
+    List<SensorAssignment> sensorAssignments = allAssignments.get(config.getSensorType(1));
     assertEquals(1, sensorAssignments.size());
     assertEquals(makeAssignment(DATA_FILE_NAME, 1, true), sensorAssignments.toArray()[0]);
   }
@@ -240,8 +239,8 @@ public class SensorAssignmentsTest extends BaseTest {
   @Test
   public void assignByNameTest() throws Exception {
     assignments.addAssignment("Intake Temperature", makeAssignment(DATA_FILE_NAME, 1, true));
-    Map<SensorType, Set<SensorAssignment>> allAssignments = assignments;
-    Set<SensorAssignment> sensorAssignments = allAssignments.get(config.getSensorType(1));
+    Map<SensorType, List<SensorAssignment>> allAssignments = assignments;
+    List<SensorAssignment> sensorAssignments = allAssignments.get(config.getSensorType(1));
     assertEquals(1, sensorAssignments.size());
     assertEquals(makeAssignment(DATA_FILE_NAME, 1, true), sensorAssignments.toArray()[0]);
   }

@@ -23,7 +23,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
-public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>> {
+public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment>> {
 
   /**
    * The database IDs of the variables that this set of assignments is targeting
@@ -86,20 +86,20 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
       ResourceManager.getInstance().getSensorsConfiguration();
 
     for (SensorType type: sensorConfig.getNonCoreSensors(conn)) {
-      put(type, new HashSet<SensorAssignment>());
+      put(type, new ArrayList<SensorAssignment>());
 
       // Add the Run Type if required
       if (type.hasInternalCalibration()) {
-        put(SensorType.createRunTypeSensor(), new HashSet<SensorAssignment>());
+        put(SensorType.RUN_TYPE_SENSOR_TYPE, new ArrayList<SensorAssignment>());
       }
     }
 
     for (SensorType coreType : sensorConfig.getCoreSensors(variableIDs)) {
-      put(coreType, new HashSet<SensorAssignment>());
+      put(coreType, new ArrayList<SensorAssignment>());
 
       // Add the Run Type if required
       if (coreType.hasInternalCalibration()) {
-        put(SensorType.createRunTypeSensor(), new HashSet<SensorAssignment>());
+        put(SensorType.RUN_TYPE_SENSOR_TYPE, new ArrayList<SensorAssignment>());
       }
     }
   }
@@ -216,7 +216,7 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
   private boolean isAssigned(String file, int column) {
     boolean assigned = false;
 
-    for (Set<SensorAssignment> set : values()) {
+    for (List<SensorAssignment> set : values()) {
       for (SensorAssignment assignment : set) {
         if (assignment.getDataFile().equals(file) &&
           assignment.getColumn() == column) {
@@ -241,7 +241,7 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
   private boolean checkAssignment(SensorType sensorType, String dataFileName, boolean primaryOnly) {
     boolean assigned = false;
 
-    Set<SensorAssignment> assignments = get(sensorType);
+    List<SensorAssignment> assignments = get(sensorType);
     if (null != assignments) {
       for (SensorAssignment assignment : get(sensorType)) {
         if (null == dataFileName || assignment.getDataFile().equals(dataFileName)) {
@@ -346,7 +346,7 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
         "', column " + assignment.getColumn() + " has already been assigned");
     }
 
-    Set<SensorAssignment> assignments = get(sensorType);
+    List<SensorAssignment> assignments = get(sensorType);
     if (null == assignments) {
       // The sensor is not valid for this instrument, so it has not
       // been added to the assignments list
@@ -367,9 +367,9 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
 
     boolean assignmentRemoved = false;
 
-    for (Map.Entry<SensorType, Set<SensorAssignment>> entry : entrySet()) {
+    for (Map.Entry<SensorType, List<SensorAssignment>> entry : entrySet()) {
 
-      Set<SensorAssignment> assignments = entry.getValue();
+      List<SensorAssignment> assignments = entry.getValue();
       for (SensorAssignment assignment : assignments) {
         if (assignment.getDataFile().equalsIgnoreCase(fileDescription) && assignment.getColumn() == columnIndex) {
           assignments.remove(assignment);
@@ -388,11 +388,11 @@ public class SensorAssignments extends TreeMap<SensorType, Set<SensorAssignment>
    * @param fileDescription The file description
    */
   public void removeFileAssignments(String fileDescription) {
-    for (Map.Entry<SensorType, Set<SensorAssignment>> entry : entrySet()) {
+    for (Map.Entry<SensorType, List<SensorAssignment>> entry : entrySet()) {
 
       Set<SensorAssignment> assignmentsToRemove = new HashSet<SensorAssignment>();
 
-      Set<SensorAssignment> assignments = entry.getValue();
+      List<SensorAssignment> assignments = entry.getValue();
       for (SensorAssignment assignment : assignments) {
         if (assignment.getDataFile().equalsIgnoreCase(fileDescription)) {
           assignmentsToRemove.add(assignment);

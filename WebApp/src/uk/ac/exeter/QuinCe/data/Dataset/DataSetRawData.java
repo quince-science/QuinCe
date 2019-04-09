@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -734,10 +733,10 @@ public abstract class DataSetRawData {
 
       record = new DataSetRawDataRecord(dataSet, getSelectedTime(), longitude, latitude, getSelectedRunType(), runTypeCategory);
 
-      for (Map.Entry<SensorType, Set<SensorAssignment>> entry : instrument.getSensorAssignments().entrySet()) {
+      for (Map.Entry<SensorType, List<SensorAssignment>> entry : instrument.getSensorAssignments().entrySet()) {
 
         SensorType sensorType = entry.getKey();
-        Set<SensorAssignment> assignments = entry.getValue();
+        List<SensorAssignment> assignments = entry.getValue();
 
         // TODO We don't handle diagnostics at this point in the migration.
         // They'll be added back in later
