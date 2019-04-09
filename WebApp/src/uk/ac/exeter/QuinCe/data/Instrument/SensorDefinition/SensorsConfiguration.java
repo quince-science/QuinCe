@@ -219,8 +219,7 @@ public class SensorsConfiguration {
    * Build the special sensor types used internally by the application
    */
   private void buildSpecialSensors() {
-    SensorType runTypeSensor = SensorType.createRunTypeSensor();
-    sensorTypes.put(runTypeSensor.getId(), runTypeSensor);
+    sensorTypes.put(SensorType.RUN_TYPE_SENSOR_TYPE.getId(), SensorType.RUN_TYPE_SENSOR_TYPE);
   }
 
   /**
