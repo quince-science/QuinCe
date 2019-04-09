@@ -54,11 +54,6 @@ public class ExtractDataSetJob extends Job {
   private DataSet dataSet = null;
 
   /**
-   * The instrument to which the data set belongs
-   */
-  private Instrument instrument = null;
-
-  /**
    * Name of the job, used for reporting
    */
   private final String jobName = "Dataset Extraction";
@@ -159,10 +154,17 @@ public class ExtractDataSetJob extends Job {
               for (SensorAssignment assignment : entry.getValue()) {
                 if (assignment.getDataFile().equals(fileDefinition.getFileDescription())) {
 
-                  sensorValues.add(new SensorValue(dataSet.getId(),
-                    assignment.getDatabaseId(), time,
-                    file.getStringValue(line, assignment.getColumn(),
-                      assignment.getMissingValue())));
+                  // For run types, follow all aliases
+                  if (entry.getKey().getId() == SensorType.RUN_TYPE_ID) {
+                    sensorValues.add(new SensorValue(dataSet.getId(),
+                      assignment.getDatabaseId(), time,
+                      file.getFileDefinition().getRunType(line, true).getRunName()));
+                  } else {
+                    sensorValues.add(new SensorValue(dataSet.getId(),
+                      assignment.getDatabaseId(), time,
+                      file.getStringValue(line, assignment.getColumn(),
+                        assignment.getMissingValue())));
+                  }
                 }
               }
             }
