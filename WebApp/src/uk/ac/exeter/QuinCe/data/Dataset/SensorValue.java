@@ -7,6 +7,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineFlag;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 /**
@@ -17,14 +18,9 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 public class SensorValue {
 
   /**
-   * Indicatest that this value has not be stored in the database
-   */
-  public static final long NO_RECORD = -1;
-
-  /**
    * The database ID of this value
    */
-  private final long databaseId;
+  private final long id;
 
   /**
    * The ID of the dataset that the sensor value is in
@@ -78,7 +74,7 @@ public class SensorValue {
   public SensorValue(long datasetId, long columnId,
     LocalDateTime time, String value) {
 
-    this.databaseId = NO_RECORD;
+    this.id = DatabaseUtils.NO_DATABASE_RECORD;
     this.datasetId = datasetId;
     this.columnId = columnId;
     this.time = time;
@@ -98,7 +94,7 @@ public class SensorValue {
     LocalDateTime time, String value, AutoQCResult autoQc,
     Flag userQcFlag, String userQcMessage) {
 
-    this.databaseId = databaseId;
+    this.id = databaseId;
     this.datasetId = datasetId;
     this.columnId = columnId;
     this.time = time;
@@ -281,7 +277,7 @@ public class SensorValue {
    *         it is a new record and is yet to be saved
    */
   public boolean isInDatabase() {
-    return (databaseId != NO_RECORD);
+    return (id != DatabaseUtils.NO_DATABASE_RECORD);
   }
 
   /**
@@ -298,7 +294,7 @@ public class SensorValue {
    * Get the database ID of this sensor value
    * @return The database ID
    */
-  public long getDatabaseId() {
-    return databaseId;
+  public long getId() {
+    return id;
   }
 }
