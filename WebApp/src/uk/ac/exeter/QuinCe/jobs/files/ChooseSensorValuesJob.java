@@ -1,6 +1,8 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -8,8 +10,15 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
+import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementValue;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -82,12 +91,54 @@ public class ChooseSensorValuesJob extends Job {
       // Get the data set from the database
       dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
 
+      SensorsConfiguration sensorConfig =
+        ResourceManager.getInstance().getSensorsConfiguration();
+
       instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(),
-        ResourceManager.getInstance().getSensorsConfiguration(),
+        sensorConfig,
         ResourceManager.getInstance().getRunTypeCategoryConfiguration());
 
+      List<Measurement> measurements =
+        DataSetDataDB.getMeasurements(conn, instrument, dataSet.getId());
 
+      List<MeasurementValue> measurementValues =
+        new ArrayList<MeasurementValue>();
 
+      // Get all the sensor values for the dataset, ordered by date and then
+      // grouped by sensor type
+      DateColumnGroupedSensorValues groupedSensorValues =
+        DataSetDataDB.getSensorValuesByDateAndColumn(conn,
+          instrument, dataSet.getId());
+
+      // Loop through each measurement and grab the relevant sensor values
+      for (Measurement measurement : measurements) {
+
+        // Get all the sensor values for the measurement time
+        Map<SensorType, List<SensorValue>> values =
+          groupedSensorValues.get(measurement.getTime());
+
+        // Get one sensor value for each sensor type.
+        // TODO This will need to check averages, fallbacks
+        //      and QC flags in future
+        for (Map.Entry<SensorType, List<SensorValue>> entry :
+          values.entrySet()) {
+
+          // We want sensor values from every diagnostic and each of the
+          // required sensor types
+          //
+          // For the moment we just grab the first available value from
+          // each SensorType. This will be made more sophisticated in future
+          if (entry.getKey().isDiagnostic() ||
+            sensorConfig.requiredForVariable(entry.getKey(),
+              measurement.getVariable())) {
+
+            measurementValues.add(new MeasurementValue(measurement,
+              entry.getValue().get(0)));
+          }
+        }
+      }
+
+      DataSetDataDB.storeMeasurementValues(conn, measurementValues);
 
       // Trigger the Build Measurements job
       /*

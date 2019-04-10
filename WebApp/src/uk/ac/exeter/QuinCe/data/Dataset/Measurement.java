@@ -34,6 +34,16 @@ public class Measurement {
   private final LocalDateTime time;
 
   /**
+   * The longitude of the measurement
+   */
+  private final double longitude;
+
+  /**
+   * The latitude of the measurement
+   */
+  private final double latitude;
+
+  /**
    * The run type of the measurement (optional)
    */
   private final String runType;
@@ -43,15 +53,19 @@ public class Measurement {
    * @param datasetId The ID of the dataset to which the measurement belongs
    * @param variable The variable that is measured
    * @param time The timestamp of the measurement
+   * @param longitude The longitude of the measurement
+   * @param latitude The latitude of the measurement
    * @param runType The run type of the measurement
    */
   public Measurement(long datasetId, InstrumentVariable variable,
-    LocalDateTime time, String runType) {
+    LocalDateTime time, double longitude, double latitude, String runType) {
 
     this.id = DatabaseUtils.NO_DATABASE_RECORD;
     this.datasetId = datasetId;
     this.variable = variable;
     this.time = time;
+    this.longitude = longitude;
+    this.latitude = latitude;
     this.runType = runType;
   }
 
@@ -61,15 +75,19 @@ public class Measurement {
    * @param datasetId The ID of the dataset to which the measurement belongs
    * @param variable The variable that is measured
    * @param time The timestamp of the measurement
-   * @param runType The run type of the measurement
+   * @param longitude The longitude of the measurement
+   * @param latitude The latitude of the measurement
+@param runType The run type of the measurement
    */
   public Measurement(long id, long datasetId, InstrumentVariable variable,
-    LocalDateTime time, String runType) {
+    LocalDateTime time, double longitude, double latitude, String runType) {
 
     this.id = id;
     this.datasetId = datasetId;
     this.variable = variable;
     this.time = time;
+    this.longitude = longitude;
+    this.latitude = latitude;
     this.runType = runType;
   }
 
@@ -111,6 +129,22 @@ public class Measurement {
    */
   public LocalDateTime getTime() {
     return time;
+  }
+
+  /**
+   * Get the longitude of the measurement
+   * @return The measurement longitude
+   */
+  public double getLongitude() {
+    return longitude;
+  }
+
+  /**
+   * Get the latitude of the measurement
+   * @return The measurement latitude
+   */
+  public double getLatitude() {
+    return latitude;
   }
 
   public String getRunType() {
