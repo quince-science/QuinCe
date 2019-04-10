@@ -4,6 +4,8 @@ CREATE TABLE measurements (
   dataset_id INT NOT NULL,
   variable_id INT NOT NULL,
   date BIGINT(20) NOT NULL,
+  longitude DOUBLE NOT NULL,
+  latitude DOUBLE NOT NULL,
   run_type VARCHAR(45) NULL,
   PRIMARY KEY (id),
   INDEX measurement_dataset_idx (dataset_id ASC),

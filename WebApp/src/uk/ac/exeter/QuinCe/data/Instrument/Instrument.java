@@ -321,4 +321,27 @@ public class Instrument {
     FileDefinition fileDef = getFileDefinitions().get(runTypeAssignments.get(0).getDataFile());
     return fileDef.getRunTypes().getRunTypeCategory(runTypeValue);
   }
+
+  /**
+   * Get an InstrumentVaraible based on its ID
+   * @param variableId The variable ID
+   * @return The InstrumentVariable
+   * @throws InstrumentException If the variable is not found
+   */
+  public InstrumentVariable getVariable(long variableId) throws InstrumentException {
+    InstrumentVariable result = null;
+
+    for (InstrumentVariable variable : variables) {
+      if (variable.getId() == variableId) {
+        result = variable;
+        break;
+      }
+    }
+
+    if (null == result) {
+      throw new InstrumentException("Variable with ID " + variableId
+        +" is not part of this instrument");
+    }
+    return result;
+  }
 }
