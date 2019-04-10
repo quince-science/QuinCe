@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
@@ -30,9 +31,29 @@ public class SensorType implements Comparable<SensorType> {
   public static final long RUN_TYPE_ID = -1;
 
   /**
+   * Special ID for dummy longitude sensor type
+   */
+  public static final long LONGITUDE_ID = FileDefinition.LONGITUDE_COLUMN_ID;
+
+  /**
+   * Special ID for dummy latitude sensor type
+   */
+  public static final long LATITUDE_ID = FileDefinition.LATITUDE_COLUMN_ID;
+
+  /**
    * The special Run Type sensor type
    */
   public static SensorType RUN_TYPE_SENSOR_TYPE;
+
+  /**
+   * Dummy longitude sensor type
+   */
+  public static SensorType LONGITUDE_SENSOR_TYPE;
+
+  /**
+   * Dummy latitude sensor type
+   */
+  public static SensorType LATITUDE_SENSOR_TYPE;
 
   /**
    * The database ID of this sensor type
@@ -93,6 +114,8 @@ public class SensorType implements Comparable<SensorType> {
 
   static {
     RUN_TYPE_SENSOR_TYPE = new SensorType(RUN_TYPE_ID, "Run Type", "Run Type");
+    LONGITUDE_SENSOR_TYPE = new SensorType(LONGITUDE_ID, "Longitude", "Longitude");
+    LATITUDE_SENSOR_TYPE = new SensorType(LATITUDE_ID, "Latitude", "Latitude");
   }
 
   /**

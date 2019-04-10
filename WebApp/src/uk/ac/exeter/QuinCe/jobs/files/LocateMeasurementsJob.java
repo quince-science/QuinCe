@@ -126,11 +126,27 @@ public class LocateMeasurementsJob extends Job {
                 "Missing Run Type for measurement at " + entry.getKey());
             }
 
+            // Ditto for longitude and latitude
+            List<SensorValue> longitudeValues = sensorTypeGroups.get(SensorType.LONGITUDE_SENSOR_TYPE);
+            if (null == longitudeValues) {
+              throw new RecordNotFoundException(
+                "Missing Longitude for measurement at " + entry.getKey());
+            }
+
+            List<SensorValue> latitudeValues = sensorTypeGroups.get(SensorType.LATITUDE_SENSOR_TYPE);
+            if (null == latitudeValues) {
+              throw new RecordNotFoundException(
+                "Missing Longitude for measurement at " + entry.getKey());
+            }
+
             // Only store non-ignored run types (assume only one run type)
-            SensorValue runType = runTypeValues.get(0);
-            if (!instrument.getRunTypeCategory(runType.getValue()).equals(RunTypeCategory.IGNORED)) {
+            String runType = runTypeValues.get(0).getValue();
+            double longitude = longitudeValues.get(0).getDoubleValue();
+            double latitude = latitudeValues.get(0).getDoubleValue();
+
+            if (!instrument.getRunTypeCategory(runType).equals(RunTypeCategory.IGNORED)) {
               measurements.add(new Measurement(dataSet.getId(), variable,
-                entry.getKey(), runType.getValue()));
+                entry.getKey(), longitude, latitude, runType));
             }
           }
         }
