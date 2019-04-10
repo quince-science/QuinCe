@@ -16,6 +16,7 @@ INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, 
   VALUES ('Wind Direction (relative)', 'Other', NULL, NULL, NULL, 0);
 
 CREATE TABLE sensor_values (
+  id BIGINT(20) NOT NULL AUTO_INCREMENT,
   dataset_id INT NOT NULL,
   file_column INT NOT NULL,
   date BIGINT(20) NOT NULL,

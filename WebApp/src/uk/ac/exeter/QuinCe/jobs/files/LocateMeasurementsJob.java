@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -32,16 +33,15 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Identifies individual measurements in a dataset and extracts
- * them ready for data reduction. This includes selecting which
- * sensor value(s) to use based on the instrument configuration and the
- * results of the automatic QC
+ * Identifies individual measurements in a dataset and stores
+ * them in the database. Followed by the ChooseSensorValues
+ * job, which picks the SensorValues to use for that measurement
  *
  * @author Steve Jones
  *
  */
 // TODO The detailed selection operations are not yet implemented.
-public class BuildMeasurementsJob extends Job {
+public class LocateMeasurementsJob extends Job {
 
   /**
    * The parameter name for the data set id
@@ -51,7 +51,7 @@ public class BuildMeasurementsJob extends Job {
   /**
    * Name of the job, used for reporting
    */
-  private final String jobName = "Automatic Quality Control";
+  private final String jobName = "Locate Measurements";
 
   /**
    * The data set being processed by the job
@@ -75,7 +75,7 @@ public class BuildMeasurementsJob extends Job {
    * @throws RecordNotFoundException If any required database records are missing
    * @see JobManager#getNextJob(ResourceManager, Properties)
    */
-  public BuildMeasurementsJob(ResourceManager resourceManager, Properties config,
+  public LocateMeasurementsJob(ResourceManager resourceManager, Properties config,
     long jobId, Map<String, String> parameters)
       throws MissingParamException, InvalidJobParametersException,
         DatabaseException, RecordNotFoundException {
@@ -137,6 +137,13 @@ public class BuildMeasurementsJob extends Job {
       }
 
       DataSetDataDB.storeMeasurements(conn, measurements);
+
+      // Trigger the Build Measurements job
+      dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
+      DataSetDB.updateDataSet(conn, dataSet);
+      Map<String, String> jobParams = new HashMap<String, String>();
+      jobParams.put(LocateMeasurementsJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
+      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), ChooseSensorValuesJob.class.getCanonicalName(), jobParams);
 
       conn.commit();
     } catch (Exception e) {

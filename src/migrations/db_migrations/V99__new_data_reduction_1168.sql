@@ -12,3 +12,19 @@ CREATE TABLE measurements (
     REFERENCES dataset (id)
     ON DELETE RESTRICT
     ON UPDATE RESTRICT);
+
+CREATE TABLE measurement_values (
+  measurement_id BIGINT(20) NOT NULL,
+  sensor_value_id BIGINT(20) NOT NULL,
+  PRIMARY KEY (measurement_id, sensor_value_id),
+  INDEX MEASVAL_MEASUREMENT_idx (measurement_id ASC),
+  CONSTRAINT MEASVAL_MEASUREMENT
+    FOREIGN KEY (measurement_id)
+    REFERENCES measurements (id)
+    ON DELETE RESTRICT
+    ON UPDATE RESTRICT,
+  CONSTRAINT MEASVAL_SENSORVALUE
+    FOREIGN KEY (sensor_value_id)
+    REFERENCES sensor_values (id)
+    ON DELETE RESTRICT
+    ON UPDATE RESTRICT);
