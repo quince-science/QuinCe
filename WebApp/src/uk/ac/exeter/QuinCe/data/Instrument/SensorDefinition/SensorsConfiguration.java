@@ -454,13 +454,30 @@ public class SensorsConfiguration {
       if (null == variable) {
         throw new SensorConfigurationException("Unknown variable ID " + varId);
       } else {
-        List<SensorType> variableSensorTypes = variable.getAllSensorTypes();
-        for (SensorType varSensorType : variableSensorTypes) {
-          if (varSensorType.equalsIncludingRelations(sensorType)) {
-            required = true;
-            break;
-          }
+        required = requiredForVariable(sensorType, variable);
+        if (required) {
+          break;
         }
+      }
+    }
+
+    return required;
+  }
+
+  /**
+   * See if the supplied SensorType is required by any of the listed variables
+   * @param sensorType The SensorType
+   * @param variableIds The variables' database IDs
+   * @return {@code true} if any variable requires the SensorType; {@code false} if not
+   */
+  public boolean requiredForVariable(SensorType sensorType, InstrumentVariable variable) {
+    boolean required = false;
+
+    List<SensorType> variableSensorTypes = variable.getAllSensorTypes();
+    for (SensorType varSensorType : variableSensorTypes) {
+      if (varSensorType.equalsIncludingRelations(sensorType)) {
+        required = true;
+        break;
       }
     }
 
