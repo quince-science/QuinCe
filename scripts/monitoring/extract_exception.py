@@ -3,8 +3,8 @@
 
 import sys
 import os
-import smtplib
-from email.mime.text import MIMEText
+import json
+import requests
 
 # Constants
 LAST_LINE_FILE = "lastLine.txt"
@@ -13,10 +13,7 @@ EXCEPTION_MODE = 1
 
 # Global variables (from command line paramters)
 logFile = None
-emailHost = None
-emailSender = None
-emailRecipients = []
-
+slackURL = None
 
 # Other top-level variables
 lastLine = 0
@@ -24,23 +21,18 @@ exceptions = []
 
 # Process the command line arguments
 def processCommandLine ():
-    global logFile, emailHost, emailSender, emailRecipients
+    global logFile, slackURL
 
-    if len(sys.argv) < 5:
-        print "Usage: extract_exception.py logFile smtpHost" + \
-            " emailSenderAddress emailRecipient [emailRecipient...]"
+    if len(sys.argv) != 3:
+        print "Usage: extract_exception.py <logFile> <slack URL>"
         quit()
     else:
         logFile = sys.argv[1]
+        slackURL = sys.argv[2]
         if not os.access(logFile, os.R_OK):
             print "Log file does not exist or cannot be read"
             quit()
 
-        emailHost = sys.argv[2]
-        emailSender = sys.argv[3]
-
-        for i in xrange(4, len(sys.argv)):
-            emailRecipients.append(sys.argv[i])
 
 
 # The last line we processed is stored in a file.
@@ -153,19 +145,16 @@ if mode == EXCEPTION_MODE:
 
 if len(exceptions) > 0:
 
-    # Send an email with the exceptions we found
-    emailBody = "Exceptions found in " + logFile
+    # Send an HTTP POST with the exceptions we found
+    errorLog = "Exceptions found in " + logFile
 
     for exception in exceptions:
-        emailBody = emailBody + "\n\n"
-        emailBody = emailBody + exception
+        errorLog = errorLog + "\n\n"
+        errorLog = errorLog + exception
 
-    email = smtplib.SMTP(emailHost)
-    msg = MIMEText(emailBody)
-    msg["Subject"] = "QuinCe Exceptions"
-    msg["From"] = emailSender
-    msg["To"] = ", ".join(emailRecipients)
-    email.sendmail(emailSender, emailRecipients, msg.as_string())
+    payload = json.dumps({"text": errorLog})
+
+    requests.post(slackURL, payload)
 
 
 # Store the last processed line ready for next time
