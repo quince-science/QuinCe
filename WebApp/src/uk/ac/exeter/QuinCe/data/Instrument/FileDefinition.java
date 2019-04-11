@@ -445,7 +445,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
       dataLine = dataLine.trim().replaceAll("  *", " ");
     }
 
-    values = Arrays.asList(dataLine.split(separator));
+    values = Arrays.asList(dataLine.split(separator, dataLine.length()));
     return StringUtils.trimList(values);
   }
 
