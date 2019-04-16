@@ -68,7 +68,7 @@ then
 
   # Get the file definition IDs - these will be used to delete folders from
   # the file store
-  read -ra file_def_ids <<< `mysql -u$db_user -p"$db_password" $db_name -B --skip-column-names -e "select id from file_definition where instrument_id = 9"`
+  read -ra file_def_ids <<< `mysql -u$db_user -p"$db_password" $db_name -B --skip-column-names -e "select id from file_definition where instrument_id = $instrument_id"`
 
   mysql -u$db_user -p"$db_password" $db_name <<EOF
     DELETE FROM equilibrator_pco2 WHERE measurement_id IN (SELECT id FROM dataset_data WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id));
