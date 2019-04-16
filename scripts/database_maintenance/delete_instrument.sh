@@ -65,6 +65,11 @@ then
   if [ $verbose -eq 1 ]; then
     echo "Delete all data related to instrument ID $instrument_id from database"
   fi
+
+  # Get the file definition IDs - these will be used to delete folders from
+  # the file store
+  read -ra file_def_ids <<< `mysql -u$db_user -p"$db_password" $db_name -B --skip-column-names -e "select id from file_definition where instrument_id = 9"`
+
   mysql -u$db_user -p"$db_password" $db_name <<EOF
     DELETE FROM equilibrator_pco2 WHERE measurement_id IN (SELECT id FROM dataset_data WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id));
     DELETE FROM dataset_data WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id);
@@ -80,17 +85,24 @@ then
 
     DELETE FROM instrument WHERE id = $instrument_id;
 EOF
+
   # Also delete files from the file store:
-  if [ -d "$filestore_folder" ] && [ -d "$filestore_folder/$instrument_id" ]
+  if [ ! -d "$filestore_folder" ]
   then
-    if [ $verbose -eq 1 ]; then
-      echo "Deleting filestore data"
-    fi
-    rm "$filestore_folder/$instrument_id/"* 2>/dev/null
-    rmdir "$filestore_folder/$instrument_id"
-  fi
-else
-    echo "Folder $filestore_folder/$instrument_id dont exist"
-    echo -e "$usage"
+    echo "Filestore Folder $filestore_folder does not exist"
     exit 1
+  else
+    if [ $verbose -eq 1 ]
+    then
+      echo "Deleting filestore folders: ${file_def_ids[@]}"
+    fi
+
+    for i in ${file_def_ids[@]}
+    do
+      if [ -d "$filestore_folder/$i" ]
+      then
+        rm -r "$filestore_folder/$i"
+      fi
+    done
+  fi
 fi
