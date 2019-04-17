@@ -5,6 +5,7 @@ package uk.ac.exeter.QuinCe.data.Calculation;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class CalculatorException extends Exception{
 
   /**

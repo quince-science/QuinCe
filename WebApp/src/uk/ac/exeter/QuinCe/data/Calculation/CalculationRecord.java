@@ -36,6 +36,7 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  * @author Steve Jones
  *
  */
+@Deprecated
 public abstract class CalculationRecord extends DataRecord {
 
   /**
