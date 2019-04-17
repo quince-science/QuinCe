@@ -189,11 +189,6 @@ public class DataSet {
   private ArrayList<Message> messages = new ArrayList<Message>();
 
   /**
-   * The number of records that need flagging
-   */
-  private int needsFlagCount = -1;
-
-  /**
    * Constructor for all fields
    * @param id
    *    Data set's database ID
@@ -222,7 +217,7 @@ public class DataSet {
    */
   protected DataSet(long id, long instrumentId, String name,
       LocalDateTime start, LocalDateTime end, int status, LocalDateTime statusDate,
-      boolean nrt, Properties properties, LocalDateTime lastTouched, int needsFlagCount,
+      boolean nrt, Properties properties, LocalDateTime lastTouched,
       List<Message> messages) {
     this.id = id;
     this.instrumentId = instrumentId;
@@ -234,7 +229,6 @@ public class DataSet {
     this.nrt = nrt;
     this.properties = properties;
     this.lastTouched = lastTouched;
-    this.needsFlagCount = needsFlagCount;
     this.messages = new ArrayList<Message>(messages);
   }
 
@@ -498,27 +492,6 @@ public class DataSet {
   }
 
   /**
-   * Get the number of records that need flagging by the user.
-   *
-   * This only gives a value if the dataset's status is
-   * {@line #STATUS_USER_QC} or later;
-   * otherwise it returns {@code -1}.
-   * @return The number of records that need flagging
-   */
-  public int getNeedsFlagCount() {
-    int result = needsFlagCount;
-
-    // Status values increase through processing.
-    // This value isn't available before automatic
-    // QC is finished
-    if (getStatus() < STATUS_USER_QC) {
-      result = -1;
-    }
-
-    return result;
-  }
-
-  /**
    * Determine whether or not this dataset can be exported.
    *
    * <p>The data set can be exported if it meets the following
@@ -531,7 +504,8 @@ public class DataSet {
    * @return {@code true} if the dataset can be exported; {@code false} if it cannot
    */
   public boolean getCanBeExported() {
-    return (getStatus() >= STATUS_USER_QC && (needsFlagCount == 0 || isNrt()));
+    //TODO Reinstate check of whether QC is complete
+    return (getStatus() >= STATUS_USER_QC || isNrt());
   }
 
   public void addMessage(String message, String details) {
