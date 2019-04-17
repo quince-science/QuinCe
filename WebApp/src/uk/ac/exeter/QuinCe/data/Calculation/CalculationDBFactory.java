@@ -7,6 +7,7 @@ import uk.ac.exeter.QuinCe.EquilibratorPco2.EquilibratorPco2DB;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class CalculationDBFactory {
 
   // TODO This definitely needs to use reflection.
