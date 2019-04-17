@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -141,13 +142,11 @@ public class ChooseSensorValuesJob extends Job {
       DataSetDataDB.storeMeasurementValues(conn, measurementValues);
 
       // Trigger the Build Measurements job
-      /*
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
       DataSetDB.updateDataSet(conn, dataSet);
       Map<String, String> jobParams = new HashMap<String, String>();
       jobParams.put(LocateMeasurementsJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
-      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), ChooseSensorValuesJob.class.getCanonicalName(), jobParams);
-      */
+      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), DataReductionJob.class.getCanonicalName(), jobParams);
 
       conn.commit();
     } catch (Exception e) {
