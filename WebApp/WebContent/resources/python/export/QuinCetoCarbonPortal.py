@@ -13,7 +13,7 @@ import traceback
 from py_func.quince_comm import get_export_list, report_abandon_export
 from py_func.meta_handling import process_dataset, process_L0_data, process_L2_data
 from py_func.carbon import cp_init, send_L0_to_cp, send_L2_to_cp
-from py_func.copernicus import send_to_copernicus
+from py_func.copernicus import build_netCDF, upload_to_copernicus
 
 
 #logging.basicConfig(filename = 'logfile.log', 
@@ -37,6 +37,12 @@ def main():
     # Get list of datasets ready to be submitted from QuinCe
 
     export_list = get_export_list(config_quince)
+    if not export_list:
+      print('no datasets ready for export')
+      upload_status = {}
+
+      quit()
+
     upload_status = {}
     
     for datasetNr, dataset in enumerate(export_list): 
@@ -46,58 +52,67 @@ def main():
       manifest, 
       data_filenames, 
       raw_filenames,
-      destinations] = process_dataset(dataset,config_quince)
+      destination_filename] = process_dataset(dataset,config_quince)
 
       #--Make connection with Carbon Portal 
-      if 'ICOS OTC' in destinations:
-        cp_response_init, auth_cookie = cp_init(
-          dataset['name'],
-          destinations['ICOS OTC'],
-          dataset_zip,
-          config_carbon)
+      # if 'ICOS OTC' in destination_filename:
+      #   cp_response_init, auth_cookie = cp_init(
+      #     dataset['name'],
+      #     destination_filename['ICOS OTC'],
+      #     dataset_zip,
+      #     config_carbon)
         
-      #--- Processing L0 files
-      for index, filename in enumerate(raw_filenames):
-        meta_L0, file_L0, hashsum_L0 = process_L0_data(
-          filename,
-          manifest,
-          dataset_zip,
-          config_meta,
-          index)
+      # #--- Processing L0 files
+      # for index, filename in enumerate(raw_filenames):
+      #   meta_L0, file_L0, hashsum_L0 = process_L0_data(
+      #     filename,
+      #     manifest,
+      #     dataset_zip,
+      #     config_meta,
+      #     index)
 
-        if 'ICOS OTC' in destinations:
-          upload_status[datasetNr]['cp_response_L0'] = send_L0_to_cp(
-            meta_L0,
-            file_L0,
-            hashsum_L0,
-            auth_cookie)
+      #   if 'ICOS OTC' in destination_filename:
+      #     upload_status[datasetNr]['cp_response_L0'] = send_L0_to_cp(
+      #       meta_L0,
+      #       file_L0,
+      #       hashsum_L0,
+      #       auth_cookie)
           
       #--- Processing L2 files
       for index, data_filename in enumerate(data_filenames):
-        if 'ICOS OTC' in data_filename:   
-          meta_L2, file_L2, hashsum_L2 = process_L2_data(
-            data_filename,
-            manifest,
-            dataset_zip)
+        # if 'ICOS OTC' in data_filename:   
+        #   meta_L2, file_L2, hashsum_L2 = process_L2_data(
+        #     data_filename,
+        #     manifest,
+        #     dataset_zip)
           
-          upload_status[datasetNr]['cp_response_L2'] = send_L2_to_cp(
-            meta_L2,
-            file_L2,
-            hashsum_L2,
-            auth_cookie)
+        #   upload_status[datasetNr]['cp_response_L2'] = send_L2_to_cp(
+        #     meta_L2,
+        #     file_L2,
+        #     hashsum_L2,
+        #     auth_cookie)
 
         if 'Copernicus' in data_filename:  
-          upload_status[datasetNr]['result_copernicus_upload_L2'] = (
-            send_to_copernicus(
-            data_filename, 
-            dataset_zip,
-            dataset['name'],
-            destinations['Copernicus'],
-            config_copernicus,
-            'nrt_server')) #,delete_file=True)
+          logging.info('Executing Copernicus routine')
+          build_netCDF(dataset_zip,dataset['name'],destination_filename['Copernicus'])
+          # upload_status[datasetNr]['result_copernicus_upload_L2'] = (
+          #   send_to_copernicus(
+          #   data_filename, 
+          #   dataset_zip,
+          #   dataset['name'],
+          #   destination_filename['Copernicus'],
+          #   config_copernicus,
+          #   'nrt_server')) #,delete_file=True)
 
     #report to QuinCe about upload process Abandon/complete
+
+    #UPLOAD TO COPERNICUS
     #report_abandon_export(config_quince,dataset['id'])
+    
+    try: 
+      upload_to_copernicus(config_copernicus,'nrt_server')
+    except:
+      logging.INFO('FTP connection failed')
 
   #Create error handling:
   #except cookie expired
