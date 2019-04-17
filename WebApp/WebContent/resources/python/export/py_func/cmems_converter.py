@@ -67,7 +67,7 @@ def makenetcdf_(datasetname, lines):
 
 
   platform_code = getplatformcode_(datasetname)
-  filenameroot = "GL_TS_TS_" + getplatformcallsign_(platform_code) + "_" + filedate
+  filenameroot = "GL_LATEST_TS_TS_" + getplatformcallsign_(platform_code) + "_" + filedate
 
   # Open a new netCDF file
   ncpath = tempfile.gettempdir() + "/" + filenameroot + ".nc"
@@ -121,7 +121,6 @@ def makenetcdf_(datasetname, lines):
   maxlat = -90
 
   # Fill in dimension variables
-  print(len(lines))
   times = [0] * len(lines)
   lats = [0] * len(lines)
   lons = [0] * len(lines)

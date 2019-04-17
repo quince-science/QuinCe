@@ -24,9 +24,9 @@ def process_dataset(dataset, config_quince):
   [manifest,
   data_filenames,
   raw_filenames] = extract_zip(dataset_zip,dataset['name'])
-  destinations = get_export_destination(data_filenames)
+  destination_filename = get_export_destination_filename(data_filenames)
 
-  return dataset_zip, manifest, data_filenames, raw_filenames, destinations
+  return dataset_zip, manifest, data_filenames, raw_filenames, destination_filename
 
 def extract_zip(dataset_zip,dataset_name):
   '''
@@ -58,15 +58,15 @@ def get_file_from_zip(zip_folder,filename):
     file = zip.extract(filename, path='tmp')
   return file
 
-def get_export_destination(data_filenames):
-  ''' returns the destinations of the datafiles'''
-  destinations = {}
+def get_export_destination_filename(data_filenames):
+  ''' returns the filename to be sent to the corresponding destinations of the datafiles'''
+  destination_filename = {}
   for destination in data_filenames:
     info = re.split('/',destination)
     destination = info[2]
     data_filename = info[3]
-    destinations[destination] = data_filename
-  return destinations
+    destination_filename[destination] = data_filename
+  return destination_filename
 
 
 def get_hashsum(zip_folder,filename):
