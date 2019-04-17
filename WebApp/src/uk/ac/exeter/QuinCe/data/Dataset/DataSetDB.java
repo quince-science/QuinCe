@@ -15,7 +15,6 @@ import javax.sql.DataSource;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
-import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -76,12 +75,11 @@ public class DataSetDB {
   private static String makeGetDatasetsQuery(String whereField) {
     StringBuilder sql = new StringBuilder("SELECT "
         + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
-        + "d.status_date, d.nrt, d.properties, d.last_touched, COUNT(c.user_flag), " // 10
-        + "COALESCE(d.messages_json, '[]') " // 11
+        + "d.status_date, d.nrt, d.properties, d.last_touched, " // 9
+        + "COALESCE(d.messages_json, '[]') " // 10
         + "FROM dataset d "
         + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
         + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id "
-        + "AND c.user_flag = " + Flag.VALUE_NEEDED + " "
         + "WHERE d.");
 
     sql.append(whereField);
@@ -173,8 +171,7 @@ public class DataSetDB {
     boolean nrt = record.getBoolean(8);
     Properties properties = null; // 9
     LocalDateTime lastTouched = DateTimeUtils.longToDate(record.getLong(10));
-    int needsFlagCount = record.getInt(11);
-    String json = record.getString(12);
+    String json = record.getString(11);
     JSONArray array = new JSONArray(json);
     ArrayList<Message> messages = new ArrayList<>();
     for (Object o: array) {
@@ -188,7 +185,7 @@ public class DataSetDB {
     }
 
     return new DataSet(id, instrumentId, name, start, end, status, statusDate,
-        nrt, properties, lastTouched, needsFlagCount, messages);
+        nrt, properties, lastTouched, messages);
   }
 
   /**
