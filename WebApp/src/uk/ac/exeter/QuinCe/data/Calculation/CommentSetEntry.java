@@ -9,6 +9,7 @@ import uk.ac.exeter.QCRoutines.messages.Flag;
  * @author Steve Jones
  * @see CommentSet
  */
+@Deprecated
 public class CommentSetEntry implements Comparable<CommentSetEntry> {
 
   /**
