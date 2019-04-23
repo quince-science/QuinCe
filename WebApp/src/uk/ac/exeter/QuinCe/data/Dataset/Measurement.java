@@ -11,7 +11,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
  * @author Steve Jones
  *
  */
-public class Measurement {
+public class Measurement implements Comparable<Measurement> {
 
   /**
    * The measurement's database ID
@@ -147,7 +147,52 @@ public class Measurement {
     return latitude;
   }
 
+  /**
+   * Get the Run Type of this measurement
+   * @return The run type
+   */
   public String getRunType() {
     return runType;
+  }
+
+  /*
+   * In theory, equals and compareTo should check the same fields.
+   * However, we will only compare Measurements from the same dataset,
+   * and the id field is unique (the primary key in the database).
+   *
+   * Therefore checking the id is sufficient to know that two objects
+   * are equal. Comparison is done on the id first, and if they aren't equal
+   * then the time is used. This ensures that "compareTo() == 0" is consistent
+   * with "equals() == true" in all cases.
+   *
+   * If the IDs aren't equal, compareTo uses time to establish ordering.
+   */
+
+  @Override
+  public boolean equals(Object o) {
+    // Compare by ID
+    boolean equals = false;
+
+    if (o instanceof Measurement) {
+      equals = ((Measurement) o).id == id;
+    }
+
+    return equals;
+  }
+
+  @Override
+  public int hashCode() {
+    return Long.hashCode(id);
+  }
+
+  @Override
+  public int compareTo(Measurement o) {
+    int result = 0;
+
+    if (o.id != id) {
+      result = time.compareTo(o.time);
+    }
+
+    return result;
   }
 }

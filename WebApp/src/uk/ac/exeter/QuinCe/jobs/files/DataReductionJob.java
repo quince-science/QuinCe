@@ -8,6 +8,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.MeasurementsWithSensorValues;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -59,6 +63,7 @@ public class DataReductionJob extends Job {
     Connection conn = null;
     Connection statusConn = null;
     DataSet dataSet = null;
+    Instrument instrument = null;
 
     try {
       conn = dataSource.getConnection();
@@ -66,6 +71,10 @@ public class DataReductionJob extends Job {
 
       dataSet = DataSetDB.getDataSet(conn,
           Long.parseLong(parameters.get(ID_PARAM)));
+
+      instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(),
+        ResourceManager.getInstance().getSensorsConfiguration(),
+        ResourceManager.getInstance().getRunTypeCategoryConfiguration());
 
       // Clear messages before executing job
       dataSet.clearMessages();
@@ -75,22 +84,27 @@ public class DataReductionJob extends Job {
       DataSetDB.updateDataSet(statusConn, dataSet);
       statusConn.close();
 
+      // Get all the SensorValues for the dataset's measurements
+      MeasurementsWithSensorValues values =
+        DataSetDataDB.getMeasurementData(conn, instrument, dataSet.getId());
+
+
+
+
       // If the thread was interrupted, undo everything
       if (thread.isInterrupted()) {
         conn.rollback();
 
         // Requeue the data reduction job
         JobManager.requeueJob(conn, id);
-        conn.commit();
       } else {
 
         // Set up the Auto QC job
         dataSet.setStatus(DataSet.STATUS_USER_QC);
         DataSetDB.updateDataSet(conn, dataSet);
-
-        conn.commit();
       }
 
+      conn.commit();
     } catch (Exception e) {
       DatabaseUtils.rollBack(conn);
 
