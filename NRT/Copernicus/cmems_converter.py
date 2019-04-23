@@ -445,7 +445,7 @@ def makeqcvalue_(flag):
   result = 9 # Missing
 
   if flag == 2:
-    result = 1
+    result = 2
   elif flag == 3:
     result = 2
   elif flag == 4:
