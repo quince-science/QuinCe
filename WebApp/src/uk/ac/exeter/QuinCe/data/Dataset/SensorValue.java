@@ -15,7 +15,7 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  * @author Steve Jones
  *
  */
-public class SensorValue {
+public class SensorValue implements Comparable<SensorValue> {
 
   /**
    * The database ID of this value
@@ -296,5 +296,19 @@ public class SensorValue {
    */
   public long getId() {
     return id;
+  }
+
+  @Override
+  public int compareTo(SensorValue o) {
+    // If the IDs are equal, the objects are equal.
+    // Otherwise compare on time
+
+    int result = 0;
+
+    if (id != o.id) {
+      result = time.compareTo(o.time);
+    }
+
+    return result;
   }
 }
