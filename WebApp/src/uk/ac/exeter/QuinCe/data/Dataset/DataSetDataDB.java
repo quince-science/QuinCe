@@ -134,8 +134,8 @@ public class DataSetDataDB {
     + "m.id, sv.id, sv.file_column, sv.date, sv.value, " // 5
     + "sv.auto_qc, sv.user_qc_flag, sv.user_qc_message " // 8
     + "FROM measurements m "
-    + "RIGHT JOIN measurement_values mv ON m.id = mv.measurement_id "
-    + "LEFT JOIN sensor_values sv ON mv.sensor_value_id = sv.id "
+    + "INNER JOIN measurement_values mv ON m.id = mv.measurement_id "
+    + "INNER JOIN sensor_values sv ON mv.sensor_value_id = sv.id "
     + "WHERE m.dataset_id = ? ORDER BY sv.date ASC";
 
   /**
@@ -1320,7 +1320,6 @@ public class DataSetDataDB {
 
         result.add(measurementId, sensorValue);
       }
-
     } catch (Exception e) {
       throw new DatabaseException("Error while retrieving measurements and sensor values", e);
     } finally {
