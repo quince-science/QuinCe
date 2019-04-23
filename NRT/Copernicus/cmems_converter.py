@@ -130,7 +130,8 @@ def makenetcdf_(datasetname, lines):
     times[i] = maketimefield_(fields[0])
     if i == 0:
       starttime = maketimeobject_(fields[0])
-    elif i == len(lines) - 1:
+    
+    if i == len(lines) - 1:
       endtime = maketimeobject_(fields[0])
 
     lats[i] = float(fields[2])
