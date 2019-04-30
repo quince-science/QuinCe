@@ -18,7 +18,7 @@ from py_func.copernicus import build_netCDF, upload_to_copernicus
 
 #logging.basicConfig(filename = 'logfile.log', 
 #stream=sys.stdout,level = logging.DEBUG, filemode = 'w')
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 config_file_quince = 'config_quince.toml'
 config_file_copernicus = 'config_copernicus.toml'
@@ -32,22 +32,16 @@ with open(config_file_meta) as f: config_meta = toml.load(f)
 
 def main():
   try:
-    logging.debug('Making connection with QuinCe:')
-    logging.debug('Obtaining IDs of datasets ready for export')
+    logging.debug('Obtaining IDs of datasets ready for export from QuinCe')
     # Get list of datasets ready to be submitted from QuinCe
 
     export_list = get_export_list(config_quince)
-    if not export_list:
-      print('no datasets ready for export')
-      upload_status = {}
 
+    if not export_list:
+      logging.info('no datasets ready for export')
       quit()
 
-    upload_status = {}
-    
     for datasetNr, dataset in enumerate(export_list): 
-      upload_status[datasetNr]={} 
-
       [dataset_zip,
       manifest, 
       data_filenames, 
@@ -94,25 +88,25 @@ def main():
 
         if 'Copernicus' in data_filename:  
           logging.info('Executing Copernicus routine')
-          build_netCDF(dataset_zip,dataset['name'],destination_filename['Copernicus'])
-          # upload_status[datasetNr]['result_copernicus_upload_L2'] = (
-          #   send_to_copernicus(
-          #   data_filename, 
-          #   dataset_zip,
-          #   dataset['name'],
-          #   destination_filename['Copernicus'],
-          #   config_copernicus,
-          #   'nrt_server')) #,delete_file=True)
-
-    #report to QuinCe about upload process Abandon/complete
+          build_netCDF(
+            dataset_zip,dataset['name'],destination_filename['Copernicus'])
 
     #UPLOAD TO COPERNICUS
-    #report_abandon_export(config_quince,dataset['id'])
-    
     try: 
       upload_to_copernicus(config_copernicus,'nrt_server')
-    except:
+    except Exception as e:
+      logging.error('Exception occurred: ', exc_info=True)
       logging.INFO('FTP connection failed')
+    
+    # *** Test and debug functionality ***
+    #try:
+    #  print(export_list)
+    #  for dataset in export_list:
+    #    report_abandon_export(config_quince,dataset['id'])
+    #except Exception as e:
+    #  logging.error('Exception occurred: ', exc_info=True)
+    #  print('error reporting abandon export')
+    # ************************************ 
 
   #Create error handling:
   #except cookie expired
@@ -129,9 +123,9 @@ def main():
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(exc_type, fname, exc_tb.tb_lineno)
     traceback.print_exc()
-  finally:
-    print(upload_status)
+
     report_abandon_export(config_quince,dataset['id'])
+
 
 if __name__ == '__main__':
   main()
