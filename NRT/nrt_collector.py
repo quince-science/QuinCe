@@ -25,7 +25,7 @@ def ignore_file(filename):
 # Upload a file to the FTP server. If it's a ZIP file,
 # extract it and upload the contents as individual files
 def upload_file(logger, ftpconn, ftp_config, instrument_id, preprocessor, filename, contents):
-  upload_result = -1
+  upload_result = nrtftp.UPLOAD_OK
 
   if not str.endswith(filename, ".zip"):
     if not ignore_file(filename):
@@ -37,12 +37,17 @@ def upload_file(logger, ftpconn, ftp_config, instrument_id, preprocessor, filena
         if not ignore_file(name):
           log_instrument(logger, instrument_id, logging.DEBUG, "Uploading "
             + "ZIP entry " + name)
-          upload_result = nrtftp.upload_file(ftpconn, ftp_config,
-            instrument_id, ntpath.basename(name), preprocessor.preprocess(BytesIO(unzip.read(name))))
 
-          # If any file fails to upload, stop
-          if upload_result != nrtftp.UPLOAD_OK:
-            break
+          preprocessed_file = None
+          try:
+            preprocessed_file = preprocessor.preprocess(BytesIO(unzip.read(name)))
+          except Exception as e:
+            log_instrument(logger, instrument_id, logging.ERROR, "Preprocessing "
+              + "failed: " + str(e))
+
+          if preprocessed_file is not None:
+            upload_result = nrtftp.upload_file(ftpconn, ftp_config,
+              instrument_id, ntpath.basename(name), preprocessed_file)
 
   return upload_result
 
@@ -120,7 +125,7 @@ def main():
                 retriever.file_not_processed()
               elif upload_result == nrtftp.UPLOAD_OK:
                 log_instrument(logger, instrument_id, logging.DEBUG, \
-                  "File uploaded OK")
+                  "File uploaded OK (look for individual failures in ZIPs)")
                 retriever.file_succeeded()
               else:
                 log_instrument(logger, instrument_id, logging.CRITICAL, \
