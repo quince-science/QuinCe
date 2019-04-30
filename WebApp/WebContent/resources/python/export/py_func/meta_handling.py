@@ -42,8 +42,8 @@ def extract_zip(dataset_zip,dataset_name):
     .format(dataset_name))
    
   with ZipFile(io.BytesIO(dataset_zip),'r') as zip: 
-    zip.printdir()
     files_in_zip = zip.namelist()
+    logging.info(f'files extracted: {files_in_zip!r}')
 
     manifest = zip.read(str(dataset_name)+'/manifest.json')
     manifest = json.loads(manifest.decode('utf-8'))
