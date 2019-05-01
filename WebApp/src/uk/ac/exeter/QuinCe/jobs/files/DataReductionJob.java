@@ -1,17 +1,28 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeSet;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.MeasurementsWithSensorValues;
+import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
@@ -88,8 +99,21 @@ public class DataReductionJob extends Job {
       MeasurementsWithSensorValues values =
         DataSetDataDB.getMeasurementData(conn, instrument, dataSet.getId());
 
+      List<DataReductionRecord> dataReductionRecords = new ArrayList<DataReductionRecord>(values.size());
+      
+      for (Map.Entry<Measurement, HashMap<SensorType, TreeSet<SensorValue>>> entry : values.entrySet()) {
 
+        // Only process a measurement if it's a real measurement
+        // (not an internal calibration or similar)
+        if (isVariableMeasurement(instrument, entry.getKey())) {
+          DataReducer reducer = DataReducerFactory.getReducer(entry.getKey().getVariable());
 
+          dataReductionRecords.add(reducer.performDataReduction(
+              instrument, entry.getKey(), entry.getValue(), values));
+        }
+      }
+
+      System.out.println(dataReductionRecords.size());
 
       // If the thread was interrupted, undo everything
       if (thread.isInterrupted()) {
@@ -159,4 +183,21 @@ public class DataReductionJob extends Job {
   public String getJobName() {
     return jobName;
   }
+  
+  /**
+   * Determines whether or not a measurement 
+   * @param instrument
+   * @param measurement
+   * @return
+   */
+  private boolean isVariableMeasurement(Instrument instrument,
+      Measurement measurement) {
+    
+    RunTypeCategory runTypeCategory =
+        instrument.getRunTypeCategory(measurement.getRunType());
+    
+    return runTypeCategory.isMeasurementType() &&
+        runTypeCategory.getDescription().equals(measurement.getVariable().getName());
+  }
+
 }
