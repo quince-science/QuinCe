@@ -45,8 +45,10 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     CalculationInputValues inputValues = getCalculationInputValues(
       instrument, sensorValues,
       "Intake Temperature", "Salinity", "Equilibrator Temperature",
-      "Equilibrator Pressure");
+      "Equilibrator Pressure", "CO₂ in gas");
     
+    System.out.println("Measurement " + measurement.getId());
+    System.out.println(inputValues);
     
   }
 

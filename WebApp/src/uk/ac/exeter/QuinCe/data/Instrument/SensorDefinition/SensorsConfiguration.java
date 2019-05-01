@@ -445,7 +445,8 @@ public class SensorsConfiguration {
    * @return {@code true} if any variable requires the SensorType; {@code false} if not
    * @throws SensorConfigurationException If any variable ID is invalid
    */
-  public boolean requiredForVariables(SensorType sensorType, List<Long> variableIds) throws SensorConfigurationException {
+  public boolean requiredForVariables(SensorType sensorType, List<Long> variableIds)
+      throws SensorConfigurationException {
 
     boolean required = false;
 
@@ -469,8 +470,11 @@ public class SensorsConfiguration {
    * @param sensorType The SensorType
    * @param variableIds The variables' database IDs
    * @return {@code true} if any variable requires the SensorType; {@code false} if not
+   * @throws SensorConfigurationException If the sensor configuration is internally inconsistent
    */
-  public boolean requiredForVariable(SensorType sensorType, InstrumentVariable variable) {
+  public boolean requiredForVariable(SensorType sensorType, 
+    InstrumentVariable variable) throws SensorConfigurationException {
+    
     boolean required = false;
 
     List<SensorType> variableSensorTypes = variable.getAllSensorTypes();
@@ -478,6 +482,16 @@ public class SensorsConfiguration {
       if (varSensorType.equalsIncludingRelations(sensorType)) {
         required = true;
         break;
+      } else if (varSensorType.dependsOnOtherType()) {
+        try {
+          SensorType dependsOnType = getSensorType(varSensorType.getDependsOn());
+          if (dependsOnType.equalsIncludingRelations(sensorType)) {
+            required = true;
+            break;
+          }
+        } catch (SensorTypeNotFoundException e) {
+          throw new SensorConfigurationException("Cannot find sensor type that should exist", e);
+        }
       }
     }
 
