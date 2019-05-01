@@ -153,6 +153,15 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
   }
 
   /**
+   * See if a SensorType has been assigned
+   * @param sensorType The sensor type
+   * @return {@code true} if the sensor has been assigned; {@code false} if not
+   */
+  public boolean isAssigned(SensorType sensorType) {
+    return isAssigned(sensorType, false, false);
+  }
+  
+  /**
    * See if a SensorType has been assigned. Optionally only check for
    * primary assignments. Check children or siblings as appropriate.
    *

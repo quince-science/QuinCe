@@ -98,7 +98,7 @@ public class Flag implements Comparable<Flag> {
   public static final Flag BAD = makeBadFlag();
 
   /**
-   *  An instance of a Not Set flag
+   *  An instance of a Needed flag
    */
   public static final Flag NEEDED = makeNeededFlag();
 
@@ -279,13 +279,22 @@ public class Flag implements Comparable<Flag> {
    * significant than the specified flag.
    *
    * The order of significance for flags is (lowest significance first):
-   * Not Set, Good, Questionable, Bad
+   * Not Set, Good, Questionable, Bad, Needed
    *
    * @param flag The flag to be compared
    * @return {@code true} if this flag is more significant than the supplied flag; {@code false} if it is not.
    */
   public boolean moreSignificantThan(Flag flag) {
-    return (compareTo(flag) > 0);
+    boolean result = false;
+    
+    // NEEDED Flag is always most significant
+    if (null == flag) {
+      result = true;
+    } else if (!this.equals(Flag.NEEDED)) {
+      result = (compareTo(flag) > 0);
+    }
+    
+    return result;
   }
 
   /**
