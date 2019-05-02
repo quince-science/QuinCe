@@ -74,7 +74,7 @@ public abstract class DataReducer {
       qcMessages.add("Missing " + type.getName());
     }
     
-    record.setQc(Flag.BAD, qcMessages);
+    record.setQc(Flag.NO_QC, qcMessages);
   }
   
   /**

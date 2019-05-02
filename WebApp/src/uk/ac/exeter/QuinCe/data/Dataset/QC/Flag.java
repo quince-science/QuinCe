@@ -29,6 +29,11 @@ package uk.ac.exeter.QuinCe.data.Dataset.QC;
 public class Flag implements Comparable<Flag> {
 
   /**
+   * Value indicating that no QC has been performed
+   */
+  public static final int VALUE_NO_QC = 0;
+  
+  /**
    * The WOCE value for a good flag
    */
   public static final int VALUE_GOOD = 2;
@@ -43,6 +48,11 @@ public class Flag implements Comparable<Flag> {
    */
   public static final int VALUE_ASSUMED_GOOD = -2;
 
+  /**
+   * The text indicating that no QC has been performed
+   */
+  public static final String TEXT_NO_QC = "No QC";
+  
   /**
    * The text value for a good flag
    */
@@ -77,6 +87,12 @@ public class Flag implements Comparable<Flag> {
    * The text value for a needed flag
    */
   protected static final String TEXT_NEEDED = "Needed";
+
+  /**
+   * An instance of a No QC flag
+   */
+  public static final Flag NO_QC = makeNoQCFlag();
+  
   /**
    *  An instance of a Good flag
    */
@@ -145,6 +161,10 @@ public class Flag implements Comparable<Flag> {
     String result;
 
     switch (flagValue) {
+    case VALUE_NO_QC: {
+      result = TEXT_NO_QC;
+      break;
+    }
     case VALUE_GOOD: {
       result = TEXT_GOOD;
       break;
@@ -181,8 +201,24 @@ public class Flag implements Comparable<Flag> {
    * @return {@code true} if the flag value is valid; {@code false} if it is not
    */
   public static boolean isValidFlagValue(int value) {
-    return (value == VALUE_GOOD || value == VALUE_ASSUMED_GOOD || value == VALUE_QUESTIONABLE ||
-        value == VALUE_BAD || value == VALUE_NEEDED);
+    return (value == VALUE_NO_QC || value == VALUE_GOOD ||
+      value == VALUE_ASSUMED_GOOD || value == VALUE_QUESTIONABLE ||
+      value == VALUE_BAD || value == VALUE_NEEDED);
+  }
+
+  /**
+   * Create an instance of a Good flag
+   * @return A Good flag
+   */
+  private static Flag makeNoQCFlag() {
+    Flag flag = null;
+    try {
+      flag = new Flag(VALUE_NO_QC);
+    } catch (InvalidFlagException e) {
+      // This won't be thrown; do nothing
+    }
+
+    return flag;
   }
 
   /**
