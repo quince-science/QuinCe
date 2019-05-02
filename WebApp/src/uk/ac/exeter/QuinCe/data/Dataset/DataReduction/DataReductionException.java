@@ -7,8 +7,16 @@ package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
  */
 public class DataReductionException extends Exception {
 
+  /**
+   * Serial version UID
+   */
+  private static final long serialVersionUID = -7961027072943299664L;
+
   public DataReductionException(String message) {
     super(message);
   }
-  
+
+  public DataReductionException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

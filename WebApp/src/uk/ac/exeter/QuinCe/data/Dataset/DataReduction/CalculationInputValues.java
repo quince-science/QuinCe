@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
@@ -20,10 +21,19 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  */
 public class CalculationInputValues {
   
+  /**
+   * The sensor type values to be used for the calculation
+   */
   private HashMap<String, Double> values;
   
+  /**
+   * The most significant QC flag for each sensor type
+   */
   private HashMap<String, Flag> qcFlags;
   
+  /**
+   * The QC messages for each sensor type
+   */
   private HashMap<String, List<String>> qcMessages;
   
   /**
@@ -63,6 +73,23 @@ public class CalculationInputValues {
     List<String> messageList = new ArrayList<String>(1);
     messageList.add(qcMessage);
     put(sensorType, value, qcFlag, messageList);
+  }
+  
+  /**
+   * Get a list of the sensor types that have a NaN value. Returns
+   * an empty list if there are no NaN values
+   * @return The sensor types with NaN value
+   */
+  public List<String> getNaNs() {
+    List<String> nanSensorTypes = new ArrayList<String>();
+    
+    for (Map.Entry<String, Double> entry : values.entrySet()) {
+      if (entry.getValue().isNaN()) {
+        nanSensorTypes.add(entry.getKey());
+      }
+    }
+    
+    return nanSensorTypes;
   }
   
   @Override
