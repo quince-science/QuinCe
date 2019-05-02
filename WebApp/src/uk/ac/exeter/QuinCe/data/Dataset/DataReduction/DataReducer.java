@@ -1,17 +1,16 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Dataset.MeasurementsWithSensorValues;
-import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -36,11 +35,10 @@ public abstract class DataReducer {
    * @return The data reduction result
    */
   public DataReductionRecord performDataReduction(Instrument instrument,
-      Measurement measurement, HashMap<SensorType, TreeSet<SensorValue>> sensorValues,
-      MeasurementsWithSensorValues allMeasurements) throws Exception {
+      Measurement measurement, Map<SensorType, CalculationValue> sensorValues) throws Exception {
     
     DataReductionRecord record = new DataReductionRecord(measurement);
-    doCalculation(instrument, measurement, sensorValues, allMeasurements, record);
+    doCalculation(instrument, measurement, sensorValues, record);
     
     return record;
   }
@@ -54,111 +52,9 @@ public abstract class DataReducer {
    * @param record The data reduction result
    */
   protected abstract void doCalculation(Instrument instrument,
-      Measurement measurement, HashMap<SensorType, TreeSet<SensorValue>> sensorValues,
-      MeasurementsWithSensorValues allMeasurements, DataReductionRecord record)
+      Measurement measurement, Map<SensorType, CalculationValue> sensorValues,
+      DataReductionRecord record)
       throws Exception;
-  
-  /**
-   * Gather all the calculation values to be used in data reduction
-   * from the sensor values. All fallbacks/averaging/interpolation are
-   * applied, and the QC flag to be applied to the final calculated value
-   * @param sensorValues
-   * @param sensorTypes
-   * @return
-   * @throws SensorTypeNotFoundException
-   */
-  protected CalculationInputValues getCalculationInputValues(Instrument instrument,
-      HashMap<SensorType, TreeSet<SensorValue>> sensorValues,
-      String... sensorTypes) throws SensorTypeNotFoundException {
-    
-    SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
-    SensorAssignments sensorAssignments = instrument.getSensorAssignments();
-    
-
-    // Work out all sensor types to get, accounting for dependencies and parents
-    List<SensorType> actualSensorTypes = new ArrayList<SensorType>();
-    
-    for (String sensorTypeName : sensorTypes) {
-      SensorType sensorType = sensorConfig.getSensorType(sensorTypeName);
-      if (sensorConfig.isParent(sensorType)) {
-        for (SensorType child : sensorConfig.getChildren(sensorType)) {
-        
-          if (sensorAssignments.isAssigned(child)) {
-            actualSensorTypes.add(child);
-            if (child.dependsOnOtherType()) {
-              SensorType dependentOtherType = sensorConfig.getSensorType(child.getDependsOn());
-              if (sensorAssignments.isAssigned(dependentOtherType)) {
-                actualSensorTypes.add(dependentOtherType);
-              }
-            }
-          }
-        }
-      } else {
-        actualSensorTypes.add(sensorType);
-        if (sensorType.dependsOnOtherType()) {
-          SensorType dependentOtherType = sensorConfig.getSensorType(sensorType.getDependsOn());
-          if (sensorAssignments.isAssigned(dependentOtherType)) {
-            actualSensorTypes.add(dependentOtherType);
-          }
-        }
-      }
-    }
-
-    // Now get the values for all the sensor types we've chosen
-    CalculationInputValues result = new CalculationInputValues();
-    
-    for (SensorType sensorType : actualSensorTypes) {
-      Set<SensorValue> values = sensorValues.get(sensorType);
-      if (null == values) {
-        result.put(sensorType.getName(), Double.NaN, Flag.BAD, "Missing " + sensorType.getName());
-      } else {
-        
-        // Calculate the final value for the sensor type
-        // along with the QC flag
-
-        // TODO For the moment we just average all values and use the
-        // worst flag. This needs to be made more sophisticated - skipping
-        // bad values and using fallbacks, or interpolating, or whatever.
-        
-        Double valueTotal = 0.0;
-        int count = 0;
-        Flag qcFlag = Flag.ASSUMED_GOOD;
-        List<String> qcMessages = null;
-        
-        for (SensorValue value : values) {
-          if (!value.isNaN()) {
-            valueTotal += value.getDoubleValue();
-            count++;
-
-            // Update the QC flag to be applied to the overall value
-            if (value.getUserQCFlag().equals(Flag.NEEDED)) {
-              
-              if (!qcFlag.equals(Flag.NEEDED)) {
-                qcFlag = Flag.NEEDED;
-                qcMessages = new ArrayList<String>();
-                qcMessages.add("AUTO QC: " + sensorType.getName() + " " + value.getUserQCMessage());
-              } else if (value.getUserQCFlag().moreSignificantThan(qcFlag)) {
-                qcFlag = value.getUserQCFlag();
-                qcMessages = new ArrayList<String>();
-                qcMessages.add(value.getUserQCMessage());
-              } else if (value.getUserQCFlag().equals(qcFlag)) {
-                qcMessages.add(value.getUserQCMessage());
-              }
-            }
-          }
-        }
-        
-        if (count == 0) {
-          result.put(sensorType.getName(), Double.NaN, Flag.BAD,
-            "Missing " + sensorType.getName());
-        } else {
-          result.put(sensorType.getName(), valueTotal / count, qcFlag, qcMessages);
-        }
-      }
-    }
-
-    return result;    
-  }
   
   /**
    * Set a data reduction record's state for a missing required parameter
@@ -166,12 +62,19 @@ public abstract class DataReducer {
    * @param missingParameterName The name of the missing parameter
    */
   protected void makeMissingParameterRecord(
-      DataReductionRecord record, String missingParameterName) {
+      DataReductionRecord record, Set<SensorType> missingTypes) {
+    
+    List<String> qcMessages = new ArrayList<String>(missingTypes.size());
     
     for (String parameter : getCalculationParameters()) {
       record.put(parameter, Double.NaN);
     }
-    record.setQc(Flag.BAD, "Missing " + missingParameterName);
+    
+    for (SensorType type : missingTypes) {
+      qcMessages.add("Missing " + type.getName());
+    }
+    
+    record.setQc(Flag.BAD, qcMessages);
   }
   
   /**
@@ -180,4 +83,140 @@ public abstract class DataReducer {
    * @return The calculation parameters
    */
   protected abstract List<String> getCalculationParameters();
+  
+  /**
+   * Get the list of SensorTypes required by this data reducer. This takes
+   * the minimum list of sensor types (or parent types) and determines the
+   * actual required types according to the sensor types assigned to the
+   * instrument and their dependents.
+   * 
+   * @param instrumentAssignments The sensor types assigned to the instrument
+   * @param sensorTypeNames The names of the bare minimum sensor types
+   * @return The complete list of required SensorType objects
+   */
+  protected Set<SensorType> getRequiredSensorTypes(
+    SensorAssignments instrumentAssignments, String... sensorTypeNames)
+    throws DataReductionException {
+    
+    Set<SensorType> result = new HashSet<SensorType>(sensorTypeNames.length);
+    
+    try {
+      SensorsConfiguration sensorConfig =
+          ResourceManager.getInstance().getSensorsConfiguration();
+        
+        for (String sensorTypeName : sensorTypeNames) {
+          SensorType baseSensorType = sensorConfig.getSensorType(sensorTypeName);
+          
+          if (sensorConfig.isParent(baseSensorType)) {
+            Set<SensorType> childSensorTypes = sensorConfig.getChildren(baseSensorType);
+            if (!addAnySensorTypesAndDependsOn(result, childSensorTypes, instrumentAssignments)) {
+              throw new DataReductionException(
+                "No assignments present for children of Sensor Type "
+                + baseSensorType.getName() + " or their dependents");
+            }
+          } else {
+            if (!addSensorTypeAndDependsOn(result, baseSensorType, instrumentAssignments)) {
+              throw new DataReductionException(
+                "No assignments present for Sensor Type "
+                + baseSensorType.getName() + " or its dependents");
+            }
+          }
+        }
+    } catch (SensorTypeNotFoundException e) {
+      throw new DataReductionException("Named sensor type not found", e);
+    } catch (SensorConfigurationException e) {
+      throw new DataReductionException("Invalid sensor configuration detected", e); 
+    }
+    
+    return result;
+  }
+  
+  /**
+   * Add a set of Sensor Types to an existing list of Sensor Types, including
+   * any dependents
+   * 
+   * @param list The list to which the sensor types are to be added
+   * @param typesToAdd The sensor types to add
+   * @param instrumentAssignments The instrument's sensor assignments
+   * @return {@code true} if at least one Sensor Type is added; {@code false} if
+   *         none are added (unless the list is empty)
+   * @throws SensorConfigurationException 
+   * @throws SensorTypeNotFoundException 
+   */
+  private boolean addAnySensorTypesAndDependsOn(Set<SensorType> list,
+    Set<SensorType> typesToAdd, SensorAssignments instrumentAssignments)
+    throws SensorConfigurationException, SensorTypeNotFoundException {
+    
+    boolean result = false;
+    
+    if (typesToAdd.size() == 0) {
+      result = true;
+    } else {
+      for (SensorType add : typesToAdd) {
+        if (addSensorTypeAndDependsOn(list, add, instrumentAssignments)) {
+          result = true;
+        }
+      }
+    }
+    
+    return result;
+  }
+  
+  /**
+   * Add a Sensor Type to an existing list of Sensor Types, including
+   * any dependents
+   * 
+   * @param list The list to which the sensor types are to be added
+   * @param typesToAdd The sensor types to add
+   * @param instrumentAssignments The instrument's sensor assignments
+   * @throws SensorConfigurationException 
+   * @throws SensorTypeNotFoundException 
+   */
+  private boolean addSensorTypeAndDependsOn(Set<SensorType> list,
+    SensorType typeToAdd, SensorAssignments instrumentAssignments)
+    throws SensorConfigurationException, SensorTypeNotFoundException {
+    
+    boolean result = true;
+    
+    if (!instrumentAssignments.isAssigned(typeToAdd)) {
+      result = false;
+    } else {
+      list.add(typeToAdd);
+      SensorType dependsOn = instrumentAssignments.getDependsOn(typeToAdd);
+      if (null != dependsOn) {
+        if (!addSensorTypeAndDependsOn(list, dependsOn, instrumentAssignments)) {
+          result = false;
+        }
+      }
+    }
+
+    return result;
+  }
+  
+  /**
+   * See if any required values are NaN in the supplied set of values. If there
+   * are NaNs, make the record a blank and return {@code true}.
+   * @param record The record being processed
+   * @param values The calculation values
+   * @param requiredTypes The required sensor types
+   * @return
+   */
+  protected boolean nanCheck(DataReductionRecord record,
+    Map<SensorType, CalculationValue> values, Set<SensorType> requiredTypes) {
+    
+    Set<SensorType> nanTypes = new HashSet<SensorType>();
+    
+    for (SensorType type : requiredTypes) {
+      CalculationValue value = values.get(type);
+      if (null == value || value.isNaN()) {
+        nanTypes.add(type);
+      }
+    }
+    
+    if (nanTypes.size() > 0) {
+      makeMissingParameterRecord(record, nanTypes);
+    }
+    
+    return (nanTypes.size() > 0);
+  }
 }

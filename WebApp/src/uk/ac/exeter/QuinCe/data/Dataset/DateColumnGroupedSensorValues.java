@@ -34,6 +34,14 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 public class DateColumnGroupedSensorValues
 extends TreeMap<LocalDateTime, Map<SensorType, List<SensorValue>>> {
 
+  /**
+   * Serial Version UID
+   */
+  private static final long serialVersionUID = -2963733268242830810L;
+  
+  /**
+   * The instrument that these values belong to
+   */
   private Instrument instrument;
 
   public DateColumnGroupedSensorValues(Instrument instrument) {

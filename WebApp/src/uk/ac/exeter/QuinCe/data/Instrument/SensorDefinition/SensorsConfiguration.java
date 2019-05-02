@@ -250,8 +250,8 @@ public class SensorsConfiguration {
    * @param parent The parent sensor type
    * @return The child types
    */
-  public List<SensorType> getChildren(SensorType parent) {
-    List<SensorType> children = new ArrayList<SensorType>();
+  public Set<SensorType> getChildren(SensorType parent) {
+    Set<SensorType> children = new HashSet<SensorType>();
 
     for (SensorType type : sensorTypes.values()) {
       if (type.getParent() == parent.getId()) {
@@ -300,7 +300,7 @@ public class SensorsConfiguration {
     List<SensorType> siblings = new ArrayList<SensorType>();
 
     if (type.hasParent()) {
-      List<SensorType> children = getChildren(getParent(type));
+      Set<SensorType> children = getChildren(getParent(type));
       for (SensorType child : children) {
         if (child.getId() != type.getId()) {
           siblings.add(child);
@@ -550,7 +550,7 @@ public class SensorsConfiguration {
     for (SensorType sensorType : getSensorTypes()) {
       // Parents must have more than one child
       if (isParent(sensorType)) {
-        List<SensorType> children = getChildren(sensorType);
+        Set<SensorType> children = getChildren(sensorType);
         if (children.size() <= 1) {
           throw new SensorConfigurationException(
             "SensorType " + sensorType.getId() + " must have more than one child"
