@@ -1,13 +1,11 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.TreeSet;
+import java.util.Map;
+import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Dataset.MeasurementsWithSensorValues;
-import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
@@ -39,17 +37,17 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   
   @Override
   protected void doCalculation(Instrument instrument, Measurement measurement,
-      HashMap<SensorType, TreeSet<SensorValue>> sensorValues,
-      MeasurementsWithSensorValues allMeasurements, DataReductionRecord record) throws Exception {
-
-    CalculationInputValues inputValues = getCalculationInputValues(
-      instrument, sensorValues,
-      "Intake Temperature", "Salinity", "Equilibrator Temperature",
-      "Equilibrator Pressure", "CO₂ in gas");
+      Map<SensorType, CalculationValue> sensorValues,
+      DataReductionRecord record) throws Exception {
     
-    System.out.println("Measurement " + measurement.getId());
-    System.out.println(inputValues);
+    // Work out which sensor types we require
+    Set<SensorType> requiredSensorTypes = getRequiredSensorTypes(
+      instrument.getSensorAssignments(), "Intake Temperature", "Salinity",
+      "Equilibrator Temperature", "Equilibrator Pressure", "CO₂ in gas");
     
+    if (!nanCheck(record, sensorValues, requiredSensorTypes)) {
+      System.out.println("I can calculate!");
+    }
   }
 
   @Override

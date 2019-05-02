@@ -127,18 +127,6 @@ public class DataSetDataDB {
     + "VALUES (?, ?)";
 
   /**
-   * Query to get all sensor values related to all measurements
-   * in a data set
-   */
-  private static final String GET_MEASUREMENT_SENSOR_VALUES_QUERY = "SELECT "
-    + "m.id, sv.id, sv.file_column, sv.date, sv.value, " // 5
-    + "sv.auto_qc, sv.user_qc_flag, sv.user_qc_message " // 8
-    + "FROM measurements m "
-    + "INNER JOIN measurement_values mv ON m.id = mv.measurement_id "
-    + "INNER JOIN sensor_values sv ON mv.sensor_value_id = sv.id "
-    + "WHERE m.dataset_id = ? ORDER BY sv.date ASC";
-
-  /**
    * The name of the ID column
    */
   private static final String ID_COL = "id";
@@ -1280,53 +1268,5 @@ public class DataSetDataDB {
     } finally {
       DatabaseUtils.closeStatements(stmt);
     }
-  }
-
-  public static MeasurementsWithSensorValues
-  getMeasurementData(Connection conn, Instrument instrument, long datasetId)
-    throws MissingParamException, DatabaseException, InvalidFlagException {
-
-    MeasurementsWithSensorValues result = null;
-
-    MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkMissing(instrument, "instrument");
-    MissingParam.checkPositive(datasetId, "datasetId");
-
-    PreparedStatement stmt = null;
-    ResultSet records = null;
-
-    try {
-
-      List<Measurement> measurements = getMeasurements(conn, instrument, datasetId);
-      result = new MeasurementsWithSensorValues(instrument, measurements);
-
-      stmt = conn.prepareStatement(GET_MEASUREMENT_SENSOR_VALUES_QUERY);
-      stmt.setLong(1,  datasetId);
-
-      records = stmt.executeQuery();
-
-      while (records.next()) {
-        long measurementId = records.getLong(1);
-        long sensorValueId = records.getLong(2);
-        long fileColumnId = records.getLong(3);
-        LocalDateTime date = DateTimeUtils.longToDate(records.getLong(4));
-        String value = records.getString(5);
-        AutoQCResult autoQC = AutoQCResult.buildFromJson(records.getString(6));
-        Flag userQCFlag = new Flag(records.getInt(7));
-        String userQCMessage = records.getString(8);
-
-        SensorValue sensorValue = new SensorValue(sensorValueId, datasetId,
-          fileColumnId, date, value, autoQC, userQCFlag, userQCMessage);
-
-        result.add(measurementId, sensorValue);
-      }
-    } catch (Exception e) {
-      throw new DatabaseException("Error while retrieving measurements and sensor values", e);
-    } finally {
-      DatabaseUtils.closeResultSets(records);
-      DatabaseUtils.closeStatements(stmt);
-    }
-
-    return result;
   }
 }
