@@ -6,19 +6,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TreeSet;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Dataset.MeasurementsWithSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
@@ -95,6 +96,56 @@ public class DataReductionJob extends Job {
       DataSetDB.updateDataSet(statusConn, dataSet);
       statusConn.close();
 
+      // Get all the sensor values for the dataset, ordered by date and then
+      // grouped by sensor type
+      DateColumnGroupedSensorValues groupedSensorValues =
+        DataSetDataDB.getSensorValuesByDateAndColumn(conn,
+          instrument, dataSet.getId());
+
+      List<Measurement> allMeasurements =
+          DataSetDataDB.getMeasurements(conn, instrument, dataSet.getId());
+
+      // Process each measurement individually
+      for (Measurement measurement : allMeasurements) {
+        
+        // Only process true measurements (not internal calibrations etc
+        if (isVariableMeasurement(instrument, measurement)) {
+        
+          // Get the value to be used in calculation for each sensor type
+          Map<SensorType, CalculationValue> calculationValues =
+              new HashMap<SensorType, CalculationValue>();
+
+          
+          // TODO This will have to be more intelligent - allowing
+          // retrieval of values before and after the measurement time
+          // for interpolation etc.
+          //
+          // Get all the sensor values for the measurement time
+          Map<SensorType, List<SensorValue>> values =
+            groupedSensorValues.get(measurement.getTime());
+          
+          
+          // Loop through each sensor type
+          for (SensorType sensorType : values.keySet()) {
+            
+            if (!sensorType.isSystemType()) {
+              List<SensorValue> sensorValues = values.get(sensorType);
+              
+              calculationValues.put(
+                sensorType, getCalculationValue(sensorType, sensorValues));
+            }
+          }
+          
+          DataReducer reducer = DataReducerFactory.getReducer(measurement.getVariable());
+          DataReductionRecord dataReductionRecord = reducer.performDataReduction(
+            instrument, measurement, calculationValues);
+          
+          // WRITE DATA REDUCTION RECORD AND SENSOR VALUE IDS FROM CALCULATION VALUES MAP
+        }
+      }
+      
+      
+/*      
       // Get all the SensorValues for the dataset's measurements
       MeasurementsWithSensorValues values =
         DataSetDataDB.getMeasurementData(conn, instrument, dataSet.getId());
@@ -114,7 +165,7 @@ public class DataReductionJob extends Job {
       }
 
       System.out.println(dataReductionRecords.size());
-
+*/
       // If the thread was interrupted, undo everything
       if (thread.isInterrupted()) {
         conn.rollback();
@@ -200,4 +251,65 @@ public class DataReductionJob extends Job {
         runTypeCategory.getDescription().equals(measurement.getVariable().getName());
   }
 
+  /**
+   * Get the value to be used in data reduction calculations from a given
+   * set of sensor values
+   * @param list The sensor values
+   * @return The calculation value
+   */
+  private CalculationValue getCalculationValue(SensorType sensorType,
+    List<SensorValue> values) {
+    
+    // TODO Make this more intelligent - handle fallbacks, averages, interpolation etc.
+    // For now we're just averaging all the values we get.
+    
+    List<Long> usedSensorValues = new ArrayList<Long>();
+    Double finalValue = Double.NaN;
+    Flag qcFlag = Flag.ASSUMED_GOOD;
+    List<String> qcMessages = new ArrayList<String>();
+    
+    if (null == values) {
+      qcFlag = Flag.BAD;
+      qcMessages.add("Missing " + sensorType.getName());
+    } else {
+    
+      Double valueTotal = 0.0;
+      int count = 0;
+    
+      for (SensorValue value : values) {
+        if (!value.isNaN()) {
+          valueTotal += value.getDoubleValue();
+          count++;
+          
+          usedSensorValues.add(value.getId());
+          
+          // Update the QC flag to be applied to the overall value
+          if (value.getUserQCFlag().equals(Flag.NEEDED)) {
+            
+            if (!qcFlag.equals(Flag.NEEDED)) {
+              qcFlag = Flag.NEEDED;
+              qcMessages = new ArrayList<String>();
+              qcMessages.add("AUTO QC: " + sensorType.getName() + " " + value.getUserQCMessage());
+            } else if (value.getUserQCFlag().moreSignificantThan(qcFlag)) {
+              qcFlag = value.getUserQCFlag();
+              qcMessages = new ArrayList<String>();
+              qcMessages.add(value.getUserQCMessage());
+            } else if (value.getUserQCFlag().equals(qcFlag)) {
+              qcMessages.add(value.getUserQCMessage());
+            }
+          }
+        }
+      }
+      
+      if (count == 0) {
+        qcFlag = Flag.BAD;
+        qcMessages = new ArrayList<String>(1);
+        qcMessages.add("Missing " + sensorType.getName());
+      } else {
+        finalValue = valueTotal / count;
+      }
+    }
+    
+    return new CalculationValue(usedSensorValues, finalValue, qcFlag, qcMessages);
+  }
 }

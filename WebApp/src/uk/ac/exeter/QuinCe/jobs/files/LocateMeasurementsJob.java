@@ -159,7 +159,7 @@ public class LocateMeasurementsJob extends Job {
       DataSetDB.updateDataSet(conn, dataSet);
       Map<String, String> jobParams = new HashMap<String, String>();
       jobParams.put(LocateMeasurementsJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
-      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), ChooseSensorValuesJob.class.getCanonicalName(), jobParams);
+      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), DataReductionJob.class.getCanonicalName(), jobParams);
 
       conn.commit();
     } catch (Exception e) {

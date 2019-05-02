@@ -1,6 +1,8 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -30,7 +32,7 @@ public class DataReductionRecord {
 	/**
 	 * QC Message
 	 */
-	private String qcMessage;
+	private List<String> qcMessages;
 
 	/**
 	 * Create an empty record for a given measurement
@@ -42,17 +44,17 @@ public class DataReductionRecord {
 	  
 	  this.calculationValues = new HashMap<String, Double>();
 	  this.qcFlag = Flag.NEEDED;
-	  this.qcMessage = null;
+	  this.qcMessages = new ArrayList<String>();
 	}
 	
 	/**
 	 * Set the QC details for the record
 	 * @param flag The QC flag
-	 * @param message The QC message
+	 * @param message The QC messages
 	 */
-	protected void setQc(Flag flag, String message) {
+	protected void setQc(Flag flag, List<String> messages) {
 	  this.qcFlag = flag;
-	  this.qcMessage = message;
+	  this.qcMessages = messages;
 	}
 	
 	/**
