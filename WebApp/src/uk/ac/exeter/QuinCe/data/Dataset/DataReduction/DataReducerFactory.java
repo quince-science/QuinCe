@@ -1,7 +1,13 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
-import java.util.HashMap;
+import java.sql.Connection;
+import java.util.List;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
+import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 
 /**
@@ -11,19 +17,39 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
  */
 public class DataReducerFactory {
 
-  private static HashMap<String, DataReducer> reducers;
-  
-  static {
-    reducers = new HashMap<String, DataReducer>();
-    reducers.put("Underway Marine pCO₂", new UnderwayMarinePco2Reducer());
-  }
-  
   /**
-   * Get the Data Reducer for a given variable
+   * Get the Data Reducer for a given variable and initialise it
    * @param variable The variable
    * @return The Data Reducer
+   * @throws DataReductionException If the reducer cannot be retreived 
    */
-  public static DataReducer getReducer(InstrumentVariable variable) {
-    return reducers.get(variable.getName());
+  public static DataReducer getReducer(
+      Connection conn, Instrument instrument, InstrumentVariable variable,
+      List<Measurement> allMeasurements,
+      DateColumnGroupedSensorValues groupedSensorValues)
+      throws DataReductionException {
+    
+    DataReducer reducer;
+
+    try {
+    
+      CalibrationSet calibrationSet = ExternalStandardDB.getInstance().getMostRecentCalibrations(
+        conn, instrument.getDatabaseId(), groupedSensorValues.getFirstTime());
+    
+    
+      switch (variable.getName()) {
+      case "Underway Marine pCO₂": {
+        reducer = new UnderwayMarinePco2Reducer(allMeasurements, groupedSensorValues, calibrationSet);
+        break;
+      }
+      default: {
+        throw new DataReductionException("Cannot find reducer for variable " + variable.getName());
+      }
+      }
+    } catch (Exception e) {
+      throw new DataReductionException("Cannot initialise data reducer", e);
+    }
+      
+    return reducer;
   }
 }
