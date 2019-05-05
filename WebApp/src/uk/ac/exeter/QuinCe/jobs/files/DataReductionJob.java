@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +18,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationValue;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducer;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
@@ -132,11 +130,13 @@ public class DataReductionJob extends Job {
               List<SensorValue> sensorValues = values.get(sensorType);
               
               calculationValues.put(
-                sensorType, getCalculationValue(sensorType, sensorValues));
+                sensorType, CalculationValue.get(sensorType, sensorValues));
             }
           }
           
-          DataReducer reducer = DataReducerFactory.getReducer(measurement.getVariable());
+          DataReducer reducer = DataReducerFactory.getReducer(conn, instrument,
+            measurement.getVariable(), allMeasurements, groupedSensorValues);
+          
           DataReductionRecord dataReductionRecord = reducer.performDataReduction(
             instrument, measurement, calculationValues);
           
@@ -145,27 +145,6 @@ public class DataReductionJob extends Job {
       }
       
       
-/*      
-      // Get all the SensorValues for the dataset's measurements
-      MeasurementsWithSensorValues values =
-        DataSetDataDB.getMeasurementData(conn, instrument, dataSet.getId());
-
-      List<DataReductionRecord> dataReductionRecords = new ArrayList<DataReductionRecord>(values.size());
-      
-      for (Map.Entry<Measurement, HashMap<SensorType, TreeSet<SensorValue>>> entry : values.entrySet()) {
-
-        // Only process a measurement if it's a real measurement
-        // (not an internal calibration or similar)
-        if (isVariableMeasurement(instrument, entry.getKey())) {
-          DataReducer reducer = DataReducerFactory.getReducer(entry.getKey().getVariable());
-
-          dataReductionRecords.add(reducer.performDataReduction(
-              instrument, entry.getKey(), entry.getValue(), values));
-        }
-      }
-
-      System.out.println(dataReductionRecords.size());
-*/
       // If the thread was interrupted, undo everything
       if (thread.isInterrupted()) {
         conn.rollback();
@@ -249,67 +228,5 @@ public class DataReductionJob extends Job {
     
     return runTypeCategory.isMeasurementType() &&
         runTypeCategory.getDescription().equals(measurement.getVariable().getName());
-  }
-
-  /**
-   * Get the value to be used in data reduction calculations from a given
-   * set of sensor values
-   * @param list The sensor values
-   * @return The calculation value
-   */
-  private CalculationValue getCalculationValue(SensorType sensorType,
-    List<SensorValue> values) {
-    
-    // TODO Make this more intelligent - handle fallbacks, averages, interpolation etc.
-    // For now we're just averaging all the values we get.
-    
-    List<Long> usedSensorValues = new ArrayList<Long>();
-    Double finalValue = Double.NaN;
-    Flag qcFlag = Flag.ASSUMED_GOOD;
-    List<String> qcMessages = new ArrayList<String>();
-    
-    if (null == values) {
-      qcFlag = Flag.BAD;
-      qcMessages.add("Missing " + sensorType.getName());
-    } else {
-    
-      Double valueTotal = 0.0;
-      int count = 0;
-    
-      for (SensorValue value : values) {
-        if (!value.isNaN()) {
-          valueTotal += value.getDoubleValue();
-          count++;
-          
-          usedSensorValues.add(value.getId());
-          
-          // Update the QC flag to be applied to the overall value
-          if (value.getUserQCFlag().equals(Flag.NEEDED)) {
-            
-            if (!qcFlag.equals(Flag.NEEDED)) {
-              qcFlag = Flag.NEEDED;
-              qcMessages = new ArrayList<String>();
-              qcMessages.add("AUTO QC: " + sensorType.getName() + " " + value.getUserQCMessage());
-            } else if (value.getUserQCFlag().moreSignificantThan(qcFlag)) {
-              qcFlag = value.getUserQCFlag();
-              qcMessages = new ArrayList<String>();
-              qcMessages.add(value.getUserQCMessage());
-            } else if (value.getUserQCFlag().equals(qcFlag)) {
-              qcMessages.add(value.getUserQCMessage());
-            }
-          }
-        }
-      }
-      
-      if (count == 0) {
-        qcFlag = Flag.BAD;
-        qcMessages = new ArrayList<String>(1);
-        qcMessages.add("Missing " + sensorType.getName());
-      } else {
-        finalValue = valueTotal / count;
-      }
-    }
-    
-    return new CalculationValue(usedSensorValues, finalValue, qcFlag, qcMessages);
   }
 }
