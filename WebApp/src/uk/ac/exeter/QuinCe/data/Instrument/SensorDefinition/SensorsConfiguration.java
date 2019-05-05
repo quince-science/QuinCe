@@ -485,9 +485,16 @@ public class SensorsConfiguration {
       } else if (varSensorType.dependsOnOtherType()) {
         try {
           SensorType dependsOnType = getSensorType(varSensorType.getDependsOn());
+          
+          // Does this type depend on us?
           if (dependsOnType.equalsIncludingRelations(sensorType)) {
-            required = true;
-            break;
+            
+            // Yes. Is there a Depends Question? If so, it's not specifically required.
+            // Other checks later in processing will see if the question has been answered
+            if (!varSensorType.hasDependsQuestion()) {
+              required = true;
+              break;
+            }
           }
         } catch (SensorTypeNotFoundException e) {
           throw new SensorConfigurationException("Cannot find sensor type that should exist", e);
