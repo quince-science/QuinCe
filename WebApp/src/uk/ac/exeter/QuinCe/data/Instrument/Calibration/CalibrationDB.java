@@ -123,15 +123,43 @@ public abstract class CalibrationDB {
   public CalibrationSet getMostRecentCalibrations(DataSource dataSource,
       long instrumentId, LocalDateTime date) throws CalibrationException,
       DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
-
-    CalibrationSet result = new CalibrationSet(instrumentId, getCalibrationType(), getTargets(dataSource, instrumentId));
-
+    
+    CalibrationSet result = null;
     Connection conn = null;
+    
+    try {
+      conn = dataSource.getConnection();
+      result = getMostRecentCalibrations(conn, instrumentId, date);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving calibrations", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+    
+    return result;
+  }
+
+  /**
+   * Get the most recent calibrations for each target
+   * @param dataSource A data source
+   * @param instrumentId The instrument ID
+   * @return The calibrations
+   * @throws CalibrationException If the calibrations are internally inconsistent
+   * @throws DatabaseException If a database error occurs
+   * @throws RecordNotFoundException If any required records are missing
+   * @throws MissingParamException If any internal calls are missing required parameters
+   * @throws InstrumentException
+   */
+  public CalibrationSet getMostRecentCalibrations(Connection conn,
+      long instrumentId, LocalDateTime date) throws CalibrationException,
+      DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
+
+    CalibrationSet result = new CalibrationSet(instrumentId, getCalibrationType(), getTargets(conn, instrumentId));
+
     PreparedStatement stmt = null;
     ResultSet records = null;
 
     try {
-      conn = dataSource.getConnection();
       stmt = conn.prepareStatement(GET_RECENT_CALIBRATIONS_QUERY);
       stmt.setLong(1, instrumentId);
       stmt.setString(2, getCalibrationType());
@@ -151,7 +179,6 @@ public abstract class CalibrationDB {
     } finally {
       DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
     }
 
     return result;

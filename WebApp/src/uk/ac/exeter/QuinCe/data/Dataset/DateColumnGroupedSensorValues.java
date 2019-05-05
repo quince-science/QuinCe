@@ -85,4 +85,12 @@ extends TreeMap<LocalDateTime, Map<SensorType, List<SensorValue>>> {
       add(value);
     }
   }
+  
+  /**
+   * Get the first time in this set of sensor values
+   * @return The first time
+   */
+  public LocalDateTime getFirstTime() {
+    return keySet().iterator().next();
+  }
 }
