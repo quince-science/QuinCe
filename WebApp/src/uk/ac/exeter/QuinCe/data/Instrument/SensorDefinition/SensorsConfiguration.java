@@ -437,6 +437,22 @@ public class SensorsConfiguration {
     }
     return result;
   }
+  
+  /**
+   * Get the list of {@link SensorType} objects corresponding to the supplied
+   * list of names
+   * @param sensorId The sensor types' names
+   * @return The SensorType objects
+   * @throws SensorTypeNotFoundException If any sensor type does not exist
+   */
+  public List<SensorType> getSensorTypes(String[] typeNames) throws SensorTypeNotFoundException {
+    List<SensorType> result = new ArrayList<SensorType>(typeNames.length);
+    for (String typeName : typeNames) {
+      result.add(getSensorType(typeName));
+    }
+    
+    return result;
+  }
 
   /**
    * See if the supplied SensorType is required by any of the listed variables
