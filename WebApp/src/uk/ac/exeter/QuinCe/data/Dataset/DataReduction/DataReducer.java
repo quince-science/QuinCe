@@ -85,6 +85,14 @@ public abstract class DataReducer {
     DataReductionRecord record = new DataReductionRecord(measurement);
     doCalculation(instrument, measurement, sensorValues, record);
     
+    List<SensorType> missingParameters = getMissingParameters(instrument.getSensorAssignments(), sensorValues);
+    if (missingParameters.size() > 0) {
+      makeMissingParameterRecord(record, missingParameters);
+    } else {
+      doCalculation(instrument, measurement, sensorValues, record);
+      buildRecord(record);
+    }
+
     return record;
   }
   
@@ -107,7 +115,7 @@ public abstract class DataReducer {
    * @param missingParameterName The name of the missing parameter
    */
   protected void makeMissingParameterRecord(
-      DataReductionRecord record, Set<SensorType> missingTypes) {
+      DataReductionRecord record, List<SensorType> missingTypes) {
     
     List<String> qcMessages = new ArrayList<String>(missingTypes.size());
     
@@ -138,19 +146,18 @@ public abstract class DataReducer {
    * @param instrumentAssignments The sensor types assigned to the instrument
    * @param sensorTypeNames The names of the bare minimum sensor types
    * @return The complete list of required SensorType objects
+   * @throws SensorTypeNotFoundException 
    */
   protected Set<SensorType> getRequiredSensorTypes(
-    SensorAssignments instrumentAssignments, String... sensorTypeNames)
-    throws DataReductionException {
+    SensorAssignments instrumentAssignments) throws DataReductionException, SensorTypeNotFoundException {
     
-    Set<SensorType> result = new HashSet<SensorType>(sensorTypeNames.length);
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
+    List<SensorType> sensorTypes = sensorConfig.getSensorTypes(getRequiredTypeStrings());
+    
+    Set<SensorType> result = new HashSet<SensorType>(sensorTypes.size());
     
     try {
-      SensorsConfiguration sensorConfig =
-          ResourceManager.getInstance().getSensorsConfiguration();
-        
-        for (String sensorTypeName : sensorTypeNames) {
-          SensorType baseSensorType = sensorConfig.getSensorType(sensorTypeName);
+        for (SensorType baseSensorType : sensorTypes) {
           
           if (sensorConfig.isParent(baseSensorType)) {
             Set<SensorType> childSensorTypes = sensorConfig.getChildren(baseSensorType);
@@ -245,26 +252,24 @@ public abstract class DataReducer {
    * @param values The calculation values
    * @param requiredTypes The required sensor types
    * @return
+   * @throws SensorTypeNotFoundException 
+   * @throws DataReductionException 
    */
-  protected boolean nanCheck(DataReductionRecord record,
-    Map<SensorType, CalculationValue> values, Set<SensorType> requiredTypes) {
+  private List<SensorType> getMissingParameters(SensorAssignments instrumentAssignments, Map<SensorType, CalculationValue> values) throws SensorTypeNotFoundException, DataReductionException {
     
-    Set<SensorType> nanTypes = new HashSet<SensorType>();
+    List<SensorType> missingTypes = new ArrayList<SensorType>();
     
-    for (SensorType type : requiredTypes) {
+    for (SensorType type : getRequiredSensorTypes(instrumentAssignments)) {
       CalculationValue value = values.get(type);
       if (null == value || value.isNaN()) {
-        nanTypes.add(type);
+        missingTypes.add(type);
       }
     }
     
-    if (nanTypes.size() > 0) {
-      makeMissingParameterRecord(record, nanTypes);
-    }
-    
-    return (nanTypes.size() > 0);
+    return missingTypes;
   }
   
+  protected abstract String[] getRequiredTypeStrings();
 
   /**
    * Apply external standards calibration to a sensor value
@@ -443,21 +448,21 @@ public abstract class DataReducer {
     return result;
   }
   
-  protected SensorType getSensorType(Set<SensorType> sensorTypes, String sensorTypeName) {
-    SensorType result = null;
-    
-    for (SensorType sensorType : sensorTypes) {
-      if (sensorType.getName().equals(sensorTypeName)) {
-        result = sensorType;
-        break;
-      }
-    }
-    
-    return result;
+  protected SensorType getSensorType(String sensorTypeName) throws SensorTypeNotFoundException {
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
+    return sensorConfig.getSensorType(sensorTypeName);
   }
   
-  protected Double getValue(Set<SensorType> sensorTypes, Map<SensorType, CalculationValue> sensorValues, String sensorTypeName) {
-    SensorType sensorType = getSensorType(sensorTypes, sensorTypeName);
+  protected Double getValue(Map<SensorType, CalculationValue> sensorValues, String sensorTypeName) throws SensorTypeNotFoundException {
+    SensorType sensorType = getSensorType(sensorTypeName);
     return sensorValues.get(sensorType).getValue();
+  }
+  
+  /**
+   * Populate the DataReductionRecord based on a successful calculation
+   * @param record The DataReductionRecord
+   */
+  protected void buildRecord(DataReductionRecord record) {
+    
   }
 }
