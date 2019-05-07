@@ -17,3 +17,12 @@
 /.gradle/
 /build/
 !gradle-wrapper.jar
+
+# Misc stuff from python exporter
+**/*.db
+WebApp/WebContent/resources/python/export/DNT/
+WebApp/WebContent/resources/python/export/latest/
+WebApp/WebContent/resources/python/export/log/
+WebApp/WebContent/resources/python/export/tmp/
+WebApp/WebContent/resources/python/export/oap_metadata_templates/
+
