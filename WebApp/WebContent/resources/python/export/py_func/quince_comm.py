@@ -67,12 +67,8 @@ def report_complete_export(config,dataset_id):
     Reports to QuinCe that export was successful for dataset with 
     id: dataset_id
     '''
-    logging.info(
-        'Export complete for dataset with QuinCe id: {:s}'
-        .format(dataset_id))
-   
+    logging.info(f'Export complete for dataset with QuinCe id: {dataset_id}')
     complete_export = make_quince_call(config, 'completeExport', dataset_id)
-    conn.close()
 
 def report_abandon_export(config,dataset_id):
     '''

@@ -10,7 +10,7 @@ import sys
 import os
 import traceback
 
-from py_func.quince_comm import get_export_list, report_abandon_export
+from py_func.quince_comm import get_export_list, report_abandon_export, report_complete_export
 from py_func.meta_handling import process_dataset, process_L0_data, process_L2_data
 from py_func.carbon import cp_init, send_L0_to_cp, send_L2_to_cp
 from py_func.copernicus import build_netCDF, upload_to_copernicus
@@ -18,7 +18,7 @@ from py_func.copernicus import build_netCDF, upload_to_copernicus
 
 #logging.basicConfig(filename = 'logfile.log', 
 #stream=sys.stdout,level = logging.DEBUG, filemode = 'w')
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(message)s',stream=sys.stdout, level=logging.DEBUG)
 
 config_file_quince = 'config_quince.toml'
 config_file_copernicus = 'config_copernicus.toml'
@@ -91,22 +91,17 @@ def main():
           build_netCDF(
             dataset_zip,dataset['name'],destination_filename['Copernicus'])
 
-    #UPLOAD TO COPERNICUS
-    try: 
-      upload_to_copernicus(config_copernicus,'nrt_server')
-    except Exception as e:
-      logging.error('Exception occurred: ', exc_info=True)
-      logging.INFO('FTP connection failed')
-    
-    # *** Test and debug functionality ***
-    #try:
-    #  print(export_list)
-    #  for dataset in export_list:
-    #    report_abandon_export(config_quince,dataset['id'])
-    #except Exception as e:
-    #  logging.error('Exception occurred: ', exc_info=True)
-    #  print('error reporting abandon export')
-    # ************************************ 
+      #UPLOAD TO COPERNICUS
+      try: 
+        successful_upload = upload_to_copernicus(config_copernicus,'nrt_server')
+      except Exception as e:
+        logging.error('Exception occurred: ', exc_info=True)
+        logging.INFO('FTP connection failed')
+
+      if successful_upload:
+        report_complete_export(config_quince,dataset['id'])
+      else:
+        report_abandon_export(config_quince,dataset['id'])
 
   #Create error handling:
   #except cookie expired
