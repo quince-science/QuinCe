@@ -328,7 +328,7 @@ def makenetcdf_(datasetname, lines):
   nc.naming_authority = "Copernicus"
 
   nc.platform_code = getplatformcallsign_(platform_code)
-  nc.site_code = getplatformcallsign_(platform_code)
+  nc.site_code = "" # getplatformcallsign_(platform_code)
 
   # For buoys -> Mooring observation.
   platform_category_code = getplatformcategorycode_(platform_code)
