@@ -18,7 +18,8 @@ from py_func.copernicus import build_netCDF, upload_to_copernicus
 
 #logging.basicConfig(filename = 'logfile.log', 
 #stream=sys.stdout,level = logging.DEBUG, filemode = 'w')
-logging.basicConfig(format='%(asctime)s %(message)s',stream=sys.stdout, level=logging.DEBUG)
+#logging.basicConfig(stream=sys.stdout,format='%(asctime)s %(message)s', level=logging.DEBUG)
+logging.basicConfig(filename='console.log',format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 config_file_quince = 'config_quince.toml'
 config_file_copernicus = 'config_copernicus.toml'
