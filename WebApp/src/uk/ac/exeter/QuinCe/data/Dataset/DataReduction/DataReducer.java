@@ -338,13 +338,13 @@ public abstract class DataReducer {
           
           CalculationValue priorCalibrationValue = null;
           if (null != surroundingTimes.prev) {
-            priorCalibrationValue = CalculationValue.get(sensorType,
+            priorCalibrationValue = CalculationValue.get(measurement, sensorType,
               groupedSensorValues.get(surroundingTimes.prev).get(sensorType));
           }
           
           CalculationValue postCalibrationValue = null;
           if (null != surroundingTimes.next) {
-            postCalibrationValue = CalculationValue.get(sensorType,
+            postCalibrationValue = CalculationValue.get(measurement, sensorType,
               groupedSensorValues.get(surroundingTimes.next).get(sensorType));
           }
 
@@ -459,7 +459,7 @@ public abstract class DataReducer {
         Map<SensorType, List<SensorValue>> measurementData =
           groupedSensorValues.get(currentMeasurement.getTime());
         
-        CalculationValue value = CalculationValue.get(sensorType, measurementData.get(sensorType));
+        CalculationValue value = CalculationValue.get(start, sensorType, measurementData.get(sensorType));
         if (!value.isNaN()) {
           result = currentMeasurement.getTime();
         }
@@ -488,7 +488,7 @@ public abstract class DataReducer {
         Map<SensorType, List<SensorValue>> measurementData =
           groupedSensorValues.get(currentMeasurement.getTime());
         
-        CalculationValue value = CalculationValue.get(sensorType, measurementData.get(sensorType));
+        CalculationValue value = CalculationValue.get(start, sensorType, measurementData.get(sensorType));
         if (!value.isNaN()) {
           result = currentMeasurement.getTime();
         }

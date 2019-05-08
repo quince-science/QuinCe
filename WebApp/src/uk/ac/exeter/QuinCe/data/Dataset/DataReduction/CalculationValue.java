@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
+import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -17,6 +18,10 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
  */
 public class CalculationValue {
 
+  private final long measurementId;
+  
+  private final long variableId;
+  
   private TreeSet<Long> usedSensorValues;
   
   private Double value;
@@ -25,9 +30,12 @@ public class CalculationValue {
   
   private List<String> qcMessages;
   
-  public CalculationValue(TreeSet<Long> usedSensorValues, Double value,
+  public CalculationValue(long measurementId, long variableId,
+      TreeSet<Long> usedSensorValues, Double value,
     Flag qcFlag, List<String> qcMessages) {
     
+    this.measurementId = measurementId;
+    this.variableId = variableId;
     this.usedSensorValues = usedSensorValues;
     this.value = value;
     this.qcFlag = qcFlag;
@@ -67,12 +75,29 @@ public class CalculationValue {
   }
   
   /**
+   * Get the database IDs of the sensor values used to generate this
+   * CalculationValue
+   * @return The sensor value IDs
+   */
+  public TreeSet<Long> getUsedSensorValueIds() {
+    return usedSensorValues;
+  }
+  
+  public long getMeasurementId() {
+    return measurementId;
+  }
+  
+  public long getVariableId() {
+    return variableId;
+  }
+  
+  /**
    * Get the value to be used in data reduction calculations from a given
    * set of sensor values
    * @param list The sensor values
    * @return The calculation value
    */
-  public static  CalculationValue get(SensorType sensorType,
+  public static  CalculationValue get(Measurement measurement, SensorType sensorType,
     List<SensorValue> values) {
     
     // TODO Make this more intelligent - handle fallbacks, averages, interpolation etc.
@@ -125,7 +150,9 @@ public class CalculationValue {
       }
     }
     
-    return new CalculationValue(usedSensorValues, finalValue, qcFlag, qcMessages);
+    return new CalculationValue(measurement.getId(),
+        measurement.getVariable().getId(),usedSensorValues,
+        finalValue, qcFlag, qcMessages);
   }
   
   /**
@@ -143,13 +170,16 @@ public class CalculationValue {
   public static CalculationValue sum(CalculationValue... values) {
     Double sum = 0.0;
     
+    long measurementId = values[0].measurementId;
+    long variableId = values[0].variableId;
+    
     for (CalculationValue cv : values) {
       if (null != cv) {
         sum += cv.value;
       }
     }
     
-    return makeCombinedCalculationValue(sum, values);
+    return makeCombinedCalculationValue(measurementId, variableId, sum, values);
   }
   
   /**
@@ -168,6 +198,9 @@ public class CalculationValue {
     Double sum = 0.0;
     int count = 0;
     
+    long measurementId = values[0].measurementId;
+    long variableId = values[0].variableId;
+
     for (CalculationValue cv : values) {
       if (null != cv) {
         sum += cv.value;
@@ -175,7 +208,8 @@ public class CalculationValue {
       }
     }
     
-    return makeCombinedCalculationValue(sum / count, values);
+    return makeCombinedCalculationValue(measurementId, variableId,
+        sum / count, values);
   }
   
   /**
@@ -188,7 +222,7 @@ public class CalculationValue {
    * @return The combined object
    */
   private static CalculationValue makeCombinedCalculationValue(
-    Double newValue, CalculationValue... valueObjects) {
+    long measurementId, long variableId, Double newValue, CalculationValue... valueObjects) {
 
     TreeSet<Long> newSensorValues = new TreeSet<Long>();
     Flag newQcFlag = Flag.GOOD;
@@ -204,6 +238,7 @@ public class CalculationValue {
       }
     }
     
-    return new CalculationValue(newSensorValues, newValue, newQcFlag, newQcMessages);
+    return new CalculationValue(measurementId, variableId, newSensorValues,
+        newValue, newQcFlag, newQcMessages);
   }
 }
