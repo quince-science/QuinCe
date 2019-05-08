@@ -74,6 +74,7 @@ FAILED_INGESTION = -1
 dnt_datetime_format = '%Y%m%dT%H%M%SZ'
 server_location = 'ftp://nrt.cmems-du.eu/Core'
 my_dir=''
+lt = 'latest'
 
 nc_nan = 'tmp_nan_update.nc'
 
@@ -101,14 +102,16 @@ def build_netCDF(dataset_zip,dataset_name,destination_filename):
 
   csv_file = get_file_from_zip(dataset_zip, dataset_name
      + '/dataset/Copernicus/' + destination_filename)  
-   
-  local_folder = (
-    'latest/' + (datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
-  try: os.mkdir(local_folder); 
-  except Exception as e:
-    logging.warning('folder already exist')
-    pass
 
+  if not os.path.isdir(lt):
+    os.mkdir(lt)
+
+  local_folder = (
+    lt + '/' + (datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
+  if not os.path.isdir(local_folder):
+    os.mkdir(local_folder); 
+
+    
   logging.info(
     'Creating netcdf-files based on {:s} to send to Copernicus'
     .format(csv_file))
@@ -163,6 +166,11 @@ def upload_to_copernicus(ftp_config,server):
 
   OK = True
   error = ''
+
+  if not os.path.isdir('log'):
+    os.mkdir('log')
+  if not os.path.isdir('DNT'):
+    os.mkdir('DNT')
 
   # create ftp-connection
   with ftputil.FTPHost(
@@ -356,7 +364,7 @@ def abort_upload(error,local_folder,ftp,nrt_dir):
     for dataset in export_list:
       report_abandon_export(config_quince,dataset['id'])
   except Exception as e:
-    logging.error('Exception occurred: ', exc_info=True)
+    logging.error('Abandoning export failed: ', exc_info=True)
 
 
 
@@ -370,7 +378,7 @@ def check_directory(ftp, nrt_dir):
 
   with open (not_ingested,'a+') as f:
     for item in uningested_files:
-      f.write(datetime.datetime.now() + ': ' + str(item) + '\n')
+      f.write(str(datetime.datetime.now()) + ': ' + str(item) + '\n')
 
   if ftp.listdir(nrt_dir):
     logging.warning('ftp-folder is not empty')
@@ -402,21 +410,19 @@ def sql_commit(nc_dict,table="latest"):
   conn = sqlite3.connect(cmems_db)
 
   c = conn.cursor()
-  try:
-    c.execute(''' CREATE TABLE latest (
-                filename TEXT PRIMARY KEY,
-                hashsum TEXT NOT NULL,
-                filepath TEXT NOT NULL UNIQUE,
-                nc_date TEXT,
-                uploaded INTEGER,
-                ftp_filepath TEXT,
-                dnt_file TEXT,
-                comment TEXT
-                )''')
-    logging.info('Creating database {}'.format(table))
 
-  except Exception as e:
-    pass #table already exists 
+  # if not table: 
+  #logging.info('Creating database {}'.format(table))
+  c.execute(''' CREATE TABLE IF NOT EXISTS latest (
+              filename TEXT PRIMARY KEY,
+              hashsum TEXT NOT NULL,
+              filepath TEXT NOT NULL UNIQUE,
+              nc_date TEXT,
+              uploaded INTEGER,
+              ftp_filepath TEXT,
+              dnt_file TEXT,
+              comment TEXT
+              )''')
 
   for key in nc_dict:
 
@@ -453,7 +459,8 @@ def sql_commit(nc_dict,table="latest"):
           None))
         conn.commit()
     except Exception as e:
-      pass
+      logging.error('Adding {key} to database failed: ', exc_info=True)
+      
 
 def upload_to_ftp(ftp, ftp_config, filepath):
   ''' Uploads file with location 'filepath' to an ftp-server, 
@@ -546,9 +553,8 @@ def build_DNT(dnt_upload,dnt_delete):
   dnt_folder = 'DNT/' + local_folder  
   dnt_filepath = dnt_folder + '/' + dnt_file
 
-  try: os.mkdir(dnt_folder); 
-  except Exception as e:
-    pass
+  if not os.path.isdir(dnt_folder):
+    os.mkdir(dnt_folder)
 
   with open(dnt_filepath,'wb') as xml: 
     xml_tree.write(xml,xml_declaration=True,method='xml')
