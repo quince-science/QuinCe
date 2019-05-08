@@ -56,6 +56,16 @@ public abstract class DataReducer {
    */
   protected LinkedHashMap<String, Double> calculationParameters;
   
+  /**
+   * Cache of searched record times prior to starting point
+   */
+  private HashMap<String, LocalDateTime> previousSearchTimes;
+  
+  /**
+   * Cache of searched record times after starting point
+   */
+  private HashMap<String, LocalDateTime> nextSearchTimes;
+  
   public DataReducer(List<Measurement> allMeasurements,
       DateColumnGroupedSensorValues groupedSensorValues,
       CalibrationSet calibrationSet) {
@@ -69,6 +79,9 @@ public abstract class DataReducer {
     for (String parameter : getCalculationParameterNames()) {
       calculationParameters.put(parameter, null);
     }
+    
+    previousSearchTimes = new HashMap<String, LocalDateTime>();
+    nextSearchTimes = new HashMap<String, LocalDateTime>();
   }
   
   /**
@@ -312,21 +325,21 @@ public abstract class DataReducer {
         double concentration = calibrationSet.getCalibrationValue(target, sensorType.getName());
         if (!ignoreZero || concentration > 0.0) {
           
+          PrevNextTimes surroundingTimes = getSurroundingTimes(measurement, target, sensorType);
+          
           CalculationValue priorCalibrationValue = null;
-          LocalDateTime priorCalibrationTime = getPreviousTime(measurement, target, sensorType);
-          if (null != priorCalibrationTime) {
+          if (null != surroundingTimes.prev) {
             priorCalibrationValue = CalculationValue.get(sensorType,
-              groupedSensorValues.get(priorCalibrationTime).get(sensorType));
+              groupedSensorValues.get(surroundingTimes.prev).get(sensorType));
           }
           
           CalculationValue postCalibrationValue = null;
-          LocalDateTime postCalibrationTime = getNextTime(measurement, target, sensorType);
-          if (null != postCalibrationTime) {
+          if (null != surroundingTimes.next) {
             postCalibrationValue = CalculationValue.get(sensorType,
-              groupedSensorValues.get(postCalibrationTime).get(sensorType));
+              groupedSensorValues.get(surroundingTimes.next).get(sensorType));
           }
 
-          standardMeasurements.put(target, calculateStandardValueAtDate(measurement.getTime(), target, priorCalibrationTime, priorCalibrationValue, postCalibrationTime, postCalibrationValue));
+          standardMeasurements.put(target, calculateStandardValueAtDate(measurement.getTime(), target, surroundingTimes.prev, priorCalibrationValue, surroundingTimes.next, postCalibrationValue));
         }
       }
 
@@ -386,6 +399,36 @@ public abstract class DataReducer {
 
     return result;
   }
+  
+
+  private PrevNextTimes getSurroundingTimes(Measurement start, String runType, SensorType sensorType) {
+    
+    PrevNextTimes result = null;
+    PrevNextTimes cached = new PrevNextTimes(previousSearchTimes.get(runType), nextSearchTimes.get(runType));
+    boolean searchRequired = false;
+    
+    if (null == cached.prev && null == cached.next) {
+      searchRequired = true;
+    } else if (null != cached.prev && start.getTime().isBefore(cached.prev)) {
+      searchRequired = true;
+    } else if (null != cached.next && start.getTime().isAfter(cached.next)) {
+      searchRequired = true;
+    }
+    
+    if (!searchRequired) {
+      result = cached;
+    } else {
+      LocalDateTime prev = getPreviousTime(start, runType, sensorType);
+      LocalDateTime next = getNextTime(start, runType, sensorType);
+      result = new PrevNextTimes(prev, next);
+      
+      previousSearchTimes.put(runType, prev);
+      nextSearchTimes.put(runType, next);
+    }
+
+    return result;
+  }
+  
   
   /**
    * Get the last measurement prior to the specified date with the
@@ -464,5 +507,16 @@ public abstract class DataReducer {
    */
   protected void buildRecord(DataReductionRecord record) {
     
+  }
+  
+  
+  private class PrevNextTimes {
+    LocalDateTime prev;
+    LocalDateTime next;
+    
+    private PrevNextTimes(LocalDateTime prev, LocalDateTime next) {
+      this.prev = prev;
+      this.next = next;
+    }
   }
 }
