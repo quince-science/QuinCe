@@ -76,15 +76,15 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     Double fCO2 = calcFco2SST(pCO2SST, co2Calibrated, equilibratorPressure, equilibratorTemperature);
     
     // Store the calculated values
-    calculationParameters.put("Equilibrator Pressure", equilibratorPressure);
-    calculationParameters.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
-    calculationParameters.put("True Moisture", trueXH2O);
-    calculationParameters.put("pH₂O", pH2O);
-    calculationParameters.put("Dried CO₂", co2Dried);
-    calculationParameters.put("Calibrated CO₂", co2Calibrated);
-    calculationParameters.put("pCO₂ TE Wet", pCo2TEWet);
-    calculationParameters.put("pCO₂ SST", pCO2SST);
-    calculationParameters.put("fCO₂", fCO2);
+    record.put("Equilibrator Pressure", equilibratorPressure);
+    record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
+    record.put("True Moisture", trueXH2O);
+    record.put("pH₂O", pH2O);
+    record.put("Dried CO₂", co2Dried);
+    record.put("Calibrated CO₂", co2Calibrated);
+    record.put("pCO₂ TE Wet", pCo2TEWet);
+    record.put("pCO₂ SST", pCO2SST);
+    record.put("fCO₂", fCO2);
   }
 
   @Override

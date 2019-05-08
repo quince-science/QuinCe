@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 
 /**
  * Class to hold the sensors required for a given variable.
@@ -71,7 +71,7 @@ public class InstrumentVariable {
     List<Long> requiredSensorTypeIds, List<Integer> questionableCascades,
     List<Integer> badCascades)
       throws SensorTypeNotFoundException, SensorConfigurationException,
-        InvalidFlagException {
+      InvalidFlagException {
 
     this.id = id;
     this.name = name;

@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -53,8 +54,13 @@ public class DataReductionRecord {
 	 * @param message The QC messages
 	 */
 	protected void setQc(Flag flag, List<String> messages) {
-	  this.qcFlag = flag;
-	  this.qcMessages = messages;
+
+	  if (flag.equals(qcFlag)) {
+	    qcMessages.addAll(messages);
+	  } else if (flag.moreSignificantThan(qcFlag)) {
+	    qcFlag = flag;
+	    qcMessages = messages;
+	  }
 	}
 	
 	/**
@@ -64,5 +70,25 @@ public class DataReductionRecord {
 	 */
 	protected void put(String parameter, Double value) {
 	  calculationValues.put(parameter, value);
+	}
+	
+	protected void putAll(Map<String, Double> values) {
+	  calculationValues.putAll(values);
+	}
+	
+	/**
+	 * Get the QC flag
+	 * @return The QC flag
+	 */
+	public Flag getQCFlag() {
+	  return qcFlag;
+	}
+	
+	/**
+	 * Get the QC messages
+	 * @return The QC messages
+	 */
+	public List<String> getQCMessages() {
+	  return qcMessages;
 	}
 }
