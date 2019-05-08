@@ -7,7 +7,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
-import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 
 /**
@@ -25,6 +24,7 @@ public class DataReducerFactory {
    */
   public static DataReducer getReducer(
       Connection conn, Instrument instrument, InstrumentVariable variable,
+      CalibrationSet calibrationSet,
       List<Measurement> allMeasurements,
       DateColumnGroupedSensorValues groupedSensorValues)
       throws DataReductionException {
@@ -32,11 +32,6 @@ public class DataReducerFactory {
     DataReducer reducer;
 
     try {
-    
-      CalibrationSet calibrationSet = ExternalStandardDB.getInstance().getMostRecentCalibrations(
-        conn, instrument.getDatabaseId(), groupedSensorValues.getFirstTime());
-    
-    
       switch (variable.getName()) {
       case "Underway Marine pCO₂": {
         reducer = new UnderwayMarinePco2Reducer(allMeasurements, groupedSensorValues, calibrationSet);
