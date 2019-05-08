@@ -51,6 +51,22 @@ public class CalculationValue {
   }
 
   /**
+   * Get the QC flag
+   * @return The QC flag
+   */
+  public Flag getQCFlag() {
+    return qcFlag;
+  }
+
+  /**
+   * Get the QC messages
+   * @return The QC messages
+   */
+  public List<String> getQCMessages() {
+    return qcMessages;
+  }
+  
+  /**
    * Get the value to be used in data reduction calculations from a given
    * set of sensor values
    * @param list The sensor values
