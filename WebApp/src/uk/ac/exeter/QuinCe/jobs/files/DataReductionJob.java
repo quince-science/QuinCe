@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,7 +113,12 @@ public class DataReductionJob extends Job {
         ExternalStandardDB.getInstance().getMostRecentCalibrations(
         conn, instrument.getDatabaseId(), groupedSensorValues.getFirstTime());
 
+      // Cached data reducer instances
       Map<InstrumentVariable, DataReducer> reducers = new HashMap<InstrumentVariable, DataReducer>();
+      
+      // Storage of values to be written to the database
+      List<CalculationValue> calculationValuesToStore = new ArrayList<CalculationValue>();
+      List<DataReductionRecord> dataReductionRecords = new ArrayList<DataReductionRecord>(allMeasurements.size());
       
       // Process each measurement individually
       for (Measurement measurement : allMeasurements) {
@@ -141,7 +147,7 @@ public class DataReductionJob extends Job {
               List<SensorValue> sensorValues = values.get(sensorType);
               
               calculationValues.put(
-                sensorType, CalculationValue.get(sensorType, sensorValues));
+                sensorType, CalculationValue.get(measurement, sensorType, sensorValues));
             }
           }
           
@@ -157,12 +163,13 @@ public class DataReductionJob extends Job {
           DataReductionRecord dataReductionRecord = reducer.performDataReduction(
             instrument, measurement, calculationValues);
           
-          System.out.println(dataReductionRecord.getQCFlag() + ": " + dataReductionRecord.getQCMessages());
-          
-          // WRITE DATA REDUCTION RECORD AND SENSOR VALUE IDS FROM CALCULATION VALUES MAP
+          calculationValuesToStore.addAll(calculationValues.values());
+          dataReductionRecords.add(dataReductionRecord);          
         }
       }
-      
+
+      DataSetDataDB.storeDataReduction(conn, calculationValuesToStore, dataReductionRecords);
+
       
       // If the thread was interrupted, undo everything
       if (thread.isInterrupted()) {

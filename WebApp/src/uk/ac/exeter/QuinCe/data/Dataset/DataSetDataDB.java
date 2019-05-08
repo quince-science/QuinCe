@@ -18,6 +18,8 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationValue;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
@@ -38,6 +40,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.Variable;
 import uk.ac.exeter.QuinCe.web.VariableList;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -123,9 +126,16 @@ public class DataSetDataDB {
    * Statement to store a Measurement Value
    */
   private static final String STORE_MEASUREMENT_VALUE_STATEMENT = "INSERT INTO "
-    + "measurement_values (measurement_id, sensor_value_id) "
-    + "VALUES (?, ?)";
-
+    + "measurement_values (measurement_id, variable_id, sensor_value_id) "
+    + "VALUES (?, ?, ?)";
+  
+  /**
+   * Statement to store a data reduction result
+   */
+  private static final String STORE_DATA_REDUCTION_STATEMENT = "INSERT INTO "
+    + "data_reduction (measurement_id, variable_id, calculation_values, "
+    + "qc_flag, qc_message) VALUES (?, ?, ?, ?, ?)";
+  
   /**
    * The name of the ID column
    */
@@ -1267,6 +1277,50 @@ public class DataSetDataDB {
       throw new DatabaseException("Error while storing measurements", e);
     } finally {
       DatabaseUtils.closeStatements(stmt);
+    }
+  }
+  
+  public static void storeDataReduction(Connection conn,
+      Collection<CalculationValue> values,
+      List<DataReductionRecord> dataReductionRecords) throws DatabaseException {
+    
+    PreparedStatement valueStmt = null;
+    PreparedStatement dataReductionStmt = null;
+    
+    try {
+      valueStmt = conn.prepareStatement(STORE_MEASUREMENT_VALUE_STATEMENT);
+      
+      // First the used sensor values
+      for (CalculationValue value : values) {
+        for (long id : value.getUsedSensorValueIds()) {
+          valueStmt.setLong(1, value.getMeasurementId());
+          valueStmt.setLong(2, value.getVariableId());
+          valueStmt.setLong(3, id);
+          
+          valueStmt.addBatch();
+        }
+      }
+      
+      valueStmt.executeBatch();
+      
+      // And now the data reduction record
+      dataReductionStmt = conn.prepareStatement(STORE_DATA_REDUCTION_STATEMENT);
+      for (DataReductionRecord dataReduction : dataReductionRecords) {
+        dataReductionStmt.setLong(1, dataReduction.getMeasurementId());
+        dataReductionStmt.setLong(2, dataReduction.getVariableId());
+        dataReductionStmt.setString(3, dataReduction.getCalculationJson());
+        dataReductionStmt.setInt(4, dataReduction.getQCFlag().getFlagValue());
+        dataReductionStmt.setString(5, StringUtils.collectionToDelimited(dataReduction.getQCMessages(), ";"));
+        
+        dataReductionStmt.addBatch();
+      }
+      
+      dataReductionStmt.executeBatch();
+      
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while storing data reduction", e);
+    } finally {
+      DatabaseUtils.closeStatements(valueStmt);
     }
   }
 }
