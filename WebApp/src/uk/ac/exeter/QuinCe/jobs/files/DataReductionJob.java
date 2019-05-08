@@ -157,6 +157,8 @@ public class DataReductionJob extends Job {
           DataReductionRecord dataReductionRecord = reducer.performDataReduction(
             instrument, measurement, calculationValues);
           
+          System.out.println(dataReductionRecord.getQCFlag() + ": " + dataReductionRecord.getQCMessages());
+          
           // WRITE DATA REDUCTION RECORD AND SENSOR VALUE IDS FROM CALCULATION VALUES MAP
         }
       }

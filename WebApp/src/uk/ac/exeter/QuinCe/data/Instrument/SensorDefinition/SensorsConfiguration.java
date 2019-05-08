@@ -15,7 +15,7 @@ import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
