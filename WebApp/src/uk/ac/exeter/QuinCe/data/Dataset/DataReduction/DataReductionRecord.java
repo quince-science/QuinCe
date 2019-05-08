@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.Gson;
+
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
@@ -13,12 +15,12 @@ public class DataReductionRecord {
 	/**
 	 * The database ID of the measurement
 	 */
-	private long measurementId;
+	private final long measurementId;
 	
 	/**
 	 * The database ID of the variable being processed
 	 */
-	private long variableId;
+	private final long variableId;
 	
 	/**
 	 * Intermediate calculation values
@@ -54,7 +56,6 @@ public class DataReductionRecord {
 	 * @param message The QC messages
 	 */
 	protected void setQc(Flag flag, List<String> messages) {
-
 	  if (flag.equals(qcFlag)) {
 	    qcMessages.addAll(messages);
 	  } else if (flag.moreSignificantThan(qcFlag)) {
@@ -75,6 +76,22 @@ public class DataReductionRecord {
 	protected void putAll(Map<String, Double> values) {
 	  calculationValues.putAll(values);
 	}
+
+	/**
+	 * Get the measurement ID
+	 * @return The measurement ID
+	 */
+	public long getMeasurementId() {
+	  return measurementId;
+	}
+	
+	/**
+	 * Get the variable ID
+	 * @return The variable ID
+	 */
+	public long getVariableId() {
+	  return variableId;
+	}
 	
 	/**
 	 * Get the QC flag
@@ -90,5 +107,14 @@ public class DataReductionRecord {
 	 */
 	public List<String> getQCMessages() {
 	  return qcMessages;
+	}
+	
+	/**
+	 * Get the calculation values as a JSON string
+	 * @return The calculation JSON
+	 */
+	public String getCalculationJson() {
+	  Gson gson = new Gson();
+	  return gson.toJson(calculationValues);
 	}
 }
