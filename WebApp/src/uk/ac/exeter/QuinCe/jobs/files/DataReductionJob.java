@@ -20,7 +20,10 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
@@ -100,9 +103,17 @@ public class DataReductionJob extends Job {
         DataSetDataDB.getSensorValuesByDateAndColumn(conn,
           instrument, dataSet.getId());
 
+      // Get all the measurement records
       List<Measurement> allMeasurements =
           DataSetDataDB.getMeasurements(conn, instrument, dataSet.getId());
 
+      // Get the most recent calibration data from before the dataset start
+      CalibrationSet calibrationSet =
+        ExternalStandardDB.getInstance().getMostRecentCalibrations(
+        conn, instrument.getDatabaseId(), groupedSensorValues.getFirstTime());
+
+      Map<InstrumentVariable, DataReducer> reducers = new HashMap<InstrumentVariable, DataReducer>();
+      
       // Process each measurement individually
       for (Measurement measurement : allMeasurements) {
         
@@ -134,8 +145,14 @@ public class DataReductionJob extends Job {
             }
           }
           
-          DataReducer reducer = DataReducerFactory.getReducer(conn, instrument,
-            measurement.getVariable(), allMeasurements, groupedSensorValues);
+          DataReducer reducer = reducers.get(measurement.getVariable());
+          if (null == reducer) {
+            reducer = DataReducerFactory.getReducer(conn, instrument,
+                measurement.getVariable(), calibrationSet, allMeasurements,
+                groupedSensorValues);
+            
+            reducers.put(measurement.getVariable(), reducer);
+          }
           
           DataReductionRecord dataReductionRecord = reducer.performDataReduction(
             instrument, measurement, calculationValues);
