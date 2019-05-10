@@ -16,10 +16,6 @@ from py_func.carbon import cp_init, send_L0_to_cp, send_L2_to_cp
 from py_func.copernicus import build_netCDF, upload_to_copernicus
 
 
-#logging.basicConfig(filename = 'logfile.log', 
-#stream=sys.stdout,level = logging.DEBUG, filemode = 'w')
-#logging.basicConfig(stream=sys.stdout,format='%(asctime)s %(message)s', level=logging.DEBUG)
-logging.basicConfig(filename='console.log',format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 config_file_quince = 'config_quince.toml'
 config_file_copernicus = 'config_copernicus.toml'
@@ -31,6 +27,11 @@ with open(config_file_copernicus) as f: config_copernicus = toml.load(f)
 with open(config_file_carbon) as f: config_carbon = toml.load(f)
 with open(config_file_meta) as f: config_meta = toml.load(f)
 
+if not os.path.isdir('log'):
+  os.mkdir('log')
+#logging.basicConfig(stream=sys.stdout,format='%(asctime)s %(message)s', level=logging.DEBUG)
+logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.DEBUG)
+
 def main():
   try:
     logging.debug('Obtaining IDs of datasets ready for export from QuinCe')
@@ -39,8 +40,9 @@ def main():
     export_list = get_export_list(config_quince)
 
     if not export_list:
-      logging.info('no datasets ready for export')
-      quit()
+      logging.info('Terminating script, no datasets to be exported.')
+      quit('No datasets ready for export')
+
 
     for datasetNr, dataset in enumerate(export_list): 
       [dataset_zip,
@@ -94,7 +96,7 @@ def main():
 
       #UPLOAD TO COPERNICUS
       try: 
-        successful_upload = upload_to_copernicus(config_copernicus,'nrt_server')
+        successful_upload = upload_to_copernicus(config_copernicus,'nrt_server',dataset)
       except Exception as e:
         logging.error('Exception occurred: ', exc_info=True)
         logging.INFO('FTP connection failed')
