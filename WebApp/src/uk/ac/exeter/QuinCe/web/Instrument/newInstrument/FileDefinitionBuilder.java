@@ -184,7 +184,7 @@ public class FileDefinitionBuilder extends FileDefinition {
       searchPattern = Pattern.compile(separator);
     }
 
-    Matcher matcher = searchPattern.matcher(searchString.trim());
+    Matcher matcher = searchPattern.matcher(searchString);
 
     int matchCount = 0;
     while (matcher.find()) {
