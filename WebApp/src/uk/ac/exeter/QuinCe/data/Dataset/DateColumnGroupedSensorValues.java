@@ -38,7 +38,7 @@ extends TreeMap<LocalDateTime, Map<SensorType, List<SensorValue>>> {
    * Serial Version UID
    */
   private static final long serialVersionUID = -2963733268242830810L;
-  
+
   /**
    * The instrument that these values belong to
    */
@@ -85,7 +85,7 @@ extends TreeMap<LocalDateTime, Map<SensorType, List<SensorValue>>> {
       add(value);
     }
   }
-  
+
   /**
    * Get the first time in this set of sensor values
    * @return The first time

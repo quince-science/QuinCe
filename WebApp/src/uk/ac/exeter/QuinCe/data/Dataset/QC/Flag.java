@@ -32,7 +32,7 @@ public class Flag implements Comparable<Flag> {
    * Value indicating that no QC has been performed
    */
   public static final int VALUE_NO_QC = 0;
-  
+
   /**
    * The WOCE value for a good flag
    */
@@ -52,7 +52,7 @@ public class Flag implements Comparable<Flag> {
    * The text indicating that no QC has been performed
    */
   public static final String TEXT_NO_QC = "No QC";
-  
+
   /**
    * The text value for a good flag
    */
@@ -92,7 +92,7 @@ public class Flag implements Comparable<Flag> {
    * An instance of a No QC flag
    */
   public static final Flag NO_QC = makeNoQCFlag();
-  
+
   /**
    *  An instance of a Good flag
    */
@@ -322,14 +322,14 @@ public class Flag implements Comparable<Flag> {
    */
   public boolean moreSignificantThan(Flag flag) {
     boolean result = false;
-    
+
     // NEEDED Flag is always most significant
     if (null == flag) {
       result = true;
     } else if (!this.equals(Flag.NEEDED)) {
       result = (compareTo(flag) > 0);
     }
-    
+
     return result;
   }
 
