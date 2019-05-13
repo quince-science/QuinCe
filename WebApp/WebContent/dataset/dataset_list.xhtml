@@ -22,15 +22,9 @@
         return false;
       }
 
-      function createDataReductionJob(id) {
+      function recalculate(id) {
         $('#datasetListForm\\:datasetId').val(id);
-        $('#datasetListForm\\:dataReductionLink').click();
-        return false;
-      }
-
-      function createAutoQcJob(id) {
-        $('#datasetListForm\\:datasetId').val(id);
-        $('#datasetListForm\\:autoQcLink').click();
+        $('#datasetListForm\\:recalculateLink').click();
         return false;
       }
 
@@ -87,7 +81,7 @@
         <p:commandLink id="reviewCalibrationDataLink" ajax="false" action="#{reviewCalibrationDataBean.start}"/>
 
         <h:inputHidden id="datasetId" value="#{dataSetsBean.datasetId}"/>
-        <p:commandLink id="dataReductionLink" ajax="false" action="#{dataSetsBean.submitDataReductionJob}"/>
+        <p:commandLink id="recalculateLink" ajax="false" action="#{dataSetsBean.recalculate}"/>
         <p:commandLink id="autoQcLink" ajax="false" action="#{dataSetsBean.submitAutoQcJob}"/>
         <p:commandLink id="submitLink" ajax="false" action="#{dataSetsBean.submitForApproval}"/>
         <p:commandLink id="approveLink" ajax="false" action="#{dataSetsBean.approve}"/>
@@ -149,8 +143,8 @@
               <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
                 <h:graphicImage value="/resources/image/calibration.svg" styleClass="actionIcon" alt="Calibration" title="Calibration"/>
               </p:commandLink>
-              <p:commandLink onclick="createDataReductionJob(#{dataset.id})">
-                <h:graphicImage value="/resources/image/calculate.svg" styleClass="actionIcon" alt="Data Reduction" title="Data Reduction"/>
+              <p:commandLink onclick="recalculate(#{dataset.id})">
+                <h:graphicImage value="/resources/image/calculate.svg" styleClass="actionIcon" alt="Recalculate" title="Recalculate"/>
               </p:commandLink>
               <p:commandLink onclick="goToQc(#{dataset.id})">
                 <h:graphicImage value="/resources/image/qc.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
