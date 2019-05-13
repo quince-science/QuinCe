@@ -128,14 +128,25 @@ public class DataSetDataDB {
   private static final String STORE_MEASUREMENT_VALUE_STATEMENT = "INSERT INTO "
     + "measurement_values (measurement_id, variable_id, sensor_value_id) "
     + "VALUES (?, ?, ?)";
-  
+
   /**
    * Statement to store a data reduction result
    */
   private static final String STORE_DATA_REDUCTION_STATEMENT = "INSERT INTO "
     + "data_reduction (measurement_id, variable_id, calculation_values, "
     + "qc_flag, qc_message) VALUES (?, ?, ?, ?, ?)";
-  
+
+  private static final String DELETE_DATA_REDUCTION_STATEMENT = "DELETE FROM "
+    + "data_reduction WHERE measurement_id IN "
+    + "(SELECT id FROM measurements WHERE dataset_id = ?)";
+
+  private static final String DELETE_MEASUREMENT_VALUES_STATEMENT = "DELETE FROM "
+    + "measurement_values WHERE measurement_id IN "
+    + "(SELECT id FROM measurements WHERE dataset_id = ?)";
+
+  private static final String DELETE_MEASUREMENTS_STATEMENT = "DELETE FROM "
+    + "measurements WHERE dataset_id = ?";
+
   /**
    * The name of the ID column
    */
@@ -1167,7 +1178,8 @@ public class DataSetDataDB {
 
     try {
 
-      stmt = conn.prepareStatement(STORE_MEASUREMENT_STATEMENT, Statement.RETURN_GENERATED_KEYS);
+      stmt = conn.prepareStatement(STORE_MEASUREMENT_STATEMENT,
+        Statement.RETURN_GENERATED_KEYS);
 
       // Batch up all the measurements
       for (Measurement measurement : measurements) {
@@ -1205,7 +1217,9 @@ public class DataSetDataDB {
    * @throws DatabaseException If a database error occurs
    * @throws MissingParamException If any required parameters are missing
    */
-  public static List<Measurement> getMeasurements(Connection conn, Instrument instrument, long datasetId) throws MissingParamException, DatabaseException {
+  public static List<Measurement> getMeasurements(Connection conn,
+    Instrument instrument, long datasetId)
+      throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
@@ -1279,30 +1293,38 @@ public class DataSetDataDB {
       DatabaseUtils.closeStatements(stmt);
     }
   }
-  
+
+  /**
+   * Store the results of data reduction in the database
+   * @param conn A database connection
+   * @param values The calculation values for the data reduction, as extracted
+   *               from the sensor values
+   * @param dataReductionRecords The data reduction calculations
+   * @throws DatabaseException If the data cannot be stored
+   */
   public static void storeDataReduction(Connection conn,
       Collection<CalculationValue> values,
       List<DataReductionRecord> dataReductionRecords) throws DatabaseException {
-    
+
     PreparedStatement valueStmt = null;
     PreparedStatement dataReductionStmt = null;
-    
+
     try {
       valueStmt = conn.prepareStatement(STORE_MEASUREMENT_VALUE_STATEMENT);
-      
+
       // First the used sensor values
       for (CalculationValue value : values) {
         for (long id : value.getUsedSensorValueIds()) {
           valueStmt.setLong(1, value.getMeasurementId());
           valueStmt.setLong(2, value.getVariableId());
           valueStmt.setLong(3, id);
-          
+
           valueStmt.addBatch();
         }
       }
-      
+
       valueStmt.executeBatch();
-      
+
       // And now the data reduction record
       dataReductionStmt = conn.prepareStatement(STORE_DATA_REDUCTION_STATEMENT);
       for (DataReductionRecord dataReduction : dataReductionRecords) {
@@ -1310,17 +1332,66 @@ public class DataSetDataDB {
         dataReductionStmt.setLong(2, dataReduction.getVariableId());
         dataReductionStmt.setString(3, dataReduction.getCalculationJson());
         dataReductionStmt.setInt(4, dataReduction.getQCFlag().getFlagValue());
-        dataReductionStmt.setString(5, StringUtils.collectionToDelimited(dataReduction.getQCMessages(), ";"));
-        
+        dataReductionStmt.setString(5,
+          StringUtils.collectionToDelimited(dataReduction.getQCMessages(), ";"));
+
         dataReductionStmt.addBatch();
       }
-      
+
       dataReductionStmt.executeBatch();
-      
+
     } catch (SQLException e) {
       throw new DatabaseException("Error while storing data reduction", e);
     } finally {
       DatabaseUtils.closeStatements(valueStmt);
+    }
+  }
+
+  /**
+   * Remove all measurement details from a data set, ready for them to be
+   * recalculated
+   * @param dataSource A data source
+   * @param datasetId The database ID of the data set
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   */
+  public static void deleteMeasurements(DataSource dataSource, long datasetId)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkZeroPositive(datasetId, "datasetId");
+
+    Connection conn = null;
+    PreparedStatement delDataReductionStmt = null;
+    PreparedStatement delMeasurementValuesStmt = null;
+    PreparedStatement delMeasurementsStmt = null;
+
+    try {
+      conn = dataSource.getConnection();
+      conn.setAutoCommit(false);
+
+      delDataReductionStmt = conn.prepareStatement(
+        DELETE_DATA_REDUCTION_STATEMENT);
+      delDataReductionStmt.setLong(1, datasetId);
+      delDataReductionStmt.execute();
+
+      delMeasurementValuesStmt = conn.prepareStatement(
+        DELETE_MEASUREMENT_VALUES_STATEMENT);
+      delMeasurementValuesStmt.setLong(1,  datasetId);
+      delMeasurementValuesStmt.execute();
+
+      delMeasurementsStmt = conn.prepareStatement(
+        DELETE_MEASUREMENTS_STATEMENT);
+      delMeasurementsStmt.setLong(1,  datasetId);
+      delMeasurementsStmt.execute();
+
+      conn.commit();
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while deleting measurements", e);
+    } finally {
+      DatabaseUtils.closeStatements(delMeasurementsStmt,
+        delMeasurementValuesStmt, delDataReductionStmt);
+      DatabaseUtils.closeConnection(conn);
     }
   }
 }
