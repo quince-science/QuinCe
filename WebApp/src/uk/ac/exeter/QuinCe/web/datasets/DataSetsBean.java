@@ -22,7 +22,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
-import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.jobs.files.ExtractDataSetJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -417,24 +416,11 @@ public class DataSetsBean extends BaseManagedBean {
   }
 
   /**
-   * Submit the data set for data reduction
+   * Recalculate the data set, starting with automatic QC
    */
-  public void submitDataReductionJob() {
+  public void recalculate() {
     try {
       DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_DATA_REDUCTION);
-      Map<String, String> jobParams = new HashMap<String, String>();
-      jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(datasetId));
-      JobManager.addJob(getDataSource(), getUser(), DataReductionJob.class.getCanonicalName(), jobParams);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
-
-  /**
-   * Submit the data set for automatic QC
-   */
-  public void submitAutoQcJob() {
-    try {
       Map<String, String> jobParams = new HashMap<String, String>();
       jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(datasetId));
       JobManager.addJob(getDataSource(), getUser(), AutoQCJob.class.getCanonicalName(), jobParams);
