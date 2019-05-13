@@ -303,8 +303,12 @@ def upload_to_copernicus(ftp_config,server,dataset):
 
         except Exception as e:
           logging.error('No response from CMEMS: ', exc_info=True)
-          # error += 'No response from CMEMS: ' + str(e)
-########### update database with upload failed and comment. 
+          error_msg = "No CMEMS-response"
+          c.execute("UPDATE latest \
+            SET uploaded = -1, comment = ? \
+            WHERE dnt_file = ?", 
+            [error_msg, local_folder])
+          conn.commit()
 
       except Exception as e:
         logging.error('Uploading DNT failed: ', exc_info=True)
@@ -474,12 +478,16 @@ def sql_commit(nc_dict,table="latest"):
         else:
           logging.info(f'Updating: {key}')
           c.execute("UPDATE latest SET \
-            hashsum=?,filepath=?,nc_date=?,uploaded=?,ftp_filepath=?,dnt_file=?,comment=? WHERE filename = ?",\
-            (nc_dict[key]['hashsum'], nc_dict[key]['filepath'], nc_dict[key]['date'], uploaded, None, None, None, key))
+            hashsum=?,filepath=?,nc_date=?,uploaded=?,ftp_filepath=?,\
+            dnt_file=?,comment=? WHERE filename = ?",\
+            (nc_dict[key]['hashsum'], nc_dict[key]['filepath'],
+            nc_dict[key]['date'], uploaded, None, None, None, key))
         conn.commit()
       else:
         logging.debug(f'Adding new entry {key}')
-        c.execute("INSERT INTO latest(filename,hashsum,filepath,nc_date,uploaded,ftp_filepath,dnt_file,comment) \
+        c.execute("INSERT INTO latest \
+          (filename,hashsum,filepath,nc_date,uploaded,\
+          ftp_filepath,dnt_file,comment) \
           VALUES (?,?,?,?,?,?,?,?)",(
           key, 
           nc_dict[key]['hashsum'], 
