@@ -437,7 +437,7 @@ public class SensorsConfiguration {
     }
     return result;
   }
-  
+
   /**
    * Get the list of {@link SensorType} objects corresponding to the supplied
    * list of names
@@ -450,7 +450,7 @@ public class SensorsConfiguration {
     for (String typeName : typeNames) {
       result.add(getSensorType(typeName));
     }
-    
+
     return result;
   }
 
@@ -488,9 +488,9 @@ public class SensorsConfiguration {
    * @return {@code true} if any variable requires the SensorType; {@code false} if not
    * @throws SensorConfigurationException If the sensor configuration is internally inconsistent
    */
-  public boolean requiredForVariable(SensorType sensorType, 
+  public boolean requiredForVariable(SensorType sensorType,
     InstrumentVariable variable) throws SensorConfigurationException {
-    
+
     boolean required = false;
 
     List<SensorType> variableSensorTypes = variable.getAllSensorTypes();
@@ -501,10 +501,10 @@ public class SensorsConfiguration {
       } else if (varSensorType.dependsOnOtherType()) {
         try {
           SensorType dependsOnType = getSensorType(varSensorType.getDependsOn());
-          
+
           // Does this type depend on us?
           if (dependsOnType.equalsIncludingRelations(sensorType)) {
-            
+
             // Yes. Is there a Depends Question? If so, it's not specifically required.
             // Other checks later in processing will see if the question has been answered
             if (!varSensorType.hasDependsQuestion()) {
