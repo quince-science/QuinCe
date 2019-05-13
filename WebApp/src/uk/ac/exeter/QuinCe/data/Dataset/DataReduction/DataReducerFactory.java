@@ -20,7 +20,7 @@ public class DataReducerFactory {
    * Get the Data Reducer for a given variable and initialise it
    * @param variable The variable
    * @return The Data Reducer
-   * @throws DataReductionException If the reducer cannot be retreived 
+   * @throws DataReductionException If the reducer cannot be retreived
    */
   public static DataReducer getReducer(
       Connection conn, Instrument instrument, InstrumentVariable variable,
@@ -28,7 +28,7 @@ public class DataReducerFactory {
       List<Measurement> allMeasurements,
       DateColumnGroupedSensorValues groupedSensorValues)
       throws DataReductionException {
-    
+
     DataReducer reducer;
 
     try {
@@ -44,7 +44,7 @@ public class DataReducerFactory {
     } catch (Exception e) {
       throw new DataReductionException("Cannot initialise data reducer", e);
     }
-      
+
     return reducer;
   }
 }
