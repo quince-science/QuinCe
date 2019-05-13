@@ -19,21 +19,21 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 public class CalculationValue {
 
   private final long measurementId;
-  
+
   private final long variableId;
-  
+
   private TreeSet<Long> usedSensorValues;
-  
+
   private Double value;
-  
+
   private Flag qcFlag;
-  
+
   private List<String> qcMessages;
-  
+
   public CalculationValue(long measurementId, long variableId,
       TreeSet<Long> usedSensorValues, Double value,
     Flag qcFlag, List<String> qcMessages) {
-    
+
     this.measurementId = measurementId;
     this.variableId = variableId;
     this.usedSensorValues = usedSensorValues;
@@ -41,7 +41,7 @@ public class CalculationValue {
     this.qcFlag = qcFlag;
     this.qcMessages = qcMessages;
   }
-  
+
   /**
    * Determine whether or not this value is NaN
    * @return {@code true} if the value is NaN; {@code false} otherwise
@@ -49,7 +49,7 @@ public class CalculationValue {
   public boolean isNaN() {
     return value.isNaN();
   }
-  
+
   /**
    * Get the value
    * @return The value
@@ -73,7 +73,7 @@ public class CalculationValue {
   public List<String> getQCMessages() {
     return qcMessages;
   }
-  
+
   /**
    * Get the database IDs of the sensor values used to generate this
    * CalculationValue
@@ -82,15 +82,15 @@ public class CalculationValue {
   public TreeSet<Long> getUsedSensorValueIds() {
     return usedSensorValues;
   }
-  
+
   public long getMeasurementId() {
     return measurementId;
   }
-  
+
   public long getVariableId() {
     return variableId;
   }
-  
+
   /**
    * Get the value to be used in data reduction calculations from a given
    * set of sensor values
@@ -99,33 +99,33 @@ public class CalculationValue {
    */
   public static  CalculationValue get(Measurement measurement, SensorType sensorType,
     List<SensorValue> values) {
-    
+
     // TODO Make this more intelligent - handle fallbacks, averages, interpolation etc.
     // For now we're just averaging all the values we get.
-    
+
     TreeSet<Long> usedSensorValues = new TreeSet<Long>();
     Double finalValue = Double.NaN;
     Flag qcFlag = Flag.ASSUMED_GOOD;
     List<String> qcMessages = new ArrayList<String>();
-    
+
     if (null == values) {
       qcFlag = Flag.BAD;
       qcMessages.add("Missing " + sensorType.getName());
     } else {
-    
+
       Double valueTotal = 0.0;
       int count = 0;
-    
+
       for (SensorValue value : values) {
         if (!value.isNaN()) {
           valueTotal += value.getDoubleValue();
           count++;
-          
+
           usedSensorValues.add(value.getId());
-          
+
           // Update the QC flag to be applied to the overall value
           if (value.getUserQCFlag().equals(Flag.NEEDED)) {
-            
+
             if (!qcFlag.equals(Flag.NEEDED)) {
               qcFlag = Flag.NEEDED;
               qcMessages = new ArrayList<String>();
@@ -140,7 +140,7 @@ public class CalculationValue {
           }
         }
       }
-      
+
       if (count == 0) {
         qcFlag = Flag.BAD;
         qcMessages = new ArrayList<String>(1);
@@ -149,39 +149,39 @@ public class CalculationValue {
         finalValue = valueTotal / count;
       }
     }
-    
+
     return new CalculationValue(measurement.getId(),
         measurement.getVariable().getId(),usedSensorValues,
         finalValue, qcFlag, qcMessages);
   }
-  
+
   /**
    * Sum the value of a number of CalculationValue objects, producing a new object.
    * The {@code usedSensorValues} of the result will be the combined list from
    * both input values. The QC flag will be the most significant flag, and the
    * messages will also be combined.
-   * 
+   *
    * {@code null} values are ignored
-   * 
+   *
    * @param value1 The first value
    * @param value2 The second value
    * @return The summed value
    */
   public static CalculationValue sum(CalculationValue... values) {
     Double sum = 0.0;
-    
+
     long measurementId = values[0].measurementId;
     long variableId = values[0].variableId;
-    
+
     for (CalculationValue cv : values) {
       if (null != cv) {
         sum += cv.value;
       }
     }
-    
+
     return makeCombinedCalculationValue(measurementId, variableId, sum, values);
   }
-  
+
   /**
    * Calculate the mean value of a number of CalculationValue objects, producing a new object.
    * The {@code usedSensorValues} of the result will be the combined list from
@@ -189,7 +189,7 @@ public class CalculationValue {
    * messages will also be combined.
    *
    * {@code null} values are ignored
-   * 
+   *
    * @param value1 The first value
    * @param value2 The second value
    * @return The summed value
@@ -197,7 +197,7 @@ public class CalculationValue {
   public static CalculationValue mean(CalculationValue... values) {
     Double sum = 0.0;
     int count = 0;
-    
+
     long measurementId = values[0].measurementId;
     long variableId = values[0].variableId;
 
@@ -207,15 +207,15 @@ public class CalculationValue {
         count++;
       }
     }
-    
+
     return makeCombinedCalculationValue(measurementId, variableId,
         sum / count, values);
   }
-  
+
   /**
    * Create a new CalculationValue by combining the sensor values, QC flag
    * and QC messages from both values and setting the value to that specified
-   * 
+   *
    * @param value1 The first value object
    * @param value2 The second value object
    * @param newValue The value for the new object
@@ -227,7 +227,7 @@ public class CalculationValue {
     TreeSet<Long> newSensorValues = new TreeSet<Long>();
     Flag newQcFlag = Flag.GOOD;
     List<String> newQcMessages = new ArrayList<String>();
-    
+
     for (CalculationValue cv : valueObjects) {
       if (null != cv) {
         newSensorValues.addAll(cv.usedSensorValues);
@@ -237,7 +237,7 @@ public class CalculationValue {
         newQcMessages.addAll(cv.qcMessages);
       }
     }
-    
+
     return new CalculationValue(measurementId, variableId, newSensorValues,
         newValue, newQcFlag, newQcMessages);
   }

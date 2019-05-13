@@ -123,10 +123,10 @@ public abstract class CalibrationDB {
   public CalibrationSet getMostRecentCalibrations(DataSource dataSource,
       long instrumentId, LocalDateTime date) throws CalibrationException,
       DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException {
-    
+
     CalibrationSet result = null;
     Connection conn = null;
-    
+
     try {
       conn = dataSource.getConnection();
       result = getMostRecentCalibrations(conn, instrumentId, date);
@@ -135,7 +135,7 @@ public abstract class CalibrationDB {
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
-    
+
     return result;
   }
 

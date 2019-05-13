@@ -115,22 +115,22 @@ public class DataReductionJob extends Job {
 
       // Cached data reducer instances
       Map<InstrumentVariable, DataReducer> reducers = new HashMap<InstrumentVariable, DataReducer>();
-      
+
       // Storage of values to be written to the database
       List<CalculationValue> calculationValuesToStore = new ArrayList<CalculationValue>();
       List<DataReductionRecord> dataReductionRecords = new ArrayList<DataReductionRecord>(allMeasurements.size());
-      
+
       // Process each measurement individually
       for (Measurement measurement : allMeasurements) {
-        
+
         // Only process true measurements (not internal calibrations etc
         if (isVariableMeasurement(instrument, measurement)) {
-        
+
           // Get the value to be used in calculation for each sensor type
           Map<SensorType, CalculationValue> calculationValues =
               new HashMap<SensorType, CalculationValue>();
 
-          
+
           // TODO This will have to be more intelligent - allowing
           // retrieval of values before and after the measurement time
           // for interpolation etc.
@@ -138,39 +138,39 @@ public class DataReductionJob extends Job {
           // Get all the sensor values for the measurement time
           Map<SensorType, List<SensorValue>> values =
             groupedSensorValues.get(measurement.getTime());
-          
-          
+
+
           // Loop through each sensor type
           for (SensorType sensorType : values.keySet()) {
-            
+
             if (!sensorType.isSystemType()) {
               List<SensorValue> sensorValues = values.get(sensorType);
-              
+
               calculationValues.put(
                 sensorType, CalculationValue.get(measurement, sensorType, sensorValues));
             }
           }
-          
+
           DataReducer reducer = reducers.get(measurement.getVariable());
           if (null == reducer) {
             reducer = DataReducerFactory.getReducer(conn, instrument,
                 measurement.getVariable(), calibrationSet, allMeasurements,
                 groupedSensorValues);
-            
+
             reducers.put(measurement.getVariable(), reducer);
           }
-          
+
           DataReductionRecord dataReductionRecord = reducer.performDataReduction(
             instrument, measurement, calculationValues);
-          
+
           calculationValuesToStore.addAll(calculationValues.values());
-          dataReductionRecords.add(dataReductionRecord);          
+          dataReductionRecords.add(dataReductionRecord);
         }
       }
 
       DataSetDataDB.storeDataReduction(conn, calculationValuesToStore, dataReductionRecords);
 
-      
+
       // If the thread was interrupted, undo everything
       if (thread.isInterrupted()) {
         conn.rollback();
@@ -239,19 +239,19 @@ public class DataReductionJob extends Job {
   public String getJobName() {
     return jobName;
   }
-  
+
   /**
-   * Determines whether or not a measurement 
+   * Determines whether or not a measurement
    * @param instrument
    * @param measurement
    * @return
    */
   private boolean isVariableMeasurement(Instrument instrument,
       Measurement measurement) {
-    
+
     RunTypeCategory runTypeCategory =
         instrument.getRunTypeCategory(measurement.getRunType());
-    
+
     return runTypeCategory.isMeasurementType() &&
         runTypeCategory.getDescription().equals(measurement.getVariable().getName());
   }
