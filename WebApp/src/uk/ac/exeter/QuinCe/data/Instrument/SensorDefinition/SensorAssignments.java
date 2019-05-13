@@ -160,7 +160,7 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
   public boolean isAssigned(SensorType sensorType) {
     return isAssigned(sensorType, false, false);
   }
-  
+
   /**
    * See if a SensorType has been assigned. Optionally only check for
    * primary assignments. Check children or siblings as appropriate.
@@ -311,24 +311,24 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
     return dependents;
   }
-  
+
   /**
    * Get the Sensor Type that the given type depends on, if there is such a type.
    * If there's a Depends Question, one of the assignments must have answered
    * {@code true}. Returns {@code null} if the supplied Sensor Type does
    * not depend on another Sensor Type.
-   * 
+   *
    * @param baseType The originating Sensor Type
    * @return The type that the baseType depends on
    * @throws SensorTypeNotFoundException If the sensor configuration is inconsistent
    */
   public SensorType getDependsOn(SensorType baseType) throws SensorTypeNotFoundException {
     SensorType result = null;
-    
+
     if (baseType.dependsOnOtherType()) {
 
       SensorType dependsOnType = getSensorConfig().getSensorType(baseType.getDependsOn());
-      
+
       if (!baseType.hasDependsQuestion()) {
         result = dependsOnType;
       } else {
@@ -341,10 +341,10 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
           }
         }
       }
-      
-      
+
+
     }
-    
+
     return result;
   }
 

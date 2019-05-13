@@ -25,7 +25,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   private static final double PASCALS_TO_ATMOSPHERES = 0.00000986923266716013;
 
   private static List<String> calculationParameterNames;
-  
+
   static {
     calculationParameterNames = new ArrayList<String>(8);
     calculationParameterNames.add("Equilibrator Pressure");
@@ -38,11 +38,11 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     calculationParameterNames.add("pCO₂ SST");
     calculationParameterNames.add("fCO₂");
   }
-  
+
   public UnderwayMarinePco2Reducer(List<Measurement> allMeasurements,
       DateColumnGroupedSensorValues groupedSensorValues,
       CalibrationSet calibrationSet) {
-    
+
     super(allMeasurements, groupedSensorValues, calibrationSet);
   }
 
@@ -50,9 +50,9 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   protected void doCalculation(Instrument instrument, Measurement measurement,
       Map<SensorType, CalculationValue> sensorValues,
       DataReductionRecord record) throws Exception {
-    
+
     Set<SensorType> requiredSensorTypes = getRequiredSensorTypes(instrument.getSensorAssignments());
-    
+
     SensorType xH2OSensorType = getSensorType("xH₂O in gas");
     SensorType co2SensorType = getSensorType("CO₂ in gas");
 
@@ -61,20 +61,20 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
       trueXH2O = applyValueCalibration(measurement,
         xH2OSensorType, sensorValues.get(xH2OSensorType), false);
     }
-    
+
     Double intakeTemperature = getValue(sensorValues, "Intake Temperature");
     Double salinity = getValue(sensorValues, "Salinity");
     Double equilibratorTemperature = getValue(sensorValues, "Equilibrator Temperature");
     Double equilibratorPressure = getEquilibratorPressure(requiredSensorTypes, sensorValues).getValue();
     Double co2InGas = getValue(sensorValues, "CO₂ in gas");
-    
+
     Double co2Dried = calcDriedCo2(co2InGas, trueXH2O);
     Double co2Calibrated = applyValueCalibration(measurement, co2SensorType, co2Dried, true);
     Double pH2O = calcPH2O(salinity, equilibratorTemperature);
     Double pCo2TEWet = calcPco2TEWet(co2Calibrated, equilibratorPressure, pH2O);
     Double pCO2SST = calcPco2SST(pCo2TEWet, equilibratorTemperature, intakeTemperature);
     Double fCO2 = calcFco2SST(pCO2SST, co2Calibrated, equilibratorPressure, equilibratorTemperature);
-    
+
     // Store the calculated values
     record.put("Equilibrator Pressure", equilibratorPressure);
     record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
@@ -103,7 +103,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     double kelvin = eqt + 273.15;
     return Math.exp(24.4543 - 67.4509 * (100 / kelvin) - 4.8489 * Math.log(kelvin / 100) - 0.000544 * salinity);
   }
-  
+
   /**
    * Calculate dried CO2 using a moisture measurement
    * @param co2 The measured CO2 value
@@ -156,30 +156,30 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
 
     return pco2SST * Math.exp(((B + 2 * Math.pow(1 - co2Calibrated * 1e-6, 2) * delta) * eqpAtmospheres) / (82.0575 * kelvin));
   }
-  
+
   private CalculationValue getEquilibratorPressure(Set<SensorType> sensorTypes,
     Map<SensorType, CalculationValue> sensorValues) throws SensorTypeNotFoundException {
 
     CalculationValue absolute = null;
     CalculationValue differential = null;
-    
+
     // Get the Absolute equilibrator pressure
     SensorType absoluteSensorType = getSensorType("Equilibrator Pressure (absolute)");
     if (sensorTypes.contains(absoluteSensorType)) {
       absolute = sensorValues.get(absoluteSensorType);
     }
-    
+
     // Now the differential, with calculation to ambient pressure
     SensorType differentialSensorType = getSensorType("Equilibrator Pressure (differential)");
     SensorType ambientSensorType = getSensorType("Ambient Pressure");
-    
+
     if (sensorTypes.contains(differentialSensorType)) {
       CalculationValue differentialPressure = sensorValues.get(differentialSensorType);
       CalculationValue ambientPressure = sensorValues.get(ambientSensorType);
-      
+
       differential = CalculationValue.sum(ambientPressure, differentialPressure);
     }
-    
+
     return CalculationValue.mean(absolute, differential);
   }
 

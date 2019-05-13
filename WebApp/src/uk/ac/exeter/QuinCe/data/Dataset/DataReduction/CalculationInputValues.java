@@ -12,30 +12,30 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  * Class to hold the values to be used in a calculation. Generated
  * by a Data Reducer to create a single value for each required sensor type,
  * having performed averaging/interpolation as required.
- * 
+ *
  * The class also holds a QC flag and message, indicating the most significant
  * flag gathered from all the source sensor values.
- * 
+ *
  * @author Steve Jones
  *
  */
 public class CalculationInputValues {
-  
+
   /**
    * The sensor type values to be used for the calculation
    */
   private HashMap<String, Double> values;
-  
+
   /**
    * The most significant QC flag for each sensor type
    */
   private HashMap<String, Flag> qcFlags;
-  
+
   /**
    * The QC messages for each sensor type
    */
   private HashMap<String, List<String>> qcMessages;
-  
+
   /**
    * Simple constructor
    */
@@ -44,7 +44,7 @@ public class CalculationInputValues {
     this.qcFlags = new HashMap<String, Flag>();
     this.qcMessages = new HashMap<String, List<String>>();
   }
-  
+
   /**
    * Set the value and QC details for a sensor type
    * @param sensorType The sensor type name
@@ -74,7 +74,7 @@ public class CalculationInputValues {
     messageList.add(qcMessage);
     put(sensorType, value, qcFlag, messageList);
   }
-  
+
   /**
    * Get a list of the sensor types that have a NaN value. Returns
    * an empty list if there are no NaN values
@@ -82,20 +82,20 @@ public class CalculationInputValues {
    */
   public List<String> getNaNs() {
     List<String> nanSensorTypes = new ArrayList<String>();
-    
+
     for (Map.Entry<String, Double> entry : values.entrySet()) {
       if (entry.getValue().isNaN()) {
         nanSensorTypes.add(entry.getKey());
       }
     }
-    
+
     return nanSensorTypes;
   }
-  
+
   @Override
   public String toString() {
     StringBuilder string = new StringBuilder();
-    
+
     for (String sensorType : values.keySet()) {
       string.append(sensorType);
       string.append(": ");
@@ -106,7 +106,7 @@ public class CalculationInputValues {
       string.append(StringUtils.collectionToDelimited(qcMessages.get(sensorType)));
       string.append('\n');
     }
-    
+
     return string.toString();
   }
 }
