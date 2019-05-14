@@ -77,10 +77,7 @@ public class DataSetDB {
         + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
         + "d.status_date, d.nrt, d.properties, d.last_touched, " // 9
         + "COALESCE(d.messages_json, '[]') " // 10
-        + "FROM dataset d "
-        + "LEFT JOIN dataset_data dd ON d.id = dd.dataset_id "
-        + "LEFT JOIN equilibrator_pco2 c ON c.measurement_id = dd.id "
-        + "WHERE d.");
+        + "FROM dataset d WHERE d.");
 
     sql.append(whereField);
     sql.append(" = ? GROUP BY d.id ORDER BY d.start ASC");
