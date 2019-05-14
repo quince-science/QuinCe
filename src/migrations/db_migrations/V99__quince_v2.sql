@@ -206,3 +206,120 @@ ALTER TABLE file_column DROP COLUMN sensor_type_old;
 
 -- Remove the post_calibrated field - no longer used
 ALTER TABLE file_column DROP COLUMN post_calibrated;
+
+
+-- Add ship speed and direction sensors
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('Ship Speed', 'Other', NULL, NULL, NULL, 0);
+
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('Ship Course', 'Other', NULL, NULL, NULL, 0);
+
+-- Add wind speed and direction sensors. Speeds can be
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('Wind Speed', 'Other', NULL, NULL, NULL, 0);
+
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('Wind Direction (absolute)', 'Other', NULL, NULL, NULL, 0);
+
+INSERT INTO sensor_types (name, vargroup, parent, depends_on, depends_question, internal_calibration)
+  VALUES ('Wind Direction (relative)', 'Other', NULL, NULL, NULL, 0);
+
+CREATE TABLE sensor_values (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  dataset_id INT NOT NULL,
+  file_column INT NOT NULL,
+  date BIGINT(20) NOT NULL,
+  value VARCHAR(100) NULL,
+  auto_qc TEXT,
+  user_qc_flag SMALLINT(2) DEFAULT -1000,
+  user_qc_message VARCHAR(255),
+  CONSTRAINT SENSORVALUE_DATASET
+    FOREIGN KEY (dataset_id)
+    REFERENCES dataset (id)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+-- Remove value_column from file_column table - no longer used
+ALTER TABLE file_column DROP COLUMN value_column;
+
+
+-- The category_code field is now an INT that either references
+-- a varialbe in the variables table, or a special value
+
+ALTER TABLE run_type ADD COLUMN new_category_code INT NOT NULL AFTER `category_code`;
+UPDATE run_type SET new_category_code = -1 WHERE category_code = 'IGN';
+UPDATE run_type SET new_category_code = -2 WHERE category_code = 'ALIAS';
+UPDATE run_type SET new_category_code = -3 WHERE category_code = 'EXT';
+UPDATE run_type SET new_category_code =
+  (SELECT id FROM variables WHERE name='Underway Marine pCO₂') WHERE category_code = 'MCO2';
+
+ALTER TABLE run_type DROP COLUMN category_code;
+ALTER TABLE run_type CHANGE COLUMN `new_category_code` `category_code` INT NOT NULL;
+
+
+
+
+
+
+
+
+
+
+-- Changes for the new data reduction scheme
+CREATE TABLE measurements (
+  id BIGINT(20) NOT NULL AUTO_INCREMENT,
+  dataset_id INT NOT NULL,
+  variable_id INT NOT NULL,
+  date BIGINT(20) NOT NULL,
+  longitude DOUBLE NOT NULL,
+  latitude DOUBLE NOT NULL,
+  run_type VARCHAR(45) NULL,
+  PRIMARY KEY (id),
+  INDEX measurement_dataset_idx (dataset_id ASC),
+  CONSTRAINT measurement_dataset
+    FOREIGN KEY (dataset_id)
+    REFERENCES dataset (id)
+    ON DELETE RESTRICT
+    ON UPDATE NO ACTION);
+
+CREATE TABLE measurement_values (
+  measurement_id BIGINT(20) NOT NULL,
+  variable_id INT(11) NOT NULL,
+  sensor_value_id BIGINT(20) NOT NULL,
+  PRIMARY KEY (measurement_id, variable_id, sensor_value_id),
+  INDEX MEASVAL_MEASUREMENT_idx (measurement_id ASC),
+  CONSTRAINT MEASVAL_MEASUREMENT
+    FOREIGN KEY (measurement_id)
+    REFERENCES measurements (id)
+    ON DELETE RESTRICT
+    ON UPDATE RESTRICT,
+  CONSTRAINT MEASVAL_VARIABLE
+    FOREIGN KEY (variable_id)
+    REFERENCES variables (id)
+    ON DELETE RESTRICT
+    ON UPDATE RESTRICT,
+  CONSTRAINT MEASVAL_SENSORVALUE
+    FOREIGN KEY (sensor_value_id)
+    REFERENCES sensor_values (id)
+    ON DELETE RESTRICT
+    ON UPDATE RESTRICT);
+
+CREATE TABLE data_reduction (
+  measurement_id BIGINT(20) NOT NULL,
+  variable_id INT(11) NOT NULL,
+  calculation_values MEDIUMTEXT NOT NULL,
+  qc_flag SMALLINT(2) NOT NULL,
+  qc_message TEXT NULL,
+  PRIMARY KEY (measurement_id, variable_id),
+  INDEX datareduction_variable_idx (variable_id ASC),
+  CONSTRAINT DATAREDUCTION_MEASUREMENT
+    FOREIGN KEY (measurement_id)
+    REFERENCES measurements (id)
+    ON DELETE RESTRICT
+    ON UPDATE NO ACTION,
+  CONSTRAINT DATAREDUCTION_VARIABLE
+    FOREIGN KEY (variable_id)
+    REFERENCES variables (id)
+    ON DELETE RESTRICT
+    ON UPDATE NO ACTION);
