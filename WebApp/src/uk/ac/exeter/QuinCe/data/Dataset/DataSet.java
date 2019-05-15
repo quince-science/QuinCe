@@ -184,6 +184,11 @@ public class DataSet {
   private boolean nrt = false;
 
   /**
+   * The number of NEEDED flags to be processed by the user
+   */
+  private int needsFlagCount = -1;
+
+  /**
    * Messages from jobs handling this data set
    */
   private ArrayList<Message> messages = new ArrayList<Message>();
@@ -218,7 +223,7 @@ public class DataSet {
   protected DataSet(long id, long instrumentId, String name,
       LocalDateTime start, LocalDateTime end, int status, LocalDateTime statusDate,
       boolean nrt, Properties properties, LocalDateTime lastTouched,
-      List<Message> messages) {
+      int needsFlagCount, List<Message> messages) {
     this.id = id;
     this.instrumentId = instrumentId;
     this.name = name;
@@ -229,6 +234,7 @@ public class DataSet {
     this.nrt = nrt;
     this.properties = properties;
     this.lastTouched = lastTouched;
+    this.needsFlagCount = needsFlagCount;
     this.messages = new ArrayList<Message>(messages);
   }
 
@@ -553,6 +559,15 @@ public class DataSet {
    */
   public boolean isNrt() {
     return nrt;
+  }
+
+  /**
+   * Get the number of NEEDED flags to be processed
+   * by the user
+   * @return The number of NEEDED flags
+   */
+  public int getNeedsFlagCount() {
+    return needsFlagCount;
   }
 
   @Override
