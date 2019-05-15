@@ -88,8 +88,6 @@ public class DataSetDB {
     sql.append(whereField);
     sql.append(" = ? GROUP BY d.id ORDER BY d.start ASC");
 
-    System.out.println(sql.toString());
-
     return sql.toString();
   }
 
