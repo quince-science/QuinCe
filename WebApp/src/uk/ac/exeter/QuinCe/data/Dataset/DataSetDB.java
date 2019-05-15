@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -76,11 +77,18 @@ public class DataSetDB {
     StringBuilder sql = new StringBuilder("SELECT "
         + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
         + "d.status_date, d.nrt, d.properties, d.last_touched, " // 9
-        + "COALESCE(d.messages_json, '[]') " // 10
-        + "FROM dataset d WHERE d.");
+        + "COALESCE(d.messages_json, '[]'), " // 10
+        + "COUNT(sv.user_qc_flag) "
+        + "FROM dataset d "
+        + "LEFT JOIN sensor_values sv "
+        + "ON (d.id = sv.dataset_id AND "
+        + "sv.user_qc_flag = " + Flag.VALUE_NEEDED + ") "
+        + "WHERE d.");
 
     sql.append(whereField);
     sql.append(" = ? GROUP BY d.id ORDER BY d.start ASC");
+
+    System.out.println(sql.toString());
 
     return sql.toString();
   }
@@ -181,8 +189,10 @@ public class DataSetDB {
       }
     }
 
+    int needsFlagCount = record.getInt(12);
+
     return new DataSet(id, instrumentId, name, start, end, status, statusDate,
-        nrt, properties, lastTouched, messages);
+        nrt, properties, lastTouched, needsFlagCount, messages);
   }
 
   /**

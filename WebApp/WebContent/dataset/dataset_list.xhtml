@@ -121,6 +121,9 @@
               rendered="#{dataset.status ne DataSet.STATUS_ERROR}"
               value="#{dataset.statusName}"
             />
+            <ui:fragment rendered="#{dataset.status eq DataSet.STATUS_USER_QC}">
+              (<h:outputText value="#{dataset.needsFlagCount}"/> to flag)
+            </ui:fragment>
             <p:commandButton
               rendered="#{dataset.status eq DataSet.STATUS_ERROR}"
               icon="ui-icon-notice"
