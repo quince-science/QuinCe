@@ -66,9 +66,9 @@ then
     echo "Delete all data related to instrument ID $instrument_id from database"
   fi
   mysql -u$db_user -p"$db_password" $db_name <<EOF
-    DELETE FROM equilibrator_pco2 WHERE measurement_id IN (SELECT id FROM dataset_data WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id));
-    -- DELETE FROM dataset_data WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id);
-    -- DELETE FROM calibration_data WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id);
+    DELETE FROM data_reduction WHERE measurement_id IN (SELECT id FROM measurements WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id));
+    DELETE FROM measurement_values WHERE measurement_id IN (SELECT id FROM measurements WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id));
+    DELETE FROM measurements WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id);
 
     DELETE FROM sensor_values WHERE dataset_id IN (SELECT id FROM dataset WHERE instrument_id = $instrument_id);
 
