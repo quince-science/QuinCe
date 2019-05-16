@@ -927,6 +927,35 @@ public class InstrumentDB {
 
   /**
    * Get the variables measured by an instrument
+   * @param instrumentId The instrument's database ID
+   * @return The variables
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   * @throws VariableNotFoundException If an invalid variable is configured for the instrument
+   */
+  public static List<InstrumentVariable> getVariables(long instrumentId)
+    throws MissingParamException, DatabaseException, VariableNotFoundException {
+
+    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+
+    DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
+    Connection conn = null;
+    List<InstrumentVariable> result = null;
+
+    try {
+      conn = dataSource.getConnection();
+      result = getVariables(conn, instrumentId);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting instrument variables", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the variables measured by an instrument
    * @param conn A database connection
    * @param instrumentId The instrument's database ID
    * @return The variables

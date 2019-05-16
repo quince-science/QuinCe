@@ -3,12 +3,17 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.primefaces.json.JSONArray;
 
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -192,6 +197,11 @@ public class DataSet {
    * Messages from jobs handling this data set
    */
   private ArrayList<Message> messages = new ArrayList<Message>();
+
+  /**
+   * The available field sets for this dataset
+   */
+  private Map<String, Long> fieldSets = null;
 
   /**
    * Constructor for all fields
@@ -568,6 +578,33 @@ public class DataSet {
    */
   public int getNeedsFlagCount() {
     return needsFlagCount;
+  }
+
+  /**
+   * Get the available field sets for this dataset. Builds the list once,
+   * then caches it
+   * @return The field sets
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   * @throws VariableNotFoundException If an invalid variable is configured for the instrument
+   */
+  public Map<String, Long> getFieldSets()
+    throws MissingParamException, VariableNotFoundException, DatabaseException {
+
+    if (null == fieldSets) {
+      fieldSets = new LinkedHashMap<String, Long>();
+      fieldSets.put(DataSetDataDB.SENSORS_FIELDSET_NAME,
+        DataSetDataDB.SENSORS_FIELDSET);
+
+      fieldSets.put(DataSetDataDB.DIAGNOSTICS_FIELDSET_NAME,
+        DataSetDataDB.DIAGNOSTICS_FIELDSET);
+
+      for (InstrumentVariable variable : InstrumentDB.getVariables(instrumentId)) {
+        fieldSets.put(variable.getName(), variable.getId());
+      }
+    }
+
+    return fieldSets;
   }
 
   @Override
