@@ -83,7 +83,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
   /**
    * The current table mode
    */
-  private String tableMode = null;
+  private long fieldSet = 0;
 
   /**
    * A Javascript array string containing the list of all row numbers in the current data file that can be
@@ -464,16 +464,16 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * Get the current table mode
    * @return The table mode
    */
-  public String getTableMode() {
-    return tableMode;
+  public long getFieldSet() {
+    return fieldSet;
   }
 
   /**
    * Set the table mode
-   * @param tableMode The table mode
+   * @param sensorsFieldset The table mode
    */
-  public void setTableMode(String tableMode) {
-    this.tableMode = tableMode;
+  public void setFieldSet(long fieldSet) {
+    this.fieldSet = fieldSet;
   }
 
   /**

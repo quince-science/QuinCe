@@ -104,12 +104,10 @@
     </p:dialog>
   </ui:define>
   <ui:define name="tableControls">
-      <p:selectOneButton value="#{manualQcBean.tableMode}" widgetVar="tableModeSelector" onchange="renderTableColumns()">
-        <f:selectItem itemLabel="Sensors" itemValue="sensors"/>
-        <f:selectItem itemLabel="Calculations" itemValue="calculations"/>
-        <f:selectItem itemLabel="Diagnostics" itemValue="diagnostics"/>
+      <p:selectOneMenu value="#{manualQcBean.fieldSet}" widgetVar="fieldSetSelector">
+        <f:selectItems value="#{manualQcBean.dataset.fieldSets}"/>
         <f:ajax process="@this" render="@none"/>
-      </p:selectOneButton>
+      </p:selectOneMenu>
   </ui:define>
   <ui:define name="selectionActions">
     <p:commandButton widgetVar="acceptQcButton" value="Accept Automatic QC" onclick="acceptAutoQc()" styleClass="inlineButton"/>
