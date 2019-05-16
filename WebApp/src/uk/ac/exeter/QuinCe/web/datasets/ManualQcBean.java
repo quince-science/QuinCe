@@ -99,12 +99,13 @@ public class ManualQcBean extends PlotPageBean {
    */
   @Override
   public void init() {
-    setTableMode("sensors");
+    setFieldSet(DataSetDataDB.SENSORS_FIELDSET);
   }
 
   @Override
   protected List<Long> loadRowIds() throws Exception {
-    return DataSetDataDB.getMeasurementIds(getDataSource(), getDatasetId());
+    //return DataSetDataDB.getMeasurementIds(getDataSource(), getDatasetId());
+    return new ArrayList<Long>();
   }
 
   @Override

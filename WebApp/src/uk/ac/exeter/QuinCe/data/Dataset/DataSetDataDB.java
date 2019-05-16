@@ -54,6 +54,26 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class DataSetDataDB {
 
   /**
+   * Field Set ID for sensor values
+   */
+  public static final long SENSORS_FIELDSET = -1;
+
+  /**
+   * Field set name for sensor values
+   */
+  public static final String SENSORS_FIELDSET_NAME = "Sensors";
+
+  /**
+   * Field Set ID for diagnostic values
+   */
+  public static final long DIAGNOSTICS_FIELDSET = -2;
+
+  /**
+   * Field set name for diagnostic values
+   */
+  public static final String DIAGNOSTICS_FIELDSET_NAME = "Diagnostics";
+
+  /**
    * Query to get all measurements for a data set
    */
   private static final String GET_ALL_MEASUREMENTS_QUERY = "SELECT * FROM dataset_data WHERE dataset_id = ? ORDER BY date ASC";
