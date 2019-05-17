@@ -42,8 +42,9 @@ public class DataSetDB {
    */
   private static final String ADD_DATASET_STATEMENT = "INSERT INTO dataset "
       + "(instrument_id, name, start, end, status, status_date, "
-      + "nrt, properties, last_touched, messages_json) "
-      + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 10
+      + "nrt, properties, last_touched, messages_json,"
+      + "min_longitude, max_longitude, min_latitude, max_latitude) "
+      + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 14
 
   /**
    * Statement to update a data set in the database
@@ -53,7 +54,8 @@ public class DataSetDB {
   private static final String UPDATE_DATASET_STATEMENT = "Update dataset set "
       + "instrument_id = ?, name = ?, start = ?, end = ?, status = ?, " // 5
       + "status_date = ?, nrt = ?, properties = ?, last_touched = ?, " // 9
-      + "messages_json = ? WHERE id = ?"; // 11
+      + "messages_json = ?, min_longitude = ?, max_longitude = ?, " // 12
+      + "min_latitude = ?, max_latitude = ? WHERE id = ?"; // 15
 
   /**
    * Statement to delete all records for a given dataset
@@ -76,9 +78,10 @@ public class DataSetDB {
   private static String makeGetDatasetsQuery(String whereField) {
     StringBuilder sql = new StringBuilder("SELECT "
         + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
-        + "d.status_date, d.nrt, d.properties, d.last_touched, " // 9
-        + "COALESCE(d.messages_json, '[]'), " // 10
-        + "COUNT(sv.user_qc_flag) "
+        + "d.status_date, d.nrt, d.properties, d.last_touched, " // 10
+        + "COALESCE(d.messages_json, '[]'), " // 11
+        + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude, " // 15
+        + "COUNT(sv.user_qc_flag) " // 16
         + "FROM dataset d "
         + "LEFT JOIN sensor_values sv "
         + "ON (d.id = sv.dataset_id AND "
@@ -187,10 +190,16 @@ public class DataSetDB {
       }
     }
 
-    int needsFlagCount = record.getInt(12);
+    double minLon = record.getDouble(12);
+    double maxLon = record.getDouble(13);
+    double minLat = record.getDouble(14);
+    double maxLat = record.getDouble(15);
+
+    int needsFlagCount = record.getInt(16);
 
     return new DataSet(id, instrumentId, name, start, end, status, statusDate,
-        nrt, properties, lastTouched, needsFlagCount, messages);
+        nrt, properties, lastTouched, needsFlagCount, messages,
+        minLon, minLat, maxLon, maxLat);
   }
 
   /**
@@ -276,8 +285,13 @@ public class DataSetDB {
         stmt.setNull(10, Types.VARCHAR);
       }
 
+      stmt.setDouble(11, dataSet.getMinLon());
+      stmt.setDouble(12, dataSet.getMaxLon());
+      stmt.setDouble(13, dataSet.getMinLat());
+      stmt.setDouble(14, dataSet.getMaxLat());
+
       if (DatabaseUtils.NO_DATABASE_RECORD != dataSet.getId()) {
-        stmt.setLong(11, dataSet.getId());
+        stmt.setLong(15, dataSet.getId());
       }
 
       stmt.execute();

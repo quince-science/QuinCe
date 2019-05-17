@@ -204,6 +204,26 @@ public class DataSet {
   private Map<String, Long> fieldSets = null;
 
   /**
+   * The minimum longitude
+   */
+  private double minLon = 0.0;
+
+  /**
+   * The maximum longitude
+   */
+  private double maxLon = 0.0;
+
+  /**
+   * The minimum latitude
+   */
+  private double minLat = 0.0;
+
+  /**
+   * The maximum latitiude
+   */
+  private double maxLat = 0.0;
+
+  /**
    * Constructor for all fields
    * @param id
    *    Data set's database ID
@@ -233,7 +253,8 @@ public class DataSet {
   protected DataSet(long id, long instrumentId, String name,
       LocalDateTime start, LocalDateTime end, int status, LocalDateTime statusDate,
       boolean nrt, Properties properties, LocalDateTime lastTouched,
-      int needsFlagCount, List<Message> messages) {
+      int needsFlagCount, List<Message> messages,
+      double minLon, double minLat, double maxLon, double maxLat) {
     this.id = id;
     this.instrumentId = instrumentId;
     this.name = name;
@@ -246,6 +267,10 @@ public class DataSet {
     this.lastTouched = lastTouched;
     this.needsFlagCount = needsFlagCount;
     this.messages = new ArrayList<Message>(messages);
+    this.minLon = minLon;
+    this.minLat = minLat;
+    this.maxLon = maxLon;
+    this.maxLat = maxLat;
   }
 
   /**
@@ -617,5 +642,68 @@ public class DataSet {
     }
 
     return result;
+  }
+
+  /**
+   * Set the dataset's geographical bounds
+   * @param minLon The minimum longitude
+   * @param maxLon The maximum longitude
+   * @param minLat The minimum latitude
+   * @param maxLat The maximum latitude
+   */
+  public void setBounds(double minLon, double minLat,
+    double maxLon, double maxLat) {
+
+    this.minLon = minLon;
+    this.maxLon = maxLon;
+    this.minLat = minLat;
+    this.maxLat = maxLat;
+
+  }
+
+  /**
+   * Get the geographical bounds of the dataset
+   * This is a list of six values:
+   *
+   * <ol>
+   *   <li>West</li>
+   *   <li>South</li>
+   *   <li>East</li>
+   *   <li>North</li>
+   *   <li>Middle longitude</li>
+   *   <li>Middle latitude</li>
+   * </ol>
+   *
+   * @return The dataset bounds
+   */
+  public List<Double> getBounds() {
+
+    List<Double> result = new ArrayList<Double>(6);
+
+    result.add(minLon);
+    result.add(minLat);
+    result.add(maxLon);
+    result.add(maxLat);
+
+    result.add((maxLon - minLon) / 2 + minLon);
+    result.add((maxLat - minLat) / 2 + minLat);
+
+    return result;
+  }
+
+  public double getMinLon() {
+    return minLon;
+  }
+
+  public double getMaxLon() {
+    return maxLon;
+  }
+
+  public double getMinLat() {
+    return minLat;
+  }
+
+  public double getMaxLat() {
+    return maxLat;
   }
 }
