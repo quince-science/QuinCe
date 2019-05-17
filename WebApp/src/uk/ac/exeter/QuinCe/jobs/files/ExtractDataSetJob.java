@@ -103,6 +103,11 @@ public class ExtractDataSetJob extends Job {
       LocalDateTime realStartTime = null;
       LocalDateTime realEndTime = dataSet.getEnd();
 
+      // Collect the data bounds
+      double minLon = Double.MAX_VALUE;
+      double maxLon = Double.MIN_VALUE;
+      double minLat = Double.MAX_VALUE;
+      double maxLat = Double.MIN_VALUE;
 
       for (DataFile file : files) {
         FileDefinition fileDefinition = file.getFileDefinition();
@@ -129,6 +134,13 @@ public class ExtractDataSetJob extends Job {
             if (null != fileDefinition.getLongitudeSpecification()) {
               try {
                 double longitude = file.getLongitude(line);
+                if (longitude < minLon) {
+                  minLon = longitude;
+                }
+                if (longitude > maxLon) {
+                  maxLon = longitude;
+                }
+
                 sensorValues.add(new SensorValue(dataSet.getId(),
                   FileDefinition.LONGITUDE_COLUMN_ID, time, String.valueOf(longitude)));
               } catch (PositionException e) {
@@ -139,6 +151,13 @@ public class ExtractDataSetJob extends Job {
             if (null != fileDefinition.getLongitudeSpecification()) {
               try {
                 double latitude = file.getLatitude(line);
+                if (latitude < minLat) {
+                  minLat = latitude;
+                }
+                if (latitude > maxLat) {
+                  maxLat = latitude;
+                }
+
                 sensorValues.add(new SensorValue(dataSet.getId(),
                   FileDefinition.LATITUDE_COLUMN_ID, time, String.valueOf(latitude)));
               } catch (PositionException e) {
@@ -183,6 +202,8 @@ public class ExtractDataSetJob extends Job {
       if (null != realEndTime) {
         dataSet.setEnd(realEndTime);
       }
+
+      dataSet.setBounds(minLon, minLat, maxLon, maxLat);
 
       // Trigger the Auto QC job
       dataSet.setStatus(DataSet.STATUS_AUTO_QC);
