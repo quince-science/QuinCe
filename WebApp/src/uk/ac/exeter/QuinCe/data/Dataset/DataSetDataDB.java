@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +24,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -43,6 +46,7 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.Variable;
 import uk.ac.exeter.QuinCe.web.VariableList;
+import uk.ac.exeter.QuinCe.web.datasets.QCColumnValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -166,6 +170,16 @@ public class DataSetDataDB {
 
   private static final String DELETE_MEASUREMENTS_STATEMENT = "DELETE FROM "
     + "measurements WHERE dataset_id = ?";
+
+  private static final String GET_QC_SENSOR_DATA_QUERY = "SELECT "
+    + "sv.id, sv.file_column, sv.date, sv.value, "
+    + "sv.auto_qc, sv.user_qc_flag, sv.user_qc_message, "
+    + "IF(COUNT(mv.sensor_value_id) > 0, TRUE, FALSE) "
+    + "FROM sensor_values sv "
+    + "LEFT JOIN measurement_values mv ON (sv.id = mv.sensor_value_id) "
+    + "WHERE sv.dataset_id = ? "
+    + "AND sv.file_column IN (" + DatabaseUtils.IN_PARAMS_TOKEN + ") "
+    + "GROUP BY sv.id, mv.sensor_value_id ORDER BY sv.date";
 
   /**
    * The name of the ID column
@@ -1413,5 +1427,87 @@ public class DataSetDataDB {
         delMeasurementValuesStmt, delDataReductionStmt);
       DatabaseUtils.closeConnection(conn);
     }
+  }
+
+  /**
+   * Load the data to be displayed in the QC table
+   * @param dataSource A data source
+   * @param datasetId The data set's database ID
+   * @param sensorIDs The database IDs of the sensors to be retrieved
+   * @return The table data
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   * @throws InvalidFlagException If a QC flag is invalid
+   * @throws RoutineException If an automatic QC result cannot be processed
+   */
+  public static LinkedHashMap<LocalDateTime, LinkedHashMap<Long, QCColumnValue>> getQCSensorData(
+    DataSource dataSource, long datasetId, List<Long> sensorIDs) throws MissingParamException, DatabaseException, InvalidFlagException, RoutineException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkPositive(datasetId, "datasetId");
+    MissingParam.checkMissing(sensorIDs, "sensorIDs", false);
+
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+    LinkedHashMap<LocalDateTime, LinkedHashMap<Long, QCColumnValue>> result =
+      new LinkedHashMap<LocalDateTime, LinkedHashMap<Long, QCColumnValue>>();
+
+    try {
+      conn = dataSource.getConnection();
+
+      String sql = GET_QC_SENSOR_DATA_QUERY.replaceAll(
+        DatabaseUtils.IN_PARAMS_TOKEN,
+        StringUtils.collectionToDelimited(sensorIDs, ","));
+
+      stmt = conn.prepareStatement(sql);
+      stmt.setLong(1, datasetId);
+
+      records = stmt.executeQuery();
+
+      LocalDateTime currentTime = null;
+      LinkedHashMap<Long, QCColumnValue> currentValues = null;
+
+      while (records.next()) {
+
+        long valueId = records.getLong(1);
+        long sensorId = records.getLong(2);
+        LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
+        Double sensorValue = StringUtils.doubleFromString(records.getString(4));
+        AutoQCResult autoQC = AutoQCResult.buildFromJson(records.getString(5));
+        Flag userQCFlag = new Flag(records.getInt(6));
+        String qcComment = records.getString(7);
+        boolean used = records.getBoolean(8);
+        // Lon/Lat are always used
+        if (sensorId == FileDefinition.LONGITUDE_COLUMN_ID ||
+            sensorId == FileDefinition.LATITUDE_COLUMN_ID) {
+
+          used = true;
+        }
+
+        if (!time.equals(currentTime)) {
+          if (null != currentTime) {
+            result.put(currentTime, currentValues);
+          }
+          currentTime = time;
+          currentValues = QCColumnValue.initMap(sensorIDs);
+        }
+
+        QCColumnValue value = new QCColumnValue(valueId, sensorValue, autoQC, userQCFlag, qcComment, used);
+        currentValues.put(sensorId, value);
+      }
+
+      // Last date entry
+      result.put(currentTime, currentValues);
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting sensor data", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
+    }
+
+    return result;
   }
 }

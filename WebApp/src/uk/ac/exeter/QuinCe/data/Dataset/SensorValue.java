@@ -9,6 +9,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineFlag;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Represents a single sensor value
@@ -152,12 +153,7 @@ public class SensorValue implements Comparable<SensorValue> {
    * @return The value as a Double
    */
   public Double getDoubleValue() {
-    Double result = Double.NaN;
-    if (null != value) {
-      result = Double.parseDouble(value.replaceAll(",", ""));
-    }
-
-    return result;
+    return StringUtils.doubleFromString(value);
   }
 
   /**

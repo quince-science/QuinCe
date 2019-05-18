@@ -1,10 +1,12 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
@@ -46,5 +48,36 @@ public class DataReducerFactory {
     }
 
     return reducer;
+  }
+
+  /**
+   * Get the calculation parameters for a given data reducer
+   * @param variable The variable for the data reducer
+   * @return The calculation parameter names
+   * @throws DataReductionException If the variable does not have a reducer
+   */
+  public static List<FileColumn> getCalculationParameterNames(
+    String variableName) throws DataReductionException {
+
+    DataReducer reducer;
+
+    switch (variableName) {
+    case "Underway Marine pCO₂": {
+      reducer = new UnderwayMarinePco2Reducer(null, null, null);
+      break;
+    }
+    default: {
+      throw new DataReductionException("Cannot find reducer for variable " + variableName);
+    }
+    }
+
+    List<FileColumn> result = new ArrayList<FileColumn>(
+      reducer.getCalculationParameterNames().size());
+
+    for (String name : reducer.getCalculationParameterNames()) {
+      result.add(new FileColumn(0, name, 0, null));
+    }
+
+    return result;
   }
 }

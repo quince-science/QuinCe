@@ -28,7 +28,7 @@ function drawPage() {
   //initPlot(1);
   //initPlot(2);
 
-  //drawTable();
+  drawTable();
 }
 
 function initPlot(index) {
@@ -90,6 +90,8 @@ function resizePlots() {
  * Show or hide columns as required.
  */
 function renderTableColumns() {
+
+/*	
   // ID
   jsDataTable.columns(0).visible(false, false);
 
@@ -108,6 +110,7 @@ function renderTableColumns() {
   }
 
   jsDataTable.columns.adjust();
+*/
 }
 
 /*
