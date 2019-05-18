@@ -660,4 +660,18 @@ public final class StringUtils {
 
     return csv.toString();
   }
+
+  /**
+   * Generate a Double value from a String, handling thousands separators
+   * @param value The string value
+   * @return The double value
+   */
+  public static Double doubleFromString(String value) {
+    Double result = Double.NaN;
+    if (null != value && value.trim().length() > 0) {
+      result = Double.parseDouble(value.replaceAll(",", ""));
+    }
+
+    return result;
+  }
 }
