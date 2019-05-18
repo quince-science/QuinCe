@@ -187,6 +187,8 @@ function makeJSDates(data) {
 function drawTable() {
   html = '<table id="dataTable" class="display compact nowrap" cellspacing="0" width="100%"><thead>';
 
+  var columnHeadings = JSON.parse($('#plotPageForm\\:columnHeadings').val());
+  
   columnHeadings.forEach(heading => {
     html += '<th>';
     html += heading;
@@ -247,8 +249,8 @@ function drawTable() {
         clickRowAction(data[0], event.shiftKey);
         }
       });
-    },
-    columnDefs: getColumnDefs()
+    }
+    //columnDefs: getColumnDefs()
   });
 
   renderTableColumns();
