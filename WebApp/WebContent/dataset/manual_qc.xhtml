@@ -106,7 +106,7 @@
   <ui:define name="tableControls">
       <p:selectOneMenu value="#{manualQcBean.fieldSet}" widgetVar="fieldSetSelector">
         <f:selectItems value="#{manualQcBean.dataset.fieldSets}"/>
-        <f:ajax process="@this" render="@none"/>
+        <f:ajax process="@this" render=":plotPageForm:columnHeadings"/>
       </p:selectOneMenu>
   </ui:define>
   <ui:define name="selectionActions">

@@ -23,7 +23,6 @@
     <h:outputScript name="script/plotPage.js"/>
     <ui:insert name="localHead"></ui:insert>
     <script>
-      var columnHeadings = #{sessionScope[beanName].tableHeadings};
       var variableGroups = #{sessionScope[beanName].variableGroups};
       var variableGroupNames = #{sessionScope[beanName].variableGroupNames};
       var variableCount = #{sessionScope[beanName].variableCount};
@@ -39,6 +38,7 @@
 
     <!-- General form for page-wide fixed data -->
     <h:form id="plotPageForm" method="post">
+      <h:inputHidden value="#{sessionScope[beanName].tableHeadings}" id="columnHeadings"/>
       <h:inputHidden value="#{sessionScope[beanName].tableRowIds}" id="tableRowIds"/>
       <h:inputHidden value="#{sessionScope[beanName].selectableRows}" id="selectableRows"/>
       <h:inputHidden value="#{sessionScope[beanName].dataBounds}" id="dataBounds"/>

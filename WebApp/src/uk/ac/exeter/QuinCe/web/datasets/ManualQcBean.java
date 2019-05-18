@@ -1,9 +1,13 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -11,20 +15,26 @@ import javax.faces.bean.SessionScoped;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
+import com.google.gson.Gson;
+
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecordFactory;
 import uk.ac.exeter.QuinCe.data.Calculation.CommentSet;
 import uk.ac.exeter.QuinCe.data.Calculation.CommentSetEntry;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.DiagnosticDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
+import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.PlotPageBean;
 import uk.ac.exeter.QuinCe.web.Variable;
 import uk.ac.exeter.QuinCe.web.VariableList;
@@ -51,26 +61,31 @@ public class ManualQcBean extends PlotPageBean {
   /**
    * The number of sensor columns
    */
+  @Deprecated
   private int sensorColumnCount = 0;
 
   /**
    * The number of calculation columns
    */
+  @Deprecated
   private int calculationColumnCount = 0;
 
   /**
    * The number of diagnostic columns
    */
+  @Deprecated
   private int diagnosticColumnCount = 0;
 
   /**
    * The column containing the auto QC flag
    */
+  @Deprecated
   private int autoFlagColumn = 0;
 
   /**
    * The column containing the manual QC flag
    */
+  @Deprecated
   private int userFlagColumn = 0;
 
   /**
@@ -95,6 +110,22 @@ public class ManualQcBean extends PlotPageBean {
   private String userComment;
 
   /**
+   * The basic list of table columns. This excludes Date/Time, Lon and Lat,
+   * and does not include the sub-columns (i.e. qc info)
+   */
+  private List<FileColumn> tableColumns;
+
+  /**
+   * The table content for the current field set
+   */
+  private LinkedHashMap<LocalDateTime, LinkedHashMap<Long, QCColumnValue>> tableData;
+
+  /**
+   * The list of times in the table data. Used for quick lookups by index
+   */
+  private List<LocalDateTime> tableTimes;
+
+  /**
    * Initialise the required data for the bean
    */
   @Override
@@ -104,74 +135,18 @@ public class ManualQcBean extends PlotPageBean {
 
   @Override
   protected List<Long> loadRowIds() throws Exception {
-    //return DataSetDataDB.getMeasurementIds(getDataSource(), getDatasetId());
-    return new ArrayList<Long>();
-  }
-
-  @Override
-  protected String buildTableHeadings() throws Exception {
-    List<String> dataHeadings = DataSetDataDB.getDatasetDataColumnNames(getDataSource(), getDataset());
-    sensorColumnCount = dataHeadings.size() - 4; // Skip id, date, lat, lon
-    List<String> calculationHeadings = CalculationDBFactory.getCalculationDB().getCalculationColumnHeadings();
-    calculationColumnCount = calculationHeadings.size();
-    List<String> diagnosticHeadings = DiagnosticDataDB.getDiagnosticSensorNames(getDataSource(), getDataset().getInstrumentId());
-    diagnosticColumnCount = diagnosticHeadings.size();
-
-    JSONArray headings = new JSONArray();
-
-    for (String heading : dataHeadings) {
-      headings.put(heading);
+    if (null == tableData) {
+      loadTableData();
     }
 
-    for (int i = 0; i < calculationHeadings.size(); i++) {
-      headings.put(calculationHeadings.get(i));
-    }
-
-    for (String heading : diagnosticHeadings) {
-      headings.put(heading);
-    }
-
-    headings.put("Automatic QC");
-    headings.put("Automatic QC Message");
-
-    // Columns are zero-based, so we don't need to add one to get to the auto flag column
-    autoFlagColumn = dataHeadings.size() + calculationHeadings.size() + diagnosticHeadings.size();
-
-    if (!getDataset().isNrt()) {
-      headings.put("Manual QC");
-      headings.put("Manual QC Message");
-      userFlagColumn = autoFlagColumn + 2;
-    } else {
-      userFlagColumn = -1;
-    }
-
-
-    return headings.toString();
+    return Stream.iterate(0L, n -> n + 1)
+       .limit(tableData.size() - 1)
+       .collect(Collectors.toList());
   }
 
   @Override
   protected String getScreenNavigation() {
     return NAV_PLOT;
-  }
-
-  @Override
-  protected String buildSelectableRows() throws Exception {
-    List<Long> ids = CalculationDBFactory.getCalculationDB().getSelectableMeasurementIds(getDataSource(), getDatasetId());
-
-    StringBuilder result = new StringBuilder();
-
-    result.append('[');
-
-    for (int i = 0; i < ids.size(); i++) {
-      result.append(ids.get(i));
-      if (i < ids.size() - 1) {
-        result.append(',');
-      }
-    }
-
-    result.append(']');
-
-    return result.toString();
   }
 
   @Override
@@ -181,100 +156,52 @@ public class ManualQcBean extends PlotPageBean {
 
   @Override
   protected String loadTableData(int start, int length) throws Exception {
-    List<DataSetRawDataRecord> datasetData = DataSetDataDB.getMeasurements(getDataSource(), getDataset(), start, length);
 
-    List<Long> measurementIds = new ArrayList<Long>(datasetData.size());
-    List<CalculationRecord> calculationData = new ArrayList<CalculationRecord>(datasetData.size());
-    for (DataSetRawDataRecord record : datasetData) {
-      measurementIds.add(record.getId());
-      CalculationRecord calcRecord = CalculationRecordFactory.makeCalculationRecord(getDatasetId(), record.getId());
-      CalculationDBFactory.getCalculationDB().loadCalculationValues(getDataSource(), calcRecord);
-      calculationData.add(calcRecord);
-    }
+    // ROw ID
+    // Time
+    // Lon
+    // Lon used
+    // Lon QD
+    // Lon needsFlag
+    // Lon commnet
+    // Lat
+    // Lat used
+    // Lat QD
+    // Lat needsFlag
+    // Lat commnet
 
-    List<String> diagnosticHeadings = DiagnosticDataDB.getDiagnosticSensorNames(getDataSource(), getDataset().getInstrumentId());
-    Map<Long, Map<String, Double>> diagnosticData = DiagnosticDataDB.getDiagnosticValues(getDataSource(), getDataset().getInstrumentId(), measurementIds, diagnosticHeadings);
+    // Table columns as above
+
+    // TODO Convert to GSON - I don't have the API here
 
     JSONArray json = new JSONArray();
 
-    int rowId = start - 1;
-    for (int i = 0; i < datasetData.size(); i++) {
-      rowId++;
-
-      DataSetRawDataRecord dsData = datasetData.get(i);
-      CalculationRecord calcData = calculationData.get(i);
+    for (int i = start; i < start + length; i++) {
 
       JSONObject obj = new JSONObject();
 
-      obj.put("DT_RowId", "row" + rowId);
+      obj.put("DT_RowId", "row" + i);
 
       int columnIndex = 0;
-      obj.put(String.valueOf(columnIndex), dsData.getId()); // ID
+      obj.put(String.valueOf(columnIndex), tableTimes.get(i));
 
-      columnIndex++;
-      obj.put(String.valueOf(columnIndex), DateTimeUtils.dateToLong(dsData.getDate())); // Date
+      LinkedHashMap<Long, QCColumnValue> row = tableData.get(tableTimes.get(i));
 
-      columnIndex++;
-      obj.put(String.valueOf(columnIndex), dsData.getLongitude()); // Longitude
-
-      columnIndex++;
-      obj.put(String.valueOf(columnIndex), dsData.getLatitude()); // Latitude
-
-      // Sensor values
-      for (Map.Entry<String, Double> entry : dsData.getSensorValues().entrySet()) {
+      for (QCColumnValue value : row.values()) {
         columnIndex++;
-        Double value = entry.getValue();
-        if (null == value) {
-          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-        } else {
-          obj.put(String.valueOf(columnIndex), value);
-        }
-      }
-
-      // Calculation values
-      List<String> calcColumns = calcData.getCalculationColumns();
-
-      for (int j = 0; j < calcColumns.size(); j++) {
-        columnIndex++;
-        Double value = calcData.getNumericValue(calcColumns.get(j));
-        if (null == value) {
-          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-        } else {
-          obj.put(String.valueOf(columnIndex), value);
-        }
-      }
-
-      // Diagnostic values
-      Map<String, Double> diagnosticValues = diagnosticData.get(dsData.getId());
-      for (String column : diagnosticHeadings) {
-        columnIndex++;
-        if (null == diagnosticValues.get(column)) {
-          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-        } else {
-          obj.put(String.valueOf(columnIndex), diagnosticValues.get(column));
-        }
-      }
-
-      columnIndex++;
-      obj.put(String.valueOf(columnIndex), calcData.getAutoFlag().getFlagValue());
-
-      columnIndex++;
-      if (null == calcData.getAutoQCMessagesString()) {
-        obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-      } else {
-        obj.put(String.valueOf(columnIndex), calcData.getAutoQCMessagesString());
-      }
-
-      if (!getDataset().isNrt()) {
-        columnIndex++;
-        obj.put(String.valueOf(columnIndex), calcData.getUserFlag().getFlagValue());
+        obj.put(String.valueOf(columnIndex), value.getValue());
 
         columnIndex++;
-        if (null == calcData.getUserMessage()) {
-          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-        } else {
-          obj.put(String.valueOf(columnIndex), calcData.getUserMessage());
-        }
+        obj.put(String.valueOf(columnIndex), value.isUsed());
+
+        columnIndex++;
+        obj.put(String.valueOf(columnIndex), value.getQcFlag().getFlagValue());
+
+        columnIndex++;
+        obj.put(String.valueOf(columnIndex), value.needsFlag());
+
+        columnIndex++;
+        obj.put(String.valueOf(columnIndex), value.getQcComment());
       }
 
       json.put(obj);
@@ -482,5 +409,93 @@ public class ManualQcBean extends PlotPageBean {
   @Override
   public boolean getHasTwoPlots() {
     return true;
+  }
+
+  @Override
+  public void setFieldSet(long fieldSet) {
+    super.setFieldSet(fieldSet);
+
+    try {
+
+      if (fieldSet == DataSetDataDB.SENSORS_FIELDSET) {
+        tableColumns = InstrumentDB.getSensorColumns(
+          getDataSource(), getDataset().getInstrumentId());
+
+      } else if (fieldSet == DataSetDataDB.DIAGNOSTICS_FIELDSET) {
+        tableColumns = InstrumentDB.getDiagnosticColumns(
+          getDataSource(), getDataset().getInstrumentId());
+
+      } else {
+
+        for (Map.Entry<String, Long> entry : getDataset().getFieldSets().entrySet()) {
+          if (entry.getValue() == fieldSet) {
+            tableColumns = DataReducerFactory.getCalculationParameterNames(entry.getKey());
+          }
+        }
+      }
+
+      tableData = null;
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Override
+  public String getTableHeadings() {
+    List<String> headings = new ArrayList<String>(tableColumns.size() * 4 + 12);
+
+    headings.add("Date/Time");
+
+    headings.add("Longitude");
+    headings.add("Longitude" + "_used");
+    headings.add("Longitude" + "_qc");
+    headings.add("Longitude" + "_needsFlag");
+    headings.add("Longitude" + "_comment");
+
+    headings.add("Latitude");
+    headings.add("Latitude" + "_used");
+    headings.add("Latitude" + "_qc");
+    headings.add("Latitude" + "_needsFlag");
+    headings.add("Latitude" + "_comment");
+
+    for (FileColumn column : tableColumns) {
+      headings.add(column.getColumnName());
+      headings.add(column.getColumnName() + "_used");
+      headings.add(column.getColumnName() + "_qc");
+      headings.add(column.getColumnName() + "_needsFlag");
+      headings.add(column.getColumnName() + "_comment");
+    }
+
+    Gson gson = new Gson();
+    return gson.toJson(headings);
+  }
+
+  /**
+   * Load the data for the current field set
+   */
+  private void loadTableData() throws MissingParamException, DatabaseException, InvalidFlagException, RoutineException {
+
+    try {
+      tableData = DataSetDataDB.getQCSensorData(getDataSource(), getDataset().getId(),
+        getTableColumnsWithPosition());
+
+      tableTimes = new ArrayList<LocalDateTime>(tableData.keySet());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  private List<Long> getTableColumnsWithPosition() {
+    List<Long> result = new ArrayList<Long>(tableColumns.size() + 2);
+
+    result.add(FileDefinition.LONGITUDE_COLUMN_ID);
+    result.add(FileDefinition.LATITUDE_COLUMN_ID);
+
+    for (FileColumn column : tableColumns) {
+      result.add(column.getColumnId());
+    }
+
+    return result;
   }
 }
