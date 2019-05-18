@@ -214,6 +214,16 @@ public class InstrumentDB {
     + "id, name FROM variables";
 
   /**
+   * Get the sensor or diagnostic column details for a given instrument
+   */
+  private static final String GET_COLUMNS_QUERY = "SELECT "
+    + "fc.id, fc.sensor_name, st.id, st.name FROM sensor_types st "
+    + "RIGHT JOIN file_column fc ON (fc.sensor_type = st.id) "
+    + "INNER JOIN file_definition fd ON (fc.file_definition_id = fd.id)"
+    + "WHERE fd.instrument_id = ? AND st.diagnostic = ? "
+    + "ORDER BY st.name, fc.sensor_name";
+
+  /**
    * Store a new instrument in the database
    * @param dataSource A data source
    * @param instrument The instrument
@@ -1496,5 +1506,86 @@ public class InstrumentDB {
     }
 
     return variables;
+  }
+
+  /**
+   * Get the column details for a given instrument, either for
+   * sensor values or diagnostic values
+   * @param dataSource A data source
+   * @param instrumentId The instrument's database ID
+   * @param diagnostic If {@code true}, returns diagnostic columns;
+   *                   otherwise returns sensor value columns
+   * @return The column details
+   * @throws DatabaseException If the variables cannot be retrieved
+   * @throws MissingParamException If any required parameters are missing
+   */
+  private static List<FileColumn> getColumns(
+    DataSource dataSource, long instrumentId, boolean diagnostic)
+      throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkPositive(instrumentId, "instrumentId");
+
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+    List<FileColumn> result = new ArrayList<FileColumn>();
+
+    try {
+      conn = dataSource.getConnection();
+      stmt = conn.prepareStatement(GET_COLUMNS_QUERY);
+      stmt.setLong(1, instrumentId);
+      stmt.setBoolean(2, diagnostic);
+
+      records = stmt.executeQuery();
+
+      while (records.next()) {
+        long columnId = records.getLong(1);
+        String columnName = records.getString(2);
+        long sensorTypeId = records.getLong(3);
+        String sensorTypeName = records.getString(4);
+
+        result.add(new FileColumn(columnId, columnName, sensorTypeId, sensorTypeName));
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Exception while getting columns", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the column details for a given instrument's sensor values
+   * @param dataSource A data source
+   * @param instrumentId The instrument's database ID
+   * @return The column details
+   * @throws DatabaseException If the variables cannot be retrieved
+   * @throws MissingParamException If any required parameters are missing
+   */
+  public static List<FileColumn> getSensorColumns(
+    DataSource dataSource, long instrumentId)
+      throws MissingParamException, DatabaseException {
+
+    return getColumns(dataSource, instrumentId, false);
+  }
+
+  /**
+   * Get the column details for a given instrument's diagnostic values
+   * @param dataSource A data source
+   * @param instrumentId The instrument's database ID
+   * @return The column details
+   * @throws DatabaseException If the variables cannot be retrieved
+   * @throws MissingParamException If any required parameters are missing
+   */
+  public static List<FileColumn> getDiagnosticColumns(
+    DataSource dataSource, long instrumentId)
+      throws MissingParamException, DatabaseException {
+
+    return getColumns(dataSource, instrumentId, true);
   }
 }

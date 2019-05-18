@@ -2,11 +2,10 @@ package uk.ac.exeter.QuinCe.web;
 
 import java.util.List;
 
-import org.primefaces.json.JSONArray;
+import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -20,11 +19,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * The ID of the data set being processed
    */
   private long datasetId;
-
-  /**
-   * The geographical bounds of the data set
-   */
-  private List<Double> dataBounds;
 
   /**
    * The data set being processed
@@ -59,7 +53,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
   /**
    * The table headings as a JSON array
    */
-  private String tableHeadings;
+  private List<String> tableHeadings;
 
   /**
    * An internal value for the DataTables library,
@@ -318,10 +312,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
    */
   public void generateTableData() {
     try {
-      if (null == tableHeadings) {
-        buildTableHeadings();
-      }
-
       tableJsonData = loadTableData(tableDataStart, tableDataLength);
     } catch (Exception e) {
       e.printStackTrace();
@@ -347,16 +337,20 @@ public abstract class PlotPageBean extends BaseManagedBean {
   protected abstract List<Long> loadRowIds() throws Exception;
 
   /**
-   * Build the table headings
-   */
-  protected abstract String buildTableHeadings() throws Exception;
-
-  /**
-   * Get the headings for the table
+   * Get the headings for the table as a JSON string
    * @return The table headings
    */
   public String getTableHeadings() {
-    return tableHeadings;
+    Gson gson = new Gson();
+    return gson.toJson(tableHeadings);
+  }
+
+  /**
+   * Set the headings for the table
+   * @param tableHeadings
+   */
+  protected void setTableHeadings(List<String> tableHeadings) {
+    this.tableHeadings = tableHeadings;
   }
 
   /**
@@ -426,16 +420,14 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
       variables = new VariableList();
       buildVariableList(variables);
-      dataBounds = DataSetDataDB.getDataBounds(getDataSource(), dataset);
 
       init();
       dirty = false;
-      plot1 = new Plot(this, dataBounds, getDefaultPlot1XAxis(), getDefaultPlot1YAxis(), getDefaultMap1Variable());
-      plot2 = new Plot(this, dataBounds, getDefaultPlot2XAxis(), getDefaultPlot2YAxis(), getDefaultMap2Variable());
+      plot1 = new Plot(this, dataset.getBounds(), getDefaultPlot1XAxis(), getDefaultPlot1YAxis(), getDefaultMap1Variable());
+      plot2 = new Plot(this, dataset.getBounds(), getDefaultPlot2XAxis(), getDefaultPlot2YAxis(), getDefaultMap2Variable());
 
 
       buildTableRowIds();
-      tableHeadings = buildTableHeadings();
       selectableRows = buildSelectableRows();
     } catch (Exception e) {
       e.printStackTrace();
@@ -482,11 +474,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
    */
   private void buildTableRowIds() throws Exception {
     tableRowIds = loadRowIds();
-    JSONArray json = new JSONArray();
-    for (int i = 0; i < tableRowIds.size(); i++) {
-      json.put(tableRowIds.get(i));
-    }
-    tableRowIdsJson = json.toString();
+    Gson gson = new Gson();
+    tableRowIdsJson = gson.toJson(tableRowIds);
   }
 
   /**
@@ -504,7 +493,9 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * Build the list of selectable record IDs
    * @throws Exception If the list cannot be created
    */
-  protected abstract String buildSelectableRows() throws Exception;
+  protected String buildSelectableRows() throws Exception {
+    return getTableRowIds();
+  }
 
   /**
    * Build the labels for the plot
@@ -584,7 +575,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @return The data bounds
    */
   public String getDataBounds() {
-    return '[' + StringUtils.collectionToDelimited(dataBounds, ",") + ']';
+    Gson gson = new Gson();
+    return gson.toJson(dataset.getBounds());
   }
 
   /**
