@@ -235,6 +235,7 @@ function drawTable() {
       }
     },
     rowCallback: function( row, data, index ) {
+      // Highlight if the row is selected
       if ($.inArray(data[0], selectedRows) > -1) {
         $(row).addClass('selected');
       }
@@ -249,8 +250,8 @@ function drawTable() {
         clickRowAction(data[0], event.shiftKey);
         }
       });
-    }
-    //columnDefs: getColumnDefs()
+    },
+    columnDefs: getColumnDefs()
   });
 
   renderTableColumns();
@@ -488,9 +489,7 @@ function clearSelection() {
   selectionUpdated();
 }
 
-function showInfoPopup(qcFlag, qcMessage, target) {
-
-  $('#infoPopup').stop(true, true);
+function showQCMessage(qcFlag, qcMessage) {
 
   if (qcMessage != "") {
 
@@ -513,17 +512,15 @@ function showInfoPopup(qcFlag, qcMessage, target) {
     content += qcMessage;
     content += '</div>';
 
-    $('#infoPopup')
-    .html(content)
-    .css({"left": 0, "top": 0})
-    .offset({"left": $(target).position().left - $('#infoPopup').width() - 10, "top": $(target).offset().top - 3})
-    .show('slide', {direction: 'right'}, 100);
+    $('#qcMessage').html(content);
+    $('#qcControls').hide();
+    $('#qcMessage').show();
   }
 }
 
-function hideInfoPopup() {
-  $('#infoPopup').stop(true, true);
-  $('#infoPopup').hide('slide', {direction: 'right'}, 100);
+function hideQCMessage() {
+  $('#qcMessage').hide();
+  $('#qcControls').show();
 }
 
 function drawPlot(index) {
