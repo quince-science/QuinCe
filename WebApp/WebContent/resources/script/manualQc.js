@@ -107,10 +107,10 @@ function renderTableColumns() {
 function getColumnDefs() {
 
   var columns = JSON.parse($('#plotPageForm\\:columnHeadings').val())
-  
+
   var dateCol = [0];
   var valueCols = range(1, columns.length, 5);
-	
+
   return [
     {"render":
       function (data, type, row) {
@@ -120,46 +120,46 @@ function getColumnDefs() {
     },
     {"render":
       function (data, type, row) {
-    	
-    	var col = arguments[3]['col'];
-    	
-    	var used = row[col + 1];
-    	
-    	var flagClass = null;
-    	switch (row[col + 2]) {
-    	case 3: {
-    	  flagClass = 'questionable';
-          break;
-    	}
-    	case 4: {
-    	  flagClass = 'bad';
-          break;
-    	}
-    	}
-    	
-    	var needsFlag = row[col + 3];
 
-    	var classes = ['numericCol'];
-    	if (!used) {
-    		classes.push('unused');
-    	}
-    	
-    	if (null != flagClass) {
-    		classes.push(flagClass);
-    	}
-    	
-    	if (needsFlag) {
-    		classes.push('needsFlag');
-    	}
-    	    	
-    	var result = '<div class="' + classes.join(' ') + '"';
+      var col = arguments[3]['col'];
 
-    	if (null != flagClass) {
-    		result += ' onmouseover="showQCMessage(' + row[col + 2] + ', \''+ row[col + 4] + '\')" onmouseout="hideQCMessage()"';
-    	}
-    	
-    	result += '>' + (null == data ? null : data.toFixed(3)) + '</div>';
-    	return result;
+      var used = row[col + 1];
+
+      var flagClass = null;
+      switch (row[col + 2]) {
+      case 3: {
+        flagClass = 'questionable';
+          break;
+      }
+      case 4: {
+        flagClass = 'bad';
+          break;
+      }
+      }
+
+      var needsFlag = row[col + 3];
+
+      var classes = ['numericCol'];
+      if (!used) {
+        classes.push('unused');
+      }
+
+      if (null != flagClass) {
+        classes.push(flagClass);
+      }
+
+      if (needsFlag) {
+        classes.push('needsFlag');
+      }
+
+      var result = '<div class="' + classes.join(' ') + '"';
+
+      if (null != flagClass) {
+        result += ' onmouseover="showQCMessage(' + row[col + 2] + ', \''+ row[col + 4] + '\')" onmouseout="hideQCMessage()"';
+      }
+
+      result += '>' + (null == data ? null : data.toFixed(3)) + '</div>';
+      return result;
       },
       "targets": valueCols
     }
