@@ -437,22 +437,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
   }
 
   /**
-   * Get any additional table data required on the front end
-   * @return The additional table data
-   */
-  public String getAdditionalTableData() {
-    return null;
-  }
-
-  /**
-   * Dummy method for setting the additional table data; does nothing
-   * @param tableData The table data; ignored
-   */
-  public void setAdditionalTableData(String tableData) {
-    // Do nothing
-  }
-
-  /**
    * Get the current table mode
    * @return The table mode
    */
