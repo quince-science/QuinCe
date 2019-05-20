@@ -25,7 +25,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
-import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -1479,9 +1478,7 @@ public class DataSetDataDB {
         String qcComment = records.getString(7);
         boolean used = records.getBoolean(8);
         // Lon/Lat are always used
-        if (sensorId == FileDefinition.LONGITUDE_COLUMN_ID ||
-            sensorId == FileDefinition.LATITUDE_COLUMN_ID) {
-
+        if (sensorId < 0) {
           used = true;
         }
 

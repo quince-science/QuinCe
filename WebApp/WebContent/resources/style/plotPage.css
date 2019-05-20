@@ -141,6 +141,10 @@ tr.selected {
   flex-wrap: wrap;
 }
 
+#qcMessage {
+  text-align: right;
+}
+
 .variable {
   display: flex;
   margin-bottom: 3px;

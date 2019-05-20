@@ -316,6 +316,15 @@ li.menuitem:hover, li.smallMenuitem:hover {
   color: #999999;
 }
 
+.unused {
+  text-decoration: line-through;
+  font-style: italic;
+}
+
+.needsFlag {
+  background: #D7D6FF;
+}
+
 div.fullPage {
   margin-left: 30px;
   margin-right: 30px;
@@ -370,7 +379,7 @@ td.labelsNoPad {
 }
 
 table .numericCol {
-  text-align: right;
+  float: right;
 }
 
 table .centreCol {

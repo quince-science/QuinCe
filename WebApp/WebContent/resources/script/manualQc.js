@@ -4,6 +4,10 @@ var diagnosticColumns = [];
 
 var plotSplitProportion = 0.5;
 
+// Stepped range calculator
+const range = (start, stop, step = 1) =>
+  Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step)
+
 function start() {
   /*
    * This is a hack to get round a bug in PrimeFaces.
@@ -90,93 +94,75 @@ function resizePlots() {
  * Show or hide columns as required.
  */
 function renderTableColumns() {
-
-/*	
-  // ID
-  jsDataTable.columns(0).visible(false, false);
-
-  // Message columns are the last and third from last columns
-  jsDataTable.columns([jsDataTable.columns()[0].length - 1, jsDataTable.columns()[0].length - 3]).visible(false, false);
-
-  var tableMode = PF('tableModeSelector').getJQ().find(':checked').val();
-
-  jsDataTable.columns(sensorColumns).visible(tableMode == "sensors", false);
-  jsDataTable.columns(calculationColumns).visible(tableMode == "calculations", false);
-  jsDataTable.columns(diagnosticColumns).visible(tableMode == "diagnostics", false);
-
-  // TODO This is an ugly hack to ensure the final fCO2 is always displayed.
-  if (tableMode != "diagnostics") {
-    jsDataTable.columns($.inArray("fCO2", columnHeadings)).visible(true, true);
-  }
-
-  jsDataTable.columns.adjust();
-*/
+  var columnCount = jsDataTable.columns()[0].length;
+  var valueCols = range(1, columnCount, 5);
+  var allColumns = range(1, columnCount);
+  var invisibleColumns = allColumns.filter(f => !valueCols.includes(f));
+  jsDataTable.columns(invisibleColumns).visible(false, false);
 }
 
 /*
  * Formats etc for table columns
  */
 function getColumnDefs() {
-  var additionalData = JSON.parse($('#tableForm\\:additionalTableData').val());
 
-  sensorColumns = [];
-  var colIndex = 3; //Date/time, lon and lat are the first three columns so skip them
-  for (i = 0; i < additionalData.sensorColumnCount; i++) {
-    colIndex++;
-    sensorColumns.push(colIndex);
-  }
-
-  calculationColumns = [];
-  for (i = 0; i < additionalData.calculationColumnCount; i++) {
-    colIndex++;
-    calculationColumns.push(colIndex);
-  }
-
-  diagnosticColumns = [];
-  for (i = 0; i < additionalData.diagnosticColumnCount; i++) {
-    colIndex++;
-    diagnosticColumns.push(colIndex);
-  }
-
-  var numericCols = $.merge($.merge($.merge([2, 3], sensorColumns), calculationColumns), diagnosticColumns);
-
+  var columns = JSON.parse($('#plotPageForm\\:columnHeadings').val())
+  
+  var dateCol = [0];
+  var valueCols = range(1, columns.length, 5);
+	
   return [
-        {"className": "centreCol", "targets": additionalData.flagColumns},
-        {"className": "numericCol", "targets": numericCols},
-        {"render":
-          function (data, type, row) {
-            return makeUTCDateTime(new Date(data));
-          },
-          "targets": 1
-        },
-        {"render":
-          function (data, type, row) {
-            return (null == data ? null : data.toFixed(3));
-          },
-          "targets": numericCols
-        },
-        {"render":
-          function (data, type, row) {
-                var output = '<div onmouseover="showInfoPopup(' + row[additionalData.flagColumns[0]] + ', \'' + row[additionalData.flagColumns[0] + 1] + '\', this)" onmouseout="hideInfoPopup()" class="';
-                output += getFlagClass(data);
-                output += '">';
-                output += getFlagText(data);
-                output += '</div>';
-                return output;
-            },
-            "targets": additionalData.flagColumns[0]
-        },
-        {"render":
-          function (data, type, row) {
-            var output = '<div class="';
-            output += getFlagClass(data);
-            output += '">';
-        output += getFlagText(data);
-        output += '</div>';
-        return output;
-            },
-            "targets": additionalData.flagColumns[1]
-        }
+    {"render":
+      function (data, type, row) {
+        return makeUTCDateTime(new Date(data));
+      },
+      "targets": dateCol
+    },
+    {"render":
+      function (data, type, row) {
+    	
+    	var col = arguments[3]['col'];
+    	
+    	var used = row[col + 1];
+    	
+    	var flagClass = null;
+    	switch (row[col + 2]) {
+    	case 3: {
+    	  flagClass = 'questionable';
+          break;
+    	}
+    	case 4: {
+    	  flagClass = 'bad';
+          break;
+    	}
+    	}
+    	
+    	var needsFlag = row[col + 3];
+
+    	var classes = ['numericCol'];
+    	if (!used) {
+    		classes.push('unused');
+    	}
+    	
+    	if (null != flagClass) {
+    		classes.push(flagClass);
+    	}
+    	
+    	if (needsFlag) {
+    		classes.push('needsFlag');
+    	}
+    	    	
+    	var result = '<div class="' + classes.join(' ') + '"';
+
+    	if (null != flagClass) {
+    		result += ' onmouseover="showQCMessage(' + row[col + 2] + ', \''+ row[col + 4] + '\')" onmouseout="hideQCMessage()"';
+    	}
+    	
+    	result += '>' + (null == data ? null : data.toFixed(3)) + '</div>';
+    	return result;
+      },
+      "targets": valueCols
+    }
   ];
 }
 

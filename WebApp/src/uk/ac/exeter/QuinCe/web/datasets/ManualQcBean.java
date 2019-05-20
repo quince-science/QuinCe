@@ -59,36 +59,6 @@ public class ManualQcBean extends PlotPageBean {
   private static final String NAV_DATASET_LIST = "dataset_list";
 
   /**
-   * The number of sensor columns
-   */
-  @Deprecated
-  private int sensorColumnCount = 0;
-
-  /**
-   * The number of calculation columns
-   */
-  @Deprecated
-  private int calculationColumnCount = 0;
-
-  /**
-   * The number of diagnostic columns
-   */
-  @Deprecated
-  private int diagnosticColumnCount = 0;
-
-  /**
-   * The column containing the auto QC flag
-   */
-  @Deprecated
-  private int autoFlagColumn = 0;
-
-  /**
-   * The column containing the manual QC flag
-   */
-  @Deprecated
-  private int userFlagColumn = 0;
-
-  /**
    * The set of comments for the user QC dialog. Stored as a Javascript array of entries, with each entry containing
    * Comment, Count and Flag value
    */
@@ -226,23 +196,6 @@ public class ManualQcBean extends PlotPageBean {
       }
     }
     return NAV_DATASET_LIST;
-  }
-
-  @Override
-  public String getAdditionalTableData() {
-    JSONObject json = new JSONObject();
-
-    json.put("sensorColumnCount", sensorColumnCount);
-    json.put("calculationColumnCount", calculationColumnCount);
-    json.put("diagnosticColumnCount", diagnosticColumnCount);
-
-    JSONArray flagColumns = new JSONArray();
-    flagColumns.put(autoFlagColumn);
-    flagColumns.put(userFlagColumn);
-
-    json.put("flagColumns", flagColumns);
-
-    return json.toString();
   }
 
   /**
