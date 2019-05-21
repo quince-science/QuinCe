@@ -138,6 +138,8 @@ public class AutoQCJob extends Job {
       for (Map.Entry<Long, List<SensorValue>> entry : sensorValues.entrySet()) {
         SensorType sensorType = sensorAssignments.getSensorTypeForDBColumn(entry.getKey());
         for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
+          List<SensorValue> values = entry.getValue();
+          SensorValue.clearAutoQC(values);
           routine.qcValues(entry.getValue());
         }
       }

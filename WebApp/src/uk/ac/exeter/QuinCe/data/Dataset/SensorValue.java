@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
@@ -306,5 +307,16 @@ public class SensorValue implements Comparable<SensorValue> {
     }
 
     return result;
+  }
+
+  /**
+   * Clear the automatic QC information for a set of SensorValues
+   * @param values The values
+   * @throws RecordNotFoundException
+   */
+  public static void clearAutoQC(List<SensorValue> values) throws RecordNotFoundException {
+    for (SensorValue value : values) {
+      value.clearAutomaticQC();
+    }
   }
 }
