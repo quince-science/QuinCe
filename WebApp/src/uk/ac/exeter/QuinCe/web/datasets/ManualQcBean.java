@@ -150,7 +150,7 @@ public class ManualQcBean extends PlotPageBean {
 
       JSONObject obj = new JSONObject();
 
-      obj.put("DT_RowId", "row" + i);
+      obj.put("DT_RowId", tableTimes.get(i));
 
       int columnIndex = 0;
       obj.put(String.valueOf(columnIndex), tableTimes.get(i));
