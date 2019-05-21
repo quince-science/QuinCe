@@ -415,7 +415,7 @@ public class DataSetsBean extends BaseManagedBean {
    */
   public void recalculate() {
     try {
-      DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_DATA_REDUCTION);
+      DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_AUTO_QC);
       Map<String, String> jobParams = new HashMap<String, String>();
       jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(datasetId));
       JobManager.addJob(getDataSource(), getUser(), AutoQCJob.class.getCanonicalName(), jobParams);
