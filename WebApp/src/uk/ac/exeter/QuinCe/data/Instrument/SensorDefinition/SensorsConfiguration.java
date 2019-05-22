@@ -33,7 +33,7 @@ public class SensorsConfiguration {
    */
   private static final String GET_SENSOR_TYPES_QUERY = "SELECT "
       + "id, name, vargroup, parent, depends_on, depends_question, " // 6
-      + "internal_calibration, diagnostic " // 8
+      + "internal_calibration, diagnostic, display_order " // 9
       + "FROM sensor_types";
 
   /**
