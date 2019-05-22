@@ -1,4 +1,5 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -11,15 +12,19 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationValue;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionRecord;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
@@ -46,6 +51,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.Variable;
 import uk.ac.exeter.QuinCe.web.VariableList;
 import uk.ac.exeter.QuinCe.web.datasets.QCColumnValue;
+import uk.ac.exeter.QuinCe.web.datasets.QCTableData;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -179,6 +185,12 @@ public class DataSetDataDB {
     + "WHERE sv.dataset_id = ? "
     + "AND sv.file_column IN (" + DatabaseUtils.IN_PARAMS_TOKEN + ") "
     + "GROUP BY sv.id, mv.sensor_value_id ORDER BY sv.date";
+
+  private static final String GET_DATA_REDUCTION_QUERY = "SELECT "
+  + "m.date, dr.variable_id, dr.calculation_values, dr.qc_flag, dr.qc_message "
+  + "FROM measurements m INNER JOIN data_reduction dr "
+  + "ON (m.id = dr.measurement_id) "
+  + "WHERE m.dataset_id = ? ORDER BY m.date ASC";
 
   /**
    * The name of the ID column
@@ -1439,18 +1451,19 @@ public class DataSetDataDB {
    * @throws InvalidFlagException If a QC flag is invalid
    * @throws RoutineException If an automatic QC result cannot be processed
    */
-  public static LinkedHashMap<LocalDateTime, LinkedHashMap<Long, QCColumnValue>> getQCSensorData(
-    DataSource dataSource, long datasetId, List<Long> sensorIDs) throws MissingParamException, DatabaseException, InvalidFlagException, RoutineException {
+  public static void getQCSensorData(
+    DataSource dataSource, QCTableData tableData, long datasetId, List<Long> sensorIDs)
+      throws MissingParamException, DatabaseException, InvalidFlagException,
+        RoutineException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(tableData, "tableData", true);
     MissingParam.checkPositive(datasetId, "datasetId");
     MissingParam.checkMissing(sensorIDs, "sensorIDs", false);
 
     Connection conn = null;
     PreparedStatement stmt = null;
     ResultSet records = null;
-    LinkedHashMap<LocalDateTime, LinkedHashMap<Long, QCColumnValue>> result =
-      new LinkedHashMap<LocalDateTime, LinkedHashMap<Long, QCColumnValue>>();
 
     try {
       conn = dataSource.getConnection();
@@ -1463,9 +1476,6 @@ public class DataSetDataDB {
       stmt.setLong(1, datasetId);
 
       records = stmt.executeQuery();
-
-      LocalDateTime currentTime = null;
-      LinkedHashMap<Long, QCColumnValue> currentValues = null;
 
       while (records.next()) {
 
@@ -1482,21 +1492,9 @@ public class DataSetDataDB {
           used = true;
         }
 
-        if (!time.equals(currentTime)) {
-          if (null != currentTime) {
-            result.put(currentTime, currentValues);
-          }
-          currentTime = time;
-          currentValues = QCColumnValue.initMap(sensorIDs);
-        }
-
         QCColumnValue value = new QCColumnValue(valueId, sensorValue, autoQC, userQCFlag, qcComment, used);
-        currentValues.put(sensorId, value);
+        tableData.addValue(time, sensorId, value);
       }
-
-      // Last date entry
-      result.put(currentTime, currentValues);
-
     } catch (SQLException e) {
       throw new DatabaseException("Error getting sensor data", e);
     } finally {
@@ -1504,7 +1502,58 @@ public class DataSetDataDB {
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
     }
+  }
 
-    return result;
+  public static void getDataReductionData(
+    DataSource dataSource, QCTableData tableData, DataSet dataSet)
+      throws MissingParamException, DatabaseException, InvalidFlagException,
+        RoutineException, VariableNotFoundException, DataReductionException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(tableData, "tableData", true);
+    MissingParam.checkMissing(dataSet, "dataSet");
+
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+    SensorsConfiguration sensorConfig =
+      ResourceManager.getInstance().getSensorsConfiguration();
+
+    try {
+      conn = dataSource.getConnection();
+
+      stmt = conn.prepareStatement(GET_DATA_REDUCTION_QUERY);
+      stmt.setLong(1, dataSet.getId());
+      records = stmt.executeQuery();
+
+      while (records.next()) {
+
+        LocalDateTime time = DateTimeUtils.longToDate(records.getLong(1));
+        long variableId = records.getLong(2);
+        String valuesJson = records.getString(3);
+        Flag qcFlag = new Flag(records.getInt(4));
+        String qcComment = records.getString(5);
+
+        Type mapType = new TypeToken<HashMap<String, Double>>() {}.getType();
+        Map<String, Double> values = new Gson().fromJson(valuesJson, mapType);
+
+        Map<String, Long> reductionParameters =
+          DataReducerFactory.getCalculationParameters(sensorConfig.getInstrumentVariable(variableId));
+
+        for (Map.Entry<String, Double> entry : values.entrySet()) {
+
+          QCColumnValue columnValue = new QCColumnValue(reductionParameters.get(entry.getKey()),
+            entry.getValue(), new AutoQCResult(), qcFlag, qcComment, true);
+
+          tableData.addValue(time, reductionParameters.get(entry.getKey()), columnValue);
+        }
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting sensor data", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
+    }
   }
 }
