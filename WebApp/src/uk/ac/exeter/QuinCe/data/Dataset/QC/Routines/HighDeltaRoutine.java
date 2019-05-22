@@ -53,8 +53,8 @@ public class HighDeltaRoutine extends Routine {
 
         // Calculate the change between this record and the previous one
         if (!sensorValue.isNaN()) {
-          long minutesDifference = ChronoUnit.MINUTES.between(
-            lastValue.getTime(), sensorValue.getTime());
+          double minutesDifference = ChronoUnit.SECONDS.between(
+            lastValue.getTime(), sensorValue.getTime()) / 60.0;
 
           double valueDelta = Math.abs(sensorValue.getDoubleValue()
             - lastValue.getDoubleValue());

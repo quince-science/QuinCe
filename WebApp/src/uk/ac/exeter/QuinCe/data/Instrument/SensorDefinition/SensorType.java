@@ -31,14 +31,29 @@ public class SensorType implements Comparable<SensorType> {
   public static final long RUN_TYPE_ID = -1;
 
   /**
+   * The display order for the Run Type
+   */
+  private static final int RUN_TYPE_ORDER = -1000;
+
+  /**
    * Special ID for dummy longitude sensor type
    */
   public static final long LONGITUDE_ID = FileDefinition.LONGITUDE_COLUMN_ID;
 
   /**
+   * The display order for the longitude
+   */
+  private static final int LONGITUDE_ORDER = -2;
+
+  /**
    * Special ID for dummy latitude sensor type
    */
   public static final long LATITUDE_ID = FileDefinition.LATITUDE_COLUMN_ID;
+
+  /**
+   * The display order for the latitude
+   */
+  private static final int LATITUDE_ORDER = -1;
 
   /**
    * The special Run Type sensor type
@@ -112,10 +127,19 @@ public class SensorType implements Comparable<SensorType> {
    */
   private boolean systemType = false;
 
+  /**
+   * Determines where this sensor type will be displayed in lists of
+   * sensor types
+   */
+  private int displayOrder = 0;
+
   static {
-    RUN_TYPE_SENSOR_TYPE = new SensorType(RUN_TYPE_ID, "Run Type", "Run Type");
-    LONGITUDE_SENSOR_TYPE = new SensorType(LONGITUDE_ID, "Longitude", "Longitude");
-    LATITUDE_SENSOR_TYPE = new SensorType(LATITUDE_ID, "Latitude", "Latitude");
+    RUN_TYPE_SENSOR_TYPE = new SensorType(RUN_TYPE_ID, "Run Type",
+      "Run Type", RUN_TYPE_ORDER);
+    LONGITUDE_SENSOR_TYPE = new SensorType(LONGITUDE_ID, "Longitude",
+      "Longitude", LONGITUDE_ORDER);
+    LATITUDE_SENSOR_TYPE = new SensorType(LATITUDE_ID, "Latitude",
+      "Latitude", LATITUDE_ORDER);
   }
 
   /**
@@ -130,7 +154,8 @@ public class SensorType implements Comparable<SensorType> {
    * @throws MissingParamException If the ID is not a positive number
    */
   public SensorType(long id, String name, String group, Long parent, Long dependsOn,
-    String dependsQuestion, boolean internalCalibration, boolean diagnostic)
+    String dependsQuestion, boolean internalCalibration, boolean diagnostic,
+    int displayOrder)
     throws MissingParamException, SensorConfigurationException {
 
     MissingParam.checkPositive(id, "id");
@@ -173,6 +198,7 @@ public class SensorType implements Comparable<SensorType> {
     this.internalCalibration = internalCalibration;
     this.diagnostic = diagnostic;
     this.systemType = false;
+    this.displayOrder = displayOrder;
   }
 
   /**
@@ -180,7 +206,7 @@ public class SensorType implements Comparable<SensorType> {
    * @param id The sensor ID
    * @param name The sensor name
    */
-  private SensorType(long id, String name, String group) {
+  private SensorType(long id, String name, String group, int displayOrder) {
     this.id = id;
     this.name = name;
     this.group = group;
@@ -190,6 +216,7 @@ public class SensorType implements Comparable<SensorType> {
     this.internalCalibration = false;
     this.diagnostic = false;
     this.systemType = true;
+    this.displayOrder = displayOrder;
   }
 
   /**
@@ -237,6 +264,7 @@ public class SensorType implements Comparable<SensorType> {
 
     this.internalCalibration = record.getBoolean(7);
     this.diagnostic = record.getBoolean(8);
+    this.displayOrder = record.getInt(9);
   }
 
 
@@ -413,14 +441,10 @@ public class SensorType implements Comparable<SensorType> {
   @Override
   public int compareTo(SensorType o) {
 
-    int result = 0;
+    // Compare display order, then sensor type name
+    int result = this.displayOrder - o.displayOrder;
 
-    // Diagnostic types go last
-    if (!diagnostic && o.diagnostic) {
-      result = -1;
-    } else if (diagnostic && !o.diagnostic) {
-      result = 1;
-    } else {
+    if (result == 0) {
       result = name.compareTo(o.name);
     }
 

@@ -31,6 +31,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -83,12 +84,12 @@ public class ManualQcBean extends PlotPageBean {
    * The basic list of table columns. This excludes Date/Time, Lon and Lat,
    * and does not include the sub-columns (i.e. qc info)
    */
-  private List<FileColumn> tableColumns;
+  private List<QCColumn> tableColumns;
 
   /**
    * The table content for the current field set
    */
-  private LinkedHashMap<LocalDateTime, LinkedHashMap<Long, QCColumnValue>> tableData;
+  private QCTableData tableData;
 
   /**
    * The list of times in the table data. Used for quick lookups by index
@@ -127,21 +128,6 @@ public class ManualQcBean extends PlotPageBean {
   @Override
   protected String loadTableData(int start, int length) throws Exception {
 
-    // ROw ID
-    // Time
-    // Lon
-    // Lon used
-    // Lon QD
-    // Lon needsFlag
-    // Lon commnet
-    // Lat
-    // Lat used
-    // Lat QD
-    // Lat needsFlag
-    // Lat commnet
-
-    // Table columns as above
-
     // TODO Convert to GSON - I don't have the API here
 
     JSONArray json = new JSONArray();
@@ -158,20 +144,38 @@ public class ManualQcBean extends PlotPageBean {
       LinkedHashMap<Long, QCColumnValue> row = tableData.get(tableTimes.get(i));
 
       for (QCColumnValue value : row.values()) {
-        columnIndex++;
-        obj.put(String.valueOf(columnIndex), value.getValue());
 
-        columnIndex++;
-        obj.put(String.valueOf(columnIndex), value.isUsed());
+        if (null == value) {
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
 
-        columnIndex++;
-        obj.put(String.valueOf(columnIndex), value.getQcFlag().getFlagValue());
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
 
-        columnIndex++;
-        obj.put(String.valueOf(columnIndex), value.needsFlag());
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
 
-        columnIndex++;
-        obj.put(String.valueOf(columnIndex), value.getQcComment());
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
+
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
+        } else {
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), value.getValue());
+
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), value.isUsed());
+
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), value.getQcFlag().getFlagValue());
+
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), value.needsFlag());
+
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), value.getQcComment());
+        }
       }
 
       json.put(obj);
@@ -187,9 +191,9 @@ public class ManualQcBean extends PlotPageBean {
   public String finish() {
     if (dirty) {
       try {
-        DataSetDB.setDatasetStatus(getDataSource(), getDatasetId(), DataSet.STATUS_DATA_REDUCTION);
+        DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_DATA_REDUCTION);
         Map<String, String> jobParams = new HashMap<String, String>();
-        jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(getDatasetId()));
+        jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(datasetId));
         JobManager.addJob(getDataSource(), getUser(), DataReductionJob.class.getCanonicalName(), jobParams);
       } catch (Exception e) {
         e.printStackTrace();
@@ -365,36 +369,6 @@ public class ManualQcBean extends PlotPageBean {
   }
 
   @Override
-  public void setFieldSet(long fieldSet) {
-    super.setFieldSet(fieldSet);
-
-    try {
-
-      if (fieldSet == DataSetDataDB.SENSORS_FIELDSET) {
-        tableColumns = InstrumentDB.getSensorColumns(
-          getDataSource(), getDataset().getInstrumentId());
-
-      } else if (fieldSet == DataSetDataDB.DIAGNOSTICS_FIELDSET) {
-        tableColumns = InstrumentDB.getDiagnosticColumns(
-          getDataSource(), getDataset().getInstrumentId());
-
-      } else {
-
-        for (Map.Entry<String, Long> entry : getDataset().getFieldSets().entrySet()) {
-          if (entry.getValue() == fieldSet) {
-            tableColumns = DataReducerFactory.getCalculationParameterNames(entry.getKey());
-          }
-        }
-      }
-
-      tableData = null;
-
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
-
-  @Override
   public String getTableHeadings() {
     List<String> headings = new ArrayList<String>(tableColumns.size() * 4 + 12);
 
@@ -412,12 +386,12 @@ public class ManualQcBean extends PlotPageBean {
     headings.add("Latitude" + "_needsFlag");
     headings.add("Latitude" + "_comment");
 
-    for (FileColumn column : tableColumns) {
-      headings.add(column.getColumnName());
-      headings.add(column.getColumnName() + "_used");
-      headings.add(column.getColumnName() + "_qc");
-      headings.add(column.getColumnName() + "_needsFlag");
-      headings.add(column.getColumnName() + "_comment");
+    for (QCColumn column : tableColumns) {
+      headings.add(column.getName());
+      headings.add(column.getName() + "_used");
+      headings.add(column.getName() + "_qc");
+      headings.add(column.getName() + "_needsFlag");
+      headings.add(column.getName() + "_comment");
     }
 
     Gson gson = new Gson();
@@ -427,12 +401,49 @@ public class ManualQcBean extends PlotPageBean {
   /**
    * Load the data for the current field set
    */
-  private void loadTableData() throws MissingParamException, DatabaseException, InvalidFlagException, RoutineException {
+  private void loadTableData() throws MissingParamException, DatabaseException,
+    InvalidFlagException, RoutineException {
 
     try {
-      tableData = DataSetDataDB.getQCSensorData(getDataSource(), getDataset().getId(),
-        getTableColumnsWithPosition());
+      tableColumns = new ArrayList<QCColumn>();
 
+      // Sensor columns
+      List<FileColumn> fileColumns = InstrumentDB.getSensorColumns(
+        getDataSource(), instrument.getDatabaseId());
+
+      for (FileColumn column : fileColumns) {
+        long fieldSet = DataSetDataDB.SENSORS_FIELDSET;
+        if (column.getSensorType().isDiagnostic()) {
+          fieldSet = DataSetDataDB.DIAGNOSTICS_FIELDSET;
+        }
+
+        tableColumns.add(new QCColumn(column.getColumnId(),
+          column.getColumnName(), fieldSet));
+      }
+
+      // Data reduction columns
+      for (InstrumentVariable variable : instrument.getVariables()) {
+        Map<String, Long> variableParameters =
+          DataReducerFactory.getCalculationParameters(variable);
+
+        // Columns from data reduction are given IDs based on the
+        // variable ID and parameter number
+        for (Map.Entry<String, Long> entry : variableParameters.entrySet()) {
+          tableColumns.add(new QCColumn(entry.getValue(),
+            entry.getKey(), variable.getId()));
+        }
+      }
+
+      tableData = new QCTableData(tableColumns);
+
+      // Load data for sensor columns
+      DataSetDataDB.getQCSensorData(getDataSource(), tableData,
+        getDataset().getId(), getTableColumnsWithPosition());
+
+      // Load data reduction data
+      DataSetDataDB.getDataReductionData(getDataSource(), tableData, dataset);
+
+      // Extract the times - these will be the row IDs
       tableTimes = new ArrayList<LocalDateTime>(tableData.keySet());
     } catch (Exception e) {
       e.printStackTrace();
@@ -445,8 +456,8 @@ public class ManualQcBean extends PlotPageBean {
     result.add(FileDefinition.LONGITUDE_COLUMN_ID);
     result.add(FileDefinition.LATITUDE_COLUMN_ID);
 
-    for (FileColumn column : tableColumns) {
-      result.add(column.getColumnId());
+    for (QCColumn column : tableColumns) {
+      result.add(column.getId());
     }
 
     return result;
