@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+
 /**
  * Class to represent a file column.
  * Contains the file column and sensor type references
@@ -19,22 +21,16 @@ public class FileColumn {
   private final String columnName;
 
   /**
-   * The database ID of the Sensor Type that this column contains
+   * The Sensor Type that this column contains
    */
-  private final long sensorTypeId;
-
-  /**
-   * The name of the sensor type that this column contains
-   */
-  private final String sensorTypeName;
+  private final SensorType sensorType;
 
   public FileColumn(long columnId, String columnName,
-    long sensorTypeId, String sensorTypeName) {
+    SensorType sensorType) {
 
     this.columnId = columnId;
     this.columnName = columnName;
-    this.sensorTypeId = sensorTypeId;
-    this.sensorTypeName = sensorTypeName;
+    this.sensorType = sensorType;
   }
 
   /**
@@ -57,16 +53,8 @@ public class FileColumn {
    * Get the sensor type database ID
    * @return The sensor type ID
    */
-  public long getSensorTypeId() {
-    return sensorTypeId;
-  }
-
-  /**
-   * Get the sensor type name
-   * @return The sensor type name
-   */
-  public String getSensorTypeName() {
-    return sensorTypeName;
+  public SensorType getSensorType() {
+    return sensorType;
   }
 
   @Override

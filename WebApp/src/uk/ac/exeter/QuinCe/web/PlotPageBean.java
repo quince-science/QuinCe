@@ -6,7 +6,10 @@ import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Bean for pages containing plots and tables
@@ -18,12 +21,17 @@ public abstract class PlotPageBean extends BaseManagedBean {
   /**
    * The ID of the data set being processed
    */
-  private long datasetId;
+  protected long datasetId;
 
   /**
    * The data set being processed
    */
-  private DataSet dataset;
+  protected DataSet dataset;
+
+  /**
+   * The instrument that the dataset belongs to
+   */
+  protected Instrument instrument;
 
   /**
    * The data for the current view of the data table.
@@ -416,7 +424,12 @@ public abstract class PlotPageBean extends BaseManagedBean {
    */
   public String start() {
     try {
+      ResourceManager resourceManager = ResourceManager.getInstance();
       dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
+
+      instrument = InstrumentDB.getInstrument(getDataSource(),
+        dataset.getInstrumentId(), resourceManager.getSensorsConfiguration(),
+        resourceManager.getRunTypeCategoryConfiguration());
 
       variables = new VariableList();
       buildVariableList(variables);
