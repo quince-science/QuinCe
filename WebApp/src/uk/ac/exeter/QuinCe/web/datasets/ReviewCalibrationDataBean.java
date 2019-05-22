@@ -80,7 +80,6 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
     return CalibrationDataDB.getCalibrationRowIds(getDataSource(), getDatasetId(), null);
   }
 
-  @Override
   protected String buildTableHeadings() {
     JSONArray headings = new JSONArray();
     headings.put("ID");

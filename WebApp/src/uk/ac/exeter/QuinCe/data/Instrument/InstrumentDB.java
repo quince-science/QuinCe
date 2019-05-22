@@ -35,6 +35,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -218,10 +219,10 @@ public class InstrumentDB {
    */
   private static final String GET_COLUMNS_QUERY = "SELECT "
     + "fc.id, fc.sensor_name, st.id, st.name FROM sensor_types st "
-    + "RIGHT JOIN file_column fc ON (fc.sensor_type = st.id) "
+    + "LEFT JOIN file_column fc ON (fc.sensor_type = st.id) "
     + "INNER JOIN file_definition fd ON (fc.file_definition_id = fd.id)"
-    + "WHERE fd.instrument_id = ? AND st.diagnostic = ? "
-    + "ORDER BY st.name, fc.sensor_name";
+    + "WHERE fd.instrument_id = ? "
+    + "ORDER BY st.display_order, st.name, fc.sensor_name";
 
   /**
    * Store a new instrument in the database
@@ -1518,14 +1519,16 @@ public class InstrumentDB {
    * @return The column details
    * @throws DatabaseException If the variables cannot be retrieved
    * @throws MissingParamException If any required parameters are missing
+   * @throws SensorTypeNotFoundException
    */
-  private static List<FileColumn> getColumns(
-    DataSource dataSource, long instrumentId, boolean diagnostic)
-      throws MissingParamException, DatabaseException {
+  public static List<FileColumn> getSensorColumns(
+    DataSource dataSource, long instrumentId)
+      throws MissingParamException, DatabaseException, SensorTypeNotFoundException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkPositive(instrumentId, "instrumentId");
 
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
     Connection conn = null;
     PreparedStatement stmt = null;
     ResultSet records = null;
@@ -1535,7 +1538,6 @@ public class InstrumentDB {
       conn = dataSource.getConnection();
       stmt = conn.prepareStatement(GET_COLUMNS_QUERY);
       stmt.setLong(1, instrumentId);
-      stmt.setBoolean(2, diagnostic);
 
       records = stmt.executeQuery();
 
@@ -1543,9 +1545,8 @@ public class InstrumentDB {
         long columnId = records.getLong(1);
         String columnName = records.getString(2);
         long sensorTypeId = records.getLong(3);
-        String sensorTypeName = records.getString(4);
 
-        result.add(new FileColumn(columnId, columnName, sensorTypeId, sensorTypeName));
+        result.add(new FileColumn(columnId, columnName, sensorConfig.getSensorType(sensorTypeId)));
       }
 
     } catch (SQLException e) {
@@ -1557,35 +1558,5 @@ public class InstrumentDB {
     }
 
     return result;
-  }
-
-  /**
-   * Get the column details for a given instrument's sensor values
-   * @param dataSource A data source
-   * @param instrumentId The instrument's database ID
-   * @return The column details
-   * @throws DatabaseException If the variables cannot be retrieved
-   * @throws MissingParamException If any required parameters are missing
-   */
-  public static List<FileColumn> getSensorColumns(
-    DataSource dataSource, long instrumentId)
-      throws MissingParamException, DatabaseException {
-
-    return getColumns(dataSource, instrumentId, false);
-  }
-
-  /**
-   * Get the column details for a given instrument's diagnostic values
-   * @param dataSource A data source
-   * @param instrumentId The instrument's database ID
-   * @return The column details
-   * @throws DatabaseException If the variables cannot be retrieved
-   * @throws MissingParamException If any required parameters are missing
-   */
-  public static List<FileColumn> getDiagnosticColumns(
-    DataSource dataSource, long instrumentId)
-      throws MissingParamException, DatabaseException {
-
-    return getColumns(dataSource, instrumentId, true);
   }
 }
