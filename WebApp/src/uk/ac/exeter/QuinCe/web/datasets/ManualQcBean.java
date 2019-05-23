@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -394,8 +395,51 @@ public class ManualQcBean extends PlotPageBean {
       headings.add(column.getName() + "_comment");
     }
 
-    Gson gson = new Gson();
-    return gson.toJson(headings);
+    return new Gson().toJson(headings);
+  }
+
+  @Override
+  public String getFieldSets() {
+
+    TreeMap<Long, List<Integer>> fieldSets = new TreeMap<Long, List<Integer>>();
+
+    List<Integer> dateLatLon = new ArrayList<Integer>();
+
+    // Date/Time
+    int col = 0;
+    dateLatLon.add(col);
+
+    // Longitude
+    dateLatLon.add(++col);
+    dateLatLon.add(++col);
+    dateLatLon.add(++col);
+    dateLatLon.add(++col);
+    dateLatLon.add(++col);
+
+    // Latitude
+    dateLatLon.add(++col);
+    dateLatLon.add(++col);
+    dateLatLon.add(++col);
+    dateLatLon.add(++col);
+    dateLatLon.add(++col);
+
+    fieldSets.put(0L, dateLatLon);
+
+    for (QCColumn column : tableColumns) {
+      long fieldSet = column.getFieldSet();
+
+      if (null == fieldSets.get(fieldSet)) {
+        fieldSets.put(fieldSet, new ArrayList<Integer>());
+      }
+
+      fieldSets.get(fieldSet).add(++col);
+      fieldSets.get(fieldSet).add(++col);
+      fieldSets.get(fieldSet).add(++col);
+      fieldSets.get(fieldSet).add(++col);
+      fieldSets.get(fieldSet).add(++col);
+    }
+
+    return new Gson().toJson(fieldSets);
   }
 
   /**

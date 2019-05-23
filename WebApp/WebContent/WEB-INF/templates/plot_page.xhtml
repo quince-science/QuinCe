@@ -39,6 +39,7 @@
     <!-- General form for page-wide fixed data -->
     <h:form id="plotPageForm" method="post">
       <h:inputHidden value="#{sessionScope[beanName].tableHeadings}" id="columnHeadings"/>
+      <h:inputHidden value="#{sessionScope[beanName].fieldSets}" id="fieldSets"/>
       <h:inputHidden value="#{sessionScope[beanName].tableRowIds}" id="tableRowIds"/>
       <h:inputHidden value="#{sessionScope[beanName].selectableRows}" id="selectableRows"/>
       <h:inputHidden value="#{sessionScope[beanName].dataBounds}" id="dataBounds"/>
@@ -190,7 +191,9 @@
     <p:toolbar id="footerToolbar" styleClass="plotPageFooter">
       <f:facet name="left">
         <h:form id="tableControlsForm" method="post" styleClass="inline">
-          <ui:insert name="tableControls"></ui:insert>
+          <p:selectOneMenu widgetVar="fieldSetSelector" onchange="renderTableColumns(event.target.value)">
+            <f:selectItems value="#{manualQcBean.dataset.fieldSets}"/>
+          </p:selectOneMenu>
         </h:form>
       </f:facet>
       <f:facet name="right">
