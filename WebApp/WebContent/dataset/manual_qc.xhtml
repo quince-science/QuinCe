@@ -103,12 +103,6 @@
       </h:panelGrid>
     </p:dialog>
   </ui:define>
-  <ui:define name="tableControls">
-      <p:selectOneMenu value="#{manualQcBean.fieldSet}" widgetVar="fieldSetSelector">
-        <f:selectItems value="#{manualQcBean.dataset.fieldSets}"/>
-        <f:ajax process="@this" render=":plotPageForm:columnHeadings"/>
-      </p:selectOneMenu>
-  </ui:define>
   <ui:define name="selectionActions">
     <p:commandButton widgetVar="acceptQcButton" value="Accept Automatic QC" onclick="acceptAutoQc()" styleClass="inlineButton"/>
     <p:commandButton widgetVar="overrideQcButton" value="Override Automatic QC" onclick="startUserQcFlags()" styleClass="inlineButton"/>
