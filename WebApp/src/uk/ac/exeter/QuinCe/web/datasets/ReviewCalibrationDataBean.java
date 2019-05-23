@@ -229,4 +229,10 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
   public boolean getHasTwoPlots() {
     return false;
   }
+
+  @Override
+  public String getFieldSets() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }

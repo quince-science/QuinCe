@@ -354,6 +354,17 @@ public abstract class PlotPageBean extends BaseManagedBean {
   }
 
   /**
+   * Return a JSON array of integers stating which field set
+   * each column belongs to. This array must match the number
+   * of columns returned by getTableHeadings.
+   *
+   * A field set of 0 indicates that the column is in every field set
+   *
+   * @return The field sets for the columns
+   */
+  public abstract String getFieldSets();
+
+  /**
    * Set the headings for the table
    * @param tableHeadings
    */

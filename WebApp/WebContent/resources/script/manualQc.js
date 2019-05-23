@@ -93,12 +93,30 @@ function resizePlots() {
 /*
  * Show or hide columns as required.
  */
-function renderTableColumns() {
-  var columnCount = jsDataTable.columns()[0].length;
-  var valueCols = range(1, columnCount, 5);
-  var allColumns = range(1, columnCount);
-  var invisibleColumns = allColumns.filter(f => !valueCols.includes(f));
+function renderTableColumns(fieldSet) {
+
+  // Default to Sensors
+  if (typeof fieldSet === 'undefined') {
+    fieldSet = -1;
+  }
+
+  var fieldSets = JSON.parse($('#plotPageForm\\:fieldSets').val());
+
+  var baseColumns = fieldSets[0];
+
+  var visibleColumns = [];
+  visibleColumns.push(baseColumns[0]); // Date/time
+  visibleColumns.push(baseColumns[1]); // Longitude
+  visibleColumns.push(baseColumns[6]); // Latitude
+  
+  var fieldSetColumns = fieldSets[fieldSet];
+  for (i = 0; i < fieldSetColumns.length; i += 5) {
+    visibleColumns.push(fieldSetColumns[i]);
+  }
+
+  var invisibleColumns = jsDataTable.columns()[0].filter(f => !visibleColumns.includes(f));
   jsDataTable.columns(invisibleColumns).visible(false, false);
+  jsDataTable.columns(visibleColumns).visible(true, true);
 }
 
 /*
