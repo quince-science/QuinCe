@@ -108,7 +108,7 @@ function renderTableColumns(fieldSet) {
   visibleColumns.push(baseColumns[0]); // Date/time
   visibleColumns.push(baseColumns[1]); // Longitude
   visibleColumns.push(baseColumns[6]); // Latitude
-  
+
   var fieldSetColumns = fieldSets[fieldSet];
   for (i = 0; i < fieldSetColumns.length; i += 5) {
     visibleColumns.push(fieldSetColumns[i]);
