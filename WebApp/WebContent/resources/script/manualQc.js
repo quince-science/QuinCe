@@ -102,12 +102,13 @@ function renderTableColumns(fieldSet) {
 
   var fieldSets = JSON.parse($('#plotPageForm\\:fieldSets').val());
 
-  var baseColumns = fieldSets[0];
+  var visibleColumns = [0]; // Date/Time
+  
+  var fieldSetColumns = fieldSets[0];
+  for (i = 0; i < fieldSetColumns.length; i += 5) {
+    visibleColumns.push(fieldSetColumns[i]);
+  }
 
-  var visibleColumns = [];
-  visibleColumns.push(baseColumns[0]); // Date/time
-  visibleColumns.push(baseColumns[1]); // Longitude
-  visibleColumns.push(baseColumns[6]); // Latitude
 
   var fieldSetColumns = fieldSets[fieldSet];
   for (i = 0; i < fieldSetColumns.length; i += 5) {
@@ -117,6 +118,8 @@ function renderTableColumns(fieldSet) {
   var invisibleColumns = jsDataTable.columns()[0].filter(f => !visibleColumns.includes(f));
   jsDataTable.columns(invisibleColumns).visible(false, false);
   jsDataTable.columns(visibleColumns).visible(true, true);
+  
+  console.log(visibleColumns);
 }
 
 /*
