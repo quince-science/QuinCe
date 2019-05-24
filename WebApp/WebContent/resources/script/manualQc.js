@@ -179,7 +179,7 @@ function getColumnDefs() {
         result += ' onmouseover="showQCMessage(' + row[col + 2] + ', \''+ row[col + 4] + '\')" onmouseout="hideQCMessage()"';
       }
 
-      result += '>' + (null == data ? null : data.toFixed(3)) + '</div>';
+      result += '>' + (null == data ? "" : data.toFixed(3)) + '</div>';
       return result;
       },
       "targets": valueCols
