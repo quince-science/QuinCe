@@ -1,9 +1,8 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 import java.sql.Connection;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
@@ -56,7 +55,7 @@ public class DataReducerFactory {
    * @return The calculation parameter names
    * @throws DataReductionException If the variable does not have a reducer
    */
-  public static Map<String, Long> getCalculationParameters(
+  public static LinkedHashMap<String, Long> getCalculationParameters(
     InstrumentVariable variable) throws DataReductionException {
 
     DataReducer reducer;
@@ -73,7 +72,7 @@ public class DataReducerFactory {
 
     List<String> parameterNames = reducer.getCalculationParameterNames();
 
-    TreeMap<String, Long> result = new TreeMap<String, Long>();
+    LinkedHashMap<String, Long> result = new LinkedHashMap<String, Long>();
     int i = -1;
     for (String name : parameterNames) {
       i++;

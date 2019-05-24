@@ -375,18 +375,6 @@ public class ManualQcBean extends PlotPageBean {
 
     headings.add("Date/Time");
 
-    headings.add("Longitude");
-    headings.add("Longitude" + "_used");
-    headings.add("Longitude" + "_qc");
-    headings.add("Longitude" + "_needsFlag");
-    headings.add("Longitude" + "_comment");
-
-    headings.add("Latitude");
-    headings.add("Latitude" + "_used");
-    headings.add("Latitude" + "_qc");
-    headings.add("Latitude" + "_needsFlag");
-    headings.add("Latitude" + "_comment");
-
     for (QCColumn column : tableColumns) {
       headings.add(column.getName());
       headings.add(column.getName() + "_used");
@@ -403,27 +391,8 @@ public class ManualQcBean extends PlotPageBean {
 
     TreeMap<Long, List<Integer>> fieldSets = new TreeMap<Long, List<Integer>>();
 
-    List<Integer> dateLatLon = new ArrayList<Integer>();
-
     // Date/Time
     int col = 0;
-    dateLatLon.add(col);
-
-    // Longitude
-    dateLatLon.add(++col);
-    dateLatLon.add(++col);
-    dateLatLon.add(++col);
-    dateLatLon.add(++col);
-    dateLatLon.add(++col);
-
-    // Latitude
-    dateLatLon.add(++col);
-    dateLatLon.add(++col);
-    dateLatLon.add(++col);
-    dateLatLon.add(++col);
-    dateLatLon.add(++col);
-
-    fieldSets.put(0L, dateLatLon);
 
     for (QCColumn column : tableColumns) {
       long fieldSet = column.getFieldSet();
@@ -451,6 +420,11 @@ public class ManualQcBean extends PlotPageBean {
     try {
       tableColumns = new ArrayList<QCColumn>();
 
+      tableColumns.add(new QCColumn(FileDefinition.LONGITUDE_COLUMN_ID,
+        "Longitude", 0));
+      tableColumns.add(new QCColumn(FileDefinition.LATITUDE_COLUMN_ID,
+        "Latitude", 0));
+
       // Sensor columns
       List<FileColumn> fileColumns = InstrumentDB.getSensorColumns(
         getDataSource(), instrument.getDatabaseId());
@@ -467,7 +441,7 @@ public class ManualQcBean extends PlotPageBean {
 
       // Data reduction columns
       for (InstrumentVariable variable : instrument.getVariables()) {
-        Map<String, Long> variableParameters =
+        LinkedHashMap<String, Long> variableParameters =
           DataReducerFactory.getCalculationParameters(variable);
 
         // Columns from data reduction are given IDs based on the
@@ -482,7 +456,7 @@ public class ManualQcBean extends PlotPageBean {
 
       // Load data for sensor columns
       DataSetDataDB.getQCSensorData(getDataSource(), tableData,
-        getDataset().getId(), getTableColumnsWithPosition());
+        getDataset().getId(), getTableColumnIDs());
 
       // Load data reduction data
       DataSetDataDB.getDataReductionData(getDataSource(), tableData, dataset);
@@ -494,11 +468,8 @@ public class ManualQcBean extends PlotPageBean {
     }
   }
 
-  private List<Long> getTableColumnsWithPosition() {
+  private List<Long> getTableColumnIDs() {
     List<Long> result = new ArrayList<Long>(tableColumns.size() + 2);
-
-    result.add(FileDefinition.LONGITUDE_COLUMN_ID);
-    result.add(FileDefinition.LATITUDE_COLUMN_ID);
 
     for (QCColumn column : tableColumns) {
       result.add(column.getId());
