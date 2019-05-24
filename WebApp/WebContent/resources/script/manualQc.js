@@ -103,7 +103,7 @@ function renderTableColumns(fieldSet) {
   var fieldSets = JSON.parse($('#plotPageForm\\:fieldSets').val());
 
   var visibleColumns = [0]; // Date/Time
-  
+
   var fieldSetColumns = fieldSets[0];
   for (i = 0; i < fieldSetColumns.length; i += 5) {
     visibleColumns.push(fieldSetColumns[i]);
@@ -118,7 +118,7 @@ function renderTableColumns(fieldSet) {
   var invisibleColumns = jsDataTable.columns()[0].filter(f => !visibleColumns.includes(f));
   jsDataTable.columns(invisibleColumns).visible(false, false);
   jsDataTable.columns(visibleColumns).visible(true, true);
-  
+
   console.log(visibleColumns);
 }
 
