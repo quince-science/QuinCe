@@ -41,7 +41,7 @@ def main():
 
     if not export_list:
       logging.info('Terminating script, no datasets to be exported.')
-      quit('No datasets ready for export')
+      sys.exit()
 
 
     for datasetNr, dataset in enumerate(export_list): 
