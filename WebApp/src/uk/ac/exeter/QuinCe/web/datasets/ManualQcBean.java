@@ -456,7 +456,7 @@ public class ManualQcBean extends PlotPageBean {
 
       // Load data for sensor columns
       DataSetDataDB.getQCSensorData(getDataSource(), tableData,
-        getDataset().getId(), getTableColumnIDs());
+        getDataset().getId(), instrument, getTableColumnIDs());
 
       // Load data reduction data
       DataSetDataDB.getDataReductionData(getDataSource(), tableData, dataset);
