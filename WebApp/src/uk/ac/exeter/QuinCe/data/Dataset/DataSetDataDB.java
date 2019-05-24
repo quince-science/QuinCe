@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -1537,13 +1538,13 @@ public class DataSetDataDB {
         Type mapType = new TypeToken<HashMap<String, Double>>() {}.getType();
         Map<String, Double> values = new Gson().fromJson(valuesJson, mapType);
 
-        Map<String, Long> reductionParameters =
+        LinkedHashMap<String, Long> reductionParameters =
           DataReducerFactory.getCalculationParameters(sensorConfig.getInstrumentVariable(variableId));
 
-        for (Map.Entry<String, Double> entry : values.entrySet()) {
+        for (Map.Entry<String, Long> entry : reductionParameters.entrySet()) {
 
-          QCColumnValue columnValue = new QCColumnValue(reductionParameters.get(entry.getKey()),
-            entry.getValue(), new AutoQCResult(), qcFlag, qcComment, true);
+          QCColumnValue columnValue = new QCColumnValue(entry.getValue(),
+            values.get(entry.getKey()), new AutoQCResult(), qcFlag, qcComment, true);
 
           tableData.addValue(time, reductionParameters.get(entry.getKey()), columnValue);
         }
