@@ -40,6 +40,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -589,7 +590,7 @@ public class DataSetDataDB {
    */
   private static PreparedStatement createInsertRecordStatement(Connection conn,
     DataSetRawDataRecord record)
-      throws MissingParamException, SQLException, DatabaseException, SensorConfigurationException, VariableNotFoundException {
+      throws MissingParamException, SQLException, DatabaseException,SensorConfigurationException, VariableNotFoundException {
 
     List<String> fieldNames = new ArrayList<String>();
 
@@ -696,13 +697,17 @@ public class DataSetDataDB {
      * @throws InstrumentException If the instrument details cannot be retrieved
      * @throws RecordNotFoundException If the instrument for the data set does not exist
    */
-  public static List<String> getDatasetDataColumnNames(DataSource dataSource, DataSet dataSet) throws MissingParamException, DatabaseException, InstrumentException, RecordNotFoundException {
+  public static List<String> getDatasetDataColumnNames(DataSource dataSource,
+    DataSet dataSet) throws MissingParamException, DatabaseException,
+    InstrumentException, RecordNotFoundException {
+
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(dataSet, "dataSet");
 
     List<String> result = new ArrayList<String>();
 
-    SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
+    SensorsConfiguration sensorConfig =
+      ResourceManager.getInstance().getSensorsConfiguration();
     Connection conn = null;
     ResultSet columns = null;
 
@@ -710,7 +715,10 @@ public class DataSetDataDB {
       conn = dataSource.getConnection();
 
       ResourceManager resourceManager = ResourceManager.getInstance();
-      Instrument instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
+      Instrument instrument = InstrumentDB.getInstrument(conn,
+        dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(),
+        resourceManager.getRunTypeCategoryConfiguration());
+
       SensorAssignments sensorAssignments = instrument.getSensorAssignments();
 
       DatabaseMetaData metadata = conn.getMetaData();
@@ -766,13 +774,16 @@ public class DataSetDataDB {
     return result;
   }
 
-  public static void populateVariableList(DataSource dataSource, DataSet dataSet, VariableList variables) throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException {
+  public static void populateVariableList(DataSource dataSource, DataSet dataSet,
+    VariableList variables) throws MissingParamException, DatabaseException,
+    RecordNotFoundException, InstrumentException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(dataSet, "dataSet");
     MissingParam.checkMissing(variables, "variables", true);
 
-    SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
+    SensorsConfiguration sensorConfig =
+      ResourceManager.getInstance().getSensorsConfiguration();
     Connection conn = null;
     ResultSet columns = null;
 
@@ -780,7 +791,10 @@ public class DataSetDataDB {
       conn = dataSource.getConnection();
 
       ResourceManager resourceManager = ResourceManager.getInstance();
-      Instrument instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
+      Instrument instrument = InstrumentDB.getInstrument(conn,
+        dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(),
+        resourceManager.getRunTypeCategoryConfiguration());
+
       SensorAssignments sensorAssignments = instrument.getSensorAssignments();
 
       DatabaseMetaData metadata = conn.getMetaData();
@@ -795,15 +809,18 @@ public class DataSetDataDB {
           break;
         }
         case "date": {
-          variables.addVariable("Date/Time", new Variable(Variable.TYPE_BASE, "Date/Time", "date"));
+          variables.addVariable("Date/Time",
+            new Variable(Variable.TYPE_BASE, "Date/Time", "date"));
           break;
         }
         case "longitude": {
-          variables.addVariable("Longitude", new Variable(Variable.TYPE_BASE, "Longitude", "longitude"));
+          variables.addVariable("Longitude",
+            new Variable(Variable.TYPE_BASE, "Longitude", "longitude"));
           break;
         }
         case "latitude": {
-          variables.addVariable("Latitude", new Variable(Variable.TYPE_BASE, "Latitude", "latitude"));
+          variables.addVariable("Latitude",
+            new Variable(Variable.TYPE_BASE, "Latitude", "latitude"));
           break;
         }
         case "dataset_id":
@@ -817,7 +834,8 @@ public class DataSetDataDB {
             if (sensorAssignments.getAssignmentCount(sensorType) > 0) {
               if (columnName.equals(sensorType.getDatabaseFieldName())) {
                 // TODO Eventually this will use the sensor name as the label, and the sensor type as the group
-                variables.addVariable(sensorType.getGroup(), new Variable(Variable.TYPE_SENSOR, sensorType.getName(), columnName));
+                variables.addVariable(sensorType.getGroup(),
+                  new Variable(Variable.TYPE_SENSOR, sensorType.getName(), columnName));
                 break;
               }
             }
@@ -847,13 +865,19 @@ public class DataSetDataDB {
    * @throws RecordNotFoundException If the dataset or its instrument do not exist
    * @throws InstrumentException If the instrument details cannot be retrieved
    */
-  public static List<String> extractDatasetFields(Connection conn, DataSet dataSet, List<String> originalFields) throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException {
+  public static List<String> extractDatasetFields(Connection conn, DataSet dataSet,
+    List<String> originalFields) throws MissingParamException, DatabaseException,
+    RecordNotFoundException, InstrumentException {
+
     List<String> datasetFields = new ArrayList<String>();
 
     ResourceManager resourceManager = ResourceManager.getInstance();
     SensorsConfiguration sensorConfig = resourceManager.getSensorsConfiguration();
 
-    Instrument instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
+    Instrument instrument = InstrumentDB.getInstrument(conn,
+      dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(),
+      resourceManager.getRunTypeCategoryConfiguration());
+
     SensorAssignments sensorAssignments = instrument.getSensorAssignments();
 
     for (String originalField : originalFields) {
@@ -897,11 +921,15 @@ public class DataSetDataDB {
    * @throws RecordNotFoundException If the dataset or its instrument do not exist
    * @throws InstrumentException If the instrument details cannot be retrieved
    */
-  public static boolean isDatasetField(Connection conn, DataSet dataset, String field) throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException {
+  public static boolean isDatasetField(Connection conn, DataSet dataset,
+    String field) throws MissingParamException, DatabaseException,
+    RecordNotFoundException, InstrumentException {
+
     List<String> fieldList = new ArrayList<String>(1);
     fieldList.add(field);
 
-    List<String> detectedDatasetField = extractDatasetFields(conn, dataset, fieldList);
+    List<String> detectedDatasetField =
+      extractDatasetFields(conn, dataset, fieldList);
 
     return (detectedDatasetField.size() > 0);
   }
@@ -914,7 +942,8 @@ public class DataSetDataDB {
      * @throws DatabaseException If a database error occurs
      * @throws MissingParamException If any required parameters are missing
    */
-  public static List<Double> getDataBounds(DataSource dataSource, DataSet dataset) throws MissingParamException, DatabaseException {
+  public static List<Double> getDataBounds(DataSource dataSource, DataSet dataset)
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(dataset, "dataset");
@@ -942,7 +971,8 @@ public class DataSetDataDB {
    * @throws DatabaseException If a database error occurs
    * @throws MissingParamException If any required parameters are missing
    */
-  public static List<Double> getDataBounds(Connection conn, DataSet dataset) throws MissingParamException, DatabaseException {
+  public static List<Double> getDataBounds(Connection conn, DataSet dataset)
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(dataset, "dataset");
@@ -965,8 +995,10 @@ public class DataSetDataDB {
       result.add(records.getDouble(4)); // North
 
       // Mid point
-      result.add((records.getDouble(3) - records.getDouble(1)) / 2 + records.getDouble(1));
-      result.add((records.getDouble(4) - records.getDouble(2)) / 2 + records.getDouble(2));
+      result.add((records.getDouble(3) - records.getDouble(1)) / 2 +
+        records.getDouble(1));
+      result.add((records.getDouble(4) - records.getDouble(2)) / 2 +
+        records.getDouble(2));
 
     } catch (SQLException e) {
       throw new DatabaseException("Error while getting dataset bounds", e);
@@ -1451,17 +1483,21 @@ public class DataSetDataDB {
    * @throws MissingParamException If any required parameters are missing
    * @throws InvalidFlagException If a QC flag is invalid
    * @throws RoutineException If an automatic QC result cannot be processed
+   * @throws SensorTypeNotFoundException
+   * @throws RecordNotFoundException
    */
   public static void getQCSensorData(
-    DataSource dataSource, QCTableData tableData, long datasetId, List<Long> sensorIDs)
+    DataSource dataSource, QCTableData tableData, long datasetId, Instrument instrument, List<Long> sensorIDs)
       throws MissingParamException, DatabaseException, InvalidFlagException,
-        RoutineException {
+        RoutineException, SensorTypeNotFoundException, RecordNotFoundException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(tableData, "tableData", true);
     MissingParam.checkPositive(datasetId, "datasetId");
     MissingParam.checkMissing(sensorIDs, "sensorIDs", false);
 
+    SensorsConfiguration sensorConfig =
+      ResourceManager.getInstance().getSensorsConfiguration();
     Connection conn = null;
     PreparedStatement stmt = null;
     ResultSet records = null;
@@ -1489,11 +1525,18 @@ public class DataSetDataDB {
         String qcComment = records.getString(7);
         boolean used = records.getBoolean(8);
         // Lon/Lat are always used
-        if (sensorId < 0) {
+        // We also mark diagnostic sensors as used, otherwise they're all
+        // marked as not used which is pointless.
+
+        SensorType sensorType =
+          instrument.getSensorAssignments().getSensorTypeForDBColumn(sensorId);
+
+        if (sensorId < 0 || sensorType.isDiagnostic()) {
           used = true;
         }
 
-        QCColumnValue value = new QCColumnValue(valueId, sensorValue, autoQC, userQCFlag, qcComment, used);
+        QCColumnValue value = new QCColumnValue(valueId, sensorValue, autoQC,
+          userQCFlag, qcComment, used);
         tableData.addValue(time, sensorId, value);
       }
     } catch (SQLException e) {
@@ -1539,14 +1582,17 @@ public class DataSetDataDB {
         Map<String, Double> values = new Gson().fromJson(valuesJson, mapType);
 
         LinkedHashMap<String, Long> reductionParameters =
-          DataReducerFactory.getCalculationParameters(sensorConfig.getInstrumentVariable(variableId));
+          DataReducerFactory.getCalculationParameters(
+            sensorConfig.getInstrumentVariable(variableId));
 
         for (Map.Entry<String, Long> entry : reductionParameters.entrySet()) {
 
           QCColumnValue columnValue = new QCColumnValue(entry.getValue(),
-            values.get(entry.getKey()), new AutoQCResult(), qcFlag, qcComment, true);
+            values.get(entry.getKey()),
+            new AutoQCResult(), qcFlag, qcComment, true);
 
-          tableData.addValue(time, reductionParameters.get(entry.getKey()), columnValue);
+          tableData.addValue(time,reductionParameters.get(entry.getKey()),
+            columnValue);
         }
       }
     } catch (SQLException e) {
