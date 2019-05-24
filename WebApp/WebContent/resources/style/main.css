@@ -317,7 +317,6 @@ li.menuitem:hover, li.smallMenuitem:hover {
 }
 
 .unused {
-  text-decoration: line-through;
   font-style: italic;
 }
 
