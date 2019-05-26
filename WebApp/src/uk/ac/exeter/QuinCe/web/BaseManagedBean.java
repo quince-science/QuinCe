@@ -196,7 +196,7 @@ public abstract class BaseManagedBean {
    * Get a data source
    * @return The data source
    */
-  protected DataSource getDataSource() {
+  public DataSource getDataSource() {
     return ResourceManager.getInstance().getDBDataSource();
   }
 

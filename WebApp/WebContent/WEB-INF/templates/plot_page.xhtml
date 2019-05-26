@@ -25,7 +25,7 @@
     <script>
       var variableGroups = #{sessionScope[beanName].variableGroups};
       var variableGroupNames = #{sessionScope[beanName].variableGroupNames};
-      var variableCount = #{sessionScope[beanName].variableCount};
+      var variableCount = #{sessionScope[beanName].getFieldSets().getFieldCount()};
       var canEdit = #{sessionScope[beanName].canEdit};
     </script>
   </h:head>
@@ -38,8 +38,8 @@
 
     <!-- General form for page-wide fixed data -->
     <h:form id="plotPageForm" method="post">
-      <h:inputHidden value="#{sessionScope[beanName].tableHeadings}" id="columnHeadings"/>
-      <h:inputHidden value="#{sessionScope[beanName].fieldSets}" id="fieldSets"/>
+      <h:inputHidden value="#{sessionScope[beanName].getFieldSets().getTableHeadings()}" id="columnHeadings"/>
+      <h:inputHidden value="#{sessionScope[beanName].getFieldSets().getFieldSetIds()}" id="fieldSets"/>
       <h:inputHidden value="#{sessionScope[beanName].tableRowIds}" id="tableRowIds"/>
       <h:inputHidden value="#{sessionScope[beanName].selectableRows}" id="selectableRows"/>
       <h:inputHidden value="#{sessionScope[beanName].dataBounds}" id="dataBounds"/>
@@ -69,54 +69,24 @@
 
     <p:dialog widgetVar="variableDialog" modal="true" header="Variables" resizable="false">
       <div id="variablesList">
-        <ui:repeat value="#{sessionScope[beanName].variablesList}" var="varGroup">
-          <ui:fragment rendered="#{varGroup.size eq 1 and !varGroup.titleRequired and varGroup.variables[0].visible}">
-            <div class="variable singleVariable">
-              <div class="varName">
-                <h:outputText value="#{varGroup.variables[0].label}"/>
-              </div>
-              <div class="variableControls">
-                <p:selectBooleanCheckbox widgetVar="mapVar-#{varGroup.variables[0].id}"
-                  id="mapVarCheckbox" onchange="updateMapCheckboxes(#{varGroup.variables[0].id})"/>
-                <ui:fragment rendered="#{varGroup.variables[0].canUseOnXAxis}">
-                  <p:selectBooleanButton widgetVar="xAxis-#{varGroup.variables[0].id}"
-                    onLabel="X" offLabel="X"
-                    styleClass="axisButton" id="xAxisButton"
-                    onchange="updateXAxisButtons(#{varGroup.variables[0].id})"/>
-                </ui:fragment>
-                <ui:fragment rendered="#{varGroup.variables[0].canUseOnYAxis}">
-                  <p:selectBooleanButton widgetVar="yAxis-#{varGroup.variables[0].id}"
-                    onLabel="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton"
-                    onchange="updateYAxisButtons(#{varGroup.variables[0].id})"/>
-                </ui:fragment>
-              </div>
-            </div>
-          </ui:fragment>
-          <ui:fragment rendered="#{varGroup.size gt 1 or varGroup.titleRequired}">
-            <div class="variableGroup">
+        <ui:repeat value="#{sessionScope[beanName].getFieldSets().getFieldSets(false).entrySet().toArray()}" var="entry">
+          <div class="variableGroup">
               <div class="varGroupName">
-                <h:outputText value="#{varGroup.name}"/>
+                <h:outputText value="#{entry.key.name}"/>
               </div>
-              <ui:repeat value="#{varGroup.variables}" var="variable">
-                <ui:fragment rendered="#{variable.visible}">
-                  <div class="variable">
-                    <div class="varName varGroupMember">
-                      <h:outputText value="#{variable.label}"/>
-                    </div>
-                    <div class="variableControls">
-                      <p:selectBooleanCheckbox widgetVar="mapVar-#{variable.id}" id="mapVarCheckbox" onchange="updateMapCheckboxes(#{variable.id})"/>
-                      <ui:fragment rendered="#{variable.canUseOnXAxis}">
-                        <p:selectBooleanButton widgetVar="xAxis-#{variable.id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateXAxisButtons(#{variable.id})"/>
-                      </ui:fragment>
-                      <ui:fragment rendered="#{variable.canUseOnYAxis}">
-                        <p:selectBooleanButton widgetVar="yAxis-#{variable.id}" onLabel="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateYAxisButtons(#{variable.id})"/>
-                      </ui:fragment>
-                    </div>
+              <ui:repeat value="#{entry.value}" var="variable">
+                <div class="variable">
+                  <div class="varName varGroupMember">
+                    <h:outputText value="#{variable.name}"/>
                   </div>
-                </ui:fragment>
+                  <div class="variableControls">
+                    <p:selectBooleanCheckbox widgetVar="mapVar-#{variable.id}" id="mapVarCheckbox" onchange="updateMapCheckboxes(#{variable.id})"/>
+                    <p:selectBooleanButton widgetVar="xAxis-#{variable.id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateXAxisButtons(#{variable.id})"/>
+                    <p:selectBooleanButton widgetVar="yAxis-#{variable.id}" onLabel="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateYAxisButtons(#{variable.id})"/>
+                  </div>
+                </div>
               </ui:repeat>
-            </div>
-          </ui:fragment>
+          </div>
         </ui:repeat>
       </div>
       <h:panelGrid columns="2" styleClass="buttonPanel">
@@ -192,7 +162,7 @@
       <f:facet name="left">
         <h:form id="tableControlsForm" method="post" styleClass="inline">
           <p:selectOneMenu widgetVar="fieldSetSelector" onchange="renderTableColumns(event.target.value)">
-            <f:selectItems value="#{manualQcBean.dataset.fieldSets}"/>
+            <f:selectItems value="#{manualQcBean.dataset.getFieldSetsByName(false)}"/>
           </p:selectOneMenu>
         </h:form>
       </f:facet>
