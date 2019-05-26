@@ -52,8 +52,8 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.Variable;
 import uk.ac.exeter.QuinCe.web.VariableList;
-import uk.ac.exeter.QuinCe.web.datasets.QCColumnValue;
-import uk.ac.exeter.QuinCe.web.datasets.QCTableData;
+import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
+import uk.ac.exeter.QuinCe.web.PlotPage.TableData;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -1487,7 +1487,7 @@ public class DataSetDataDB {
    * @throws RecordNotFoundException
    */
   public static void getQCSensorData(
-    DataSource dataSource, QCTableData tableData, long datasetId, Instrument instrument, List<Long> sensorIDs)
+    DataSource dataSource, TableData tableData, long datasetId, Instrument instrument, List<Long> sensorIDs)
       throws MissingParamException, DatabaseException, InvalidFlagException,
         RoutineException, SensorTypeNotFoundException, RecordNotFoundException {
 
@@ -1535,7 +1535,7 @@ public class DataSetDataDB {
           used = true;
         }
 
-        QCColumnValue value = new QCColumnValue(valueId, sensorValue, autoQC,
+        FieldValue value = new FieldValue(valueId, sensorValue, autoQC,
           userQCFlag, qcComment, used);
         tableData.addValue(time, sensorId, value);
       }
@@ -1549,7 +1549,7 @@ public class DataSetDataDB {
   }
 
   public static void getDataReductionData(
-    DataSource dataSource, QCTableData tableData, DataSet dataSet)
+    DataSource dataSource, TableData tableData, DataSet dataSet)
       throws MissingParamException, DatabaseException, InvalidFlagException,
         RoutineException, VariableNotFoundException, DataReductionException {
 
@@ -1587,7 +1587,7 @@ public class DataSetDataDB {
 
         for (Map.Entry<String, Long> entry : reductionParameters.entrySet()) {
 
-          QCColumnValue columnValue = new QCColumnValue(entry.getValue(),
+          FieldValue columnValue = new FieldValue(entry.getValue(),
             values.get(entry.getKey()),
             new AutoQCResult(), qcFlag, qcComment, true);
 

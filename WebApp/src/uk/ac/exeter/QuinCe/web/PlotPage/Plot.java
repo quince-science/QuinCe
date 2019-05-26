@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web;
+package uk.ac.exeter.QuinCe.web.PlotPage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +35,12 @@ public class Plot {
   /**
    * The variable to use on the X Axis in Plot 1.
    */
-  private Variable xAxis;
+  private Field xAxis;
 
   /**
    * The variables to use on the Y Axis in Plot 1.
    */
-  private List<Variable> yAxis;
+  private Field yAxis;
 
   /**
    * The plot data
@@ -50,7 +50,7 @@ public class Plot {
   /**
    * The variable to show on the map
    */
-  private Variable mapVariable;
+  private Field mapVariable;
 
   /**
    * Flag to indicate that the map scale should be updated
@@ -81,7 +81,7 @@ public class Plot {
    * @param yAxis The y axis variables
    * @param mapVariable The map variable
    */
-  public Plot(PlotPageBean parentBean, List<Double> mapBounds, Variable xAxis, List<Variable> yAxis, Variable mapVariable) {
+  public Plot(PlotPageBean parentBean, List<Double> mapBounds, Field xAxis, Field yAxis, Field mapVariable) {
     this.parentBean = parentBean;
     this.mapBounds = mapBounds;
     this.xAxis = xAxis;
@@ -110,100 +110,46 @@ public class Plot {
   /**
    * @return the xAxis
    */
-  public int getXAxis() {
-    int result = -1;
-    if (null != xAxis) {
-      result = xAxis.getId();
-    }
-
-    return result;
+  public Field getXAxis() {
+    return xAxis;
   }
 
   /**
    * @param xAxis the xAxis to set
    */
-  public void setXAxis(int xAxis) {
+  public void setXAxis(long xAxisId) {
     // A -1 value means no change is required
-    if (-1 != xAxis) {
-      this.xAxis = parentBean.getVariablesList().getVariable(xAxis);
+    if (-1 != xAxisId) {
+      this.xAxis = parentBean.getFieldSets().getField(xAxisId);
     }
-  }
-
-  /**
-   * @param xAxis the xAxis to set
-   */
-  public void setXAxis(Variable xAxis) {
-    this.xAxis = xAxis;
   }
 
   /**
    * @return the yAxis
    */
-  public String getYAxis() {
-
-    List<Integer> ids;
-
-    if (null == yAxis) {
-      ids = new ArrayList<Integer>(1);
-      ids.add(-1);
-    } else {
-      ids = Variable.getIds(yAxis);
-    }
-
-    return StringUtils.intListToJsonArray(ids);
-  }
-
-  /**
-   * Get the selected Y Axis variables
-   * @return The selected Y axis variables
-   */
-  public List<Variable> getYAxisVariables() {
+  public Field getYAxis() {
     return yAxis;
   }
 
   /**
    * @param yAxis the yAxis to set
    */
-  public void setYAxis(String yAxis) {
-    List<Integer> axisVariables = StringUtils.jsonArrayToIntList(yAxis);
-    if (axisVariables.size() > 0) {
-      this.yAxis = parentBean.getVariablesList().getVariables(axisVariables);
-    }
-  }
-
-  /**
-   *
-   * @param yAxis The yAxis to set
-   */
-  public void setYAxis(List<Variable> yAxis) {
-    this.yAxis = yAxis;
+  public void setYAxis(long yAxisId) {
+    this.yAxis = parentBean.getFieldSets().getField(yAxisId);
   }
 
   /**
    * @return the mapVariable
    */
-  public int getMapVariable() {
-    int result = -1;
-
-    if (null != mapVariable) {
-      result = mapVariable.getId();
-    }
-
-    return result;
+  public Field getMapVariable() {
+    return mapVariable;
   }
 
   /**
    * @param mapVariable the mapVariable to set
    */
-  public void setMapVariable(int mapVariable) {
-    this.mapVariable = parentBean.getVariablesList().getVariable(mapVariable);
-  }
-
-  /**
-   * @param mapVariable the mapVariable to set
-   */
-  public void setMapVariable(Variable mapVariable) {
-    this.mapVariable = mapVariable;
+  public void setMapVariable(long mapVariableId) {
+    this.mapVariable = parentBean.getFieldSets().getField(mapVariableId);;
   }
 
   /**
@@ -216,6 +162,7 @@ public class Plot {
 
   // TODO This is horrible. Come up with an alternative.
   //      But we need a way to stop the data coming from the front end
+  //      Which is doable with 'execute' directives
 
   /**
    * Dummy method for JSF - does nothing
@@ -243,24 +190,9 @@ public class Plot {
 
       // TODO Remove the magic strings. Make PSF fields in CalculationDB
       result.append('"');
-      if (null != xAxis) {
-        result.append(xAxis.getLabel());
-      }
+      result.append(xAxis.getName());
       result.append("\",\"ID\",\"Manual Flag\"");
-
-      if (null != yAxis) {
-        result.append(',');
-
-        for (int i = 0; i < yAxis.size(); i++) {
-          result.append('"');
-          result.append(yAxis.get(i).getLabel());
-          result.append('"');
-
-          if (i < yAxis.size() - 1) {
-            result.append(',');
-          }
-        }
-      }
+      result.append(yAxis.getName());
 
       break;
     }
@@ -277,7 +209,7 @@ public class Plot {
       result.append("\",\"");
       result.append("Manual Flag");
       result.append("\",\"");
-      result.append(mapVariable.getLabel());
+      result.append(mapVariable.getName());
       result.append('"');
     }
     }
@@ -306,20 +238,14 @@ public class Plot {
     switch(mode) {
     case MODE_PLOT: {
       // TODO Remove the magic strings. Make PSF fields in CalculationDB
-      fields.add(xAxis.getFieldName());
+      fields.add(xAxis.getName());
       fields.add("id");
       if (parentBean.getDataset().isNrt()) {
         fields.add("auto_flag");
       } else {
         fields.add("user_flag");
       }
-
-
-      if (null != yAxis) {
-        for (Variable variable : yAxis) {
-          fields.add(variable.getFieldName());
-        }
-      }
+      fields.add(yAxis.getName());
 
       break;
     }
@@ -334,7 +260,7 @@ public class Plot {
       } else {
         fields.add("user_flag");
       }
-      fields.add(mapVariable.getFieldName());
+      fields.add(mapVariable.getName());
     }
     }
 
@@ -428,7 +354,7 @@ public class Plot {
 
     try {
       // TODO This is specific to the Manual QC. Move it out to a method in the parent bean
-      result = CalculationDBFactory.getCalculationDB().getValueRange(parentBean.getDataSource(), parentBean.getDataset(), mapVariable.getFieldName());
+      result = CalculationDBFactory.getCalculationDB().getValueRange(parentBean.getDataSource(), parentBean.getDataset(), mapVariable.getName());
     } catch (Exception e) {
       e.printStackTrace();
     }

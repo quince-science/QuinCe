@@ -27,6 +27,10 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
  */
 public class DataSet {
 
+  public static final long TIMEPOS_FIELDSET_ID = 0L;
+
+  public static final String TIMEPOS_FIELDSET_NAME = "Time/Position";
+
   /**
    * The numeric value for the error status.
    * The data set will be given this status whenever a processing job fails.
@@ -201,7 +205,12 @@ public class DataSet {
   /**
    * The available field sets for this dataset
    */
-  private Map<String, Long> fieldSets = null;
+  private LinkedHashMap<String, Long> fieldSetsByName = null;
+
+  /**
+   * The available field sets for this dataset
+   */
+  private LinkedHashMap<Long, String> fieldSetsById = null;
 
   /**
    * The minimum longitude
@@ -606,30 +615,70 @@ public class DataSet {
   }
 
   /**
-   * Get the available field sets for this dataset. Builds the list once,
-   * then caches it
+   * Get the available field sets for this dataset keyed by name.
+   * Builds the list once, then caches it
    * @return The field sets
    * @throws MissingParamException If any required parameters are missing
    * @throws DatabaseException If a database error occurs
    * @throws VariableNotFoundException If an invalid variable is configured for the instrument
    */
-  public Map<String, Long> getFieldSets()
+  @SuppressWarnings("unchecked")
+  public LinkedHashMap<String, Long> getFieldSetsByName(boolean includeTimePos)
     throws MissingParamException, VariableNotFoundException, DatabaseException {
 
-    if (null == fieldSets) {
-      fieldSets = new LinkedHashMap<String, Long>();
-      fieldSets.put(DataSetDataDB.SENSORS_FIELDSET_NAME,
+    if (null == fieldSetsByName) {
+      fieldSetsByName = new LinkedHashMap<String, Long>();
+      fieldSetsByName.put(TIMEPOS_FIELDSET_NAME, TIMEPOS_FIELDSET_ID);
+
+      fieldSetsByName.put(DataSetDataDB.SENSORS_FIELDSET_NAME,
         DataSetDataDB.SENSORS_FIELDSET);
 
-      fieldSets.put(DataSetDataDB.DIAGNOSTICS_FIELDSET_NAME,
+      fieldSetsByName.put(DataSetDataDB.DIAGNOSTICS_FIELDSET_NAME,
         DataSetDataDB.DIAGNOSTICS_FIELDSET);
 
       for (InstrumentVariable variable : InstrumentDB.getVariables(instrumentId)) {
-        fieldSets.put(variable.getName(), variable.getId());
+        fieldSetsByName.put(variable.getName(), variable.getId());
       }
     }
 
-    return fieldSets;
+    LinkedHashMap<String, Long> result = fieldSetsByName;
+
+    if (!includeTimePos) {
+      result = (LinkedHashMap<String, Long>) fieldSetsByName.clone();
+      result.remove(DataSet.TIMEPOS_FIELDSET_NAME);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the available field sets for this dataset keyed by ID.
+   * Builds the list once, then caches it
+   * @return The field sets
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   * @throws VariableNotFoundException If an invalid variable is configured for the instrument
+   */
+  @SuppressWarnings("unchecked")
+  public LinkedHashMap<Long, String> getFieldSetsById(boolean includeTimePos)
+    throws MissingParamException, VariableNotFoundException, DatabaseException {
+    if (null == fieldSetsById) {
+      Map<String, Long> byName = getFieldSetsByName(true);
+
+      fieldSetsById = new LinkedHashMap<Long, String>();
+      for (Map.Entry<String, Long> entry : byName.entrySet()) {
+        fieldSetsById.put(entry.getValue(), entry.getKey());
+      }
+    }
+
+    LinkedHashMap<Long, String> result = fieldSetsById;
+
+    if (!includeTimePos) {
+      result = (LinkedHashMap<Long, String>) fieldSetsById.clone();
+      result.remove(DataSet.TIMEPOS_FIELDSET_ID);
+    }
+
+    return result;
   }
 
   @Override

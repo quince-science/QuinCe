@@ -1,6 +1,11 @@
-package uk.ac.exeter.QuinCe.web;
+package uk.ac.exeter.QuinCe.web.PlotPage;
 
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+
+import org.primefaces.json.JSONArray;
+import org.primefaces.json.JSONObject;
 
 import com.google.gson.Gson;
 
@@ -8,7 +13,11 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -34,6 +43,21 @@ public abstract class PlotPageBean extends BaseManagedBean {
   protected Instrument instrument;
 
   /**
+   * The field sets for the current dataset
+   */
+  protected FieldSets fieldSets;
+
+  /**
+   * The table content for the current field set
+   */
+  protected TableData tableData;
+
+  /**
+   * The list of times in the table data. Used for quick lookups by index
+   */
+  protected List<LocalDateTime> tableRowIds;
+
+  /**
    * The data for the current view of the data table.
    *
    * <p>
@@ -48,20 +72,11 @@ public abstract class PlotPageBean extends BaseManagedBean {
    */
   private String tableJsonData = null;
 
-  /**
-   * The list of row ids in the data being displayed.
-   */
-  private List<Long> tableRowIds = null;
 
   /**
    * The list of row IDs as a JSON string
    */
   private String tableRowIdsJson = null;
-
-  /**
-   * The table headings as a JSON array
-   */
-  private List<String> tableHeadings;
 
   /**
    * An internal value for the DataTables library,
@@ -83,9 +98,9 @@ public abstract class PlotPageBean extends BaseManagedBean {
   private int tableDataLength;
 
   /**
-   * The current table mode
+   * The currently selected field set
    */
-  private long fieldSet = 0;
+  private long currentFieldSet = 0;
 
   /**
    * A Javascript array string containing the list of all row numbers in the current data file that can be
@@ -103,11 +118,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * The row numbers that have been selected by the user. Stored as a comma-separated list.
    */
   private String selectedRows = null;
-
-  /**
-   * The tree of variables for the plots
-   */
-  protected VariableList variables = null;
 
   /**
    * The data for the first plot as a JSON string
@@ -320,7 +330,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
    */
   public void generateTableData() {
     try {
-      tableJsonData = loadTableData(tableDataStart, tableDataLength);
+      tableJsonData = getTableData(tableDataStart, tableDataLength);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -334,50 +344,18 @@ public abstract class PlotPageBean extends BaseManagedBean {
   private void clearTableData() {
     tableRowIds = null;
     tableRowIdsJson = null;
-    tableHeadings = null;
     tableJsonData = null;
   }
 
   /**
-   * Get the list of row IDs for the data being displayed
-   * @return The row IDs
+   * Get the list of field set IDs
+   * @return The field set IDs
+   * @throws DatabaseException
+   * @throws VariableNotFoundException
+   * @throws MissingParamException
    */
-  protected abstract List<Long> loadRowIds() throws Exception;
-
-  /**
-   * Get the headings for the table as a JSON string
-   * @return The table headings
-   */
-  public String getTableHeadings() {
-    Gson gson = new Gson();
-    return gson.toJson(tableHeadings);
-  }
-
-  /**
-   * Return a JSON array of integers stating which field set
-   * each column belongs to. This array must match the number
-   * of columns returned by getTableHeadings.
-   *
-   * A field set of 0 indicates that the column is in every field set
-   *
-   * @return The field sets for the columns
-   */
-  public abstract String getFieldSets();
-
-  /**
-   * Set the headings for the table
-   * @param tableHeadings
-   */
-  protected void setTableHeadings(List<String> tableHeadings) {
-    this.tableHeadings = tableHeadings;
-  }
-
-  /**
-   * Get the list of variables for the current data set
-   * @return The variables
-   */
-  public VariableList getVariablesList() {
-    return variables;
+  public FieldSets getFieldSets() {
+    return fieldSets;
   }
 
   /**
@@ -435,6 +413,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
    */
   public String start() {
     try {
+      reset();
+
       ResourceManager resourceManager = ResourceManager.getInstance();
       dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
 
@@ -442,17 +422,15 @@ public abstract class PlotPageBean extends BaseManagedBean {
         dataset.getInstrumentId(), resourceManager.getSensorsConfiguration(),
         resourceManager.getRunTypeCategoryConfiguration());
 
-      variables = new VariableList();
-      buildVariableList(variables);
 
-      init();
-      dirty = false;
+      loadData();
+      selectableRows = buildSelectableRows();
+
       plot1 = new Plot(this, dataset.getBounds(), getDefaultPlot1XAxis(), getDefaultPlot1YAxis(), getDefaultMap1Variable());
       plot2 = new Plot(this, dataset.getBounds(), getDefaultPlot2XAxis(), getDefaultPlot2YAxis(), getDefaultMap2Variable());
 
-
-      buildTableRowIds();
-      selectableRows = buildSelectableRows();
+      init();
+      dirty = false;
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -461,11 +439,26 @@ public abstract class PlotPageBean extends BaseManagedBean {
   }
 
   /**
+   * Clear all cached data
+   */
+  protected void reset() {
+    dataset = null;
+    instrument = null;
+    tableData = null;
+    fieldSets = null;
+    tableRowIds = null;
+    plot1 = null;
+    plot2 = null;
+    selectableRows = null;
+    selectedRows = null;
+  }
+
+  /**
    * Get the current table mode
    * @return The table mode
    */
   public long getFieldSet() {
-    return fieldSet;
+    return currentFieldSet;
   }
 
   /**
@@ -473,17 +466,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @param sensorsFieldset The table mode
    */
   public void setFieldSet(long fieldSet) {
-    this.fieldSet = fieldSet;
-  }
-
-  /**
-   * Build the list of row IDs for the data being displayed
-   * @throws Exception If the row IDs cannot be retrieved
-   */
-  private void buildTableRowIds() throws Exception {
-    tableRowIds = loadRowIds();
-    Gson gson = new Gson();
-    tableRowIdsJson = gson.toJson(tableRowIds);
+    this.currentFieldSet = fieldSet;
   }
 
   /**
@@ -516,66 +499,122 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @param length The number of records to retrieve
    * @return The table data
    */
-  protected abstract String loadTableData(int start, int length) throws Exception;
+  protected String getTableData(int start, int length) throws Exception {
+
+    // TODO Convert to GSON - I don't have the API here
+
+    JSONArray json = new JSONArray();
+
+    for (int i = start; i < start + length; i++) {
+
+      JSONObject obj = new JSONObject();
+
+      obj.put("DT_RowId", tableRowIds.get(i));
+
+      int columnIndex = 0;
+      obj.put(String.valueOf(columnIndex), tableRowIds.get(i));
+
+      LinkedHashMap<Field, FieldValue> row = tableData.get(tableRowIds.get(i));
+
+      for (FieldValue value : row.values()) {
+
+        if (null == value) {
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
+
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
+
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
+
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
+
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
+        } else {
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), value.getValue());
+
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), value.isUsed());
+
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), value.getQcFlag().getFlagValue());
+
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), value.needsFlag());
+
+          columnIndex++;
+          obj.put(String.valueOf(columnIndex), value.getQcComment());
+        }
+
+        json.put(obj);
+      }
+    }
+
+    return json.toString();
+  }
 
   /**
    * Get the default variable to use on the X axis of Plot 1
    * @return The default variable
    */
-  protected abstract Variable getDefaultPlot1XAxis();
+  protected Field getDefaultPlot1XAxis() {
+    return fieldSets.getRowIdField();
+  }
 
   /**
    * Get the default variables to use on the Y axis of Plot 1
    * @return The default variables
    */
-  protected abstract List<Variable> getDefaultPlot1YAxis();
+  protected abstract Field getDefaultPlot1YAxis();
 
   /**
    * Get the default variable to use on the X axis of Plot 2
    * @return The default variable
    */
-  protected abstract Variable getDefaultPlot2XAxis();
+  protected Field getDefaultPlot2XAxis() {
+    return fieldSets.getRowIdField();
+  }
 
   /**
    * Get the default variables to use on the Y axis of Plot 2
    * @return The default variables
    */
-  protected abstract List<Variable> getDefaultPlot2YAxis();
+  protected abstract Field getDefaultPlot2YAxis();
 
   /**
    * Get the default variable to use on Map 1
    * @return The default variable
    */
-  protected abstract Variable getDefaultMap1Variable();
+  protected Field getDefaultMap1Variable() {
+    return getDefaultPlot1YAxis();
+  }
 
   /**
    * Get the default variable to use on Map 2
    * @return The default variable
    */
-  protected abstract Variable getDefaultMap2Variable();
+  protected Field getDefaultMap2Variable() {
+    return getDefaultPlot2YAxis();
+  }
 
   /**
    * Get the variable group details
    * @return The variable group details
    */
-  public String getVariableGroups() {
-    return variables.getGroupsJson();
+  public String getVariableGroups() throws Exception {
+    return new Gson().toJson(getFieldSets());
   }
 
   /**
    * Get the variable group names as a JSON string
    * @return The variable group names
    */
-  public String getVariableGroupNames() {
-    return variables.getGroupNamesJson();
-  }
-
-  /**
-   * Get the total number of available variables
-   * @return The number of variables
-   */
-  public int getVariableCount() {
-    return variables.getVariableCount();
+  public String getVariableGroupNames() throws Exception {
+    return new Gson().toJson(dataset.getFieldSetsByName(true).keySet());
   }
 
   /**
@@ -602,13 +641,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
   public abstract boolean getHasTwoPlots();
 
   /**
-   * Build the variable list for the plots
-   * @param variables The list to be populated
-   * @throws Exception If any errors occur
-   */
-  protected abstract void buildVariableList(VariableList variables) throws Exception;
-
-  /**
    * Retrieve the data for the specified fields as a JSON string
    * @param fields The fields to retrieve
    * @return The data
@@ -624,4 +656,10 @@ public abstract class PlotPageBean extends BaseManagedBean {
     // NRT data sets cannot be edited
     return !getDataset().isNrt();
   }
+
+  /**
+   * Load all data for the page. Populate field sets, table data,
+   * and table row ids
+   */
+  protected abstract void loadData() throws Exception;
 }
