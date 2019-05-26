@@ -6,17 +6,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
 import org.primefaces.json.JSONArray;
-import org.primefaces.json.JSONObject;
-
-import com.google.gson.Gson;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
@@ -25,21 +19,18 @@ import uk.ac.exeter.QuinCe.data.Calculation.CommentSetEntry;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DiagnosticDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.web.PlotPageBean;
-import uk.ac.exeter.QuinCe.web.Variable;
-import uk.ac.exeter.QuinCe.web.VariableList;
+import uk.ac.exeter.QuinCe.web.PlotPage.Field;
+import uk.ac.exeter.QuinCe.web.PlotPage.FieldSet;
+import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
+import uk.ac.exeter.QuinCe.web.PlotPage.PlotPageBean;
+import uk.ac.exeter.QuinCe.web.PlotPage.TableData;
 
 /**
  * User QC bean
@@ -82,38 +73,11 @@ public class ManualQcBean extends PlotPageBean {
   private String userComment;
 
   /**
-   * The basic list of table columns. This excludes Date/Time, Lon and Lat,
-   * and does not include the sub-columns (i.e. qc info)
-   */
-  private List<QCColumn> tableColumns;
-
-  /**
-   * The table content for the current field set
-   */
-  private QCTableData tableData;
-
-  /**
-   * The list of times in the table data. Used for quick lookups by index
-   */
-  private List<LocalDateTime> tableTimes;
-
-  /**
    * Initialise the required data for the bean
    */
   @Override
   public void init() {
     setFieldSet(DataSetDataDB.SENSORS_FIELDSET);
-  }
-
-  @Override
-  protected List<Long> loadRowIds() throws Exception {
-    if (null == tableData) {
-      loadTableData();
-    }
-
-    return Stream.iterate(0L, n -> n + 1)
-       .limit(tableData.size() - 1)
-       .collect(Collectors.toList());
   }
 
   @Override
@@ -124,65 +88,6 @@ public class ManualQcBean extends PlotPageBean {
   @Override
   protected String buildPlotLabels(int plotIndex) {
     return null;
-  }
-
-  @Override
-  protected String loadTableData(int start, int length) throws Exception {
-
-    // TODO Convert to GSON - I don't have the API here
-
-    JSONArray json = new JSONArray();
-
-    for (int i = start; i < start + length; i++) {
-
-      JSONObject obj = new JSONObject();
-
-      obj.put("DT_RowId", tableTimes.get(i));
-
-      int columnIndex = 0;
-      obj.put(String.valueOf(columnIndex), tableTimes.get(i));
-
-      LinkedHashMap<Long, QCColumnValue> row = tableData.get(tableTimes.get(i));
-
-      for (QCColumnValue value : row.values()) {
-
-        if (null == value) {
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-        } else {
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), value.getValue());
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), value.isUsed());
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), value.getQcFlag().getFlagValue());
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), value.needsFlag());
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), value.getQcComment());
-        }
-      }
-
-      json.put(obj);
-    }
-
-    return json.toString();
   }
 
   /**
@@ -319,44 +224,28 @@ public class ManualQcBean extends PlotPageBean {
   }
 
   @Override
-  protected Variable getDefaultPlot1XAxis() {
-    return variables.getVariableWithLabel("Date/Time");
-  }
+  protected Field getDefaultPlot1YAxis() {
+    Field result = null;
 
-  @Override
-  protected List<Variable> getDefaultPlot1YAxis() {
-    List<Variable> result = new ArrayList<Variable>(1);
-    result.add(variables.getVariableWithLabel("Intake Temperature"));
+    try {
+      List<FileColumn> fileColumns = InstrumentDB.getSensorColumns(
+        getDataSource(), instrument.getDatabaseId());
+
+      for (FileColumn column : fileColumns) {
+        if (column.getSensorType().getName().equals("Intake Temperature")) {
+          result = fieldSets.getField(column.getColumnId());
+        }
+      }
+    } catch (Exception e) {
+      // Do nothing
+    }
+
     return result;
   }
 
   @Override
-  protected Variable getDefaultPlot2XAxis() {
-    return variables.getVariableWithLabel("Date/Time");
-  }
-
-  @Override
-  protected List<Variable> getDefaultPlot2YAxis() {
-    List<Variable> result = new ArrayList<Variable>(1);
-    result.add(variables.getVariableWithLabel("Final fCO2"));
-    return result;
-  }
-
-  @Override
-  protected Variable getDefaultMap1Variable() {
-    return variables.getVariableWithLabel("Intake Temperature");
-  }
-
-  @Override
-  protected Variable getDefaultMap2Variable() {
-    return variables.getVariableWithLabel("Final fCO2");
-  }
-
-  @Override
-  protected void buildVariableList(VariableList variables) throws Exception {
-    DataSetDataDB.populateVariableList(getDataSource(), getDataset(), variables);
-    CalculationDBFactory.getCalculationDB().populateVariableList(variables);
-    DiagnosticDataDB.populateVariableList(getDataSource(), getDataset(), variables);
+  protected Field getDefaultPlot2YAxis() {
+    return fieldSets.getField("fCO₂");
   }
 
   @Override
@@ -369,74 +258,40 @@ public class ManualQcBean extends PlotPageBean {
     return true;
   }
 
-  @Override
-  public String getTableHeadings() {
-    List<String> headings = new ArrayList<String>(tableColumns.size() * 4 + 12);
-
-    headings.add("Date/Time");
-
-    for (QCColumn column : tableColumns) {
-      headings.add(column.getName());
-      headings.add(column.getName() + "_used");
-      headings.add(column.getName() + "_qc");
-      headings.add(column.getName() + "_needsFlag");
-      headings.add(column.getName() + "_comment");
-    }
-
-    return new Gson().toJson(headings);
-  }
-
-  @Override
-  public String getFieldSets() {
-
-    TreeMap<Long, List<Integer>> fieldSets = new TreeMap<Long, List<Integer>>();
-
-    // Date/Time
-    int col = 0;
-
-    for (QCColumn column : tableColumns) {
-      long fieldSet = column.getFieldSet();
-
-      if (null == fieldSets.get(fieldSet)) {
-        fieldSets.put(fieldSet, new ArrayList<Integer>());
-      }
-
-      fieldSets.get(fieldSet).add(++col);
-      fieldSets.get(fieldSet).add(++col);
-      fieldSets.get(fieldSet).add(++col);
-      fieldSets.get(fieldSet).add(++col);
-      fieldSets.get(fieldSet).add(++col);
-    }
-
-    return new Gson().toJson(fieldSets);
-  }
-
   /**
    * Load the data for the current field set
    */
-  private void loadTableData() throws MissingParamException, DatabaseException,
-    InvalidFlagException, RoutineException {
+  @Override
+  protected void loadData() throws Exception {
 
     try {
-      tableColumns = new ArrayList<QCColumn>();
+      fieldSets = new FieldSets("Date/Time");
 
-      tableColumns.add(new QCColumn(FileDefinition.LONGITUDE_COLUMN_ID,
-        "Longitude", 0));
-      tableColumns.add(new QCColumn(FileDefinition.LATITUDE_COLUMN_ID,
-        "Latitude", 0));
+      fieldSets.addField(FieldSet.BASE_FIELD_SET,
+        new Field(FileDefinition.LONGITUDE_COLUMN_ID, "Longitude"));
+      fieldSets.addField(FieldSet.BASE_FIELD_SET,
+        new Field(FileDefinition.LATITUDE_COLUMN_ID, "Latitude"));
 
       // Sensor columns
       List<FileColumn> fileColumns = InstrumentDB.getSensorColumns(
         getDataSource(), instrument.getDatabaseId());
 
+      FieldSet sensorFieldSet = fieldSets.addFieldSet(DataSetDataDB.SENSORS_FIELDSET,
+          DataSetDataDB.SENSORS_FIELDSET_NAME);
+
+
+      FieldSet diagnosticFieldSet = fieldSets.addFieldSet(DataSetDataDB.DIAGNOSTICS_FIELDSET,
+        DataSetDataDB.DIAGNOSTICS_FIELDSET_NAME);
+
       for (FileColumn column : fileColumns) {
-        long fieldSet = DataSetDataDB.SENSORS_FIELDSET;
+
+        FieldSet addFieldSet = sensorFieldSet;
         if (column.getSensorType().isDiagnostic()) {
-          fieldSet = DataSetDataDB.DIAGNOSTICS_FIELDSET;
+          addFieldSet = diagnosticFieldSet;
         }
 
-        tableColumns.add(new QCColumn(column.getColumnId(),
-          column.getColumnName(), fieldSet));
+        fieldSets.addField(addFieldSet,
+          new Field(column.getColumnId(), column.getColumnName()));
       }
 
       // Data reduction columns
@@ -444,37 +299,37 @@ public class ManualQcBean extends PlotPageBean {
         LinkedHashMap<String, Long> variableParameters =
           DataReducerFactory.getCalculationParameters(variable);
 
+        FieldSet varFieldSet = fieldSets.addFieldSet(variable.getId(), variable.getName());
+
         // Columns from data reduction are given IDs based on the
         // variable ID and parameter number
         for (Map.Entry<String, Long> entry : variableParameters.entrySet()) {
-          tableColumns.add(new QCColumn(entry.getValue(),
-            entry.getKey(), variable.getId()));
+
+          fieldSets.addField(varFieldSet,
+            new Field(entry.getValue(), entry.getKey()));
         }
       }
 
-      tableData = new QCTableData(tableColumns);
+      tableData = new TableData(fieldSets);
 
       // Load data for sensor columns
+      List<Long> fieldIds = new ArrayList<Long>();
+      fieldIds.add(FileDefinition.LONGITUDE_COLUMN_ID);
+      fieldIds.add(FileDefinition.LATITUDE_COLUMN_ID);
+      fieldIds.addAll(fieldSets.getFieldIds(sensorFieldSet));
+      fieldIds.addAll(fieldSets.getFieldIds(diagnosticFieldSet));
+
+
       DataSetDataDB.getQCSensorData(getDataSource(), tableData,
-        getDataset().getId(), instrument, getTableColumnIDs());
+        getDataset().getId(), instrument, fieldIds);
 
       // Load data reduction data
       DataSetDataDB.getDataReductionData(getDataSource(), tableData, dataset);
 
       // Extract the times - these will be the row IDs
-      tableTimes = new ArrayList<LocalDateTime>(tableData.keySet());
+      tableRowIds = new ArrayList<LocalDateTime>(tableData.keySet());
     } catch (Exception e) {
       e.printStackTrace();
     }
-  }
-
-  private List<Long> getTableColumnIDs() {
-    List<Long> result = new ArrayList<Long>(tableColumns.size() + 2);
-
-    for (QCColumn column : tableColumns) {
-      result.add(column.getId());
-    }
-
-    return result;
   }
 }

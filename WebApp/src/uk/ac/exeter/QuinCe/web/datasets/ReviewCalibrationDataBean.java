@@ -8,8 +8,6 @@ import java.util.Map;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
-import org.primefaces.json.JSONArray;
-
 import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
@@ -17,9 +15,8 @@ import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.web.PlotPageBean;
-import uk.ac.exeter.QuinCe.web.Variable;
-import uk.ac.exeter.QuinCe.web.VariableList;
+import uk.ac.exeter.QuinCe.web.PlotPage.Field;
+import uk.ac.exeter.QuinCe.web.PlotPage.PlotPageBean;
 
 /**
  * Bean for handling review of calibration data
@@ -76,25 +73,6 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
   }
 
   @Override
-  protected List<Long> loadRowIds() throws Exception {
-    return CalibrationDataDB.getCalibrationRowIds(getDataSource(), getDatasetId(), null);
-  }
-
-  protected String buildTableHeadings() {
-    JSONArray headings = new JSONArray();
-    headings.put("ID");
-    headings.put("Date");
-    headings.put("Run Type");
-    headings.put("CO2");
-    headings.put("Standard Value");
-    headings.put("Offset");
-    headings.put("Use?");
-    headings.put("Use Message");
-
-    return headings.toString();
-  }
-
-  @Override
   protected String buildSelectableRows() throws Exception {
     List<Long> ids = CalibrationDataDB.getCalibrationRowIds(getDataSource(), getDatasetId(), null);
     StringBuilder result = new StringBuilder();
@@ -128,7 +106,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
   }
 
   @Override
-  protected String loadTableData(int start, int length) throws Exception {
+  protected String getTableData(int start, int length) throws Exception {
     return CalibrationDataDB.getJsonTableData(getDataSource(), getDatasetId(), null, start, length);
   }
 
@@ -180,48 +158,25 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
   }
 
   @Override
-  protected Variable getDefaultPlot1XAxis() {
-    return variables.getVariableWithLabel("Date/Time");
-  }
-
-  @Override
-  protected List<Variable> getDefaultPlot1YAxis() {
-    return variables.getGroup("CO₂").getVariables();
-  }
-
-  @Override
-  protected Variable getDefaultPlot2XAxis() {
+  protected Field getDefaultPlot1YAxis() {
+    //TODO DO
     return null;
   }
 
   @Override
-  protected List<Variable> getDefaultPlot2YAxis() {
-    return new ArrayList<Variable>();
-  }
-
-  @Override
-  protected Variable getDefaultMap1Variable() {
+  protected Field getDefaultPlot2YAxis() {
+    //TODO DO
     return null;
-  }
-
-  @Override
-  protected Variable getDefaultMap2Variable() {
-    return null;
-  }
-
-  @Override
-  protected void buildVariableList(VariableList variables) throws Exception {
-    variables.addVariable("Date/Time", new Variable(Variable.TYPE_BASE, "Date/Time", "date", true, false, false));
-    CalibrationDataDB.populateVariableList(getDataSource(), getDataset(), variables);
   }
 
   @Override
   protected String getData(List<String> fields) throws Exception {
     List<String> standardNames = new ArrayList<String>();
+/*
     for (Variable variable : plot1.getYAxisVariables()) {
       standardNames.add(variable.getFieldName());
     }
-
+*/
     return CalibrationDataDB.getJsonPlotData(getDataSource(), getDataset(), standardNames);
   }
 
@@ -231,8 +186,8 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
   }
 
   @Override
-  public String getFieldSets() {
+  protected void loadData() throws Exception {
     // TODO Auto-generated method stub
-    return null;
+
   }
 }
