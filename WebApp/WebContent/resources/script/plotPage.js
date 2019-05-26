@@ -275,6 +275,39 @@ function drawTable() {
 }
 
 /*
+ * Show or hide columns as required.
+ */
+function renderTableColumns(fieldSet) {
+
+  // Default to Sensors
+  if (typeof fieldSet === 'undefined') {
+    fieldSet = -1;
+  }
+
+  var fieldSets = JSON.parse($('#plotPageForm\\:fieldSets').val());
+
+  var visibleColumns = [0]; // Date/Time
+
+  // Other base fieldset fields
+  var fieldSetColumns = fieldSets[0];
+  for (i = 1; i < fieldSetColumns.length; i += 5) {
+    visibleColumns.push(fieldSetColumns[i]);
+  }
+
+  // Selected fieldset fields
+  var fieldSetColumns = fieldSets[fieldSet];
+  for (i = 0; i < fieldSetColumns.length; i += 5) {
+    visibleColumns.push(fieldSetColumns[i]);
+  }
+
+  var invisibleColumns = jsDataTable.columns()[0].filter(f => !visibleColumns.includes(f));
+  jsDataTable.columns(invisibleColumns).visible(false, false);
+  jsDataTable.columns(visibleColumns).visible(true, true);
+
+  console.log(visibleColumns);
+}
+
+/*
  * Calculate the value of the scrollY entry for the data table
  */
 function calcTableScrollY() {

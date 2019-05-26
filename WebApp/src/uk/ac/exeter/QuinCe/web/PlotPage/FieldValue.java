@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.datasets;
+package uk.ac.exeter.QuinCe.web.PlotPage;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -7,7 +7,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.AutoQCResult;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 
-public class QCColumnValue {
+public class FieldValue {
 
   /**
    * The sensor value's database ID
@@ -49,7 +49,7 @@ public class QCColumnValue {
    * @param qcComment The QC comment
    * @param used Indicates whether or not the value is used in any calculations
    */
-  public QCColumnValue(long valueId, Double value, Flag qcFlag, boolean needsFlag,
+  public FieldValue(long valueId, Double value, Flag qcFlag, boolean needsFlag,
     String qcComment, boolean used) {
 
     this.valueId = valueId;
@@ -70,7 +70,7 @@ public class QCColumnValue {
    * @param used Indicates whether or not the value is used in any calculations
    * @throws RoutineException If the automatic QC result cannot be processed
    */
-  public QCColumnValue(long valueId, Double value, AutoQCResult autoQC,
+  public FieldValue(long valueId, Double value, AutoQCResult autoQC,
     Flag userQCFlag, String qcComment, boolean used) throws RoutineException {
 
     this.valueId = valueId;
@@ -96,8 +96,8 @@ public class QCColumnValue {
    * @param ids The IDs
    * @return The map
    */
-  public static LinkedHashMap<Long, QCColumnValue> initMap(List<Long> ids) {
-    LinkedHashMap<Long, QCColumnValue> map = new LinkedHashMap<Long, QCColumnValue>();
+  public static LinkedHashMap<Long, FieldValue> initMap(List<Long> ids) {
+    LinkedHashMap<Long, FieldValue> map = new LinkedHashMap<Long, FieldValue>();
     for (Long id : ids) {
       map.put(id, null);
     }
@@ -129,4 +129,8 @@ public class QCColumnValue {
     return used;
   }
 
+  @Override
+  public String toString() {
+    return String.valueOf(value);
+  }
 }
