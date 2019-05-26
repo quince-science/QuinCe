@@ -303,8 +303,6 @@ function renderTableColumns(fieldSet) {
   var invisibleColumns = jsDataTable.columns()[0].filter(f => !visibleColumns.includes(f));
   jsDataTable.columns(invisibleColumns).visible(false, false);
   jsDataTable.columns(visibleColumns).visible(true, true);
-
-  console.log(visibleColumns);
 }
 
 /*
