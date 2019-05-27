@@ -1,8 +1,10 @@
 package uk.ac.exeter.QuinCe.web.PlotPage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gson.Gson;
 
@@ -10,8 +12,15 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
 
   private Field rowIdField;
 
+  private Map<String, Field> fieldsByName;
+
+  private Map<Long, Field> fieldsById;
+
   public FieldSets(String rowIdName) {
     super();
+    fieldsByName = new HashMap<String, Field>();
+    fieldsById = new HashMap<Long, Field>();
+
     addFieldSet(FieldSet.BASE_FIELD_SET);
 
     // Add the row ID field to the base field set
@@ -61,19 +70,7 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
    * @return The field, or null
    */
   public Field getField(long fieldId) {
-    Field result = null;
-
-    fieldSetLoop:
-    for (List<Field> fields : values()) {
-      for (Field field : fields) {
-        if (field.getId() == fieldId) {
-          result = field;
-          break fieldSetLoop;
-        }
-      }
-    }
-
-    return result;
+    return fieldsById.get(fieldId);
   }
 
   /**
@@ -82,19 +79,7 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
    * @return
    */
   public Field getField(String fieldName) {
-    Field result = null;
-
-    fieldSetLoop:
-    for (List<Field> fields : values()) {
-      for (Field field : fields) {
-        if (field.getName().equals(fieldName)) {
-          result = field;
-          break fieldSetLoop;
-        }
-      }
-    }
-
-    return result;
+    return fieldsByName.get(fieldName);
   }
 
   /**
@@ -111,6 +96,8 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
     }
 
     get(fieldSet).add(field);
+    fieldsByName.put(field.getName(), field);
+    fieldsById.put(field.getId(), field);
   }
 
   public FieldSet addFieldSet(long id, String name) {
