@@ -1,10 +1,6 @@
-var sensorColums = [];
-var calculationColumns = [];
-var diagnosticColumns = [];
-
 var plotSplitProportion = 0.5;
 
-// Stepped range calculator
+//Stepped range calculator
 const range = (start, stop, step = 1) =>
   Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step)
 
@@ -98,57 +94,65 @@ function getColumnDefs() {
   var columns = JSON.parse($('#plotPageForm\\:columnHeadings').val())
 
   var dateCol = [0];
-  var valueCols = range(1, columns.length, 5);
+  var valueCols = range(1, columns.length);
 
   return [
-    {"render":
+  {"render":
       function (data, type, row) {
         return makeUTCDateTime(new Date(data));
       },
       "targets": dateCol
     },
+    {"defaultContent": "",
+        "targets": valueCols
+    },
     {"render":
       function (data, type, row) {
+      // 0 = value
+      // 1 = used
+      // 2 = QC flag
+      // 3 = Needs Flag
+      // 4 = QC Comment
 
-      var col = arguments[3]['col'];
+      var result = '';
 
-      var used = row[col + 1];
+      if (null != data) {
+          var flagClass = null;
+          switch (data[2]) {
+          case 3: {
+            flagClass = 'questionable';
+              break;
+          }
+          case 4: {
+            flagClass = 'bad';
+              break;
+          }
+          }
 
-      var flagClass = null;
-      switch (row[col + 2]) {
-      case 3: {
-        flagClass = 'questionable';
-          break;
+          var classes = ['numericCol'];
+          if (!data[1]) {
+            classes.push('unused');
+          }
+
+          if (null != flagClass) {
+            console.log(flagClass);
+            classes.push(flagClass);
+          }
+
+          if (data[3]) {
+            classes.push('needsFlag');
+          }
+
+          result = '<div class="' + classes.join(' ') + '"';
+
+          if (null != flagClass) {
+            result += ' onmouseover="showQCMessage(' + data[2] + ', \''+ data[4] + '\')" onmouseout="hideQCMessage()"';
+          }
+
+          result += '>' + (null == data ? "" : data[0].toFixed(3)) + '</div>';
+          return result;
       }
-      case 4: {
-        flagClass = 'bad';
-          break;
-      }
-      }
 
-      var needsFlag = row[col + 3];
-
-      var classes = ['numericCol'];
-      if (!used) {
-        classes.push('unused');
-      }
-
-      if (null != flagClass) {
-        classes.push(flagClass);
-      }
-
-      if (needsFlag) {
-        classes.push('needsFlag');
-      }
-
-      var result = '<div class="' + classes.join(' ') + '"';
-
-      if (null != flagClass) {
-        result += ' onmouseover="showQCMessage(' + row[col + 2] + ', \''+ row[col + 4] + '\')" onmouseout="hideQCMessage()"';
-      }
-
-      result += '>' + (null == data ? "" : data.toFixed(3)) + '</div>';
-      return result;
       },
       "targets": valueCols
     }

@@ -521,33 +521,16 @@ public abstract class PlotPageBean extends BaseManagedBean {
         if (null == value) {
           columnIndex++;
           obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), JSONObject.NULL);
         } else {
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), value.getValue());
+          JSONArray cellData = new JSONArray();
+          cellData.put(value.getValue());
+          cellData.put(value.isUsed());
+          cellData.put(value.getQcFlag().getFlagValue());
+          cellData.put(value.needsFlag());
+          cellData.put(value.getQcComment());
 
           columnIndex++;
-          obj.put(String.valueOf(columnIndex), value.isUsed());
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), value.getQcFlag().getFlagValue());
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), value.needsFlag());
-
-          columnIndex++;
-          obj.put(String.valueOf(columnIndex), value.getQcComment());
+          obj.put(String.valueOf(columnIndex), cellData);
         }
 
         json.put(obj);

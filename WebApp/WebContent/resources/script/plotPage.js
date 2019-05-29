@@ -278,7 +278,6 @@ function drawTable() {
  * Show or hide columns as required.
  */
 function renderTableColumns(fieldSet) {
-
   // Default to Sensors
   if (typeof fieldSet === 'undefined') {
     fieldSet = -1;
@@ -290,13 +289,13 @@ function renderTableColumns(fieldSet) {
 
   // Other base fieldset fields
   var fieldSetColumns = fieldSets[0];
-  for (i = 1; i < fieldSetColumns.length; i += 5) {
+  for (var i = 1; i < fieldSetColumns.length; i++) {
     visibleColumns.push(fieldSetColumns[i]);
   }
 
   // Selected fieldset fields
   var fieldSetColumns = fieldSets[fieldSet];
-  for (i = 0; i < fieldSetColumns.length; i += 5) {
+  for (var i = 0; i < fieldSetColumns.length; i++) {
     visibleColumns.push(fieldSetColumns[i]);
   }
 
