@@ -135,7 +135,6 @@ function getColumnDefs() {
           }
 
           if (null != flagClass) {
-            console.log(flagClass);
             classes.push(flagClass);
           }
 
