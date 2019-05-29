@@ -138,15 +138,7 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
 
     for (List<Field> fields : values()) {
       for (Field field : fields) {
-        if (field.equals(rowIdField)) {
-          headings.add(field.getName());
-        } else {
-          headings.add(field.getName());
-          headings.add(field.getName() + "_used");
-          headings.add(field.getName() + "_qc");
-          headings.add(field.getName() + "_needsFlag");
-          headings.add(field.getName() + "_comment");
-        }
+        headings.add(field.getName());
       }
     }
 
@@ -170,16 +162,8 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
       // Add the field set to the map
       columnIndexes.put(fieldSet.getId(), new ArrayList<Integer>());
 
-      for (Field field : get(fieldSet)) {
-        if (field.equals(rowIdField)) {
-          columnIndexes.get(fieldSet.getId()).add(++currentColumn);
-        } else {
-          columnIndexes.get(fieldSet.getId()).add(++currentColumn); // Name
-          columnIndexes.get(fieldSet.getId()).add(++currentColumn); // Used
-          columnIndexes.get(fieldSet.getId()).add(++currentColumn); // QC
-          columnIndexes.get(fieldSet.getId()).add(++currentColumn); // Needs Flag
-          columnIndexes.get(fieldSet.getId()).add(++currentColumn); // Comment
-        }
+      for (int i = 0; i < get(fieldSet).size(); i++) {
+        columnIndexes.get(fieldSet.getId()).add(++currentColumn);
       }
     }
 
