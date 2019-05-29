@@ -533,8 +533,9 @@ public abstract class PlotPageBean extends BaseManagedBean {
           obj.put(String.valueOf(columnIndex), cellData);
         }
 
-        json.put(obj);
       }
+
+      json.put(obj);
     }
 
     return json.toString();
