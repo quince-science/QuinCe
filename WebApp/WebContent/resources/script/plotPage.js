@@ -61,7 +61,7 @@ var BASE_GRAPH_OPTIONS = {
 var VARIABLES_DIALOG_ENTRY_HEIGHT = 35;
 
 //Controller for input updates
-var variablesUpdating = false;
+var updatingButtons = false;
 var variablesPlotIndex = 1;
 
 
@@ -581,11 +581,6 @@ function drawPlot(index) {
   var yLabels = labels.slice(3);
   var yLabel = yLabels[0];
 
-  if (yLabels.length > 1) {
-    var yIds = JSON.parse($('#plot' + index + 'Form\\:yAxis').val());
-    yLabel = getVariableGroup(yIds[0]);
-  }
-
   var graph_options = Object.assign({}, BASE_GRAPH_OPTIONS);
   graph_options.labels = getPlotLabels(index);
   graph_options.xlabel = xLabel;
@@ -748,110 +743,28 @@ function showVariableDialog(plotIndex) {
 function setupPlotVariables(plotIndex) {
   $("[id$=mapVarCheckbox]").hide();
   $("[id$=AxisButton]").show();
-  updateXAxisButtons($('#plot' + plotIndex + 'Form\\:xAxis').val());
-  populateYAxisButtons(JSON.parse($('#plot' + plotIndex + 'Form\\:yAxis').val()));
+  updateAxisButtons('x', $('#plot' + plotIndex + 'Form\\:xAxis').val());
+  updateAxisButtons('y', $('#plot' + plotIndex + 'Form\\:yAxis').val());
 }
 
-//Select the specified X Axis in the dialog
-function updateXAxisButtons(variable) {
+//Select the specified axis variable in the dialog
+function updateAxisButtons(axis, variable) {
 
-  if (!variablesUpdating) {
-    variablesUpdating = true;
+  if (!updatingButtons) {
+    updatingButtons = true;
 
-    for (var i = 0; i < variableCount; i++) {
-      var widget = PrimeFaces.widgets['xAxis-' + i];
-      if (null != widget) {
-        if (i == variable) {
-          widget.check();
-        } else {
-          widget.uncheck();
-        }
-      }
-    }
-
-    variablesUpdating = false;
-  }
-}
-
-function populateYAxisButtons(variables) {
-  if (!variablesUpdating) {
-    variablesUpdating = true;
-
-
-    for (var i = 0; i < variableCount; i++) {
-      var widget = PrimeFaces.widgets['yAxis-' + i];
-      if (null != widget) {
-        if ($.inArray(i, variables) > -1) {
-          widget.check();
-        } else {
-          widget.uncheck();
-        }
-      }
-    }
-
-    variablesUpdating = false;
-  }
-}
-
-function updateYAxisButtons(variable) {
-  if (!variablesUpdating) {
-    variablesUpdating = true;
-
-    var finished = false;
-    var index = 0;
-
-    while (!finished) {
-      var widget = PrimeFaces.widgets['yAxis-' + index];
-      if (null == widget) {
-        finished = true;
-      } else if (index != variable && !inSameGroup(index, variable)) {
+    variableIds.forEach(id => {
+      var widget = PrimeFaces.widgets[axis + 'Axis-' + id];
+      if (id == variable) {
+        widget.check();
+        $('#plot' + variablesPlotIndex + 'Form\\:' + axis + 'Axis').val(variable);
+      } else {
         widget.uncheck();
       }
+    });
 
-      index++;
-    }
-
-    // If no Y axis is selected, disabled the OK button
-    if ($('[id$=yAxisButton_input]:checked').length == 0) {
-      PF('variableOk').disable();
-    } else {
-      PF('variableOk').enable();
-    }
-
-    variablesUpdating = false;
+    updatingButtons = false;
   }
-}
-
-//See if two ids are in the same variable group
-function inSameGroup(id1, id2) {
-  var result = false;
-
-  if (id1 == id2) {
-    result = true;
-  } else {
-    for (var i = 0; i < variableGroups.length; i++) {
-      var groupMembers = variableGroups[i];
-      if ($.inArray(id1, groupMembers) > -1 && $.inArray(id2, groupMembers) > -1) {
-        result = true;
-      }
-    }
-  }
-
-  return result;
-}
-
-function getVariableGroup(varIndex) {
-
-  var label = '';
-  for (var i = 0; i < variableGroups.length; i++) {
-
-    if ($.inArray(varIndex, variableGroups[i]) > -1) {
-      label = variableGroupNames[i];
-      break
-    }
-  }
-
-  return label;
 }
 
 function setupMapVariables(plotIndex) {
@@ -915,7 +828,6 @@ function applyVariables() {
   if (PrimeFaces.widgets['variableDialog']) {
     PF('variableDialog').hide();
   }
-  updatePlotInputs(variablesPlotIndex);
 
   var mode = getPlotMode(variablesPlotIndex);
   if (mode == 'plot') {
@@ -928,59 +840,6 @@ function applyVariables() {
     initMap(variablesPlotIndex);
   }
 
-}
-
-function updatePlotInputs(plotIndex) {
-  var mode = getPlotMode(plotIndex);
-
-  if (mode == 'plot') {
-    // If no X Axis is selected, keep the current selection
-    var xAxis = getSelectedXAxis();
-    if (-1 != xAxis) {
-      $('#plot' + plotIndex + 'Form\\:xAxis').val(getSelectedXAxis());
-    }
-
-    $('#plot' + plotIndex + 'Form\\:yAxis').val(getSelectedYAxis());
-  } else if (mode == 'map') {
-    $('#plot' + plotIndex + 'Form\\:mapVariable').val(getSelectedMapVar());
-  }
-}
-
-function getSelectedXAxis() {
-
-  var result = -1;
-
-  for (var i = 0; i < variableCount; i++) {
-    var widget = PrimeFaces.widgets['xAxis-' + i];
-    if (null != widget) {
-      if (widget.input.prop('checked')) {
-        result = i;
-        break;
-      }
-    }
-  }
-
-  return result;
-}
-
-function getSelectedYAxis() {
-
-  var result = '[';
-
-  for (var i = 0; i < variableCount; i++) {
-    var widget = PrimeFaces.widgets['yAxis-' + i];
-    if (null != widget && widget.input.prop('checked')) {
-      result += i;
-      result += ',';
-    }
-  }
-
-  if (result.length > 1) {
-    result = result.substring(0, result.length - 1);
-  }
-  result += ']';
-
-  return result;
 }
 
 function getSelectedMapVar() {

@@ -123,6 +123,16 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
     return result;
   }
 
+  public List<Long> getFieldIds() {
+    List<Long> result = new ArrayList<Long>();
+
+    for (FieldSet fieldSet : this.keySet()) {
+      result.addAll(getFieldIds(fieldSet));
+    }
+
+    return result;
+  }
+
   public List<Long> getFieldIds(FieldSet fieldSet) {
     List<Long> result = new ArrayList<Long>(get(fieldSet).size());
 
