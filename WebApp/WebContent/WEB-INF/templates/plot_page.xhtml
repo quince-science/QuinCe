@@ -23,8 +23,7 @@
     <h:outputScript name="script/plotPage.js"/>
     <ui:insert name="localHead"></ui:insert>
     <script>
-      var variableGroups = #{sessionScope[beanName].variableGroups};
-      var variableGroupNames = #{sessionScope[beanName].variableGroupNames};
+      var variableIds = #{sessionScope[beanName].getFieldSets().getFieldIds()};
       var variableCount = #{sessionScope[beanName].getFieldSets().getFieldCount()};
       var canEdit = #{sessionScope[beanName].canEdit};
     </script>
@@ -81,8 +80,8 @@
                   </div>
                   <div class="variableControls">
                     <p:selectBooleanCheckbox widgetVar="mapVar-#{variable.id}" id="mapVarCheckbox" onchange="updateMapCheckboxes(#{variable.id})"/>
-                    <p:selectBooleanButton widgetVar="xAxis-#{variable.id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateXAxisButtons(#{variable.id})"/>
-                    <p:selectBooleanButton widgetVar="yAxis-#{variable.id}" onLabel="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateYAxisButtons(#{variable.id})"/>
+                    <p:selectBooleanButton widgetVar="xAxis-#{variable.id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateAxisButtons('x', #{variable.id})"/>
+                    <p:selectBooleanButton widgetVar="yAxis-#{variable.id}" onLabel="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateAxisButtons('y', #{variable.id})"/>
                   </div>
                 </div>
               </ui:repeat>

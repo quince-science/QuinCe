@@ -108,9 +108,13 @@ public class Plot {
   }
 
   /**
-   * @return the xAxis
+   * @return the X Axis ID
    */
-  public Field getXAxis() {
+  public long getXAxis() {
+    return xAxis.getId();
+  }
+
+  public Field getXAxisField() {
     return xAxis;
   }
 
@@ -125,9 +129,13 @@ public class Plot {
   }
 
   /**
-   * @return the yAxis
+   * @return the Y Axis ID
    */
-  public Field getYAxis() {
+  public long getYAxis() {
+    return yAxis.getId();
+  }
+
+  public Field getYAxisField() {
     return yAxis;
   }
 
@@ -141,7 +149,11 @@ public class Plot {
   /**
    * @return the mapVariable
    */
-  public Field getMapVariable() {
+  public long getMapVariable() {
+    return mapVariable.getId();
+  }
+
+  public Field getMapVariableField() {
     return mapVariable;
   }
 
@@ -182,6 +194,7 @@ public class Plot {
   public String getLabels() {
     StringBuilder result = new StringBuilder();
 
+    // TODO Make this through GSON
     result.append('[');
 
 
@@ -191,9 +204,9 @@ public class Plot {
       // TODO Remove the magic strings. Make PSF fields in CalculationDB
       result.append('"');
       result.append(xAxis.getName());
-      result.append("\",\"ID\",\"Manual Flag\"");
+      result.append("\",\"ID\",\"QC Flag\",\"");
       result.append(yAxis.getName());
-
+      result.append('"');
       break;
     }
     case MODE_MAP: {
@@ -207,7 +220,7 @@ public class Plot {
       result.append("\",\"");
       result.append("ID");
       result.append("\",\"");
-      result.append("Manual Flag");
+      result.append("QC Flag");
       result.append("\",\"");
       result.append(mapVariable.getName());
       result.append('"');
