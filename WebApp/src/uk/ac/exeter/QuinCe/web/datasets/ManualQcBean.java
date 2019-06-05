@@ -30,7 +30,7 @@ import uk.ac.exeter.QuinCe.web.PlotPage.Field;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSet;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
 import uk.ac.exeter.QuinCe.web.PlotPage.PlotPageBean;
-import uk.ac.exeter.QuinCe.web.PlotPage.TableData;
+import uk.ac.exeter.QuinCe.web.PlotPage.PlotPageData;
 
 /**
  * User QC bean
@@ -310,7 +310,7 @@ public class ManualQcBean extends PlotPageBean {
         }
       }
 
-      tableData = new TableData(fieldSets);
+      tableData = new PlotPageData(fieldSets);
 
       // Load data for sensor columns
       List<Long> fieldIds = new ArrayList<Long>();

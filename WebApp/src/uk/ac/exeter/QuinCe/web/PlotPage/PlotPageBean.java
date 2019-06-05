@@ -50,7 +50,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
   /**
    * The table content for the current field set
    */
-  protected TableData tableData;
+  protected PlotPageData tableData;
 
   /**
    * The list of times in the table data. Used for quick lookups by index
