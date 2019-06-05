@@ -4,11 +4,11 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.TreeMap;
 
-public class TableData extends TreeMap<LocalDateTime, LinkedHashMap<Field, FieldValue>> {
+public class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, FieldValue>> {
 
   private FieldSets fieldSets;
 
-  public TableData(FieldSets fieldSets) {
+  public PlotPageData(FieldSets fieldSets) {
     super();
     this.fieldSets = fieldSets;
   }
