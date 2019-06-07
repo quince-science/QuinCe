@@ -80,8 +80,15 @@
                   </div>
                   <div class="variableControls">
                     <p:selectBooleanCheckbox widgetVar="mapVar-#{variable.id}" id="mapVarCheckbox" onchange="updateMapCheckboxes(#{variable.id})"/>
-                    <p:selectBooleanButton widgetVar="xAxis-#{variable.id}" onLabel="X" offLabel="X" styleClass="axisButton" id="xAxisButton" onchange="updateAxisButtons('x', #{variable.id})"/>
-                    <p:selectBooleanButton widgetVar="yAxis-#{variable.id}" onLabel="Y" offLabel="Y" styleClass="axisButton" id="yAxisButton" onchange="updateAxisButtons('y', #{variable.id})"/>
+                    <p:selectBooleanButton widgetVar="xAxis-#{variable.id}" onLabel="X" offLabel="X" styleClass="axisButton" onchange="updateAxisButtons('x', #{variable.id})"/>
+                    
+                    <ui:remove><!-- Date/Time cannot be used for the Y axis --></ui:remove>
+                    <ui:fragment rendered="#{variable.id ne 0}">
+                      <p:selectBooleanButton widgetVar="yAxis-#{variable.id}" onLabel="Y" offLabel="Y" styleClass="axisButton" onchange="updateAxisButtons('y', #{variable.id})"/>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{variable.id eq 0}">
+                      <div class="noAxisButton">&nbsp;</div>
+                    </ui:fragment>
                   </div>
                 </div>
               </ui:repeat>
