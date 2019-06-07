@@ -201,6 +201,11 @@ tr.selected {
   position: relative;
 }
 
+.noAxisButton {
+  width: 19px;
+  height: 16px;
+}
+
 .ui-selectbooleanbutton .ui-button-text {
   margin-left: -8px;
   margin-top: -3px;

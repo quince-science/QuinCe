@@ -755,11 +755,15 @@ function updateAxisButtons(axis, variable) {
 
     variableIds.forEach(id => {
       var widget = PrimeFaces.widgets[axis + 'Axis-' + id];
-      if (id == variable) {
-        widget.check();
-        $('#plot' + variablesPlotIndex + 'Form\\:' + axis + 'Axis').val(variable);
-      } else {
-        widget.uncheck();
+   
+      // Not all variables will have an axis button
+      if (widget) {
+        if (id == variable) {
+          widget.check();
+          $('#plot' + variablesPlotIndex + 'Form\\:' + axis + 'Axis').val(variable);
+        } else {
+          widget.uncheck();
+        }
       }
     });
 
