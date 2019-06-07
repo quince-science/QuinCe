@@ -755,7 +755,7 @@ function updateAxisButtons(axis, variable) {
 
     variableIds.forEach(id => {
       var widget = PrimeFaces.widgets[axis + 'Axis-' + id];
-   
+
       // Not all variables will have an axis button
       if (widget) {
         if (id == variable) {
