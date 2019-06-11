@@ -14,6 +14,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
@@ -486,7 +487,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
       JSONObject obj = new JSONObject();
 
-      obj.put("DT_RowId", pageData.getRowIds().get(i));
+      obj.put("DT_RowId", DateTimeUtils.dateToLong(pageData.getRowIds().get(i)));
 
       int columnIndex = 0;
       obj.put(String.valueOf(columnIndex), pageData.getRowIds().get(i));
