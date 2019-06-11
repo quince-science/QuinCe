@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -249,11 +248,6 @@ public class ManualQcBean extends PlotPageBean {
   }
 
   @Override
-  protected String getData(List<String> fields) throws Exception {
-    return CalculationDBFactory.getCalculationDB().getJsonData(getDataSource(), getDataset(), fields, fields.get(0));
-  }
-
-  @Override
   public boolean getHasTwoPlots() {
     return true;
   }
@@ -310,7 +304,7 @@ public class ManualQcBean extends PlotPageBean {
         }
       }
 
-      tableData = new PlotPageData(fieldSets);
+      pageData = new PlotPageData(fieldSets);
 
       // Load data for sensor columns
       List<Long> fieldIds = new ArrayList<Long>();
@@ -320,14 +314,11 @@ public class ManualQcBean extends PlotPageBean {
       fieldIds.addAll(fieldSets.getFieldIds(diagnosticFieldSet));
 
 
-      DataSetDataDB.getQCSensorData(getDataSource(), tableData,
+      DataSetDataDB.getQCSensorData(getDataSource(), pageData,
         getDataset().getId(), instrument, fieldIds);
 
       // Load data reduction data
-      DataSetDataDB.getDataReductionData(getDataSource(), tableData, dataset);
-
-      // Extract the times - these will be the row IDs
-      tableRowIds = new ArrayList<LocalDateTime>(tableData.keySet());
+      DataSetDataDB.getDataReductionData(getDataSource(), pageData, dataset);
     } catch (Exception e) {
       e.printStackTrace();
     }

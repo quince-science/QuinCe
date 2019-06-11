@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.web.PlotPage;
 
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -50,12 +49,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
   /**
    * The table content for the current field set
    */
-  protected PlotPageData tableData;
-
-  /**
-   * The list of times in the table data. Used for quick lookups by index
-   */
-  protected List<LocalDateTime> tableRowIds;
+  protected PlotPageData pageData;
 
   /**
    * The data for the current view of the data table.
@@ -71,12 +65,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @see <a href="https://datatables.net/examples/data_sources/server_side.html">DataTables Server-Side Processing</a>
    */
   private String tableJsonData = null;
-
-
-  /**
-   * The list of row IDs as a JSON string
-   */
-  private String tableRowIdsJson = null;
 
   /**
    * An internal value for the DataTables library,
@@ -197,8 +185,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
    */
   public int getRecordCount() {
     int result = -1;
-    if (null != tableRowIds) {
-      result = tableRowIds.size();
+    if (null != pageData) {
+      result = pageData.size();
     }
 
     return result;
@@ -209,22 +197,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @param recordCount Ignored.
    */
   public void setRecordCount(int recordCount) {
-    // Do nothing
-  }
-
-  /**
-   * Returns the list of table rows as a JSON string
-   * @return The table row IDs
-   */
-  public String getTableRowIds() {
-    return tableRowIdsJson;
-  }
-
-  /**
-   * Set the table row IDs (dummy method)
-   * @param tableRowIds Ignored.
-   */
-  public void setTableRowIds(String tableRowIds) {
     // Do nothing
   }
 
@@ -342,8 +314,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * reinitialise everything.
    */
   private void clearTableData() {
-    tableRowIds = null;
-    tableRowIdsJson = null;
     tableJsonData = null;
   }
 
@@ -444,9 +414,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
   protected void reset() {
     dataset = null;
     instrument = null;
-    tableData = null;
+    pageData = null;
     fieldSets = null;
-    tableRowIds = null;
     plot1 = null;
     plot2 = null;
     selectableRows = null;
@@ -485,13 +454,21 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @throws Exception If the list cannot be created
    */
   protected String buildSelectableRows() throws Exception {
-    return getTableRowIds();
+    return pageData.getRowIdsJson();
   }
 
   /**
    * Build the labels for the plot
    */
   protected abstract String buildPlotLabels(int plotIndex);
+
+  /**
+   * Get the page data object
+   * @return The page data object
+   */
+  public PlotPageData getTableData() {
+    return pageData;
+  }
 
   /**
    * Load the data for the specified portion of the table as a JSON string
@@ -509,12 +486,12 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
       JSONObject obj = new JSONObject();
 
-      obj.put("DT_RowId", tableRowIds.get(i));
+      obj.put("DT_RowId", pageData.getRowIds().get(i));
 
       int columnIndex = 0;
-      obj.put(String.valueOf(columnIndex), tableRowIds.get(i));
+      obj.put(String.valueOf(columnIndex), pageData.getRowIds().get(i));
 
-      LinkedHashMap<Field, FieldValue> row = tableData.get(tableRowIds.get(i));
+      LinkedHashMap<Field, FieldValue> row = pageData.get(pageData.getRowIds().get(i));
 
       for (FieldValue value : row.values()) {
 
@@ -625,14 +602,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
   public abstract boolean getHasTwoPlots();
 
   /**
-   * Retrieve the data for the specified fields as a JSON string
-   * @param fields The fields to retrieve
-   * @return The data
-   * @throws Exception If an error occurs
-   */
-  protected abstract String getData(List<String> fields) throws Exception;
-
-  /**
    * Indicates whether or not changes can be made to the data
    * @return {@code true} if data can be edited; {@code false} if not
    */
@@ -646,4 +615,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * and table row ids
    */
   protected abstract void loadData() throws Exception;
+
+  protected PlotPageData getData() {
+    return pageData;
+  }
 }

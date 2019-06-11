@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -167,17 +166,6 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
   protected Field getDefaultPlot2YAxis() {
     //TODO DO
     return null;
-  }
-
-  @Override
-  protected String getData(List<String> fields) throws Exception {
-    List<String> standardNames = new ArrayList<String>();
-/*
-    for (Variable variable : plot1.getYAxisVariables()) {
-      standardNames.add(variable.getFieldName());
-    }
-*/
-    return CalibrationDataDB.getJsonPlotData(getDataSource(), getDataset(), standardNames);
   }
 
   @Override

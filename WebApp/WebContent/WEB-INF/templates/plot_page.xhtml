@@ -39,7 +39,7 @@
     <h:form id="plotPageForm" method="post">
       <h:inputHidden value="#{sessionScope[beanName].getFieldSets().getTableHeadings()}" id="columnHeadings"/>
       <h:inputHidden value="#{sessionScope[beanName].getFieldSets().getFieldSetIds()}" id="fieldSets"/>
-      <h:inputHidden value="#{sessionScope[beanName].tableRowIds}" id="tableRowIds"/>
+      <h:inputHidden value="#{sessionScope[beanName].getTableData().getRowIdsJson()}" id="tableRowIds"/>
       <h:inputHidden value="#{sessionScope[beanName].selectableRows}" id="selectableRows"/>
       <h:inputHidden value="#{sessionScope[beanName].dataBounds}" id="dataBounds"/>
       <ui:insert name="formEntries"></ui:insert>
