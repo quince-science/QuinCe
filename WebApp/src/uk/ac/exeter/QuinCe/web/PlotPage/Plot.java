@@ -241,51 +241,11 @@ public class Plot {
   }
 
   /**
-   * Get the fields required for the plot in its current configuration
-   * @return The fields
-   */
-  private List<String> getPlotDataFields() {
-
-    List<String> fields = new ArrayList<String>();
-
-    switch(mode) {
-    case MODE_PLOT: {
-      // TODO Remove the magic strings. Make PSF fields in CalculationDB
-      fields.add(xAxis.getName());
-      fields.add("id");
-      if (parentBean.getDataset().isNrt()) {
-        fields.add("auto_flag");
-      } else {
-        fields.add("user_flag");
-      }
-      fields.add(yAxis.getName());
-
-      break;
-    }
-    case MODE_MAP: {
-      // TODO Remove the magic strings. Make PSF fields in CalculationDB
-      fields.add("longitude");
-      fields.add("latitude");
-      fields.add("date");
-      fields.add("id");
-      if (parentBean.getDataset().isNrt()) {
-        fields.add("auto_flag");
-      } else {
-        fields.add("user_flag");
-      }
-      fields.add(mapVariable.getName());
-    }
-    }
-
-    return fields;
-  }
-
-  /**
    * Update the plot data
      */
   public void updatePlot() {
     try {
-      data = parentBean.getData(getPlotDataFields());
+      data = parentBean.getData().getPlotData(xAxis, yAxis);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -352,7 +312,7 @@ public class Plot {
             // if (mapUpdateScale) { // This doesn't work well. Since the performance hit is small, leave out the check for now.
                 mapScaleLimits = loadMapScaleLimits();
             //}
-            mapData = CalculationDBFactory.getCalculationDB().getJsonData(parentBean.getDataSource(), parentBean.getDataset(), getPlotDataFields(), null, mapBounds, true);
+            //mapData = CalculationDBFactory.getCalculationDB().getJsonData(parentBean.getDataSource(), parentBean.getDataset(), getPlotDataFields(), null, mapBounds, true);
     } catch (Exception e) {
       e.printStackTrace();
     }
