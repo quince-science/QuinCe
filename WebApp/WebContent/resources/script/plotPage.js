@@ -657,7 +657,7 @@ function getPlotVisibility(index) {
   for (var i = 1; i < labels.length; i++) {
     switch (labels[i]) {
     case 'ID':
-    case 'Manual Flag': {
+    case 'QC Flag': {
       visibility.push(false);
       break;
     }
