@@ -25,8 +25,8 @@ function drawPage() {
   // add them to the dialog first
   //TODO This is ugly and must be fixed up
 
-  //initPlot(1);
-  //initPlot(2);
+  initPlot(1);
+  initPlot(2);
 
   drawTable();
 }
