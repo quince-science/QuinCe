@@ -346,6 +346,7 @@ function getRowId(event, xValue, points) {
 
   var plotIndex = containerId.substring(4, 5);
   var pointId = points[0]['idx'];
+
   return getPlotData(plotIndex)[pointId][1];
 }
 
@@ -365,16 +366,16 @@ function scrollToTableRow(rowId) {
 
     // Because we scroll to the row - 2, we know that the
     // row we want to highlight is the third row
-    tableScrollRow = tableRow;
+    tableScrollRow = rowId;
 
     // The highlight is done as part of the table draw callback
   }
 }
 
-function highlightRow(tableRow) {
-  if (null != tableRow) {
+function highlightRow(rowId) {
+  if (null != rowId) {
     setTimeout(function() {
-      var rowNode = $('#row' + tableRow)[0];
+      var rowNode = $('#' + rowId)[0];
       $(rowNode).css('animationName', 'rowFlash').css('animationDuration', '1s');
       setTimeout(function() {
         $(rowNode).css('animationName', '');
