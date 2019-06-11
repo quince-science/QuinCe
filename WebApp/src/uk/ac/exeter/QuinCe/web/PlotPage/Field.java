@@ -24,4 +24,17 @@ public class Field {
   public String toString() {
     return name;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    boolean result = false;
+
+    if (o instanceof Field) {
+      result = ((Field) o).id == id;
+    } else if (o instanceof Long) {
+      result = (Long) o == id;
+    }
+
+    return result;
+  }
 }

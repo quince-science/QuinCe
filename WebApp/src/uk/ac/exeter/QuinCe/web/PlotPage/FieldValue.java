@@ -129,6 +129,10 @@ public class FieldValue {
     return used;
   }
 
+  public boolean isNaN() {
+    return value.isNaN();
+  }
+
   @Override
   public String toString() {
     return String.valueOf(value);
