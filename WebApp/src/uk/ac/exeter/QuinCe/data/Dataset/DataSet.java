@@ -725,19 +725,8 @@ public class DataSet {
    *
    * @return The dataset bounds
    */
-  public List<Double> getBounds() {
-
-    List<Double> result = new ArrayList<Double>(6);
-
-    result.add(minLon);
-    result.add(minLat);
-    result.add(maxLon);
-    result.add(maxLat);
-
-    result.add((maxLon - minLon) / 2 + minLon);
-    result.add((maxLat - minLat) / 2 + minLat);
-
-    return result;
+  public GeoBounds getBounds() {
+    return new GeoBounds(minLon, maxLon, minLat, maxLat);
   }
 
   public double getMinLon() {

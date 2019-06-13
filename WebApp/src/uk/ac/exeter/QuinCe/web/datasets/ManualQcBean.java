@@ -29,7 +29,7 @@ import uk.ac.exeter.QuinCe.web.PlotPage.Field;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSet;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
 import uk.ac.exeter.QuinCe.web.PlotPage.PlotPageBean;
-import uk.ac.exeter.QuinCe.web.PlotPage.PlotPageData;
+import uk.ac.exeter.QuinCe.web.PlotPage.Data.PlotPageData;
 
 /**
  * User QC bean
@@ -104,6 +104,10 @@ public class ManualQcBean extends PlotPageBean {
         e.printStackTrace();
       }
     }
+
+    // Destroy all data
+    reset();
+
     return NAV_DATASET_LIST;
   }
 
