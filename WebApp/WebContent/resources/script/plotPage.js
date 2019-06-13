@@ -19,8 +19,8 @@ var PLOT_MEASUREMENT_ID_INDEX = 1;
 var PLOT_MANUAL_FLAG_INDEX = 2;
 var PLOT_FIRST_Y_INDEX = 3;
 
-var MAP_MEASUREMENT_ID_INDEX = 3;
-var MAP_MANUAL_FLAG_INDEX = 4;
+var MAP_MEASUREMENT_ID_INDEX = 2;
+var MAP_MANUAL_FLAG_INDEX = 3;
 
 // Colors used to highlight points in plot, depending on quality flag or
 // selection
@@ -742,8 +742,23 @@ function showVariableDialog(plotIndex) {
 }
 
 function setupPlotVariables(plotIndex) {
-  $("[id$=mapVarCheckbox]").hide();
-  $("[id$=AxisButton]").show();
+  variableIds.forEach(id => {
+    var xWidget = PrimeFaces.widgets['xAxis-' + id];
+    if (xWidget) {
+      xWidget.jq.show();
+    }
+
+    var yWidget = PrimeFaces.widgets['yAxis-' + id];
+    if (yWidget) {
+        yWidget.jq.show();
+      }
+
+    var mapWidget = PrimeFaces.widgets['mapVar-' + id];
+    if (mapWidget) {
+      mapWidget.jq.hide();
+    }
+  });
+
   updateAxisButtons('x', $('#plot' + plotIndex + 'Form\\:xAxis').val());
   updateAxisButtons('y', $('#plot' + plotIndex + 'Form\\:yAxis').val());
 }
@@ -773,34 +788,46 @@ function updateAxisButtons(axis, variable) {
 }
 
 function setupMapVariables(plotIndex) {
-  $("[id$=AxisButton]").hide();
-  $("[id$=mapVarCheckbox]").show();
+  variableIds.forEach(id => {
+    var xWidget = PrimeFaces.widgets['xAxis-' + id];
+    if (xWidget) {
+      xWidget.jq.hide();
+    }
+
+    var yWidget = PrimeFaces.widgets['yAxis-' + id];
+    if (yWidget) {
+        yWidget.jq.hide();
+      }
+
+    var mapWidget = PrimeFaces.widgets['mapVar-' + id];
+    if (mapWidget) {
+      mapWidget.jq.show();
+    }
+  });
   updateMapCheckboxes($('#plot' + plotIndex + 'Form\\:mapVariable').val());
 }
 
 //Select the specified variable in the dialog
 function updateMapCheckboxes(variable) {
 
-  if (!variablesUpdating) {
-    variablesUpdating = true;
+  if (!updatingButtons) {
+  updatingButtons = true;
 
-    var finished = false;
-    var index = 0;
+    variableIds.forEach(id => {
+        var widget = PrimeFaces.widgets['mapVar-' + id];
 
-    while (!finished) {
-      var widget = PrimeFaces.widgets['mapVar-' + index];
-      if (null == widget) {
-        finished = true;
-      } else if (index == variable) {
-        widget.check();
-      } else {
-        widget.uncheck();
-      }
+        // Not all variables will have an axis button
+        if (widget) {
+          if (id == variable) {
+            widget.check();
+            $('#plot' + variablesPlotIndex + 'Form\\:mapVariable').val(variable);
+          } else {
+            widget.uncheck();
+          }
+        }
+      });
 
-      index++;
-    }
-
-    variablesUpdating = false;
+    updatingButtons = false;
   }
 }
 
@@ -946,7 +973,6 @@ function initMap(index) {
 
   window[extentVar] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", initialView.getProjection());
 
-
   window[mapVar].on('moveend', function(event) {
     mapMoveGetData(event);
   });
@@ -1017,7 +1043,7 @@ function drawMap(index) {
         image: new ol.style.Circle({
           radius: 5,
           fill: new ol.style.Fill({
-            color: window[colorScaleVar].getColor(featureData[5])
+            color: window[colorScaleVar].getColor(featureData[4])
           }),
           stroke: stroke
         })
@@ -1067,7 +1093,7 @@ function displayMapFeatureInfo(event, pixel) {
     featureInfo += feature['data'][1];
     featureInfo += ' ';
     featureInfo += ' <b>Value:</b> '
-      featureInfo += feature['data'][5];
+      featureInfo += feature['data'][4];
   }
 
   $('#map' + index + 'Value').html(featureInfo);
@@ -1080,7 +1106,7 @@ function mapClick(event, pixel) {
   });
 
   if (feature) {
-    scrollToTableRow(feature['data'][3]);
+    scrollToTableRow(feature['data'][2]);
   }
 }
 

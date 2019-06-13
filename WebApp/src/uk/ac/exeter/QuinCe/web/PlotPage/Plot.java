@@ -3,7 +3,7 @@ package uk.ac.exeter.QuinCe.web.PlotPage;
 import java.util.ArrayList;
 import java.util.List;
 
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.GeoBounds;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -64,9 +64,8 @@ public class Plot {
 
   /**
    * The bounds of the map display.
-   * This is a list of [minx, miny, maxx, maxy]
    */
-  private List<Double> mapBounds = null;
+  private GeoBounds mapBounds = null;
 
   /**
    * The scale limits for the left map
@@ -81,14 +80,14 @@ public class Plot {
    * @param yAxis The y axis variables
    * @param mapVariable The map variable
    */
-  public Plot(PlotPageBean parentBean, List<Double> mapBounds, Field xAxis, Field yAxis, Field mapVariable) {
+  public Plot(PlotPageBean parentBean, GeoBounds mapBounds, Field xAxis, Field yAxis, Field mapVariable) {
     this.parentBean = parentBean;
     this.mapBounds = mapBounds;
     this.xAxis = xAxis;
     this.yAxis = yAxis;
     this.mapVariable = mapVariable;
 
-    mapScaleLimits = new ArrayList<Double>(4);
+    mapScaleLimits = new ArrayList<Double>(2);
     mapScaleLimits.add(0.0);
     mapScaleLimits.add(0.0);
   }
@@ -283,14 +282,14 @@ public class Plot {
    * @return the mapBounds
    */
   public String getMapBounds() {
-    return '[' + StringUtils.collectionToDelimited(mapBounds, ",") + ']';
+    return mapBounds.toJson();
   }
 
   /**
    * @param mapBounds the mapBounds to set
    */
   public void setMapBounds(String mapBounds) {
-    this.mapBounds = StringUtils.delimitedToDoubleList(mapBounds.substring(1, mapBounds.length() - 1), ",");
+    this.mapBounds = new GeoBounds(mapBounds);
   }
 
   /**
@@ -309,35 +308,10 @@ public class Plot {
 
   public void generateMapData() {
     try {
-            // if (mapUpdateScale) { // This doesn't work well. Since the performance hit is small, leave out the check for now.
-                mapScaleLimits = loadMapScaleLimits();
-            //}
-            //mapData = CalculationDBFactory.getCalculationDB().getJsonData(parentBean.getDataSource(), parentBean.getDataset(), getPlotDataFields(), null, mapBounds, true);
+      mapScaleLimits = parentBean.getData().getValueRange(mapVariable);
+      mapData = parentBean.getData().getMapData(mapVariable, mapBounds);
     } catch (Exception e) {
       e.printStackTrace();
     }
-  }
-
-  /**
-   * Get the value range for a column being shown on a map
-   * @return The value range
-   */
-  private List<Double> loadMapScaleLimits() {
-    List<Double> result = null;
-
-    try {
-      // TODO This is specific to the Manual QC. Move it out to a method in the parent bean
-      result = CalculationDBFactory.getCalculationDB().getValueRange(parentBean.getDataSource(), parentBean.getDataset(), mapVariable.getName());
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    if (null == result) {
-      result = new ArrayList<Double>(2);
-      result.add(0.0);
-      result.add(0.0);
-    }
-
-    return result;
   }
 }

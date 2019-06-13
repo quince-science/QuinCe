@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.PlotPage.Data.PlotPageData;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -584,8 +585,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @return The data bounds
    */
   public String getDataBounds() {
-    Gson gson = new Gson();
-    return gson.toJson(dataset.getBounds());
+    return dataset.getBounds().toJson();
   }
 
   /**
