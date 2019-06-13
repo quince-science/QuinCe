@@ -53,7 +53,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.Variable;
 import uk.ac.exeter.QuinCe.web.VariableList;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
-import uk.ac.exeter.QuinCe.web.PlotPage.PlotPageData;
+import uk.ac.exeter.QuinCe.web.PlotPage.Data.PlotPageData;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
