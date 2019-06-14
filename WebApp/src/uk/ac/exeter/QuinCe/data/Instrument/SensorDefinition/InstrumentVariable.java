@@ -8,6 +8,7 @@ import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Class to hold the sensors required for a given variable.
@@ -162,6 +163,9 @@ public class InstrumentVariable {
   public Flag getCascade(SensorType sensorType, Flag flag,
     SensorAssignments sensorAssignments) throws SensorConfigurationException {
 
+    SensorsConfiguration sensorConfig =
+      ResourceManager.getInstance().getSensorsConfiguration();
+
     Flag result = null;
 
     if (sensorType.equals(coreSensorType)) {
@@ -174,11 +178,25 @@ public class InstrumentVariable {
         break;
       }
       case Flag.VALUE_QUESTIONABLE: {
-        result = questionableCascades.get(sensorType);
+        if (questionableCascades.containsKey(sensorType)) {
+          result = questionableCascades.get(sensorType);
+        } else {
+          SensorType parent = sensorConfig.getParent(sensorType);
+          if (null != parent) {
+            result = questionableCascades.get(parent);
+          }
+        }
         break;
       }
       case Flag.VALUE_BAD: {
-        result = badCascades.get(sensorType);
+        if (badCascades.containsKey(sensorType)) {
+          result = badCascades.get(sensorType);
+        } else {
+          SensorType parent = sensorConfig.getParent(sensorType);
+          if (null != parent) {
+            result = badCascades.get(parent);
+          }
+        }
         break;
       }
       default: {
