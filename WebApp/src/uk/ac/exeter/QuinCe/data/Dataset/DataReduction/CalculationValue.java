@@ -7,6 +7,7 @@ import java.util.TreeSet;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 /**
@@ -30,9 +31,11 @@ public class CalculationValue {
 
   private List<String> qcMessages;
 
+  private boolean flagNeeded;
+
   public CalculationValue(long measurementId, long variableId,
       TreeSet<Long> usedSensorValues, Double value,
-    Flag qcFlag, List<String> qcMessages) {
+    Flag qcFlag, List<String> qcMessages, boolean flagNeeded) {
 
     this.measurementId = measurementId;
     this.variableId = variableId;
@@ -40,6 +43,7 @@ public class CalculationValue {
     this.value = value;
     this.qcFlag = qcFlag;
     this.qcMessages = qcMessages;
+    this.flagNeeded = flagNeeded;
   }
 
   /**
@@ -64,6 +68,10 @@ public class CalculationValue {
    */
   public Flag getQCFlag() {
     return qcFlag;
+  }
+
+  public boolean flagNeeded() {
+    return flagNeeded;
   }
 
   /**
@@ -96,9 +104,10 @@ public class CalculationValue {
    * set of sensor values
    * @param list The sensor values
    * @return The calculation value
+   * @throws RoutineException
    */
   public static  CalculationValue get(Measurement measurement, SensorType sensorType,
-    List<SensorValue> values) {
+    List<SensorValue> values) throws RoutineException {
 
     // TODO Make this more intelligent - handle fallbacks, averages, interpolation etc.
     // For now we're just averaging all the values we get.
@@ -106,6 +115,7 @@ public class CalculationValue {
     TreeSet<Long> usedSensorValues = new TreeSet<Long>();
     Double finalValue = Double.NaN;
     Flag qcFlag = Flag.ASSUMED_GOOD;
+    boolean flagNeeded = false;
     List<String> qcMessages = new ArrayList<String>();
 
     if (null == values) {
@@ -124,19 +134,20 @@ public class CalculationValue {
           usedSensorValues.add(value.getId());
 
           // Update the QC flag to be applied to the overall value
+          Flag flagToCheck = value.getUserQCFlag();
+          String qcMessage = value.getUserQCMessage();
           if (value.getUserQCFlag().equals(Flag.NEEDED)) {
+            flagNeeded = true;
+            flagToCheck = value.getAutoQcFlag();
+            qcMessage = value.getAutoQcResult().getAllMessages();
+          }
 
-            if (!qcFlag.equals(Flag.NEEDED)) {
-              qcFlag = Flag.NEEDED;
-              qcMessages = new ArrayList<String>();
-              qcMessages.add("AUTO QC: " + sensorType.getName() + " " + value.getUserQCMessage());
-            } else if (value.getUserQCFlag().moreSignificantThan(qcFlag)) {
-              qcFlag = value.getUserQCFlag();
-              qcMessages = new ArrayList<String>();
-              qcMessages.add(value.getUserQCMessage());
-            } else if (value.getUserQCFlag().equals(qcFlag)) {
-              qcMessages.add(value.getUserQCMessage());
-            }
+          if (flagToCheck.moreSignificantThan(qcFlag)) {
+            qcFlag = flagToCheck;
+            qcMessages = new ArrayList<String>();
+            qcMessages.add(qcMessage);
+          } else if (flagToCheck.equals(qcFlag)) {
+            qcMessages.add(qcMessage);
           }
         }
       }
@@ -152,7 +163,7 @@ public class CalculationValue {
 
     return new CalculationValue(measurement.getId(),
         measurement.getVariable().getId(),usedSensorValues,
-        finalValue, qcFlag, qcMessages);
+        finalValue, qcFlag, qcMessages, flagNeeded);
   }
 
   /**
@@ -226,6 +237,7 @@ public class CalculationValue {
 
     TreeSet<Long> newSensorValues = new TreeSet<Long>();
     Flag newQcFlag = Flag.GOOD;
+    boolean newFlagNeeded = false;
     List<String> newQcMessages = new ArrayList<String>();
 
     for (CalculationValue cv : valueObjects) {
@@ -235,10 +247,13 @@ public class CalculationValue {
           newQcFlag = cv.qcFlag;
         }
         newQcMessages.addAll(cv.qcMessages);
+        if (cv.flagNeeded) {
+          newFlagNeeded = true;
+        }
       }
     }
 
     return new CalculationValue(measurementId, variableId, newSensorValues,
-        newValue, newQcFlag, newQcMessages);
+        newValue, newQcFlag, newQcMessages, newFlagNeeded);
   }
 }
