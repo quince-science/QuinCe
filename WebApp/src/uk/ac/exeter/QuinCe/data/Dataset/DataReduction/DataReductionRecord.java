@@ -46,7 +46,7 @@ public class DataReductionRecord {
     this.variableId = measurement.getVariable().getId();
 
     this.calculationValues = new HashMap<String, Double>();
-    this.qcFlag = Flag.NEEDED;
+    this.qcFlag = Flag.ASSUMED_GOOD;
     this.qcMessages = new ArrayList<String>();
   }
 
