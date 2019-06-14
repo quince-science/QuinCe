@@ -217,7 +217,7 @@ public class InstrumentVariable {
         Set<SensorType> dependingTypes = sensorAssignments.getDependents(sensorType);
         for (SensorType dependingType : dependingTypes) {
           Flag dependingCascadeFlag = getCascade(dependingType, flag, sensorAssignments);
-          if (null == result ||dependingCascadeFlag.moreSignificantThan(result)) {
+          if (null == result || dependingCascadeFlag.moreSignificantThan(result)) {
             result = dependingCascadeFlag;
           }
         }
