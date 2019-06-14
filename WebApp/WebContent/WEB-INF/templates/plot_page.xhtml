@@ -59,11 +59,11 @@
       <h:inputHidden value="#{sessionScope[beanName].tableDataDraw}" id="tableDataDraw"/>
       <h:inputHidden value="#{sessionScope[beanName].tableDataStart}" id="tableDataStart"/>
       <h:inputHidden value="#{sessionScope[beanName].tableDataLength}" id="tableDataLength"/>
-      <h:commandLink id="tableGetData" action="#{sessionScope[beanName].generateTableData}">
-        <f:ajax execute="tableDataDraw tableDataStart tableDataLength"
-          render="tableJsonData tableDataDraw recordCount"
-          onevent="tableDataDownload"/>
-      </h:commandLink>
+      <p:remoteCommand name="tableGetData"
+        action="#{sessionScope[beanName].generateTableData}"
+        process="tableDataDraw tableDataStart tableDataLength"
+        update="tableJsonData tableDataDraw recordCount"
+        oncomplete="tableDataDownload()"/>
     </h:form>
 
     <p:dialog widgetVar="variableDialog" modal="true" header="Variables" resizable="false">
@@ -117,18 +117,24 @@
             <h:inputHidden value="#{sessionScope[beanName].plot1.YAxis}" id="yAxis"/>
             <h:inputHidden value="#{sessionScope[beanName].plot1.data}" id="plotData"/>
             <h:inputHidden value="#{sessionScope[beanName].plot1.labels}" id="plotLabels"/>
-            <h:commandLink id="plotGetData" action="#{sessionScope[beanName].plot1.updatePlot}">
-              <f:ajax execute="xAxis yAxis plotMode" render="plotData plotLabels" onevent="updatePlot1"/>
-            </h:commandLink>
+            <p:remoteCommand name="plot1GetData"
+              action="#{sessionScope[beanName].plot1.updatePlot}"
+              process="xAxis yAxis plotMode"
+              update="plotData plotLabels"
+              oncomplete="updatePlot(1)"
+            />
 
             <h:inputHidden value="#{sessionScope[beanName].plot1.mapVariable}" id="mapVariable"/>
             <h:inputHidden value="#{sessionScope[beanName].plot1.mapBounds}" id="mapBounds"/>
             <h:inputHidden value="#{sessionScope[beanName].plot1.mapScaleLimits}" id="mapScaleLimits"/>
             <h:inputHidden value="#{sessionScope[beanName].plot1.mapUpdateScale}" id="mapUpdateScale"/>
             <h:inputHidden value="#{sessionScope[beanName].plot1.mapData}" id="mapData"/>
-            <h:commandLink id="mapGetData" action="#{sessionScope[beanName].plot1.generateMapData}">
-              <f:ajax execute="mapVariable mapBounds mapUpdateScale plotMode" render="mapData mapScaleLimits" onevent="updateMap1"/>
-            </h:commandLink>
+            <p:remoteCommand name="map1GetData"
+              action="#{sessionScope[beanName].plot1.generateMapData}"
+              process="mapVariable mapBounds mapUpdateScale plotMode"
+              update="mapData mapScaleLimits"
+              oncomplete="drawMap(1)"
+            />
 
             <ui:insert name="plot1">Plot 1</ui:insert>
           </h:form>
@@ -142,18 +148,24 @@
               <h:inputHidden value="#{sessionScope[beanName].plot2.YAxis}" id="yAxis"/>
               <h:inputHidden value="#{sessionScope[beanName].plot2.data}" id="plotData"/>
               <h:inputHidden value="#{sessionScope[beanName].plot2.labels}" id="plotLabels"/>
-              <h:commandLink id="plotGetData" action="#{sessionScope[beanName].plot2.updatePlot}">
-                <f:ajax execute="xAxis yAxis plotMode" render="plotData plotLabels" onevent="updatePlot2"/>
-              </h:commandLink>
+              <p:remoteCommand name="plot2GetData"
+                action="#{sessionScope[beanName].plot2.updatePlot}"
+                process="xAxis yAxis plotMode"
+                update="plotData plotLabels"
+                oncomplete="updatePlot(2)"
+              />
 
               <h:inputHidden value="#{sessionScope[beanName].plot2.mapVariable}" id="mapVariable"/>
               <h:inputHidden value="#{sessionScope[beanName].plot2.mapBounds}" id="mapBounds"/>
               <h:inputHidden value="#{sessionScope[beanName].plot2.mapScaleLimits}" id="mapScaleLimits"/>
               <h:inputHidden value="#{sessionScope[beanName].plot2.mapUpdateScale}" id="mapUpdateScale"/>
               <h:inputHidden value="#{sessionScope[beanName].plot2.mapData}" id="mapData"/>
-              <h:commandLink id="mapGetData" action="#{sessionScope[beanName].plot2.generateMapData}">
-                <f:ajax execute="mapVariable mapBounds mapUpdateScale plotMode" render="mapData mapScaleLimits" onevent="updateMap2"/>
-              </h:commandLink>
+              <p:remoteCommand name="map2GetData"
+                action="#{sessionScope[beanName].plot2.generateMapData}"
+                process="mapVariable mapBounds mapUpdateScale plotMode"
+                update="mapData mapScaleLimits"
+                oncomplete="drawMap(2)"
+              />
 
               <ui:insert name="plot2">Plot 2</ui:insert>
             </h:form>
