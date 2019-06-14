@@ -128,6 +128,9 @@ public abstract class DataReducer {
     for (SensorType sensorType : getRequiredSensorTypes(instrumentAssignments)) {
       CalculationValue value = sensorValues.get(sensorType);
       Flag cascadeFlag = variable.getCascade(sensorType, value.getQCFlag(), instrumentAssignments);
+      if (null == cascadeFlag) {
+        cascadeFlag = Flag.ASSUMED_GOOD;
+      }
       record.setQc(cascadeFlag, value.getQCMessages());
     }
   }
