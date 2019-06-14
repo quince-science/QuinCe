@@ -759,8 +759,8 @@ function setupPlotVariables(plotIndex) {
     }
   });
 
-  updateAxisButtons('x', $('#plot' + plotIndex + 'Form\\:xAxis').val());
-  updateAxisButtons('y', $('#plot' + plotIndex + 'Form\\:yAxis').val());
+  updateAxisButtons('x', $('#plot' + variablesPlotIndex + 'Form\\:xAxis').val());
+  updateAxisButtons('y', $('#plot' + variablesPlotIndex + 'Form\\:yAxis').val());
 }
 
 //Select the specified axis variable in the dialog
