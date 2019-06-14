@@ -225,7 +225,7 @@ function drawTable() {
       $('#tableForm\\:tableJsonData').val("");
 
       // Submit the query to the server
-      $('#tableForm\\:tableGetData').click();
+      tableGetData(); // PF remoteCommand
     },
     bInfo: false,
     drawCallback: function (settings) {
@@ -314,21 +314,19 @@ function calcTableScrollY() {
 function getSelectableRows() {
   return JSON.parse($('#plotPageForm\\:selectableRows').val());
 }
+
 /*
  * Called when table data has been downloaded from the server.
  * The previously stored callback function is triggered with
  * the data from the server.
  */
-function tableDataDownload(data) {
-  var status = data.status;
-  if (status == "success") {
-    dataTableDrawCallback( {
-      draw: $('#tableForm\\:tableDataDraw').val(),
-      data: JSON.parse($('#tableForm\\:tableJsonData').val()),
-      recordsTotal: $('#tableForm\\:recordCount').val(),
-      recordsFiltered: $('#tableForm\\:recordCount').val()
-    });
-  }
+function tableDataDownload() {
+  dataTableDrawCallback( {
+    draw: $('#tableForm\\:tableDataDraw').val(),
+    data: JSON.parse($('#tableForm\\:tableJsonData').val()),
+    recordsTotal: $('#tableForm\\:recordCount').val(),
+    recordsFiltered: $('#tableForm\\:recordCount').val()
+  });
 }
 
 /*
@@ -865,10 +863,10 @@ function applyVariables() {
   if (mode == 'plot') {
     // Clear the current plot data
     $('#plot' + variablesPlotIndex + 'Form\\:plotData').val("");
-    $('#plot' + variablesPlotIndex + 'Form\\:plotGetData').click();
+    eval('plot' + variablesPlotIndex + 'GetData()'); // PF remoteCommand
   } else if (mode == 'map') {
     $('#plot' + variablesPlotIndex + 'Form\\:mapData').val("");
-    $('#plot' + variablesPlotIndex + 'Form\\:mapGetData').click();
+    eval('map' + variablesPlotIndex + 'GetData()'); // PF remoteCommand
     initMap(variablesPlotIndex);
   }
 
@@ -896,30 +894,6 @@ function getSelectedMapVar() {
   }
 
   return result;
-}
-
-function updatePlot1(data) {
-  if (data.status == "success") {
-    updatePlot(1);
-  }
-}
-
-function updatePlot2(data) {
-  if (data.status == "success") {
-    updatePlot(2);
-  }
-}
-
-function updateMap1(data) {
-  if (data.status == "success") {
-    drawMap(1);
-  }
-}
-
-function updateMap2(data) {
-  if (data.status == "success") {
-    drawMap(2);
-  }
 }
 
 function updatePlot(plotIndex) {
@@ -1000,7 +974,7 @@ function getMapData(index) {
   $('#plot' + index + 'Form\\:mapBounds').val('[' + extent + ']');
   $('#plot' + variablesPlotIndex + 'Form\\:plotData').val("");
   $('#plot' + variablesPlotIndex + 'Form\\:mapData').val("");
-  $('#plot' + index + 'Form\\:mapGetData').click();
+  eval('map' + index + 'GetData()');
 }
 
 function drawMap(index) {
