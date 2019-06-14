@@ -14,6 +14,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
@@ -410,7 +411,7 @@ public abstract class DataReducer {
   }
 
 
-  private PrevNextTimes getSurroundingTimes(Measurement start, String runType, SensorType sensorType) {
+  private PrevNextTimes getSurroundingTimes(Measurement start, String runType, SensorType sensorType) throws RoutineException {
 
     PrevNextTimes result = null;
     PrevNextTimes cached = new PrevNextTimes(previousSearchTimes.get(runType), nextSearchTimes.get(runType));
@@ -445,8 +446,9 @@ public abstract class DataReducer {
    * @param time The time
    * @param runType The run type
    * @return The previous measurement
+   * @throws RoutineException
    */
-  private LocalDateTime getPreviousTime(Measurement start, String runType, SensorType sensorType) {
+  private LocalDateTime getPreviousTime(Measurement start, String runType, SensorType sensorType) throws RoutineException {
 
     // TODO This and getNextTime can be refactored together
 
@@ -477,8 +479,9 @@ public abstract class DataReducer {
    * @param time The time
    * @param runType The run type
    * @return The previous measurement
+   * @throws RoutineException
    */
-  private LocalDateTime getNextTime(Measurement start, String runType, SensorType sensorType) {
+  private LocalDateTime getNextTime(Measurement start, String runType, SensorType sensorType) throws RoutineException {
     LocalDateTime result = null;
 
     int i = allMeasurements.indexOf(start) + 1;
