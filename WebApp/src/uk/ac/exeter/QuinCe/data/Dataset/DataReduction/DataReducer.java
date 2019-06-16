@@ -126,11 +126,18 @@ public abstract class DataReducer {
    */
   private void applyQCFlags(SensorAssignments instrumentAssignments, InstrumentVariable variable, Map<SensorType, CalculationValue> sensorValues, DataReductionRecord record) throws SensorTypeNotFoundException, DataReductionException, SensorConfigurationException {
     for (SensorType sensorType : getRequiredSensorTypes(instrumentAssignments)) {
+      Flag cascadeFlag;
+
       CalculationValue value = sensorValues.get(sensorType);
-      Flag cascadeFlag = variable.getCascade(sensorType, value.getQCFlag(), instrumentAssignments);
-      if (null == cascadeFlag) {
-        cascadeFlag = Flag.ASSUMED_GOOD;
+      if (value.flagNeeded()) {
+        cascadeFlag = Flag.NEEDED;
+      } else {
+        cascadeFlag = variable.getCascade(sensorType, value.getQCFlag(), instrumentAssignments);
+        if (null == cascadeFlag) {
+          cascadeFlag = Flag.ASSUMED_GOOD;
+        }
       }
+
       record.setQc(cascadeFlag, value.getQCMessages());
     }
   }
