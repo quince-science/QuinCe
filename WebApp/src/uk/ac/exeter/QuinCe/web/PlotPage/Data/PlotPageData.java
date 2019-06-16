@@ -77,15 +77,23 @@ public class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, Fi
    * @return The plot data
    */
   public String getPlotData(Field xAxis, Field yAxis) {
-    String result;
+
+    TreeSet<PlotRecord> records;
 
     if (xAxis.getId() == Field.ROWID_FIELD_ID) {
-      result = getPlotDataWithIdAxis(yAxis);
+      records = getPlotDataWithIdAxis(yAxis);
     } else {
-      result = getPlotDataWithNonIdAxis(xAxis, yAxis);
+      records = getPlotDataWithNonIdAxis(xAxis, yAxis);
     }
 
-    return result;
+    // TODO Convert to GSON
+    JSONArray json = new JSONArray();
+
+    for (PlotRecord record : records) {
+      json.put(record.toJsonArray());
+    }
+
+    return json.toString();
   }
 
   public List<Double> getValueRange(Field field) {
@@ -140,9 +148,8 @@ public class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, Fi
   }
 
 
-  private String getPlotDataWithIdAxis(Field yAxis) {
-    // TODO Convert to Gson
-    JSONArray json = new JSONArray();
+  private TreeSet<PlotRecord> getPlotDataWithIdAxis(Field yAxis) {
+    TreeSet<PlotRecord> records = new TreeSet<PlotRecord>();
 
     for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> entry :
       entrySet()) {
@@ -151,22 +158,16 @@ public class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, Fi
         FieldValue value = entry.getValue().get(yAxis);
 
         if (null != value && !value.isNaN()) {
-          JSONArray record = new JSONArray();
-          record.put(DateTimeUtils.dateToLong(entry.getKey())); // Date (x axis)
-          record.put(DateTimeUtils.dateToLong(entry.getKey())); // ID
-          record.put(value.getQcFlag().getFlagValue()); // QC Flag
-          record.put(value.getValue()); // Value
-
-          json.put(record);
+          records.add(new PlotRecord(DateTimeUtils.dateToLong(entry.getKey()),
+            DateTimeUtils.dateToLong(entry.getKey()), value));
         }
-
       }
     }
 
-    return json.toString();
+    return records;
   }
 
-  private String getPlotDataWithNonIdAxis(Field xAxis, Field yAxis) {
+  private TreeSet<PlotRecord> getPlotDataWithNonIdAxis(Field xAxis, Field yAxis) {
 
     TreeSet<PlotRecord> records = new TreeSet<PlotRecord>();
 
@@ -182,21 +183,12 @@ public class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, Fi
           // If the current key also contains the x axis, use that
           FieldValue xValue = get(getClosestWithField(yEntry.getKey(), xAxis)).get(xAxis);
 
-          records.add(new PlotRecord(
-            xValue.getValue(), dateLong,
-            yValue.getQcFlag().getFlagValue(), yValue.getValue()));
+          records.add(new PlotRecord( xValue.getValue(), dateLong, yValue));
         }
       }
     }
 
-    // TODO Convert to GSON
-    JSONArray json = new JSONArray();
-
-    for (PlotRecord record : records) {
-      json.put(record.toJsonArray());
-    }
-
-    return json.toString();
+    return records;
   }
 
   private LocalDateTime getClosestWithField(LocalDateTime start, Field field) {
