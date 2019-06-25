@@ -9,6 +9,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 
@@ -39,11 +40,11 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     calculationParameterNames.add("fCO₂");
   }
 
-  public UnderwayMarinePco2Reducer(List<Measurement> allMeasurements,
+  public UnderwayMarinePco2Reducer(InstrumentVariable variable, List<Measurement> allMeasurements,
       DateColumnGroupedSensorValues groupedSensorValues,
       CalibrationSet calibrationSet) {
 
-    super(allMeasurements, groupedSensorValues, calibrationSet);
+    super(variable, allMeasurements, groupedSensorValues, calibrationSet);
   }
 
   @Override

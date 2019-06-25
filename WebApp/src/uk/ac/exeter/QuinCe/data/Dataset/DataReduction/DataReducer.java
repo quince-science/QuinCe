@@ -38,6 +38,11 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public abstract class DataReducer {
 
   /**
+   * The variable that this reducer works on
+   */
+  protected InstrumentVariable variable;
+
+  /**
    * All the measurements from the current data set
    */
   protected List<Measurement> allMeasurements;
@@ -62,10 +67,11 @@ public abstract class DataReducer {
    */
   private HashMap<String, LocalDateTime> nextSearchTimes;
 
-  public DataReducer(List<Measurement> allMeasurements,
+  public DataReducer(InstrumentVariable variable, List<Measurement> allMeasurements,
       DateColumnGroupedSensorValues groupedSensorValues,
       CalibrationSet calibrationSet) {
 
+    this.variable = variable;
     this.allMeasurements = allMeasurements;
     this.groupedSensorValues = groupedSensorValues;
     this.calibrationSet = calibrationSet;
@@ -86,18 +92,33 @@ public abstract class DataReducer {
       Measurement measurement, Map<SensorType, CalculationValue> sensorValues) throws Exception {
 
     DataReductionRecord record = new DataReductionRecord(measurement);
-    doCalculation(instrument, measurement, sensorValues, record);
 
-    List<SensorType> missingParameters = getMissingParameters(instrument.getSensorAssignments(), sensorValues);
-    if (missingParameters.size() > 0) {
-      makeMissingParameterRecord(record, missingParameters);
+    if (!isMeasurementRunType(instrument, measurement.getRunType())) {
+      makeEmptyRecord(record);
     } else {
       doCalculation(instrument, measurement, sensorValues, record);
+
+      List<SensorType> missingParameters = getMissingParameters(instrument.getSensorAssignments(), sensorValues);
+      if (missingParameters.size() > 0) {
+        makeMissingParameterRecord(record, missingParameters);
+      } else {
+        doCalculation(instrument, measurement, sensorValues, record);
+      }
+
+      applyQCFlags(instrument.getSensorAssignments(), measurement.getVariable(), sensorValues, record);
     }
 
-    applyQCFlags(instrument.getSensorAssignments(), measurement.getVariable(), sensorValues, record);
-
     return record;
+  }
+
+  /**
+   * Determine whether a Measurement object has the correct run type
+   * for data reduction to be performed
+   * @param runType The run type
+   * @return
+   */
+  private boolean isMeasurementRunType(Instrument instrument, String runType) {
+    return instrument.getRunTypeCategory(runType).getType() == variable.getId();
   }
 
   /**
@@ -140,6 +161,14 @@ public abstract class DataReducer {
 
       record.setQc(cascadeFlag, value.getQCMessages());
     }
+  }
+
+  /**
+   * Set the state for a non-calculated record (used for unused run types etc)
+   * @param record The record
+   */
+  protected void makeEmptyRecord(DataReductionRecord record) {
+    record.setQc(Flag.NO_QC, new ArrayList<String>());
   }
 
   /**
