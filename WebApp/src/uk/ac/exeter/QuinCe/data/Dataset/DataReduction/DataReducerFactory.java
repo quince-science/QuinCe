@@ -35,7 +35,7 @@ public class DataReducerFactory {
     try {
       switch (variable.getName()) {
       case "Underway Marine pCO₂": {
-        reducer = new UnderwayMarinePco2Reducer(allMeasurements, groupedSensorValues, calibrationSet);
+        reducer = new UnderwayMarinePco2Reducer(variable, allMeasurements, groupedSensorValues, calibrationSet);
         break;
       }
       default: {
@@ -62,7 +62,7 @@ public class DataReducerFactory {
 
     switch (variable.getName()) {
     case "Underway Marine pCO₂": {
-      reducer = new UnderwayMarinePco2Reducer(null, null, null);
+      reducer = new UnderwayMarinePco2Reducer(variable, null, null, null);
       break;
     }
     default: {
