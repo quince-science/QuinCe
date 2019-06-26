@@ -179,9 +179,12 @@ public class DataReductionJob extends Job {
         JobManager.requeueJob(conn, id);
       } else {
 
-        // Set up the Auto QC job
-        dataSet.setStatus(DataSet.STATUS_USER_QC);
+        // Trigger the Build Measurements job
+        dataSet.setStatus(DataSet.STATUS_AUTO_QC);
         DataSetDB.updateDataSet(conn, dataSet);
+        Map<String, String> jobParams = new HashMap<String, String>();
+        jobParams.put(LocateMeasurementsJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
+        JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), ApplyQCJob.class.getCanonicalName(), jobParams);
       }
 
       conn.commit();
