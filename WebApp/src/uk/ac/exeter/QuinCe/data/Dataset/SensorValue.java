@@ -319,4 +319,17 @@ public class SensorValue implements Comparable<SensorValue> {
       value.clearAutomaticQC();
     }
   }
+
+  public static boolean contains(List<SensorValue> values, String searchValue) {
+    boolean result = false;
+
+    for (SensorValue testValue : values) {
+      if (testValue.getValue().equals(searchValue)) {
+        result = true;
+        break;
+      }
+    }
+
+    return result;
+  }
 }

@@ -117,4 +117,12 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
   public int compareTo(RunTypeCategory o) {
     return description.compareTo(o.description);
   }
+
+  /**
+   * Determine whether or not this category references a variable
+   * @return
+   */
+  public boolean isVariable() {
+    return type > 0;
+  }
 }
