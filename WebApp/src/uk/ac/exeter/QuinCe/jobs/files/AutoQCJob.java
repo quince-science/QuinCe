@@ -9,20 +9,22 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QCRoutines.messages.Message;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.Routine;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
+import uk.ac.exeter.QuinCe.jobs.JobException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
@@ -134,13 +136,83 @@ public class AutoQCJob extends Job {
       Map<Long, List<SensorValue>> sensorValues =
         DataSetDataDB.getSensorValuesByColumn(conn, dataSet.getId());
 
+
       // Run the routines for each column
       for (Map.Entry<Long, List<SensorValue>> entry : sensorValues.entrySet()) {
         SensorType sensorType = sensorAssignments.getSensorTypeForDBColumn(entry.getKey());
+
+        List<SensorValue> values = entry.getValue();
+        SensorValue.clearAutoQC(values);
+
+
+        // If this sensor uses internal calibration,
+        // see if there are run types for that variable. If so, filter the sensor values
+        if (sensorType.hasInternalCalibration()) {
+          // TODO This whole section is ugly as hell. Make it less so, as Picard never said.
+
+          List<InstrumentVariable> sensorVariables = instrument.getSensorVariables(sensorType);
+          List<String> measurementRunTypes = null;
+
+          for (InstrumentVariable variable : sensorVariables) {
+            Map<Long, List<String>> variableRunTypes = instrument.getVariableRunTypes(variable);
+            if (variableRunTypes.size() > 0 && variableRunTypes.containsKey(variable.getId())) {
+              measurementRunTypes = variableRunTypes.get(variable.getId());
+            }
+          }
+
+          if (null != measurementRunTypes) {
+            List<SensorAssignment> runTypeColumns = sensorAssignments.get(SensorType.RUN_TYPE_SENSOR_TYPE);
+
+            // Only one of the run type columns can contain run types for the variable
+            long runTypeColumnID = -1;
+
+            for (SensorAssignment runTypeColumn : runTypeColumns) {
+              if (SensorValue.contains(sensorValues.get(runTypeColumn.getDatabaseId()), measurementRunTypes.get(0))) {
+                runTypeColumnID = runTypeColumn.getDatabaseId();
+              }
+            }
+
+            if (runTypeColumnID == -1) {
+              throw new JobException("Cannot find column containing run type '" + measurementRunTypes.get(0));
+            }
+
+            List<SensorValue> runTypes = sensorValues.get(runTypeColumnID);
+            int currentRunTypeIndex = 0;
+            SensorValue currentRunType = runTypes.get(0);
+
+            List<SensorValue> filteredValues = new ArrayList<SensorValue>(values.size());
+            for (SensorValue testValue : values) {
+
+              if (currentRunType.getTime().isAfter(testValue.getTime())) {
+                // There is no run type for the current test value, so skip it
+                continue;
+              } else {
+                boolean currentRunTypeFound = false;
+                while (!currentRunTypeFound) {
+                  if (currentRunType.getTime().equals(testValue.getTime())) {
+                    currentRunTypeFound = true;
+                  } else if (currentRunTypeIndex < runTypes.size() -1 && runTypes.get(currentRunTypeIndex + 1).getTime().isBefore(testValue.getTime())) {
+                    currentRunTypeIndex++;
+                    currentRunType = runTypes.get(currentRunTypeIndex);
+                  } else {
+                    currentRunTypeFound = true;
+                  }
+                }
+              }
+
+              if (measurementRunTypes.contains(currentRunType.getValue())) {
+                filteredValues.add(testValue);
+              } else {
+                testValue.setUserQC(Flag.NO_QC, null);
+              }
+            }
+
+            values = filteredValues;
+          }
+        }
+
         for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
-          List<SensorValue> values = entry.getValue();
-          SensorValue.clearAutoQC(values);
-          routine.qcValues(entry.getValue());
+          routine.qcValues(values);
         }
       }
 
