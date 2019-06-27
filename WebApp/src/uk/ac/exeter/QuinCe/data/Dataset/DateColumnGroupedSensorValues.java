@@ -26,8 +26,6 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
  * The time stamps are stored in order; sensor types and values can be in any order
  * within a time stamp.
  *
- * Values are in date order.
- *
  * @author Steve Jones
  *
  */

@@ -1,10 +1,15 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
@@ -342,6 +347,63 @@ public class Instrument {
       throw new InstrumentException("Variable with ID " + variableId
         +" is not part of this instrument");
     }
+    return result;
+  }
+
+  /**
+   * Get the run types that correspond to measurements for a given variable
+   * Returns a map of Column ID to the run types, including all aliases
+   * @param variable
+   * @return
+   */
+  public Map<Long, List<String>> getVariableRunTypes(InstrumentVariable variable) {
+    Map<Long, List<String>> result = new HashMap<Long, List<String>>();
+
+    for (FileDefinition fileDefinition : fileDefinitions) {
+      RunTypeAssignments runTypeAssignments = fileDefinition.getRunTypes();
+      for (String runType : runTypeAssignments.keySet()) {
+        RunTypeAssignment assignment = runTypeAssignments.get(runType);
+
+        while (assignment.isAlias()) {
+          assignment = runTypeAssignments.get(assignment.getAliasTo());
+        }
+
+        if (assignment.getCategory().isVariable()) {
+          if (!result.containsKey(assignment.getCategoryCode())) {
+            result.put(assignment.getCategoryCode(), new ArrayList<String>());
+          }
+
+          result.get(assignment.getCategoryCode()).add(runType);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the list of variables that require the specified sensor type.
+   * If no variables require it, the list is empty.
+   * @param sensorType
+   * @return
+   */
+  public List<InstrumentVariable> getSensorVariables(SensorType sensorType) {
+    List<InstrumentVariable> result = new ArrayList<InstrumentVariable>(variables.size());
+
+    for (InstrumentVariable variable : variables) {
+      List<SensorType> variableSensorTypes = variable.getAllSensorTypes();
+      for (SensorType type : variableSensorTypes) {
+        if (type.equals(sensorType)) {
+          result.add(variable);
+          break;
+        } else if (type.getDependsOn() == sensorType.getId()){
+          result.add(variable);
+          break;
+        }
+      }
+    }
+
+
     return result;
   }
 }

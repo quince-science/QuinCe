@@ -1,5 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
@@ -125,5 +127,20 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
     }
 
     return result;
+  }
+
+  public Map<String, Long> getVariableRunTypes() {
+
+    Map<String, Long> result = new HashMap<String, Long>();
+
+    for (Map.Entry<String, RunTypeAssignment> entry : entrySet()) {
+      RunTypeCategory category = entry.getValue().getCategory();
+      if (category.isVariable()) {
+        result.put(entry.getKey(), category.getType());
+      }
+    }
+
+    return result;
+
   }
 }
