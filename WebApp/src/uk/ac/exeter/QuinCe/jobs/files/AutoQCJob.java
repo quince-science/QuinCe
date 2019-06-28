@@ -144,7 +144,6 @@ public class AutoQCJob extends Job {
         List<SensorValue> values = entry.getValue();
         SensorValue.clearAutoQC(values);
 
-
         // If this sensor uses internal calibration,
         // see if there are run types for that variable. If so, filter the sensor values
         if (sensorType.hasInternalCalibration()) {
@@ -191,7 +190,10 @@ public class AutoQCJob extends Job {
                 while (!currentRunTypeFound) {
                   if (currentRunType.getTime().equals(testValue.getTime())) {
                     currentRunTypeFound = true;
-                  } else if (currentRunTypeIndex < runTypes.size() -1 && runTypes.get(currentRunTypeIndex + 1).getTime().isBefore(testValue.getTime())) {
+                  } else if (currentRunTypeIndex < runTypes.size() -1 &&
+                    !runTypes.get(currentRunTypeIndex + 1).getTime().isAfter(testValue.getTime())) {
+
+
                     currentRunTypeIndex++;
                     currentRunType = runTypes.get(currentRunTypeIndex);
                   } else {
