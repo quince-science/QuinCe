@@ -106,6 +106,8 @@ public abstract class DataReducer {
       }
     }
 
+    applyQCFlags(instrument.getSensorAssignments(), variable, sensorValues, record);
+
     return record;
   }
 
@@ -528,6 +530,34 @@ public abstract class DataReducer {
     private PrevNextTimes(LocalDateTime prev, LocalDateTime next) {
       this.prev = prev;
       this.next = next;
+    }
+  }
+
+
+  /**
+   * Set the QC flag on a record based on the flags of the sensor values.
+   * The flag logic is in {@link DataReductionRecord}.
+   * @param instrumentAssignments The sensor assignments for the instrument
+   * @param variable The variable being processed
+   * @param sensorValues The sensor values
+   * @param record The target record
+   * @throws SensorTypeNotFoundException If the sensor config is invalid
+   * @throws DataReductionException If the QC cannot be applied
+   * @throws SensorConfigurationException If the sensor config is invalid
+   */
+  private void applyQCFlags(SensorAssignments instrumentAssignments, InstrumentVariable variable, Map<SensorType, CalculationValue> sensorValues, DataReductionRecord record) throws SensorTypeNotFoundException, DataReductionException, SensorConfigurationException {
+    for (SensorType sensorType : getRequiredSensorTypes(instrumentAssignments)) {
+      Flag cascadeFlag;
+      CalculationValue value = sensorValues.get(sensorType);
+      if (value.flagNeeded()) {
+        cascadeFlag = Flag.NEEDED;
+      } else {
+        cascadeFlag = variable.getCascade(sensorType, value.getQCFlag(), instrumentAssignments);
+        if (null == cascadeFlag) {
+          cascadeFlag = Flag.ASSUMED_GOOD;
+        }
+      }
+      record.setQc(cascadeFlag, value.getQCMessages());
     }
   }
 }
