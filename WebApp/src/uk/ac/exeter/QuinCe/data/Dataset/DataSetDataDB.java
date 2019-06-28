@@ -37,6 +37,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -187,6 +188,14 @@ public class DataSetDataDB {
     + "WHERE sv.dataset_id = ? "
     + "AND sv.file_column IN (" + DatabaseUtils.IN_PARAMS_TOKEN + ") "
     + "GROUP BY sv.id, mv.sensor_value_id ORDER BY sv.date";
+
+  private static final String GET_SENSOR_VALUES_QUERY = "SELECT "
+    + "id, file_column, date, value, "
+    + "auto_qc, user_qc_flag, user_qc_message "
+    + "FROM sensor_values "
+    + "WHERE dataset_id = ? "
+    + "AND file_column IN (" + DatabaseUtils.IN_PARAMS_TOKEN + ") "
+    + "ORDER BY date ASC";
 
   private static final String GET_DATA_REDUCTION_QUERY = "SELECT "
   + "m.date, dr.variable_id, dr.calculation_values, dr.qc_flag, dr.qc_message "
@@ -1496,14 +1505,25 @@ public class DataSetDataDB {
     MissingParam.checkPositive(datasetId, "datasetId");
     MissingParam.checkMissing(sensorIDs, "sensorIDs", false);
 
-    SensorsConfiguration sensorConfig =
-      ResourceManager.getInstance().getSensorsConfiguration();
     Connection conn = null;
     PreparedStatement stmt = null;
     ResultSet records = null;
 
     try {
       conn = dataSource.getConnection();
+
+      // Get all run type records
+      List<SensorValue> runTypeRecords = getRunTypes(conn, instrument, datasetId);
+
+      // Get the list of run type values that indicate measurements
+      List<String> measurementRunTypes = new ArrayList<String>(0);
+
+      for (InstrumentVariable variable : instrument.getVariables()) {
+        Map<Long, List<String>> variableRunTypes = instrument.getVariableRunTypes(variable);
+        if (variableRunTypes.size() > 0 && variableRunTypes.containsKey(variable.getId())) {
+          measurementRunTypes.addAll(variableRunTypes.get(variable.getId()));
+        }
+      }
 
       String sql = GET_QC_SENSOR_DATA_QUERY.replaceAll(
         DatabaseUtils.IN_PARAMS_TOKEN,
@@ -1528,16 +1548,27 @@ public class DataSetDataDB {
         // We also mark diagnostic sensors as used, otherwise they're all
         // marked as not used which is pointless.
 
+        boolean filter = false;
+
         SensorType sensorType =
           instrument.getSensorAssignments().getSensorTypeForDBColumn(sensorId);
 
-        if (sensorId < 0 || sensorType.isDiagnostic()) {
-          used = true;
+        if (sensorType.hasInternalCalibration()) {
+          SensorValue runType = SensorValue.getNearestValue(runTypeRecords, time);
+          if (!measurementRunTypes.contains(runType.getValue())) {
+            filter = true;
+          }
         }
 
-        FieldValue value = new FieldValue(valueId, sensorValue, autoQC,
-          userQCFlag, qcComment, used);
-        tableData.addValue(time, sensorId, value);
+        if (!filter) {
+          if (sensorId < 0 || sensorType.isDiagnostic()) {
+            used = true;
+          }
+
+          FieldValue value = new FieldValue(valueId, sensorValue, autoQC,
+            userQCFlag, qcComment, used);
+          tableData.addValue(time, sensorId, value);
+        }
       }
     } catch (SQLException e) {
       throw new DatabaseException("Error getting sensor data", e);
@@ -1602,5 +1633,50 @@ public class DataSetDataDB {
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
     }
+  }
+
+  public static List<SensorValue> getRunTypes(Connection conn, Instrument instrument, long datasetId) throws InvalidFlagException, DatabaseException {
+    List<SensorValue> result = null;
+
+    List<SensorAssignment> runTypeColumns = instrument.getSensorAssignments().get(SensorType.RUN_TYPE_SENSOR_TYPE);
+    if (runTypeColumns.size() > 0) {
+      List<Long> columnIds = new ArrayList<Long>(runTypeColumns.size());
+      for (SensorAssignment column : runTypeColumns) {
+        columnIds.add(column.getDatabaseId());
+      }
+      result = getSensorValues(conn, datasetId, columnIds);
+    }
+
+    return result;
+  }
+
+  public static List<SensorValue> getSensorValues(Connection conn, long datasetId, List<Long> sensorIDs) throws InvalidFlagException, DatabaseException {
+
+    List<SensorValue> result = new ArrayList<SensorValue>();
+
+    PreparedStatement stmt = null;
+    ResultSet records = null;
+
+    try {
+      String sql = GET_SENSOR_VALUES_QUERY.replaceAll(
+        DatabaseUtils.IN_PARAMS_TOKEN,
+        StringUtils.collectionToDelimited(sensorIDs, ","));
+
+      stmt = conn.prepareStatement(sql);
+      stmt.setLong(1, datasetId);
+
+      records = stmt.executeQuery();
+
+      while (records.next()) {
+        result.add(sensorValueFromResultSet(records, datasetId));
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting sensor data", e);
+    } finally {
+      DatabaseUtils.closeResultSets(records);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return result;
   }
 }
