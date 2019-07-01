@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 
 import java.time.LocalDateTime;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -10,7 +10,7 @@ import java.util.ListIterator;
  * @author Steve Jones
  *
  */
-public class NavigableSensorValuesList extends LinkedList<SensorValue> {
+public class NavigableSensorValuesList extends ArrayList<SensorValue> {
 
   /**
    * The search iterator
