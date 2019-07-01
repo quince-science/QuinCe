@@ -1554,19 +1554,19 @@ public class DataSetDataDB {
         // We also mark diagnostic sensors as used, otherwise they're all
         // marked as not used which is pointless.
 
-        boolean filter = false;
-
         SensorType sensorType =
           instrument.getSensorAssignments().getSensorTypeForDBColumn(sensorId);
+
+        boolean filterOut = false;
 
         if (sensorType.hasInternalCalibration()) {
           SensorValue runType = runTypeRecords.incrementalSearch(time);
           if (!measurementRunTypes.contains(runType.getValue())) {
-            filter = true;
+                filterOut = true;
           }
         }
 
-        if (!filter) {
+        if (!filterOut) {
           if (sensorId < 0 || sensorType.isDiagnostic()) {
             used = true;
           }
