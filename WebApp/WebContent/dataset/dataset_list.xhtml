@@ -17,6 +17,7 @@
       }
 
       function goToQc(id) {
+    	PF('pleaseWait').show();
         $('#datasetListForm\\:manualQcDatasetId').val(id);
         $('#datasetListForm\\:manualQcLink').click();
         return false;
@@ -53,6 +54,10 @@
   </ui:define>
 
   <ui:define name="content">
+    <p:dialog header="Please wait" widgetVar="pleaseWait" modal="true" resizable="false" closable="false">
+      Preparing data for QC. This can take quite a while, so please be patient...
+    </p:dialog>
+
     <ui:fragment rendered="#{not dataSetsBean.hasInstruments}">
       <div class="instructions error">
         You do not have any instruments defined. Go to the Instruments tab to add an instrument.
