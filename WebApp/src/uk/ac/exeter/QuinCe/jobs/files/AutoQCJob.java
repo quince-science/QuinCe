@@ -12,6 +12,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.NavigableSensorValuesList;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.QCRoutinesConfiguration;
@@ -133,12 +134,12 @@ public class AutoQCJob extends Job {
         ResourceManager.getInstance().getQCRoutinesConfiguration();
 
       // Get the sensor values grouped by data file column
-      Map<Long, List<SensorValue>> sensorValues =
+      Map<Long, NavigableSensorValuesList> sensorValues =
         DataSetDataDB.getSensorValuesByColumn(conn, dataSet.getId());
 
 
       // Run the routines for each column
-      for (Map.Entry<Long, List<SensorValue>> entry : sensorValues.entrySet()) {
+      for (Map.Entry<Long, NavigableSensorValuesList> entry : sensorValues.entrySet()) {
         SensorType sensorType = sensorAssignments.getSensorTypeForDBColumn(entry.getKey());
 
         List<SensorValue> values = entry.getValue();
@@ -175,32 +176,13 @@ public class AutoQCJob extends Job {
               throw new JobException("Cannot find column containing run type '" + measurementRunTypes.get(0));
             }
 
-            List<SensorValue> runTypes = sensorValues.get(runTypeColumnID);
-            int currentRunTypeIndex = 0;
-            SensorValue currentRunType = runTypes.get(0);
+            NavigableSensorValuesList runTypes = new NavigableSensorValuesList(sensorValues.get(runTypeColumnID));
+            runTypes.initIncrementalSearch();
 
             List<SensorValue> filteredValues = new ArrayList<SensorValue>(values.size());
             for (SensorValue testValue : values) {
 
-              if (currentRunType.getTime().isAfter(testValue.getTime())) {
-                // There is no run type for the current test value, so skip it
-                continue;
-              } else {
-                boolean currentRunTypeFound = false;
-                while (!currentRunTypeFound) {
-                  if (currentRunType.getTime().equals(testValue.getTime())) {
-                    currentRunTypeFound = true;
-                  } else if (currentRunTypeIndex < runTypes.size() -1 &&
-                    !runTypes.get(currentRunTypeIndex + 1).getTime().isAfter(testValue.getTime())) {
-
-
-                    currentRunTypeIndex++;
-                    currentRunType = runTypes.get(currentRunTypeIndex);
-                  } else {
-                    currentRunTypeFound = true;
-                  }
-                }
-              }
+              SensorValue currentRunType = runTypes.incrementalSearch(testValue.getTime());
 
               if (measurementRunTypes.contains(currentRunType.getValue())) {
                 filteredValues.add(testValue);
@@ -209,9 +191,13 @@ public class AutoQCJob extends Job {
               }
             }
 
+            runTypes.finishIncrementalSearch();
+
             values = filteredValues;
           }
         }
+
+
 
         for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
           routine.qcValues(values);

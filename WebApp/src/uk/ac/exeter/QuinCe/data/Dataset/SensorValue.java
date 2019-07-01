@@ -332,31 +332,4 @@ public class SensorValue implements Comparable<SensorValue> {
 
     return result;
   }
-
-  /**
-   * Get the nearest value that is on or before the specified time
-   * @param values The values to search
-   * @param time The time
-   * @return
-   */
-  public static SensorValue getNearestValue(List<SensorValue> values,
-    LocalDateTime time) {
-
-    SensorValue result = null;
-
-    if (!values.get(0).getTime().isAfter(time)) {
-
-      for (int i = 1; i < values.size(); i++) {
-        if (values.get(i).getTime().equals(time)) {
-          result = values.get(i);
-          break;
-        } else if (values.get(i).getTime().isAfter(time)) {
-          result = values.get(i - 1);
-          break;
-        }
-      }
-    }
-
-    return result;
-  }
 }
