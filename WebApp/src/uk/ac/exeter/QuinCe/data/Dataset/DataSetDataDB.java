@@ -1127,14 +1127,14 @@ public class DataSetDataDB {
    * @throws DatabaseException If a database error occurs
    * @throws MissingParamException If any required parameters are missing
    */
-  public static Map<Long, List<SensorValue>> getSensorValuesByColumn(
+  public static Map<Long, NavigableSensorValuesList> getSensorValuesByColumn(
     Connection conn, long datasetId)
       throws RecordNotFoundException, DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
 
-    Map<Long, List<SensorValue>> values = new HashMap<Long, List<SensorValue>>();
+    Map<Long, NavigableSensorValuesList> values = new HashMap<Long, NavigableSensorValuesList>();
     PreparedStatement stmt = null;
     ResultSet records = null;
 
@@ -1146,7 +1146,7 @@ public class DataSetDataDB {
       records = stmt.executeQuery();
 
       long currentColumnId = -1;
-      List<SensorValue> currentSensorValues = new ArrayList<SensorValue>();
+      NavigableSensorValuesList currentSensorValues = new NavigableSensorValuesList();
 
       while (records.next()) {
         SensorValue sensorValue = sensorValueFromResultSet(records, datasetId);
@@ -1157,7 +1157,7 @@ public class DataSetDataDB {
           }
 
           currentColumnId = sensorValue.getColumnId();
-          currentSensorValues = new ArrayList<SensorValue>();
+          currentSensorValues = new NavigableSensorValuesList();
         }
 
         currentSensorValues.add(sensorValue);
@@ -1513,7 +1513,7 @@ public class DataSetDataDB {
       conn = dataSource.getConnection();
 
       // Get all run type records
-      List<SensorValue> runTypeRecords = getRunTypes(conn, instrument, datasetId);
+      NavigableSensorValuesList runTypeRecords = getRunTypes(conn, instrument, datasetId);
 
       // Get the list of run type values that indicate measurements
       List<String> measurementRunTypes = new ArrayList<String>(0);
@@ -1532,7 +1532,13 @@ public class DataSetDataDB {
       stmt = conn.prepareStatement(sql);
       stmt.setLong(1, datasetId);
 
+      System.out.println(LocalDateTime.now() + " Execute query");
+
       records = stmt.executeQuery();
+
+      System.out.println(LocalDateTime.now() + " Read records");
+
+      runTypeRecords.initIncrementalSearch();
 
       while (records.next()) {
 
@@ -1554,7 +1560,7 @@ public class DataSetDataDB {
           instrument.getSensorAssignments().getSensorTypeForDBColumn(sensorId);
 
         if (sensorType.hasInternalCalibration()) {
-          SensorValue runType = SensorValue.getNearestValue(runTypeRecords, time);
+          SensorValue runType = runTypeRecords.incrementalSearch(time);
           if (!measurementRunTypes.contains(runType.getValue())) {
             filter = true;
           }
@@ -1564,12 +1570,16 @@ public class DataSetDataDB {
           if (sensorId < 0 || sensorType.isDiagnostic()) {
             used = true;
           }
-
           FieldValue value = new FieldValue(valueId, sensorValue, autoQC,
             userQCFlag, qcComment, used);
           tableData.addValue(time, sensorId, value);
         }
       }
+
+      runTypeRecords.finishIncrementalSearch();
+
+      System.out.println(LocalDateTime.now() + " Done");
+
     } catch (SQLException e) {
       throw new DatabaseException("Error getting sensor data", e);
     } finally {
@@ -1635,8 +1645,8 @@ public class DataSetDataDB {
     }
   }
 
-  public static List<SensorValue> getRunTypes(Connection conn, Instrument instrument, long datasetId) throws InvalidFlagException, DatabaseException {
-    List<SensorValue> result = null;
+  public static NavigableSensorValuesList getRunTypes(Connection conn, Instrument instrument, long datasetId) throws InvalidFlagException, DatabaseException {
+    NavigableSensorValuesList result = null;
 
     List<SensorAssignment> runTypeColumns = instrument.getSensorAssignments().get(SensorType.RUN_TYPE_SENSOR_TYPE);
     if (runTypeColumns.size() > 0) {
@@ -1650,9 +1660,9 @@ public class DataSetDataDB {
     return result;
   }
 
-  public static List<SensorValue> getSensorValues(Connection conn, long datasetId, List<Long> sensorIDs) throws InvalidFlagException, DatabaseException {
+  public static NavigableSensorValuesList getSensorValues(Connection conn, long datasetId, List<Long> sensorIDs) throws InvalidFlagException, DatabaseException {
 
-    List<SensorValue> result = new ArrayList<SensorValue>();
+    NavigableSensorValuesList result = new NavigableSensorValuesList();
 
     PreparedStatement stmt = null;
     ResultSet records = null;
