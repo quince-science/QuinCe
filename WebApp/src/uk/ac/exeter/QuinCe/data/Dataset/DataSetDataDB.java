@@ -1560,7 +1560,7 @@ public class DataSetDataDB {
 
         if (runTypeColumns.contains(fileColumn)) {
           currentRunType = records.getString(4);
-        } else {
+        } else if (sensorIDs.contains(fileColumn)) {
 
           //This is a sensor value
           long valueId = records.getLong(1);
