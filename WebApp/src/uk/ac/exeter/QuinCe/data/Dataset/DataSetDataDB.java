@@ -10,8 +10,10 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +39,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
@@ -53,6 +54,7 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.Variable;
 import uk.ac.exeter.QuinCe.web.VariableList;
+import uk.ac.exeter.QuinCe.web.PlotPage.Field;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
 import uk.ac.exeter.QuinCe.web.PlotPage.Data.PlotPageData;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -179,23 +181,18 @@ public class DataSetDataDB {
   private static final String DELETE_MEASUREMENTS_STATEMENT = "DELETE FROM "
     + "measurements WHERE dataset_id = ?";
 
-  private static final String GET_QC_SENSOR_DATA_QUERY = "SELECT "
-    + "sv.id, sv.file_column, sv.date, sv.value, "
-    + "sv.auto_qc, sv.user_qc_flag, sv.user_qc_message, "
-    + "IF(COUNT(mv.sensor_value_id) > 0, TRUE, FALSE) "
-    + "FROM sensor_values sv "
-    + "LEFT JOIN measurement_values mv ON (sv.id = mv.sensor_value_id) "
-    + "WHERE sv.dataset_id = ? "
-    + "AND sv.file_column IN (" + DatabaseUtils.IN_PARAMS_TOKEN + ") "
-    + "GROUP BY sv.id, mv.sensor_value_id ORDER BY sv.date";
-
   private static final String GET_SENSOR_VALUES_QUERY = "SELECT "
     + "id, file_column, date, value, "
     + "auto_qc, user_qc_flag, user_qc_message "
     + "FROM sensor_values "
     + "WHERE dataset_id = ? "
-    + "AND file_column IN (" + DatabaseUtils.IN_PARAMS_TOKEN + ") "
     + "ORDER BY date ASC";
+
+  private static final String GET_USED_SENSOR_VALUES_QUERY = "SELECT DISTINCT "
+    + "sensor_value_id FROM measurement_values "
+    + "WHERE measurement_id IN "
+    + "(SELECT id FROM measurements WHERE dataset_id = ?) "
+    + "ORDER BY sensor_value_id";
 
   private static final String GET_DATA_REDUCTION_QUERY = "SELECT "
   + "m.date, dr.variable_id, dr.calculation_values, dr.qc_flag, dr.qc_message "
@@ -1512,8 +1509,8 @@ public class DataSetDataDB {
     try {
       conn = dataSource.getConnection();
 
-      // Get all run type records
-      NavigableSensorValuesList runTypeRecords = getRunTypes(conn, instrument, datasetId);
+      // Get the Run Type column IDs
+      List<Long> runTypeColumns = instrument.getSensorAssignments().getRunTypeColumnIDs();
 
       // Get the list of run type values that indicate measurements
       List<String> measurementRunTypes = new ArrayList<String>(0);
@@ -1525,62 +1522,76 @@ public class DataSetDataDB {
         }
       }
 
-      String sql = GET_QC_SENSOR_DATA_QUERY.replaceAll(
-        DatabaseUtils.IN_PARAMS_TOKEN,
-        StringUtils.collectionToDelimited(sensorIDs, ","));
+      // Get the list of sensor values used in the dataset
+      long[] usedSensorValueIDs = getUsedSensorValueIDs(conn, datasetId);
 
-      stmt = conn.prepareStatement(sql);
+
+      // Get all the sensor values for the data set
+      stmt = conn.prepareStatement(GET_SENSOR_VALUES_QUERY);
       stmt.setLong(1, datasetId);
-
-      System.out.println(LocalDateTime.now() + " Execute query");
 
       records = stmt.executeQuery();
 
-      System.out.println(LocalDateTime.now() + " Read records");
-
-      runTypeRecords.initIncrementalSearch();
+      // We collect together all the sensor values for a given date.
+      // Then we check them all together and add them to the output
+      String currentRunType = null;
+      LocalDateTime currentTime = LocalDateTime.MIN;
+      LinkedHashMap<Field, FieldValue> currentDateValues = new LinkedHashMap<Field, FieldValue>();
 
       while (records.next()) {
 
-        long valueId = records.getLong(1);
-        long sensorId = records.getLong(2);
+
         LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
-        Double sensorValue = StringUtils.doubleFromString(records.getString(4));
-        AutoQCResult autoQC = AutoQCResult.buildFromJson(records.getString(5));
-        Flag userQCFlag = new Flag(records.getInt(6));
-        String qcComment = records.getString(7);
-        boolean used = records.getBoolean(8);
-        // Lon/Lat are always used
-        // We also mark diagnostic sensors as used, otherwise they're all
-        // marked as not used which is pointless.
 
-        SensorType sensorType =
-          instrument.getSensorAssignments().getSensorTypeForDBColumn(sensorId);
+        // If the time has changed, process the current set of collected values
+        if (!time.isEqual(currentTime)) {
+          storeCurrentValues(tableData, measurementRunTypes, currentRunType,
+            instrument.getSensorAssignments(), currentTime, currentDateValues);
 
-        boolean filterOut = false;
-
-        if (sensorType.hasInternalCalibration()) {
-          SensorValue runType = runTypeRecords.incrementalSearch(time);
-          if (!measurementRunTypes.contains(runType.getValue())) {
-                filterOut = true;
-          }
+          currentTime = time;
+          currentDateValues = new LinkedHashMap<Field, FieldValue>();
         }
 
-        if (!filterOut) {
-          if (sensorId < 0 || sensorType.isDiagnostic()) {
+
+        // Process the current record
+
+        // See if this is a Run Type
+        long fileColumn = records.getLong(2);
+
+        if (runTypeColumns.contains(fileColumn)) {
+          currentRunType = records.getString(4);
+        } else {
+
+          //This is a sensor value
+          long valueId = records.getLong(1);
+          Double sensorValue = StringUtils.doubleFromString(records.getString(4));
+          AutoQCResult autoQC = AutoQCResult.buildFromJson(records.getString(5));
+          Flag userQCFlag = new Flag(records.getInt(6));
+          String qcComment = records.getString(7);
+
+          SensorType sensorType = instrument.getSensorAssignments().getSensorTypeForDBColumn(fileColumn);
+
+          // See if this value has been used in the data set
+          // Position and diagnostics are always marked as used
+          boolean used = false;
+          if (fileColumn < 0 || sensorType.isDiagnostic()) {
+            used = true;
+          } else if (Arrays.binarySearch(usedSensorValueIDs, valueId) >= 0) {
             used = true;
           }
+
           FieldValue value = new FieldValue(valueId, sensorValue, autoQC,
             userQCFlag, qcComment, used);
-          tableData.addValue(time, sensorId, value);
+          currentDateValues.put(tableData.getFieldSets().getField(fileColumn), value);
         }
       }
 
-      runTypeRecords.finishIncrementalSearch();
+      // Store the last set of values
+      storeCurrentValues(tableData, measurementRunTypes, currentRunType,
+        instrument.getSensorAssignments(), currentTime, currentDateValues);
 
-      System.out.println(LocalDateTime.now() + " Done");
 
-    } catch (SQLException e) {
+    } catch (Exception e) {
       throw new DatabaseException("Error getting sensor data", e);
     } finally {
       DatabaseUtils.closeResultSets(records);
@@ -1645,48 +1656,66 @@ public class DataSetDataDB {
     }
   }
 
-  public static NavigableSensorValuesList getRunTypes(Connection conn, Instrument instrument, long datasetId) throws InvalidFlagException, DatabaseException {
-    NavigableSensorValuesList result = null;
+  private static long[] getUsedSensorValueIDs(Connection conn, long datasetId) throws DatabaseException {
 
-    List<SensorAssignment> runTypeColumns = instrument.getSensorAssignments().get(SensorType.RUN_TYPE_SENSOR_TYPE);
-    if (runTypeColumns.size() > 0) {
-      List<Long> columnIds = new ArrayList<Long>(runTypeColumns.size());
-      for (SensorAssignment column : runTypeColumns) {
-        columnIds.add(column.getDatabaseId());
-      }
-      result = getSensorValues(conn, datasetId, columnIds);
-    }
-
-    return result;
-  }
-
-  public static NavigableSensorValuesList getSensorValues(Connection conn, long datasetId, List<Long> sensorIDs) throws InvalidFlagException, DatabaseException {
-
-    NavigableSensorValuesList result = new NavigableSensorValuesList();
+    ArrayList<Long> ids = new ArrayList<Long>();
 
     PreparedStatement stmt = null;
     ResultSet records = null;
 
     try {
-      String sql = GET_SENSOR_VALUES_QUERY.replaceAll(
-        DatabaseUtils.IN_PARAMS_TOKEN,
-        StringUtils.collectionToDelimited(sensorIDs, ","));
 
-      stmt = conn.prepareStatement(sql);
-      stmt.setLong(1, datasetId);
+      stmt = conn.prepareStatement(GET_USED_SENSOR_VALUES_QUERY);
+      stmt.setLong(1,  datasetId);
 
       records = stmt.executeQuery();
-
       while (records.next()) {
-        result.add(sensorValueFromResultSet(records, datasetId));
+        ids.add(records.getLong(1));
       }
+
     } catch (SQLException e) {
-      throw new DatabaseException("Error getting sensor data", e);
+      throw new DatabaseException("Error while getting used sensor value IDS", e);
     } finally {
       DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);
     }
 
+    long[] result = new long[ids.size()];
+    for (int i = 0; i < ids.size(); i++) {
+      result[i] = ids.get(i);
+    }
+
     return result;
+  }
+
+  private static void storeCurrentValues(PlotPageData tableData,
+    List<String> measurementRunTypes, String currentRunType,
+    SensorAssignments sensorAssignments,
+    LocalDateTime time, LinkedHashMap<Field, FieldValue> values)
+      throws RecordNotFoundException {
+
+
+    if (values.size() > 0) {
+      // Filter out values based on run type.
+      // If a value has internal calibrations, and we aren't on a
+      // measurement run type, that value is removed.
+
+      // If there's no run types, we skip filtering as all values are valid
+      if (measurementRunTypes.size() > 0) {
+
+        if (null == currentRunType || !measurementRunTypes.contains(currentRunType)) {
+          Iterator<Map.Entry<Field, FieldValue>> filterIterator = values.entrySet().iterator();
+          while (filterIterator.hasNext()) {
+            Map.Entry<Field, FieldValue> entry = filterIterator.next();
+
+            if (sensorAssignments.getSensorTypeForDBColumn(entry.getKey().getId()).hasInternalCalibration()) {
+              filterIterator.remove();
+            }
+          }
+        }
+      }
+
+      tableData.put(time, values);
+    }
   }
 }

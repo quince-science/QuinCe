@@ -90,7 +90,7 @@ public class FieldValue {
   }
 
   /**
-   * Initialise a map of id -> QCColumnValue for a list of IDs,
+   * Initialise a map of id -> FieldValue for a list of IDs,
    * maintaining the same order of IDs. Entries in the map are null
    *
    * @param ids The IDs
