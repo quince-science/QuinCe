@@ -1536,20 +1536,22 @@ public class DataSetDataDB {
       // Then we check them all together and add them to the output
       String currentRunType = null;
       LocalDateTime currentTime = LocalDateTime.MIN;
-      LinkedHashMap<Field, FieldValue> currentDateValues = new LinkedHashMap<Field, FieldValue>();
+      // Get the field map in correct order
+      Map<Field, FieldValue> currentDateValues = new HashMap<Field, FieldValue>();
 
       while (records.next()) {
-
-
         LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
 
         // If the time has changed, process the current set of collected values
         if (!time.isEqual(currentTime)) {
-          storeCurrentValues(tableData, measurementRunTypes, currentRunType,
-            instrument.getSensorAssignments(), currentTime, currentDateValues);
+          if (!currentTime.isEqual(LocalDateTime.MIN)) {
+            storeCurrentValues(tableData, measurementRunTypes, currentRunType,
+              instrument.getSensorAssignments(), currentTime, currentDateValues);
+
+          }
 
           currentTime = time;
-          currentDateValues = new LinkedHashMap<Field, FieldValue>();
+          currentDateValues = new HashMap<Field, FieldValue>();
         }
 
 
@@ -1691,31 +1693,29 @@ public class DataSetDataDB {
   private static void storeCurrentValues(PlotPageData tableData,
     List<String> measurementRunTypes, String currentRunType,
     SensorAssignments sensorAssignments,
-    LocalDateTime time, LinkedHashMap<Field, FieldValue> values)
+    LocalDateTime time, Map<Field, FieldValue> values)
       throws RecordNotFoundException {
 
 
-    if (values.size() > 0) {
-      // Filter out values based on run type.
-      // If a value has internal calibrations, and we aren't on a
-      // measurement run type, that value is removed.
+    // Filter out values based on run type.
+    // If a value has internal calibrations, and we aren't on a
+    // measurement run type, that value is removed.
 
-      // If there's no run types, we skip filtering as all values are valid
-      if (measurementRunTypes.size() > 0) {
+    // If there's no run types, we skip filtering as all values are valid
+    if (measurementRunTypes.size() > 0) {
 
-        if (null == currentRunType || !measurementRunTypes.contains(currentRunType)) {
-          Iterator<Map.Entry<Field, FieldValue>> filterIterator = values.entrySet().iterator();
-          while (filterIterator.hasNext()) {
-            Map.Entry<Field, FieldValue> entry = filterIterator.next();
+      if (null == currentRunType || !measurementRunTypes.contains(currentRunType)) {
+        Iterator<Map.Entry<Field, FieldValue>> filterIterator = values.entrySet().iterator();
+        while (filterIterator.hasNext()) {
+          Map.Entry<Field, FieldValue> entry = filterIterator.next();
 
-            if (sensorAssignments.getSensorTypeForDBColumn(entry.getKey().getId()).hasInternalCalibration()) {
-              filterIterator.remove();
-            }
+          if (sensorAssignments.getSensorTypeForDBColumn(entry.getKey().getId()).hasInternalCalibration()) {
+            filterIterator.remove();
           }
         }
       }
-
-      tableData.put(time, values);
     }
+
+    tableData.addValues(time, values);
   }
 }

@@ -71,6 +71,19 @@ public class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, Fi
   }
 
   /**
+   * Add a set of values to the table
+   * @param rowId The table row
+   * @param values The field values
+   */
+  public void addValues(LocalDateTime rowId, Map<Field, FieldValue> values) {
+    if (!containsKey(rowId)) {
+      put(rowId, fieldSets.generateFieldValuesMap());
+    }
+
+    get(rowId).putAll(values);
+  }
+
+  /**
    * Get data for a plot
    * @param xAxis X Axis
    * @param yAxis Y Axis
