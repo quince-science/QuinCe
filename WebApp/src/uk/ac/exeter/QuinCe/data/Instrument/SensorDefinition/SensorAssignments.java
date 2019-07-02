@@ -542,4 +542,17 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
     return result;
   }
+
+  /**
+   * Get the column IDs for the Run Type columns
+   * @return
+   */
+  public List<Long> getRunTypeColumnIDs() {
+    List<Long> result = new ArrayList<Long>();
+    for (SensorAssignment assignment : get(SensorType.RUN_TYPE_SENSOR_TYPE)) {
+      result.add(assignment.getDatabaseId());
+    }
+
+    return result;
+  }
 }
