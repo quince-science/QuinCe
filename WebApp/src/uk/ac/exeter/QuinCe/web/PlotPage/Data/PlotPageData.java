@@ -335,4 +335,12 @@ public class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, Fi
 
     return result;
   }
+
+  /**
+   * Get the field sets
+   * @return
+   */
+  public FieldSets getFieldSets() {
+    return fieldSets;
+  }
 }
