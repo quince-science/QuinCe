@@ -104,6 +104,7 @@ var mapSource = new ol.source.Stamen({
 var jsDataTable = null;
 
 //Table selections
+var selectedColumn = -1;
 var selectedRows = [];
 
 //The row number (in the data file) of the last selected/deselected row, and
@@ -233,23 +234,7 @@ function drawTable() {
         highlightRow(tableScrollRow);
         tableScrollRow = null;
       }
-    },
-    rowCallback: function( row, data, index ) {
-      // Highlight if the row is selected
-      if ($.inArray(data[0], selectedRows) > -1) {
-        $(row).addClass('selected');
-      }
-
-      // For some reason, the click handler is added twice
-      // on the first round of data loading (i.e. when the screen
-      // is first drawn). I can't find why, so for now I'll just
-      // remove all existing click handlers before adding this one.
-      $(row).off('click');
-      $(row).on('click', function(event) {
-        if (canEdit) {
-        clickRowAction(data[0], event.shiftKey);
-        }
-      });
+      setupTableClickHandlers();
     },
     columnDefs: getColumnDefs()
   });
@@ -313,6 +298,10 @@ function calcTableScrollY() {
 
 function getSelectableRows() {
   return JSON.parse($('#plotPageForm\\:selectableRows').val());
+}
+
+function getSelectableColumns() {
+  return JSON.parse($('#plotPageForm\\:selectableColumns').val());
 }
 
 /*
@@ -383,9 +372,53 @@ function highlightRow(rowId) {
 }
 
 /*
- * Process row clicks as selections/deselections
+ * Set up click handlers on table cells
  */
-function clickRowAction(rowId, shiftClick) {
+function setupTableClickHandlers() {
+
+  // Remove any existing handlers
+  $('.dataTable').off('click', 'tbody td');
+
+  // Set click handler
+  $('.dataTable').on('click', 'tbody td', function() {
+    clickCellAction(this._DT_CellIndex, event.shiftKey);
+  })
+}
+
+function canSelect(row, col) {
+
+  var result = true;
+
+  if ($.inArray(row, getSelectableRows()) < 0) {
+    result = false;
+  } else if ($.inArray(col, getSelectableColumns()) < 0) {
+    result = false;
+  }
+
+  return result;
+}
+
+
+/*
+ * Process cell clicks
+ */
+function clickCellAction(cellIndex, shiftClick) {
+
+  var rowId = jsDataTable.row(cellIndex.row).data()['DT_RowId'];
+  var columnIndex = cellIndex.column;
+  if (canSelect(rowId, columnIndex)) {
+
+    if (columnIndex != selectedColumn) {
+      selectedColumn = columnIndex;
+      selectedRows = [rowId];
+      lastClickedRow = rowId;
+      lastClickedAction = SELECT_ACTION;
+      selectionUpdated();
+    }
+
+  }
+
+  /*
   // We only do something if the row is selectable
   if ($.inArray(rowId, getSelectableRows()) != -1) {
 
@@ -412,6 +445,7 @@ function clickRowAction(rowId, shiftClick) {
     lastClickedRow = rowId;
     lastClickedAction = action;
   }
+*/
 }
 
 function addRowsToSelection(rows) {
@@ -479,20 +513,30 @@ function getRowsInRange(startRow, endRow) {
 
 function selectionUpdated() {
 
-  // Update the displayed rows
+  // Clear all selection display
+  $(jsDataTable.table().node()).find('.selected').removeClass('selected');
+
+  // Highlight selected rows
   var rows = jsDataTable.rows()[0];
   for (var i = 0; i < rows.length; i++) {
     var row = jsDataTable.row(i);
-    if ($.inArray(row.data()[0], selectedRows) > -1) {
-      $(row.node()).addClass('selected');
-    } else {
-      $(row.node()).removeClass('selected');
+    var col = jsDataTable.cell({row:i, column:selectedColumn});
+
+    if ($.inArray(row.data()['DT_RowId'], selectedRows) > -1) {
+      $(jsDataTable.cell({row : i, column : selectedColumn}).node()).addClass('selected')
     }
   }
 
-  // Update the selected rows counter
-  $('#selectedRowsCount').html(selectedRows.length);
+  // Update the selection summary
+  if (selectedRows.length == 0) {
+    $('#selectedColumn').html('None');
+    $('#selectedRowsCount').html('');
+  } else {
+    $('#selectedColumn').html(JSON.parse($('#plotPageForm\\:columnHeadings').val())[selectedColumn]);
+    $('#selectedRowsCount').html(selectedRows.length);
+  }
 
+  /*
   // Redraw the plots to show selection
   if (null != plot1) {
     drawPlot(1);
@@ -506,6 +550,7 @@ function selectionUpdated() {
   if (null != map2) {
     drawMap(2);
   }
+*/
 
   if (canEdit && typeof postSelectionUpdated == 'function') {
     postSelectionUpdated();
@@ -514,6 +559,7 @@ function selectionUpdated() {
 
 function clearSelection() {
   jsDataTable.rows(selectedRows).deselect();
+  selectedColumn = -1;
   selectedRows = [];
   selectionUpdated();
 }
