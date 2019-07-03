@@ -327,4 +327,21 @@ public class ManualQcBean extends PlotPageBean {
       e.printStackTrace();
     }
   }
+
+  @Override
+  public List<Integer> getSelectableColumns() {
+
+    List<Integer> result = new ArrayList<Integer>();
+
+    // The lon and lat are added and fixed to be columns 1 and 2
+    result.add(1);
+    result.add(2);
+
+    // Now any sensor value. This is the field set with ID -1.
+    // We'll add diagnostics sometime.
+    LinkedHashMap<Long, List<Integer>> columnIndexes = fieldSets.getColumnIndexes();
+    result.addAll(columnIndexes.get(DataSetDataDB.SENSORS_FIELDSET));
+
+    return result;
+  }
 }

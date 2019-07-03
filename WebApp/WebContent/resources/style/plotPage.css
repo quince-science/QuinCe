@@ -78,6 +78,10 @@ tr.selected {
   background-color: #FFFF00 !important;
 }
 
+td.selected {
+  background-color: #FFFF00 !important;
+}
+
 .clearSelectionButton {
   background-image: url("#{resource['image/delete_button.svg']}") !important;
   background-size: cover;

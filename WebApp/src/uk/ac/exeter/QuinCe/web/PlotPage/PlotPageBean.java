@@ -105,6 +105,12 @@ public abstract class PlotPageBean extends BaseManagedBean {
   protected String selectableRows = null;
 
   /**
+   * The index of the selected column. Can be converted to a field
+   * using the fieldSets
+   */
+  private int selectedColumn = -1;
+
+  /**
    * The row numbers that have been selected by the user. Stored as a comma-separated list.
    */
   private String selectedRows = null;
@@ -289,6 +295,19 @@ public abstract class PlotPageBean extends BaseManagedBean {
     return StringUtils.delimitedToLongList(selectedRows);
   }
 
+  public int getSelectedColumn() {
+    return selectedColumn;
+  }
+
+  /**
+   * Set the selected column index
+   * @param selectedRows The selected column index
+   * @see #selectedColumn
+   */
+  public void setSelectedColumn(int selectedColumn) {
+    this.selectedColumn = selectedColumn;
+  }
+
   /**
    * Set the selected table rows.
    * @param selectedRows The selected rows
@@ -452,7 +471,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
   protected abstract String getScreenNavigation();
 
   /**
-   * Build the list of selectable record IDs
+   * Build the list of selectable record IDs. By default, this is all rows
    * @throws Exception If the list cannot be created
    */
   protected String buildSelectableRows() throws Exception {
@@ -617,7 +636,17 @@ public abstract class PlotPageBean extends BaseManagedBean {
    */
   protected abstract void loadData() throws Exception;
 
+  /**
+   * Get the page data object
+   * @return The page data
+   */
   protected PlotPageData getData() {
     return pageData;
   }
+
+  /**
+   * Get the indexes of the columns that can be selected in the data table
+   * @return
+   */
+  public abstract List<Integer> getSelectableColumns();
 }
