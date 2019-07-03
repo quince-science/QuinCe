@@ -235,6 +235,7 @@ function drawTable() {
         tableScrollRow = null;
       }
       setupTableClickHandlers();
+      drawTableSelection();
     },
     columnDefs: getColumnDefs()
   });
@@ -413,42 +414,37 @@ function clickCellAction(cellIndex, shiftClick) {
       selectedRows = [rowId];
       lastClickedRow = rowId;
       lastClickedAction = SELECT_ACTION;
-      selectionUpdated();
-    }
+    } else {
 
-  }
+      var action = lastClickedAction;
+      var actionRows = [rowId];
 
-  /*
-  // We only do something if the row is selectable
-  if ($.inArray(rowId, getSelectableRows()) != -1) {
-
-    var action = lastClickedAction;
-    var actionRows = [rowId];
-
-    if (!shiftClick) {
-      if ($.inArray(rowId, selectedRows) != -1) {
-        action = DESELECT_ACTION;
+      if (!shiftClick) {
+        if ($.inArray(rowId, selectedRows) != -1) {
+          action = DESELECT_ACTION;
+        } else {
+          action = SELECT_ACTION;
+        }
       } else {
-        action = SELECT_ACTION;
+        actionRows = getRowsInRange(lastClickedRow, rowId);
       }
-    } else {
-      actionRows = getRowsInRange(lastClickedRow, rowId);
-    }
 
-    if (action == SELECT_ACTION) {
-      addRowsToSelection(actionRows);
-    } else {
-      removeRowsFromSelection(actionRows);
+      if (action == SELECT_ACTION) {
+        addRowsToSelection(actionRows);
+      } else {
+        removeRowsFromSelection(actionRows);
+      }
+
+      lastClickedRow = rowId;
+      lastClickedAction = action;
     }
 
     selectionUpdated();
-    lastClickedRow = rowId;
-    lastClickedAction = action;
   }
-*/
 }
 
 function addRowsToSelection(rows) {
+
   var rowsIndex = 0;
   var selectionIndex = 0;
 
@@ -496,12 +492,14 @@ function getRowsInRange(startRow, endRow) {
     step = -1;
   }
 
-  var startIndex = $.inArray(startRow, getSelectableRows());
+  var selectableRows = getSelectableRows();
+
+  var startIndex = $.inArray(startRow, selectableRows);
   var currentIndex = startIndex;
 
-  while (getSelectableRows()[currentIndex] != endRow) {
+  while (selectableRows[currentIndex] != endRow) {
     currentIndex = currentIndex + step;
-    rows.push(getSelectableRows()[currentIndex]);
+    rows.push(selectableRows[currentIndex]);
   }
 
   if (step == -1) {
@@ -513,6 +511,29 @@ function getRowsInRange(startRow, endRow) {
 
 function selectionUpdated() {
 
+  drawTableSelection();
+
+
+  // Redraw the plots to show selection
+  if (null != plot1) {
+    drawPlot(1);
+  }
+  if (null != plot2) {
+    drawPlot(2);
+  }
+  if (null != map1) {
+    drawMap(1);
+  }
+  if (null != map2) {
+    drawMap(2);
+  }
+
+  if (canEdit && typeof postSelectionUpdated == 'function') {
+    postSelectionUpdated();
+  }
+}
+
+function drawTableSelection() {
   // Clear all selection display
   $(jsDataTable.table().node()).find('.selected').removeClass('selected');
 
@@ -535,27 +556,8 @@ function selectionUpdated() {
     $('#selectedColumn').html(JSON.parse($('#plotPageForm\\:columnHeadings').val())[selectedColumn]);
     $('#selectedRowsCount').html(selectedRows.length);
   }
-
-  /*
-  // Redraw the plots to show selection
-  if (null != plot1) {
-    drawPlot(1);
-  }
-  if (null != plot2) {
-    drawPlot(2);
-  }
-  if (null != map1) {
-    drawMap(1);
-  }
-  if (null != map2) {
-    drawMap(2);
-  }
-*/
-
-  if (canEdit && typeof postSelectionUpdated == 'function') {
-    postSelectionUpdated();
-  }
 }
+
 
 function clearSelection() {
   jsDataTable.rows(selectedRows).deselect();
