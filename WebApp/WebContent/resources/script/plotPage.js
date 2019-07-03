@@ -444,26 +444,7 @@ function clickCellAction(cellIndex, shiftClick) {
 }
 
 function addRowsToSelection(rows) {
-
-  var rowsIndex = 0;
-  var selectionIndex = 0;
-
-  while (selectionIndex < selectedRows.length && rowsIndex < rows.length) {
-    while (selectedRows[selectionIndex] > rows[rowsIndex]) {
-      selectedRows.splice(selectionIndex, 0, rows[rowsIndex]);
-      selectionIndex++;
-      rowsIndex++;
-    }
-
-    if (selectedRows[selectionIndex] == rows[rowsIndex]) {
-      rowsIndex++;
-    }
-    selectionIndex++;
-  }
-
-  if (rowsIndex < rows.length) {
-    selectedRows = selectedRows.concat(rows.slice(rowsIndex));
-  }
+  selectedRows = selectedRows.concat(rows).sort((a, b) => a - b);
 }
 
 function removeRowsFromSelection(rows) {
@@ -494,7 +475,7 @@ function getRowsInRange(startRow, endRow) {
 
   var selectableRows = getSelectableRows();
 
-  var startIndex = $.inArray(startRow, selectableRows);
+  var startIndex = selectableRows.indexOf(startRow);
   var currentIndex = startIndex;
 
   while (selectableRows[currentIndex] != endRow) {
@@ -513,7 +494,9 @@ function selectionUpdated() {
 
   drawTableSelection();
 
+  drawPlot(1);
 
+/*
   // Redraw the plots to show selection
   if (null != plot1) {
     drawPlot(1);
@@ -527,7 +510,7 @@ function selectionUpdated() {
   if (null != map2) {
     drawMap(2);
   }
-
+*/
   if (canEdit && typeof postSelectionUpdated == 'function') {
     postSelectionUpdated();
   }
@@ -560,7 +543,6 @@ function drawTableSelection() {
 
 
 function clearSelection() {
-  jsDataTable.rows(selectedRows).deselect();
   selectedColumn = -1;
   selectedRows = [];
   selectionUpdated();
@@ -578,8 +560,7 @@ function showQCMessage(qcFlag, qcMessage) {
       content += 'questionable';
       break;
     }
-    case 4:
-    case 44: {
+    case 4: {
       content += 'bad';
       break;
     }
@@ -1167,7 +1148,8 @@ function makeHighlights(plotData) {
   var highlightColor = null;
 
   for (var i = 0; i < plotData.length; i++) {
-    var selected = ($.inArray(plotData[i][PLOT_MEASUREMENT_ID_INDEX], selectedRows) > -1);
+    //var selected = (selectedRows.indexOf(plotData[i][PLOT_MEASUREMENT_ID_INDEX]) > -1);
+    var selected = binarySearch(selectedRows, plotData[i][PLOT_MEASUREMENT_ID_INDEX]) > -1;
 
     if (selected || Math.abs(plotData[i][PLOT_MANUAL_FLAG_INDEX]) != FLAG_GOOD) {
       highlightColor = null;
@@ -1192,14 +1174,11 @@ function makeHighlights(plotData) {
 function makeMapHighlights(mapData) {
   var highlights = {};
 
-  var currentFlag = FLAG_GOOD;
-  var highlightColor = null;
-
   for (var i = 0; i < mapData.length; i++) {
     var selected = ($.inArray(mapData[i][MAP_MEASUREMENT_ID_INDEX], selectedRows) > -1);
 
     if (selected || Math.abs(mapData[i][MAP_MANUAL_FLAG_INDEX]) != FLAG_GOOD) {
-      highlightColor = null;
+      let highlightColor = null;
       if (mapData[i][MAP_MANUAL_FLAG_INDEX] in HIGHLIGHT_COLORS ) {
         highlightColor = HIGHLIGHT_COLORS[mapData[i][MAP_MANUAL_FLAG_INDEX]]
       }
@@ -1345,4 +1324,23 @@ function selectPointsInRect(data, minX, maxX, minY, maxY) {
 
   addRowsToSelection(pointsToSelect);
   selectionUpdated();
+}
+
+function binarySearch (arr, val) {
+  let start = 0;
+  let end = arr.length - 1;
+
+  while (start <= end) {
+      let mid = Math.floor((start + end) / 2);
+
+      if (arr[mid] === val) {
+          return mid;
+      }
+      if (val < arr[mid]) {
+          end = mid - 1;
+      } else {
+          start = mid + 1;
+      }
+  }
+  return -1;
 }
