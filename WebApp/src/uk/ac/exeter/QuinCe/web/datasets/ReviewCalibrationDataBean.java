@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,5 +178,10 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
   protected void loadData() throws Exception {
     // TODO Auto-generated method stub
 
+  }
+
+  @Override
+  public List<Integer> getSelectableColumns() {
+    return new ArrayList<Integer>();
   }
 }
