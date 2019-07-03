@@ -41,12 +41,14 @@
       <h:inputHidden value="#{sessionScope[beanName].getFieldSets().getFieldSetIds()}" id="fieldSets"/>
       <h:inputHidden value="#{sessionScope[beanName].getTableData().getRowIdsJson()}" id="tableRowIds"/>
       <h:inputHidden value="#{sessionScope[beanName].selectableRows}" id="selectableRows"/>
+      <h:inputHidden value="#{sessionScope[beanName].selectableColumns}" id="selectableColumns"/>
       <h:inputHidden value="#{sessionScope[beanName].dataBounds}" id="dataBounds"/>
       <ui:insert name="formEntries"></ui:insert>
     </h:form>
 
     <!-- Form for row selections -->
     <h:form id="selectionForm" method="post">
+      <h:inputHidden id="selectedColumn" value="#{sessionScope[beanName].selectedColumn}"/>
       <h:inputHidden id="selectedRows" value="#{sessionScope[beanName].selectedRows}"/>
       <ui:insert name="selectionFormEntries"/>
       <ui:insert name="selectionDialog"/>
@@ -192,7 +194,9 @@
           </ui:fragment>
           <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
             <h:form id="selectActionsForm" method="post" styleClass="inline">
-              Selection: <span id="selectedRowsCount">0</span>
+              Selection:
+              <span id="selectedColumn"></span>
+              <span id="selectedRowsCount">0</span>
               <p:commandButton icon="clearSelectionButton" onclick="clearSelection();" styleClass="inlineButton tightButton"/>
               <ui:insert name="selectionActions">Selection actions here</ui:insert>
             </h:form>
