@@ -46,6 +46,14 @@ if [ $help -eq 1 ]; then
   exit
 fi
 
+if [ -z "$dataset_id"]
+then
+  mysql -u$db_user -p"$db_password" $db_name << EOF
+    SELECT id, name FROM dataset;
+EOF
+echo ""
+fi
+
 while [ -z "$dataset_id" ]
 do
   read -p "Dataset ID: " dataset_id
