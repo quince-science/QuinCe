@@ -143,7 +143,7 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
     return result;
   }
 
-  public String getTableHeadings() {
+  private List<String> getTableHeadingsList() {
     List<String> headings = new ArrayList<String>();
 
     for (List<Field> fields : values()) {
@@ -152,7 +152,11 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
       }
     }
 
-    return new Gson().toJson(headings);
+    return headings;
+  }
+
+  public String getTableHeadings() {
+    return new Gson().toJson(getTableHeadingsList());
   }
 
   public LinkedHashMap<Long, List<Integer>> getColumnIndexes() {
@@ -194,5 +198,9 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
     }
 
     return result;
+  }
+
+  public Field getField(int columnIndex) {
+    return getField(getTableHeadingsList().get(columnIndex));
   }
 }
