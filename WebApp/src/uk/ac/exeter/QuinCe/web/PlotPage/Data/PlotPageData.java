@@ -356,4 +356,8 @@ public class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, Fi
   public FieldSets getFieldSets() {
     return fieldSets;
   }
+
+  public FieldValue getValue(LocalDateTime time, int fieldIndex) {
+    return get(time).get(fieldSets.getField(fieldIndex));
+  }
 }

@@ -133,6 +133,10 @@ public class FieldValue {
     return value.isNaN();
   }
 
+  public void setNeedsFlag(boolean needsFlag) {
+    this.needsFlag = needsFlag;
+  }
+
   @Override
   public String toString() {
     return String.valueOf(value);
