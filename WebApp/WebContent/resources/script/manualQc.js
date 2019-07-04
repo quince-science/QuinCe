@@ -185,11 +185,14 @@ function updateFlagDialogControls() {
 }
 
 function acceptAutoQc() {
+  $('#selectionForm\\:selectedColumn').val(selectedColumn);
   $('#selectionForm\\:selectedRows').val(selectedRows);
   $('#selectionForm\\:acceptAutoQc').click();
 }
 
 function qcFlagsAccepted() {
+  /*
+
   var additionalData = JSON.parse($('#tableForm\\:additionalTableData').val());
 
   var autoFlagColumn = additionalData.flagColumns[0];
@@ -205,15 +208,12 @@ function qcFlagsAccepted() {
       jsDataTable.cell(i, userFlagColumn).data(jsDataTable.cell(row, autoFlagColumn).data());
     }
   }
-
+  */
   clearSelection();
-
-  // Reload the plots
-  $('#plot1Form\\:plotGetData').click();
-  $('#plot2Form\\:plotGetData').click();
 }
 
 function startUserQcFlags() {
+  $('#selectionForm\\:selectedColumn').val(selectedColumn);
   $('#selectionForm\\:selectedRows').val(selectedRows);
   $('#selectionForm\\:generateUserQcComments').click();
 }
