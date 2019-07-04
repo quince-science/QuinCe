@@ -494,9 +494,6 @@ function selectionUpdated() {
 
   drawTableSelection();
 
-  drawPlot(1);
-
-/*
   // Redraw the plots to show selection
   if (null != plot1) {
     drawPlot(1);
@@ -510,7 +507,7 @@ function selectionUpdated() {
   if (null != map2) {
     drawMap(2);
   }
-*/
+
   if (canEdit && typeof postSelectionUpdated == 'function') {
     postSelectionUpdated();
   }
@@ -520,7 +517,7 @@ function drawTableSelection() {
   // Clear all selection display
   $(jsDataTable.table().node()).find('.selected').removeClass('selected');
 
-  // Highlight selected rows
+  // Highlight selected cells
   var rows = jsDataTable.rows()[0];
   for (var i = 0; i < rows.length; i++) {
     var row = jsDataTable.row(i);
@@ -1148,7 +1145,6 @@ function makeHighlights(plotData) {
   var highlightColor = null;
 
   for (var i = 0; i < plotData.length; i++) {
-    //var selected = (selectedRows.indexOf(plotData[i][PLOT_MEASUREMENT_ID_INDEX]) > -1);
     var selected = binarySearch(selectedRows, plotData[i][PLOT_MEASUREMENT_ID_INDEX]) > -1;
 
     if (selected || Math.abs(plotData[i][PLOT_MANUAL_FLAG_INDEX]) != FLAG_GOOD) {
@@ -1175,7 +1171,7 @@ function makeMapHighlights(mapData) {
   var highlights = {};
 
   for (var i = 0; i < mapData.length; i++) {
-    var selected = ($.inArray(mapData[i][MAP_MEASUREMENT_ID_INDEX], selectedRows) > -1);
+    var selected = binarySearch(selectedRows, mapData[i][MAP_MEASUREMENT_ID_INDEX]) > -1;
 
     if (selected || Math.abs(mapData[i][MAP_MANUAL_FLAG_INDEX]) != FLAG_GOOD) {
       let highlightColor = null;
