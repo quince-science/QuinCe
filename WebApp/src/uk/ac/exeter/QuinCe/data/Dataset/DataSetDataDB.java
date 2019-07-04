@@ -200,6 +200,10 @@ public class DataSetDataDB {
   + "ON (m.id = dr.measurement_id) "
   + "WHERE m.dataset_id = ? ORDER BY m.date ASC";
 
+  private static final String SET_QC_STATEMENT = "UPDATE sensor_values SET "
+    + "user_qc_flag = ?, user_qc_message = ? "
+    + "WHERE id = ?";
+
   /**
    * The name of the ID column
    */
@@ -1717,5 +1721,37 @@ public class DataSetDataDB {
     }
 
     tableData.addValues(time, values);
+  }
+
+  public static void setQC(DataSource dataSource, List<FieldValue> updateValues) throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(updateValues, "updateValues");
+
+    Connection conn = null;
+    PreparedStatement stmt = null;
+
+    try {
+
+      conn = dataSource.getConnection();
+      stmt = conn.prepareStatement(SET_QC_STATEMENT);
+
+      for (FieldValue value : updateValues) {
+        stmt.setInt(1, value.getQcFlag().getFlagValue());
+        stmt.setString(2, value.getQcComment());
+        stmt.setLong(3, value.getValueId());
+
+        stmt.addBatch();
+      }
+
+      stmt.executeBatch();
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error updating QC values", e);
+    } finally {
+      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeConnection(conn);
+    }
+
   }
 }
