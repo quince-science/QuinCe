@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,9 +21,12 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.PlotPage.Field;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSet;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
+import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
 import uk.ac.exeter.QuinCe.web.PlotPage.PlotPageBean;
 import uk.ac.exeter.QuinCe.web.PlotPage.Data.PlotPageData;
 
@@ -115,7 +119,20 @@ public class ManualQcBean extends PlotPageBean {
    */
   public void acceptAutoQc() {
     try {
-      System.out.println("Auto QC Accept");
+
+      List<Long> timeLongs = StringUtils.delimitedToLongList(getSelectedRows());
+      List<FieldValue> updateValues = new ArrayList<FieldValue>(timeLongs.size());
+
+      for (long timeLong : timeLongs) {
+        LocalDateTime time = DateTimeUtils.longToDate(timeLong);
+        updateValues.add(pageData.getValue(time, selectedColumn));
+      }
+
+      DataSetDataDB.setQC(getDataSource(), updateValues);
+
+      for (FieldValue value : updateValues) {
+        value.setNeedsFlag(false);
+      }
 
       dirty = true;
     } catch (Exception e) {
