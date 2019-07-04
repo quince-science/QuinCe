@@ -108,12 +108,12 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * The index of the selected column. Can be converted to a field
    * using the fieldSets
    */
-  private int selectedColumn = -1;
+  protected int selectedColumn = -1;
 
   /**
    * The row numbers that have been selected by the user. Stored as a comma-separated list.
    */
-  private String selectedRows = null;
+  protected String selectedRows = null;
 
   /**
    * The data for the first plot as a JSON string
