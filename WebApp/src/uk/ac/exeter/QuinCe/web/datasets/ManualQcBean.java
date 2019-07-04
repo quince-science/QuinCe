@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,16 +14,12 @@ import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Calculation.CommentSet;
 import uk.ac.exeter.QuinCe.data.Calculation.CommentSetEntry;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
-import uk.ac.exeter.QuinCe.jobs.JobManager;
-import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.web.PlotPage.Field;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSet;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
@@ -95,6 +90,8 @@ public class ManualQcBean extends PlotPageBean {
    */
   public String finish() {
     if (dirty) {
+      /*
+
       try {
         DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_DATA_REDUCTION);
         Map<String, String> jobParams = new HashMap<String, String>();
@@ -103,9 +100,11 @@ public class ManualQcBean extends PlotPageBean {
       } catch (Exception e) {
         e.printStackTrace();
       }
+
+      */
     }
 
-    // Destroy all data
+    // Destroy all bean data
     reset();
 
     return NAV_DATASET_LIST;
@@ -116,7 +115,8 @@ public class ManualQcBean extends PlotPageBean {
    */
   public void acceptAutoQc() {
     try {
-      CalculationDBFactory.getCalculationDB().acceptAutoQc(getDataSource(), getSelectedRowsList());
+      System.out.println("Auto QC Accept");
+
       dirty = true;
     } catch (Exception e) {
       e.printStackTrace();
