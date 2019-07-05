@@ -191,9 +191,12 @@ function acceptAutoQc() {
 }
 
 function qcFlagsAccepted() {
-  // Reload table data
-  jsDataTable.ajax.reload();
   clearSelection();
+  plot1GetData();
+  plot2GetData();
+
+  // Reload table data
+  jsDataTable.ajax.reload(null, false);
 }
 
 function startUserQcFlags() {
