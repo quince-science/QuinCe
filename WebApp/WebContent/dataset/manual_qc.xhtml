@@ -77,7 +77,12 @@
   <ui:define name="selectionFormEntries">
     <h:inputHidden id="userCommentList" value="#{manualQcBean.userCommentList}"/>
     <h:inputHidden id="worstSelectedFlag" value="#{manualQcBean.worstSelectedFlag}"/>
-    <p:commandLink id="acceptAutoQc" action="#{manualQcBean.acceptAutoQc}" ajax="true" process="selectedColumn selectedRows" update="@none" oncomplete="qcFlagsAccepted()"/>
+    <p:remoteCommand name="submitAutoQC"
+      action="#{manualQcBean.acceptAutoQc}"
+      process="selectedColumn selectedRows"
+      update="@none"
+      oncomplete="qcFlagsAccepted()"
+    />
     <p:commandLink id="generateUserQcComments" action="#{manualQcBean.generateUserCommentList}" ajax="true" execute="selectedRows" update="userCommentList worstSelectedFlag" oncomplete="showFlagDialog()"/>
     <p:commandLink id="applyManualFlag" action="#{manualQcBean.applyManualFlag}" ajax="true" execute="manualFlag manualComment" update="@none" oncomplete="manualFlagsUpdated()"/>
   </ui:define>

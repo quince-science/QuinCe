@@ -187,7 +187,7 @@ function updateFlagDialogControls() {
 function acceptAutoQc() {
   $('#selectionForm\\:selectedColumn').val(selectedColumn);
   $('#selectionForm\\:selectedRows').val(selectedRows);
-  $('#selectionForm\\:acceptAutoQc').click();
+  submitAutoQC();
 }
 
 function qcFlagsAccepted() {
