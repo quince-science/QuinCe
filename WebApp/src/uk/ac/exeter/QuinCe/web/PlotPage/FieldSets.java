@@ -155,8 +155,24 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
     return headings;
   }
 
+  private List<Long> getTableIDsList() {
+    List<Long> headings = new ArrayList<Long>();
+
+    for (List<Field> fields : values()) {
+      for (Field field : fields) {
+        headings.add(field.getId());
+      }
+    }
+
+    return headings;
+  }
+
   public String getTableHeadings() {
     return new Gson().toJson(getTableHeadingsList());
+  }
+
+  public String getTableHeadingIDs() {
+    return new Gson().toJson(getTableIDsList());
   }
 
   public LinkedHashMap<Long, List<Integer>> getColumnIndexes() {

@@ -1269,12 +1269,12 @@ function selectModeMouseUp(event, g, context) {
   var yDragDistance = Math.abs(context.dragEndY - context.dragStartY);
 
   if (xDragDistance <= 3 && yDragDistance <= 3) {
-  var closestPoint = g.findClosestPoint(context.dragEndX, context.dragEndY, undefined);
+    var closestPoint = g.findClosestPoint(context.dragEndX, context.dragEndY, undefined);
     var pointId = closestPoint.point['idx'];
     var row = getPlotData(plotId)[pointId][1];
     scrollToTableRow(row);
   } else {
-    selectPointsInRect(getPlotData(plotId), minX, maxX, minY, maxY);
+    selectPointsInRect(getPlotData(plotId), parseInt($('#plot' + plotId + 'Form\\:yAxis').val()), minX, maxX, minY, maxY);
   }
 }
 
@@ -1301,7 +1301,7 @@ function dragGetY(graph, event) {
   return event.clientY - graph.canvas_.getBoundingClientRect().top;
 }
 
-function selectPointsInRect(data, minX, maxX, minY, maxY) {
+function selectPointsInRect(data, variableId, minX, maxX, minY, maxY) {
   var pointsToSelect = [];
 
   for (var i = 0; i < data.length; i++) {
@@ -1318,6 +1318,7 @@ function selectPointsInRect(data, minX, maxX, minY, maxY) {
     }
   }
 
+  selectedColumn = JSON.parse($('#plotPageForm\\:columnIDs').val()).indexOf(variableId);
   addRowsToSelection(pointsToSelect);
   selectionUpdated();
 }
