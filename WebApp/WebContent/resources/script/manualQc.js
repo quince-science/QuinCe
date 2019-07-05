@@ -191,24 +191,8 @@ function acceptAutoQc() {
 }
 
 function qcFlagsAccepted() {
-  /*
-
-  var additionalData = JSON.parse($('#tableForm\\:additionalTableData').val());
-
-  var autoFlagColumn = additionalData.flagColumns[0];
-  var autoMessageColumn = autoFlagColumn + 1;
-  var userFlagColumn= additionalData.flagColumns[1];
-  var userMessageColumn = userFlagColumn + 1;
-
-  var rows = jsDataTable.rows()[0];
-  for (var i = 0; i < rows.length; i++) {
-    var row = jsDataTable.row(i);
-    if ($.inArray(row.data()[0], selectedRows) > -1) {
-      jsDataTable.cell(i, userMessageColumn).data(jsDataTable.cell(row, autoMessageColumn).data());
-      jsDataTable.cell(i, userFlagColumn).data(jsDataTable.cell(row, autoFlagColumn).data());
-    }
-  }
-  */
+  // Reload table data
+  jsDataTable.ajax.reload();
   clearSelection();
 }
 
