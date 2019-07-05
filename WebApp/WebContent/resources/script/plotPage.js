@@ -386,7 +386,7 @@ function setupTableClickHandlers() {
   })
 }
 
-function canSelect(row, col) {
+function canSelectCell(row, col) {
 
   var result = true;
 
@@ -399,6 +399,9 @@ function canSelect(row, col) {
   return result;
 }
 
+function canSelectColumn(col) {
+  return getSelectableColumns().indexOf(col) > -1;
+}
 
 /*
  * Process cell clicks
@@ -407,7 +410,7 @@ function clickCellAction(cellIndex, shiftClick) {
 
   var rowId = jsDataTable.row(cellIndex.row).data()['DT_RowId'];
   var columnIndex = cellIndex.column;
-  if (canSelect(rowId, columnIndex)) {
+  if (canSelectCell(rowId, columnIndex)) {
 
     if (columnIndex != selectedColumn) {
       selectedColumn = columnIndex;
@@ -1246,35 +1249,40 @@ function selectModeMouseMove(event, g, context) {
 }
 
 function selectModeMouseUp(event, g, context) {
-  g.clearZoomRect_();
-  var minX = g.toDataXCoord(context.dragStartX);
-  var maxX = g.toDataXCoord(context.dragEndX);
-  if (maxX < minX) {
-    minX = maxX;
-    maxX = g.toDataXCoord(context.dragStartX);
-  }
 
-  var minY = g.toDataYCoord(context.dragStartY);
-  var maxY = g.toDataYCoord(context.dragEndY);
-  if (maxY < minY) {
-    minY = maxY;
-    maxY = g.toDataYCoord(context.dragStartY);
-  }
+  g.clearZoomRect_();
 
   var plotId = g.maindiv_.id.substring(4,5);
+  var plotVar = parseInt($('#plot' + plotId + 'Form\\:yAxis').val());
 
-  // If we've only moved the mouse by a small amount,
-  // interpret it as a click
-  var xDragDistance = Math.abs(context.dragEndX - context.dragStartX);
-  var yDragDistance = Math.abs(context.dragEndY - context.dragStartY);
+  if (canSelectColumn(getColumnIndex(plotVar))) {
+    var minX = g.toDataXCoord(context.dragStartX);
+    var maxX = g.toDataXCoord(context.dragEndX);
+    if (maxX < minX) {
+      minX = maxX;
+      maxX = g.toDataXCoord(context.dragStartX);
+    }
 
-  if (xDragDistance <= 3 && yDragDistance <= 3) {
-    var closestPoint = g.findClosestPoint(context.dragEndX, context.dragEndY, undefined);
-    var pointId = closestPoint.point['idx'];
-    var row = getPlotData(plotId)[pointId][1];
-    scrollToTableRow(row);
-  } else {
-    selectPointsInRect(getPlotData(plotId), parseInt($('#plot' + plotId + 'Form\\:yAxis').val()), minX, maxX, minY, maxY);
+    var minY = g.toDataYCoord(context.dragStartY);
+    var maxY = g.toDataYCoord(context.dragEndY);
+    if (maxY < minY) {
+      minY = maxY;
+      maxY = g.toDataYCoord(context.dragStartY);
+    }
+
+    // If we've only moved the mouse by a small amount,
+    // interpret it as a click
+    var xDragDistance = Math.abs(context.dragEndX - context.dragStartX);
+    var yDragDistance = Math.abs(context.dragEndY - context.dragStartY);
+
+    if (xDragDistance <= 3 && yDragDistance <= 3) {
+      var closestPoint = g.findClosestPoint(context.dragEndX, context.dragEndY, undefined);
+      var pointId = closestPoint.point['idx'];
+      var row = getPlotData(plotId)[pointId][1];
+      scrollToTableRow(row);
+    } else {
+      selectPointsInRect(getPlotData(plotId), plotVar, minX, maxX, minY, maxY);
+    }
   }
 }
 
@@ -1318,9 +1326,19 @@ function selectPointsInRect(data, variableId, minX, maxX, minY, maxY) {
     }
   }
 
-  selectedColumn = JSON.parse($('#plotPageForm\\:columnIDs').val()).indexOf(variableId);
-  addRowsToSelection(pointsToSelect);
+  newSelectedColumn = getColumnIndex(variableId);
+  if (newSelectedColumn != selectedColumn) {
+    selectedRows = pointsToSelect;
+    selectedColumn = newSelectedColumn;
+  } else {
+    addRowsToSelection(pointsToSelect);
+  }
+
   selectionUpdated();
+}
+
+function getColumnIndex(varId) {
+  return JSON.parse($('#plotPageForm\\:columnIDs').val()).indexOf(varId);
 }
 
 function binarySearch (arr, val) {
