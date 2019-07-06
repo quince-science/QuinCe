@@ -673,6 +673,14 @@ function drawPlot(index) {
       plotData,
       graph_options
   );
+
+  var plotVar = parseInt($('#plot' + index + 'Form\\:yAxis').val());
+  if (canSelectColumn(getColumnIndex(plotVar))) {
+    enablePlotSelect(index);
+  } else {
+    disablePlotSelect(index);
+  }
+
   window['map' + index] = null;
 }
 
