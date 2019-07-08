@@ -84,7 +84,7 @@
       oncomplete="qcFlagsAccepted()"
     />
     <p:commandLink id="generateUserQcComments" action="#{manualQcBean.generateUserCommentList}" ajax="true" execute="selectedRows" update="userCommentList worstSelectedFlag" oncomplete="showFlagDialog()"/>
-    <p:commandLink id="applyManualFlag" action="#{manualQcBean.applyManualFlag}" ajax="true" execute="manualFlag manualComment" update="@none" oncomplete="manualFlagsUpdated()"/>
+    <p:commandLink id="applyManualFlag" action="#{manualQcBean.applyManualFlag}" ajax="true" execute="manualFlag manualComment" update="@none" oncomplete="qcFlagsAccepted()"/>
   </ui:define>
 
   <ui:define name="selectionDialog">
