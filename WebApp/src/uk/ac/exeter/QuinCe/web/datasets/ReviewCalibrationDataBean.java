@@ -150,7 +150,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
   public void setCalibrationUse() throws MissingParamException, DatabaseException {
 
     try {
-      CalibrationDataDB.setCalibrationUse(getDataSource(), getSelectedRowsList(), useCalibrations, useCalibrationsMessage);
+      //CalibrationDataDB.setCalibrationUse(getDataSource(), getSelectedRowsList(), useCalibrations, useCalibrationsMessage);
       dirty = true;
     } catch (Exception e) {
       e.printStackTrace();

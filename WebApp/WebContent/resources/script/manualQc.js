@@ -235,29 +235,6 @@ function saveManualComment() {
   PF('flagDialog').hide();
 }
 
-function manualFlagsUpdated() {
-
-  var additionalData = JSON.parse($('#tableForm\\:additionalTableData').val());
-
-  var userFlagColumn= additionalData.flagColumns[1];
-  var userMessageColumn = userFlagColumn + 1;
-
-  var rows = jsDataTable.rows()[0];
-  for (var i = 0; i < rows.length; i++) {
-    var row = jsDataTable.row(i);
-    if ($.inArray(row.data()[0], selectedRows) > -1) {
-      jsDataTable.cell(i, userMessageColumn).data($('#selectionForm\\:manualComment').val());
-      jsDataTable.cell(i, userFlagColumn).data(PF('flagMenu').input.val());
-    }
-  }
-
-  clearSelection();
-
-  // Reload the plots
-  $('#plot1Form\\:plotGetData').click();
-  $('#plot2Form\\:plotGetData').click();
-}
-
 function disablePlotSelect(index) {
   // TODO This works by messing with the CSS, because the version
   // of PrimeFaces we're using doesn't work properly.

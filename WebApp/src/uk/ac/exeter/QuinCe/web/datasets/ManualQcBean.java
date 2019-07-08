@@ -11,23 +11,20 @@ import javax.faces.bean.SessionScoped;
 
 import org.primefaces.json.JSONArray;
 
-import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
-import uk.ac.exeter.QuinCe.data.Calculation.CommentSet;
-import uk.ac.exeter.QuinCe.data.Calculation.CommentSetEntry;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
-import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
-import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.PlotPage.Field;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSet;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
 import uk.ac.exeter.QuinCe.web.PlotPage.PlotPageBean;
+import uk.ac.exeter.QuinCe.web.PlotPage.Data.CommentSet;
+import uk.ac.exeter.QuinCe.web.PlotPage.Data.CommentSetEntry;
 import uk.ac.exeter.QuinCe.web.PlotPage.Data.PlotPageData;
 
 /**
@@ -120,11 +117,12 @@ public class ManualQcBean extends PlotPageBean {
   public void acceptAutoQc() {
     try {
 
-      List<Long> timeLongs = StringUtils.delimitedToLongList(getSelectedRows());
-      List<FieldValue> updateValues = new ArrayList<FieldValue>(timeLongs.size());
+      List<LocalDateTime> times = getSelectedRowsList();
+      List<FieldValue> updateValues = new ArrayList<FieldValue>(times.size());
 
-      for (long timeLong : timeLongs) {
-        LocalDateTime time = DateTimeUtils.longToDate(timeLong);
+      //times.stream().map(x -> updateValues.add(pageData.getValue(x, selectedColumn)));
+
+      for (LocalDateTime time : times) {
         updateValues.add(pageData.getValue(time, selectedColumn));
       }
 
@@ -182,7 +180,7 @@ public class ManualQcBean extends PlotPageBean {
     JSONArray json = new JSONArray();
 
     try {
-      CommentSet comments = CalculationDBFactory.getCalculationDB().getCommentsForRows(getDataSource(), getSelectedRowsList());
+      CommentSet comments = pageData.getCommentSet(selectedColumn, getSelectedRowsList());
       for (CommentSetEntry entry : comments) {
         json.put(entry.toJson());
         if (entry.getFlag().moreSignificantThan(worstSelectedFlag)) {
@@ -236,7 +234,8 @@ public class ManualQcBean extends PlotPageBean {
    */
   public void applyManualFlag() {
     try {
-      CalculationDBFactory.getCalculationDB().applyManualFlag(getDataSource(), getSelectedRowsList(), userFlag, userComment);
+      List<FieldValue> updatedValues = pageData.setQC(getSelectedRowsList(), selectedColumn, new Flag(userFlag), userComment);
+      DataSetDataDB.setQC(getDataSource(), updatedValues);
       dirty = true;
     } catch (Exception e) {
       e.printStackTrace();
