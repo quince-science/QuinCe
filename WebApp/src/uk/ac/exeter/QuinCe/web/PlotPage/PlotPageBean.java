@@ -1,7 +1,9 @@
 package uk.ac.exeter.QuinCe.web.PlotPage;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
@@ -291,8 +293,9 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * Get the selected rows as a list of numbers
    * @return The selected rows
    */
-  public List<Long> getSelectedRowsList() {
-    return StringUtils.delimitedToLongList(selectedRows);
+  public List<LocalDateTime> getSelectedRowsList() {
+    List<Long> rowLongs = StringUtils.delimitedToLongList(selectedRows);
+    return rowLongs.stream().map(x -> DateTimeUtils.longToDate(x)).collect(Collectors.toList());
   }
 
   public int getSelectedColumn() {

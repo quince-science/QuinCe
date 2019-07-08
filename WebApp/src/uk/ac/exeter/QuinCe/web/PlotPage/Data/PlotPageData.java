@@ -17,6 +17,7 @@ import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.GeoBounds;
 import uk.ac.exeter.QuinCe.data.Dataset.Position;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.web.PlotPage.Field;
@@ -359,5 +360,43 @@ public class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, Fi
 
   public FieldValue getValue(LocalDateTime time, int fieldIndex) {
     return get(time).get(fieldSets.getField(fieldIndex));
+  }
+
+  public CommentSet getCommentSet(int fieldIndex, List<LocalDateTime> rows) {
+
+    CommentSet result = new CommentSet();
+    Field field = fieldSets.getField(fieldIndex);
+
+    for (LocalDateTime id : rows) {
+      FieldValue value = get(id).get(field);
+      if (null != value) {
+        if (!value.getQcFlag().isGood()) {
+          result.addComment(value.getQcComment(), value.getQcFlag());
+        }
+      }
+    }
+
+
+    return result;
+
+  }
+
+  public List<FieldValue> setQC(List<LocalDateTime> rows,
+    int fieldIndex, Flag flag, String comment) {
+
+    List<FieldValue> updatedValues = new ArrayList<FieldValue>(rows.size());
+    Field field = fieldSets.getField(fieldIndex);
+
+    for (LocalDateTime id : rows) {
+      FieldValue value = get(id).get(field);
+      if (null != value) {
+        value.setQcFlag(flag);
+        value.setQcComment(comment);
+        value.setNeedsFlag(false);
+        updatedValues.add(value);
+      }
+    }
+
+    return updatedValues;
   }
 }
