@@ -192,8 +192,8 @@ function acceptAutoQc() {
 
 function qcFlagsAccepted() {
   clearSelection();
-  plot1GetData();
-  plot2GetData();
+  redrawPlot(1);
+  redrawPlot(2);
 
   // Reload table data
   jsDataTable.ajax.reload(null, false);
