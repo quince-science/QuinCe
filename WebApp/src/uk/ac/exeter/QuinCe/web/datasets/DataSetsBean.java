@@ -125,6 +125,7 @@ public class DataSetsBean extends BaseManagedBean {
    * @return The navigation string
    */
   public String goToList() {
+    updateDatasetList();
     return NAV_DATASET_LIST;
   }
 
