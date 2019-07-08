@@ -179,8 +179,17 @@ public class DataReductionJob extends Job {
         JobManager.requeueJob(conn, id);
       } else {
 
+        if (dataSet.isNrt()) {
+          dataSet.setStatus(DataSet.STATUS_READY_FOR_EXPORT);
+        } else {
+          if (dataSet.getNeedsFlagCount() > 0) {
+            dataSet.setStatus(DataSet.STATUS_USER_QC);
+          } else {
+            dataSet.setStatus(DataSet.STATUS_READY_FOR_SUBMISSION);
+          }
+        }
+
         // Set the dataset status
-        dataSet.setStatus(DataSet.STATUS_USER_QC);
         DataSetDB.updateDataSet(conn, dataSet);
       }
 
