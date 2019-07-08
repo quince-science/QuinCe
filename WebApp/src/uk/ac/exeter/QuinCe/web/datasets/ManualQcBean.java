@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web.datasets;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,8 @@ import javax.faces.bean.SessionScoped;
 
 import org.primefaces.json.JSONArray;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -18,6 +21,9 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
+import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.web.PlotPage.Field;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSet;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
@@ -91,18 +97,14 @@ public class ManualQcBean extends PlotPageBean {
    */
   public String finish() {
     if (dirty) {
-      /*
-
       try {
-        DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_DATA_REDUCTION);
+        DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_AUTO_QC);
         Map<String, String> jobParams = new HashMap<String, String>();
         jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(datasetId));
-        JobManager.addJob(getDataSource(), getUser(), DataReductionJob.class.getCanonicalName(), jobParams);
+        JobManager.addJob(getDataSource(), getUser(), AutoQCJob.class.getCanonicalName(), jobParams);
       } catch (Exception e) {
         e.printStackTrace();
       }
-
-      */
     }
 
     // Destroy all bean data
