@@ -50,6 +50,10 @@
       setInterval(function() {
         updateList();
       }, 10000);
+
+      $(document).ready(function() {
+        updateList();
+      });
     </script>
   </ui:define>
 
@@ -86,10 +90,9 @@
         <p:commandLink id="reviewCalibrationDataLink" ajax="false" action="#{reviewCalibrationDataBean.start}"/>
 
         <h:inputHidden id="datasetId" value="#{dataSetsBean.datasetId}"/>
-        <p:commandLink id="recalculateLink" ajax="false" action="#{dataSetsBean.recalculate}"/>
-        <p:commandLink id="autoQcLink" ajax="false" action="#{dataSetsBean.submitAutoQcJob}"/>
-        <p:commandLink id="submitLink" ajax="false" action="#{dataSetsBean.submitForApproval}"/>
-        <p:commandLink id="approveLink" ajax="false" action="#{dataSetsBean.approve}"/>
+        <p:commandLink id="recalculateLink" ajax="true" action="#{dataSetsBean.recalculate}" oncomplete="updateList()"/>
+        <p:commandLink id="submitLink" ajax="true" action="#{dataSetsBean.submitForApproval}" oncomplete="updateList()"/>
+        <p:commandLink id="approveLink" ajax="true" action="#{dataSetsBean.approve}" oncomplete="updateList()"/>
 
         <h:inputHidden id="manualQcDatasetId" value="#{manualQcBean.datasetId}"/>
         <p:commandLink id="manualQcLink" ajax="false" action="#{manualQcBean.start}"/>
