@@ -19,6 +19,21 @@ dataset_id Database dataset id
 Dataset id will be prompted for if not present in arguments
 EOM
 
+read -r -d '' statuses << EOM
+Choose status:
+-1   ERROR
+ 0   Waiting
+ 1   Data extraction
+ 2   Data reduction
+ 3   Automatic QC
+ 4   Ready for QC
+ 5   Ready for submission
+ 6   Waiting for approval
+ 7   Waiting for automatic export
+ 8   Automatic export in progress
+ 9   Automatic export complete
+EOM
+
 db_name="$(scripts/get_setup_property.sh db_database)"
 db_user="$(scripts/get_setup_property.sh db_username)"
 db_password="$(scripts/get_setup_property.sh db_password)"
@@ -39,6 +54,7 @@ while getopts "vh" opt; do
 done
 
 dataset_id=${@:$OPTIND:1}
+new_status=${@:$OPTIND + 1:2}
 
 # Print help and exit
 if [ $help -eq 1 ]; then
@@ -46,7 +62,7 @@ if [ $help -eq 1 ]; then
   exit
 fi
 
-if [ -z "$dataset_id"]
+if [ -z "$dataset_id" ]
 then
   mysql -u$db_user -p"$db_password" $db_name << EOF
     SELECT id, name FROM dataset;
@@ -59,22 +75,26 @@ do
   read -p "Dataset ID: " dataset_id
 done
 
-if [ "$dataset_id" -eq "$dataset_id" ] 2>/dev/null
+if [ -z "$new_status" ]
 then
-  if [ $verbose -eq 1 ]; then
-    echo "Delete all data related to dataset ID $dataset_id from database"
-  fi
-  # Retrieve the instrument id before delering the dataset data
-  instrument_id=$(mysql -u $db_user -p"$db_password" $db_name -N -B \
-      -e "select instrument_id from dataset where id=$dataset_id limit 1")
+  echo -e "$statuses"
+fi
 
-  # Delete dataset data
+while [ -z "$new_status" ]
+do
+  read -p "Status: " new_status
+done
+
+if [[ "$dataset_id" -eq "$dataset_id" && "$new_status" -eq "$new_status" ]] 2>/dev/null
+then
+  if [ $verbose -eq 1 ]
+  then
+    echo "Setting status of dataset ID $dataset_id to $new_status"
+  fi
+
+  # Set the status
   mysql -u $db_user -p"$db_password" $db_name <<EOF
-    DELETE FROM equilibrator_pco2 WHERE measurement_id IN (SELECT id FROM dataset_data WHERE dataset_id = $dataset_id);
-    DELETE FROM diagnostic_data WHERE measurement_id IN (SELECT id FROM dataset_data WHERE dataset_id = $dataset_id);
-    DELETE FROM dataset_data WHERE dataset_id = $dataset_id;
-    DELETE FROM calibration_data WHERE dataset_id = $dataset_id;
-    DELETE FROM dataset WHERE id = $dataset_id;
+    UPDATE dataset SET status = $new_status WHERE id = $dataset_id;
 EOF
 
 fi

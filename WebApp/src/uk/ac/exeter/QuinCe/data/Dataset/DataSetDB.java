@@ -671,6 +671,7 @@ public class DataSetDB {
     result.put("enddate", DateTimeUtils.toIsoDate(dataset.getEnd()));
     result.put("platformCode", instrument.getPlatformCode());
     result.put("nrt", dataset.isNrt());
+    result.put("last_touched", DateTimeUtils.toIsoDate(dataset.getLastTouched()));
 
     int recordCount = DataSetDataDB.getMeasurementIds(conn, dataset.getId()).size();
     result.put("records", recordCount);
