@@ -24,9 +24,10 @@ def process_dataset(dataset, config_quince):
   [manifest,
   data_filenames,
   raw_filenames] = extract_zip(dataset_zip,dataset['name'])
-  destination_filename = get_export_destination_filename(data_filenames)
+  
+  #destination_filename = get_export_destination_filename(data_filenames)
 
-  return dataset_zip, manifest, data_filenames, raw_filenames, destination_filename
+  return dataset_zip, manifest, data_filenames, raw_filenames
 
 def extract_zip(dataset_zip,dataset_name):
   '''

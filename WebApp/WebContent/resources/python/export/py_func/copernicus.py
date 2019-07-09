@@ -95,7 +95,7 @@ index_dir = '/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/NRT_201904'
 
 product_id = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
 
-def build_netCDF(dataset_zip,dataset_name,destination_filename):
+def build_netCDF(dataset_zip,dataset_name,data_filename):
   '''
   transforms csv-file to daily netCDF-files.
   Creates dictionary containing info on each netCDF file extracted
@@ -104,8 +104,7 @@ def build_netCDF(dataset_zip,dataset_name,destination_filename):
   '''
   # BUILD netCDF FILES
 
-  csv_file = get_file_from_zip(dataset_zip, dataset_name
-     + '/dataset/Copernicus/' + destination_filename)  
+  csv_file = get_file_from_zip(dataset_zip, data_filename)  
 
   if not os.path.isdir(lt):
     os.mkdir(lt)
@@ -267,7 +266,8 @@ def upload_to_copernicus(ftp_config,server,dataset):
     dnt_delete = {}
     for item in results_delete: 
       filename, filepath_local  = item[0], item[2]
-      dnt_delete[filename] = item[6] #ftp_filepath
+      dnt_delete[filename] = item[6].rsplit('/NRT/')[-1] #ftp_filepath
+      logging.debug(f'To be deleted: {dnt_delete[filename]}')
       c.execute("UPDATE latest SET uploaded = ? \
         WHERE filename = ?", [NOT_UPLOADED, filename])
       conn.commit()
@@ -500,18 +500,22 @@ def upload_to_ftp(ftp, ftp_config, filepath):
   '''
  
   upload_result = UPLOAD_OK
-  if filepath.endswith('.nc'):
+  if filepath.endswith('.nc'): # Datafile
     filename = filepath.rsplit('/',1)[-1]
     date = filename.split('_')[-1].split('.')[0]
     ftp_folder = nrt_dir + '/' + date     
     ftp_filepath = ftp_folder + '/' +  filename
 
-  elif filepath.endswith('.xml'):
+  elif filepath.endswith('.xml'): # DNT file
     ftp_folder = dnt_dir
     ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
 
-  elif filepath.endswith('.txt'):
+  elif filepath.endswith('.txt'): # index file
     ftp_folder = nrt_dir
+    print('b:',ftp_folder)
+    ftp_folder = nrt_dir.rsplit('/',1)[0]
+    print('a:',ftp_folder)
+    
     ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
 
     with open(filepath,'rb') as f: 
@@ -551,12 +555,17 @@ def build_DNT(dnt_upload,dnt_delete):
 
   # items to be uploaded
   for item in dnt_upload:
-    local_folder = dnt_upload[item]['local_folder']
+    local_folder = dnt_upload[item]['local_folder'] + '/'
     ftp_filepath = dnt_upload[item]['ftp_filepath'].split('/',3)[-1]
     start_upload_time = dnt_upload[item]['start_upload_time'] 
     stop_upload_time = dnt_upload[item]['stop_upload_time']
-    with open(local_folder +'/'+ ftp_filepath.split('/')[-1],'rb') as f: 
-      file_bytes = f.read()
+    print(local_folder)
+    if ('index_' in local_folder):
+      with open(ftp_filepath.split('/')[-1],'rb') as f: 
+        file_bytes = f.read()
+    else:
+      with open(local_folder + ftp_filepath.split('/')[-1],'rb') as f: 
+        file_bytes = f.read()
 
     file = ET.SubElement(dataset,'file')
     file.set('Checksum',hashlib.md5(file_bytes).hexdigest())
@@ -648,7 +657,8 @@ def build_index(results_uploaded):
 
   index_latest = index_header + index_info
 
-  index_filename = 'latest/index_latest.txt'
+  index_filename = 'index_latest.txt'
+  #index_filename = 'latest/index_latest.txt'
   with open(index_filename,'wb') as f: f.write(index_latest.encode())
  
   logging.debug('index file:\n' + index_latest)
@@ -771,7 +781,10 @@ def abort_upload(error,local_folder,ftp,csv_file,nc_file):
   error_msg = "Failed ingestion: " + local_folder + ', ' + error 
   try:
     for item in failed_ingestion:
-      prev_error = item[-1]
+      if item[8]:
+        prev_error = str( item[8])
+      else:
+        prev_error = ''
       error_msg = prev_error + error_msg
       c.execute("UPDATE latest SET uploaded = 0, comment = ? WHERE hashsum = ?",[error_msg, str(item[1])])
     conn.commit()
