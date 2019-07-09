@@ -511,10 +511,7 @@ def upload_to_ftp(ftp, ftp_config, filepath):
     ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
 
   elif filepath.endswith('.txt'): # index file
-    ftp_folder = nrt_dir
-    print('b:',ftp_folder)
     ftp_folder = nrt_dir.rsplit('/',1)[0]
-    print('a:',ftp_folder)
     
     ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
 
@@ -559,7 +556,6 @@ def build_DNT(dnt_upload,dnt_delete):
     ftp_filepath = dnt_upload[item]['ftp_filepath'].split('/',3)[-1]
     start_upload_time = dnt_upload[item]['start_upload_time'] 
     stop_upload_time = dnt_upload[item]['stop_upload_time']
-    print(local_folder)
     if ('index_' in local_folder):
       with open(ftp_filepath.split('/')[-1],'rb') as f: 
         file_bytes = f.read()
