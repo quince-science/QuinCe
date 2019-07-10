@@ -15,6 +15,9 @@
   </ui:define>
 
   <ui:define name="dataSetName">#{manualQcBean.dataset.name} - Quality Control #{requestScope[beanName]}</ui:define>
+  <ui:define name="pageStatus">
+    Flags needed: <h:outputText id="flagsRequired" value="#{manualQcBean.getData().getFlagsRequired()}"/>
+  </ui:define>
 
   <ui:define name="plot1">
     <div id="plot1Container"></div>
@@ -80,11 +83,16 @@
     <p:remoteCommand name="submitAutoQC"
       action="#{manualQcBean.acceptAutoQc}"
       process="selectedColumn selectedRows"
-      update="@none"
+      update="@(#flagsRequired)"
       oncomplete="qcFlagsAccepted()"
     />
     <p:commandLink id="generateUserQcComments" action="#{manualQcBean.generateUserCommentList}" ajax="true" execute="selectedRows" update="userCommentList worstSelectedFlag" oncomplete="showFlagDialog()"/>
-    <p:commandLink id="applyManualFlag" action="#{manualQcBean.applyManualFlag}" ajax="true" execute="manualFlag manualComment" update="@none" oncomplete="qcFlagsAccepted()"/>
+    <p:remoteCommand name="applyManualFlag"
+      action="#{manualQcBean.applyManualFlag}"
+      process="manualFlag manualComment"
+      update="@(#flagsRequired)"
+      oncomplete="qcFlagsAccepted()"
+    />
   </ui:define>
 
   <ui:define name="selectionDialog">
