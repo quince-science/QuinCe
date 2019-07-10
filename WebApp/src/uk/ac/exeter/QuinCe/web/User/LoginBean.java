@@ -151,6 +151,7 @@ public class LoginBean extends BaseManagedBean {
 
     } catch (Exception e) {
       internalError(e);
+      result = INTERNAL_ERROR_RESULT;
     }
 
     getSession().removeAttribute("SESSION_EXPIRED");
