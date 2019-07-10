@@ -153,6 +153,11 @@
       <redirect/>
     </navigation-case>
     <navigation-case>
+      <from-outcome>variables</from-outcome>
+      <to-view-id>/instrument/new/variables.xhtml</to-view-id>
+      <redirect/>
+    </navigation-case>
+    <navigation-case>
       <from-outcome>upload_file</from-outcome>
       <to-view-id>/instrument/new/upload_file.xhtml</to-view-id>
       <redirect/>
