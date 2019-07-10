@@ -643,7 +643,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * Get the page data object
    * @return The page data
    */
-  protected PlotPageData getData() {
+  public PlotPageData getData() {
     return pageData;
   }
 

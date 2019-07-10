@@ -399,4 +399,19 @@ public class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, Fi
 
     return updatedValues;
   }
+
+  public int getFlagsRequired() {
+
+    int result = 0;
+
+    for (LinkedHashMap<Field, FieldValue> rowFields : values()) {
+      for (FieldValue value : rowFields.values()) {
+        if (null != value && value.needsFlag()) {
+            result++;
+        }
+      }
+    }
+
+    return result;
+  }
 }
