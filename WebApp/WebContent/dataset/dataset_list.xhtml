@@ -77,7 +77,7 @@
       <h:form id="datasetListForm" method="post" charset="utf8">
         <h:panelGrid columns="3" cellpadding="5" class="buttonPanel contentList">
           <p:outputLabel for="instrument" value="Select Instrument:"/>
-          <p:selectOneMenu id="instrument" value="#{dataSetsBean.currentInstrumentId}">
+          <p:selectOneMenu id="instrument" value="#{dataSetsBean.currentInstrumentId}" onchange="updateList()">
             <f:selectItems value="#{dataSetsBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
             <p:ajax event="change" update="datasets"/>
           </p:selectOneMenu>
