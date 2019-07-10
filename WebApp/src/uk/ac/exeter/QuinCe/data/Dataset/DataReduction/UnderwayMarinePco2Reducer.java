@@ -57,7 +57,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     SensorType xH2OSensorType = getSensorType("xH₂O in gas");
     SensorType co2SensorType = getSensorType("CO₂ in gas");
 
-    Double trueXH2O = Double.NaN;
+    Double trueXH2O = 0.0D;
     if (requiredSensorTypes.contains(xH2OSensorType)) {
       trueXH2O = applyValueCalibration(measurement,
         xH2OSensorType, sensorValues.get(xH2OSensorType), false);
@@ -69,7 +69,11 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     Double equilibratorPressure = getEquilibratorPressure(requiredSensorTypes, sensorValues).getValue();
     Double co2InGas = getValue(sensorValues, "CO₂ in gas");
 
-    Double co2Dried = calcDriedCo2(co2InGas, trueXH2O);
+    Double co2Dried = co2InGas;
+    if (requiredSensorTypes.contains(xH2OSensorType)) {
+      co2Dried = calcDriedCo2(co2InGas, trueXH2O);
+    }
+
     Double co2Calibrated = applyValueCalibration(measurement, co2SensorType, co2Dried, true);
     Double pH2O = calcPH2O(salinity, equilibratorTemperature);
     Double pCo2TEWet = calcPco2TEWet(co2Calibrated, equilibratorPressure, pH2O);
