@@ -231,7 +231,7 @@ function showFlagDialog() {
 
 function saveManualComment() {
   $('#selectionForm\\:selectedRows').val(selectedRows);
-  $('#selectionForm\\:applyManualFlag').click();
+  applyManualFlag();
   PF('flagDialog').hide();
 }
 
