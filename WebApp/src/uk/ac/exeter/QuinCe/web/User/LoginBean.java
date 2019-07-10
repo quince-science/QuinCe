@@ -121,13 +121,18 @@ public class LoginBean extends BaseManagedBean {
       User user = UserDB.getUser(getDataSource(), emailAddress);
       int authenticateResult;
 
-      if (user.isApiUser()) {
-        // API users are not allowed to log in
+      if (null == user) {
+        // The user doesn't exist, so authentication fails
         authenticateResult = UserDB.AUTHENTICATE_FAILED;
       } else {
-        // Authenticate the user
-        authenticateResult = UserDB.authenticate(ServletUtils.getDBDataSource(),
-          emailAddress, password.toCharArray());
+        if (user.isApiUser()) {
+          // API users are not allowed to log in
+          authenticateResult = UserDB.AUTHENTICATE_FAILED;
+        } else {
+          // Authenticate the user
+          authenticateResult = UserDB.authenticate(ServletUtils.getDBDataSource(),
+            emailAddress, password.toCharArray());
+        }
       }
 
       switch (authenticateResult) {
