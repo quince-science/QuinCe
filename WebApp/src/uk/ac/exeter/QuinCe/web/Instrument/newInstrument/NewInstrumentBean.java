@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -61,6 +60,11 @@ public class NewInstrumentBean extends FileUploadBean {
    * Navigation to start definition of a new instrument
    */
   private static final String NAV_NAME = "name";
+
+  /**
+   * Navigation to choose variables
+   */
+  private static final String NAV_VARIABLES = "variables";
 
   /**
    * Navigation when cancelling definition of a new instrument
@@ -361,6 +365,10 @@ public class NewInstrumentBean extends FileUploadBean {
     return NAV_NAME;
   }
 
+  public String goToVariables() {
+    return NAV_VARIABLES;
+  }
+
   /**
    * Navigate to the files step.
    *
@@ -437,12 +445,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
       instrumentName = null;
       instrumentFiles = new NewInstrumentFileSet();
+      sensorAssignments = null;
+      instrumentVariables = null;
 
-      // TODO This will be removed when full variable support is implemented
-      instrumentVariables = new ArrayList<Long>(1);
-      instrumentVariables.add(1L);
-
-      sensorAssignments = new SensorAssignments(conn, instrumentVariables);
       resetSensorAssignmentValues();
       resetPositionAssignmentValues();
       resetDateTimeAssignmentValues();
@@ -470,6 +475,31 @@ public class NewInstrumentBean extends FileUploadBean {
    */
   public void setInstrumentName(String instrumentName) {
     this.instrumentName = instrumentName;
+  }
+
+  public List<Long> getInstrumentVariables() {
+    return instrumentVariables;
+  }
+
+  public void setInstrumentVariables(List<Long> instrumentVariables) {
+    this.instrumentVariables = instrumentVariables;
+    try {
+      sensorAssignments = new SensorAssignments(getDataSource(), instrumentVariables);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  public Map<Long, String> getAllVariables() {
+    Map<Long, String> variables = null;
+
+    try {
+      variables = InstrumentDB.getAllVariables(getDataSource());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    return variables;
   }
 
   /**
@@ -1342,7 +1372,7 @@ public class NewInstrumentBean extends FileUploadBean {
     String result;
 
     if (instrumentFiles.size() == 0) {
-      result = NAV_NAME;
+      result = NAV_VARIABLES;
     } else {
       result = NAV_ASSIGN_VARIABLES;
     }
