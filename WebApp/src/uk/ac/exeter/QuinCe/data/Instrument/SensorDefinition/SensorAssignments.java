@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -8,8 +9,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.sql.DataSource;
+
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -47,10 +51,14 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
     throws DatabaseException, SensorConfigurationException, SensorTypeNotFoundException {
 
     super();
-
     this.variableIDs = variableIDs;
-
     populateAssignments(conn);
+  }
+
+  public SensorAssignments(DataSource dataSource, List<Long> variableIDs) throws SensorTypeNotFoundException, SensorConfigurationException, DatabaseException {
+    super();
+    this.variableIDs = variableIDs;
+    populateAssignments(dataSource);
   }
 
   /**
@@ -70,6 +78,27 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
     }
 
     return new SensorAssignments(conn, ids);
+  }
+
+  /**
+   * Initialise the data structure
+   * @param conn A database connection
+   * @throws DatabaseException If any database lookups fail
+   * @throws SensorConfigurationException If any variables can't be found
+   * @throws SensorTypeNotFoundException If any internally listed SensorTypes
+   *                                     don't exist
+   */
+  private void populateAssignments(DataSource dataSource) throws SensorTypeNotFoundException, SensorConfigurationException, DatabaseException {
+    Connection conn = null;
+
+    try {
+      conn = dataSource.getConnection();
+      populateAssignments(conn);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error setting up sensor assignments", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
   }
 
   /**

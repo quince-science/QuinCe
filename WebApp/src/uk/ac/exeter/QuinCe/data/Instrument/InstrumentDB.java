@@ -1471,6 +1471,26 @@ public class InstrumentDB {
 
   /**
    * Get all the variables registered in the application
+   * @param dataSource A data source
+   * @return The variables
+   * @throws DatabaseException If the variables cannot be retrieved
+   * @throws MissingParamException If any required parameters are missing
+   */
+  public static Map<Long, String> getAllVariables(DataSource dataSource) throws DatabaseException, MissingParamException {
+    Connection conn = null;
+
+    try {
+      conn = dataSource.getConnection();
+      return getAllVariables(conn);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while reading variables", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+  }
+
+  /**
+   * Get all the variables registered in the application
    * @param conn A database connection
    * @return The variables
    * @throws DatabaseException If the variables cannot be retrieved
