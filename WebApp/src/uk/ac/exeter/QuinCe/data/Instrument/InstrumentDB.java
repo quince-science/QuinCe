@@ -60,9 +60,9 @@ public class InstrumentDB {
    */
   private static final String CREATE_INSTRUMENT_STATEMENT = "INSERT INTO instrument ("
       + "owner, name," // 2
-      + "pre_flushing_time, post_flushing_time, minimum_water_flow, averaging_mode, " // 6
-      + "platform_code, nrt" // 8
-      + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+      + "pre_flushing_time, post_flushing_time, " // 4
+      + "platform_code, nrt" // 6
+      + ") VALUES (?, ?, ?, ?, ?, ?)";
 
   /**
    * Statement for inserting an instrument variable record
@@ -142,8 +142,8 @@ public class InstrumentDB {
    */
   private static final String GET_INSTRUMENT_QUERY = "SELECT "
       + "name, owner, " // 2
-      + "pre_flushing_time, post_flushing_time, minimum_water_flow, averaging_mode, " // 6
-      + "platform_code, nrt " // 7
+      + "pre_flushing_time, post_flushing_time, " // 4
+      + "platform_code, nrt " // 5
       + "FROM instrument WHERE id = ?";
 
   /**
@@ -361,10 +361,8 @@ public class InstrumentDB {
     stmt.setString(2, instrument.getName()); // name
     stmt.setInt(3, instrument.getPreFlushingTime()); // pre_flushing_time
     stmt.setInt(4, instrument.getPostFlushingTime()); // post_flushing_time
-    stmt.setInt(5, instrument.getMinimumWaterFlow()); // minimum_water_flow
-    stmt.setInt(6, instrument.getAveragingMode()); // averaging_mode
-    stmt.setString(7, instrument.getPlatformCode()); // platform_code
-    stmt.setBoolean(8, instrument.getNrt()); // nrt
+    stmt.setString(5, instrument.getPlatformCode()); // platform_code
+    stmt.setBoolean(6, instrument.getNrt()); // nrt
 
     return stmt;
   }
@@ -737,8 +735,6 @@ public class InstrumentDB {
       long owner;
       int preFlushingTime;
       int postFlushingTime;
-      int minimumWaterFlow;
-      int averagingMode;
       String platformCode;
       boolean nrt;
       InstrumentFileSet files;
@@ -762,10 +758,8 @@ public class InstrumentDB {
         owner = instrumentRecord.getLong(2);
         preFlushingTime = instrumentRecord.getInt(3);
         postFlushingTime = instrumentRecord.getInt(4);
-        minimumWaterFlow = instrumentRecord.getInt(5);
-        averagingMode = instrumentRecord.getInt(6);
-        platformCode = instrumentRecord.getString(7);
-        nrt = instrumentRecord.getBoolean(8);
+        platformCode = instrumentRecord.getString(5);
+        nrt = instrumentRecord.getBoolean(6);
 
         // Now get the file definitions
         files = getFileDefinitions(conn, instrumentId);
@@ -777,8 +771,8 @@ public class InstrumentDB {
         sensorAssignments = getSensorAssignments(conn, instrumentId, files, sensorConfiguration, runTypeConfiguration);
 
         instrument = new Instrument(instrumentId, owner, name, files, variables,
-          sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow,
-          averagingMode, platformCode, nrt);
+          sensorAssignments, preFlushingTime, postFlushingTime,
+          platformCode, nrt);
       }
 
     } catch (SQLException e) {

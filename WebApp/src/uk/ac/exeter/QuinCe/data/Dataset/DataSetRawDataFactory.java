@@ -43,7 +43,7 @@ public class DataSetRawDataFactory {
 
 
     DataSetRawData result = null;
-
+/*
     switch (instrument.getAveragingMode()) {
     case DataSetRawData.AVG_MODE_NONE: {
       result = new NoAverageDataSetRawData(dataSource, dataSet, instrument);
@@ -56,7 +56,7 @@ public class DataSetRawDataFactory {
       throw new DataSetException("Unrecognised averaging mode " + instrument.getAveragingMode());
     }
     }
-
+*/
     return result;
   }
 
