@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.User.User;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
@@ -67,16 +66,6 @@ public class Instrument {
   private int postFlushingTime = 0;
 
   /**
-   * The minimum water flow
-   */
-  private int minimumWaterFlow = -1;
-
-  /**
-   * The averaging mode
-   */
-  private int averagingMode = DataSetRawData.AVG_MODE_NONE;
-
-  /**
    * Platform code
    */
   private String platformCode = null;
@@ -109,8 +98,7 @@ public class Instrument {
   public Instrument(long databaseId, long ownerId, String name,
       InstrumentFileSet fileDefinitions, List<InstrumentVariable> variables,
       SensorAssignments sensorAssignments, int preFlushingTime,
-      int postFlushingTime, int minimumWaterFlow, int averagingMode,
-      String platformCode, boolean nrt) {
+      int postFlushingTime, String platformCode, boolean nrt) {
 
     this.databaseID = databaseId;
     this.ownerId = ownerId;
@@ -120,8 +108,6 @@ public class Instrument {
     this.sensorAssignments = sensorAssignments;
     this.preFlushingTime = preFlushingTime;
     this.postFlushingTime = postFlushingTime;
-    this.minimumWaterFlow = minimumWaterFlow;
-    this.averagingMode = averagingMode;
     this.setPlatformCode(platformCode);
     this.nrt = nrt;
 
@@ -143,8 +129,7 @@ public class Instrument {
    */
   public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
       List<InstrumentVariable> variables, SensorAssignments sensorAssignments,
-      int preFlushingTime, int postFlushingTime, int minimumWaterFlow,
-      int averagingMode, String platformCode, boolean nrt) {
+      int preFlushingTime, int postFlushingTime, String platformCode, boolean nrt) {
 
     this.ownerId = owner.getDatabaseID();
     this.name = name;
@@ -153,8 +138,6 @@ public class Instrument {
     this.sensorAssignments = sensorAssignments;
     this.preFlushingTime = preFlushingTime;
     this.postFlushingTime = postFlushingTime;
-    this.minimumWaterFlow = minimumWaterFlow;
-    this.averagingMode = averagingMode;
     this.platformCode = platformCode;
     this.nrt = nrt;
 
@@ -244,35 +227,11 @@ public class Instrument {
   }
 
   /**
-   * Get the minimum water flow
-   * @return The minimum water flow
-   */
-  public int getMinimumWaterFlow() {
-    return minimumWaterFlow;
-  }
-
-  /**
-   * Set the minimum water flow
-   * @param minimumWaterFlow The minimum water flow
-   */
-  public void setMinimumWaterFlow(int minimumWaterFlow) {
-    this.minimumWaterFlow = minimumWaterFlow;
-  }
-
-  /**
    * Get the sensor assignments
    * @return The sensor assignments
    */
   public SensorAssignments getSensorAssignments() {
     return sensorAssignments;
-  }
-
-  /**
-   * Get the averaging mode
-   * @return The averaging mode
-   */
-  public int getAveragingMode() {
-    return averagingMode;
   }
 
   /**

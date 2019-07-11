@@ -18,7 +18,6 @@ import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONException;
 import org.primefaces.json.JSONObject;
 
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawData;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -314,16 +313,6 @@ public class NewInstrumentBean extends FileUploadBean {
    * The post-flushing time
    */
   private int postFlushingTime = 0;
-
-  /**
-   * The minimum water flow
-   */
-  private int minimumWaterFlow = -1;
-
-  /**
-   * The averaging mode
-   */
-  private int averagingMode = DataSetRawData.AVG_MODE_NONE;
 
   /**
    * The averaging mode
@@ -1601,38 +1590,6 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Get the minimum water flow
-   * @return The minimum water flow
-   */
-  public int getMinimumWaterFlow() {
-    return minimumWaterFlow;
-  }
-
-  /**
-   * Set the minimum water flow
-   * @param minimumWaterFlow The minimum water flow
-   */
-  public void setMinimumWaterFlow(int minimumWaterFlow) {
-    this.minimumWaterFlow = minimumWaterFlow;
-  }
-
-  /**
-   * Get the averaging mode
-   * @return The averaging mode
-   */
-  public int getAveragingMode() {
-    return averagingMode;
-  }
-
-  /**
-   * Set the averaging mode
-   * @param averagingMode The averaging mode
-   */
-  public void setAveragingMode(int averagingMode) {
-    this.averagingMode = averagingMode;
-  }
-
-  /**
    * @return the platformCode
    */
   public String getPlatformCode() {
@@ -1673,8 +1630,8 @@ public class NewInstrumentBean extends FileUploadBean {
 
       Instrument instrument = new Instrument(getUser(), instrumentName,
         instrumentFiles, sensorConfig.getInstrumentVariables(instrumentVariables),
-        sensorAssignments, preFlushingTime, postFlushingTime, minimumWaterFlow,
-        averagingMode, platformCode, false);
+        sensorAssignments, preFlushingTime, postFlushingTime,
+        platformCode, false);
 
       InstrumentDB.storeInstrument(getDataSource(), instrument);
       setCurrentInstrumentId(instrument.getDatabaseId());
@@ -1753,13 +1710,5 @@ public class NewInstrumentBean extends FileUploadBean {
     public void assignRunType() {
       FileDefinition file = instrumentFiles.get(runTypeFile);
       file.setRunTypeColumn(runTypeColumn);
-    }
-
-    /**
-     * Get the available averaging modes
-     * @return The averaging modes
-     */
-    public Map<String, Integer> getAveragingModes() {
-      return DataSetRawData.averagingModes();
     }
 }
