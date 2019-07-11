@@ -181,11 +181,16 @@ public class CalculationValue {
   public static CalculationValue sum(CalculationValue... values) {
     Double sum = 0.0;
 
-    long measurementId = values[0].measurementId;
-    long variableId = values[0].variableId;
+    long measurementId = -1L;
+    long variableId = -1L;
 
     for (CalculationValue cv : values) {
       if (null != cv) {
+        if (measurementId < 0) {
+          measurementId = cv.measurementId;
+          variableId = cv.variableId;
+        }
+
         sum += cv.value;
       }
     }
@@ -209,11 +214,16 @@ public class CalculationValue {
     Double sum = 0.0;
     int count = 0;
 
-    long measurementId = values[0].measurementId;
-    long variableId = values[0].variableId;
+    long measurementId = -1L;
+    long variableId = -1L;
 
     for (CalculationValue cv : values) {
       if (null != cv) {
+        if (measurementId < 0) {
+          measurementId = cv.measurementId;
+          variableId = cv.variableId;
+        }
+
         sum += cv.value;
         count++;
       }
