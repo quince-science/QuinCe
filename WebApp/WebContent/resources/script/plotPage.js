@@ -897,12 +897,14 @@ function applyVariables() {
   }
 
   var mode = getPlotMode(variablesPlotIndex);
+
+  // Clear all current data
+  $('#plot' + variablesPlotIndex + 'Form\\:plotData').val("");
+  $('#plot' + variablesPlotIndex + 'Form\\:mapData').val("");
+
   if (mode == 'plot') {
-    // Clear the current plot data
-    $('#plot' + variablesPlotIndex + 'Form\\:plotData').val("");
     eval('plot' + variablesPlotIndex + 'GetData()'); // PF remoteCommand
   } else if (mode == 'map') {
-    $('#plot' + variablesPlotIndex + 'Form\\:mapData').val("");
     eval('map' + variablesPlotIndex + 'GetData()'); // PF remoteCommand
     initMap(variablesPlotIndex);
   }
