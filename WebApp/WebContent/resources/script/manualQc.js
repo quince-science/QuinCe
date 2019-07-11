@@ -148,7 +148,7 @@ function getColumnDefs() {
             result += ' onmouseover="showQCMessage(' + data[2] + ', \''+ data[4] + '\')" onmouseout="hideQCMessage()"';
           }
 
-          result += '>' + (null == data ? "" : data[0].toFixed(3)) + '</div>';
+          result += '>' + (null == data[0] ? "" : data[0].toFixed(3)) + '</div>';
           return result;
       }
 

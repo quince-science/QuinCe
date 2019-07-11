@@ -524,7 +524,13 @@ public abstract class PlotPageBean extends BaseManagedBean {
           obj.put(String.valueOf(columnIndex), JSONObject.NULL);
         } else {
           JSONArray cellData = new JSONArray();
-          cellData.put(value.getValue());
+
+          if (value.getValue().isNaN()) {
+            cellData.put(JSONObject.NULL);
+          } else {
+            cellData.put(value.getValue());
+          }
+
           cellData.put(value.isUsed());
           cellData.put(value.getQcFlag().getFlagValue());
           cellData.put(value.needsFlag());
