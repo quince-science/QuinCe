@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class EquilibratorPco2Calculator extends DataReductionCalculator {
 
   /**

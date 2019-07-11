@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @author Steve Jones
  *
  */
+@Deprecated
 public class EquilibratorPco2CalculationRecord extends CalculationRecord {
 
   /**
