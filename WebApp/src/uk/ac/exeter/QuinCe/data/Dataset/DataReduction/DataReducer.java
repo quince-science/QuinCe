@@ -43,6 +43,11 @@ public abstract class DataReducer {
   protected InstrumentVariable variable;
 
   /**
+   * The variable attributes
+   */
+  protected Map<String, Float> variableAttributes;
+
+  /**
    * All the measurements from the current data set
    */
   protected List<Measurement> allMeasurements;
@@ -67,11 +72,13 @@ public abstract class DataReducer {
    */
   private HashMap<String, LocalDateTime> nextSearchTimes;
 
-  public DataReducer(InstrumentVariable variable, List<Measurement> allMeasurements,
+  public DataReducer(InstrumentVariable variable,
+    Map<String, Float> variableAttributes, List<Measurement> allMeasurements,
       DateColumnGroupedSensorValues groupedSensorValues,
       CalibrationSet calibrationSet) {
 
     this.variable = variable;
+    this.variableAttributes = variableAttributes;
     this.allMeasurements = allMeasurements;
     this.groupedSensorValues = groupedSensorValues;
     this.calibrationSet = calibrationSet;
@@ -559,5 +566,9 @@ public abstract class DataReducer {
       }
       record.setQc(cascadeFlag, value.getQCMessages());
     }
+  }
+
+  protected Double kelvin(Double celsius) {
+    return celsius + 273.15;
   }
 }
