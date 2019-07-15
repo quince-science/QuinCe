@@ -11,22 +11,37 @@
   </ui:define>
   <ui:define name="new_instrument_content">
     <h:form id="newInstrumentForm" method="post" charset="utf8">
-      <p:defaultCommand target="nextButton" />
 
-      <table class="form">
-        <tr>
-          <td class="labels">NODC Platform Code</td>
-          <td><p:inputText id="platformCode" value="#{newInstrumentBean.platformCode}" /></td>
-        </tr>
-        <tr>
-          <td class="labels">Pre-flushing time (seconds)</td>
-          <td><p:inputNumber id="preFlushing" value="#{newInstrumentBean.preFlushingTime}" decimalPlaces="0"/></td>
-        </tr>
-        <tr>
-          <td class="labels">Post-flushing time (seconds)</td>
-          <td><p:inputNumber id="postFlushing" value="#{newInstrumentBean.postFlushingTime}" decimalPlaces="0"/></td>
-        </tr>
-      </table>
+      <p:fieldset id="instrumentFields" legend="Instrument" style="margin-bottom: 20px">
+        <table class="form">
+          <tr>
+            <td class="labels">NODC Platform Code</td>
+            <td><p:inputText id="platformCode" value="#{newInstrumentBean.platformCode}" /></td>
+          </tr>
+          <tr>
+            <td class="labels">Pre-flushing time (seconds)</td>
+            <td><p:inputNumber id="preFlushing" value="#{newInstrumentBean.preFlushingTime}" decimalPlaces="0"/></td>
+          </tr>
+          <tr>
+            <td class="labels">Post-flushing time (seconds)</td>
+            <td><p:inputNumber id="postFlushing" value="#{newInstrumentBean.postFlushingTime}" decimalPlaces="0"/></td>
+          </tr>
+        </table>
+      </p:fieldset>
+
+      <ui:repeat value="#{newInstrumentBean.getVariableAttributes().entrySet()}" var="varAttrEntry">
+        <p:fieldset legend="#{varAttrEntry.key.name}" style="margin-bottom: 20px">
+          <table class="form">
+            <ui:repeat value="#{varAttrEntry.value}" var="attribute">
+              <tr>
+                <td class="labels"><h:outputText value="#{attribute.label}"/></td>
+                <td><p:inputNumber value="#{attribute.value}"/></td>
+              </tr>
+            </ui:repeat>
+          </table>
+        </p:fieldset>
+      </ui:repeat>
+
 
       <!--  The cancel include has a 2 entries (1 is invisible) -->
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">

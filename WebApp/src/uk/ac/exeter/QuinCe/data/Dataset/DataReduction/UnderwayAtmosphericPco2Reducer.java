@@ -11,36 +11,35 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 
 /**
  * Data Reduction class for underway marine pCO₂
  * @author Steve Jones
  *
  */
-public class UnderwayMarinePco2Reducer extends DataReducer {
+public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
   /**
    * The conversion factor from Pascals to Atmospheres
    */
   private static final double PASCALS_TO_ATMOSPHERES = 0.00000986923266716013;
 
+  private static final double MOLAR_MASS_AIR = 28.97e-3;
+
   private static List<String> calculationParameterNames;
 
   static {
     calculationParameterNames = new ArrayList<String>(8);
-    calculationParameterNames.add("Equilibrator Pressure");
-    calculationParameterNames.add("ΔT");
     calculationParameterNames.add("True Moisture");
+    calculationParameterNames.add("Sea Level Pressure");
     calculationParameterNames.add("pH₂O");
     calculationParameterNames.add("Dried CO₂");
     calculationParameterNames.add("Calibrated CO₂");
-    calculationParameterNames.add("pCO₂ TE Wet");
-    calculationParameterNames.add("pCO₂ SST");
+    calculationParameterNames.add("pCO₂");
     calculationParameterNames.add("fCO₂");
   }
 
-  public UnderwayMarinePco2Reducer(InstrumentVariable variable,
+  public UnderwayAtmosphericPco2Reducer(InstrumentVariable variable,
     Map<String, Float> variableAttributes, List<Measurement> allMeasurements,
     DateColumnGroupedSensorValues groupedSensorValues, CalibrationSet calibrationSet) {
 
@@ -65,8 +64,8 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
 
     Double intakeTemperature = getValue(sensorValues, "Intake Temperature");
     Double salinity = getValue(sensorValues, "Salinity");
-    Double equilibratorTemperature = getValue(sensorValues, "Equilibrator Temperature");
-    Double equilibratorPressure = getEquilibratorPressure(requiredSensorTypes, sensorValues).getValue();
+    Double seaLevelPressure = getSeaLevelAtmPressure(
+      getValue(sensorValues, "Atmospheric Pressure"), intakeTemperature);
     Double co2InGas = getValue(sensorValues, "CO₂ in gas");
 
     Double co2Dried = co2InGas;
@@ -75,26 +74,32 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     }
 
     Double co2Calibrated = applyValueCalibration(measurement, co2SensorType, co2Dried, true);
-    Double pH2O = calcPH2O(salinity, equilibratorTemperature);
-    Double pCo2TEWet = calcPco2TEWet(co2Calibrated, equilibratorPressure, pH2O);
-    Double pCO2SST = calcPco2SST(pCo2TEWet, equilibratorTemperature, intakeTemperature);
-    Double fCO2 = calcFco2SST(pCO2SST, co2Calibrated, equilibratorPressure, equilibratorTemperature);
+    Double pH2O = calcPH2O(salinity, intakeTemperature);
+    Double pCO2 = calcPco2TEWet(co2Calibrated, seaLevelPressure, pH2O);
+    Double fCO2 = calcFCO2(pCO2, co2Calibrated, seaLevelPressure, intakeTemperature);
 
     // Store the calculated values
-    record.put("Equilibrator Pressure", equilibratorPressure);
-    record.put("ΔT", Math.abs(intakeTemperature - equilibratorTemperature));
     record.put("True Moisture", trueXH2O);
+    record.put("Sea Level Pressure", seaLevelPressure);
     record.put("pH₂O", pH2O);
     record.put("Dried CO₂", co2Dried);
     record.put("Calibrated CO₂", co2Calibrated);
-    record.put("pCO₂ TE Wet", pCo2TEWet);
-    record.put("pCO₂ SST", pCO2SST);
+    record.put("pCO₂", pCO2);
     record.put("fCO₂", fCO2);
   }
 
   @Override
   protected List<String> getCalculationParameterNames() {
     return calculationParameterNames;
+  }
+
+  private Double getSeaLevelAtmPressure(Double measuredPressure, Double intakeTemperature) {
+    Float sensorHeight = variableAttributes.get("atm_pres_sensor_height");
+
+    Double correction = (measuredPressure * MOLAR_MASS_AIR) /
+      (kelvin(intakeTemperature) * 8.314) * 9.8 * sensorHeight;
+
+    return measuredPressure + correction;
   }
 
   /**
@@ -132,63 +137,25 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   }
 
   /**
-   * Calculates pCO<sub>2</sub> at the intake (sea surface) temperature.
-   * From Takahashi et al. (2009)
-   * @param pco2TEWet The pCO<sub>2</sub> at equilibrator temperature
-   * @param eqt The equilibrator temperature
-   * @param sst The intake temperature
-   * @return The pCO<sub>2</sub> at intake temperature
-   */
-  private Double calcPco2SST(Double pco2TEWet, Double eqt, Double sst) {
-    return pco2TEWet * Math.exp(0.0423 * (kelvin(sst) - kelvin(eqt)));
-  }
-
-  /**
    * Converts pCO<sub>2</sub> to fCO<sub>2</sub>
-   * @param pco2SST pCO<sub>2</sub> at intake temperature
+   * @param pCO2 pCO<sub>2</sub> at intake temperature
    * @param co2Calibrated The calibrated, dried xCO<sub>2</sub> value
    * @param eqp The equilibrator pressure
    * @param eqt The equilibrator temperature
    * @return The fCO<sub>2</sub> value
    */
-  private Double calcFco2SST(Double pco2SST, Double co2Calibrated, Double eqp, Double eqt) {
+  private Double calcFCO2(Double pCO2, Double co2Calibrated, Double eqp, Double eqt) {
     Double kelvin = kelvin(eqt);
     Double B = -1636.75 + 12.0408 * kelvin -0.0327957 * Math.pow(kelvin, 2) + (3.16528 * 1e-5) * Math.pow(kelvin, 3);
     Double delta = 57.7 - 0.118 * kelvin;
     Double eqpAtmospheres = (eqp * 100) * PASCALS_TO_ATMOSPHERES;
 
-    return pco2SST * Math.exp(((B + 2 * Math.pow(1 - co2Calibrated * 1e-6, 2) * delta) * eqpAtmospheres) / (82.0575 * kelvin));
-  }
-
-  private CalculationValue getEquilibratorPressure(Set<SensorType> sensorTypes,
-    Map<SensorType, CalculationValue> sensorValues) throws SensorTypeNotFoundException {
-
-    CalculationValue absolute = null;
-    CalculationValue differential = null;
-
-    // Get the Absolute equilibrator pressure
-    SensorType absoluteSensorType = getSensorType("Equilibrator Pressure (absolute)");
-    if (sensorTypes.contains(absoluteSensorType)) {
-      absolute = sensorValues.get(absoluteSensorType);
-    }
-
-    // Now the differential, with calculation to ambient pressure
-    SensorType differentialSensorType = getSensorType("Equilibrator Pressure (differential)");
-    SensorType ambientSensorType = getSensorType("Ambient Pressure");
-
-    if (sensorTypes.contains(differentialSensorType)) {
-      CalculationValue differentialPressure = sensorValues.get(differentialSensorType);
-      CalculationValue ambientPressure = sensorValues.get(ambientSensorType);
-
-      differential = CalculationValue.sum(ambientPressure, differentialPressure);
-    }
-
-    return CalculationValue.mean(absolute, differential);
+    return pCO2 * Math.exp(((B + 2 * Math.pow(1 - co2Calibrated * 1e-6, 2) * delta) * eqpAtmospheres) / (82.0575 * kelvin));
   }
 
   @Override
   protected String[] getRequiredTypeStrings() {
     return new String[] {"Intake Temperature", "Salinity",
-      "Equilibrator Temperature", "Equilibrator Pressure", "CO₂ in gas"};
+      "Atmospheric Pressure", "CO₂ in gas"};
   }
 }
