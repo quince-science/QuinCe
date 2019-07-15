@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +38,11 @@ public class InstrumentVariable {
   private String name;
 
   /**
+   * IDs and Labels for this variable's attributes
+   */
+  LinkedHashMap<String, String> attributes;
+
+  /**
    * The core SensorType
    */
   private SensorType coreSensorType;
@@ -68,7 +74,8 @@ public class InstrumentVariable {
    * @throws SensorConfigurationException If the parameters are not internally consistent
    * @throws InvalidFlagException If any cascade flags are invalid
    */
-  protected InstrumentVariable(SensorsConfiguration sensorConfig, long id, String name, long coreSensorTypeId,
+  protected InstrumentVariable(SensorsConfiguration sensorConfig, long id,
+    String name, LinkedHashMap<String, String> attributes, long coreSensorTypeId,
     List<Long> requiredSensorTypeIds, List<Integer> questionableCascades,
     List<Integer> badCascades)
       throws SensorTypeNotFoundException, SensorConfigurationException,
@@ -76,6 +83,7 @@ public class InstrumentVariable {
 
     this.id = id;
     this.name = name;
+    this.attributes = attributes;
 
     coreSensorType = sensorConfig.getSensorType(coreSensorTypeId);
     if (coreSensorType.hasParent()) {
@@ -244,5 +252,20 @@ public class InstrumentVariable {
       ids.add(variable.getId());
     }
     return ids;
+  }
+
+  public boolean hasAttributes() {
+    return attributes.size() > 0;
+  }
+
+  public List<VariableAttribute> generateAttributes() {
+    List<VariableAttribute> result =
+      new ArrayList<VariableAttribute>(attributes.size());
+
+    for (Map.Entry<String, String> entry : attributes.entrySet()) {
+      result.add(new VariableAttribute(entry.getKey(), entry.getValue()));
+    }
+
+    return result;
   }
 }
