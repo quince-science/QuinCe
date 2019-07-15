@@ -153,9 +153,14 @@ public class DataReductionJob extends Job {
 
           DataReducer reducer = reducers.get(measurement.getVariable());
           if (null == reducer) {
+
+            Map<String, Float> variableAttributes =
+              InstrumentDB.getVariableAttributes(conn, instrument.getDatabaseId(),
+                measurement.getVariable().getId());
+
             reducer = DataReducerFactory.getReducer(conn, instrument,
-                measurement.getVariable(), calibrationSet, allMeasurements,
-                groupedSensorValues);
+                measurement.getVariable(), variableAttributes, calibrationSet,
+                allMeasurements, groupedSensorValues);
 
             reducers.put(measurement.getVariable(), reducer);
           }

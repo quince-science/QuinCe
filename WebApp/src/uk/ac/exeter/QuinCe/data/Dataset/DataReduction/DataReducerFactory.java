@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 import java.sql.Connection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
@@ -25,7 +26,7 @@ public class DataReducerFactory {
    */
   public static DataReducer getReducer(
       Connection conn, Instrument instrument, InstrumentVariable variable,
-      CalibrationSet calibrationSet,
+      Map<String, Float> variableAttributes, CalibrationSet calibrationSet,
       List<Measurement> allMeasurements,
       DateColumnGroupedSensorValues groupedSensorValues)
       throws DataReductionException {
@@ -35,7 +36,11 @@ public class DataReducerFactory {
     try {
       switch (variable.getName()) {
       case "Underway Marine pCO₂": {
-        reducer = new UnderwayMarinePco2Reducer(variable, allMeasurements, groupedSensorValues, calibrationSet);
+        reducer = new UnderwayMarinePco2Reducer(variable, variableAttributes, allMeasurements, groupedSensorValues, calibrationSet);
+        break;
+      }
+      case "Underway Atmospheric pCO₂": {
+        reducer = new UnderwayAtmosphericPco2Reducer(variable, variableAttributes, allMeasurements, groupedSensorValues, calibrationSet);
         break;
       }
       default: {
@@ -62,7 +67,11 @@ public class DataReducerFactory {
 
     switch (variable.getName()) {
     case "Underway Marine pCO₂": {
-      reducer = new UnderwayMarinePco2Reducer(variable, null, null, null);
+      reducer = new UnderwayMarinePco2Reducer(variable, null, null, null, null);
+      break;
+    }
+    case "Underway Atmospheric pCO₂": {
+      reducer = new UnderwayAtmosphericPco2Reducer(variable, null, null, null, null);
       break;
     }
     default: {

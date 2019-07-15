@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,12 +9,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import javax.sql.DataSource;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -47,7 +52,7 @@ public class SensorsConfiguration {
    * Query to get the sensor types required by all variables
    */
   private static final String GET_VARIABLES_SENSOR_TYPES_QUERY = "SELECT "
-    + "v.id, v.name, "
+    + "v.id, v.name, v.attributes, "
     + "s.sensor_type, s.core, s.questionable_cascade, s.bad_cascade "
     + "FROM variables v INNER JOIN variable_sensors s ON v.id = s.variable_id "
     + "ORDER BY v.id";
@@ -133,6 +138,7 @@ public class SensorsConfiguration {
 
       long currentVariable = -1;
       String name = null;
+      LinkedHashMap<String, String> attributes = null;
       long coreSensorType = -1;
       List<Long> requiredSensorTypes = new ArrayList<Long>();;
       List<Integer> questionableCascades = new ArrayList<Integer>();
@@ -145,42 +151,56 @@ public class SensorsConfiguration {
           if (currentVariable > -1) {
             // Write the old variable
             instrumentVariables.put(currentVariable,
-              new InstrumentVariable(this, currentVariable, name, coreSensorType,
-                requiredSensorTypes, questionableCascades, badCascades));
+              new InstrumentVariable(this, currentVariable, name, attributes,
+                coreSensorType, requiredSensorTypes, questionableCascades,
+                badCascades));
           }
 
           // Set up the new variable
           currentVariable = newVariable;
           name = records.getString(2);
+          attributes = makeAttributesMap(records.getString(3));
           requiredSensorTypes = new ArrayList<Long>();
           questionableCascades = new ArrayList<Integer>();
           badCascades = new ArrayList<Integer>();
         }
 
 
-        long sensorTypeId = records.getLong(3);
-        boolean core = records.getBoolean(4);
+        long sensorTypeId = records.getLong(4);
+        boolean core = records.getBoolean(5);
         if (core) {
           coreSensorType = sensorTypeId;
         } else {
           requiredSensorTypes.add(sensorTypeId);
-          questionableCascades.add(records.getInt(5));
-          badCascades.add(records.getInt(6));
+          questionableCascades.add(records.getInt(6));
+          badCascades.add(records.getInt(7));
         }
 
       }
 
       // Write the last variable
       instrumentVariables.put(currentVariable,
-        new InstrumentVariable(this, currentVariable, name, coreSensorType,
-          requiredSensorTypes, questionableCascades, badCascades));
+        new InstrumentVariable(this, currentVariable, name, attributes,
+          coreSensorType, requiredSensorTypes, questionableCascades, badCascades));
     } catch(SQLException e) {
       throw new DatabaseException("Error while loading instrument variables", e);
     } finally {
       DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);
     }
+  }
 
+  private LinkedHashMap<String, String> makeAttributesMap(String attributesJson) {
+    LinkedHashMap<String, String> result;
+
+    if (null == attributesJson) {
+      result = new LinkedHashMap<String, String>();
+    } else {
+      Type mapType = new TypeToken<LinkedHashMap<String, String>>() {}.getType();
+      result = new Gson().fromJson(attributesJson, mapType);
+    }
+
+    return result;
   }
 
   /**

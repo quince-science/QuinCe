@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -31,12 +32,15 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.NoSuchCategoryException;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableAttribute;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.HighlightedString;
@@ -339,6 +343,11 @@ public class NewInstrumentBean extends FileUploadBean {
   private List<Long> instrumentVariables;
 
   /**
+   * The attributes for all selected variables
+   */
+  private LinkedHashMap<InstrumentVariable, List<VariableAttribute>> variableAttributes;
+
+  /**
    * Begin a new instrument definition
    * @return The navigation to the start page
    */
@@ -447,6 +456,7 @@ public class NewInstrumentBean extends FileUploadBean {
       instrumentFiles = new NewInstrumentFileSet();
       sensorAssignments = null;
       instrumentVariables = null;
+      variableAttributes = null;
 
       resetSensorAssignmentValues();
       resetPositionAssignmentValues();
@@ -1394,7 +1404,33 @@ public class NewInstrumentBean extends FileUploadBean {
    * @return The navigation to the Other Info page
    */
   public String goToOtherInfo() {
+
+    try {
+      initVariableAttributes();
+    } catch (Exception e) {
+      internalError(e);
+    }
     return NAV_OTHER_INFO;
+  }
+
+  private void initVariableAttributes() throws VariableNotFoundException {
+    if (null == variableAttributes) {
+      variableAttributes = new LinkedHashMap<InstrumentVariable, List<VariableAttribute>>();
+
+      SensorsConfiguration sensorConfig =
+        ResourceManager.getInstance().getSensorsConfiguration();
+
+      for (long varId : instrumentVariables) {
+        InstrumentVariable variable = sensorConfig.getInstrumentVariable(varId);
+        if (variable.hasAttributes()) {
+          variableAttributes.put(variable, variable.generateAttributes());
+        }
+      }
+    }
+  }
+
+  public LinkedHashMap<InstrumentVariable, List<VariableAttribute>> getVariableAttributes() {
+    return variableAttributes;
   }
 
   /**
@@ -1663,7 +1699,7 @@ public class NewInstrumentBean extends FileUploadBean {
         sensorAssignments, preFlushingTime, postFlushingTime,
         platformCode, false);
 
-      InstrumentDB.storeInstrument(getDataSource(), instrument);
+      InstrumentDB.storeInstrument(getDataSource(), instrument, variableAttributes);
       setCurrentInstrumentId(instrument.getDatabaseId());
 
       // Reinitialise beans to update their instrument lists
@@ -1682,63 +1718,63 @@ public class NewInstrumentBean extends FileUploadBean {
    * Set up the reference to the Instrument List Bean
    * @param instrumentListBean The instrument list bean
    */
-    public void setInstrumentListBean(InstrumentListBean instrumentListBean) {
-        this.instrumentListBean = instrumentListBean;
-    }
+  public void setInstrumentListBean(InstrumentListBean instrumentListBean) {
+      this.instrumentListBean = instrumentListBean;
+  }
 
   /**
    * Set up the reference to the Data Files Bean
    * @param dataFilesBean The data files bean
    */
-    public void setDataFilesBean(DataFilesBean dataFilesBean) {
-        this.dataFilesBean = dataFilesBean;
-    }
+  public void setDataFilesBean(DataFilesBean dataFilesBean) {
+      this.dataFilesBean = dataFilesBean;
+  }
 
   /**
    * Set up the reference to the Data Sets Bean
    * @param dataSetsBean The data sets bean
    */
-    public void setDataSetsBean(DataSetsBean dataSetsBean) {
-        this.dataSetsBean = dataSetsBean;
-    }
+  public void setDataSetsBean(DataSetsBean dataSetsBean) {
+      this.dataSetsBean = dataSetsBean;
+  }
 
-    /**
-     * Get the file for which a Run Type column is being assigned
-     * @return The Run Type file
-     */
-    public String getRunTypeFile() {
-      return runTypeFile;
-    }
+  /**
+   * Get the file for which a Run Type column is being assigned
+   * @return The Run Type file
+   */
+  public String getRunTypeFile() {
+    return runTypeFile;
+  }
 
-    /**
-     * Set the file for which a Run Type column is being assigned
-     * @param runTypeFile The Run Type file
-     */
-    public void setRunTypeFile(String runTypeFile) {
-      this.runTypeFile = runTypeFile;
-    }
+  /**
+   * Set the file for which a Run Type column is being assigned
+   * @param runTypeFile The Run Type file
+   */
+  public void setRunTypeFile(String runTypeFile) {
+    this.runTypeFile = runTypeFile;
+  }
 
-    /**
-     * Get the index of the Run Type column being assigned
-     * @return The Run Type column index
-     */
-    public int getRunTypeColumn() {
-      return runTypeColumn;
-    }
+  /**
+   * Get the index of the Run Type column being assigned
+   * @return The Run Type column index
+   */
+  public int getRunTypeColumn() {
+    return runTypeColumn;
+  }
 
-    /**
-     * Set the index of the Run Type column being assigned
-     * @param runTypeColumn The Run Type column index
-     */
-    public void setRunTypeColumn(int runTypeColumn) {
-      this.runTypeColumn = runTypeColumn;
-    }
+  /**
+   * Set the index of the Run Type column being assigned
+   * @param runTypeColumn The Run Type column index
+   */
+  public void setRunTypeColumn(int runTypeColumn) {
+    this.runTypeColumn = runTypeColumn;
+  }
 
-    /**
-     * Set the Run Type column for a file
-     */
-    public void assignRunType() {
-      FileDefinition file = instrumentFiles.get(runTypeFile);
-      file.setRunTypeColumn(runTypeColumn);
-    }
+  /**
+   * Set the Run Type column for a file
+   */
+  public void assignRunType() {
+    FileDefinition file = instrumentFiles.get(runTypeFile);
+    file.setRunTypeColumn(runTypeColumn);
+  }
 }
