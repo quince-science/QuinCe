@@ -29,3 +29,19 @@ function makeUTCyyyymmdd(date) {
   
   return string;
 }
+
+function formatForTable(date) {
+  var string = date.getFullYear();
+  string += '-';
+  string += new String(date.getMonth() + 1).padStart(2, '0');
+  string += '-';
+  string += new String(date.getDate()).padStart(2, '0');
+  string += ' ';
+  string += new String(date.getHours()).padStart(2, '0');
+  string += ':';
+  string += new String(date.getMinutes()).padStart(2, '0');
+  string += ':';
+  string += new String(date.getSeconds()).padStart(2, '0');
+  
+  return string;
+}
