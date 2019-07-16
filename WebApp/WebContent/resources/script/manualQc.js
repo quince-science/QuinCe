@@ -99,7 +99,7 @@ function getColumnDefs() {
   return [
   {"render":
       function (data, type, row) {
-        return makeUTCDateTime(new Date(data));
+        return formatForTable(new Date(data));
       },
       "targets": dateCol
     },
