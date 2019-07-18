@@ -1,9 +1,5 @@
 var plotSplitProportion = 0.5;
 
-//Stepped range calculator
-const range = (start, stop, step = 1) =>
-  Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step)
-
 function start() {
   /*
    * This is a hack to get round a bug in PrimeFaces.
@@ -241,12 +237,4 @@ function disablePlotSelect(index) {
   // Sort it out when we upgrade.
   PF('plot' + index + 'SelectMode').jq.find('input:radio[value="zoom"]').trigger('click');
   PF('plot' + index + 'SelectMode').buttons.eq(1).addClass('ui-state-disabled');
-}
-
-
-function enablePlotSelect(index) {
-  // TODO This works by messing with the CSS, because the version
-  // of PrimeFaces we're using doesn't work properly.
-  // Sort it out when we upgrade.
-  PF('plot' + index + 'SelectMode').buttons.eq(1).removeClass('ui-state-disabled');
 }

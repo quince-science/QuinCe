@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.primefaces.json.JSONArray;
@@ -206,11 +205,6 @@ public class DataSet {
    * The available field sets for this dataset
    */
   private LinkedHashMap<String, Long> fieldSetsByName = null;
-
-  /**
-   * The available field sets for this dataset
-   */
-  private LinkedHashMap<Long, String> fieldSetsById = null;
 
   /**
    * The minimum longitude
@@ -623,7 +617,7 @@ public class DataSet {
    * @throws VariableNotFoundException If an invalid variable is configured for the instrument
    */
   @SuppressWarnings("unchecked")
-  public LinkedHashMap<String, Long> getFieldSetsByName(boolean includeTimePos)
+  public LinkedHashMap<String, Long> getFieldSets(boolean includeTimePos)
     throws MissingParamException, VariableNotFoundException, DatabaseException {
 
     if (null == fieldSetsByName) {
@@ -646,36 +640,6 @@ public class DataSet {
     if (!includeTimePos) {
       result = (LinkedHashMap<String, Long>) fieldSetsByName.clone();
       result.remove(DataSet.TIMEPOS_FIELDSET_NAME);
-    }
-
-    return result;
-  }
-
-  /**
-   * Get the available field sets for this dataset keyed by ID.
-   * Builds the list once, then caches it
-   * @return The field sets
-   * @throws MissingParamException If any required parameters are missing
-   * @throws DatabaseException If a database error occurs
-   * @throws VariableNotFoundException If an invalid variable is configured for the instrument
-   */
-  @SuppressWarnings("unchecked")
-  public LinkedHashMap<Long, String> getFieldSetsById(boolean includeTimePos)
-    throws MissingParamException, VariableNotFoundException, DatabaseException {
-    if (null == fieldSetsById) {
-      Map<String, Long> byName = getFieldSetsByName(true);
-
-      fieldSetsById = new LinkedHashMap<Long, String>();
-      for (Map.Entry<String, Long> entry : byName.entrySet()) {
-        fieldSetsById.put(entry.getValue(), entry.getKey());
-      }
-    }
-
-    LinkedHashMap<Long, String> result = fieldSetsById;
-
-    if (!includeTimePos) {
-      result = (LinkedHashMap<Long, String>) fieldSetsById.clone();
-      result.remove(DataSet.TIMEPOS_FIELDSET_ID);
     }
 
     return result;

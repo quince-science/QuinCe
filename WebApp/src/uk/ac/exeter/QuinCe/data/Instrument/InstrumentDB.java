@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -1598,6 +1599,16 @@ public class InstrumentDB {
 
     return result;
   }
+
+  public static List<FileColumn> getCalibratedSensorColumns(
+    DataSource dataSource, long instrumentId) throws MissingParamException, SensorTypeNotFoundException, DatabaseException {
+
+    return getSensorColumns(dataSource, instrumentId)
+      .stream()
+      .filter(x -> x.getSensorType().hasInternalCalibration())
+      .collect(Collectors.toList());
+  }
+
 
   public static Map<String, Float> getVariableAttributes(Connection conn,
     long instrumentId, long variableId) throws DatabaseException, MissingParamException {
