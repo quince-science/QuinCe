@@ -186,7 +186,7 @@
       <f:facet name="left">
         <h:form id="tableControlsForm" method="post" styleClass="inline">
           <p:selectOneMenu widgetVar="fieldSetSelector" onchange="renderTableColumns(event.target.value)">
-            <f:selectItems value="#{manualQcBean.dataset.getFieldSetsByName(false)}"/>
+            <f:selectItems value="#{sessionScope[beanName].getFieldSets(false)}"/>
           </p:selectOneMenu>
         </h:form>
       </f:facet>

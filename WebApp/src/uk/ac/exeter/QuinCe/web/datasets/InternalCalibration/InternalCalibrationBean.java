@@ -1,21 +1,29 @@
-package uk.ac.exeter.QuinCe.web.datasets;
+package uk.ac.exeter.QuinCe.web.datasets.InternalCalibration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
-import uk.ac.exeter.QuinCe.data.Dataset.CalibrationDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
+import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.PlotPage.Field;
+import uk.ac.exeter.QuinCe.web.PlotPage.FieldSet;
+import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
 import uk.ac.exeter.QuinCe.web.PlotPage.PlotPageBean;
 
 /**
@@ -25,12 +33,12 @@ import uk.ac.exeter.QuinCe.web.PlotPage.PlotPageBean;
  */
 @ManagedBean
 @SessionScoped
-public class ReviewCalibrationDataBean extends PlotPageBean {
+public class InternalCalibrationBean extends PlotPageBean {
 
   /**
    * Navigation to the calibration data plot page
    */
-  private static final String NAV_PLOT = "calibration_data_plot";
+  private static final String NAV_PLOT = "internal_calibration_plot";
 
   /**
    * Navigation to the dataset list
@@ -52,6 +60,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
    */
   @Override
   public void init() {
+    setFieldSet(DataSetDataDB.SENSORS_FIELDSET);
   }
 
   /**
@@ -61,31 +70,15 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
   public String finish() {
     if (dirty) {
       try {
-        DataSetDB.setDatasetStatus(getDataSource(), getDatasetId(), DataSet.STATUS_DATA_REDUCTION);
+        DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_AUTO_QC);
         Map<String, String> jobParams = new HashMap<String, String>();
-        jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(getDatasetId()));
-        JobManager.addJob(getDataSource(), getUser(), DataReductionJob.class.getCanonicalName(), jobParams);
+        jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(datasetId));
+        JobManager.addJob(getDataSource(), getUser(), AutoQCJob.class.getCanonicalName(), jobParams);
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
     return NAV_DATASET_LIST;
-  }
-
-  @Override
-  protected String buildSelectableRows() throws Exception {
-    List<Long> ids = CalibrationDataDB.getCalibrationRowIds(getDataSource(), getDatasetId(), null);
-    StringBuilder result = new StringBuilder();
-    result.append('[');
-    for (int i = 0; i < ids.size(); i++) {
-      result.append(ids.get(i));
-      if (i < ids.size() - 1) {
-        result.append(',');
-      }
-    }
-    result.append(']');
-
-    return result.toString();
   }
 
   @Override
@@ -95,19 +88,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 
   @Override
   protected String buildPlotLabels(int plotIndex) {
-    String result = null;
-
-    if (plotIndex == 1) {
-      // TODO This should be built dynamically in CalibrationDataDB
-      return "[\"Date\",\"ID\",\"CO2\"]";
-    }
-
-    return result;
-  }
-
-  @Override
-  protected String getTableData(int start, int length) throws Exception {
-    return CalibrationDataDB.getJsonTableData(getDataSource(), getDatasetId(), null, start, length);
+    return null;
   }
 
   /**
@@ -144,12 +125,13 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 
   /**
    * Set the usage status of the selected rows
-     * @throws DatabaseException If a database error occurs
-     * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
    */
   public void setCalibrationUse() throws MissingParamException, DatabaseException {
 
     try {
+      System.out.println("setCalibrationUse DO SOMETHING!!!!");
       //CalibrationDataDB.setCalibrationUse(getDataSource(), getSelectedRowsList(), useCalibrations, useCalibrationsMessage);
       dirty = true;
     } catch (Exception e) {
@@ -159,8 +141,7 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 
   @Override
   protected Field getDefaultPlot1YAxis() {
-    //TODO DO
-    return null;
+    return fieldSets.getField(1);
   }
 
   @Override
@@ -176,12 +157,70 @@ public class ReviewCalibrationDataBean extends PlotPageBean {
 
   @Override
   protected void loadData() throws Exception {
-    // TODO Auto-generated method stub
+
+    try {
+      fieldSets = new FieldSets("Date/Time");
+
+      // Sensor columns
+      List<FileColumn> calibratedColumns = InstrumentDB.getCalibratedSensorColumns(
+        getDataSource(), instrument.getDatabaseId());
+
+      List<String> calibrationRunTypes = instrument.getRunTypes(RunTypeCategory.INTERNAL_CALIBRATION_TYPE);
+
+      for (FileColumn column : calibratedColumns) {
+        FieldSet columnFieldSet = fieldSets.addFieldSet(column.getColumnId(), column.getColumnName());
+
+        // Add one field for each run type
+        for (String runType : calibrationRunTypes) {
+          fieldSets.addField(columnFieldSet, new RunTypeField(runType, column));
+        }
+      }
+
+      pageData = new InternalCalibrationPageData(instrument, fieldSets);
+
+      List<Long> fieldIds = calibratedColumns
+        .stream()
+        .mapToLong(f -> f.getColumnId())
+        .boxed()
+        .collect(Collectors.toList());
+
+      DataSetDataDB.getQCSensorData(getDataSource(), pageData,
+        getDataset().getId(), instrument, fieldIds);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
 
   }
 
   @Override
   public List<Integer> getSelectableColumns() {
-    return new ArrayList<Integer>();
+
+    List<Integer> result = new ArrayList<Integer>();
+
+    // Everything outside the base field set (i.e. Date/Time) is selectable
+    LinkedHashMap<Long, List<Integer>> columnIndexes = fieldSets.getColumnIndexes();
+    for (long fieldSet : columnIndexes.keySet()) {
+      if (fieldSet != FieldSet.BASE_ID) {
+        result.addAll(columnIndexes.get(fieldSet));
+      }
+    }
+
+    return result;
+  }
+
+  @Override
+  public LinkedHashMap<String, Long> getFieldSets(boolean includeTimePos)
+    throws Exception {
+
+    LinkedHashMap<String, Long> result = new LinkedHashMap<String, Long>();
+
+    for (FieldSet fieldSet : fieldSets.keySet()) {
+      if (includeTimePos || fieldSet.getId() != FieldSet.BASE_ID) {
+        result.put(fieldSet.getName(), fieldSet.getId());
+      }
+    }
+
+    return result;
   }
 }

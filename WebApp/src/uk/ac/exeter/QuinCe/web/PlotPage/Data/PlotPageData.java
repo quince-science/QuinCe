@@ -19,14 +19,18 @@ import uk.ac.exeter.QuinCe.data.Dataset.GeoBounds;
 import uk.ac.exeter.QuinCe.data.Dataset.Position;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.PlotPage.Field;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
 
-public class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, FieldValue>> {
+public abstract class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, FieldValue>> {
 
-  private FieldSets fieldSets;
+  protected Instrument instrument;
+
+  protected FieldSets fieldSets;
 
   private boolean dirty = true;
 
@@ -38,8 +42,11 @@ public class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, Fi
 
   private Map<Field, MapRecords> mapCache;
 
-  public PlotPageData(FieldSets fieldSets) {
+  private boolean filterInitialised = false;
+
+  public PlotPageData(Instrument instrument, FieldSets fieldSets) throws Exception {
     super();
+    this.instrument = instrument;
     this.fieldSets = fieldSets;
     mapCache = new HashMap<Field, MapRecords>();
     dirty = true;
@@ -306,16 +313,18 @@ public class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, Fi
   private void makePositionLookup() {
     positions = new TreeMap<LocalDateTime, Position>();
 
-    Field lonField = fieldSets.getField(FileDefinition.LONGITUDE_COLUMN_ID);
-    Field latField = fieldSets.getField(FileDefinition.LATITUDE_COLUMN_ID);
+    if (fieldSets.containsField(FileDefinition.LONGITUDE_COLUMN_ID)) {
+      Field lonField = fieldSets.getField(FileDefinition.LONGITUDE_COLUMN_ID);
+      Field latField = fieldSets.getField(FileDefinition.LATITUDE_COLUMN_ID);
 
-    for (LocalDateTime time : keySet()) {
-      LinkedHashMap<Field, FieldValue> data = get(time);
-      if (data.containsKey(lonField)) {
-        positions.put(time,
-          new Position(
-            data.get(lonField).getValue(),
-            data.get(latField).getValue()));
+      for (LocalDateTime time : keySet()) {
+        LinkedHashMap<Field, FieldValue> data = get(time);
+        if (data.containsKey(lonField)) {
+          positions.put(time,
+            new Position(
+              data.get(lonField).getValue(),
+              data.get(latField).getValue()));
+        }
       }
     }
   }
@@ -414,4 +423,36 @@ public class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, Fi
 
     return result;
   }
+
+  public final void filterAndAddValues(String runType, LocalDateTime time, Map<Long, FieldValue> values)
+    throws Exception {
+
+    if (!filterInitialised) {
+      initFilter();
+    }
+
+    filterAndAddValuesAction(runType, time, values);
+  }
+
+
+  /**
+   * Add a set of values, filtering out unwanted values. The default
+   * filter removes values for columns that are internally calibrated
+   * where the run type is not a measurement. This has the effect
+   * of removing all values taken during internal calibration.
+   *
+   * Override this method to filter the supplied values according to need.
+   *
+   * @param currentRunType
+   * @param time
+   * @param values
+   * @throws RecordNotFoundException
+   */
+  protected abstract void filterAndAddValuesAction(String runType, LocalDateTime time, Map<Long, FieldValue> values)
+      throws RecordNotFoundException;
+
+  /**
+   * Initialise information required for filterAndAddValues
+   */
+  protected abstract void initFilter() throws Exception;
 }

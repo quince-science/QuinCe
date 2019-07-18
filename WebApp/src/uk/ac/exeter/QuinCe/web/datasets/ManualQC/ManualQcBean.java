@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.datasets;
+package uk.ac.exeter.QuinCe.web.datasets.ManualQC;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,9 +21,12 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
+import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.PlotPage.Field;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSet;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
@@ -31,7 +34,6 @@ import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
 import uk.ac.exeter.QuinCe.web.PlotPage.PlotPageBean;
 import uk.ac.exeter.QuinCe.web.PlotPage.Data.CommentSet;
 import uk.ac.exeter.QuinCe.web.PlotPage.Data.CommentSetEntry;
-import uk.ac.exeter.QuinCe.web.PlotPage.Data.PlotPageData;
 
 /**
  * User QC bean
@@ -326,7 +328,7 @@ public class ManualQcBean extends PlotPageBean {
         }
       }
 
-      pageData = new PlotPageData(fieldSets);
+      pageData = new ManualQCPageData(instrument, fieldSets);
 
       // Load data for sensor columns
       List<Long> fieldIds = new ArrayList<Long>();
@@ -348,18 +350,29 @@ public class ManualQcBean extends PlotPageBean {
 
   @Override
   public List<Integer> getSelectableColumns() {
-
     List<Integer> result = new ArrayList<Integer>();
 
-    // The lon and lat are added and fixed to be columns 1 and 2
-    result.add(1);
-    result.add(2);
-
-    // Now any sensor value. This is the field set with ID -1.
+    // Sensor values. This is the field set with ID -1.
     // We'll add diagnostics sometime.
     LinkedHashMap<Long, List<Integer>> columnIndexes = fieldSets.getColumnIndexes();
     result.addAll(columnIndexes.get(DataSetDataDB.SENSORS_FIELDSET));
 
     return result;
   }
+
+  /**
+   * Get the available field sets for this dataset keyed by name.
+   * Builds the list once, then caches it
+   * @return The field sets
+   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException If a database error occurs
+   * @throws VariableNotFoundException If an invalid variable is configured for the instrument
+   */
+  @Override
+  public LinkedHashMap<String, Long> getFieldSets(boolean includeTimePos)
+    throws MissingParamException, VariableNotFoundException, DatabaseException {
+
+    return dataset.getFieldSets(includeTimePos);
+  }
+
 }

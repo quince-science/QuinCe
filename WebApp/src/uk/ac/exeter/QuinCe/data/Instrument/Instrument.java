@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Instrument;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -363,6 +364,23 @@ public class Instrument {
     }
 
 
+    return result;
+  }
+
+
+  public List<String> getRunTypes(long assignmentType) {
+
+    List<String> result = new ArrayList<String>();
+
+    for (FileDefinition fileDef : fileDefinitions) {
+      for (Map.Entry<String, RunTypeAssignment> entry : fileDef.getRunTypes().entrySet()) {
+        if (entry.getValue().getCategoryCode() == assignmentType) {
+          result.add(entry.getKey());
+        }
+      }
+    }
+
+    Collections.sort(result);
     return result;
   }
 }
