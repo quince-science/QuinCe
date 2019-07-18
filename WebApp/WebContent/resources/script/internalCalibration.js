@@ -26,33 +26,70 @@ function renderTableColumns() {
  * Formats etc for table columns
  */
 function getColumnDefs() {
+
+  var columns = JSON.parse($('#plotPageForm\\:columnHeadings').val())
+
+  var dateCol = [0];
+  var valueCols = range(1, columns.length);
+
   return [
-        {"className": "noWrap", "targets": [0]},
-        {"className": "centreCol", "targets": [2, 6]},
-        {"className": "numericCol", "targets": [3, 4, 5]},
-        {"render":
-          function (data, type, row) {
-            return makeUTCDateTime(new Date(data));
-          },
-          "targets": 1
-        },
-        {"render":
-          function (data, type, row) {
-            return data.toFixed(3);
-          },
-          "targets": [3, 4, 5]
-        },
-        {"render":
-          function (data, type, row) {
-          var output = '<div onmouseover="showInfoPopup(' + 6 + ', \'' + row[7] + '\', this)" onmouseout="hideInfoPopup()" class="';
-              output += data ? 'good' : 'bad';
-              output += '">';
-              output += data ? 'Yes' : 'No';
-              output += '</div>';
-              return output;
-          },
-          "targets": 6
-        },
+  {"render":
+      function (data, type, row) {
+        return formatForTable(new Date(data));
+      },
+      "targets": dateCol
+    },
+    {"defaultContent": "",
+        "targets": valueCols
+    },
+    {"render":
+      function (data, type, row) {
+        // 0 = value
+        // 1 = used
+        // 2 = QC flag
+        // 3 = Needs Flag
+        // 4 = QC Comment
+  
+        var result = '';
+  
+        if (null != data) {
+            var flagClass = null;
+            switch (data[2]) {
+            case 3: {
+              flagClass = 'questionable';
+                break;
+            }
+            case 4: {
+              flagClass = 'bad';
+                break;
+            }
+            }
+  
+            var classes = ['numericCol'];
+            if (!data[1]) {
+              classes.push('unused');
+            }
+  
+            if (null != flagClass) {
+              classes.push(flagClass);
+            }
+  
+            if (data[3]) {
+              classes.push('needsFlag');
+            }
+  
+            result = '<div class="' + classes.join(' ') + '"';
+  
+            if (null != flagClass) {
+              result += ' onmouseover="showQCMessage(' + data[2] + ', \''+ data[4] + '\')" onmouseout="hideQCMessage()"';
+            }
+  
+            result += '>' + (null == data[0] ? "" : data[0].toFixed(3)) + '</div>';
+            return result;
+        }
+      },
+      "targets": valueCols
+    }
   ];
 }
 

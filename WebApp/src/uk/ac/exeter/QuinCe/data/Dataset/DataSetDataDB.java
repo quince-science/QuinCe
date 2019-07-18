@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +53,6 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.Variable;
 import uk.ac.exeter.QuinCe.web.VariableList;
-import uk.ac.exeter.QuinCe.web.PlotPage.Field;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
 import uk.ac.exeter.QuinCe.web.PlotPage.Data.PlotPageData;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -1516,16 +1514,6 @@ public class DataSetDataDB {
       // Get the Run Type column IDs
       List<Long> runTypeColumns = instrument.getSensorAssignments().getRunTypeColumnIDs();
 
-      // Get the list of run type values that indicate measurements
-      List<String> measurementRunTypes = new ArrayList<String>(0);
-
-      for (InstrumentVariable variable : instrument.getVariables()) {
-        Map<Long, List<String>> variableRunTypes = instrument.getVariableRunTypes(variable);
-        if (variableRunTypes.size() > 0 && variableRunTypes.containsKey(variable.getId())) {
-          measurementRunTypes.addAll(variableRunTypes.get(variable.getId()));
-        }
-      }
-
       // Get the list of sensor values used in the dataset
       long[] usedSensorValueIDs = getUsedSensorValueIDs(conn, datasetId);
 
@@ -1540,8 +1528,7 @@ public class DataSetDataDB {
       // Then we check them all together and add them to the output
       String currentRunType = null;
       LocalDateTime currentTime = LocalDateTime.MIN;
-      // Get the field map in correct order
-      Map<Field, FieldValue> currentDateValues = new HashMap<Field, FieldValue>();
+      Map<Long, FieldValue> currentDateValues = new HashMap<Long, FieldValue>();
 
       while (records.next()) {
         LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
@@ -1549,13 +1536,12 @@ public class DataSetDataDB {
         // If the time has changed, process the current set of collected values
         if (!time.isEqual(currentTime)) {
           if (!currentTime.isEqual(LocalDateTime.MIN)) {
-            storeCurrentValues(tableData, measurementRunTypes, currentRunType,
-              instrument.getSensorAssignments(), currentTime, currentDateValues);
+            tableData.filterAndAddValues(currentRunType, currentTime, currentDateValues);
 
           }
 
           currentTime = time;
-          currentDateValues = new HashMap<Field, FieldValue>();
+          currentDateValues = new HashMap<Long, FieldValue>();
         }
 
 
@@ -1588,14 +1574,12 @@ public class DataSetDataDB {
 
           FieldValue value = new FieldValue(valueId, sensorValue, autoQC,
             userQCFlag, qcComment, used);
-          currentDateValues.put(tableData.getFieldSets().getField(fileColumn), value);
+          currentDateValues.put(fileColumn, value);
         }
       }
 
       // Store the last set of values
-      storeCurrentValues(tableData, measurementRunTypes, currentRunType,
-        instrument.getSensorAssignments(), currentTime, currentDateValues);
-
+      tableData.filterAndAddValues(currentRunType, currentTime, currentDateValues);
 
     } catch (Exception e) {
       throw new DatabaseException("Error getting sensor data", e);
@@ -1692,35 +1676,6 @@ public class DataSetDataDB {
     }
 
     return result;
-  }
-
-  private static void storeCurrentValues(PlotPageData tableData,
-    List<String> measurementRunTypes, String currentRunType,
-    SensorAssignments sensorAssignments,
-    LocalDateTime time, Map<Field, FieldValue> values)
-      throws RecordNotFoundException {
-
-
-    // Filter out values based on run type.
-    // If a value has internal calibrations, and we aren't on a
-    // measurement run type, that value is removed.
-
-    // If there's no run types, we skip filtering as all values are valid
-    if (measurementRunTypes.size() > 0) {
-
-      if (null == currentRunType || !measurementRunTypes.contains(currentRunType)) {
-        Iterator<Map.Entry<Field, FieldValue>> filterIterator = values.entrySet().iterator();
-        while (filterIterator.hasNext()) {
-          Map.Entry<Field, FieldValue> entry = filterIterator.next();
-
-          if (sensorAssignments.getSensorTypeForDBColumn(entry.getKey().getId()).hasInternalCalibration()) {
-            filterIterator.remove();
-          }
-        }
-      }
-    }
-
-    tableData.addValues(time, values);
   }
 
   public static void setQC(DataSource dataSource, List<FieldValue> updateValues) throws MissingParamException, DatabaseException {

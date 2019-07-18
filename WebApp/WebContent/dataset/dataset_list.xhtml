@@ -11,13 +11,14 @@
     <c:set var="mainMenuActiveIndex" value="0" scope="request"/>
     <script>
       function goToCalibrationData(id) {
+        PF('pleaseWait').show();
         $('#datasetListForm\\:calibrationDatasetId').val(id);
         $('#datasetListForm\\:reviewCalibrationDataLink').click();
         return false;
       }
 
       function goToQc(id) {
-      PF('pleaseWait').show();
+        PF('pleaseWait').show();
         $('#datasetListForm\\:manualQcDatasetId').val(id);
         $('#datasetListForm\\:manualQcLink').click();
         return false;
@@ -86,8 +87,8 @@
           </ui:fragment>
         </h:panelGrid>
 
-        <h:inputHidden id="calibrationDatasetId" value="#{reviewCalibrationDataBean.datasetId}"/>
-        <p:commandLink id="reviewCalibrationDataLink" ajax="false" action="#{reviewCalibrationDataBean.start}"/>
+        <h:inputHidden id="calibrationDatasetId" value="#{internalCalibrationBean.datasetId}"/>
+        <p:commandLink id="reviewCalibrationDataLink" ajax="false" action="#{internalCalibrationBean.start}"/>
 
         <h:inputHidden id="datasetId" value="#{dataSetsBean.datasetId}"/>
         <p:commandLink id="recalculateLink" ajax="true" action="#{dataSetsBean.recalculate}" oncomplete="updateList()"/>

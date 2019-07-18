@@ -605,7 +605,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @return The variable group names
    */
   public String getVariableGroupNames() throws Exception {
-    return new Gson().toJson(dataset.getFieldSetsByName(true).keySet());
+    return new Gson().toJson(getFieldSets(true).keySet());
   }
 
   /**
@@ -658,4 +658,12 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @return
    */
   public abstract List<Integer> getSelectableColumns();
+
+  /**
+   * Get the field sets for the current dataset
+   * @param includeTimePos Include the base field set containing time and position
+   * @return
+   * @throws Exception
+   */
+  public abstract LinkedHashMap<String, Long> getFieldSets(boolean includeTimePos) throws Exception;
 }

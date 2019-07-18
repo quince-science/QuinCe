@@ -220,8 +220,8 @@
       <redirect/>
     </navigation-case>
     <navigation-case>
-      <from-outcome>calibration_data_plot</from-outcome>
-      <to-view-id>/dataset/calibration_data.xhtml</to-view-id>
+      <from-outcome>internal_calibration_plot</from-outcome>
+      <to-view-id>/dataset/internal_calibration.xhtml</to-view-id>
       <redirect/>
     </navigation-case>
     <navigation-case>
