@@ -74,6 +74,15 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
   }
 
   /**
+   * See if this field set contains the field with the specified ID
+   * @param fieldId The field ID
+   * @return {@code true} if the field exists; {@code false} if it does not
+   */
+  public boolean containsField(long fieldId) {
+    return fieldsById.containsKey(fieldId);
+  }
+
+  /**
    * Get a Field using its name
    * @param fieldName
    * @return

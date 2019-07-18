@@ -32,7 +32,6 @@ HIGHLIGHT_COLORS[FLAG_NEEDS_FLAG] = 'rgba(129, 127, 255, 1)';
 HIGHLIGHT_COLORS[FLAG_IGNORED] = 'rgba(225, 225, 225, 1)';
 HIGHLIGHT_COLORS[SELECTION_POINT] = 'rgba(255, 221, 0, 1)';
 
-
 var BASE_GRAPH_OPTIONS = {
   drawPoints: true,
   strokeWidth: 0.0,
@@ -125,6 +124,10 @@ var scrollEventTimeLimit = 300;
 
 var resizeEventTimer = null;
 var tableSplitProportion = 0.5;
+
+//Stepped range calculator
+const range = (start, stop, step = 1) =>
+  Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step)
 
 //Page Load function - kicks everything off
 $(function() {
@@ -264,12 +267,14 @@ function drawTable() {
  * Show or hide columns as required.
  */
 function renderTableColumns(fieldSet) {
-  // Default to Sensors
-  if (typeof fieldSet === 'undefined') {
-    fieldSet = -1;
-  }
 
   var fieldSets = JSON.parse($('#plotPageForm\\:fieldSets').val());
+
+  // Default to the first field set
+  // Note that the zeroth fieldset is Date/Position which doesn't count
+  if (typeof fieldSet === 'undefined') {
+    fieldSet = Object.keys(fieldSets)[1];
+  }
 
   var visibleColumns = [0]; // Date/Time
 
@@ -1368,4 +1373,11 @@ function binarySearch (arr, val) {
       }
   }
   return -1;
+}
+
+function enablePlotSelect(index) {
+  // TODO This works by messing with the CSS, because the version
+  // of PrimeFaces we're using doesn't work properly.
+  // Sort it out when we upgrade.
+  PF('plot' + index + 'SelectMode').buttons.eq(1).removeClass('ui-state-disabled');
 }
