@@ -273,7 +273,7 @@ function renderTableColumns(fieldSet) {
   // Default to the first field set
   // Note that the zeroth fieldset is Date/Position which doesn't count
   if (typeof fieldSet === 'undefined') {
-    fieldSet = Object.keys(fieldSets)[1];
+    fieldSet = $('#plotPageForm\\:defaultFieldSet').val();
   }
 
   var visibleColumns = [0]; // Date/Time

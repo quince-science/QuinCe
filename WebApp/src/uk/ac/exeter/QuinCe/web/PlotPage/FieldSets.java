@@ -16,6 +16,8 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
 
   private Map<Long, Field> fieldsById;
 
+  private long defaultFieldSet = FieldSet.BASE_ID;
+
   public FieldSets(String rowIdName) {
     super();
     fieldsByName = new HashMap<String, Field>();
@@ -109,9 +111,16 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
     fieldsById.put(field.getId(), field);
   }
 
-  public FieldSet addFieldSet(long id, String name) {
+  public FieldSet addFieldSet(long id, String name, boolean defaultFieldSet) {
     FieldSet fieldSet = new FieldSet(id, name);
     addFieldSet(fieldSet);
+
+    // If the size is 2, this is the first 'real' field set to be added,
+    // so it has to be the default regardless of what the caller might want.
+    if (size() == 2 || defaultFieldSet) {
+      this.defaultFieldSet = id;
+    }
+
     return fieldSet;
   }
 
@@ -227,5 +236,9 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
 
   public Field getField(int columnIndex) {
     return getField(getTableHeadingsList().get(columnIndex));
+  }
+
+  public long getDefaultFieldSet() {
+    return defaultFieldSet;
   }
 }
