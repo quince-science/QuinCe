@@ -28,7 +28,7 @@
             <p:commandButton icon="zoomOutButton" onclick="resetZoom(1)" styleClass="inlineButton tightButton"/>
           </div>
           <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
-            <p:selectOneButton id="plotSelectMode" widgetVar="plot1SelectMode" value="zoom" styleClass="selectModeButtons" onchange="setPlotSelectMode(1)">
+            <p:selectOneButton id="plotSelectMode" widgetVar="plot1SelectMode" value="zoom" styleClass="selectModeButtons" onchange="setPlotSelectMode(1)" unselectable="false">
               <f:selectItem itemLabel=" " itemValue="zoom"/>
               <f:selectItem itemLabel=" " itemValue="select"/>
             </p:selectOneButton>
@@ -39,7 +39,13 @@
   </ui:define>
 
   <ui:define name="selectionDialog">
-    <p:commandLink id="setUseCalibrations" action="#{internalCalibrationBean.setCalibrationUse}" ajax="true" process="useCalibrations useCalibrationsMessage selectedRows" update="@none"/>
+    <p:remoteCommand name="setUseCalibrations"
+      action="#{internalCalibrationBean.setCalibrationUse}"
+      process="useCalibrations useCalibrationsMessage selectedColumn selectedRows"
+      oncomplete="calibrationUpdated()"
+    />
+
+    <p:commandLink id="setUseCalibrations" action="#{internalCalibrationBean.setCalibrationUse}" ajax="true" process="useCalibrations useCalibrationsMessage selectedColumn selectedRows" update="@none"/>
     <p:dialog widgetVar="useDialog" modal="true" header="Use Selected Calibrations?">
       <div class="insructions">
         Should these calibrations be used?
