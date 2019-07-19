@@ -295,11 +295,11 @@ public class ManualQcBean extends PlotPageBean {
         getDataSource(), instrument.getDatabaseId());
 
       FieldSet sensorFieldSet = fieldSets.addFieldSet(DataSetDataDB.SENSORS_FIELDSET,
-          DataSetDataDB.SENSORS_FIELDSET_NAME);
+          DataSetDataDB.SENSORS_FIELDSET_NAME, true);
 
 
       FieldSet diagnosticFieldSet = fieldSets.addFieldSet(DataSetDataDB.DIAGNOSTICS_FIELDSET,
-        DataSetDataDB.DIAGNOSTICS_FIELDSET_NAME);
+        DataSetDataDB.DIAGNOSTICS_FIELDSET_NAME, false);
 
       for (FileColumn column : fileColumns) {
 
@@ -317,7 +317,7 @@ public class ManualQcBean extends PlotPageBean {
         LinkedHashMap<String, Long> variableParameters =
           DataReducerFactory.getCalculationParameters(variable);
 
-        FieldSet varFieldSet = fieldSets.addFieldSet(variable.getId(), variable.getName());
+        FieldSet varFieldSet = fieldSets.addFieldSet(variable.getId(), variable.getName(), false);
 
         // Columns from data reduction are given IDs based on the
         // variable ID and parameter number

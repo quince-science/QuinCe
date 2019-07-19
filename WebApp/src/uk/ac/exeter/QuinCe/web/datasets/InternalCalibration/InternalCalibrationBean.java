@@ -168,7 +168,9 @@ public class InternalCalibrationBean extends PlotPageBean {
       List<String> calibrationRunTypes = instrument.getRunTypes(RunTypeCategory.INTERNAL_CALIBRATION_TYPE);
 
       for (FileColumn column : calibratedColumns) {
-        FieldSet columnFieldSet = fieldSets.addFieldSet(column.getColumnId(), column.getColumnName());
+
+        // We want the first field set to be the default
+        FieldSet columnFieldSet = fieldSets.addFieldSet(column.getColumnId(), column.getColumnName(), fieldSets.size() == 1);
 
         // Add one field for each run type
         for (String runType : calibrationRunTypes) {
