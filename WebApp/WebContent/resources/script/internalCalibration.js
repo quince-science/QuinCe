@@ -110,24 +110,18 @@ function showUseDialog() {
 }
 
 function storeCalibrationSelection() {
+  $('#selectionForm\\:selectedColumn').val(selectedColumn);
   $('#selectionForm\\:selectedRows').val(selectedRows);
-  $('#selectionForm\\:setUseCalibrations').click();
+  setUseCalibrations(); // PF remoteCommand
+}
 
-  // Update the table data
-  var rows = jsDataTable.rows()[0];
-  for (var i = 0; i < rows.length; i++) {
-    var row = jsDataTable.row(i);
-    if ($.inArray(row.data()[0], selectedRows) > -1) {
-      jsDataTable.cell(i, 6).data(PF('useCalibrationsWidget').getJQ().find(':checked').val() == 'true');
-      jsDataTable.cell(i, 7).data($(PF('useCalibrationsMessageWidget').jqId).val());
-    }
-  }
-
-  clearSelection();
+function calibrationUpdated() {
   PF('useDialog').hide();
+  clearSelection();
+  redrawPlot(1);
 
-  // Reload the plot
-  $('#plot1Form\\:plotGetData').click();
+  //Reload table data
+  jsDataTable.ajax.reload(null, false);
 }
 
 function postSelectionUpdated() {
