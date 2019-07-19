@@ -187,7 +187,7 @@ public class AutoQCJob extends Job {
               if (measurementRunTypes.contains(currentRunType.getValue())) {
                 filteredValues.add(testValue);
               } else {
-                testValue.setUserQC(Flag.NO_QC, null);
+                testValue.setUserQC(Flag.ASSUMED_GOOD, null);
               }
             }
 
