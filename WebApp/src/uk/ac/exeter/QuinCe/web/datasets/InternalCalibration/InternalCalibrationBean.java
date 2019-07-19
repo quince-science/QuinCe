@@ -13,6 +13,7 @@ import javax.faces.bean.SessionScoped;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
@@ -24,6 +25,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.PlotPage.Field;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSet;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
+import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
 import uk.ac.exeter.QuinCe.web.PlotPage.PlotPageBean;
 
 /**
@@ -131,8 +133,13 @@ public class InternalCalibrationBean extends PlotPageBean {
   public void setCalibrationUse() throws MissingParamException, DatabaseException {
 
     try {
-      System.out.println("setCalibrationUse DO SOMETHING!!!!");
-      //CalibrationDataDB.setCalibrationUse(getDataSource(), getSelectedRowsList(), useCalibrations, useCalibrationsMessage);
+      Flag newFlag = Flag.GOOD;
+      if (!useCalibrations) {
+        newFlag = Flag.BAD;
+      }
+
+      List<FieldValue> updatedValues = pageData.setQC(getSelectedRowsList(), selectedColumn, newFlag, useCalibrationsMessage);
+      DataSetDataDB.setQC(getDataSource(), updatedValues);
       dirty = true;
     } catch (Exception e) {
       e.printStackTrace();
