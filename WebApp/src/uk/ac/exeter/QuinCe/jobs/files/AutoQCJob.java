@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeSet;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -19,13 +20,11 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.Routine;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.jobs.InvalidJobParametersException;
 import uk.ac.exeter.QuinCe.jobs.Job;
-import uk.ac.exeter.QuinCe.jobs.JobException;
 import uk.ac.exeter.QuinCe.jobs.JobFailedException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.JobThread;
@@ -142,65 +141,49 @@ public class AutoQCJob extends Job {
       for (Map.Entry<Long, NavigableSensorValuesList> entry : sensorValues.entrySet()) {
         SensorType sensorType = sensorAssignments.getSensorTypeForDBColumn(entry.getKey());
 
-        List<SensorValue> values = entry.getValue();
-        SensorValue.clearAutoQC(values);
+        // Where sensors have internal calibrations, their values need to be
+        // QCed in separate groups.
+        Map<String, NavigableSensorValuesList> valuesForQC = new HashMap<String, NavigableSensorValuesList>();
 
-        // If this sensor uses internal calibration,
-        // see if there are run types for that variable. If so, filter the sensor values
-        if (sensorType.hasInternalCalibration()) {
-          // TODO This whole section is ugly as hell. Make it less so, as Picard never said.
+        if (!sensorType.hasInternalCalibration()) {
+          // All the values can be QCed as a single group
+          valuesForQC.put("", sensorValues.get(entry.getKey()));
+        } else {
 
-          List<InstrumentVariable> sensorVariables = instrument.getSensorVariables(sensorType);
-          List<String> measurementRunTypes = null;
+          // Get all the run type entries from the data set
+          List<SensorAssignment> runTypeColumns = sensorAssignments.get(SensorType.RUN_TYPE_SENSOR_TYPE);
 
-          for (InstrumentVariable variable : sensorVariables) {
-            Map<Long, List<String>> variableRunTypes = instrument.getVariableRunTypes(variable);
-            if (variableRunTypes.size() > 0 && variableRunTypes.containsKey(variable.getId())) {
-              measurementRunTypes = variableRunTypes.get(variable.getId());
-            }
+          TreeSet<SensorValue> runTypeValuesTemp = new TreeSet<SensorValue>();
+          for (SensorAssignment column : runTypeColumns) {
+            runTypeValuesTemp.addAll(sensorValues.get(column.getDatabaseId()));
           }
 
-          if (null != measurementRunTypes) {
-            List<SensorAssignment> runTypeColumns = sensorAssignments.get(SensorType.RUN_TYPE_SENSOR_TYPE);
+          NavigableSensorValuesList runTypeValues = new NavigableSensorValuesList();
+          runTypeValues.addAll(runTypeValuesTemp);
 
-            // Only one of the run type columns can contain run types for the variable
-            long runTypeColumnID = -1;
+          // Group the sensor values by run type
+          runTypeValues.initIncrementalSearch();
 
-            for (SensorAssignment runTypeColumn : runTypeColumns) {
-              if (SensorValue.contains(sensorValues.get(runTypeColumn.getDatabaseId()), measurementRunTypes.get(0))) {
-                runTypeColumnID = runTypeColumn.getDatabaseId();
-              }
+          for (SensorValue value : sensorValues.get(entry.getKey())) {
+
+            SensorValue runType = runTypeValues.incrementalSearch(value.getTime());
+            if (!valuesForQC.containsKey(runType.getValue())) {
+              valuesForQC.put(runType.getValue(), new NavigableSensorValuesList());
             }
 
-            if (runTypeColumnID == -1) {
-              throw new JobException("Cannot find column containing run type '" + measurementRunTypes.get(0));
-            }
-
-            NavigableSensorValuesList runTypes = new NavigableSensorValuesList(sensorValues.get(runTypeColumnID));
-            runTypes.initIncrementalSearch();
-
-            List<SensorValue> filteredValues = new ArrayList<SensorValue>(values.size());
-            for (SensorValue testValue : values) {
-
-              SensorValue currentRunType = runTypes.incrementalSearch(testValue.getTime());
-
-              if (measurementRunTypes.contains(currentRunType.getValue())) {
-                filteredValues.add(testValue);
-              } else {
-                testValue.setUserQC(Flag.ASSUMED_GOOD, null);
-              }
-            }
-
-            runTypes.finishIncrementalSearch();
-
-            values = filteredValues;
+            valuesForQC.get(runType.getValue()).add(value);
           }
+
+          runTypeValues.finishIncrementalSearch();
         }
 
-
-
+        // Loop through all routines
         for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
-          routine.qcValues(values);
+
+          // QC each group of sensor values in turn
+          for (NavigableSensorValuesList values : valuesForQC.values()) {
+            routine.qcValues(values);
+          }
         }
       }
 
