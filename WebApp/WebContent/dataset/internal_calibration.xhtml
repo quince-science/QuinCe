@@ -45,6 +45,7 @@
     <p:remoteCommand name="setUseCalibrations"
       action="#{internalCalibrationBean.setCalibrationUse}"
       process="useCalibrations useCalibrationsMessage selectedColumn selectedRows"
+      update="@(#flagsRequired)"
       oncomplete="calibrationUpdated()"
     />
 
