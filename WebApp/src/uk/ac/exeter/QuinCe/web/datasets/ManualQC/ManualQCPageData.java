@@ -8,6 +8,7 @@ import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.PlotPage.Field;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
@@ -48,7 +49,8 @@ public class ManualQCPageData extends PlotPageData {
     for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
 
       // We don't keep internal calibration values
-      if (!instrument.getSensorAssignments().getSensorTypeForDBColumn(entry.getKey()).hasInternalCalibration()) {
+      SensorType sensorType = instrument.getSensorAssignments().getSensorTypeForDBColumn(entry.getKey());
+      if (!sensorType.hasInternalCalibration() || measurementRunTypes.contains(runType)) {
         valuesToAdd.put(fieldSets.getField(entry.getKey()), entry.getValue());
       }
     }
