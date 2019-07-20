@@ -367,7 +367,6 @@ public class Instrument {
     return result;
   }
 
-
   public List<String> getRunTypes(long assignmentType) {
 
     List<String> result = new ArrayList<String>();
@@ -381,6 +380,37 @@ public class Instrument {
     }
 
     Collections.sort(result);
+    return result;
+  }
+
+  public List<String> getMeasurementRunTypes() {
+    List<String> result = new ArrayList<String>();
+
+    for (InstrumentVariable variable : variables) {
+      Map<Long, List<String>> variableRunTypes = getVariableRunTypes(variable);
+      if (variableRunTypes.size() > 0 && variableRunTypes.containsKey(variable.getId())) {
+        result.addAll(variableRunTypes.get(variable.getId()));
+      }
+    }
+
+    return result;
+  }
+
+
+  public List<String> getInternalCalibrationRunTypes() {
+    // Get the list of run type values that indicate measurements
+    List<String> result = new ArrayList<String>(0);
+
+    for (FileDefinition fileDef : fileDefinitions) {
+      RunTypeAssignments assignments = fileDef.getRunTypes();
+
+      for (Map.Entry<String, RunTypeAssignment> assignment : assignments.entrySet()) {
+        if (assignment.getValue().getCategory().equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
+          result.add(assignment.getKey());
+        }
+      }
+    }
+
     return result;
   }
 }
