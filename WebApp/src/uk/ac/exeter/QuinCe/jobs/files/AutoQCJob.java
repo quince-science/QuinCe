@@ -177,12 +177,13 @@ public class AutoQCJob extends Job {
           runTypeValues.finishIncrementalSearch();
         }
 
-        // Loop through all routines
-        for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
+        // QC each group of sensor values in turn
+        for (NavigableSensorValuesList values : valuesForQC.values()) {
+          SensorValue.clearAutoQC(values);
 
-          // QC each group of sensor values in turn
-          for (NavigableSensorValuesList values : valuesForQC.values()) {
-            routine.qcValues(values);
+          // Loop through all routines
+          for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
+              routine.qcValues(values);
           }
         }
       }
