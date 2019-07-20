@@ -85,6 +85,8 @@ public class AutoQCJob extends Job {
    */
   private Instrument instrument = null;
 
+  private List<String> measurementRunTypes;
+
   /**
    * Constructor that allows the {@link JobManager} to create an instance of this job.
    * @param resourceManager The application's resource manager
@@ -128,6 +130,8 @@ public class AutoQCJob extends Job {
         ResourceManager.getInstance().getRunTypeCategoryConfiguration());
 
       SensorAssignments sensorAssignments = instrument.getSensorAssignments();
+
+      measurementRunTypes = instrument.getMeasurementRunTypes();
 
       QCRoutinesConfiguration qcRoutinesConfig =
         ResourceManager.getInstance().getQCRoutinesConfiguration();
@@ -178,13 +182,16 @@ public class AutoQCJob extends Job {
         }
 
         // QC each group of sensor values in turn
-        for (NavigableSensorValuesList values : valuesForQC.values()) {
-          SensorValue.clearAutoQC(values);
+        for (Map.Entry<String, NavigableSensorValuesList> values : valuesForQC.entrySet()) {
 
-          // Loop through all routines
-          for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
-              routine.qcValues(values);
+          SensorValue.clearAutoQC(entry.getValue());
+          if (values.getKey().equals("") || measurementRunTypes.contains(values.getKey())) {
+            // Loop through all routines
+            for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
+                routine.qcValues(entry.getValue());
+            }
           }
+
         }
       }
 
