@@ -1,18 +1,13 @@
 package uk.ac.exeter.QuinCe.web.datasets.InternalCalibration;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
-import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignment;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeAssignments;
-import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.PlotPage.Field;
 import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
@@ -59,17 +54,7 @@ public class InternalCalibrationPageData extends PlotPageData {
       columns.put(column.getColumnId(), column);
     }
 
-      // Get the list of run type values that indicate measurements
-    internalCalibrationRunTypes = new ArrayList<String>(0);
-
-    for (FileDefinition fileDef : instrument.getFileDefinitions()) {
-      RunTypeAssignments assignments = fileDef.getRunTypes();
-
-      for (Map.Entry<String, RunTypeAssignment> assignment : assignments.entrySet()) {
-        if (assignment.getValue().getCategory().equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
-          internalCalibrationRunTypes.add(assignment.getKey());
-        }
-      }
-    }
+    // Get the list of run type values that indicate measurements
+    internalCalibrationRunTypes = instrument.getInternalCalibrationRunTypes();
   }
 }

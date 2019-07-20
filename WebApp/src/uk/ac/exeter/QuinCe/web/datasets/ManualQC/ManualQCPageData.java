@@ -1,13 +1,11 @@
 package uk.ac.exeter.QuinCe.web.datasets.ManualQC;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.PlotPage.Field;
@@ -64,14 +62,6 @@ public class ManualQCPageData extends PlotPageData {
   @Override
   protected void initFilter() {
     // Get the list of run type values that indicate measurements
-    measurementRunTypes = new ArrayList<String>(0);
-
-    for (InstrumentVariable variable : instrument.getVariables()) {
-      Map<Long, List<String>> variableRunTypes = instrument.getVariableRunTypes(variable);
-      if (variableRunTypes.size() > 0 && variableRunTypes.containsKey(variable.getId())) {
-        measurementRunTypes.addAll(variableRunTypes.get(variable.getId()));
-      }
-    }
+    measurementRunTypes = instrument.getMeasurementRunTypes();
   }
-
 }
