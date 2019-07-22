@@ -147,12 +147,10 @@ function updateUseDialogControls() {
 }
 
 function getPlotMode(index) {
-  return 'plot';
+  return 'plot'; // No maps allowed!
 }
 
-function customiseGraphOptions(graph_options) {
-  graph_options.strokeWidth = 1.0;
-  graph_options.connectSeparatedPoints = true;
-  graph_options.drawAxesAtZero = true;
-  return graph_options;
+function getPlotTargetValue(index) {
+  var labelFields = getPlotLabels(index)[3].split(':');
+  return calibrationJson[labelFields[0]][labelFields[1]];
 }
