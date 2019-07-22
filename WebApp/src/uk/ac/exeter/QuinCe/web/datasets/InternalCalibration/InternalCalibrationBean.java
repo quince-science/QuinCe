@@ -10,12 +10,17 @@ import java.util.stream.Collectors;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
+import org.primefaces.json.JSONObject;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
@@ -56,6 +61,11 @@ public class InternalCalibrationBean extends PlotPageBean {
    * The message attached to calibrations that should not be used
    */
   private String useCalibrationsMessage = null;
+
+  /**
+   * The internal calibration references for the dataset
+   */
+  private String calibrationJson;
 
   /**
    * Initialise the required data for the bean
@@ -195,11 +205,49 @@ public class InternalCalibrationBean extends PlotPageBean {
 
       DataSetDataDB.getQCSensorData(getDataSource(), pageData,
         getDataset().getId(), instrument, fieldIds);
+
+
+      // Load internal calibration data
+      loadCalibrationData(calibratedColumns);
+
     } catch (Exception e) {
       e.printStackTrace();
     }
 
+  }
 
+  /**
+   * Load the external standard data into a JSON object. This is used
+   * to draw target lines on the plots
+   *
+   * @param calibratedColumns
+   * @throws Exception
+   */
+  private void loadCalibrationData(List<FileColumn> calibratedColumns) throws Exception {
+
+    CalibrationSet calibrationSet =
+      ExternalStandardDB.getInstance().getMostRecentCalibrations(
+      getDataSource(), instrument.getDatabaseId(), dataset.getStart());
+
+    JSONObject json = new JSONObject();
+
+    for (Calibration calibration : calibrationSet) {
+      JSONObject variableCalibrations = new JSONObject();
+
+      for (FileColumn column : calibratedColumns) {
+        String sensorType = column.getSensorType().getName();
+
+        variableCalibrations.put(column.getColumnName(), calibration.getCoefficient(sensorType));
+      }
+
+      json.put(calibration.getTarget(), variableCalibrations);
+    }
+
+    calibrationJson = json.toString();
+  }
+
+  public String getCalibrationJson() {
+    return calibrationJson;
   }
 
   @Override

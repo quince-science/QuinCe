@@ -52,6 +52,8 @@ var BASE_GRAPH_OPTIONS = {
       gridLineColor: 'rbg(200, 200, 200)',
     }
   },
+  xRangePad: 10,
+  yRangePad: 10,
   clickCallback: function(e, x, points) {
     scrollToTableRow(getRowId(e, x, points));
   }
@@ -588,20 +590,23 @@ function hideQCMessage() {
 
 function drawPlot(index) {
 
-  var plotVar = 'plot' + index;
-
-  // Existing zoom information
-  var existingXLabel = null;
-  var existingYLabel = null;
-  var existingXZoom = null;
-  var existingYZoom = null;
-
-  if (null != window[plotVar]) {
-    existingXLabel = window[plotVar].getOption('xlabel');
-    existingYLabel = window[plotVar].getOption('ylabel');
-    existingXZoom = window[plotVar].xAxisRange();
-    existingYZoom = window[plotVar].yAxisRange(0);
+  // Get the plot data
+  var plotData = null;
+  // TODO 0 = date - but we need to make it a proper lookup
+  if ($('#plot' + index + 'Form\\:xAxis').val() == 0) {
+    plotData = makeJSDates(getPlotData(index));
+  } else {
+    plotData = getPlotData(index);
   }
+
+  var plotHighlights = makeHighlights(plotData);
+  var targetValue = null;
+
+  if (typeof getPlotTargetValue == 'function') {
+    targetValue = getPlotTargetValue(index);
+  }
+
+  var plotVar = 'plot' + index;
 
   // Remove the existing plot
   if (null != window[plotVar]) {
@@ -628,49 +633,43 @@ function drawPlot(index) {
     graph_options = customiseGraphOptions(graph_options);
   }
 
-  // Preserve zoom settings where possible
-  if (null != existingXZoom && existingXLabel == xLabel) {
-    graph_options.dateWindow = existingXZoom;
-  }
+  graph_options.underlayCallback = function(canvas, area, g) {
 
-  if (null != existingYZoom && existingYLabel == yLabel) {
-    graph_options.valueRange = existingYZoom;
-  }
+    // POINT HIGHLIGHTS
+    for (var i = 0; i < plotHighlights.length; i++) {
+      var fillStyle = null;
 
-  // Get the plot data
-  var plotData = null;
-  // TODO 0 = date - but we need to make it a proper lookup
-  if ($('#plot' + index + 'Form\\:xAxis').val() == 0) {
-    plotData = makeJSDates(getPlotData(index));
-  } else {
-    plotData = getPlotData(index);
-  }
+      if (plotHighlights[i][3]) {
+        fillStyle = HIGHLIGHT_COLORS[SELECTION_POINT];
+      } else if (null != plotHighlights[i][2]) {
+        fillStyle = plotHighlights[i][2];
+      }
 
-  var plotHighlights = makeHighlights(plotData);
-  if (plotHighlights.length > 0) {
-    graph_options.underlayCallback = function(canvas, area, g) {
-      // Selected
-      for (var i = 0; i < plotHighlights.length; i++) {
-        var fillStyle = null;
-
-        if (plotHighlights[i][3]) {
-          fillStyle = HIGHLIGHT_COLORS[SELECTION_POINT];
-        } else if (null != plotHighlights[i][2]) {
-          fillStyle = plotHighlights[i][2];
-        }
-
-        if (null != fillStyle) {
-          var xPoint = g.toDomXCoord(plotHighlights[i][0]);
-          var yPoint = g.toDomYCoord(plotHighlights[i][1]);
-          canvas.fillStyle = fillStyle;
-          canvas.beginPath();
-          canvas.arc(xPoint, yPoint, PLOT_FLAG_SIZE, 0, 2 * Math.PI, false);
-          canvas.fill();
-        }
+      if (null != fillStyle) {
+        var xPoint = g.toDomXCoord(plotHighlights[i][0]);
+        var yPoint = g.toDomYCoord(plotHighlights[i][1]);
+        canvas.fillStyle = fillStyle;
+        canvas.beginPath();
+        canvas.arc(xPoint, yPoint, PLOT_FLAG_SIZE, 0, 2 * Math.PI, false);
+        canvas.fill();
       }
     }
-  } else {
-    graph_options.underlayCallback = null;
+
+    // TARGET VALUE
+    if (null != targetValue) {
+      var xmin = g.toDomXCoord(g.xAxisExtremes()[0]);
+      var xmax = g.toDomXCoord(g.xAxisExtremes()[1]);
+      var ycoord = g.toDomYCoord(targetValue);
+
+      canvas.setLineDash([10, 5]);
+      canvas.strokeStyle = '#FF0000';
+      canvas.lineWidth = 3;
+      canvas.beginPath();
+      canvas.moveTo(xmin, ycoord);
+      canvas.lineTo(xmax, ycoord);
+      canvas.stroke();
+      canvas.setLineDash([]);
+    }
   }
 
   window[plotVar] = new Dygraph (
@@ -679,14 +678,50 @@ function drawPlot(index) {
       graph_options
   );
 
-  var plotVar = parseInt($('#plot' + index + 'Form\\:yAxis').val());
-  if (canSelectColumn(getColumnIndex(plotVar))) {
+  // Zoom to include the target value if required
+  if (null != targetValue) {
+    defaultPlotZoom(index);
+  }
+
+
+  var plotVariable = parseInt($('#plot' + index + 'Form\\:yAxis').val());
+  if (canSelectColumn(getColumnIndex(plotVariable))) {
     enablePlotSelect(index);
   } else {
     disablePlotSelect(index);
   }
 
   window['map' + index] = null;
+
+  defaultPlotZoom(index);
+}
+
+function defaultPlotZoom(index) {
+
+  var targetValue = null;
+
+  if (typeof getPlotTargetValue == 'function') {
+    targetValue = getPlotTargetValue(index);
+  }
+
+  if (null == targetValue) {
+    window['plot' + index].resetZoom();
+  } else {
+
+    var newYRange = window['plot' + index].yAxisExtremes()[0];
+    if (targetValue < newYRange[0]) {
+      newYRange[0] = targetValue;
+    }
+
+    if (targetValue > newYRange[1]) {
+      newYRange[1] = targetValue;
+    }
+
+    window['plot' + index].updateOptions({
+      'valueRange' : newYRange,
+      dateWindow: null
+    });
+  }
 }
 
 function getPlotVisibility(index) {
@@ -1136,10 +1171,7 @@ function resetZoom(index) {
     window['map' + index + 'Extent'] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", window['map' + index].getView().getProjection());
     window['map' + index].getView().fit(window['map' + index + 'Extent'], window['map' + index].getSize());
   } else {
-    window['plot' + index].updateOptions({
-      dateWindow: null,
-      valueRange: null
-    });
+    defaultPlotZoom(index);
   }
 }
 
