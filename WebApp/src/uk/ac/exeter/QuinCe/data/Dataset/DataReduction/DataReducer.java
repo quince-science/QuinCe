@@ -459,7 +459,8 @@ public abstract class DataReducer {
 
   /**
    * Get the last measurement prior to the specified date with the
-   * specified run type. Returns {@code null} if there is no matching record
+   * specified run type. Returns {@code null} if there is no matching record.
+   * Skips empty records and records whose QC flag is not GOOD or ASSUMED_GOOD
    * @param time The time
    * @param runType The run type
    * @return The previous measurement
@@ -479,7 +480,9 @@ public abstract class DataReducer {
           groupedSensorValues.get(currentMeasurement.getTime());
 
         CalculationValue value = CalculationValue.get(start, sensorType, measurementData.get(sensorType));
-        if (!value.isNaN()) {
+
+        // Skip empty and non-GOOD values
+        if (!value.isNaN() && value.getQCFlag().isGood()) {
           result = currentMeasurement.getTime();
         }
       }
@@ -492,7 +495,8 @@ public abstract class DataReducer {
 
   /**
    * Get the first measurement after the specified date with the
-   * specified run type. Returns {@code null} if there is no matching record
+   * specified run type. Returns {@code null} if there is no matching record.
+   * Skips empty records and records whose QC flag is not GOOD or ASSUMED_GOOD
    * @param time The time
    * @param runType The run type
    * @return The previous measurement
@@ -509,7 +513,9 @@ public abstract class DataReducer {
           groupedSensorValues.get(currentMeasurement.getTime());
 
         CalculationValue value = CalculationValue.get(start, sensorType, measurementData.get(sensorType));
-        if (!value.isNaN()) {
+
+        // Skip empty and non-GOOD values
+        if (!value.isNaN() && value.getQCFlag().isGood()) {
           result = currentMeasurement.getTime();
         }
       }
