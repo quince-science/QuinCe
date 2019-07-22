@@ -12,6 +12,10 @@
   <ui:define name="localHead">
     <h:outputScript name="script/internalCalibration.js"/>
     <h:outputStylesheet name="style/internalCalibration.css"/>
+
+    <script>
+      var calibrationJson = JSON.parse('#{internalCalibrationBean.calibrationJson}');
+    </script>
   </ui:define>
 
   <ui:define name="dataSetName">#{internalCalibrationBean.dataset.name} - Calibration Data #{requestScope[beanName]}</ui:define>
