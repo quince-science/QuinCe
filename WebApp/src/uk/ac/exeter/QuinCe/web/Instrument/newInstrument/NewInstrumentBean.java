@@ -1527,6 +1527,8 @@ public class NewInstrumentBean extends FileUploadBean {
 
     // Set up the category list
     List<RunTypeCategory> categories = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategories(false, false);
+    categories = removeUnusedVariables(categories);
+
     TreeMap<RunTypeCategory, Integer> assignedCategories = new TreeMap<RunTypeCategory, Integer>();
 
     for (RunTypeCategory category : categories) {
@@ -1789,5 +1791,10 @@ public class NewInstrumentBean extends FileUploadBean {
 
   public void setDepth(int depth) {
     this.depth = depth;
+  }
+
+  @Override
+  protected List<Long> getInstrumentVariableIDs() {
+    return instrumentVariables;
   }
 }
