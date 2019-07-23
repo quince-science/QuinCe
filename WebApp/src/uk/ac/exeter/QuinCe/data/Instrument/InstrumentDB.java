@@ -66,9 +66,9 @@ public class InstrumentDB {
    */
   private static final String CREATE_INSTRUMENT_STATEMENT = "INSERT INTO instrument ("
       + "owner, name," // 2
-      + "pre_flushing_time, post_flushing_time, " // 4
-      + "platform_code, nrt" // 6
-      + ") VALUES (?, ?, ?, ?, ?, ?)";
+      + "pre_flushing_time, post_flushing_time, depth, " // 5
+      + "platform_code, nrt" // 7
+      + ") VALUES (?, ?, ?, ?, ?, ?, ?)";
 
   /**
    * Statement for inserting an instrument variable record
@@ -148,8 +148,8 @@ public class InstrumentDB {
    */
   private static final String GET_INSTRUMENT_QUERY = "SELECT "
       + "name, owner, " // 2
-      + "pre_flushing_time, post_flushing_time, " // 4
-      + "platform_code, nrt " // 5
+      + "pre_flushing_time, post_flushing_time, depth, " // 5
+      + "platform_code, nrt " // 7
       + "FROM instrument WHERE id = ?";
 
   /**
@@ -387,8 +387,9 @@ public class InstrumentDB {
     stmt.setString(2, instrument.getName()); // name
     stmt.setInt(3, instrument.getPreFlushingTime()); // pre_flushing_time
     stmt.setInt(4, instrument.getPostFlushingTime()); // post_flushing_time
-    stmt.setString(5, instrument.getPlatformCode()); // platform_code
-    stmt.setBoolean(6, instrument.getNrt()); // nrt
+    stmt.setInt(5, instrument.getDepth());
+    stmt.setString(6, instrument.getPlatformCode()); // platform_code
+    stmt.setBoolean(7, instrument.getNrt()); // nrt
 
     return stmt;
   }
@@ -761,6 +762,7 @@ public class InstrumentDB {
       long owner;
       int preFlushingTime;
       int postFlushingTime;
+      int depth;
       String platformCode;
       boolean nrt;
       InstrumentFileSet files;
@@ -784,8 +786,9 @@ public class InstrumentDB {
         owner = instrumentRecord.getLong(2);
         preFlushingTime = instrumentRecord.getInt(3);
         postFlushingTime = instrumentRecord.getInt(4);
-        platformCode = instrumentRecord.getString(5);
-        nrt = instrumentRecord.getBoolean(6);
+        depth = instrumentRecord.getInt(5);
+        platformCode = instrumentRecord.getString(6);
+        nrt = instrumentRecord.getBoolean(7);
 
         // Now get the file definitions
         files = getFileDefinitions(conn, instrumentId);
@@ -797,7 +800,7 @@ public class InstrumentDB {
         sensorAssignments = getSensorAssignments(conn, instrumentId, files, sensorConfiguration, runTypeConfiguration);
 
         instrument = new Instrument(instrumentId, owner, name, files, variables,
-          sensorAssignments, preFlushingTime, postFlushingTime,
+          sensorAssignments, preFlushingTime, postFlushingTime, depth,
           platformCode, nrt);
       }
 
