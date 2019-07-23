@@ -323,6 +323,11 @@ public class NewInstrumentBean extends FileUploadBean {
   private int postFlushingTime = 0;
 
   /**
+   * The instrument/intake depth
+   */
+  private int depth;
+
+  /**
    * The averaging mode
    */
   private String platformCode = null;
@@ -1696,7 +1701,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
       Instrument instrument = new Instrument(getUser(), instrumentName,
         instrumentFiles, sensorConfig.getInstrumentVariables(instrumentVariables),
-        sensorAssignments, preFlushingTime, postFlushingTime,
+        sensorAssignments, preFlushingTime, postFlushingTime, depth,
         platformCode, false);
 
       InstrumentDB.storeInstrument(getDataSource(), instrument, variableAttributes);
@@ -1776,5 +1781,13 @@ public class NewInstrumentBean extends FileUploadBean {
   public void assignRunType() {
     FileDefinition file = instrumentFiles.get(runTypeFile);
     file.setRunTypeColumn(runTypeColumn);
+  }
+
+  public int getDepth() {
+    return depth;
+  }
+
+  public void setDepth(int depth) {
+    this.depth = depth;
   }
 }
