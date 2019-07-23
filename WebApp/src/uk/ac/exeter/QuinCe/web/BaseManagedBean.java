@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.faces.application.ConfigurableNavigationHandler;
 import javax.faces.application.FacesMessage;
@@ -376,7 +377,19 @@ public abstract class BaseManagedBean {
    * @throws ResourceException If the Resource Manager cannot be accessed
    */
   public List<RunTypeCategory> getRunTypeCategories() throws ResourceException {
-    return ServletUtils.getResourceManager().getRunTypeCategoryConfiguration().getCategories(true, true);
+    List<RunTypeCategory> allCategories =
+      ServletUtils.getResourceManager().getRunTypeCategoryConfiguration()
+        .getCategories(true, true);
+
+    return removeUnusedVariables(allCategories);
+  }
+
+  protected List<RunTypeCategory> removeUnusedVariables(List<RunTypeCategory> categories) {
+    List<Long> instrumentVariables = getInstrumentVariableIDs();
+    return categories
+      .stream()
+      .filter(c -> c.getType() < 0 || instrumentVariables.contains(c.getType()))
+      .collect(Collectors.toList());
   }
 
   /**
@@ -387,5 +400,16 @@ public abstract class BaseManagedBean {
    */
   public boolean isApprovalUser() {
     return getUser().isApprovalUser();
+  }
+
+  /**
+   * Get the IDs of the variables assigned to the current instrument
+   * @return The variable IDs
+   */
+  protected List<Long> getInstrumentVariableIDs() {
+    return getCurrentInstrument().getVariables()
+      .stream()
+      .map(v -> v.getId())
+      .collect(Collectors.toList());
   }
 }
