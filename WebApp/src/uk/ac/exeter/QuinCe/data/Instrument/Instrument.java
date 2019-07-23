@@ -67,6 +67,11 @@ public class Instrument {
   private int postFlushingTime = 0;
 
   /**
+   * The depth of the instrument or its intake
+   */
+  private int depth = 0;
+
+  /**
    * Platform code
    */
   private String platformCode = null;
@@ -99,7 +104,7 @@ public class Instrument {
   public Instrument(long databaseId, long ownerId, String name,
       InstrumentFileSet fileDefinitions, List<InstrumentVariable> variables,
       SensorAssignments sensorAssignments, int preFlushingTime,
-      int postFlushingTime, String platformCode, boolean nrt) {
+      int postFlushingTime, int depth, String platformCode, boolean nrt) {
 
     this.databaseID = databaseId;
     this.ownerId = ownerId;
@@ -109,6 +114,7 @@ public class Instrument {
     this.sensorAssignments = sensorAssignments;
     this.preFlushingTime = preFlushingTime;
     this.postFlushingTime = postFlushingTime;
+    this.depth = depth;
     this.setPlatformCode(platformCode);
     this.nrt = nrt;
 
@@ -130,7 +136,8 @@ public class Instrument {
    */
   public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
       List<InstrumentVariable> variables, SensorAssignments sensorAssignments,
-      int preFlushingTime, int postFlushingTime, String platformCode, boolean nrt) {
+      int preFlushingTime, int postFlushingTime, int depth, String platformCode,
+      boolean nrt) {
 
     this.ownerId = owner.getDatabaseID();
     this.name = name;
@@ -139,6 +146,7 @@ public class Instrument {
     this.sensorAssignments = sensorAssignments;
     this.preFlushingTime = preFlushingTime;
     this.postFlushingTime = postFlushingTime;
+    this.depth = depth;
     this.platformCode = platformCode;
     this.nrt = nrt;
 
@@ -412,5 +420,13 @@ public class Instrument {
     }
 
     return result;
+  }
+
+  public int getDepth() {
+    return depth;
+  }
+
+  public void setDepth(int depth) {
+    this.depth = depth;
   }
 }

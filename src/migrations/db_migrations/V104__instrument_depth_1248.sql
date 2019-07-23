@@ -1,0 +1,1 @@
+ALTER TABLE instrument ADD depth INT NOT NULL DEFAULT 0 AFTER post_flushing_time;
