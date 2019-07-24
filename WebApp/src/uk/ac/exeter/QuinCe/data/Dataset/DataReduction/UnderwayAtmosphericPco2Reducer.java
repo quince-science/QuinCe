@@ -62,7 +62,7 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
         xH2OSensorType, sensorValues.get(xH2OSensorType), false);
     }
 
-    Double intakeTemperature = getValue(sensorValues, "Intake Temperature");
+    Double intakeTemperature = getValue(sensorValues, "Equilibrator Temperature");
     Double salinity = getValue(sensorValues, "Salinity");
     Double seaLevelPressure = getSeaLevelAtmPressure(
       getValue(sensorValues, "Atmospheric Pressure"), intakeTemperature);
@@ -155,7 +155,7 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
   @Override
   protected String[] getRequiredTypeStrings() {
-    return new String[] {"Intake Temperature", "Salinity",
+    return new String[] {"Equilibrator Temperature", "Salinity",
       "Atmospheric Pressure", "CO₂ in gas"};
   }
 }
