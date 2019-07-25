@@ -1,19 +1,14 @@
 package uk.ac.exeter.QuinCe.data.Export;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.TreeMap;
+import java.util.Map;
 
 import org.primefaces.json.JSONArray;
-import org.primefaces.json.JSONException;
 import org.primefaces.json.JSONObject;
 
-import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QCRoutines.messages.InvalidFlagException;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationDB;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculatorException;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorConfigurationException;
+import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -23,11 +18,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  */
 public class ExportOption {
 
-  private static List<String> FIXED_KEYS;
-
-  /**
-   * The index of this configuration in the export configuration file
-   */
   private int index;
 
   /**
@@ -41,39 +31,27 @@ public class ExportOption {
   private String separator;
 
   /**
-   * The list of flags that records must match to be included in the export
+   * The string to put in files where a value is missing
    */
-  private List<Flag> flags;
+  private String missingValue = "NaN";
 
   /**
-   * The set of columns to be exported. See {@link ExportConfig} for a list
-   * of supported columns
+   * The variables to be exported as part of this export.
+   * If any instrument does not contain a given variable it will be ignored
    */
-  private List<String> sensorColumns;
+  private List<Long> variables;
 
   /**
-   * The column headings to use for the sensors
+   * Indicates whether all sensors will be exported, or just those required
+   * for the variables being exported
    */
-  private List<String> sensorColumnHeadings;
+  private boolean allSensors = true;
 
   /**
-   * The calculation columns to be exported for the different calculation paths
+   * Indicates whether all intermediate calculation columns will be exported,
+   * or just the final calculated value
    */
-  private TreeMap<String, List<String>> calculationColumns;
-
-  /**
-   * The column headings for the calculation columns
-   */
-  private TreeMap<String, List<String>> calculationColumnHeadings;
-
-  static {
-    FIXED_KEYS = new ArrayList<String>(4);
-    FIXED_KEYS.add("exportName");
-    FIXED_KEYS.add("separator");
-    FIXED_KEYS.add("flags");
-    FIXED_KEYS.add("sensors");
-    FIXED_KEYS.add("sensors_headings");
-  }
+  private boolean includeCalculationColumns = false;
 
   /**
    * Build an ExportOption object from a JSON string
@@ -83,15 +61,9 @@ public class ExportOption {
    */
   public ExportOption(ResourceManager resourceManager, int index, JSONObject json) throws ExportException {
     this.index = index;
-    this.calculationColumns = new TreeMap<String, List<String>>();
-    this.calculationColumnHeadings = new TreeMap<String, List<String>>();
     parseJson(resourceManager, json);
   }
 
-  /**
-   * Returns the index of this configuration in the export configuration file
-   * @return The configuration index
-   */
   public int getIndex() {
     return index;
   }
@@ -112,13 +84,16 @@ public class ExportOption {
     return separator;
   }
 
-  /**
-   * Returns the list of record flags to be included in the export file.
-   * Records without one of these flags will not be exported.
-   * @return The list of flags
-   */
-  public List<Flag> getFlags() {
-    return flags;
+  public List<Long> getVariables() {
+    return variables;
+  }
+
+  public boolean includeAllSensors() {
+    return allSensors;
+  }
+
+  public boolean includeCalculationColumns() {
+    return includeCalculationColumns;
   }
 
   /**
@@ -129,123 +104,72 @@ public class ExportOption {
   private void parseJson(ResourceManager resourceManager, JSONObject json) throws ExportConfigurationException {
 
     // Export name
-    try {
+    if (!json.has("exportName")) {
+      throw new ExportConfigurationException(json, "Missing exportName");
+    } else {
       this.name = json.getString("exportName").trim();
       if (name.contains("/")) {
-        throw new ExportConfigurationException(index, "Export option name cannot contain '/'");
+        throw new ExportConfigurationException(name, "Export option name cannot contain '/'");
       }
-
-      if (name.length() == 0) {
-        throw new ExportConfigurationException(index, "exportName cannot be empty");
-      }
-    } catch (JSONException e) {
-      throw new ExportConfigurationException(index, "Missing exportName");
     }
 
     // Separator
-    try {
-      String separator = json.getString("separator");
-      parseSeparator(separator);
-    } catch (JSONException e) {
-      throw new ExportConfigurationException(index, "Missing separator");
+    if (!json.has("separator")) {
+      throw new ExportConfigurationException(name, "Missing separator");
+    } else {
+      parseSeparator(json.getString("separator"));
     }
 
-    // Flags
+    // Variables
+    Map<Long, String> allVariables;
     try {
-
-      JSONArray flagsEntry = json.getJSONArray("flags");
-      if (flagsEntry.length() == 0) {
-        throw new ExportConfigurationException(index, "At least one flag must be specified");
-      }
-
-      this.flags = new ArrayList<Flag>(flagsEntry.length());
-      for (int i = 0; i < flagsEntry.length(); i++) {
-        int flagEntry = flagsEntry.getInt(i);
-
-        try {
-          this.flags.add(new Flag(flagsEntry.getInt(i)));
-        } catch (InvalidFlagException e) {
-          throw new ExportConfigurationException(index, "Invalid flag value '" + flagEntry + "'");
-        }
-      }
-
-    } catch (JSONException e) {
-      throw new ExportConfigurationException(index, "Missing or invalid flags entry");
+      allVariables = InstrumentDB.getAllVariables(resourceManager.getDBDataSource());
+    } catch (Exception e) {
+      throw new ExportConfigurationException("N/A", "Unable to retrieve variable information");
     }
 
-    // Sensors
-    try {
-      JSONArray sensorColumnsEntry = json.getJSONArray("sensors");
-      sensorColumns = new ArrayList<String>();
-      for (int i = 0; i < sensorColumnsEntry.length(); i++) {
-        sensorColumns.add(sensorColumnsEntry.getString(i).trim());
-      }
+    // If the element isn't provided, assume all variables
+    if (!json.has("variables")) {
+      variables = new ArrayList<Long>(allVariables.keySet());
+    } else {
+      JSONArray varArray = json.getJSONArray("variables");
 
-      try {
-        resourceManager.getSensorsConfiguration().validateSensorNames(sensorColumns);
-      } catch (SensorConfigurationException e) {
-        throw new ExportConfigurationException(index, "Error parsing sensors entry: " + e.getMessage());
-      }
+      // If we have an empty array, use all variables
+      if (varArray.length() == 0) {
+        variables = new ArrayList<Long>(allVariables.keySet());
+      } else {
+        variables = new ArrayList<Long>(varArray.length());
 
-      JSONArray sensorColumnHeadingsEntry = json.getJSONArray("sensors_headings");
-      sensorColumnHeadings = new ArrayList<String>(sensorColumns.size());
-      for (int i = 0; i < sensorColumnHeadingsEntry.length(); i++) {
-        sensorColumnHeadings.add(sensorColumnHeadingsEntry.getString(i).trim());
-      }
+        Iterator<Object> iter = json.getJSONArray("variables").iterator();
+        while (iter.hasNext()) {
+          String varName = (String) iter.next();
 
-      if (sensorColumnHeadings.size() != sensorColumns.size()) {
-        throw new ExportConfigurationException(index,
-            "Number of column headings does not match number of columns");
-      }
-    } catch (JSONException e) {
-      throw new ExportConfigurationException(index, "Missing or invalid sensor columns entry");
-    }
-
-    // Calculation columns.
-    // These are any other entries that haven't been processed above.
-    for (String key : json.keySet()) {
-      if (!FIXED_KEYS.contains(key)) {
-
-        CalculationDB calculationDb = null;
-
-        if (key.endsWith("_columns")) {
-          String calculationIdentifier = key.substring(0, key.length() - 8);
-          try {
-            calculationDb = CalculationDBFactory.getCalculationDB(key.substring(0, key.length() - 8));
-          } catch (CalculatorException e) {
-            throw new ExportConfigurationException(index, "Unrecognised calculation idendtifier '"
-                + calculationIdentifier + "'");
+          boolean variableFound = false;
+          for (Map.Entry<Long, String> entry : allVariables.entrySet()) {
+            if (varName.equals(entry.getValue())) {
+              variables.add(entry.getKey());
+              variableFound = true;
+              break;
+            }
           }
 
-          try {
-            JSONArray calculationColumnsEntry = json.getJSONArray(key);
-            List<String> calculationColumnNames = new ArrayList<String>();
-            for (int i = 0; i < calculationColumnsEntry.length(); i++) {
-              calculationColumnNames.add(calculationColumnsEntry.getString(i));
-            }
-
-            calculationDb.validateColumnHeadings(calculationColumnNames);
-            this.calculationColumns.put(calculationIdentifier, calculationColumnNames);
-
-            JSONArray calculationColumnHeadingsEntry = json.getJSONArray(calculationIdentifier + "_headings");
-            List<String> calculationColumnHeadings = new ArrayList<String>(calculationColumnNames.size());
-            for (int i = 0; i < calculationColumnHeadingsEntry.length(); i++) {
-              calculationColumnHeadings.add(calculationColumnHeadingsEntry.getString(i));
-            }
-
-            if (calculationColumnHeadings.size() != calculationColumnNames.size()) {
-              throw new ExportConfigurationException(index,
-                  "Number of column headings does not match number of columns for " + calculationIdentifier);
-            } else {
-              this.calculationColumnHeadings.put(calculationIdentifier, calculationColumnHeadings);
-            }
-          } catch (JSONException e) {
-            throw new ExportConfigurationException(index, "Invalid calculation columns entry '" + key + "'");
-          } catch (CalculatorException e) {
-            throw new ExportConfigurationException(index, e);
+          if (!variableFound) {
+            throw new ExportConfigurationException(name, "Invalid variable name '" + varName);
           }
         }
       }
+    }
+
+    if (json.has("missingValue")) {
+      missingValue = json.getString("missingValue");
+    }
+
+    if (json.has("allSensors")) {
+      allSensors = json.getBoolean("allSensors");
+    }
+
+    if (json.has("includeCalculationColumns")) {
+      includeCalculationColumns = json.getBoolean("includeCalculationColumns");
     }
   }
 
@@ -265,62 +189,9 @@ public class ExportOption {
       break;
     }
     default: {
-      throw new ExportConfigurationException(index, "Separator must be 'tab' or 'comma'");
+      throw new ExportConfigurationException(name, "Separator must be 'tab' or 'comma'");
     }
     }
-  }
-
-  /**
-   * Get the list of sensor columns to be included in the export file
-   * @return The sensor columns
-   */
-  public List<String> getSensorColumns() {
-    return sensorColumns;
-  }
-
-  /**
-   * Get the list of sensor column headings
-   * @return The sensor column headings
-   */
-  public List<String> getSensorColumnHeadings() {
-    return sensorColumnHeadings;
-  }
-
-  /**
-   * Get the list of columns required for the given calculation
-   * @param calculation The calculation name
-   * @return The list of columns
-   */
-  public List<String> getCalculationColumns(String calculation) {
-    return calculationColumns.get(calculation);
-  }
-
-  /**
-   * Get the list of column headings for the given calculation
-   * @param calculation The calculation name
-   * @return The column headings
-   */
-  public List<String> getCalculationColumnHeadings(String calculation) {
-    return calculationColumnHeadings.get(calculation);
-  }
-
-  /**
-   * See if a given flag value can be included in this export,
-   * i.e. it is contained in the {@code flags} list
-   * @param flag The flag to be checked
-   * @return {@code true} if the flag can be included; {@code false} if it cannot
-   */
-  public boolean flagAllowed(Flag flag) {
-    boolean allowed = false;
-
-    for (Flag checkFlag : flags) {
-      if (Flag.getWoceValue(checkFlag.getFlagValue()) == Flag.getWoceValue(flag.getFlagValue())) {
-        allowed = true;
-        break;
-      }
-    }
-
-    return allowed;
   }
 
   /**

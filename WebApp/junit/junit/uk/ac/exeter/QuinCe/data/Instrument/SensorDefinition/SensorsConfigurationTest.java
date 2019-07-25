@@ -763,7 +763,7 @@ public class SensorsConfigurationTest extends BaseTest {
     initTestVarList();
     List<InstrumentVariable> variables = getConfig().getInstrumentVariables(bothVarsList);
     for (InstrumentVariable variable : variables) {
-      assertTrue(variable.getId() == 1L || variable.getId() == 2L);
+      assertTrue(variable.getName().equals("Underway Marine pCO₂") || variable.getName().equals("testVar"));
     }
   }
 
