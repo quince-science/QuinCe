@@ -1,7 +1,7 @@
 -- Benguela Stream instrument definition
 
 -- Instrument
-INSERT INTO instrument VALUES (1,1,'Benguela Stream',0,0,-1,0,'BSBS',0,'2019-01-28 13:31:21','2019-01-28 14:31:21');
+INSERT INTO instrument VALUES (1,1,'Benguela Stream',0,0,5,'BSBS',0,'2019-01-28 13:31:21','2019-01-28 14:31:21');
 
 -- Instrument uses the basic marine pCO2 variable
 INSERT INTO instrument_variables (instrument_id, variable_id)
