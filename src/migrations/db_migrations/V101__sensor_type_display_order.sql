@@ -1,6 +1,5 @@
 -- Add display order to sensor types
-ALTER TABLE sensor_types
-ADD COLUMN display_order INT NOT NULL AFTER diagnostic;
+ALTER TABLE sensor_types ADD COLUMN display_order INT NULL AFTER diagnostic;
 
 UPDATE sensor_types SET display_order = 1 WHERE id = 1;
 UPDATE sensor_types SET display_order = 2 WHERE id = 2;
@@ -23,3 +22,5 @@ UPDATE sensor_types SET display_order = 16 WHERE id = 18;
 UPDATE sensor_types SET display_order = 17 WHERE id = 19;
 UPDATE sensor_types SET display_order = 18 WHERE id = 20;
 UPDATE sensor_types SET display_order = 18 WHERE id = 21;
+
+ALTER TABLE sensor_types CHANGE display_order display_order INT NOT NULL;
