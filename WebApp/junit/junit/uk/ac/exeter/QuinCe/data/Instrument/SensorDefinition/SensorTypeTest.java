@@ -28,14 +28,14 @@ public class SensorTypeTest extends BaseTest {
    * @throws Exception If it can't be built
    */
   private SensorType getBasicSensorType() throws Exception {
-    return new SensorType(1L, "Name", "Group", null, null, null, false, false, 1);
+    return new SensorType(1L, "Name", "Group", null, null, null, false, false, 1, null, null, null);
   }
 
   @ParameterizedTest
   @ValueSource(longs = {0L, -1L})
   public void invalidIdsTest(long id) {
     assertThrows(MissingParamException.class, () -> {
-      new SensorType(id, "Name", "Group", null, null, null, false, false, 1);
+      new SensorType(id, "Name", "Group", null, null, null, false, false, 1, null, null, null);
     });
   }
 
@@ -43,7 +43,7 @@ public class SensorTypeTest extends BaseTest {
   @MethodSource("createNullEmptyStrings")
   public void invalidNamesTest(String name) {
     assertThrows(MissingParamException.class, () -> {
-      new SensorType(1L, name, "Group", null, null, null, false, false, 1);
+      new SensorType(1L, name, "Group", null, null, null, false, false, 1, null, null, null);
     });
   }
 
@@ -51,7 +51,7 @@ public class SensorTypeTest extends BaseTest {
   @MethodSource("createNullEmptyStrings")
   public void invalidGroupsTest(String group) {
     assertThrows(MissingParamException.class, () -> {
-      new SensorType(1L, "Name", group, null, null, null, false, false, 1);
+      new SensorType(1L, "Name", group, null, null, null, false, false, 1, null, null, null);
     });
   }
 
@@ -64,7 +64,7 @@ public class SensorTypeTest extends BaseTest {
   @MethodSource("createInvalidReferences")
   public void invalidParentTest(Long parent) {
     assertThrows(MissingParamException.class, () -> {
-      new SensorType(1, "Name", "Group", parent, null, null, false, false, 1);
+      new SensorType(1, "Name", "Group", parent, null, null, false, false, 1, null, null, null);
     });
   }
 
@@ -72,7 +72,7 @@ public class SensorTypeTest extends BaseTest {
   @MethodSource("createInvalidReferences")
   public void invalidDependsOnTest(Long dependsOn) {
     assertThrows(MissingParamException.class, () -> {
-      new SensorType(1, "Name", "Group", null, dependsOn, null, false, false, 1);
+      new SensorType(1, "Name", "Group", null, dependsOn, null, false, false, 1, null, null, null);
     });
   }
 
@@ -96,7 +96,7 @@ public class SensorTypeTest extends BaseTest {
 
   @Test
   public void nullParentTest() throws Exception {
-    SensorType type = new SensorType(1L, "Name", "Group", null, null, null, false, false, 1);
+    SensorType type = new SensorType(1L, "Name", "Group", null, null, null, false, false, 1, null, null, null);
     assertEquals(SensorType.NO_PARENT, type.getParent());
     assertFalse(type.hasParent());
   }
@@ -104,20 +104,20 @@ public class SensorTypeTest extends BaseTest {
   @Test
   public void ownParentTest() {
     assertThrows(SensorConfigurationException.class, () -> {
-      new SensorType(1L, "Name", "Group", 1L, null, null, true, false, 1);
+      new SensorType(1L, "Name", "Group", 1L, null, null, true, false, 1, null, null, null);
     });
   }
 
   @Test
   public void validParentTest() throws Exception {
-    SensorType type = new SensorType(1L, "Name", "Group", 2L, null, null, false, false, 1);
+    SensorType type = new SensorType(1L, "Name", "Group", 2L, null, null, false, false, 1, null, null, null);
     assertEquals(2L, type.getParent());
     assertTrue(type.hasParent());
   }
 
   @Test
   public void nullDependsOnTest() throws Exception {
-    SensorType type = new SensorType(1L, "Name", "Group", null, null, null, false, false, 1);
+    SensorType type = new SensorType(1L, "Name", "Group", null, null, null, false, false, 1, null, null, null);
     assertEquals(SensorType.NO_DEPENDS_ON, type.getDependsOn());
     assertFalse(type.dependsOnOtherType());
   }
@@ -125,13 +125,13 @@ public class SensorTypeTest extends BaseTest {
   @Test
   public void ownDependsOnTest() {
     assertThrows(SensorConfigurationException.class, () -> {
-      new SensorType(1L, "Name", "Group", null, 1L, null, true, false, 1);
+      new SensorType(1L, "Name", "Group", null, 1L, null, true, false, 1, null, null, null);
     });
   }
 
   @Test
   public void dependsOnTest() throws Exception {
-    SensorType type = new SensorType(1L, "Name", "Group", null, 2L, null, false, false, 1);
+    SensorType type = new SensorType(1L, "Name", "Group", null, 2L, null, false, false, 1, null, null, null);
     assertEquals(2L, type.getDependsOn());
     assertTrue(type.dependsOnOtherType());
   }
@@ -139,7 +139,7 @@ public class SensorTypeTest extends BaseTest {
   @ParameterizedTest
   @MethodSource("createNullEmptyStrings")
   public void nullDependsQuestionTest() throws Exception {
-    SensorType type = new SensorType(1L, "Name", "Group", null, null, null, false, false, 1);
+    SensorType type = new SensorType(1L, "Name", "Group", null, null, null, false, false, 1, null, null, null);
     assertNull(type.getDependsQuestion());
     assertFalse(type.hasDependsQuestion());
   }
@@ -147,38 +147,38 @@ public class SensorTypeTest extends BaseTest {
   @Test
   public void dependsQuestionWithoutDependsOnTest() {
     assertThrows(SensorConfigurationException.class, () -> {
-      new SensorType(1L, "Name", "Group", null, null, "Question?", false, false, 1);
+      new SensorType(1L, "Name", "Group", null, null, "Question?", false, false, 1, null, null, null);
     });
   }
 
   @Test
   public void dependsQuestionTest() throws Exception {
-    SensorType type = new SensorType(1L, "Name", "Group", null, 2L, "Question?", false, false, 1);
+    SensorType type = new SensorType(1L, "Name", "Group", null, 2L, "Question?", false, false, 1, null, null, null);
     assertNotNull(type.getDependsQuestion());
     assertTrue(type.hasDependsQuestion());
   }
 
   @Test
   public void notDiagnosticTest() throws Exception {
-    SensorType type = new SensorType(1L, "Name", "Group", null, null, null, false, false, 1);
+    SensorType type = new SensorType(1L, "Name", "Group", null, null, null, false, false, 1, null, null, null);
     assertFalse(type.isDiagnostic());
   }
 
   @Test
   public void isDiagnosticTest() throws Exception {
-    SensorType type = new SensorType(1L, "Name", "Group", null, null, null, false, true, 1);
+    SensorType type = new SensorType(1L, "Name", "Group", null, null, null, false, true, 1, null, null, null);
     assertTrue(type.isDiagnostic());
   }
 
   @Test
   public void notInternalCalibrationTest() throws Exception {
-    SensorType type = new SensorType(1L, "Name", "Group", null, null, null, false, false, 1);
+    SensorType type = new SensorType(1L, "Name", "Group", null, null, null, false, false, 1, null, null, null);
     assertFalse(type.hasInternalCalibration());
   }
 
   @Test
   public void internalCalibrationTest() throws Exception {
-    SensorType type = new SensorType(1L, "Name", "Group", null, null, null, true, false, 1);
+    SensorType type = new SensorType(1L, "Name", "Group", null, null, null, true, false, 1, null, null, null);
     assertTrue(type.hasInternalCalibration());
   }
 
@@ -212,14 +212,14 @@ public class SensorTypeTest extends BaseTest {
   @Test
   public void notEqualsSensorTypeTest() throws Exception {
     SensorType type = getBasicSensorType();
-    SensorType type2 = new SensorType(4L, "Flurble", "Group", null, null, null, false, false, 1);
+    SensorType type2 = new SensorType(4L, "Flurble", "Group", null, null, null, false, false, 1, null, null, null);
     assertFalse(type.equals(type2));
   }
 
   @Test
   public void compareToTest() throws Exception {
     SensorType type = getBasicSensorType();
-    SensorType type2 = new SensorType(4L, "Flurble", "Group", null, null, null, false, false, 1);
+    SensorType type2 = new SensorType(4L, "Flurble", "Group", null, null, null, false, false, 1, null, null, null);
     assertTrue(type2.compareTo(type) < 0);
     assertTrue(type.compareTo(type2) > 0);
     assertTrue(type.compareTo(type) == 0);
