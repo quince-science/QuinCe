@@ -128,6 +128,22 @@ public class SensorType implements Comparable<SensorType> {
   private boolean systemType = false;
 
   /**
+   * The units in which values for this sensor are stored
+   */
+  private String units = null;
+
+  /**
+   * The BODC P01 vocabulary code for the sensor
+   * (or a self-defined one if no P01 code is available)
+   */
+  private String columnCode = null;
+
+  /**
+   * The default column heading
+   */
+  private String columnHeading = null;
+
+  /**
    * Determines where this sensor type will be displayed in lists of
    * sensor types
    */
@@ -135,11 +151,11 @@ public class SensorType implements Comparable<SensorType> {
 
   static {
     RUN_TYPE_SENSOR_TYPE = new SensorType(RUN_TYPE_ID, "Run Type",
-      "Run Type", RUN_TYPE_ORDER);
+      "Run Type", RUN_TYPE_ORDER, null, "RUNTYPE");
     LONGITUDE_SENSOR_TYPE = new SensorType(LONGITUDE_ID, "Longitude",
-      "Longitude", LONGITUDE_ORDER);
+      "Longitude", LONGITUDE_ORDER, "degrees_east", "ALONGP01");
     LATITUDE_SENSOR_TYPE = new SensorType(LATITUDE_ID, "Latitude",
-      "Latitude", LATITUDE_ORDER);
+      "Latitude", LATITUDE_ORDER, "degrees_north", "ALATGP01");
   }
 
   /**
@@ -155,7 +171,7 @@ public class SensorType implements Comparable<SensorType> {
    */
   public SensorType(long id, String name, String group, Long parent, Long dependsOn,
     String dependsQuestion, boolean internalCalibration, boolean diagnostic,
-    int displayOrder)
+    int displayOrder, String units, String columnCode, String columnHeading)
     throws MissingParamException, SensorConfigurationException {
 
     MissingParam.checkPositive(id, "id");
@@ -206,7 +222,7 @@ public class SensorType implements Comparable<SensorType> {
    * @param id The sensor ID
    * @param name The sensor name
    */
-  private SensorType(long id, String name, String group, int displayOrder) {
+  private SensorType(long id, String name, String group, int displayOrder, String units, String columnCode) {
     this.id = id;
     this.name = name;
     this.group = group;
@@ -217,6 +233,8 @@ public class SensorType implements Comparable<SensorType> {
     this.diagnostic = false;
     this.systemType = true;
     this.displayOrder = displayOrder;
+    this.units = units;
+    this.columnCode = columnCode;
   }
 
   /**
@@ -265,6 +283,9 @@ public class SensorType implements Comparable<SensorType> {
     this.internalCalibration = record.getBoolean(7);
     this.diagnostic = record.getBoolean(8);
     this.displayOrder = record.getInt(9);
+    this.units = record.getString(10);
+    this.columnCode = record.getString(11);
+    this.columnHeading = record.getString(12);
   }
 
 
