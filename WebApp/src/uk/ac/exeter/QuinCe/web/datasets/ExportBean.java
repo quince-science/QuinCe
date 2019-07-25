@@ -21,15 +21,9 @@ import org.primefaces.json.JSONObject;
 
 import uk.ac.exeter.QCRoutines.config.InvalidDataTypeException;
 import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
-import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecord;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationRecordFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetRawDataRecord;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
@@ -40,7 +34,6 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
@@ -52,11 +45,6 @@ public class ExportBean extends BaseManagedBean {
    * Navigation to the export page
    */
   private static final String NAV_EXPORT_PAGE = "export";
-
-  /**
-   * The string to use for missing values
-   */
-  private static final String MISSING_VALUE = "NaN";
 
   /**
    * The database ID of the dataset to be exported
@@ -267,6 +255,12 @@ public class ExportBean extends BaseManagedBean {
    */
   private static byte[] getDatasetExport(Connection conn, DataSet dataset, ExportOption exportOption)
       throws NoSuchColumnException, InvalidDataTypeException, MissingParamException, DatabaseException, RecordNotFoundException, MessageException {
+
+    StringBuilder output = new StringBuilder("I am export!");
+
+/*
+
+
     // TODO This will get all sensor columns. When the sensor data storage is updated (Issue #576), this can be revised.
     List<DataSetRawDataRecord> datasetData = DataSetDataDB.getMeasurements(conn, dataset);
 
@@ -396,7 +390,7 @@ public class ExportBean extends BaseManagedBean {
       }
 
     }
-
+*/
     return output.toString().getBytes();
   }
 
