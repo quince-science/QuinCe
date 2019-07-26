@@ -7,6 +7,8 @@ import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
+import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
@@ -54,16 +56,9 @@ public class DataReducerFactory {
     return reducer;
   }
 
-  /**
-   * Get the calculation parameters for a given data reducer with their IDs
-   * @param variable The variable for the data reducer
-   * @return The calculation parameter names
-   * @throws DataReductionException If the variable does not have a reducer
-   */
-  public static LinkedHashMap<String, Long> getCalculationParameters(
-    InstrumentVariable variable) throws DataReductionException {
+  private static DataReducer getSkeletonReducer(InstrumentVariable variable) throws DataReductionException {
 
-    DataReducer reducer;
+    DataReducer reducer = null;
 
     switch (variable.getName()) {
     case "Underway Marine pCO₂": {
@@ -79,6 +74,19 @@ public class DataReducerFactory {
     }
     }
 
+    return reducer;
+  }
+
+  /**
+   * Get the calculation parameters for a given data reducer with their IDs
+   * @param variable The variable for the data reducer
+   * @return The calculation parameter names
+   * @throws DataReductionException If the variable does not have a reducer
+   */
+  public static LinkedHashMap<String, Long> getCalculationParameters(
+    InstrumentVariable variable) throws DataReductionException {
+
+    DataReducer reducer = getSkeletonReducer(variable);
     List<String> parameterNames = reducer.getCalculationParameterNames();
 
     LinkedHashMap<String, Long> result = new LinkedHashMap<String, Long>();
@@ -89,5 +97,12 @@ public class DataReducerFactory {
     }
 
     return result;
+  }
+
+  public static List<ColumnHeader> getColumnHeaders(InstrumentVariable variable,
+    ExportOption exportOption) throws DataReductionException {
+
+    DataReducer reducer = getSkeletonReducer(variable);
+    return reducer.getColumnHeaders(exportOption.includeCalculationColumns());
   }
 }

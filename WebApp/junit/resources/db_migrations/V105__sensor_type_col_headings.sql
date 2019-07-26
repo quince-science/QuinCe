@@ -13,7 +13,7 @@ UPDATE sensor_types SET units = '°C', column_code = 'TEMPPR01', column_heading 
 UPDATE sensor_types SET units = 'psu', column_code = 'PSALPR01', column_heading = 'Practical Salinity' WHERE id = 2;
 UPDATE sensor_types SET units = '°C', column_code = 'TEMPEQMN', column_heading = 'Temperature of Equilibration' WHERE id = 3;
 UPDATE sensor_types SET units = 'hPa', column_code = 'PRESEQ', column_heading = 'Pressure in Equilibrator' WHERE id = 4;
-UPDATE sensor_types SET units = 'hPa', column_code = 'PRESEQ', column_heading = 'Absolute Pressure in Equilibrator' WHERE id = 5;
+UPDATE sensor_types SET units = 'hPa', column_code = 'PRESEQABS', column_heading = 'Absolute Pressure in Equilibrator' WHERE id = 5;
 UPDATE sensor_types SET units = 'hPa', column_code = 'PRESEQREL', column_heading = 'Relative Pressure in Equilibrator' WHERE id = 6;
 UPDATE sensor_types SET units = 'hPa', column_code = 'PRESAMB', column_heading = 'Instrument Ambient Pressure' WHERE id = 7;
 UPDATE sensor_types SET units = 'μmol mol-1', column_code = 'WMXRZZ01', column_heading = 'H₂O Mole Fraction' WHERE id = 8;
