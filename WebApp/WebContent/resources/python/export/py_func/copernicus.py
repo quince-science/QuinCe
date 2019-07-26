@@ -43,7 +43,6 @@ Example of index file format provided by Corentin.Guyot@ifremer.fr 2019-03-06
 COP-GLOBAL-01,ftp://nrt.cmems-du.eu/Core/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/nrt/latest/20190221/GL_LATEST_PR_BA_7JXZ_20190221.nc,19.486,19.486,-176.568,-176.568,2019-02-21T17:50:00Z,2019-02-21T17:50:00Z,Unknown institution,2019-02-24T04:10:11Z,R,DEPH TEMP
 '''
 import logging 
-#import pysftp
 import ftplib
 import ftputil 
 import os
@@ -59,11 +58,10 @@ import sqlite3
 import json
 import time
 
-from py_func.meta_handling import get_file_from_zip
+from py_func.carbon import get_file_from_zip
 
 # Upload result codes
 UPLOAD_OK = 0
-NOT_INITIALISED = 1
 FILE_EXISTS = 2
 
 # Response codes
@@ -73,10 +71,6 @@ FAILED_INGESTION = -1
 
 dnt_datetime_format = '%Y%m%dT%H%M%SZ'
 server_location = 'ftp://nrt.cmems-du.eu/Core'
-my_dir=''
-lt = 'latest'
-
-nc_nan = 'tmp_nan_update.nc'
 
 cmems_log = 'log/cmems_response.log'
 error_log = 'log/errors.log'
@@ -88,36 +82,30 @@ delay_log = 'log/delay.log'
 cmems_db = 'files_cmems.db'
 delay_db = 'log/delay.db'
 
-
 nrt_dir='/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/NRT_201904/latest'
 dnt_dir='/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/DNT'
-index_dir = '/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/NRT_201904'
+#index_dir = '/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/NRT_201904'
 
 product_id = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
 
 def build_netCDF(dataset_zip,dataset_name,data_filename):
-  '''
-  transforms csv-file to daily netCDF-files.
+  '''  Transforms csv-file to daily netCDF-files.
+  
   Creates dictionary containing info on each netCDF file extracted
   requires: zip-folder, dataset-name and specific filename of csv-file.
   returns: dictionary
   '''
-  # BUILD netCDF FILES
-
+  logging.info(f'Building daily netCDF-files from {data_filename}')
   csv_file = get_file_from_zip(dataset_zip, data_filename)  
 
-  if not os.path.isdir(lt):
-    os.mkdir(lt)
+  if not os.path.isdir('latest'): os.mkdir('latest')
 
   local_folder = (
-    lt + '/' + (datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
+    'latest' + '/' + (datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
   if not os.path.isdir(local_folder):
     os.mkdir(local_folder); 
-
     
-  logging.info(
-    'Creating netcdf-files based on {:s} to send to Copernicus'
-    .format(csv_file))
+  logging.info(f'Creating netcdf-files based on {csv_file} to send to Copernicus')
   with open(csv_file) as f: 
     csv = f.read()
     nc_files = buildnetcdfs(dataset_name,csv)
@@ -128,20 +116,18 @@ def build_netCDF(dataset_zip,dataset_name,data_filename):
     nc_content = nc_file[1] 
     hashsum = hashlib.md5(nc_content).hexdigest()
 
-    # ASSIGN DATE-VARIABLES TO netCDF FILE
-    #assigning date_update and history
+    logging.debug(f'Assigning netCDF attributes: date_update and history')
     nc_filepath = local_folder + '/' + nc_filename + '.nc'   
-
     with open(nc_filepath,'wb') as f: f.write(nc_content)
-
     nc = netCDF4.Dataset(nc_filepath,mode = 'a')
+
     datasetdate = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     nc.date_update = datasetdate
     nc.history = datasetdate + " : Creation"
     nc.close()
- 
 
     # create dictionary object
+    logging.debug(f'Storing netCDF metadata for {nc_filename}')
     date = nc_filename.split('_')[-1]
     date = datetime.datetime.strptime(date,'%Y%m%d')
     nc_dict[nc_filename] = ({
@@ -152,22 +138,17 @@ def build_netCDF(dataset_zip,dataset_name,data_filename):
       'dataset':dataset_name}
       )
   # Commit dict object to database
+  logging.debug(f'Commiting netCDF metadata to local SQL database {cmems_db}')
   sql_commit(nc_dict)
 
 
 def sql_commit(nc_dict,table="latest"):
-  ''' 
+  ''' Adds new netCDF files, listed in nc_dict, to new or existing SQL-table 
   creates SQL table if non exists
-
-  adds new netCDF files, listed in nc_dict, to new or existing SQL-table 
-
   '''
   conn = sqlite3.connect(cmems_db)
-
   c = conn.cursor()
 
-  # if not table: 
-  #logging.info('Creating database {}'.format(table))
   c.execute(''' CREATE TABLE IF NOT EXISTS latest (
               filename TEXT PRIMARY KEY,
               hashsum TEXT NOT NULL,
@@ -181,7 +162,6 @@ def sql_commit(nc_dict,table="latest"):
               )''')
 
   for key in nc_dict:
-
     if nc_dict[key]['uploaded']: uploaded = 1
     else: uploaded = 0
 
@@ -192,7 +172,7 @@ def sql_commit(nc_dict,table="latest"):
         if filename_exists[0] == nc_dict[key]['hashsum']:#hashsums match
           logging.info(f'{key} Already in the database')
         else:
-          logging.info(f'Updating: {key}')
+          logging.info(f'{key} Updating database entry')
           c.execute("UPDATE latest SET \
             hashsum=?,filepath=?,nc_date=?,dataset=?,uploaded=?,ftp_filepath=?,\
             dnt_file=?,comment=? WHERE filename = ?",\
@@ -201,7 +181,7 @@ def sql_commit(nc_dict,table="latest"):
             uploaded, None, None, None, key))
         conn.commit()
       else:
-        logging.debug(f'Adding new entry {key}')
+        logging.debug(f'{key} Adding new entry ')
         c.execute("INSERT INTO latest \
           (filename,hashsum,filepath,nc_date,dataset,uploaded,\
           ftp_filepath,dnt_file,comment) \
@@ -217,20 +197,18 @@ def sql_commit(nc_dict,table="latest"):
           None))
         conn.commit()
     except Exception as e:
-      logging.error(f'Adding/Updating database failed:  {key} ', exc_info=True)
+      logging.error(f'{key} Adding/Updating database failed ', exc_info=True)
 
 
 def upload_to_copernicus(ftp_config,server,dataset):
-  '''
+  '''Uploads netCDF files, creates and uploads index file and DNT file.
+
   Creates a FTP-connection.
-  Uploads netCDF files, creates and uploads index file and DNT file.
   Checks response file generated by cmems to identify any failed uploads.
 
   netCDF uploads are determined based on date-range and current upload-status.
 
-  ftp_config contains login information
-  server is the url of the cmems ftp-server 
-
+  server: url of the cmems ftp-server 
   '''
 
   OK = True
@@ -241,23 +219,22 @@ def upload_to_copernicus(ftp_config,server,dataset):
   if not os.path.isdir('DNT'):
     os.mkdir('DNT')
 
-  # create ftp-connection
+  logging.info(f'Making connection with ftp server: {server}')
   with ftputil.FTPHost(
     host=ftp_config['Copernicus'][server],
     user=ftp_config['Copernicus']['user'],
     passwd=ftp_config['Copernicus']['password'])as ftp:
-
     conn = sqlite3.connect(cmems_db)
     c = conn.cursor()
 
-  # CHECK IF FTP IS EMPTY 
+    logging.debug(f'Checking {nrt_dir} for unexpected files')
     directory_empty = check_directory(ftp, nrt_dir) 
     if directory_empty:
       return False
 
-  # CHECK DICTONARY : DELETE FILES ON SERVER; OLDER THAN 30 DAYS
   # Dictionary structure: 
   # filename, hashsum, filepath, nc_date, dataset, uploaded, ftp_filepath, dnt_file, comment
+    logging.debug(f'Checking server for files older than 30 days')
     c.execute("SELECT * FROM latest \
      WHERE (nc_date < date('now','-30 day') AND uploaded == ?)",[UPLOADED]) 
     results_delete = c.fetchall()
@@ -272,7 +249,7 @@ def upload_to_copernicus(ftp_config,server,dataset):
         WHERE filename = ?", [NOT_UPLOADED, filename])
       conn.commit()
 
-  # CHECK DICTIONARY: UPLOAD FILES NOT ON SERVER; YOUNGER THAN 30 DAYS
+    logging.info('Checking local database for files to be uploaded') 
     c.execute("SELECT * FROM latest \
       WHERE (nc_date >= date('now','-30 day') \
       AND uploaded == ?)",[NOT_UPLOADED]) 
@@ -291,7 +268,7 @@ def upload_to_copernicus(ftp_config,server,dataset):
       
       # Setting dnt-variable to temp variable: local folder.
       # After DNT is created, DNT-filepath is updated for all instances where 
-      # DNT-filetpath is local_folder
+      # DNT-filetpath == local_folder
       local_folder = filepath_local.rsplit('/',1)[0] 
       if upload_result == 0: #upload ok
         c.execute("UPDATE latest \
@@ -300,19 +277,18 @@ def upload_to_copernicus(ftp_config,server,dataset):
           [UPLOADED, filepath_ftp, local_folder ,filename])
         conn.commit()
 
-        #log time delay
+        logging.debug(f'logging time-delay for {csv_file}')
         try:
           log_time(csv_file,filename,stop_upload_time)
         except Exception as e:
           logging.error('Logging time failed:', exc_info=True)
 
-        # create DNT-entry
+        logging.debug(f'Creating DNT-entry for {filename}')
         dnt_upload[filename] = ({'ftp_filepath':filepath_ftp, 
           'start_upload_time':start_upload_time, 
           'stop_upload_time':stop_upload_time,
           'local_folder':local_folder})    
         logging.debug(f'dnt entry: {dnt_upload[filename]}') 
-
 
       else:
         logging.debug(f'Upload failed: {upload_result}')
@@ -323,9 +299,8 @@ def upload_to_copernicus(ftp_config,server,dataset):
           [FAILED_INGESTION, filename])
         conn.commit()
 
-
     if dnt_upload or dnt_delete:
-      # BUILD INDEX
+      logging.debug(f'Building index-file')
       c.execute("SELECT * FROM latest WHERE uploaded == 1")
       currently_uploaded = c.fetchall()
       try:
@@ -339,7 +314,7 @@ def upload_to_copernicus(ftp_config,server,dataset):
           [FAILED_INGESTION, filename])
         conn.commit()        
  
-      # UPLOAD INDEX 
+      logging.debug(f'Uploading index-file: {index_filepath}')
       try:
         upload_result, ftp_filepath, start_upload_time, stop_upload_time = (
           upload_to_ftp(ftp,ftp_config, index_filepath))
@@ -353,8 +328,7 @@ def upload_to_copernicus(ftp_config,server,dataset):
           [FAILED_INGESTION, filename])
         conn.commit()
     
-      # BUILD DNT-FILE
-      # Adding index file to DNT-list:
+      logging.debug(f'Creating DNT entry for index-file ')
       dnt_upload[index_filepath] = ({
         'ftp_filepath':ftp_filepath, 
         'start_upload_time':start_upload_time, 
@@ -380,7 +354,7 @@ def upload_to_copernicus(ftp_config,server,dataset):
           [FAILED_INGESTION, filename])
         conn.commit()
 
-      # UPLOAD DNT-FILE
+      logging.debug(f'Uploading DNT-file: {dnt_local_filepath}')
       try: 
         #using underscores to unpack the function without storing unused vars.
         _, dnt_ftp_filepath, _, _ = (
@@ -426,8 +400,6 @@ def upload_to_copernicus(ftp_config,server,dataset):
         logging.debug(f'DNT failed: {filename}')
         conn.commit()
 
-
-
     # writing database to csv-file for debugging
     c.execute("SELECT * FROM latest")
     database = c.fetchall()
@@ -449,14 +421,11 @@ def upload_to_copernicus(ftp_config,server,dataset):
       logging.warning('Aborting upload')
       abort_upload(error, local_folder, ftp, csv_file, filename)
 
-
-    #upload complete
-    return OK
+    return OK #upload complete
 
 
 def check_directory(ftp, nrt_dir):
-  ''' 
-  Cleans out empty folders, checks if main directory is empty. 
+  '''  Cleans out empty folders, checks if main directory is empty. 
   returns True when empty 
   '''
 
@@ -489,7 +458,8 @@ def clean_directory(ftp,nrt_dir):
 
 
 def upload_to_ftp(ftp, ftp_config, filepath):
-  ''' Uploads file with location 'filepath' to an ftp-server, 
+  ''' Uploads file with location 'filepath' to an ftp-server
+
   server-location set by 'directory' parameter and config-file, 
   ftp is the ftp-connection
 
@@ -596,11 +566,10 @@ def build_DNT(dnt_upload,dnt_delete):
 
 
 def build_index(results_uploaded):
-  '''
-  Creates index-file over CMEMS directory.
-  Lists all files currently uploaded to the CMEMS server. 
+  '''  Creates index-file over CMEMS directory.
 
-  results_uploaded is a list of files currently uploaded to the FTP-server
+  Lists all files currently uploaded to the CMEMS server. 
+  Results_uploaded is a list of files currently uploaded to the FTP-server
   according to the CMEMS-database.
 
   returns the filename of the generated index-file
@@ -609,12 +578,12 @@ def build_index(results_uploaded):
   date_header = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
   index_header = ('# Title : Carbon in-situ observations catalog \n'\
-    + '# Description : catalog of available in-situ observations per platform.\n'\
-    + '# Project : Copernicus \n# Format version : 1.0 \n'\
-    + '# Date of update : ' + date_header +'\n'
-    + '# catalog_id,file_name,geospatial_lat_min,geospatial_lat_max,'\
-    + 'geospatial_lon_min,geospatial_lon_max,time_coverage_start,'\
-    + 'time_coverage_end,provider,date_update,data_mode,parameters\n')
+    +'# Description : catalog of available in-situ observations per platform.\n'\
+    +'# Project : Copernicus \n# Format version : 1.0 \n'\
+    +'# Date of update : ' + date_header +'\n'
+    +'# catalog_id,file_name,geospatial_lat_min,geospatial_lat_max,'\
+    +'geospatial_lon_min,geospatial_lon_max,time_coverage_start,'\
+    +'time_coverage_end,provider,date_update,data_mode,parameters\n')
 
   index_info = ''
   for file in results_uploaded:
@@ -663,8 +632,7 @@ def build_index(results_uploaded):
 
 
 def get_response(ftp,dnt_filepath,folder_local):
-  '''
-  Retrieves the status of any file uploaded to CMEMS server
+  ''' Retrieves the status of any file uploaded to CMEMS server
 
   requires login information and the filename of the DNT associated with 
   the upload.
@@ -682,11 +650,9 @@ def get_response(ftp,dnt_filepath,folder_local):
 
 
 def evaluate_response_file(ftp,dnt_filepath,folder_local):
-  '''
-  Retrieves response from cmems-ftp server.
+  ''' Retrieves response from cmems-ftp server.
 
   returns a list of rejected files
-
   '''
   response_received = False
   loop_iter = 0
@@ -743,9 +709,9 @@ def evaluate_response_file(ftp,dnt_filepath,folder_local):
 
 
 def abort_upload(error,local_folder,ftp,csv_file,nc_file):
-  '''
-  Protocol to clear system when a process fails.
-  error contains an error message describing where the script failed, and the
+  '''  Protocol to clear system when a process fails.
+
+  Error contains an error message describing where the script failed, and the
   console log of the exception.
 
   If the script fails the database must be updated to reflect the incident.
@@ -755,8 +721,7 @@ def abort_upload(error,local_folder,ftp,csv_file,nc_file):
   If the script fails after the initial upload of netCDF-files, these must be 
   deleted from the CMEMS production FTP server as part of the clean up.
 
-  Finally the error should be logged including: date, csv-file, 
-  error-message. 
+  Logs: date, csv-file, error-message. Written to error-log file.
 
   '''
   
@@ -773,7 +738,6 @@ def abort_upload(error,local_folder,ftp,csv_file,nc_file):
     logging.debug(f'Removing: {set(current_ftp).intersection(failed_ingestion)}')
     clear_FTP(ftp, set(current_ftp).intersection(failed_ingestion))
 
-  # Update database : set uploaded to 0 where upload failed
   error_msg = "Failed ingestion: " + local_folder + ', ' + error 
   try:
     for item in failed_ingestion:
@@ -782,7 +746,9 @@ def abort_upload(error,local_folder,ftp,csv_file,nc_file):
       else:
         prev_error = ''
       error_msg = prev_error + error_msg
-      c.execute("UPDATE latest SET uploaded = 0, comment = ? WHERE hashsum = ?",[error_msg, str(item[1])])
+      logging.debug(f'Updating database : setting uploaded to 0 for {item}')
+      c.execute("UPDATE latest SET uploaded = 0, comment = ? WHERE hashsum = ?",
+        [error_msg, str(item[1])])
     conn.commit()
   except:
     logging.error('Failed to reset database after export-failure')
@@ -794,9 +760,7 @@ def abort_upload(error,local_folder,ftp,csv_file,nc_file):
 
 
 def clear_FTP(ftp,files):
-  '''
-  Deletes files in list 'files' from CMEMS ftp server
-  '''
+  '''  Deletes files in list 'files' from CMEMS ftp server  '''
   for file in files:
     logging.debug(f'removing {str(file)} from ftp-server')
     try:
@@ -806,8 +770,8 @@ def clear_FTP(ftp,files):
       logging.error('Exception occurred: ', exc_info=True)
 
 def log_time(csv_file,nc_file, t_upload):
-  '''
-  Generates and populates database of uploaded files and potential time-delay.
+  ''' Generates and populates database of uploaded files and potential time-delay.
+
   csv-file is original dataset-filename as retrieved from QuinCe
   nc-file is netCDF filename, file that was uploaded
   d_measured is the date the data was measured, retrieved from nc_file
@@ -818,15 +782,10 @@ def log_time(csv_file,nc_file, t_upload):
   t_delay is the estimated delay, if on-time, t_delay is set to 0
 
   database filename is delivery_log.db  
-
   '''
   
-  #if database not exist create database
-  
   conn = sqlite3.connect('delivery_log.db')
-
   c = conn.cursor()
-
   c.execute(''' CREATE TABLE IF NOT EXISTS log (
               filename TEXT PRIMARY KEY,
               csv_filename TEXT NOT NULL,
