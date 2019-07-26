@@ -54,6 +54,16 @@ public class ExportOption {
   private boolean includeCalculationColumns = false;
 
   /**
+   * Indicates whether to use column codes instead of names
+   */
+  private boolean useColumnCodes = false;
+
+  /**
+   * Indicates whether units should be included in column headings
+   */
+  private boolean includeUnits = true;
+
+  /**
    * Build an ExportOption object from a JSON string
    * @param index The index of the configuration in the export configuration file
    * @param json The JSON string defining the export option
@@ -84,6 +94,10 @@ public class ExportOption {
     return separator;
   }
 
+  public String getMissingValue() {
+    return missingValue;
+  }
+
   public List<Long> getVariables() {
     return variables;
   }
@@ -94,6 +108,14 @@ public class ExportOption {
 
   public boolean includeCalculationColumns() {
     return includeCalculationColumns;
+  }
+
+  public boolean useColumnCodes() {
+    return useColumnCodes;
+  }
+
+  public boolean includeUnits() {
+    return includeUnits;
   }
 
   /**
@@ -170,6 +192,14 @@ public class ExportOption {
 
     if (json.has("includeCalculationColumns")) {
       includeCalculationColumns = json.getBoolean("includeCalculationColumns");
+    }
+
+    if (json.has("useColumnCodes")) {
+      useColumnCodes = json.getBoolean("useColumnCodes");
+    }
+
+    if (json.has("includeUnits")) {
+      includeUnits = json.getBoolean("includeUnits");
     }
   }
 

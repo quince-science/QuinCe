@@ -7,6 +7,7 @@ import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
@@ -28,8 +29,10 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
   private static List<String> calculationParameterNames;
 
+  private static List<ColumnHeader> columnHeaders;
+
   static {
-    calculationParameterNames = new ArrayList<String>(8);
+    calculationParameterNames = new ArrayList<String>(7);
     calculationParameterNames.add("True Moisture");
     calculationParameterNames.add("Sea Level Pressure");
     calculationParameterNames.add("pH₂O");
@@ -37,7 +40,16 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
     calculationParameterNames.add("Calibrated CO₂");
     calculationParameterNames.add("pCO₂");
     calculationParameterNames.add("fCO₂");
-  }
+
+    columnHeaders = new ArrayList<ColumnHeader>(7);
+    columnHeaders.add(new ColumnHeader("Atmosphere True Moisture", "AXCO2CORR", "μmol mol-1"));
+    columnHeaders.add(new ColumnHeader("Atmospheric Pressure At Sea Level", "CAPAZZ01", "hPa"));
+    columnHeaders.add(new ColumnHeader("Atmosphere Water Vapour Pressure", "RH2OX0EQ", "hPa"));
+    columnHeaders.add(new ColumnHeader("xCO₂ In Atmoshpere - Dry Air", "XCO2DRAT", "μmol mol-1"));
+    columnHeaders.add(new ColumnHeader("xCO₂ In Atmosphere - Calibrated In Dry Air", "XCO2DCMA", "μmol mol-1"));
+    columnHeaders.add(new ColumnHeader("pCO₂ In Atmosphere", "ACO2XXXX", "μatm"));
+    columnHeaders.add(new ColumnHeader("fCO₂ In Atmosphere", "FCO2WTAT", "μatm"));
+}
 
   public UnderwayAtmosphericPco2Reducer(InstrumentVariable variable,
     Map<String, Float> variableAttributes, List<Measurement> allMeasurements,
@@ -157,5 +169,16 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
   protected String[] getRequiredTypeStrings() {
     return new String[] {"Equilibrator Temperature", "Salinity",
       "Atmospheric Pressure", "CO₂ in gas"};
+  }
+
+  @Override
+  public List<ColumnHeader> getColumnHeaders(boolean includeCalculationColumns) {
+
+    List<ColumnHeader> result = columnHeaders;
+    if (!includeCalculationColumns) {
+      result = columnHeaders.subList(5, columnHeaders.size());
+    }
+
+    return result;
   }
 }
