@@ -7,6 +7,7 @@ import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
+import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
@@ -27,6 +28,8 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
 
   private static List<String> calculationParameterNames;
 
+  private static List<ColumnHeader> columnHeaders;
+
   static {
     calculationParameterNames = new ArrayList<String>(8);
     calculationParameterNames.add("Equilibrator Pressure");
@@ -38,7 +41,18 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     calculationParameterNames.add("pCO₂ TE Wet");
     calculationParameterNames.add("pCO₂ SST");
     calculationParameterNames.add("fCO₂");
-  }
+
+    columnHeaders = new ArrayList<ColumnHeader>(7);
+    columnHeaders.add(new ColumnHeader("Equilibrator Pressure", "PRESEQ", "°C"));
+    columnHeaders.add(new ColumnHeader("Water-Equilibrator Temperature Difference", "DELTAT", "°C"));
+    columnHeaders.add(new ColumnHeader("Marine True Moisture", "MXCO2CORR", "μmol mol-1"));
+    columnHeaders.add(new ColumnHeader("Marine Water Vapour Pressure", "RH2OX0EQ", "hPa"));
+    columnHeaders.add(new ColumnHeader("xCO₂ In Water - Dry Air", "XCO2WBDY", "μmol mol-1"));
+    columnHeaders.add(new ColumnHeader("xCO₂ In Water - Calibrated In Dry Air", "XCO2DECQ", "μmol mol-1"));
+    columnHeaders.add(new ColumnHeader("pCO₂ In Water - Equilibrator Temperature", "PCO2IG02", "μatm"));
+    columnHeaders.add(new ColumnHeader("pCO₂ In Water", "PCO2TK02", "μatm"));
+    columnHeaders.add(new ColumnHeader("fCO₂ In Water", "FCO2XXXX", "μatm"));
+}
 
   public UnderwayMarinePco2Reducer(InstrumentVariable variable,
     Map<String, Float> variableAttributes, List<Measurement> allMeasurements,
@@ -190,5 +204,16 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   protected String[] getRequiredTypeStrings() {
     return new String[] {"Intake Temperature", "Salinity",
       "Equilibrator Temperature", "Equilibrator Pressure", "CO₂ in gas"};
+  }
+
+  @Override
+  public List<ColumnHeader> getColumnHeaders(boolean includeCalculationColumns) {
+
+    List<ColumnHeader> result = columnHeaders;
+    if (!includeCalculationColumns) {
+      result = columnHeaders.subList(7, columnHeaders.size());
+    }
+
+    return result;
   }
 }
