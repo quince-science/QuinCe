@@ -3,6 +3,7 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
@@ -128,20 +129,9 @@ public class SensorType implements Comparable<SensorType> {
   private boolean systemType = false;
 
   /**
-   * The units in which values for this sensor are stored
+   * The column header
    */
-  private String units = null;
-
-  /**
-   * The BODC P01 vocabulary code for the sensor
-   * (or a self-defined one if no P01 code is available)
-   */
-  private String columnCode = null;
-
-  /**
-   * The default column heading
-   */
-  private String columnHeading = null;
+  private ColumnHeader columnHeader;
 
   /**
    * Determines where this sensor type will be displayed in lists of
@@ -233,8 +223,7 @@ public class SensorType implements Comparable<SensorType> {
     this.diagnostic = false;
     this.systemType = true;
     this.displayOrder = displayOrder;
-    this.units = units;
-    this.columnCode = columnCode;
+    this.columnHeader = new ColumnHeader(name, columnCode, units);
   }
 
   /**
@@ -283,9 +272,7 @@ public class SensorType implements Comparable<SensorType> {
     this.internalCalibration = record.getBoolean(7);
     this.diagnostic = record.getBoolean(8);
     this.displayOrder = record.getInt(9);
-    this.units = record.getString(10);
-    this.columnCode = record.getString(11);
-    this.columnHeading = record.getString(12);
+    this.columnHeader = new ColumnHeader(record.getString(12), record.getString(11), record.getString(10));
   }
 
 
@@ -484,5 +471,9 @@ public class SensorType implements Comparable<SensorType> {
    */
   public boolean isSystemType() {
     return systemType;
+  }
+
+  public ColumnHeader getColumnHeader() {
+    return columnHeader;
   }
 }

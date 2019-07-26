@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
+import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
@@ -577,4 +578,6 @@ public abstract class DataReducer {
   protected Double kelvin(Double celsius) {
     return celsius + 273.15;
   }
+
+  public abstract List<ColumnHeader> getColumnHeaders(boolean includeCalculationColumns);
 }

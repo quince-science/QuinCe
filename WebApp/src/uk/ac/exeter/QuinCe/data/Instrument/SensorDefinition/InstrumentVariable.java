@@ -268,4 +268,17 @@ public class InstrumentVariable {
 
     return result;
   }
+
+  public static boolean sensorTypeRequired(List<InstrumentVariable> variables, SensorType sensorType) {
+    boolean result = false;
+
+    for (InstrumentVariable variable : variables) {
+      if (variable.requiredSensorTypes.contains(sensorType)) {
+        result = true;
+        break;
+      }
+    }
+
+    return result;
+  }
 }
