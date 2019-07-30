@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.PlotPage;
+package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -20,7 +20,10 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
-import uk.ac.exeter.QuinCe.web.PlotPage.Data.PlotPageData;
+import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
+import uk.ac.exeter.QuinCe.web.datasets.data.Field;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -53,7 +56,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
   /**
    * The table content for the current field set
    */
-  protected PlotPageData pageData;
+  protected DatasetMeasurementData pageData;
 
   /**
    * The data for the current view of the data table.
@@ -490,7 +493,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * Get the page data object
    * @return The page data object
    */
-  public PlotPageData getTableData() {
+  public DatasetMeasurementData getTableData() {
     return pageData;
   }
 
@@ -649,7 +652,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * Get the page data object
    * @return The page data
    */
-  public PlotPageData getData() {
+  public DatasetMeasurementData getData() {
     return pageData;
   }
 

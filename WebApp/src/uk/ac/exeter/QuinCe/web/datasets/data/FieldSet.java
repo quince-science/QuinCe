@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.PlotPage;
+package uk.ac.exeter.QuinCe.web.datasets.data;
 
 public class FieldSet implements Comparable<FieldSet> {
 
