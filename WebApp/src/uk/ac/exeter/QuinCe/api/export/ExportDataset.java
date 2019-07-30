@@ -19,7 +19,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategoryConfiguration
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.datasets.ExportBean;
+import uk.ac.exeter.QuinCe.web.datasets.export.ExportBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**

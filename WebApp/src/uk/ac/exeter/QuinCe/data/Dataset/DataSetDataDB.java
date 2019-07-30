@@ -53,8 +53,8 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.Variable;
 import uk.ac.exeter.QuinCe.web.VariableList;
-import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
-import uk.ac.exeter.QuinCe.web.PlotPage.Data.PlotPageData;
+import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -1495,7 +1495,7 @@ public class DataSetDataDB {
    * @throws RecordNotFoundException
    */
   public static void getQCSensorData(
-    DataSource dataSource, PlotPageData tableData, long datasetId, Instrument instrument, List<Long> sensorIDs)
+    DataSource dataSource, DatasetMeasurementData tableData, long datasetId, Instrument instrument, List<Long> sensorIDs)
       throws MissingParamException, DatabaseException, InvalidFlagException,
         RoutineException, SensorTypeNotFoundException, RecordNotFoundException {
 
@@ -1591,7 +1591,7 @@ public class DataSetDataDB {
   }
 
   public static void getDataReductionData(
-    DataSource dataSource, PlotPageData tableData, DataSet dataSet)
+    DataSource dataSource, DatasetMeasurementData tableData, DataSet dataSet)
       throws MissingParamException, DatabaseException, InvalidFlagException,
         RoutineException, VariableNotFoundException, DataReductionException {
 
