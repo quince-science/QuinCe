@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.datasets.ManualQC;
+package uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -8,12 +8,12 @@ import java.util.Map;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.PlotPage.Field;
-import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
-import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
-import uk.ac.exeter.QuinCe.web.PlotPage.Data.PlotPageData;
+import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
+import uk.ac.exeter.QuinCe.web.datasets.data.Field;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 
-public class ManualQCPageData extends PlotPageData {
+public class ManualQCPageData extends DatasetMeasurementData {
 
   private List<String> measurementRunTypes;
 

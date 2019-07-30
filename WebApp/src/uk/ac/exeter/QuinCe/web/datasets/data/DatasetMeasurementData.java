@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.PlotPage.Data;
+package uk.ac.exeter.QuinCe.web.datasets.data;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -22,11 +22,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.PlotPage.Field;
-import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
-import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
 
-public abstract class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<Field, FieldValue>> {
+public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, LinkedHashMap<Field, FieldValue>> {
 
   protected Instrument instrument;
 
@@ -44,7 +41,7 @@ public abstract class PlotPageData extends TreeMap<LocalDateTime, LinkedHashMap<
 
   private boolean filterInitialised = false;
 
-  public PlotPageData(Instrument instrument, FieldSets fieldSets) throws Exception {
+  public DatasetMeasurementData(Instrument instrument, FieldSets fieldSets) throws Exception {
     super();
     this.instrument = instrument;
     this.fieldSets = fieldSets;

@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.datasets.InternalCalibration;
+package uk.ac.exeter.QuinCe.web.datasets.plotPage.InternalCalibration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,11 +27,11 @@ import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
 import uk.ac.exeter.QuinCe.jobs.files.DataReductionJob;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.web.PlotPage.Field;
-import uk.ac.exeter.QuinCe.web.PlotPage.FieldSet;
-import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
-import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
-import uk.ac.exeter.QuinCe.web.PlotPage.PlotPageBean;
+import uk.ac.exeter.QuinCe.web.datasets.data.Field;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
+import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageBean;
 
 /**
  * Bean for handling review of calibration data
