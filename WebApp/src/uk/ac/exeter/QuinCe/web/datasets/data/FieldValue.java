@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.PlotPage;
+package uk.ac.exeter.QuinCe.web.datasets.data;
 
 import java.util.LinkedHashMap;
 import java.util.List;

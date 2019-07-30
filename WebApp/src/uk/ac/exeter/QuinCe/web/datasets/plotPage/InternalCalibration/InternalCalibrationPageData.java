@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.datasets.InternalCalibration;
+package uk.ac.exeter.QuinCe.web.datasets.plotPage.InternalCalibration;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -9,13 +9,13 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
-import uk.ac.exeter.QuinCe.web.PlotPage.Field;
-import uk.ac.exeter.QuinCe.web.PlotPage.FieldSets;
-import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
-import uk.ac.exeter.QuinCe.web.PlotPage.Data.PlotPageData;
+import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
+import uk.ac.exeter.QuinCe.web.datasets.data.Field;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
-public class InternalCalibrationPageData extends PlotPageData {
+public class InternalCalibrationPageData extends DatasetMeasurementData {
 
   private List<String> internalCalibrationRunTypes;
 

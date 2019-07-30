@@ -1,7 +1,7 @@
-package uk.ac.exeter.QuinCe.web.datasets.InternalCalibration;
+package uk.ac.exeter.QuinCe.web.datasets.plotPage.InternalCalibration;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
-import uk.ac.exeter.QuinCe.web.PlotPage.Field;
+import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 
 public class RunTypeField extends Field {
 
