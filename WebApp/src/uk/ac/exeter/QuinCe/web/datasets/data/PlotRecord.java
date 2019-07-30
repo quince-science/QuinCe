@@ -1,9 +1,8 @@
-package uk.ac.exeter.QuinCe.web.PlotPage.Data;
+package uk.ac.exeter.QuinCe.web.datasets.data;
 
 import org.primefaces.json.JSONArray;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.web.PlotPage.FieldValue;
 
 public class PlotRecord implements Comparable<PlotRecord> {
 

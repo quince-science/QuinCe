@@ -1,4 +1,4 @@
-package uk.ac.exeter.QuinCe.web.PlotPage.Data;
+package uk.ac.exeter.QuinCe.web.datasets.data;
 
 import java.util.ArrayList;
 import java.util.List;

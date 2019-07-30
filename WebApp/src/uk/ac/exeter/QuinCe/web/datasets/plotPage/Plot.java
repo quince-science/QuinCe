@@ -1,10 +1,11 @@
-package uk.ac.exeter.QuinCe.web.PlotPage;
+package uk.ac.exeter.QuinCe.web.datasets.plotPage;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.exeter.QuinCe.data.Dataset.GeoBounds;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
+import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 
 /**
  * Information about a plot on the Plot Page
