@@ -30,6 +30,18 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
     addField(FieldSet.BASE_FIELD_SET, rowIdField);
   }
 
+  public FieldSets(Field initialField) {
+    super();
+    fieldsByName = new HashMap<String, Field>();
+    fieldsById = new HashMap<Long, Field>();
+
+    addFieldSet(FieldSet.BASE_FIELD_SET);
+
+    // Add the row ID field to the base field set
+    rowIdField = new Field(Field.ROWID_FIELD_ID, initialField.getName());
+    addField(FieldSet.BASE_FIELD_SET, initialField);
+  }
+
   /**
    * Get all the field sets with their fields, optionally excluding the base field set
    * @param excludeBase
@@ -111,6 +123,10 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
     fieldsById.put(field.getId(), field);
   }
 
+  public FieldSet addFieldSet(long id, String name) {
+    return addFieldSet(id, name, false);
+  }
+
   public FieldSet addFieldSet(long id, String name, boolean defaultFieldSet) {
     FieldSet fieldSet = new FieldSet(id, name);
     addFieldSet(fieldSet);
@@ -161,7 +177,7 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
     return result;
   }
 
-  private List<String> getTableHeadingsList() {
+  public List<String> getTableHeadingsList() {
     List<String> headings = new ArrayList<String>();
 
     for (List<Field> fields : values()) {
