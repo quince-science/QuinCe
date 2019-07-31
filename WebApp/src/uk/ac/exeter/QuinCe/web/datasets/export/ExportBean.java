@@ -7,9 +7,7 @@ import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -26,19 +24,13 @@ import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
-import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -266,57 +258,17 @@ public class ExportBean extends BaseManagedBean {
    * @throws DataReductionException
    */
   private static byte[] getDatasetExport(Connection conn, Instrument instrument, DataSet dataset, ExportOption exportOption)
-      throws NoSuchColumnException, InvalidDataTypeException,
-        MissingParamException, DatabaseException, RecordNotFoundException,
-        MessageException, DataReductionException {
+      throws Exception {
 
 
-    // Work out which sensor types are going in the export file
-    SensorAssignments assignments = instrument.getSensorAssignments();
-    List<InstrumentVariable> variables = instrument.getVariables();
-    variables = variables
-      .stream()
-      .filter(v -> exportOption.getVariables().contains(v.getId()))
-      .collect(Collectors.toList());
-
-    List<SensorType> exportSensorTypes = new ArrayList<SensorType>();
-    exportSensorTypes.add(SensorType.LONGITUDE_SENSOR_TYPE);
-    exportSensorTypes.add(SensorType.LATITUDE_SENSOR_TYPE);
-
-    for (Map.Entry<SensorType, List<SensorAssignment>> entry : assignments.entrySet()) {
-
-      if (entry.getValue().size() > 0) {
-        if (exportOption.includeAllSensors() || InstrumentVariable.sensorTypeRequired(variables, entry.getKey())) {
-          exportSensorTypes.add(entry.getKey());
-        }
-      }
-    }
-
+    ExportData data = new ExportData(
+      ResourceManager.getInstance().getDBDataSource(), instrument, exportOption);
 
     StringBuilder output = new StringBuilder();
 
-    // Build the header
+    List<String> headers = data.getFieldSets().getTableHeadingsList();
 
-    // Timestamp is fixed
-    List<String> columnHeadings = new ArrayList<String>();
-    columnHeadings.add("Timestamp");
-
-    // TODO Depth is fixed and hard-coded here. It will be replaced (See #1284)
-    ColumnHeader depthHeader = new ColumnHeader("Depth", "DEPH", "m");
-    columnHeadings.add(depthHeader.makeColumnHeading(exportOption));
-
-    for (SensorType sensorType : exportSensorTypes) {
-      columnHeadings.add(sensorType.getColumnHeader().makeColumnHeading(exportOption));
-    }
-
-    for (InstrumentVariable variable : variables) {
-      for (ColumnHeader columnHeader : DataReducerFactory.getColumnHeaders(variable, exportOption)) {
-        columnHeadings.add(columnHeader.makeColumnHeading(exportOption));
-      }
-    }
-
-    output.append(StringUtils.collectionToDelimited(columnHeadings, exportOption.getSeparator()));
-    output.append('\n');
+    output.append(StringUtils.collectionToDelimited(headers, exportOption.getSeparator()));
 
 /*
 
