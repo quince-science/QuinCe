@@ -8,8 +8,6 @@ import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
-import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
@@ -100,18 +98,21 @@ public class DataReducerFactory {
     return result;
   }
 
-  public static TreeMap<Long, ColumnHeader> getColumnHeaders(InstrumentVariable variable,
-    ExportOption exportOption) throws DataReductionException {
+  public static TreeMap<Long, CalculationParameter> getCalculationParameters(InstrumentVariable variable,
+    boolean includeCalculationColumns) throws DataReductionException {
 
     DataReducer reducer = getSkeletonReducer(variable);
 
-    TreeMap<Long, ColumnHeader> result = new TreeMap<Long, ColumnHeader>();
+    TreeMap<Long, CalculationParameter> result = new TreeMap<Long, CalculationParameter>();
 
-    List<ColumnHeader> headers = reducer.getColumnHeaders(exportOption.includeCalculationColumns());
-    int i = -1;
-    for (ColumnHeader header : headers) {
-      i++;
-      result.put(makeId(variable, i), header);
+    List<CalculationParameter> parameters = reducer.getCalculationParameters();
+    for (int i = 0; i < parameters.size(); i++) {
+      long id = makeId(variable, i);
+
+      CalculationParameter parameter = parameters.get(i);
+      if (includeCalculationColumns || parameter.isResult()) {
+        result.put(id, parameter);
+      }
     }
 
     return result;

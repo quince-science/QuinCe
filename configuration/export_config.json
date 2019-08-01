@@ -20,6 +20,7 @@
     "allSensors": true,
   	"includeCalculationColumns": false,
   	"useColumnCodes": true,
-  	"includeUnits": false
+  	"includeUnits": false,
+  	"includeQCComments": false
   }
 ]
