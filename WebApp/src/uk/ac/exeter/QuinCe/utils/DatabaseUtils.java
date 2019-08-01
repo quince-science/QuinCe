@@ -7,10 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 
 /**
  * A utility class providing useful methods for dealing with
@@ -112,23 +109,6 @@ public class DatabaseUtils {
         // DO nothing
       }
     }
-  }
-
-  /**
-   * Retrieve a date/time from the database. For the actual data, all times are recorded in UTC,
-   * so this method ensures that the retrieved {@link java.util.Calendar} object is in UTC.
-   *
-   * @param records The results from which the date/time must be retrieved
-   * @param columnIndex The colum index of the date/time
-   * @return The date/time in UTC
-   * @throws SQLException If an error occurs while reading from the database record
-   * @see java.util.Calendar#getInstance(TimeZone, Locale)
-   */
-  @Deprecated
-  public static Calendar getUTCDateTime(ResultSet records, int columnIndex) throws SQLException {
-    Calendar result = DateTimeUtils.getUTCCalendarInstance();
-    result.setTimeInMillis(records.getTimestamp(columnIndex).getTime());
-    return result;
   }
 
   /**
