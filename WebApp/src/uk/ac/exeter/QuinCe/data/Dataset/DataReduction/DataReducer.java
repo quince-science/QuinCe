@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
@@ -15,7 +16,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
-import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
@@ -176,7 +176,12 @@ public abstract class DataReducer {
    * display order
    * @return The calculation parameters
    */
-  protected abstract List<String> getCalculationParameterNames();
+  protected List<String> getCalculationParameterNames() {
+    return getCalculationParameters()
+      .stream()
+      .map(cp -> cp.getName())
+      .collect(Collectors.toList());
+  }
 
   /**
    * Get the list of SensorTypes required by this data reducer. This takes
@@ -579,5 +584,5 @@ public abstract class DataReducer {
     return celsius + 273.15;
   }
 
-  public abstract List<ColumnHeader> getColumnHeaders(boolean includeCalculationColumns);
+  public abstract List<CalculationParameter> getCalculationParameters();
 }

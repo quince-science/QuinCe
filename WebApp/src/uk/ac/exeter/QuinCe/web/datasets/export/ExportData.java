@@ -11,6 +11,7 @@ import java.util.TreeMap;
 import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
@@ -76,18 +77,18 @@ public class ExportData extends ManualQCPageData {
     DataSource dataSource, Instrument instrument, ExportOption exportOption)
       throws Exception {
 
-    ExportField lonField = new ExportField(SensorType.LONGITUDE_SENSOR_TYPE, exportOption);
+    ExportField lonField = new ExportField(SensorType.LONGITUDE_SENSOR_TYPE, false, exportOption);
     fieldSets.addField(FieldSet.BASE_FIELD_SET, lonField);
     sensorTypeFields.put(SensorType.LONGITUDE_SENSOR_TYPE.getId(), lonField);
 
-    ExportField latField = new ExportField(SensorType.LATITUDE_SENSOR_TYPE, exportOption);
+    ExportField latField = new ExportField(SensorType.LATITUDE_SENSOR_TYPE, false, exportOption);
     fieldSets.addField(FieldSet.BASE_FIELD_SET, latField);
     sensorTypeFields.put(SensorType.LATITUDE_SENSOR_TYPE.getId(), latField);
 
     // TODO Depth is fixed for now. Will fix this when variable parameter support is fixed
     // (Issue #1284)
     ColumnHeader depthHeader = new ColumnHeader("Depth", "ADEPZZ01", "m");
-    depthField = new ExportField(depthHeader.hashCode(), depthHeader, exportOption);
+    depthField = new ExportField(depthHeader.hashCode(), depthHeader, false, exportOption);
     fieldSets.addField(FieldSet.BASE_FIELD_SET, depthField);
 
     // Sensors
@@ -115,7 +116,7 @@ public class ExportData extends ManualQCPageData {
 
     for (SensorType sensorType : exportSensorTypes) {
       if (!sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
-        ExportField field = new ExportField(sensorType, exportOption);
+        ExportField field = new ExportField(sensorType, true, exportOption);
         fieldSets.addField(sensorsFieldSet, field);
         sensorTypeFields.put(sensorType.getId(), field);
       }
@@ -125,11 +126,14 @@ public class ExportData extends ManualQCPageData {
     for (InstrumentVariable variable : variables) {
 
       FieldSet varFieldSet = fieldSets.addFieldSet(variable.getId(), variable.getName());
-      TreeMap<Long, ColumnHeader> variableHeaders =
-        DataReducerFactory.getColumnHeaders(variable, exportOption);
+      TreeMap<Long, CalculationParameter> parameters =
+        DataReducerFactory.getCalculationParameters(variable, exportOption.includeCalculationColumns());
 
-      for (Map.Entry<Long, ColumnHeader> entry : variableHeaders.entrySet()) {
-        ExportField field = new ExportField(entry.getKey(), entry.getValue(), exportOption);
+      for (Map.Entry<Long, CalculationParameter> entry : parameters.entrySet()) {
+
+        ExportField field = new ExportField(
+          entry.getKey(), entry.getValue().getColumnHeader(),
+          entry.getValue().isResult(), exportOption);
 
         fieldSets.addField(varFieldSet, field);
         variableFields.put(entry.getKey(), field);

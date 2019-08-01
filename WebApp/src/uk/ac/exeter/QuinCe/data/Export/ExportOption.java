@@ -64,6 +64,11 @@ public class ExportOption {
   private boolean includeUnits = true;
 
   /**
+   * Indicates whether QC comments should be included in the output
+   */
+  private boolean includeQCComments = true;
+
+  /**
    * Build an ExportOption object from a JSON string
    * @param index The index of the configuration in the export configuration file
    * @param json The JSON string defining the export option
@@ -201,6 +206,10 @@ public class ExportOption {
     if (json.has("includeUnits")) {
       includeUnits = json.getBoolean("includeUnits");
     }
+
+    if (json.has("includeQCComments")) {
+      includeQCComments = json.getBoolean("includeQCComments");
+    }
   }
 
   /**
@@ -247,5 +256,9 @@ public class ExportOption {
     }
 
     return result;
+  }
+
+  public boolean includeQCComments() {
+    return includeQCComments;
   }
 }

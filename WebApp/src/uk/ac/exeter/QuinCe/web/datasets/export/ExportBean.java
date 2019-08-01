@@ -7,9 +7,8 @@ import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -293,23 +292,55 @@ public class ExportBean extends BaseManagedBean {
     // Headers
     List<String> headers = new ArrayList<String>();
     headers.add("Date/Time");
-    headers.addAll(data.getFieldSets().getTableHeadingsList());
+
+    for (Field field : data.getFieldSets().getFields()) {
+      ExportField exportField = (ExportField) field;
+
+      String header = exportField.getName();
+      headers.add(header);
+      if (exportField.hasQC()) {
+        headers.add(header + " QC Flag");
+        if (exportOption.includeQCComments()) {
+          headers.add(header + " QC Comment");
+        }
+      }
+    }
+
     output.append(StringUtils.collectionToDelimited(headers, exportOption.getSeparator()));
     output.append('\n');
 
     for (LocalDateTime rowId : data.keySet()) {
-      LinkedHashMap<Field, FieldValue> row = data.get(rowId);
 
       output.append(DateTimeUtils.toIsoDate(rowId));
 
-      Iterator<FieldValue> valueIter = row.values().iterator();
-      while (valueIter.hasNext()) {
+      for (Map.Entry<Field, FieldValue> entry : data.get(rowId).entrySet()) {
+        ExportField field = (ExportField) entry.getKey();
+        FieldValue fieldValue = entry.getValue();
+
         output.append(exportOption.getSeparator());
-        FieldValue fieldValue = valueIter.next();
         if (null == fieldValue || fieldValue.isNaN()) {
           output.append(exportOption.getMissingValue());
         } else {
           output.append(numberFormatter.format(fieldValue.getValue()));
+        }
+
+
+        if (field.hasQC()) {
+          output.append(exportOption.getSeparator());
+          if (null == fieldValue) {
+            output.append(exportOption.getMissingValue());
+          } else {
+            output.append(fieldValue.getQcFlag().getWoceValue());
+          }
+
+          if (exportOption.includeQCComments()) {
+            output.append(exportOption.getSeparator());
+            if (null == fieldValue) {
+              output.append("");
+            } else {
+              output.append(StringUtils.makeCsvString(fieldValue.getQcComment()));
+            }
+          }
         }
       }
 

@@ -11,15 +11,19 @@ public class ExportField extends Field {
 
   private ExportOption exportOption;
 
-  public ExportField(SensorType sensorType, ExportOption exportOption) {
+  private boolean hasQC;
+
+  public ExportField(SensorType sensorType, boolean hasQC, ExportOption exportOption) {
     super(sensorType.getId(), sensorType.getName());
     this.columnHeader = sensorType.getColumnHeader();
     this.exportOption = exportOption;
+    this.hasQC = hasQC;
   }
 
-  public ExportField(long id, ColumnHeader header, ExportOption exportOption) {
+  public ExportField(long id, ColumnHeader header, boolean hasQC, ExportOption exportOption) {
     super(id, header.getHeading());
     this.columnHeader = header;
+    this.hasQC = hasQC;
     this.exportOption = exportOption;
   }
 
@@ -28,4 +32,7 @@ public class ExportField extends Field {
     return columnHeader.makeColumnHeading(exportOption);
   }
 
+  public boolean hasQC() {
+    return hasQC;
+  }
 }
