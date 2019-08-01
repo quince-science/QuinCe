@@ -21,7 +21,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentFileSet;
-import uk.ac.exeter.QuinCe.jobs.Job;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -49,12 +48,6 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * @see FileStore
  */
 public class DataFileDB {
-
-  /**
-   * Query to find a data file in the database by name and instrument ID
-   * @see #fileExists(DataSource, long, String)
-   */
-  private static final String FIND_FILE_QUERY = "SELECT id FROM data_file WHERE instrument_id = ? AND filename = ?";
 
   /**
    * Statement to add a data file to the database
@@ -461,49 +454,6 @@ public class DataFileDB {
   }
 
   /**
-   * Checks to see if a file with a given name and for a given instrument
-   * already exists in the system
-   * @param dataSource A data source
-   * @param instrumentID The instrument ID
-   * @param fileName The name of the file
-   * @return {@code true} if the file exists; {@code false} if it does not
-   * @throws MissingParamException If any of the parameters are missing
-   * @throws DatabaseException If an error occurs during the search
-   * @see #FIND_FILE_QUERY
-   */
-  @Deprecated
-  public static boolean fileExists(DataSource dataSource, long instrumentID, String fileName) throws MissingParamException, DatabaseException {
-
-    MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkPositive(instrumentID, "instrumentID");
-    MissingParam.checkMissing(fileName, "fileName");
-
-    boolean result = false;
-
-    Connection conn = null;
-    PreparedStatement stmt = null;
-    ResultSet records = null;
-
-    try {
-      conn = dataSource.getConnection();
-      stmt = conn.prepareStatement(FIND_FILE_QUERY);
-      stmt.setLong(1, instrumentID);
-      stmt.setString(2, fileName);
-      records = stmt.executeQuery();
-      result = records.next();
-
-    } catch (SQLException e) {
-      throw new DatabaseException("An error occurred while searching for an existing file", e);
-    } finally {
-      DatabaseUtils.closeResultSets(records);
-      DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
-    }
-
-    return result;
-  }
-
-  /**
    * Returns a list of all the files owned by a specific user. The list
    * can optionally be restricted by an instrument ID.
    * @param dataSource A data source
@@ -693,106 +643,6 @@ public class DataFileDB {
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
     }
-  }
-
-  /**
-   * Retrieves the database ID of the instrument with which the specified data file is associated.
-   * @param dataSource A data source
-   * @param fileId The database ID of the data file
-   * @return The database ID of the instrument
-   * @throws MissingParamException If any required parameters are missing
-   * @throws DatabaseException If a database error occurs
-   * @throws RecordNotFoundException If the specified data file does not exist
-   * @see #GET_INSTRUMENT_ID_QUERY
-   */
-  @Deprecated
-  public static long getInstrumentId(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-    // TODO Remove in the long run
-    return -1;
-  }
-
-  /**
-   * Specify the type of job that is currently being run (or queued to be run) on the specified file.
-   *
-   * The job is specified as a Job Code, so that it is not the specific {@link Job} object that
-   * is referenced, but the type of Job. These Job Codes are defined in the {@link FileInfo} class.
-   *
-   * @param conn A database connection
-   * @param fileId The database ID of the data file
-   * @param jobCode The Job Code of the job that is running (or will be run)
-   * @throws MissingParamException If any required parameters are missing
-   * @throws DatabaseException If a database error occurs
-   * @see FileInfo
-   * @see #SET_JOB_STATEMENT
-   */
-  @Deprecated
-  public static void setCurrentJob(Connection conn, long fileId, int jobCode) throws MissingParamException, DatabaseException {
-    // TODO remove
-  }
-
-  /**
-   * Set the delete flag on a data file. If set to {@code true}, this will
-   * indicate that the file should be deleted.
-   *
-   * <p>
-   *   Files that have their delete flag set will not appear in the system
-   *   as far as users are concerned. A background task will perform the actual deletion.
-   * </p>
-   * @param dataSource A data source
-   * @param fileId The database ID of the data file
-   * @param deleteFlag The delete flag
-   * @throws MissingParamException If any of the parameters are missing
-   * @throws DatabaseException If a database error occurs
-   * @throws RecordNotFoundException If the specified data file does not exist in the database
-   * @see #SET_DELETE_FLAG_STATEMENT
-   */
-  @Deprecated
-  public static void setDeleteFlag(DataSource dataSource, long fileId, boolean deleteFlag) throws MissingParamException, DatabaseException, RecordNotFoundException {
-  }
-
-  /**
-   * Get the delete flag for a data file.
-   * @param dataSource A data source
-   * @param fileId The database ID of the data file
-   * @return {@code true} if the file is marked for deletion; {@code false} if it is not
-   * @throws MissingParamException If any parameters are missing
-   * @throws DatabaseException If a database error occurs
-   * @throws RecordNotFoundException If the specified data file does not exist in the database
-   */
-  @Deprecated
-  public static boolean getDeleteFlag(DataSource dataSource, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-    // TODO remove
-    return false;
-  }
-
-
-  /**
-   * Get the delete flag for a data file.
-   * @param conn A database connection
-   * @param fileId The database ID of the data file
-   * @return {@code true} if the file is marked for deletion; {@code false} if it is not
-   * @throws MissingParamException If any parameters are missing
-   * @throws DatabaseException If a database error occurs
-   * @throws RecordNotFoundException If the specified data file does not exist in the database
-   * @see #GET_DELETE_FLAG_STATEMENT
-   */
-  @Deprecated
-  public static boolean getDeleteFlag(Connection conn, long fileId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-    return false;
-  }
-
-  /**
-   * Retrieves a list of all data files that have their delete flag set
-   * @param dataSource A data source
-   * @return The list of data files that have their delete flag set
-   * @throws MissingParamException If any required parameters are missing
-   * @throws DatabaseException If a database error occurs
-   * @see #GET_DELETE_FLAG_FILES_QUERY
-   */
-  @Deprecated
-  public static List<Long> getFilesWithDeleteFlag(DataSource dataSource) throws MissingParamException, DatabaseException {
-    // TODO Remove
-    return null;
   }
 
   /**
