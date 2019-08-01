@@ -175,6 +175,16 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
     return result;
   }
 
+  public List<Field> getFields() {
+    List<Field> result = new ArrayList<Field>();
+
+    for (List<Field> setFields : this.values()) {
+      result.addAll(setFields);
+    }
+
+    return result;
+  }
+
   public List<Long> getFieldIds(FieldSet fieldSet) {
     List<Long> result = new ArrayList<Long>(get(fieldSet).size());
 
