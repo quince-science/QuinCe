@@ -17,18 +17,18 @@ public class FieldValue {
   /**
    * The measured value
    */
-  private Double value;
+  protected Double value;
 
   /**
    * The QC flag - either the user QC flag, or if that is
    * NEEDS FLAG, the auto QC flag
    */
-  private Flag qcFlag;
+  protected Flag qcFlag;
 
   /**
    * Indicates whether the user must verify the automatic QC
    */
-  private boolean needsFlag;
+  protected boolean needsFlag;
 
   /**
    * The QC comment
@@ -87,6 +87,19 @@ public class FieldValue {
     }
 
     this.used = used;
+  }
+
+  /**
+   * Copy constructor
+   * @param init The source FieldValue
+   */
+  public FieldValue(FieldValue init) {
+    valueId = init.valueId;
+    value = init.value;
+    qcFlag = init.qcFlag;
+    needsFlag = init.needsFlag;
+    qcComment = init.qcComment;
+    used = init.used;
   }
 
   /**

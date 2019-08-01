@@ -584,4 +584,16 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
     return result;
   }
+
+  public List<Long> getFileColumnIDs() {
+    List<Long> ids = new ArrayList<Long>();
+
+    for (List<SensorAssignment> typeAssignments : values()) {
+      for (SensorAssignment assignment : typeAssignments) {
+        ids.add(assignment.getDatabaseId());
+      }
+    }
+
+    return ids;
+  }
 }

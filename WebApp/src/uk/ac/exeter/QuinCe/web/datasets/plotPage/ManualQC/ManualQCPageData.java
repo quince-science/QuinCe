@@ -15,7 +15,7 @@ import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 
 public class ManualQCPageData extends DatasetMeasurementData {
 
-  private List<String> measurementRunTypes;
+  protected List<String> measurementRunTypes;
 
   public ManualQCPageData(Instrument instrument, FieldSets fieldSets) throws Exception {
     super(instrument, fieldSets);
