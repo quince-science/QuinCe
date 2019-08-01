@@ -2,6 +2,9 @@ package uk.ac.exeter.QuinCe.web.html;
 
 import java.util.List;
 
+// TODO We can probably get rid of this class. We have better JSON tools now,
+//      and the two costants can move somewhere else.
+
 /**
  * Various HTML-related utilities and constants
  * @author Steve Jones

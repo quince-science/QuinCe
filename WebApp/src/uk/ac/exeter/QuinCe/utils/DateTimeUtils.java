@@ -1,19 +1,9 @@
 package uk.ac.exeter.QuinCe.utils;
 
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.SimpleTimeZone;
-import java.util.TimeZone;
-
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 /**
  * Miscellaneous date/time utilities
@@ -39,18 +29,6 @@ public class DateTimeUtils {
   public static final String DISPLAY_DATE_TIME_FORMAT = "uuuu-MM-dd HH:mm:ss";
 
   /**
-   * A formatter for generating date strings. The output format is
-   * {@code YYYY-MM-DD}.
-   */
-  private static SimpleDateFormat dateFormatter = null;
-
-  /**
-   * A formatter for generating date/time strings. The output format is {@code YYYY-MM-DD HH:mm:ss}.
-   */
-  @Deprecated
-  private static SimpleDateFormat dateTimeFormatter = null;
-
-  /**
    * A formatter for generating ISO format dates
    */
   private static java.time.format.DateTimeFormatter isoDateTimeFormatter = null;
@@ -60,15 +38,7 @@ public class DateTimeUtils {
    */
   private static java.time.format.DateTimeFormatter displayDateTimeFormatter = null;
 
-  /**
-   * A formatter for parsing date/time strings returned by SQL queries. The
-   * format is {@code yyyy-MM-dd HH:mm:ss.S}.
-   */
-  private static DateTimeFormatter sqlDateTimeFormatter = null;
-
   static {
-    dateTimeFormatter = new SimpleDateFormat(DISPLAY_DATE_TIME_FORMAT);
-    dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     isoDateTimeFormatter = java.time.format.DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
     displayDateTimeFormatter = java.time.format.DateTimeFormatter
         .ofPattern(DISPLAY_DATE_TIME_FORMAT).withZone(ZoneOffset.UTC);
@@ -87,68 +57,6 @@ public class DateTimeUtils {
   }
 
   /**
-   * Set the time of a {@link Calendar} object to midnight by truncation.
-   * This returns a new object - the original remains untouched.
-   *
-   * @param date The {@link Calendar} object to be set to midnight
-   * @return A copy of the {@link Calendar} object with the time set to midnight
-   */
-  @Deprecated
-  public static Calendar setMidnight(Calendar date) {
-    Calendar result = (Calendar) date.clone();
-    result.set(Calendar.HOUR_OF_DAY, 0);
-    result.set(Calendar.MINUTE, 0);
-    result.set(Calendar.SECOND, 0);
-    result.set(Calendar.MILLISECOND, 0);
-    return result;
-  }
-
-  /**
-   * Return the number of whole days between two dates
-   * @param firstDate The first date
-   * @param lastDate The second date
-   * @return The number of days' difference
-   */
-  @Deprecated
-  public static int getDaysBetween(Calendar firstDate, Calendar lastDate) {
-    long diffMillis = lastDate.getTimeInMillis() - firstDate.getTimeInMillis();
-    return (int) Math.floorDiv(diffMillis, MILLIS_PER_DAY);
-  }
-
-  /**
-   * Returns the number of seconds between two dates. If the second date is
-   * before the first date, the result will be negative.
-   * @param firstDate The first date
-   * @param lastDate The last date
-   * @return The number of seconds between the dates.
-   */
-  @Deprecated
-  public static int getSecondsBetween(Calendar firstDate, Calendar lastDate) {
-    long diffMillis = lastDate.getTimeInMillis() - firstDate.getTimeInMillis();
-    return (int) Math.floorDiv(diffMillis, 1000);
-  }
-
-  /**
-   * Format a date to YYYY-MM-dd format
-   * @param date The date
-   * @return The formatted date
-   */
-  @Deprecated
-  public static String formatDate(Calendar date) {
-    return dateFormatter.format(date.getTime());
-  }
-
-  /**
-   * Format a date/time to YYYY-MM-dd HH:mm:ss format
-   * @param dateTime The date/time
-   * @return The formatted date/time
-   */
-  @Deprecated
-  public static String formatDateTime(Date dateTime) {
-    return dateTimeFormatter.format(dateTime);
-  }
-
-  /**
    * Format a date/time to YYYY-MM-dd HH:mm:ss format
    * @param dateTime The date/time
    * @return The formatted date/time
@@ -156,83 +64,6 @@ public class DateTimeUtils {
   public static String formatDateTime(LocalDateTime dateTime) {
     return displayDateTimeFormatter.format(dateTime);
   }
-
-  /**
-   * Format a date/time to YYYY-MM-dd HH:mm:ss format
-   * @param dateTime The date/time
-   * @return The formatted date/time
-   */
-  @Deprecated
-  public static String formatDateTime(Calendar dateTime) {
-    return formatDateTime(dateTime.getTime());
-  }
-
-  /**
-   * Determines whether or not two dates are equal.
-   * The dates are compared to a resolution of one second (milliseconds are ignored).
-   * @param date1 The first date
-   * @param date2 The second date
-   * @return {@code true} if the dates are equal; {@code false} if they are different.
-   */
-  @Deprecated
-  public static boolean datesEqual(Calendar date1, Calendar date2) {
-
-    boolean equal = true;
-
-    if (date1.get(Calendar.YEAR) != date2.get(Calendar.YEAR)) {
-      equal = false;
-    } else if (date1.get(Calendar.MONTH) != date2.get(Calendar.MONTH)) {
-      equal = false;
-    } else if (date1.get(Calendar.DATE) != date2.get(Calendar.DATE)) {
-      equal = false;
-    } else if (date1.get(Calendar.HOUR_OF_DAY) != date2.get(Calendar.HOUR_OF_DAY)) {
-      equal = false;
-    } else if (date1.get(Calendar.MINUTE) != date2.get(Calendar.MINUTE)) {
-      equal = false;
-    } else if (date1.get(Calendar.SECOND) != date2.get(Calendar.SECOND)) {
-      equal = false;
-    }
-
-    return equal;
-
-  }
-
-  /**
-   * Get an instance of a {@link Calendar} object with a UTC time zone.
-   * The calendar object will be set to the current time, and can have its
-   * value updated as required.
-   *
-   * @return A {@link Calendar} object with the time zone set to UTC.
-   * @see Calendar#getInstance(TimeZone, Locale)
-   */
-  @Deprecated
-  public static Calendar getUTCCalendarInstance() {
-    return Calendar.getInstance(new SimpleTimeZone(0, "UTC"), Locale.ENGLISH);
-  }
-
-  /**
-   * Construct a {@link DateTime} object from a date/time string returned by an SQL query.
-   * @param dateTime The date/time string from the SQL query
-   * @return The {@link DateTime} object
-   * @throws InvalidDateTimeStringException If the date/time string cannot be parsed.
-   */
-  @Deprecated
-  public static DateTime makeDateTimeFromSql(String dateTime) throws InvalidDateTimeStringException {
-    if (null == sqlDateTimeFormatter) {
-      sqlDateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.S");
-    }
-
-    DateTime result = null;
-
-    try {
-      result = sqlDateTimeFormatter.parseDateTime(dateTime);
-    } catch (IllegalArgumentException e) {
-      throw new InvalidDateTimeStringException(dateTime);
-    }
-
-    return result;
-  }
-
 
   /**
    * Convert a UTC {@link LocalDateTime} to a {@code long}
