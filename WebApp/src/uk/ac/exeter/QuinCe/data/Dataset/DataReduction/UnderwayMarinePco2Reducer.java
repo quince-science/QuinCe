@@ -7,7 +7,6 @@ import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
@@ -26,32 +25,19 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
    */
   private static final double PASCALS_TO_ATMOSPHERES = 0.00000986923266716013;
 
-  private static List<String> calculationParameterNames;
-
-  private static List<ColumnHeader> columnHeaders;
+  private static List<CalculationParameter> calculationParameters;
 
   static {
-    calculationParameterNames = new ArrayList<String>(8);
-    calculationParameterNames.add("Equilibrator Pressure");
-    calculationParameterNames.add("ΔT");
-    calculationParameterNames.add("True Moisture");
-    calculationParameterNames.add("pH₂O");
-    calculationParameterNames.add("Dried CO₂");
-    calculationParameterNames.add("Calibrated CO₂");
-    calculationParameterNames.add("pCO₂ TE Wet");
-    calculationParameterNames.add("pCO₂ SST");
-    calculationParameterNames.add("fCO₂");
-
-    columnHeaders = new ArrayList<ColumnHeader>(7);
-    columnHeaders.add(new ColumnHeader("Equilibrator Pressure", "PRESEQ", "hPa"));
-    columnHeaders.add(new ColumnHeader("Water-Equilibrator Temperature Difference", "DELTAT", "°C"));
-    columnHeaders.add(new ColumnHeader("Marine True Moisture", "MXCO2CORR", "μmol mol-1"));
-    columnHeaders.add(new ColumnHeader("Marine Water Vapour Pressure", "RH2OX0EQ", "hPa"));
-    columnHeaders.add(new ColumnHeader("xCO₂ In Water - Dry Air", "XCO2WBDY", "μmol mol-1"));
-    columnHeaders.add(new ColumnHeader("xCO₂ In Water - Calibrated In Dry Air", "XCO2DECQ", "μmol mol-1"));
-    columnHeaders.add(new ColumnHeader("pCO₂ In Water - Equilibrator Temperature", "PCO2IG02", "μatm"));
-    columnHeaders.add(new ColumnHeader("pCO₂ In Water", "PCO2TK02", "μatm"));
-    columnHeaders.add(new ColumnHeader("fCO₂ In Water", "FCO2XXXX", "μatm"));
+    calculationParameters = new ArrayList<CalculationParameter>(8);
+    calculationParameters.add(new CalculationParameter("Equilibrator Pressure", "Equilibrator Pressure", "PRESEQ", "hPa", false));
+    calculationParameters.add(new CalculationParameter("ΔT", "Water-Equilibrator Temperature Difference", "DELTAT", "°C", false));
+    calculationParameters.add(new CalculationParameter("True Moisture", "Marine True Moisture", "MWMXRCORR", "μmol mol-1", false));
+    calculationParameters.add(new CalculationParameter("pH₂O", "Marine Water Vapour Pressure", "RH2OX0EQ", "hPa", false));
+    calculationParameters.add(new CalculationParameter("Dried CO₂", "xCO₂ In Water - Dry Air", "XCO2WBDY", "μmol mol-1", false));
+    calculationParameters.add(new CalculationParameter("Calibrated CO₂", "xCO₂ In Water - Calibrated In Dry Air", "XCO2DECQ", "μmol mol-1", false));
+    calculationParameters.add(new CalculationParameter("pCO₂ TE Wet", "pCO₂ In Water - Equilibrator Temperature", "PCO2IG02", "μatm", true));
+    calculationParameters.add(new CalculationParameter("pCO₂ SST", "pCO₂ In Water", "PCO2TK02", "μatm", true));
+    calculationParameters.add(new CalculationParameter("fCO₂", "fCO₂ In Water", "FCO2XXXX", "μatm", true));
 }
 
   public UnderwayMarinePco2Reducer(InstrumentVariable variable,
@@ -104,11 +90,6 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     record.put("pCO₂ TE Wet", pCo2TEWet);
     record.put("pCO₂ SST", pCO2SST);
     record.put("fCO₂", fCO2);
-  }
-
-  @Override
-  protected List<String> getCalculationParameterNames() {
-    return calculationParameterNames;
   }
 
   /**
@@ -207,13 +188,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
   }
 
   @Override
-  public List<ColumnHeader> getColumnHeaders(boolean includeCalculationColumns) {
-
-    List<ColumnHeader> result = columnHeaders;
-    if (!includeCalculationColumns) {
-      result = columnHeaders.subList(7, columnHeaders.size());
-    }
-
-    return result;
+  public List<CalculationParameter> getCalculationParameters() {
+    return calculationParameters;
   }
 }

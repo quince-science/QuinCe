@@ -7,7 +7,6 @@ import java.util.Set;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
-import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
@@ -27,28 +26,17 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
 
   private static final double MOLAR_MASS_AIR = 28.97e-3;
 
-  private static List<String> calculationParameterNames;
-
-  private static List<ColumnHeader> columnHeaders;
+  private static List<CalculationParameter> calculationParameters;
 
   static {
-    calculationParameterNames = new ArrayList<String>(7);
-    calculationParameterNames.add("True Moisture");
-    calculationParameterNames.add("Sea Level Pressure");
-    calculationParameterNames.add("pH₂O");
-    calculationParameterNames.add("Dried CO₂");
-    calculationParameterNames.add("Calibrated CO₂");
-    calculationParameterNames.add("pCO₂");
-    calculationParameterNames.add("fCO₂");
-
-    columnHeaders = new ArrayList<ColumnHeader>(7);
-    columnHeaders.add(new ColumnHeader("Atmosphere True Moisture", "AXCO2CORR", "μmol mol-1"));
-    columnHeaders.add(new ColumnHeader("Atmospheric Pressure At Sea Level", "CAPAZZ01", "hPa"));
-    columnHeaders.add(new ColumnHeader("Atmosphere Water Vapour Pressure", "RH2OX0EQ", "hPa"));
-    columnHeaders.add(new ColumnHeader("xCO₂ In Atmoshpere - Dry Air", "XCO2DRAT", "μmol mol-1"));
-    columnHeaders.add(new ColumnHeader("xCO₂ In Atmosphere - Calibrated In Dry Air", "XCO2DCMA", "μmol mol-1"));
-    columnHeaders.add(new ColumnHeader("pCO₂ In Atmosphere", "ACO2XXXX", "μatm"));
-    columnHeaders.add(new ColumnHeader("fCO₂ In Atmosphere", "FCO2WTAT", "μatm"));
+    calculationParameters = new ArrayList<CalculationParameter>(7);
+    calculationParameters.add(new CalculationParameter("True Moisture", "Atmosphere True Moisture", "AWMXRCORR", "μmol mol-1", false));
+    calculationParameters.add(new CalculationParameter("Sea Level Pressure", "Atmospheric Pressure At Sea Level", "CAPAZZ01", "hPa", false));
+    calculationParameters.add(new CalculationParameter("pH₂O", "Atmosphere Water Vapour Pressure", "RH2OX0EQ", "hPa", false));
+    calculationParameters.add(new CalculationParameter("Dried CO₂", "xCO₂ In Atmoshpere - Dry Air", "XCO2DRAT", "μmol mol-1", false));
+    calculationParameters.add(new CalculationParameter("Calibrated CO₂", "xCO₂ In Atmosphere - Calibrated In Dry Air", "XCO2DCMA", "μmol mol-1", false));
+    calculationParameters.add(new CalculationParameter("pCO₂", "pCO₂ In Atmosphere", "ACO2XXXX", "μatm", true));
+    calculationParameters.add(new CalculationParameter("fCO₂", "fCO₂ In Atmosphere", "FCO2WTAT", "μatm", true));
 }
 
   public UnderwayAtmosphericPco2Reducer(InstrumentVariable variable,
@@ -98,11 +86,6 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
     record.put("Calibrated CO₂", co2Calibrated);
     record.put("pCO₂", pCO2);
     record.put("fCO₂", fCO2);
-  }
-
-  @Override
-  protected List<String> getCalculationParameterNames() {
-    return calculationParameterNames;
   }
 
   private Double getSeaLevelAtmPressure(Double measuredPressure, Double intakeTemperature) {
@@ -172,13 +155,7 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
   }
 
   @Override
-  public List<ColumnHeader> getColumnHeaders(boolean includeCalculationColumns) {
-
-    List<ColumnHeader> result = columnHeaders;
-    if (!includeCalculationColumns) {
-      result = columnHeaders.subList(5, columnHeaders.size());
-    }
-
-    return result;
+  public List<CalculationParameter> getCalculationParameters() {
+    return calculationParameters;
   }
 }
