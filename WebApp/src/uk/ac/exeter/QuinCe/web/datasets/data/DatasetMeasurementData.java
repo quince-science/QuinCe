@@ -80,7 +80,7 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
    * @param rowId The table row
    * @param values The field values
    */
-  public void addValues(LocalDateTime rowId, Map<Field, FieldValue> values) {
+  public void addValues(LocalDateTime rowId, Map<Field, ? extends FieldValue> values) {
     if (!containsKey(rowId)) {
       put(rowId, fieldSets.generateFieldValuesMap());
     }
