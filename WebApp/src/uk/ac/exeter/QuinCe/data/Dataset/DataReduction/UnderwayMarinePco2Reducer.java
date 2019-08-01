@@ -43,7 +43,7 @@ public class UnderwayMarinePco2Reducer extends DataReducer {
     calculationParameterNames.add("fCO₂");
 
     columnHeaders = new ArrayList<ColumnHeader>(7);
-    columnHeaders.add(new ColumnHeader("Equilibrator Pressure", "PRESEQ", "°C"));
+    columnHeaders.add(new ColumnHeader("Equilibrator Pressure", "PRESEQ", "hPa"));
     columnHeaders.add(new ColumnHeader("Water-Equilibrator Temperature Difference", "DELTAT", "°C"));
     columnHeaders.add(new ColumnHeader("Marine True Moisture", "MXCO2CORR", "μmol mol-1"));
     columnHeaders.add(new ColumnHeader("Marine Water Vapour Pressure", "RH2OX0EQ", "hPa"));

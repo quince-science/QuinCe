@@ -5,7 +5,10 @@ import java.io.OutputStream;
 import java.math.RoundingMode;
 import java.sql.Connection;
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -15,6 +18,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.sql.DataSource;
 
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
@@ -24,12 +28,14 @@ import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
+import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -38,6 +44,8 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.datasets.data.Field;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 @ManagedBean
@@ -261,14 +269,52 @@ public class ExportBean extends BaseManagedBean {
       throws Exception {
 
 
-    ExportData data = new ExportData(
-      ResourceManager.getInstance().getDBDataSource(), instrument, exportOption);
+    DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
 
+    ExportData data = new ExportData(
+      dataSource, instrument, exportOption);
+
+    // Load sensor data
+    List<Long> fieldIds = new ArrayList<Long>();
+    fieldIds.add(FileDefinition.LONGITUDE_COLUMN_ID);
+    fieldIds.add(FileDefinition.LATITUDE_COLUMN_ID);
+    fieldIds.addAll(instrument.getSensorAssignments().getFileColumnIDs());
+
+    DataSetDataDB.getQCSensorData(dataSource, data,
+      dataset.getId(), instrument, fieldIds);
+
+    // Load data reduction data
+    DataSetDataDB.getDataReductionData(dataSource, data, dataset);
+
+
+    // Let's make some output
     StringBuilder output = new StringBuilder();
 
-    List<String> headers = data.getFieldSets().getTableHeadingsList();
-
+    // Headers
+    List<String> headers = new ArrayList<String>();
+    headers.add("Date/Time");
+    headers.addAll(data.getFieldSets().getTableHeadingsList());
     output.append(StringUtils.collectionToDelimited(headers, exportOption.getSeparator()));
+    output.append('\n');
+
+    for (LocalDateTime rowId : data.keySet()) {
+      LinkedHashMap<Field, FieldValue> row = data.get(rowId);
+
+      output.append(DateTimeUtils.toIsoDate(rowId));
+
+      Iterator<FieldValue> valueIter = row.values().iterator();
+      while (valueIter.hasNext()) {
+        output.append(exportOption.getSeparator());
+        FieldValue fieldValue = valueIter.next();
+        if (null == fieldValue || fieldValue.isNaN()) {
+          output.append(exportOption.getMissingValue());
+        } else {
+          output.append(numberFormatter.format(fieldValue.getValue()));
+        }
+      }
+
+      output.append('\n');
+    }
 
 /*
 
@@ -404,7 +450,6 @@ public class ExportBean extends BaseManagedBean {
     }
 */
 
-    System.out.println(output.toString());
     return output.toString().getBytes();
   }
 

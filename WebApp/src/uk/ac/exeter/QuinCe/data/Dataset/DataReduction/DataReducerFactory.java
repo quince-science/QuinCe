@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DateColumnGroupedSensorValues;
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
@@ -93,16 +94,30 @@ public class DataReducerFactory {
     int i = -1;
     for (String name : parameterNames) {
       i++;
-      result.put(name, variable.getId() * 1000 + i);
+      result.put(name, makeId(variable, i));
     }
 
     return result;
   }
 
-  public static List<ColumnHeader> getColumnHeaders(InstrumentVariable variable,
+  public static TreeMap<Long, ColumnHeader> getColumnHeaders(InstrumentVariable variable,
     ExportOption exportOption) throws DataReductionException {
 
     DataReducer reducer = getSkeletonReducer(variable);
-    return reducer.getColumnHeaders(exportOption.includeCalculationColumns());
+
+    TreeMap<Long, ColumnHeader> result = new TreeMap<Long, ColumnHeader>();
+
+    List<ColumnHeader> headers = reducer.getColumnHeaders(exportOption.includeCalculationColumns());
+    int i = -1;
+    for (ColumnHeader header : headers) {
+      i++;
+      result.put(makeId(variable, i), header);
+    }
+
+    return result;
+  }
+
+  private static long makeId(InstrumentVariable variable, int sequence) {
+    return variable.getId() * 10000 + sequence;
   }
 }

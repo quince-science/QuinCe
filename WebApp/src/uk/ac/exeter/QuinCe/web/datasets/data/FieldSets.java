@@ -30,6 +30,14 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
     addField(FieldSet.BASE_FIELD_SET, rowIdField);
   }
 
+  public FieldSets() {
+    super();
+    fieldsByName = new HashMap<String, Field>();
+    fieldsById = new HashMap<Long, Field>();
+
+    addFieldSet(FieldSet.BASE_FIELD_SET);
+  }
+
   public FieldSets(Field initialField) {
     super();
     fieldsByName = new HashMap<String, Field>();
