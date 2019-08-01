@@ -16,7 +16,6 @@ import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
 import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QuinCe.data.Calculation.CalculationDBFactory;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -600,8 +599,6 @@ public class DataSetDB {
   public static void deleteDataSet(Connection conn, DataSet dataSet) throws MissingParamException, DatabaseException {
 
     // Delete all related data
-    CalculationDBFactory.getCalculationDB().deleteDatasetCalculationData(conn, dataSet);
-    CalibrationDataDB.deleteDatasetData(conn, dataSet);
     DataSetDB.deleteDatasetData(conn, dataSet);
 
     boolean currentAutoCommitStatus = false;
