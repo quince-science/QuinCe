@@ -73,8 +73,8 @@ public class NoEmptyStringList extends ArrayList<String> {
   private static List<String> filterCollection(Collection<? extends String> c) {
     return c
       .stream()
-      .filter(e -> isValid(e))
-      .map(e -> e.trim())
+      .filter(NoEmptyStringList::isValid)
+      .map(String::trim)
       .collect(Collectors.toList());
   }
 }

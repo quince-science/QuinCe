@@ -124,8 +124,6 @@ public class ManualQcBean extends PlotPageBean {
       List<LocalDateTime> times = getSelectedRowsList();
       List<FieldValue> updateValues = new ArrayList<FieldValue>(times.size());
 
-      //times.stream().map(x -> updateValues.add(pageData.getValue(x, selectedColumn)));
-
       for (LocalDateTime time : times) {
         updateValues.add(pageData.getValue(time, selectedColumn));
       }
