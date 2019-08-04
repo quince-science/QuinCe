@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +8,7 @@ import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.utils.NoEmptyStringList;
 
 public class DataReductionRecord {
 
@@ -35,7 +35,7 @@ public class DataReductionRecord {
   /**
    * QC Message
    */
-  private List<String> qcMessages;
+  private NoEmptyStringList qcMessages;
 
   /**
    * Create an empty record for a given measurement
@@ -47,7 +47,7 @@ public class DataReductionRecord {
 
     this.calculationValues = new HashMap<String, Double>();
     this.qcFlag = Flag.ASSUMED_GOOD;
-    this.qcMessages = new ArrayList<String>();
+    this.qcMessages = new NoEmptyStringList();
   }
 
   /**
@@ -60,7 +60,7 @@ public class DataReductionRecord {
       qcMessages.addAll(messages);
     } else if (flag.moreSignificantThan(qcFlag)) {
       qcFlag = flag;
-      qcMessages = messages;
+      qcMessages = new NoEmptyStringList(messages);
     }
   }
 
