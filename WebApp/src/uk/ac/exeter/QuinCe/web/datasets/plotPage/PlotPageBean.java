@@ -298,7 +298,10 @@ public abstract class PlotPageBean extends BaseManagedBean {
    */
   public List<LocalDateTime> getSelectedRowsList() {
     List<Long> rowLongs = StringUtils.delimitedToLongList(selectedRows);
-    return rowLongs.stream().map(x -> DateTimeUtils.longToDate(x)).collect(Collectors.toList());
+    return rowLongs
+      .stream()
+      .map(DateTimeUtils::longToDate)
+      .collect(Collectors.toList());
   }
 
   public int getSelectedColumn() {

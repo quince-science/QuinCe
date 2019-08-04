@@ -16,6 +16,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentStub;
 import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.User.LoginBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
@@ -409,7 +410,7 @@ public abstract class BaseManagedBean {
   protected List<Long> getInstrumentVariableIDs() {
     return getCurrentInstrument().getVariables()
       .stream()
-      .map(v -> v.getId())
+      .map(InstrumentVariable::getId)
       .collect(Collectors.toList());
   }
 }
