@@ -179,7 +179,7 @@ public abstract class DataReducer {
   protected List<String> getCalculationParameterNames() {
     return getCalculationParameters()
       .stream()
-      .map(cp -> cp.getName())
+      .map(CalculationParameter::getName)
       .collect(Collectors.toList());
   }
 

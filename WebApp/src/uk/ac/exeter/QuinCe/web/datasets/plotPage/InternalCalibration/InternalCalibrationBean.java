@@ -199,7 +199,7 @@ public class InternalCalibrationBean extends PlotPageBean {
 
       List<Long> fieldIds = calibratedColumns
         .stream()
-        .mapToLong(f -> f.getColumnId())
+        .mapToLong(FileColumn::getColumnId)
         .boxed()
         .collect(Collectors.toList());
 
