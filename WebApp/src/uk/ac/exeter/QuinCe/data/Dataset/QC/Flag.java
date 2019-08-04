@@ -321,12 +321,16 @@ public class Flag implements Comparable<Flag> {
    * @return {@code true} if this flag is more significant than the supplied flag; {@code false} if it is not.
    */
   public boolean moreSignificantThan(Flag flag) {
-    boolean result = true;
+    boolean result = false;
 
     // NEEDED Flag is always most significant
     if (null == flag) {
       result = true;
-    } else if (!this.equals(Flag.NEEDED)) {
+    } else if (flag.equals(Flag.NEEDED)) {
+      result = false;
+    } else if (this.equals(Flag.NEEDED)) {
+      result = true;
+    } else {
       result = (compareTo(flag) > 0);
     }
 
