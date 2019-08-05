@@ -13,8 +13,6 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
-import uk.ac.exeter.QCRoutines.config.ColumnConfig;
-import uk.ac.exeter.QCRoutines.config.ConfigException;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.QCRoutinesConfiguration;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
@@ -54,11 +52,6 @@ public class ResourceManager implements ServletContextListener {
    */
   private Properties configuration;
 
-  /**
-   * The column configuration used by the QC routines
-   */
-  private ColumnConfig columnConfig;
-
   private SensorsConfiguration sensorsConfiguration;
 
   private RunTypeCategoryConfiguration runTypeCategoryConfiguration;
@@ -92,14 +85,6 @@ public class ResourceManager implements ServletContextListener {
       JobThreadPool.initialise(1);
     } catch (InvalidThreadCountException e) {
       // Do nothing for now
-    }
-
-    // Initialise the column config
-    try {
-      ColumnConfig.init(configuration.getProperty("columns.configfile"));
-      columnConfig = ColumnConfig.getInstance();
-    } catch (ConfigException e) {
-      throw new RuntimeException("Could not initialise data column configuration", e);
     }
 
     // Initialise the sensors configuration
@@ -156,14 +141,6 @@ public class ResourceManager implements ServletContextListener {
    */
   public Properties getConfig() {
     return configuration;
-  }
-
-  /**
-   * Retrieve the column configuration for the QC routines
-   * @return The column configuration
-   */
-  public ColumnConfig getColumnConfig() {
-    return columnConfig;
   }
 
   public SensorsConfiguration getSensorsConfiguration() {
