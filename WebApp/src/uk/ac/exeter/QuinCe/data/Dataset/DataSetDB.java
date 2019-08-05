@@ -688,12 +688,11 @@ public class DataSetDB {
     int recordCount = DataSetDataDB.getMeasurementIds(conn, dataset.getId()).size();
     result.put("records", recordCount);
 
-    List<Double> bounds = DataSetDataDB.getDataBounds(conn, dataset);
     JSONObject boundsObject = new JSONObject();
-    boundsObject.put("west", bounds.get(0));
-    boundsObject.put("south", bounds.get(1));
-    boundsObject.put("east", bounds.get(2));
-    boundsObject.put("north", bounds.get(3));
+    boundsObject.put("south", dataset.getMinLat());
+    boundsObject.put("west", dataset.getMinLon());
+    boundsObject.put("east", dataset.getMaxLon());
+    boundsObject.put("north", dataset.getMaxLat());
     result.put("bounds", boundsObject);
 
     return result;
