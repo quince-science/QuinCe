@@ -50,7 +50,6 @@ public class ResourceManagerTest extends BaseTest {
     // are available
     assertNotNull(ResourceManager.getInstance().getConfig(), "Application Configuration not available from ResourceManager");
     assertNotNull(ResourceManager.getInstance().getDBDataSource(), "DataSource not available from ResourceManager");
-    assertNotNull(ResourceManager.getInstance().getColumnConfig(), "ColumnConfig not available from ResourceManager");
     assertNotNull(ResourceManager.getInstance().getSensorsConfiguration(), "SensorsConfiguration not available from ResourceManager");
     assertNotNull(ResourceManager.getInstance().getRunTypeCategoryConfiguration(), "RunTypeCategoryConfiguration not available from ResourceManager");
   }
