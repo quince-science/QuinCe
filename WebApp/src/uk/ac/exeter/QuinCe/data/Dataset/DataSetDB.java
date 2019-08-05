@@ -56,12 +56,6 @@ public class DataSetDB {
       + "messages_json = ?, min_longitude = ?, max_longitude = ?, " // 12
       + "min_latitude = ?, max_latitude = ? WHERE id = ?"; // 15
 
-  /**
-   * Statement to delete all records for a given dataset
-   */
-  private static final String DELETE_DATASET_DATA_QUERY = "DELETE FROM dataset_data "
-      + "WHERE dataset_id = ?";
-
    /**
    * Statement to delete a dataset record
    */
@@ -453,37 +447,6 @@ public class DataSetDB {
   }
 
   /**
-   * Delete all records for a given data set
-   *
-   * @param conn
-   *          A database connection
-   * @param dataSet
-   *          The data set
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws DatabaseException
-   *           If a database error occurs
-   */
-  public static void deleteDatasetData(Connection conn, DataSet dataSet) throws MissingParamException, DatabaseException {
-
-    MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkMissing(dataSet, "dataSet");
-
-    PreparedStatement stmt = null;
-
-    try {
-      stmt = conn.prepareStatement(DELETE_DATASET_DATA_QUERY);
-      stmt.setLong(1, dataSet.getId());
-
-      stmt.execute();
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while deleting dataset data", e);
-    } finally {
-      DatabaseUtils.closeStatements(stmt);
-    }
-  }
-
-  /**
    * Update a dataset in the database
    * @param conn A database connection
    * @param dataSet The updated dataset
@@ -598,8 +561,7 @@ public class DataSetDB {
    */
   public static void deleteDataSet(Connection conn, DataSet dataSet) throws MissingParamException, DatabaseException {
 
-    // Delete all related data
-    DataSetDB.deleteDatasetData(conn, dataSet);
+    // TODO Delete all related data. To be fixed in issue #1289
 
     boolean currentAutoCommitStatus = false;
     PreparedStatement stmt = null;
@@ -685,7 +647,7 @@ public class DataSetDB {
     result.put("platformCode", instrument.getPlatformCode());
     result.put("nrt", dataset.isNrt());
 
-    int recordCount = DataSetDataDB.getMeasurementIds(conn, dataset.getId()).size();
+    int recordCount = DataSetDataDB.getMeasurementCount(conn, dataset.getId());
     result.put("records", recordCount);
 
     JSONObject boundsObject = new JSONObject();
