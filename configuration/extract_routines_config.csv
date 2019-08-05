@@ -1,4 +1,0 @@
-#Class,Option,Option....
-Monotonic,fatal
-RangeCheck,Longitude,-180,360,-180,360,-180,360
-RangeCheck,Latitude,-90,90,-90,90,-90,90
