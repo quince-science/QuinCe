@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
 import java.lang.reflect.Type;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -44,15 +43,13 @@ import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
-import uk.ac.exeter.QuinCe.web.Variable;
-import uk.ac.exeter.QuinCe.web.VariableList;
 import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Class for handling database queries related to the
- * {@code dataset_data} table
+ * Class for handling database queries related to
+ * dataset data
  * @author Steve Jones
  *
  */
@@ -77,18 +74,6 @@ public class DataSetDataDB {
    * Field set name for diagnostic values
    */
   public static final String DIAGNOSTICS_FIELDSET_NAME = "Diagnostics";
-
-  /**
-   * Query to get all measurements IDs for a data set
-   */
-  private static final String GET_ALL_MEASUREMENT_IDS_QUERY = "SELECT id FROM dataset_data WHERE dataset_id = ? ORDER BY date ASC";
-
-  /**
-   * Query to get the geographical bounds of a data set
-   */
-  private static final String GET_BOUNDS_QUERY = "SELECT"
-      + " MIN(longitude), MIN(latitude), MAX(longitude), MAX(latitude)"
-      + " FROM dataset_data WHERE dataset_id = ?";
 
   /**
    * Statement to store a sensor value
@@ -185,242 +170,8 @@ public class DataSetDataDB {
     + "user_qc_flag = ?, user_qc_message = ? "
     + "WHERE id = ?";
 
-  /**
-   * Get the IDs of all the measurements for a given data set
-   * @param dataSource A data source
-   * @param datasetId The dataset ID
-   * @return The measurement IDs
-     * @throws DatabaseException If a database error occurs
-     * @throws MissingParamException If any required parameters are missing
-   * @throws RecordNotFoundException If no measurements are found
-   */
-  public static List<Long> getMeasurementIds(DataSource dataSource, long datasetId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-    MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkZeroPositive(datasetId, "datasetId");
-
-    List<Long> result = null;
-    Connection conn = null;
-
-    try {
-      conn = dataSource.getConnection();
-      result = getMeasurementIds(conn, datasetId);
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while getting measurement IDs", e);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
-    }
-
-    return result;
-  }
-
-  /**
-   * Get the IDs of all the measurements for a given data set
-   * @param conn A database connection
-   * @param datasetId The dataset ID
-   * @return The measurement IDs
-     * @throws DatabaseException If a database error occurs
-     * @throws MissingParamException If any required parameters are missing
-   * @throws RecordNotFoundException If no measurements are found
-   */
-  public static List<Long> getMeasurementIds(Connection conn, long datasetId) throws MissingParamException, DatabaseException, RecordNotFoundException {
-
-    MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkZeroPositive(datasetId, "datasetId");
-
-    PreparedStatement stmt = null;
-    ResultSet records = null;
-
-    List<Long> ids = new ArrayList<Long>();
-
-    try {
-      stmt = conn.prepareStatement(GET_ALL_MEASUREMENT_IDS_QUERY);
-      stmt.setLong(1, datasetId);
-
-      records = stmt.executeQuery();
-
-      while(records.next()) {
-        ids.add(records.getLong(1));
-      }
-
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while getting measurement IDs", e);
-    } finally {
-      DatabaseUtils.closeResultSets(records);
-      DatabaseUtils.closeStatements(stmt);
-    }
-
-    if (ids.size() == 0) {
-      throw new RecordNotFoundException("No records found for dataset " + datasetId);
-    }
-
-    return ids;
-  }
-
-  /**
-   * Get the list of columns names for a raw dataset record
-   * @param dataSource A data source
-   * @param dataSet The data set
-   * @return The column names
-     * @throws DatabaseException If a database error occurs
-     * @throws MissingParamException If any required parameters are missing
-     * @throws InstrumentException If the instrument details cannot be retrieved
-     * @throws RecordNotFoundException If the instrument for the data set does not exist
-   */
-  public static List<String> getDatasetDataColumnNames(DataSource dataSource,
-    DataSet dataSet) throws MissingParamException, DatabaseException,
-    InstrumentException, RecordNotFoundException {
-
-    MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkMissing(dataSet, "dataSet");
-
-    List<String> result = new ArrayList<String>();
-
-    SensorsConfiguration sensorConfig =
-      ResourceManager.getInstance().getSensorsConfiguration();
-    Connection conn = null;
-    ResultSet columns = null;
-
-    try {
-      conn = dataSource.getConnection();
-
-      ResourceManager resourceManager = ResourceManager.getInstance();
-      Instrument instrument = InstrumentDB.getInstrument(conn,
-        dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(),
-        resourceManager.getRunTypeCategoryConfiguration());
-
-      SensorAssignments sensorAssignments = instrument.getSensorAssignments();
-
-      DatabaseMetaData metadata = conn.getMetaData();
-      columns = metadata.getColumns(null, null, "dataset_data", null);
-
-      while (columns.next()) {
-        String columnName = columns.getString(4);
-
-        switch (columnName) {
-        case "id": {
-          result.add("ID");
-          break;
-        }
-        case "date": {
-          result.add("Date");
-          break;
-        }
-        case "longitude": {
-          result.add("Longitude");
-          break;
-        }
-        case "latitude": {
-          result.add("Latitude");
-          break;
-        }
-        case "dataset_id":
-        case "run_type": {
-          // Ignored
-          break;
-        }
-        default: {
-          // Sensor value columns
-          for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-            if (sensorAssignments.getAssignmentCount(sensorType) > 0) {
-              if (columnName.equals(sensorType.getDatabaseFieldName())) {
-                result.add(sensorType.getName());
-                break;
-              }
-            }
-          }
-
-          break;
-        }
-        }
-      }
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while getting column names", e);
-    } finally {
-      DatabaseUtils.closeResultSets(columns);
-      DatabaseUtils.closeConnection(conn);
-    }
-
-    return result;
-  }
-
-  public static void populateVariableList(DataSource dataSource, DataSet dataSet,
-    VariableList variables) throws MissingParamException, DatabaseException,
-    RecordNotFoundException, InstrumentException {
-
-    MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkMissing(dataSet, "dataSet");
-    MissingParam.checkMissing(variables, "variables", true);
-
-    SensorsConfiguration sensorConfig =
-      ResourceManager.getInstance().getSensorsConfiguration();
-    Connection conn = null;
-    ResultSet columns = null;
-
-    try {
-      conn = dataSource.getConnection();
-
-      ResourceManager resourceManager = ResourceManager.getInstance();
-      Instrument instrument = InstrumentDB.getInstrument(conn,
-        dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(),
-        resourceManager.getRunTypeCategoryConfiguration());
-
-      SensorAssignments sensorAssignments = instrument.getSensorAssignments();
-
-      DatabaseMetaData metadata = conn.getMetaData();
-      columns = metadata.getColumns(null, null, "dataset_data", null);
-
-      while (columns.next()) {
-        String columnName = columns.getString(4);
-
-        switch (columnName) {
-        case "id": {
-          // Ignored
-          break;
-        }
-        case "date": {
-          variables.addVariable("Date/Time",
-            new Variable(Variable.TYPE_BASE, "Date/Time", "date"));
-          break;
-        }
-        case "longitude": {
-          variables.addVariable("Longitude",
-            new Variable(Variable.TYPE_BASE, "Longitude", "longitude"));
-          break;
-        }
-        case "latitude": {
-          variables.addVariable("Latitude",
-            new Variable(Variable.TYPE_BASE, "Latitude", "latitude"));
-          break;
-        }
-        case "dataset_id":
-        case "run_type": {
-          // Ignored
-          break;
-        }
-        default: {
-          // Sensor value columns
-          for (SensorType sensorType : sensorConfig.getSensorTypes()) {
-            if (sensorAssignments.getAssignmentCount(sensorType) > 0) {
-              if (columnName.equals(sensorType.getDatabaseFieldName())) {
-                // TODO Eventually this will use the sensor name as the label, and the sensor type as the group
-                variables.addVariable(sensorType.getGroup(),
-                  new Variable(Variable.TYPE_SENSOR, sensorType.getName(), columnName));
-                break;
-              }
-            }
-          }
-
-          break;
-        }
-        }
-      }
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while getting column names", e);
-    } finally {
-      DatabaseUtils.closeResultSets(columns);
-      DatabaseUtils.closeConnection(conn);
-    }
-  }
+  private static final String GET_MEASUREMENT_COUNT_QUERY = "SELECT "
+    + "COUNT(*) FROM measurements WHERE dataset_id = ?";
 
   /**
    * Take a list of fields, and return those which come from the dataset data.
@@ -501,82 +252,6 @@ public class DataSetDataDB {
       extractDatasetFields(conn, dataset, fieldList);
 
     return (detectedDatasetField.size() > 0);
-  }
-
-  /**
-   * Get the geographical bounds of a data set
-   * @param dataSource A data source
-   * @param dataset The dataset
-   * @return The bounds
-     * @throws DatabaseException If a database error occurs
-     * @throws MissingParamException If any required parameters are missing
-   */
-  public static List<Double> getDataBounds(DataSource dataSource, DataSet dataset)
-    throws MissingParamException, DatabaseException {
-
-    MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkMissing(dataset, "dataset");
-
-    List<Double> result = null;
-
-    Connection conn = null;
-    try {
-      conn = dataSource.getConnection();
-      result = getDataBounds(conn, dataset);
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while getting dataset bounds", e);
-    } finally {
-      DatabaseUtils.closeConnection(conn);
-    }
-
-    return result;
-  }
-
-  /**
-   * Get the geographical bounds of a data set
-   * @param dataSource A data source
-   * @param dataset The dataset
-   * @return The bounds
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
-   */
-  public static List<Double> getDataBounds(Connection conn, DataSet dataset)
-    throws MissingParamException, DatabaseException {
-
-    MissingParam.checkMissing(conn, "conn");
-    MissingParam.checkMissing(dataset, "dataset");
-
-    List<Double> result = new ArrayList<Double>(6);
-
-    PreparedStatement stmt = null;
-    ResultSet records = null;
-
-    try {
-      stmt = conn.prepareStatement(GET_BOUNDS_QUERY);
-      stmt.setLong(1, dataset.getId());
-
-      records = stmt.executeQuery();
-
-      records.next();
-      result.add(records.getDouble(1)); // West
-      result.add(records.getDouble(2)); // South
-      result.add(records.getDouble(3)); // East
-      result.add(records.getDouble(4)); // North
-
-      // Mid point
-      result.add((records.getDouble(3) - records.getDouble(1)) / 2 +
-        records.getDouble(1));
-      result.add((records.getDouble(4) - records.getDouble(2)) / 2 +
-        records.getDouble(2));
-
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while getting dataset bounds", e);
-    } finally {
-      DatabaseUtils.closeResultSets(records);
-      DatabaseUtils.closeStatements(stmt);
-    }
-
-    return result;
   }
 
   /**
@@ -853,6 +528,43 @@ public class DataSetDataDB {
       DatabaseUtils.closeResultSets(createdKeys);
       DatabaseUtils.closeStatements(stmt);
     }
+  }
+
+  /**
+   * Get the number of measurements in a dataset
+   * @param conn
+   * @param datasetId
+   * @return
+   * @throws MissingParamException
+   * @throws DatabaseException
+   */
+  public static int getMeasurementCount(Connection conn, long datasetId)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(datasetId, "datasetId");
+
+    int result = -1;
+
+    PreparedStatement stmt = null;
+    ResultSet count = null;
+
+    try {
+      stmt = conn.prepareStatement(GET_MEASUREMENT_COUNT_QUERY);
+      stmt.setLong(1, datasetId);
+
+      count = stmt.executeQuery();
+      if (count.next()) {
+        result = count.getInt(1);
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting measurement count", e);
+    } finally {
+      DatabaseUtils.closeResultSets(count);
+      DatabaseUtils.closeStatements(stmt);
+    }
+
+    return result;
   }
 
   /**
