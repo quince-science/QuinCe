@@ -1,1 +1,1 @@
-INSERT INTO sensor_types (name, vargroup, parent) VALUES ('Test Orphan', 'Group', null)
+INSERT INTO sensor_types (name, vargroup, parent, display_order) VALUES ('Test Orphan', 'Group', null, 1000);
