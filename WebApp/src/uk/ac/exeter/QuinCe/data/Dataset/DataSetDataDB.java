@@ -171,7 +171,7 @@ public class DataSetDataDB {
     + "WHERE id = ?";
 
   private static final String GET_MEASUREMENT_COUNT_QUERY = "SELECT "
-    + "COUNT(*) FROM measurements WHERE dataset_id = ?";
+    + "COUNT(DISTINCT(date)) FROM measurements WHERE dataset_id = ?";
 
   /**
    * Take a list of fields, and return those which come from the dataset data.
