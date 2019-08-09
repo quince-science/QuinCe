@@ -564,7 +564,7 @@ public class DataSetDB {
     // TODO Delete all related data. To be fixed in issue #1289
 
     boolean currentAutoCommitStatus = false;
-    PreparedStatement stmt = null;
+    PreparedStatement datasetStatement = null;
 
     try {
       currentAutoCommitStatus = conn.getAutoCommit();
@@ -572,9 +572,12 @@ public class DataSetDB {
         conn.setAutoCommit(false);
       }
 
-      stmt = conn.prepareStatement(DELETE_DATASET_QUERY);
-      stmt.setLong(1, dataSet.getId());
-      stmt.execute();
+      DataSetDataDB.deleteMeasurements(conn, dataSet.getId());
+      DataSetDataDB.deleteSensorValues(conn, dataSet.getId());
+
+      datasetStatement = conn.prepareStatement(DELETE_DATASET_QUERY);
+      datasetStatement.setLong(1, dataSet.getId());
+      datasetStatement.execute();
 
       if (currentAutoCommitStatus) {
         // Return the connection to its non-transaction state
@@ -591,7 +594,7 @@ public class DataSetDB {
         }
       }
     } finally {
-      DatabaseUtils.closeStatements(stmt);
+      DatabaseUtils.closeStatements(datasetStatement);
     }
   }
 
