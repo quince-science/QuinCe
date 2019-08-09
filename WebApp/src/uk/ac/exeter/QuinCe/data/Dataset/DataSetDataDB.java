@@ -715,18 +715,42 @@ public class DataSetDataDB {
    * @throws MissingParamException If any required parameters are missing
    */
   public static void deleteMeasurements(DataSource dataSource, long datasetId)
-    throws MissingParamException, DatabaseException {
+    throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
 
     Connection conn = null;
+
+    try {
+      conn = dataSource.getConnection();
+      deleteMeasurements(conn, datasetId);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while deleting measurements", e);
+    } finally {
+      DatabaseUtils.closeConnection(conn);
+    }
+  }
+
+  /**
+   * Remove all measurement details from a data set, ready for them to be
+   * recalculated
+   * @param dataSource A data source
+   * @param datasetId The database ID of the data set
+   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException If any required parameters are missing
+   */
+  public static void deleteMeasurements(Connection conn, long datasetId)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(datasetId, "datasetId");
+
     PreparedStatement delDataReductionStmt = null;
     PreparedStatement delMeasurementValuesStmt = null;
     PreparedStatement delMeasurementsStmt = null;
 
     try {
-      conn = dataSource.getConnection();
       conn.setAutoCommit(false);
 
       delDataReductionStmt = conn.prepareStatement(
@@ -750,7 +774,6 @@ public class DataSetDataDB {
     } finally {
       DatabaseUtils.closeStatements(delMeasurementsStmt,
         delMeasurementValuesStmt, delDataReductionStmt);
-      DatabaseUtils.closeConnection(conn);
     }
   }
 
