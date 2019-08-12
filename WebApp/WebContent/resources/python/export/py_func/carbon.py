@@ -7,190 +7,150 @@ import traceback
 import logging
 import hashlib
 import datetime
-from py_func.meta_handling import get_hashsum, get_file_from_zip
+import sqlite3
+import datetime
+from zipfile import ZipFile
+import io
 
-'''
-Carbon Portal submission process
+#from py_func.meta_handling import get_hashsum, get_file_from_zip
+'''Carbon Portal submission process
+
 1. post metadata package describing the data-object (JSON object)
-   - post potential supporting document
-2. post dataobject
+   - post potential supporting document (not yet supported)
+2. put dataobject
 '''
+OBJ_SPEC_URI = {}
+OBJ_SPEC_URI['L0'] = 'http://meta.icos-cp.eu/resources/cpmeta/otcL0DataObject'
+OBJ_SPEC_URI['L1'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL1Product' 
+CP_DB = 'database_carbon_portal.db'
 
- #auth_cookie = None #resets authentication cookie everytime the carbon.py is imported to the main script, e.g. start of main-script?
+META_URL = 'https://meta.icos-cp.eu/upload'
+OBJECT_BASE_URL = 'https://data.icos-cp.eu/objects/'
+META_CONTENT_TYPE = 'application/json'
+OBJECT_CONTENT_TYPE = 'text/csv'
 
+def export_file_to_cp(manifest, platform, config, filename, platform_code,dataset_zip,index, auth_cookie,level,L0_hashsums=[]):
+  ''' Upload routie for NRT data files
 
-def carbon_portal_routine(file,manifest,config):  # NOT IN USE
+  Uploads both metadata and data object
+  OBJ_SPEC_URI is Carbon Portal URI for identifying data object
 
-  #retireving authentication cookit
-  auth_cookie = get_auth_cookie(config)
-
-
-
-  # FOR EACH L0 DATASET
-  # CREATE METADATA, UPLOAD METADATA, UPLOAD DATA
-  # CREATE LIST OF UPLOADED DATASETS
-
-  # FOR EACH L1 DATASET
-  # LINK TO L0 DATASETS
-  # CREATE METADATA, UPLOAD METADATA, UPLOAD DATA
-
-
-  #creating metadata-package
-  metadata = build_metadata_package(file,manifest,station)
-
-  #posting metadata-package
-  url = 'https://meta.icos-cp.eu/upload'
-  logging.debug(f'Uploading metadata-package')
-  
-  resp = post_object(url,metadata,'application/json',auth_cookie)
-  
-  logging.debug(f'Upload response: {resp}')
+  L0_hashsums is list of L0 hashsums associated with L1 object, only applicable 
+  for L1 exports. Might get deprecated.
 
   '''
-  <data object id> is either base64url- or hex-encoded representation of the first 18 bytes of a SHA-256 hashsum of the data object's contents. 
-  The complete 32-byte representations are also accepted. 
-  You will have obtained the data object id by the time you have completed the first step of the 2-step upload procedure. 
-  '''
-  #posting data-object
-  data = 'file'.encode('utf-8') #Binary contents of file. #open file, read bytes.
-  obj_spec_uri = '' #Ask Oleg, same as meta: objectSpecification?
-  nRows = ''
-  url = 'https://data.icos-cp.eu/tryingest?specUri=<' + obj_spec_uri + '>&nRows=<' + nRows + '>'
-  content_type = ''
-  logging.debug(f'Uploading data-object')
+  logging.info(f'Processing {level} file: {filename}')
   
-  resp = post_object(url,data,content_type,auth_cookie)
-  
-  logging.debug(f'Upload response: {resp}')
-
-
-def upload_L0(manifest, platform, config, filenames, platform_code,dataset_zip, auth_cookie):
-
-  for index, filename in enumerate(filenames):
-    logging.debug('L0 file:', filename)
-
-    file = get_file_from_zip(dataset_zip,filename)
-    hashsum = get_hashsum(file)  
-
-    #create metadata package
-    L0_meta = build_metadata_package(file, manifest, platform[platform_code], index, hashsum)
-    logging.debug(f'L0 meta type: {type(L0_meta)}')
-    logging.debug(f'L0_meta {L0_meta}')
-
-    #upload metadata package
-    #posting metadata-object
-    url = 'https://meta.icos-cp.eu/upload'
-    content_type = 'application/json'
-    logging.debug(f'Uploading data-object')
-
-    resp = post_object(url,L0_meta,auth_cookie,content_type)
-  
-    logging.debug(f'Upload response: {resp}')
-
-
-    #upload data-file
-    #posting data-object
-    data = file.encode('utf-8') #Binary contents of file. #open file, read bytes.
-    #obj_spec_uri = '' #Ask Oleg, same as meta: objectSpecification?
-    data_object_id = hashsum
-    nRows = manifest['manifest']['metadata']['records']
-    url = 'https://data.icos-cp.eu/tryingest?specUri=<' + obj_spec_uri + '>&nRows=<' + nRows + '>'
-    #url = 'https://data.icos-cp.eu/objects/<' + data_object_id + '>'
-    content_type = 'text/csv'
-    logging.debug(f'Uploading data-object')
-  
-    resp = post_object(url,data,auth_cookie,content_type)
-  
-    logging.debug(f'Upload response: {resp}')
-
-
-def upload_L1(manifest, platform, config, filename, platform_code,dataset_zip,index, cookie):
-
   file = get_file_from_zip(dataset_zip,filename)
+  hashsum = get_hashsum(file)  
+
+  start_date = datetime.datetime.strptime(
+    manifest['manifest']['metadata']['startdate'],
+    '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y%m%d')
+  NRT_set = (manifest['manifest']['metadata']['platformCode']
+   + '_NRT_' + start_date + '.csv')
+  
+  if 'L1' in level:
+    export_filename = NRT_set
+  else:
+    export_filename = os.path.split(file)[-1]
+  #sql_investigate returns old hashsum if filename exists, but hashsum doesn't match.
+  already_exported = sql_investigate(
+    export_filename, hashsum,filename,level,NRT_set)
+
+  if 'EXISTS' in already_exported: return hashsum 
+  elif 'NEW' not in already_exported: is_next_version = already_exported #old hashsum
+  else: is_next_version = None
+
+  meta = build_metadata_package(
+    file, manifest, platform[platform_code],index, hashsum, 
+    OBJ_SPEC_URI[level], level, L0_hashsums, is_next_version, export_filename)
+
+  try:
+    upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI[level])
+  except Exception as e:
+    logging.error(f'Failed to upload: {filename}, \n Exception: {e}')
+    return ''
+
+  sql_commit(export_filename, hashsum,filename,level,NRT_set)
+
+  return hashsum
+
+def upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI):
+  '''  upload functionality for exporting metadata and data object to Carbon Portal  '''
+  logging.debug(f'cookie: cpauthToken={auth_cookie}')
+
+  #posting metadata-json
+  logging.info(f'POSTING {file} metadata-object to {META_URL}')
+  resp = send_object(
+    META_URL,meta.encode('utf-8'),auth_cookie,META_CONTENT_TYPE,'POST')
+  logging.debug(f'{file} metadata upload response: {resp}')
+
+  #putting data-object
+  #tryingest_url = ('https://data.icos-cp.eu/tryingest?specUri=' + urllib.parse.quote(OBJ_SPEC_URI, safe='') + '&nRows=' + str(manifest['manifest']['metadata']['records']))
+  object_url = OBJECT_BASE_URL + hashsum
+  logging.info(f'PUTTING data-object: {file} to {object_url}')
+  
+  with open(file) as f: 
+    data = f.read().encode('utf-8')
+    resp = send_object(object_url,data,auth_cookie,OBJECT_CONTENT_TYPE,'PUT')
+    logging.debug(f'{file} Upload response: {resp}')
 
 
-  #create metadata package
-  L1_meta = build_metadata_package(file, manifest, platform[platform_code],index)
+def build_metadata_package(file,manifest,platform,index,hashsum, obj_spec, level,L0_hashsums, is_next_version, export_filename):
+  '''  Builds metadata-package, step 1 of 2 Carbon Portal upload process.
 
-
-  #upload metadata package
-
-  #upload data-file
-
-
-
-def build_metadata_package(file,manifest,platform,index,hashsum):
+  https://github.com/ICOS-Carbon-Portal/meta#registering-the-metadata-package
+  returns metadata json object
   '''
-  Builds metadata-package, step 1 of 2 Carbon Portal upload process.
-  Description: https://github.com/ICOS-Carbon-Portal/meta#registering-the-metadata-package
-
-  "submitterId": "OTC",
-  "hashSum":  from file,
-  "fileName": from file "L0test.csv",
-  "specificInfo": {
-  "station": from lookup table "https://meta.icos-cp.eu/ontologies/cpmeta/OS",
-  "acquisitionInterval": {
-    "start": from file "2008-09-01T00:00:00.000Z",
-    "stop": from file "2008-12-31T23:59:59.999Z"
-  },
-  "production": {
-    "creator": "http://meta.icos-cp.eu/resources/people/Lynn_Hazan",
-    "contributors": [],
-      "hostOrganization": "http://meta.icos-cp.eu/resources/organizations/ATC",
-      "comment": "free text",
-      "creationDate": "2017-12-01T12:00:00.000Z"
-    }
-    "nRows": from file (number of data_rows; total_rows-header_rows),
-  },
-  "objectSpecification": "http://meta.icos-cp.eu/resources/cpmeta/atcCo2NrtDataObject",
-  "isNextVersionOf": Optional "MAp1ftC4mItuNXH3xmAe7jZk",
-  "preExistingDoi": Optional "10.1594/PANGAEA.865618"
-
-  '''
-
   logging.debug('Constructing metadata-package')
-
   creation_date = datetime.datetime.utcnow().isoformat()+'Z'
-  #now = datetime.datetime.now()
-  #creation_date = now.strftime('%Y-%m-%d')
 
-  #creating dictonary/json structure
+  # generic metadata
   meta= {
-  'submitterID': 'http://meta.icos-cp.eu/resources/people/Benjamin_Pfeil', # 'provided by CP', #ask Oleg, # Should probably be a general OTC ID
-  'hashsum':hashsum,
-  'filename':manifest['manifest']['raw'][index]['filename'],
+  'submitterId': 'OTC',
+  'hashSum':hashsum,
   'specificInfo':{
-  'station': platform['cp_url'], #cp url: manifest['manifest']['metadata']['platformCode'],
-  'nRows':manifest['manifest']['metadata']['records'],
-  'acquisitionInterval': {
-  'start':manifest['manifest']['raw'][index]['startDate'],
-  'stop': manifest['manifest']['raw'][index]['endDate']
+  'station': platform['cp_url'],
   },
-  'production': {
-  'creator': 'http://meta.icos-cp.eu/resources/organizations/OTC',
-  'contributors': '[]',
-  'creationDate': creation_date
-  },
-  },
-  'objectSpecification': 'URI', #ask Oleg
-  'comment': [manifest['manifest']['metadata']['quince_information']]
+  'objectSpecification': obj_spec
   }
+
+  # L1 specific metadata
+  if 'L1' in level:
+    meta['fileName'] = export_filename
+    meta['specificInfo']['nRows'] = manifest['manifest']['metadata']['records']
+    meta['specificInfo']['production'] = (
+      {'creator': 'http://meta.icos-cp.eu/resources/organizations/OTC',
+      'contributors': [],
+      'creationDate': creation_date,
+      'comment': ''.join(
+        [manifest['manifest']['metadata']['quince_information']])})
+    # meta['specificInfo']['production']['sources'] = L0_hashsums
+
+    if is_next_version is not None:
+      meta['isNextVersionOf'] = is_next_version
+
+  # L0 specific metadata
+  if 'L0' in level:
+    meta['specificInfo']['acquisitionInterval'] = ({
+      'start':manifest['manifest']['raw'][index]['startDate'],
+      'stop': manifest['manifest']['raw'][index]['endDate']})
+    meta['fileName'] = os.path.split(file)[-1]
+
 
   #converting from dictionary to json-object
   meta_JSON = json.dumps(meta) 
+
   parsed = json.loads(meta_JSON);  
-  logging.debug(f'metadata-package: {json.dumps(parsed, indent = 4)}')
-  logging.debug(f'meta_JSON type: {type(meta_JSON)}')
+  logging.debug(
+    f'metadata-package: {type(meta_JSON)}\n{json.dumps(parsed, indent = 4)}')
 
   return meta_JSON
 
 
-
 def get_hashsum(filename):
-  '''
-  creates a 256 hashsum corresponding to input file.
-  returns: hashsum 
-  '''
+  ''' returns a 256 hashsum corresponding to input file. '''
   logging.info(
     'Generating hashsum for datafile {:s}'
     .format(filename))
@@ -198,38 +158,22 @@ def get_hashsum(filename):
   hashsum = hashlib.sha256(content.encode('utf-8')).hexdigest()
   return hashsum
 
-def post_object(url,data,auth_cookie,content_type):
-  '''
-  http-posts data-object to url with header denoting content-type and authentication cookie
+def send_object(url,data,auth_cookie,content_type,method):
+  '''  http-posts/puts data-object to url with content-type and auth_cookie  '''
 
-  '''
-  # data = json.dumps(metadata_filename) #transforming dictionary-object to json-object
-  # content_type = 'application/json'
-
-  headers = { 'Content-Type': content_type , 'Cookie': auth_cookie,  }
-  req = urllib.request.Request(url, data=data.encode('utf-8'), headers=headers, method='POST')
-
-  handlers = [ 
-    urllib.request.HTTPHandler(), 
-    urllib.request.HTTPSHandler()
-    ]
-  opener = urllib.request.build_opener(*handlers)
-
-  response = opener.open(req)
-
-  #response = opener.error(req)
-
-  logging.debug('Post response:',str(response.read()))
-  return response.read()
-
-
+  headers = {'Content-Type':content_type,'Cookie':'cpauthToken=' + auth_cookie,}
+  req = urllib.request.Request(url, data=data, headers=headers, method=method)
+  try:
+    response = urllib.request.urlopen(req)
+    logging.debug(f'Post response: {response.read()}')
+    return response.read()
+  except Exception as e:
+    logging.debug(e.code)
+    logging.debug(e.read())
+    return None
 
 def get_auth_cookie(config):   
-  '''
-  Retrives authentication cookie from Carbon Portal. 
-  authentication_Values:  Login credentials
-  returns:  authentication cookie string 
-  '''
+  '''   Returns authentication cookie from Carbon Portal.   '''
   logging.info('Obtaining authentication cookie')
 
   auth_url = config['CARBON']['auth_url']
@@ -260,60 +204,72 @@ def get_auth_cookie(config):
       logging.debug('No cookie obtained')
   return None
 
-  # def cp_init(dataset_name,destination,dataset_zip,config_carbon):
-  #   ''' 
-  #   Initiates contact with Carbon Portal. Sends login information, hashsum 
-  #   and retrieves authentication cookie from Carbon Portal.
-  #   '''
-  #   auth_cookie = get_new_auth_cookie(config_carbon)
-  #   filename = dataset_name + '/dataset/ICOS OTC/' + destination
-  #   hashsum = get_hashsum(dataset_zip,filename)
-  #   logging.info('Sending hashsum and filename to CP')
+def sql_investigate(export_filename, hashsum,filename,level,NRT_set):
+  '''  Checks the sql database for identical filenames and hashsums
+  returns 'exists', 'new', old_hashsum if 'update' and 'error' if failure. 
+  '''
+  c = create_connection(CP_DB)
 
-  
+  c.execute("SELECT hashsum FROM cp_export WHERE export_filename=? ",
+    [export_filename])
+  filename_exists = c.fetchone() 
+  # fetchone fetches first(only) result from query if present, fetches hashsum if filename exists
+  try:
+    if filename_exists: 
+      if filename_exists[0] == hashsum:
+        logging.debug(f'{filename} already exported')
+        return 'EXISTS'
+      else:
+        return filename_exists[0] #old_hashsum
+    else:
+      return 'NEW'
+  except Exception as e:
+    logging.error(f'Checking database failed:  {filename} ', exc_info=True)
+    return 'ERROR'
 
-  #     #check hashsum
 
-  #     #... if hashsum already exists; abort loop over dataset  
-  #       # Report to quince that dataset exist, check that raw data matches(?)
+def sql_commit(export_filename, hashsum,filename,level,NRT_set):
+  '''  Updates existing entries or inserts new entries after export.  '''
+
+  today = datetime.datetime.now().strftime('%Y-%m-%d')
+  c = create_connection(CP_DB)
+
+  try:
+    filename_exists = c.fetchone() 
+    if filename_exists:
+      if filename_exists[0] == hashsum:
+        logging.info(f'Update to {filename}')
+        c.execute("UPDATE cp_export SET \
+          hashsum=?,export_date=? WHERE filename = ?",\
+          (hashsum, today, filename))
+        conn.commit()
     
-  #     #check filename
-  #     #... if filname already exists; communicate that this is updated 
-  #     # version, upload new version with new hashsum
-  #       # isNextVersionOf = PID
+      else:
+        c.execute("INSERT INTO cp_export \
+          (export_filename,hashsum,filename,level,NRT_set,export_date) \
+          VALUES (?,?,?,?,?,?)",
+           (export_filename, hashsum, filename, level, NRT_set, today))
+        conn.commit()
+  except Exception as e:
+    logging.error(f'Adding/Updating database failed: {filename}', exc_info=True)
+    return 'ERROR'
 
-  #   response = 'temp'
-  #   return response, auth_cookie
- 
-  # def upload_data(filename, hashsum, auth_cookie):   
-  #   '''
-  #   uploads metadata to Carbon Portal
-  #   error 401 :  authentication cookie has expired
-  #   filePath: path to file to be uploaded
-  #   auth_cookie: authentication cookie to use for communication with Carbon portal
-  #   return: http response
-  #   '''
-  #   #Constructing and running request
-  #   data = json.dumps(metadata_filename) #transforming dictionary-object to json-object
-  #   headers = { 'Content-Type': 'application/json' , 'Cookie': auth_cookie }
-  #   req = urllib.request.Request(metadata_url, data=data, headers=headers)
-  #   response = opener.open(req)
-  #   return response.read()
+def create_connection(CP_DB):
+  ''' creates connection and database if not already created '''
+  conn = sqlite3.connect(CP_DB)
+  c = conn.cursor()
+  c.execute(''' CREATE TABLE IF NOT EXISTS cp_export (
+              export_filename TEXT PRIMARY KEY,
+              hashsum TEXT NOT NULL UNIQUE,
+              filename TEXT NOT NULL UNIQUE,
+              level TEXT,
+              NRT_set TEXT,
+              export_date TEXT 
+              )''')
+  return c
 
-  # def send_L0_to_cp(meta_L0,file_L0,hashsum,auth_cookie):
-  #   logging.info(
-  #     'Sending metadata and L0 dataset {:s} to Carbon Portal'
-  #     .format(file_L0))
-  #   response = 'temp'      
-  #   #response = upload_data(data,hashsum,auth_cookie)
-
-  #   return response
-
-  # def send_L2_to_cp(meta_L2,file_L2,hashsum,auth_cookie):
-  #   logging.info(
-  #     'Sending metadata and L2 dataset {:s} to Carbon Portal'
-  #     .format(file_L2))
-  #   response = 'temp'      
-  #   #response = upload_data(data,hashsum,auth_cookie)
-
-  #   return response
+def get_file_from_zip(zip_folder,filename):
+  ''' opens zip folder and returns file '''
+  with ZipFile(io.BytesIO(zip_folder),'r') as zip: 
+    file = zip.extract(filename, path='tmp')
+  return file
