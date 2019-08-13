@@ -39,11 +39,12 @@ public class UnderwayAtmosphericPco2Reducer extends DataReducer {
     calculationParameters.add(new CalculationParameter("fCO₂", "fCO₂ In Atmosphere", "FCO2WTAT", "μatm", true));
 }
 
-  public UnderwayAtmosphericPco2Reducer(InstrumentVariable variable,
+  public UnderwayAtmosphericPco2Reducer(InstrumentVariable variable, boolean nrt,
     Map<String, Float> variableAttributes, List<Measurement> allMeasurements,
     DateColumnGroupedSensorValues groupedSensorValues, CalibrationSet calibrationSet) {
 
-    super(variable, variableAttributes, allMeasurements, groupedSensorValues, calibrationSet);
+    super(variable, nrt, variableAttributes, allMeasurements,
+      groupedSensorValues, calibrationSet);
   }
 
   @Override

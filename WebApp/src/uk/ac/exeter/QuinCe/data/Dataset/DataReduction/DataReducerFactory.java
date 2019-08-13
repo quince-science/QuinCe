@@ -27,8 +27,8 @@ public class DataReducerFactory {
    */
   public static DataReducer getReducer(
       Connection conn, Instrument instrument, InstrumentVariable variable,
-      Map<String, Float> variableAttributes, CalibrationSet calibrationSet,
-      List<Measurement> allMeasurements,
+      boolean nrt, Map<String, Float> variableAttributes,
+      CalibrationSet calibrationSet, List<Measurement> allMeasurements,
       DateColumnGroupedSensorValues groupedSensorValues)
       throws DataReductionException {
 
@@ -37,11 +37,11 @@ public class DataReducerFactory {
     try {
       switch (variable.getName()) {
       case "Underway Marine pCO₂": {
-        reducer = new UnderwayMarinePco2Reducer(variable, variableAttributes, allMeasurements, groupedSensorValues, calibrationSet);
+        reducer = new UnderwayMarinePco2Reducer(variable, nrt, variableAttributes, allMeasurements, groupedSensorValues, calibrationSet);
         break;
       }
       case "Underway Atmospheric pCO₂": {
-        reducer = new UnderwayAtmosphericPco2Reducer(variable, variableAttributes, allMeasurements, groupedSensorValues, calibrationSet);
+        reducer = new UnderwayAtmosphericPco2Reducer(variable, nrt, variableAttributes, allMeasurements, groupedSensorValues, calibrationSet);
         break;
       }
       default: {
@@ -61,11 +61,11 @@ public class DataReducerFactory {
 
     switch (variable.getName()) {
     case "Underway Marine pCO₂": {
-      reducer = new UnderwayMarinePco2Reducer(variable, null, null, null, null);
+      reducer = new UnderwayMarinePco2Reducer(variable, false, null, null, null, null);
       break;
     }
     case "Underway Atmospheric pCO₂": {
-      reducer = new UnderwayAtmosphericPco2Reducer(variable, null, null, null, null);
+      reducer = new UnderwayAtmosphericPco2Reducer(variable, false, null, null, null, null);
       break;
     }
     default: {
