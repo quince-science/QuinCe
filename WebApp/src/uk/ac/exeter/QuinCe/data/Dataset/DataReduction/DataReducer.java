@@ -44,6 +44,11 @@ public abstract class DataReducer {
   protected InstrumentVariable variable;
 
   /**
+   * Indicates whether or not we are processing an NRT dataset
+   */
+  private boolean nrt;
+
+  /**
    * The variable attributes
    */
   protected Map<String, Float> variableAttributes;
@@ -73,12 +78,13 @@ public abstract class DataReducer {
    */
   private HashMap<String, LocalDateTime> nextSearchTimes;
 
-  public DataReducer(InstrumentVariable variable,
+  public DataReducer(InstrumentVariable variable, boolean nrt,
     Map<String, Float> variableAttributes, List<Measurement> allMeasurements,
       DateColumnGroupedSensorValues groupedSensorValues,
       CalibrationSet calibrationSet) {
 
     this.variable = variable;
+    this.nrt = nrt;
     this.variableAttributes = variableAttributes;
     this.allMeasurements = allMeasurements;
     this.groupedSensorValues = groupedSensorValues;
@@ -568,7 +574,7 @@ public abstract class DataReducer {
     for (SensorType sensorType : getRequiredSensorTypes(instrumentAssignments)) {
       Flag cascadeFlag;
       CalculationValue value = sensorValues.get(sensorType);
-      if (value.flagNeeded()) {
+      if (!nrt && value.flagNeeded()) {
         cascadeFlag = Flag.NEEDED;
       } else {
         cascadeFlag = variable.getCascade(sensorType, value.getQCFlag(), instrumentAssignments);
