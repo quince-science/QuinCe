@@ -1415,8 +1415,8 @@ function enablePlotSelect(index) {
   // TODO This works by messing with the CSS, because the version
   // of PrimeFaces we're using doesn't work properly.
   // Sort it out when we upgrade.
-  
-  if (!nrt()) { 
+
+  if (!nrt()) {
     PF('plot' + index + 'SelectMode').buttons.eq(1).removeClass('ui-state-disabled');
   }
 }
