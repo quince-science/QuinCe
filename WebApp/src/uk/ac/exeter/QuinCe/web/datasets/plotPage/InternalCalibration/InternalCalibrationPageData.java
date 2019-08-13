@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -21,8 +22,8 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
 
   private Map<Long, FileColumn> columns;
 
-  public InternalCalibrationPageData(Instrument instrument, FieldSets fieldSets) throws Exception {
-    super(instrument, fieldSets);
+  public InternalCalibrationPageData(Instrument instrument, FieldSets fieldSets, DataSet dataSet) throws Exception {
+    super(instrument, fieldSets, dataSet);
   }
 
   @Override

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -17,8 +18,8 @@ public class ManualQCPageData extends DatasetMeasurementData {
 
   protected List<String> measurementRunTypes;
 
-  public ManualQCPageData(Instrument instrument, FieldSets fieldSets) throws Exception {
-    super(instrument, fieldSets);
+  public ManualQCPageData(Instrument instrument, FieldSets fieldSets, DataSet dataSet) throws Exception {
+    super(instrument, fieldSets, dataSet);
   }
 
   /**

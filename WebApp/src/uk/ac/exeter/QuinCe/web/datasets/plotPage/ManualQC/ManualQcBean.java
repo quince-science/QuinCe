@@ -326,7 +326,7 @@ public class ManualQcBean extends PlotPageBean {
         }
       }
 
-      pageData = new ManualQCPageData(instrument, fieldSets);
+      pageData = new ManualQCPageData(instrument, fieldSets, dataset);
 
       // Load data for sensor columns
       List<Long> fieldIds = new ArrayList<Long>();

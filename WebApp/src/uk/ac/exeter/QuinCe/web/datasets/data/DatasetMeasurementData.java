@@ -15,6 +15,7 @@ import org.primefaces.json.JSONArray;
 
 import com.google.gson.Gson;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.GeoBounds;
 import uk.ac.exeter.QuinCe.data.Dataset.Position;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
@@ -29,6 +30,8 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
 
   protected FieldSets fieldSets;
 
+  protected DataSet dataSet;
+
   private boolean dirty = true;
 
   private List<LocalDateTime> rowIds;
@@ -41,9 +44,10 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
 
   private boolean filterInitialised = false;
 
-  public DatasetMeasurementData(Instrument instrument, FieldSets fieldSets) throws Exception {
+  public DatasetMeasurementData(Instrument instrument, FieldSets fieldSets, DataSet dataSet) throws Exception {
     super();
     this.instrument = instrument;
+    this.dataSet = dataSet;
     this.fieldSets = fieldSets;
     mapCache = new HashMap<Field, MapRecords>();
     dirty = true;
@@ -177,7 +181,7 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
 
         if (null != value && !value.isNaN()) {
           records.add(new PlotRecord(DateTimeUtils.dateToLong(entry.getKey()),
-            DateTimeUtils.dateToLong(entry.getKey()), value));
+            DateTimeUtils.dateToLong(entry.getKey()), value, dataSet.isNrt()));
         }
       }
     }
@@ -201,7 +205,7 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
           // If the current key also contains the x axis, use that
           FieldValue xValue = get(getClosestWithField(yEntry.getKey(), xAxis)).get(xAxis);
 
-          records.add(new PlotRecord( xValue.getValue(), dateLong, yValue));
+          records.add(new PlotRecord( xValue.getValue(), dateLong, yValue, dataSet.isNrt()));
         }
       }
     }

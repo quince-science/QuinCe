@@ -18,11 +18,11 @@ public class PlotRecord implements Comparable<PlotRecord> {
     this.yValue = yValue;
   }
 
-  protected PlotRecord(double xValue, long id, FieldValue value) {
+  protected PlotRecord(double xValue, long id, FieldValue value, boolean nrt) {
     this.xValue = xValue;
     this.id = id;
 
-    if (value.needsFlag()) {
+    if (!nrt && value.needsFlag()) {
       this.flag = Flag.VALUE_NEEDED;
     } else {
       this.flag = value.getQcFlag().getFlagValue();

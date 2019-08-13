@@ -195,7 +195,7 @@ public class InternalCalibrationBean extends PlotPageBean {
         }
       }
 
-      pageData = new InternalCalibrationPageData(instrument, fieldSets);
+      pageData = new InternalCalibrationPageData(instrument, fieldSets, dataset);
 
       List<Long> fieldIds = calibratedColumns
         .stream()
