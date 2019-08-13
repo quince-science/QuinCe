@@ -484,7 +484,12 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @throws Exception If the list cannot be created
    */
   protected String buildSelectableRows() throws Exception {
-    return pageData.getRowIdsJson();
+    String result = "";
+    if (!dataset.isNrt()) {
+      result = pageData.getRowIdsJson();
+    }
+
+    return result;
   }
 
   /**
@@ -672,4 +677,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @throws Exception
    */
   public abstract LinkedHashMap<String, Long> getFieldSets(boolean includeTimePos) throws Exception;
+
+  public boolean isNrt() {
+    return dataset.isNrt();
+  }
 }
