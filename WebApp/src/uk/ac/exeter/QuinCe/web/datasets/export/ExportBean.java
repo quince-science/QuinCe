@@ -271,7 +271,7 @@ public class ExportBean extends BaseManagedBean {
     DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
 
     ExportData data = new ExportData(
-      dataSource, instrument, exportOption);
+      dataSource, instrument, dataset, exportOption);
 
     // Load sensor data
     List<Long> fieldIds = new ArrayList<Long>();

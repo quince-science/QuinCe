@@ -10,6 +10,7 @@ import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.CalculationParameter;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
@@ -56,10 +57,10 @@ public class ExportData extends ManualQCPageData {
 
   private FieldValue depthFieldValue;
 
-  public ExportData(DataSource dataSource, Instrument instrument, ExportOption exportOption)
+  public ExportData(DataSource dataSource, Instrument instrument, DataSet dataSet, ExportOption exportOption)
     throws Exception {
 
-    super(instrument, new FieldSets());
+    super(instrument, new FieldSets(), dataSet);
     buildFieldSets(dataSource, instrument, exportOption);
 
     depthFieldValue = new FieldValue(-1L, new Double(instrument.getDepth()), Flag.GOOD, false, "", false);
