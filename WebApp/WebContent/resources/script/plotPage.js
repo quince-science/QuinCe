@@ -1407,9 +1407,16 @@ function binarySearch (arr, val) {
   return -1;
 }
 
+function nrt() {
+  return $('#plotPageForm\\:nrt').val();
+}
+
 function enablePlotSelect(index) {
   // TODO This works by messing with the CSS, because the version
   // of PrimeFaces we're using doesn't work properly.
   // Sort it out when we upgrade.
-  PF('plot' + index + 'SelectMode').buttons.eq(1).removeClass('ui-state-disabled');
+  
+  if (!nrt()) { 
+    PF('plot' + index + 'SelectMode').buttons.eq(1).removeClass('ui-state-disabled');
+  }
 }
