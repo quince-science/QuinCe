@@ -205,6 +205,7 @@ public class SensorValue implements Comparable<SensorValue> {
    *         in the database
    */
   public void clearAutomaticQC() throws RecordNotFoundException {
+
     if (!isInDatabase()) {
       throw new RecordNotFoundException(
         "SensorValue has not been stored in the database");
@@ -228,6 +229,7 @@ public class SensorValue implements Comparable<SensorValue> {
    */
   public void addAutoQCFlag(RoutineFlag flag)
     throws RecordNotFoundException, RoutineException {
+
     if (!isInDatabase()) {
       throw new RecordNotFoundException(
         "SensorValue has not been stored in the database");

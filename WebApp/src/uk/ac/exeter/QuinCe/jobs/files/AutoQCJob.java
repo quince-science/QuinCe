@@ -184,11 +184,11 @@ public class AutoQCJob extends Job {
         // QC each group of sensor values in turn
         for (Map.Entry<String, NavigableSensorValuesList> values : valuesForQC.entrySet()) {
 
-          SensorValue.clearAutoQC(entry.getValue());
+          SensorValue.clearAutoQC(values.getValue());
           if (values.getKey().equals("") || measurementRunTypes.contains(values.getKey())) {
             // Loop through all routines
             for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
-                routine.qcValues(entry.getValue());
+                routine.qcValues(values.getValue());
             }
           }
 
