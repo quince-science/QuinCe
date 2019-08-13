@@ -350,10 +350,13 @@ public class ManualQcBean extends PlotPageBean {
   public List<Integer> getSelectableColumns() {
     List<Integer> result = new ArrayList<Integer>();
 
-    // Sensor values. This is the field set with ID -1.
-    // We'll add diagnostics sometime.
-    LinkedHashMap<Long, List<Integer>> columnIndexes = fieldSets.getColumnIndexes();
-    result.addAll(columnIndexes.get(DataSetDataDB.SENSORS_FIELDSET));
+    // Nothing is selectable for NRT datasets
+    if (!dataset.isNrt()) {
+      // Sensor values. This is the field set with ID -1.
+      // We'll add diagnostics sometime.
+      LinkedHashMap<Long, List<Integer>> columnIndexes = fieldSets.getColumnIndexes();
+      result.addAll(columnIndexes.get(DataSetDataDB.SENSORS_FIELDSET));
+    }
 
     return result;
   }
