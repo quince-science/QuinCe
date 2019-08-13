@@ -24,6 +24,7 @@ import org.primefaces.json.JSONObject;
 
 import uk.ac.exeter.QCRoutines.config.InvalidDataTypeException;
 import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
+import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
@@ -330,7 +331,13 @@ public class ExportBean extends BaseManagedBean {
           if (null == fieldValue) {
             output.append(exportOption.getMissingValue());
           } else {
-            output.append(fieldValue.getQcFlag().getWoceValue());
+            if (!dataset.isNrt() && fieldValue.needsFlag()) {
+              output.append(Flag.NEEDED.getWoceValue());
+            } else {
+              output.append(fieldValue.getQcFlag().getWoceValue());
+            }
+
+
           }
 
           if (exportOption.includeQCComments()) {
