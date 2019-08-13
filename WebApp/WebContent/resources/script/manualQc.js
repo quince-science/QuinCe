@@ -235,8 +235,8 @@ function disablePlotSelect(index) {
   // TODO This works by messing with the CSS, because the version
   // of PrimeFaces we're using doesn't work properly.
   // Sort it out when we upgrade.
-  
-  if (!nrt()) { 
+
+  if (!nrt()) {
     PF('plot' + index + 'SelectMode').jq.find('input:radio[value="zoom"]').trigger('click');
     PF('plot' + index + 'SelectMode').buttons.eq(1).addClass('ui-state-disabled');
   }
