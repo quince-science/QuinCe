@@ -159,7 +159,7 @@ public class DataReductionJob extends Job {
                 measurement.getVariable().getId());
 
             reducer = DataReducerFactory.getReducer(conn, instrument,
-                measurement.getVariable(), variableAttributes, calibrationSet,
+                measurement.getVariable(), dataSet.isNrt(), variableAttributes, calibrationSet,
                 allMeasurements, groupedSensorValues);
 
             reducers.put(measurement.getVariable(), reducer);
