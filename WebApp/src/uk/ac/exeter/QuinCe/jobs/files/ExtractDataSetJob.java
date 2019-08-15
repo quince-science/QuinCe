@@ -84,16 +84,22 @@ public class ExtractDataSetJob extends Job {
       conn = dataSource.getConnection();
       conn.setAutoCommit(false);
 
-      // Get the data set from the database
+      // Get the new data set from the database
       dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
-
-      // Reset the data set and all associated data
-      reset(conn);
-      conn.commit();
 
       Instrument instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(),
         ResourceManager.getInstance().getSensorsConfiguration(),
         ResourceManager.getInstance().getRunTypeCategoryConfiguration());
+
+      // Delete any existing NRT dataset, unless we're processing it.
+      // The odds are that the new dataset will replace it
+      if (instrument.getNrt() && !dataSet.isNrt()) {
+          DataSetDB.deleteNrtDataSet(conn, dataSet.getInstrumentId());
+      }
+
+      // Reset the data set and all associated data
+      reset(conn);
+      conn.commit();
 
       List<DataFile> files = DataFileDB.getDataFiles(conn,
         ResourceManager.getInstance().getConfig(), dataSet.getSourceFiles(conn));

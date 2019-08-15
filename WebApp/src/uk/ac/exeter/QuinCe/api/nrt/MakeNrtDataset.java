@@ -84,7 +84,7 @@ public class MakeNrtDataset {
    *         {@code false} if no dataset is created.
    * @throws Exception Any errors are propagated upward
    */
-  private boolean createNrtDataset(Connection conn, Instrument instrument) throws Exception {
+  public static boolean createNrtDataset(Connection conn, Instrument instrument) throws Exception {
 
     Properties appConfig = ResourceManager.getInstance().getConfig();
 
@@ -142,7 +142,7 @@ public class MakeNrtDataset {
     return createDataset;
   }
 
-  private String buildNrtDatasetName(Instrument instrument) {
+  private static String buildNrtDatasetName(Instrument instrument) {
     StringBuilder result = new StringBuilder("NRT");
     result.append(instrument.getPlatformCode());
     result.append(System.currentTimeMillis());
