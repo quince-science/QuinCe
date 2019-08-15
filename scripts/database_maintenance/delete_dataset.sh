@@ -46,7 +46,7 @@ if [ $help -eq 1 ]; then
   exit
 fi
 
-if [ -z "$dataset_id"]
+if [ -z "$dataset_id" ]
 then
   mysql -u$db_user -p"$db_password" $db_name << EOF
     SELECT id, name FROM dataset;

@@ -374,6 +374,24 @@ public class DataSetDB {
     return result;
   }
 
+  public static void setNrtDatasetStatus(DataSource dataSource, Instrument instrument, int status) throws DatabaseException, MissingParamException, InvalidDataSetStatusException, RecordNotFoundException {
+
+    try (
+      Connection conn = dataSource.getConnection();
+      )
+    {
+
+      DataSet nrtDataset = getNrtDataSet(conn, instrument.getDatabaseId());
+      if (null != nrtDataset) {
+        setDatasetStatus(conn, nrtDataset.getId(), status);
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while setting dataset status", e);
+    }
+
+  }
+
   /**
    * Set the status of a {@link DataSet}.
    *
