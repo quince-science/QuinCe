@@ -148,47 +148,49 @@
             <f:facet name="header">
               <h:outputText value="Actions"/>
             </f:facet>
-            <ui:fragment rendered="#{dataset.status ge DataSet.STATUS_USER_QC}">
-              <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
-                <h:graphicImage value="/resources/image/calibration.svg" styleClass="actionIcon" alt="Calibration" title="Calibration"/>
-              </p:commandLink>
-              <p:commandLink onclick="recalculate(#{dataset.id})">
-                <h:graphicImage value="/resources/image/calculate.svg" styleClass="actionIcon" alt="Recalculate" title="Recalculate"/>
-              </p:commandLink>
-              <p:commandLink onclick="goToQc(#{dataset.id})">
-                <h:graphicImage value="/resources/image/qc.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
-              </p:commandLink>
-            </ui:fragment>
-            <ui:fragment rendered="#{dataset.status lt DataSet.STATUS_USER_QC}">
-              <h:graphicImage value="/resources/image/calibration_disabled.svg" styleClass="actionIcon" alt="Calibration" title="Calibration"/>
-              <h:graphicImage value="/resources/image/calculate_disabled.svg" styleClass="actionIcon" alt="Data Reduction" title="Data Reduction"/>
-              <h:graphicImage value="/resources/image/qc_disabled.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
-            </ui:fragment>
-            <ui:fragment rendered="#{dataset.canBeExported}">
-              <p:commandLink onclick="exportDataset(#{dataset.id})">
-                <h:graphicImage value="/resources/image/export.svg" styleClass="actionIcon" alt="Export" title="Export"/>
-              </p:commandLink>
-            </ui:fragment>
-            <ui:fragment rendered="#{!dataset.canBeExported}">
-              <h:graphicImage value="/resources/image/export_disabled.svg" styleClass="actionIcon" alt="Export" title="Export"/>
-            </ui:fragment>
-            <ui:fragment rendered="#{!dataset.nrt}">
-              <ui:fragment rendered="#{dataset.status eq DataSet.STATUS_READY_FOR_SUBMISSION}">
-                <p:commandLink onclick="submitForApproval(#{dataset.id})">
-                  <h:graphicImage value="/resources/image/submit.svg" styleClass="actionIcon" alt="Submit" title="Submit"/>
+            <ui:fragment rendered="#{dataset.status gt DataSet.STATUS_ERROR}">
+              <ui:fragment rendered="#{dataset.status ge DataSet.STATUS_USER_QC}">
+                <p:commandLink onclick="goToCalibrationData(#{dataset.id})">
+                  <h:graphicImage value="/resources/image/calibration.svg" styleClass="actionIcon" alt="Calibration" title="Calibration"/>
+                </p:commandLink>
+                <p:commandLink onclick="recalculate(#{dataset.id})">
+                  <h:graphicImage value="/resources/image/calculate.svg" styleClass="actionIcon" alt="Recalculate" title="Recalculate"/>
+                </p:commandLink>
+                <p:commandLink onclick="goToQc(#{dataset.id})">
+                  <h:graphicImage value="/resources/image/qc.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
                 </p:commandLink>
               </ui:fragment>
-              <ui:fragment rendered="#{dataset.status ne DataSet.STATUS_READY_FOR_SUBMISSION}">
-                  <h:graphicImage value="/resources/image/submit_disabled.svg" styleClass="actionIcon" alt="Submit" title="Submit"/>
+              <ui:fragment rendered="#{dataset.status lt DataSet.STATUS_USER_QC}">
+                <h:graphicImage value="/resources/image/calibration_disabled.svg" styleClass="actionIcon" alt="Calibration" title="Calibration"/>
+                <h:graphicImage value="/resources/image/calculate_disabled.svg" styleClass="actionIcon" alt="Data Reduction" title="Data Reduction"/>
+                <h:graphicImage value="/resources/image/qc_disabled.svg" styleClass="actionIcon" alt="Quality Control" title="Quality Control"/>
               </ui:fragment>
-              <ui:fragment rendered="#{dataSetsBean.approvalUser}">
-                <ui:fragment rendered="#{dataset.status eq DataSet.STATUS_WAITING_FOR_APPROVAL}">
-                  <p:commandLink onclick="approve(#{dataset.id})">
-                    <h:graphicImage value="/resources/image/approve.svg" styleClass="actionIcon" alt="Approve" title="Approve"/>
+              <ui:fragment rendered="#{dataset.canBeExported}">
+                <p:commandLink onclick="exportDataset(#{dataset.id})">
+                  <h:graphicImage value="/resources/image/export.svg" styleClass="actionIcon" alt="Export" title="Export"/>
+                </p:commandLink>
+              </ui:fragment>
+              <ui:fragment rendered="#{!dataset.canBeExported}">
+                <h:graphicImage value="/resources/image/export_disabled.svg" styleClass="actionIcon" alt="Export" title="Export"/>
+              </ui:fragment>
+              <ui:fragment rendered="#{!dataset.nrt}">
+                <ui:fragment rendered="#{dataset.status eq DataSet.STATUS_READY_FOR_SUBMISSION}">
+                  <p:commandLink onclick="submitForApproval(#{dataset.id})">
+                    <h:graphicImage value="/resources/image/submit.svg" styleClass="actionIcon" alt="Submit" title="Submit"/>
                   </p:commandLink>
                 </ui:fragment>
-                <ui:fragment rendered="#{dataset.status ne DataSet.STATUS_WAITING_FOR_APPROVAL}">
-                    <h:graphicImage value="/resources/image/approve_disabled.svg" styleClass="actionIcon" alt="Approve" title="Approve"/>
+                <ui:fragment rendered="#{dataset.status ne DataSet.STATUS_READY_FOR_SUBMISSION}">
+                    <h:graphicImage value="/resources/image/submit_disabled.svg" styleClass="actionIcon" alt="Submit" title="Submit"/>
+                </ui:fragment>
+                <ui:fragment rendered="#{dataSetsBean.approvalUser}">
+                  <ui:fragment rendered="#{dataset.status eq DataSet.STATUS_WAITING_FOR_APPROVAL}">
+                    <p:commandLink onclick="approve(#{dataset.id})">
+                      <h:graphicImage value="/resources/image/approve.svg" styleClass="actionIcon" alt="Approve" title="Approve"/>
+                    </p:commandLink>
+                  </ui:fragment>
+                  <ui:fragment rendered="#{dataset.status ne DataSet.STATUS_WAITING_FOR_APPROVAL}">
+                      <h:graphicImage value="/resources/image/approve_disabled.svg" styleClass="actionIcon" alt="Approve" title="Approve"/>
+                  </ui:fragment>
                 </ui:fragment>
               </ui:fragment>
             </ui:fragment>

@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import uk.ac.exeter.QuinCe.api.nrt.MakeNrtDataset;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -196,6 +197,10 @@ public class DataReductionJob extends Job {
 
         // Set the dataset status
         DataSetDB.updateDataSet(conn, dataSet);
+
+        if (instrument.getNrt()) {
+          MakeNrtDataset.createNrtDataset(conn, instrument);
+        }
       }
 
       conn.commit();

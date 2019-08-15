@@ -31,6 +31,16 @@ public class DataSet {
   public static final String TIMEPOS_FIELDSET_NAME = "Time/Position";
 
   /**
+   * The numeric value for the delete status.
+   */
+  public static final int STATUS_DELETE = -2;
+
+  /**
+   * The string for the delete status
+   */
+  public static final String STATUS_DELETE_NAME = "Marked for deletion";
+
+  /**
    * The numeric value for the error status.
    * The data set will be given this status whenever a processing job fails.
    */
@@ -335,6 +345,10 @@ public class DataSet {
     String result;
 
     switch (statusValue) {
+    case STATUS_DELETE: {
+      result = STATUS_DELETE_NAME;
+      break;
+    }
     case STATUS_ERROR: {
       result = STATUS_ERROR_NAME;
       break;
@@ -532,7 +546,7 @@ public class DataSet {
    * @return {@code true} if the status is valid; {@code false} if it is not
    */
   public static boolean validateStatus(int status) {
-    return (status >= STATUS_ERROR && status <= STATUS_EXPORT_COMPLETE);
+    return (status >= STATUS_DELETE && status <= STATUS_EXPORT_COMPLETE);
   }
 
   /**
