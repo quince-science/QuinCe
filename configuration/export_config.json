@@ -21,6 +21,7 @@
   	"includeCalculationColumns": false,
   	"useColumnCodes": true,
   	"includeUnits": false,
-  	"includeQCComments": false
+  	"includeQCComments": false,
+  	"qcFlagSuffix": "_QC"
   }
 ]

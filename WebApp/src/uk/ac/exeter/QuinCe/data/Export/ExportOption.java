@@ -69,6 +69,16 @@ public class ExportOption {
   private boolean includeQCComments = true;
 
   /**
+   * QC Flag header suffix
+   */
+  private String qcFlagSuffix = " QC Flag";
+
+  /**
+   * QC Comment header suffix
+   */
+  private String qcCommentSuffix = " QC Comment";
+
+  /**
    * Build an ExportOption object from a JSON string
    * @param index The index of the configuration in the export configuration file
    * @param json The JSON string defining the export option
@@ -210,6 +220,14 @@ public class ExportOption {
     if (json.has("includeQCComments")) {
       includeQCComments = json.getBoolean("includeQCComments");
     }
+
+    if (json.has("qcFlagSuffix")) {
+      qcFlagSuffix = json.getString("qcFlagSuffix");
+    }
+
+    if (json.has("qcCommentSuffix")) {
+      qcCommentSuffix = json.getString("qcCommentSuffix");
+    }
   }
 
   /**
@@ -260,5 +278,13 @@ public class ExportOption {
 
   public boolean includeQCComments() {
     return includeQCComments;
+  }
+
+  public String getQcFlagSuffix() {
+    return qcFlagSuffix;
+  }
+
+  public String getQcCommentSuffix() {
+    return qcCommentSuffix;
   }
 }
