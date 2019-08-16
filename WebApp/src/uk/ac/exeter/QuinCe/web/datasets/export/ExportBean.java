@@ -300,9 +300,9 @@ public class ExportBean extends BaseManagedBean {
       String header = exportField.getName();
       headers.add(header);
       if (exportField.hasQC()) {
-        headers.add(header + " QC Flag");
+        headers.add(header + exportOption.getQcFlagSuffix());
         if (exportOption.includeQCComments()) {
-          headers.add(header + " QC Comment");
+          headers.add(header + exportOption.getQcCommentSuffix());
         }
       }
     }
@@ -336,8 +336,6 @@ public class ExportBean extends BaseManagedBean {
             } else {
               output.append(fieldValue.getQcFlag().getWoceValue());
             }
-
-
           }
 
           if (exportOption.includeQCComments()) {
