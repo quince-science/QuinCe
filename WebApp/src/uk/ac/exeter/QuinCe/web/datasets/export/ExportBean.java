@@ -293,7 +293,7 @@ public class ExportBean extends BaseManagedBean {
 
     // Headers
     List<String> headers = new ArrayList<String>();
-    headers.add("Date/Time");
+    headers.add(exportOption.getTimestampHeader());
 
     List<ExportField> exportFields = new ArrayList<ExportField>();
 

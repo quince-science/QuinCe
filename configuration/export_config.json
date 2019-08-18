@@ -22,6 +22,7 @@
   	"useColumnCodes": true,
   	"includeUnits": false,
   	"includeQCComments": false,
-  	"qcFlagSuffix": "_QC"
+  	"qcFlagSuffix": "_QC",
+  	"timestampHeader": "Timestamp"
   }
 ]

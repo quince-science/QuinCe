@@ -68,6 +68,8 @@ public class ExportOption {
    */
   private boolean includeQCComments = true;
 
+  private String timestampHeader = "Date/Time";
+
   /**
    * QC Flag header suffix
    */
@@ -221,6 +223,10 @@ public class ExportOption {
       includeQCComments = json.getBoolean("includeQCComments");
     }
 
+    if (json.has("timestampHeader")) {
+      timestampHeader = json.getString("timestampHeader");
+    }
+
     if (json.has("qcFlagSuffix")) {
       qcFlagSuffix = json.getString("qcFlagSuffix");
     }
@@ -286,5 +292,9 @@ public class ExportOption {
 
   public String getQcCommentSuffix() {
     return qcCommentSuffix;
+  }
+
+  public String getTimestampHeader() {
+    return timestampHeader;
   }
 }
