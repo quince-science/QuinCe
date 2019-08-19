@@ -1,0 +1,5 @@
+Export Column,QC,netCDF Name,Data Type,Attributes
+ADEPZZ01,7,DEPH,f,'{"long_name":"Depth","standard_name":"depth","units":"m","positive":"down","valid_min":-12000.0,"valid_max":12000.0,"axis":"Z","reference":"sea_level","coordinate_reference_frame":"urn:ogc:crs:EPSG::5113"}'
+TEMPPR01,Data,TEMP,f,'{"long_name":"Sea temperature","standard_name":"sea_water_temperature","units":"degrees_C"}'
+PSALPR01,Data,PSAL,f,'{"long_name":"Practical salinity","standard_name":"sea_water_practical_salinity","units":"0.001"}'
+FCO2XXXX,Data,FCO2,f,'{"long_name":"fugacity_of_CO2_in_sea_water","standard_name":"fugacity_of_CO2","units":"µatm"}'
