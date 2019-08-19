@@ -145,7 +145,8 @@ def makenetcdf_(datasetname, fieldconfig, records):
 
   # Fields
   for index, field in fieldconfig.iterrows():
-    var = nc.createVariable(field['netCDF Name'], field['Data Type'], ("TIME", "DEPTH"), fill_value=-9999)
+    var = nc.createVariable(field['netCDF Name'], field['Data Type'], \
+      ("TIME", "DEPTH"), fill_value=field['FillValue'])
 
     attributes = json.loads(field['Attributes'])
     for key, value in attributes.items():
@@ -158,6 +159,7 @@ def makenetcdf_(datasetname, fieldconfig, records):
 
     # DM variable
     dmvar = nc.createVariable(field['netCDF Name'] + '_DM', 'c', ("TIME", "DEPTH"), fill_value=' ')
+    assigndmvarattributes_(dmvar)
     dmvar[:,:] = dms
 
     qc_values = np.empty([records.shape[0], 1])
