@@ -300,12 +300,24 @@ public class SensorValue implements Comparable<SensorValue> {
   @Override
   public int compareTo(SensorValue o) {
     // If the IDs are equal, the objects are equal.
-    // Otherwise compare on time
+    // Otherwise compare on time, dataset ID, column ID
 
     int result = 0;
 
-    if (id != o.id) {
+    if (id > -1) {
+      result = Long.compare(id, o.id);
+    }
+
+    if (result == 0) {
       result = time.compareTo(o.time);
+    }
+
+    if (result == 0) {
+      result = Long.compare(datasetId, o.datasetId);
+    }
+
+    if (result == 0) {
+      result = Long.compare(columnId, o.columnId);
     }
 
     return result;
@@ -333,5 +345,36 @@ public class SensorValue implements Comparable<SensorValue> {
     }
 
     return result;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (int) (columnId ^ (columnId >>> 32));
+    result = prime * result + (int) (datasetId ^ (datasetId >>> 32));
+    result = prime * result + ((time == null) ? 0 : time.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof SensorValue))
+      return false;
+    SensorValue other = (SensorValue) obj;
+    if (columnId != other.columnId)
+      return false;
+    if (datasetId != other.datasetId)
+      return false;
+    if (time == null) {
+      if (other.time != null)
+        return false;
+    } else if (!time.equals(other.time))
+      return false;
+    return true;
   }
 }

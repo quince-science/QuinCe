@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.TreeSet;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -86,6 +87,8 @@ public class ExtractDataSetJob extends Job {
 
       // Get the new data set from the database
       dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
+      dataSet.setStatus(DataSet.STATUS_DATA_EXTRACTION);
+      DataSetDB.updateDataSet(conn, dataSet);
 
       Instrument instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(),
         ResourceManager.getInstance().getSensorsConfiguration(),
@@ -104,7 +107,7 @@ public class ExtractDataSetJob extends Job {
       List<DataFile> files = DataFileDB.getDataFiles(conn,
         ResourceManager.getInstance().getConfig(), dataSet.getSourceFiles(conn));
 
-      List<SensorValue> sensorValues = new ArrayList<SensorValue>();
+      TreeSet<SensorValue> sensorValues = new TreeSet<SensorValue>();
 
       // We want to store when run types begin and end
       RunTypePeriods runTypePeriods = new RunTypePeriods();
@@ -230,9 +233,10 @@ public class ExtractDataSetJob extends Job {
         }
       }
 
-
       // Store the remaining values
-      DataSetDataDB.storeSensorValues(conn, sensorValues);
+      if (sensorValues.size() > 0) {
+        DataSetDataDB.storeSensorValues(conn, sensorValues);
+      }
 
       // Adjust the Dataset limits to the actual extracted data
       if (null != realStartTime) {
@@ -338,7 +342,25 @@ public class ExtractDataSetJob extends Job {
     }
 
     private boolean encompasses(LocalDateTime time) {
-      return (!start.isAfter(time) && !end.isBefore(time));
+      boolean result = false;
+      if (start.equals(end)) {
+        result = time.equals(start);
+      } else {
+        boolean afterStart = false;
+        boolean beforeEnd = false;
+
+        if (time.equals(start) || time.isAfter(start)) {
+          afterStart = true;
+        }
+
+        if (time.equals(end) || time.isBefore(end)) {
+          beforeEnd = true;
+        }
+
+        result = afterStart && beforeEnd;
+      }
+
+      return result;
     }
   }
 
