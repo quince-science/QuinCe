@@ -73,7 +73,8 @@ public class DataFileDB {
       + "f.end_date, f.record_count, i.id FROM data_file AS f "
       + "INNER JOIN file_definition AS d ON f.file_definition_id = d.id "
       + "INNER JOIN instrument AS i ON d.instrument_id = i.id "
-      + "WHERE f.id IN " + DatabaseUtils.IN_PARAMS_TOKEN;
+      + "WHERE f.id IN " + DatabaseUtils.IN_PARAMS_TOKEN
+      + " ORDER BY f.start_date ASC";
 
   /**
    * Query to find all the data files owned by a given user
