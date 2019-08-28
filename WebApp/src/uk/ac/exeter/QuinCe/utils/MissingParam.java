@@ -78,8 +78,10 @@ public class MissingParam {
  public static void checkMissing(Collection<?> collection, String collectionName,
     boolean canBeEmpty) throws MissingParamException {
 
-    if (null == collection || (!canBeEmpty && collection.size() == 0)) {
+    if (null == collection) {
       throw new MissingParamException(collectionName);
+    } else if (!canBeEmpty && collection.size() == 0) {
+      throw new EmptyMissingParamException(collectionName);
     }
   }
 
@@ -106,8 +108,10 @@ public class MissingParam {
 public static void checkMissing(Map<?, ?> map, String mapName,
    boolean canBeEmpty) throws MissingParamException {
 
-   if (null == map || (!canBeEmpty && map.size() == 0)) {
+   if (null == map) {
      throw new MissingParamException(mapName);
+   } else if (!canBeEmpty && map.size() == 0) {
+     throw new EmptyMissingParamException(mapName);
    }
  }
 
@@ -120,18 +124,10 @@ public static void checkMissing(Map<?, ?> map, String mapName,
    * @throws MissingParamException If the array is {@code null} or empty (if {@code canBeEmpty} is {@code false})
    */
   public static void checkMissing(char[] parameter, String parameterName, boolean canBeEmpty) throws MissingParamException {
-    boolean isMissing = false;
-
     if (null == parameter) {
-      isMissing = true;
-    } else {
-      if (!canBeEmpty && parameter.length == 0) {
-          isMissing = true;
-      }
-    }
-
-    if (isMissing) {
       throw new MissingParamException(parameterName);
+    } else if (!canBeEmpty && parameter.length == 0) {
+      throw new EmptyMissingParamException(parameterName);
     }
   }
 
@@ -152,8 +148,10 @@ public static void checkMissing(Map<?, ?> map, String mapName,
   public static void checkMissing(String string, String stringName,
     boolean canBeEmpty) throws MissingParamException {
 
-    if (null == string || (!canBeEmpty && string.trim().length() == 0)) {
+    if (null == string) {
       throw new MissingParamException(stringName);
+    } else if (!canBeEmpty && string.length() == 0) {
+      throw new EmptyMissingParamException(stringName);
     }
   }
 
