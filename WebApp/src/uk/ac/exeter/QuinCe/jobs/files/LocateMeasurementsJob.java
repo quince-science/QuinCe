@@ -117,6 +117,7 @@ public class LocateMeasurementsJob extends Job {
           if (sensorTypeGroups.containsKey(variable.getCoreSensorType())) {
 
             // We have a value. Therefore we have a measurement.
+            boolean measurementOK = true;
 
             // Get the Run Type for this measurement
             // We assume there's only one run type
@@ -129,24 +130,24 @@ public class LocateMeasurementsJob extends Job {
             // Ditto for longitude and latitude
             List<SensorValue> longitudeValues = sensorTypeGroups.get(SensorType.LONGITUDE_SENSOR_TYPE);
             if (null == longitudeValues) {
-              throw new RecordNotFoundException(
-                "Missing Longitude for measurement at " + entry.getKey());
+              measurementOK = false;
             }
 
             List<SensorValue> latitudeValues = sensorTypeGroups.get(SensorType.LATITUDE_SENSOR_TYPE);
             if (null == latitudeValues) {
-              throw new RecordNotFoundException(
-                "Missing Longitude for measurement at " + entry.getKey());
+              measurementOK = false;
             }
 
-            // Only store non-ignored run types (assume only one run type)
-            String runType = runTypeValues.get(0).getValue();
-            double longitude = longitudeValues.get(0).getDoubleValue();
-            double latitude = latitudeValues.get(0).getDoubleValue();
+            if (measurementOK) {
+              // Only store non-ignored run types (assume only one run type)
+              String runType = runTypeValues.get(0).getValue();
+              double longitude = longitudeValues.get(0).getDoubleValue();
+              double latitude = latitudeValues.get(0).getDoubleValue();
 
-            if (!instrument.getRunTypeCategory(runType).equals(RunTypeCategory.IGNORED)) {
-              measurements.add(new Measurement(dataSet.getId(), variable,
-                entry.getKey(), longitude, latitude, runType));
+              if (!instrument.getRunTypeCategory(runType).equals(RunTypeCategory.IGNORED)) {
+                measurements.add(new Measurement(dataSet.getId(), variable,
+                  entry.getKey(), longitude, latitude, runType));
+              }
             }
           }
         }
