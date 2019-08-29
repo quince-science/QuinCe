@@ -1,0 +1,14 @@
+['58GS']
+platform_name = 'G.O. Sars'
+expocode = "58GS"
+platform_type = "Ship" 
+region = "North Atlantic"
+export = ['ICOS','CMEMS']
+
+
+['26NA']
+platform_name = 'Nuka Arctica'
+expocode = "26NA"
+platform_type = "Ship" 
+region = "North Atlantic"
+export = ['ICOS','CMEMS']

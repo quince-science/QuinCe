@@ -3,6 +3,24 @@ import urllib
 import base64
 import toml
 import json
+import sys
+import os
+
+def get_export_list(config):
+    ''' Retrieves list of datasets ready for export from QuinCe. 
+
+    config: .toml-file containing log-in information.
+    returns: array containing name, instrument and id for each dataset 
+    ready to be downloaded.
+    '''
+    logging.info('Retrieving exportList  from QuinCe')
+
+    export_list = make_quince_call(config,'exportList')
+
+    logging.info('{} dataset(s) ready for export'.format(
+        export_list.decode('utf8').count('id')))
+
+    return json.loads(export_list.decode('utf-8'))
 
 def make_quince_call(config, call, dataset_id=-1):
     ''' sends request to QuinCe'''
@@ -26,26 +44,24 @@ def make_quince_call(config, call, dataset_id=-1):
     request.add_header("Authorization", "Basic %s" % base64_auth_string
         .decode("utf-8"))
 
-    conn = urllib.request.urlopen(request)
-    quince_response = conn.read()
-    conn.close()
+    try:
+        conn = urllib.request.urlopen(request)
+        quince_response = conn.read()
+        conn.close()
+        return quince_response
 
-    return quince_response
+    except Exception as e:
+      logging.critical('Failed to connect to QuinCe. Encountered: %s ',e);
+      exc_type, exc_obj, exc_tb = sys.exc_info()
 
-def get_export_list(config):
-    ''' Retrieves list of datasets ready for export from QuinCe. 
+      fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+      logging.debug(f'type: {exc_type}')
+      logging.debug(f'file name: {fname}')
+      logging.debug(f'line number: {exc_tb.tb_lineno}')
+      logging.debug(sys.exc_value)
 
-    config: .toml-file containing log-in information.
-    returns: array containing name, instrument and id for each dataset 
-    ready to be downloaded.
-    '''
-    logging.info('Retrieving exportList  from QuinCe')
+      sys.exit()
 
-    export_list = make_quince_call(config,'exportList')
-    logging.info('{} dataset(s) ready for export'.format(
-        export_list.decode('utf8').count('id')))
-
-    return json.loads(export_list.decode('utf-8'))
 
 def get_export_dataset(config,dataset_id):
     ''' Retrieves .zip file from QuinCe 
