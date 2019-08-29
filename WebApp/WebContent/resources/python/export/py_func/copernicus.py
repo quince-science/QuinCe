@@ -2,22 +2,14 @@
 '''
 Functions specific to communication with Copernicus.
 
-Files to Copernicus must be on netcdf format, one file for each day of data.
-
-datasetname, csv and xml is sent to buildnetcdfs. 
-This splits the csv into day long segments and sends the segments to makenetcdf_
-makenetcdf_ creates the netcdf-file and appends it together with the associated date 
-to results, which is returned by buildnetcdfs. 
-results is on the format [[date,bytes][date,bytes]].
+Files to Copernicus must be on netcdf format.
 
 Files are sent to Copernicus by FTP. 
-Each put-request must include filename[expocode], bytes, destination.
 
 The Copernicus FTP requires an Index file and a DNT file describing all 
 files uploaded to the server to complete the ingestion. 
 The index file reflects all the files in the FTP folder.
 The DNT file triggers the ingestion. 
-A DNT file must be submitted for the index-file as well.
 
 Example of DNT file format provided by mail from Antoine.Queric@ifremer.fr 2019-03-07
 <?xml version="1.0" ?>
@@ -41,6 +33,20 @@ Example of index file format provided by Corentin.Guyot@ifremer.fr 2019-03-06
 # Date of update : 20190305080103 
 # catalog_id,file_name,geospatial_lat_min,geospatial_lat_max,geospatial_lon_min,geospatial_lon_max,time_coverage_start,time_coverage_end,provider,date_update,data_mode,parameters 
 COP-GLOBAL-01,ftp://nrt.cmems-du.eu/Core/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/nrt/latest/20190221/GL_LATEST_PR_BA_7JXZ_20190221.nc,19.486,19.486,-176.568,-176.568,2019-02-21T17:50:00Z,2019-02-21T17:50:00Z,Unknown institution,2019-02-24T04:10:11Z,R,DEPH TEMP
+
+To delete en empty directory, you can use the following syntax inside your DNT file :
+
+        <directory DestinationFolderName="" SourceFolderName="directoryName">
+          <KeyWord>Delete</KeyWord>
+        </directory>
+
+
+To move an existing file, you can use following syntax in your DNT file :
+
+        <file Checksum="fileChecksum" FileName="path/to/existing/file.nc" NewFileName="path/to/new_folder/file.nc">
+            <KeyWord>Move</KeyWord>
+        </file>
+
 '''
 import logging 
 #import pysftp
@@ -143,6 +149,7 @@ def build_netCDF(dataset_zip,dataset_name,destination_filename):
     # create dictionary object
     date = nc_filename.split('_')[-1]
     date = datetime.datetime.strptime(date,'%Y%m%d')
+    hashsum = hashlib.md5(nc_content).hexdigest()
     nc_dict[nc_filename] = ({
       'filepath':nc_filepath, 
       'hashsum': hashsum, 
@@ -151,6 +158,9 @@ def build_netCDF(dataset_zip,dataset_name,destination_filename):
   
   sql_commit(nc_dict)
 
+  logging.debug(f'Commiting metadata to local SQL database {cmems_db}')
+  sql_commit(nc_dict)
+  return local_folder
 
 
 def upload_to_copernicus(ftp_config,server):
@@ -180,8 +190,7 @@ def upload_to_copernicus(ftp_config,server):
 
   # CHECK IF FTP IS EMPTY 
     directory_empty = check_directory(ftp, nrt_dir) 
-    if directory_empty:
-      return False
+    if directory_empty: return False
 
   #****************
   # CURRENT DATABASE for debugging
@@ -196,7 +205,7 @@ def upload_to_copernicus(ftp_config,server):
     c.execute("SELECT * FROM latest \
      WHERE (nc_date < date('now','-30 day') AND uploaded == ?)",[UPLOADED]) 
     results_delete = c.fetchall()
-    logging.debug(f'delete: {results_delete}')
+    logging.debug(f'delete {len(results_delete)}; {results_delete}')
     
     dnt_delete = {}
     for item in results_delete: 
@@ -244,8 +253,10 @@ def upload_to_copernicus(ftp_config,server):
       # BUILD INDEX
       c.execute("SELECT * FROM latest WHERE uploaded == 1")
       currently_uploaded = c.fetchall()
+
       try:
-        index_filepath = build_index(currently_uploaded)
+        logging.debug('local_folder: ', local_folder)
+        index_filename = build_index(currently_uploaded,local_folder)
       except Exception as e:
         logging.error('Building index failed: ', exc_info=True)
         OK = False
@@ -254,7 +265,7 @@ def upload_to_copernicus(ftp_config,server):
       # UPLOAD INDEX 
       try:
         upload_result, ftp_filepath, start_upload_time, stop_upload_time = (
-          upload_to_ftp(ftp,ftp_config, index_filepath))
+          upload_to_ftp(ftp,ftp_config, index_filename))
         logging.debug(f'index upload result: {upload_result}')
       except Exception as e:
         logging.error('Uploading index failed: ', exc_info=True)
@@ -267,7 +278,7 @@ def upload_to_copernicus(ftp_config,server):
         'ftp_filepath':ftp_filepath, 
         'start_upload_time':start_upload_time, 
         'stop_upload_time':stop_upload_time,
-        'local_folder':index_filepath.rsplit('/',1)[0]
+        'local_folder': local_folder #latest/date
         })
 
       logging.info('Building DNT-file')
@@ -279,7 +290,7 @@ def upload_to_copernicus(ftp_config,server):
           WHERE dnt_file = ?", [dnt_local_filepath, local_folder])
         conn.commit()
 
-      except Exception as e:
+      except Exception as exception:
         logging.error('Building DNT failed: ', exc_info=True)
         OK = False
         error += 'Building DNT failed: ' + str(e)
@@ -544,12 +555,18 @@ def build_DNT(dnt_upload,dnt_delete):
     key_word = ET.SubElement(file_del,'KeyWord')
     key_word.text = 'Delete'
 
+    #file_del = ET.SubElement(dataset,'directory')
+    #file_del.set('DestinationFolderName','')
+    #file_del.set('SourceFolderName',ftp_filepath.rsplit('/',1)[0])
+    #key_word = ET.SubElement(file_del,'KeyWord')
+    #key_word.text = 'Delete'
+
   xml_tree = ET.ElementTree(dnt)
   logging.debug('DNT file:\n' + str(ET.dump(xml_tree)))
 
   dnt_file = product_id + '_P' + date + '.xml'
-  dnt_folder = 'DNT/' + local_folder  
-  dnt_filepath = dnt_folder + '/' + dnt_file
+  dnt_folder = 'DNT/' + local_folder   
+  dnt_filepath = dnt_folder + dnt_file
 
   try: os.mkdir(dnt_folder); 
   except Exception as e:
