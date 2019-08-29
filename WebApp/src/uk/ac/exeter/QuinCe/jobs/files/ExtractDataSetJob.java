@@ -143,63 +143,73 @@ public class ExtractDataSetJob extends Job {
 
             realEndTime = time;
 
+            // We only process a line if it has a valid position
+            boolean positionOK = true;
+            double longitude = 0;
+            double latitude = 0;
+
             // Position
-            // TODO Flag position errors as QC errors when we get to that
             if (null != fileDefinition.getLongitudeSpecification()) {
               try {
-                double longitude = file.getLongitude(line);
+                longitude = file.getLongitude(line);
                 if (longitude < minLon) {
                   minLon = longitude;
                 }
                 if (longitude > maxLon) {
                   maxLon = longitude;
                 }
-
-                sensorValues.add(new SensorValue(dataSet.getId(),
-                  FileDefinition.LONGITUDE_COLUMN_ID, time, String.valueOf(longitude)));
               } catch (PositionException e) {
                 System.out.println("File " + file.getDatabaseId() + ", Line " + currentLine + ": PositionException: " + e.getMessage());
+                positionOK = false;
               }
             }
 
             if (null != fileDefinition.getLongitudeSpecification()) {
               try {
-                double latitude = file.getLatitude(line);
+                latitude = file.getLatitude(line);
                 if (latitude < minLat) {
                   minLat = latitude;
                 }
                 if (latitude > maxLat) {
                   maxLat = latitude;
                 }
-
-                sensorValues.add(new SensorValue(dataSet.getId(),
-                  FileDefinition.LATITUDE_COLUMN_ID, time, String.valueOf(latitude)));
               } catch (PositionException e) {
                 System.out.println("File " + file.getDatabaseId() + ", Line " + currentLine + ": PositionException: " + e.getMessage());
+                positionOK = false;
               }
             }
 
-            // Assigned columns
-            for (Entry<SensorType, List<SensorAssignment>> entry :
-              instrument.getSensorAssignments().entrySet()) {
 
-              for (SensorAssignment assignment : entry.getValue()) {
-                if (assignment.getDataFile().equals(fileDefinition.getFileDescription())) {
+            if (positionOK) {
+              // Write the position values
+              sensorValues.add(new SensorValue(dataSet.getId(),
+                FileDefinition.LONGITUDE_COLUMN_ID, time, String.valueOf(longitude)));
 
-                  // For run types, follow all aliases
-                  if (entry.getKey().equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
-                    String runType = file.getFileDefinition().getRunType(line, true).getRunName();
+              sensorValues.add(new SensorValue(dataSet.getId(),
+                FileDefinition.LATITUDE_COLUMN_ID, time, String.valueOf(latitude)));
 
-                    sensorValues.add(new SensorValue(dataSet.getId(),
-                      assignment.getDatabaseId(), time,
-                      runType));
+              // Assigned columns
+              for (Entry<SensorType, List<SensorAssignment>> entry :
+                instrument.getSensorAssignments().entrySet()) {
 
-                    runTypePeriods.add(runType, time);
-                  } else {
-                    sensorValues.add(new SensorValue(dataSet.getId(),
-                      assignment.getDatabaseId(), time,
-                      file.getStringValue(line, assignment.getColumn(),
-                        assignment.getMissingValue())));
+                for (SensorAssignment assignment : entry.getValue()) {
+                  if (assignment.getDataFile().equals(fileDefinition.getFileDescription())) {
+
+                    // For run types, follow all aliases
+                    if (entry.getKey().equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
+                      String runType = file.getFileDefinition().getRunType(line, true).getRunName();
+
+                      sensorValues.add(new SensorValue(dataSet.getId(),
+                        assignment.getDatabaseId(), time,
+                        runType));
+
+                      runTypePeriods.add(runType, time);
+                    } else {
+                      sensorValues.add(new SensorValue(dataSet.getId(),
+                        assignment.getDatabaseId(), time,
+                        file.getStringValue(line, assignment.getColumn(),
+                          assignment.getMissingValue())));
+                    }
                   }
                 }
               }
