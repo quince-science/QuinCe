@@ -12,6 +12,7 @@ import uk.ac.exeter.QuinCe.User.UserPreferences;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.user.SendPasswordResetMailJob;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
@@ -199,6 +200,15 @@ public class LoginBean extends BaseManagedBean {
     }
 
     return result;
+  }
+
+  /**
+   * Get the current application version
+   * @return The app version
+   */
+  public String getAppVersion() {
+    // TODO Access to config values should be available through the BaseManagedBean
+    return ResourceManager.getInstance().getConfig().getProperty("version");
   }
 
   @Override
