@@ -150,7 +150,7 @@ public static void checkMissing(Map<?, ?> map, String mapName,
 
     if (null == string) {
       throw new MissingParamException(stringName);
-    } else if (!canBeEmpty && string.length() == 0) {
+    } else if (!canBeEmpty && string.trim().length() == 0) {
       throw new EmptyMissingParamException(stringName);
     }
   }
