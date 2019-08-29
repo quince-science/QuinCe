@@ -285,9 +285,13 @@ public class ExtractDataSetJob extends Job {
 
     boolean result = false;
 
-    if (DateTimeUtils.secondsBetween(runTypePeriod.start, time) <= instrument.getPreFlushingTime()) {
+    if (instrument.getPreFlushingTime() > 0 &&
+      DateTimeUtils.secondsBetween(runTypePeriod.start, time) <= instrument.getPreFlushingTime()) {
+
       result = true;
-    } else if (DateTimeUtils.secondsBetween(time, runTypePeriod.end) <= instrument.getPostFlushingTime()) {
+    } else if (instrument.getPostFlushingTime() > 0 &&
+      DateTimeUtils.secondsBetween(time, runTypePeriod.end) <= instrument.getPostFlushingTime()) {
+
       result = true;
     }
 
