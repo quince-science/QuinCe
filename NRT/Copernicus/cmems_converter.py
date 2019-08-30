@@ -45,7 +45,7 @@ def buildnetcdfs(datasetname, fieldconfig, filedata):
 
     if linedate != currentdate:
       if currentdate is not None:
-        result.append(makenetcdf_(datasetname, fieldconfig, filedata[daystartline:dayendline]))
+        result.append(makenetcdf_(datasetname, fieldconfig, filedata[daystartline:dayendline + 1]))
 
       currentdate = linedate
       daystartline = currentline
@@ -61,7 +61,7 @@ def buildnetcdfs(datasetname, fieldconfig, filedata):
   return result
 
 def makenetcdf_(datasetname, fieldconfig, records):
-  filedate = getlinedate_(records.iloc[[1]])
+  filedate = getlinedate_(records.iloc[[0]])
   ncbytes = None
 
   platform_code = getplatformcode_(datasetname)
@@ -349,7 +349,7 @@ def makeqcvalue_(flag):
   return result
 
 def getlinedate_(line):
-  return pd.to_datetime(line.Timestamp).iloc[0].date()
+  return pd.to_datetime(line.Timestamp).iloc[0].date().strftime('%Y%m%d')
 
 def getplatformcode_(datasetname):
   platform_code = None
