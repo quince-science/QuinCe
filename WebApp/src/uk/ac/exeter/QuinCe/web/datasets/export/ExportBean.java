@@ -302,13 +302,15 @@ public class ExportBean extends BaseManagedBean {
       if (fieldSet.getId() <= 0 || exportOption.getVariables().contains(fieldSet.getId())) {
         for (Field field : data.getFieldSets().get(fieldSet)) {
           ExportField exportField = (ExportField) field;
-          exportFields.add(exportField);
-          String header = exportField.getName();
-          headers.add(header);
-          if (exportField.hasQC()) {
-            headers.add(header + exportOption.getQcFlagSuffix());
-            if (exportOption.includeQCComments()) {
-              headers.add(header + exportOption.getQcCommentSuffix());
+          if (!exportField.isDiagnostic()) {
+            exportFields.add(exportField);
+            String header = exportField.getName();
+            headers.add(header);
+            if (exportField.hasQC()) {
+              headers.add(header + exportOption.getQcFlagSuffix());
+              if (exportOption.includeQCComments()) {
+                headers.add(header + exportOption.getQcCommentSuffix());
+              }
             }
           }
         }
@@ -324,34 +326,36 @@ public class ExportBean extends BaseManagedBean {
 
       for (Map.Entry<Field, FieldValue> entry : data.get(rowId).entrySet()) {
         ExportField field = (ExportField) entry.getKey();
-        if (exportFields.contains(field)) {
-          FieldValue fieldValue = entry.getValue();
+        if (!field.isDiagnostic()) {
+          if (exportFields.contains(field)) {
+            FieldValue fieldValue = entry.getValue();
 
-          output.append(exportOption.getSeparator());
-          if (null == fieldValue || fieldValue.isNaN()) {
-            output.append(exportOption.getMissingValue());
-          } else {
-            output.append(numberFormatter.format(fieldValue.getValue()));
-          }
-
-          if (field.hasQC()) {
             output.append(exportOption.getSeparator());
-            if (null == fieldValue) {
+            if (null == fieldValue || fieldValue.isNaN()) {
               output.append(exportOption.getMissingValue());
             } else {
-              if (!dataset.isNrt() && fieldValue.needsFlag()) {
-                output.append(Flag.NEEDED.getWoceValue());
-              } else {
-                output.append(fieldValue.getQcFlag().getWoceValue());
-              }
+              output.append(numberFormatter.format(fieldValue.getValue()));
             }
 
-            if (exportOption.includeQCComments()) {
+            if (field.hasQC()) {
               output.append(exportOption.getSeparator());
               if (null == fieldValue) {
-                output.append("");
+                output.append(exportOption.getMissingValue());
               } else {
-                output.append(StringUtils.makeCsvString(fieldValue.getQcComment()));
+                if (!dataset.isNrt() && fieldValue.needsFlag()) {
+                  output.append(Flag.NEEDED.getWoceValue());
+                } else {
+                  output.append(fieldValue.getQcFlag().getWoceValue());
+                }
+              }
+
+              if (exportOption.includeQCComments()) {
+                output.append(exportOption.getSeparator());
+                if (null == fieldValue) {
+                  output.append("");
+                } else {
+                  output.append(StringUtils.makeCsvString(fieldValue.getQcComment()));
+                }
               }
             }
           }

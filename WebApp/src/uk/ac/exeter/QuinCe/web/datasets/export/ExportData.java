@@ -78,18 +78,18 @@ public class ExportData extends ManualQCPageData {
     DataSource dataSource, Instrument instrument, ExportOption exportOption)
       throws Exception {
 
-    ExportField lonField = new ExportField(SensorType.LONGITUDE_SENSOR_TYPE, false, exportOption);
+    ExportField lonField = new ExportField(SensorType.LONGITUDE_SENSOR_TYPE, false, false, exportOption);
     fieldSets.addField(FieldSet.BASE_FIELD_SET, lonField);
     sensorTypeFields.put(SensorType.LONGITUDE_SENSOR_TYPE.getId(), lonField);
 
-    ExportField latField = new ExportField(SensorType.LATITUDE_SENSOR_TYPE, false, exportOption);
+    ExportField latField = new ExportField(SensorType.LATITUDE_SENSOR_TYPE, false, false, exportOption);
     fieldSets.addField(FieldSet.BASE_FIELD_SET, latField);
     sensorTypeFields.put(SensorType.LATITUDE_SENSOR_TYPE.getId(), latField);
 
     // TODO Depth is fixed for now. Will fix this when variable parameter support is fixed
     // (Issue #1284)
     ColumnHeader depthHeader = new ColumnHeader("Depth", "ADEPZZ01", "m");
-    depthField = new ExportField(depthHeader.hashCode(), depthHeader, false, exportOption);
+    depthField = new ExportField(depthHeader.hashCode(), depthHeader, false, false, exportOption);
     fieldSets.addField(FieldSet.BASE_FIELD_SET, depthField);
 
     // Sensors
@@ -117,7 +117,9 @@ public class ExportData extends ManualQCPageData {
 
     for (SensorType sensorType : exportSensorTypes) {
       if (!sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
-        ExportField field = new ExportField(sensorType, true, exportOption);
+        ExportField field = new ExportField(sensorType, sensorType.isDiagnostic(),
+          !sensorType.isDiagnostic(), exportOption);
+
         fieldSets.addField(sensorsFieldSet, field);
         sensorTypeFields.put(sensorType.getId(), field);
       }
@@ -134,7 +136,7 @@ public class ExportData extends ManualQCPageData {
 
         ExportField field = new ExportField(
           entry.getKey(), entry.getValue().getColumnHeader(),
-          entry.getValue().isResult(), exportOption);
+          !entry.getValue().isResult(), entry.getValue().isResult(), exportOption);
 
         fieldSets.addField(varFieldSet, field);
         variableFields.put(entry.getKey(), field);
