@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.Measurement;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.utils.MathUtils;
 import uk.ac.exeter.QuinCe.utils.NoEmptyStringList;
 
 public class DataReductionRecord {
@@ -115,6 +116,6 @@ public class DataReductionRecord {
    */
   public String getCalculationJson() {
     Gson gson = new Gson();
-    return gson.toJson(calculationValues);
+    return gson.toJson(MathUtils.nanToNull(calculationValues));
   }
 }
