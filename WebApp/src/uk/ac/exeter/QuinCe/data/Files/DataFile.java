@@ -746,11 +746,34 @@ public class DataFile {
     return result;
   }
 
+  /**
+   * Get a field value from a line. If the line does not have enough fields,
+   * or the field is the defined missing value, returns {@code null}
+   * @param line The line containing the value
+   * @param field The field to retrieve
+   * @param missingValue The defined missing value
+   * @return The extracted value
+   */
   public String getStringValue(List<String> line, int field, String missingValue) {
-    String result = line.get(field).trim();
-    if (result.equals(missingValue)) {
-      result = null;
+    String result = null;
+
+    if (field < line.size()) {
+      result = line.get(field).trim();
+
+      if (result.equals(missingValue)) {
+        result = null;
+      }
+
+      if (null != result) {
+        try {
+          Double.parseDouble(result);
+        } catch (NumberFormatException e) {
+          System.out.println("NumberFormatException: Invalid value '" + result + "'");
+          result = null;
+        }
+      }
     }
+
     return result;
   }
 

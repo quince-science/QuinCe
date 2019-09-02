@@ -53,7 +53,11 @@ public class FieldValue {
     String qcComment, boolean used) {
 
     this.valueId = valueId;
-    this.value = value;
+    if (null == value) {
+      this.value = Double.NaN;
+    } else {
+      this.value = value;
+    }
     this.qcFlag = qcFlag;
     this.needsFlag = needsFlag;
     this.qcComment = qcComment;
@@ -74,7 +78,11 @@ public class FieldValue {
     Flag userQCFlag, String qcComment, boolean used) throws RoutineException {
 
     this.valueId = valueId;
-    this.value = value;
+    if (null == value) {
+      this.value = Double.NaN;
+    } else {
+      this.value = value;
+    }
 
     if (userQCFlag.equals(Flag.NEEDED)) {
       this.qcFlag = autoQC.getOverallFlag();
