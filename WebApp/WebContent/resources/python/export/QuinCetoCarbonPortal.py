@@ -47,33 +47,34 @@ def main():
       manifest, 
       data_filenames, 
       raw_filenames] = process_dataset(dataset,config_quince)
+      logging.debug('Manifest: \n',str(manifest))
 
       platform_code = manifest['manifest']['metadata']['platformCode']
       export_destination = platform[platform_code]['export'] 
 
-      # if 'ICOS' in export_destination: 
-      #   cp_cookie = get_auth_cookie(config_carbon)
+      if 'ICOS' in export_destination: 
+        cp_cookie = get_auth_cookie(config_carbon)
       
-      #   L0_hashsums = []
-      #   for index, raw_filename in enumerate(raw_filenames):
-      #     L0_hashsum = export_file_to_cp(
-      #       manifest, platform, config_carbon, raw_filename, platform_code, 
-      #       dataset_zip, index, cp_cookie,'L0')
-      #     L0_hashsums += [L0_hashsum]
+        L0_hashsums = []
+        for index, raw_filename in enumerate(raw_filenames):
+          L0_hashsum = export_file_to_cp(
+            manifest, platform, config_carbon, raw_filename, platform_code, 
+            dataset_zip, index, cp_cookie,'L0')
+          L0_hashsums += [L0_hashsum]
 
           
       #--- Processing L1 files
       for index, data_filename in enumerate(data_filenames):
 
-        ### EXPORTING L1 TO CARBON PORTAL ###
-        # if 'ICOS' in data_filename and 'ICOS' in export_destination: 
-        #   try:
-        #     L1_hashsum = export_file_to_cp(
-        #       manifest, platform, config_carbon, data_filename, platform_code, 
-        #       dataset_zip, index, cp_cookie, 'L1', L0_hashsums)
-        #   except Exception as e:
-        #     logging.error('Exception occurred: ', exc_info=True)
-        #     logging.INFO('Carbon Portal export failed')
+        ## EXPORTING L1 TO CARBON PORTAL ###
+        if 'ICOS' in data_filename and 'ICOS' in export_destination: 
+          try:
+            L1_hashsum = export_file_to_cp(
+              manifest, platform, config_carbon, data_filename, platform_code, 
+              dataset_zip, index, cp_cookie, 'L1', L0_hashsums)
+          except Exception as e:
+            logging.error('Exception occurred: ', exc_info=True)
+            logging.INFO('Carbon Portal export failed')
 
         if 'Copernicus' in data_filename and 'CMEMS' in export_destination:  
           logging.info('Executing Copernicus routine')
@@ -85,8 +86,8 @@ def main():
             logging.error('Exception occurred: ', exc_info=True)
             logging.INFO('FTP connection failed')
       if successful_upload_CMEMS:
-        #report_complete_export(config_quince,dataset['id'])
-      #else: 
+        report_complete_export(config_quince,dataset['id'])
+      else: 
         report_abandon_export(config_quince,dataset['id'])
 
   except Exception as e: 

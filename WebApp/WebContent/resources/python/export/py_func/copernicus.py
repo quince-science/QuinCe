@@ -160,7 +160,7 @@ def build_netCDF(dataset_zip,dataset_name,destination_filename):
 
   logging.debug(f'Commiting metadata to local SQL database {cmems_db}')
   sql_commit(nc_dict)
-  return local_folder
+  return str(local_folder)
 
 
 def upload_to_copernicus(ftp_config,server):
