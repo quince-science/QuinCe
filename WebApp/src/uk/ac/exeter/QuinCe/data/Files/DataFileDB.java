@@ -176,6 +176,11 @@ public class DataFileDB {
       + "id FROM data_file WHERE filename = ? AND file_definition_id IN "
       + "(SELECT id FROM file_definition WHERE instrument_id = ?)";
 
+  private static final String GET_FILE_COUNT_QUERY = "SELECT "
+    + "COUNT(*) FROM data_file WHERE "
+    + "file_definition_id IN"
+    + "(SELECT id FROM file_definition WHERE instrument_id = ?)";
+
   /**
    * Store a file in the database and in the file store
    * @param dataSource A data source
@@ -961,5 +966,33 @@ public class DataFileDB {
     }
 
     return result;
+  }
+
+  public static int getFileCount(DataSource dataSource, long instrumentId) throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+
+    int fileCount = 0;
+
+    try (
+      Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn.prepareStatement(GET_FILE_COUNT_QUERY);
+    ) {
+
+      stmt.setLong(1, instrumentId);
+
+      try (ResultSet records = stmt.executeQuery()) {
+        records.first();
+        fileCount = records.getInt(1);
+      } catch (SQLException e) {
+        throw e;
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting instrument files", e);
+    }
+
+    return fileCount;
   }
 }

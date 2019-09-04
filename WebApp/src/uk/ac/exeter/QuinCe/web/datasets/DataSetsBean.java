@@ -87,12 +87,17 @@ public class DataSetsBean extends BaseManagedBean {
   private boolean validCalibration = true;
 
   /**
+   * Indicates whether or not the selected instrument has files
+   */
+  private boolean hasFiles = false;
+
+  /**
    * The message to be displayed if any calibrations
    * are invalid
    */
   private String validCalibrationMessage = null;
 
-/**
+  /**
    * Initialise/Reset the bean
    */
   @PostConstruct
@@ -147,6 +152,7 @@ public class DataSetsBean extends BaseManagedBean {
   private void loadDataSets() throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException, ResourceException {
     if (null != getCurrentInstrument()) {
       dataSets = DataSetDB.getDataSets(getDataSource(), getCurrentInstrument().getDatabaseId());
+      hasFiles = DataFileDB.getFileCount(getDataSource(), getCurrentInstrument().getDatabaseId()) > 0;
     } else {
       dataSets = null;
     }
@@ -492,5 +498,9 @@ public class DataSetsBean extends BaseManagedBean {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public boolean getHasFiles() {
+    return hasFiles;
   }
 }
