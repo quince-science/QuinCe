@@ -481,6 +481,7 @@ public class DataFileDB {
 
     try {
       conn = dataSource.getConnection();
+      InstrumentFileSet fileDefinitions = InstrumentDB.getFileDefinitions(conn, instrumentId);
 
       if (null != instrumentId) {
         stmt = conn.prepareStatement(GET_FILES_BY_INSTRUMENT_QUERY);
@@ -494,7 +495,7 @@ public class DataFileDB {
 
       records = stmt.executeQuery();
       while (records.next()) {
-        fileInfo.add(makeDataFile(records, appConfig.getProperty("filestore"), conn));
+        fileInfo.add(makeDataFile(records, appConfig.getProperty("filestore"), fileDefinitions));
       }
 
     } catch (Exception e) {
@@ -568,12 +569,33 @@ public class DataFileDB {
     DataFile result = null;
 
     try {
-      long fileDefinitionId = record.getLong(2);
       long instrumentId = record.getLong(7);
-
       InstrumentFileSet files = InstrumentDB.getFileDefinitions(conn, instrumentId);
+      result = makeDataFile(record, fileStore, files);
+    } catch (SQLException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new DatabaseException("Error retrieving file definition details", e);
+    }
 
-      result = makeDataFile(record, fileStore, files.get(fileDefinitionId));
+    return result;
+  }
+
+  /**
+   * Build a {@link DataFile} object from a database record
+   * @param record The database record
+   * @param fileStore The file store location
+   * @param conn A database connection
+   * @return The DataFile object
+   * @throws SQLException If the record cannot be read
+   * @throws DatabaseException If any sub-queries fail
+   */
+  private static DataFile makeDataFile(ResultSet record, String fileStore, InstrumentFileSet fileDefinitions) throws SQLException, DatabaseException {
+    DataFile result = null;
+
+    try {
+      long fileDefinitionId = record.getLong(2);
+      result = makeDataFile(record, fileStore, fileDefinitions.get(fileDefinitionId));
     } catch (SQLException e) {
       throw e;
     } catch (Exception e) {
@@ -831,7 +853,7 @@ public class DataFileDB {
     List<PreparedStatement> statements = new ArrayList<PreparedStatement>();
     List<ResultSet> resultSets = new ArrayList<ResultSet>();
     try {
-      List<FileDefinition> fileDefinitions = InstrumentDB.getFileDefinitions(conn, instrumentId);
+      InstrumentFileSet fileDefinitions = InstrumentDB.getFileDefinitions(conn, instrumentId);
       Map<FileDefinition, List<DataFile>> filesAfterDate = new HashMap<FileDefinition, List<DataFile>>();
 
       // Get all the files after the specified date, grouped by file definition
@@ -844,7 +866,7 @@ public class DataFileDB {
 
         ResultSet records = stmt.executeQuery();
         while (records.next()) {
-          foundFiles.add(makeDataFile(records, appConfig.getProperty("filestore"), conn));
+          foundFiles.add(makeDataFile(records, appConfig.getProperty("filestore"), fileDefinitions));
         }
 
         statements.add(stmt);
