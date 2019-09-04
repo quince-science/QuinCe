@@ -82,7 +82,7 @@
             <f:selectItems value="#{dataSetsBean.instruments}" var="instrument" itemValue="#{instrument.id}" itemLabel="#{instrument.name}"/>
             <p:ajax event="change" update="datasets"/>
           </p:selectOneMenu>
-          <ui:fragment rendered="#{fn:length(dataFilesBean.listFiles) gt 0}">
+          <ui:fragment rendered="#{dataSetsBean.hasFiles}">
             <p:commandButton value="Create New Data Set" ajax="false" action="#{dataSetsBean.startNewDataset}"/>
           </ui:fragment>
         </h:panelGrid>
@@ -198,7 +198,7 @@
         </p:dataTable>
 
         <h:panelGrid columns="1" cellpadding="5" class="buttonPanel">
-          <ui:fragment rendered="#{fn:length(dataFilesBean.listFiles) eq 0}">
+          <ui:fragment rendered="#{!dataSetsBean.hasFiles}">
             <div class="instructions error">
               There are no data files available for this instrument. Go to the Files tab to upload new files.
             </div>
