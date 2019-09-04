@@ -47,7 +47,7 @@ def main():
       manifest, 
       data_filenames, 
       raw_filenames] = process_dataset(dataset,config_quince)
-      logging.debug('Manifest: \n',str(manifest))
+      logging.debug(manifest)
 
       platform_code = manifest['manifest']['metadata']['platformCode']
       export_destination = platform[platform_code]['export'] 
