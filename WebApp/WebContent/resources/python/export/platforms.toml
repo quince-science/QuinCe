@@ -1,14 +1,17 @@
-['58GS']
-platform_name = 'G.O. Sars'
-expocode = "58GS"
-platform_type = "Ship" 
-region = "North Atlantic"
+[58GS]
+name = 'G. O. Sars'
+nodc_code = '58GS'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_GOSars'
+category_code = 31
+data_type = 'VOS'
+call_sign = 'LMEL'
 export = ['ICOS','CMEMS']
 
-
-['26NA']
-platform_name = 'Nuka Arctica'
-expocode = "26NA"
-platform_type = "Ship" 
-region = "North Atlantic"
+[26NA]
+name = 'Nuka Arctica'
+nodc_code = '26NA'
+cp_url = 'http://meta.icos-cp.eu/resources/stations/OS_26NA'
+category_code = 31
+data_type = 'VOS'
+call_sign = 'OXYH2'
 export = ['ICOS','CMEMS']
