@@ -1,5 +1,8 @@
-CREATE INDEX SENSORVALUES_USERQCFLAG ON sensor_values (user_qc_flag);
+CREATE INDEX USERQCFLAG ON sensor_values (user_qc_flag);
+CREATE INDEX DATASETID_DATE ON sensor_values (dataset_id, date);
 
 
 -- ROLLBACK
--- DROP INDEX SENSORVALUES_USERQCFLAG ON sensor_values;
+
+-- DROP INDEX USERQCFLAG ON sensor_values;
+-- DROP INDEX DATASETID_DATE ON sensor_values;
