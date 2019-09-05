@@ -1,0 +1,5 @@
+CREATE INDEX SENSORVALUES_USERQCFLAG ON sensor_values (user_qc_flag);
+
+
+-- ROLLBACK
+-- DROP INDEX SENSORVALUES_USERQCFLAG ON sensor_values;
