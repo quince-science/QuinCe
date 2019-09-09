@@ -14,9 +14,9 @@ import io
 
 #from py_func.meta_handling import get_hashsum, get_file_from_zip
 '''Carbon Portal submission process
+https://github.com/ICOS-Carbon-Portal/meta#data-object-registration-and-upload-instructions
 
 1. post metadata package describing the data-object (JSON object)
-   - post potential supporting document (not yet supported)
 2. put dataobject
 '''
 OBJ_SPEC_URI = {}
@@ -29,7 +29,9 @@ OBJECT_BASE_URL = 'https://data.icos-cp.eu/objects/'
 META_CONTENT_TYPE = 'application/json'
 OBJECT_CONTENT_TYPE = 'text/csv'
 
-def export_file_to_cp(manifest, platform, config, filename, platform_code,dataset_zip,index, auth_cookie,level,L0_hashsums=[]):
+def export_file_to_cp(
+  manifest, platform, config, filename, platform_code,dataset_zip,index, 
+  auth_cookie,level,L0_hashsums=[]):
   ''' Upload routie for NRT data files
 
   Uploads both metadata and data object
@@ -54,12 +56,13 @@ def export_file_to_cp(manifest, platform, config, filename, platform_code,datase
     export_filename = NRT_set
   else:
     export_filename = os.path.split(file)[-1]
-  #sql_investigate returns old hashsum if filename exists, but hashsum doesn't match.
-  already_exported = sql_investigate(
-    export_filename, hashsum,filename,level,NRT_set)
 
-  if 'EXISTS' in already_exported: return hashsum 
-  elif 'NEW' not in already_exported: is_next_version = already_exported #old hashsum
+  logging.info(f'Checking for previous export of {export_filename}')
+  #sql_investigate returns old hashsum if new version(same name, diff hashsum).
+  prev_exp = sql_investigate(export_filename,hashsum,filename,level,NRT_set)
+
+  if 'EXISTS' in prev_exp: return hashsum # terminates function. 
+  elif 'NEW' not in prev_exp: is_next_version = prev_exp #old hashsum
   else: is_next_version = None
 
   meta = build_metadata_package(
@@ -72,32 +75,36 @@ def export_file_to_cp(manifest, platform, config, filename, platform_code,datase
     logging.error(f'Failed to upload: {filename}, \n Exception: {e}')
     return ''
 
-  sql_commit(export_filename, hashsum,filename,level,NRT_set)
+  db_status = sql_commit(export_filename, hashsum,filename,level,NRT_set)
+  logging.debug(f'{export_filename}: SQL commit {db_status}')
 
   return hashsum
 
 def upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI):
-  '''  upload functionality for exporting metadata and data object to Carbon Portal  '''
+  '''Uploads metadata and data object to Carbon Portal  '''
   logging.debug(f'cookie: cpauthToken={auth_cookie}')
 
   #posting metadata-json
   logging.info(f'POSTING {file} metadata-object to {META_URL}')
-  resp = send_object(
+  resp = push_object(
     META_URL,meta.encode('utf-8'),auth_cookie,META_CONTENT_TYPE,'POST')
   logging.debug(f'{file} metadata upload response: {resp}')
 
   #putting data-object
-  #tryingest_url = ('https://data.icos-cp.eu/tryingest?specUri=' + urllib.parse.quote(OBJ_SPEC_URI, safe='') + '&nRows=' + str(manifest['manifest']['metadata']['records']))
+  #tryingest_url = ('https://data.icos-cp.eu/tryingest?specUri=' 
+  #  + urllib.parse.quote(OBJ_SPEC_URI, safe='') + '&nRows=' 
+  #  + str(manifest['manifest']['metadata']['records']))
   object_url = OBJECT_BASE_URL + hashsum
   logging.info(f'PUTTING data-object: {file} to {object_url}')
   
   with open(file) as f: 
     data = f.read().encode('utf-8')
-    resp = send_object(object_url,data,auth_cookie,OBJECT_CONTENT_TYPE,'PUT')
+    resp = push_object(object_url,data,auth_cookie,OBJECT_CONTENT_TYPE,'PUT')
     logging.debug(f'{file} Upload response: {resp}')
 
 
-def build_metadata_package(file,manifest,platform,index,hashsum, obj_spec, level,L0_hashsums, is_next_version, export_filename):
+def build_metadata_package(file,manifest,platform,index,hashsum,
+  obj_spec,level,L0_hashsums,is_next_version,export_filename):
   '''  Builds metadata-package, step 1 of 2 Carbon Portal upload process.
 
   https://github.com/ICOS-Carbon-Portal/meta#registering-the-metadata-package
@@ -108,13 +115,11 @@ def build_metadata_package(file,manifest,platform,index,hashsum, obj_spec, level
 
   # generic metadata
   meta= {
-  'submitterId': 'OTC',
-  'hashSum':hashsum,
-  'specificInfo':{
-  'station': platform['cp_url'],
-  },
-  'objectSpecification': obj_spec
-  }
+    'submitterId': 'OTC',
+    'hashSum':hashsum,
+    'specificInfo':{'station': platform['cp_url'],},
+    'objectSpecification': obj_spec
+    }
 
   # L1 specific metadata
   if 'L1' in level:
@@ -139,26 +144,24 @@ def build_metadata_package(file,manifest,platform,index,hashsum, obj_spec, level
     meta['fileName'] = os.path.split(file)[-1]
 
 
-  #converting from dictionary to json-object
+  # converting from dictionary to json-object
   meta_JSON = json.dumps(meta) 
 
-  parsed = json.loads(meta_JSON);  
   logging.debug(
-    f'metadata-package: {type(meta_JSON)}\n{json.dumps(parsed, indent = 4)}')
+    f'metadata-package: {type(meta_JSON)}\n \
+    {json.dumps(json.loads(meta_JSON), indent = 4)}')
 
   return meta_JSON
 
 
 def get_hashsum(filename):
   ''' returns a 256 hashsum corresponding to input file. '''
-  logging.info(
-    'Generating hashsum for datafile {:s}'
-    .format(filename))
-  with open(filename) as f: content=f.read()
+  logging.info(f'Generating hashsum for datafile {filename}')
+  with open(filename) as f: content = f.read()
   hashsum = hashlib.sha256(content.encode('utf-8')).hexdigest()
   return hashsum
 
-def send_object(url,data,auth_cookie,content_type,method):
+def push_object(url,data,auth_cookie,content_type,method):
   '''  http-posts/puts data-object to url with content-type and auth_cookie  '''
 
   headers = {'Content-Type':content_type,'Cookie':'cpauthToken=' + auth_cookie,}
@@ -181,7 +184,7 @@ def get_auth_cookie(config):
   auth_pwd = config['CARBON']['auth_pwd']
   auth_values={'mail': auth_mail,'password': auth_pwd}
 
-  # Building cookie system
+  logging.debug('Building cookie system')
   cookies = http.cookiejar.LWPCookieJar()
   handlers = [ 
     urllib.request.HTTPHandler(), 
@@ -190,13 +193,13 @@ def get_auth_cookie(config):
     ]
   opener = urllib.request.build_opener(*handlers) 
     
-  #Constructing request
+  logging.debug('Constructing request')
   data = urllib.parse.urlencode(auth_values).encode('utf-8')
   req = urllib.request.Request(auth_url, data)
   response = opener.open(req)
   logging.debug(f'Cookie response: {response}')
 
-  #Retrieving cookie
+  logging.debug('Retrieving cookie')
   for cookie in cookies:
     if cookie.name == 'cpauthToken':
       return cookie.value
@@ -213,23 +216,25 @@ def sql_investigate(export_filename, hashsum,filename,level,NRT_set):
   c.execute("SELECT hashsum FROM cp_export WHERE export_filename=? ",
     [export_filename])
   filename_exists = c.fetchone() 
-  # fetchone fetches first(only) result from query if present, fetches hashsum if filename exists
+  # fetches hashsum if filename exists
   try:
     if filename_exists: 
       if filename_exists[0] == hashsum:
-        logging.debug(f'{filename} already exported')
+        logging.debug(f'{filename}: already exported')
         return 'EXISTS'
       else:
         return filename_exists[0] #old_hashsum
     else:
+      logging.debug(f'{filename}: new entry.')
       return 'NEW'
   except Exception as e:
     logging.error(f'Checking database failed:  {filename} ', exc_info=True)
     return 'ERROR'
 
 
-def sql_commit(export_filename, hashsum,filename,level,NRT_set):
+def sql_commit(export_filename,hashsum,filename,level,NRT_set):
   '''  Updates existing entries or inserts new entries after export.  '''
+  logging.debug(f'Adding {export_filename} to SQL database')
 
   today = datetime.datetime.now().strftime('%Y-%m-%d')
   c = create_connection(CP_DB)
@@ -237,26 +242,29 @@ def sql_commit(export_filename, hashsum,filename,level,NRT_set):
   try:
     filename_exists = c.fetchone() 
     if filename_exists:
-      if filename_exists[0] == hashsum:
+      if not(filename_exists[0] == hashsum):
         logging.info(f'Update to {filename}')
         c.execute("UPDATE cp_export SET \
           hashsum=?,export_date=? WHERE filename = ?",\
           (hashsum, today, filename))
-        conn.commit()
-    
-      else:
-        c.execute("INSERT INTO cp_export \
-          (export_filename,hashsum,filename,level,NRT_set,export_date) \
-          VALUES (?,?,?,?,?,?)",
-           (export_filename, hashsum, filename, level, NRT_set, today))
-        conn.commit()
+        #conn.commit()
+        logging.debug(f'{filename} SQL database update: Success')
+        return 'SUCCESS'
+    else:
+      c.execute("INSERT INTO cp_export \
+        (export_filename,hashsum,filename,level,NRT_set,export_date) \
+        VALUES (?,?,?,?,?,?)",
+         (export_filename, hashsum, filename, level, NRT_set, today))
+      #conn.commit()
+      logging.debug(f'{filename} SQL database commit: Success')
+      return 'SUCCESS'
   except Exception as e:
     logging.error(f'Adding/Updating database failed: {filename}', exc_info=True)
     return 'ERROR'
 
 def create_connection(CP_DB):
   ''' creates connection and database if not already created '''
-  conn = sqlite3.connect(CP_DB)
+  conn = sqlite3.connect(CP_DB, isolation_level=None)
   c = conn.cursor()
   c.execute(''' CREATE TABLE IF NOT EXISTS cp_export (
               export_filename TEXT PRIMARY KEY,
