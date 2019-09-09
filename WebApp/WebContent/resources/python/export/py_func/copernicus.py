@@ -255,7 +255,7 @@ def upload_to_copernicus(ftp_config,server):
       currently_uploaded = c.fetchall()
 
       try:
-        logging.debug('local_folder: ', local_folder)
+        logging.debug(f'local_folder: {local_folder}')
         index_filename = build_index(currently_uploaded,local_folder)
       except Exception as e:
         logging.error('Building index failed: ', exc_info=True)
