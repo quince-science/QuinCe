@@ -1,8 +1,10 @@
 import sys, os
 import tempfile
 import datetime
+import pandas as pd
 import numpy as np
-import csv
+import csv, json
+from math import isnan
 from io import BytesIO
 from zipfile import ZipFile
 from netCDF4 import Dataset
@@ -29,45 +31,41 @@ PLATFORM_CODES = {
   "41" : "moored surface buoy"
 }
 
-def buildnetcdfs(datasetname, csv):
+def buildnetcdfs(datasetname, fieldconfig, filedata):
 
   result = []
 
-  csvlines = str.split(csv, "\n")
-  currentline = 1
+  currentline = 0
   currentdate = None
+  daystartline = currentline
+  dayendline = None
 
-  dailylines = []
-
-  while currentline < len(csvlines):
-    if (csvlines[currentline].strip() == ""):
-      break
-
-    linedate = getlinedate_(csvlines[currentline])
+  while currentline < filedata.shape[0]:
+    linedate = getlinedate_(filedata.iloc[[currentline]])
 
     if linedate != currentdate:
       if currentdate is not None:
-        result.append(makenetcdf_(datasetname, dailylines))
+        result.append(makenetcdf_(datasetname, fieldconfig, filedata[daystartline:dayendline + 1]))
 
       currentdate = linedate
-      dailylines = []
+      daystartline = currentline
+      dayendline = currentline
 
-    dailylines.append(csvlines[currentline])
+    dayendline = currentline
     currentline = currentline + 1
 
   # Make the last netCDF
-  if len(dailylines) > 0:
-    result.append(makenetcdf_(datasetname, dailylines))
+  if dayendline is not None:
+    result.append(makenetcdf_(datasetname, fieldconfig, filedata[daystartline:dayendline]))
 
   return result
 
-def makenetcdf_(datasetname, lines):
-  filedate = getlinedate_(lines[0])
+def makenetcdf_(datasetname, fieldconfig, records):
+  filedate = getlinedate_(records.iloc[[0]])
   ncbytes = None
 
-
   platform_code = getplatformcode_(datasetname)
-  filenameroot = "GL_LATEST_TS_TS_" + getplatformcallsign_(platform_code) + "_" + filedate
+  filenameroot = "GL_TS_TS_" + getplatformcallsign_(platform_code) + "_" + str(filedate)
 
   # Open a new netCDF file
   ncpath = tempfile.gettempdir() + "/" + filenameroot + ".nc"
@@ -86,9 +84,8 @@ def makenetcdf_(datasetname, lines):
   timevar.valid_max = 90000;
   timevar.axis = "T"
 
-  latdim = nc.createDimension("LATITUDE", len(lines))
-  latvar = nc.createVariable("LATITUDE", "f", ("LATITUDE"),
-    fill_value = 99999.0)
+  latdim = nc.createDimension("LATITUDE", records.shape[0])
+  latvar = nc.createVariable("LATITUDE", "f", ("LATITUDE"), fill_value = 99999.0)
 
   latvar.long_name = "Latitude of each location"
   latvar.standard_name = "latitude"
@@ -99,7 +96,7 @@ def makenetcdf_(datasetname, lines):
   latvar.reference = "WGS84"
   latvar.coordinate_reference_frame = "urn:ogc:crs:EPSG::4326"
 
-  londim = nc.createDimension("LONGITUDE", len(lines))
+  londim = nc.createDimension("LONGITUDE", records.shape[0])
   lonvar = nc.createVariable("LONGITUDE", "f", ("LONGITUDE"),
     fill_value = 99999.0)
 
@@ -112,44 +109,12 @@ def makenetcdf_(datasetname, lines):
   lonvar.reference = "WGS84"
   lonvar.coordinate_reference_frame = "urn:ogc:crs:EPSG::4326"
 
-  positiondim = nc.createDimension("POSITION", len(lines))
-
-  # Record position bounds
-  minlon = 180
-  maxlon = -180
-  minlat = 90
-  maxlat = -90
+  positiondim = nc.createDimension("POSITION", records.shape[0])
 
   # Fill in dimension variables
-  times = [0] * len(lines)
-  lats = [0] * len(lines)
-  lons = [0] * len(lines)
-  for i in range(0, len(lines)):
-    fields = str.split(lines[i], ",")
-    times[i] = maketimefield_(fields[0])
-    if i == 0:
-      starttime = maketimeobject_(fields[0])
-    
-    if i == len(lines) - 1:
-      endtime = maketimeobject_(fields[0])
-
-    lats[i] = float(fields[2])
-    if lats[i] < minlat:
-      minlat = lats[i]
-
-    if lats[i] > maxlat:
-      maxlat = lats[i]
-
-    lons[i] = float(fields[1])
-    if lons[i] < minlon:
-      minlon = lons[i]
-
-    if lons[i] > maxlon:
-      maxlon = lons[i]
-
-  timevar[:] = times
-  latvar[:] = lats
-  lonvar[:] = lons
+  timevar[:] = records['Timestamp'].apply(maketimefield_).to_numpy()
+  latvar[:] = records['ALATGP01'].to_numpy()
+  lonvar[:] = records['ALONGP01'].to_numpy()
 
   # QC flags for dimension variables. Assume all are good
   timeqcvar = nc.createVariable("TIME_QC", "b", ("TIME"), \
@@ -162,129 +127,52 @@ def makenetcdf_(datasetname, lines):
   assignqcvarattributes_(positionqcvar)
   positionqcvar[:] = 1
 
-  # Now we create the data variables
-  depthvar = nc.createVariable("DEPH", "f", ("TIME", "DEPTH"), \
-    fill_value = -99999.0)
-  depthvar.long_name = "Depth"
-  depthvar.standard_name = "depth"
-  depthvar.units = "m"
-  depthvar.positive = "down"
-  depthvar.valid_min = -12000.0
-  depthvar.valid_max = 12000.0
-  depthvar.axis = "Z"
-  depthvar.reference = "sea_level"
-  depthvar.coordinate_reference_frame = "urn:ogc:crs:EPSG::5113"
-
-  depthqcvar = nc.createVariable("DEPH_QC", "b", ("TIME", "DEPTH"), \
-    fill_value = QC_FILL_VALUE)
-  assignqcvarattributes_(depthqcvar)
-  depthqcvar[:] = 7
-
   positionvar = nc.createVariable("POSITIONING_SYSTEM", "c", ("TIME", "DEPTH"),\
     fill_value = " ")
   positionvar.longname = "Positioning system"
   positionvar.flag_values = "A, G, L, N, U"
   positionvar.flag_meanings = "Argos, GPS, Loran, Nominal, Unknown"
 
-  sstvar = nc.createVariable("TEMP", "f", ("TIME", "DEPTH"), \
-    fill_value = -9999)
-  sstvar.long_name = "Sea temperature"
-  sstvar.standard_name = "sea_water_temperature"
-  sstvar.units = "degrees_C"
+  positions = np.empty([records.shape[0], 1], dtype="object")
+  positions[:,0] = "G"
 
-  # SST is not explicitly QCed with a flag, so set to Unknown.
-  # Once we have per-sensor QC flags we can fill this in properly
-  sstqcvar = nc.createVariable("TEMP_QC", "b", ("TIME", "DEPTH"), \
-   fill_value = QC_FILL_VALUE)
-  assignqcvarattributes_(sstqcvar)
-  sstqcvar[:] = 0
-
-  sssvar = nc.createVariable("PSAL", "f", ("TIME", "DEPTH"), \
-    fill_value = -9999)
-  sssvar.long_name = "Practical salinity"
-  sssvar.standard_name = "sea_water_practical_salinity"
-  sssvar.units = "0.001"
-
-  # SSS is not explicitly QCed with a flag, so set to Unknown.
-  # Once we have per-sensor QC flags we can fill this in properly
-  sssqcvar = nc.createVariable("PSAL_QC", "b", ("TIME", "DEPTH"), \
-   fill_value = QC_FILL_VALUE)
-  assignqcvarattributes_(sssqcvar)
-  sssqcvar[:] = 0
-
-  fco2var = nc.createVariable("FCO2", "f", ("TIME", "DEPTH"), \
-    fill_value = -9999)
-  fco2var.long_name = "fugacity_of_CO2_in_sea_water"
-  fco2var.standard_name = "fugacity_of_CO2"
-  fco2var.units = "µatm"
-
-  # We do have QC flags for the fco2
-  fco2qcvar = nc.createVariable("FCO2_QC", "b", ("TIME", "DEPTH"), \
-    fill_value="-128")
-  assignqcvarattributes_(fco2qcvar)
-
-  # Dimension variables for data variables
-  depthdmvar = nc.createVariable("DEPH_DM", "c", ("TIME", "DEPTH"), \
-    fill_value = " ")
-  assigndmvarattributes_(depthdmvar)
-
-  sstdmvar = nc.createVariable("TEMP_DM", "c", ("TIME", "DEPTH"), \
-    fill_value = " ")
-  assigndmvarattributes_(sstdmvar)
-
-  sssdmvar = nc.createVariable("PSAL_DM", "c", ("TIME", "DEPTH"), \
-    fill_value = " ")
-  assigndmvarattributes_(sssdmvar)
-
-  fco2dmvar = nc.createVariable("FCO2_DM", "c", ("TIME", "DEPTH"), \
-    fill_value = " ")
-  assigndmvarattributes_(fco2dmvar)
-
-  # And populate them
-  depths = np.empty([len(lines), 1])
-  positions = np.empty([len(lines), 1], dtype="object")
-  temps = np.empty([len(lines), 1])
-  sals = np.empty([len(lines), 1])
-  fco2s = np.empty([len(lines), 1])
-  fco2qcs = np.empty([len(lines), 1])
-  dms = np.empty([len(lines), 1], dtype="object")
-
-  for i in range(0, len(lines)):
-    fields = str.split(lines[i], ",")
-    depths[i, 0] = 5
-    positions[i, 0] = "G"
-    dms[i, 0] = "R"
-
-    if fields[3] == "":
-      temps[i, 0] = -9999
-    else:
-      temps[i, 0] = fields[3]
-
-    if fields[4] == "":
-      sals[i, 0] = -9999
-    else:
-      sals[i, 0] = fields[4]
-
-    if fields[5] == "":
-      fco2s[i, 0] = -9999
-    else:
-      fco2s[i, 0] = fields[5]
-
-    if len(fields[6]) == 0:
-      fco2qcs[i, 0] = -128
-    else:
-      fco2qcs[i, 0] = makeqcvalue_(int(fields[6]))
-
-  depthvar[:,:] = depths
   positionvar[:,:] = positions
-  sstvar[:,:] = temps
-  sssvar[:,:] = sals
-  fco2var[:,:] = fco2s
-  fco2qcvar[:,:] = fco2qcs
-  depthdmvar[:,:] = dms
-  sstdmvar[:,:] = dms
-  sssdmvar[:,:] = dms
-  fco2dmvar[:,:] = dms
+
+  # DM values
+  dms = np.empty([records.shape[0], 1], dtype="object")
+  dms[:,0] = "R"
+
+
+  # Fields
+  for index, field in fieldconfig.iterrows():
+    var = nc.createVariable(field['netCDF Name'], field['Data Type'], \
+      ("TIME", "DEPTH"), fill_value=field['FillValue'])
+
+    attributes = json.loads(field['Attributes'])
+    for key, value in attributes.items():
+      var.setncattr(key, value)
+
+    varvalues = np.empty([records.shape[0], 1])
+    varvalues[:,0] = records[field['Export Column']].to_numpy()
+
+    var[:,:] = varvalues
+
+    # DM variable
+    dmvar = nc.createVariable(field['netCDF Name'] + '_DM', 'c', ("TIME", "DEPTH"), fill_value=' ')
+    assigndmvarattributes_(dmvar)
+    dmvar[:,:] = dms
+
+    qc_values = np.empty([records.shape[0], 1])
+    if field['QC'] == "Data":
+      qc_values[:,0] = makeqcvalues_(varvalues, records[field['Export Column'] + '_QC'].to_numpy())
+    else:
+      qc_values[:,0] = field['QC']
+
+    qcvar = nc.createVariable(field['netCDF Name'] + '_QC', "b", ("TIME", "DEPTH"), \
+      fill_value = QC_FILL_VALUE)
+
+    assignqcvarattributes_(qcvar)
+    qcvar[:,:] = qc_values
 
   # Global attributes
   nc.id = filenameroot
@@ -299,22 +187,17 @@ def makenetcdf_(datasetname, lines):
   nc.data_mode = "R"
   nc.area = "Global Ocean"
 
-  nc.geospatial_lat_min = str(minlat)
-  nc.geospatial_lat_max = str(maxlat)
-  nc.geospatial_lon_min = str(minlon)
-  nc.geospatial_lon_max = str(maxlon)
+  nc.geospatial_lat_min = str(min(latvar))
+  nc.geospatial_lat_max = str(max(latvar))
+  nc.geospatial_lon_min = str(min(lonvar))
+  nc.geospatial_lon_max = str(max(lonvar))
   nc.geospatial_vertical_min = "5.00"
   nc.geospatial_vertical_max = "5.00"
-
-  nc.last_latitude_observation = lats[-1]
-  nc.last_longitude_observation = lons[-1]
-  nc.last_date_observation = endtime.strftime("%Y-%m-%dT%H:%M:%SZ")
-  nc.time_coverage_start = starttime.strftime("%Y-%m-%dT%H:%M:%SZ")
-  nc.time_coverage_end = endtime.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-  #datasetdate = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-  #nc.date_update = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-  #nc.history = datasetdate + " : Creation"
+  nc.last_latitude_observation = str(records['ALATGP01'].iloc[[-1]].to_numpy()[0])
+  nc.last_longitude_observation = str(records['ALONGP01'].iloc[[-1]].to_numpy()[0])
+  nc.last_date_observation = records['Timestamp'].iloc[[-1]].to_numpy()[0]
+  nc.time_coverage_start = records['Timestamp'].iloc[[0]].to_numpy()[0]
+  nc.time_coverage_end = records['Timestamp'].iloc[[-1]].to_numpy()[0]
 
   nc.update_interval = "daily"
 
@@ -328,7 +211,7 @@ def makenetcdf_(datasetname, lines):
   nc.naming_authority = "Copernicus"
 
   nc.platform_code = getplatformcallsign_(platform_code)
-  nc.site_code = "" # getplatformcallsign_(platform_code)
+  nc.site_code = getplatformcallsign_(platform_code)
 
   # For buoys -> Mooring observation.
   platform_category_code = getplatformcategorycode_(platform_code)
@@ -360,6 +243,17 @@ def makenetcdf_(datasetname, lines):
   os.remove(ncpath)
 
   return [filenameroot, ncbytes]
+
+def makeqcvalues_(values, qc):
+
+  result = np.empty(len(values))
+  for i in range(0, len(values)):
+    if isnan(values[i]):
+      result[i] = 9
+    else:
+      result[i] = makeqcvalue_(qc[i])
+
+  return result
 
 def getplatformcategorycode_(platform_code):
   result = None
@@ -440,12 +334,11 @@ def maketimeobject_(timestr):
 
   return timeobj
 
-
 def makeqcvalue_(flag):
   result = 9 # Missing
 
   if flag == 2:
-    result = 1
+    result = 2
   elif flag == 3:
     result = 2
   elif flag == 4:
@@ -456,8 +349,7 @@ def makeqcvalue_(flag):
   return result
 
 def getlinedate_(line):
-  datefield = str.split(line, ",")[0]
-  return datefield[0:4] + datefield[5:7] + datefield[8:10]
+  return pd.to_datetime(line.Timestamp).iloc[0].date().strftime('%Y%m%d')
 
 def getplatformcode_(datasetname):
   platform_code = None
@@ -482,17 +374,21 @@ def getplatformcode_(datasetname):
 
 
 def main():
+  fieldconfig = pd.read_csv('fields.csv', delimiter=',', quotechar='\'')
+
   zipfile = sys.argv[1]
 
   datasetname = os.path.splitext(zipfile)[0]
   datasetpath = datasetname + "/dataset/Copernicus/" + datasetname + ".csv"
 
-  csv = None
+  filedata = None
 
   with ZipFile(zipfile, "r") as unzip:
-  	csv = unzip.read(datasetpath).decode("utf-8")
+    filedata = pd.read_csv(BytesIO(unzip.read(datasetpath)), delimiter=',')
 
-  netcdfs = buildnetcdfs(datasetname, csv)
+  filedata['Timestamp'] = filedata['Timestamp'].astype(str)
+
+  netcdfs = buildnetcdfs(datasetname, fieldconfig, filedata)
 
   for i in range(0, len(netcdfs)):
     with open(netcdfs[i][0] + ".nc", "wb") as outchan:
