@@ -15,12 +15,9 @@ import org.primefaces.json.JSONArray;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
-import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.jobs.JobManager;
 import uk.ac.exeter.QuinCe.jobs.files.AutoQCJob;
@@ -30,8 +27,6 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.datasets.data.CommentSet;
 import uk.ac.exeter.QuinCe.web.datasets.data.CommentSetEntry;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
-import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
-import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageBean;
 
@@ -294,7 +289,7 @@ public class ManualQcBean extends PlotPageBean {
    */
   @Override
   protected void loadData() throws Exception {
-
+/*
     try {
       fieldSets = new FieldSets("Date/Time");
 
@@ -360,6 +355,7 @@ public class ManualQcBean extends PlotPageBean {
     } catch (Exception e) {
       e.printStackTrace();
     }
+*/
   }
 
   @Override
