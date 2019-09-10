@@ -585,7 +585,13 @@ public class DataSetDB {
     PreparedStatement datasetStatement = null;
 
     try {
+
       currentAutoCommitStatus = conn.getAutoCommit();
+      setDatasetStatus(conn, dataSet.getId(), DataSet.STATUS_DELETE);
+      if (!currentAutoCommitStatus) {
+        conn.commit();
+      }
+
       if (currentAutoCommitStatus) {
         conn.setAutoCommit(false);
       }
@@ -602,7 +608,7 @@ public class DataSetDB {
         conn.commit();
         conn.setAutoCommit(true);
       }
-    } catch (SQLException e) {
+    } catch (Exception e) {
       if (currentAutoCommitStatus) {
         try {
           conn.rollback();
