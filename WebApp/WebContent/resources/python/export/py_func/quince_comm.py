@@ -58,7 +58,6 @@ def make_quince_call(config, call, dataset_id=-1):
       logging.debug(f'type: {exc_type}')
       logging.debug(f'file name: {fname}')
       logging.debug(f'line number: {exc_tb.tb_lineno}')
-      logging.debug(sys.exc_value)
 
       sys.exit()
 
