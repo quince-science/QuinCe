@@ -32,40 +32,38 @@ PLATFORM_CODES = {
 }
 
 def buildnetcdfs(datasetname, fieldconfig, filedata):
+  ''' Construct CMEMS complient netCDF files from filedata'''
 
   result = []
-
   currentline = 0
   currentdate = None
   daystartline = currentline
   dayendline = None
 
   while currentline < filedata.shape[0]:
-    linedate = getlinedate_(filedata.iloc[[currentline]])
-
+    linedate = getlinedate(filedata.iloc[[currentline]])
     if linedate != currentdate:
-      if currentdate is not None:
-        result.append(makenetcdf_(datasetname, fieldconfig, filedata[daystartline:dayendline + 1]))
+      if currentdate:
+        result.append(makenetcdf(datasetname, fieldconfig, filedata[daystartline:dayendline + 1]))
 
       currentdate = linedate
       daystartline = currentline
-      dayendline = currentline
 
     dayendline = currentline
     currentline = currentline + 1
 
   # Make the last netCDF
-  if dayendline is not None:
-    result.append(makenetcdf_(datasetname, fieldconfig, filedata[daystartline:dayendline]))
+  if dayendline:
+    result.append(makenetcdf(datasetname, fieldconfig, filedata[daystartline:dayendline+1]))
 
   return result
 
-def makenetcdf_(datasetname, fieldconfig, records):
-  filedate = getlinedate_(records.iloc[[0]])
+def makenetcdf(datasetname, fieldconfig, records):
+  filedate = getlinedate(records.iloc[[0]])
   ncbytes = None
 
-  platform_code = getplatformcode_(datasetname)
-  filenameroot = "GL_TS_TS_" + getplatformcallsign_(platform_code) + "_" + str(filedate)
+  platform_code = getplatformcode(datasetname)
+  filenameroot = "GL_TS_TS_" + getplatformcallsign(platform_code) + "_" + str(filedate)
 
   # Open a new netCDF file
   ncpath = tempfile.gettempdir() + "/" + filenameroot + ".nc"
@@ -112,19 +110,19 @@ def makenetcdf_(datasetname, fieldconfig, records):
   positiondim = nc.createDimension("POSITION", records.shape[0])
 
   # Fill in dimension variables
-  timevar[:] = records['Timestamp'].apply(maketimefield_).to_numpy()
+  timevar[:] = records['Timestamp'].apply(maketimefield).to_numpy()
   latvar[:] = records['ALATGP01'].to_numpy()
   lonvar[:] = records['ALONGP01'].to_numpy()
 
   # QC flags for dimension variables. Assume all are good
   timeqcvar = nc.createVariable("TIME_QC", "b", ("TIME"), \
    fill_value = QC_FILL_VALUE)
-  assignqcvarattributes_(timeqcvar)
+  assignqcvarattributes(timeqcvar)
   timeqcvar[:] = 1
 
   positionqcvar = nc.createVariable("POSITION_QC", "b", ("POSITION"), \
    fill_value = QC_FILL_VALUE)
-  assignqcvarattributes_(positionqcvar)
+  assignqcvarattributes(positionqcvar)
   positionqcvar[:] = 1
 
   positionvar = nc.createVariable("POSITIONING_SYSTEM", "c", ("TIME", "DEPTH"),\
@@ -159,19 +157,19 @@ def makenetcdf_(datasetname, fieldconfig, records):
 
     # DM variable
     dmvar = nc.createVariable(field['netCDF Name'] + '_DM', 'c', ("TIME", "DEPTH"), fill_value=' ')
-    assigndmvarattributes_(dmvar)
+    assigndmvarattributes(dmvar)
     dmvar[:,:] = dms
 
     qc_values = np.empty([records.shape[0], 1])
     if field['QC'] == "Data":
-      qc_values[:,0] = makeqcvalues_(varvalues, records[field['Export Column'] + '_QC'].to_numpy())
+      qc_values[:,0] = makeqcvalues(varvalues, records[field['Export Column'] + '_QC'].to_numpy())
     else:
       qc_values[:,0] = field['QC']
 
     qcvar = nc.createVariable(field['netCDF Name'] + '_QC', "b", ("TIME", "DEPTH"), \
       fill_value = QC_FILL_VALUE)
 
-    assignqcvarattributes_(qcvar)
+    assignqcvarattributes(qcvar)
     qcvar[:,:] = qc_values
 
   # Global attributes
@@ -210,12 +208,12 @@ def makenetcdf_(datasetname, fieldconfig, records):
   nc.author = "cmems-service"
   nc.naming_authority = "Copernicus"
 
-  nc.platform_code = getplatformcallsign_(platform_code)
-  nc.site_code = getplatformcallsign_(platform_code)
+  nc.platform_code = getplatformcallsign(platform_code)
+  nc.site_code = getplatformcallsign(platform_code)
 
   # For buoys -> Mooring observation.
-  platform_category_code = getplatformcategorycode_(platform_code)
-  nc.platform_name = getplatformname_(platform_code)
+  platform_category_code = getplatformcategorycode(platform_code)
+  nc.platform_name = getplatformname(platform_code)
   nc.source_platform_category_code = platform_category_code
   nc.source = PLATFORM_CODES[platform_category_code]
 
@@ -244,18 +242,18 @@ def makenetcdf_(datasetname, fieldconfig, records):
 
   return [filenameroot, ncbytes]
 
-def makeqcvalues_(values, qc):
+def makeqcvalues(values, qc):
 
   result = np.empty(len(values))
   for i in range(0, len(values)):
     if isnan(values[i]):
       result[i] = 9
     else:
-      result[i] = makeqcvalue_(qc[i])
+      result[i] = makeqcvalue(qc[i])
 
   return result
 
-def getplatformcategorycode_(platform_code):
+def getplatformvalue(platform_code,value):
   result = None
 
   with open("ship_categories.csv") as infile:
@@ -264,11 +262,24 @@ def getplatformcategorycode_(platform_code):
     try:
       result = lookups[platform_code]
     except KeyError:
-      print("PLATFORM CODE '" + platform_code + "' not found in ship categories")
+      logging.error(f"PLATFORM CODE '{platform_code}' not found in ship categories")
 
   return result
 
-def getplatformname_(platform_code):
+def getplatformcategorycode(platform_code):
+  result = None
+
+  with open("ship_categories.csv") as infile:
+    reader = csv.reader(infile)
+    lookups = {rows[0]:rows[2] for rows in reader}
+    try:
+      result = lookups[platform_code]
+    except KeyError:
+      logging.error(f"PLATFORM CODE '{platform_code}' not found in ship categories")
+
+  return result
+
+def getplatformname(platform_code):
   result = None
 
   with open("ship_categories.csv") as infile:
@@ -277,11 +288,11 @@ def getplatformname_(platform_code):
     try:
       result = lookups[platform_code]
     except KeyError:
-      print("PLATFORM CODE '" + platform_code + "' not found in ship categories")
+      logging.error(f"PLATFORM CODE ' {platform_code} ' not found in ship categories")
 
   return result
 
-def getplatformcallsign_(platform_code):
+def getplatformcallsign(platform_code):
   result = None
 
   with open("ship_categories.csv") as infile:
@@ -290,11 +301,11 @@ def getplatformcallsign_(platform_code):
     try:
       result = lookups[platform_code]
     except KeyError:
-      print("PLATFORM CODE '" + platform_code + "' not found in ship categories")
+      logging.error(f"PLATFORM CODE ' {platform_code}' not found in ship categories")
 
   return result
 
-def getplatformdatatype_(platform_code):
+def getplatformdatatype(platform_code):
   result = None
 
   with open("ship_categories.csv") as infile:
@@ -303,17 +314,17 @@ def getplatformdatatype_(platform_code):
     try:
       result = lookups[platform_code]
     except KeyError:
-      print("PLATFORM CODE '" + platform_code + "' not found in ship categories")
+      logging.error(f"PLATFORM CODE '{platform_code}' not found in ship categories")
 
   return result
 
-def assigndmvarattributes_(dmvar):
+def assigndmvarattributes(dmvar):
   dmvar.long_name = DM_LONG_NAME
   dmvar.conventions = DM_CONVENTIONS
   dmvar.flag_values = DM_FLAG_VALUES
   dmvar.flag_meanings = DM_FLAG_MEANINGS
 
-def assignqcvarattributes_(qcvar):
+def assignqcvarattributes(qcvar):
   qcvar.long_name = QC_LONG_NAME
   qcvar.conventions = QC_CONVENTIONS
   qcvar.valid_min = QC_VALID_MIN
@@ -321,20 +332,20 @@ def assignqcvarattributes_(qcvar):
   qcvar.flag_values = QC_FLAG_VALUES
   qcvar.flag_meanings = QC_FLAG_MEANINGS
 
-def maketimefield_(timestr):
-  timeobj = maketimeobject_(timestr)
+def maketimefield(timestr):
+  timeobj = maketimeobject(timestr)
 
   diff = timeobj - TIME_BASE
   return diff.days + diff.seconds / 86400
 
-def maketimeobject_(timestr):
+def maketimeobject(timestr):
   timeobj = datetime.datetime(int(timestr[0:4]), int(timestr[5:7]), \
     int(timestr[8:10]), int(timestr[11:13]), int(timestr[14:16]), \
     int(timestr[17:19]))
 
   return timeobj
 
-def makeqcvalue_(flag):
+def makeqcvalue(flag):
   result = 9 # Missing
 
   if flag == 2:
@@ -348,10 +359,10 @@ def makeqcvalue_(flag):
 
   return result
 
-def getlinedate_(line):
+def getlinedate(line):
   return pd.to_datetime(line.Timestamp).iloc[0].date().strftime('%Y%m%d')
 
-def getplatformcode_(datasetname):
+def getplatformcode(datasetname):
   platform_code = None
 
   # NRT data sets

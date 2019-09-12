@@ -67,7 +67,7 @@ import sqlite3
 import json
 import time
 
-from py_func.meta_handling import get_file_from_zip
+from py_func.carbon import get_file_from_zip
 
 # Upload result codes
 UPLOAD_OK = 0
@@ -98,7 +98,7 @@ index_dir = '/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/NRT_201904'
 
 product_id = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
 
-def build_netCDF(dataset_zip,dataset_name,destination_filename):
+def build_dataproduct(dataset_zip,dataset_name,destination_filename):
   '''
   transforms csv-file to daily netCDF-files.
   Creates dictionary containing info on each netCDF file extracted
@@ -110,8 +110,7 @@ def build_netCDF(dataset_zip,dataset_name,destination_filename):
   # Load field config
   fieldconfig = pd.read_csv('fields.csv', delimiter=',', quotechar='\'')
 
-  csv_file = get_file_from_zip(dataset_zip, dataset_name
-     + '/dataset/Copernicus/' + destination_filename)  
+  csv_file = get_file_from_zip(dataset_zip, destination_filename)  
    
   local_folder = (
     'latest/' + (datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
