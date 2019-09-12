@@ -31,7 +31,7 @@ OBJECT_CONTENT_TYPE = 'text/csv'
 
 def export_file_to_cp(
   manifest, platform, config, filename, platform_code,dataset_zip,index, 
-  auth_cookie,level,L0_hashsums=[]):
+  auth_cookie,level,upload,L0_hashsums=[]):
   ''' Upload routie for NRT data files
 
   Uploads both metadata and data object
@@ -68,15 +68,15 @@ def export_file_to_cp(
   meta = build_metadata_package(
     file, manifest, platform[platform_code],index, hashsum, 
     OBJ_SPEC_URI[level], level, L0_hashsums, is_next_version, export_filename)
-
-  try:
-    upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI[level])
-  except Exception as e:
-    logging.error(f'Failed to upload: {filename}, \n Exception: {e}')
-    return ''
-
-  db_status = sql_commit(export_filename, hashsum,filename,level,NRT_set)
-  logging.debug(f'{export_filename}: SQL commit {db_status}')
+  
+  if upload:
+    try:
+      upload_to_cp(auth_cookie, file, hashsum, meta, OBJ_SPEC_URI[level])
+      db_status = sql_commit(export_filename, hashsum,filename,level,NRT_set)
+      logging.debug(f'{export_filename}: SQL commit {db_status}')
+    except Exception as e:
+      logging.error(f'Failed to upload: {filename}, \n Exception: {e}')
+      return ''
 
   return hashsum
 

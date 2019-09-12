@@ -33,6 +33,8 @@ if not os.path.isdir('log'):
 #logging.basicConfig(stream=sys.stdout,format='%(asctime)s %(message)s', level=logging.DEBUG)
 logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.DEBUG)
 
+upload = True # for debugging purposes, when False no data is exported.
+
 def main():
   logging.debug('Obtaining IDs of datasets ready for export from QuinCe')
   export_list = get_export_list(config_quince)
@@ -59,7 +61,7 @@ def main():
         for index, raw_filename in enumerate(raw_filenames):
           L0_hashsum = export_file_to_cp(
             manifest, platform, config_carbon, raw_filename, platform_code, 
-            dataset_zip, index, cp_cookie,'L0')
+            dataset_zip, index, cp_cookie,'L0',upload)
           L0_hashsums += [L0_hashsum]
 
           
@@ -71,7 +73,7 @@ def main():
           try:
             L1_hashsum = export_file_to_cp(
               manifest, platform, config_carbon, data_filename, platform_code, 
-              dataset_zip, index, cp_cookie, 'L1', L0_hashsums)
+              dataset_zip, index, cp_cookie, 'L1', upload, L0_hashsums)
           except Exception as e:
             logging.error('Exception occurred: ', exc_info=True)
             logging.INFO('Carbon Portal export failed')
@@ -80,8 +82,11 @@ def main():
           logging.info('Executing Copernicus routine')
           local_folder  = build_dataproduct(dataset_zip,dataset['name'],data_filename)
           try: 
-            successful_upload_CMEMS = upload_to_copernicus(
-              config_copernicus,'nrt_server',dataset,local_folder)
+            if upload:
+                successful_upload_CMEMS = upload_to_copernicus(
+                    config_copernicus,'nrt_server',dataset,local_folder)
+            else: 
+                successful_upload_CMEMS = False
           except Exception as e:
             logging.error('Exception occurred: ', exc_info=True)
             logging.INFO('FTP connection failed')
@@ -94,6 +99,7 @@ def main():
     print(e); 
     logging.info('Failed to run. Encountered: %s ',e);
     exc_type, exc_obj, exc_tb = sys.exc_info()
+    traceback.print_exc()
 
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     logging.debug(f'type: {exc_type}')
