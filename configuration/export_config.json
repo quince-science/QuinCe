@@ -11,7 +11,15 @@
   	"exportName": "ICOS OTC",
   	"separator": "comma",
   	"allSensors": true,
-  	"includeCalculationColumns": true
+  	"includeCalculationColumns": true,
+  	"replaceColumnHeaders": {
+  	  "ALATGP01": "Latitude",
+  	  "ALONGP01": "Longitude",
+  	  "PSALPR01": "P_sal [psu]",
+  	  "TEMPPR01": "Temp [degC]",
+  	  "FCO2XXXX": "fCO2 [uatm]",
+  	  "PCO2TK02": "pCO2 [uatm]"
+  	}
   },
   {
     "exportName": "Copernicus",
