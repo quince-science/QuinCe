@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Export;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,9 @@ public class ExportOption {
    */
   private boolean includeQCComments = true;
 
+  /**
+   * The header for the timestamp column
+   */
   private String timestampHeader = "Date/Time";
 
   /**
@@ -80,6 +84,11 @@ public class ExportOption {
    * QC Comment header suffix
    */
   private String qcCommentSuffix = " QC Comment";
+
+  /**
+   * Custom column header replacements
+   */
+  private Map<String, String> replacementColumnHeaders = null;
 
   /**
    * Build an ExportOption object from a JSON string
@@ -249,6 +258,20 @@ public class ExportOption {
 
     if (json.has("qcCommentSuffix")) {
       qcCommentSuffix = json.getString("qcCommentSuffix");
+    }
+
+    if (json.has("replaceColumnHeaders")) {
+      useColumnCodes = true;
+      replacementColumnHeaders = new HashMap<String, String>();
+
+      JSONObject replacementHeaderJson = json.getJSONObject("replaceColumnHeaders");
+      replacementHeaderJson.keySet()
+        .stream()
+        .forEach(k -> {
+          replacementColumnHeaders.put(k, replacementHeaderJson.getString(k));
+
+        });
+
     }
   }
 
