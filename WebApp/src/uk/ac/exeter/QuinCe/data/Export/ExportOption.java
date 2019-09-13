@@ -344,4 +344,18 @@ public class ExportOption {
   public String getTimestampHeader() {
     return timestampHeader;
   }
+
+
+  public String getReplacementHeader(String code) {
+    String result = code;
+
+    if (null != replacementColumnHeaders &&
+      replacementColumnHeaders.containsKey(code)) {
+
+      result = replacementColumnHeaders.get(code);
+
+    }
+
+    return result;
+  }
 }
