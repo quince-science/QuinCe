@@ -26,3 +26,7 @@ WebApp/WebContent/resources/python/export/log/
 WebApp/WebContent/resources/python/export/tmp/
 WebApp/WebContent/resources/python/export/oap_metadata_templates/
 **/*.nc
+
+WebApp/WebContent/resources/python/export/index_monthly.txt
+
+WebApp/WebContent/resources/python/export/monthly/stations.rdf
