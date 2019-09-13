@@ -19,7 +19,7 @@ public class ColumnHeader {
     StringBuilder header = new StringBuilder();
 
     if (exportOption.useColumnCodes()) {
-      header.append(code);
+      header.append(exportOption.getReplacementHeader(code));
     } else {
       header.append(heading);
     }
