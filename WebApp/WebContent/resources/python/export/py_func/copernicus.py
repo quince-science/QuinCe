@@ -162,7 +162,7 @@ def build_dataproduct(dataset_zip,dataset_name,destination_filename):
   return str(local_folder)
 
 
-def upload_to_copernicus(ftp_config,server):
+def upload_to_copernicus(ftp_config,server,dataset,local_folder):
   '''
   Creates a FTP-connection.
   Uploads netCDF files, creates and uploads index file and DNT file.
@@ -190,13 +190,6 @@ def upload_to_copernicus(ftp_config,server):
   # CHECK IF FTP IS EMPTY 
     directory_empty = check_directory(ftp, nrt_dir) 
     if directory_empty: return False
-
-  #****************
-  # CURRENT DATABASE for debugging
-  #  c.execute("SELECT * FROM latest ")
-  #  results = c.fetchall()
-  #  logging.debug(f'current database:\n{results!r}')
-  #****************
 
   # CHECK DICTONARY : DELETE FILES ON SERVER; OLDER THAN 30 DAYS
   # Dictionary structure: 
@@ -231,7 +224,7 @@ def upload_to_copernicus(ftp_config,server):
       # Setting dnt-variable to temp variable: local folder.
       # After DNT is created, DNT-filepath is updated for all instances where 
       # DNT-filetpath is local_folder
-      local_folder = filepath_local.rsplit('/',1)[0] 
+      #local_folder = filepath_local.rsplit('/',1)[0] 
       if upload_result == 0: #upload ok
         c.execute("UPDATE latest \
           SET uploaded = ?, ftp_filepath = ?, dnt_file = ? \
@@ -699,8 +692,6 @@ def evaluate_response_file(ftp,dnt_filepath,folder_local):
   else: return True
 
 def cmems_delay(filename, upload_time):
-  print(filename)
-  print(filename.rsplit('_',1)[-1].split('.')[0])
   #date_recorded = filename.rsplit('_',1)[-1].split('.')[0] #nc_date
   #target_upload = datetime.datetime#nc-date + 1 day + 12:00 
   #delay = #diff uploaded - recorded
