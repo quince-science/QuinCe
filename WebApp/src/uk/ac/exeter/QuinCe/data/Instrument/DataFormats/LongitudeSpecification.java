@@ -3,7 +3,9 @@ package uk.ac.exeter.QuinCe.data.Instrument.DataFormats;
 import java.util.List;
 
 /**
- * Handles all formats of longitudes, and the corresponding column assignments within a data file
+ * Handles all formats of longitudes, and the corresponding column assignments
+ * within a data file
+ * 
  * @author Steve Jones
  *
  */
@@ -20,8 +22,8 @@ public class LongitudeSpecification extends PositionSpecification {
   public static final int FORMAT_MINUS180_180 = 1;
 
   /**
-   * Indicates that longitudes are between 0 and 180, with an extra
-   * field denoting East or West
+   * Indicates that longitudes are between 0 and 180, with an extra field
+   * denoting East or West
    */
   public static final int FORMAT_0_180 = 2;
 
@@ -34,12 +36,18 @@ public class LongitudeSpecification extends PositionSpecification {
 
   /**
    * Constructor for a complete specification
-   * @param format The format
-   * @param valueColumn The value column
-   * @param hemisphereColumn The hemisphere column
-   * @throws PositionException If the specification is incomplete or invalid
+   * 
+   * @param format
+   *          The format
+   * @param valueColumn
+   *          The value column
+   * @param hemisphereColumn
+   *          The hemisphere column
+   * @throws PositionException
+   *           If the specification is incomplete or invalid
    */
-  public LongitudeSpecification(int format, int valueColumn, int hemisphereColumn) throws PositionException {
+  public LongitudeSpecification(int format, int valueColumn,
+    int hemisphereColumn) throws PositionException {
     super(format, valueColumn, hemisphereColumn);
   }
 
@@ -82,7 +90,8 @@ public class LongitudeSpecification extends PositionSpecification {
       }
       }
     } catch (NumberFormatException e) {
-      throw new PositionException("Invalid longitude value '" + line.get(getValueColumn()) + "'");
+      throw new PositionException(
+        "Invalid longitude value '" + line.get(getValueColumn()) + "'");
     }
 
     if (value < -180 || value > 180) {
@@ -93,12 +102,17 @@ public class LongitudeSpecification extends PositionSpecification {
   }
 
   /**
-   * Calculate the longitude multiplier for a longitude value. East = 1, West = -1
-   * @param hemisphere The hemisphere
+   * Calculate the longitude multiplier for a longitude value. East = 1, West =
+   * -1
+   * 
+   * @param hemisphere
+   *          The hemisphere
    * @return The multiplier
-   * @throws PositionException If the hemisphere value is invalid
+   * @throws PositionException
+   *           If the hemisphere value is invalid
    */
-  private double hemisphereMultiplier(String hemisphere) throws PositionException {
+  private double hemisphereMultiplier(String hemisphere)
+    throws PositionException {
     double multiplier = 1.0;
 
     if (null == hemisphere) {
@@ -117,7 +131,8 @@ public class LongitudeSpecification extends PositionSpecification {
       break;
     }
     default: {
-      throw new PositionException("Invalid hemisphere value '" + hemisphere + "'");
+      throw new PositionException(
+        "Invalid hemisphere value '" + hemisphere + "'");
     }
     }
 

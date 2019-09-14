@@ -24,7 +24,9 @@ public class AutoQCResult extends ArrayList<RoutineFlag> {
 
   /**
    * Build an AutoQCResult from a JSON string
-   * @param json The JSON string
+   * 
+   * @param json
+   *          The JSON string
    * @return The AutoQCResult
    */
   public static AutoQCResult buildFromJson(String json) {
@@ -47,9 +49,11 @@ public class AutoQCResult extends ArrayList<RoutineFlag> {
   }
 
   /**
-   * Return the overall flag that results from a set of flags
-   * from QC routines. This is the most significant flag of the set
-   * @param flags The flags
+   * Return the overall flag that results from a set of flags from QC routines.
+   * This is the most significant flag of the set
+   * 
+   * @param flags
+   *          The flags
    * @return The most significant flag
    */
   public Flag getOverallFlag() {
@@ -66,6 +70,7 @@ public class AutoQCResult extends ArrayList<RoutineFlag> {
 
   /**
    * Generate a JSON representation of this result
+   * 
    * @return The JSON representation
    */
   public String toJson() {
@@ -80,8 +85,10 @@ public class AutoQCResult extends ArrayList<RoutineFlag> {
 
   /**
    * Get the short messages for each QC flag in this result
+   * 
    * @return The messages
-   * @throws RoutineException If a message cannot be retrieved
+   * @throws RoutineException
+   *           If a message cannot be retrieved
    */
   public String getAllMessages() throws RoutineException {
     StringBuilder result = new StringBuilder();

@@ -7,9 +7,8 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import uk.ac.exeter.QuinCe.User.User;
 
 /**
- * Basic class containing the read-omly summary of a job. This cannot
- * be used to manipulate jobs - the {@link JobManager} must
- * be used for that.
+ * Basic class containing the read-omly summary of a job. This cannot be used to
+ * manipulate jobs - the {@link JobManager} must be used for that.
  *
  * @author Steve Jones
  *
@@ -65,18 +64,30 @@ public class JobSummary {
 
   /**
    * Basic constructor - simply takes in all values for the summary
-   * @param id The job's database ID
-   * @param owner The job's owner
-   * @param className The job's class name
-   * @param created The date/time that the job was created
-   * @param status The current status of the job
-   * @param started The date/time that the job was started
-   * @param ended The date/time that the job finished
-   * @param progress The current progress of the job
-   * @param stackTrace The stack trace for the job
+   * 
+   * @param id
+   *          The job's database ID
+   * @param owner
+   *          The job's owner
+   * @param className
+   *          The job's class name
+   * @param created
+   *          The date/time that the job was created
+   * @param status
+   *          The current status of the job
+   * @param started
+   *          The date/time that the job was started
+   * @param ended
+   *          The date/time that the job finished
+   * @param progress
+   *          The current progress of the job
+   * @param stackTrace
+   *          The stack trace for the job
    */
   @Deprecated
-  public JobSummary(long id, User owner, String className, Date created, String status, Date started, Date ended, double progress, String stackTrace) {
+  public JobSummary(long id, User owner, String className, Date created,
+    String status, Date started, Date ended, double progress,
+    String stackTrace) {
     this.id = id;
     this.owner = owner;
     this.className = className;
@@ -90,6 +101,7 @@ public class JobSummary {
 
   /**
    * Get the job's database ID
+   * 
    * @return The job's database ID
    */
   public long getId() {
@@ -98,6 +110,7 @@ public class JobSummary {
 
   /**
    * Get the job's owner
+   * 
    * @return The job's owner
    */
   public User getOwner() {
@@ -106,6 +119,7 @@ public class JobSummary {
 
   /**
    * Get the job's class name. The package is removed.
+   * 
    * @return The job's class name
    */
   public String getClassName() {
@@ -116,6 +130,7 @@ public class JobSummary {
 
   /**
    * Get the date/time that the job was created
+   * 
    * @return The date/time that the job was created
    */
   public Date getCreated() {
@@ -124,6 +139,7 @@ public class JobSummary {
 
   /**
    * Get the current status of the job
+   * 
    * @return The current status of the job
    */
   public String getStatus() {
@@ -132,6 +148,7 @@ public class JobSummary {
 
   /**
    * Get the date/time that the job was started
+   * 
    * @return The date/time that the job was started
    */
   @Deprecated
@@ -141,6 +158,7 @@ public class JobSummary {
 
   /**
    * Get the date/time that the job finished
+   * 
    * @return The date/time that the job finished
    */
   @Deprecated
@@ -150,6 +168,7 @@ public class JobSummary {
 
   /**
    * Get the current progress of the job
+   * 
    * @return The current progress of the job
    */
   public double getProgress() {
@@ -158,6 +177,7 @@ public class JobSummary {
 
   /**
    * Get the stack trace for the job
+   * 
    * @return The stack trace for the job
    */
   public String getStackTrace() {
@@ -166,6 +186,7 @@ public class JobSummary {
 
   /**
    * Get the stack trace for the job, formatted in HTML
+   * 
    * @return The stack trace for the job in HTML
    */
   public String getStackTraceAsHtml() {

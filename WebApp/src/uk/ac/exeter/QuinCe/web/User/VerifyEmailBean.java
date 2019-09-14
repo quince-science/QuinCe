@@ -33,11 +33,14 @@ public class VerifyEmailBean extends BaseManagedBean {
   public void verifyCode() {
 
     try {
-      int codeOK = UserDB.checkEmailVerificationCode(ServletUtils.getDBDataSource(), getRequestParameter(USER_PARAM), getRequestParameter(CODE_PARAM));
+      int codeOK = UserDB.checkEmailVerificationCode(
+        ServletUtils.getDBDataSource(), getRequestParameter(USER_PARAM),
+        getRequestParameter(CODE_PARAM));
 
       switch (codeOK) {
       case UserDB.CODE_OK: {
-        UserDB.clearEmailVerificationCode(ServletUtils.getDBDataSource(), getRequestParameter(USER_PARAM));
+        UserDB.clearEmailVerificationCode(ServletUtils.getDBDataSource(),
+          getRequestParameter(USER_PARAM));
         verified = true;
         break;
       }

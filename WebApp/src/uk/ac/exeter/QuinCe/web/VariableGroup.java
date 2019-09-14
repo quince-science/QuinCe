@@ -5,6 +5,7 @@ import java.util.List;
 
 /**
  * A group of variables within a {@link VariableList}.
+ * 
  * @author Steve Jones
  *
  */
@@ -24,12 +25,15 @@ public class VariableGroup {
    * The variables within the group
    */
   private List<Variable> variables;
-  // Ordinarily I'd just make the class extend a list, but JSF doesn't like getting
+  // Ordinarily I'd just make the class extend a list, but JSF doesn't like
+  // getting
   // the name attribute if I do that.
 
   /**
    * Initialise the group
-   * @param name The group name
+   * 
+   * @param name
+   *          The group name
    */
   public VariableGroup(String name) {
     this.name = name;
@@ -44,6 +48,7 @@ public class VariableGroup {
 
   /**
    * Get the number of variables in the group
+   * 
    * @return The number of variables in the group
    */
   public int size() {
@@ -52,7 +57,9 @@ public class VariableGroup {
 
   /**
    * Add a variable to the group
-   * @param variable The variable
+   * 
+   * @param variable
+   *          The variable
    */
   public void add(Variable variable) {
     variables.add(variable);
@@ -60,6 +67,7 @@ public class VariableGroup {
 
   /**
    * Get the group's name
+   * 
    * @return The name
    */
   public String getName() {
@@ -68,6 +76,7 @@ public class VariableGroup {
 
   /**
    * Get the number of variables in the group
+   * 
    * @return The group size
    */
   public int getSize() {
@@ -76,6 +85,7 @@ public class VariableGroup {
 
   /**
    * Get the variables in this group
+   * 
    * @return The variables
    */
   public List<Variable> getVariables() {
@@ -84,7 +94,9 @@ public class VariableGroup {
 
   /**
    * Determine whether or not the title MUST be shown for this group
-   * @return {@code true} if the title must be shown; {@code false} if it can be skipped
+   * 
+   * @return {@code true} if the title must be shown; {@code false} if it can be
+   *         skipped
    */
   public boolean getTitleRequired() {
     return titleRequired;

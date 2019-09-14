@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * Object to represent a data set
+ * 
  * @author Steve Jones
  *
  */
@@ -41,8 +42,8 @@ public class DataSet {
   public static final String STATUS_DELETE_NAME = "Marked for deletion";
 
   /**
-   * The numeric value for the error status.
-   * The data set will be given this status whenever a processing job fails.
+   * The numeric value for the error status. The data set will be given this
+   * status whenever a processing job fails.
    */
   public static final int STATUS_ERROR = -1;
 
@@ -238,36 +239,37 @@ public class DataSet {
 
   /**
    * Constructor for all fields
+   * 
    * @param id
-   *    Data set's database ID
+   *          Data set's database ID
    * @param instrumentId
-   *    Database ID of the instrument to which the data set belongs
+   *          Database ID of the instrument to which the data set belongs
    * @param name
-   *    Dataset name
+   *          Dataset name
    * @param start
-   *    Start date
+   *          Start date
    * @param end
-   *    End date
+   *          End date
    * @param status
    *          The current status
    * @param status
    *          The date that the status was set
    * @param nrt
-   *    Indicates whether or not this is a NRT dataset
+   *          Indicates whether or not this is a NRT dataset
    * @param properties
-   *    Additional properties
+   *          Additional properties
    * @param lastTouched
-   *    Date that the dataset was last accessed
+   *          Date that the dataset was last accessed
    * @param needsFlagCount
-   *    Number of records that need flagging by the user
+   *          Number of records that need flagging by the user
    * @param messages
-   *    List of messages concerning the dataset (errors etc)
+   *          List of messages concerning the dataset (errors etc)
    */
   protected DataSet(long id, long instrumentId, String name,
-      LocalDateTime start, LocalDateTime end, int status, LocalDateTime statusDate,
-      boolean nrt, Properties properties, LocalDateTime lastTouched,
-      int needsFlagCount, List<Message> messages,
-      double minLon, double minLat, double maxLon, double maxLat) {
+    LocalDateTime start, LocalDateTime end, int status,
+    LocalDateTime statusDate, boolean nrt, Properties properties,
+    LocalDateTime lastTouched, int needsFlagCount, List<Message> messages,
+    double minLon, double minLat, double maxLon, double maxLat) {
     this.id = id;
     this.instrumentId = instrumentId;
     this.name = name;
@@ -288,7 +290,9 @@ public class DataSet {
 
   /**
    * Constructor for a new, empty data set
-   * @param instrumentId The database ID of the instrument to which the data set belongs
+   * 
+   * @param instrumentId
+   *          The database ID of the instrument to which the data set belongs
    */
   public DataSet(long instrumentId) {
     this.instrumentId = instrumentId;
@@ -297,21 +301,22 @@ public class DataSet {
 
   /**
    * Constructor for all fields
+   * 
    * @param id
-   *    Data set's database ID
+   *          Data set's database ID
    * @param instrumentId
-   *    Database ID of the instrument to which the data set belongs
+   *          Database ID of the instrument to which the data set belongs
    * @param name
-   *    Dataset name
+   *          Dataset name
    * @param start
-   *    Start date
+   *          Start date
    * @param end
-   *    End date
+   *          End date
    * @param nrt
-   *    Indicates whether or not this is a NRT dataset
+   *          Indicates whether or not this is a NRT dataset
    */
-  public DataSet(long instrumentId, String name,
-      LocalDateTime start, LocalDateTime end, boolean nrt) {
+  public DataSet(long instrumentId, String name, LocalDateTime start,
+    LocalDateTime end, boolean nrt) {
     this.instrumentId = instrumentId;
     this.name = name;
     this.start = start;
@@ -322,6 +327,7 @@ public class DataSet {
 
   /**
    * Get the data set's status
+   * 
    * @return The status
    */
   public int getStatus() {
@@ -330,6 +336,7 @@ public class DataSet {
 
   /**
    * Get the human-readable status of the data set
+   * 
    * @return The status
    */
   public String getStatusName() {
@@ -338,7 +345,9 @@ public class DataSet {
 
   /**
    * Get the human-readable name of a given data set status
-   * @param statusValue The status value
+   * 
+   * @param statusValue
+   *          The status value
    * @return The status name
    */
   public static String getStatusName(int statusValue) {
@@ -403,6 +412,7 @@ public class DataSet {
 
   /**
    * Get the data set's database ID
+   * 
    * @return The database ID
    */
   public long getId() {
@@ -411,7 +421,9 @@ public class DataSet {
 
   /**
    * Set the data set's database ID
-   * @param id The database ID
+   * 
+   * @param id
+   *          The database ID
    */
   protected void setId(long id) {
     this.id = id;
@@ -419,6 +431,7 @@ public class DataSet {
 
   /**
    * Get the database ID of the instrument to which this data set belongs
+   * 
    * @return The instrument's database ID
    */
   public long getInstrumentId() {
@@ -427,6 +440,7 @@ public class DataSet {
 
   /**
    * Get the name of the data set
+   * 
    * @return The data set name
    */
   public String getName() {
@@ -435,7 +449,9 @@ public class DataSet {
 
   /**
    * Set the name of the data set
-   * @param name The data set name
+   * 
+   * @param name
+   *          The data set name
    */
   public void setName(String name) {
     this.name = name;
@@ -443,6 +459,7 @@ public class DataSet {
 
   /**
    * Get the start date of the data set
+   * 
    * @return The start date
    */
   public LocalDateTime getStart() {
@@ -451,7 +468,9 @@ public class DataSet {
 
   /**
    * Set the start date of the data set
-   * @param start The start date
+   * 
+   * @param start
+   *          The start date
    */
   public void setStart(LocalDateTime start) {
     this.start = start;
@@ -459,6 +478,7 @@ public class DataSet {
 
   /**
    * Get the end date of the data set
+   * 
    * @return The end date
    */
   public LocalDateTime getEnd() {
@@ -467,7 +487,9 @@ public class DataSet {
 
   /**
    * Set the end date of the data set
-   * @param end The end date
+   * 
+   * @param end
+   *          The end date
    */
   public void setEnd(LocalDateTime end) {
     this.end = end;
@@ -475,6 +497,7 @@ public class DataSet {
 
   /**
    * Get the date that the data set was last accessed
+   * 
    * @return The last access date
    */
   public LocalDateTime getLastTouched() {
@@ -490,8 +513,11 @@ public class DataSet {
 
   /**
    * Set the data set's status
-   * @param status The status
-   * @throws InvalidDataSetStatusException If the status is invalid
+   * 
+   * @param status
+   *          The status
+   * @throws InvalidDataSetStatusException
+   *           If the status is invalid
    */
   public void setStatus(int status) throws InvalidDataSetStatusException {
     if (!validateStatus(status)) {
@@ -504,6 +530,7 @@ public class DataSet {
 
   /**
    * Get the date that the dataset's status was set
+   * 
    * @return The status date
    */
   public LocalDateTime getStatusDate() {
@@ -512,8 +539,11 @@ public class DataSet {
 
   /**
    * Set a property on the data set.
-   * @param key The key
-   * @param value The value
+   * 
+   * @param key
+   *          The key
+   * @param value
+   *          The value
    * @see Properties#setProperty(String, String)
    */
   public void setProperty(String key, String value) {
@@ -526,7 +556,9 @@ public class DataSet {
 
   /**
    * Get a property from the data set
-   * @param key The key
+   * 
+   * @param key
+   *          The key
    * @return The value
    * @see Properties#getProperty(String)
    */
@@ -542,7 +574,9 @@ public class DataSet {
 
   /**
    * Determine whether or not a given status value is valid
-   * @param status The status to be checked
+   * 
+   * @param status
+   *          The status to be checked
    * @return {@code true} if the status is valid; {@code false} if it is not
    */
   public static boolean validateStatus(int status) {
@@ -552,17 +586,19 @@ public class DataSet {
   /**
    * Determine whether or not this dataset can be exported.
    *
-   * <p>The data set can be exported if it meets the following
-   * criteria:</p>
+   * <p>
+   * The data set can be exported if it meets the following criteria:
+   * </p>
    * <ul>
-   *   <li>The dataset ready for user QC (not in any other state)</li>
-   *   <li>No rows need flagging</li>
+   * <li>The dataset ready for user QC (not in any other state)</li>
+   * <li>No rows need flagging</li>
    * </ul>
    *
-   * @return {@code true} if the dataset can be exported; {@code false} if it cannot
+   * @return {@code true} if the dataset can be exported; {@code false} if it
+   *         cannot
    */
   public boolean getCanBeExported() {
-    //TODO Reinstate check of whether QC is complete
+    // TODO Reinstate check of whether QC is complete
     return (getStatus() >= STATUS_USER_QC || isNrt());
   }
 
@@ -594,19 +630,24 @@ public class DataSet {
   }
 
   /**
-   * Get a list of the raw data files used to construct
-   * this DataSet
-   * @param dataSource A data source
+   * Get a list of the raw data files used to construct this DataSet
+   * 
+   * @param dataSource
+   *          A data source
    * @return The IDs of the files
-   * @throws MissingParamException If any required parameters are missing
-   * @throws DatabaseException If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
    */
-  public List<Long> getSourceFiles(Connection conn) throws MissingParamException, DatabaseException {
+  public List<Long> getSourceFiles(Connection conn)
+    throws MissingParamException, DatabaseException {
     return DataFileDB.getFilesWithinDates(conn, instrumentId, start, end);
   }
 
   /**
    * Determine whether or not this is a NRT dataset
+   * 
    * @return {@code true} if this is an NRT dataset; {@code false} if it is not
    */
   public boolean isNrt() {
@@ -614,8 +655,8 @@ public class DataSet {
   }
 
   /**
-   * Get the number of NEEDED flags to be processed
-   * by the user
+   * Get the number of NEEDED flags to be processed by the user
+   * 
    * @return The number of NEEDED flags
    */
   public int getNeedsFlagCount() {
@@ -623,12 +664,16 @@ public class DataSet {
   }
 
   /**
-   * Get the available field sets for this dataset keyed by name.
-   * Builds the list once, then caches it
+   * Get the available field sets for this dataset keyed by name. Builds the
+   * list once, then caches it
+   * 
    * @return The field sets
-   * @throws MissingParamException If any required parameters are missing
-   * @throws DatabaseException If a database error occurs
-   * @throws VariableNotFoundException If an invalid variable is configured for the instrument
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws VariableNotFoundException
+   *           If an invalid variable is configured for the instrument
    */
   @SuppressWarnings("unchecked")
   public LinkedHashMap<String, Long> getFieldSets(boolean includeTimePos)
@@ -644,7 +689,8 @@ public class DataSet {
       fieldSetsByName.put(DataSetDataDB.DIAGNOSTICS_FIELDSET_NAME,
         DataSetDataDB.DIAGNOSTICS_FIELDSET);
 
-      for (InstrumentVariable variable : InstrumentDB.getVariables(instrumentId)) {
+      for (InstrumentVariable variable : InstrumentDB
+        .getVariables(instrumentId)) {
         fieldSetsByName.put(variable.getName(), variable.getId());
       }
     }
@@ -673,13 +719,18 @@ public class DataSet {
 
   /**
    * Set the dataset's geographical bounds
-   * @param minLon The minimum longitude
-   * @param maxLon The maximum longitude
-   * @param minLat The minimum latitude
-   * @param maxLat The maximum latitude
+   * 
+   * @param minLon
+   *          The minimum longitude
+   * @param maxLon
+   *          The maximum longitude
+   * @param minLat
+   *          The minimum latitude
+   * @param maxLat
+   *          The maximum latitude
    */
-  public void setBounds(double minLon, double minLat,
-    double maxLon, double maxLat) {
+  public void setBounds(double minLon, double minLat, double maxLon,
+    double maxLat) {
 
     this.minLon = minLon;
     this.maxLon = maxLon;
@@ -689,16 +740,15 @@ public class DataSet {
   }
 
   /**
-   * Get the geographical bounds of the dataset
-   * This is a list of six values:
+   * Get the geographical bounds of the dataset This is a list of six values:
    *
    * <ol>
-   *   <li>West</li>
-   *   <li>South</li>
-   *   <li>East</li>
-   *   <li>North</li>
-   *   <li>Middle longitude</li>
-   *   <li>Middle latitude</li>
+   * <li>West</li>
+   * <li>South</li>
+   * <li>East</li>
+   * <li>North</li>
+   * <li>Middle longitude</li>
+   * <li>Middle latitude</li>
    * </ol>
    *
    * @return The dataset bounds

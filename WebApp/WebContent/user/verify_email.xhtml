@@ -1,23 +1,17 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
   xmlns:h="http://xmlns.jcp.org/jsf/html"
   xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-  xmlns:f="http://xmlns.jcp.org/jsf/core"
-  xmlns:p="http://primefaces.org/ui"
+  xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui"
   template="/WEB-INF/templates/basic_page.xhtml">
-
   <f:metadata>
     <f:event listener="#{verifyEmailBean.verifyCode}" type="preRenderView" />
   </f:metadata>
-
   <ui:define name="pageTitle"></ui:define>
-
   <ui:define name="content">
     <div class="contentBox wideContentBox">
       <h:form id="sendCodeForm" method="post" accept-charset="utf8">
-        <h1>
-          #{verifyEmailBean.verified ? "Email Verified" : "Email Verification Failed"}
-        </h1>
-
+        <h1>#{verifyEmailBean.verified ? "Email Verified" : "Email
+          Verification Failed"}</h1>
         <div class="instructions">
           <ui:fragment rendered="#{verifyEmailBean.verified}">
             You can now log in to the application.
@@ -28,7 +22,7 @@
         </div>
         <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
           <ui:fragment rendered="#{verifyEmailBean.verified}">
-            <p:button id="homeButton" value="Home" outcome="/index.xhtml"/>
+            <p:button id="homeButton" value="Home" outcome="/index.xhtml" />
           </ui:fragment>
         </h:panelGrid>
       </h:form>

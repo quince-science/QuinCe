@@ -33,6 +33,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Bean for handling the creation and management of data sets
+ * 
  * @author Steve Jones
  */
 @ManagedBean
@@ -55,7 +56,8 @@ public class DataSetsBean extends BaseManagedBean {
   private List<DataSet> dataSets;
 
   /**
-   * The file definitions for the current instrument in JSON format for the timeline
+   * The file definitions for the current instrument in JSON format for the
+   * timeline
    */
   private String fileDefinitionsJson;
 
@@ -80,9 +82,9 @@ public class DataSetsBean extends BaseManagedBean {
   private String platformCode = null;
 
   /**
-   * Says whether the dataset being defined has valid calibrations,
-   * both for sensors and external standards. This
-   * defaults to true, but is actually checked when the form is submitted.
+   * Says whether the dataset being defined has valid calibrations, both for
+   * sensors and external standards. This defaults to true, but is actually
+   * checked when the form is submitted.
    */
   private boolean validCalibration = true;
 
@@ -92,8 +94,7 @@ public class DataSetsBean extends BaseManagedBean {
   private boolean hasFiles = false;
 
   /**
-   * The message to be displayed if any calibrations
-   * are invalid
+   * The message to be displayed if any calibrations are invalid
    */
   private String validCalibrationMessage = null;
 
@@ -112,6 +113,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Start the dataset definition procedure
+   * 
    * @return The navigation to the dataset definition page
    */
   public String startNewDataset() {
@@ -127,6 +129,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Navigate to the datasets list
+   * 
    * @return The navigation string
    */
   public String goToList() {
@@ -136,6 +139,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Get the data sets for the current instrument
+   * 
    * @return The data sets
    */
   public List<DataSet> getDataSets() {
@@ -144,23 +148,32 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Load the list of data sets for the instrument from the database
-   * @throws ResourceException If the app resources cannot be accessed
-   * @throws InstrumentException If the instrument data is invalid
-   * @throws RecordNotFoundException If the instrument cannot be found
-   * @throws MissingParamException If any internal calls have missing parameters
+   * 
+   * @throws ResourceException
+   *           If the app resources cannot be accessed
+   * @throws InstrumentException
+   *           If the instrument data is invalid
+   * @throws RecordNotFoundException
+   *           If the instrument cannot be found
+   * @throws MissingParamException
+   *           If any internal calls have missing parameters
    */
-  private void loadDataSets() throws MissingParamException, DatabaseException, RecordNotFoundException, InstrumentException, ResourceException {
+  private void loadDataSets() throws MissingParamException, DatabaseException,
+    RecordNotFoundException, InstrumentException, ResourceException {
     if (null != getCurrentInstrument()) {
-      dataSets = DataSetDB.getDataSets(getDataSource(), getCurrentInstrument().getDatabaseId());
-      hasFiles = DataFileDB.getFileCount(getDataSource(), getCurrentInstrument().getDatabaseId()) > 0;
+      dataSets = DataSetDB.getDataSets(getDataSource(),
+        getCurrentInstrument().getDatabaseId());
+      hasFiles = DataFileDB.getFileCount(getDataSource(),
+        getCurrentInstrument().getDatabaseId()) > 0;
     } else {
       dataSets = null;
     }
   }
 
   /**
-   * Get the data files for the current instrument in JSON format
-   * for the timeline
+   * Get the data files for the current instrument in JSON format for the
+   * timeline
+   * 
    * @return The data files JSON
    */
   public String getTimelineEntriesJson() {
@@ -172,8 +185,9 @@ public class DataSetsBean extends BaseManagedBean {
   }
 
   /**
-   * Get the file definitions for the current instrument in JSON format
-   * for the timeline
+   * Get the file definitions for the current instrument in JSON format for the
+   * timeline
+   * 
    * @return The file definitions JSON
    */
   public String getFileDefinitionsJson() {
@@ -196,13 +210,18 @@ public class DataSetsBean extends BaseManagedBean {
 
       fdJson.append('[');
 
-      // Add a fake definition for the data sets, so they can be seen on the timeline
-      fdJson.append("{\"id\":-1000,\"content\":\"File Type:\",\"order\":-1000},");
+      // Add a fake definition for the data sets, so they can be seen on the
+      // timeline
+      fdJson
+        .append("{\"id\":-1000,\"content\":\"File Type:\",\"order\":-1000},");
 
-      for (int i = 0; i < getCurrentInstrument().getFileDefinitions().size(); i++) {
-        FileDefinition definition = getCurrentInstrument().getFileDefinitions().get(i);
+      for (int i = 0; i < getCurrentInstrument().getFileDefinitions()
+        .size(); i++) {
+        FileDefinition definition = getCurrentInstrument().getFileDefinitions()
+          .get(i);
 
-        // Store the definition number for use when building the files JSON below
+        // Store the definition number for use when building the files JSON
+        // below
         definitionIds.put(definition.getFileDescription(), i);
 
         fdJson.append('{');
@@ -224,7 +243,8 @@ public class DataSetsBean extends BaseManagedBean {
       fileDefinitionsJson = fdJson.toString();
 
       // Now the actual files
-      List<DataFile> dataFiles = DataFileDB.getFiles(getDataSource(), getAppConfig(), getCurrentInstrument().getDatabaseId());
+      List<DataFile> dataFiles = DataFileDB.getFiles(getDataSource(),
+        getAppConfig(), getCurrentInstrument().getDatabaseId());
 
       StringBuilder entriesJson = new StringBuilder();
       entriesJson.append('[');
@@ -234,7 +254,8 @@ public class DataSetsBean extends BaseManagedBean {
 
         entriesJson.append('{');
         entriesJson.append("\"type\":\"range\", \"group\":");
-        entriesJson.append(definitionIds.get(file.getFileDefinition().getFileDescription()));
+        entriesJson.append(
+          definitionIds.get(file.getFileDefinition().getFileDescription()));
         entriesJson.append(",\"start\":\"");
         entriesJson.append(DateTimeUtils.toIsoDate(file.getStartDate()));
         entriesJson.append("\",\"end\":\"");
@@ -290,6 +311,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Get the new data set
+   * 
    * @return The new data set
    */
   public DataSet getNewDataSet() {
@@ -298,6 +320,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Get the names of all data sets for the instrument as a JSON string
+   * 
    * @return The data set names
    */
   public String getDataSetNamesJson() {
@@ -322,6 +345,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Store the newly defined data set
+   * 
    * @return Navigation to the data set list
    */
   public String addDataSet() {
@@ -329,13 +353,16 @@ public class DataSetsBean extends BaseManagedBean {
     try {
 
       // Mark any existing NRT dataset for deletion
-      DataSetDB.setNrtDatasetStatus(getDataSource(), getCurrentInstrument(), DataSet.STATUS_DELETE);
+      DataSetDB.setNrtDatasetStatus(getDataSource(), getCurrentInstrument(),
+        DataSet.STATUS_DELETE);
       DataSetDB.addDataSet(getDataSource(), newDataSet);
 
       Map<String, String> params = new HashMap<String, String>();
-      params.put(ExtractDataSetJob.ID_PARAM, String.valueOf(newDataSet.getId()));
+      params.put(ExtractDataSetJob.ID_PARAM,
+        String.valueOf(newDataSet.getId()));
 
-      JobManager.addJob(getDataSource(), getUser(), ExtractDataSetJob.class.getCanonicalName(), params);
+      JobManager.addJob(getDataSource(), getUser(),
+        ExtractDataSetJob.class.getCanonicalName(), params);
 
       loadDataSets();
     } catch (Exception e) {
@@ -355,15 +382,13 @@ public class DataSetsBean extends BaseManagedBean {
       }
       ResourceManager rm = ResourceManager.getInstance();
       try {
-        Instrument i = InstrumentDB.getInstrument(
-          rm.getDBDataSource(),
-          getNewDataSet().getInstrumentId(),
-          rm.getSensorsConfiguration(),
-          rm.getRunTypeCategoryConfiguration()
-        );
+        Instrument i = InstrumentDB.getInstrument(rm.getDBDataSource(),
+          getNewDataSet().getInstrumentId(), rm.getSensorsConfiguration(),
+          rm.getRunTypeCategoryConfiguration());
         platformCode = i.getPlatformCode();
         return platformCode;
-      } catch (MissingParamException | DatabaseException | RecordNotFoundException | InstrumentException e) {
+      } catch (MissingParamException | DatabaseException
+        | RecordNotFoundException | InstrumentException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
@@ -372,7 +397,8 @@ public class DataSetsBean extends BaseManagedBean {
   }
 
   /**
-   * @param platformCode the platformCode to set
+   * @param platformCode
+   *          the platformCode to set
    */
   public void setPlatformCode(String platformCode) {
     this.platformCode = platformCode;
@@ -380,6 +406,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Get the dataset ID
+   * 
    * @return The dataset ID
    */
   public long getDatasetId() {
@@ -388,7 +415,9 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Set the dataset ID
-   * @param datasetId The dataset ID
+   * 
+   * @param datasetId
+   *          The dataset ID
    */
   public void setDatasetId(long datasetId) {
     this.datasetId = datasetId;
@@ -399,7 +428,8 @@ public class DataSetsBean extends BaseManagedBean {
    */
   public void submitForApproval() {
     try {
-      DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_WAITING_FOR_APPROVAL);
+      DataSetDB.setDatasetStatus(getDataSource(), datasetId,
+        DataSet.STATUS_WAITING_FOR_APPROVAL);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -410,7 +440,8 @@ public class DataSetsBean extends BaseManagedBean {
    */
   public void approve() {
     try {
-      DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_READY_FOR_EXPORT);
+      DataSetDB.setDatasetStatus(getDataSource(), datasetId,
+        DataSet.STATUS_READY_FOR_EXPORT);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -421,10 +452,12 @@ public class DataSetsBean extends BaseManagedBean {
    */
   public void recalculate() {
     try {
-      DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_AUTO_QC);
+      DataSetDB.setDatasetStatus(getDataSource(), datasetId,
+        DataSet.STATUS_AUTO_QC);
       Map<String, String> jobParams = new HashMap<String, String>();
       jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(datasetId));
-      JobManager.addJob(getDataSource(), getUser(), AutoQCJob.class.getCanonicalName(), jobParams);
+      JobManager.addJob(getDataSource(), getUser(),
+        AutoQCJob.class.getCanonicalName(), jobParams);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -432,31 +465,32 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Check if this instrument has a valid calibration for the start-time of the
-   * data set the user wants to create. Checks both sensor calibrations
-   * and external standards.
+   * data set the user wants to create. Checks both sensor calibrations and
+   * external standards.
    */
   public void checkValidCalibration() {
     validCalibration = true;
     Map<String, String> params = FacesContext.getCurrentInstance()
-        .getExternalContext().getRequestParameterMap();
+      .getExternalContext().getRequestParameterMap();
 
     String startTime = params.get("uploadForm:startDate_input");
     // startTime not yet set
     if (startTime.length() > 0) {
       try {
 
-
         // Check sensor calibration equations
         CalibrationSet calibrations = new SensorCalibrationDB()
-            .getMostRecentCalibrations(getDataSource(), getCurrentInstrumentId(),
-                DateTimeUtils.parseDisplayDateTime(startTime));
+          .getMostRecentCalibrations(getDataSource(), getCurrentInstrumentId(),
+            DateTimeUtils.parseDisplayDateTime(startTime));
 
         if (!calibrations.isValid()) {
           validCalibration = false;
           validCalibrationMessage = "One or more sensor calibration equations are missing";
         } else {
           // Check external standards
-          CalibrationSet externalStandards = ExternalStandardDB.getInstance().getStandardsSet(getDataSource(), getCurrentInstrumentId(), DateTimeUtils.parseDisplayDateTime(startTime));
+          CalibrationSet externalStandards = ExternalStandardDB.getInstance()
+            .getStandardsSet(getDataSource(), getCurrentInstrumentId(),
+              DateTimeUtils.parseDisplayDateTime(startTime));
           if (!externalStandards.isComplete()) {
             validCalibration = false;
             validCalibrationMessage = "No complete set of external standards is available";
@@ -483,6 +517,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Get the error message for invalid calibrations
+   * 
    * @return The error message
    */
   public String getValidCalibrationMessage() {

@@ -10,6 +10,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
 
 /**
  * Bean for external standards
+ * 
  * @author Steve Jones
  *
  */

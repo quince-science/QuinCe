@@ -7,6 +7,7 @@ import java.util.List;
 
 /**
  * Various HTML-related utilities and constants
+ * 
  * @author Steve Jones
  *
  */
@@ -23,12 +24,8 @@ public class HtmlUtils {
 
     for (int i = 0; i < lines.size(); i++) {
       output.append('"');
-      output.append(lines.get(i)
-          .replace("\r", "")
-          .replace("\n", "")
-          .replace("\t", "\\t")
-          .replace("\\", "\\\\")
-          .replace("\"", "\\\""));
+      output.append(lines.get(i).replace("\r", "").replace("\n", "")
+        .replace("\t", "\\t").replace("\\", "\\\\").replace("\"", "\\\""));
 
       output.append('"');
 

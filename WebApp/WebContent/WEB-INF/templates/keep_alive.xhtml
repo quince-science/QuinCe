@@ -4,7 +4,7 @@
   xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
   <h:form id="sessionTouchForm" method="post">
     <h:commandLink id="sessionTouch" action="#{keepAliveBean.sessionTouch}">
-      <f:ajax render="@none"/>
+      <f:ajax render="@none" />
     </h:commandLink>
     <script>
       var sessionTouchFunction = function() {

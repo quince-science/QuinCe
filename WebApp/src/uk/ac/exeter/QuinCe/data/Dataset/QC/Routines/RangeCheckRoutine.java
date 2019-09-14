@@ -28,12 +28,14 @@ public class RangeCheckRoutine extends Routine {
   private static final int BAD_MAX_PARAM = 3;
 
   /**
-   * The minimum value of the range that will trigger a {@link Flag#QUESTIONABLE}.
+   * The minimum value of the range that will trigger a
+   * {@link Flag#QUESTIONABLE}.
    */
   private double questionableMin = 0.0;
 
   /**
-   * The maximum value of the range that will trigger a {@link Flag#QUESTIONABLE}.
+   * The maximum value of the range that will trigger a
+   * {@link Flag#QUESTIONABLE}.
    */
   private double questionableMax = 0.0;
 
@@ -48,7 +50,8 @@ public class RangeCheckRoutine extends Routine {
   private double badMax = 0.0;
 
   /**
-   * Indicates whether or not this range checker has a Questionable range configured
+   * Indicates whether or not this range checker has a Questionable range
+   * configured
    */
   private boolean hasQuestionableRange = false;
 
@@ -59,11 +62,13 @@ public class RangeCheckRoutine extends Routine {
 
   /**
    * Basic constructor
-   * @param parameters The parameters
-   * @throws QCRoutinesConfigurationException If the parameters are invalid
+   * 
+   * @param parameters
+   *          The parameters
+   * @throws QCRoutinesConfigurationException
+   *           If the parameters are invalid
    */
-  public RangeCheckRoutine(List<String> parameters)
-    throws RoutineException {
+  public RangeCheckRoutine(List<String> parameters) throws RoutineException {
     super(parameters);
   }
 
@@ -74,33 +79,35 @@ public class RangeCheckRoutine extends Routine {
         + "<questionable_range_min>,<questionable_range_max>,<bad_range_min>,<bad_range_max>");
     }
 
-    if (parameters.get(QUESTIONABLE_MIN_PARAM).trim().length() > 0 ||
-      parameters.get(QUESTIONABLE_MAX_PARAM).trim().length() > 0) {
+    if (parameters.get(QUESTIONABLE_MIN_PARAM).trim().length() > 0
+      || parameters.get(QUESTIONABLE_MAX_PARAM).trim().length() > 0) {
 
       hasQuestionableRange = true;
       try {
         questionableMin = Double.parseDouble(parameters.get(0));
         questionableMax = Double.parseDouble(parameters.get(1));
-      } catch(NumberFormatException e) {
-        throw new RoutineException("Questionable range parameters must be numeric", e);
+      } catch (NumberFormatException e) {
+        throw new RoutineException(
+          "Questionable range parameters must be numeric", e);
       }
     }
 
-    if (parameters.get(BAD_MIN_PARAM).trim().length() > 0 ||
-      parameters.get(BAD_MAX_PARAM).trim().length() > 0) {
+    if (parameters.get(BAD_MIN_PARAM).trim().length() > 0
+      || parameters.get(BAD_MAX_PARAM).trim().length() > 0) {
 
       hasBadRange = true;
       try {
         badMin = Double.parseDouble(parameters.get(2));
         badMax = Double.parseDouble(parameters.get(3));
-      } catch(NumberFormatException e) {
+      } catch (NumberFormatException e) {
         throw new RoutineException("Bad range parameters must be numeric", e);
       }
     }
 
     if (hasQuestionableRange && hasBadRange) {
       if (badMin > questionableMin || badMax < questionableMax) {
-        throw new RoutineException("Bad range must be larger than questionable range");
+        throw new RoutineException(
+          "Bad range must be larger than questionable range");
       }
     }
   }
@@ -114,8 +121,10 @@ public class RangeCheckRoutine extends Routine {
         if (hasBadRange && (value < badMin || value > badMax)) {
           addFlag(sensorValue, Flag.BAD, "" + badMin + ":" + badMax,
             String.valueOf(value));
-        } else if (hasQuestionableRange && (value < questionableMin || value > questionableMax)) {
-          addFlag(sensorValue, Flag.QUESTIONABLE, "" + questionableMin + ":" + questionableMax,
+        } else if (hasQuestionableRange
+          && (value < questionableMin || value > questionableMax)) {
+          addFlag(sensorValue, Flag.QUESTIONABLE,
+            "" + questionableMin + ":" + questionableMax,
             String.valueOf(value));
         }
       }
@@ -124,6 +133,7 @@ public class RangeCheckRoutine extends Routine {
 
   /**
    * Get the short form QC message
+   * 
    * @return The short QC message
    */
   public static String getShortMessage() {
@@ -132,11 +142,16 @@ public class RangeCheckRoutine extends Routine {
 
   /**
    * Get the long form QC message
-   * @param requiredValue The value required by the routine
-   * @param actualValue The value received by the routine
+   * 
+   * @param requiredValue
+   *          The value required by the routine
+   * @param actualValue
+   *          The value received by the routine
    * @return The long form message
    */
-  public static String getLongMessage(String requiredValue, String actualValue) {
-    return "Out of range - Should be in " + requiredValue + ", actual value is " + actualValue;
+  public static String getLongMessage(String requiredValue,
+    String actualValue) {
+    return "Out of range - Should be in " + requiredValue + ", actual value is "
+      + actualValue;
   }
 }

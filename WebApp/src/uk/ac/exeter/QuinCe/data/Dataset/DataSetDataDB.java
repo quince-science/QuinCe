@@ -1,4 +1,5 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
+
 import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -48,8 +49,8 @@ import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Class for handling database queries related to
- * dataset data
+ * Class for handling database queries related to dataset data
+ *
  * @author Steve Jones
  *
  */
@@ -79,9 +80,9 @@ public class DataSetDataDB {
    * Statement to store a sensor value
    */
   private static final String STORE_NEW_SENSOR_VALUE_STATEMENT = "INSERT INTO "
-   + "sensor_values (dataset_id, file_column, date, value, "
-   + "auto_qc, user_qc_flag, user_qc_message) "
-   + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+    + "sensor_values (dataset_id, file_column, date, value, "
+    + "auto_qc, user_qc_flag, user_qc_message) "
+    + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
   private static final String UPDATE_SENSOR_VALUE_STATEMENT = "UPDATE sensor_values "
     + "SET auto_qc=?, user_qc_flag=?, user_qc_message=? WHERE id = ?";
@@ -95,8 +96,7 @@ public class DataSetDataDB {
   private static final String GET_SENSOR_VALUES_BY_COLUMN_QUERY = "SELECT "
     + "id, file_column, date, value, auto_qc, " // 5
     + "user_qc_flag, user_qc_message " // 7
-    + "FROM sensor_values WHERE dataset_id = ? "
-    + "ORDER BY file_column, date";
+    + "FROM sensor_values WHERE dataset_id = ? " + "ORDER BY file_column, date";
 
   /**
    * Query to get all the sensor values for a dataset
@@ -104,8 +104,7 @@ public class DataSetDataDB {
   private static final String GET_SENSOR_VALUES_BY_DATE_AND_COLUMN_QUERY = "SELECT "
     + "id, file_column, date, value, auto_qc, " // 5
     + "user_qc_flag, user_qc_message " // 7
-    + "FROM sensor_values WHERE dataset_id = ? "
-    + "ORDER BY date, file_column";
+    + "FROM sensor_values WHERE dataset_id = ? " + "ORDER BY date, file_column";
 
   /**
    * Statement to store a measurement record
@@ -149,26 +148,22 @@ public class DataSetDataDB {
 
   private static final String GET_SENSOR_VALUES_QUERY = "SELECT "
     + "id, file_column, date, value, "
-    + "auto_qc, user_qc_flag, user_qc_message "
-    + "FROM sensor_values "
-    + "WHERE dataset_id = ? "
-    + "ORDER BY date ASC";
+    + "auto_qc, user_qc_flag, user_qc_message " + "FROM sensor_values "
+    + "WHERE dataset_id = ? " + "ORDER BY date ASC";
 
   private static final String GET_USED_SENSOR_VALUES_QUERY = "SELECT DISTINCT "
-    + "sensor_value_id FROM measurement_values "
-    + "WHERE measurement_id IN "
+    + "sensor_value_id FROM measurement_values " + "WHERE measurement_id IN "
     + "(SELECT id FROM measurements WHERE dataset_id = ?) "
     + "ORDER BY sensor_value_id";
 
   private static final String GET_DATA_REDUCTION_QUERY = "SELECT "
-  + "m.date, dr.variable_id, dr.calculation_values, dr.qc_flag, dr.qc_message "
-  + "FROM measurements m INNER JOIN data_reduction dr "
-  + "ON (m.id = dr.measurement_id) "
-  + "WHERE m.dataset_id = ? ORDER BY m.date ASC";
+    + "m.date, dr.variable_id, dr.calculation_values, dr.qc_flag, dr.qc_message "
+    + "FROM measurements m INNER JOIN data_reduction dr "
+    + "ON (m.id = dr.measurement_id) "
+    + "WHERE m.dataset_id = ? ORDER BY m.date ASC";
 
   private static final String SET_QC_STATEMENT = "UPDATE sensor_values SET "
-    + "user_qc_flag = ?, user_qc_message = ? "
-    + "WHERE id = ?";
+    + "user_qc_flag = ?, user_qc_message = ? " + "WHERE id = ?";
 
   private static final String GET_MEASUREMENT_COUNT_QUERY = "SELECT "
     + "COUNT(DISTINCT(date)) FROM measurements WHERE dataset_id = ?";
@@ -176,23 +171,32 @@ public class DataSetDataDB {
   /**
    * Take a list of fields, and return those which come from the dataset data.
    * Any others will come from calculation data and will be left alone.
-   * @param conn A database connection
-   * @param dataSet The data set to which the fields belong
-   * @param originalFields The list of fields
+   *
+   * @param conn
+   *          A database connection
+   * @param dataSet
+   *          The data set to which the fields belong
+   * @param originalFields
+   *          The list of fields
    * @return The fields that come from dataset data
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
-   * @throws RecordNotFoundException If the dataset or its instrument do not exist
-   * @throws InstrumentException If the instrument details cannot be retrieved
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws RecordNotFoundException
+   *           If the dataset or its instrument do not exist
+   * @throws InstrumentException
+   *           If the instrument details cannot be retrieved
    */
-  public static List<String> extractDatasetFields(Connection conn, DataSet dataSet,
-    List<String> originalFields) throws MissingParamException, DatabaseException,
-    RecordNotFoundException, InstrumentException {
+  public static List<String> extractDatasetFields(Connection conn,
+    DataSet dataSet, List<String> originalFields) throws MissingParamException,
+    DatabaseException, RecordNotFoundException, InstrumentException {
 
     List<String> datasetFields = new ArrayList<String>();
 
     ResourceManager resourceManager = ResourceManager.getInstance();
-    SensorsConfiguration sensorConfig = resourceManager.getSensorsConfiguration();
+    SensorsConfiguration sensorConfig = resourceManager
+      .getSensorsConfiguration();
 
     Instrument instrument = InstrumentDB.getInstrument(conn,
       dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(),
@@ -215,7 +219,8 @@ public class DataSetDataDB {
         for (SensorType sensorType : sensorConfig.getSensorTypes()) {
           if (sensorAssignments.getAssignmentCount(sensorType) > 0) {
             if (originalField.equals(sensorType.getDatabaseFieldName())) {
-              // TODO Eventually this will use the sensor name as the label, and the sensor type as the group
+              // TODO Eventually this will use the sensor name as the label, and
+              // the sensor type as the group
               datasetFields.add(originalField);
               break;
             }
@@ -232,14 +237,23 @@ public class DataSetDataDB {
 
   /**
    * Determine whether or not a given field is a dataset-level field
-   * @param conn A database connection
-   * @param dataset The dataset to which the field belongs
-   * @param field The field name
-   * @return {@code true} if the field is a dataset field; {@code false} if it is not
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
-   * @throws RecordNotFoundException If the dataset or its instrument do not exist
-   * @throws InstrumentException If the instrument details cannot be retrieved
+   *
+   * @param conn
+   *          A database connection
+   * @param dataset
+   *          The dataset to which the field belongs
+   * @param field
+   *          The field name
+   * @return {@code true} if the field is a dataset field; {@code false} if it
+   *         is not
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws RecordNotFoundException
+   *           If the dataset or its instrument do not exist
+   * @throws InstrumentException
+   *           If the instrument details cannot be retrieved
    */
   public static boolean isDatasetField(Connection conn, DataSet dataset,
     String field) throws MissingParamException, DatabaseException,
@@ -248,8 +262,8 @@ public class DataSetDataDB {
     List<String> fieldList = new ArrayList<String>(1);
     fieldList.add(field);
 
-    List<String> detectedDatasetField =
-      extractDatasetFields(conn, dataset, fieldList);
+    List<String> detectedDatasetField = extractDatasetFields(conn, dataset,
+      fieldList);
 
     return (detectedDatasetField.size() > 0);
   }
@@ -259,18 +273,22 @@ public class DataSetDataDB {
    *
    * Values will only be stored if their {@code dirty} flag is set.
    *
-   * If a sensor value has a database ID, it will be updated. Otherwise
-   * it will be stored as a new record. Note that the new records will not
-   * be given an ID; they must be re-read from the database afterwards.
+   * If a sensor value has a database ID, it will be updated. Otherwise it will
+   * be stored as a new record. Note that the new records will not be given an
+   * ID; they must be re-read from the database afterwards.
    *
-   * @param conn A database connection
-   * @param sensorValues The sensor values
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   * @param conn
+   *          A database connection
+   * @param sensorValues
+   *          The sensor values
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static void storeSensorValues(Connection conn,
     Collection<SensorValue> sensorValues)
-      throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(sensorValues, "sensorValues");
@@ -325,10 +343,15 @@ public class DataSetDataDB {
 
   /**
    * Remove all sensor values for a dataset
-   * @param conn A database connection
-   * @param datasetId The dataset's database ID
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   *
+   * @param conn
+   *          A database connection
+   * @param datasetId
+   *          The dataset's database ID
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static void deleteSensorValues(Connection conn, long datasetId)
     throws MissingParamException, DatabaseException {
@@ -353,18 +376,22 @@ public class DataSetDataDB {
   /**
    * Get all the sensor values for a dataset grouped by their column in the
    * source data file(s)
-   * @param conn A database connection
-   * @param datasetId The database ID of the dataset whose values are to be
-   *                  retrieved
+   *
+   * @param conn
+   *          A database connection
+   * @param datasetId
+   *          The database ID of the dataset whose values are to be retrieved
    * @return The values
-   * @throws RecordNotFoundException If the instrument configuration does not
-   *                                 match the values
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   * @throws RecordNotFoundException
+   *           If the instrument configuration does not match the values
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static Map<Long, NavigableSensorValuesList> getSensorValuesByColumn(
     Connection conn, long datasetId)
-      throws RecordNotFoundException, DatabaseException, MissingParamException {
+    throws RecordNotFoundException, DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
@@ -416,24 +443,29 @@ public class DataSetDataDB {
   }
 
   /**
-   * Get all the sensor values for a data set
-   * The returned list is ordered by timestamp and then grouped by
-   * the values' source {@code file_column} database records
-   * @param conn A database connection
-   * @param datasetId The dataset whose values are to be retrieved
+   * Get all the sensor values for a data set The returned list is ordered by
+   * timestamp and then grouped by the values' source {@code file_column}
+   * database records
+   *
+   * @param conn
+   *          A database connection
+   * @param datasetId
+   *          The dataset whose values are to be retrieved
    * @return The values
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static DateColumnGroupedSensorValues getSensorValuesByDateAndColumn(
     Connection conn, Instrument instrument, long datasetId)
-      throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
 
-    DateColumnGroupedSensorValues result =
-      new DateColumnGroupedSensorValues(instrument);
+    DateColumnGroupedSensorValues result = new DateColumnGroupedSensorValues(
+      instrument);
 
     PreparedStatement stmt = null;
     ResultSet records = null;
@@ -458,14 +490,19 @@ public class DataSetDataDB {
 
   /**
    * Build a SensorValue object from a ResultSet
-   * @param record The ResultSet
-   * @param datasetId The ID of the value's parent dataset
+   *
+   * @param record
+   *          The ResultSet
+   * @param datasetId
+   *          The ID of the value's parent dataset
    * @return The SensorValue
-   * @throws SQLException If any values cannot be read
-   * @throws InvalidFlagException If the stored Flag value is invalid
+   * @throws SQLException
+   *           If any values cannot be read
+   * @throws InvalidFlagException
+   *           If the stored Flag value is invalid
    */
-  private static SensorValue sensorValueFromResultSet(
-    ResultSet record, long datasetId) throws SQLException, InvalidFlagException {
+  private static SensorValue sensorValueFromResultSet(ResultSet record,
+    long datasetId) throws SQLException, InvalidFlagException {
 
     long valueId = record.getLong(1);
     long fileColumnId = record.getLong(2);
@@ -475,22 +512,26 @@ public class DataSetDataDB {
     Flag userQCFlag = new Flag(record.getInt(6));
     String userQCMessage = record.getString(7);
 
-    return new SensorValue(valueId, datasetId, fileColumnId,
-      time, value, autoQC, userQCFlag, userQCMessage);
+    return new SensorValue(valueId, datasetId, fileColumnId, time, value,
+      autoQC, userQCFlag, userQCMessage);
   }
 
   /**
-   * Store a set of measurements in the database. The resulting database
-   * IDs are added to the Measurement objects
+   * Store a set of measurements in the database. The resulting database IDs are
+   * added to the Measurement objects
    *
-   * @param conn A database connection
-   * @param measurements The measurements to be stored
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   * @param conn
+   *          A database connection
+   * @param measurements
+   *          The measurements to be stored
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static void storeMeasurements(Connection conn,
     List<Measurement> measurements)
-      throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(measurements, "measurements");
@@ -520,7 +561,8 @@ public class DataSetDataDB {
       int currentMeasurement = -1;
       while (createdKeys.next()) {
         currentMeasurement++;
-        measurements.get(currentMeasurement).setDatabaseId(createdKeys.getLong(1));
+        measurements.get(currentMeasurement)
+          .setDatabaseId(createdKeys.getLong(1));
       }
     } catch (Exception e) {
       throw new DatabaseException("Error while storing measurements", e);
@@ -532,6 +574,7 @@ public class DataSetDataDB {
 
   /**
    * Get the number of measurements in a dataset
+   *
    * @param conn
    * @param datasetId
    * @return
@@ -569,16 +612,22 @@ public class DataSetDataDB {
 
   /**
    * Get the set of measurements for a dataset, ordered by date and variable
-   * @param conn A database connection
-   * @param instrument The instrument to which the dataset belongs
-   * @param datasetId The database ID of the dataset
+   *
+   * @param conn
+   *          A database connection
+   * @param instrument
+   *          The instrument to which the dataset belongs
+   * @param datasetId
+   *          The database ID of the dataset
    * @return The measurements
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static List<Measurement> getMeasurements(Connection conn,
     Instrument instrument, long datasetId)
-      throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
@@ -603,8 +652,9 @@ public class DataSetDataDB {
         double latitude = records.getDouble(5);
         String runType = records.getString(6);
 
-        measurements.add(new Measurement(id, datasetId,
-          instrument.getVariable(variableId), time, longitude, latitude, runType));
+        measurements.add(
+          new Measurement(id, datasetId, instrument.getVariable(variableId),
+            time, longitude, latitude, runType));
       }
 
     } catch (Exception e) {
@@ -619,14 +669,19 @@ public class DataSetDataDB {
 
   /**
    * Store a set of measurement values
-   * @param conn A database connection
-   * @param measurementValues The measurement values
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   *
+   * @param conn
+   *          A database connection
+   * @param measurementValues
+   *          The measurement values
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static void storeMeasurementValues(Connection conn,
     List<MeasurementValue> measurementValues)
-      throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(measurementValues, "measurementValues");
@@ -655,15 +710,20 @@ public class DataSetDataDB {
 
   /**
    * Store the results of data reduction in the database
-   * @param conn A database connection
-   * @param values The calculation values for the data reduction, as extracted
-   *               from the sensor values
-   * @param dataReductionRecords The data reduction calculations
-   * @throws DatabaseException If the data cannot be stored
+   *
+   * @param conn
+   *          A database connection
+   * @param values
+   *          The calculation values for the data reduction, as extracted from
+   *          the sensor values
+   * @param dataReductionRecords
+   *          The data reduction calculations
+   * @throws DatabaseException
+   *           If the data cannot be stored
    */
   public static void storeDataReduction(Connection conn,
-      Collection<CalculationValue> values,
-      List<DataReductionRecord> dataReductionRecords) throws DatabaseException {
+    Collection<CalculationValue> values,
+    List<DataReductionRecord> dataReductionRecords) throws DatabaseException {
 
     PreparedStatement valueStmt = null;
     PreparedStatement dataReductionStmt = null;
@@ -691,8 +751,8 @@ public class DataSetDataDB {
         dataReductionStmt.setLong(2, dataReduction.getVariableId());
         dataReductionStmt.setString(3, dataReduction.getCalculationJson());
         dataReductionStmt.setInt(4, dataReduction.getQCFlag().getFlagValue());
-        dataReductionStmt.setString(5,
-          StringUtils.collectionToDelimited(dataReduction.getQCMessages(), ";"));
+        dataReductionStmt.setString(5, StringUtils
+          .collectionToDelimited(dataReduction.getQCMessages(), ";"));
 
         dataReductionStmt.addBatch();
       }
@@ -709,10 +769,15 @@ public class DataSetDataDB {
   /**
    * Remove all measurement details from a data set, ready for them to be
    * recalculated
-   * @param dataSource A data source
-   * @param datasetId The database ID of the data set
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   *
+   * @param dataSource
+   *          A data source
+   * @param datasetId
+   *          The database ID of the data set
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static void deleteMeasurements(DataSource dataSource, long datasetId)
     throws DatabaseException, MissingParamException {
@@ -735,10 +800,15 @@ public class DataSetDataDB {
   /**
    * Remove all measurement details from a data set, ready for them to be
    * recalculated
-   * @param dataSource A data source
-   * @param datasetId The database ID of the data set
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   *
+   * @param dataSource
+   *          A data source
+   * @param datasetId
+   *          The database ID of the data set
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static void deleteMeasurements(Connection conn, long datasetId)
     throws MissingParamException, DatabaseException {
@@ -753,19 +823,19 @@ public class DataSetDataDB {
     try {
       conn.setAutoCommit(false);
 
-      delDataReductionStmt = conn.prepareStatement(
-        DELETE_DATA_REDUCTION_STATEMENT);
+      delDataReductionStmt = conn
+        .prepareStatement(DELETE_DATA_REDUCTION_STATEMENT);
       delDataReductionStmt.setLong(1, datasetId);
       delDataReductionStmt.execute();
 
-      delMeasurementValuesStmt = conn.prepareStatement(
-        DELETE_MEASUREMENT_VALUES_STATEMENT);
-      delMeasurementValuesStmt.setLong(1,  datasetId);
+      delMeasurementValuesStmt = conn
+        .prepareStatement(DELETE_MEASUREMENT_VALUES_STATEMENT);
+      delMeasurementValuesStmt.setLong(1, datasetId);
       delMeasurementValuesStmt.execute();
 
-      delMeasurementsStmt = conn.prepareStatement(
-        DELETE_MEASUREMENTS_STATEMENT);
-      delMeasurementsStmt.setLong(1,  datasetId);
+      delMeasurementsStmt = conn
+        .prepareStatement(DELETE_MEASUREMENTS_STATEMENT);
+      delMeasurementsStmt.setLong(1, datasetId);
       delMeasurementsStmt.execute();
 
       conn.commit();
@@ -779,21 +849,30 @@ public class DataSetDataDB {
 
   /**
    * Load the data to be displayed in the QC table
-   * @param dataSource A data source
-   * @param datasetId The data set's database ID
-   * @param sensorIDs The database IDs of the sensors to be retrieved
+   *
+   * @param dataSource
+   *          A data source
+   * @param datasetId
+   *          The data set's database ID
+   * @param sensorIDs
+   *          The database IDs of the sensors to be retrieved
    * @return The table data
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
-   * @throws InvalidFlagException If a QC flag is invalid
-   * @throws RoutineException If an automatic QC result cannot be processed
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws InvalidFlagException
+   *           If a QC flag is invalid
+   * @throws RoutineException
+   *           If an automatic QC result cannot be processed
    * @throws SensorTypeNotFoundException
    * @throws RecordNotFoundException
    */
-  public static void getQCSensorData(
-    DataSource dataSource, DatasetMeasurementData tableData, long datasetId, Instrument instrument, List<Long> sensorIDs)
-      throws MissingParamException, DatabaseException, InvalidFlagException,
-        RoutineException, SensorTypeNotFoundException, RecordNotFoundException {
+  public static void getQCSensorData(DataSource dataSource,
+    DatasetMeasurementData tableData, long datasetId, Instrument instrument,
+    List<Long> sensorIDs)
+    throws MissingParamException, DatabaseException, InvalidFlagException,
+    RoutineException, SensorTypeNotFoundException, RecordNotFoundException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(tableData, "tableData", true);
@@ -808,11 +887,11 @@ public class DataSetDataDB {
       conn = dataSource.getConnection();
 
       // Get the Run Type column IDs
-      List<Long> runTypeColumns = instrument.getSensorAssignments().getRunTypeColumnIDs();
+      List<Long> runTypeColumns = instrument.getSensorAssignments()
+        .getRunTypeColumnIDs();
 
       // Get the list of sensor values used in the dataset
       long[] usedSensorValueIDs = getUsedSensorValueIDs(conn, datasetId);
-
 
       // Get all the sensor values for the data set
       stmt = conn.prepareStatement(GET_SENSOR_VALUES_QUERY);
@@ -832,14 +911,14 @@ public class DataSetDataDB {
         // If the time has changed, process the current set of collected values
         if (!time.isEqual(currentTime)) {
           if (!currentTime.isEqual(LocalDateTime.MIN)) {
-            tableData.filterAndAddValues(currentRunType, currentTime, currentDateValues);
+            tableData.filterAndAddValues(currentRunType, currentTime,
+              currentDateValues);
 
           }
 
           currentTime = time;
           currentDateValues = new HashMap<Long, FieldValue>();
         }
-
 
         // Process the current record
 
@@ -850,14 +929,17 @@ public class DataSetDataDB {
           currentRunType = records.getString(4);
         } else if (sensorIDs.contains(fileColumn)) {
 
-          //This is a sensor value
+          // This is a sensor value
           long valueId = records.getLong(1);
-          Double sensorValue = StringUtils.doubleFromString(records.getString(4));
-          AutoQCResult autoQC = AutoQCResult.buildFromJson(records.getString(5));
+          Double sensorValue = StringUtils
+            .doubleFromString(records.getString(4));
+          AutoQCResult autoQC = AutoQCResult
+            .buildFromJson(records.getString(5));
           Flag userQCFlag = new Flag(records.getInt(6));
           String qcComment = records.getString(7);
 
-          SensorType sensorType = instrument.getSensorAssignments().getSensorTypeForDBColumn(fileColumn);
+          SensorType sensorType = instrument.getSensorAssignments()
+            .getSensorTypeForDBColumn(fileColumn);
 
           // See if this value has been used in the data set
           // Position and diagnostics are always marked as used
@@ -875,7 +957,8 @@ public class DataSetDataDB {
       }
 
       // Store the last set of values
-      tableData.filterAndAddValues(currentRunType, currentTime, currentDateValues);
+      tableData.filterAndAddValues(currentRunType, currentTime,
+        currentDateValues);
 
     } catch (Exception e) {
       throw new DatabaseException("Error getting sensor data", e);
@@ -886,10 +969,10 @@ public class DataSetDataDB {
     }
   }
 
-  public static void getDataReductionData(
-    DataSource dataSource, DatasetMeasurementData tableData, DataSet dataSet)
-      throws MissingParamException, DatabaseException, InvalidFlagException,
-        RoutineException, VariableNotFoundException, DataReductionException {
+  public static void getDataReductionData(DataSource dataSource,
+    DatasetMeasurementData tableData, DataSet dataSet)
+    throws MissingParamException, DatabaseException, InvalidFlagException,
+    RoutineException, VariableNotFoundException, DataReductionException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(tableData, "tableData", true);
@@ -898,8 +981,8 @@ public class DataSetDataDB {
     Connection conn = null;
     PreparedStatement stmt = null;
     ResultSet records = null;
-    SensorsConfiguration sensorConfig =
-      ResourceManager.getInstance().getSensorsConfiguration();
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
 
     try {
       conn = dataSource.getConnection();
@@ -916,20 +999,21 @@ public class DataSetDataDB {
         Flag qcFlag = new Flag(records.getInt(4));
         String qcComment = records.getString(5);
 
-        Type mapType = new TypeToken<HashMap<String, Double>>() {}.getType();
+        Type mapType = new TypeToken<HashMap<String, Double>>() {
+        }.getType();
         Map<String, Double> values = new Gson().fromJson(valuesJson, mapType);
 
-        LinkedHashMap<String, Long> reductionParameters =
-          DataReducerFactory.getCalculationParameters(
+        LinkedHashMap<String, Long> reductionParameters = DataReducerFactory
+          .getCalculationParameters(
             sensorConfig.getInstrumentVariable(variableId));
 
         for (Map.Entry<String, Long> entry : reductionParameters.entrySet()) {
 
           FieldValue columnValue = new FieldValue(entry.getValue(),
-            values.get(entry.getKey()),
-            new AutoQCResult(), qcFlag, qcComment, true);
+            values.get(entry.getKey()), new AutoQCResult(), qcFlag, qcComment,
+            true);
 
-          tableData.addValue(time,reductionParameters.get(entry.getKey()),
+          tableData.addValue(time, reductionParameters.get(entry.getKey()),
             columnValue);
         }
       }
@@ -942,7 +1026,8 @@ public class DataSetDataDB {
     }
   }
 
-  private static long[] getUsedSensorValueIDs(Connection conn, long datasetId) throws DatabaseException {
+  private static long[] getUsedSensorValueIDs(Connection conn, long datasetId)
+    throws DatabaseException {
 
     ArrayList<Long> ids = new ArrayList<Long>();
 
@@ -952,7 +1037,7 @@ public class DataSetDataDB {
     try {
 
       stmt = conn.prepareStatement(GET_USED_SENSOR_VALUES_QUERY);
-      stmt.setLong(1,  datasetId);
+      stmt.setLong(1, datasetId);
 
       records = stmt.executeQuery();
       while (records.next()) {
@@ -960,7 +1045,8 @@ public class DataSetDataDB {
       }
 
     } catch (SQLException e) {
-      throw new DatabaseException("Error while getting used sensor value IDS", e);
+      throw new DatabaseException("Error while getting used sensor value IDS",
+        e);
     } finally {
       DatabaseUtils.closeResultSets(records);
       DatabaseUtils.closeStatements(stmt);
@@ -974,7 +1060,8 @@ public class DataSetDataDB {
     return result;
   }
 
-  public static void setQC(DataSource dataSource, List<FieldValue> updateValues) throws MissingParamException, DatabaseException {
+  public static void setQC(DataSource dataSource, List<FieldValue> updateValues)
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(updateValues, "updateValues");

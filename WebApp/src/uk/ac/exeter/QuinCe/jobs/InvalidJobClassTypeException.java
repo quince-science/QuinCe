@@ -1,9 +1,8 @@
 package uk.ac.exeter.QuinCe.jobs;
 
 /**
- * Exception to indicate that the specified job class
- * is not of the correct type, i.e. it doesn't extend the
- * abstract {@link Job} class.
+ * Exception to indicate that the specified job class is not of the correct
+ * type, i.e. it doesn't extend the abstract {@link Job} class.
  *
  * @author Steve Jones
  *
@@ -17,9 +16,12 @@ public class InvalidJobClassTypeException extends Exception {
 
   /**
    * Constructor
-   * @param className The name of the invalid class
+   * 
+   * @param className
+   *          The name of the invalid class
    */
   public InvalidJobClassTypeException(String className) {
-    super("The specified job class '" + className + "' is not an instance of the Job class");
+    super("The specified job class '" + className
+      + "' is not an instance of the Job class");
   }
 }

@@ -4,6 +4,7 @@ import org.primefaces.json.JSONObject;
 
 /**
  * Class for a string with a highlighted region
+ * 
  * @author Steve Jones
  *
  */
@@ -26,12 +27,18 @@ public class HighlightedString {
 
   /**
    * Basic constructor
-   * @param string The string
-   * @param highlightStart The first highlighted character
-   * @param highlightEnd The character after the last highlighted character
-   * @throws HighlightedStringException If the string is empty or the highlight indices are invalid
+   * 
+   * @param string
+   *          The string
+   * @param highlightStart
+   *          The first highlighted character
+   * @param highlightEnd
+   *          The character after the last highlighted character
+   * @throws HighlightedStringException
+   *           If the string is empty or the highlight indices are invalid
    */
-  public HighlightedString(String string, int highlightStart, int highlightEnd) throws HighlightedStringException {
+  public HighlightedString(String string, int highlightStart, int highlightEnd)
+    throws HighlightedStringException {
     if (null == string) {
       this.string = "";
     } else {
@@ -45,7 +52,8 @@ public class HighlightedString {
       highlightEnd = -1;
     } else {
       if (highlightStart >= string.length()) {
-        throw new HighlightedStringException("Highlight start is outside the string bounds");
+        throw new HighlightedStringException(
+          "Highlight start is outside the string bounds");
       }
 
       if (highlightStart < 0) {
@@ -53,7 +61,8 @@ public class HighlightedString {
       }
 
       if (highlightEnd < highlightStart) {
-        throw new HighlightedStringException("Highlight end cannot be before highlight start");
+        throw new HighlightedStringException(
+          "Highlight end cannot be before highlight start");
       }
 
       if (highlightEnd >= string.length()) {
@@ -64,6 +73,7 @@ public class HighlightedString {
 
   /**
    * Get the highlighted string as a JSON object
+   * 
    * @return The string as a JSON object
    */
   public String getJson() {
@@ -76,9 +86,10 @@ public class HighlightedString {
 
   /**
    * Get the highlighted portion of the string
+   * 
    * @return The highlighted portion of the string
    */
-  public String getHighlightedPortion(){
+  public String getHighlightedPortion() {
     return string.substring(highlightStart, highlightEnd);
   }
 

@@ -11,8 +11,11 @@ public class ExportConfigurationException extends ExportException {
 
   /**
    * Constructor for a basic message
-   * @param index The index of the entry in the configuration that failed
-   * @param message The message
+   * 
+   * @param index
+   *          The index of the entry in the configuration that failed
+   * @param message
+   *          The message
    */
   public ExportConfigurationException(String name, String message) {
     super("Error in export config entry '" + name + "': " + message);
@@ -20,9 +23,13 @@ public class ExportConfigurationException extends ExportException {
 
   /**
    * Constructor for an underlying error
-   * @param index The index of the entry in the configuration that failed
-   * @param message The error message
-   * @param cause The underlying cause
+   * 
+   * @param index
+   *          The index of the entry in the configuration that failed
+   * @param message
+   *          The error message
+   * @param cause
+   *          The underlying cause
    */
   public ExportConfigurationException(String name, Throwable cause) {
     super("Error in export config entry '" + name + "': ", cause);

@@ -75,13 +75,20 @@ public class Plot {
 
   /**
    * Basic constructor
-   * @param parentBean The bean to which this plot belongs
-   * @param mapBounds The bounds of the map display
-   * @param xAxis The x axis variable
-   * @param yAxis The y axis variables
-   * @param mapVariable The map variable
+   * 
+   * @param parentBean
+   *          The bean to which this plot belongs
+   * @param mapBounds
+   *          The bounds of the map display
+   * @param xAxis
+   *          The x axis variable
+   * @param yAxis
+   *          The y axis variables
+   * @param mapVariable
+   *          The map variable
    */
-  public Plot(PlotPageBean parentBean, GeoBounds mapBounds, Field xAxis, Field yAxis, Field mapVariable) {
+  public Plot(PlotPageBean parentBean, GeoBounds mapBounds, Field xAxis,
+    Field yAxis, Field mapVariable) {
     this.parentBean = parentBean;
     this.mapBounds = mapBounds;
     this.xAxis = xAxis;
@@ -101,7 +108,8 @@ public class Plot {
   }
 
   /**
-   * @param mode the mode to set
+   * @param mode
+   *          the mode to set
    */
   public void setMode(String mode) {
     this.mode = mode;
@@ -119,7 +127,8 @@ public class Plot {
   }
 
   /**
-   * @param xAxis the xAxis to set
+   * @param xAxis
+   *          the xAxis to set
    */
   public void setXAxis(long xAxisId) {
     // A -1 value means no change is required
@@ -140,7 +149,8 @@ public class Plot {
   }
 
   /**
-   * @param yAxis the yAxis to set
+   * @param yAxis
+   *          the yAxis to set
    */
   public void setYAxis(long yAxisId) {
     this.yAxis = parentBean.getFieldSets().getField(yAxisId);
@@ -158,14 +168,17 @@ public class Plot {
   }
 
   /**
-   * @param mapVariable the mapVariable to set
+   * @param mapVariable
+   *          the mapVariable to set
    */
   public void setMapVariable(long mapVariableId) {
-    this.mapVariable = parentBean.getFieldSets().getField(mapVariableId);;
+    this.mapVariable = parentBean.getFieldSets().getField(mapVariableId);
+    ;
   }
 
   /**
    * Get the plot data
+   * 
    * @return The plot data
    */
   public String getData() {
@@ -173,22 +186,25 @@ public class Plot {
   }
 
   // TODO This is horrible. Come up with an alternative.
-  //      But we need a way to stop the data coming from the front end
-  //      Which is doable with 'execute' directives
+  // But we need a way to stop the data coming from the front end
+  // Which is doable with 'execute' directives
 
   /**
    * Dummy method for JSF - does nothing
-   * @param data The data from JSF - ignored
+   * 
+   * @param data
+   *          The data from JSF - ignored
    */
   public void setData(String data) {
     // Do nothing
   }
 
   // TODO This is horrible. Come up with an alternative.
-  //      But we need a way to stop the labels coming from the front end
+  // But we need a way to stop the labels coming from the front end
 
   /**
    * Get the data labels for the plot
+   * 
    * @return The data labels
    */
   public String getLabels() {
@@ -197,8 +213,7 @@ public class Plot {
     // TODO Make this through GSON
     result.append('[');
 
-
-    switch(mode) {
+    switch (mode) {
     case MODE_PLOT: {
 
       // TODO Remove the magic strings. Make PSF fields in CalculationDB
@@ -234,7 +249,9 @@ public class Plot {
 
   /**
    * Dummy method for the front end
-   * @param labels Ignored
+   * 
+   * @param labels
+   *          Ignored
    */
   public void setLabels(String labels) {
     // Do nothing
@@ -242,7 +259,7 @@ public class Plot {
 
   /**
    * Update the plot data
-     */
+   */
   public void updatePlot() {
     try {
       data = parentBean.getData().getPlotData(xAxis, yAxis);
@@ -259,7 +276,8 @@ public class Plot {
   }
 
   /**
-   * @param mapUpdateScale the updateScale to set
+   * @param mapUpdateScale
+   *          the updateScale to set
    */
   public void setMapUpdateScale(boolean mapUpdateScale) {
     this.mapUpdateScale = mapUpdateScale;
@@ -273,7 +291,8 @@ public class Plot {
   }
 
   /**
-   * @param mapData the mapData to set; ignored
+   * @param mapData
+   *          the mapData to set; ignored
    */
   public void setMapData(String mapData) {
     // Do nothing
@@ -287,7 +306,8 @@ public class Plot {
   }
 
   /**
-   * @param mapBounds the mapBounds to set
+   * @param mapBounds
+   *          the mapBounds to set
    */
   public void setMapBounds(String mapBounds) {
     this.mapBounds = new GeoBounds(mapBounds);
@@ -301,7 +321,8 @@ public class Plot {
   }
 
   /**
-   * @param mapScaleLimits the scaleLimits to set
+   * @param mapScaleLimits
+   *          the scaleLimits to set
    */
   public void setMapScaleLimits(String mapScaleLimits) {
     // Do nothing

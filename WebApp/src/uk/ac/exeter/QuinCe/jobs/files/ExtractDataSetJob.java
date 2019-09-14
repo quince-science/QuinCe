@@ -40,6 +40,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Job to extract the data for a data set from the uploaded data files
+ * 
  * @author Steve Jones
  *
  */
@@ -63,16 +64,26 @@ public class ExtractDataSetJob extends Job {
   /**
    * Initialise the job object so it is ready to run
    *
-   * @param resourceManager The system resource manager
-   * @param config The application configuration
-   * @param jobId The id of the job in the database
-   * @param parameters The job parameters, containing the file ID
-   * @throws InvalidJobParametersException If the parameters are not valid for the job
-   * @throws MissingParamException If any of the parameters are invalid
-   * @throws RecordNotFoundException If the job record cannot be found in the database
-   * @throws DatabaseException If a database error occurs
+   * @param resourceManager
+   *          The system resource manager
+   * @param config
+   *          The application configuration
+   * @param jobId
+   *          The id of the job in the database
+   * @param parameters
+   *          The job parameters, containing the file ID
+   * @throws InvalidJobParametersException
+   *           If the parameters are not valid for the job
+   * @throws MissingParamException
+   *           If any of the parameters are invalid
+   * @throws RecordNotFoundException
+   *           If the job record cannot be found in the database
+   * @throws DatabaseException
+   *           If a database error occurs
    */
-  public ExtractDataSetJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+  public ExtractDataSetJob(ResourceManager resourceManager, Properties config,
+    long jobId, Map<String, String> parameters) throws MissingParamException,
+    InvalidJobParametersException, DatabaseException, RecordNotFoundException {
     super(resourceManager, config, jobId, parameters);
   }
 
@@ -86,18 +97,20 @@ public class ExtractDataSetJob extends Job {
       conn.setAutoCommit(false);
 
       // Get the new data set from the database
-      dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
+      dataSet = DataSetDB.getDataSet(conn,
+        Long.parseLong(parameters.get(ID_PARAM)));
       dataSet.setStatus(DataSet.STATUS_DATA_EXTRACTION);
       DataSetDB.updateDataSet(conn, dataSet);
 
-      Instrument instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(),
+      Instrument instrument = InstrumentDB.getInstrument(conn,
+        dataSet.getInstrumentId(),
         ResourceManager.getInstance().getSensorsConfiguration(),
         ResourceManager.getInstance().getRunTypeCategoryConfiguration());
 
       // Delete any existing NRT dataset, unless we're processing it.
       // The odds are that the new dataset will replace it
       if (instrument.getNrt() && !dataSet.isNrt()) {
-          DataSetDB.deleteNrtDataSet(conn, dataSet.getInstrumentId());
+        DataSetDB.deleteNrtDataSet(conn, dataSet.getInstrumentId());
       }
 
       // Reset the data set and all associated data
@@ -105,7 +118,8 @@ public class ExtractDataSetJob extends Job {
       conn.commit();
 
       List<DataFile> files = DataFileDB.getDataFiles(conn,
-        ResourceManager.getInstance().getConfig(), dataSet.getSourceFiles(conn));
+        ResourceManager.getInstance().getConfig(),
+        dataSet.getSourceFiles(conn));
 
       TreeSet<SensorValue> sensorValues = new TreeSet<SensorValue>();
 
@@ -132,10 +146,10 @@ public class ExtractDataSetJob extends Job {
           List<String> line = file.getLine(currentLine);
           LocalDateTime time = file.getDate(line);
 
-          if (
-              (time.equals(dataSet.getStart()) || time.isAfter(dataSet.getStart())) &&
-              (time.isBefore(dataSet.getEnd()) || time.isEqual(dataSet.getEnd()))
-            ) {
+          if ((time.equals(dataSet.getStart())
+            || time.isAfter(dataSet.getStart()))
+            && (time.isBefore(dataSet.getEnd())
+              || time.isEqual(dataSet.getEnd()))) {
 
             if (null == realStartTime && null != time) {
               realStartTime = time;
@@ -159,7 +173,8 @@ public class ExtractDataSetJob extends Job {
                   maxLon = longitude;
                 }
               } catch (PositionException e) {
-                System.out.println("File " + file.getDatabaseId() + ", Line " + currentLine + ": PositionException: " + e.getMessage());
+                System.out.println("File " + file.getDatabaseId() + ", Line "
+                  + currentLine + ": PositionException: " + e.getMessage());
                 positionOK = false;
               }
             }
@@ -174,34 +189,38 @@ public class ExtractDataSetJob extends Job {
                   maxLat = latitude;
                 }
               } catch (PositionException e) {
-                System.out.println("File " + file.getDatabaseId() + ", Line " + currentLine + ": PositionException: " + e.getMessage());
+                System.out.println("File " + file.getDatabaseId() + ", Line "
+                  + currentLine + ": PositionException: " + e.getMessage());
                 positionOK = false;
               }
             }
 
-
             if (positionOK) {
               // Write the position values
               sensorValues.add(new SensorValue(dataSet.getId(),
-                FileDefinition.LONGITUDE_COLUMN_ID, time, String.valueOf(longitude)));
+                FileDefinition.LONGITUDE_COLUMN_ID, time,
+                String.valueOf(longitude)));
 
               sensorValues.add(new SensorValue(dataSet.getId(),
-                FileDefinition.LATITUDE_COLUMN_ID, time, String.valueOf(latitude)));
+                FileDefinition.LATITUDE_COLUMN_ID, time,
+                String.valueOf(latitude)));
 
               // Assigned columns
-              for (Entry<SensorType, List<SensorAssignment>> entry :
-                instrument.getSensorAssignments().entrySet()) {
+              for (Entry<SensorType, List<SensorAssignment>> entry : instrument
+                .getSensorAssignments().entrySet()) {
 
                 for (SensorAssignment assignment : entry.getValue()) {
-                  if (assignment.getDataFile().equals(fileDefinition.getFileDescription())) {
+                  if (assignment.getDataFile()
+                    .equals(fileDefinition.getFileDescription())) {
 
                     // For run types, follow all aliases
-                    if (entry.getKey().equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
-                      String runType = file.getFileDefinition().getRunType(line, true).getRunName();
+                    if (entry.getKey()
+                      .equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
+                      String runType = file.getFileDefinition()
+                        .getRunType(line, true).getRunName();
 
                       sensorValues.add(new SensorValue(dataSet.getId(),
-                        assignment.getDatabaseId(), time,
-                        runType));
+                        assignment.getDatabaseId(), time, runType));
 
                       runTypePeriods.add(runType, time);
                     } else {
@@ -263,8 +282,10 @@ public class ExtractDataSetJob extends Job {
       dataSet.setStatus(DataSet.STATUS_AUTO_QC);
       DataSetDB.updateDataSet(conn, dataSet);
       Map<String, String> jobParams = new HashMap<String, String>();
-      jobParams.put(AutoQCJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
-      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), AutoQCJob.class.getCanonicalName(), jobParams);
+      jobParams.put(AutoQCJob.ID_PARAM,
+        String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
+      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
+        AutoQCJob.class.getCanonicalName(), jobParams);
 
       conn.commit();
     } catch (Exception e) {
@@ -290,17 +311,19 @@ public class ExtractDataSetJob extends Job {
     }
   }
 
-  private boolean inFlushingPeriod(LocalDateTime time, RunTypePeriod runTypePeriod,
-    Instrument instrument) {
+  private boolean inFlushingPeriod(LocalDateTime time,
+    RunTypePeriod runTypePeriod, Instrument instrument) {
 
     boolean result = false;
 
-    if (instrument.getPreFlushingTime() > 0 &&
-      DateTimeUtils.secondsBetween(runTypePeriod.start, time) <= instrument.getPreFlushingTime()) {
+    if (instrument.getPreFlushingTime() > 0
+      && DateTimeUtils.secondsBetween(runTypePeriod.start, time) <= instrument
+        .getPreFlushingTime()) {
 
       result = true;
-    } else if (instrument.getPostFlushingTime() > 0 &&
-      DateTimeUtils.secondsBetween(time, runTypePeriod.end) <= instrument.getPostFlushingTime()) {
+    } else if (instrument.getPostFlushingTime() > 0
+      && DateTimeUtils.secondsBetween(time, runTypePeriod.end) <= instrument
+        .getPostFlushingTime()) {
 
       result = true;
     }
@@ -327,9 +350,8 @@ public class ExtractDataSetJob extends Job {
    * @throws RecordNotFoundException
    *           If the record don't exist
    */
-  private void reset(Connection conn)
-      throws MissingParamException, InvalidDataSetStatusException,
-      DatabaseException, RecordNotFoundException {
+  private void reset(Connection conn) throws MissingParamException,
+    InvalidDataSetStatusException, DatabaseException, RecordNotFoundException {
 
     DataSetDataDB.deleteSensorValues(conn, dataSet.getId());
     DataSetDB.setDatasetStatus(conn, dataSet.getId(), DataSet.STATUS_WAITING);
@@ -339,7 +361,6 @@ public class ExtractDataSetJob extends Job {
   public String getJobName() {
     return jobName;
   }
-
 
   private class RunTypePeriod {
 

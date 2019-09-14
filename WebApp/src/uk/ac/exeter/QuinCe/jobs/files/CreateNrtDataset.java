@@ -31,18 +31,30 @@ public class CreateNrtDataset extends Job {
   public static final String ID_PARAM = "id";
 
   /**
-   * Constructor that allows the {@link JobManager} to create an instance of this job.
-   * @param resourceManager The application's resource manager
-   * @param config The application configuration
-   * @param jobId The database ID of the job
-   * @param parameters The job parameters
-   * @throws MissingParamException If any parameters are missing
-   * @throws InvalidJobParametersException If any of the job parameters are invalid
-   * @throws DatabaseException If a database occurs
-   * @throws RecordNotFoundException If any required database records are missing
+   * Constructor that allows the {@link JobManager} to create an instance of
+   * this job.
+   * 
+   * @param resourceManager
+   *          The application's resource manager
+   * @param config
+   *          The application configuration
+   * @param jobId
+   *          The database ID of the job
+   * @param parameters
+   *          The job parameters
+   * @throws MissingParamException
+   *           If any parameters are missing
+   * @throws InvalidJobParametersException
+   *           If any of the job parameters are invalid
+   * @throws DatabaseException
+   *           If a database occurs
+   * @throws RecordNotFoundException
+   *           If any required database records are missing
    * @see JobManager#getNextJob(ResourceManager, Properties)
    */
-  public CreateNrtDataset(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+  public CreateNrtDataset(ResourceManager resourceManager, Properties config,
+    long jobId, Map<String, String> parameters) throws MissingParamException,
+    InvalidJobParametersException, DatabaseException, RecordNotFoundException {
     super(resourceManager, config, jobId, parameters);
   }
 
@@ -68,22 +80,27 @@ public class CreateNrtDataset extends Job {
       // Default to 1st Jan 1900, or immediately after the last dataset.
       // The real dataset date will be adjusted when the records are extracted
       LocalDateTime nrtStartDate = LocalDateTime.of(1900, 1, 1, 0, 0, 0);
-      DataSet lastDataset = DataSetDB.getLastDataSet(conn, instrument.getDatabaseId());
+      DataSet lastDataset = DataSetDB.getLastDataSet(conn,
+        instrument.getDatabaseId());
       if (null != lastDataset) {
         nrtStartDate = lastDataset.getEnd().plusSeconds(1);
       }
 
-      LocalDateTime endDate = DataFileDB.getLastFileDate(conn, instrument.getDatabaseId());
+      LocalDateTime endDate = DataFileDB.getLastFileDate(conn,
+        instrument.getDatabaseId());
       String nrtDatasetName = buildNrtDatasetName(instrument);
-      DataSet newDataset = new DataSet(instrument.getDatabaseId(), nrtDatasetName, nrtStartDate, endDate, true);
+      DataSet newDataset = new DataSet(instrument.getDatabaseId(),
+        nrtDatasetName, nrtStartDate, endDate, true);
       DataSetDB.addDataSet(conn, newDataset);
 
-      // TODO This is a copy of the code in DataSetsBean.addDataSet. Does it need collapsing?
+      // TODO This is a copy of the code in DataSetsBean.addDataSet. Does it
+      // need collapsing?
       Map<String, String> params = new HashMap<String, String>();
-      params.put(ExtractDataSetJob.ID_PARAM, String.valueOf(newDataset.getId()));
+      params.put(ExtractDataSetJob.ID_PARAM,
+        String.valueOf(newDataset.getId()));
 
       JobManager.addJob(conn, UserDB.getUser(conn, instrument.getOwnerId()),
-          ExtractDataSetJob.class.getCanonicalName(), params);
+        ExtractDataSetJob.class.getCanonicalName(), params);
 
     } catch (Exception e) {
       e.printStackTrace();

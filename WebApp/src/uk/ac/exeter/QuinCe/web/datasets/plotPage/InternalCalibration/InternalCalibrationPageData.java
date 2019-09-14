@@ -22,7 +22,8 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
 
   private Map<Long, FileColumn> columns;
 
-  public InternalCalibrationPageData(Instrument instrument, FieldSets fieldSets, DataSet dataSet) throws Exception {
+  public InternalCalibrationPageData(Instrument instrument, FieldSets fieldSets,
+    DataSet dataSet) throws Exception {
     super(instrument, fieldSets, dataSet);
   }
 
@@ -50,7 +51,9 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
 
     columns = new HashMap<Long, FileColumn>();
 
-    List<FileColumn> instrumentColumns = InstrumentDB.getSensorColumns(ResourceManager.getInstance().getDBDataSource(), instrument.getDatabaseId());
+    List<FileColumn> instrumentColumns = InstrumentDB.getSensorColumns(
+      ResourceManager.getInstance().getDBDataSource(),
+      instrument.getDatabaseId());
     for (FileColumn column : instrumentColumns) {
       columns.put(column.getColumnId(), column);
     }

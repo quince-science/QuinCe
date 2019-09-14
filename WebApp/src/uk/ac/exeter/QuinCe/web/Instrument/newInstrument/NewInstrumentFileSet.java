@@ -7,6 +7,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 
 /**
  * Class to define a set of InstrumentFiles when creating an instrument
+ * 
  * @author Steve Jones
  *
  */
@@ -36,21 +37,24 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
   }
 
   /**
-   * Get the time and position column assignments for all
-   * files related to this instrument.
+   * Get the time and position column assignments for all files related to this
+   * instrument.
    *
    * <p>
-   *   The assignments are encoded as a JSON string in
-   *   the following format:
+   * The assignments are encoded as a JSON string in the following format:
    * </p>
+   * 
    * <pre>
    * [
    * ]
    * </pre>
+   * 
    * @return The time and position assignments
-   * @throws DateTimeSpecificationException If an error occurs while generating the date/time string
+   * @throws DateTimeSpecificationException
+   *           If an error occurs while generating the date/time string
    */
-  public String getFileSpecificAssignments(SensorAssignments sensorAssignments) throws DateTimeSpecificationException {
+  public String getFileSpecificAssignments(SensorAssignments sensorAssignments)
+    throws DateTimeSpecificationException {
     StringBuilder json = new StringBuilder();
 
     json.append('[');
@@ -83,7 +87,9 @@ public class NewInstrumentFileSet extends InstrumentFileSet {
   }
 
   /**
-   * Get the list of registered file descriptions and their columns as a JSON string
+   * Get the list of registered file descriptions and their columns as a JSON
+   * string
+   * 
    * @return The file names
    */
   public String getFilesAndColumns() {

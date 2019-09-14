@@ -7,8 +7,9 @@ import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * A stub object for an instrument, containing only information
- * useful for display in a list of instruments.
+ * A stub object for an instrument, containing only information useful for
+ * display in a list of instruments.
+ * 
  * @author Steve Jones
  *
  */
@@ -26,9 +27,13 @@ public class InstrumentStub {
 
   /**
    * Simple constructor
-   * @param id The instrument's database ID
-   * @param name The instrument's name
-   * @param calibratableSensors Indicates the presence of sensors requiring calibration
+   * 
+   * @param id
+   *          The instrument's database ID
+   * @param name
+   *          The instrument's name
+   * @param calibratableSensors
+   *          Indicates the presence of sensors requiring calibration
    */
   public InstrumentStub(long id, String name) {
     this.id = id;
@@ -37,22 +42,33 @@ public class InstrumentStub {
 
   /**
    * Returns the complete Instrument object for this stub
+   * 
    * @return The complete Instrument object
-   * @throws MissingParamException If the call to the database routine is incorrect (should never happen!)
-   * @throws DatabaseException If an error occurs while retrieving the data from the database
-   * @throws RecordNotFoundException If the instrument record cannot be found in the database
-   * @throws ResourceException If the data source cannot be retrieved
-   * @throws InstrumentException If any instrument details are invalid
+   * @throws MissingParamException
+   *           If the call to the database routine is incorrect (should never
+   *           happen!)
+   * @throws DatabaseException
+   *           If an error occurs while retrieving the data from the database
+   * @throws RecordNotFoundException
+   *           If the instrument record cannot be found in the database
+   * @throws ResourceException
+   *           If the data source cannot be retrieved
+   * @throws InstrumentException
+   *           If any instrument details are invalid
    */
-  public Instrument getFullInstrument() throws MissingParamException, DatabaseException, RecordNotFoundException, ResourceException, InstrumentException {
+  public Instrument getFullInstrument()
+    throws MissingParamException, DatabaseException, RecordNotFoundException,
+    ResourceException, InstrumentException {
     ResourceManager resourceManager = ResourceManager.getInstance();
     return InstrumentDB.getInstrument(resourceManager.getDBDataSource(), id,
-      resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
+      resourceManager.getSensorsConfiguration(),
+      resourceManager.getRunTypeCategoryConfiguration());
   }
 
   ///////// *** GETTERS AND SETTERS *** ///////////
   /**
    * Returns the instrument's database ID
+   * 
    * @return The instrument's database ID
    */
   public long getId() {
@@ -61,6 +77,7 @@ public class InstrumentStub {
 
   /**
    * Return the instrument's name
+   * 
    * @return The instrument's name
    */
   public String getName() {

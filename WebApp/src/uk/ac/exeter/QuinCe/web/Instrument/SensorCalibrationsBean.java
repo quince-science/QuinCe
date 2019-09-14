@@ -12,10 +12,9 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.SensorCalibrationDB;
  * Bean for sensor calibrations.
  *
  * <p>
- *   This currently uses the PolynomialSensorCalibration exclusively,
- *   because that is the only supported version right now. This will
- *   need to be genericised when the full framework of different calibration
- *   formulae is implemented.
+ * This currently uses the PolynomialSensorCalibration exclusively, because that
+ * is the only supported version right now. This will need to be genericised
+ * when the full framework of different calibration formulae is implemented.
  * </p>
  *
  * @author Steve Jones
