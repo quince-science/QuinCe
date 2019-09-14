@@ -469,7 +469,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
         dataset.getInstrumentId(), resourceManager.getSensorsConfiguration(),
         resourceManager.getRunTypeCategoryConfiguration());
 
-      loadData();
+
+      initData();
       selectableRows = buildSelectableRows();
 
       plot1 = new Plot(this, dataset.getBounds(), getDefaultPlot1XAxis(),
@@ -725,10 +726,11 @@ public abstract class PlotPageBean extends BaseManagedBean {
   }
 
   /**
-   * Load all data for the page. Populate field sets, table data, and table row
-   * ids
+   * Initialise the data structure for displaying data. Set up columns
+   * and row IDs
+   * @throws Exception
    */
-  protected abstract void loadData() throws Exception;
+  protected abstract void initData() throws Exception;
 
   /**
    * Get the page data object
