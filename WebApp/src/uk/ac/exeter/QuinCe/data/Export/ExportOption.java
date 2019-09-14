@@ -267,13 +267,12 @@ public class ExportOption {
       includeUnits = false;
       replacementColumnHeaders = new HashMap<String, String>();
 
-      JSONObject replacementHeaderJson = json.getJSONObject("replaceColumnHeaders");
-      replacementHeaderJson.keySet()
-        .stream()
-        .forEach(k -> {
-          replacementColumnHeaders.put(k, replacementHeaderJson.getString(k));
+      JSONObject replacementHeaderJson = json
+        .getJSONObject("replaceColumnHeaders");
+      replacementHeaderJson.keySet().stream().forEach(k -> {
+        replacementColumnHeaders.put(k, replacementHeaderJson.getString(k));
 
-        });
+      });
 
     }
   }
@@ -345,12 +344,11 @@ public class ExportOption {
     return timestampHeader;
   }
 
-
   public String getReplacementHeader(String code) {
     String result = code;
 
-    if (null != replacementColumnHeaders &&
-      replacementColumnHeaders.containsKey(code)) {
+    if (null != replacementColumnHeaders
+      && replacementColumnHeaders.containsKey(code)) {
 
       result = replacementColumnHeaders.get(code);
 
