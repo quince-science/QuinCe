@@ -36,8 +36,6 @@ public abstract class DatasetMeasurementData
 
   private boolean dirty = true;
 
-  private List<LocalDateTime> rowIds;
-
   private String rowIdsJson;
 
   private TreeMap<LocalDateTime, Position> positions;
@@ -58,7 +56,7 @@ public abstract class DatasetMeasurementData
 
   /**
    * Add a value to the table
-   * 
+   *
    * @param rowId
    * @param field
    * @param value
@@ -74,7 +72,7 @@ public abstract class DatasetMeasurementData
 
   /**
    * Add a value to the table
-   * 
+   *
    * @param rowId
    * @param fieldId
    * @param value
@@ -86,7 +84,7 @@ public abstract class DatasetMeasurementData
 
   /**
    * Add a set of values to the table
-   * 
+   *
    * @param rowId
    *          The table row
    * @param values
@@ -103,7 +101,7 @@ public abstract class DatasetMeasurementData
 
   /**
    * Get data for a plot
-   * 
+   *
    * @param xAxis
    *          X Axis
    * @param yAxis
@@ -292,11 +290,7 @@ public abstract class DatasetMeasurementData
   }
 
   public List<LocalDateTime> getRowIds() {
-    if (dirty) {
-      buildCaches();
-    }
-
-    return rowIds;
+    return new ArrayList<LocalDateTime>(keySet());
   }
 
   public String getRowIdsJson() {
@@ -314,12 +308,8 @@ public abstract class DatasetMeasurementData
   }
 
   private void makeRowIds() {
-    rowIds = new ArrayList<LocalDateTime>(keySet());
-
-    List<Long> jsonInput = new ArrayList<Long>(rowIds.size());
-    for (LocalDateTime id : rowIds) {
-      jsonInput.add(DateTimeUtils.dateToLong(id));
-    }
+    List<Long> jsonInput = new ArrayList<Long>(size());
+    keySet().stream().forEach(k -> jsonInput.add(DateTimeUtils.dateToLong(k)));
 
     Gson gson = new Gson();
     rowIdsJson = gson.toJson(jsonInput).toString();
@@ -374,7 +364,7 @@ public abstract class DatasetMeasurementData
 
   /**
    * Get the field sets
-   * 
+   *
    * @return
    */
   public FieldSets getFieldSets() {
