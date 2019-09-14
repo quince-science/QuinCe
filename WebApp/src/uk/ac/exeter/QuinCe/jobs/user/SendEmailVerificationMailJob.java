@@ -11,6 +11,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Background job to send email verification codes to users
+ * 
  * @author Steve Jones
  *
  */
@@ -22,14 +23,23 @@ public class SendEmailVerificationMailJob extends SendCodeJob {
 
   /**
    * Job object constructor
-   * @param resourceManager The application's resource manager
-   * @param config The application configuration
-   * @param id The job ID
-   * @param params The job parameters
-   * @throws MissingParamException If any required parameters are missing
-   * @throws InvalidJobParametersException If the job parameters are invalid
+   * 
+   * @param resourceManager
+   *          The application's resource manager
+   * @param config
+   *          The application configuration
+   * @param id
+   *          The job ID
+   * @param params
+   *          The job parameters
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws InvalidJobParametersException
+   *           If the job parameters are invalid
    */
-  public SendEmailVerificationMailJob(ResourceManager resourceManager, Properties config, long id, Map<String, String> params) throws MissingParamException, InvalidJobParametersException {
+  public SendEmailVerificationMailJob(ResourceManager resourceManager,
+    Properties config, long id, Map<String, String> params)
+    throws MissingParamException, InvalidJobParametersException {
     super(resourceManager, config, id, params);
   }
 

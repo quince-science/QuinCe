@@ -4,6 +4,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 
 /**
  * Exception for variables that can't be found
+ * 
  * @author Steve Jones
  *
  */
@@ -16,7 +17,9 @@ public class VariableNotFoundException extends InstrumentException {
 
   /**
    * Variable name not found
-   * @param name The variable name
+   * 
+   * @param name
+   *          The variable name
    */
   public VariableNotFoundException(String name) {
     super("The variable with name '" + name + "' does not exist");
@@ -24,7 +27,9 @@ public class VariableNotFoundException extends InstrumentException {
 
   /**
    * Variable ID not found
-   * @param variableId The variable ID
+   * 
+   * @param variableId
+   *          The variable ID
    */
   public VariableNotFoundException(long variableId) {
     super("The variable with ID " + variableId + " does not exist");

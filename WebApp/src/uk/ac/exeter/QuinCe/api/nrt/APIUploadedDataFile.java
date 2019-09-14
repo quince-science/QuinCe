@@ -10,6 +10,7 @@ import uk.ac.exeter.QuinCe.web.files.UploadedDataFile;
 
 /**
  * {#UploadedDataFile} instance for use with simple Strings
+ * 
  * @author Steve Jones
  *
  */
@@ -27,8 +28,11 @@ public class APIUploadedDataFile extends UploadedDataFile {
 
   /**
    * Basic constructor for pre-prepared strings
-   * @param filename The filename
-   * @param contents The file contents
+   * 
+   * @param filename
+   *          The filename
+   * @param contents
+   *          The file contents
    */
   protected APIUploadedDataFile(String filename, String contents) {
     super();
@@ -37,16 +41,22 @@ public class APIUploadedDataFile extends UploadedDataFile {
   }
 
   /**
-   * Constructor to build a file from an {#InputStream}. Assumes data is in UTF-8.
+   * Constructor to build a file from an {#InputStream}. Assumes data is in
+   * UTF-8.
    *
    * Note that the InputStream is not closed by this constructor.
-   * @param filename The filename
-   * @param inputStream The input stream
+   * 
+   * @param filename
+   *          The filename
+   * @param inputStream
+   *          The input stream
    */
-  protected APIUploadedDataFile(String filename, InputStream inputStream) throws IOException {
+  protected APIUploadedDataFile(String filename, InputStream inputStream)
+    throws IOException {
     super();
     this.filename = filename;
-    this.contents = IOUtils.toString(inputStream, StandardCharsets.UTF_8.displayName());
+    this.contents = IOUtils.toString(inputStream,
+      StandardCharsets.UTF_8.displayName());
   }
 
   @Override

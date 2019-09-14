@@ -15,9 +15,8 @@ import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.web.html.HtmlUtils;
 
 /**
- * This is a specialised instance of the InstrumentFile class
- * that provides special functions used only when an instrument
- * is being defined.
+ * This is a specialised instance of the InstrumentFile class that provides
+ * special functions used only when an instrument is being defined.
  *
  * @author Steve Jones
  *
@@ -30,8 +29,8 @@ public class FileDefinitionBuilder extends FileDefinition {
   protected static final int MAX_DISPLAY_LINES = 250;
 
   /**
-   * The number of lines to search in order to determine
-   * the file's column separator
+   * The number of lines to search in order to determine the file's column
+   * separator
    */
   private static final int SEPARATOR_SEARCH_LINES = 10;
 
@@ -47,7 +46,9 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Create a new file definition with the default description
-   * @param fileSet The file set that will contain this file definition
+   * 
+   * @param fileSet
+   *          The file set that will contain this file definition
    */
   public FileDefinitionBuilder(InstrumentFileSet fileSet) {
     super(DEFAULT_DESCRIPTION, fileSet);
@@ -61,16 +62,23 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Create a new file definition with a specified description
-   * @param fileDescription The file description
-   * @param fileSet The file set that will contain this file definition
+   * 
+   * @param fileDescription
+   *          The file description
+   * @param fileSet
+   *          The file set that will contain this file definition
    */
-  public FileDefinitionBuilder(String fileDescription, InstrumentFileSet fileSet) {
+  public FileDefinitionBuilder(String fileDescription,
+    InstrumentFileSet fileSet) {
     super(fileDescription, fileSet);
   }
 
   /**
-   * Determines whether or not file data has been uploaded for this instrument file
-   * @return {@code true} if file data has been uploaded; {@code false} if it has not.
+   * Determines whether or not file data has been uploaded for this instrument
+   * file
+   * 
+   * @return {@code true} if file data has been uploaded; {@code false} if it
+   *         has not.
    */
   public boolean getHasFileData() {
     return (null != fileContents);
@@ -78,6 +86,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Guess the layout of the file from its contents
+   * 
    * @see #calculateColumnCount()
    */
   public void guessFileLayout() {
@@ -86,7 +95,8 @@ public class FileDefinitionBuilder extends FileDefinition {
       // and the maximum number of columns in each line
       setSeparator(getMostCommonSeparator());
 
-      // Work out the likely number of columns in the file from the last few lines
+      // Work out the likely number of columns in the file from the last few
+      // lines
       super.setColumnCount(calculateColumnCount());
 
       // Now start at the beginning of the file, looking for rows containing the
@@ -95,7 +105,8 @@ public class FileDefinitionBuilder extends FileDefinition {
       int currentRow = 0;
       boolean columnsRowFound = false;
       while (!columnsRowFound && currentRow < fileContents.size()) {
-        if (countSeparatorInstances(getSeparator(), fileContents.get(currentRow)) + 1 == getColumnCount()) {
+        if (countSeparatorInstances(getSeparator(),
+          fileContents.get(currentRow)) + 1 == getColumnCount()) {
           columnsRowFound = true;
         } else {
           currentRow++;
@@ -107,7 +118,8 @@ public class FileDefinitionBuilder extends FileDefinition {
         setHeaderEndString(fileContents.get(currentRow - 1));
       }
 
-      // Finally, find the line row that's mostly numeric. This is the first proper data line.
+      // Finally, find the line row that's mostly numeric. This is the first
+      // proper data line.
       // Any lines between the header and this are column header rows
       boolean dataFound = false;
       while (!dataFound && currentRow < fileContents.size()) {
@@ -129,8 +141,9 @@ public class FileDefinitionBuilder extends FileDefinition {
   }
 
   /**
-   * Get the {@link #MAX_DISPLAY_LINES} of the file data as a JSON string,
-   * to be used in previewing the file contents
+   * Get the {@link #MAX_DISPLAY_LINES} of the file data as a JSON string, to be
+   * used in previewing the file contents
+   * 
    * @return The file preview data
    */
   public String getFilePreview() {
@@ -149,6 +162,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Search a string to find the most commonly occurring valid separator value
+   * 
    * @return The most common separator in the string
    */
   private String getMostCommonSeparator() {
@@ -169,8 +183,11 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Count the number of instances of a given separator in a string
-   * @param separator The separator to search for
-   * @param searchString The string to be searched
+   * 
+   * @param separator
+   *          The separator to search for
+   * @param searchString
+   *          The string to be searched
    * @return The number of separators found in the string
    */
   private int countSeparatorInstances(String separator, String searchString) {
@@ -178,7 +195,8 @@ public class FileDefinitionBuilder extends FileDefinition {
     Pattern searchPattern;
 
     if (separator.equals(" ")) {
-      // Space separators come in groups, so count consecutive spaces as one instance
+      // Space separators come in groups, so count consecutive spaces as one
+      // instance
       searchPattern = Pattern.compile(" +");
     } else {
       searchPattern = Pattern.compile(separator);
@@ -196,7 +214,9 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Store the file data as an array of Strings
-   * @param fileContents The file data
+   * 
+   * @param fileContents
+   *          The file data
    */
   public void setFileContents(List<String> fileContents) {
     this.fileContents = fileContents;
@@ -204,12 +224,15 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Create a deep copy of a {@code FileDefinitionBuilder} object.
-   * @param source The source object
+   * 
+   * @param source
+   *          The source object
    * @return The copied object
    */
   public static FileDefinitionBuilder copy(FileDefinitionBuilder source) {
 
-    FileDefinitionBuilder dest = new FileDefinitionBuilder(source.getFileDescription(), source.getFileSet());
+    FileDefinitionBuilder dest = new FileDefinitionBuilder(
+      source.getFileDescription(), source.getFileSet());
 
     try {
       dest.setHeaderType(source.getHeaderType());
@@ -253,19 +276,20 @@ public class FileDefinitionBuilder extends FileDefinition {
   /**
    * Get the number of columns in a file using the specified separator.
    *
-   * This states the hypothetical number of columns found in the file
-   * if the specified separator is used.
+   * This states the hypothetical number of columns found in the file if the
+   * specified separator is used.
    *
-   * This counts is based on the number of separators found per line
-   * in the last few lines of the file. The largest number of columns
-   * is used, because some instruments report diagnostic information on shorter lines.
+   * This counts is based on the number of separators found per line in the last
+   * few lines of the file. The largest number of columns is used, because some
+   * instruments report diagnostic information on shorter lines.
    *
-   * @param separator The separator
+   * @param separator
+   *          The separator
    * @return The number of columns
    * @see #SEPARATOR_SEARCH_LINES
    * @see #getMostCommonSeparator()
    */
-   public int calculateColumnCount(String separator) {
+  public int calculateColumnCount(String separator) {
     int maxColumnCount = 0;
 
     int firstSearchLine = fileContents.size() - SEPARATOR_SEARCH_LINES;
@@ -273,7 +297,8 @@ public class FileDefinitionBuilder extends FileDefinition {
       firstSearchLine = 0;
     }
     for (int i = firstSearchLine; i < fileContents.size(); i++) {
-      int separatorCount = countSeparatorInstances(separator, fileContents.get(i));
+      int separatorCount = countSeparatorInstances(separator,
+        fileContents.get(i));
       if (separatorCount > maxColumnCount) {
         maxColumnCount = separatorCount + 1;
       }
@@ -283,10 +308,11 @@ public class FileDefinitionBuilder extends FileDefinition {
   }
 
   /**
-   * Dummy set column method for bean requirements.
-   * We don't allow external agencies to set this,
-   * but it's needed for bean compatibility
-   * @param columnCount The column count
+   * Dummy set column method for bean requirements. We don't allow external
+   * agencies to set this, but it's needed for bean compatibility
+   * 
+   * @param columnCount
+   *          The column count
    */
   @Override
   public void setColumnCount(int columnCount) {
@@ -296,17 +322,17 @@ public class FileDefinitionBuilder extends FileDefinition {
   /**
    * Get the set of column definitions for this file definition as a JSON array
    * <p>
-   *   If the file has column header rows, the column names will
-   *   be taken from the first of those rows. Otherwise, they will be
-   *   Column 1, Column 2 etc.
+   * If the file has column header rows, the column names will be taken from the
+   * first of those rows. Otherwise, they will be Column 1, Column 2 etc.
    * </p>
    *
    * @return The file columns
    */
   public String getFileColumns() {
 
-    // TODO Only regenerate the columns when the file spec is changed. Don't do it
-    //      on demand like this.
+    // TODO Only regenerate the columns when the file spec is changed. Don't do
+    // it
+    // on demand like this.
     List<String> columns = new ArrayList<String>();
 
     if (getColumnHeaderRows() == 0) {
@@ -339,7 +365,9 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Return the row number of the first column header row in the file
-   * @return The first column header row, or -1 if the file does not have column headers
+   * 
+   * @return The first column header row, or -1 if the file does not have column
+   *         headers
    */
   public int getFirstColumnHeaderRow() {
     int result = -1;
@@ -357,6 +385,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Get the data from the sample file as a JSON string
+   * 
    * @return The file data
    */
   public String getJsonData() {
@@ -398,21 +427,23 @@ public class FileDefinitionBuilder extends FileDefinition {
       }
     }
 
-
     result.append(']');
 
     return result.toString();
   }
 
   @Override
-  public void setSeparatorName(String separatorName) throws InvalidSeparatorException {
+  public void setSeparatorName(String separatorName)
+    throws InvalidSeparatorException {
     super.setSeparatorName(separatorName);
     super.setColumnCount(calculateColumnCount());
   }
 
   /**
    * Get the unique values from a column
-   * @param column The column index
+   * 
+   * @param column
+   *          The column index
    * @return The unique values
    */
   protected TreeSet<String> getUniqueColumnValues(int column) {
@@ -440,6 +471,7 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Shortcut method to get the length of the header
+   * 
    * @return The header length
    */
   private int getHeaderLength() {
@@ -448,22 +480,27 @@ public class FileDefinitionBuilder extends FileDefinition {
 
   /**
    * Get the header line from a file that contains the given prefix and suffix.
-   * A line will match if it contains the prefix, followed by a
-   * number of characters, followed by the suffix.
+   * A line will match if it contains the prefix, followed by a number of
+   * characters, followed by the suffix.
    * <p>
-   *   The matching line will be returned as a {@link HighlightedString},
-   *   with the portion between the prefix and suffix highlighted.
+   * The matching line will be returned as a {@link HighlightedString}, with the
+   * portion between the prefix and suffix highlighted.
    * </p>
    * <p>
-   *   If multiple lines match the prefix and suffix, the first line
-   *   will be returned.
+   * If multiple lines match the prefix and suffix, the first line will be
+   * returned.
    * </p>
-   * @param prefix The prefix
-   * @param suffix The suffix
+   * 
+   * @param prefix
+   *          The prefix
+   * @param suffix
+   *          The suffix
    * @return The matching line
-   * @throws HighlightedStringException If an error occurs while building the highlighted string
+   * @throws HighlightedStringException
+   *           If an error occurs while building the highlighted string
    */
-  public HighlightedString getHeaderLine(String prefix, String suffix) throws HighlightedStringException {
+  public HighlightedString getHeaderLine(String prefix, String suffix)
+    throws HighlightedStringException {
     return super.getHeaderLine(fileContents, prefix, suffix);
   }
 }

@@ -7,6 +7,7 @@ import java.util.ListIterator;
 
 /**
  * A linked list of SensorValue objects with a stateful search capability
+ * 
  * @author Steve Jones
  *
  */
@@ -26,7 +27,9 @@ public class NavigableSensorValuesList extends ArrayList<SensorValue> {
 
   /**
    * Convert an existing list of SensorValues to a navigable list
-   * @param list The existing list
+   * 
+   * @param list
+   *          The existing list
    */
   public NavigableSensorValuesList(List<SensorValue> list) {
     super(list);
@@ -37,7 +40,8 @@ public class NavigableSensorValuesList extends ArrayList<SensorValue> {
    */
   public void initIncrementalSearch() {
     if (null != incrementalSearchIterator) {
-      throw new IllegalStateException("Incremental search is already initialised");
+      throw new IllegalStateException(
+        "Incremental search is already initialised");
     }
 
     incrementalSearchIterator = listIterator();
@@ -48,29 +52,34 @@ public class NavigableSensorValuesList extends ArrayList<SensorValue> {
    */
   public void finishIncrementalSearch() {
     if (null == incrementalSearchIterator) {
-      throw new IllegalStateException("Incremental search has not been initialised");
+      throw new IllegalStateException(
+        "Incremental search has not been initialised");
     }
 
     incrementalSearchIterator = null;
   }
 
   /**
-   * Perform an incremental search for the specified time from the
-   * current search state. Returns the latest SensorValue that is before
-   * or equal to the specified time. Returns {@code null} if there
-   * is no element before that time.
-   * @param time The time to search for
-   * @return The latest SensorValue that is before or equal to the specified time
+   * Perform an incremental search for the specified time from the current
+   * search state. Returns the latest SensorValue that is before or equal to the
+   * specified time. Returns {@code null} if there is no element before that
+   * time.
+   * 
+   * @param time
+   *          The time to search for
+   * @return The latest SensorValue that is before or equal to the specified
+   *         time
    */
   public SensorValue incrementalSearch(LocalDateTime time) {
     SensorValue result = null;
 
     if (null == incrementalSearchIterator) {
-      throw new IllegalStateException("Incremental search has not been initialised");
+      throw new IllegalStateException(
+        "Incremental search has not been initialised");
     }
 
-    while (incrementalSearchIterator.hasNext() &&
-      !get(incrementalSearchIterator.nextIndex()).getTime().isAfter(time)) {
+    while (incrementalSearchIterator.hasNext()
+      && !get(incrementalSearchIterator.nextIndex()).getTime().isAfter(time)) {
 
       incrementalSearchIterator.next();
     }

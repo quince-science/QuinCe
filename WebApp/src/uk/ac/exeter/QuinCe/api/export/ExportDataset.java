@@ -27,9 +27,9 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *
  * The ZIP will contain:
  * <ul>
- *   <li>The dataset in all available export formats</li>
- *   <li>The raw data files used to build the datases</li>
- *   <li>A manifest containing file lists and metadata</li>
+ * <li>The dataset in all available export formats</li>
+ * <li>The raw data files used to build the datases</li>
+ * <li>A manifest containing file lists and metadata</li>
  * </ul>
  *
  * @author Steve Jones
@@ -42,7 +42,7 @@ public class ExportDataset {
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   public Response getDatasetZip(@FormParam("id") long id) throws Exception {
 
-  Connection conn = null;
+    Connection conn = null;
     Response response;
     Status responseCode = Status.OK;
     byte[] zip = null;
@@ -50,12 +50,15 @@ public class ExportDataset {
     try {
       ResourceManager resourceManager = ResourceManager.getInstance();
       DataSource dataSource = resourceManager.getDBDataSource();
-      SensorsConfiguration sensorConfig = resourceManager.getSensorsConfiguration();
-      RunTypeCategoryConfiguration runTypeConfig = resourceManager.getRunTypeCategoryConfiguration();
+      SensorsConfiguration sensorConfig = resourceManager
+        .getSensorsConfiguration();
+      RunTypeCategoryConfiguration runTypeConfig = resourceManager
+        .getRunTypeCategoryConfiguration();
 
       conn = dataSource.getConnection();
       DataSet dataset = DataSetDB.getDataSet(conn, id);
-      Instrument instrument = InstrumentDB.getInstrument(conn, dataset.getInstrumentId(), sensorConfig, runTypeConfig);
+      Instrument instrument = InstrumentDB.getInstrument(conn,
+        dataset.getInstrumentId(), sensorConfig, runTypeConfig);
       if (dataset.getStatus() != DataSet.STATUS_READY_FOR_EXPORT) {
         responseCode = Status.FORBIDDEN;
       } else {
@@ -71,7 +74,8 @@ public class ExportDataset {
     if (!responseCode.equals(Status.OK)) {
       response = Response.status(responseCode).build();
     } else {
-      response = Response.ok(zip, MediaType.APPLICATION_OCTET_STREAM_TYPE).build();
+      response = Response.ok(zip, MediaType.APPLICATION_OCTET_STREAM_TYPE)
+        .build();
     }
 
     return response;

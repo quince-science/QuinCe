@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Instrument;
 
 /**
  * Excpeption thrown if an invalid header type is specified
+ * 
  * @author Steve Jones
  *
  */
@@ -16,6 +17,7 @@ public class InvalidHeaderTypeException extends FileDefinitionException {
    * Constructor with automatic message
    */
   public InvalidHeaderTypeException() {
-    super("Header type must be either FileDefinition.HEADER_TYPE_LINE_COUNT or FileDefinition.HEADER_TYPE_STRING");
+    super(
+      "Header type must be either FileDefinition.HEADER_TYPE_LINE_COUNT or FileDefinition.HEADER_TYPE_STRING");
   }
 }

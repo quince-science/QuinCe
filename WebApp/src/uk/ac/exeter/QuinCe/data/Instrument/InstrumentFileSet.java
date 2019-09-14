@@ -5,6 +5,7 @@ import java.util.List;
 
 /**
  * Methods to handle and process a set of file definitions for an instrument
+ * 
  * @author Steve Jones
  *
  */
@@ -39,10 +40,13 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
   }
 
   /**
-   * Determine whether or not the file set contains a file definition
-   * with the specified description
-   * @param description The file description
-   * @return {@code true} if a file with the specified description is present; {@code false} otherwise
+   * Determine whether or not the file set contains a file definition with the
+   * specified description
+   * 
+   * @param description
+   *          The file description
+   * @return {@code true} if a file with the specified description is present;
+   *         {@code false} otherwise
    */
   public boolean containsFileDescription(String description) {
     boolean found = false;
@@ -58,9 +62,11 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
   }
 
   /**
-   * Retrieve the file definition with the specified description.
-   * If no definition is found, the method returns {@code null}
-   * @param description The file description
+   * Retrieve the file definition with the specified description. If no
+   * definition is found, the method returns {@code null}
+   * 
+   * @param description
+   *          The file description
    * @return The file definition
    */
   public FileDefinition get(String description) {
@@ -77,9 +83,11 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
   }
 
   /**
-   * Retrieve the file definition with the specified database ID.
-   * If no definition is found, the method returns {@code null}
-   * @param definitionId The database ID
+   * Retrieve the file definition with the specified database ID. If no
+   * definition is found, the method returns {@code null}
+   * 
+   * @param definitionId
+   *          The database ID
    * @return The file definition
    */
   public FileDefinition get(long definitionId) {
@@ -119,13 +127,15 @@ public class InstrumentFileSet extends ArrayList<FileDefinition> {
   }
 
   /**
-   * Find file definitions that match the layout of the
-   * supplied file definition.
+   * Find file definitions that match the layout of the supplied file
+   * definition.
    *
-   * @param fileToMatch The file definition to be matched
+   * @param fileToMatch
+   *          The file definition to be matched
    * @return The matching file definitions
    */
-  public List<FileDefinition> getMatchingFileDefinition(FileDefinition fileToMatch) {
+  public List<FileDefinition> getMatchingFileDefinition(
+    FileDefinition fileToMatch) {
     List<FileDefinition> result = new ArrayList<FileDefinition>();
 
     for (FileDefinition file : this) {

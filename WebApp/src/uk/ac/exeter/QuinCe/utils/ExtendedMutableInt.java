@@ -3,8 +3,9 @@ package uk.ac.exeter.QuinCe.utils;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 /**
- * An extension of the Apache Commons MutableInt class
- * with some useful functions
+ * An extension of the Apache Commons MutableInt class with some useful
+ * functions
+ * 
  * @author Steve Jones
  * @see MutableInt
  */
@@ -17,7 +18,9 @@ public class ExtendedMutableInt extends MutableInt {
 
   /**
    * Simple constructor for an {@code int} value
-   * @param value The initial value
+   * 
+   * @param value
+   *          The initial value
    */
   public ExtendedMutableInt(int value) {
     super(value);
@@ -25,7 +28,9 @@ public class ExtendedMutableInt extends MutableInt {
 
   /**
    * See if the value of this object is greater than the specified value
-   * @param otherValue The value to compare
+   * 
+   * @param otherValue
+   *          The value to compare
    * @return {@code this > otherValue}
    */
   public boolean greaterThan(int otherValue) {
@@ -33,8 +38,11 @@ public class ExtendedMutableInt extends MutableInt {
   }
 
   /**
-   * See if the value of this object is greater than or equal to the specified value
-   * @param otherValue The value to compare
+   * See if the value of this object is greater than or equal to the specified
+   * value
+   * 
+   * @param otherValue
+   *          The value to compare
    * @return {@code this >= otherValue}
    */
   public boolean greaterThanOrEqualTo(int otherValue) {
@@ -42,8 +50,9 @@ public class ExtendedMutableInt extends MutableInt {
   }
 
   /**
-   * Create a new {@code ExtendedMutableInt} object with
-   * a value one higher than this object's value.
+   * Create a new {@code ExtendedMutableInt} object with a value one higher than
+   * this object's value.
+   * 
    * @return The new object
    */
   public ExtendedMutableInt incrementedClone() {

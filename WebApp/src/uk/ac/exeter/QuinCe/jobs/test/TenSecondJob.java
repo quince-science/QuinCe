@@ -11,9 +11,9 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * A test job that runs in chunks of 10 seconds.
- * It doesn't actually do anything, but simply updates its progress
- * after each 10 second chunk.
+ * A test job that runs in chunks of 10 seconds. It doesn't actually do
+ * anything, but simply updates its progress after each 10 second chunk.
+ * 
  * @author Steve Jones
  *
  */
@@ -36,14 +36,23 @@ public class TenSecondJob extends Job {
 
   /**
    * Constructs a job object, and validates the parameters passed to it
-   * @param resourceManager The system resource manager
-   * @param config The application properties
-   * @param id The id of the job in the database
-   * @param parameters The parameters for the job
-   * @throws InvalidJobParametersException If the parameters are not valid for the job
-   * @throws MissingParamException If any required parameters are missing
+   * 
+   * @param resourceManager
+   *          The system resource manager
+   * @param config
+   *          The application properties
+   * @param id
+   *          The id of the job in the database
+   * @param parameters
+   *          The parameters for the job
+   * @throws InvalidJobParametersException
+   *           If the parameters are not valid for the job
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
-  public TenSecondJob(ResourceManager resourceManager, Properties config, long id, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException {
+  public TenSecondJob(ResourceManager resourceManager, Properties config,
+    long id, Map<String, String> parameters)
+    throws MissingParamException, InvalidJobParametersException {
     super(resourceManager, config, id, parameters);
     chunkCount = Integer.parseInt(parameters.get(CHUNK_KEY));
   }
@@ -54,10 +63,10 @@ public class TenSecondJob extends Job {
       System.out.println("Job " + id + ": Chunk " + i + " of " + chunkCount);
       try {
         Thread.sleep(10000);
-        setProgress(((double)i / (double)chunkCount) * 100);
-      } catch(InterruptedException e) {
+        setProgress(((double) i / (double) chunkCount) * 100);
+      } catch (InterruptedException e) {
         // Don't care
-      } catch(Exception e) {
+      } catch (Exception e) {
         throw new JobFailedException(id, e);
       }
     }
@@ -73,7 +82,7 @@ public class TenSecondJob extends Job {
     } else {
       try {
         chunkCount = Integer.parseInt(parameters.get(CHUNK_KEY));
-      } catch(NumberFormatException e) {
+      } catch (NumberFormatException e) {
         throw new InvalidJobParametersException("It's not a number!");
       }
     }

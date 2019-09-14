@@ -13,10 +13,11 @@ import javax.faces.convert.FacesConverter;
 
 /**
  * Convert LocalDateTime objects to Strings, and back again
+ * 
  * @author Steve Jones
  * @see "https://stackoverflow.com/questions/34883270/how-to-use-java-time-zoneddatetime-localdatetime-in-pcalendar"
  */
-@FacesConverter(forClass=LocalDateTime.class)
+@FacesConverter(forClass = LocalDateTime.class)
 public class LocalDateTimeConverter implements Converter {
 
   /**
@@ -39,7 +40,8 @@ public class LocalDateTimeConverter implements Converter {
   }
 
   @Override
-  public Object getAsObject(FacesContext context, UIComponent component, String value) throws ConverterException {
+  public Object getAsObject(FacesContext context, UIComponent component,
+    String value) throws ConverterException {
     LocalDateTime result = null;
 
     if (null != value) {
@@ -49,7 +51,8 @@ public class LocalDateTimeConverter implements Converter {
 
         String valueToConvert = value;
 
-        if (null != dateOnly && (Boolean.parseBoolean((String) attributes.get(DATE_ONLY_ATTR)))) {
+        if (null != dateOnly
+          && (Boolean.parseBoolean((String) attributes.get(DATE_ONLY_ATTR)))) {
           valueToConvert = valueToConvert + " 00:00:00";
         }
 
@@ -64,7 +67,8 @@ public class LocalDateTimeConverter implements Converter {
   }
 
   @Override
-  public String getAsString(FacesContext context, UIComponent component, Object value) throws ConverterException {
+  public String getAsString(FacesContext context, UIComponent component,
+    Object value) throws ConverterException {
     String result = null;
 
     if (null != value) {
@@ -74,7 +78,8 @@ public class LocalDateTimeConverter implements Converter {
 
         result = ((LocalDateTime) value).format(formatter);
 
-        if (null != dateOnly && (Boolean.parseBoolean((String) attributes.get(DATE_ONLY_ATTR)))) {
+        if (null != dateOnly
+          && (Boolean.parseBoolean((String) attributes.get(DATE_ONLY_ATTR)))) {
           result = result.substring(0, 10);
         }
       } catch (DateTimeException e) {

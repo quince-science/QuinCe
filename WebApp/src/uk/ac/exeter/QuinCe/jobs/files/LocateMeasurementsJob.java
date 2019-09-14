@@ -33,9 +33,9 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Identifies individual measurements in a dataset and stores
- * them in the database. Followed by the ChooseSensorValues
- * job, which picks the SensorValues to use for that measurement
+ * Identifies individual measurements in a dataset and stores them in the
+ * database. Followed by the ChooseSensorValues job, which picks the
+ * SensorValues to use for that measurement
  *
  * @author Steve Jones
  *
@@ -64,21 +64,31 @@ public class LocateMeasurementsJob extends Job {
   private Instrument instrument = null;
 
   /**
-   * Constructor that allows the {@link JobManager} to create an instance of this job.
-   * @param resourceManager The application's resource manager
-   * @param config The application configuration
-   * @param jobId The database ID of the job
-   * @param parameters The job parameters
-   * @throws MissingParamException If any parameters are missing
-   * @throws InvalidJobParametersException If any of the job parameters are invalid
-   * @throws DatabaseException If a database occurs
-   * @throws RecordNotFoundException If any required database records are missing
+   * Constructor that allows the {@link JobManager} to create an instance of
+   * this job.
+   * 
+   * @param resourceManager
+   *          The application's resource manager
+   * @param config
+   *          The application configuration
+   * @param jobId
+   *          The database ID of the job
+   * @param parameters
+   *          The job parameters
+   * @throws MissingParamException
+   *           If any parameters are missing
+   * @throws InvalidJobParametersException
+   *           If any of the job parameters are invalid
+   * @throws DatabaseException
+   *           If a database occurs
+   * @throws RecordNotFoundException
+   *           If any required database records are missing
    * @see JobManager#getNextJob(ResourceManager, Properties)
    */
-  public LocateMeasurementsJob(ResourceManager resourceManager, Properties config,
-    long jobId, Map<String, String> parameters)
-      throws MissingParamException, InvalidJobParametersException,
-        DatabaseException, RecordNotFoundException {
+  public LocateMeasurementsJob(ResourceManager resourceManager,
+    Properties config, long jobId, Map<String, String> parameters)
+    throws MissingParamException, InvalidJobParametersException,
+    DatabaseException, RecordNotFoundException {
     super(resourceManager, config, jobId, parameters);
   }
 
@@ -91,7 +101,8 @@ public class LocateMeasurementsJob extends Job {
       conn.setAutoCommit(false);
 
       // Get the data set from the database
-      dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
+      dataSet = DataSetDB.getDataSet(conn,
+        Long.parseLong(parameters.get(ID_PARAM)));
 
       instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(),
         ResourceManager.getInstance().getSensorsConfiguration(),
@@ -99,15 +110,16 @@ public class LocateMeasurementsJob extends Job {
 
       // Get all the sensor values for the dataset, ordered by date and then
       // grouped by sensor type
-      DateColumnGroupedSensorValues groupedSensorValues =
-        DataSetDataDB.getSensorValuesByDateAndColumn(conn, instrument, dataSet.getId());
+      DateColumnGroupedSensorValues groupedSensorValues = DataSetDataDB
+        .getSensorValuesByDateAndColumn(conn, instrument, dataSet.getId());
 
       // The list of measurements being built, to be stored in the database
-      List<Measurement> measurements = new ArrayList<Measurement>(groupedSensorValues.size());
+      List<Measurement> measurements = new ArrayList<Measurement>(
+        groupedSensorValues.size());
 
       // Go through each date in turn
-      for (Map.Entry<LocalDateTime, Map<SensorType, List<SensorValue>>> entry :
-        groupedSensorValues.entrySet()) {
+      for (Map.Entry<LocalDateTime, Map<SensorType, List<SensorValue>>> entry : groupedSensorValues
+        .entrySet()) {
 
         // See if there's a core value for each of the instrument's measured
         // variables for this date
@@ -121,19 +133,22 @@ public class LocateMeasurementsJob extends Job {
 
             // Get the Run Type for this measurement
             // We assume there's only one run type
-            List<SensorValue> runTypeValues = sensorTypeGroups.get(SensorType.RUN_TYPE_SENSOR_TYPE);
+            List<SensorValue> runTypeValues = sensorTypeGroups
+              .get(SensorType.RUN_TYPE_SENSOR_TYPE);
             if (null == runTypeValues) {
               throw new RecordNotFoundException(
                 "Missing Run Type for measurement at " + entry.getKey());
             }
 
             // Ditto for longitude and latitude
-            List<SensorValue> longitudeValues = sensorTypeGroups.get(SensorType.LONGITUDE_SENSOR_TYPE);
+            List<SensorValue> longitudeValues = sensorTypeGroups
+              .get(SensorType.LONGITUDE_SENSOR_TYPE);
             if (null == longitudeValues) {
               measurementOK = false;
             }
 
-            List<SensorValue> latitudeValues = sensorTypeGroups.get(SensorType.LATITUDE_SENSOR_TYPE);
+            List<SensorValue> latitudeValues = sensorTypeGroups
+              .get(SensorType.LATITUDE_SENSOR_TYPE);
             if (null == latitudeValues) {
               measurementOK = false;
             }
@@ -144,7 +159,8 @@ public class LocateMeasurementsJob extends Job {
               double longitude = longitudeValues.get(0).getDoubleValue();
               double latitude = latitudeValues.get(0).getDoubleValue();
 
-              if (!instrument.getRunTypeCategory(runType).equals(RunTypeCategory.IGNORED)) {
+              if (!instrument.getRunTypeCategory(runType)
+                .equals(RunTypeCategory.IGNORED)) {
                 measurements.add(new Measurement(dataSet.getId(), variable,
                   entry.getKey(), longitude, latitude, runType));
               }
@@ -159,8 +175,10 @@ public class LocateMeasurementsJob extends Job {
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
       DataSetDB.updateDataSet(conn, dataSet);
       Map<String, String> jobParams = new HashMap<String, String>();
-      jobParams.put(LocateMeasurementsJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
-      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), DataReductionJob.class.getCanonicalName(), jobParams);
+      jobParams.put(LocateMeasurementsJob.ID_PARAM,
+        String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
+      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
+        DataReductionJob.class.getCanonicalName(), jobParams);
 
       conn.commit();
     } catch (Exception e) {

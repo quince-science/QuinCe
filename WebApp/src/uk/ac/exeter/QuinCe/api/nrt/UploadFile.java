@@ -23,6 +23,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * API call for uploading new files for an instrument
+ * 
  * @author Steve Jones
  *
  */
@@ -31,14 +32,15 @@ public class UploadFile {
 
   /**
    * Main API method
+   * 
    * @return The upload response
    */
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.TEXT_PLAIN)
   public Response uploadFile(@FormDataParam("instrument") long instrumentId,
-      @FormDataParam("file") InputStream is,
-      @FormDataParam("file") FormDataContentDisposition fileDetail) {
+    @FormDataParam("file") InputStream is,
+    @FormDataParam("file") FormDataContentDisposition fileDetail) {
 
     int result = Status.OK.getStatusCode();
     String resultBody = null;
@@ -46,15 +48,17 @@ public class UploadFile {
     try {
       ResourceManager resourceManager = ResourceManager.getInstance();
       DataSource dataSource = resourceManager.getDBDataSource();
-      Instrument instrument = InstrumentDB.getInstrument(dataSource, instrumentId,
-          resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
+      Instrument instrument = InstrumentDB.getInstrument(dataSource,
+        instrumentId, resourceManager.getSensorsConfiguration(),
+        resourceManager.getRunTypeCategoryConfiguration());
 
       // We don't allow uploads for non-NRT instruments
       if (!instrument.getNrt()) {
         result = Status.FORBIDDEN.getStatusCode();
         resultBody = "Not an NRT instrument";
       } else {
-        UploadedDataFile upload = new APIUploadedDataFile(fileDetail.getFileName(), is);
+        UploadedDataFile upload = new APIUploadedDataFile(
+          fileDetail.getFileName(), is);
 
         // Extract and check the file
         upload.extractFile(instrument, resourceManager.getConfig(), true, true);
@@ -64,8 +68,8 @@ public class UploadFile {
           result = upload.getStatusCode();
           resultBody = upload.getMessages();
         } else {
-          DataFileDB.storeFile(dataSource, resourceManager.getConfig(), upload.getDataFile(),
-              upload.getReplacementFile());
+          DataFileDB.storeFile(dataSource, resourceManager.getConfig(),
+            upload.getDataFile(), upload.getReplacementFile());
         }
       }
     } catch (Exception e) {
