@@ -13,8 +13,7 @@
   <ui:define name="dataSetName">#{manualQcBean.dataset.name} - Quality Control #{requestScope[beanName]}</ui:define>
   <ui:define name="pageStatus">
     <ui:fragment rendered="#{!manualQcBean.nrt}">
-      Flags needed: <h:outputText id="flagsRequired"
-        value="#{manualQcBean.getData().getFlagsRequired()}" />
+      Flags needed: <h:outputText id="flagsRequired" value="#{manualQcBean.flagsRequired}"/>
     </ui:fragment>
   </ui:define>
   <ui:define name="plot1">
