@@ -151,6 +151,13 @@ public class DataSetDataDB {
     + "auto_qc, user_qc_flag, user_qc_message " + "FROM sensor_values "
     + "WHERE dataset_id = ? " + "ORDER BY date ASC";
 
+  private static final String GET_SENSOR_VALUE_DATES_QUERY = "SELECT DISTINCT "
+    + "date FROM sensor_values WHERE dataset_id = ? ORDER BY DATE ASC";
+
+  private static final String GET_REQUIRED_FLAGS_QUERY = "SELECT "
+    + "COUNT(*) FROM sensor_values WHERE dataset_id = ? "
+    + "AND user_qc_flag = " + Flag.VALUE_NEEDED;
+
   private static final String GET_USED_SENSOR_VALUES_QUERY = "SELECT DISTINCT "
     + "sensor_value_id FROM measurement_values " + "WHERE measurement_id IN "
     + "(SELECT id FROM measurements WHERE dataset_id = ?) "
@@ -845,6 +852,63 @@ public class DataSetDataDB {
       DatabaseUtils.closeStatements(delMeasurementsStmt,
         delMeasurementValuesStmt, delDataReductionStmt);
     }
+  }
+
+  public static List<LocalDateTime> getSensorValueDates(
+    DataSource dataSource, long datasetId) throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkZeroPositive(datasetId, "dataSetId");
+
+    List<LocalDateTime> times = new ArrayList<LocalDateTime>();
+
+    try (
+      Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn.prepareStatement(GET_SENSOR_VALUE_DATES_QUERY);
+    ) {
+
+      stmt.setLong(1, datasetId);
+
+      try (
+        ResultSet records = stmt.executeQuery();
+      ) {
+        while (records.next()) {
+          times.add(DateTimeUtils.longToDate(records.getLong(1)));
+        }
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting sensor value dates", e);
+    }
+
+    return times;
+  }
+
+  public static int getFlagsRequired(
+    DataSource dataSource, long datasetId) throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkZeroPositive(datasetId, "dataSetId");
+
+    int result = 0;
+
+    try (
+      Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn.prepareStatement(GET_REQUIRED_FLAGS_QUERY);
+    ) {
+
+      stmt.setLong(1, datasetId);
+
+      try (
+        ResultSet records = stmt.executeQuery();
+      ) {
+        records.next();
+        result = records.getInt(1);
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting sensor value dates", e);
+    }
+
+    return result;
   }
 
   /**
