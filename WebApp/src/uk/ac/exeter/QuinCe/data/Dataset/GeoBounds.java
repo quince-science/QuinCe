@@ -21,7 +21,8 @@ public class GeoBounds {
   }
 
   public GeoBounds(String boundsString) {
-    List<Double> boundsList = StringUtils.delimitedToDoubleList(boundsString.substring(1, boundsString.length() - 1), ",");
+    List<Double> boundsList = StringUtils.delimitedToDoubleList(
+      boundsString.substring(1, boundsString.length() - 1), ",");
     this.minLon = boundsList.get(0);
     this.maxLon = boundsList.get(2);
     this.minLat = boundsList.get(1);
@@ -31,8 +32,8 @@ public class GeoBounds {
   public boolean inBounds(Position position) {
     boolean result = true;
 
-    if (position.lon < minLon || position.lon > maxLon ||
-        position.lat < minLat || position.lat > maxLat) {
+    if (position.lon < minLon || position.lon > maxLon || position.lat < minLat
+      || position.lat > maxLat) {
 
       result = false;
     }

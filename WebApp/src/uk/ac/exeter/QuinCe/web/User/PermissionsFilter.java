@@ -18,9 +18,10 @@ import uk.ac.exeter.QuinCe.User.User;
  * A filter to determine whether a user has a given permission.
  *
  * <p>
- *   This is an abstract class. Implementing classes will determine
- *   which permission they will check.
+ * This is an abstract class. Implementing classes will determine which
+ * permission they will check.
  * </p>
+ * 
  * @author Steve Jones
  *
  */
@@ -32,18 +33,19 @@ public abstract class PermissionsFilter implements Filter {
   }
 
   @Override
-  public void doFilter(ServletRequest req, ServletResponse res, FilterChain filterChain) throws IOException, ServletException {
+  public void doFilter(ServletRequest req, ServletResponse res,
+    FilterChain filterChain) throws IOException, ServletException {
     HttpServletRequest request = (HttpServletRequest) req;
-        HttpServletResponse response = (HttpServletResponse) res;
-        HttpSession session = request.getSession(false);
+    HttpServletResponse response = (HttpServletResponse) res;
+    HttpSession session = request.getSession(false);
 
-        User user = (User) session.getAttribute(LoginBean.USER_SESSION_ATTR);
+    User user = (User) session.getAttribute(LoginBean.USER_SESSION_ATTR);
 
-        if (hasPermission(user)) {
-          filterChain.doFilter(request, response);
-        } else {
-          response.sendError(HttpServletResponse.SC_FORBIDDEN);
-        }
+    if (hasPermission(user)) {
+      filterChain.doFilter(request, response);
+    } else {
+      response.sendError(HttpServletResponse.SC_FORBIDDEN);
+    }
   }
 
   @Override
@@ -52,10 +54,13 @@ public abstract class PermissionsFilter implements Filter {
   }
 
   /**
-   * Determine whether or not the specified user has the permission
-   * being checked by this filter.
-   * @param user The user whose permissions must be checked
-   * @return {@code true} if the user has the permission; {@code false} if they do not
+   * Determine whether or not the specified user has the permission being
+   * checked by this filter.
+   * 
+   * @param user
+   *          The user whose permissions must be checked
+   * @return {@code true} if the user has the permission; {@code false} if they
+   *         do not
    */
   public abstract boolean hasPermission(User user);
 }

@@ -15,8 +15,9 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Job to reset dataset export status if export is taking too long
- * (we assume that the exporter has died)
+ * Job to reset dataset export status if export is taking too long (we assume
+ * that the exporter has died)
+ * 
  * @author zuj007
  *
  */
@@ -31,13 +32,13 @@ public class ExportTimeoutJob extends BackgroundTask {
 
     try {
       conn = ResourceManager.getInstance().getDBDataSource().getConnection();
-      List<DataSet> dataSets =
-          DataSetDB.getDatasetsWithStatus(conn, DataSet.STATUS_EXPORTING);
+      List<DataSet> dataSets = DataSetDB.getDatasetsWithStatus(conn,
+        DataSet.STATUS_EXPORTING);
 
       for (DataSet dataset : dataSets) {
         if (now.minusMinutes(30).isAfter(dataset.getStatusDate())) {
-          DataSetDB.setDatasetStatus(conn,
-              dataset.getId(), DataSet.STATUS_READY_FOR_EXPORT);
+          DataSetDB.setDatasetStatus(conn, dataset.getId(),
+            DataSet.STATUS_READY_FOR_EXPORT);
         }
       }
     } catch (Exception e) {

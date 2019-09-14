@@ -24,7 +24,8 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
-public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, LinkedHashMap<Field, FieldValue>> {
+public abstract class DatasetMeasurementData
+  extends TreeMap<LocalDateTime, LinkedHashMap<Field, FieldValue>> {
 
   protected Instrument instrument;
 
@@ -44,7 +45,8 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
 
   private boolean filterInitialised = false;
 
-  public DatasetMeasurementData(Instrument instrument, FieldSets fieldSets, DataSet dataSet) throws Exception {
+  public DatasetMeasurementData(Instrument instrument, FieldSets fieldSets,
+    DataSet dataSet) throws Exception {
     super();
     this.instrument = instrument;
     this.dataSet = dataSet;
@@ -55,6 +57,7 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
 
   /**
    * Add a value to the table
+   * 
    * @param rowId
    * @param field
    * @param value
@@ -70,6 +73,7 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
 
   /**
    * Add a value to the table
+   * 
    * @param rowId
    * @param fieldId
    * @param value
@@ -81,10 +85,14 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
 
   /**
    * Add a set of values to the table
-   * @param rowId The table row
-   * @param values The field values
+   * 
+   * @param rowId
+   *          The table row
+   * @param values
+   *          The field values
    */
-  public void addValues(LocalDateTime rowId, Map<Field, ? extends FieldValue> values) {
+  public void addValues(LocalDateTime rowId,
+    Map<Field, ? extends FieldValue> values) {
     if (!containsKey(rowId)) {
       put(rowId, fieldSets.generateFieldValuesMap());
     }
@@ -94,8 +102,11 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
 
   /**
    * Get data for a plot
-   * @param xAxis X Axis
-   * @param yAxis Y Axis
+   * 
+   * @param xAxis
+   *          X Axis
+   * @param yAxis
+   *          Y Axis
    * @return The plot data
    */
   public String getPlotData(Field xAxis, Field yAxis) {
@@ -136,7 +147,7 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
       }
     }
 
-    Double[] result = {min, max};
+    Double[] result = { min, max };
     return Arrays.asList(result);
   }
 
@@ -152,15 +163,15 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
   private void buildMapCache(Field field) {
     MapRecords records = new MapRecords(size());
 
-    for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> entry :
-      entrySet()) {
+    for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> entry : entrySet()) {
 
       if (entry.getValue().containsKey(field)) {
         FieldValue value = entry.getValue().get(field);
 
         if (null != value && !value.isNaN()) {
           Position position = getClosestPosition(entry.getKey());
-          MapRecord record = new MapRecord(position, DateTimeUtils.dateToLong(entry.getKey()), value);
+          MapRecord record = new MapRecord(position,
+            DateTimeUtils.dateToLong(entry.getKey()), value);
           records.add(record);
         }
       }
@@ -169,12 +180,10 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
     mapCache.put(field, records);
   }
 
-
   private TreeSet<PlotRecord> getPlotDataWithIdAxis(Field yAxis) {
     TreeSet<PlotRecord> records = new TreeSet<PlotRecord>();
 
-    for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> entry :
-      entrySet()) {
+    for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> entry : entrySet()) {
 
       if (entry.getValue().containsKey(yAxis)) {
         FieldValue value = entry.getValue().get(yAxis);
@@ -189,12 +198,12 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
     return records;
   }
 
-  private TreeSet<PlotRecord> getPlotDataWithNonIdAxis(Field xAxis, Field yAxis) {
+  private TreeSet<PlotRecord> getPlotDataWithNonIdAxis(Field xAxis,
+    Field yAxis) {
 
     TreeSet<PlotRecord> records = new TreeSet<PlotRecord>();
 
-    for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> yEntry :
-      entrySet()) {
+    for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> yEntry : entrySet()) {
 
       if (yEntry.getValue().containsKey(yAxis)) {
 
@@ -203,9 +212,11 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
 
         if (null != yValue && !yValue.isNaN()) {
           // If the current key also contains the x axis, use that
-          FieldValue xValue = get(getClosestWithField(yEntry.getKey(), xAxis)).get(xAxis);
+          FieldValue xValue = get(getClosestWithField(yEntry.getKey(), xAxis))
+            .get(xAxis);
 
-          records.add(new PlotRecord( xValue.getValue(), dateLong, yValue, dataSet.isNrt()));
+          records.add(new PlotRecord(xValue.getValue(), dateLong, yValue,
+            dataSet.isNrt()));
         }
       }
     }
@@ -250,7 +261,8 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
     LocalDateTime searchKey = lowerKey(start);
 
     while (null == result && null != searchKey) {
-      if (get(searchKey).containsKey(field) && !get(searchKey).get(field).isNaN()) {
+      if (get(searchKey).containsKey(field)
+        && !get(searchKey).get(field).isNaN()) {
         result = searchKey;
       } else {
         searchKey = lowerKey(searchKey);
@@ -267,7 +279,8 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
     LocalDateTime searchKey = higherKey(start);
 
     while (null == result && null != searchKey) {
-      if (get(searchKey).containsKey(field) && !get(searchKey).get(field).isNaN()) {
+      if (get(searchKey).containsKey(field)
+        && !get(searchKey).get(field).isNaN()) {
         result = searchKey;
       } else {
         searchKey = higherKey(searchKey);
@@ -321,10 +334,8 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
       for (LocalDateTime time : keySet()) {
         LinkedHashMap<Field, FieldValue> data = get(time);
         if (data.containsKey(lonField)) {
-          positions.put(time,
-            new Position(
-              data.get(lonField).getValue(),
-              data.get(latField).getValue()));
+          positions.put(time, new Position(data.get(lonField).getValue(),
+            data.get(latField).getValue()));
         }
       }
     }
@@ -362,6 +373,7 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
 
   /**
    * Get the field sets
+   * 
    * @return
    */
   public FieldSets getFieldSets() {
@@ -386,13 +398,12 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
       }
     }
 
-
     return result;
 
   }
 
-  public List<FieldValue> setQC(List<LocalDateTime> rows,
-    int fieldIndex, Flag flag, String comment) {
+  public List<FieldValue> setQC(List<LocalDateTime> rows, int fieldIndex,
+    Flag flag, String comment) {
 
     List<FieldValue> updatedValues = new ArrayList<FieldValue>(rows.size());
     Field field = fieldSets.getField(fieldIndex);
@@ -417,7 +428,7 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
     for (LinkedHashMap<Field, FieldValue> rowFields : values()) {
       for (FieldValue value : rowFields.values()) {
         if (null != value && value.needsFlag()) {
-            result++;
+          result++;
         }
       }
     }
@@ -425,8 +436,8 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
     return result;
   }
 
-  public final void filterAndAddValues(String runType, LocalDateTime time, Map<Long, FieldValue> values)
-    throws Exception {
+  public final void filterAndAddValues(String runType, LocalDateTime time,
+    Map<Long, FieldValue> values) throws Exception {
 
     if (!filterInitialised) {
       initFilter();
@@ -435,12 +446,11 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
     filterAndAddValuesAction(runType, time, values);
   }
 
-
   /**
-   * Add a set of values, filtering out unwanted values. The default
-   * filter removes values for columns that are internally calibrated
-   * where the run type is not a measurement. This has the effect
-   * of removing all values taken during internal calibration.
+   * Add a set of values, filtering out unwanted values. The default filter
+   * removes values for columns that are internally calibrated where the run
+   * type is not a measurement. This has the effect of removing all values taken
+   * during internal calibration.
    *
    * Override this method to filter the supplied values according to need.
    *
@@ -449,8 +459,9 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
    * @param values
    * @throws RecordNotFoundException
    */
-  protected abstract void filterAndAddValuesAction(String runType, LocalDateTime time, Map<Long, FieldValue> values)
-      throws RecordNotFoundException;
+  protected abstract void filterAndAddValuesAction(String runType,
+    LocalDateTime time, Map<Long, FieldValue> values)
+    throws RecordNotFoundException;
 
   /**
    * Initialise information required for filterAndAddValues

@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Defines how the date and time are stored in a data file
+ * 
  * @author Steve Jones
  *
  */
@@ -154,20 +155,25 @@ public class DateTimeSpecification {
   private Map<Integer, DateTimeColumnAssignment> assignments;
 
   /**
-   * Indicates whether or not the file containing this specification has a header
+   * Indicates whether or not the file containing this specification has a
+   * header
    */
   private boolean fileHasHeader;
 
   /**
    * Constructs an empty specification
-   * @param fileHasHeader Indicates whether or not the file containing this specification has a header
+   * 
+   * @param fileHasHeader
+   *          Indicates whether or not the file containing this specification
+   *          has a header
    */
   public DateTimeSpecification(boolean fileHasHeader) {
     assignments = new TreeMap<Integer, DateTimeColumnAssignment>();
 
     assignments.put(DATE_TIME, new DateTimeColumnAssignment(DATE_TIME));
     assignments.put(DATE, new DateTimeColumnAssignment(DATE));
-    assignments.put(HOURS_FROM_START, new DateTimeColumnAssignment(HOURS_FROM_START));
+    assignments.put(HOURS_FROM_START,
+      new DateTimeColumnAssignment(HOURS_FROM_START));
     assignments.put(JDAY_TIME, new DateTimeColumnAssignment(JDAY_TIME));
     assignments.put(JDAY, new DateTimeColumnAssignment(JDAY));
     assignments.put(YEAR, new DateTimeColumnAssignment(YEAR));
@@ -183,44 +189,73 @@ public class DateTimeSpecification {
 
   /**
    * Constructor for a complete specification to be built from raw values
-   * @param fileHasHeader Indicates whether or not the file containing this specification has a header
-   * @param dateTimeCol The column where the date/time will be stored
-   * @param dateTimeProps The properties for the date/time column
-   * @param dateCol The column where the date will be stored
-   * @param dateProps The properties for the date column
-   * @param hoursFromStartCol The column where the hours-from-start-of-file will be stored
-   * @param hoursFromStartProps The properties for the hours-from-start-of-file column
-   * @param jdayTimeCol The column where the Julian day/time will be stored
-   * @param jdayCol The column where the Julian day will be stored
-   * @param yearCol The column where the year will be stored
-   * @param monthCol The column where the month will be stored
-   * @param dayCol The column where the day will be stored
-   * @param timeCol The column where the time will be stored
-   * @param timeProps The properties for the time column
-   * @param hourCol The column where the hour will be stored
-   * @param minuteCol The column where the minute will be stored
-   * @param secondCol The column where the second will be stored
-   * @throws DateTimeSpecificationException If the specification is incomplete
+   * 
+   * @param fileHasHeader
+   *          Indicates whether or not the file containing this specification
+   *          has a header
+   * @param dateTimeCol
+   *          The column where the date/time will be stored
+   * @param dateTimeProps
+   *          The properties for the date/time column
+   * @param dateCol
+   *          The column where the date will be stored
+   * @param dateProps
+   *          The properties for the date column
+   * @param hoursFromStartCol
+   *          The column where the hours-from-start-of-file will be stored
+   * @param hoursFromStartProps
+   *          The properties for the hours-from-start-of-file column
+   * @param jdayTimeCol
+   *          The column where the Julian day/time will be stored
+   * @param jdayCol
+   *          The column where the Julian day will be stored
+   * @param yearCol
+   *          The column where the year will be stored
+   * @param monthCol
+   *          The column where the month will be stored
+   * @param dayCol
+   *          The column where the day will be stored
+   * @param timeCol
+   *          The column where the time will be stored
+   * @param timeProps
+   *          The properties for the time column
+   * @param hourCol
+   *          The column where the hour will be stored
+   * @param minuteCol
+   *          The column where the minute will be stored
+   * @param secondCol
+   *          The column where the second will be stored
+   * @throws DateTimeSpecificationException
+   *           If the specification is incomplete
    */
-  public DateTimeSpecification(boolean fileHasHeader, int dateTimeCol, Properties dateTimeProps, int dateCol, Properties dateProps,
-      int hoursFromStartCol, Properties hoursFromStartProps, int jdayTimeCol, int jdayCol, int yearCol,
-      int monthCol, int dayCol, int timeCol, Properties timeProps, int hourCol, int minuteCol, int secondCol) throws DateTimeSpecificationException {
+  public DateTimeSpecification(boolean fileHasHeader, int dateTimeCol,
+    Properties dateTimeProps, int dateCol, Properties dateProps,
+    int hoursFromStartCol, Properties hoursFromStartProps, int jdayTimeCol,
+    int jdayCol, int yearCol, int monthCol, int dayCol, int timeCol,
+    Properties timeProps, int hourCol, int minuteCol, int secondCol)
+    throws DateTimeSpecificationException {
 
     assignments = new TreeMap<Integer, DateTimeColumnAssignment>();
 
-    assignments.put(DATE_TIME, new DateTimeColumnAssignment(DATE_TIME, dateTimeCol, dateTimeProps));
-    assignments.put(DATE, new DateTimeColumnAssignment(DATE, dateCol, dateProps));
-    assignments.put(HOURS_FROM_START, new DateTimeColumnAssignment(HOURS_FROM_START, hoursFromStartCol, hoursFromStartProps));
-    assignments.put(JDAY_TIME, new DateTimeColumnAssignment(JDAY_TIME, jdayTimeCol, null));
+    assignments.put(DATE_TIME,
+      new DateTimeColumnAssignment(DATE_TIME, dateTimeCol, dateTimeProps));
+    assignments.put(DATE,
+      new DateTimeColumnAssignment(DATE, dateCol, dateProps));
+    assignments.put(HOURS_FROM_START, new DateTimeColumnAssignment(
+      HOURS_FROM_START, hoursFromStartCol, hoursFromStartProps));
+    assignments.put(JDAY_TIME,
+      new DateTimeColumnAssignment(JDAY_TIME, jdayTimeCol, null));
     assignments.put(JDAY, new DateTimeColumnAssignment(JDAY, jdayCol, null));
     assignments.put(YEAR, new DateTimeColumnAssignment(YEAR, yearCol, null));
     assignments.put(MONTH, new DateTimeColumnAssignment(MONTH, monthCol, null));
     assignments.put(DAY, new DateTimeColumnAssignment(DAY, dayCol, null));
-    assignments.put(TIME, new DateTimeColumnAssignment(TIME, timeCol, timeProps));
+    assignments.put(TIME,
+      new DateTimeColumnAssignment(TIME, timeCol, timeProps));
     assignments.put(HOUR, new DateTimeColumnAssignment(HOUR, hourCol, null));
-    assignments.put(MINUTE, new DateTimeColumnAssignment(MINUTE, minuteCol, null));
-    assignments.put(SECOND, new DateTimeColumnAssignment(SECOND, secondCol, null));
-
+    assignments.put(MINUTE,
+      new DateTimeColumnAssignment(MINUTE, minuteCol, null));
+    assignments.put(SECOND,
+      new DateTimeColumnAssignment(SECOND, secondCol, null));
 
     this.fileHasHeader = fileHasHeader;
 
@@ -233,22 +268,22 @@ public class DateTimeSpecification {
    * Get the JSON representation of this specification.
    *
    * <p>
-   *   The JSON string is as follows:
+   * The JSON string is as follows:
    * </p>
+   * 
    * <pre>
-   *   {
-   *   }
+   * {}
    * </pre>
    * <p>
-   *   The format will be the integer value corresponding
-   *   to the chosen format. The JSON processor will need
-   *   to know how to translate these.
+   * The format will be the integer value corresponding to the chosen format.
+   * The JSON processor will need to know how to translate these.
    * </p>
    *
    * @return The JSON string
-   * @throws DateTimeSpecificationException If an error occurs while building the string
+   * @throws DateTimeSpecificationException
+   *           If an error occurs while building the string
    */
-  //TODO Make JSON string in comment
+  // TODO Make JSON string in comment
   public String getJsonString() throws DateTimeSpecificationException {
     StringBuilder json = new StringBuilder();
 
@@ -279,25 +314,29 @@ public class DateTimeSpecification {
   }
 
   /**
-   * Determine whether or not this specification has had both
-   * date and time fully assigned
-   * @return {@code true} if the date and time have been assigned; {@code false} if assignments are still required
+   * Determine whether or not this specification has had both date and time
+   * fully assigned
+   * 
+   * @return {@code true} if the date and time have been assigned; {@code false}
+   *         if assignments are still required
    */
   public boolean assignmentComplete() {
     boolean dateAssigned = false;
     boolean timeAssigned = false;
 
-    if (isAssigned(DATE_TIME) || isAssigned(JDAY_TIME) || isAssigned(HOURS_FROM_START)) {
+    if (isAssigned(DATE_TIME) || isAssigned(JDAY_TIME)
+      || isAssigned(HOURS_FROM_START)) {
       dateAssigned = true;
       timeAssigned = true;
     } else {
-      if (isAssigned(DATE) || isAssigned(JDAY) ||
-          (isAssigned(YEAR) && isAssigned(MONTH) && isAssigned(DAY))) {
+      if (isAssigned(DATE) || isAssigned(JDAY)
+        || (isAssigned(YEAR) && isAssigned(MONTH) && isAssigned(DAY))) {
         dateAssigned = true;
       }
 
       if (!timeAssigned) {
-        if (isAssigned(TIME) || (isAssigned(HOUR) && isAssigned(MINUTE) && isAssigned(SECOND))) {
+        if (isAssigned(TIME)
+          || (isAssigned(HOUR) && isAssigned(MINUTE) && isAssigned(SECOND))) {
           timeAssigned = true;
         }
       }
@@ -307,10 +346,10 @@ public class DateTimeSpecification {
   }
 
   /**
-   * As column assignments are filled in, some options become
-   * unavailable as they are incompatible with the populated
-   * ones. This method returns the keys that have either been
-   * assigned or still can be assigned.
+   * As column assignments are filled in, some options become unavailable as
+   * they are incompatible with the populated ones. This method returns the keys
+   * that have either been assigned or still can be assigned.
+   * 
    * @return The available entries
    */
   private List<Integer> getAvailableEntries() {
@@ -319,9 +358,11 @@ public class DateTimeSpecification {
     // and build from there.
     Integer availableMask = 0;
 
-    // If the assignments are internally consistent, then we can take a few shortcuts
+    // If the assignments are internally consistent, then we can take a few
+    // shortcuts
     if (nothingAssigned()) {
-      availableMask = setMaskBits(availableMask, DATE_TIME, DATE, YEAR, JDAY_TIME, JDAY, MONTH, DAY, TIME, HOUR, MINUTE, SECOND);
+      availableMask = setMaskBits(availableMask, DATE_TIME, DATE, YEAR,
+        JDAY_TIME, JDAY, MONTH, DAY, TIME, HOUR, MINUTE, SECOND);
       if (fileHasHeader) {
         availableMask = setMaskBits(availableMask, HOURS_FROM_START);
       }
@@ -379,13 +420,15 @@ public class DateTimeSpecification {
 
       // If only the YEAR is assigned, then anything except Date/Time is allowed
       if (!dateProcessed && isAssigned(YEAR)) {
-        availableMask = setMaskBits(availableMask, JDAY_TIME, JDAY, YEAR, MONTH, DAY);
+        availableMask = setMaskBits(availableMask, JDAY_TIME, JDAY, YEAR, MONTH,
+          DAY);
         dateProcessed = true;
       }
 
       // Otherwise all date values are available
       if (!dateProcessed) {
-        availableMask = setMaskBits(availableMask, DATE, JDAY_TIME, JDAY, YEAR, MONTH, DAY);
+        availableMask = setMaskBits(availableMask, DATE, JDAY_TIME, JDAY, YEAR,
+          MONTH, DAY);
         dateProcessed = true;
       }
 
@@ -395,8 +438,10 @@ public class DateTimeSpecification {
         timeProcessed = true;
       }
 
-      // If any of HOUR, MINUTE, SECOND are assigned, they are available and no others
-      if (!timeProcessed && (isAssigned(HOUR) || isAssigned(MINUTE) || isAssigned(SECOND))) {
+      // If any of HOUR, MINUTE, SECOND are assigned, they are available and no
+      // others
+      if (!timeProcessed
+        && (isAssigned(HOUR) || isAssigned(MINUTE) || isAssigned(SECOND))) {
         availableMask = setMaskBits(availableMask, HOUR, MINUTE, SECOND);
         timeProcessed = true;
       }
@@ -421,10 +466,12 @@ public class DateTimeSpecification {
   }
 
   /**
-   * Determine whether a column has been assigned to the specified
-   * index.
-   * @param assignmentIndex The index
-   * @return {@code true} if a column has been assigned; {@code false} if it is not
+   * Determine whether a column has been assigned to the specified index.
+   * 
+   * @param assignmentIndex
+   *          The index
+   * @return {@code true} if a column has been assigned; {@code false} if it is
+   *         not
    * @see DateTimeColumnAssignment#isAssigned()
    */
   public boolean isAssigned(int assignmentIndex) {
@@ -433,7 +480,9 @@ public class DateTimeSpecification {
 
   /**
    * Get the assignment for a given date/time field
-   * @param assignmentIndex The date/time field index
+   * 
+   * @param assignmentIndex
+   *          The date/time field index
    * @return The assignment
    */
   public DateTimeColumnAssignment getAssignment(int assignmentIndex) {
@@ -442,7 +491,9 @@ public class DateTimeSpecification {
 
   /**
    * Determine whether no date/time entries have been assigned
-   * @return {@code true} if no assignments have been made; {@code false} if it one or more assignments have been made
+   * 
+   * @return {@code true} if no assignments have been made; {@code false} if it
+   *         one or more assignments have been made
    * @see DateTimeColumnAssignment#isAssigned()
    */
   private boolean nothingAssigned() {
@@ -460,8 +511,11 @@ public class DateTimeSpecification {
 
   /**
    * Set the specified bits on a mask
-   * @param mask The mask
-   * @param bits The bits to set
+   * 
+   * @param mask
+   *          The mask
+   * @param bits
+   *          The bits to set
    * @return The updated mask
    */
   private int setMaskBits(Integer mask, int... bits) {
@@ -476,11 +530,15 @@ public class DateTimeSpecification {
 
   /**
    * Get the name for a specified date/time assignment index
-   * @param index The index
+   * 
+   * @param index
+   *          The index
    * @return The name
-   * @throws DateTimeSpecificationException If the index is not recognised
+   * @throws DateTimeSpecificationException
+   *           If the index is not recognised
    */
-  private String getAssignmentName(int index) throws DateTimeSpecificationException {
+  private String getAssignmentName(int index)
+    throws DateTimeSpecificationException {
     String result = null;
 
     switch (index) {
@@ -533,7 +591,8 @@ public class DateTimeSpecification {
       break;
     }
     default: {
-      throw new DateTimeSpecificationException("Unrecognised specification index " + index);
+      throw new DateTimeSpecificationException(
+        "Unrecognised specification index " + index);
     }
     }
 
@@ -541,12 +600,16 @@ public class DateTimeSpecification {
   }
 
   /**
-   * Get the index  for a specified date/time assignment name
-   * @param name The name
+   * Get the index for a specified date/time assignment name
+   * 
+   * @param name
+   *          The name
    * @return The index
-   * @throws DateTimeSpecificationException If the index is not recognised
+   * @throws DateTimeSpecificationException
+   *           If the index is not recognised
    */
-  public static int getAssignmentIndex(String name) throws DateTimeSpecificationException {
+  public static int getAssignmentIndex(String name)
+    throws DateTimeSpecificationException {
     int result = -1;
 
     switch (name) {
@@ -586,7 +649,7 @@ public class DateTimeSpecification {
       result = TIME;
       break;
     }
-    case  HOUR_NAME: {
+    case HOUR_NAME: {
       result = HOUR;
       break;
     }
@@ -599,7 +662,8 @@ public class DateTimeSpecification {
       break;
     }
     default: {
-      throw new DateTimeSpecificationException("Unrecognised specification index '" + name + "'");
+      throw new DateTimeSpecificationException(
+        "Unrecognised specification index '" + name + "'");
     }
     }
 
@@ -608,34 +672,49 @@ public class DateTimeSpecification {
 
   /**
    * Assign a column to a date/time variable
-   * @param variable The variable name
-   * @param column The column index
-   * @param format The format (can be null for fields that don't need it)
-   * @throws DateTimeSpecificationException Is the assignment cannot be made
+   * 
+   * @param variable
+   *          The variable name
+   * @param column
+   *          The column index
+   * @param format
+   *          The format (can be null for fields that don't need it)
+   * @throws DateTimeSpecificationException
+   *           Is the assignment cannot be made
    */
-  public void assign(String variable, int column, String format) throws DateTimeSpecificationException {
+  public void assign(String variable, int column, String format)
+    throws DateTimeSpecificationException {
     int assignmentIndex = getAssignmentIndex(variable);
     if (assignmentIndex == HOURS_FROM_START) {
-      throw new DateTimeSpecificationException("Cannot use assign with " + variable + "; use assignHoursFromStart");
+      throw new DateTimeSpecificationException(
+        "Cannot use assign with " + variable + "; use assignHoursFromStart");
     }
 
     DateTimeColumnAssignment assignment = assignments.get(assignmentIndex);
     assignment.setColumn(column);
 
-    if (assignmentIndex == DATE_TIME || assignmentIndex == DATE || assignmentIndex == TIME) {
+    if (assignmentIndex == DATE_TIME || assignmentIndex == DATE
+      || assignmentIndex == TIME) {
       assignment.setDateFormatString(format);
     }
   }
 
   /**
    * Assign a column to the {@link #HOURS_FROM_START} assignment
-   * @param column The column index
-   * @param headerPrefix The header prefix
-   * @param headerSuffix The header suffix
-   * @param format The date format
-   * @throws DateTimeSpecificationException If the assignment cannot be made
+   * 
+   * @param column
+   *          The column index
+   * @param headerPrefix
+   *          The header prefix
+   * @param headerSuffix
+   *          The header suffix
+   * @param format
+   *          The date format
+   * @throws DateTimeSpecificationException
+   *           If the assignment cannot be made
    */
-  public void assignHoursFromStart(int column, String headerPrefix, String headerSuffix, String format) throws DateTimeSpecificationException {
+  public void assignHoursFromStart(int column, String headerPrefix,
+    String headerSuffix, String format) throws DateTimeSpecificationException {
     DateTimeColumnAssignment assignment = assignments.get(HOURS_FROM_START);
     assignment.setColumn(column);
     assignment.setDateFormatString(format);
@@ -645,14 +724,18 @@ public class DateTimeSpecification {
 
   /**
    * Remove a column from any of the assignments
-   * @param column The index of the column to be unassigned
-   * @return {@code true} if the column index was found and removed; {@code false} if not.
+   * 
+   * @param column
+   *          The index of the column to be unassigned
+   * @return {@code true} if the column index was found and removed;
+   *         {@code false} if not.
    */
   public boolean removeAssignment(int column) {
 
     boolean assignmentRemoved = false;
 
-    for (Map.Entry<Integer, DateTimeColumnAssignment> entry : assignments.entrySet()) {
+    for (Map.Entry<Integer, DateTimeColumnAssignment> entry : assignments
+      .entrySet()) {
       DateTimeColumnAssignment assignment = entry.getValue();
       if (assignment.getColumn() == column) {
         assignment.clearAssignment();
@@ -666,7 +749,9 @@ public class DateTimeSpecification {
 
   /**
    * Specify whether or not the parent file has a header
-   * @param fileHasHeader Flag indicating whether or not the parent file has a header
+   * 
+   * @param fileHasHeader
+   *          Flag indicating whether or not the parent file has a header
    */
   public void setFileHasHeader(boolean fileHasHeader) {
     this.fileHasHeader = fileHasHeader;
@@ -674,12 +759,17 @@ public class DateTimeSpecification {
 
   /**
    * Get the date and time from a line in a file
-   * @param headerDate The date from the file header
-   * @param line The line
+   * 
+   * @param headerDate
+   *          The date from the file header
+   * @param line
+   *          The line
    * @return The date/time
-   * @throws DataFileException If the date/time in the line is missing or invalid
+   * @throws DataFileException
+   *           If the date/time in the line is missing or invalid
    */
-  public LocalDateTime getDateTime(LocalDateTime headerDate, List<String> line) throws DateTimeSpecificationException {
+  public LocalDateTime getDateTime(LocalDateTime headerDate, List<String> line)
+    throws DateTimeSpecificationException {
     LocalDateTime result = null;
 
     if (isAssigned(HOURS_FROM_START)) {
@@ -713,24 +803,29 @@ public class DateTimeSpecification {
       result = LocalDateTime.of(date, time);
     }
 
-
     return result;
   }
 
   /**
    * Get the date of a line using the Hours From Start Date specification
-   * @param headerDate The file's start date from the header
-   * @param line The line whose date is to be extracted
+   * 
+   * @param headerDate
+   *          The file's start date from the header
+   * @param line
+   *          The line whose date is to be extracted
    * @return The date
-   * @throws DataFileException If the hours column is empty
+   * @throws DataFileException
+   *           If the hours column is empty
    */
-  private LocalDateTime getHoursFromStartDate(LocalDateTime headerDate, List<String> line) throws DateTimeSpecificationException {
+  private LocalDateTime getHoursFromStartDate(LocalDateTime headerDate,
+    List<String> line) throws DateTimeSpecificationException {
 
     DateTimeColumnAssignment assignment = getAssignment(HOURS_FROM_START);
     Double hours;
 
     try {
-      hours = DataFile.extractDoubleFieldValue(line.get(assignment.getColumn()), null);
+      hours = DataFile.extractDoubleFieldValue(line.get(assignment.getColumn()),
+        null);
     } catch (ValueNotNumericException e) {
       throw new DateTimeSpecificationException("Hours column is not numeric");
     }
@@ -748,7 +843,8 @@ public class DateTimeSpecification {
     try {
       result = headerDate.plusSeconds(lineSeconds);
     } catch (DateTimeException e) {
-      throw new DateTimeSpecificationException("Invalid hours value: " + e.getMessage());
+      throw new DateTimeSpecificationException(
+        "Invalid hours value: " + e.getMessage());
     }
 
     return result;
@@ -756,15 +852,20 @@ public class DateTimeSpecification {
 
   /**
    * Get value of a date/time field
-   * @param line The line whose date is to be extracted
+   * 
+   * @param line
+   *          The line whose date is to be extracted
    * @return The date/time
-   * @throws DataFileException If the date/time field is empty or cannot be parsed
+   * @throws DataFileException
+   *           If the date/time field is empty or cannot be parsed
    */
-  private LocalDateTime getDateTime(List<String> line) throws DateTimeSpecificationException {
+  private LocalDateTime getDateTime(List<String> line)
+    throws DateTimeSpecificationException {
     LocalDateTime result;
 
     DateTimeColumnAssignment assignment = getAssignment(DATE_TIME);
-    String fieldValue = DataFile.extractStringFieldValue(line.get(assignment.getColumn()), null);
+    String fieldValue = DataFile
+      .extractStringFieldValue(line.get(assignment.getColumn()), null);
 
     if (null == fieldValue) {
       throw new DateTimeSpecificationException("Date/time column is empty");
@@ -772,7 +873,8 @@ public class DateTimeSpecification {
       try {
         result = LocalDateTime.parse(fieldValue, assignment.getFormatter());
       } catch (DateTimeParseException e) {
-        throw new DateTimeSpecificationException("Invalid date/time value '" + fieldValue + "'");
+        throw new DateTimeSpecificationException(
+          "Invalid date/time value '" + fieldValue + "'");
       }
     }
 
@@ -781,11 +883,15 @@ public class DateTimeSpecification {
 
   /**
    * Get the date/time of a Year/Julian DateTime formatted line
-   * @param line The line
+   * 
+   * @param line
+   *          The line
    * @return The date/time
-   * @throws DataFileException If any required fields are empty
+   * @throws DataFileException
+   *           If any required fields are empty
    */
-  private LocalDateTime getYearJDayTime(List<String> line) throws DateTimeSpecificationException {
+  private LocalDateTime getYearJDayTime(List<String> line)
+    throws DateTimeSpecificationException {
     int yearField = getAssignment(YEAR).getColumn();
     int jdayTimeField = getAssignment(JDAY_TIME).getColumn();
 
@@ -803,12 +909,15 @@ public class DateTimeSpecification {
 
     Double jdayTime = null;
     try {
-      jdayTime = DataFile.extractDoubleFieldValue(line.get(jdayTimeField), null);
+      jdayTime = DataFile.extractDoubleFieldValue(line.get(jdayTimeField),
+        null);
       if (null == jdayTime) {
-        throw new DateTimeSpecificationException("Julian date/time column is empty");
+        throw new DateTimeSpecificationException(
+          "Julian date/time column is empty");
       }
     } catch (ValueNotNumericException e) {
-      throw new DateTimeSpecificationException("Julian date/time value is not numeric");
+      throw new DateTimeSpecificationException(
+        "Julian date/time value is not numeric");
     }
 
     LocalDateTime result;
@@ -821,7 +930,8 @@ public class DateTimeSpecification {
       double secondsFraction = jdayTime - days;
       result = result.plusSeconds((int) (secondsFraction * 86400));
     } catch (DateTimeException e) {
-      throw new DateTimeSpecificationException("Invalid date/time value: " + e.getMessage());
+      throw new DateTimeSpecificationException(
+        "Invalid date/time value: " + e.getMessage());
     }
 
     return result;
@@ -829,15 +939,20 @@ public class DateTimeSpecification {
 
   /**
    * Get a date from a line containing a date-only string
-   * @param line The line
+   * 
+   * @param line
+   *          The line
    * @return The date
-   * @throws DataFileException If the date field is empty or invalid
+   * @throws DataFileException
+   *           If the date field is empty or invalid
    */
-  private LocalDate getDate(List<String> line) throws DateTimeSpecificationException {
+  private LocalDate getDate(List<String> line)
+    throws DateTimeSpecificationException {
     LocalDate result;
 
     DateTimeColumnAssignment assignment = getAssignment(DATE);
-    String fieldValue = DataFile.extractStringFieldValue(line.get(assignment.getColumn()), null);
+    String fieldValue = DataFile
+      .extractStringFieldValue(line.get(assignment.getColumn()), null);
 
     if (null == fieldValue) {
       throw new DateTimeSpecificationException("Date column is empty");
@@ -845,7 +960,8 @@ public class DateTimeSpecification {
       try {
         result = LocalDate.parse(fieldValue, assignment.getFormatter());
       } catch (DateTimeParseException e) {
-        throw new DateTimeSpecificationException("Invalid date value '" + fieldValue + "': " + e.getMessage());
+        throw new DateTimeSpecificationException(
+          "Invalid date value '" + fieldValue + "': " + e.getMessage());
       }
     }
 
@@ -854,11 +970,15 @@ public class DateTimeSpecification {
 
   /**
    * Get the date from a line containing a year and Julian day
-   * @param line The line
+   * 
+   * @param line
+   *          The line
    * @return The date
-   * @throws DataFileException If any date fields are empty or invalid
+   * @throws DataFileException
+   *           If any date fields are empty or invalid
    */
-  private LocalDate getYearJDay(List<String> line) throws DateTimeSpecificationException {
+  private LocalDate getYearJDay(List<String> line)
+    throws DateTimeSpecificationException {
     int yearField = getAssignment(YEAR).getColumn();
     int jdayField = getAssignment(JDAY).getColumn();
 
@@ -869,7 +989,8 @@ public class DateTimeSpecification {
       year = DataFile.extractIntFieldValue(line.get(yearField), null);
       jday = DataFile.extractIntFieldValue(line.get(jdayField), null);
     } catch (ValueNotNumericException e) {
-      throw new DateTimeSpecificationException("One or more date values is not numeric");
+      throw new DateTimeSpecificationException(
+        "One or more date values is not numeric");
     }
 
     if (null == year) {
@@ -884,7 +1005,8 @@ public class DateTimeSpecification {
     try {
       result = LocalDate.ofYearDay(year, jday);
     } catch (DateTimeException e) {
-      throw new DateTimeSpecificationException("Invalid date/time: " + e.getMessage());
+      throw new DateTimeSpecificationException(
+        "Invalid date/time: " + e.getMessage());
     }
 
     return result;
@@ -892,11 +1014,15 @@ public class DateTimeSpecification {
 
   /**
    * Get a date from a line containing year/month/day fields
-   * @param line The line
+   * 
+   * @param line
+   *          The line
    * @return The date
-   * @throws DataFileException If the date fields are empty or invalid
+   * @throws DataFileException
+   *           If the date fields are empty or invalid
    */
-  private LocalDate getYMDDate(List<String> line) throws DateTimeSpecificationException {
+  private LocalDate getYMDDate(List<String> line)
+    throws DateTimeSpecificationException {
     int yearField = getAssignment(YEAR).getColumn();
     int monthField = getAssignment(MONTH).getColumn();
     int dayField = getAssignment(DAY).getColumn();
@@ -910,7 +1036,8 @@ public class DateTimeSpecification {
       month = DataFile.extractIntFieldValue(line.get(monthField), null);
       day = DataFile.extractIntFieldValue(line.get(dayField), null);
     } catch (ValueNotNumericException e) {
-      throw new DateTimeSpecificationException("One or more date values is not numeric");
+      throw new DateTimeSpecificationException(
+        "One or more date values is not numeric");
     }
 
     if (null == year) {
@@ -935,7 +1062,8 @@ public class DateTimeSpecification {
     try {
       result = LocalDate.of(year, month, day);
     } catch (DateTimeException e) {
-      throw new DateTimeSpecificationException("Invalid date value: " + e.getMessage());
+      throw new DateTimeSpecificationException(
+        "Invalid date value: " + e.getMessage());
     }
 
     return result;
@@ -943,15 +1071,20 @@ public class DateTimeSpecification {
 
   /**
    * Get the time from a line with a single time column
-   * @param line The line
+   * 
+   * @param line
+   *          The line
    * @return The time
-   * @throws DataFileException If the time field is empty or invalid
+   * @throws DataFileException
+   *           If the time field is empty or invalid
    */
-  private LocalTime getTime(List<String> line) throws DateTimeSpecificationException {
+  private LocalTime getTime(List<String> line)
+    throws DateTimeSpecificationException {
     LocalTime result;
 
     DateTimeColumnAssignment assignment = getAssignment(TIME);
-    String fieldValue = DataFile.extractStringFieldValue(line.get(assignment.getColumn()), null);
+    String fieldValue = DataFile
+      .extractStringFieldValue(line.get(assignment.getColumn()), null);
 
     if (null == fieldValue) {
       throw new DateTimeSpecificationException("Time column is empty");
@@ -959,7 +1092,8 @@ public class DateTimeSpecification {
       try {
         result = LocalTime.parse(fieldValue, assignment.getFormatter());
       } catch (DateTimeParseException e) {
-        throw new DateTimeSpecificationException("Invalid time value '" + fieldValue + "'");
+        throw new DateTimeSpecificationException(
+          "Invalid time value '" + fieldValue + "'");
       }
     }
 
@@ -968,11 +1102,15 @@ public class DateTimeSpecification {
 
   /**
    * Get the time from a line containing hour/minute/second fields
-   * @param line The line
+   * 
+   * @param line
+   *          The line
    * @return The time
-   * @throws DataFileException If any fields are empty or invalid
+   * @throws DataFileException
+   *           If any fields are empty or invalid
    */
-  private LocalTime getHMSTime(List<String> line) throws DateTimeSpecificationException {
+  private LocalTime getHMSTime(List<String> line)
+    throws DateTimeSpecificationException {
     int hourField = getAssignment(HOUR).getColumn();
     int minuteField = getAssignment(MINUTE).getColumn();
     int secondField = getAssignment(SECOND).getColumn();
@@ -986,7 +1124,8 @@ public class DateTimeSpecification {
       minute = DataFile.extractIntFieldValue(line.get(minuteField), null);
       second = DataFile.extractIntFieldValue(line.get(secondField), null);
     } catch (ValueNotNumericException e) {
-      throw new DateTimeSpecificationException("One or more time values are not numeric");
+      throw new DateTimeSpecificationException(
+        "One or more time values are not numeric");
     }
 
     if (null == hour) {
@@ -1005,7 +1144,8 @@ public class DateTimeSpecification {
     try {
       result = LocalTime.of(hour, minute, second);
     } catch (DateTimeException e) {
-      throw new DateTimeSpecificationException("Invalid time value: " + e.getMessage());
+      throw new DateTimeSpecificationException(
+        "Invalid time value: " + e.getMessage());
     }
 
     return result;

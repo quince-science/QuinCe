@@ -2,14 +2,15 @@ package uk.ac.exeter.QuinCe.data.Instrument.RunTypes;
 
 /**
  * Defines a Run Type Category
+ * 
  * @author Steve Jones
  *
  */
 public class RunTypeCategory implements Comparable<RunTypeCategory> {
 
   /**
-   * Code to indicate that a run type has not been assigned.
-   * Has no associated RunTypeCategory object.
+   * Code to indicate that a run type has not been assigned. Has no associated
+   * RunTypeCategory object.
    */
   public static final long NOT_ASSIGNED = -999L;
 
@@ -49,8 +50,8 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
   private final long type;
 
   /**
-   * The description of this category. Usually a variable name,
-   * expect for the special types
+   * The description of this category. Usually a variable name, expect for the
+   * special types
    */
   private final String description;
 
@@ -58,14 +59,20 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
   static {
     IGNORED = new RunTypeCategory(IGNORED_TYPE, "Ignored");
     ALIAS = new RunTypeCategory(ALIAS_TYPE, "Alias");
-    INTERNAL_CALIBRATION = new RunTypeCategory(INTERNAL_CALIBRATION_TYPE, "Internal Calibration");
+    INTERNAL_CALIBRATION = new RunTypeCategory(INTERNAL_CALIBRATION_TYPE,
+      "Internal Calibration");
   }
 
   /**
    * Basic constructor
-   * @param code The category code - either a variable ID, or a special code as above
-   * @param name The category description - usually the variable name
-   * @throws InvalidCategoryTypeException If the type is invalid
+   * 
+   * @param code
+   *          The category code - either a variable ID, or a special code as
+   *          above
+   * @param name
+   *          The category description - usually the variable name
+   * @throws InvalidCategoryTypeException
+   *           If the type is invalid
    */
   protected RunTypeCategory(long type, String description) {
     this.type = type;
@@ -74,6 +81,7 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
 
   /**
    * Get the category type
+   * 
    * @return The category type
    */
   public long getType() {
@@ -82,6 +90,7 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
 
   /**
    * Get the category description
+   * 
    * @return The category description
    */
   public String getDescription() {
@@ -90,6 +99,7 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
 
   /**
    * Determine whether or not this run type is for measurements
+   * 
    * @return {@code true} if this is a measurement type; {@code false} otherwise
    */
   public boolean isMeasurementType() {
@@ -120,6 +130,7 @@ public class RunTypeCategory implements Comparable<RunTypeCategory> {
 
   /**
    * Determine whether or not this category references a variable
+   * 
    * @return
    */
   public boolean isVariable() {

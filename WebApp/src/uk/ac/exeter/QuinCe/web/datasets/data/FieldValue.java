@@ -20,8 +20,8 @@ public class FieldValue {
   protected Double value;
 
   /**
-   * The QC flag - either the user QC flag, or if that is
-   * NEEDS FLAG, the auto QC flag
+   * The QC flag - either the user QC flag, or if that is NEEDS FLAG, the auto
+   * QC flag
    */
   protected Flag qcFlag;
 
@@ -42,12 +42,19 @@ public class FieldValue {
 
   /**
    * Constructor to directly set all values
-   * @param valueId The value's database ID
-   * @param value The measured value
-   * @param qcFlag The QC Flag
-   * @param needsFlag Indicates whether the user must verify automatic QC
-   * @param qcComment The QC comment
-   * @param used Indicates whether or not the value is used in any calculations
+   * 
+   * @param valueId
+   *          The value's database ID
+   * @param value
+   *          The measured value
+   * @param qcFlag
+   *          The QC Flag
+   * @param needsFlag
+   *          Indicates whether the user must verify automatic QC
+   * @param qcComment
+   *          The QC comment
+   * @param used
+   *          Indicates whether or not the value is used in any calculations
    */
   public FieldValue(long valueId, Double value, Flag qcFlag, boolean needsFlag,
     String qcComment, boolean used) {
@@ -66,13 +73,21 @@ public class FieldValue {
 
   /**
    * Constructor with logic for setting status from QC results
-   * @param valueId The value's database ID
-   * @param value The measured value
-   * @param autoQC The automatic QC result
-   * @param userQCFlag The user QC flag
-   * @param qcComment The user QC comment
-   * @param used Indicates whether or not the value is used in any calculations
-   * @throws RoutineException If the automatic QC result cannot be processed
+   * 
+   * @param valueId
+   *          The value's database ID
+   * @param value
+   *          The measured value
+   * @param autoQC
+   *          The automatic QC result
+   * @param userQCFlag
+   *          The user QC flag
+   * @param qcComment
+   *          The user QC comment
+   * @param used
+   *          Indicates whether or not the value is used in any calculations
+   * @throws RoutineException
+   *           If the automatic QC result cannot be processed
    */
   public FieldValue(long valueId, Double value, AutoQCResult autoQC,
     Flag userQCFlag, String qcComment, boolean used) throws RoutineException {
@@ -99,7 +114,9 @@ public class FieldValue {
 
   /**
    * Copy constructor
-   * @param init The source FieldValue
+   * 
+   * @param init
+   *          The source FieldValue
    */
   public FieldValue(FieldValue init) {
     valueId = init.valueId;
@@ -111,10 +128,11 @@ public class FieldValue {
   }
 
   /**
-   * Initialise a map of id -> FieldValue for a list of IDs,
-   * maintaining the same order of IDs. Entries in the map are null
+   * Initialise a map of id -> FieldValue for a list of IDs, maintaining the
+   * same order of IDs. Entries in the map are null
    *
-   * @param ids The IDs
+   * @param ids
+   *          The IDs
    * @return The map
    */
   public static LinkedHashMap<Long, FieldValue> initMap(List<Long> ids) {

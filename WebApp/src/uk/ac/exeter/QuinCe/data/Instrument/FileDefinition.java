@@ -17,8 +17,9 @@ import uk.ac.exeter.QuinCe.utils.HighlightedStringException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
- * Holds a description of a sample data file uploaded during the
- * creation of a new instrument
+ * Holds a description of a sample data file uploaded during the creation of a
+ * new instrument
+ * 
  * @author Steve Jones
  *
  */
@@ -58,7 +59,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * The available separator characters
    */
-  protected static final String[] VALID_SEPARATORS = {"\t", ",", ";", " "};
+  protected static final String[] VALID_SEPARATORS = { "\t", ",", ";", " " };
 
   /**
    * Menu index for the tab separator
@@ -91,18 +92,19 @@ public class FileDefinition implements Comparable<FileDefinition> {
   private String fileDescription;
 
   /**
-   * The method by which the header is defined.
-   * One of {@link #HEADER_TYPE_LINE_COUNT} or {@link #HEADER_TYPE_STRING}
+   * The method by which the header is defined. One of
+   * {@link #HEADER_TYPE_LINE_COUNT} or {@link #HEADER_TYPE_STRING}
    *
    * <p>
-   *   For an empty header, use {@link #HEADER_TYPE_LINE_COUNT} and set
-   *   {@link #headerLines} to zero.
+   * For an empty header, use {@link #HEADER_TYPE_LINE_COUNT} and set
+   * {@link #headerLines} to zero.
    * </p>
    */
   private int headerType = HEADER_TYPE_LINE_COUNT;
 
   /**
-   * The number of lines in the header (if the header is defined by a number of lines)
+   * The number of lines in the header (if the header is defined by a number of
+   * lines)
    */
   private int headerLines = 0;
 
@@ -162,8 +164,10 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Create a new file with the given description.
    *
-   * @param fileDescription The file description
-   * @param fileSet The file set of which this definition is a member
+   * @param fileDescription
+   *          The file description
+   * @param fileSet
+   *          The file set of which this definition is a member
    */
   public FileDefinition(String fileDescription, InstrumentFileSet fileSet) {
     this.fileDescription = fileDescription;
@@ -175,21 +179,37 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Construct a complete file definition
-   * @param databaseId The definition's database ID
-   * @param description The file description
-   * @param separator The column separator
-   * @param headerType The header type
-   * @param headerLines The number of header lines
-   * @param headerEndString The string used to identify the end of the header
-   * @param columnHeaderRows The number of column header rows
-   * @param columnCount The column count
-   * @param lonSpec The longitude specification
-   * @param latSpec The latitude specification
-   * @param dateTimeSpec The date/time specification
-   * @param fileSet The parent file set
+   * 
+   * @param databaseId
+   *          The definition's database ID
+   * @param description
+   *          The file description
+   * @param separator
+   *          The column separator
+   * @param headerType
+   *          The header type
+   * @param headerLines
+   *          The number of header lines
+   * @param headerEndString
+   *          The string used to identify the end of the header
+   * @param columnHeaderRows
+   *          The number of column header rows
+   * @param columnCount
+   *          The column count
+   * @param lonSpec
+   *          The longitude specification
+   * @param latSpec
+   *          The latitude specification
+   * @param dateTimeSpec
+   *          The date/time specification
+   * @param fileSet
+   *          The parent file set
    */
-  public FileDefinition(long databaseId, String description, String separator, int headerType, int headerLines, String headerEndString,
-      int columnHeaderRows, int columnCount, LongitudeSpecification lonSpec, LatitudeSpecification latSpec, DateTimeSpecification dateTimeSpec, InstrumentFileSet fileSet) {
+  public FileDefinition(long databaseId, String description, String separator,
+    int headerType, int headerLines, String headerEndString,
+    int columnHeaderRows, int columnCount, LongitudeSpecification lonSpec,
+    LatitudeSpecification latSpec, DateTimeSpecification dateTimeSpec,
+    InstrumentFileSet fileSet) {
 
     // TODO checks
 
@@ -210,6 +230,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the database ID of this file definition
+   * 
    * @return The database ID
    */
   public long getDatabaseId() {
@@ -218,6 +239,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the description for this file
+   * 
    * @return The file description
    */
   public String getFileDescription() {
@@ -226,18 +248,22 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the description for this file
-   * @param fileDescription The file description
+   * 
+   * @param fileDescription
+   *          The file description
    */
   public void setFileDescription(String fileDescription) {
     this.fileDescription = fileDescription;
   }
 
   /**
-   * Comparison is based on the file description. The comparison is case insensitive.
+   * Comparison is based on the file description. The comparison is case
+   * insensitive.
    */
   @Override
   public int compareTo(FileDefinition o) {
-    return fileDescription.toLowerCase().compareTo(o.fileDescription.toLowerCase());
+    return fileDescription.toLowerCase()
+      .compareTo(o.fileDescription.toLowerCase());
   }
 
   /**
@@ -253,15 +279,17 @@ public class FileDefinition implements Comparable<FileDefinition> {
       result = false;
     } else {
       FileDefinition oFile = (FileDefinition) o;
-      result = oFile.fileDescription.toLowerCase() == fileDescription.toLowerCase();
+      result = oFile.fileDescription.toLowerCase() == fileDescription
+        .toLowerCase();
     }
 
     return result;
   }
 
   /**
-   * Get the number of lines that make up the header.
-   * This is only valid if {@link #headerType} is set to {@link #HEADER_TYPE_LINE_COUNT}.
+   * Get the number of lines that make up the header. This is only valid if
+   * {@link #headerType} is set to {@link #HEADER_TYPE_LINE_COUNT}.
+   * 
    * @return The number of lines in the header
    */
   public int getHeaderLines() {
@@ -270,7 +298,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the number of lines that make up the header
-   * @param headerLines The number of lines in the header
+   * 
+   * @param headerLines
+   *          The number of lines in the header
    */
   public void setHeaderLines(int headerLines) {
     this.headerLines = headerLines;
@@ -278,8 +308,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
   }
 
   /**
-   * Get the string that defines the last line of the header.
-   * This is only valid if {@link #headerType} is set to {@link #HEADER_TYPE_STRING}.
+   * Get the string that defines the last line of the header. This is only valid
+   * if {@link #headerType} is set to {@link #HEADER_TYPE_STRING}.
+   * 
    * @return The string that defines the last line of the header.
    */
   public String getHeaderEndString() {
@@ -288,7 +319,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the string that defines the last line of the header.
-   * @param headerEndString The string that defines the last line of the header.
+   * 
+   * @param headerEndString
+   *          The string that defines the last line of the header.
    */
   public void setHeaderEndString(String headerEndString) {
     this.headerEndString = headerEndString;
@@ -296,6 +329,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the number of column header rows
+   * 
    * @return The number of column header rows
    */
   public int getColumnHeaderRows() {
@@ -304,7 +338,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the number of column header rows
-   * @param columnHeaderRows The number of column header rows
+   * 
+   * @param columnHeaderRows
+   *          The number of column header rows
    */
   public void setColumnHeaderRows(int columnHeaderRows) {
     this.columnHeaderRows = columnHeaderRows;
@@ -312,6 +348,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the file's column separator
+   * 
    * @return The separator
    */
   public String getSeparator() {
@@ -320,6 +357,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the name for the file's column separator
+   * 
    * @return The separator name
    */
   public String getSeparatorName() {
@@ -337,11 +375,13 @@ public class FileDefinition implements Comparable<FileDefinition> {
   }
 
   /**
-   * Set the column separator. This can use either a separator name
-   * or the separator character itself.
+   * Set the column separator. This can use either a separator name or the
+   * separator character itself.
    *
-   * @param separator The separator
-   * @throws InvalidSeparatorException If the supplied separator is not supported
+   * @param separator
+   *          The separator
+   * @throws InvalidSeparatorException
+   *           If the supplied separator is not supported
    * @see #SEPARATOR_LOOKUP
    * @see #VALID_SEPARATORS
    */
@@ -354,10 +394,14 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the file's column separator using the separator name
-   * @param separatorName The separator name
-   * @throws InvalidSeparatorException If the separator name is not recognised
+   * 
+   * @param separatorName
+   *          The separator name
+   * @throws InvalidSeparatorException
+   *           If the separator name is not recognised
    */
-  public void setSeparatorName(String separatorName) throws InvalidSeparatorException {
+  public void setSeparatorName(String separatorName)
+    throws InvalidSeparatorException {
     if (!SEPARATOR_LOOKUP.containsKey(separatorName)) {
       throw new InvalidSeparatorException(separatorName);
     } else {
@@ -367,14 +411,18 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Ensure that a separator is one of the supported options
-   * @param separator The separator to be checked
-   * @return {@code true} if the separator is supported; {@code false} if it is not
+   * 
+   * @param separator
+   *          The separator to be checked
+   * @return {@code true} if the separator is supported; {@code false} if it is
+   *         not
    */
   public static boolean validateSeparator(String separator) {
 
     boolean separatorValid = true;
 
-    if (!SEPARATOR_LOOKUP.containsKey(separator) && !SEPARATOR_LOOKUP.containsValue(separator)) {
+    if (!SEPARATOR_LOOKUP.containsKey(separator)
+      && !SEPARATOR_LOOKUP.containsValue(separator)) {
       separatorValid = false;
     }
 
@@ -382,7 +430,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
   }
 
   /**
-   * Get the header type of the file. Will be either {@link #HEADER_TYPE_LINE_COUNT} or {@link #HEADER_TYPE_STRING}.
+   * Get the header type of the file. Will be either
+   * {@link #HEADER_TYPE_LINE_COUNT} or {@link #HEADER_TYPE_STRING}.
+   * 
    * @return The header type.
    */
   public int getHeaderType() {
@@ -390,12 +440,17 @@ public class FileDefinition implements Comparable<FileDefinition> {
   }
 
   /**
-   * Set the header type of the file. Must be either {@link #HEADER_TYPE_LINE_COUNT} or {@link #HEADER_TYPE_STRING}.
-   * @param headerType The header type
-   * @throws InvalidHeaderTypeException If an invalid header type is specified
+   * Set the header type of the file. Must be either
+   * {@link #HEADER_TYPE_LINE_COUNT} or {@link #HEADER_TYPE_STRING}.
+   * 
+   * @param headerType
+   *          The header type
+   * @throws InvalidHeaderTypeException
+   *           If an invalid header type is specified
    */
   public void setHeaderType(int headerType) throws InvalidHeaderTypeException {
-    if (headerType != HEADER_TYPE_LINE_COUNT && headerType != HEADER_TYPE_STRING) {
+    if (headerType != HEADER_TYPE_LINE_COUNT
+      && headerType != HEADER_TYPE_STRING) {
       throw new InvalidHeaderTypeException();
     }
     this.headerType = headerType;
@@ -403,7 +458,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the header to be defined by a number of lines
-   * @param headerLines The number of lines in the header
+   * 
+   * @param headerLines
+   *          The number of lines in the header
    */
   public void setLineCountHeaderType(int headerLines) {
     this.headerType = HEADER_TYPE_LINE_COUNT;
@@ -412,7 +469,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the header to be defined by a string that marks the end of the header
-   * @param headerString The string denoting the end of the header
+   * 
+   * @param headerString
+   *          The string denoting the end of the header
    */
   public void setStringHeaderType(String headerString) {
     this.headerType = HEADER_TYPE_STRING;
@@ -421,7 +480,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the column count
-   * @param columnCount The column count
+   * 
+   * @param columnCount
+   *          The column count
    */
   public void setColumnCount(int columnCount) {
     this.columnCount = columnCount;
@@ -429,6 +490,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the column count
+   * 
    * @return The column count
    */
   public int getColumnCount() {
@@ -437,7 +499,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Convert a string from a data file into a list of column values
-   * @param dataLine The data line
+   * 
+   * @param dataLine
+   *          The data line
    * @return The column values
    */
   public List<String> extractFields(String dataLine) {
@@ -453,6 +517,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the longitude specification
+   * 
    * @return The longitude specification
    */
   public LongitudeSpecification getLongitudeSpecification() {
@@ -461,6 +526,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the latitude specification
+   * 
    * @return The latitude specification
    */
   public LatitudeSpecification getLatitudeSpecification() {
@@ -469,6 +535,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the date/time specification
+   * 
    * @return The date/time specification
    */
   public DateTimeSpecification getDateTimeSpecification() {
@@ -478,9 +545,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
   /**
    * Determine whether or not the file has a header.
    *
-   * The header has either with a specified number of header lines or
-   * a header end string.
-   * @return {@code true} if the file has a header; {@code false} if it does not.
+   * The header has either with a specified number of header lines or a header
+   * end string.
+   * 
+   * @return {@code true} if the file has a header; {@code false} if it does
+   *         not.
    */
   public boolean hasHeader() {
     return (headerLines > 0 || null != headerEndString);
@@ -488,6 +557,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the file set of which this definition is a member
+   * 
    * @return The parent file set
    */
   public InstrumentFileSet getFileSet() {
@@ -495,11 +565,13 @@ public class FileDefinition implements Comparable<FileDefinition> {
   }
 
   /**
-   * Remove a column assignment from the date/time or position
-   * specification. If there is no assignment for the column,
-   * no action is taken.
-   * @param column The column to be unassigned
-   * @return {@code true} if an assignment was found and removed; {@code false} if not.
+   * Remove a column assignment from the date/time or position specification. If
+   * there is no assignment for the column, no action is taken.
+   * 
+   * @param column
+   *          The column to be unassigned
+   * @return {@code true} if an assignment was found and removed; {@code false}
+   *         if not.
    */
   public boolean removeAssignment(int column) {
 
@@ -510,7 +582,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
       unassigned = true;
     } else if (latitudeSpecification.getHemisphereColumn() == column) {
       latitudeSpecification.clearHemisphereColumn();
-      unassigned= true;
+      unassigned = true;
     }
 
     if (!unassigned) {
@@ -519,7 +591,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
         unassigned = true;
       } else if (longitudeSpecification.getHemisphereColumn() == column) {
         longitudeSpecification.clearHemisphereColumn();
-        unassigned= true;
+        unassigned = true;
       }
     }
 
@@ -532,9 +604,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
   }
 
   /**
-   * Get the assigned run types for this file. If the
-   * {@link #runTypeColumn} is {@code -1}, this will return
-   * {@code null}.
+   * Get the assigned run types for this file. If the {@link #runTypeColumn} is
+   * {@code -1}, this will return {@code null}.
+   * 
    * @return The run types
    */
   public RunTypeAssignments getRunTypes() {
@@ -543,6 +615,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the list of run type values in this file
+   * 
    * @return The run type values
    */
   public List<String> getRunTypeValues() {
@@ -558,7 +631,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the list of run type values with the specified value excluded
-   * @param exclusion The value to exclude from the list
+   * 
+   * @param exclusion
+   *          The value to exclude from the list
    * @return The list of run types without the excluded value
    */
   public List<String> getRunTypeValuesWithExclusion(String exclusion) {
@@ -568,8 +643,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
   }
 
   /**
-   * Get the run type column for this file. Returns -1
-   * if the column is not assigned
+   * Get the run type column for this file. Returns -1 if the column is not
+   * assigned
+   * 
    * @return The run type column
    */
   public int getRunTypeColumn() {
@@ -595,8 +671,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the run type category for a given run type
-   * @param runType The run type
-   * @param category The run type category
+   * 
+   * @param runType
+   *          The run type
+   * @param category
+   *          The run type category
    */
   public void setRunTypeCategory(String runType, RunTypeCategory category) {
     runTypes.put(runType, new RunTypeAssignment(runType, category));
@@ -604,30 +683,38 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Set the run type category for a given run type
-   * @param runType The run type
-   * @param category The run type category
+   * 
+   * @param runType
+   *          The run type
+   * @param category
+   *          The run type category
    */
   public void setRunTypeCategory(String runType, String alias) {
-    // TODO We should check to make sure that the aliased run type actually exists
-    //      and that it's not a circular alias
-    //      I'm not sure how hard this is at the minute so I'm ignoring it -
-    //      the UI should prevent it from happening anyway
+    // TODO We should check to make sure that the aliased run type actually
+    // exists
+    // and that it's not a circular alias
+    // I'm not sure how hard this is at the minute so I'm ignoring it -
+    // the UI should prevent it from happening anyway
     runTypes.put(runType, new RunTypeAssignment(runType, alias));
   }
 
   /**
    * Insert the complete set of run types associated with this file definition.
    * Replaces any existing run types.
-   * @param runTypes The run types
+   * 
+   * @param runTypes
+   *          The run types
    */
   public void setRunTypes(RunTypeAssignments runTypes) {
     this.runTypes = runTypes;
   }
 
   /**
-   * Compare the layout of this file definition to
-   * a supplied definition to see if they are identical.
-   * @param compare The definition to be compared
+   * Compare the layout of this file definition to a supplied definition to see
+   * if they are identical.
+   * 
+   * @param compare
+   *          The definition to be compared
    * @return {@code true} if the layouts match; {@code false} otherwise.
    */
   public boolean matchesLayout(FileDefinition compare) {
@@ -645,7 +732,8 @@ public class FileDefinition implements Comparable<FileDefinition> {
         if (null != compare.headerEndString) {
           matches = false;
         }
-      } else if (null == compare.headerEndString || !headerEndString.equals(compare.headerEndString)) {
+      } else if (null == compare.headerEndString
+        || !headerEndString.equals(compare.headerEndString)) {
         matches = false;
       }
       break;
@@ -656,7 +744,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
       if (columnHeaderRows != compare.columnHeaderRows) {
         matches = false;
       } else if (!separator.equals(compare.separator)) {
-          matches = false;
+        matches = false;
       } else if (columnCount != compare.columnCount) {
         matches = false;
       }
@@ -667,23 +755,29 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the header line from a file that contains the given prefix and suffix.
-   * A line will match if it contains the prefix, followed by a
-   * number of characters, followed by the suffix.
+   * A line will match if it contains the prefix, followed by a number of
+   * characters, followed by the suffix.
    * <p>
-   *   The matching line will be returned as a {@link HighlightedString},
-   *   with the portion between the prefix and suffix highlighted.
+   * The matching line will be returned as a {@link HighlightedString}, with the
+   * portion between the prefix and suffix highlighted.
    * </p>
    * <p>
-   *   If multiple lines match the prefix and suffix, the first line
-   *   will be returned.
+   * If multiple lines match the prefix and suffix, the first line will be
+   * returned.
    * </p>
-   * @param fileContents The file contents
-   * @param prefix The prefix
-   * @param suffix The suffix
+   * 
+   * @param fileContents
+   *          The file contents
+   * @param prefix
+   *          The prefix
+   * @param suffix
+   *          The suffix
    * @return The matching line
-   * @throws HighlightedStringException If an error occurs while building the highlighted string
+   * @throws HighlightedStringException
+   *           If an error occurs while building the highlighted string
    */
-  public HighlightedString getHeaderLine(List<String> fileContents, String prefix, String suffix) throws HighlightedStringException {
+  public HighlightedString getHeaderLine(List<String> fileContents,
+    String prefix, String suffix) throws HighlightedStringException {
 
     HighlightedString matchedLine = null;
 
@@ -704,7 +798,8 @@ public class FileDefinition implements Comparable<FileDefinition> {
           }
         }
 
-        matchedLine = new HighlightedString(line, prefixPos + prefix.length(), suffixPos);
+        matchedLine = new HighlightedString(line, prefixPos + prefix.length(),
+          suffixPos);
         break;
       }
     }
@@ -714,7 +809,9 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the number of rows in a file header
-   * @param fileContents The file contents
+   * 
+   * @param fileContents
+   *          The file contents
    * @return The number of rows in the file header
    */
   public int getHeaderLength(List<String> fileContents) {
@@ -746,9 +843,11 @@ public class FileDefinition implements Comparable<FileDefinition> {
   }
 
   /**
-   * Get the file header from a file. If there is no header,
-   * returns an empty list.
-   * @param fileContents The file contents
+   * Get the file header from a file. If there is no header, returns an empty
+   * list.
+   * 
+   * @param fileContents
+   *          The file contents
    * @return The lines of the file header
    */
   public List<String> getFileHeader(List<String> fileContents) {
@@ -766,6 +865,7 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Determine whether or not this file contains Run Types
+   * 
    * @return {@code true} if the file contains Run Types; {@code false} if not
    */
   public boolean hasRunTypes() {
@@ -774,21 +874,31 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the run type from a data line
-   * @param line The line
+   * 
+   * @param line
+   *          The line
    * @return The run type
-   * @throws FileDefinitionException If this file does not contain run types, the run type is not present, or the run type is not recognised
+   * @throws FileDefinitionException
+   *           If this file does not contain run types, the run type is not
+   *           present, or the run type is not recognised
    */
-  public RunTypeAssignment getRunType(String line, boolean followAlias) throws FileDefinitionException {
-      return getRunType(extractFields(line), followAlias);
+  public RunTypeAssignment getRunType(String line, boolean followAlias)
+    throws FileDefinitionException {
+    return getRunType(extractFields(line), followAlias);
   }
 
   /**
    * Get the run type from a data line
-   * @param line The line
+   * 
+   * @param line
+   *          The line
    * @return The run type
-   * @throws FileDefinitionException If this file does not contain run types, the run type is not present, or the run type is not recognised
+   * @throws FileDefinitionException
+   *           If this file does not contain run types, the run type is not
+   *           present, or the run type is not recognised
    */
-  public RunTypeAssignment getRunType(List<String> line, boolean followAlias) throws FileDefinitionException {
+  public RunTypeAssignment getRunType(List<String> line, boolean followAlias)
+    throws FileDefinitionException {
     RunTypeAssignment result = null;
 
     if (!hasRunTypes()) {
@@ -805,11 +915,15 @@ public class FileDefinition implements Comparable<FileDefinition> {
 
   /**
    * Get the Run Type Category of the Run Type on the given line
-   * @param line The line
+   * 
+   * @param line
+   *          The line
    * @return The Run Type Category
-   * @throws FileDefinitionException If the Run Type is not recognised
+   * @throws FileDefinitionException
+   *           If the Run Type is not recognised
    */
-  public RunTypeCategory getRunTypeCategory(String line) throws FileDefinitionException {
+  public RunTypeCategory getRunTypeCategory(String line)
+    throws FileDefinitionException {
     return getRunType(line, true).getCategory();
   }
 }

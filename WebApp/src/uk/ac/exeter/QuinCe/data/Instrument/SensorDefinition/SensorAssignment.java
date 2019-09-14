@@ -3,7 +3,9 @@ package uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
 /**
- * Records the data file and column number that have been assigned a particular sensor role
+ * Records the data file and column number that have been assigned a particular
+ * sensor role
+ * 
  * @author Steve Jones
  *
  */
@@ -31,6 +33,7 @@ public class SensorAssignment {
 
   /**
    * The answer to the Depends Question
+   * 
    * @see SensorType#getDependsQuestion
    */
   private boolean dependsQuestionAnswer = false;
@@ -47,13 +50,21 @@ public class SensorAssignment {
 
   /**
    * Simple constructor
-   * @param dataFile The data file
-   * @param column The column number
-   * @param sensorName The name of the sensor
-   * @param postCalibrated Specifies whether or not values should be calibrated by QuinCe
-   * @param primary Specifies whether this is a primary or fallback sensor
-   * @param dependsQuestionAnswer The answer to the Depends Question
-   * @param missingValue The missing value String
+   * 
+   * @param dataFile
+   *          The data file
+   * @param column
+   *          The column number
+   * @param sensorName
+   *          The name of the sensor
+   * @param postCalibrated
+   *          Specifies whether or not values should be calibrated by QuinCe
+   * @param primary
+   *          Specifies whether this is a primary or fallback sensor
+   * @param dependsQuestionAnswer
+   *          The answer to the Depends Question
+   * @param missingValue
+   *          The missing value String
    */
   public SensorAssignment(String dataFile, int column, String sensorName,
     boolean primary, boolean dependsQuestionAnswer, String missingValue) {
@@ -68,15 +79,25 @@ public class SensorAssignment {
 
   /**
    * Simple constructor
-   * @param databaseId The assignment's datbaase ID
-   * @param dataFile The data file
-   * @param fileColumn The column number in the file
-   * @param databaseColumn The column where the sensor's data will be stored in the database
-   * @param sensorName The name of the sensor
-   * @param postCalibrated Specifies whether or not values should be calibrated by QuinCe
-   * @param primary Specifies whether this is a primary or fallback sensor
-   * @param dependsQuestionAnswer The answer to the Depends Question
-   * @param missingValue The missing value String
+   * 
+   * @param databaseId
+   *          The assignment's datbaase ID
+   * @param dataFile
+   *          The data file
+   * @param fileColumn
+   *          The column number in the file
+   * @param databaseColumn
+   *          The column where the sensor's data will be stored in the database
+   * @param sensorName
+   *          The name of the sensor
+   * @param postCalibrated
+   *          Specifies whether or not values should be calibrated by QuinCe
+   * @param primary
+   *          Specifies whether this is a primary or fallback sensor
+   * @param dependsQuestionAnswer
+   *          The answer to the Depends Question
+   * @param missingValue
+   *          The missing value String
    */
   public SensorAssignment(long databaseId, String dataFile, int fileColumn,
     String sensorName, boolean primary, boolean dependsQuestionAnswer,
@@ -93,6 +114,7 @@ public class SensorAssignment {
 
   /**
    * Get the database ID of this sensor assignment
+   * 
    * @return The assignment's database ID
    */
   public long getDatabaseId() {
@@ -101,7 +123,9 @@ public class SensorAssignment {
 
   /**
    * Set the database ID of this assignment
-   * @param databaseId The database ID
+   * 
+   * @param databaseId
+   *          The database ID
    */
   public void setDatabaseId(long databaseId) {
     this.databaseId = databaseId;
@@ -109,6 +133,7 @@ public class SensorAssignment {
 
   /**
    * Get the data file
+   * 
    * @return The data file
    */
   public String getDataFile() {
@@ -117,6 +142,7 @@ public class SensorAssignment {
 
   /**
    * Get the column number
+   * 
    * @return The column number
    */
   public int getColumn() {
@@ -125,6 +151,7 @@ public class SensorAssignment {
 
   /**
    * Get the name of the sensor
+   * 
    * @return The sensor name
    */
   public String getSensorName() {
@@ -139,7 +166,9 @@ public class SensorAssignment {
 
   /**
    * Set the answer to the Depends Question
-   * @param dependsQuestionAnswer The answer
+   * 
+   * @param dependsQuestionAnswer
+   *          The answer
    * @see SensorType#getDependsQuestion()
    */
   public void setDependsQuestionAnswer(boolean dependsQuestionAnswer) {
@@ -148,6 +177,7 @@ public class SensorAssignment {
 
   /**
    * Get the answer to the Depends Question
+   * 
    * @return The answer
    * @see SensorType#getDependsQuestion()
    */
@@ -157,7 +187,9 @@ public class SensorAssignment {
 
   /**
    * Determines whether or not this is a primary sensor
-   * @return {@code true} if this is a primary sensor; {@code false} if it is a fallback sensor
+   * 
+   * @return {@code true} if this is a primary sensor; {@code false} if it is a
+   *         fallback sensor
    */
   public boolean isPrimary() {
     return primary;
@@ -165,6 +197,7 @@ public class SensorAssignment {
 
   /**
    * Get the missing value String
+   * 
    * @return The missing value String
    */
   public String getMissingValue() {
@@ -173,7 +206,9 @@ public class SensorAssignment {
 
   /**
    * Set the missing value String
-   * @param missingValue The missing value String
+   * 
+   * @param missingValue
+   *          The missing value String
    */
   public void setMissingValue(String missingValue) {
     if (null == missingValue) {
@@ -184,11 +219,13 @@ public class SensorAssignment {
   }
 
   /**
-   * Get the human-readable string describing an assignment to
-   * a data file and named sensor
+   * Get the human-readable string describing an assignment to a data file and
+   * named sensor
    *
-   * @param dataFile The data file name
-   * @param sensorName The sensor name
+   * @param dataFile
+   *          The data file name
+   * @param sensorName
+   *          The sensor name
    * @return The description
    */
   public static String getTarget(String dataFile, String sensorName) {
@@ -197,6 +234,7 @@ public class SensorAssignment {
 
   /**
    * Get the human-readable string describing this assignment
+   * 
    * @return The assignment description
    */
   public String getTarget() {

@@ -1,160 +1,139 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
   xmlns:h="http://xmlns.jcp.org/jsf/html"
   xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-  xmlns:p="http://primefaces.org/ui"
-  xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
   xmlns:c="http://java.sun.com/jsp/jstl/core"
   template="/WEB-INF/templates/basic_page.xhtml">
-
   <ui:define name="title">Upload Files</ui:define>
   <ui:define name="localHead">
-    <h:outputScript name="script/dataFiles.js"/>
-    <h:outputStylesheet name="style/dataFiles.css"/>
+    <h:outputScript name="script/dataFiles.js" />
+    <h:outputStylesheet name="style/dataFiles.css" />
     <h:outputStylesheet name="grid/grid.css" library="primefaces" />
   </ui:define>
-
   <ui:define name="pageTitle">#{fileUpload.currentInstrument.name} - Upload Data Files</ui:define>
-
   <ui:define name="content">
     <h:form id="uploadForm" method="post" charset="utf8">
       <div class="pageBlock">
-         <div id="uploadFile">
-          <p:messages id="messages" autoUpdate="true" closable="true"/>
+        <div id="uploadFile">
+          <p:messages id="messages" autoUpdate="true" closable="true" />
           <div id="messages" class="error listBox hidden"></div>
-          <p:outputLabel value="Select a file to upload"/>
-          <p:fileUpload
-            fileUploadListener="#{fileUpload.handleFileUpload}"
+          <p:outputLabel value="Select a file to upload" />
+          <p:fileUpload fileUploadListener="#{fileUpload.handleFileUpload}"
             mode="advanced" auto="false" oncomplete="extractNext()"
-            multiple="true" update="fileDetails" widgetVar="fileUploadWidget"
-          />
-          <p:outputPanel id="fileDetails" styleClass="#{fileUpload.displayClass}">
-            <p:remoteCommand
-            name="extractNext"
-            action="#{fileUpload.extractNext()}"
-            process="@this"
-            update="fileList storeFileButton" />
-            <p:dialog id="msgDialog" widgetVar="msgDialog" header="Errors and messages" minHeight="40" >
+            multiple="true" update="fileDetails" widgetVar="fileUploadWidget" />
+          <p:outputPanel id="fileDetails"
+            styleClass="#{fileUpload.displayClass}">
+            <p:remoteCommand name="extractNext"
+              action="#{fileUpload.extractNext()}" process="@this"
+              update="fileList storeFileButton" />
+            <p:dialog id="msgDialog" widgetVar="msgDialog"
+              header="Errors and messages" minHeight="40">
               <p:scrollPanel style="height:200px" mode="native">
                 <div id="messageText"></div>
               </p:scrollPanel>
             </p:dialog>
-            <p:dataTable
-              id="fileList"
-              var="uploadedFile"
+            <p:dataTable id="fileList" var="uploadedFile"
               value="#{fileUpload.uploadedFiles}"
               rowStyleClass="#{uploadedFile.hasMessages ? 'error' : ''}"
-              rowIndexVar="rowIndex"
-            >
+              rowIndexVar="rowIndex">
               <p:column headerText="Filename">
                 <h:outputText value="#{uploadedFile.name}" />
               </p:column>
               <p:column headerText="Start date">
                 <ui:fragment rendered="#{!uploadedFile.processed}">
-                  <div class="tablespinner loading"/>
+                  <div class="tablespinner loading" />
                 </ui:fragment>
-                <h:outputText escape="false" value="#{uploadedFile.startDate}" rendered="#{uploadedFile.processed}">
+                <h:outputText escape="false" value="#{uploadedFile.startDate}"
+                  rendered="#{uploadedFile.processed}">
                   <f:convertDateTime pattern="#{fileUpload.longDateFormat}" />
                 </h:outputText>
               </p:column>
               <p:column headerText="End date">
                 <ui:fragment rendered="#{!uploadedFile.processed}">
-                  <div class="tablespinner loading"/>
+                  <div class="tablespinner loading" />
                 </ui:fragment>
-                <h:outputText escape="false" value="#{uploadedFile.endDate}" rendered="#{uploadedFile.processed}">
+                <h:outputText escape="false" value="#{uploadedFile.endDate}"
+                  rendered="#{uploadedFile.processed}">
                   <f:convertDateTime pattern="#{fileUpload.longDateFormat}" />
                 </h:outputText>
               </p:column>
               <p:column headerText="No. of records">
                 <ui:fragment rendered="#{!uploadedFile.processed}">
-                  <div class="tablespinner loading"/>
+                  <div class="tablespinner loading" />
                 </ui:fragment>
-                <h:outputText value="#{uploadedFile.dataFile.recordCount}" rendered="#{uploadedFile.processed}"/>
-                <h:outputText value=" (Updated file)" rendered="#{uploadedFile.processed} and #{uploadedFile.replacement}" styleClass="note"></h:outputText>
+                <h:outputText value="#{uploadedFile.dataFile.recordCount}"
+                  rendered="#{uploadedFile.processed}" />
+                <h:outputText value=" (Updated file)"
+                  rendered="#{uploadedFile.processed} and #{uploadedFile.replacement}"
+                  styleClass="note"></h:outputText>
               </p:column>
               <p:column headerText="Store file to database">
                 <ui:fragment rendered="#{!uploadedFile.processed}">
-                  <div class="tablespinner loading"/>
+                  <div class="tablespinner loading" />
                 </ui:fragment>
-                <p:selectBooleanCheckbox
-                  id="fileStoreCheckbox"
+                <p:selectBooleanCheckbox id="fileStoreCheckbox"
                   rendered="#{uploadedFile.processed and !uploadedFile.hasMessages}"
                   value="#{uploadedFile.store}" />
                 <p:commandButton
                   rendered="#{uploadedFile.processed and uploadedFile.hasMessages}"
                   icon="ui-icon-notice"
                   onclick="renderMessages($(this).data('messages'))"
-                  title="Errors"
-                  value="Errors"
-                >
-                  <f:passThroughAttribute name="data-messages" value="#{uploadedFile.messages}" />
+                  title="Errors" value="Errors">
+                  <f:passThroughAttribute name="data-messages"
+                    value="#{uploadedFile.messages}" />
                 </p:commandButton>
-                <ui:fragment rendered="#{uploadedFile.processed and uploadedFile.hasUnrecognisedRunTypes}">
-                  <p:commandButton
-                    icon="ui-icon-plus"
+                <ui:fragment
+                  rendered="#{uploadedFile.processed and uploadedFile.hasUnrecognisedRunTypes}">
+                  <p:commandButton icon="ui-icon-plus"
                     onclick="PF('runTypesDialog_#{rowIndex}').show()"
                     title="Unrecognised Run Types Found"
-                    value="Unrecognised Run Types Found"
-                  />
+                    value="Unrecognised Run Types Found" />
                   <p:dialog widgetVar="runTypesDialog_#{rowIndex}" modal="true">
                     <p:fieldset legend="Unrecognised Run Types">
-                      <div class="instructions">
-                        This file contained unrecognised Run Types.
-                        Please assign them using the menu options.
-                      </div>
+                      <div class="instructions">This file contained
+                        unrecognised Run Types. Please assign them using the
+                        menu options.</div>
                       <table class="shrink noborder">
-                        <ui:repeat
-                          var="runType"
+                        <ui:repeat var="runType"
                           value="#{uploadedFile.dataFile.missingRunTypes}"
-                          varStatus="missingRunTypeStatus"
-                        >
+                          varStatus="missingRunTypeStatus">
                           <tr>
-                          <td class="labelsNoPad">
-                              <h:outputText value="#{runType.runName}"/>
-                            </td>
-                            <td>
-                              <p:selectOneMenu
+                            <td class="labelsNoPad"><h:outputText
+                                value="#{runType.runName}" /></td>
+                            <td><p:selectOneMenu
                                 widgetVar="missingRunType_#{rowIndex}_#{missingRunTypeStatus.index}"
                                 value="#{runType.categoryCode}"
-                                onchange="runTypeChanged(#{rowIndex}, #{missingRunTypeStatus.index})"
-                              >
-                                <f:selectItems value="#{fileUpload.runTypeCategories}" var="category" itemValue="#{category.type}" itemLabel="#{category.description}"/>
-                              </p:selectOneMenu>
-                            </td>
-                            <td>
-                              <p:selectOneMenu
+                                onchange="runTypeChanged(#{rowIndex}, #{missingRunTypeStatus.index})">
+                                <f:selectItems
+                                  value="#{fileUpload.runTypeCategories}"
+                                  var="category" itemValue="#{category.type}"
+                                  itemLabel="#{category.description}" />
+                              </p:selectOneMenu></td>
+                            <td><p:selectOneMenu
                                 widgetVar="alias_#{rowIndex}_#{missingRunTypeStatus.index}"
-                                value="#{runType.aliasTo}"
-                                styleClass="hidden"
-                              >
-                                <f:selectItems value="#{uploadedFile.dataFile.getRunTypeValuesWithExclusion(runType.runName)}" var="runTypeAlias"/>
-                              </p:selectOneMenu>
-                            </td>
+                                value="#{runType.aliasTo}" styleClass="hidden">
+                                <f:selectItems
+                                  value="#{uploadedFile.dataFile.getRunTypeValuesWithExclusion(runType.runName)}"
+                                  var="runTypeAlias" />
+                              </p:selectOneMenu></td>
                           </tr>
                         </ui:repeat>
                       </table>
-                      <p:commandButton
-                        icon="ui-icon-save"
+                      <p:commandButton icon="ui-icon-save"
                         actionListener="#{fileUpload.updateRunTypes(rowIndex)}"
-                        title="Save Run Types"
-                        value="Save Run Types"
+                        title="Save Run Types" value="Save Run Types"
                         onclick="PF('runTypesDialog_#{rowIndex}').hide()"
-                        update="fileList"
-                        oncomplete="reprocessUploadedFiles()"
-                      />
+                        update="fileList" oncomplete="reprocessUploadedFiles()" />
                     </p:fieldset>
                     <p:fieldset legend="These run types are already defined">
                       <table class="shrink noborder">
-                        <ui:repeat
-                          var="runType"
-                          value="#{uploadedFile.dataFile.fileDefinition.runTypes.values()}"
-                        >
+                        <ui:repeat var="runType"
+                          value="#{uploadedFile.dataFile.fileDefinition.runTypes.values()}">
                           <tr>
-                            <td class="labels">
-                              <h:outputText value="#{runType.runName}"/>
-                            </td>
-                            <td>
-                              <h:outputText value="#{runType.assignmentText}"/>
-                            </td>
+                            <td class="labels"><h:outputText
+                                value="#{runType.runName}" /></td>
+                            <td><h:outputText
+                                value="#{runType.assignmentText}" /></td>
                           </tr>
                         </ui:repeat>
                       </table>
@@ -171,11 +150,9 @@
           styleClass="#{fileUpload.storeFileButtonClass}" icon="ui-icon-disk"
           title="Store marked files to database"
           value="Store marked files to database"
-          actionListener="#{fileUpload.store()}"
-          ajax="true" update="fileList"
-          action="file_list"
-        />
-        <p:button value="Back to File List" outcome="file_list"/>
+          actionListener="#{fileUpload.store()}" ajax="true" update="fileList"
+          action="file_list" />
+        <p:button value="Back to File List" outcome="file_list" />
       </h:panelGrid>
     </h:form>
   </ui:define>

@@ -5,6 +5,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * A thread object that is used to run a job.
+ * 
  * @author Steve Jones
  *
  */
@@ -21,15 +22,16 @@ public class JobThread extends Thread implements Comparable<JobThread> {
   private Job job;
 
   /**
-   * Indicates whether or not this is an overflow thread.
-   * Overflow threads are not returned to the stack, but are destroyed
-   * once they have completed.
+   * Indicates whether or not this is an overflow thread. Overflow threads are
+   * not returned to the stack, but are destroyed once they have completed.
    */
   private boolean overflowThread;
 
   /**
    * Creates a job thread
-   * @param overflowThread Indicates whether or not this is an overflow thread
+   * 
+   * @param overflowThread
+   *          Indicates whether or not this is an overflow thread
    */
   public JobThread(boolean overflowThread) {
     this.overflowThread = overflowThread;
@@ -38,8 +40,11 @@ public class JobThread extends Thread implements Comparable<JobThread> {
 
   /**
    * Sets up the job that this thread will run.
-   * @param job The job
-   * @throws MissingParamException If any required parameters are missing
+   * 
+   * @param job
+   *          The job
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public void setupJob(Job job) throws MissingParamException {
     MissingParam.checkMissing(job, "job");
@@ -56,17 +61,19 @@ public class JobThread extends Thread implements Comparable<JobThread> {
   }
 
   /**
-   * Checks whether or not this is an overflow thread, and therefore
-   * whether it should be destroyed when finished with or returned to the thread pool
-   * @return {@code true} if it is an overflow thread; {@code false} if it is not
+   * Checks whether or not this is an overflow thread, and therefore whether it
+   * should be destroyed when finished with or returned to the thread pool
+   * 
+   * @return {@code true} if it is an overflow thread; {@code false} if it is
+   *         not
    */
   protected boolean isOverflowThread() {
     return overflowThread;
   }
 
   /**
-   * Start the thread and run the job.
-   * When finished the thread will return itself to the thread pool
+   * Start the thread and run the job. When finished the thread will return
+   * itself to the thread pool
    */
   public void run() {
     try {
@@ -79,18 +86,17 @@ public class JobThread extends Thread implements Comparable<JobThread> {
       job.execute(this);
 
       switch (job.getFinishState()) {
-      case (Job.KILLED_STATUS):
-      {
+      case (Job.KILLED_STATUS): {
         job.logKilled();
         break;
       }
-      case (Job.FINISHED_STATUS):
-      {
+      case (Job.FINISHED_STATUS): {
         job.logFinished();
         break;
       }
       default: {
-        throw new JobException("Invalid finished state (" + job.getFinishState() + ") set on job");
+        throw new JobException(
+          "Invalid finished state (" + job.getFinishState() + ") set on job");
       }
       }
     } catch (Throwable e) {

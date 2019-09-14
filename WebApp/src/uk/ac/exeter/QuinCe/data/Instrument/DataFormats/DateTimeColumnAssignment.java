@@ -4,11 +4,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 
 /**
- * Different date/time fields are assigned to columns in data files.
- * Some have a specific format, and some have another parameter.
+ * Different date/time fields are assigned to columns in data files. Some have a
+ * specific format, and some have another parameter.
  *
- * This class contains the data for such an assignment, and will
- * be part of the mapped assignments in the main date/time specification.
+ * This class contains the data for such an assignment, and will be part of the
+ * mapped assignments in the main date/time specification.
  *
  * @author Steve Jones
  * @see DateTimeSpecification
@@ -52,7 +52,9 @@ public class DateTimeColumnAssignment {
 
   /**
    * Create an empty assignment
-   * @param assignmentIndex The assignment index
+   * 
+   * @param assignmentIndex
+   *          The assignment index
    */
   protected DateTimeColumnAssignment(int assignmentIndex) {
     this.assignmentIndex = assignmentIndex;
@@ -62,11 +64,16 @@ public class DateTimeColumnAssignment {
 
   /**
    * Construct a complete assignment
-   * @param assignmentIndex The assignment index
-   * @param column The column where the value will be stored
-   * @param props The properties for the assignment
+   * 
+   * @param assignmentIndex
+   *          The assignment index
+   * @param column
+   *          The column where the value will be stored
+   * @param props
+   *          The properties for the assignment
    */
-  protected DateTimeColumnAssignment(int assignmentIndex, int column, Properties props) {
+  protected DateTimeColumnAssignment(int assignmentIndex, int column,
+    Properties props) {
     this.assignmentIndex = assignmentIndex;
     this.column = column;
     if (null == props) {
@@ -78,6 +85,7 @@ public class DateTimeColumnAssignment {
 
   /**
    * Get the assigned column index
+   * 
    * @return The column index
    */
   public int getColumn() {
@@ -86,7 +94,9 @@ public class DateTimeColumnAssignment {
 
   /**
    * Set the assigned column index
-   * @param column The column index
+   * 
+   * @param column
+   *          The column index
    */
   public void setColumn(int column) {
     this.column = column;
@@ -94,6 +104,7 @@ public class DateTimeColumnAssignment {
 
   /**
    * Get the date format as a string
+   * 
    * @return The date format string
    */
   public String getDateFormatString() {
@@ -102,10 +113,15 @@ public class DateTimeColumnAssignment {
 
   /**
    * Set the format string
-   * @param format The format string
-   * @throws DateTimeSpecificationException If an attempt is made to set a format for an assignment that doesn't need one
+   * 
+   * @param format
+   *          The format string
+   * @throws DateTimeSpecificationException
+   *           If an attempt is made to set a format for an assignment that
+   *           doesn't need one
    */
-  public void setDateFormatString(String format) throws DateTimeSpecificationException {
+  public void setDateFormatString(String format)
+    throws DateTimeSpecificationException {
     switch (assignmentIndex) {
     case DateTimeSpecification.DATE_TIME:
     case DateTimeSpecification.DATE:
@@ -115,14 +131,16 @@ public class DateTimeColumnAssignment {
       break;
     }
     default: {
-      throw new DateTimeSpecificationException("Cannot set date format for spec field " + assignmentIndex);
+      throw new DateTimeSpecificationException(
+        "Cannot set date format for spec field " + assignmentIndex);
     }
     }
   }
 
   /**
-   * Get the date format as a formatter object.
-   * If this assignment does not have a format, the method returns null
+   * Get the date format as a formatter object. If this assignment does not have
+   * a format, the method returns null
+   * 
    * @return The formatter
    */
   public DateTimeFormatter getFormatter() {
@@ -137,6 +155,7 @@ public class DateTimeColumnAssignment {
 
   /**
    * Get the properties of this assignment
+   * 
    * @return The assignment properties
    */
   public Properties getProperties() {
@@ -144,61 +163,81 @@ public class DateTimeColumnAssignment {
   }
 
   /**
-   * Determine whether or not this assignment is populated, i.e.
-   * has a column index assigned.
-   * @return {@code true} if the assignment is populate; {@code false} if it is empty
+   * Determine whether or not this assignment is populated, i.e. has a column
+   * index assigned.
+   * 
+   * @return {@code true} if the assignment is populate; {@code false} if it is
+   *         empty
    */
   public boolean isAssigned() {
     return column != NOT_ASSIGNED;
   }
 
   /**
-   * Set the header prefix for the {@link DateTimeSpecification#HOURS_FROM_START} assignment
-   * @param prefix The prefix
-   * @throws DateTimeSpecificationException If an attempt is made to set a prefix for a different assignment
+   * Set the header prefix for the
+   * {@link DateTimeSpecification#HOURS_FROM_START} assignment
+   * 
+   * @param prefix
+   *          The prefix
+   * @throws DateTimeSpecificationException
+   *           If an attempt is made to set a prefix for a different assignment
    */
   public void setPrefix(String prefix) throws DateTimeSpecificationException {
     if (assignmentIndex != DateTimeSpecification.HOURS_FROM_START) {
-      throw new DateTimeSpecificationException("Cannot set header prefix for spec field " + assignmentIndex);
+      throw new DateTimeSpecificationException(
+        "Cannot set header prefix for spec field " + assignmentIndex);
     }
 
     properties.setProperty(PREFIX_PROPERTY, prefix);
   }
 
   /**
-   * Get the header prefix for the {@link DateTimeSpecification#HOURS_FROM_START} assignment
+   * Get the header prefix for the
+   * {@link DateTimeSpecification#HOURS_FROM_START} assignment
+   * 
    * @return The prefix
-   * @throws DateTimeSpecificationException If an attempt is made to set a prefix for a different assignment
+   * @throws DateTimeSpecificationException
+   *           If an attempt is made to set a prefix for a different assignment
    */
   public String getPrefix() throws DateTimeSpecificationException {
     if (assignmentIndex != DateTimeSpecification.HOURS_FROM_START) {
-      throw new DateTimeSpecificationException("Cannot get header prefix for spec field " + assignmentIndex);
+      throw new DateTimeSpecificationException(
+        "Cannot get header prefix for spec field " + assignmentIndex);
     }
 
     return properties.getProperty(PREFIX_PROPERTY);
   }
 
   /**
-   * Set the header suffix for the {@link DateTimeSpecification#HOURS_FROM_START} assignment
-   * @param suffix The suffix
-   * @throws DateTimeSpecificationException If an attempt is made to set a suffix for a different assignment
+   * Set the header suffix for the
+   * {@link DateTimeSpecification#HOURS_FROM_START} assignment
+   * 
+   * @param suffix
+   *          The suffix
+   * @throws DateTimeSpecificationException
+   *           If an attempt is made to set a suffix for a different assignment
    */
   public void setSuffix(String suffix) throws DateTimeSpecificationException {
     if (assignmentIndex != DateTimeSpecification.HOURS_FROM_START) {
-      throw new DateTimeSpecificationException("Cannot set header suffix for spec field " + assignmentIndex);
+      throw new DateTimeSpecificationException(
+        "Cannot set header suffix for spec field " + assignmentIndex);
     }
 
     properties.setProperty(SUFFIX_PROPERTY, suffix);
   }
 
   /**
-   * Get the header suffix for the {@link DateTimeSpecification#HOURS_FROM_START} assignment
+   * Get the header suffix for the
+   * {@link DateTimeSpecification#HOURS_FROM_START} assignment
+   * 
    * @return suffix The suffix
-   * @throws DateTimeSpecificationException If an attempt is made to set a suffix for a different assignment
+   * @throws DateTimeSpecificationException
+   *           If an attempt is made to set a suffix for a different assignment
    */
   public String getSuffix() throws DateTimeSpecificationException {
     if (assignmentIndex != DateTimeSpecification.HOURS_FROM_START) {
-      throw new DateTimeSpecificationException("Cannot set header suffix for spec field " + assignmentIndex);
+      throw new DateTimeSpecificationException(
+        "Cannot set header suffix for spec field " + assignmentIndex);
     }
 
     return properties.getProperty(SUFFIX_PROPERTY);

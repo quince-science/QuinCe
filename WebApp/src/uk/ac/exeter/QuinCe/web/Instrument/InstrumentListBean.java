@@ -15,8 +15,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
- * Bean for transient instrument operations, e.g.
- * listing instruments.
+ * Bean for transient instrument operations, e.g. listing instruments.
  *
  * @author Steve Jones
  *
@@ -26,7 +25,8 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 public class InstrumentListBean extends BaseManagedBean {
 
   /**
-   * The name of the session attribute that holds the ID of the currently selected instrument
+   * The name of the session attribute that holds the ID of the currently
+   * selected instrument
    */
   public static final String ATTR_CURRENT_INSTRUMENT = "currentInstrument";
 
@@ -62,7 +62,8 @@ public class InstrumentListBean extends BaseManagedBean {
   public void init() {
     // Load the instrument list
     try {
-      instrumentList = InstrumentDB.getInstrumentList(ServletUtils.getDBDataSource(), getUser());
+      instrumentList = InstrumentDB
+        .getInstrumentList(ServletUtils.getDBDataSource(), getUser());
     } catch (MissingParamException | DatabaseException | ResourceException e) {
       e.printStackTrace();
       throw new RuntimeException(e.getMessage(), e);
@@ -71,6 +72,7 @@ public class InstrumentListBean extends BaseManagedBean {
 
   /**
    * Returns a list of the instruments owned by the current user
+   * 
    * @return The instruments owned by the current user
    */
   public List<InstrumentStub> getInstrumentList() {
@@ -79,6 +81,7 @@ public class InstrumentListBean extends BaseManagedBean {
 
   /**
    * View the calibrations list page for the chosen instrument
+   * 
    * @return The calibrations list page navigation
    */
   public String viewCalibrations() {
@@ -87,6 +90,7 @@ public class InstrumentListBean extends BaseManagedBean {
 
   /**
    * View the external standards list page for the chosen instrument
+   * 
    * @return The external standards list page navigation
    */
   public String viewStandards() {
@@ -95,6 +99,7 @@ public class InstrumentListBean extends BaseManagedBean {
 
   /**
    * Returns to the instrument list
+   * 
    * @return The navigation string for the instrument list
    */
   public String viewInstrumentList() {
@@ -105,6 +110,7 @@ public class InstrumentListBean extends BaseManagedBean {
 
   /**
    * Returns the ID of the instrument chosen from the instrument list
+   * 
    * @return The instrument ID
    */
   public long getChosenInstrument() {
@@ -119,7 +125,9 @@ public class InstrumentListBean extends BaseManagedBean {
 
   /**
    * Sets the ID of the instrument chosen from the instrument list
-   * @param chosenInstrument The instrument ID
+   * 
+   * @param chosenInstrument
+   *          The instrument ID
    */
   public void setChosenInstrument(long chosenInstrument) {
     for (InstrumentStub stub : instrumentList) {

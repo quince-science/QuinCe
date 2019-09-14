@@ -7,6 +7,7 @@ import java.util.Properties;
 
 /**
  * User Preferences
+ * 
  * @author Steve Jones
  *
  */
@@ -18,8 +19,8 @@ public class UserPreferences extends Properties {
   private static final long serialVersionUID = 196884326828074580L;
 
   /**
-   * The property name for the last instrument that the user
-   * interacted with
+   * The property name for the last instrument that the user interacted with
+   * 
    * @see #setLastInstrument(long)
    */
   private static final String LAST_INSTRUMENT = "lastInstrument";
@@ -31,7 +32,9 @@ public class UserPreferences extends Properties {
 
   /**
    * Construct an empty preferences object for a user
-   * @param userId The user ID
+   * 
+   * @param userId
+   *          The user ID
    */
   public UserPreferences(long userId) {
     super();
@@ -40,8 +43,11 @@ public class UserPreferences extends Properties {
 
   /**
    * Construct a preferences object from a String representation
-   * @param userId The user ID
-   * @param preferencesString The preferences string
+   * 
+   * @param userId
+   *          The user ID
+   * @param preferencesString
+   *          The preferences string
    */
   protected UserPreferences(long userId, String preferencesString) {
     super();
@@ -53,9 +59,9 @@ public class UserPreferences extends Properties {
         load(reader);
       } catch (IOException e) {
         /*
-         * We fail silently. If the properties can't be
-         * read, they must be corrupted in the database.
-         * They will get overwritten the next time a preference is set.
+         * We fail silently. If the properties can't be read, they must be
+         * corrupted in the database. They will get overwritten the next time a
+         * preference is set.
          */
         e.printStackTrace();
       }
@@ -64,6 +70,7 @@ public class UserPreferences extends Properties {
 
   /**
    * Get the ID of the user to which these preferences belong
+   * 
    * @return The user ID
    */
   protected long getUserId() {
@@ -72,7 +79,9 @@ public class UserPreferences extends Properties {
 
   /**
    * Store the last instrument that the user interacted with
-   * @param instrumentId The instrument's database ID
+   * 
+   * @param instrumentId
+   *          The instrument's database ID
    */
   public void setLastInstrument(long instrumentId) {
     setProperty(LAST_INSTRUMENT, String.valueOf(instrumentId));
@@ -80,6 +89,7 @@ public class UserPreferences extends Properties {
 
   /**
    * Retrieve the last instrument that the user interacted with
+   * 
    * @return The instrument's database ID
    */
   public long getLastInstrument() {
@@ -99,6 +109,7 @@ public class UserPreferences extends Properties {
 
   /**
    * Write the user preferences to a String
+   * 
    * @return The user preferences string
    */
   public String writeToString() {
@@ -110,9 +121,8 @@ public class UserPreferences extends Properties {
       result = writer.toString();
     } catch (IOException e) {
       /*
-       * We fail silently. If the properties can't be
-       * converted to a String we return null so they'll
-       * be reset in the database.
+       * We fail silently. If the properties can't be converted to a String we
+       * return null so they'll be reset in the database.
        *
        * Log the error to the console
        */

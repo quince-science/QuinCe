@@ -2,15 +2,15 @@ package uk.ac.exeter.QuinCe.data.Files;
 
 /**
  * Class to hold a message related to a data file
+ * 
  * @author Steve Jones
  *
  */
 public class DataFileMessage implements Comparable<DataFileMessage> {
 
   /**
-   * The row to which the message applies.
-   * {@code -1} indicates that the message is not related
-   * to any particular row.
+   * The row to which the message applies. {@code -1} indicates that the message
+   * is not related to any particular row.
    */
   private int line;
 
@@ -20,9 +20,10 @@ public class DataFileMessage implements Comparable<DataFileMessage> {
   private String message;
 
   /**
-   * Constructor for a message that is not related
-   * to a specific row in the file
-   * @param message The message text
+   * Constructor for a message that is not related to a specific row in the file
+   * 
+   * @param message
+   *          The message text
    */
   public DataFileMessage(String message) {
     this.line = -1;
@@ -30,10 +31,12 @@ public class DataFileMessage implements Comparable<DataFileMessage> {
   }
 
   /**
-   * Constructor for a message related to a
-   * specific row in the file
-   * @param line The row number
-   * @param message The message text
+   * Constructor for a message related to a specific row in the file
+   * 
+   * @param line
+   *          The row number
+   * @param message
+   *          The message text
    */
   public DataFileMessage(int line, String message) {
     this.line = line + 1; // Human-readable line numbers in messages!

@@ -22,20 +22,24 @@ import uk.ac.exeter.QuinCe.User.User;
  * Filter for all URLs, to determine whether or not the user is logged in.
  * Exceptions are:
  * <ul>
- *   <li>Login page</li>
- *   <li>Signup page</li>
- *   <li>Email Verification Page</li>
- *   <li>Password Reset page</li>
+ * <li>Login page</li>
+ * <li>Signup page</li>
+ * <li>Email Verification Page</li>
+ * <li>Password Reset page</li>
  * </ul>
  *
- * <p>Based on code from stackoverflow.</p>
+ * <p>
+ * Based on code from stackoverflow.
+ * </p>
  *
- * @see <a href="http://stackoverflow.com/questions/8480100/how-implement-a-login-filter-in-jsf">How implement a login filter in JSF?</a>
+ * @see <a href=
+ *      "http://stackoverflow.com/questions/8480100/how-implement-a-login-filter-in-jsf">How
+ *      implement a login filter in JSF?</a>
  *
  * @author Steve Jones
  *
  */
-@WebFilter(servletNames = {"Faces Servlet", "Logout"})
+@WebFilter(servletNames = { "Faces Servlet", "Logout" })
 public class AuthenticatedFilter implements Filter {
 
   /**
@@ -47,20 +51,21 @@ public class AuthenticatedFilter implements Filter {
    * The list of paths that will be identified as resources.
    *
    * <p>
-   *   Resources are things like Javascript files, images, stylesheets etc.
-   *   They do not need checking as they are not security-restricted in terms
-   *   of the application.
+   * Resources are things like Javascript files, images, stylesheets etc. They
+   * do not need checking as they are not security-restricted in terms of the
+   * application.
    * </p>
    */
   private List<String> resourcePaths = new ArrayList<String>();
 
   /**
-   * Checks all requests for application pages to ensure that the user is
-   * logged in. If the user is not logged in, they will be redirected
-   * to the login page with a 'session expired' message.
+   * Checks all requests for application pages to ensure that the user is logged
+   * in. If the user is not logged in, they will be redirected to the login page
+   * with a 'session expired' message.
    */
   @Override
-  public void doFilter(ServletRequest req, ServletResponse res, FilterChain filterChain) throws IOException, ServletException {
+  public void doFilter(ServletRequest req, ServletResponse res,
+    FilterChain filterChain) throws IOException, ServletException {
     HttpServletRequest request = (HttpServletRequest) req;
     HttpServletResponse response = (HttpServletResponse) res;
     HttpSession session = request.getSession(false);
@@ -81,7 +86,8 @@ public class AuthenticatedFilter implements Filter {
       // Get the user's email address from the session (if possible)
       User user = (User) session.getAttribute(LoginBean.USER_SESSION_ATTR);
 
-      if (user != null || isResourceRequest(request) || isAllowedPath(request)) {
+      if (user != null || isResourceRequest(request)
+        || isAllowedPath(request)) {
         filterChain.doFilter(request, response);
       } else {
         if (requestURL.equals(request.getContextPath())) {
@@ -96,17 +102,21 @@ public class AuthenticatedFilter implements Filter {
   }
 
   /**
-   * Determines whether or not this is a request for a resource rather than
-   * a page of the application.
-   * @param request The request
-   * @return {@code true} if the request is a resource request; {@code false} otherwise.
+   * Determines whether or not this is a request for a resource rather than a
+   * page of the application.
+   * 
+   * @param request
+   *          The request
+   * @return {@code true} if the request is a resource request; {@code false}
+   *         otherwise.
    * @see #resourcePaths
    */
   private boolean isResourceRequest(HttpServletRequest request) {
     boolean result = false;
 
     for (String resourcePath : resourcePaths) {
-      if (request.getRequestURI().startsWith(request.getContextPath() + resourcePath)) {
+      if (request.getRequestURI()
+        .startsWith(request.getContextPath() + resourcePath)) {
         result = true;
         break;
       }
@@ -116,9 +126,13 @@ public class AuthenticatedFilter implements Filter {
   }
 
   /**
-   * Determines whether or not a page can be accessed without the user having logged in.
-   * @param request The request
-   * @return {@code true} if the request is allowed without being logged in; {@code false} otherwise.
+   * Determines whether or not a page can be accessed without the user having
+   * logged in.
+   * 
+   * @param request
+   *          The request
+   * @return {@code true} if the request is allowed without being logged in;
+   *         {@code false} otherwise.
    * @see #allowedPaths
    */
   private boolean isAllowedPath(HttpServletRequest request) {
@@ -130,7 +144,7 @@ public class AuthenticatedFilter implements Filter {
     } else if (requestURI.startsWith(request.getContextPath() + "/api/")) {
       allowed = true;
     } else {
-      for (String allowedPath: allowedPaths) {
+      for (String allowedPath : allowedPaths) {
         String pathURIBase = request.getContextPath() + allowedPath;
         int sessionIdPos = requestURI.indexOf(";jsessionid");
         if (sessionIdPos != -1) {
@@ -159,11 +173,12 @@ public class AuthenticatedFilter implements Filter {
   }
 
   /**
-   * Sets up the list of resource paths, and pages that can be accessed without being logged in.
+   * Sets up the list of resource paths, and pages that can be accessed without
+   * being logged in.
    *
    * <p>
-   *   Pages specified without an extension are checked for both{@code .jsf} and {@code .xhtml} requests.
-   *   Pages with extensions are checked as-is.
+   * Pages specified without an extension are checked for both{@code .jsf} and
+   * {@code .xhtml} requests. Pages with extensions are checked as-is.
    * </p>
    */
   @Override

@@ -5,15 +5,13 @@ import java.util.List;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Stores details of the assignment of a given run type
- * to a run type category. Handles aliases to other run
- * types.
+ * Stores details of the assignment of a given run type to a run type category.
+ * Handles aliases to other run types.
  *
- * The category can be empty to show that the run type
- * is not assigned to anything.
+ * The category can be empty to show that the run type is not assigned to
+ * anything.
  *
- * The natural ordering of this class is the name of
- * the run type.
+ * The natural ordering of this class is the name of the run type.
  *
  * @author zuj007
  *
@@ -26,26 +24,27 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
   private String runName;
 
   /**
-   * The category to which the run type is assigned.
-   * If the run type is an alias, this will be {@code null}.
+   * The category to which the run type is assigned. If the run type is an
+   * alias, this will be {@code null}.
    */
   private RunTypeCategory category;
 
   /**
-   * Indicates whether or not this run type
-   * is an alias to another run type
+   * Indicates whether or not this run type is an alias to another run type
    */
   private boolean alias = false;
 
   /**
-   * The run type to which this run type is
-   * aliased. {@code null} if it is not an alias
+   * The run type to which this run type is aliased. {@code null} if it is not
+   * an alias
    */
   private String aliasTo = null;
 
   /**
    * Create an empty assignment for a run type
-   * @param runType The run type
+   * 
+   * @param runType
+   *          The run type
    */
   public RunTypeAssignment(String runName) {
     this.runName = runName.toLowerCase();
@@ -54,8 +53,11 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Construct a standard run type assignment to a category
-   * @param runType The run type
-   * @param category The category
+   * 
+   * @param runType
+   *          The run type
+   * @param category
+   *          The category
    */
   public RunTypeAssignment(String runName, RunTypeCategory category) {
     this.runName = runName.toLowerCase();
@@ -64,8 +66,11 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Create an alias from one run type to another
-   * @param runType The run type
-   * @param aliasTo The run type to which is it aliased
+   * 
+   * @param runType
+   *          The run type
+   * @param aliasTo
+   *          The run type to which is it aliased
    */
   public RunTypeAssignment(String runName, String aliasTo) {
     this.runName = runName.toLowerCase();
@@ -75,9 +80,11 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
   }
 
   /**
-   * Determine whether or not this run type is correctly assigned,
-   * either to a category or as an alias
-   * @return {@code true} if the run type is assigned; {@code false} if it is not
+   * Determine whether or not this run type is correctly assigned, either to a
+   * category or as an alias
+   * 
+   * @return {@code true} if the run type is assigned; {@code false} if it is
+   *         not
    */
   public boolean isAssigned() {
     return (!alias && null == category);
@@ -85,6 +92,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Get the run name that this assignment is for
+   * 
    * @return The run name
    */
   public String getRunName() {
@@ -92,12 +100,11 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
   }
 
   /**
-   * Get the category to which this run type is assigned.
-   * If the run type is an alias, returned category will be
-   * {@code null}.
+   * Get the category to which this run type is assigned. If the run type is an
+   * alias, returned category will be {@code null}.
    *
-   * If you want to get the aliased category of a run type,
-   * use {@link RunTypeAssignments#getRunTypeCategory(String)}
+   * If you want to get the aliased category of a run type, use
+   * {@link RunTypeAssignments#getRunTypeCategory(String)}
    *
    * @return The assigned category
    */
@@ -107,7 +114,9 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Determine whether or not this run type is an alias
-   * @return {@code true} if the run type is an alias; {@code false} if it is not
+   * 
+   * @return {@code true} if the run type is an alias; {@code false} if it is
+   *         not
    */
   public boolean isAlias() {
     return alias;
@@ -115,15 +124,18 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Set the flag stating whether or not this run type is an alias
-   * @param alias The alias flag
+   * 
+   * @param alias
+   *          The alias flag
    */
   public void setAlias(boolean alias) {
     this.alias = alias;
   }
 
   /**
-   * Get the run type to which this run type is aliased.
-   * Returns {@code null} if this is not an alias
+   * Get the run type to which this run type is aliased. Returns {@code null} if
+   * this is not an alias
+   * 
    * @return The alias
    */
   public String getAliasTo() {
@@ -132,7 +144,9 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Set the run type to which this run type is aliased.
-   * @param aliasTo The alias
+   * 
+   * @param aliasTo
+   *          The alias
    */
   public void setAliasTo(String aliasTo) {
     this.aliasTo = aliasTo;
@@ -178,6 +192,7 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Get a human readable description of this assignment
+   * 
    * @return The assignment description
    */
   public String getAssignmentText() {
@@ -194,8 +209,9 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
   }
 
   /**
-   * Get the code for the assigned Run Type category.
-   * If no category is assigned, returns {@code null}
+   * Get the code for the assigned Run Type category. If no category is
+   * assigned, returns {@code null}
+   * 
    * @return The assigned category
    */
   public long getCategoryCode() {
@@ -214,8 +230,10 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
 
   /**
    * Set a run type
+   * 
    * @param code
-   * @throws RunTypeCategoryException If the code is not recognised
+   * @throws RunTypeCategoryException
+   *           If the code is not recognised
    */
   public void setCategoryCode(long type) throws RunTypeCategoryException {
     boolean categoryAssigned = false;
@@ -226,7 +244,8 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
       categoryAssigned = true;
     } else {
       try {
-        List<RunTypeCategory> categories = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategories(true, true);
+        List<RunTypeCategory> categories = ResourceManager.getInstance()
+          .getRunTypeCategoryConfiguration().getCategories(true, true);
         for (RunTypeCategory checkCategory : categories) {
           if (type == checkCategory.getType()) {
             category = checkCategory;
@@ -241,7 +260,8 @@ public class RunTypeAssignment implements Comparable<RunTypeAssignment> {
     }
 
     if (!categoryAssigned) {
-      RunTypeCategoryException e = new RunTypeCategoryException("Unrecognised run type '" + type + "'");
+      RunTypeCategoryException e = new RunTypeCategoryException(
+        "Unrecognised run type '" + type + "'");
       e.printStackTrace();
       throw e;
     }

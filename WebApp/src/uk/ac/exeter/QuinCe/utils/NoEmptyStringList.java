@@ -6,8 +6,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Special list of strings that ignores all empty strings. Also trims
- * all supplied strings
+ * Special list of strings that ignores all empty strings. Also trims all
+ * supplied strings
+ * 
  * @author Steve Jones
  *
  */
@@ -58,7 +59,9 @@ public class NoEmptyStringList extends ArrayList<String> {
 
   /**
    * Determine whether or not a string is valid (i.e. not empty)
-   * @param e The string
+   * 
+   * @param e
+   *          The string
    * @return {@code true} if the string is valid; {@code false} if it is empty
    */
   private static boolean isValid(String e) {
@@ -67,14 +70,13 @@ public class NoEmptyStringList extends ArrayList<String> {
 
   /**
    * Remove all empty strings from a collection, and trim the remaining values
-   * @param c The collection
+   * 
+   * @param c
+   *          The collection
    * @return The filtered and trimmed collection
    */
   private static List<String> filterCollection(Collection<? extends String> c) {
-    return c
-      .stream()
-      .filter(NoEmptyStringList::isValid)
-      .map(String::trim)
+    return c.stream().filter(NoEmptyStringList::isValid).map(String::trim)
       .collect(Collectors.toList());
   }
 }

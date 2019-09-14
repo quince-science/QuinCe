@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * API Method to create NRT datasets
+ * 
  * @author Steve Jones
  *
  */
@@ -33,9 +34,10 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class MakeNrtDataset {
 
   /**
-   * Main API method. Performs checks then tries to
-   * create the NRT dataset.
-   * @param instrumentId The instrument ID ({@code instrument} parameter)
+   * Main API method. Performs checks then tries to create the NRT dataset.
+   * 
+   * @param instrumentId
+   *          The instrument ID ({@code instrument} parameter)
    * @return The response
    */
   @POST
@@ -54,7 +56,8 @@ public class MakeNrtDataset {
         ResourceManager resourceManager = ResourceManager.getInstance();
 
         Instrument instrument = InstrumentDB.getInstrument(conn, instrumentId,
-            resourceManager.getSensorsConfiguration(), resourceManager.getRunTypeCategoryConfiguration());
+          resourceManager.getSensorsConfiguration(),
+          resourceManager.getRunTypeCategoryConfiguration());
 
         if (!instrument.getNrt()) {
           response = Response.status(Status.FORBIDDEN).build();
@@ -78,36 +81,45 @@ public class MakeNrtDataset {
 
   /**
    * Attempt to create a NRT dataset for an instrument
-   * @param conn A database connection
-   * @param instrumentId The instrument ID
-   * @return {@code true} if a new NRT dataset is created;
-   *         {@code false} if no dataset is created.
-   * @throws Exception Any errors are propagated upward
+   * 
+   * @param conn
+   *          A database connection
+   * @param instrumentId
+   *          The instrument ID
+   * @return {@code true} if a new NRT dataset is created; {@code false} if no
+   *         dataset is created.
+   * @throws Exception
+   *           Any errors are propagated upward
    */
-  public static boolean createNrtDataset(Connection conn, Instrument instrument) throws Exception {
+  public static boolean createNrtDataset(Connection conn, Instrument instrument)
+    throws Exception {
 
     Properties appConfig = ResourceManager.getInstance().getConfig();
 
-    DataSet lastDataset = DataSetDB.getLastDataSet(conn, instrument.getDatabaseId());
+    DataSet lastDataset = DataSetDB.getLastDataSet(conn,
+      instrument.getDatabaseId());
 
     boolean createDataset = true;
 
     if (null == lastDataset) {
-      if (!DataFileDB.completeFilesAfter(conn, appConfig, instrument.getDatabaseId(), null)) {
+      if (!DataFileDB.completeFilesAfter(conn, appConfig,
+        instrument.getDatabaseId(), null)) {
         createDataset = false;
       }
     } else {
-      if (!DataFileDB.completeFilesAfter(conn, appConfig, instrument.getDatabaseId(), lastDataset.getEnd())) {
+      if (!DataFileDB.completeFilesAfter(conn, appConfig,
+        instrument.getDatabaseId(), lastDataset.getEnd())) {
         createDataset = false;
       }
     }
 
     if (createDataset) {
       Map<String, String> params = new HashMap<String, String>();
-      params.put(ExtractDataSetJob.ID_PARAM, String.valueOf(instrument.getDatabaseId()));
+      params.put(ExtractDataSetJob.ID_PARAM,
+        String.valueOf(instrument.getDatabaseId()));
 
       JobManager.addJob(conn, UserDB.getUser(conn, instrument.getOwnerId()),
-          CreateNrtDataset.class.getCanonicalName(), params);
+        CreateNrtDataset.class.getCanonicalName(), params);
     }
 
     return createDataset;

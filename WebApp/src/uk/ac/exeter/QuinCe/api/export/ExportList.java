@@ -39,11 +39,14 @@ public class ExportList {
 
     try {
       ResourceManager resourceManager = ResourceManager.getInstance();
-      SensorsConfiguration sensorConfig = resourceManager.getSensorsConfiguration();
-      RunTypeCategoryConfiguration runTypeConfig = resourceManager.getRunTypeCategoryConfiguration();
+      SensorsConfiguration sensorConfig = resourceManager
+        .getSensorsConfiguration();
+      RunTypeCategoryConfiguration runTypeConfig = resourceManager
+        .getRunTypeCategoryConfiguration();
 
       conn = resourceManager.getDBDataSource().getConnection();
-      List<DataSet> datasets = DataSetDB.getDatasetsWithStatus(conn, DataSet.STATUS_READY_FOR_EXPORT);
+      List<DataSet> datasets = DataSetDB.getDatasetsWithStatus(conn,
+        DataSet.STATUS_READY_FOR_EXPORT);
 
       JSONArray json = new JSONArray();
 
@@ -53,11 +56,12 @@ public class ExportList {
         datasetJson.put("id", dataset.getId());
         datasetJson.put("name", dataset.getName());
 
-        Instrument instrument = InstrumentDB.getInstrument(conn, dataset.getInstrumentId(), sensorConfig,
-            runTypeConfig);
+        Instrument instrument = InstrumentDB.getInstrument(conn,
+          dataset.getInstrumentId(), sensorConfig, runTypeConfig);
         JSONObject instrumentJson = new JSONObject();
         instrumentJson.put("name", instrument.getName());
-        instrumentJson.put("user", UserDB.getUser(conn, instrument.getOwnerId()).getFullName());
+        instrumentJson.put("user",
+          UserDB.getUser(conn, instrument.getOwnerId()).getFullName());
         datasetJson.put("instrument", instrumentJson);
 
         json.put(datasetJson);
