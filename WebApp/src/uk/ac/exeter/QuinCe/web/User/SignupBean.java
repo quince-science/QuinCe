@@ -15,6 +15,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * JSF Managed Bean for handling new user sign-up
+ * 
  * @author Steve Jones
  *
  */
@@ -59,6 +60,7 @@ public class SignupBean extends BaseManagedBean {
 
   /**
    * Get the email address
+   * 
    * @return The email address
    */
   public String getEmailAddress() {
@@ -67,7 +69,9 @@ public class SignupBean extends BaseManagedBean {
 
   /**
    * Set the email address
-   * @param emailAddress The email address
+   * 
+   * @param emailAddress
+   *          The email address
    */
   public void setEmailAddress(String emailAddress) {
     this.emailAddress = emailAddress.trim();
@@ -75,6 +79,7 @@ public class SignupBean extends BaseManagedBean {
 
   /**
    * Get the user's given name
+   * 
    * @return The given name
    */
   public String getGivenName() {
@@ -83,7 +88,9 @@ public class SignupBean extends BaseManagedBean {
 
   /**
    * Set the user's given name
-   * @param givenName The given name
+   * 
+   * @param givenName
+   *          The given name
    */
   public void setGivenName(String givenName) {
     this.givenName = givenName.trim();
@@ -91,6 +98,7 @@ public class SignupBean extends BaseManagedBean {
 
   /**
    * Get the user's surname
+   * 
    * @return The surname
    */
   public String getSurname() {
@@ -99,7 +107,9 @@ public class SignupBean extends BaseManagedBean {
 
   /**
    * Set the user's surname
-   * @param surname The surname
+   * 
+   * @param surname
+   *          The surname
    */
   public void setSurname(String surname) {
     this.surname = surname.trim();
@@ -107,6 +117,7 @@ public class SignupBean extends BaseManagedBean {
 
   /**
    * Get the first password
+   * 
    * @return The first password
    */
   public String getPassword1() {
@@ -115,7 +126,9 @@ public class SignupBean extends BaseManagedBean {
 
   /**
    * Set the first password
-   * @param password1 The first password
+   * 
+   * @param password1
+   *          The first password
    */
   public void setPassword1(String password1) {
     // Note that passwords aren't trimmed
@@ -124,6 +137,7 @@ public class SignupBean extends BaseManagedBean {
 
   /**
    * Get the second password
+   * 
    * @return The second password
    */
   public String getPassword2() {
@@ -132,7 +146,9 @@ public class SignupBean extends BaseManagedBean {
 
   /**
    * Set the second password
-   * @param password2 The second password
+   * 
+   * @param password2
+   *          The second password
    */
   public void setPassword2(String password2) {
     // Note that passwords aren't trimmed
@@ -141,6 +157,7 @@ public class SignupBean extends BaseManagedBean {
 
   /**
    * The main signup action method
+   * 
    * @return Result string
    */
   public String signUp() {
@@ -153,15 +170,21 @@ public class SignupBean extends BaseManagedBean {
 
       try {
         // Add the user to the database
-        User newUser = UserDB.createUser(ServletUtils.getDBDataSource(), emailAddress, password1.toCharArray(), givenName, surname, true);
+        User newUser = UserDB.createUser(ServletUtils.getDBDataSource(),
+          emailAddress, password1.toCharArray(), givenName, surname, true);
 
         // Build and start the job to send out the verification email
         Map<String, String> emailJobParams = new HashMap<String, String>(1);
-        emailJobParams.put(SendEmailVerificationMailJob.EMAIL_KEY, emailAddress);
+        emailJobParams.put(SendEmailVerificationMailJob.EMAIL_KEY,
+          emailAddress);
 
-        JobManager.addInstantJob(ServletUtils.getResourceManager(), ServletUtils.getAppConfig(), newUser, "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob", emailJobParams);
+        JobManager.addInstantJob(ServletUtils.getResourceManager(),
+          ServletUtils.getAppConfig(), newUser,
+          "uk.ac.exeter.QuinCe.jobs.user.SendEmailVerificationMailJob",
+          emailJobParams);
       } catch (UserExistsException e) {
-        setMessage(getComponentID("emailAddress"), "A user already exists with that email address");
+        setMessage(getComponentID("emailAddress"),
+          "A user already exists with that email address");
         result = USER_EXISTS_RESULT;
       } catch (Exception e) {
         result = internalError(e);
@@ -173,6 +196,7 @@ public class SignupBean extends BaseManagedBean {
 
   /**
    * Validate the bean's contents
+   * 
    * @return {@code true} if the contents are valid; {@code false} otherwise.
    */
   private boolean validate() {

@@ -1,12 +1,11 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
   xmlns:h="http://xmlns.jcp.org/jsf/html"
   xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-  xmlns:f="http://xmlns.jcp.org/jsf/core"
-  xmlns:p="http://primefaces.org/ui"
+  xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui"
   xmlns:c="http://java.sun.com/jsp/jstl/core"
   template="/WEB-INF/templates/new_instrument.xhtml">
   <ui:define name="instrumentHead">
-    <c:set var="instrumentStep" value="1" scope="request"/>
+    <c:set var="instrumentStep" value="1" scope="request" />
     <script>
       function checkSelection() {
 
@@ -29,18 +28,22 @@
   <ui:define name="new_instrument_content">
     <h:form id="newInstrumentForm" method="post" charset="utf8">
       <div id="variablesForm">
-
-        <p:selectManyCheckbox widgetVar="variables" value="#{newInstrumentBean.instrumentVariables}" onchange="checkSelection()">
-          <f:selectItems value="#{newInstrumentBean.getAllVariables().entrySet()}"
-            var="entry" itemLabel="#{entry.getValue()}" itemValue="#{entry.getKey()}"/>
+        <p:selectManyCheckbox widgetVar="variables"
+          value="#{newInstrumentBean.instrumentVariables}"
+          onchange="checkSelection()">
+          <f:selectItems
+            value="#{newInstrumentBean.getAllVariables().entrySet()}"
+            var="entry" itemLabel="#{entry.getValue()}"
+            itemValue="#{entry.getKey()}" />
         </p:selectManyCheckbox>
-
       </div>
       <!--  The cancel include has two entries (one is invisible) -->
       <h:panelGrid columns="4" cellpadding="5" styleClass="buttonPanel">
-        <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml"/>
-        <p:commandButton value="Back" ajax="false" action="#{newInstrumentBean.goToName}" immediate="true"/>
-        <p:commandButton widgetVar="next" value="Next" ajax="false" action="#{newInstrumentBean.goToFiles}"/>
+        <ui:include src="/WEB-INF/templates/new_instrument_cancel.xhtml" />
+        <p:commandButton value="Back" ajax="false"
+          action="#{newInstrumentBean.goToName}" immediate="true" />
+        <p:commandButton widgetVar="next" value="Next" ajax="false"
+          action="#{newInstrumentBean.goToFiles}" />
       </h:panelGrid>
     </h:form>
     <script>
@@ -48,6 +51,5 @@
         checkSelection();
       });
     </script>
-
   </ui:define>
 </ui:composition>

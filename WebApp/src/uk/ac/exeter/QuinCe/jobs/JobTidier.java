@@ -11,12 +11,12 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * Background task to remove old finished jobs from the system.
  *
  * <p>
- *   Finished jobs more than 28 days old are removed. Jobs that
- *   were killed or had errors are not removed.
+ * Finished jobs more than 28 days old are removed. Jobs that were killed or had
+ * errors are not removed.
  * </p>
  *
  * <p>
- *   The job will run once per day.
+ * The job will run once per day.
  * </p>
  *
  * @author Steve Jones
@@ -28,7 +28,8 @@ public class JobTidier extends BackgroundTask {
   @Override
   protected void doTask() throws BackgroundTaskException {
     try {
-      JobManager.deleteFinishedJobs(ResourceManager.getInstance().getDBDataSource(), 28);
+      JobManager.deleteFinishedJobs(
+        ResourceManager.getInstance().getDBDataSource(), 28);
     } catch (Exception e) {
       throw new BackgroundTaskException(e);
     }

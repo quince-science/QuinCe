@@ -18,15 +18,16 @@ public class ManualQCPageData extends DatasetMeasurementData {
 
   protected List<String> measurementRunTypes;
 
-  public ManualQCPageData(Instrument instrument, FieldSets fieldSets, DataSet dataSet) throws Exception {
+  public ManualQCPageData(Instrument instrument, FieldSets fieldSets,
+    DataSet dataSet) throws Exception {
     super(instrument, fieldSets, dataSet);
   }
 
   /**
-   * Add a set of values, filtering out unwanted values. The default
-   * filter removes values for columns that are internally calibrated
-   * where the run type is not a measurement. This has the effect
-   * of removing all values taken during internal calibration.
+   * Add a set of values, filtering out unwanted values. The default filter
+   * removes values for columns that are internally calibrated where the run
+   * type is not a measurement. This has the effect of removing all values taken
+   * during internal calibration.
    *
    * Override this method to filter the supplied values according to need.
    *
@@ -36,8 +37,8 @@ public class ManualQCPageData extends DatasetMeasurementData {
    * @throws RecordNotFoundException
    */
   @Override
-  public void filterAndAddValuesAction(String runType, LocalDateTime time, Map<Long, FieldValue> values)
-      throws RecordNotFoundException {
+  public void filterAndAddValuesAction(String runType, LocalDateTime time,
+    Map<Long, FieldValue> values) throws RecordNotFoundException {
 
     // Filter out values based on run type.
     // If a value has internal calibrations, and we aren't on a
@@ -48,8 +49,10 @@ public class ManualQCPageData extends DatasetMeasurementData {
     for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
 
       // We don't keep internal calibration values
-      SensorType sensorType = instrument.getSensorAssignments().getSensorTypeForDBColumn(entry.getKey());
-      if (!sensorType.hasInternalCalibration() || measurementRunTypes.contains(runType)) {
+      SensorType sensorType = instrument.getSensorAssignments()
+        .getSensorTypeForDBColumn(entry.getKey());
+      if (!sensorType.hasInternalCalibration()
+        || measurementRunTypes.contains(runType)) {
         valuesToAdd.put(fieldSets.getField(entry.getKey()), entry.getValue());
       }
     }

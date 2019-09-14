@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.utils;
 
 /**
  * Exception thrown when a date/time string cannot be parsed
+ * 
  * @author Steve Jones
  *
  */
@@ -14,7 +15,9 @@ public class DateTimeParseException extends Exception {
 
   /**
    * Simple constructor
-   * @param message The error message
+   * 
+   * @param message
+   *          The error message
    */
   public DateTimeParseException(String message) {
     super(message);

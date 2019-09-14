@@ -6,6 +6,7 @@ import uk.ac.exeter.QuinCe.User.User;
 
 /**
  * Filter to determine whether a user has permission to view and manage jobs
+ * 
  * @author Steve Jones
  *
  */

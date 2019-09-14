@@ -1,8 +1,9 @@
 package uk.ac.exeter.QuinCe.jobs;
 
 /**
- * Exception thrown if the specified size for the job pool
- * is invalid (i.e. not a positive number).
+ * Exception thrown if the specified size for the job pool is invalid (i.e. not
+ * a positive number).
+ * 
  * @author Steve Jones
  *
  */

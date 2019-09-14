@@ -56,19 +56,30 @@ public class DataReductionJob extends Job {
   private final String jobName = "Data Reduction";
 
   /**
-   * Constructor for a data reduction job to be run on a specific data file.
-   * The job record must already have been created in the database.
+   * Constructor for a data reduction job to be run on a specific data file. The
+   * job record must already have been created in the database.
    *
-   * @param resourceManager The QuinCe resource manager
-   * @param config The application configuration
-   * @param jobId The job's database ID
-   * @param parameters The job parameters. These will be ignored.
-   * @throws MissingParamException If any constructor parameters are missing
-   * @throws InvalidJobParametersException If any of the parameters are invalid. Because parameters are ignored for this job, this exception will not be thrown.
-   * @throws DatabaseException If a database error occurs
-   * @throws RecordNotFoundException If the job cannot be found in the database
+   * @param resourceManager
+   *          The QuinCe resource manager
+   * @param config
+   *          The application configuration
+   * @param jobId
+   *          The job's database ID
+   * @param parameters
+   *          The job parameters. These will be ignored.
+   * @throws MissingParamException
+   *           If any constructor parameters are missing
+   * @throws InvalidJobParametersException
+   *           If any of the parameters are invalid. Because parameters are
+   *           ignored for this job, this exception will not be thrown.
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws RecordNotFoundException
+   *           If the job cannot be found in the database
    */
-  public DataReductionJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+  public DataReductionJob(ResourceManager resourceManager, Properties config,
+    long jobId, Map<String, String> parameters) throws MissingParamException,
+    InvalidJobParametersException, DatabaseException, RecordNotFoundException {
     super(resourceManager, config, jobId, parameters);
   }
 
@@ -85,7 +96,7 @@ public class DataReductionJob extends Job {
       conn.setAutoCommit(false);
 
       dataSet = DataSetDB.getDataSet(conn,
-          Long.parseLong(parameters.get(ID_PARAM)));
+        Long.parseLong(parameters.get(ID_PARAM)));
 
       instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(),
         ResourceManager.getInstance().getSensorsConfiguration(),
@@ -101,25 +112,25 @@ public class DataReductionJob extends Job {
 
       // Get all the sensor values for the dataset, ordered by date and then
       // grouped by sensor type
-      DateColumnGroupedSensorValues groupedSensorValues =
-        DataSetDataDB.getSensorValuesByDateAndColumn(conn,
-          instrument, dataSet.getId());
+      DateColumnGroupedSensorValues groupedSensorValues = DataSetDataDB
+        .getSensorValuesByDateAndColumn(conn, instrument, dataSet.getId());
 
       // Get all the measurement records
-      List<Measurement> allMeasurements =
-          DataSetDataDB.getMeasurements(conn, instrument, dataSet.getId());
+      List<Measurement> allMeasurements = DataSetDataDB.getMeasurements(conn,
+        instrument, dataSet.getId());
 
       // Get the most recent calibration data from before the dataset start
-      CalibrationSet calibrationSet =
-        ExternalStandardDB.getInstance().getMostRecentCalibrations(
-        conn, instrument.getDatabaseId(), groupedSensorValues.getFirstTime());
+      CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
+        .getMostRecentCalibrations(conn, instrument.getDatabaseId(),
+          groupedSensorValues.getFirstTime());
 
       // Cached data reducer instances
       Map<InstrumentVariable, DataReducer> reducers = new HashMap<InstrumentVariable, DataReducer>();
 
       // Storage of values to be written to the database
       List<CalculationValue> calculationValuesToStore = new ArrayList<CalculationValue>();
-      List<DataReductionRecord> dataReductionRecords = new ArrayList<DataReductionRecord>(allMeasurements.size());
+      List<DataReductionRecord> dataReductionRecords = new ArrayList<DataReductionRecord>(
+        allMeasurements.size());
 
       // Process each measurement individually
       for (Measurement measurement : allMeasurements) {
@@ -128,18 +139,15 @@ public class DataReductionJob extends Job {
         if (isVariableMeasurement(instrument, measurement)) {
 
           // Get the value to be used in calculation for each sensor type
-          Map<SensorType, CalculationValue> calculationValues =
-              new HashMap<SensorType, CalculationValue>();
-
+          Map<SensorType, CalculationValue> calculationValues = new HashMap<SensorType, CalculationValue>();
 
           // TODO This will have to be more intelligent - allowing
           // retrieval of values before and after the measurement time
           // for interpolation etc.
           //
           // Get all the sensor values for the measurement time
-          Map<SensorType, List<SensorValue>> values =
-            groupedSensorValues.get(measurement.getTime());
-
+          Map<SensorType, List<SensorValue>> values = groupedSensorValues
+            .get(measurement.getTime());
 
           // Loop through each sensor type
           for (SensorType sensorType : values.keySet()) {
@@ -147,35 +155,35 @@ public class DataReductionJob extends Job {
             if (!sensorType.isSystemType()) {
               List<SensorValue> sensorValues = values.get(sensorType);
 
-              calculationValues.put(
-                sensorType, CalculationValue.get(measurement, sensorType, sensorValues));
+              calculationValues.put(sensorType,
+                CalculationValue.get(measurement, sensorType, sensorValues));
             }
           }
 
           DataReducer reducer = reducers.get(measurement.getVariable());
           if (null == reducer) {
 
-            Map<String, Float> variableAttributes =
-              InstrumentDB.getVariableAttributes(conn, instrument.getDatabaseId(),
+            Map<String, Float> variableAttributes = InstrumentDB
+              .getVariableAttributes(conn, instrument.getDatabaseId(),
                 measurement.getVariable().getId());
 
             reducer = DataReducerFactory.getReducer(conn, instrument,
-                measurement.getVariable(), dataSet.isNrt(), variableAttributes, calibrationSet,
-                allMeasurements, groupedSensorValues);
+              measurement.getVariable(), dataSet.isNrt(), variableAttributes,
+              calibrationSet, allMeasurements, groupedSensorValues);
 
             reducers.put(measurement.getVariable(), reducer);
           }
 
-          DataReductionRecord dataReductionRecord = reducer.performDataReduction(
-            instrument, measurement, calculationValues);
+          DataReductionRecord dataReductionRecord = reducer
+            .performDataReduction(instrument, measurement, calculationValues);
 
           calculationValuesToStore.addAll(calculationValues.values());
           dataReductionRecords.add(dataReductionRecord);
         }
       }
 
-      DataSetDataDB.storeDataReduction(conn, calculationValuesToStore, dataReductionRecords);
-
+      DataSetDataDB.storeDataReduction(conn, calculationValuesToStore,
+        dataReductionRecords);
 
       // If the thread was interrupted, undo everything
       if (thread.isInterrupted()) {
@@ -209,14 +217,14 @@ public class DataReductionJob extends Job {
 
       try {
         if (dataSet != null
-            && dataSet.getId() != DatabaseUtils.NO_DATABASE_RECORD) {
+          && dataSet.getId() != DatabaseUtils.NO_DATABASE_RECORD) {
           // Change dataset status to Error, and append an error message
           StringBuffer message = new StringBuffer();
           message.append(getJobName());
           message.append(" - error: ");
           message.append(e.getMessage());
           dataSet.addMessage(message.toString(),
-              ExceptionUtils.getStackTrace(e));
+            ExceptionUtils.getStackTrace(e));
           dataSet.setStatus(DataSet.STATUS_ERROR);
 
           DataSetDB.updateDataSet(conn, dataSet);
@@ -234,7 +242,9 @@ public class DataReductionJob extends Job {
 
   /**
    * Removes any previously calculated data reduction results from the database
-   * @throws JobFailedException If an error occurs
+   * 
+   * @throws JobFailedException
+   *           If an error occurs
    */
   protected void reset() throws JobFailedException {
   }
@@ -261,17 +271,18 @@ public class DataReductionJob extends Job {
 
   /**
    * Determines whether or not a measurement
+   * 
    * @param instrument
    * @param measurement
    * @return
    */
   private boolean isVariableMeasurement(Instrument instrument,
-      Measurement measurement) {
+    Measurement measurement) {
 
-    RunTypeCategory runTypeCategory =
-        instrument.getRunTypeCategory(measurement.getRunType());
+    RunTypeCategory runTypeCategory = instrument
+      .getRunTypeCategory(measurement.getRunType());
 
-    return runTypeCategory.isMeasurementType() &&
-        runTypeCategory.getDescription().equals(measurement.getVariable().getName());
+    return runTypeCategory.isMeasurementType() && runTypeCategory
+      .getDescription().equals(measurement.getVariable().getName());
   }
 }

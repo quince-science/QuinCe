@@ -8,8 +8,9 @@ import java.util.Map;
 import org.primefaces.json.JSONArray;
 
 /**
- * A structure for instrument variables, used when
- * selecting variables for plots and maps
+ * A structure for instrument variables, used when selecting variables for plots
+ * and maps
+ * 
  * @author Steve Jones
  *
  */
@@ -41,8 +42,11 @@ public class VariableList extends ArrayList<VariableGroup> {
 
   /**
    * Add a new variable
-   * @param groupName The name of the group to which the variable belongs
-   * @param variable The variable
+   * 
+   * @param groupName
+   *          The name of the group to which the variable belongs
+   * @param variable
+   *          The variable
    */
   public void addVariable(String groupName, Variable variable) {
 
@@ -63,7 +67,9 @@ public class VariableList extends ArrayList<VariableGroup> {
 
   /**
    * Retrieve a variable using its ID
-   * @param id The ID
+   * 
+   * @param id
+   *          The ID
    * @return The variable
    */
   protected Variable getVariable(int id) {
@@ -72,7 +78,9 @@ public class VariableList extends ArrayList<VariableGroup> {
 
   /**
    * Get the named variable group
-   * @param groupName The group name
+   * 
+   * @param groupName
+   *          The group name
    * @return The group, or {@code null} if it does not exist
    */
   public VariableGroup getGroup(String groupName) {
@@ -90,7 +98,9 @@ public class VariableList extends ArrayList<VariableGroup> {
 
   /**
    * Get the variable with the given label
-   * @param label The label
+   * 
+   * @param label
+   *          The label
    * @return The matching variable object, or {@code null} if no match is found
    */
   public Variable getVariableWithLabel(String label) {
@@ -105,7 +115,6 @@ public class VariableList extends ArrayList<VariableGroup> {
         }
       }
 
-
       if (null != result) {
         break;
       }
@@ -116,7 +125,9 @@ public class VariableList extends ArrayList<VariableGroup> {
 
   /**
    * Get a list of variables with the specified IDs
-   * @param ids The variable IDs
+   * 
+   * @param ids
+   *          The variable IDs
    * @return The variables
    */
   public List<Variable> getVariables(List<Integer> ids) {
@@ -133,8 +144,9 @@ public class VariableList extends ArrayList<VariableGroup> {
   }
 
   /**
-   * Get the set of groups and the ids of the variables they contain
-   * in JSON format
+   * Get the set of groups and the ids of the variables they contain in JSON
+   * format
+   * 
    * @return The group details
    */
   protected String getGroupsJson() {
@@ -153,6 +165,7 @@ public class VariableList extends ArrayList<VariableGroup> {
 
   /**
    * Get the names of all the variable groups as a JSON string
+   * 
    * @return The group names
    */
   protected String getGroupNamesJson() {
@@ -167,6 +180,7 @@ public class VariableList extends ArrayList<VariableGroup> {
 
   /**
    * Get the total number of variables in the list
+   * 
    * @return The number of variables
    */
   public int getVariableCount() {
@@ -180,10 +194,12 @@ public class VariableList extends ArrayList<VariableGroup> {
   }
 
   /**
-   * Determine whether or not the named variable group
-   * is present in the list
-   * @param groupName The group name
-   * @return {@code true} if the group is defined in this list; {@code false} otherwise
+   * Determine whether or not the named variable group is present in the list
+   * 
+   * @param groupName
+   *          The group name
+   * @return {@code true} if the group is defined in this list; {@code false}
+   *         otherwise
    */
   public boolean containsGroup(String groupName) {
     boolean result = false;

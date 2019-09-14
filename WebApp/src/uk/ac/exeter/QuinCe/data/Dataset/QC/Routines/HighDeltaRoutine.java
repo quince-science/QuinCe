@@ -15,18 +15,21 @@ public class HighDeltaRoutine extends Routine {
 
   /**
    * Basic constructor
-   * @param parameters The parameters
-   * @throws QCRoutinesConfigurationException If the parameters are invalid
+   * 
+   * @param parameters
+   *          The parameters
+   * @throws QCRoutinesConfigurationException
+   *           If the parameters are invalid
    */
-  public HighDeltaRoutine(List<String> parameters)
-    throws RoutineException {
+  public HighDeltaRoutine(List<String> parameters) throws RoutineException {
     super(parameters);
   }
 
   @Override
   protected void validateParameters() throws RoutineException {
     if (parameters.size() != 1) {
-      throw new RoutineException("Incorrect number of parameters. Must be <maxDelta>");
+      throw new RoutineException(
+        "Incorrect number of parameters. Must be <maxDelta>");
     }
 
     try {
@@ -53,11 +56,11 @@ public class HighDeltaRoutine extends Routine {
 
         // Calculate the change between this record and the previous one
         if (!sensorValue.isNaN()) {
-          double minutesDifference = ChronoUnit.SECONDS.between(
-            lastValue.getTime(), sensorValue.getTime()) / 60.0;
+          double minutesDifference = ChronoUnit.SECONDS
+            .between(lastValue.getTime(), sensorValue.getTime()) / 60.0;
 
-          double valueDelta = Math.abs(sensorValue.getDoubleValue()
-            - lastValue.getDoubleValue());
+          double valueDelta = Math
+            .abs(sensorValue.getDoubleValue() - lastValue.getDoubleValue());
 
           double deltaPerMinute = valueDelta / minutesDifference;
 
@@ -73,6 +76,7 @@ public class HighDeltaRoutine extends Routine {
 
   /**
    * Get the short form QC message
+   * 
    * @return The short QC message
    */
   public static String getShortMessage() {
@@ -81,11 +85,16 @@ public class HighDeltaRoutine extends Routine {
 
   /**
    * Get the long form QC message
-   * @param requiredValue The value required by the routine
-   * @param actualValue The value received by the routine
+   * 
+   * @param requiredValue
+   *          The value required by the routine
+   * @param actualValue
+   *          The value received by the routine
    * @return The long form message
    */
-  public static String getLongMessage(String requiredValue, String actualValue) {
-    return "Changes too quickly - " + actualValue + "/min, limit is " + requiredValue + "/min";
+  public static String getLongMessage(String requiredValue,
+    String actualValue) {
+    return "Changes too quickly - " + actualValue + "/min, limit is "
+      + requiredValue + "/min";
   }
 }

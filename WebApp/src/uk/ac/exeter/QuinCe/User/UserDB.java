@@ -20,8 +20,8 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 /**
  * Database access class for users.
  *
- * Handles reading/writing of user details
- * and all the functions that shouldn't be performed at the session level.
+ * Handles reading/writing of user details and all the functions that shouldn't
+ * be performed at the session level.
  *
  * @author Steve Jones
  *
@@ -32,76 +32,75 @@ public class UserDB {
    * SQL statement to search for a user by email address
    */
   private static final String USER_SEARCH_BY_EMAIL_STATEMENT = "SELECT "
-      + "id,email,firstname,surname,email_code,email_code_time,password_code,"
-      + "password_code_time,permissions,preferences FROM user WHERE email = ?";
+    + "id,email,firstname,surname,email_code,email_code_time,password_code,"
+    + "password_code_time,permissions,preferences FROM user WHERE email = ?";
 
   /**
    * SQL statement to search for a user by email address
    */
   private static final String USER_SEARCH_BY_ID_STATEMENT = "SELECT "
-      + "id,email,firstname,surname,email_code,email_code_time,password_code,"
-      + "password_code_time,permissions,preferences FROM user WHERE id = ?";
+    + "id,email,firstname,surname,email_code,email_code_time,password_code,"
+    + "password_code_time,permissions,preferences FROM user WHERE id = ?";
 
   /**
    * SQL statement to create a new user record
    */
   private static final String CREATE_USER_STATEMENT = "INSERT INTO user "
-      + "(email, salt, password, firstname, surname, email_code, "
-      + "email_code_time) "
-      + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+    + "(email, salt, password, firstname, surname, email_code, "
+    + "email_code_time) " + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
   /**
    * SQL statement to store an email verification code with a timestamp
    */
   private static final String CREATE_EMAIL_VERIFICATION_CODE_STATEMENT = "UPDATE "
-      + "user SET email_code = ?, email_code_time = ? WHERE id = ?";
+    + "user SET email_code = ?, email_code_time = ? WHERE id = ?";
 
   /**
    * SQL statement to store an password reset code with a timestamp
    */
   private static final String CREATE_PASSWORD_RESET_CODE_STATEMENT = "UPDATE "
-      + "user SET password_code = ?, password_code_time = ? WHERE id = ?";
+    + "user SET password_code = ?, password_code_time = ? WHERE id = ?";
 
   /**
    * SQL statement to retrieve the details required to authenticate a user
    */
   private static final String GET_AUTHENTICATION_DETAILS_STATEMENT = "SELECT "
-      + "salt,password,email_code FROM user WHERE email = ?";
+    + "salt,password,email_code FROM user WHERE email = ?";
 
   /**
    * SQL statement to change a user's password
    */
   private static final String CHANGE_PASSWORD_STATEMENT = "UPDATE "
-      + "user SET salt = ?, password = ? WHERE id = ?";
+    + "user SET salt = ?, password = ? WHERE id = ?";
 
   /**
    * SQL statement to remove an email verification code
    */
   private static final String CLEAR_EMAIL_CODE_STATEMENT = "UPDATE "
-      + "user SET email_code = NULL, email_code_time = NULL WHERE email = ?";
+    + "user SET email_code = NULL, email_code_time = NULL WHERE email = ?";
 
   /**
    * SQL statement to remove a password reset code
    */
   private static final String CLEAR_PASSWORD_RESET_CODE_STATEMENT = "UPDATE "
-      + "user SET password_code = NULL, password_code_time = NULL "
-      + "WHERE email = ?";
+    + "user SET password_code = NULL, password_code_time = NULL "
+    + "WHERE email = ?";
 
   /**
    * Statement to store a user's preferences
    */
   private static final String STORE_PREFERENCES_STATEMENT = "UPDATE "
-      + "user SET preferences = ? WHERE id = ?";
+    + "user SET preferences = ? WHERE id = ?";
 
   /**
    * Statement to retrieve a user's preferences
    */
   private static final String GET_PREFERENCES_STATEMENT = "SELECT "
-      + "preferences FROM user WHERE id = ?";
+    + "preferences FROM user WHERE id = ?";
 
   /**
-   * The length of the string to be used for email
-   * verification and password reset codes
+   * The length of the string to be used for email verification and password
+   * reset codes
    */
   private static final int CODE_LENGTH = 50;
 
@@ -116,8 +115,8 @@ public class UserDB {
   public static final int AUTHENTICATE_FAILED = 1;
 
   /**
-   * Indicates that authentication could not be completed because the
-   * email verification flag is set.
+   * Indicates that authentication could not be completed because the email
+   * verification flag is set.
    */
   public static final int AUTHENTICATE_EMAIL_CODE_SET = 2;
 
@@ -127,8 +126,8 @@ public class UserDB {
   public static final int CODE_OK = 0;
 
   /**
-   * Indicates that a code check failed because the supplied code was
-   * different from the one stored
+   * Indicates that a code check failed because the supplied code was different
+   * from the one stored
    */
   public static final int CODE_FAILED = 1;
 
@@ -145,14 +144,19 @@ public class UserDB {
   /**
    * Get a user's details from their email address. If the user doesn't exist,
    * {@code null} is returned
-   * @param dataSource A data source
-   * @param email The email address
+   * 
+   * @param dataSource
+   *          A data source
+   * @param email
+   *          The email address
    * @return The user object
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static User getUser(DataSource dataSource, String email)
-      throws DatabaseException, MissingParamException {
+    throws DatabaseException, MissingParamException {
 
     Connection conn = null;
     User user = null;
@@ -161,8 +165,9 @@ public class UserDB {
       conn = dataSource.getConnection();
       user = getUser(conn, email);
     } catch (SQLException e) {
-      throw new DatabaseException("An error occurred while retrieving the user", e);
-    } catch (DatabaseException|MissingParamException e) {
+      throw new DatabaseException("An error occurred while retrieving the user",
+        e);
+    } catch (DatabaseException | MissingParamException e) {
       throw e;
     } finally {
       DatabaseUtils.closeConnection(conn);
@@ -176,16 +181,20 @@ public class UserDB {
    *
    * If the user can't be found, this method returns {@code null}.
    *
-   * @param conn A database connection
-   * @param email The user's email address.
-   * @return A User object representing the user, or {@code null}
-   *         if the user's record could not be found.
-   * @throws MissingParamException If the supplied email is null
-   * @throws DatabaseException If a database error occurs
+   * @param conn
+   *          A database connection
+   * @param email
+   *          The user's email address.
+   * @return A User object representing the user, or {@code null} if the user's
+   *         record could not be found.
+   * @throws MissingParamException
+   *           If the supplied email is null
+   * @throws DatabaseException
+   *           If a database error occurs
    * @see uk.ac.exeter.QuinCe.User.User
    */
   public static User getUser(Connection conn, String email)
-      throws DatabaseException, MissingParamException {
+    throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
 
@@ -201,12 +210,16 @@ public class UserDB {
 
         if (record.first()) {
           foundUser = new User(record.getInt(1), record.getString(2),
-              record.getString(3), record.getString(4), record.getInt(9), record.getString(10));
-          foundUser.setEmailVerificationCode(record.getString(5), record.getTimestamp(6));
-          foundUser.setPasswordResetCode(record.getString(7), record.getTimestamp(8));
+            record.getString(3), record.getString(4), record.getInt(9),
+            record.getString(10));
+          foundUser.setEmailVerificationCode(record.getString(5),
+            record.getTimestamp(6));
+          foundUser.setPasswordResetCode(record.getString(7),
+            record.getTimestamp(8));
         }
       } catch (SQLException e) {
-        throw new DatabaseException("An error occurred while searching for the user", e);
+        throw new DatabaseException(
+          "An error occurred while searching for the user", e);
       } finally {
         DatabaseUtils.closeResultSets(record);
         DatabaseUtils.closeStatements(stmt);
@@ -221,16 +234,20 @@ public class UserDB {
    *
    * If the user can't be found, this method returns {@code null}.
    *
-   * @param dataSource A data source
-   * @param id The user's database ID
-   * @return A User object representing the user, or
-   *         {@code null} if the user's record could not be found.
-   * @throws MissingParamException If the supplied email is null
-   * @throws DatabaseException If a database error occurs
+   * @param dataSource
+   *          A data source
+   * @param id
+   *          The user's database ID
+   * @return A User object representing the user, or {@code null} if the user's
+   *         record could not be found.
+   * @throws MissingParamException
+   *           If the supplied email is null
+   * @throws DatabaseException
+   *           If a database error occurs
    * @see uk.ac.exeter.QuinCe.User.User
    */
   public static User getUser(DataSource dataSource, long id)
-      throws DatabaseException, MissingParamException {
+    throws DatabaseException, MissingParamException {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkPositive(id, "id");
 
@@ -255,14 +272,20 @@ public class UserDB {
    *
    * If the user can't be found, this method returns {@code null}.
    *
-   * @param conn A database connection
-   * @param id The user's database ID
-   * @return A User object representing the user, or {@code null} if the user's record could not be found.
-   * @throws MissingParamException If the supplied email is null
-   * @throws DatabaseException If a database error occurs
+   * @param conn
+   *          A database connection
+   * @param id
+   *          The user's database ID
+   * @return A User object representing the user, or {@code null} if the user's
+   *         record could not be found.
+   * @throws MissingParamException
+   *           If the supplied email is null
+   * @throws DatabaseException
+   *           If a database error occurs
    * @see uk.ac.exeter.QuinCe.User.User
    */
-  public static User getUser(Connection conn, long id) throws DatabaseException, MissingParamException {
+  public static User getUser(Connection conn, long id)
+    throws DatabaseException, MissingParamException {
     MissingParam.checkMissing(conn, "dataSource");
     MissingParam.checkPositive(id, "id");
 
@@ -276,13 +299,17 @@ public class UserDB {
       record = stmt.executeQuery();
 
       if (record.first()) {
-        foundUser = new User(record.getInt(1), record.getString(2), record.getString(3),
-            record.getString(4), record.getInt(9), record.getString(10));
-        foundUser.setEmailVerificationCode(record.getString(5), record.getTimestamp(6));
-        foundUser.setPasswordResetCode(record.getString(7), record.getTimestamp(8));
+        foundUser = new User(record.getInt(1), record.getString(2),
+          record.getString(3), record.getString(4), record.getInt(9),
+          record.getString(10));
+        foundUser.setEmailVerificationCode(record.getString(5),
+          record.getTimestamp(6));
+        foundUser.setPasswordResetCode(record.getString(7),
+          record.getTimestamp(8));
       }
     } catch (SQLException e) {
-      throw new DatabaseException("An error occurred while searching for the user", e);
+      throw new DatabaseException(
+        "An error occurred while searching for the user", e);
     } finally {
       DatabaseUtils.closeResultSets(record);
       DatabaseUtils.closeStatements(stmt);
@@ -291,8 +318,8 @@ public class UserDB {
     return foundUser;
   }
 
-  public static UserPreferences getPreferences(DataSource dataSource, long userId)
-      throws MissingParamException, DatabaseException {
+  public static UserPreferences getPreferences(DataSource dataSource,
+    long userId) throws MissingParamException, DatabaseException {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkZeroPositive(userId, "userId");
 
@@ -324,13 +351,19 @@ public class UserDB {
 
   /**
    * Store a user's preferences
-   * @param dataSource A data source
-   * @param preferences The preferences to be stored
-   * @throws MissingParamException If any required parameters are missing
-   * @throws DatabaseException If a database error occurs
+   * 
+   * @param dataSource
+   *          A data source
+   * @param preferences
+   *          The preferences to be stored
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
    */
-  public static void savePreferences(DataSource dataSource, UserPreferences preferences)
-      throws MissingParamException, DatabaseException {
+  public static void savePreferences(DataSource dataSource,
+    UserPreferences preferences)
+    throws MissingParamException, DatabaseException {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(preferences, "preferences");
 
@@ -357,23 +390,33 @@ public class UserDB {
    *
    * The user's password is salted and hashed.
    *
-   * @param dataSource A data source
-   * @param email The user's email address
-   * @param password The password entered by the user
-   * @param givenName The user's given name
-   * @param surname The user's surname
-   * @param generateEmailVerificationCode Indicates whether or not an
-   *        email verification code should be generated for the user
+   * @param dataSource
+   *          A data source
+   * @param email
+   *          The user's email address
+   * @param password
+   *          The password entered by the user
+   * @param givenName
+   *          The user's given name
+   * @param surname
+   *          The user's surname
+   * @param generateEmailVerificationCode
+   *          Indicates whether or not an email verification code should be
+   *          generated for the user
    * @return A new User object representing the user
-   * @throws UserExistsException If a user with the specified email
-   *         address already exists in the database
-   * @throws MissingParamException If any of the parameters are null
-   * @throws DatabaseException If a database error occurs
+   * @throws UserExistsException
+   *           If a user with the specified email address already exists in the
+   *           database
+   * @throws MissingParamException
+   *           If any of the parameters are null
+   * @throws DatabaseException
+   *           If a database error occurs
    * @see uk.ac.exeter.QuinCe.User.User
    */
-  public static User createUser(DataSource dataSource, String email, char[] password,
-      String givenName, String surname, boolean generateEmailVerificationCode)
-          throws UserExistsException, DatabaseException, MissingParamException {
+  public static User createUser(DataSource dataSource, String email,
+    char[] password, String givenName, String surname,
+    boolean generateEmailVerificationCode)
+    throws UserExistsException, DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(email, "email");
@@ -389,13 +432,15 @@ public class UserDB {
       if (null != getUser(dataSource, email)) {
         throw new UserExistsException();
       } else {
-        SaltAndHashedPassword generatedPassword = generateHashedPassword(password);
+        SaltAndHashedPassword generatedPassword = generateHashedPassword(
+          password);
 
         String emailVerificationCode = null;
         Timestamp time = null;
 
         if (generateEmailVerificationCode) {
-          emailVerificationCode = new String(PasswordHash.generateRandomString(CODE_LENGTH));
+          emailVerificationCode = new String(
+            PasswordHash.generateRandomString(CODE_LENGTH));
           time = new Timestamp(System.currentTimeMillis());
         }
 
@@ -414,9 +459,10 @@ public class UserDB {
         newUser = getUser(dataSource, email);
       }
 
-    } catch (SQLException|InvalidKeySpecException|NoSuchAlgorithmException e) {
-      throw new DatabaseException("An error occurred while creating "
-          + "the user's database record", e);
+    } catch (SQLException | InvalidKeySpecException
+      | NoSuchAlgorithmException e) {
+      throw new DatabaseException(
+        "An error occurred while creating " + "the user's database record", e);
     } finally {
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
@@ -426,16 +472,23 @@ public class UserDB {
   }
 
   /**
-   * Generate an email verification code and store it in the database.
-   * The code will be added to the passed in User object.
-   * @param dataSource A data source
-   * @param user The user who requires the code
-   * @throws NoSuchUserException If the user doesn't exist
-   * @throws DatabaseException If an error occurs while updating the database
-   * @throws MissingParamException If the supplied user object is null
+   * Generate an email verification code and store it in the database. The code
+   * will be added to the passed in User object.
+   * 
+   * @param dataSource
+   *          A data source
+   * @param user
+   *          The user who requires the code
+   * @throws NoSuchUserException
+   *           If the user doesn't exist
+   * @throws DatabaseException
+   *           If an error occurs while updating the database
+   * @throws MissingParamException
+   *           If the supplied user object is null
    */
-  public static void generateEmailVerificationCode(DataSource dataSource, User user)
-      throws NoSuchUserException, DatabaseException, MissingParamException {
+  public static void generateEmailVerificationCode(DataSource dataSource,
+    User user)
+    throws NoSuchUserException, DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(user, "user");
@@ -447,7 +500,8 @@ public class UserDB {
     Connection conn = null;
     PreparedStatement stmt = null;
 
-    String verificationCode = new String(PasswordHash.generateRandomString(CODE_LENGTH));
+    String verificationCode = new String(
+      PasswordHash.generateRandomString(CODE_LENGTH));
     Timestamp time = new Timestamp(System.currentTimeMillis());
 
     try {
@@ -459,8 +513,9 @@ public class UserDB {
       stmt.execute();
 
       user.setEmailVerificationCode(verificationCode, time);
-    } catch(SQLException e) {
-      throw new DatabaseException("An error occurred while storing the verification code", e);
+    } catch (SQLException e) {
+      throw new DatabaseException(
+        "An error occurred while storing the verification code", e);
     } finally {
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
@@ -468,16 +523,22 @@ public class UserDB {
   }
 
   /**
-   * Generate a password reset code code and store it in the database.
-   * The code will be added to the passed in User object.
-   * @param dataSource A data source
-   * @param user The user
-   * @throws NoSuchUserException If the user doesn't exist
-   * @throws DatabaseException If an error occurs while updating the database
-   * @throws MissingParamException If the supplied user object is null
+   * Generate a password reset code code and store it in the database. The code
+   * will be added to the passed in User object.
+   * 
+   * @param dataSource
+   *          A data source
+   * @param user
+   *          The user
+   * @throws NoSuchUserException
+   *           If the user doesn't exist
+   * @throws DatabaseException
+   *           If an error occurs while updating the database
+   * @throws MissingParamException
+   *           If the supplied user object is null
    */
   public static void generatePasswordResetCode(DataSource dataSource, User user)
-      throws NoSuchUserException, DatabaseException, MissingParamException {
+    throws NoSuchUserException, DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(user, "user");
@@ -489,7 +550,8 @@ public class UserDB {
     Connection conn = null;
     PreparedStatement stmt = null;
 
-    String resetCode = new String(PasswordHash.generateRandomString(CODE_LENGTH));
+    String resetCode = new String(
+      PasswordHash.generateRandomString(CODE_LENGTH));
     Timestamp time = new Timestamp(System.currentTimeMillis());
 
     try {
@@ -501,9 +563,9 @@ public class UserDB {
       stmt.execute();
 
       user.setPasswordResetCode(resetCode, time);
-    } catch(SQLException e) {
-      throw new DatabaseException("An error occurred while "
-          + "storing the password reset code", e);
+    } catch (SQLException e) {
+      throw new DatabaseException(
+        "An error occurred while " + "storing the password reset code", e);
     } finally {
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
@@ -511,20 +573,26 @@ public class UserDB {
   }
 
   /**
-   * Authenticates a user. If either the email address doesn't exist,
-   * or the passwords don't match, authentication will fail. No indication
-   * of which test caused the failure is given. If the email verification
-   * code is set, authentication will also fail. This will be indicated.
+   * Authenticates a user. If either the email address doesn't exist, or the
+   * passwords don't match, authentication will fail. No indication of which
+   * test caused the failure is given. If the email verification code is set,
+   * authentication will also fail. This will be indicated.
    *
-   * @param dataSource A data source
-   * @param email The user's email address
-   * @param password The password supplied by the user
-   * @return One of AUTHENTICATE_OK, AUTHENTICATE_FAILED, or AUTHENTICATE_EMAIL_CODE_SET
-   * @throws MissingParamException If any of the parameters are null
-   * @throws DatabaseException If an error occurs while retrieving the user's details
+   * @param dataSource
+   *          A data source
+   * @param email
+   *          The user's email address
+   * @param password
+   *          The password supplied by the user
+   * @return One of AUTHENTICATE_OK, AUTHENTICATE_FAILED, or
+   *         AUTHENTICATE_EMAIL_CODE_SET
+   * @throws MissingParamException
+   *           If any of the parameters are null
+   * @throws DatabaseException
+   *           If an error occurs while retrieving the user's details
    */
-  public static int authenticate(DataSource dataSource, String email, char[] password)
-      throws MissingParamException, DatabaseException {
+  public static int authenticate(DataSource dataSource, String email,
+    char[] password) throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
 
@@ -536,7 +604,7 @@ public class UserDB {
     try {
       conn = dataSource.getConnection();
       stmt = conn.prepareStatement(GET_AUTHENTICATION_DETAILS_STATEMENT);
-      stmt.setString(1,  email);
+      stmt.setString(1, email);
       ResultSet result = stmt.executeQuery();
       if (result.first()) {
         byte[] salt = result.getBytes(1);
@@ -548,22 +616,25 @@ public class UserDB {
         } else {
           // Recreate the salted hashed password
           byte[] hashedPassword = PasswordHash.pbkdf2(password, salt,
-              PasswordHash.PBKDF2_ITERATIONS, PasswordHash.HASH_BYTE_SIZE);
+            PasswordHash.PBKDF2_ITERATIONS, PasswordHash.HASH_BYTE_SIZE);
 
           if (Arrays.equals(storedPassword, hashedPassword)) {
             authenticationResult = AUTHENTICATE_OK;
 
-            // Clear the password reset code - since we've authenticated, it's no longer needed
+            // Clear the password reset code - since we've authenticated, it's
+            // no longer needed
             clearPasswordResetCode(conn, email);
           }
         }
       }
-    } catch (SQLException|InvalidKeySpecException|NoSuchAlgorithmException e) {
+    } catch (SQLException | InvalidKeySpecException
+      | NoSuchAlgorithmException e) {
       // Any failure results in an authentication failure
       // Although nothing should get returned, best to be safe
       authenticationResult = AUTHENTICATE_FAILED;
 
-      throw new DatabaseException("An error occurred while authenticating the user", e);
+      throw new DatabaseException(
+        "An error occurred while authenticating the user", e);
     } finally {
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
@@ -573,16 +644,22 @@ public class UserDB {
   }
 
   /**
-   * Changes a user's password. The user's old password must be
-   * authenticated before the new one is stored.
-   * @param conn A database connection
-   * @param user The user whose password is to be changed
-   * @param newPassword The user's new password
-   * @throws DatabaseException If an error occurred
-   * @throws MissingParamException If any of the parameters are null
+   * Changes a user's password. The user's old password must be authenticated
+   * before the new one is stored.
+   * 
+   * @param conn
+   *          A database connection
+   * @param user
+   *          The user whose password is to be changed
+   * @param newPassword
+   *          The user's new password
+   * @throws DatabaseException
+   *           If an error occurred
+   * @throws MissingParamException
+   *           If any of the parameters are null
    */
-  public static void changePassword(Connection conn, User user, char[] newPassword)
-      throws DatabaseException, MissingParamException {
+  public static void changePassword(Connection conn, User user,
+    char[] newPassword) throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(user, "user");
@@ -591,7 +668,8 @@ public class UserDB {
     PreparedStatement stmt = null;
 
     try {
-      SaltAndHashedPassword generatedPassword = generateHashedPassword(newPassword);
+      SaltAndHashedPassword generatedPassword = generateHashedPassword(
+        newPassword);
 
       stmt = conn.prepareStatement(CHANGE_PASSWORD_STATEMENT);
       stmt.setBytes(1, generatedPassword.salt);
@@ -599,8 +677,10 @@ public class UserDB {
       stmt.setInt(3, user.getDatabaseID());
       stmt.execute();
 
-    } catch (SQLException|InvalidKeySpecException|NoSuchAlgorithmException e) {
-      throw new DatabaseException("An error occurred while updating the password", e);
+    } catch (SQLException | InvalidKeySpecException
+      | NoSuchAlgorithmException e) {
+      throw new DatabaseException(
+        "An error occurred while updating the password", e);
     } finally {
       DatabaseUtils.closeStatements(stmt);
     }
@@ -608,16 +688,22 @@ public class UserDB {
 
   /**
    * Check a user's email verification code against the supplied code
-   * @param dataSource A data source
-   * @param email The user's email address
-   * @param code The code to be checked
-   * @return An integer value indicating whether the code matched,
-   *         didn't match, or the timestamp has expired.
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any parameters are missing
+   * 
+   * @param dataSource
+   *          A data source
+   * @param email
+   *          The user's email address
+   * @param code
+   *          The code to be checked
+   * @return An integer value indicating whether the code matched, didn't match,
+   *         or the timestamp has expired.
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any parameters are missing
    */
-  public static int checkEmailVerificationCode(DataSource dataSource, String email, String code)
-      throws DatabaseException, MissingParamException {
+  public static int checkEmailVerificationCode(DataSource dataSource,
+    String email, String code) throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(email, "email");
@@ -637,15 +723,20 @@ public class UserDB {
   }
 
   /**
-   * Remove the email verification code for a user. Note that we do not check whether
-   * the specified user exists.
-   * @param dataSource A data source
-   * @param email The user's email address
-   * @throws MissingParamException If any parameters are missing
-   * @throws DatabaseException If an error occurs while updating the database
+   * Remove the email verification code for a user. Note that we do not check
+   * whether the specified user exists.
+   * 
+   * @param dataSource
+   *          A data source
+   * @param email
+   *          The user's email address
+   * @throws MissingParamException
+   *           If any parameters are missing
+   * @throws DatabaseException
+   *           If an error occurs while updating the database
    */
-  public static void clearEmailVerificationCode(DataSource dataSource, String email)
-      throws MissingParamException, DatabaseException {
+  public static void clearEmailVerificationCode(DataSource dataSource,
+    String email) throws MissingParamException, DatabaseException {
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(email, "email");
 
@@ -658,7 +749,8 @@ public class UserDB {
       stmt.setString(1, email);
       stmt.execute();
     } catch (SQLException e) {
-      throw new DatabaseException("An error occurred while clearing the code", e);
+      throw new DatabaseException("An error occurred while clearing the code",
+        e);
     } finally {
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
@@ -666,15 +758,20 @@ public class UserDB {
   }
 
   /**
-   * Remove the email verification code for a user. Note that we do not check whether
-   * the specified user exists.
-   * @param dataSource A data source
-   * @param email The user's email address
-   * @throws MissingParamException If any parameters are missing
-   * @throws DatabaseException If an error occurs while updating the database
+   * Remove the email verification code for a user. Note that we do not check
+   * whether the specified user exists.
+   * 
+   * @param dataSource
+   *          A data source
+   * @param email
+   *          The user's email address
+   * @throws MissingParamException
+   *           If any parameters are missing
+   * @throws DatabaseException
+   *           If an error occurs while updating the database
    */
   public static void clearPasswordResetCode(Connection conn, String email)
-      throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException {
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(email, "email");
 
@@ -685,7 +782,8 @@ public class UserDB {
       stmt.setString(1, email);
       stmt.execute();
     } catch (SQLException e) {
-      throw new DatabaseException("An error occurred while clearing the code", e);
+      throw new DatabaseException("An error occurred while clearing the code",
+        e);
     } finally {
       DatabaseUtils.closeStatements(stmt);
     }
@@ -693,16 +791,22 @@ public class UserDB {
 
   /**
    * Check a user's password reset code against the supplied code
-   * @param dataSource A data source
-   * @param email The user's email address
-   * @param code The code to be checked
-   * @return An integer value indicating whether the code matched,
-   *         didn't match, or the timestamp has expired.
-   * @throws MissingParamException If any parameters are missing
-   * @throws DatabaseException If an error occurs while updating the database
+   * 
+   * @param dataSource
+   *          A data source
+   * @param email
+   *          The user's email address
+   * @param code
+   *          The code to be checked
+   * @return An integer value indicating whether the code matched, didn't match,
+   *         or the timestamp has expired.
+   * @throws MissingParamException
+   *           If any parameters are missing
+   * @throws DatabaseException
+   *           If an error occurs while updating the database
    */
   public static int checkPasswordResetCode(DataSource dataSource, String email,
-      String code)throws DatabaseException, MissingParamException {
+    String code) throws DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(email, "email");
@@ -722,16 +826,21 @@ public class UserDB {
   }
 
   /**
-   * Checks wheter or not two codes match, and that we are within
-   * the time limit (defined by {@code CODE_EXPIRY_HOURS} of the code's timestamp
-   * @param userCode The code that we are checking against
-   *        (i.e. the one stored in the database)
-   * @param codeTime The code's timestamp
-   * @param codeToCheck The code to be checked
-   * @return An integer value indicating whether the code matched,
-   *         didn't match, or the timestamp has expired.
+   * Checks wheter or not two codes match, and that we are within the time limit
+   * (defined by {@code CODE_EXPIRY_HOURS} of the code's timestamp
+   * 
+   * @param userCode
+   *          The code that we are checking against (i.e. the one stored in the
+   *          database)
+   * @param codeTime
+   *          The code's timestamp
+   * @param codeToCheck
+   *          The code to be checked
+   * @return An integer value indicating whether the code matched, didn't match,
+   *         or the timestamp has expired.
    */
-  private static int checkCode(String userCode, Timestamp codeTime, String codeToCheck) {
+  private static int checkCode(String userCode, Timestamp codeTime,
+    String codeToCheck) {
     int result = CODE_FAILED;
 
     // If the code is null, the check will fail
@@ -741,10 +850,11 @@ public class UserDB {
       // we assume the code has expired.
       if (null == codeTime) {
         result = CODE_EXPIRED;
-      // Check the code's timestamp
-      } else if (!DateTimeUtils.timeWithinLastHours(codeTime.getTime(), CODE_EXPIRY_HOURS)) {
+        // Check the code's timestamp
+      } else if (!DateTimeUtils.timeWithinLastHours(codeTime.getTime(),
+        CODE_EXPIRY_HOURS)) {
         result = CODE_EXPIRED;
-      // See if the code actually matches
+        // See if the code actually matches
       } else if (codeToCheck.equals(userCode)) {
         result = CODE_OK;
       }
@@ -754,27 +864,31 @@ public class UserDB {
   }
 
   /**
-   * Generated a salted+hashed version of a password.
-   * The salt is randomly generated and appended to the password before hashing.
-   * @param password The password
+   * Generated a salted+hashed version of a password. The salt is randomly
+   * generated and appended to the password before hashing.
+   * 
+   * @param password
+   *          The password
    * @return An object containing the salt and hashed password+salt.
-   * @throws NoSuchAlgorithmException If the hashing algorithm is not supported
-   * @throws InvalidKeySpecException If the key specification is invalid
+   * @throws NoSuchAlgorithmException
+   *           If the hashing algorithm is not supported
+   * @throws InvalidKeySpecException
+   *           If the key specification is invalid
    */
   private static SaltAndHashedPassword generateHashedPassword(char[] password)
-      throws NoSuchAlgorithmException, InvalidKeySpecException {
+    throws NoSuchAlgorithmException, InvalidKeySpecException {
     SaltAndHashedPassword result = new SaltAndHashedPassword();
     // Create the salted, hashed password
     result.salt = PasswordHash.generateSalt();
     result.hashedPassword = PasswordHash.pbkdf2(password, result.salt,
-        PasswordHash.PBKDF2_ITERATIONS, PasswordHash.HASH_BYTE_SIZE);
+      PasswordHash.PBKDF2_ITERATIONS, PasswordHash.HASH_BYTE_SIZE);
 
     return result;
   }
 
   /**
-   * Mini utility class for handling generated salts and hashed passwords.
-   * They are always generated together, so they belong together.
+   * Mini utility class for handling generated salts and hashed passwords. They
+   * are always generated together, so they belong together.
    */
   private static class SaltAndHashedPassword {
 

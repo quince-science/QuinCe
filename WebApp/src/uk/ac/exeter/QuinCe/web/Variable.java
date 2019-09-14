@@ -5,6 +5,7 @@ import java.util.List;
 
 /**
  * An entry in a variable tree
+ * 
  * @see VariableList
  * @author Steve Jones
  *
@@ -69,9 +70,13 @@ public class Variable {
 
   /**
    * Constructor for a top-level tree entry
-   * @param type The entry type
-   * @param label The label
-   * @param fieldName The database field name
+   * 
+   * @param type
+   *          The entry type
+   * @param label
+   *          The label
+   * @param fieldName
+   *          The database field name
    */
   public Variable(int type, String label, String fieldName) {
     this.type = type;
@@ -81,13 +86,22 @@ public class Variable {
 
   /**
    * Constructor for a top-level tree entry
-   * @param type The entry type
-   * @param label The label
-   * @param fieldName The database field name
-   * @param canUseOnXAxis Indicates whether or not this variable can be used on the X Axis of plots
-   * @param canUseOnYAxis Indicates whether or not this variable can be used on the Y Axis of plots
+   * 
+   * @param type
+   *          The entry type
+   * @param label
+   *          The label
+   * @param fieldName
+   *          The database field name
+   * @param canUseOnXAxis
+   *          Indicates whether or not this variable can be used on the X Axis
+   *          of plots
+   * @param canUseOnYAxis
+   *          Indicates whether or not this variable can be used on the Y Axis
+   *          of plots
    */
-  public Variable(int type, String label, String fieldName, boolean canUseOnXAxis, boolean canUseOnYAxis, boolean visible) {
+  public Variable(int type, String label, String fieldName,
+    boolean canUseOnXAxis, boolean canUseOnYAxis, boolean visible) {
     this.type = type;
     this.label = label;
     this.fieldName = fieldName;
@@ -98,7 +112,9 @@ public class Variable {
 
   /**
    * Set the entry's ID
-   * @param id The ID
+   * 
+   * @param id
+   *          The ID
    */
   protected void setId(int id) {
     this.id = id;
@@ -106,6 +122,7 @@ public class Variable {
 
   /**
    * Get the entry's ID
+   * 
    * @return The ID
    */
   public int getId() {
@@ -114,6 +131,7 @@ public class Variable {
 
   /**
    * Get the human-readable label
+   * 
    * @return The label
    */
   public String getLabel() {
@@ -122,6 +140,7 @@ public class Variable {
 
   /**
    * Get the database field name
+   * 
    * @return The field name
    */
   public String getFieldName() {
@@ -130,6 +149,7 @@ public class Variable {
 
   /**
    * Get the type
+   * 
    * @return The type
    */
   public int getType() {
@@ -138,7 +158,9 @@ public class Variable {
 
   /**
    * Get a list of variable IDs from a list of variables
-   * @param variables The variables
+   * 
+   * @param variables
+   *          The variables
    * @return The variable IDs
    */
   public static List<Integer> getIds(List<Variable> variables) {
@@ -154,7 +176,9 @@ public class Variable {
 
   /**
    * Determine whether or not this variable can be shown on the X axis of plots
-   * @return {@code true} if the variable can be shown on the X axis; {@code false} if it cannot
+   * 
+   * @return {@code true} if the variable can be shown on the X axis;
+   *         {@code false} if it cannot
    */
   public boolean getCanUseOnXAxis() {
     return canUseOnXAxis;
@@ -162,15 +186,18 @@ public class Variable {
 
   /**
    * Determine whether or not this variable can be shown on the Y axis of plots
-   * @return {@code true} if the variable can be shown on the Y axis; {@code false} if it cannot
+   * 
+   * @return {@code true} if the variable can be shown on the Y axis;
+   *         {@code false} if it cannot
    */
   public boolean getCanUseOnYAxis() {
     return canUseOnYAxis;
   }
 
   /**
-   * Determine whether or not this variable should be visible in the
-   * selection dialog
+   * Determine whether or not this variable should be visible in the selection
+   * dialog
+   * 
    * @return {@code true} if the variable is visible; {@code false} if it is not
    */
   public boolean getVisible() {

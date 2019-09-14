@@ -8,14 +8,15 @@ import uk.ac.exeter.QuinCe.utils.ParameterException;
 
 /**
  * Represents a external standard calibration
+ * 
  * @author Steve Jones
  *
  */
 public class ExternalStandard extends Calibration {
 
   /**
-   * Contains the label for the concentration value
-   * (constructed in the {@code static} block)
+   * Contains the label for the concentration value (constructed in the
+   * {@code static} block)
    */
   private static List<String> valueNames;
 
@@ -26,9 +27,11 @@ public class ExternalStandard extends Calibration {
   }
 
   /**
-   * Create an empty external standard placeholder that isn't
-   * bound to a particular standard
-   * @param instrumentId The instrument ID
+   * Create an empty external standard placeholder that isn't bound to a
+   * particular standard
+   * 
+   * @param instrumentId
+   *          The instrument ID
    */
   public ExternalStandard(long instrumentId) {
     super(instrumentId, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE);
@@ -36,29 +39,43 @@ public class ExternalStandard extends Calibration {
 
   /**
    * Creates an empty external standard for a specified standard
-   * @param instrumentid The instrument ID
-   * @param standard The standard
+   * 
+   * @param instrumentid
+   *          The instrument ID
+   * @param standard
+   *          The standard
    */
   protected ExternalStandard(long instrumentid, String standard) {
-    super(instrumentid, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE, standard);
+    super(instrumentid, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE,
+      standard);
   }
 
   /**
    * Construct a complete external standard object with all data
-   * @param instrumentId The instrument ID
-   * @param target The target external standard
-   * @param deploymentDate The deployment date
-   * @param coefficients The standard concentration
-   * @throws ParameterException If the calibration details are invalid
+   * 
+   * @param instrumentId
+   *          The instrument ID
+   * @param target
+   *          The target external standard
+   * @param deploymentDate
+   *          The deployment date
+   * @param coefficients
+   *          The standard concentration
+   * @throws ParameterException
+   *           If the calibration details are invalid
    */
-  protected ExternalStandard(long instrumentId, String target, LocalDateTime deploymentDate, List<Double> coefficients) throws ParameterException {
-    super(instrumentId, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE, target);
+  protected ExternalStandard(long instrumentId, String target,
+    LocalDateTime deploymentDate, List<Double> coefficients)
+    throws ParameterException {
+    super(instrumentId, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE,
+      target);
 
     if (null != target) {
       setDeploymentDate(deploymentDate);
       setCoefficients(coefficients);
       if (!validate()) {
-        throw new ParameterException("Deployment date/coefficients", "Calibration deployment is invalid");
+        throw new ParameterException("Deployment date/coefficients",
+          "Calibration deployment is invalid");
       }
     }
   }
@@ -81,6 +98,7 @@ public class ExternalStandard extends Calibration {
 
   /**
    * Get the concentration of the external standard
+   * 
    * @return The concentration
    */
   public double getConcentration() {
@@ -93,14 +111,17 @@ public class ExternalStandard extends Calibration {
 
   /**
    * Set the concentration of the external standard
-   * @param concentration The concentration
+   * 
+   * @param concentration
+   *          The concentration
    */
   public void setConcentration(double concentration) {
     if (null == coefficients) {
       initialiseCoefficients();
     }
 
-    coefficients.set(0, new CalibrationCoefficient(getCoefficientNames().get(0), concentration));
+    coefficients.set(0,
+      new CalibrationCoefficient(getCoefficientNames().get(0), concentration));
   }
 
   @Override

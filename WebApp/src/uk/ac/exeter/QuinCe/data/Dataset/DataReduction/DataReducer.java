@@ -29,9 +29,9 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * A DataReducer will perform all data reduction calculations
- * for a given variable. The output from the data reduction is
- * an instance of the DataReductionRecord class
+ * A DataReducer will perform all data reduction calculations for a given
+ * variable. The output from the data reduction is an instance of the
+ * DataReductionRecord class
  *
  * @author Steve Jones
  *
@@ -80,8 +80,8 @@ public abstract class DataReducer {
 
   public DataReducer(InstrumentVariable variable, boolean nrt,
     Map<String, Float> variableAttributes, List<Measurement> allMeasurements,
-      DateColumnGroupedSensorValues groupedSensorValues,
-      CalibrationSet calibrationSet) {
+    DateColumnGroupedSensorValues groupedSensorValues,
+    CalibrationSet calibrationSet) {
 
     this.variable = variable;
     this.nrt = nrt;
@@ -96,14 +96,20 @@ public abstract class DataReducer {
 
   /**
    * Perform the data reduction and set up the QC flags
-   * @param instrument The instrument that took the measurement
-   * @param measurement The measurement
-   * @param sensorValues The measurement's sensor values
-   * @param allMeasurements All measurements for the data set
+   * 
+   * @param instrument
+   *          The instrument that took the measurement
+   * @param measurement
+   *          The measurement
+   * @param sensorValues
+   *          The measurement's sensor values
+   * @param allMeasurements
+   *          All measurements for the data set
    * @return The data reduction result
    */
   public DataReductionRecord performDataReduction(Instrument instrument,
-      Measurement measurement, Map<SensorType, CalculationValue> sensorValues) throws Exception {
+    Measurement measurement, Map<SensorType, CalculationValue> sensorValues)
+    throws Exception {
 
     DataReductionRecord record = new DataReductionRecord(measurement);
 
@@ -112,7 +118,8 @@ public abstract class DataReducer {
     } else {
       doCalculation(instrument, measurement, sensorValues, record);
 
-      List<SensorType> missingParameters = getMissingParameters(instrument.getSensorAssignments(), sensorValues);
+      List<SensorType> missingParameters = getMissingParameters(
+        instrument.getSensorAssignments(), sensorValues);
       if (missingParameters.size() > 0) {
         makeMissingParameterRecord(record, missingParameters);
       } else {
@@ -120,15 +127,18 @@ public abstract class DataReducer {
       }
     }
 
-    applyQCFlags(instrument.getSensorAssignments(), variable, sensorValues, record);
+    applyQCFlags(instrument.getSensorAssignments(), variable, sensorValues,
+      record);
 
     return record;
   }
 
   /**
-   * Determine whether a Measurement object has the correct run type
-   * for data reduction to be performed
-   * @param runType The run type
+   * Determine whether a Measurement object has the correct run type for data
+   * reduction to be performed
+   * 
+   * @param runType
+   *          The run type
    * @return
    */
   private boolean isMeasurementRunType(Instrument instrument, String runType) {
@@ -137,20 +147,27 @@ public abstract class DataReducer {
 
   /**
    * Perform the data reduction calculations
-   * @param instrument The instrument that took the measurement
-   * @param measurement The measurement
-   * @param sensorValues The measurement's sensor values
-   * @param allMeasurements All measurements for the data set
-   * @param record The data reduction result
+   * 
+   * @param instrument
+   *          The instrument that took the measurement
+   * @param measurement
+   *          The measurement
+   * @param sensorValues
+   *          The measurement's sensor values
+   * @param allMeasurements
+   *          All measurements for the data set
+   * @param record
+   *          The data reduction result
    */
   protected abstract void doCalculation(Instrument instrument,
-      Measurement measurement, Map<SensorType, CalculationValue> sensorValues,
-      DataReductionRecord record)
-      throws Exception;
+    Measurement measurement, Map<SensorType, CalculationValue> sensorValues,
+    DataReductionRecord record) throws Exception;
 
   /**
    * Set the state for a non-calculated record (used for unused run types etc)
-   * @param record The record
+   * 
+   * @param record
+   *          The record
    */
   protected void makeEmptyRecord(DataReductionRecord record) {
     record.setQc(Flag.NO_QC, new ArrayList<String>());
@@ -158,11 +175,14 @@ public abstract class DataReducer {
 
   /**
    * Set a data reduction record's state for a missing required parameter
-   * @param record The record
-   * @param missingParameterName The name of the missing parameter
+   * 
+   * @param record
+   *          The record
+   * @param missingParameterName
+   *          The name of the missing parameter
    */
-  protected void makeMissingParameterRecord(
-      DataReductionRecord record, List<SensorType> missingTypes) {
+  protected void makeMissingParameterRecord(DataReductionRecord record,
+    List<SensorType> missingTypes) {
 
     List<String> qcMessages = new ArrayList<String>(missingTypes.size());
 
@@ -178,58 +198,65 @@ public abstract class DataReducer {
   }
 
   /**
-   * Get the calculation parameters generated by the reducer, in
-   * display order
+   * Get the calculation parameters generated by the reducer, in display order
+   * 
    * @return The calculation parameters
    */
   protected List<String> getCalculationParameterNames() {
-    return getCalculationParameters()
-      .stream()
-      .map(CalculationParameter::getName)
-      .collect(Collectors.toList());
+    return getCalculationParameters().stream()
+      .map(CalculationParameter::getName).collect(Collectors.toList());
   }
 
   /**
-   * Get the list of SensorTypes required by this data reducer. This takes
-   * the minimum list of sensor types (or parent types) and determines the
-   * actual required types according to the sensor types assigned to the
-   * instrument and their dependents.
+   * Get the list of SensorTypes required by this data reducer. This takes the
+   * minimum list of sensor types (or parent types) and determines the actual
+   * required types according to the sensor types assigned to the instrument and
+   * their dependents.
    *
-   * @param instrumentAssignments The sensor types assigned to the instrument
-   * @param sensorTypeNames The names of the bare minimum sensor types
+   * @param instrumentAssignments
+   *          The sensor types assigned to the instrument
+   * @param sensorTypeNames
+   *          The names of the bare minimum sensor types
    * @return The complete list of required SensorType objects
    * @throws SensorTypeNotFoundException
    */
   protected Set<SensorType> getRequiredSensorTypes(
-    SensorAssignments instrumentAssignments) throws DataReductionException, SensorTypeNotFoundException {
+    SensorAssignments instrumentAssignments)
+    throws DataReductionException, SensorTypeNotFoundException {
 
-    SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
-    List<SensorType> sensorTypes = sensorConfig.getSensorTypes(getRequiredTypeStrings());
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
+    List<SensorType> sensorTypes = sensorConfig
+      .getSensorTypes(getRequiredTypeStrings());
 
     Set<SensorType> result = new HashSet<SensorType>(sensorTypes.size());
 
     try {
-        for (SensorType baseSensorType : sensorTypes) {
+      for (SensorType baseSensorType : sensorTypes) {
 
-          if (sensorConfig.isParent(baseSensorType)) {
-            Set<SensorType> childSensorTypes = sensorConfig.getChildren(baseSensorType);
-            if (!addAnySensorTypesAndDependsOn(result, childSensorTypes, instrumentAssignments)) {
-              throw new DataReductionException(
-                "No assignments present for children of Sensor Type "
+        if (sensorConfig.isParent(baseSensorType)) {
+          Set<SensorType> childSensorTypes = sensorConfig
+            .getChildren(baseSensorType);
+          if (!addAnySensorTypesAndDependsOn(result, childSensorTypes,
+            instrumentAssignments)) {
+            throw new DataReductionException(
+              "No assignments present for children of Sensor Type "
                 + baseSensorType.getName() + " or their dependents");
-            }
-          } else {
-            if (!addSensorTypeAndDependsOn(result, baseSensorType, instrumentAssignments)) {
-              throw new DataReductionException(
-                "No assignments present for Sensor Type "
+          }
+        } else {
+          if (!addSensorTypeAndDependsOn(result, baseSensorType,
+            instrumentAssignments)) {
+            throw new DataReductionException(
+              "No assignments present for Sensor Type "
                 + baseSensorType.getName() + " or its dependents");
-            }
           }
         }
+      }
     } catch (SensorTypeNotFoundException e) {
       throw new DataReductionException("Named sensor type not found", e);
     } catch (SensorConfigurationException e) {
-      throw new DataReductionException("Invalid sensor configuration detected", e);
+      throw new DataReductionException("Invalid sensor configuration detected",
+        e);
     }
 
     return result;
@@ -239,9 +266,12 @@ public abstract class DataReducer {
    * Add a set of Sensor Types to an existing list of Sensor Types, including
    * any dependents
    *
-   * @param list The list to which the sensor types are to be added
-   * @param typesToAdd The sensor types to add
-   * @param instrumentAssignments The instrument's sensor assignments
+   * @param list
+   *          The list to which the sensor types are to be added
+   * @param typesToAdd
+   *          The sensor types to add
+   * @param instrumentAssignments
+   *          The instrument's sensor assignments
    * @return {@code true} if at least one Sensor Type is added; {@code false} if
    *         none are added (unless the list is empty)
    * @throws SensorConfigurationException
@@ -267,12 +297,15 @@ public abstract class DataReducer {
   }
 
   /**
-   * Add a Sensor Type to an existing list of Sensor Types, including
-   * any dependents
+   * Add a Sensor Type to an existing list of Sensor Types, including any
+   * dependents
    *
-   * @param list The list to which the sensor types are to be added
-   * @param typesToAdd The sensor types to add
-   * @param instrumentAssignments The instrument's sensor assignments
+   * @param list
+   *          The list to which the sensor types are to be added
+   * @param typesToAdd
+   *          The sensor types to add
+   * @param instrumentAssignments
+   *          The instrument's sensor assignments
    * @throws SensorConfigurationException
    * @throws SensorTypeNotFoundException
    */
@@ -288,7 +321,8 @@ public abstract class DataReducer {
       list.add(typeToAdd);
       SensorType dependsOn = instrumentAssignments.getDependsOn(typeToAdd);
       if (null != dependsOn) {
-        if (!addSensorTypeAndDependsOn(list, dependsOn, instrumentAssignments)) {
+        if (!addSensorTypeAndDependsOn(list, dependsOn,
+          instrumentAssignments)) {
           result = false;
         }
       }
@@ -300,14 +334,21 @@ public abstract class DataReducer {
   /**
    * See if any required values are NaN in the supplied set of values. If there
    * are NaNs, make the record a blank and return {@code true}.
-   * @param record The record being processed
-   * @param values The calculation values
-   * @param requiredTypes The required sensor types
+   * 
+   * @param record
+   *          The record being processed
+   * @param values
+   *          The calculation values
+   * @param requiredTypes
+   *          The required sensor types
    * @return
    * @throws SensorTypeNotFoundException
    * @throws DataReductionException
    */
-  private List<SensorType> getMissingParameters(SensorAssignments instrumentAssignments, Map<SensorType, CalculationValue> values) throws SensorTypeNotFoundException, DataReductionException {
+  private List<SensorType> getMissingParameters(
+    SensorAssignments instrumentAssignments,
+    Map<SensorType, CalculationValue> values)
+    throws SensorTypeNotFoundException, DataReductionException {
 
     List<SensorType> missingTypes = new ArrayList<SensorType>();
 
@@ -326,28 +367,43 @@ public abstract class DataReducer {
   /**
    * Apply external standards calibration to a sensor value
    *
-   * @param recordDate The date of the record from which the sensor value was taken
-   * @param sensorName The name of the sensor
-   * @param calculationValue The sensor value to be calibrated
-   * @param ignoreZero Indicates whether or not the zero standard should be ignored
+   * @param recordDate
+   *          The date of the record from which the sensor value was taken
+   * @param sensorName
+   *          The name of the sensor
+   * @param calculationValue
+   *          The sensor value to be calibrated
+   * @param ignoreZero
+   *          Indicates whether or not the zero standard should be ignored
    * @return The calibrated sensor value
-   * @throws DataReductionException If there are not sufficient standard measurements
+   * @throws DataReductionException
+   *           If there are not sufficient standard measurements
    */
-  protected Double applyValueCalibration(Measurement measurement, SensorType sensorType, CalculationValue originalValue, boolean ignoreZero) throws DataReductionException {
-    return applyValueCalibration(measurement, sensorType, originalValue.getValue(), ignoreZero);
+  protected Double applyValueCalibration(Measurement measurement,
+    SensorType sensorType, CalculationValue originalValue, boolean ignoreZero)
+    throws DataReductionException {
+    return applyValueCalibration(measurement, sensorType,
+      originalValue.getValue(), ignoreZero);
   }
 
   /**
    * Apply external standards calibration to a sensor value
    *
-   * @param recordDate The date of the record from which the sensor value was taken
-   * @param sensorName The name of the sensor
-   * @param calculationValue The sensor value to be calibrated
-   * @param ignoreZero Indicates whether or not the zero standard should be ignored
+   * @param recordDate
+   *          The date of the record from which the sensor value was taken
+   * @param sensorName
+   *          The name of the sensor
+   * @param calculationValue
+   *          The sensor value to be calibrated
+   * @param ignoreZero
+   *          Indicates whether or not the zero standard should be ignored
    * @return The calibrated sensor value
-   * @throws DataReductionException If there are not sufficient standard measurements
+   * @throws DataReductionException
+   *           If there are not sufficient standard measurements
    */
-  protected Double applyValueCalibration(Measurement measurement, SensorType sensorType, Double originalValue, boolean ignoreZero) throws DataReductionException {
+  protected Double applyValueCalibration(Measurement measurement,
+    SensorType sensorType, Double originalValue, boolean ignoreZero)
+    throws DataReductionException {
 
     // TODO Add excessive calibration adjustment check to this method -
     // it will set the flag on the CalculationValue
@@ -357,18 +413,22 @@ public abstract class DataReducer {
     // Get the before and after measurements for each run type
     try {
 
-      // For each external standard target, calculate the offset from the external
+      // For each external standard target, calculate the offset from the
+      // external
       // standard at the record date
       Map<String, Double> standardMeasurements = new HashMap<String, Double>();
       for (String target : calibrationSet.getTargets().keySet()) {
-        double concentration = calibrationSet.getCalibrationValue(target, sensorType.getName());
+        double concentration = calibrationSet.getCalibrationValue(target,
+          sensorType.getName());
         if (!ignoreZero || concentration > 0.0) {
 
-          PrevNextTimes surroundingTimes = getSurroundingTimes(measurement, target, sensorType);
+          PrevNextTimes surroundingTimes = getSurroundingTimes(measurement,
+            target, sensorType);
 
           CalculationValue priorCalibrationValue = null;
           if (null != surroundingTimes.prev) {
-            priorCalibrationValue = CalculationValue.get(measurement, sensorType,
+            priorCalibrationValue = CalculationValue.get(measurement,
+              sensorType,
               groupedSensorValues.get(surroundingTimes.prev).get(sensorType));
           }
 
@@ -378,14 +438,19 @@ public abstract class DataReducer {
               groupedSensorValues.get(surroundingTimes.next).get(sensorType));
           }
 
-          standardMeasurements.put(target, calculateStandardValueAtDate(measurement.getTime(), target, surroundingTimes.prev, priorCalibrationValue, surroundingTimes.next, postCalibrationValue));
+          standardMeasurements.put(target,
+            calculateStandardValueAtDate(measurement.getTime(), target,
+              surroundingTimes.prev, priorCalibrationValue,
+              surroundingTimes.next, postCalibrationValue));
         }
       }
 
-      // Make a regression of the offsets to calculate the offset at the measured concentration
+      // Make a regression of the offsets to calculate the offset at the
+      // measured concentration
       SimpleRegression regression = new SimpleRegression(true);
       for (String target : standardMeasurements.keySet()) {
-        regression.addData(standardMeasurements.get(target), calibrationSet.getCalibrationValue(target, sensorType.getName()));
+        regression.addData(standardMeasurements.get(target),
+          calibrationSet.getCalibrationValue(target, sensorType.getName()));
       }
 
       calibratedValue = regression.predict(originalValue);
@@ -394,7 +459,8 @@ public abstract class DataReducer {
       if (e instanceof DataReductionException) {
         throw (DataReductionException) e;
       } else {
-        throw new DataReductionException("Error while applying internal calibration", e);
+        throw new DataReductionException(
+          "Error while applying internal calibration", e);
       }
     }
 
@@ -402,48 +468,61 @@ public abstract class DataReducer {
   }
 
   /**
-   * Calculate the measured external standard value at a given date between
-   * two calibration measurements.
+   * Calculate the measured external standard value at a given date between two
+   * calibration measurements.
    *
-   * One of the calibrations can be {@code null}, in which case the
-   * value that of the calibration measurement that is
-   * not {@null}. If both measurements are {@code null} an error is thrown.
+   * One of the calibrations can be {@code null}, in which case the value that
+   * of the calibration measurement that is not {@null}. If both measurements
+   * are {@code null} an error is thrown.
    *
-   * @param date The target date for which the value is to be calculated
-   * @param target The name of the external standard
-   * @param sensorName The name of the sensor whose offset is being calculated
-   * @param priorCalibration The calibration measurement prior to the {@code date}
-   * @param postCalibration The calibration measurement after the {@code date}
+   * @param date
+   *          The target date for which the value is to be calculated
+   * @param target
+   *          The name of the external standard
+   * @param sensorName
+   *          The name of the sensor whose offset is being calculated
+   * @param priorCalibration
+   *          The calibration measurement prior to the {@code date}
+   * @param postCalibration
+   *          The calibration measurement after the {@code date}
    * @return The value at the specified date
-   * @throws RecordNotFoundException If both calibration measurements are {@code null}.
+   * @throws RecordNotFoundException
+   *           If both calibration measurements are {@code null}.
    */
-  private Double calculateStandardValueAtDate(LocalDateTime date, String target, LocalDateTime priorCalibrationTime, CalculationValue priorCalibration, LocalDateTime postCalibrationTime, CalculationValue postCalibration) throws RecordNotFoundException {
+  private Double calculateStandardValueAtDate(LocalDateTime date, String target,
+    LocalDateTime priorCalibrationTime, CalculationValue priorCalibration,
+    LocalDateTime postCalibrationTime, CalculationValue postCalibration)
+    throws RecordNotFoundException {
 
     Double result;
 
     if (null == priorCalibration && null == postCalibration) {
-      throw new RecordNotFoundException("No calibrations found for external standard '" + target + "'");
+      throw new RecordNotFoundException(
+        "No calibrations found for external standard '" + target + "'");
     } else if (null == priorCalibration) {
       result = postCalibration.getValue();
     } else if (null == postCalibration) {
       result = priorCalibration.getValue();
     } else {
-        double priorMeasuredValue = priorCalibration.getValue();
-        double postMeasuredValue = postCalibration.getValue();
-        SimpleRegression regression = new SimpleRegression(true);
-        regression.addData(DateTimeUtils.dateToLong(priorCalibrationTime), priorMeasuredValue);
-        regression.addData(DateTimeUtils.dateToLong(postCalibrationTime), postMeasuredValue);
-        result = regression.predict(DateTimeUtils.dateToLong(date));
+      double priorMeasuredValue = priorCalibration.getValue();
+      double postMeasuredValue = postCalibration.getValue();
+      SimpleRegression regression = new SimpleRegression(true);
+      regression.addData(DateTimeUtils.dateToLong(priorCalibrationTime),
+        priorMeasuredValue);
+      regression.addData(DateTimeUtils.dateToLong(postCalibrationTime),
+        postMeasuredValue);
+      result = regression.predict(DateTimeUtils.dateToLong(date));
     }
 
     return result;
   }
 
-
-  private PrevNextTimes getSurroundingTimes(Measurement start, String runType, SensorType sensorType) throws RoutineException {
+  private PrevNextTimes getSurroundingTimes(Measurement start, String runType,
+    SensorType sensorType) throws RoutineException {
 
     PrevNextTimes result = null;
-    PrevNextTimes cached = new PrevNextTimes(previousSearchTimes.get(runType), nextSearchTimes.get(runType));
+    PrevNextTimes cached = new PrevNextTimes(previousSearchTimes.get(runType),
+      nextSearchTimes.get(runType));
     boolean searchRequired = false;
 
     if (null == cached.prev && null == cached.next) {
@@ -468,17 +547,20 @@ public abstract class DataReducer {
     return result;
   }
 
-
   /**
-   * Get the last measurement prior to the specified date with the
-   * specified run type. Returns {@code null} if there is no matching record.
-   * Skips empty records and records whose QC flag is not GOOD or ASSUMED_GOOD
-   * @param time The time
-   * @param runType The run type
+   * Get the last measurement prior to the specified date with the specified run
+   * type. Returns {@code null} if there is no matching record. Skips empty
+   * records and records whose QC flag is not GOOD or ASSUMED_GOOD
+   * 
+   * @param time
+   *          The time
+   * @param runType
+   *          The run type
    * @return The previous measurement
    * @throws RoutineException
    */
-  private LocalDateTime getPreviousTime(Measurement start, String runType, SensorType sensorType) throws RoutineException {
+  private LocalDateTime getPreviousTime(Measurement start, String runType,
+    SensorType sensorType) throws RoutineException {
 
     // TODO This and getNextTime can be refactored together
 
@@ -488,10 +570,11 @@ public abstract class DataReducer {
     while (null == result && i >= 0) {
       Measurement currentMeasurement = allMeasurements.get(i);
       if (currentMeasurement.getRunType().equals(runType)) {
-        Map<SensorType, List<SensorValue>> measurementData =
-          groupedSensorValues.get(currentMeasurement.getTime());
+        Map<SensorType, List<SensorValue>> measurementData = groupedSensorValues
+          .get(currentMeasurement.getTime());
 
-        CalculationValue value = CalculationValue.get(start, sensorType, measurementData.get(sensorType));
+        CalculationValue value = CalculationValue.get(start, sensorType,
+          measurementData.get(sensorType));
 
         // Skip empty and non-GOOD values
         if (!value.isNaN() && value.getQCFlag().isGood()) {
@@ -506,25 +589,30 @@ public abstract class DataReducer {
   }
 
   /**
-   * Get the first measurement after the specified date with the
-   * specified run type. Returns {@code null} if there is no matching record.
-   * Skips empty records and records whose QC flag is not GOOD or ASSUMED_GOOD
-   * @param time The time
-   * @param runType The run type
+   * Get the first measurement after the specified date with the specified run
+   * type. Returns {@code null} if there is no matching record. Skips empty
+   * records and records whose QC flag is not GOOD or ASSUMED_GOOD
+   * 
+   * @param time
+   *          The time
+   * @param runType
+   *          The run type
    * @return The previous measurement
    * @throws RoutineException
    */
-  private LocalDateTime getNextTime(Measurement start, String runType, SensorType sensorType) throws RoutineException {
+  private LocalDateTime getNextTime(Measurement start, String runType,
+    SensorType sensorType) throws RoutineException {
     LocalDateTime result = null;
 
     int i = allMeasurements.indexOf(start) + 1;
     while (null == result && i < allMeasurements.size()) {
       Measurement currentMeasurement = allMeasurements.get(i);
       if (currentMeasurement.getRunType().equals(runType)) {
-        Map<SensorType, List<SensorValue>> measurementData =
-          groupedSensorValues.get(currentMeasurement.getTime());
+        Map<SensorType, List<SensorValue>> measurementData = groupedSensorValues
+          .get(currentMeasurement.getTime());
 
-        CalculationValue value = CalculationValue.get(start, sensorType, measurementData.get(sensorType));
+        CalculationValue value = CalculationValue.get(start, sensorType,
+          measurementData.get(sensorType));
 
         // Skip empty and non-GOOD values
         if (!value.isNaN() && value.getQCFlag().isGood()) {
@@ -538,12 +626,15 @@ public abstract class DataReducer {
     return result;
   }
 
-  protected SensorType getSensorType(String sensorTypeName) throws SensorTypeNotFoundException {
-    SensorsConfiguration sensorConfig = ResourceManager.getInstance().getSensorsConfiguration();
+  protected SensorType getSensorType(String sensorTypeName)
+    throws SensorTypeNotFoundException {
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
     return sensorConfig.getSensorType(sensorTypeName);
   }
 
-  protected Double getValue(Map<SensorType, CalculationValue> sensorValues, String sensorTypeName) throws SensorTypeNotFoundException {
+  protected Double getValue(Map<SensorType, CalculationValue> sensorValues,
+    String sensorTypeName) throws SensorTypeNotFoundException {
     SensorType sensorType = getSensorType(sensorTypeName);
     return sensorValues.get(sensorType).getValue();
   }
@@ -558,26 +649,38 @@ public abstract class DataReducer {
     }
   }
 
-
   /**
-   * Set the QC flag on a record based on the flags of the sensor values.
-   * The flag logic is in {@link DataReductionRecord}.
-   * @param instrumentAssignments The sensor assignments for the instrument
-   * @param variable The variable being processed
-   * @param sensorValues The sensor values
-   * @param record The target record
-   * @throws SensorTypeNotFoundException If the sensor config is invalid
-   * @throws DataReductionException If the QC cannot be applied
-   * @throws SensorConfigurationException If the sensor config is invalid
+   * Set the QC flag on a record based on the flags of the sensor values. The
+   * flag logic is in {@link DataReductionRecord}.
+   * 
+   * @param instrumentAssignments
+   *          The sensor assignments for the instrument
+   * @param variable
+   *          The variable being processed
+   * @param sensorValues
+   *          The sensor values
+   * @param record
+   *          The target record
+   * @throws SensorTypeNotFoundException
+   *           If the sensor config is invalid
+   * @throws DataReductionException
+   *           If the QC cannot be applied
+   * @throws SensorConfigurationException
+   *           If the sensor config is invalid
    */
-  private void applyQCFlags(SensorAssignments instrumentAssignments, InstrumentVariable variable, Map<SensorType, CalculationValue> sensorValues, DataReductionRecord record) throws SensorTypeNotFoundException, DataReductionException, SensorConfigurationException {
-    for (SensorType sensorType : getRequiredSensorTypes(instrumentAssignments)) {
+  private void applyQCFlags(SensorAssignments instrumentAssignments,
+    InstrumentVariable variable, Map<SensorType, CalculationValue> sensorValues,
+    DataReductionRecord record) throws SensorTypeNotFoundException,
+    DataReductionException, SensorConfigurationException {
+    for (SensorType sensorType : getRequiredSensorTypes(
+      instrumentAssignments)) {
       Flag cascadeFlag;
       CalculationValue value = sensorValues.get(sensorType);
       if (!nrt && value.flagNeeded()) {
         cascadeFlag = Flag.NEEDED;
       } else {
-        cascadeFlag = variable.getCascade(sensorType, value.getQCFlag(), instrumentAssignments);
+        cascadeFlag = variable.getCascade(sensorType, value.getQCFlag(),
+          instrumentAssignments);
         if (null == cascadeFlag) {
           cascadeFlag = Flag.ASSUMED_GOOD;
         }
