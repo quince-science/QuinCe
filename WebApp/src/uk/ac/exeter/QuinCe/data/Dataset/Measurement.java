@@ -50,12 +50,19 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Constructor for a brand new measurement that is not yet in the database
-   * @param datasetId The ID of the dataset to which the measurement belongs
-   * @param variable The variable that is measured
-   * @param time The timestamp of the measurement
-   * @param longitude The longitude of the measurement
-   * @param latitude The latitude of the measurement
-   * @param runType The run type of the measurement
+   * 
+   * @param datasetId
+   *          The ID of the dataset to which the measurement belongs
+   * @param variable
+   *          The variable that is measured
+   * @param time
+   *          The timestamp of the measurement
+   * @param longitude
+   *          The longitude of the measurement
+   * @param latitude
+   *          The latitude of the measurement
+   * @param runType
+   *          The run type of the measurement
    */
   public Measurement(long datasetId, InstrumentVariable variable,
     LocalDateTime time, double longitude, double latitude, String runType) {
@@ -71,13 +78,21 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Constructor for a measurement from the database
-   * @param id The measurement's database ID
-   * @param datasetId The ID of the dataset to which the measurement belongs
-   * @param variable The variable that is measured
-   * @param time The timestamp of the measurement
-   * @param longitude The longitude of the measurement
-   * @param latitude The latitude of the measurement
-@param runType The run type of the measurement
+   * 
+   * @param id
+   *          The measurement's database ID
+   * @param datasetId
+   *          The ID of the dataset to which the measurement belongs
+   * @param variable
+   *          The variable that is measured
+   * @param time
+   *          The timestamp of the measurement
+   * @param longitude
+   *          The longitude of the measurement
+   * @param latitude
+   *          The latitude of the measurement
+   * @param runType
+   *          The run type of the measurement
    */
   public Measurement(long id, long datasetId, InstrumentVariable variable,
     LocalDateTime time, double longitude, double latitude, String runType) {
@@ -93,7 +108,9 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Set the database ID for this measurement
-   * @param id The database ID
+   * 
+   * @param id
+   *          The database ID
    */
   protected void setDatabaseId(long id) {
     this.id = id;
@@ -101,6 +118,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Get the database ID of this measurement
+   * 
    * @return The measurement ID
    */
   public long getId() {
@@ -109,6 +127,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Get the database ID of the dataset to which this measurement belongs
+   * 
    * @return The dataset ID
    */
   public long getDatasetId() {
@@ -117,6 +136,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Get the variable measured in this measurement
+   * 
    * @return The measured variable
    */
   public InstrumentVariable getVariable() {
@@ -125,6 +145,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Get the time of the measurement
+   * 
    * @return The measurement time
    */
   public LocalDateTime getTime() {
@@ -133,6 +154,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Get the longitude of the measurement
+   * 
    * @return The measurement longitude
    */
   public double getLongitude() {
@@ -141,6 +163,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Get the latitude of the measurement
+   * 
    * @return The measurement latitude
    */
   public double getLatitude() {
@@ -149,6 +172,7 @@ public class Measurement implements Comparable<Measurement> {
 
   /**
    * Get the Run Type of this measurement
+   * 
    * @return The run type
    */
   public String getRunType() {
@@ -156,14 +180,14 @@ public class Measurement implements Comparable<Measurement> {
   }
 
   /*
-   * In theory, equals and compareTo should check the same fields.
-   * However, we will only compare Measurements from the same dataset,
-   * and the id field is unique (the primary key in the database).
+   * In theory, equals and compareTo should check the same fields. However, we
+   * will only compare Measurements from the same dataset, and the id field is
+   * unique (the primary key in the database).
    *
-   * Therefore checking the id is sufficient to know that two objects
-   * are equal. Comparison is done on the id first, and if they aren't equal
-   * then the time is used. This ensures that "compareTo() == 0" is consistent
-   * with "equals() == true" in all cases.
+   * Therefore checking the id is sufficient to know that two objects are equal.
+   * Comparison is done on the id first, and if they aren't equal then the time
+   * is used. This ensures that "compareTo() == 0" is consistent with
+   * "equals() == true" in all cases.
    *
    * If the IDs aren't equal, compareTo uses time to establish ordering.
    */

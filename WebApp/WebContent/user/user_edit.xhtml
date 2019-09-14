@@ -1,76 +1,60 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
   xmlns:h="http://xmlns.jcp.org/jsf/html"
   xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-  xmlns:p="http://primefaces.org/ui"
-  xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
   template="/WEB-INF/templates/app_page.xhtml">
-
   <ui:define name="title">Edit User</ui:define>
   <ui:define name="pageTitle">Edit User - #{utils.siteName}</ui:define>
-
   <ui:define name="content">
     <h1>My Account</h1>
     <div class="fullPage">
       <h:form id="userProfileForm" method="post" accept-charset="utf8">
-        <div class="sectionHeader">
-          Re-enter password
-        </div>
+        <div class="sectionHeader">Re-enter password</div>
         <div class="sectionContent">
-          <div class="instructions">
-            Re-enter your password to make changes to your account
-          </div>
-          <h:outputLabel id="currentPasswordLabel" for="currentPassword" class="separateline" value="Current Password: "/>
-                <h:inputSecret id="currentPassword" value="#{userProfileBean.currentPassword}" required="true" requiredMessage="You must enter your existing password to make changes"/>
-                <h:message id="currentPasswordMessage" for="currentPassword" errorClass="error"/>
+          <div class="instructions">Re-enter your password to make changes
+            to your account</div>
+          <h:outputLabel id="currentPasswordLabel" for="currentPassword"
+            class="separateline" value="Current Password: " />
+          <h:inputSecret id="currentPassword"
+            value="#{userProfileBean.currentPassword}" required="true"
+            requiredMessage="You must enter your existing password to make changes" />
+          <h:message id="currentPasswordMessage" for="currentPassword"
+            errorClass="error" />
         </div>
-        <div class="sectionHeader">
-          Email address
-        </div>
+        <div class="sectionHeader">Email address</div>
         <div class="sectionContent">
-          <div class="instructions">
-
-          </div>
+          <div class="instructions"></div>
         </div>
-        <div class="sectionHeader">
-          Your name
-        </div>
+        <div class="sectionHeader">Your name</div>
         <div class="sectionContent">
-          <div class="instructions">
-
-          </div>
+          <div class="instructions"></div>
         </div>
-        <div class="sectionHeader">
-          Change password
-        </div>
+        <div class="sectionHeader">Change password</div>
         <div class="sectionContent">
-          <div class="instructions">
-            Enter a new password
-          </div>
+          <div class="instructions">Enter a new password</div>
           <table>
             <tr>
-              <td>
-                <h:outputLabel id="newPassword1Label" for="newPassword1" class="separateline" value="New Password:"/>
-              </td>
-              <td>
-                <h:inputSecret id="newPassword1" value="#{userProfileBean.newPassword1}" promptLabel="Strength..." feedback="true"/>
-              </td>
+              <td><h:outputLabel id="newPassword1Label" for="newPassword1"
+                  class="separateline" value="New Password:" /></td>
+              <td><h:inputSecret id="newPassword1"
+                  value="#{userProfileBean.newPassword1}"
+                  promptLabel="Strength..." feedback="true" /></td>
             </tr>
             <tr>
-              <td>
-                <h:outputLabel id="newPassword2Label" for="newPassword2" class="separateline" value="Confirm New Password:"/>
-              </td>
-              <td>
-                <h:inputSecret id="newPassword2" value="#{userProfileBean.newPassword2}"/>
-                      <h:message id="newPassword2Message" for="newPassword2" errorClass="error"/>
+              <td><h:outputLabel id="newPassword2Label" for="newPassword2"
+                  class="separateline" value="Confirm New Password:" /></td>
+              <td><h:inputSecret id="newPassword2"
+                  value="#{userProfileBean.newPassword2}" /> <h:message
+                  id="newPassword2Message" for="newPassword2" errorClass="error" />
               </td>
             </tr>
           </table>
-                <br/>
-
+          <br />
         </div>
         <div class="buttonWrapper">
-          <h:commandButton value="Save" action="#{userProfileBean.saveProfile}"/>
-          <h:commandButton value="Cancel" immediate="true" action="#{userProfileBean.cancelEdit}"/>
+          <h:commandButton value="Save" action="#{userProfileBean.saveProfile}" />
+          <h:commandButton value="Cancel" immediate="true"
+            action="#{userProfileBean.cancelEdit}" />
         </div>
       </h:form>
     </div>

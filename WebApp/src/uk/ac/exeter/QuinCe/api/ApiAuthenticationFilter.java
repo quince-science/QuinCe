@@ -19,26 +19,30 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
-@WebFilter(servletNames = {"API Servlet"})
+@WebFilter(servletNames = { "API Servlet" })
 public class ApiAuthenticationFilter implements javax.servlet.Filter {
   public static final String AUTHENTICATION_HEADER = "Authorization";
 
   @Override
-  public void doFilter(ServletRequest request, ServletResponse response, FilterChain filter) throws IOException, ServletException {
+  public void doFilter(ServletRequest request, ServletResponse response,
+    FilterChain filter) throws IOException, ServletException {
 
     int result = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
     try {
-      //Get the authentication passed in HTTP headers parameters
-      String authString = ((HttpServletRequest) request).getHeader("Authorization");
+      // Get the authentication passed in HTTP headers parameters
+      String authString = ((HttpServletRequest) request)
+        .getHeader("Authorization");
 
-      //If the user does not have the right (does not provide any HTTP Basic Auth)
+      // If the user does not have the right (does not provide any HTTP Basic
+      // Auth)
       if (null == authString) {
-          result = HttpServletResponse.SC_UNAUTHORIZED;
+        result = HttpServletResponse.SC_UNAUTHORIZED;
       } else {
         String[] credentials = extractUserPassword(authString);
         DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
-        int authenticationResult = UserDB.authenticate(dataSource, credentials[0], credentials[1].toCharArray());
+        int authenticationResult = UserDB.authenticate(dataSource,
+          credentials[0], credentials[1].toCharArray());
         if (authenticationResult == UserDB.AUTHENTICATE_FAILED) {
           result = HttpServletResponse.SC_UNAUTHORIZED;
         } else {
@@ -72,11 +76,16 @@ public class ApiAuthenticationFilter implements javax.servlet.Filter {
 
   /**
    * Extract the username and password from a Basic HTTP authorization string.
-   * @param dataSource A data source
-   * @param authString The HTTP Basic Auth string
+   * 
+   * @param dataSource
+   *          A data source
+   * @param authString
+   *          The HTTP Basic Auth string
    * @return One of AUTHENTICATE_OK or AUTHENTICATE_FAILED
-   * @throws MissingParamException If any of the parameters are null
-   * @throws DatabaseException If an error occurs while retrieving the user's details
+   * @throws MissingParamException
+   *           If any of the parameters are null
+   * @throws DatabaseException
+   *           If an error occurs while retrieving the user's details
    */
   private String[] extractUserPassword(String authString) {
     // Remove preamble

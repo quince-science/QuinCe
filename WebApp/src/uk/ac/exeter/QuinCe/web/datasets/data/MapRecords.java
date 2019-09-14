@@ -15,10 +15,8 @@ public class MapRecords extends ArrayList<MapRecord> {
   }
 
   public String getDisplayJson(GeoBounds bounds) {
-    List<MapRecord> boundsFiltered =
-      stream().
-      filter(p -> bounds.inBounds(p.position)).
-      collect(Collectors.toList());
+    List<MapRecord> boundsFiltered = stream()
+      .filter(p -> bounds.inBounds(p.position)).collect(Collectors.toList());
 
     List<MapRecord> decimated;
 
@@ -28,7 +26,7 @@ public class MapRecords extends ArrayList<MapRecord> {
       decimated = new ArrayList<MapRecord>(1000);
 
       int nth = (int) Math.floor(boundsFiltered.size() / 1000);
-      for (int i = 0; i < boundsFiltered.size(); i+=nth) {
+      for (int i = 0; i < boundsFiltered.size(); i += nth) {
         decimated.add(boundsFiltered.get(i));
       }
     }

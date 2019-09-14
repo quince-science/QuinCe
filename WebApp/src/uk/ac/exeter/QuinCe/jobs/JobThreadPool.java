@@ -7,12 +7,10 @@ import java.util.TreeSet;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
- * Thread pool for background jobs.
- * The pool has a maximum number of threads. However,
- * high priority jobs will always be given a thread,
- * so the true number of threads may occasionally be
- * larger. Any extra threads will be destroyed when
- * they are finished.
+ * Thread pool for background jobs. The pool has a maximum number of threads.
+ * However, high priority jobs will always be given a thread, so the true number
+ * of threads may occasionally be larger. Any extra threads will be destroyed
+ * when they are finished.
  *
  * @author Steve Jones
  *
@@ -25,7 +23,8 @@ public class JobThreadPool {
   public static final int THREAD_NOT_RUNNING = 0;
 
   /**
-   * Indicates that a running thread for a job was found, and the thread has been interrupted
+   * Indicates that a running thread for a job was found, and the thread has
+   * been interrupted
    */
   public static final int THREAD_INTERRUPTED = 1;
 
@@ -51,12 +50,14 @@ public class JobThreadPool {
 
   /**
    * Creates the thread pool and fills it with waiting job threads
-   * @param maxThreads The maximum number of threads in the pool
+   * 
+   * @param maxThreads
+   *          The maximum number of threads in the pool
    */
   private JobThreadPool(int maxThreads) {
     this.maxThreads = maxThreads;
 
-    synchronized(threads) {
+    synchronized (threads) {
       for (int i = 0; i < maxThreads; i++) {
         threads.push(new JobThread(false));
       }
@@ -64,18 +65,22 @@ public class JobThreadPool {
   }
 
   /**
-   * Retrieves a job thread from the pool and configures it ready to execute a job.
-   * If there are no available threads in the stack, {@code null} is returned.
+   * Retrieves a job thread from the pool and configures it ready to execute a
+   * job. If there are no available threads in the stack, {@code null} is
+   * returned.
    *
-   * @param job The job to be executed
-   * @return A configured job thread, or {@code null} if the thread stack is empty
-   * @throws MissingParamException If any of the required parameters are null
-  */
+   * @param job
+   *          The job to be executed
+   * @return A configured job thread, or {@code null} if the thread stack is
+   *         empty
+   * @throws MissingParamException
+   *           If any of the required parameters are null
+   */
   public JobThread getJobThread(Job job) throws MissingParamException {
 
     JobThread thread = null;
 
-    synchronized(threads) {
+    synchronized (threads) {
       if (!threads.isEmpty()) {
         thread = threads.pop();
         allocatedThreads.add(thread);
@@ -86,12 +91,12 @@ public class JobThreadPool {
       thread.setupJob(job);
     }
 
-
     return thread;
   }
 
   /**
    * Returns the number of threads available in the pool
+   * 
    * @return The number of threads available in the pool
    */
   public int getAvailableThreads() {
@@ -99,21 +104,23 @@ public class JobThreadPool {
   }
 
   /**
-   * Retrieves a job thread from the pool and configures it ready to execute a job.
-   * If there are no available threads in the stack, an overflow thread is created instead.
-   * The overflow thread will not be returned to the stack when the job is finished.
-   * This method should only be used for high priority jobs that cannot wait for a
-   * normal thread to become available.
+   * Retrieves a job thread from the pool and configures it ready to execute a
+   * job. If there are no available threads in the stack, an overflow thread is
+   * created instead. The overflow thread will not be returned to the stack when
+   * the job is finished. This method should only be used for high priority jobs
+   * that cannot wait for a normal thread to become available.
    *
-   * @param job The job to be executed
+   * @param job
+   *          The job to be executed
    * @return A configured job thread
-   * @throws MissingParamException If any of the required parameters are null
+   * @throws MissingParamException
+   *           If any of the required parameters are null
    */
   public JobThread getInstantJobThread(Job job) throws MissingParamException {
 
     JobThread thread = null;
 
-    synchronized(threads) {
+    synchronized (threads) {
       if (!threads.isEmpty()) {
         thread = threads.pop();
       } else {
@@ -131,14 +138,16 @@ public class JobThreadPool {
   }
 
   /**
-   * Returns a job thread to the stack ready for another job.
-   * If the thread is an overflow thread, it is not returned to the stack.
-   * @param thread The thread to be returned.
+   * Returns a job thread to the stack ready for another job. If the thread is
+   * an overflow thread, it is not returned to the stack.
+   * 
+   * @param thread
+   *          The thread to be returned.
    */
   public void returnThread(JobThread thread) {
     thread.reset();
 
-    synchronized(threads) {
+    synchronized (threads) {
       allocatedThreads.remove(thread);
       if (!thread.isOverflowThread() && threads.size() < maxThreads) {
         threads.push(new JobThread(false));
@@ -147,24 +156,28 @@ public class JobThreadPool {
   }
 
   /**
-   * Tests whether or not the thread pool has been initialised,
-   * i.e. whether an instance of the singleton exists.
+   * Tests whether or not the thread pool has been initialised, i.e. whether an
+   * instance of the singleton exists.
    *
-   * @return {@code true} if the pool has been initialised; {@code false} if it has not.
+   * @return {@code true} if the pool has been initialised; {@code false} if it
+   *         has not.
    */
   public static boolean isInitialised() {
     return !(null == instance);
   }
 
   /**
-   * Initialise the job thread pool with the specified maximum number of threads.
-   * Calling this method when the pool has already been initialised will replace the
-   * existing instance.
+   * Initialise the job thread pool with the specified maximum number of
+   * threads. Calling this method when the pool has already been initialised
+   * will replace the existing instance.
    *
-   * @param maxThreads The maximum number of threads in the pool
-   * @throws InvalidThreadCountException If the number of threads is zero or negative
+   * @param maxThreads
+   *          The maximum number of threads in the pool
+   * @throws InvalidThreadCountException
+   *           If the number of threads is zero or negative
    */
-  public static void initialise(int maxThreads) throws InvalidThreadCountException {
+  public static void initialise(int maxThreads)
+    throws InvalidThreadCountException {
 
     if (maxThreads <= 0) {
       throw new InvalidThreadCountException();
@@ -177,10 +190,13 @@ public class JobThreadPool {
 
   /**
    * Retrieve the job thread pool
+   * 
    * @return The job thread pool
-   * @throws JobThreadPoolNotInitialisedException If the pool has not been initialised
+   * @throws JobThreadPoolNotInitialisedException
+   *           If the pool has not been initialised
    */
-  public static JobThreadPool getInstance() throws JobThreadPoolNotInitialisedException {
+  public static JobThreadPool getInstance()
+    throws JobThreadPoolNotInitialisedException {
     if (null == instance) {
       throw new JobThreadPoolNotInitialisedException();
     }
@@ -197,6 +213,7 @@ public class JobThreadPool {
 
   /**
    * Get the number of idle threads in the pool
+   * 
    * @return The number of idle threads in the pool
    */
   public int getPoolThreadCount() {
@@ -205,6 +222,7 @@ public class JobThreadPool {
 
   /**
    * Get the maximum number of threads in the pool
+   * 
    * @return The maximum number of threads in the pool
    */
   public int getMaxThreads() {
@@ -213,6 +231,7 @@ public class JobThreadPool {
 
   /**
    * Get the number of currently running threads
+   * 
    * @return The number of running threads
    */
   public int getRunningThreadsCount() {
@@ -220,9 +239,9 @@ public class JobThreadPool {
   }
 
   /**
-   * Get the number of overflow threads. These are threads
-   * that have been created for high priority jobs in excess
-   * of the maximum thread count.
+   * Get the number of overflow threads. These are threads that have been
+   * created for high priority jobs in excess of the maximum thread count.
+   * 
    * @return The number of overflow threads
    */
   public int getOverflowThreadsCount() {
@@ -238,13 +257,19 @@ public class JobThreadPool {
   }
 
   /**
-   * <p>Determines whether or not a thread with a given name is currently running
-   * as part of the job thread pool.</p>
-   * <p><b>N.B.</b> If a thread with the supplied name is running, but is not part of the job thread pool,
-   * it will not be detected.</p>
+   * <p>
+   * Determines whether or not a thread with a given name is currently running
+   * as part of the job thread pool.
+   * </p>
+   * <p>
+   * <b>N.B.</b> If a thread with the supplied name is running, but is not part
+   * of the job thread pool, it will not be detected.
+   * </p>
    *
-   * @param threadName The name of the thread
-   * @return {@code true} if the thread is running in the job thread pool; {@code false} if it is not.
+   * @param threadName
+   *          The name of the thread
+   * @return {@code true} if the thread is running in the job thread pool;
+   *         {@code false} if it is not.
    */
   public boolean isThreadRunning(String threadName) {
     boolean threadRunning = false;
@@ -263,18 +288,21 @@ public class JobThreadPool {
    * Kill a job.
    *
    * <p>
-   *   This checks the list of running threads to see if the specified job is currently running.
-   *   If it is, an interrupt signal is sent to it, indicating that it should close down. It is
-   *   up to the job to decide how it interprets this signal.
+   * This checks the list of running threads to see if the specified job is
+   * currently running. If it is, an interrupt signal is sent to it, indicating
+   * that it should close down. It is up to the job to decide how it interprets
+   * this signal.
    * </p>
    *
    * <p>
-   *   If the job is not running, no action is taken. The return value of the method
-   *   indicates whether or not a running thread was found.
+   * If the job is not running, no action is taken. The return value of the
+   * method indicates whether or not a running thread was found.
    * </p>
    *
-   * @param jobId The job's database ID
-   * @return {@code #THREAD_INTERRUPTED} if a thread for the job was found; {@code #THREAD_NOT_RUNNING} if no thread was found.
+   * @param jobId
+   *          The job's database ID
+   * @return {@code #THREAD_INTERRUPTED} if a thread for the job was found;
+   *         {@code #THREAD_NOT_RUNNING} if no thread was found.
    */
   public int killJob(long jobId) {
 

@@ -7,9 +7,9 @@ import java.util.TreeMap;
 import uk.ac.exeter.QuinCe.data.Instrument.MissingRunTypeException;
 
 /**
- * Holder for a set of run type assignments for a file definition.
- * This class does not reference the file definition to which it belongs -
- * it is stored as a field of the FileDefinition class.
+ * Holder for a set of run type assignments for a file definition. This class
+ * does not reference the file definition to which it belongs - it is stored as
+ * a field of the FileDefinition class.
  *
  * @author zuj007
  *
@@ -32,10 +32,11 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
   }
 
   /**
-   * Automatically convert a key to match the internal Map
-   * If the key is a String, convert it to lower case.
-   * Otherwise leave it as it is
-   * @param key The key
+   * Automatically convert a key to match the internal Map If the key is a
+   * String, convert it to lower case. Otherwise leave it as it is
+   * 
+   * @param key
+   *          The key
    * @return The converted key
    */
   private static String convertKey(Object key) {
@@ -43,9 +44,9 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
   }
 
   /**
-   * Get the category to which the specified run type is assigned.
-   * If the run type is an alias, category of the run type
-   * to which the specified type is aliased will be returned.
+   * Get the category to which the specified run type is assigned. If the run
+   * type is an alias, category of the run type to which the specified type is
+   * aliased will be returned.
    *
    * If the specified run type is not found, {@code null} is returned.
    *
@@ -67,6 +68,7 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
 
   /**
    * Get the Run Type column for the parent file definition
+   * 
    * @return The run type column
    */
   public int getColumn() {
@@ -98,8 +100,11 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
 
   /**
    * Get the run type for a given run name, following aliases if required
-   * @param runName The run name
-   * @param followAlias Indicates whether or not aliases should be followed
+   * 
+   * @param runName
+   *          The run name
+   * @param followAlias
+   *          Indicates whether or not aliases should be followed
    * @return The Run Type
    */
   public RunTypeAssignment get(String runName, boolean followAlias)
@@ -109,9 +114,9 @@ public class RunTypeAssignments extends TreeMap<String, RunTypeAssignment> {
     String searchKey = convertKey(runName);
 
     if (!containsKey(searchKey)) {
-      throw new MissingRunTypeException("Unrecognised run type '"
-        + runName + "'. Please register new run type "
-        + runName + " on instrument to load this file.",
+      throw new MissingRunTypeException(
+        "Unrecognised run type '" + runName + "'. Please register new run type "
+          + runName + " on instrument to load this file.",
         runName);
     } else {
       if (!followAlias) {

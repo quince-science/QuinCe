@@ -20,15 +20,16 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 /**
  * Map of sensors to their assignments in an instrument's data files.
  * <p>
- *   Although this class extends the Map interface, you should use the
- *   convenience methods defined here to change the contents of the Map.
- *   You can do it all yourself if you like, but caveat emptor.
+ * Although this class extends the Map interface, you should use the convenience
+ * methods defined here to change the contents of the Map. You can do it all
+ * yourself if you like, but caveat emptor.
  * </p>
  *
  * @author Steve Jones
  *
  */
-public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment>> {
+public class SensorAssignments
+  extends TreeMap<SensorType, List<SensorAssignment>> {
 
   /**
    * The database IDs of the variables that this set of assignments is targeting
@@ -42,20 +43,26 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
   /**
    * Build the list of assignments based on the supplied list of variable IDs
-   * @throws DatabaseException If any database lookups fail
-   * @throws SensorConfigurationException If any variables can't be found
-   * @throws SensorTypeNotFoundException If any internally listed SensorTypes
-   *                                     don't exist
+   * 
+   * @throws DatabaseException
+   *           If any database lookups fail
+   * @throws SensorConfigurationException
+   *           If any variables can't be found
+   * @throws SensorTypeNotFoundException
+   *           If any internally listed SensorTypes don't exist
    */
   public SensorAssignments(Connection conn, List<Long> variableIDs)
-    throws DatabaseException, SensorConfigurationException, SensorTypeNotFoundException {
+    throws DatabaseException, SensorConfigurationException,
+    SensorTypeNotFoundException {
 
     super();
     this.variableIDs = variableIDs;
     populateAssignments(conn);
   }
 
-  public SensorAssignments(DataSource dataSource, List<Long> variableIDs) throws SensorTypeNotFoundException, SensorConfigurationException, DatabaseException {
+  public SensorAssignments(DataSource dataSource, List<Long> variableIDs)
+    throws SensorTypeNotFoundException, SensorConfigurationException,
+    DatabaseException {
     super();
     this.variableIDs = variableIDs;
     populateAssignments(dataSource);
@@ -64,13 +71,17 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
   /**
    * Make a SensorAssignments using a list of InstrumentVariable objects instead
    * of their IDs. This can't be a constructor because of type erasure.
-   * @param conn A database connection
-   * @param variables The instrument variables
+   * 
+   * @param conn
+   *          A database connection
+   * @param variables
+   *          The instrument variables
    * @return The SensorAssignments object
    */
   public static SensorAssignments makeSensorAssignmentsFromVariables(
     Connection conn, List<InstrumentVariable> variables)
-      throws DatabaseException, SensorConfigurationException, SensorTypeNotFoundException {
+    throws DatabaseException, SensorConfigurationException,
+    SensorTypeNotFoundException {
 
     List<Long> ids = new ArrayList<Long>(variables.size());
     for (InstrumentVariable variable : variables) {
@@ -82,13 +93,19 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
   /**
    * Initialise the data structure
-   * @param conn A database connection
-   * @throws DatabaseException If any database lookups fail
-   * @throws SensorConfigurationException If any variables can't be found
-   * @throws SensorTypeNotFoundException If any internally listed SensorTypes
-   *                                     don't exist
+   * 
+   * @param conn
+   *          A database connection
+   * @throws DatabaseException
+   *           If any database lookups fail
+   * @throws SensorConfigurationException
+   *           If any variables can't be found
+   * @throws SensorTypeNotFoundException
+   *           If any internally listed SensorTypes don't exist
    */
-  private void populateAssignments(DataSource dataSource) throws SensorTypeNotFoundException, SensorConfigurationException, DatabaseException {
+  private void populateAssignments(DataSource dataSource)
+    throws SensorTypeNotFoundException, SensorConfigurationException,
+    DatabaseException {
     Connection conn = null;
 
     try {
@@ -103,19 +120,23 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
   /**
    * Initialise the data structure
-   * @param conn A database connection
-   * @throws DatabaseException If any database lookups fail
-   * @throws SensorConfigurationException If any variables can't be found
-   * @throws SensorTypeNotFoundException If any internally listed SensorTypes
-   *                                     don't exist
+   * 
+   * @param conn
+   *          A database connection
+   * @throws DatabaseException
+   *           If any database lookups fail
+   * @throws SensorConfigurationException
+   *           If any variables can't be found
+   * @throws SensorTypeNotFoundException
+   *           If any internally listed SensorTypes don't exist
    */
-  private void populateAssignments(Connection conn)
-    throws DatabaseException, SensorTypeNotFoundException, SensorConfigurationException {
+  private void populateAssignments(Connection conn) throws DatabaseException,
+    SensorTypeNotFoundException, SensorConfigurationException {
 
-    SensorsConfiguration sensorConfig =
-      ResourceManager.getInstance().getSensorsConfiguration();
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
 
-    for (SensorType type: sensorConfig.getNonCoreSensors(conn)) {
+    for (SensorType type : sensorConfig.getNonCoreSensors(conn)) {
       put(type, new ArrayList<SensorAssignment>());
 
       // Add the Run Type if required
@@ -138,16 +159,21 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
    * Determines whether or not a given SensorType must have a column assigned.
    * If a column has already been assigned then assignment is not required.
    *
-   * @param sensorType The sensor type to be checked
-   * @return {@code true} if a column must be assigned to the sensor; {@code false}
-   * if no assignment is needed.
-   * @throws SensorAssignmentException If the specified sensor type does not exist
-   * @throws SensorConfigurationException If the internal configuration is invalid
+   * @param sensorType
+   *          The sensor type to be checked
+   * @return {@code true} if a column must be assigned to the sensor;
+   *         {@code false} if no assignment is needed.
+   * @throws SensorAssignmentException
+   *           If the specified sensor type does not exist
+   * @throws SensorConfigurationException
+   *           If the internal configuration is invalid
    */
-  public boolean isAssignmentRequired(SensorType sensorType) throws SensorAssignmentException, SensorConfigurationException {
+  public boolean isAssignmentRequired(SensorType sensorType)
+    throws SensorAssignmentException, SensorConfigurationException {
 
     // Is the sensor required for the variables being measured?
-    boolean required = getSensorConfig().requiredForVariables(sensorType, variableIDs);
+    boolean required = getSensorConfig().requiredForVariables(sensorType,
+      variableIDs);
 
     // Do other required sensors depend on this SensorType?
     if (hasAssignedDependents(sensorType)) {
@@ -161,12 +187,16 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
   /**
    * See if a given SensorType has any dependents, and whether those dependents
    * have been assigned
-   * @param sensorType The SensorType
-   * @param variableIDs The variables' database IDs
+   * 
+   * @param sensorType
+   *          The SensorType
+   * @param variableIDs
+   *          The variables' database IDs
    * @return {@code true} if there are required dependents; {@code false} if not
    * @throws SensorConfigurationException
    */
-  private boolean hasAssignedDependents(SensorType sensorType) throws SensorConfigurationException {
+  private boolean hasAssignedDependents(SensorType sensorType)
+    throws SensorConfigurationException {
 
     boolean result = false;
 
@@ -183,7 +213,9 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
   /**
    * See if a SensorType has been assigned
-   * @param sensorType The sensor type
+   * 
+   * @param sensorType
+   *          The sensor type
    * @return {@code true} if the sensor has been assigned; {@code false} if not
    */
   public boolean isAssigned(SensorType sensorType) {
@@ -191,27 +223,35 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
   }
 
   /**
-   * See if a SensorType has been assigned. Optionally only check for
-   * primary assignments. Check children or siblings as appropriate.
+   * See if a SensorType has been assigned. Optionally only check for primary
+   * assignments. Check children or siblings as appropriate.
    *
-   * @param sensorType The SensorType
-   * @param primaryOnly If only primary assignments are to be checked
-   * @param includeRelations Indicates whether to look at relations when checking for assignment
+   * @param sensorType
+   *          The SensorType
+   * @param primaryOnly
+   *          If only primary assignments are to be checked
+   * @param includeRelations
+   *          Indicates whether to look at relations when checking for
+   *          assignment
    * @return {@code true} if the sensor has been assigned; {@code false} if not
    */
-  private boolean isAssigned(SensorType sensorType, boolean primaryOnly, boolean includeRelations) {
+  private boolean isAssigned(SensorType sensorType, boolean primaryOnly,
+    boolean includeRelations) {
     return isAssigned(sensorType, null, primaryOnly, includeRelations);
   }
 
   /**
-   * See if a SensorType has been assigned. Optionally only check for
-   * primary assignments. Check children or siblings as appropriate.
+   * See if a SensorType has been assigned. Optionally only check for primary
+   * assignments. Check children or siblings as appropriate.
    *
-   * @param sensorType The SensorType
-   * @param primaryOnly If only primary assignments are to be checked
+   * @param sensorType
+   *          The SensorType
+   * @param primaryOnly
+   *          If only primary assignments are to be checked
    * @return {@code true} if the sensor has been assigned; {@code false} if not
    */
-  private boolean isAssigned(SensorType sensorType, String dataFileName, boolean primaryOnly, boolean includeRelations) {
+  private boolean isAssigned(SensorType sensorType, String dataFileName,
+    boolean primaryOnly, boolean includeRelations) {
     boolean assigned = false;
 
     SensorsConfiguration sensorConfig = getSensorConfig();
@@ -225,8 +265,8 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
           }
         }
       } else if (sensorType.hasParent()) {
-        for (SensorType child : sensorConfig.getChildren(
-          sensorConfig.getParent(sensorType))) {
+        for (SensorType child : sensorConfig
+          .getChildren(sensorConfig.getParent(sensorType))) {
 
           if (checkAssignment(child, dataFileName, primaryOnly)) {
             assigned = true;
@@ -240,15 +280,17 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
       assigned = checkAssignment(sensorType, dataFileName, primaryOnly);
     }
 
-
     return assigned;
   }
 
   /**
-   * Determine whether or not a given column in a given file has already
-   * been assigned
-   * @param file The file
-   * @param column The column
+   * Determine whether or not a given column in a given file has already been
+   * assigned
+   * 
+   * @param file
+   *          The file
+   * @param column
+   *          The column
    * @return {@code true} if the file and column have been assigned;
    *         {@code false} if not
    */
@@ -257,8 +299,8 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
     for (List<SensorAssignment> set : values()) {
       for (SensorAssignment assignment : set) {
-        if (assignment.getDataFile().equals(file) &&
-          assignment.getColumn() == column) {
+        if (assignment.getDataFile().equals(file)
+          && assignment.getColumn() == column) {
 
           assigned = true;
           break;
@@ -273,17 +315,21 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
    * Check the internal data structure to see if a SensorType has been assigned.
    * Used by {{@link #isAssigned(SensorType, boolean)}
    *
-   * @param sensorType The SensorType
-   * @param primaryOnly If only primary assignments are to be checked
+   * @param sensorType
+   *          The SensorType
+   * @param primaryOnly
+   *          If only primary assignments are to be checked
    * @return {@code true} if the sensor has been assigned; {@code false} if not
    */
-  private boolean checkAssignment(SensorType sensorType, String dataFileName, boolean primaryOnly) {
+  private boolean checkAssignment(SensorType sensorType, String dataFileName,
+    boolean primaryOnly) {
     boolean assigned = false;
 
     List<SensorAssignment> assignments = get(sensorType);
     if (null != assignments) {
       for (SensorAssignment assignment : get(sensorType)) {
-        if (null == dataFileName || assignment.getDataFile().equals(dataFileName)) {
+        if (null == dataFileName
+          || assignment.getDataFile().equals(dataFileName)) {
           if (primaryOnly) {
             if (assignment.isPrimary()) {
               assigned = true;
@@ -301,16 +347,19 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
   }
 
   /**
-   * Determines whether or not any of the sensor types in the
-   * collection depends on the supplied sensor type.
+   * Determines whether or not any of the sensor types in the collection depends
+   * on the supplied sensor type.
    *
    * If the sensor type has a Depends Question, this is taken into account.
    *
    * The logic of this is quite nasty. Follow the code comments.
    *
-   * @param sensorType The sensor type that other sensors may depend on
-   * @return {@code true} if any other sensor types depend on the supplied sensor type; {@code false} if there are no dependents
-   * @throws SensorConfigurationException If the internal configuration is invalid
+   * @param sensorType
+   *          The sensor type that other sensors may depend on
+   * @return {@code true} if any other sensor types depend on the supplied
+   *         sensor type; {@code false} if there are no dependents
+   * @throws SensorConfigurationException
+   *           If the internal configuration is invalid
    */
   public Set<SensorType> getDependents(SensorType sensorType)
     throws SensorConfigurationException {
@@ -342,21 +391,25 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
   }
 
   /**
-   * Get the Sensor Type that the given type depends on, if there is such a type.
-   * If there's a Depends Question, one of the assignments must have answered
-   * {@code true}. Returns {@code null} if the supplied Sensor Type does
-   * not depend on another Sensor Type.
+   * Get the Sensor Type that the given type depends on, if there is such a
+   * type. If there's a Depends Question, one of the assignments must have
+   * answered {@code true}. Returns {@code null} if the supplied Sensor Type
+   * does not depend on another Sensor Type.
    *
-   * @param baseType The originating Sensor Type
+   * @param baseType
+   *          The originating Sensor Type
    * @return The type that the baseType depends on
-   * @throws SensorTypeNotFoundException If the sensor configuration is inconsistent
+   * @throws SensorTypeNotFoundException
+   *           If the sensor configuration is inconsistent
    */
-  public SensorType getDependsOn(SensorType baseType) throws SensorTypeNotFoundException {
+  public SensorType getDependsOn(SensorType baseType)
+    throws SensorTypeNotFoundException {
     SensorType result = null;
 
     if (baseType.dependsOnOtherType()) {
 
-      SensorType dependsOnType = getSensorConfig().getSensorType(baseType.getDependsOn());
+      SensorType dependsOnType = getSensorConfig()
+        .getSensorType(baseType.getDependsOn());
 
       if (!baseType.hasDependsQuestion()) {
         result = dependsOnType;
@@ -371,15 +424,14 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
         }
       }
 
-
     }
 
     return result;
   }
 
-
   /**
    * Get the Sensors Configuration
+   * 
    * @return The Sensors Configuration
    */
   private SensorsConfiguration getSensorConfig() {
@@ -388,10 +440,15 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
   /**
    * Add a sensor assignment using the name of a sensor type
-   * @param sensorType The sensor type
-   * @param assignment The assignment details
-   * @throws SensorTypeNotFoundException If the named sensor does not exist
-   * @throws SensorAssignmentException If the file column has already been assigned
+   * 
+   * @param sensorType
+   *          The sensor type
+   * @param assignment
+   *          The assignment details
+   * @throws SensorTypeNotFoundException
+   *           If the named sensor does not exist
+   * @throws SensorAssignmentException
+   *           If the file column has already been assigned
    */
   public void addAssignment(String typeName, SensorAssignment assignment)
     throws SensorTypeNotFoundException, SensorAssignmentException {
@@ -402,10 +459,15 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
   /**
    * Add a sensor assignment using the ID of a sensor type
-   * @param sensorTypeId The sensor type
-   * @param assignment The assignment details
-   * @throws SensorTypeNotFoundException If the named sensor does not exist
-   * @throws SensorAssignmentException If the file column has already been assigned
+   * 
+   * @param sensorTypeId
+   *          The sensor type
+   * @param assignment
+   *          The assignment details
+   * @throws SensorTypeNotFoundException
+   *           If the named sensor does not exist
+   * @throws SensorAssignmentException
+   *           If the file column has already been assigned
    */
   public void addAssignment(long sensorTypeId, SensorAssignment assignment)
     throws SensorTypeNotFoundException, SensorAssignmentException {
@@ -417,25 +479,29 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
     }
 
     if (isAssigned(assignment.getDataFile(), assignment.getColumn())) {
-      throw new SensorAssignmentException("File '" + assignment.getDataFile() +
-        "', column " + assignment.getColumn() + " has already been assigned");
+      throw new SensorAssignmentException("File '" + assignment.getDataFile()
+        + "', column " + assignment.getColumn() + " has already been assigned");
     }
 
     List<SensorAssignment> assignments = get(sensorType);
     if (null == assignments) {
       // The sensor is not valid for this instrument, so it has not
       // been added to the assignments list
-      throw new SensorAssignmentException(sensorType + " is not valid for this instrument");
+      throw new SensorAssignmentException(
+        sensorType + " is not valid for this instrument");
     }
     assignments.add(assignment);
   }
 
   /**
-   * De-assign a file/column from this set of assignments. The assignment doesn't have
-   * to exist; the method will return a {@code boolean} indicating whether or not
-   * a matching assignment was found and removed.
-   * @param fileDescription The file description
-   * @param columnIndex The column index
+   * De-assign a file/column from this set of assignments. The assignment
+   * doesn't have to exist; the method will return a {@code boolean} indicating
+   * whether or not a matching assignment was found and removed.
+   * 
+   * @param fileDescription
+   *          The file description
+   * @param columnIndex
+   *          The column index
    * @return {@code true} if an assignment was removed; {@code false} if not
    */
   public boolean removeAssignment(String fileDescription, int columnIndex) {
@@ -446,7 +512,8 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
       List<SensorAssignment> assignments = entry.getValue();
       for (SensorAssignment assignment : assignments) {
-        if (assignment.getDataFile().equalsIgnoreCase(fileDescription) && assignment.getColumn() == columnIndex) {
+        if (assignment.getDataFile().equalsIgnoreCase(fileDescription)
+          && assignment.getColumn() == columnIndex) {
           assignments.remove(assignment);
           assignmentRemoved = true;
           break;
@@ -460,7 +527,9 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
   /**
    * Remove all assignments from a given file
-   * @param fileDescription The file description
+   * 
+   * @param fileDescription
+   *          The file description
    */
   public void removeFileAssignments(String fileDescription) {
     for (Map.Entry<SensorType, List<SensorAssignment>> entry : entrySet()) {
@@ -480,18 +549,24 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
   /**
    * Determines whether or not a Core Sensor has been assigned within any file
-   * @param dataFileName The file to be checked
-   * @param primaryOnly If {@code true}, only primary assignments are considered;
-   *        secondary assignments will return {@code false}.
-   * @return {@code true} if the file has had a core sensor assigned; {@code false} if it has not
-   * @throws SensorConfigurationException If the sensor configuration is invalid
+   * 
+   * @param dataFileName
+   *          The file to be checked
+   * @param primaryOnly
+   *          If {@code true}, only primary assignments are considered;
+   *          secondary assignments will return {@code false}.
+   * @return {@code true} if the file has had a core sensor assigned;
+   *         {@code false} if it has not
+   * @throws SensorConfigurationException
+   *           If the sensor configuration is invalid
    */
   public boolean coreSensorAssigned(String dataFileName, boolean primaryOnly)
     throws SensorConfigurationException {
 
     boolean result = false;
 
-    List<SensorType> coreSensors = getSensorConfig().getCoreSensors(variableIDs);
+    List<SensorType> coreSensors = getSensorConfig()
+      .getCoreSensors(variableIDs);
     for (SensorType coreType : coreSensors) {
       if (isAssigned(coreType, dataFileName, primaryOnly, true)) {
         result = true;
@@ -505,7 +580,9 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
   /**
    * Determine whether or not the Run Type is required in a given file, and has
    * not yet been assigned.
-   * @param dataFileName The data file to be checked
+   * 
+   * @param dataFileName
+   *          The data file to be checked
    * @return {@code true} if the run type is required; {@code false} if not.
    */
   public boolean runTypeRequired(String dataFileName) {
@@ -526,9 +603,11 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
   }
 
   /**
-   * Get the number of columns assigned to a given SensorType.
-   * If the SensorType is not found, returns 0
-   * @param sensorType The SensorType
+   * Get the number of columns assigned to a given SensorType. If the SensorType
+   * is not found, returns 0
+   * 
+   * @param sensorType
+   *          The SensorType
    * @return The number of assigned columns
    */
   public int getAssignmentCount(SensorType sensorType) {
@@ -543,11 +622,15 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
   /**
    * Get the sensor assignment with a given File Column database ID
-   * @param columnId The file column database ID
+   * 
+   * @param columnId
+   *          The file column database ID
    * @return The sensor assignment
-   * @throws RecordNotFoundException If there is no assignment with the specified ID
+   * @throws RecordNotFoundException
+   *           If there is no assignment with the specified ID
    */
-  public SensorType getSensorTypeForDBColumn(long columnId) throws RecordNotFoundException {
+  public SensorType getSensorTypeForDBColumn(long columnId)
+    throws RecordNotFoundException {
     SensorType result = null;
 
     if (columnId == FileDefinition.LONGITUDE_COLUMN_ID) {
@@ -574,6 +657,7 @@ public class SensorAssignments extends TreeMap<SensorType, List<SensorAssignment
 
   /**
    * Get the column IDs for the Run Type columns
+   * 
    * @return
    */
   public List<Long> getRunTypeColumnIDs() {

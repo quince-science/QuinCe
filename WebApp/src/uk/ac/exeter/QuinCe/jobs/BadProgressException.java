@@ -16,8 +16,7 @@ public class BadProgressException extends Exception {
   private static final long serialVersionUID = 8691544843626836324L;
 
   /**
-   * The exception constructor.
-   * Creates a basic exception with a simple message.
+   * The exception constructor. Creates a basic exception with a simple message.
    */
   public BadProgressException() {
     super("The progress must be between 0 and 100");

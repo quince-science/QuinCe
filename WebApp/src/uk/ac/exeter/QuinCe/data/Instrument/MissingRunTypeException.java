@@ -7,11 +7,12 @@ import uk.ac.exeter.QuinCe.data.Instrument.RunTypes.RunTypeCategory;
 
 /**
  * Exception for missing run types in files.
+ * 
  * @author Jonas F. Henriksen
  *
  */
-public class MissingRunTypeException extends FileDefinitionException implements Serializable {
-
+public class MissingRunTypeException extends FileDefinitionException
+  implements Serializable {
 
   /**
    * SerialVersionUID
@@ -26,7 +27,9 @@ public class MissingRunTypeException extends FileDefinitionException implements 
 
   /**
    * Simple error
-   * @param message The error message
+   * 
+   * @param message
+   *          The error message
    */
   public MissingRunTypeException(String message, String runType) {
     super(message);

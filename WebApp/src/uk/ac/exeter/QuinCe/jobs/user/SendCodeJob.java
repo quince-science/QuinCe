@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Background job to send email verification codes to users
+ * 
  * @author Steve Jones
  *
  */
@@ -30,16 +31,23 @@ public abstract class SendCodeJob extends Job {
 
   /**
    * Job object constructor
-   * @param resourceManager The application's resource manager
-   * @param config The application configuration
-   * @param id The job ID
-   * @param params The job parameters
-   * @throws MissingParamException If any required parameters are missing
-   * @throws InvalidJobParametersException If the job parameters are invalid
+   * 
+   * @param resourceManager
+   *          The application's resource manager
+   * @param config
+   *          The application configuration
+   * @param id
+   *          The job ID
+   * @param params
+   *          The job parameters
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws InvalidJobParametersException
+   *           If the job parameters are invalid
    */
   public SendCodeJob(ResourceManager resourceManager, Properties config,
-      long id, Map<String, String> params)
-          throws MissingParamException, InvalidJobParametersException {
+    long id, Map<String, String> params)
+    throws MissingParamException, InvalidJobParametersException {
     super(resourceManager, config, id, params);
   }
 
@@ -52,8 +60,8 @@ public abstract class SendCodeJob extends Job {
     emailText.append("\n");
 
     try {
-      EmailSender.sendEmail(config, parameters.get(EMAIL_KEY),
-          getSubject(), emailText.toString());
+      EmailSender.sendEmail(config, parameters.get(EMAIL_KEY), getSubject(),
+        emailText.toString());
     } catch (EmailException e) {
       throw new JobFailedException(id, e);
     }
@@ -61,9 +69,11 @@ public abstract class SendCodeJob extends Job {
 
   @Override
   /**
-   * Validate the job parameters. In this case, make sure a URL stub and user ID is given.
+   * Validate the job parameters. In this case, make sure a URL stub and user ID
+   * is given.
    *
-   * For the moment, we don't verify the URL stub - we just make sure we've got a string.
+   * For the moment, we don't verify the URL stub - we just make sure we've got
+   * a string.
    */
   protected void validateParameters() throws InvalidJobParametersException {
     if (parameters.size() != 1) {
@@ -74,20 +84,26 @@ public abstract class SendCodeJob extends Job {
     try {
       dbUser = UserDB.getUser(dataSource, parameters.get(EMAIL_KEY));
       if (null == dbUser) {
-        throw new InvalidJobParametersException("The specified user doesn't exist in the database");
+        throw new InvalidJobParametersException(
+          "The specified user doesn't exist in the database");
       } else if (null == getCode(dbUser)) {
-        throw new InvalidJobParametersException(getCodeDescription() + " not set");
+        throw new InvalidJobParametersException(
+          getCodeDescription() + " not set");
       }
     } catch (Exception e) {
-      throw new InvalidJobParametersException("Unhandled exception while validating parameters", e);
+      throw new InvalidJobParametersException(
+        "Unhandled exception while validating parameters", e);
     }
   }
 
   /**
    * Construct the email verification link that the user will click in the email
-   * @param config The application configuration
+   * 
+   * @param config
+   *          The application configuration
    * @return The link
-   * @throws JobFailedException If the link cannot be built
+   * @throws JobFailedException
+   *           If the link cannot be built
    */
   private String buildLink(Properties config) throws JobFailedException {
 
@@ -103,7 +119,8 @@ public abstract class SendCodeJob extends Job {
       } else {
         String code = getCode(dbUser);
         if (null == code) {
-          throw new JobFailedException(id, "The user doesn't have an email verification code");
+          throw new JobFailedException(id,
+            "The user doesn't have an email verification code");
         } else {
           link.append(config.getProperty("app.urlstub"));
           link.append(getUrlPath());
@@ -132,30 +149,35 @@ public abstract class SendCodeJob extends Job {
 
   /**
    * Get the URL path
+   * 
    * @return The URL path
    */
   protected abstract String getUrlPath();
 
   /**
    * Get the email subject
+   * 
    * @return The email subject
    */
   protected abstract String getSubject();
 
   /**
    * Get the email text
+   * 
    * @return The email text
    */
   protected abstract String getEmailText();
 
   /**
    * Get the description of the code being used
+   * 
    * @return The code description
    */
   protected abstract String getCodeDescription();
 
   /**
    * Get the code
+   * 
    * @return The code
    */
   protected abstract String getCode(User user);

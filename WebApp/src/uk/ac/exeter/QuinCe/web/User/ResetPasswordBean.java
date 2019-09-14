@@ -63,8 +63,9 @@ public class ResetPasswordBean extends BaseManagedBean {
 
     if (!verified) {
       try {
-        int codeOK = UserDB.checkPasswordResetCode(ServletUtils.getDBDataSource(),
-            getRequestParameter(USER_PARAM), getRequestParameter(CODE_PARAM));
+        int codeOK = UserDB.checkPasswordResetCode(
+          ServletUtils.getDBDataSource(), getRequestParameter(USER_PARAM),
+          getRequestParameter(CODE_PARAM));
         verified = (codeOK == UserDB.CODE_OK);
 
         switch (codeOK) {
@@ -96,6 +97,7 @@ public class ResetPasswordBean extends BaseManagedBean {
 
   /**
    * Get the first password
+   * 
    * @return The first password
    */
   public String getPassword1() {
@@ -104,7 +106,9 @@ public class ResetPasswordBean extends BaseManagedBean {
 
   /**
    * Set the first password
-   * @param password1 The first password
+   * 
+   * @param password1
+   *          The first password
    */
   public void setPassword1(String password1) {
     // Note that passwords aren't trimmed
@@ -113,6 +117,7 @@ public class ResetPasswordBean extends BaseManagedBean {
 
   /**
    * Get the second password
+   * 
    * @return The second password
    */
   public String getPassword2() {
@@ -121,7 +126,9 @@ public class ResetPasswordBean extends BaseManagedBean {
 
   /**
    * Set the second password
-   * @param password2 The second password
+   * 
+   * @param password2
+   *          The second password
    */
   public void setPassword2(String password2) {
     // Note that passwords aren't trimmed
@@ -139,7 +146,8 @@ public class ResetPasswordBean extends BaseManagedBean {
       try {
         conn = getDataSource().getConnection();
         conn.setAutoCommit(false);
-        UserDB.changePassword(conn, UserDB.getUser(conn, email), password1.toCharArray());
+        UserDB.changePassword(conn, UserDB.getUser(conn, email),
+          password1.toCharArray());
         UserDB.clearPasswordResetCode(conn, email);
         conn.commit();
       } catch (SQLException e) {
@@ -155,6 +163,7 @@ public class ResetPasswordBean extends BaseManagedBean {
 
   /**
    * Validate the bean's contents
+   * 
    * @return {@code true} if the contents are valid; {@code false} otherwise.
    */
   private boolean validate() {

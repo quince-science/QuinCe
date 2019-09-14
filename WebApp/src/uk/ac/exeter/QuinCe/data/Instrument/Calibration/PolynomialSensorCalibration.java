@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
- * A calibration that applies up to a fifth-order
- * polynomial adjustment
+ * A calibration that applies up to a fifth-order polynomial adjustment
+ * 
  * @author Steve Jones
  *
  */
@@ -19,8 +19,8 @@ public class PolynomialSensorCalibration extends SensorCalibration {
   private static final String INTERCEPT_NAME = "Intercept";
 
   /**
-   * Contains the labels for the polynomial curve parameters
-   * (constructed in the {@code static} block)
+   * Contains the labels for the polynomial curve parameters (constructed in the
+   * {@code static} block)
    */
   private static List<String> valueNames;
 
@@ -36,8 +36,11 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 
   /**
    * Create a calibration object
-   * @param instrumentId The instrument to which the calibration target belongs
-   * @param target The calibration target (most likely a sensor)
+   * 
+   * @param instrumentId
+   *          The instrument to which the calibration target belongs
+   * @param target
+   *          The calibration target (most likely a sensor)
    */
   public PolynomialSensorCalibration(long instrumentId, String target) {
     super(instrumentId, target);
@@ -45,7 +48,9 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 
   /**
    * Create a calibration object with no target set
-   * @param instrumentId The instrument to which the calibration target belongs
+   * 
+   * @param instrumentId
+   *          The instrument to which the calibration target belongs
    */
   public PolynomialSensorCalibration(long instrumentId) {
     super(instrumentId);
@@ -53,13 +58,20 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 
   /**
    * Construct a complete sensor calibration object.
-   * @param instrumentId The instrument ID
-   * @param target The target sensor
-   * @param deploymentDate The deployment date
-   * @param coefficients The calibration coefficients
-   * @throws CalibrationException If the calibration details are invalid
+   * 
+   * @param instrumentId
+   *          The instrument ID
+   * @param target
+   *          The target sensor
+   * @param deploymentDate
+   *          The deployment date
+   * @param coefficients
+   *          The calibration coefficients
+   * @throws CalibrationException
+   *           If the calibration details are invalid
    */
-  public PolynomialSensorCalibration(long instrumentId, String target, LocalDateTime deploymentDate, List<Double> coefficients) {
+  public PolynomialSensorCalibration(long instrumentId, String target,
+    LocalDateTime deploymentDate, List<Double> coefficients) {
     super(instrumentId, target, deploymentDate, coefficients);
   }
 
@@ -82,10 +94,14 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 
   /**
    * Add a coefficient to the human readable coefficients string
-   * @param string The string being constructed
-   * @param coefficient The coefficient
+   * 
+   * @param string
+   *          The string being constructed
+   * @param coefficient
+   *          The coefficient
    */
-  private void appendCoefficient(StringBuilder string, CalibrationCoefficient coefficient) {
+  private void appendCoefficient(StringBuilder string,
+    CalibrationCoefficient coefficient) {
 
     String name = coefficient.getName();
     double value = coefficient.getValue();
@@ -117,7 +133,8 @@ public class PolynomialSensorCalibration extends SensorCalibration {
 
   @Override
   protected void initialiseCoefficients() {
-    coefficients = new ArrayList<CalibrationCoefficient>(getCoefficientNames().size());
+    coefficients = new ArrayList<CalibrationCoefficient>(
+      getCoefficientNames().size());
 
     for (String name : getCoefficientNames()) {
 
@@ -137,10 +154,10 @@ public class PolynomialSensorCalibration extends SensorCalibration {
     // The coefficients are stored from highest to lowest power, so iterate in
     // reverse list order
     ListIterator<CalibrationCoefficient> iterator = coefficients
-        .listIterator(coefficients.size());
+      .listIterator(coefficients.size());
     while (iterator.hasPrevious()) {
       calibratedValue += iterator.previous().getValue()
-          * Math.pow(rawValue, power);
+        * Math.pow(rawValue, power);
       power++;
     }
     return calibratedValue;

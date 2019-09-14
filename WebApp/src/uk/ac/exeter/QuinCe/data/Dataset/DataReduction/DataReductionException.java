@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.data.Dataset.DataReduction;
 
 /**
  * Exception for errors encountered during data reduction calculations
+ * 
  * @author Steve Jones
  *
  */

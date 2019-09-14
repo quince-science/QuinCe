@@ -35,12 +35,18 @@ public class QCRoutinesConfiguration {
   private Map<SensorType, List<Routine>> routines;
 
   /**
-   * Main constructor - parses supplied config file and builds all Routine objects.
-   * @param configFile The configuration file
-   * @throws QCRoutinesConfigurationException If the configuration is invalid
-   * @throws MissingParamException If any required parameters are missing
+   * Main constructor - parses supplied config file and builds all Routine
+   * objects.
+   * 
+   * @param configFile
+   *          The configuration file
+   * @throws QCRoutinesConfigurationException
+   *           If the configuration is invalid
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
-  public QCRoutinesConfiguration(SensorsConfiguration sensorsConfig, String configFile)
+  public QCRoutinesConfiguration(SensorsConfiguration sensorsConfig,
+    String configFile)
     throws QCRoutinesConfigurationException, MissingParamException {
 
     MissingParam.checkMissing(configFile, "configFile");
@@ -50,8 +56,11 @@ public class QCRoutinesConfiguration {
 
   /**
    * Add a Routine to the configuration
-   * @param sensorType The target sensor type
-   * @param routine The routine
+   * 
+   * @param sensorType
+   *          The target sensor type
+   * @param routine
+   *          The routine
    */
   private void addRoutine(SensorType sensorType, Routine routine) {
     if (!routines.containsKey(sensorType)) {
@@ -63,13 +72,18 @@ public class QCRoutinesConfiguration {
 
   /**
    * Initialise the configuration from the supplied file
-   * @param configFilename The filename
-   * @throws QCRoutinesConfigurationException If the configuration is invalid
+   * 
+   * @param configFilename
+   *          The filename
+   * @throws QCRoutinesConfigurationException
+   *           If the configuration is invalid
    */
-  private void init(SensorsConfiguration sensorsConfig, String configFilename) throws QCRoutinesConfigurationException {
+  private void init(SensorsConfiguration sensorsConfig, String configFilename)
+    throws QCRoutinesConfigurationException {
 
     try {
-      BufferedReader reader = new BufferedReader(new FileReader(configFilename));
+      BufferedReader reader = new BufferedReader(
+        new FileReader(configFilename));
       try {
         String line = reader.readLine();
         int currentLine = 1;
@@ -88,30 +102,39 @@ public class QCRoutinesConfiguration {
             String fullClassName = getFullClassName(routineName);
 
             if (routineName.equalsIgnoreCase("")) {
-              throw new QCRoutinesConfigurationException(configFilename, currentLine, "Routine class name cannot be empty");
+              throw new QCRoutinesConfigurationException(configFilename,
+                currentLine, "Routine class name cannot be empty");
             } else if (sensorTypeName.equalsIgnoreCase("")) {
-              throw new QCRoutinesConfigurationException(configFilename, currentLine, "Sensor Type name cannot be empty");
+              throw new QCRoutinesConfigurationException(configFilename,
+                currentLine, "Sensor Type name cannot be empty");
             } else {
               try {
 
-                SensorType sensorType = sensorsConfig.getSensorType(sensorTypeName);
+                SensorType sensorType = sensorsConfig
+                  .getSensorType(sensorTypeName);
 
                 // Instantiate the routine class
                 Class<?> routineClass = Class.forName(fullClassName);
 
                 @SuppressWarnings("unchecked")
-                Constructor<Routine> constructor = (Constructor<Routine>) routineClass.getConstructor(List.class);
+                Constructor<Routine> constructor = (Constructor<Routine>) routineClass
+                  .getConstructor(List.class);
 
                 Routine instance = constructor.newInstance(parameters);
 
                 addRoutine(sensorType, instance);
 
-              } catch(SensorTypeNotFoundException e) {
-                throw new QCRoutinesConfigurationException(configFilename, currentLine, "Sensor Type '" + sensorTypeName + "' does not exist");
-              } catch(ClassNotFoundException e) {
-                throw new QCRoutinesConfigurationException(configFilename, currentLine, "Routine check class '" + fullClassName + "' does not exist");
-              } catch(Exception e) {
-                throw new QCRoutinesConfigurationException(configFilename, currentLine, "Error creating Routine check class", e);
+              } catch (SensorTypeNotFoundException e) {
+                throw new QCRoutinesConfigurationException(configFilename,
+                  currentLine,
+                  "Sensor Type '" + sensorTypeName + "' does not exist");
+              } catch (ClassNotFoundException e) {
+                throw new QCRoutinesConfigurationException(configFilename,
+                  currentLine,
+                  "Routine check class '" + fullClassName + "' does not exist");
+              } catch (Exception e) {
+                throw new QCRoutinesConfigurationException(configFilename,
+                  currentLine, "Error creating Routine check class", e);
               }
             }
           }
@@ -123,13 +146,16 @@ public class QCRoutinesConfiguration {
         reader.close();
       }
     } catch (IOException e) {
-      throw new QCRoutinesConfigurationException(configFilename, "I/O Error while reading file", e);
+      throw new QCRoutinesConfigurationException(configFilename,
+        "I/O Error while reading file", e);
     }
   }
 
   /**
    * Get the QC routines for a given sensor type
-   * @param sensorType The sensor type
+   * 
+   * @param sensorType
+   *          The sensor type
    * @return The routines to be run
    */
   public List<Routine> getRoutines(SensorType sensorType) {
@@ -143,7 +169,9 @@ public class QCRoutinesConfiguration {
 
   /**
    * Get the full class name from a routine name
-   * @param routineName The routine name
+   * 
+   * @param routineName
+   *          The routine name
    * @return The full class name
    */
   private static String getFullClassName(String routineName) {
@@ -151,12 +179,14 @@ public class QCRoutinesConfiguration {
   }
 
   /**
-   * Get the shortcut name of a concrete Routine class, for storage in the database.
+   * Get the shortcut name of a concrete Routine class, for storage in the
+   * database.
    *
-   * This is the class name without the package prefix, and with the word 'Routine'
-   * stripped off the end
+   * This is the class name without the package prefix, and with the word
+   * 'Routine' stripped off the end
    *
-   * @param clazz The class
+   * @param clazz
+   *          The class
    * @return The shortcut name.
    */
   public static String getRoutineName(Class<? extends Routine> clazz) {
@@ -164,12 +194,14 @@ public class QCRoutinesConfiguration {
   }
 
   /**
-   * Get the shortcut name of a concrete Routine instance, for storage in the database.
+   * Get the shortcut name of a concrete Routine instance, for storage in the
+   * database.
    *
-   * This is the class name without the package prefix, and with the word 'Routine'
-   * stripped off the end
+   * This is the class name without the package prefix, and with the word
+   * 'Routine' stripped off the end
    *
-   * @param routine The instance
+   * @param routine
+   *          The instance
    * @return The shortcut name.
    */
   public static String getRoutineName(Routine routine) {
@@ -178,12 +210,17 @@ public class QCRoutinesConfiguration {
 
   /**
    * Get the Class object for a routine given its name
-   * @param routineName The routine name
+   * 
+   * @param routineName
+   *          The routine name
    * @return The Routine class
-   * @throws ClassNotFoundException If the class does not exist
+   * @throws ClassNotFoundException
+   *           If the class does not exist
    */
   @SuppressWarnings("unchecked")
-  public static Class<? extends Routine> getRoutineClass(String routineName) throws ClassNotFoundException {
-    return (Class<? extends Routine>) Class.forName(getFullClassName(routineName));
+  public static Class<? extends Routine> getRoutineClass(String routineName)
+    throws ClassNotFoundException {
+    return (Class<? extends Routine>) Class
+      .forName(getFullClassName(routineName));
   }
 }

@@ -3,11 +3,10 @@ package uk.ac.exeter.QuinCe.web.datasets.export;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 
 /**
- * Special version of FieldValue that combines multiple values
- * of the same type.
+ * Special version of FieldValue that combines multiple values of the same type.
  *
- * The value ID and used flags aren't used in this instance,
- * so their values are undefined.
+ * The value ID and used flags aren't used in this instance, so their values are
+ * undefined.
  *
  * @author Steve Jones
  *

@@ -12,6 +12,7 @@ public class Field {
     this.id = sensorId;
     this.name = name;
   }
+
   public long getId() {
     return id;
   }

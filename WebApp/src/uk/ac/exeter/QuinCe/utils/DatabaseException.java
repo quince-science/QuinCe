@@ -1,8 +1,8 @@
 package uk.ac.exeter.QuinCe.utils;
 
 /**
- * An exception class for any database-level exceptions.
- * Most {@code DatabaseException}s will be wrappers around an
+ * An exception class for any database-level exceptions. Most
+ * {@code DatabaseException}s will be wrappers around an
  * {@link java.sql.SQLException}.
  *
  * @author Steve Jones
@@ -11,8 +11,7 @@ package uk.ac.exeter.QuinCe.utils;
 public class DatabaseException extends Exception {
 
   /**
-   * Indicates whether or not an attempted rollback
-   * of a transaction succeeded
+   * Indicates whether or not an attempted rollback of a transaction succeeded
    */
   private boolean rollbackOK = true;
 
@@ -24,7 +23,8 @@ public class DatabaseException extends Exception {
   /**
    * Constructor for an exception without an underlying cause
    *
-   * @param message The error message
+   * @param message
+   *          The error message
    */
   public DatabaseException(String message) {
     super(message);
@@ -33,22 +33,28 @@ public class DatabaseException extends Exception {
   /**
    * Constructor for an exception with an underlying cause
    *
-   * @param message The error message
-   * @param cause The root cause of the error
+   * @param message
+   *          The error message
+   * @param cause
+   *          The root cause of the error
    */
   public DatabaseException(String message, Throwable cause) {
     super(message, cause);
   }
 
-
   /**
    * Constructor for an exception with an underlying cause
    *
-   * @param message The error message
-   * @param cause The root cause of the error
-   * @param rollbackOK Indicates whether or not a rollback was successful after the error occurred
+   * @param message
+   *          The error message
+   * @param cause
+   *          The root cause of the error
+   * @param rollbackOK
+   *          Indicates whether or not a rollback was successful after the error
+   *          occurred
    */
-  public DatabaseException(String message, Throwable cause, boolean rollbackOK) {
+  public DatabaseException(String message, Throwable cause,
+    boolean rollbackOK) {
     super(message, cause);
     this.rollbackOK = rollbackOK;
   }
