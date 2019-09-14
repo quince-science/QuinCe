@@ -190,7 +190,7 @@ public class InternalCalibrationBean extends PlotPageBean {
   }
 
   @Override
-  protected void loadData() throws Exception {
+  protected void initData() throws Exception {
 
     try {
       fieldSets = new FieldSets("Date/Time");
@@ -231,7 +231,6 @@ public class InternalCalibrationBean extends PlotPageBean {
     } catch (Exception e) {
       e.printStackTrace();
     }
-
   }
 
   /**

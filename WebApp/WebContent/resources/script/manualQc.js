@@ -24,7 +24,7 @@ function drawPage() {
   // initPlot(1);
   // initPlot(2);
 
-  // drawTable();
+  drawTable();
 }
 
 function initPlot(index) {

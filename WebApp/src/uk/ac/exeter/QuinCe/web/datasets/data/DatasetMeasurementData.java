@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -308,7 +309,7 @@ public abstract class DatasetMeasurementData
 
   private void buildCaches() {
     makeRowIds();
-    makePositionLookup();
+    //makePositionLookup();
     dirty = false;
   }
 
@@ -421,23 +422,8 @@ public abstract class DatasetMeasurementData
     return updatedValues;
   }
 
-  public int getFlagsRequired() {
-
-    int result = 0;
-
-    for (LinkedHashMap<Field, FieldValue> rowFields : values()) {
-      for (FieldValue value : rowFields.values()) {
-        if (null != value && value.needsFlag()) {
-          result++;
-        }
-      }
-    }
-
-    return result;
-  }
-
-  public final void filterAndAddValues(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values) throws Exception {
+  public final void filterAndAddValues(String runType, LocalDateTime time, Map<Long, FieldValue> values)
+    throws Exception {
 
     if (!filterInitialised) {
       initFilter();
@@ -447,10 +433,39 @@ public abstract class DatasetMeasurementData
   }
 
   /**
+   * Ensure that the specified times are present in the map.
+   * New times will be added with no data, while existing times
+   * will be left as they are.
+   *
+   * @param times The times to be added
+   */
+  public final void addTimes(Collection<LocalDateTime> times) {
+    times.stream().forEach(this::addTime);
+  }
+
+
+  /**
    * Add a set of values, filtering out unwanted values. The default filter
    * removes values for columns that are internally calibrated where the run
    * type is not a measurement. This has the effect of removing all values taken
    * during internal calibration.
+   * Ensure that the specified time is present in the map.
+   * A new time will be added with no data, while an existing time
+   * will be left as it is.
+   *
+   * @param time The time to be added
+   */
+  public final void addTime(LocalDateTime time) {
+    if (!containsKey(time)) {
+      put(time, null);
+    }
+  }
+
+  /**
+   * Add a set of values, filtering out unwanted values. The default
+   * filter removes values for columns that are internally calibrated
+   * where the run type is not a measurement. This has the effect
+   * of removing all values taken during internal calibration.
    *
    * Override this method to filter the supplied values according to need.
    *
