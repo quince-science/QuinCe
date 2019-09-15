@@ -49,7 +49,7 @@
             <h:outputLabel for="password" value="Password"/>
             <p:password id="password" value="#{loginBean.password}" styleClass="inputFormInput" required="true" requiredMessage="Password is required"/>
           </h:panelGrid>
-          <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+          <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
             <p:commandButton value="Log In" action="#{loginBean.authenticate}" ajax="false"/>
           </h:panelGrid>
           <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
