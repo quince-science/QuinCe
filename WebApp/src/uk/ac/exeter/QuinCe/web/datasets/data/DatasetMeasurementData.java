@@ -37,6 +37,8 @@ public abstract class DatasetMeasurementData
 
   private boolean dirty = true;
 
+  private List<LocalDateTime> rowIdsCache = new ArrayList<LocalDateTime>();
+
   private String rowIdsJson;
 
   private HashMap<LocalDateTime, Boolean> loaded;
@@ -294,7 +296,14 @@ public abstract class DatasetMeasurementData
   }
 
   public List<LocalDateTime> getRowIds() {
-    return new ArrayList<LocalDateTime>(keySet());
+
+    // If the cache size doesn't equal the data size, it needs rebuilding
+    if (rowIdsCache.size() != size()) {
+      rowIdsCache = new ArrayList<LocalDateTime>(keySet());
+      makeRowIds();
+    }
+
+    return rowIdsCache;
   }
 
   public String getRowIdsJson() {
@@ -306,14 +315,14 @@ public abstract class DatasetMeasurementData
   }
 
   private void buildCaches() {
-    makeRowIds();
     // makePositionLookup();
     dirty = false;
   }
 
   private void makeRowIds() {
     List<Long> jsonInput = new ArrayList<Long>(size());
-    keySet().stream().forEach(k -> jsonInput.add(DateTimeUtils.dateToLong(k)));
+    rowIdsCache.stream()
+      .forEach(k -> jsonInput.add(DateTimeUtils.dateToLong(k)));
 
     Gson gson = new Gson();
     rowIdsJson = gson.toJson(jsonInput).toString();
