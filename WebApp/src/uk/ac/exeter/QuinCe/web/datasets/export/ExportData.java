@@ -27,6 +27,7 @@ import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
+import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCPageData;
 
 public class ExportData extends ManualQCPageData {
@@ -67,7 +68,7 @@ public class ExportData extends ManualQCPageData {
 
   /**
    * Create the field sets for the data
-   * 
+   *
    * @param dataSource
    * @param instrument
    * @param exportOption
@@ -153,44 +154,45 @@ public class ExportData extends ManualQCPageData {
 
   @Override
   public void filterAndAddValuesAction(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values) throws RecordNotFoundException {
+    Map<Long, FieldValue> values) throws MeasurementDataException {
 
-    Map<Field, CombinedFieldValue> valuesToAdd = new HashMap<Field, CombinedFieldValue>();
+    try {
+      Map<Field, CombinedFieldValue> valuesToAdd = new HashMap<Field, CombinedFieldValue>();
 
-    for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
+      for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
 
-      SensorType sensorType = instrument.getSensorAssignments()
-        .getSensorTypeForDBColumn(entry.getKey());
-      if (sensorTypeFields.containsKey(sensorType.getId())) {
+        SensorType sensorType = instrument.getSensorAssignments()
+          .getSensorTypeForDBColumn(entry.getKey());
+        if (sensorTypeFields.containsKey(sensorType.getId())) {
 
-        Field field = sensorTypeFields.get(sensorType.getId());
+          Field field = sensorTypeFields.get(sensorType.getId());
 
-        // We don't keep internal calibration values
-        if (!sensorType.hasInternalCalibration()
-          || measurementRunTypes.contains(runType)) {
-          valuesToAdd.put(field,
-            addSensorValue(valuesToAdd.get(field), entry.getValue()));
+          // We don't keep internal calibration values
+          if (!sensorType.hasInternalCalibration()
+            || measurementRunTypes.contains(runType)) {
+            valuesToAdd.put(field,
+              addSensorValue(valuesToAdd.get(field), entry.getValue()));
+          }
         }
       }
-    }
 
-    addValues(time, valuesToAdd);
-  }
-
-  @Override
-  public void addValue(LocalDateTime rowId, long fieldId, FieldValue value) {
-    if (sensorTypeFields.containsKey(fieldId)) {
-
-      Map<Field, FieldValue> row = get(rowId);
-      Field field = sensorTypeFields.get(fieldId);
-      row.put(field,
-        addSensorValue((CombinedFieldValue) row.get(field), value));
-
-    } else if (variableFields.containsKey(fieldId)) {
-      super.addValue(rowId, variableFields.get(fieldId), value);
+      addValues(time, valuesToAdd);
+    } catch (RecordNotFoundException e) {
+      throw new MeasurementDataException("Failed to look up sensor type", e);
     }
   }
 
+  /*
+   * @Override public void addValue(LocalDateTime rowId, long fieldId,
+   * FieldValue value) { if (sensorTypeFields.containsKey(fieldId)) {
+   *
+   * Map<Field, FieldValue> row = get(rowId); Field field =
+   * sensorTypeFields.get(fieldId); row.put(field,
+   * addSensorValue((CombinedFieldValue) row.get(field), value));
+   *
+   * } else if (variableFields.containsKey(fieldId)) { super.addValue(rowId,
+   * variableFields.get(fieldId), value); } }
+   */
   private CombinedFieldValue addSensorValue(CombinedFieldValue existingValue,
     FieldValue value) {
 

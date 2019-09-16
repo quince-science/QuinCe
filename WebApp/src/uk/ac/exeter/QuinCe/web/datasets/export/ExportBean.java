@@ -28,7 +28,6 @@ import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
@@ -92,7 +91,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Get the dataset ID
-   * 
+   *
    * @return The dataset ID
    */
   public long getDatasetId() {
@@ -106,7 +105,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Set the dataset using its ID
-   * 
+   *
    * @param datasetId
    *          The dataset ID
    */
@@ -120,7 +119,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Get the dataset
-   * 
+   *
    * @return The dataset
    */
   public DataSet getDataset() {
@@ -129,7 +128,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Set the dataset
-   * 
+   *
    * @param dataset
    *          The dataset
    */
@@ -139,7 +138,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Get the list of available file export options
-   * 
+   *
    * @return The export options
    * @throws ExportException
    *           In an error occurs while retrieving the export options
@@ -155,7 +154,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Return the ID of the chosen file export option
-   * 
+   *
    * @return The export option ID
    */
   public int getChosenExportOption() {
@@ -164,7 +163,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Set the ID of the chosen export option
-   * 
+   *
    * @param chosenExportOption
    *          The export option ID
    */
@@ -272,7 +271,7 @@ public class ExportBean extends BaseManagedBean {
   /**
    * Obtain a dataset in the specified format as a byte array ready for export
    * or storage
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param dataSet
@@ -302,11 +301,13 @@ public class ExportBean extends BaseManagedBean {
     fieldIds.add(FileDefinition.LATITUDE_COLUMN_ID);
     fieldIds.addAll(instrument.getSensorAssignments().getFileColumnIDs());
 
-    DataSetDataDB.getQCSensorData(dataSource, data, dataset.getId(), instrument,
-      fieldIds);
-
-    // Load data reduction data
-    DataSetDataDB.getDataReductionData(dataSource, data, dataset);
+    /*
+     * DataSetDataDB.getQCSensorData(dataSource, data, dataset.getId(),
+     * instrument, fieldIds);
+     *
+     * // Load data reduction data
+     * DataSetDataDB.getDataReductionData(dataSource, data, dataset);
+     */
 
     // Let's make some output
     StringBuilder output = new StringBuilder();
@@ -393,7 +394,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Get the filename of the file that will be exported
-   * 
+   *
    * @param exportOption
    *          The export option
    * @return The export filename
@@ -417,7 +418,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Determine whether raw files should be included in the export
-   * 
+   *
    * @return {@code true} if raw files should be included; {@code false} if not
    */
   public boolean getIncludeRawFiles() {
@@ -426,7 +427,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Specify whether raw files should be included in the export
-   * 
+   *
    * @param includeRawFiles
    *          The raw files flag
    */
@@ -436,7 +437,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Create the contents of the manifest.json file
-   * 
+   *
    * @return The manifest JSON
    */
   private static JSONObject makeManifest(Connection conn, DataSet dataset,

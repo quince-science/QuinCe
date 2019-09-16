@@ -20,6 +20,7 @@ import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
+import uk.ac.exeter.QuinCe.web.BeanException;
 import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
@@ -28,7 +29,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Bean for pages containing plots and tables
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -79,7 +80,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
   /**
    * An internal value for the DataTables library, used when drawing retrieving
    * table data from the server
-   * 
+   *
    * @see <a href=
    *      "https://datatables.net/examples/data_sources/server_side.html">DataTables
    *      Server-Side Processing</a>
@@ -88,7 +89,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * The first row of the table data view to be loaded for DataTables
-   * 
+   *
    * @see <a href=
    *      "https://datatables.net/examples/data_sources/server_side.html">DataTables
    *      Server-Side Processing</a>
@@ -97,7 +98,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * The number of rows to be loaded for DataTables
-   * 
+   *
    * @see <a href=
    *      "https://datatables.net/examples/data_sources/server_side.html">DataTables
    *      Server-Side Processing</a>
@@ -152,7 +153,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the dataset ID
-   * 
+   *
    * @return The dataset ID
    */
   public long getDatasetId() {
@@ -161,7 +162,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Set the dataset ID
-   * 
+   *
    * @param datasetId
    *          The dataset ID
    */
@@ -171,7 +172,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the current DataSet object
-   * 
+   *
    * @return The data set
    */
   public DataSet getDataset() {
@@ -180,7 +181,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the data for the current view in the data table
-   * 
+   *
    * @return The table data
    * @see #tableJsonData
    */
@@ -190,7 +191,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Set the data for the current view in the data table
-   * 
+   *
    * @param tableJsonData
    *          The table data
    * @see #tableJsonData
@@ -201,7 +202,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Dummy set for the variable set JSON
-   * 
+   *
    * @param variableSetJson
    *          Ignored.
    */
@@ -231,7 +232,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Set the record count (dummy method)
-   * 
+   *
    * @param recordCount
    *          Ignored.
    */
@@ -241,7 +242,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the current value for the DataTables internal {@code draw} parameter
-   * 
+   *
    * @return The DataTables {@code draw} parameter
    * @see #tableDataDraw
    */
@@ -251,7 +252,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Set the value for the DataTables internal {@code draw} parameter
-   * 
+   *
    * @param tableDataDraw
    *          The DataTables {@code draw} parameter
    * @see #tableDataDraw
@@ -262,7 +263,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the first row of the current view in the data table
-   * 
+   *
    * @return The first row of the view
    * @see #tableDataStart
    */
@@ -272,7 +273,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Set the first row of the view in the data table
-   * 
+   *
    * @param tableDataStart
    *          The first row of the view
    * @see #tableDataStart
@@ -283,7 +284,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the number of rows in the current view in the data table
-   * 
+   *
    * @return The number of rows in the view
    * @see #tableDataLength
    */
@@ -293,7 +294,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Set the number of rows in the current view in the data file
-   * 
+   *
    * @param tableDataLength
    *          The number of rows in the view
    * @see #tableDataLength
@@ -304,7 +305,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the list of selectable row IDs
-   * 
+   *
    * @return The selectable rows
    */
   public String getSelectableRows() {
@@ -313,7 +314,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Dummy method to set selectable rows (required by bean)
-   * 
+   *
    * @param dummy
    *          Ignored
    */
@@ -324,7 +325,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
   /**
    * Get the set of rows that have been selected by the user. The rows are
    * returned as an unsorted comma-separated list.
-   * 
+   *
    * @return The selected rows
    */
   public String getSelectedRows() {
@@ -333,7 +334,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the selected rows as a list of numbers
-   * 
+   *
    * @return The selected rows
    */
   public List<LocalDateTime> getSelectedRowsList() {
@@ -348,7 +349,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Set the selected column index
-   * 
+   *
    * @param selectedRows
    *          The selected column index
    * @see #selectedColumn
@@ -359,7 +360,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Set the selected table rows.
-   * 
+   *
    * @param selectedRows
    *          The selected rows
    * @see #selectedRows
@@ -390,7 +391,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the list of field set IDs
-   * 
+   *
    * @return The field set IDs
    * @throws DatabaseException
    * @throws VariableNotFoundException
@@ -402,7 +403,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the details for Plot 1
-   * 
+   *
    * @return The plot 1 details
    */
   public Plot getPlot1() {
@@ -411,7 +412,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the details for Plot 2
-   * 
+   *
    * @return The plot 2 details
    */
   public Plot getPlot2() {
@@ -430,7 +431,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Reload data for a given plot. Can be used if the plot is changed.
-   * 
+   *
    * @param plotIndex
    *          The plot that needs to be reloaded
    */
@@ -455,7 +456,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Start a new bean instance
-   * 
+   *
    * @return Navigation to the plot page
    */
   public String start() {
@@ -468,7 +469,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
       instrument = InstrumentDB.getInstrument(getDataSource(),
         dataset.getInstrumentId(), resourceManager.getSensorsConfiguration(),
         resourceManager.getRunTypeCategoryConfiguration());
-
 
       initData();
       selectableRows = buildSelectableRows();
@@ -503,7 +503,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the current table mode
-   * 
+   *
    * @return The table mode
    */
   public long getFieldSet() {
@@ -512,7 +512,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Set the table mode
-   * 
+   *
    * @param sensorsFieldset
    *          The table mode
    */
@@ -527,14 +527,14 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the navigation to the plot screen
-   * 
+   *
    * @return The navigation to the plot screen
    */
   protected abstract String getScreenNavigation();
 
   /**
    * Build the list of selectable record IDs. By default, this is all rows
-   * 
+   *
    * @throws Exception
    *           If the list cannot be created
    */
@@ -554,7 +554,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the page data object
-   * 
+   *
    * @return The page data object
    */
   public DatasetMeasurementData getTableData() {
@@ -563,7 +563,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Load the data for the specified portion of the table as a JSON string
-   * 
+   *
    * @param start
    *          The first record to retrieve
    * @param length
@@ -571,6 +571,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * @return The table data
    */
   protected String getTableData(int start, int length) throws Exception {
+
+    pageData.loadRows(start, length);
 
     // TODO Convert to GSON - I don't have the API here
 
@@ -588,6 +590,10 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
       LinkedHashMap<Field, FieldValue> row = pageData
         .get(pageData.getRowIds().get(i));
+
+      if (null == row) {
+        throw new BeanException("Page Data row not loaded");
+      }
 
       for (FieldValue value : row.values()) {
 
@@ -622,7 +628,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the default variable to use on the X axis of Plot 1
-   * 
+   *
    * @return The default variable
    */
   protected Field getDefaultPlot1XAxis() {
@@ -631,14 +637,14 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the default variables to use on the Y axis of Plot 1
-   * 
+   *
    * @return The default variables
    */
   protected abstract Field getDefaultPlot1YAxis();
 
   /**
    * Get the default variable to use on the X axis of Plot 2
-   * 
+   *
    * @return The default variable
    */
   protected Field getDefaultPlot2XAxis() {
@@ -647,14 +653,14 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the default variables to use on the Y axis of Plot 2
-   * 
+   *
    * @return The default variables
    */
   protected abstract Field getDefaultPlot2YAxis();
 
   /**
    * Get the default variable to use on Map 1
-   * 
+   *
    * @return The default variable
    */
   protected Field getDefaultMap1Variable() {
@@ -663,7 +669,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the default variable to use on Map 2
-   * 
+   *
    * @return The default variable
    */
   protected Field getDefaultMap2Variable() {
@@ -672,7 +678,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the variable group details
-   * 
+   *
    * @return The variable group details
    */
   public String getVariableGroups() throws Exception {
@@ -681,7 +687,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the variable group names as a JSON string
-   * 
+   *
    * @return The variable group names
    */
   public String getVariableGroupNames() throws Exception {
@@ -690,7 +696,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the bounds of the data as a JSON string
-   * 
+   *
    * @return The data bounds
    */
   public String getDataBounds() {
@@ -699,7 +705,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Dummy
-   * 
+   *
    * @param dataBounds
    *          Ignored
    */
@@ -709,7 +715,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Indicates whether or not the plot page contains two plots
-   * 
+   *
    * @return {@code true} if two plots are required; {@code false} if only one
    *         plot.
    */
@@ -717,7 +723,7 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Indicates whether or not changes can be made to the data
-   * 
+   *
    * @return {@code true} if data can be edited; {@code false} if not
    */
   public boolean getCanEdit() {
@@ -726,15 +732,16 @@ public abstract class PlotPageBean extends BaseManagedBean {
   }
 
   /**
-   * Initialise the data structure for displaying data. Set up columns
-   * and row IDs
+   * Initialise the data structure for displaying data. Set up columns and row
+   * IDs
+   *
    * @throws Exception
    */
   protected abstract void initData() throws Exception;
 
   /**
    * Get the page data object
-   * 
+   *
    * @return The page data
    */
   public DatasetMeasurementData getData() {
@@ -743,14 +750,14 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   /**
    * Get the indexes of the columns that can be selected in the data table
-   * 
+   *
    * @return
    */
   public abstract List<Integer> getSelectableColumns();
 
   /**
    * Get the field sets for the current dataset
-   * 
+   *
    * @param includeTimePos
    *          Include the base field set containing time and position
    * @return
