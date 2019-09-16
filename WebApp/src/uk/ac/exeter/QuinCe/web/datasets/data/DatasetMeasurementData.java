@@ -75,6 +75,18 @@ public abstract class DatasetMeasurementData
   }
 
   /**
+   * Add a value to the table
+   *
+   * @param rowId
+   * @param fieldId
+   * @param value
+   */
+  public void addValue(LocalDateTime rowId, long fieldId, FieldValue value) {
+    addValue(rowId, fieldSets.getField(fieldId), value);
+    // dirty flag is set in called method
+  }
+
+  /**
    * Add a set of values to the table
    *
    * @param rowId
