@@ -405,15 +405,13 @@ public abstract class DatasetMeasurementData
   }
 
   public final void filterAndAddValues(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values, boolean setLoaded)
-    throws MeasurementDataException {
+    Map<Long, FieldValue> values) throws MeasurementDataException {
 
     if (!filterInitialised) {
       initFilter();
     }
 
     filterAndAddValuesAction(runType, time, values);
-    loaded.put(time, setLoaded);
   }
 
   /**
@@ -476,12 +474,13 @@ public abstract class DatasetMeasurementData
    *          The number of rows to load
    */
   public void loadRows(int start, int length) throws MeasurementDataException {
-    List<LocalDateTime> datesToLoad = getRowIds().subList(start,
-      start + length - 1);
+    List<LocalDateTime> datesToLoad = getRowIds()
+      .subList(start, start + length - 1).stream().filter(d -> !loaded.get(d))
+      .collect(Collectors.toList());
 
     // Load those dates that haven't already been loaded
-    load(datesToLoad.stream().filter(d -> !loaded.get(d))
-      .collect(Collectors.toList()));
+    load(datesToLoad);
+    setLoaded(datesToLoad, true);
   }
 
   /**
@@ -500,6 +499,10 @@ public abstract class DatasetMeasurementData
    */
   public Instrument getInstrument() {
     return instrument;
+  }
+
+  private void setLoaded(Collection<LocalDateTime> times, boolean loaded) {
+    times.stream().forEach(t -> this.loaded.put(t, loaded));
   }
 
   protected abstract void load(List<LocalDateTime> times)
