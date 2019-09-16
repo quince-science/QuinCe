@@ -160,16 +160,12 @@ public class DataSetDataDB {
     + "COUNT(*) FROM sensor_values WHERE dataset_id = ? "
     + "AND user_qc_flag = " + Flag.VALUE_NEEDED;
 
-  private static final String GET_USED_SENSOR_VALUES_QUERY = "SELECT DISTINCT "
-    + "sensor_value_id FROM measurement_values " + "WHERE measurement_id IN "
-    + "(SELECT id FROM measurements WHERE dataset_id = ?) "
-    + "ORDER BY sensor_value_id";
-
   private static final String GET_DATA_REDUCTION_QUERY = "SELECT "
     + "m.date, dr.variable_id, dr.calculation_values, dr.qc_flag, dr.qc_message "
     + "FROM measurements m INNER JOIN data_reduction dr "
-    + "ON (m.id = dr.measurement_id) "
-    + "WHERE m.dataset_id = ? ORDER BY m.date ASC";
+    + "ON (m.id = dr.measurement_id) " + "WHERE m.dataset_id = ? "
+    + "AND m.date IN " + DatabaseUtils.IN_PARAMS_TOKEN + " "
+    + "ORDER BY m.date ASC";
 
   private static final String SET_QC_STATEMENT = "UPDATE sensor_values SET "
     + "user_qc_flag = ?, user_qc_message = ? " + "WHERE id = ?";
@@ -952,7 +948,7 @@ public class DataSetDataDB {
 
       try (Connection conn = dataSource.getConnection();) {
         loadQCSensorValues(conn, output, times);
-        loadDataReductionData(conn, output);
+        loadDataReductionData(conn, output, times);
       } catch (Exception e) {
         throw new DatabaseException("Error while loading measurment data", e);
       }
@@ -1054,52 +1050,62 @@ public class DataSetDataDB {
   }
 
   private static void loadDataReductionData(Connection conn,
-    DatasetMeasurementData output)
+    DatasetMeasurementData output, List<LocalDateTime> times)
     throws MissingParamException, DatabaseException, InvalidFlagException,
     RoutineException, VariableNotFoundException, DataReductionException {
 
-    PreparedStatement stmt = null;
-    ResultSet records = null;
     SensorsConfiguration sensorConfig = ResourceManager.getInstance()
       .getSensorsConfiguration();
 
     try {
-      stmt = conn.prepareStatement(GET_DATA_REDUCTION_QUERY);
-      stmt.setLong(1, output.getDatasetId());
-      records = stmt.executeQuery();
+      String sensorValuesSQL = DatabaseUtils
+        .makeInStatementSql(GET_DATA_REDUCTION_QUERY, times.size());
 
-      while (records.next()) {
+      try (PreparedStatement sensorValuesStmt = conn
+        .prepareStatement(sensorValuesSQL)) {
 
-        LocalDateTime time = DateTimeUtils.longToDate(records.getLong(1));
-        long variableId = records.getLong(2);
-        String valuesJson = records.getString(3);
-        Flag qcFlag = new Flag(records.getInt(4));
-        String qcComment = records.getString(5);
+        sensorValuesStmt.setLong(1, output.getDatasetId());
 
-        Type mapType = new TypeToken<HashMap<String, Double>>() {
-        }.getType();
-        Map<String, Double> values = new Gson().fromJson(valuesJson, mapType);
+        // Add dates starting at parameter index 2
+        for (int i = 0; i < times.size(); i++) {
+          sensorValuesStmt.setLong(i + 2,
+            DateTimeUtils.dateToLong(times.get(i)));
+        }
 
-        LinkedHashMap<String, Long> reductionParameters = DataReducerFactory
-          .getCalculationParameters(
-            sensorConfig.getInstrumentVariable(variableId));
+        try (ResultSet records = sensorValuesStmt.executeQuery();) {
 
-        for (Map.Entry<String, Long> entry : reductionParameters.entrySet()) {
+          while (records.next()) {
 
-          FieldValue columnValue = new FieldValue(entry.getValue(),
-            values.get(entry.getKey()), new AutoQCResult(), qcFlag, qcComment,
-            true);
+            LocalDateTime time = DateTimeUtils.longToDate(records.getLong(1));
+            long variableId = records.getLong(2);
+            String valuesJson = records.getString(3);
+            Flag qcFlag = new Flag(records.getInt(4));
+            String qcComment = records.getString(5);
 
-          output.addValue(time, reductionParameters.get(entry.getKey()),
-            columnValue);
+            Type mapType = new TypeToken<HashMap<String, Double>>() {
+            }.getType();
+            Map<String, Double> values = new Gson().fromJson(valuesJson,
+              mapType);
+
+            LinkedHashMap<String, Long> reductionParameters = DataReducerFactory
+              .getCalculationParameters(
+                sensorConfig.getInstrumentVariable(variableId));
+
+            for (Map.Entry<String, Long> entry : reductionParameters
+              .entrySet()) {
+
+              FieldValue columnValue = new FieldValue(entry.getValue(),
+                values.get(entry.getKey()), new AutoQCResult(), qcFlag,
+                qcComment, true);
+
+              output.addValue(time, reductionParameters.get(entry.getKey()),
+                columnValue);
+            }
+          }
         }
       }
     } catch (SQLException e) {
       throw new DatabaseException("Error getting sensor data", e);
-    } finally {
-      DatabaseUtils.closeResultSets(records);
-      DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
     }
   }
 }
