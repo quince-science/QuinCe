@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.primefaces.json.JSONArray;
 
@@ -38,6 +39,8 @@ public abstract class DatasetMeasurementData
 
   private String rowIdsJson;
 
+  private HashMap<LocalDateTime, Boolean> loaded;
+
   private TreeMap<LocalDateTime, Position> positions;
 
   private Map<Field, MapRecords> mapCache;
@@ -45,11 +48,12 @@ public abstract class DatasetMeasurementData
   private boolean filterInitialised = false;
 
   public DatasetMeasurementData(Instrument instrument, FieldSets fieldSets,
-    DataSet dataSet) throws Exception {
+    DataSet dataSet) throws MeasurementDataException {
     super();
     this.instrument = instrument;
     this.dataSet = dataSet;
     this.fieldSets = fieldSets;
+    this.loaded = new HashMap<LocalDateTime, Boolean>();
     mapCache = new HashMap<Field, MapRecords>();
     dirty = true;
   }
@@ -61,25 +65,13 @@ public abstract class DatasetMeasurementData
    * @param field
    * @param value
    */
-  public void addValue(LocalDateTime rowId, Field field, FieldValue value) {
+  protected void addValue(LocalDateTime rowId, Field field, FieldValue value) {
     if (!containsKey(rowId)) {
       put(rowId, fieldSets.generateFieldValuesMap());
     }
 
     get(rowId).put(field, value);
     dirty = true;
-  }
-
-  /**
-   * Add a value to the table
-   *
-   * @param rowId
-   * @param fieldId
-   * @param value
-   */
-  public void addValue(LocalDateTime rowId, long fieldId, FieldValue value) {
-    addValue(rowId, fieldSets.getField(fieldId), value);
-    // dirty flag is set in called method
   }
 
   /**
@@ -90,7 +82,7 @@ public abstract class DatasetMeasurementData
    * @param values
    *          The field values
    */
-  public void addValues(LocalDateTime rowId,
+  protected void addValues(LocalDateTime rowId,
     Map<Field, ? extends FieldValue> values) {
     if (!containsKey(rowId)) {
       put(rowId, fieldSets.generateFieldValuesMap());
@@ -303,7 +295,7 @@ public abstract class DatasetMeasurementData
 
   private void buildCaches() {
     makeRowIds();
-    //makePositionLookup();
+    // makePositionLookup();
     dirty = false;
   }
 
@@ -412,50 +404,52 @@ public abstract class DatasetMeasurementData
     return updatedValues;
   }
 
-  public final void filterAndAddValues(String runType, LocalDateTime time, Map<Long, FieldValue> values)
-    throws Exception {
+  public final void filterAndAddValues(String runType, LocalDateTime time,
+    Map<Long, FieldValue> values, boolean setLoaded)
+    throws MeasurementDataException {
 
     if (!filterInitialised) {
       initFilter();
     }
 
     filterAndAddValuesAction(runType, time, values);
+    loaded.put(time, setLoaded);
   }
 
   /**
-   * Ensure that the specified times are present in the map.
-   * New times will be added with no data, while existing times
-   * will be left as they are.
+   * Ensure that the specified times are present in the map. New times will be
+   * added with no data, while existing times will be left as they are.
    *
-   * @param times The times to be added
+   * @param times
+   *          The times to be added
    */
   public final void addTimes(Collection<LocalDateTime> times) {
     times.stream().forEach(this::addTime);
   }
 
+  /**
+   * Add a set of values, filtering out unwanted values. The default filter
+   * removes values for columns that are internally calibrated where the run
+   * type is not a measurement. This has the effect of removing all values taken
+   * during internal calibration. Ensure that the specified time is present in
+   * the map. A new time will be added with no data, while an existing time will
+   * be left as it is.
+   *
+   * @param time
+   *          The time to be added
+   */
+  public final void addTime(LocalDateTime time) {
+    if (!containsKey(time)) {
+      put(time, fieldSets.generateFieldValuesMap());
+      loaded.put(time, false);
+    }
+  }
 
   /**
    * Add a set of values, filtering out unwanted values. The default filter
    * removes values for columns that are internally calibrated where the run
    * type is not a measurement. This has the effect of removing all values taken
    * during internal calibration.
-   * Ensure that the specified time is present in the map.
-   * A new time will be added with no data, while an existing time
-   * will be left as it is.
-   *
-   * @param time The time to be added
-   */
-  public final void addTime(LocalDateTime time) {
-    if (!containsKey(time)) {
-      put(time, null);
-    }
-  }
-
-  /**
-   * Add a set of values, filtering out unwanted values. The default
-   * filter removes values for columns that are internally calibrated
-   * where the run type is not a measurement. This has the effect
-   * of removing all values taken during internal calibration.
    *
    * Override this method to filter the supplied values according to need.
    *
@@ -466,10 +460,48 @@ public abstract class DatasetMeasurementData
    */
   protected abstract void filterAndAddValuesAction(String runType,
     LocalDateTime time, Map<Long, FieldValue> values)
-    throws RecordNotFoundException;
+    throws MeasurementDataException;
 
   /**
    * Initialise information required for filterAndAddValues
    */
-  protected abstract void initFilter() throws Exception;
+  protected abstract void initFilter() throws MeasurementDataException;
+
+  /**
+   * Load a range of data into the map by index
+   *
+   * @param start
+   *          The first row to load
+   * @param length
+   *          The number of rows to load
+   */
+  public void loadRows(int start, int length) throws MeasurementDataException {
+    List<LocalDateTime> datesToLoad = getRowIds().subList(start,
+      start + length - 1);
+
+    // Load those dates that haven't already been loaded
+    load(datesToLoad.stream().filter(d -> !loaded.get(d))
+      .collect(Collectors.toList()));
+  }
+
+  /**
+   * Get the database ID of the dataset to which this data belongs
+   *
+   * @return The dataset ID
+   */
+  public long getDatasetId() {
+    return dataSet.getId();
+  }
+
+  /**
+   * Get the instrument that measured this data
+   *
+   * @return The instrument
+   */
+  public Instrument getInstrument() {
+    return instrument;
+  }
+
+  protected abstract void load(List<LocalDateTime> times)
+    throws MeasurementDataException;
 }

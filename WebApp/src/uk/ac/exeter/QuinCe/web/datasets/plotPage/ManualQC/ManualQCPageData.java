@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -13,6 +14,8 @@ import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
+import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
+import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class ManualQCPageData extends DatasetMeasurementData {
 
@@ -34,30 +37,34 @@ public class ManualQCPageData extends DatasetMeasurementData {
    * @param runType
    * @param time
    * @param values
-   * @throws RecordNotFoundException
+   * @throws MeasurementDataException
    */
   @Override
   public void filterAndAddValuesAction(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values) throws RecordNotFoundException {
+    Map<Long, FieldValue> values) throws MeasurementDataException {
 
-    // Filter out values based on run type.
-    // If a value has internal calibrations, and we aren't on a
-    // measurement run type, that value is removed.
+    try {
+      // Filter out values based on run type.
+      // If a value has internal calibrations, and we aren't on a
+      // measurement run type, that value is removed.
 
-    Map<Field, FieldValue> valuesToAdd = new HashMap<Field, FieldValue>();
+      Map<Field, FieldValue> valuesToAdd = new HashMap<Field, FieldValue>();
 
-    for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
+      for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
 
-      // We don't keep internal calibration values
-      SensorType sensorType = instrument.getSensorAssignments()
-        .getSensorTypeForDBColumn(entry.getKey());
-      if (!sensorType.hasInternalCalibration()
-        || measurementRunTypes.contains(runType)) {
-        valuesToAdd.put(fieldSets.getField(entry.getKey()), entry.getValue());
+        // We don't keep internal calibration values
+        SensorType sensorType = instrument.getSensorAssignments()
+          .getSensorTypeForDBColumn(entry.getKey());
+        if (!sensorType.hasInternalCalibration()
+          || measurementRunTypes.contains(runType)) {
+          valuesToAdd.put(fieldSets.getField(entry.getKey()), entry.getValue());
+        }
       }
-    }
 
-    addValues(time, valuesToAdd);
+      addValues(time, valuesToAdd);
+    } catch (RecordNotFoundException e) {
+      throw new MeasurementDataException("Failed to look up sensor type", e);
+    }
   }
 
   /**
@@ -67,5 +74,17 @@ public class ManualQCPageData extends DatasetMeasurementData {
   protected void initFilter() {
     // Get the list of run type values that indicate measurements
     measurementRunTypes = instrument.getMeasurementRunTypes();
+  }
+
+  @Override
+  protected void load(List<LocalDateTime> times)
+    throws MeasurementDataException {
+
+    try {
+      DataSetDataDB.loadMeasurementData(
+        ResourceManager.getInstance().getDBDataSource(), this, times);
+    } catch (Exception e) {
+      throw new MeasurementDataException("Error loading data from database", e);
+    }
   }
 }

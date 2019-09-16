@@ -9,11 +9,11 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
+import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 public class InternalCalibrationPageData extends DatasetMeasurementData {
@@ -29,7 +29,7 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
 
   @Override
   public void filterAndAddValuesAction(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values) throws RecordNotFoundException {
+    Map<Long, FieldValue> values) throws MeasurementDataException {
 
     if (internalCalibrationRunTypes.contains(runType)) {
       Map<Field, FieldValue> addValues = new HashMap<Field, FieldValue>();
@@ -47,18 +47,30 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
   }
 
   @Override
-  protected void initFilter() throws Exception {
+  protected void initFilter() throws MeasurementDataException {
 
-    columns = new HashMap<Long, FileColumn>();
+    try {
+      columns = new HashMap<Long, FileColumn>();
 
-    List<FileColumn> instrumentColumns = InstrumentDB.getSensorColumns(
-      ResourceManager.getInstance().getDBDataSource(),
-      instrument.getDatabaseId());
-    for (FileColumn column : instrumentColumns) {
-      columns.put(column.getColumnId(), column);
+      List<FileColumn> instrumentColumns = InstrumentDB.getSensorColumns(
+        ResourceManager.getInstance().getDBDataSource(),
+        instrument.getDatabaseId());
+      for (FileColumn column : instrumentColumns) {
+        columns.put(column.getColumnId(), column);
+      }
+
+      // Get the list of run type values that indicate measurements
+      internalCalibrationRunTypes = instrument.getInternalCalibrationRunTypes();
+    } catch (Exception e) {
+      throw new MeasurementDataException("Error looking up insturment details",
+        e);
     }
+  }
 
-    // Get the list of run type values that indicate measurements
-    internalCalibrationRunTypes = instrument.getInternalCalibrationRunTypes();
+  @Override
+  protected void load(List<LocalDateTime> times)
+    throws MeasurementDataException {
+    // TODO Auto-generated method stub
+
   }
 }
