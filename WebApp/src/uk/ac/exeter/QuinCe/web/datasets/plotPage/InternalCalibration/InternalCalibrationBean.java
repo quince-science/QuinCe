@@ -35,7 +35,7 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageBean;
 
 /**
  * Bean for handling review of calibration data
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -78,7 +78,7 @@ public class InternalCalibrationBean extends PlotPageBean {
 
   /**
    * Finish the calibration data validation
-   * 
+   *
    * @return Navigation to the data set list
    */
   public String finish() {
@@ -109,7 +109,7 @@ public class InternalCalibrationBean extends PlotPageBean {
 
   /**
    * Get the flag indicating whether the selected calibrations are to be used
-   * 
+   *
    * @return The use calibrations flag
    */
   public boolean getUseCalibrations() {
@@ -118,7 +118,7 @@ public class InternalCalibrationBean extends PlotPageBean {
 
   /**
    * Set the flag indicating whether the selected calibrations are to be used
-   * 
+   *
    * @param useCalibrations
    *          The use calibrations flag
    */
@@ -129,7 +129,7 @@ public class InternalCalibrationBean extends PlotPageBean {
   /**
    * Get the message that will be attached to calibrations which aren't being
    * used
-   * 
+   *
    * @return The message for unused calibrations
    */
   public String getUseCalibrationsMessage() {
@@ -139,7 +139,7 @@ public class InternalCalibrationBean extends PlotPageBean {
   /**
    * Set the message that will be attached to calibrations which aren't being
    * used
-   * 
+   *
    * @param useCalibrationsMessage
    *          The message for unused calibrations
    */
@@ -149,7 +149,7 @@ public class InternalCalibrationBean extends PlotPageBean {
 
   /**
    * Set the usage status of the selected rows
-   * 
+   *
    * @throws DatabaseException
    *           If a database error occurs
    * @throws MissingParamException
@@ -222,8 +222,8 @@ public class InternalCalibrationBean extends PlotPageBean {
         .mapToLong(FileColumn::getColumnId).boxed()
         .collect(Collectors.toList());
 
-      DataSetDataDB.getQCSensorData(getDataSource(), pageData,
-        getDataset().getId(), instrument, fieldIds);
+      // DataSetDataDB.getQCSensorData(getDataSource(), pageData,
+      // getDataset().getId(), instrument, fieldIds);
 
       // Load internal calibration data
       loadCalibrationData(calibratedColumns);
