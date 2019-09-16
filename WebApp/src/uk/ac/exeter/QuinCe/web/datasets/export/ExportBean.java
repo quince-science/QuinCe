@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
@@ -289,11 +290,13 @@ public class ExportBean extends BaseManagedBean {
     fieldIds.add(FileDefinition.LATITUDE_COLUMN_ID);
     fieldIds.addAll(instrument.getSensorAssignments().getFileColumnIDs());
 
-    DataSetDataDB.getQCSensorData(dataSource, data, dataset.getId(), instrument,
-      fieldIds);
-
-    // Load data reduction data
-    DataSetDataDB.getDataReductionData(dataSource, data, dataset);
+    /*
+     * DataSetDataDB.getQCSensorData(dataSource, data, dataset.getId(),
+     * instrument, fieldIds);
+     *
+     * // Load data reduction data
+     * DataSetDataDB.getDataReductionData(dataSource, data, dataset);
+     */
 
     // Let's make some output
     StringBuilder output = new StringBuilder();
