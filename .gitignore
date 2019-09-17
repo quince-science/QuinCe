@@ -30,3 +30,9 @@ WebApp/WebContent/resources/python/export/oap_metadata_templates/
 WebApp/WebContent/resources/python/export/index_monthly.txt
 
 WebApp/WebContent/resources/python/export/monthly/stations.rdf
+
+WebApp/WebContent/resources/python/export/config_carbon.toml
+
+WebApp/WebContent/resources/python/export/config_copernicus.toml
+
+WebApp/WebContent/resources/python/export/config_quince.toml
