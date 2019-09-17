@@ -691,18 +691,6 @@ def evaluate_response_file(ftp,dnt_filepath,folder_local):
     return rejected_list
   else: return True
 
-def cmems_delay(filename, upload_time):
-  #date_recorded = filename.rsplit('_',1)[-1].split('.')[0] #nc_date
-  #target_upload = datetime.datetime#nc-date + 1 day + 12:00 
-  #delay = #diff uploaded - recorded
-
-  #cmems_report_time_exist = os.path.isfile(cmems_report_time)
-  #if cmems_report_time_exist:
-  #  with open(cmems_report_time) as log:
-  #    log.write(file)
-  #return upload_response_log
-
-
 def get_response(ftp,dnt_filepath,folder_local):
   '''
   Retrieves the status of any file uploaded to CMEMS server
@@ -720,6 +708,17 @@ def get_response(ftp,dnt_filepath,folder_local):
   with open(target,'r') as response_file:
     response = response_file.read()
   return response
+
+#def cmems_delay(filename, upload_time):
+  #date_recorded = filename.rsplit('_',1)[-1].split('.')[0] #nc_date
+  #target_upload = datetime.datetime#nc-date + 1 day + 12:00 
+  #delay = #diff uploaded - recorded
+
+  #cmems_report_time_exist = os.path.isfile(cmems_report_time)
+  #if cmems_report_time_exist:
+  #  with open(cmems_report_time) as log:
+  #    log.write(file)
+  #return upload_response_log
 
 
 
