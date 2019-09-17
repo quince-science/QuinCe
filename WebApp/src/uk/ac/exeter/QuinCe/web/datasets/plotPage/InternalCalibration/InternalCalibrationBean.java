@@ -211,7 +211,7 @@ public class InternalCalibrationBean extends PlotPageBean {
 
         // Add one field for each run type
         for (String runType : calibrationRunTypes) {
-          fieldSets.addField(columnFieldSet, new RunTypeField(runType, column));
+          fieldSets.addField(new RunTypeField(columnFieldSet, runType, column));
         }
       }
 
