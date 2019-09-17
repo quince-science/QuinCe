@@ -52,10 +52,11 @@ def get_export_list(config):
     ready to be downloaded.
     '''
     logging.info('Retrieving exportList from QuinCe')
-    export_list = QuinCe_req(config,'exportList').decode('utf8').count('id')
-    logging.info(f'{export_list} dataset(s) ready for export')
+    export_list = QuinCe_req(config,'exportList').decode('utf8')
+    export_list_count = export_list.count('id')
+    logging.info(f'{export_list_count} dataset(s) ready for export')
 
-    return json.loads(export_list.decode('utf-8'))
+    return json.loads(export_list)
 
 def get_export_dataset(config,dataset_id):
     ''' Retrieves .zip file from QuinCe 
