@@ -6,7 +6,7 @@ import json
 import sys
 import os
 
-def QuinCe_req(config, call, dataset_id=-1):
+def quince_req(config, call, dataset_id=-1):
     ''' sends request to QuinCe'''
     quince_url = config["QuinCe"]["url"]
     user = config["QuinCe"]["user"]
@@ -52,7 +52,7 @@ def get_export_list(config):
     ready to be downloaded.
     '''
     logging.info('Retrieving exportList from QuinCe')
-    export_list = QuinCe_req(config,'exportList').decode('utf8')
+    export_list = quince_req(config,'exportList').decode('utf8')
     export_list_count = export_list.count('id')
     logging.info(f'{export_list_count} dataset(s) ready for export')
 
@@ -68,20 +68,20 @@ def get_export_dataset(config,dataset_id):
     returns .zipfile.
     '''
     logging.info(f'Exporting dataset with id : {dataset_id}, from QuinCe')
-    export_dataset = QuinCe_req(config, 'exportDataset', dataset_id)
+    export_dataset = quince_req(config, 'exportDataset', dataset_id)
 
     return export_dataset
 
 def report_complete_export(config,dataset_id):
     ''' Reports to successful export '''
     logging.info(f'Export complete for dataset with QuinCe id: {dataset_id}')
-    complete_export = QuinCe_req(config, 'completeExport', dataset_id)
+    complete_export = quince_req(config, 'completeExport', dataset_id)
 
 def report_abandon_export(config,dataset_id):
     ''' Reports unsuccessful export '''
     logging.info(f'Abandoning export of dataset with QuinCe id: {dataset_id}')
-    abandon_export = QuinCe_req(config, 'abandonExport', dataset_id)
+    abandon_export = quince_req(config, 'abandonExport', dataset_id)
 
 def report_touch_export(config,dataset_id):
     ''' Reports still processing to QuinCe  '''    
-    touch_export = QuinCe_req(config, 'touchExport', dataset_id)
+    touch_export = quince_req(config, 'touchExport', dataset_id)
