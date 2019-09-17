@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,5 +87,11 @@ public class ManualQCPageData extends DatasetMeasurementData {
     } catch (Exception e) {
       throw new MeasurementDataException("Error loading data from database", e);
     }
+  }
+
+  @Override
+  protected void loadField(Field... field) throws MeasurementDataException {
+    // TODO Auto-generated method stub
+    Arrays.stream(field).forEach(f -> System.out.println(f.getId()));
   }
 }

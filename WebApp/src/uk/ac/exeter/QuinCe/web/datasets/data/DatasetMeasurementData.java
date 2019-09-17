@@ -37,11 +37,25 @@ public abstract class DatasetMeasurementData
 
   private boolean dirty = true;
 
+  /**
+   * A cache of the row IDs in the data
+   */
   private List<LocalDateTime> rowIdsCache = new ArrayList<LocalDateTime>();
 
+  /**
+   * JSON representation of the row IDs in the data
+   */
   private String rowIdsJson;
 
-  private HashMap<LocalDateTime, Boolean> loaded;
+  /**
+   * A log of which rows have been fully loaded into the data set
+   */
+  private HashMap<LocalDateTime, Boolean> rowsLoaded;
+
+  /**
+   * A log of which fields have been fully loaded into the data set
+   */
+  private HashMap<Field, Boolean> fieldsLoaded;
 
   private TreeMap<LocalDateTime, Position> positions;
 
@@ -55,7 +69,7 @@ public abstract class DatasetMeasurementData
     this.instrument = instrument;
     this.dataSet = dataSet;
     this.fieldSets = fieldSets;
-    this.loaded = new HashMap<LocalDateTime, Boolean>();
+    this.rowsLoaded = new HashMap<LocalDateTime, Boolean>();
     mapCache = new HashMap<Field, MapRecords>();
     dirty = true;
   }
@@ -114,7 +128,8 @@ public abstract class DatasetMeasurementData
    *          Y Axis
    * @return The plot data
    */
-  public String getPlotData(Field xAxis, Field yAxis) {
+  public String getPlotData(Field xAxis, Field yAxis)
+    throws MeasurementDataException {
 
     TreeSet<PlotRecord> records;
 
@@ -185,7 +200,11 @@ public abstract class DatasetMeasurementData
     mapCache.put(field, records);
   }
 
-  private TreeSet<PlotRecord> getPlotDataWithIdAxis(Field yAxis) {
+  private TreeSet<PlotRecord> getPlotDataWithIdAxis(Field yAxis)
+    throws MeasurementDataException {
+
+    loadField(yAxis);
+
     TreeSet<PlotRecord> records = new TreeSet<PlotRecord>();
 
     for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> entry : entrySet()) {
@@ -203,8 +222,10 @@ public abstract class DatasetMeasurementData
     return records;
   }
 
-  private TreeSet<PlotRecord> getPlotDataWithNonIdAxis(Field xAxis,
-    Field yAxis) {
+  private TreeSet<PlotRecord> getPlotDataWithNonIdAxis(Field xAxis, Field yAxis)
+    throws MeasurementDataException {
+
+    loadField(xAxis, yAxis);
 
     TreeSet<PlotRecord> records = new TreeSet<PlotRecord>();
 
@@ -460,7 +481,7 @@ public abstract class DatasetMeasurementData
   public final void addTime(LocalDateTime time) {
     if (!containsKey(time)) {
       put(time, fieldSets.generateFieldValuesMap());
-      loaded.put(time, false);
+      rowsLoaded.put(time, false);
     }
   }
 
@@ -496,8 +517,8 @@ public abstract class DatasetMeasurementData
    */
   public void loadRows(int start, int length) throws MeasurementDataException {
     List<LocalDateTime> datesToLoad = getRowIds()
-      .subList(start, start + length - 1).stream().filter(d -> !loaded.get(d))
-      .collect(Collectors.toList());
+      .subList(start, start + length - 1).stream()
+      .filter(d -> !rowsLoaded.get(d)).collect(Collectors.toList());
 
     // Load those dates that haven't already been loaded
     load(datesToLoad);
@@ -523,9 +544,12 @@ public abstract class DatasetMeasurementData
   }
 
   private void setLoaded(Collection<LocalDateTime> times, boolean loaded) {
-    times.stream().forEach(t -> this.loaded.put(t, loaded));
+    times.stream().forEach(t -> this.rowsLoaded.put(t, loaded));
   }
 
   protected abstract void load(List<LocalDateTime> times)
+    throws MeasurementDataException;
+
+  protected abstract void loadField(Field... field)
     throws MeasurementDataException;
 }

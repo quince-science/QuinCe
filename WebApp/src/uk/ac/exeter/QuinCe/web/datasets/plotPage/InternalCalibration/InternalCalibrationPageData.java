@@ -11,6 +11,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
@@ -37,7 +38,8 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
       for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
 
         FileColumn column = columns.get(entry.getKey());
-        RunTypeField destinationField = new RunTypeField(runType, column);
+        RunTypeField destinationField = new RunTypeField(
+          FieldSet.BASE_FIELD_SET, runType, column);
         addValues.put(destinationField, entry.getValue());
 
       }
@@ -70,6 +72,12 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
   @Override
   protected void load(List<LocalDateTime> times)
     throws MeasurementDataException {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  protected void loadField(Field... field) throws MeasurementDataException {
     // TODO Auto-generated method stub
 
   }
