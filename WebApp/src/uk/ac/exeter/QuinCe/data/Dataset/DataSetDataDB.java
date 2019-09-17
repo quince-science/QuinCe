@@ -43,6 +43,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
+import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
@@ -145,13 +146,20 @@ public class DataSetDataDB {
   private static final String DELETE_MEASUREMENTS_STATEMENT = "DELETE FROM "
     + "measurements WHERE dataset_id = ?";
 
-  private static final String GET_SENSOR_VALUES_QUERY = "SELECT "
+  private static final String GET_SENSOR_VALUES_BY_DATE_QUERY = "SELECT "
     + "sv.id, sv.file_column, sv.date, sv.value, sv.auto_qc, " // 5
     + "sv.user_qc_flag, sv.user_qc_message, mv.measurement_id " // 8
     + " FROM sensor_values sv LEFT JOIN measurement_values mv "
     + "ON sv.id = mv.sensor_value_id WHERE sv.dataset_id = ? "
     + "AND sv.date IN " + DatabaseUtils.IN_PARAMS_TOKEN + " "
     + "ORDER BY sv.date ASC";
+
+  private static final String GET_SENSOR_VALUES_BY_SENSOR_QUERY = "SELECT "
+    + "sv.id, sv.file_column, sv.date, sv.value, sv.auto_qc, " // 5
+    + "sv.user_qc_flag, sv.user_qc_message, mv.measurement_id " // 8
+    + " FROM sensor_values sv LEFT JOIN measurement_values mv "
+    + "ON sv.id = mv.sensor_value_id WHERE sv.dataset_id = ? "
+    + "AND sv.file_column = ? ORDER BY sv.date ASC";
 
   private static final String GET_SENSOR_VALUE_DATES_QUERY = "SELECT DISTINCT "
     + "date FROM sensor_values WHERE dataset_id = ? ORDER BY DATE ASC";
@@ -945,7 +953,6 @@ public class DataSetDataDB {
     MissingParam.checkMissing(times, "times", true);
 
     if (times.size() > 0) {
-
       try (Connection conn = dataSource.getConnection();) {
         loadQCSensorValues(conn, output, times);
         loadDataReductionData(conn, output, times);
@@ -955,30 +962,82 @@ public class DataSetDataDB {
     }
   }
 
+  public static void loadSensorData(DataSource dataSource,
+    DatasetMeasurementData output, List<Field> fields)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(output, "output");
+    MissingParam.checkMissing(fields, "sensorIDs", false);
+
+    try (Connection conn = dataSource.getConnection();) {
+      for (Field field : fields) {
+        loadQCSensorValues(conn, output, field);
+      }
+    } catch (Exception e) {
+      throw new DatabaseException("Error while loading measurment data", e);
+    }
+  }
+
+  private static void loadQCSensorValues(Connection conn,
+    DatasetMeasurementData output, Field field) throws DatabaseException {
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(GET_SENSOR_VALUES_BY_SENSOR_QUERY)) {
+
+      stmt.setLong(1, output.getDatasetId());
+      stmt.setLong(2, field.getId());
+
+      SensorType sensorType = output.getInstrument().getSensorAssignments()
+        .getSensorTypeForDBColumn(field.getId());
+
+      try (ResultSet records = stmt.executeQuery()) {
+
+        while (records.next()) {
+          LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
+          FieldValue value = makeSensorFieldValue(records, sensorType);
+          output.addValue(time, field, value);
+        }
+      }
+    } catch (Exception e) {
+      throw new DatabaseException("Error while retrieving sensor values", e);
+    }
+  }
+
+  /**
+   * Load all the sensor values for a given set of times
+   *
+   * @param conn
+   * @param output
+   * @param times
+   * @throws SQLException
+   * @throws MeasurementDataException
+   * @throws RecordNotFoundException
+   * @throws InvalidFlagException
+   * @throws RoutineException
+   */
   private static void loadQCSensorValues(Connection conn,
     DatasetMeasurementData output, List<LocalDateTime> times)
     throws SQLException, MeasurementDataException, RecordNotFoundException,
     InvalidFlagException, RoutineException {
 
+    String sensorValuesSQL = DatabaseUtils
+      .makeInStatementSql(GET_SENSOR_VALUES_BY_DATE_QUERY, times.size());
+
     // Get the Run Type column IDs
     List<Long> runTypeColumns = output.getInstrument().getSensorAssignments()
       .getRunTypeColumnIDs();
 
-    String sensorValuesSQL = DatabaseUtils
-      .makeInStatementSql(GET_SENSOR_VALUES_QUERY, times.size());
+    try (PreparedStatement stmt = conn.prepareStatement(sensorValuesSQL)) {
 
-    try (PreparedStatement sensorValuesStmt = conn
-      .prepareStatement(sensorValuesSQL)) {
-
-      sensorValuesStmt.setLong(1, output.getDatasetId());
+      stmt.setLong(1, output.getDatasetId());
 
       // Add dates starting at parameter index 2
       for (int i = 0; i < times.size(); i++) {
-        sensorValuesStmt.setLong(i + 2, DateTimeUtils.dateToLong(times.get(i)));
+        stmt.setLong(i + 2, DateTimeUtils.dateToLong(times.get(i)));
       }
 
-      try (ResultSet sensorValueRecords = sensorValuesStmt.executeQuery()) {
-
+      try (ResultSet records = stmt.executeQuery()) {
         // We collect together all the sensor values for a given date.
         // Then we check them all together and add them to the output
         String currentRunType = null;
@@ -986,9 +1045,8 @@ public class DataSetDataDB {
         Map<Long, FieldValue> currentDateValues = new HashMap<Long, FieldValue>();
 
         // Loop through all the sensor value records
-        while (sensorValueRecords.next()) {
-          LocalDateTime time = DateTimeUtils
-            .longToDate(sensorValueRecords.getLong(3));
+        while (records.next()) {
+          LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
 
           // If the time has changed, process the current set of collected
           // values
@@ -1006,38 +1064,16 @@ public class DataSetDataDB {
           // Process the current record
 
           // See if this is a Run Type
-          long fileColumn = sensorValueRecords.getLong(2);
+          long fileColumn = records.getLong(2);
 
           if (runTypeColumns.contains(fileColumn)) {
-            currentRunType = sensorValueRecords.getString(4);
+            currentRunType = records.getString(4);
           } else {
-
             // This is a sensor value
-            long valueId = sensorValueRecords.getLong(1);
-            Double sensorValue = StringUtils
-              .doubleFromString(sensorValueRecords.getString(4));
-            AutoQCResult autoQC = AutoQCResult
-              .buildFromJson(sensorValueRecords.getString(5));
-            Flag userQCFlag = new Flag(sensorValueRecords.getInt(6));
-            String qcComment = sensorValueRecords.getString(7);
-
             SensorType sensorType = output.getInstrument()
               .getSensorAssignments().getSensorTypeForDBColumn(fileColumn);
 
-            // See if this value has been used in the data set
-            // Position and diagnostics are always marked as used
-            // Get the measurement ID from the ResultSet. If it was null,
-            // then it isn't used in the dataset for a measurement
-            sensorValueRecords.getLong(8);
-            boolean used = !sensorValueRecords.wasNull();
-
-            // Position and diagnostics are always marked as used
-            if (!used && fileColumn < 0 || sensorType.isDiagnostic()) {
-              used = true;
-            }
-
-            FieldValue value = new FieldValue(valueId, sensorValue, autoQC,
-              userQCFlag, qcComment, used);
+            FieldValue value = makeSensorFieldValue(records, sensorType);
             currentDateValues.put(fileColumn, value);
           }
         }
@@ -1047,6 +1083,33 @@ public class DataSetDataDB {
           currentDateValues);
       }
     }
+  }
+
+  private static FieldValue makeSensorFieldValue(ResultSet record,
+    SensorType sensorType)
+    throws SQLException, RoutineException, InvalidFlagException {
+
+    long valueId = record.getLong(1);
+    long fileColumn = record.getLong(2);
+    Double sensorValue = StringUtils.doubleFromString(record.getString(4));
+    AutoQCResult autoQC = AutoQCResult.buildFromJson(record.getString(5));
+    Flag userQCFlag = new Flag(record.getInt(6));
+    String qcComment = record.getString(7);
+
+    // See if this value has been used in the data set
+    // Position and diagnostics are always marked as used
+    // Get the measurement ID from the ResultSet. If it was null,
+    // then it isn't used in the dataset for a measurement
+    record.getLong(8);
+    boolean used = !record.wasNull();
+
+    // Position and diagnostics are always marked as used
+    if (!used && fileColumn < 0 || sensorType.isDiagnostic()) {
+      used = true;
+    }
+
+    return new FieldValue(valueId, sensorValue, autoQC, userQCFlag, qcComment,
+      used);
   }
 
   private static void loadDataReductionData(Connection conn,

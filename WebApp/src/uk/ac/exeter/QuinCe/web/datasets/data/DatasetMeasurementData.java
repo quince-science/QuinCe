@@ -70,6 +70,11 @@ public abstract class DatasetMeasurementData
     this.dataSet = dataSet;
     this.fieldSets = fieldSets;
     this.rowsLoaded = new HashMap<LocalDateTime, Boolean>();
+    this.fieldsLoaded = new HashMap<Field, Boolean>();
+    for (Field field : fieldSets.getFields()) {
+      fieldsLoaded.put(field, false);
+    }
+
     mapCache = new HashMap<Field, MapRecords>();
     dirty = true;
   }
@@ -81,7 +86,7 @@ public abstract class DatasetMeasurementData
    * @param field
    * @param value
    */
-  protected void addValue(LocalDateTime rowId, Field field, FieldValue value) {
+  public void addValue(LocalDateTime rowId, Field field, FieldValue value) {
     if (!containsKey(rowId)) {
       put(rowId, fieldSets.generateFieldValuesMap());
     }
@@ -522,7 +527,7 @@ public abstract class DatasetMeasurementData
 
     // Load those dates that haven't already been loaded
     load(datesToLoad);
-    setLoaded(datesToLoad, true);
+    setRowLoaded(datesToLoad, true);
   }
 
   /**
@@ -543,13 +548,18 @@ public abstract class DatasetMeasurementData
     return instrument;
   }
 
-  private void setLoaded(Collection<LocalDateTime> times, boolean loaded) {
+  private void setRowLoaded(Collection<LocalDateTime> times, boolean loaded) {
     times.stream().forEach(t -> this.rowsLoaded.put(t, loaded));
   }
 
   protected abstract void load(List<LocalDateTime> times)
     throws MeasurementDataException;
 
-  protected abstract void loadField(Field... field)
+  private void loadField(Field... field) throws MeasurementDataException {
+    loadFieldAction(Arrays.stream(field).filter(f -> !fieldsLoaded.get(f))
+      .collect(Collectors.toList()));
+  }
+
+  protected abstract void loadFieldAction(List<Field> field)
     throws MeasurementDataException;
 }
