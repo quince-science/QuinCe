@@ -31,6 +31,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
@@ -168,12 +169,17 @@ public class DataSetDataDB {
     + "COUNT(*) FROM sensor_values WHERE dataset_id = ? "
     + "AND user_qc_flag = " + Flag.VALUE_NEEDED;
 
-  private static final String GET_DATA_REDUCTION_QUERY = "SELECT "
+  private static final String GET_DATA_REDUCTION_DATE_FILTER_QUERY = "SELECT "
     + "m.date, dr.variable_id, dr.calculation_values, dr.qc_flag, dr.qc_message "
     + "FROM measurements m INNER JOIN data_reduction dr "
-    + "ON (m.id = dr.measurement_id) " + "WHERE m.dataset_id = ? "
-    + "AND m.date IN " + DatabaseUtils.IN_PARAMS_TOKEN + " "
-    + "ORDER BY m.date ASC";
+    + "ON (m.id = dr.measurement_id) WHERE m.dataset_id = ? " + "AND m.date IN "
+    + DatabaseUtils.IN_PARAMS_TOKEN + " " + "ORDER BY m.date ASC";
+
+  private static final String GET_DATA_REDUCTION_QUERY = "SELECT "
+    + "m.date, dr.calculation_values, qc_flag "
+    + "FROM measurements m INNER JOIN data_reduction dr "
+    + "ON (m.id = dr.measurement_id) WHERE m.dataset_id = ? "
+    + "AND dr.variable_id = ? ORDER BY m.date ASC";
 
   private static final String SET_QC_STATEMENT = "UPDATE sensor_values SET "
     + "user_qc_flag = ?, user_qc_message = ? " + "WHERE id = ?";
@@ -1122,7 +1128,7 @@ public class DataSetDataDB {
 
     try {
       String sensorValuesSQL = DatabaseUtils
-        .makeInStatementSql(GET_DATA_REDUCTION_QUERY, times.size());
+        .makeInStatementSql(GET_DATA_REDUCTION_DATE_FILTER_QUERY, times.size());
 
       try (PreparedStatement sensorValuesStmt = conn
         .prepareStatement(sensorValuesSQL)) {
@@ -1169,6 +1175,48 @@ public class DataSetDataDB {
       }
     } catch (SQLException e) {
       throw new DatabaseException("Error getting sensor data", e);
+    }
+  }
+
+  public static void loadDataReductionData(DataSource dataSource,
+    DatasetMeasurementData output, InstrumentVariable variable, Field field)
+    throws MissingParamException, DatabaseException, InvalidFlagException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(output, "output");
+    MissingParam.checkMissing(variable, "variable");
+    MissingParam.checkMissing(field, "field");
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement(GET_DATA_REDUCTION_QUERY)) {
+
+      stmt.setLong(1, output.getDatasetId());
+      stmt.setLong(2, variable.getId());
+
+      try (ResultSet records = stmt.executeQuery()) {
+
+        LinkedHashMap<String, Long> reductionParameters = DataReducerFactory
+          .getCalculationParameters(variable);
+
+        while (records.next()) {
+          LocalDateTime time = DateTimeUtils.longToDate(records.getLong(1));
+          String valuesJson = records.getString(2);
+          Type mapType = new TypeToken<HashMap<String, Double>>() {
+          }.getType();
+          Map<String, Double> values = new Gson().fromJson(valuesJson, mapType);
+          Flag qcFlag = new Flag(records.getInt(3));
+
+          FieldValue value = new FieldValue(
+            reductionParameters.get(field.getName()),
+            values.get(field.getName()), new AutoQCResult(), qcFlag, null,
+            true);
+
+          output.addValue(time, field, value);
+        }
+      }
+    } catch (Exception e) {
+      throw new DatabaseException("Error getting data reduction data", e);
     }
   }
 }
