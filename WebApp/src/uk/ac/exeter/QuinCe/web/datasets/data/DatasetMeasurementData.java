@@ -55,7 +55,7 @@ public abstract class DatasetMeasurementData
   /**
    * A log of which fields have been fully loaded into the data set
    */
-  protected HashMap<Field, Boolean> fieldsLoaded;
+  private HashMap<Field, Boolean> fieldsLoaded;
 
   private TreeMap<LocalDateTime, Position> positions;
 
