@@ -1,7 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +13,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
@@ -90,8 +91,33 @@ public class ManualQCPageData extends DatasetMeasurementData {
   }
 
   @Override
-  protected void loadField(Field... field) throws MeasurementDataException {
-    // TODO Auto-generated method stub
-    Arrays.stream(field).forEach(f -> System.out.println(f.getId()));
+  protected void loadFieldAction(List<Field> fields)
+    throws MeasurementDataException {
+
+    try {
+      boolean loadDataReduction = false;
+      List<Field> sensorFields = new ArrayList<Field>(fields.size());
+
+      for (Field f : fields) {
+        if (isSensorFieldSet(f.getFieldSet())) {
+          sensorFields.add(f);
+        } else {
+          loadDataReduction = true;
+        }
+      }
+
+      if (sensorFields.size() > 0) {
+        DataSetDataDB.loadSensorData(
+          ResourceManager.getInstance().getDBDataSource(), this, sensorFields);
+      }
+    } catch (Exception e) {
+      throw new MeasurementDataException("Error loading data from database", e);
+    }
+  }
+
+  private boolean isSensorFieldSet(FieldSet fieldSet) {
+    return fieldSet.getId() == FieldSet.BASE_FIELD_SET.getId()
+      || fieldSet.getId() == DataSetDataDB.SENSORS_FIELDSET
+      || fieldSet.getId() == DataSetDataDB.DIAGNOSTICS_FIELDSET;
   }
 }

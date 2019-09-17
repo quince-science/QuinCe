@@ -77,7 +77,8 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
   }
 
   @Override
-  protected void loadField(Field... field) throws MeasurementDataException {
+  protected void loadFieldAction(List<Field> fields)
+    throws MeasurementDataException {
     // TODO Auto-generated method stub
 
   }
