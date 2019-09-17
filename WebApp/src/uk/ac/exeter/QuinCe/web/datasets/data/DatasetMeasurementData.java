@@ -55,7 +55,7 @@ public abstract class DatasetMeasurementData
   /**
    * A log of which fields have been fully loaded into the data set
    */
-  private HashMap<Field, Boolean> fieldsLoaded;
+  protected HashMap<Field, Boolean> fieldsLoaded;
 
   private TreeMap<LocalDateTime, Position> positions;
 
@@ -558,6 +558,7 @@ public abstract class DatasetMeasurementData
   private void loadField(Field... field) throws MeasurementDataException {
     loadFieldAction(Arrays.stream(field).filter(f -> !fieldsLoaded.get(f))
       .collect(Collectors.toList()));
+    Arrays.stream(field).forEach(f -> fieldsLoaded.put(f, true));
   }
 
   protected abstract void loadFieldAction(List<Field> field)
