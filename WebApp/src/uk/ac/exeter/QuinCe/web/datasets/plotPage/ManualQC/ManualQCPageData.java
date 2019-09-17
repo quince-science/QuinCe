@@ -9,6 +9,7 @@ import java.util.Map;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
@@ -95,14 +96,18 @@ public class ManualQCPageData extends DatasetMeasurementData {
     throws MeasurementDataException {
 
     try {
-      boolean loadDataReduction = false;
       List<Field> sensorFields = new ArrayList<Field>(fields.size());
-
-      for (Field f : fields) {
-        if (isSensorFieldSet(f.getFieldSet())) {
-          sensorFields.add(f);
+      for (Field field : fields) {
+        if (isSensorFieldSet(field.getFieldSet())) {
+          sensorFields.add(field);
         } else {
-          loadDataReduction = true;
+          InstrumentVariable variable = instrument
+            .getVariable(field.getFieldSet().getName());
+
+          DataSetDataDB.loadDataReductionData(
+            ResourceManager.getInstance().getDBDataSource(), this, variable,
+            field);
+
         }
       }
 

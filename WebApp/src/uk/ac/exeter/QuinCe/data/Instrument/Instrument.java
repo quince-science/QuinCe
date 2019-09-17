@@ -18,7 +18,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
 /**
  * Object to hold all the details of an instrument
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -87,7 +87,7 @@ public class Instrument {
 
   /**
    * Constructor for a complete instrument that's already in the database
-   * 
+   *
    * @param databaseId
    *          The instrument's database ID
    * @param ownerId
@@ -135,7 +135,7 @@ public class Instrument {
 
   /**
    * Constructor for a complete instrument with no database ID
-   * 
+   *
    * @param owner
    *          The instrument's owner
    * @param name
@@ -178,7 +178,7 @@ public class Instrument {
 
   /**
    * Validate that all required information for the Instrument is present
-   * 
+   *
    * @param checkDatabaseColumns
    *          Specifies whether or not database columns have been assigned and
    *          should be checked
@@ -192,7 +192,7 @@ public class Instrument {
 
   /**
    * Returns the ID of the instrument in the database
-   * 
+   *
    * @return The ID of the instrument in the database
    */
   public long getDatabaseId() {
@@ -201,7 +201,7 @@ public class Instrument {
 
   /**
    * Sets the ID of the instrument in the database
-   * 
+   *
    * @param databaseID
    *          The database ID
    */
@@ -211,7 +211,7 @@ public class Instrument {
 
   /**
    * Returns the database ID of the owner of the instrument
-   * 
+   *
    * @return The ID of the owner of the instrument
    */
   public long getOwnerId() {
@@ -220,7 +220,7 @@ public class Instrument {
 
   /**
    * Get the instrument's name
-   * 
+   *
    * @return The name
    */
   public String getName() {
@@ -229,7 +229,7 @@ public class Instrument {
 
   /**
    * Returns the pre-flushing time
-   * 
+   *
    * @return The pre-flushing time
    */
   public int getPreFlushingTime() {
@@ -238,7 +238,7 @@ public class Instrument {
 
   /**
    * Sets the pre-flushing time
-   * 
+   *
    * @param preFlushingTime
    *          The pre-flushing time
    */
@@ -248,7 +248,7 @@ public class Instrument {
 
   /**
    * Returns the post-flushing time
-   * 
+   *
    * @return The post-flushing time
    */
   public int getPostFlushingTime() {
@@ -257,7 +257,7 @@ public class Instrument {
 
   /**
    * Sets the post-flushing time
-   * 
+   *
    * @param postFlushingTime
    *          The post-flushing time
    */
@@ -267,7 +267,7 @@ public class Instrument {
 
   /**
    * Get the instrument's file definitions
-   * 
+   *
    * @return The file definitions
    */
   public InstrumentFileSet getFileDefinitions() {
@@ -276,7 +276,7 @@ public class Instrument {
 
   /**
    * Get the sensor assignments
-   * 
+   *
    * @return The sensor assignments
    */
   public SensorAssignments getSensorAssignments() {
@@ -300,7 +300,7 @@ public class Instrument {
 
   /**
    * Determine whether or not this instrument provides near-real-time data
-   * 
+   *
    * @return {@code true} if NRT data is provided; {@code false} if it is not
    */
   public boolean getNrt() {
@@ -309,7 +309,7 @@ public class Instrument {
 
   /**
    * Set the NRT flag
-   * 
+   *
    * @param nrt
    *          NRT flag
    */
@@ -319,7 +319,7 @@ public class Instrument {
 
   /**
    * Get the variables measured by this instrument
-   * 
+   *
    * @return
    */
   public List<InstrumentVariable> getVariables() {
@@ -328,7 +328,7 @@ public class Instrument {
 
   /**
    * Get the Run Type category for a given Run Type value
-   * 
+   *
    * @param runTypeValue
    *          The Run Type value
    * @return The Run Type category
@@ -345,7 +345,7 @@ public class Instrument {
 
   /**
    * Get an InstrumentVaraible based on its ID
-   * 
+   *
    * @param variableId
    *          The variable ID
    * @return The InstrumentVariable
@@ -371,9 +371,36 @@ public class Instrument {
   }
 
   /**
+   * Get an InstrumentVaraible based on its name
+   *
+   * @param variableId
+   *          The variable name
+   * @return The InstrumentVariable
+   * @throws InstrumentException
+   *           If the variable is not found
+   */
+  public InstrumentVariable getVariable(String name)
+    throws InstrumentException {
+    InstrumentVariable result = null;
+
+    for (InstrumentVariable variable : variables) {
+      if (variable.getName().equals(name)) {
+        result = variable;
+        break;
+      }
+    }
+
+    if (null == result) {
+      throw new InstrumentException(
+        "Variable with name " + name + " is not part of this instrument");
+    }
+    return result;
+  }
+
+  /**
    * Get the run types that correspond to measurements for a given variable
    * Returns a map of Column ID to the run types, including all aliases
-   * 
+   *
    * @param variable
    * @return
    */
@@ -406,7 +433,7 @@ public class Instrument {
   /**
    * Get the list of variables that require the specified sensor type. If no
    * variables require it, the list is empty.
-   * 
+   *
    * @param sensorType
    * @return
    */
