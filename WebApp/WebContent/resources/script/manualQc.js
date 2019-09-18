@@ -22,9 +22,9 @@ function drawPage() {
   //TODO This is ugly and must be fixed up
 
   initPlot(1);
-  // initPlot(2);
+  initPlot(2);
 
-  //drawTable();
+  drawTable();
 }
 
 function initPlot(index) {
