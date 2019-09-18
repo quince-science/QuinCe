@@ -26,6 +26,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
+@SuppressWarnings("serial")
 public abstract class DatasetMeasurementData
   extends TreeMap<LocalDateTime, LinkedHashMap<Field, FieldValue>> {
 
@@ -34,8 +35,6 @@ public abstract class DatasetMeasurementData
   protected FieldSets fieldSets;
 
   protected DataSet dataSet;
-
-  private boolean dirty = true;
 
   /**
    * A cache of the row IDs in the data
@@ -55,9 +54,11 @@ public abstract class DatasetMeasurementData
   /**
    * A log of which fields have been fully loaded into the data set
    */
-  private HashMap<Field, Boolean> fieldsLoaded;
+  private HashMap<Field, Boolean> loadedFields;
 
   private TreeMap<LocalDateTime, Position> positions;
+
+  private boolean positionsLoaded = false;
 
   private Map<Field, MapRecords> mapCache;
 
@@ -70,13 +71,12 @@ public abstract class DatasetMeasurementData
     this.dataSet = dataSet;
     this.fieldSets = fieldSets;
     this.rowsLoaded = new HashMap<LocalDateTime, Boolean>();
-    this.fieldsLoaded = new HashMap<Field, Boolean>();
+    this.loadedFields = new HashMap<Field, Boolean>();
     for (Field field : fieldSets.getFields()) {
-      fieldsLoaded.put(field, false);
+      loadedFields.put(field, false);
     }
 
     mapCache = new HashMap<Field, MapRecords>();
-    dirty = true;
   }
 
   /**
@@ -92,7 +92,6 @@ public abstract class DatasetMeasurementData
     }
 
     get(rowId).put(field, value);
-    dirty = true;
   }
 
   /**
@@ -104,7 +103,6 @@ public abstract class DatasetMeasurementData
    */
   public void addValue(LocalDateTime rowId, long fieldId, FieldValue value) {
     addValue(rowId, fieldSets.getField(fieldId), value);
-    // dirty flag is set in called method
   }
 
   /**
@@ -176,7 +174,8 @@ public abstract class DatasetMeasurementData
     return Arrays.asList(result);
   }
 
-  public String getMapData(Field field, GeoBounds bounds) {
+  public String getMapData(Field field, GeoBounds bounds)
+    throws MeasurementDataException {
 
     if (!mapCache.containsKey(field)) {
       buildMapCache(field);
@@ -185,7 +184,10 @@ public abstract class DatasetMeasurementData
     return mapCache.get(field).getDisplayJson(bounds);
   }
 
-  private void buildMapCache(Field field) {
+  private void buildMapCache(Field field) throws MeasurementDataException {
+
+    loadField(field);
+
     MapRecords records = new MapRecords(size());
 
     for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> entry : entrySet()) {
@@ -339,11 +341,6 @@ public abstract class DatasetMeasurementData
     }
   }
 
-  private void buildCaches() {
-    // makePositionLookup();
-    dirty = false;
-  }
-
   private void makeRowIds() {
     List<Long> jsonInput = new ArrayList<Long>(size());
     rowIdsCache.stream()
@@ -353,7 +350,11 @@ public abstract class DatasetMeasurementData
     rowIdsJson = gson.toJson(jsonInput).toString();
   }
 
-  private void makePositionLookup() {
+  private void loadPositions() throws MeasurementDataException {
+
+    loadField(fieldSets.getField(FileDefinition.LONGITUDE_COLUMN_ID),
+      fieldSets.getField(FileDefinition.LATITUDE_COLUMN_ID));
+
     positions = new TreeMap<LocalDateTime, Position>();
 
     if (fieldSets.containsField(FileDefinition.LONGITUDE_COLUMN_ID)) {
@@ -368,9 +369,16 @@ public abstract class DatasetMeasurementData
         }
       }
     }
+
+    positionsLoaded = true;
   }
 
-  private Position getClosestPosition(LocalDateTime start) {
+  private Position getClosestPosition(LocalDateTime start)
+    throws MeasurementDataException {
+
+    if (!positionsLoaded) {
+      loadPositions();
+    }
 
     Position result = null;
 
@@ -555,9 +563,9 @@ public abstract class DatasetMeasurementData
     throws MeasurementDataException;
 
   private void loadField(Field... field) throws MeasurementDataException {
-    loadFieldAction(Arrays.stream(field).filter(f -> !fieldsLoaded.get(f))
+    loadFieldAction(Arrays.stream(field).filter(f -> !loadedFields.get(f))
       .collect(Collectors.toList()));
-    Arrays.stream(field).forEach(f -> fieldsLoaded.put(f, true));
+    Arrays.stream(field).forEach(f -> loadedFields.put(f, true));
   }
 
   protected abstract void loadFieldAction(List<Field> field)
