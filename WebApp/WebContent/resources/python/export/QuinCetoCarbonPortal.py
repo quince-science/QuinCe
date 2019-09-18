@@ -61,7 +61,8 @@ def main():
             L0_hashsum = export_file_to_cp(
               manifest, platform, config_carbon, raw_filename, platform_code, 
               dataset_zip, index, cp_cookie,'L0',upload)
-            L0_hashsums += [L0_hashsum]
+            if L0_hashsum:
+              L0_hashsums += [L0_hashsum]
             
         #--- Processing L1 files
         for index, data_filename in enumerate(data_filenames):
@@ -73,8 +74,8 @@ def main():
                 manifest, platform, config_carbon, data_filename, platform_code, 
                 dataset_zip, index, cp_cookie, 'L1', upload, L0_hashsums)
             except Exception as e:
-              logging.error('Exception occurred: ', exc_info=True)
               logging.INFO('Carbon Portal export failed')
+              logging.error('Exception occurred: ', exc_info=True)
 
           if 'Copernicus' in data_filename and 'CMEMS' in export_destination:  
             logging.info('Executing Copernicus routine')
