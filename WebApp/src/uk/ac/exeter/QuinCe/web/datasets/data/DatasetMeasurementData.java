@@ -322,22 +322,21 @@ public abstract class DatasetMeasurementData
   }
 
   public List<LocalDateTime> getRowIds() {
+    updateRowIdsCache();
+    return rowIdsCache;
+  }
 
+  public String getRowIdsJson() {
+    updateRowIdsCache();
+    return rowIdsJson;
+  }
+
+  private void updateRowIdsCache() {
     // If the cache size doesn't equal the data size, it needs rebuilding
     if (rowIdsCache.size() != size()) {
       rowIdsCache = new ArrayList<LocalDateTime>(keySet());
       makeRowIds();
     }
-
-    return rowIdsCache;
-  }
-
-  public String getRowIdsJson() {
-    if (dirty) {
-      buildCaches();
-    }
-
-    return rowIdsJson;
   }
 
   private void buildCaches() {
