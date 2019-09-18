@@ -21,7 +21,7 @@ https://github.com/ICOS-Carbon-Portal/meta#data-object-registration-and-upload-i
 '''
 OBJ_SPEC_URI = {}
 OBJ_SPEC_URI['L0'] = 'http://meta.icos-cp.eu/resources/cpmeta/otcL0DataObject'
-OBJ_SPEC_URI['L1'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL1Product' 
+OBJ_SPEC_URI['L1'] = 'http://meta.icos-cp.eu/resources/cpmeta/icosOtcL1Product_v2' 
 CP_DB = 'database_carbon_portal.db'
 
 META_URL = 'https://meta.icos-cp.eu/upload'
@@ -69,7 +69,7 @@ def export_file_to_cp(
     file, manifest, platform[platform_code],index, hashsum, 
     OBJ_SPEC_URI[level], level, L0_hashsums, is_next_version, export_filename)
   
-  if upload:
+  if not upload:
     try:
       upload_status = upload_to_cp(
         auth_cookie, file, hashsum, meta, OBJ_SPEC_URI[level])
