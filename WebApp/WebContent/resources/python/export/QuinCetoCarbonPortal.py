@@ -79,11 +79,11 @@ def main():
 
           if 'Copernicus' in data_filename and 'CMEMS' in export_destination:  
             logging.info('Executing Copernicus routine')
-            local_folder  = build_dataproduct(dataset_zip,dataset['name'],data_filename)
+            curr_date  = build_dataproduct(dataset_zip,dataset['name'],data_filename)
             try: 
               if upload:
                   successful_upload_CMEMS = upload_to_copernicus(
-                      config_copernicus,'nrt_server',dataset,local_folder)
+                      config_copernicus,'nrt_server',dataset,curr_date)
               else: 
                   successful_upload_CMEMS = False
             except Exception as e:

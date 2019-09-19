@@ -111,9 +111,12 @@ def build_dataproduct(dataset_zip,dataset_name,destination_filename):
   fieldconfig = pd.read_csv('fields.csv', delimiter=',', quotechar='\'')
 
   csv_file = get_file_from_zip(dataset_zip, destination_filename)  
-   
-  local_folder = (
-    'latest/' + (datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
+  
+  local_folder = 'latest'
+  curr_date = datetime.datetime.now().strftime("%Y%m%d")
+  
+  #local_folder = (
+  #  'latest/' + (datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
   try: os.mkdir(local_folder); 
   except Exception as e:
     logging.warning('folder already exist')
@@ -159,10 +162,10 @@ def build_dataproduct(dataset_zip,dataset_name,destination_filename):
 
   logging.debug(f'Commiting metadata to local SQL database {cmems_db}')
   sql_commit(nc_dict)
-  return str(local_folder)
+  return str(curr_date)
 
 
-def upload_to_copernicus(ftp_config,server,dataset,local_folder):
+def upload_to_copernicus(ftp_config,server,dataset,curr_date):
   '''
   Creates a FTP-connection.
   Uploads netCDF files, creates and uploads index file and DNT file.
@@ -223,20 +226,20 @@ def upload_to_copernicus(ftp_config,server,dataset,local_folder):
       
       # Setting dnt-variable to temp variable: local folder.
       # After DNT is created, DNT-filepath is updated for all instances where 
-      # DNT-filetpath is local_folder
+      # DNT-filetpath is curr_date
       #local_folder = filepath_local.rsplit('/',1)[0] 
       if upload_result == 0: #upload ok
         c.execute("UPDATE latest \
           SET uploaded = ?, ftp_filepath = ?, dnt_file = ? \
           WHERE filename = ?", 
-          [UPLOADED, filepath_ftp, local_folder ,filename])
+          [UPLOADED, filepath_ftp, curr_date ,filename])
         conn.commit()
 
         # create DNT-entry
         dnt_upload[filename] = ({'ftp_filepath':filepath_ftp, 
           'start_upload_time':start_upload_time, 
           'stop_upload_time':stop_upload_time,
-          'local_folder':local_folder})    
+          'local_folder':'latest'})    
         logging.debug(f'dnt entry: {dnt_upload[filename]}') 
       else:
         logging.debug(f'upload failed: {upload_result}')
@@ -247,8 +250,7 @@ def upload_to_copernicus(ftp_config,server,dataset,local_folder):
       currently_uploaded = c.fetchall()
 
       try:
-        logging.debug(f'local_folder: {local_folder}')
-        index_filename = build_index(currently_uploaded,local_folder)
+        index_filename = build_index(currently_uploaded)
       except Exception as e:
         logging.error('Building index failed: ', exc_info=True)
         OK = False
@@ -342,11 +344,8 @@ def abort_upload(error,local_folder,ftp,nrt_dir):
   c.execute("SELECT * FROM latest WHERE (dnt_file = ?)",[local_folder])
   failed_ingestion = c.fetchall()
   
-  print("failed ingestion: \n",failed_ingestion)
-  print("uningested files: \n",uningested_files)
-
-
-
+  logging.debug(f'failed ingestion: \n{failed_ingestion}')
+  logging.debug(f'uningested files: \n {uningested_files}')
 
   # Update database : set uploaded to 0 where index-file is current date
   error_msg = "failed ingestion, " + local_folder + ', ' + error 
