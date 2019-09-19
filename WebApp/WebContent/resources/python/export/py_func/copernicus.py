@@ -71,7 +71,6 @@ from py_func.carbon import get_file_from_zip
 
 # Upload result codes
 UPLOAD_OK = 0
-NOT_INITIALISED = 1
 FILE_EXISTS = 2
 
 # Response codes
@@ -81,9 +80,6 @@ FAILED_INGESTION = -1
 
 dnt_datetime_format = '%Y%m%dT%H%M%SZ'
 server_location = 'ftp://nrt.cmems-du.eu/Core'
-my_dir=''
-
-nc_nan = 'tmp_nan_update.nc'
 
 log_file = 'log/cmems_log.txt'
 database_file = 'log/database.csv'
@@ -91,12 +87,12 @@ failed_ingestion = 'log/failed_ingestion.csv'
 not_ingested = 'log/log_uningested_files.csv'
 cmems_db = 'files_cmems.db'
 
-
-nrt_dir='/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/NRT_201904/latest'
-dnt_dir='/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/DNT'
-index_dir = '/INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049/NRT_201904'
-
 product_id = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
+
+nrt_dir = '/' + product_id + '/NRT_201904/latest'
+dnt_dir = '/' + product_id + '/DNT'
+index_dir = '/' + product_id + '/NRT_201904'
+
 
 def build_dataproduct(dataset_zip,dataset_name,destination_filename):
   '''
@@ -187,8 +183,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
     user=ftp_config['Copernicus']['user'],
     passwd=ftp_config['Copernicus']['password'])as ftp:
 
-    conn = sqlite3.connect(cmems_db)
-    c = conn.cursor()
+    c = create_connection(cmems_db)
 
   # CHECK IF FTP IS EMPTY 
     directory_empty = check_directory(ftp, nrt_dir) 
@@ -227,13 +222,11 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
       # Setting dnt-variable to temp variable: local folder.
       # After DNT is created, DNT-filepath is updated for all instances where 
       # DNT-filetpath is curr_date
-      #local_folder = filepath_local.rsplit('/',1)[0] 
       if upload_result == 0: #upload ok
         c.execute("UPDATE latest \
           SET uploaded = ?, ftp_filepath = ?, dnt_file = ? \
           WHERE filename = ?", 
           [UPLOADED, filepath_ftp, curr_date ,filename])
-        conn.commit()
 
         # create DNT-entry
         dnt_upload[filename] = ({'ftp_filepath':filepath_ftp, 
@@ -282,7 +275,6 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
         logging.info('Updating database to include DNT filename')
         c.execute("UPDATE latest SET dnt_file = ? \
           WHERE dnt_file = ?", [dnt_local_filepath, local_folder])
-        conn.commit()
 
       except Exception as exception:
         logging.error('Building DNT failed: ', exc_info=True)
@@ -353,7 +345,6 @@ def abort_upload(error,local_folder,ftp,nrt_dir):
     SET uploaded = 0, ftp_filepath = None, dnt_file = None, comment = ? \
     WHERE dnt_file = ?", 
     [error_msg, local_folder])
-  conn.commit()
 
     # Update index-file?
 
@@ -399,15 +390,9 @@ def clean_directory(ftp,nrt_dir):
         dirpath: {dirpath}, \ndirnames: {dirnames}, \nfiles: {files}')
   return uningested_files
 
-def sql_commit(nc_dict,table="latest"):
-  '''
-  creates SQL table if non exists
-
-  adds new netCDF files, listed in nc_dict, to new or existing SQL-table 
-
-  '''
-  conn = sqlite3.connect(cmems_db)
-
+def create_connection(DB):
+  ''' creates connection and database if not already created '''
+  conn = sqlite3.connect(DB, isolation_level=None)
   c = conn.cursor()
   try:
     c.execute(''' CREATE TABLE latest (
@@ -421,9 +406,19 @@ def sql_commit(nc_dict,table="latest"):
                 comment TEXT
                 )''')
     logging.info('Creating database {}'.format(table))
-
   except Exception as e:
     pass #table already exists 
+
+  return c
+
+def sql_commit(nc_dict,table="latest"):
+  '''
+  creates SQL table if non exists
+
+  adds new netCDF files, listed in nc_dict, to new or existing SQL-table 
+
+  '''
+  c = create_connection(cmems_db)
 
   for key in nc_dict:
 
@@ -444,7 +439,6 @@ def sql_commit(nc_dict,table="latest"):
           None, 
           None,
           None))
-        conn.commit()
       else:
         logging.debug(f'adding new entry {key}')
         c.execute("INSERT INTO latest(\
@@ -458,7 +452,6 @@ def sql_commit(nc_dict,table="latest"):
           None, 
           None,
           None))
-        conn.commit()
     except Exception as e:
       pass
 
@@ -537,7 +530,7 @@ def build_DNT(dnt_upload,dnt_delete):
     file.set('StartUploadTime',start_upload_time)
     file.set('StopUploadTime',stop_upload_time)
 
-#delete
+# delete
   for item in dnt_delete:
     ftp_filepath = dnt_delete[item]
 
@@ -613,15 +606,15 @@ def build_index(results_uploaded):
       parameters += item +' '
     parameters = parameters[:-1] #removes final space
 
-    index_info += ('COP-GLOBAL-01' + ',' + server_location + ftp_filepath + ',' 
+    index_info += ('COP-GLOBAL-01,' + server_location + ftp_filepath + ',' 
                 + lat_min + ',' + lat_max + ',' + lon_min + ',' + lon_max  
-                + ',' + time_start + ',' + time_end + ',' 
-                + 'University of Bergen Geophysical Institute' + ',' 
-                + date_update + ',' + 'R' + ',' + parameters + '\n')
+                + ',' + time_start + ',' + time_end  
+                + ',University of Bergen Geophysical Institute,' 
+                + date_update + ',R,' + parameters + '\n')
 
   index_latest = index_header + index_info
 
-  index_filename = 'latest/index_latest.txt'
+  index_filename = 'index_latest.txt'
   with open(index_filename,'wb') as f: f.write(index_latest.encode())
  
   #ftp_index_location = index_dir+'/index_latest.txt'
