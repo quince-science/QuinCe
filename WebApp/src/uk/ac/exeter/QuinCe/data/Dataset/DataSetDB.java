@@ -751,7 +751,7 @@ public class DataSetDB {
     result.put("last_touched",
       DateTimeUtils.toIsoDate(dataset.getLastTouched()));
 
-    int recordCount = DataSetDataDB.getMeasurementCount(conn, dataset.getId());
+    int recordCount = DataSetDataDB.getRecordCount(conn, dataset.getId());
     result.put("records", recordCount);
 
     JSONObject boundsObject = new JSONObject();
