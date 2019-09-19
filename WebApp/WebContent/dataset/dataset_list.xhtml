@@ -17,6 +17,7 @@
       }
 
       function goToQc(id) {
+        clearInterval(refreshInterval);
         PF('pleaseWait').show();
         $('#datasetListForm\\:manualQcDatasetId').val(id);
         $('#datasetListForm\\:manualQcLink').click();
@@ -30,24 +31,24 @@
       }
 
       function exportDataset(id) {
-          $('#exportForm\\:exportDatasetId').val(id);
-          $('#exportForm\\:exportLink').click();
-          return false;
-        }
+        $('#exportForm\\:exportDatasetId').val(id);
+        $('#exportForm\\:exportLink').click();
+        return false;
+      }
 
       function submitForApproval(id) {
-          $('#datasetListForm\\:datasetId').val(id);
-          $('#datasetListForm\\:submitLink').click();
-          return false;
-        }
+        $('#datasetListForm\\:datasetId').val(id);
+        $('#datasetListForm\\:submitLink').click();
+        return false;
+      }
 
       function approve(id) {
-          $('#datasetListForm\\:datasetId').val(id);
-          $('#datasetListForm\\:approveLink').click();
-          return false;
-        }
+        $('#datasetListForm\\:datasetId').val(id);
+        $('#datasetListForm\\:approveLink').click();
+        return false;
+      }
 
-      setInterval(function() {
+      var refreshInterval = setInterval(function() {
         updateList();
       }, 10000);
 
