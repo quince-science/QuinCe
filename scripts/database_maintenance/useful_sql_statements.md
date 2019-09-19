@@ -9,7 +9,7 @@ update sensor_values set user_qc_flag = 3, user_qc_message = 'FAKE: SET BY SCRIP
 Manually set a dataset's status
 
 ```sql
-update dataset set status = %%SATUS%% where dataset_id = %%DATASET_ID%%
+update dataset set status = %%SATUS%% where id = %%DATASET_ID%%
 ```
 
 Possible values:
