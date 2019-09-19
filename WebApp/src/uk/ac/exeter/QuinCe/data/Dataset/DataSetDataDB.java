@@ -165,8 +165,8 @@ public class DataSetDataDB {
   private static final String SET_QC_STATEMENT = "UPDATE sensor_values SET "
     + "user_qc_flag = ?, user_qc_message = ? " + "WHERE id = ?";
 
-  private static final String GET_MEASUREMENT_COUNT_QUERY = "SELECT "
-    + "COUNT(DISTINCT(date)) FROM measurements WHERE dataset_id = ?";
+  private static final String GET_RECORD_COUNT_QUERY = "SELECT "
+    + "COUNT(DISTINCT(date)) FROM sensor_values WHERE dataset_id = ?";
 
   /**
    * Take a list of fields, and return those which come from the dataset data.
@@ -581,7 +581,7 @@ public class DataSetDataDB {
    * @throws MissingParamException
    * @throws DatabaseException
    */
-  public static int getMeasurementCount(Connection conn, long datasetId)
+  public static int getRecordCount(Connection conn, long datasetId)
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
@@ -593,7 +593,7 @@ public class DataSetDataDB {
     ResultSet count = null;
 
     try {
-      stmt = conn.prepareStatement(GET_MEASUREMENT_COUNT_QUERY);
+      stmt = conn.prepareStatement(GET_RECORD_COUNT_QUERY);
       stmt.setLong(1, datasetId);
 
       count = stmt.executeQuery();
