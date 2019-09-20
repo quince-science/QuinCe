@@ -111,12 +111,7 @@ def build_dataproduct(dataset_zip,dataset_name,destination_filename):
   local_folder = 'latest'
   curr_date = datetime.datetime.now().strftime("%Y%m%d")
   
-  #local_folder = (
-  #  'latest/' + (datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
-  try: os.mkdir(local_folder); 
-  except Exception as e:
-    logging.warning('folder already exist')
-    pass
+  if not os.path.exists(local_folder): os.mkdir(local_folder)
 
   logging.info(
     'Creating netcdf-files based on {:s} to send to Copernicus'
@@ -394,21 +389,16 @@ def create_connection(DB):
   ''' creates connection and database if not already created '''
   conn = sqlite3.connect(DB, isolation_level=None)
   c = conn.cursor()
-  try:
-    c.execute(''' CREATE TABLE latest (
-                filename TEXT PRIMARY KEY,
-                hashsum TEXT NOT NULL,
-                filepath TEXT NOT NULL UNIQUE,
-                nc_date TEXT,
-                uploaded INTEGER,
-                ftp_filepath TEXT,
-                dnt_file TEXT,
-                comment TEXT
-                )''')
-    logging.info('Creating database {}'.format(table))
-  except Exception as e:
-    pass #table already exists 
-
+  c.execute('''CREATE TABLE IF NOT EXISTS latest (
+              filename TEXT PRIMARY KEY,
+              hashsum TEXT NOT NULL,
+              filepath TEXT NOT NULL UNIQUE,
+              nc_date TEXT,
+              uploaded INTEGER,
+              ftp_filepath TEXT,
+              dnt_file TEXT,
+              comment TEXT
+              )''')
   return c
 
 def sql_commit(nc_dict,table="latest"):
@@ -427,33 +417,21 @@ def sql_commit(nc_dict,table="latest"):
 
     c.execute("SELECT * FROM latest WHERE filename=? ",[key])
     filename_exists = c.fetchone()
-    try:
-      if filename_exists: # if netCDF file already in database
-        logging.info(f'Updating: {key}')
-        c.execute("UPDATE latest VALUES (?,?,?,?,?,?,?,?)",(
-          key, 
-          nc_dict[key]['hashsum'], 
-          nc_dict[key]['filepath'], 
-          nc_dict[key]['date'], 
-          uploaded, 
-          None, 
-          None,
-          None))
-      else:
-        logging.debug(f'adding new entry {key}')
-        c.execute("INSERT INTO latest(\
-          filename,hashsum,filepath,nc_date,uploaded,ftp_filepath,dnt_file,comment) \
-          VALUES (?,?,?,?,?,?,?,?)",(
-          key, 
-          nc_dict[key]['hashsum'], 
-          nc_dict[key]['filepath'], 
-          nc_dict[key]['date'], 
-          uploaded, 
-          None, 
-          None,
-          None))
-    except Exception as e:
-      pass
+    
+    if filename_exists: # if netCDF file already in database
+      logging.info(f'Updating: {key}')
+      sql_req = "UPDATE latest SET filename=?,hashsum=?,filepath=?,nc_date=?,\
+        uploaded=?,ftp_filepath=?,dnt_file=?,comment=? WHERE filename=?"
+      sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
+        nc_dict[key]['date'],uploaded,None,None,None,key])
+    else:
+      logging.debug(f'adding new entry {key}')
+      sql_req = "INSERT INTO latest(filename,hashsum,filepath,nc_date,\
+        uploaded,ftp_filepath,dnt_file,comment) VALUES (?,?,?,?,?,?,?,?)"
+      sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
+        nc_dict[key]['date'],uploaded,None,None,None])
+
+    c.execute(sql_req,sql_param)
 
 def upload_to_ftp(ftp, ftp_config, filepath):
   ''' Uploads file with location 'filepath' to an ftp-server, 
