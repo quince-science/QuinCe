@@ -144,6 +144,7 @@ public class ManualQcBean extends PlotPageBean {
         value.setNeedsFlag(false);
       }
 
+      updateFlagsRequired();
       dirty = true;
     } catch (Exception e) {
       e.printStackTrace();
@@ -258,6 +259,7 @@ public class ManualQcBean extends PlotPageBean {
       List<FieldValue> updatedValues = pageData.setQC(getSelectedRowsList(),
         selectedColumn, new Flag(userFlag), userComment);
       DataSetDataDB.setQC(getDataSource(), updatedValues);
+      updateFlagsRequired();
       dirty = true;
     } catch (Exception e) {
       e.printStackTrace();
@@ -359,8 +361,7 @@ public class ManualQcBean extends PlotPageBean {
       if (dataset.isNrt()) {
         flagsRequired = 0;
       } else {
-        flagsRequired = DataSetDataDB.getFlagsRequired(getDataSource(),
-          getDataset().getId());
+        updateFlagsRequired();
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -409,5 +410,11 @@ public class ManualQcBean extends PlotPageBean {
    */
   public int getFlagsRequired() {
     return flagsRequired;
+  }
+
+  private void updateFlagsRequired()
+    throws MissingParamException, DatabaseException {
+    flagsRequired = DataSetDataDB.getFlagsRequired(getDataSource(),
+      getDataset().getId());
   }
 }
