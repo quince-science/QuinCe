@@ -14,10 +14,6 @@
     </script>
   </ui:define>
   <ui:define name="dataSetName">#{internalCalibrationBean.dataset.name} - Calibration Data #{requestScope[beanName]}</ui:define>
-  <ui:define name="pageStatus">
-    Flags needed: <h:outputText id="flagsRequired"
-      value="#{internalCalibrationBean.getData().getFlagsRequired()}" />
-  </ui:define>
   <ui:define name="plot1">
     <h:inputHidden value="#{internalCalibrationBean.plot1.mode}" id="plotMode" />
     <div id="plot1Panel" class="plotContainer">
