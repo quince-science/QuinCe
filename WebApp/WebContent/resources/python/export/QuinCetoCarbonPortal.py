@@ -88,7 +88,7 @@ def main():
                   successful_upload_CMEMS = False
             except Exception as e:
               logging.error('Exception occurred: ', exc_info=True)
-              logging.INFO('FTP connection failed')
+              logging.info('FTP connection failed')
         if successful_upload_CMEMS:
           report_complete_export(config_quince,dataset['id'])
         else: 
