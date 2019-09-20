@@ -963,7 +963,7 @@ public class DataSetDataDB {
         loadQCSensorValues(conn, output, times);
         loadDataReductionData(conn, output, times);
       } catch (Exception e) {
-        throw new DatabaseException("Error while loading measurment data", e);
+        throw new DatabaseException("Error while loading measurement data", e);
       }
     }
   }
@@ -981,7 +981,7 @@ public class DataSetDataDB {
         loadQCSensorValues(conn, output, field);
       }
     } catch (Exception e) {
-      throw new DatabaseException("Error while loading measurment data", e);
+      throw new DatabaseException("Error while loading measurement data", e);
     }
   }
 
@@ -1021,11 +1021,12 @@ public class DataSetDataDB {
    * @throws RecordNotFoundException
    * @throws InvalidFlagException
    * @throws RoutineException
+   * @throws MissingParamException
    */
   private static void loadQCSensorValues(Connection conn,
     DatasetMeasurementData output, List<LocalDateTime> times)
     throws SQLException, MeasurementDataException, RecordNotFoundException,
-    InvalidFlagException, RoutineException {
+    InvalidFlagException, RoutineException, MissingParamException {
 
     String sensorValuesSQL = DatabaseUtils
       .makeInStatementSql(GET_SENSOR_VALUES_BY_DATE_QUERY, times.size());

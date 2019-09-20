@@ -9,6 +9,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
@@ -30,7 +31,8 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
 
   @Override
   public void filterAndAddValuesAction(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values) throws MeasurementDataException {
+    Map<Long, FieldValue> values)
+    throws MeasurementDataException, MissingParamException {
 
     if (internalCalibrationRunTypes.contains(runType)) {
       Map<Field, FieldValue> addValues = new HashMap<Field, FieldValue>();
