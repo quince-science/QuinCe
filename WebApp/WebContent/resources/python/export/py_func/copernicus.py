@@ -83,7 +83,7 @@ server_location = 'ftp://nrt.cmems-du.eu/Core'
 
 log_file = 'log/cmems_log.txt'
 database_file = 'log/database.csv'
-failed_ingestion = 'log/failed_ingestion.csv'
+failed_ingestion_log = 'log/failed_ingestion.csv'
 not_ingested = 'log/log_uningested_files.csv'
 cmems_db = 'files_cmems.db'
 
@@ -93,6 +93,7 @@ nrt_dir = '/' + product_id + '/NRT_201904/latest'
 dnt_dir = '/' + product_id + '/DNT'
 index_dir = '/' + product_id + '/NRT_201904'
 
+local_folder = 'latest'
 
 def build_dataproduct(dataset_zip,dataset_name,destination_filename):
   '''
@@ -108,7 +109,6 @@ def build_dataproduct(dataset_zip,dataset_name,destination_filename):
 
   csv_file = get_file_from_zip(dataset_zip, destination_filename)  
   
-  local_folder = 'latest'
   curr_date = datetime.datetime.now().strftime("%Y%m%d")
   
   if not os.path.exists(local_folder): os.mkdir(local_folder)
@@ -223,7 +223,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
         dnt_upload[filename] = ({'ftp_filepath':filepath_ftp, 
           'start_upload_time':start_upload_time, 
           'stop_upload_time':stop_upload_time,
-          'local_folder':'latest'})    
+          'local_filepath':local_folder+'/'+filename +'.nc'})    
         logging.debug(f'dnt entry: {dnt_upload[filename]}') 
       else:
         logging.debug(f'upload failed: {upload_result}')
@@ -252,11 +252,11 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
     
       # BUILD DNT-FILE
       # Adding index file to DNT-list:
-      dnt_upload[index_filepath] = ({
+      dnt_upload[index_filename] = ({
         'ftp_filepath':ftp_filepath, 
         'start_upload_time':start_upload_time, 
         'stop_upload_time':stop_upload_time,
-        'local_folder': local_folder #latest/date
+        'local_filepath': index_filename
         })
 
       logging.info('Building DNT-file')
@@ -299,7 +299,8 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
 
     return OK
 
-def abort_upload(error,local_folder,ftp,nrt_dir):
+def abort_upload(error,ftp,nrt_dir):
+  # TODO improve error handling for failed exports
 
   # Remove currently updated files on ftp-server
   uningested_files = clean_directory(ftp, nrt_dir)
@@ -431,7 +432,7 @@ def upload_to_ftp(ftp, ftp_config, filepath):
     ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
 
   elif filepath.endswith('.txt'):
-    ftp_folder = nrt_dir
+    ftp_folder = index_dir
     ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
 
     with open(filepath,'rb') as f: 
@@ -469,11 +470,11 @@ def build_DNT(dnt_upload,dnt_delete):
 
 # upload
   for item in dnt_upload:
-    local_folder = dnt_upload[item]['local_folder']
+    local_filepath = dnt_upload[item]['local_filepath']
     ftp_filepath = dnt_upload[item]['ftp_filepath'].split('/',3)[-1]
     start_upload_time = dnt_upload[item]['start_upload_time'] 
     stop_upload_time = dnt_upload[item]['stop_upload_time']
-    with open(local_folder +'/'+ ftp_filepath.split('/')[-1],'rb') as f: 
+    with open(local_filepath,'rb') as f: 
       file_bytes = f.read()
 
     file = ET.SubElement(dataset,'file')
@@ -534,7 +535,7 @@ def build_index(results_uploaded):
   index_info = ''
   for file in results_uploaded:
     local_filepath = file[2]
-    ftp_filepath = file[5]
+    ftp_filepath = file[6]
 
     nc = netCDF4.Dataset(local_filepath,mode='r')
 
