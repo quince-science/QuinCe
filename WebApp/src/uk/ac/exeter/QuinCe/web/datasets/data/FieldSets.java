@@ -19,6 +19,8 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
 
   private long defaultFieldSet = FieldSet.BASE_ID;
 
+  private List<Field> unusedFields = new ArrayList<Field>();
+
   public FieldSets(String rowIdName) {
     super();
     fieldsByName = new HashMap<String, Field>();
@@ -135,11 +137,21 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
   }
 
   public void addField(Field field) {
-    if (!containsKey(field.getFieldSet())) {
-      addFieldSet(field.getFieldSet());
+    addField(field, false);
+  }
+
+  public void addField(Field field, boolean unused) {
+
+    if (unused) {
+      unusedFields.add(field);
+    } else {
+      if (!containsKey(field.getFieldSet())) {
+        addFieldSet(field.getFieldSet());
+      }
+
+      get(field.getFieldSet()).add(field);
     }
 
-    get(field.getFieldSet()).add(field);
     fieldsByName.put(field.getName(), field);
     fieldsById.put(field.getId(), field);
   }
@@ -288,5 +300,9 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
 
   public long getDefaultFieldSet() {
     return defaultFieldSet;
+  }
+
+  public boolean isUnused(Field field) {
+    return unusedFields.contains(field);
   }
 }

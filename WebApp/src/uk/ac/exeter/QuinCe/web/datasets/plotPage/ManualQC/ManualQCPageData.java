@@ -11,6 +11,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
@@ -44,7 +45,8 @@ public class ManualQCPageData extends DatasetMeasurementData {
    */
   @Override
   public void filterAndAddValuesAction(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values) throws MeasurementDataException {
+    Map<Long, FieldValue> values)
+    throws MeasurementDataException, MissingParamException {
 
     try {
       // Filter out values based on run type.
