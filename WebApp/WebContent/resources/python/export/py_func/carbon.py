@@ -69,7 +69,7 @@ def export_file_to_cp(
     file, manifest, platform[platform_code],index, hashsum, 
     OBJ_SPEC_URI[level], level, L0_hashsums, is_next_version, export_filename)
   
-  if not upload:
+  if upload:
     try:
       upload_status = upload_to_cp(
         auth_cookie, file, hashsum, meta, OBJ_SPEC_URI[level])
