@@ -24,6 +24,8 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.MissingParam;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 @SuppressWarnings("serial")
@@ -85,13 +87,22 @@ public abstract class DatasetMeasurementData
    * @param rowId
    * @param field
    * @param value
+   * @throws MissingParamException
    */
-  public void addValue(LocalDateTime rowId, Field field, FieldValue value) {
-    if (!containsKey(rowId)) {
-      put(rowId, fieldSets.generateFieldValuesMap());
-    }
+  public void addValue(LocalDateTime rowId, Field field, FieldValue value)
+    throws MissingParamException {
 
-    get(rowId).put(field, value);
+    MissingParam.checkMissing(rowId, "rowId");
+    MissingParam.checkMissing(field, "field");
+    MissingParam.checkMissing(value, "value");
+
+    if (!fieldSets.isUnused(field)) {
+      if (!containsKey(rowId)) {
+        put(rowId, fieldSets.generateFieldValuesMap());
+      }
+
+      get(rowId).put(field, value);
+    }
   }
 
   /**
@@ -100,8 +111,10 @@ public abstract class DatasetMeasurementData
    * @param rowId
    * @param fieldId
    * @param value
+   * @throws MissingParamException
    */
-  public void addValue(LocalDateTime rowId, long fieldId, FieldValue value) {
+  public void addValue(LocalDateTime rowId, long fieldId, FieldValue value)
+    throws MissingParamException {
     addValue(rowId, fieldSets.getField(fieldId), value);
   }
 
@@ -114,7 +127,7 @@ public abstract class DatasetMeasurementData
    *          The field values
    */
   protected void addValues(LocalDateTime rowId,
-    Map<Field, ? extends FieldValue> values) {
+    Map<Field, ? extends FieldValue> values) throws MissingParamException {
     if (!containsKey(rowId)) {
       put(rowId, fieldSets.generateFieldValuesMap());
     }
@@ -459,7 +472,8 @@ public abstract class DatasetMeasurementData
   }
 
   public final void filterAndAddValues(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values) throws MeasurementDataException {
+    Map<Long, FieldValue> values)
+    throws MeasurementDataException, MissingParamException {
 
     if (!filterInitialised) {
       initFilter();
@@ -512,7 +526,7 @@ public abstract class DatasetMeasurementData
    */
   protected abstract void filterAndAddValuesAction(String runType,
     LocalDateTime time, Map<Long, FieldValue> values)
-    throws MeasurementDataException;
+    throws MissingParamException, MeasurementDataException;
 
   /**
    * Initialise information required for filterAndAddValues

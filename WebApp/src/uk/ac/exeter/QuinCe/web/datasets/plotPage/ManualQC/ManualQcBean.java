@@ -367,67 +367,6 @@ public class ManualQcBean extends PlotPageBean {
     }
   }
 
-  /**
-   * Load the data for the current field set
-   */
-  /*
-   * @Override protected void loadData() throws Exception { try { fieldSets =
-   * new FieldSets("Date/Time");
-   *
-   * fieldSets.addField(FieldSet.BASE_FIELD_SET, new
-   * Field(FileDefinition.LONGITUDE_COLUMN_ID, "Longitude"));
-   * fieldSets.addField(FieldSet.BASE_FIELD_SET, new
-   * Field(FileDefinition.LATITUDE_COLUMN_ID, "Latitude"));
-   *
-   * // Sensor columns List<FileColumn> fileColumns = InstrumentDB
-   * .getSensorColumns(getDataSource(), instrument.getDatabaseId());
-   *
-   * FieldSet sensorFieldSet = fieldSets.addFieldSet(
-   * DataSetDataDB.SENSORS_FIELDSET, DataSetDataDB.SENSORS_FIELDSET_NAME, true);
-   *
-   * FieldSet diagnosticFieldSet = fieldSets.addFieldSet(
-   * DataSetDataDB.DIAGNOSTICS_FIELDSET,
-   * DataSetDataDB.DIAGNOSTICS_FIELDSET_NAME, false);
-   *
-   * for (FileColumn column : fileColumns) {
-   *
-   * FieldSet addFieldSet = sensorFieldSet; if
-   * (column.getSensorType().isDiagnostic()) { addFieldSet = diagnosticFieldSet;
-   * }
-   *
-   * fieldSets.addField(addFieldSet, new Field(column.getColumnId(),
-   * column.getColumnName())); }
-   *
-   * // Data reduction columns for (InstrumentVariable variable :
-   * instrument.getVariables()) { LinkedHashMap<String, Long> variableParameters
-   * = DataReducerFactory .getCalculationParameters(variable);
-   *
-   * FieldSet varFieldSet = fieldSets.addFieldSet(variable.getId(),
-   * variable.getName(), false);
-   *
-   * // Columns from data reduction are given IDs based on the // variable ID
-   * and parameter number for (Map.Entry<String, Long> entry :
-   * variableParameters.entrySet()) {
-   *
-   * fieldSets.addField(varFieldSet, new Field(entry.getValue(),
-   * entry.getKey())); } }
-   *
-   * pageData = new ManualQCPageData(instrument, fieldSets, dataset);
-   *
-   * // Load data for sensor columns List<Long> fieldIds = new
-   * ArrayList<Long>(); fieldIds.add(FileDefinition.LONGITUDE_COLUMN_ID);
-   * fieldIds.add(FileDefinition.LATITUDE_COLUMN_ID);
-   * fieldIds.addAll(fieldSets.getFieldIds(sensorFieldSet));
-   * fieldIds.addAll(fieldSets.getFieldIds(diagnosticFieldSet));
-   *
-   * DataSetDataDB.getQCSensorData(getDataSource(), pageData,
-   * getDataset().getId(), instrument, fieldIds);
-   *
-   * // Load data reduction data
-   * DataSetDataDB.getDataReductionData(getDataSource(), pageData, dataset); }
-   * catch (Exception e) { e.printStackTrace(); } }
-   */
-
   @Override
   public List<Integer> getSelectableColumns() {
     List<Integer> result = new ArrayList<Integer>();

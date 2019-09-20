@@ -22,6 +22,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
@@ -136,8 +137,7 @@ public class ExportData extends ManualQCPageData {
       FieldSet varFieldSet = fieldSets.addFieldSet(variable.getId(),
         variable.getName());
       TreeMap<Long, CalculationParameter> parameters = DataReducerFactory
-        .getCalculationParameters(variable,
-          exportOption.includeCalculationColumns());
+        .getCalculationParameters(variable, true);
 
       for (Map.Entry<Long, CalculationParameter> entry : parameters
         .entrySet()) {
@@ -146,7 +146,8 @@ public class ExportData extends ManualQCPageData {
           entry.getValue().getColumnHeader(), !entry.getValue().isResult(),
           entry.getValue().isResult(), exportOption);
 
-        fieldSets.addField(field);
+        fieldSets.addField(field, (!exportOption.includeCalculationColumns()
+          && !entry.getValue().isResult()));
         variableFields.put(entry.getKey(), field);
       }
     }
@@ -154,7 +155,8 @@ public class ExportData extends ManualQCPageData {
 
   @Override
   public void filterAndAddValuesAction(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values) throws MeasurementDataException {
+    Map<Long, FieldValue> values)
+    throws MeasurementDataException, MissingParamException {
 
     try {
       Map<Field, CombinedFieldValue> valuesToAdd = new HashMap<Field, CombinedFieldValue>();
@@ -210,7 +212,7 @@ public class ExportData extends ManualQCPageData {
 
   @Override
   public void addValues(LocalDateTime rowId,
-    Map<Field, ? extends FieldValue> values) {
+    Map<Field, ? extends FieldValue> values) throws MissingParamException {
     super.addValues(rowId, values);
 
     // Add the DEPTH attribute

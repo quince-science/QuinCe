@@ -28,13 +28,13 @@ import uk.ac.exeter.QCRoutines.messages.Flag;
 import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
-import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
@@ -77,6 +77,11 @@ public class ExportBean extends BaseManagedBean {
    */
   private static DecimalFormat numberFormatter;
 
+  /**
+   * The export data, organised ready for building export files
+   */
+  private ExportData exportData = null;
+
   static {
     numberFormatter = new DecimalFormat("#0.000");
     numberFormatter.setRoundingMode(RoundingMode.HALF_UP);
@@ -86,6 +91,9 @@ public class ExportBean extends BaseManagedBean {
    * Initialise the bean
    */
   public String start() {
+    // Reset the export data
+    exportData = null;
+
     return NAV_EXPORT_PAGE;
   }
 
@@ -295,19 +303,10 @@ public class ExportBean extends BaseManagedBean {
     ExportData data = new ExportData(dataSource, instrument, dataset,
       exportOption);
 
-    // Load sensor data
-    List<Long> fieldIds = new ArrayList<Long>();
-    fieldIds.add(FileDefinition.LONGITUDE_COLUMN_ID);
-    fieldIds.add(FileDefinition.LATITUDE_COLUMN_ID);
-    fieldIds.addAll(instrument.getSensorAssignments().getFileColumnIDs());
+    data
+      .addTimes(DataSetDataDB.getSensorValueDates(dataSource, dataset.getId()));
 
-    /*
-     * DataSetDataDB.getQCSensorData(dataSource, data, dataset.getId(),
-     * instrument, fieldIds);
-     *
-     * // Load data reduction data
-     * DataSetDataDB.getDataReductionData(dataSource, data, dataset);
-     */
+    DataSetDataDB.loadMeasurementData(dataSource, data, data.getRowIds());
 
     // Let's make some output
     StringBuilder output = new StringBuilder();
