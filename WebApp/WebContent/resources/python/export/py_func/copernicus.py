@@ -191,7 +191,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
     dnt_delete = {}
     for item in results_delete: 
       filename, filepath_local  = item[0], item[2]
-      dnt_delete[filename] = item[5] #ftp_filepath
+      dnt_delete[filename] = item[5]
       c.execute("UPDATE latest SET uploaded = ? \
         WHERE filename = ?", [NOT_UPLOADED, filename])
 
@@ -503,7 +503,7 @@ def build_DNT(dnt_upload,dnt_delete):
   logging.debug('DNT file:\n' + str(ET.dump(xml_tree)))
 
   dnt_file = product_id + '_P' + date + '.xml'
-  dnt_folder = 'DNT/' + local_folder   
+  dnt_folder = 'DNT/' + local_folder + '/'  
   dnt_filepath = dnt_folder + dnt_file
 
   try: os.mkdir(dnt_folder); 
@@ -594,7 +594,7 @@ def evaluate_response_file(ftp,dnt_filepath,folder_local):
     loop_iter += 1
 
   if response_received == False: 
-    logging.info('No response from received from cmems ')
+    return 'No response received'
   else:
     if not 'Ingested="True"' in cmems_response: #ingestion failed or partial
       rejected = re.search(
