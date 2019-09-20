@@ -18,7 +18,9 @@
   	  "PSALPR01": "P_sal [psu]",
   	  "TEMPPR01": "Temp [degC]",
   	  "FCO2XXXX": "fCO2 [uatm]",
-  	  "PCO2TK02": "pCO2 [uatm]"
+  	  "PCO2TK02": "pCO2 [uatm]",
+  	  "ACO2XXXX": "pCO2 in atmosphere [uatm]",
+  	  "FCO2WTAT": "fCO2 in atmosphere [uatm]"
   	}
   },
   {
