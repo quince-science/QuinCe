@@ -497,7 +497,15 @@ public class Instrument {
 
       for (Map.Entry<String, RunTypeAssignment> assignment : assignments
         .entrySet()) {
-        if (assignment.getValue().getCategory()
+
+        // Follow aliases
+        RunTypeAssignment checkAssignment = assignment.getValue();
+        if (checkAssignment.isAlias()) {
+          checkAssignment = fileDef.getRunTypes()
+            .get(checkAssignment.getAliasTo());
+        }
+
+        if (checkAssignment.getCategory()
           .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
           result.add(assignment.getKey());
         }
