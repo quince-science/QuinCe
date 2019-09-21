@@ -122,6 +122,10 @@ public class DataSetDataDB {
     + "FROM measurements WHERE dataset_id = ? "
     + "ORDER BY variable_id ASC, date ASC";
 
+  private static final String GET_MEASUREMENT_TIMES_QUERY = "SELECT "
+    + "date FROM measurements WHERE dataset_id = ? " + "AND run_type IN "
+    + DatabaseUtils.IN_PARAMS_TOKEN + " ORDER BY date ASC";
+
   /**
    * Statement to store a Measurement Value
    */
@@ -1010,6 +1014,16 @@ public class DataSetDataDB {
     }
   }
 
+  public static void loadQCSensorValues(DataSource dataSource,
+    DatasetMeasurementData output, List<LocalDateTime> times)
+    throws SQLException, MeasurementDataException, RecordNotFoundException,
+    InvalidFlagException, RoutineException, MissingParamException {
+
+    try (Connection conn = dataSource.getConnection()) {
+      loadQCSensorValues(conn, output, times);
+    }
+  }
+
   /**
    * Load all the sensor values for a given set of times
    *
@@ -1023,71 +1037,73 @@ public class DataSetDataDB {
    * @throws RoutineException
    * @throws MissingParamException
    */
-  private static void loadQCSensorValues(Connection conn,
+  public static void loadQCSensorValues(Connection conn,
     DatasetMeasurementData output, List<LocalDateTime> times)
     throws SQLException, MeasurementDataException, RecordNotFoundException,
     InvalidFlagException, RoutineException, MissingParamException {
 
-    String sensorValuesSQL = DatabaseUtils
-      .makeInStatementSql(GET_SENSOR_VALUES_BY_DATE_QUERY, times.size());
+    if (times.size() > 0) {
+      String sensorValuesSQL = DatabaseUtils
+        .makeInStatementSql(GET_SENSOR_VALUES_BY_DATE_QUERY, times.size());
 
-    // Get the Run Type column IDs
-    List<Long> runTypeColumns = output.getInstrument().getSensorAssignments()
-      .getRunTypeColumnIDs();
+      // Get the Run Type column IDs
+      List<Long> runTypeColumns = output.getInstrument().getSensorAssignments()
+        .getRunTypeColumnIDs();
 
-    try (PreparedStatement stmt = conn.prepareStatement(sensorValuesSQL)) {
+      try (PreparedStatement stmt = conn.prepareStatement(sensorValuesSQL)) {
 
-      stmt.setLong(1, output.getDatasetId());
+        stmt.setLong(1, output.getDatasetId());
 
-      // Add dates starting at parameter index 2
-      for (int i = 0; i < times.size(); i++) {
-        stmt.setLong(i + 2, DateTimeUtils.dateToLong(times.get(i)));
-      }
-
-      try (ResultSet records = stmt.executeQuery()) {
-        // We collect together all the sensor values for a given date.
-        // Then we check them all together and add them to the output
-        String currentRunType = null;
-        LocalDateTime currentTime = LocalDateTime.MIN;
-        Map<Long, FieldValue> currentDateValues = new HashMap<Long, FieldValue>();
-
-        // Loop through all the sensor value records
-        while (records.next()) {
-          LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
-
-          // If the time has changed, process the current set of collected
-          // values
-          if (!time.isEqual(currentTime)) {
-            if (!currentTime.isEqual(LocalDateTime.MIN)) {
-              output.filterAndAddValues(currentRunType, currentTime,
-                currentDateValues);
-
-            }
-
-            currentTime = time;
-            currentDateValues = new HashMap<Long, FieldValue>();
-          }
-
-          // Process the current record
-
-          // See if this is a Run Type
-          long fileColumn = records.getLong(2);
-
-          if (runTypeColumns.contains(fileColumn)) {
-            currentRunType = records.getString(4);
-          } else {
-            // This is a sensor value
-            SensorType sensorType = output.getInstrument()
-              .getSensorAssignments().getSensorTypeForDBColumn(fileColumn);
-
-            FieldValue value = makeSensorFieldValue(records, sensorType);
-            currentDateValues.put(fileColumn, value);
-          }
+        // Add dates starting at parameter index 2
+        for (int i = 0; i < times.size(); i++) {
+          stmt.setLong(i + 2, DateTimeUtils.dateToLong(times.get(i)));
         }
 
-        // Store the last set of values
-        output.filterAndAddValues(currentRunType, currentTime,
-          currentDateValues);
+        try (ResultSet records = stmt.executeQuery()) {
+          // We collect together all the sensor values for a given date.
+          // Then we check them all together and add them to the output
+          String currentRunType = null;
+          LocalDateTime currentTime = LocalDateTime.MIN;
+          Map<Long, FieldValue> currentDateValues = new HashMap<Long, FieldValue>();
+
+          // Loop through all the sensor value records
+          while (records.next()) {
+            LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
+
+            // If the time has changed, process the current set of collected
+            // values
+            if (!time.isEqual(currentTime)) {
+              if (!currentTime.isEqual(LocalDateTime.MIN)) {
+                output.filterAndAddValues(currentRunType, currentTime,
+                  currentDateValues);
+
+              }
+
+              currentTime = time;
+              currentDateValues = new HashMap<Long, FieldValue>();
+            }
+
+            // Process the current record
+
+            // See if this is a Run Type
+            long fileColumn = records.getLong(2);
+
+            if (runTypeColumns.contains(fileColumn)) {
+              currentRunType = records.getString(4);
+            } else {
+              // This is a sensor value
+              SensorType sensorType = output.getInstrument()
+                .getSensorAssignments().getSensorTypeForDBColumn(fileColumn);
+
+              FieldValue value = makeSensorFieldValue(records, sensorType);
+              currentDateValues.put(fileColumn, value);
+            }
+          }
+
+          // Store the last set of values
+          output.filterAndAddValues(currentRunType, currentTime,
+            currentDateValues);
+        }
       }
     }
   }
@@ -1219,5 +1235,40 @@ public class DataSetDataDB {
     } catch (Exception e) {
       throw new DatabaseException("Error getting data reduction data", e);
     }
+  }
+
+  public static List<LocalDateTime> getMeasurementTimes(DataSource dataSource,
+    long datasetId, List<String> runTypes)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkPositive(datasetId, "datasetId");
+    MissingParam.checkMissing(runTypes, "runTypes", false);
+
+    List<LocalDateTime> result = new ArrayList<LocalDateTime>();
+
+    String sql = DatabaseUtils.makeInStatementSql(GET_MEASUREMENT_TIMES_QUERY,
+      runTypes.size());
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setLong(1, datasetId);
+
+      for (int i = 0; i < runTypes.size(); i++) {
+        stmt.setString(i + 2, runTypes.get(i));
+      }
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          result.add(DateTimeUtils.longToDate(records.getLong(1)));
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting measurement times", e);
+    }
+
+    return result;
   }
 }

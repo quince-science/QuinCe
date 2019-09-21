@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -197,10 +196,9 @@ public class InternalCalibrationBean extends PlotPageBean {
 
       // Sensor columns
       List<FileColumn> calibratedColumns = InstrumentDB
-        .getCalibratedSensorColumns(getDataSource(),
-          instrument.getDatabaseId());
+        .getCalibratedSensorColumns(getDataSource(), getCurrentInstrumentId());
 
-      List<String> calibrationRunTypes = instrument
+      List<String> calibrationRunTypes = getCurrentInstrument()
         .getRunTypes(RunTypeCategory.INTERNAL_CALIBRATION_TYPE);
 
       for (FileColumn column : calibratedColumns) {
@@ -215,15 +213,11 @@ public class InternalCalibrationBean extends PlotPageBean {
         }
       }
 
-      pageData = new InternalCalibrationPageData(instrument, fieldSets,
-        dataset);
+      pageData = new InternalCalibrationPageData(getCurrentInstrument(),
+        fieldSets, dataset);
 
-      List<Long> fieldIds = calibratedColumns.stream()
-        .mapToLong(FileColumn::getColumnId).boxed()
-        .collect(Collectors.toList());
-
-      // DataSetDataDB.getQCSensorData(getDataSource(), pageData,
-      // getDataset().getId(), instrument, fieldIds);
+      pageData.addTimes(DataSetDataDB.getMeasurementTimes(getDataSource(),
+        datasetId, calibrationRunTypes));
 
       // Load internal calibration data
       loadCalibrationData(calibratedColumns);
@@ -244,7 +238,7 @@ public class InternalCalibrationBean extends PlotPageBean {
     throws Exception {
 
     CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
-      .getMostRecentCalibrations(getDataSource(), instrument.getDatabaseId(),
+      .getMostRecentCalibrations(getDataSource(), getCurrentInstrumentId(),
         dataset.getStart());
 
     JSONObject json = new JSONObject();
