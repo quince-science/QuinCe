@@ -26,14 +26,14 @@ public class DatabaseUtils {
   /**
    * Token to mark the place where the parameters for an IN clause should be in
    * an SQL string.
-   * 
+   *
    * @see #makeInStatementSql(String, int)
    */
   public static final String IN_PARAMS_TOKEN = "%%IN_PARAMS%%";
 
   /**
    * Close a set of {@link java.sql.ResultSet} objects, ignoring any errors
-   * 
+   *
    * @param results
    *          The ResultSets
    */
@@ -51,7 +51,7 @@ public class DatabaseUtils {
 
   /**
    * Close a set of {@link java.sql.ResultSet} objects, ignoring any errors
-   * 
+   *
    * @param results
    *          The ResultSets
    */
@@ -62,7 +62,7 @@ public class DatabaseUtils {
   /**
    * Close a set of {@link java.sql.PreparedStatement} objects, ignoring any
    * errors
-   * 
+   *
    * @param statements
    *          The PreparedStatements
    */
@@ -81,7 +81,7 @@ public class DatabaseUtils {
   /**
    * Close a set of {@link java.sql.PreparedStatement} objects, ignoring any
    * errors
-   * 
+   *
    * @param statements
    *          The statements
    */
@@ -92,7 +92,7 @@ public class DatabaseUtils {
   /**
    * Close a database connection, ignoring any errors. All connections have
    * their auto-commit flag set to true.
-   * 
+   *
    * @param conn
    *          The database connection
    */
@@ -113,7 +113,7 @@ public class DatabaseUtils {
 
   /**
    * Roll back an open transaction
-   * 
+   *
    * @param conn
    *          The database connection
    */
@@ -129,7 +129,7 @@ public class DatabaseUtils {
 
   /**
    * Create an insert statement for a table and list of fields
-   * 
+   *
    * @param conn
    *          A database connection
    * @param table
@@ -151,7 +151,7 @@ public class DatabaseUtils {
 
   /**
    * Create an insert statement for a table and list of fields
-   * 
+   *
    * @param conn
    *          A database connection
    * @param table
@@ -203,7 +203,7 @@ public class DatabaseUtils {
 
   /**
    * Prepare a select statement
-   * 
+   *
    * @param conn
    *          A database connection
    * @param table
@@ -226,7 +226,7 @@ public class DatabaseUtils {
 
   /**
    * Prepare a select statement
-   * 
+   *
    * @param conn
    *          A database connection
    * @param table
@@ -315,8 +315,12 @@ public class DatabaseUtils {
    * @param inSize
    *          The number of items in the IN parameter
    * @return The generated SQL statement
+   * @throws MissingParamException
    */
-  public static String makeInStatementSql(String query, int inSize) {
+  public static String makeInStatementSql(String query, int inSize)
+    throws MissingParamException {
+
+    MissingParam.checkPositive(inSize, "inSize");
 
     StringBuilder inParams = new StringBuilder();
     inParams.append('(');
@@ -353,7 +357,7 @@ public class DatabaseUtils {
 
   /**
    * Set a column value in a statement, handling null values as required
-   * 
+   *
    * @param stmt
    *          The statement
    * @param column
@@ -374,7 +378,7 @@ public class DatabaseUtils {
 
   /**
    * Get a double value from a recordset, handling null values as null
-   * 
+   *
    * @param rs
    *          The recordset
    * @param column
@@ -397,7 +401,7 @@ public class DatabaseUtils {
 
   /**
    * Get an integer value from a recordset, handling null values as null
-   * 
+   *
    * @param rs
    *          The recordset
    * @param column
@@ -420,7 +424,7 @@ public class DatabaseUtils {
 
   /**
    * Get a long value from a recordset, handling null values as null
-   * 
+   *
    * @param rs
    *          The recordset
    * @param column
@@ -443,7 +447,7 @@ public class DatabaseUtils {
 
   /**
    * Set a double value that may be null
-   * 
+   *
    * @param stmt
    * @param parameter
    * @param value

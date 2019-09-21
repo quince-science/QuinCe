@@ -272,7 +272,7 @@ public class ManualQcBean extends PlotPageBean {
 
     try {
       List<FileColumn> fileColumns = InstrumentDB
-        .getSensorColumns(getDataSource(), instrument.getDatabaseId());
+        .getSensorColumns(getDataSource(), getCurrentInstrumentId());
 
       for (FileColumn column : fileColumns) {
         if (column.getSensorType().getName().equals("Intake Temperature")) {
@@ -308,7 +308,7 @@ public class ManualQcBean extends PlotPageBean {
 
       // Sensor columns
       List<FileColumn> fileColumns = InstrumentDB
-        .getSensorColumns(getDataSource(), instrument.getDatabaseId());
+        .getSensorColumns(getDataSource(), getCurrentInstrumentId());
 
       FieldSet sensorFieldSet = fieldSets.addFieldSet(
         DataSetDataDB.SENSORS_FIELDSET, DataSetDataDB.SENSORS_FIELDSET_NAME,
@@ -330,7 +330,8 @@ public class ManualQcBean extends PlotPageBean {
       }
 
       // Data reduction columns
-      for (InstrumentVariable variable : instrument.getVariables()) {
+      for (InstrumentVariable variable : getCurrentInstrument()
+        .getVariables()) {
         LinkedHashMap<String, Long> variableParameters = DataReducerFactory
           .getCalculationParameters(variable);
 
@@ -346,7 +347,8 @@ public class ManualQcBean extends PlotPageBean {
         }
       }
 
-      pageData = new ManualQCPageData(instrument, fieldSets, dataset);
+      pageData = new ManualQCPageData(getCurrentInstrument(), fieldSets,
+        dataset);
 
       // Load data for sensor columns
       List<Long> fieldIds = new ArrayList<Long>();
