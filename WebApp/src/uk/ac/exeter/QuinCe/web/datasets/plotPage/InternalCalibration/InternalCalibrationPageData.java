@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -18,11 +19,12 @@ import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+@SuppressWarnings("serial")
 public class InternalCalibrationPageData extends DatasetMeasurementData {
 
   private List<String> internalCalibrationRunTypes;
 
-  private Map<Long, FileColumn> columns;
+  private Map<Long, FileColumn> calibrationColumns;
 
   public InternalCalibrationPageData(Instrument instrument, FieldSets fieldSets,
     DataSet dataSet) throws Exception {
@@ -35,18 +37,24 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
     throws MeasurementDataException, MissingParamException {
 
     if (internalCalibrationRunTypes.contains(runType)) {
-      Map<Field, FieldValue> addValues = new HashMap<Field, FieldValue>();
+      Map<Field, FieldValue> valuesToAdd = new HashMap<Field, FieldValue>();
 
       for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
 
-        FileColumn column = columns.get(entry.getKey());
-        RunTypeField destinationField = new RunTypeField(
-          FieldSet.BASE_FIELD_SET, runType, column);
-        addValues.put(destinationField, entry.getValue());
+        FileColumn column = calibrationColumns.get(entry.getKey());
 
+        // We ignore any values that aren't in the calibratable columns
+        if (null != column) {
+          // TODO We shouldn't need to create this all the time - keep a cache
+          // somewhere
+          RunTypeField destinationField = new RunTypeField(
+            FieldSet.BASE_FIELD_SET, runType, column);
+
+          valuesToAdd.put(destinationField, entry.getValue());
+        }
       }
 
-      addValues(time, addValues);
+      addValues(time, valuesToAdd);
     }
   }
 
@@ -54,13 +62,16 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
   protected void initFilter() throws MeasurementDataException {
 
     try {
-      columns = new HashMap<Long, FileColumn>();
+      calibrationColumns = new HashMap<Long, FileColumn>();
 
-      List<FileColumn> instrumentColumns = InstrumentDB.getSensorColumns(
-        ResourceManager.getInstance().getDBDataSource(),
-        instrument.getDatabaseId());
-      for (FileColumn column : instrumentColumns) {
-        columns.put(column.getColumnId(), column);
+      // We only want the columns that have calibrations
+      List<FileColumn> calibratedColumns = InstrumentDB
+        .getCalibratedSensorColumns(
+          ResourceManager.getInstance().getDBDataSource(),
+          instrument.getDatabaseId());
+
+      for (FileColumn column : calibratedColumns) {
+        calibrationColumns.put(column.getColumnId(), column);
       }
 
       // Get the list of run type values that indicate measurements
@@ -74,8 +85,16 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
   @Override
   protected void load(List<LocalDateTime> times)
     throws MeasurementDataException {
-    // TODO Auto-generated method stub
 
+    if (times.size() > 0) {
+      try {
+        DataSetDataDB.loadQCSensorValues(
+          ResourceManager.getInstance().getDBDataSource(), this, times);
+      } catch (Exception e) {
+        throw new MeasurementDataException("Error loading data from database",
+          e);
+      }
+    }
   }
 
   @Override

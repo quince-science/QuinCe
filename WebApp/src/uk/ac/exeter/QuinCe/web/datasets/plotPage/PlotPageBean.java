@@ -12,8 +12,6 @@ import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
-import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -44,11 +42,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
    * The data set being processed
    */
   protected DataSet dataset;
-
-  /**
-   * The instrument that the dataset belongs to
-   */
-  protected Instrument instrument;
 
   /**
    * The field sets for the current dataset
@@ -466,10 +459,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
       ResourceManager resourceManager = ResourceManager.getInstance();
       dataset = DataSetDB.getDataSet(getDataSource(), datasetId);
 
-      instrument = InstrumentDB.getInstrument(getDataSource(),
-        dataset.getInstrumentId(), resourceManager.getSensorsConfiguration(),
-        resourceManager.getRunTypeCategoryConfiguration());
-
       initData();
       selectableRows = buildSelectableRows();
 
@@ -492,7 +481,6 @@ public abstract class PlotPageBean extends BaseManagedBean {
    */
   protected void reset() {
     dataset = null;
-    instrument = null;
     pageData = null;
     fieldSets = null;
     plot1 = null;
