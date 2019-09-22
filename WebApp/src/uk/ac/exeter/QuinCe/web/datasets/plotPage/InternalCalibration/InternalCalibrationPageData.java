@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage.InternalCalibration;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,12 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
   public InternalCalibrationPageData(Instrument instrument, FieldSets fieldSets,
     DataSet dataSet) throws Exception {
     super(instrument, fieldSets, dataSet);
+
+    // Since we always keep all data loaded for this implementation,
+    // all column fields are marked as loaded too
+    for (Field field : fieldSets.getFields()) {
+      loadedFields.put(field, true);
+    }
   }
 
   @Override
@@ -83,6 +90,15 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
   }
 
   @Override
+  public final void addTimes(Collection<LocalDateTime> times)
+    throws MeasurementDataException {
+    super.addTimes(times);
+
+    // Make sure all data is loaded
+    loadRows(0, size());
+  }
+
+  @Override
   protected void load(List<LocalDateTime> times)
     throws MeasurementDataException {
 
@@ -100,7 +116,7 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
   @Override
   protected void loadFieldAction(List<Field> fields)
     throws MeasurementDataException {
-    // TODO Auto-generated method stub
-
+    // We always load all data up front, so we don't need to load individual
+    // fields
   }
 }

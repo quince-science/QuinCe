@@ -216,6 +216,8 @@ public class InternalCalibrationBean extends PlotPageBean {
       pageData = new InternalCalibrationPageData(getCurrentInstrument(),
         fieldSets, dataset);
 
+      // Add the times for the calibration run types. Note that this
+      // autoloads the data too
       pageData.addTimes(DataSetDataDB.getMeasurementTimes(getDataSource(),
         datasetId, calibrationRunTypes));
 
