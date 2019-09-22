@@ -56,7 +56,7 @@ public abstract class DatasetMeasurementData
   /**
    * A log of which fields have been fully loaded into the data set
    */
-  private HashMap<Field, Boolean> loadedFields;
+  protected HashMap<Field, Boolean> loadedFields;
 
   private TreeMap<LocalDateTime, Position> positions;
 
@@ -489,7 +489,9 @@ public abstract class DatasetMeasurementData
    * @param times
    *          The times to be added
    */
-  public final void addTimes(Collection<LocalDateTime> times) {
+  public void addTimes(Collection<LocalDateTime> times)
+    throws MeasurementDataException {
+
     times.stream().forEach(this::addTime);
   }
 
@@ -504,7 +506,7 @@ public abstract class DatasetMeasurementData
    * @param time
    *          The time to be added
    */
-  public final void addTime(LocalDateTime time) {
+  private void addTime(LocalDateTime time) {
     if (!containsKey(time)) {
       put(time, fieldSets.generateFieldValuesMap());
       rowsLoaded.put(time, false);
