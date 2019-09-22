@@ -417,7 +417,11 @@ function clickCellAction(cellIndex, shiftClick) {
 
   var rowId = jsDataTable.row(cellIndex.row).data()['DT_RowId'];
   var columnIndex = cellIndex.column;
-  if (canSelectCell(rowId, columnIndex)) {
+  
+  // If the cell isn't selectable, or has no value, do nothing.
+  if (canSelectCell(rowId, columnIndex) &&
+    null != jsDataTable.cell(cellIndex).data() &&
+    null != jsDataTable.cell(cellIndex).data()[0]) {
 
     if (columnIndex != selectedColumn) {
       selectedColumn = columnIndex;
@@ -436,7 +440,7 @@ function clickCellAction(cellIndex, shiftClick) {
           action = SELECT_ACTION;
         }
       } else {
-        actionRows = getRowsInRange(lastClickedRow, rowId);
+        actionRows = getRowsInRange(lastClickedRow, rowId, columnIndex);
       }
 
       if (action == SELECT_ACTION) {
@@ -474,7 +478,7 @@ function removeRowsFromSelection(rows) {
   }
 }
 
-function getRowsInRange(startRow, endRow) {
+function getRowsInRange(startRow, endRow, columnIndex) {
 
   var rows = [];
 
@@ -490,7 +494,12 @@ function getRowsInRange(startRow, endRow) {
 
   while (selectableRows[currentIndex] != endRow) {
     currentIndex = currentIndex + step;
-    rows.push(selectableRows[currentIndex]);
+    
+    var rowIndex = jsDataTable.row('#' + selectableRows[currentIndex]).index();
+    var cellData = jsDataTable.cell({row:rowIndex, column:columnIndex}).data();
+    if (null != cellData && null != cellData[0]) {
+      rows.push(selectableRows[currentIndex]);
+    }
   }
 
   if (step == -1) {
