@@ -24,13 +24,13 @@ def processCommandLine ():
     global logFile, slackURL
 
     if len(sys.argv) != 3:
-        print "Usage: extract_exception.py <logFile> <slack URL>"
+        print("Usage: extract_exception.py <logFile> <slack URL>")
         quit()
     else:
         logFile = sys.argv[1]
         slackURL = sys.argv[2]
         if not os.access(logFile, os.R_OK):
-            print "Log file does not exist or cannot be read"
+            print("Log file does not exist or cannot be read")
             quit()
 
 
@@ -41,11 +41,11 @@ def loadLastLine ():
     lastLine = 0
 
     if os.path.isdir(LAST_LINE_FILE):
-        print "Last line file is a directory!"
+        print("Last line file is a directory!")
         quit()
     elif os.path.isfile(LAST_LINE_FILE):
         if not os.access(LAST_LINE_FILE, os.R_OK | os.W_OK):
-            print "Cannot access last line file for read/write"
+            print("Cannot access last line file for read/write")
             quit()
         else:
             llf = None
@@ -64,7 +64,7 @@ def saveLastLine (lastLine):
     if (os.path.isfile(LAST_LINE_FILE) 
             and not os.access(LAST_LINE_FILE, os.W_OK)):
         
-        print "Cannot access last line file for writing"
+        print("Cannot access last line file for writing")
         quit()
     else:
         llf = open(LAST_LINE_FILE, "w")
@@ -78,7 +78,7 @@ def getFileLines (fileName):
     lines = None
 
     if not os.access(fileName, os.R_OK):
-        print "Log file does not exist or cannot be read"
+        print("Log file does not exist or cannot be read")
         quit()
     else:
         file = open(fileName, "r")
