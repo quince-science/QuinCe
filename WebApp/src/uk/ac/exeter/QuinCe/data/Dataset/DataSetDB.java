@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
-import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -30,7 +30,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Methods for manipulating data sets in the database
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -38,7 +38,7 @@ public class DataSetDB {
 
   /**
    * Statement to add a new data set into the database
-   * 
+   *
    * @see #addDataSet(DataSource, DataSet)
    */
   private static final String ADD_DATASET_STATEMENT = "INSERT INTO dataset "
@@ -67,7 +67,7 @@ public class DataSetDB {
   /**
    * Make an SQL query for retrieving complete datasets using a specified WHERE
    * clause
-   * 
+   *
    * @param whereField
    *          The field to use in the WHERE clause
    * @return The query SQL
@@ -91,7 +91,7 @@ public class DataSetDB {
 
   /**
    * Get the list of data sets defined for a given instrument
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentId
@@ -124,7 +124,7 @@ public class DataSetDB {
 
   /**
    * Get the list of data sets defined for a given instrument
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentId
@@ -168,7 +168,7 @@ public class DataSetDB {
 
   /**
    * Create a DataSet object from a search result
-   * 
+   *
    * @param record
    *          The search result
    * @return The Data Set object
@@ -216,7 +216,7 @@ public class DataSetDB {
    * Store a new data set in the database.
    *
    * The created data set's ID is stored in the provided {@link DataSet} object
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param dataSet
@@ -237,7 +237,7 @@ public class DataSetDB {
    * Store a new data set in the database.
    *
    * The created data set's ID is stored in the provided {@link DataSet} object
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param dataSet
@@ -335,7 +335,7 @@ public class DataSetDB {
 
   /**
    * Get a data set using its database ID
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param id
@@ -371,7 +371,7 @@ public class DataSetDB {
 
   /**
    * Get a data set using its database ID
-   * 
+   *
    * @param conn
    *          A database connection
    * @param id
@@ -510,7 +510,7 @@ public class DataSetDB {
 
   /**
    * Update a dataset in the database
-   * 
+   *
    * @param conn
    *          A database connection
    * @param dataSet
@@ -529,7 +529,7 @@ public class DataSetDB {
 
   /**
    * Retrieve the most recent data set for an instrument
-   * 
+   *
    * @param conn
    *          A database connection
    * @param instrument
@@ -554,7 +554,7 @@ public class DataSetDB {
 
   /**
    * Retrieve the NRT data set for an instrument
-   * 
+   *
    * @param conn
    *          A database connection
    * @param instrument
@@ -582,7 +582,7 @@ public class DataSetDB {
   /**
    * Delete all NRT datasets defined for a given instrument. In theory there
    * should be only one, but this deletes all that it can find, just in case.
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentId
@@ -610,7 +610,7 @@ public class DataSetDB {
   /**
    * Delete all NRT datasets defined for a given instrument. In theory there
    * should be only one, but this deletes all that it can find, just in case.
-   * 
+   *
    * @param conn
    *          A database connection
    * @param instrumentId
@@ -631,7 +631,7 @@ public class DataSetDB {
 
   /**
    * Delete a dataset and all related records
-   * 
+   *
    * @param conn
    *          A database connection
    * @param dataSet
@@ -687,7 +687,7 @@ public class DataSetDB {
 
   /**
    * Generate the metadata portion of the manifest
-   * 
+   *
    * @return The metadata
    * @throws DatabaseException
    *           If a database error occurs
@@ -719,7 +719,7 @@ public class DataSetDB {
 
   /**
    * Generate the metadata portion of the manifest
-   * 
+   *
    * @return The metadata
    * @throws DatabaseException
    *           If a database error occurs
@@ -767,7 +767,7 @@ public class DataSetDB {
   /**
    * Get the all the datasets that are ready for export, but not already
    * being/been exported
-   * 
+   *
    * @param conn
    *          A database connection
    * @return The exportable datasets

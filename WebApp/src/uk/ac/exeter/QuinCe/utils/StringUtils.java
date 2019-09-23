@@ -14,11 +14,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
-import uk.ac.exeter.QCRoutines.messages.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
 /**
  * Miscellaneous string utilities
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -66,7 +66,7 @@ public final class StringUtils {
 
   /**
    * Convert a collection of objects to a delimited string
-   * 
+   *
    * @param collection
    *          The list
    * @param delimiter
@@ -152,7 +152,7 @@ public final class StringUtils {
 
   /**
    * Convert a delimited list of integers into a list of integers
-   * 
+   *
    * @param values
    *          The list
    * @return The list as integers
@@ -163,7 +163,7 @@ public final class StringUtils {
 
   /**
    * Convert a delimited list of integers into a list of integers
-   * 
+   *
    * @param values
    *          The list
    * @param delimiter
@@ -192,7 +192,7 @@ public final class StringUtils {
 
   /**
    * Convert a delimited list of double into a list of doubles
-   * 
+   *
    * @param values
    *          The list
    * @return The list as integers
@@ -216,7 +216,7 @@ public final class StringUtils {
 
   /**
    * Convert a comma-separated list of numbers to a list of longs
-   * 
+   *
    * @param values
    *          The numbers
    * @return The longs
@@ -241,7 +241,7 @@ public final class StringUtils {
 
   /**
    * Extract the stack trace from an Exception (or other Throwable) as a String.
-   * 
+   *
    * @param e
    *          The error
    * @return The stack trace
@@ -256,7 +256,7 @@ public final class StringUtils {
   /**
    * Determines whether or not a line is a comment, signified by it starting
    * with {@code #} or {@code !} or {@code //}
-   * 
+   *
    * @param line
    *          The line to be checked
    * @return {@code true} if the line is a comment; {@code false} otherwise.
@@ -270,7 +270,7 @@ public final class StringUtils {
   /**
    * Trims all items in a list of strings. A string that starts with a single
    * backslash has that backslash removed.
-   * 
+   *
    * @param source
    *          The strings to be converted
    * @return The converted strings
@@ -293,7 +293,7 @@ public final class StringUtils {
 
   /**
    * Determine whether or not a String contains a numeric value
-   * 
+   *
    * @param value
    *          The String
    * @return {@code true} if the String contains a number; {@code false} if it
@@ -320,7 +320,7 @@ public final class StringUtils {
 
   /**
    * Determine whether or not a String contains an integer value
-   * 
+   *
    * @param value
    *          The String
    * @return {@code true} if the String contains an integer; {@code false} if it
@@ -352,7 +352,7 @@ public final class StringUtils {
    * <b>Note:</b> There is no handling of {@code =} or {@code ;} in the keys or
    * values.
    * </p>
-   * 
+   *
    * @param map
    *          The Map to be converted
    * @return The String representation of the Map
@@ -378,7 +378,7 @@ public final class StringUtils {
 
   /**
    * Convert a semi-colon-delimited list of {@code key=value} pairs into a Map.
-   * 
+   *
    * @param values
    *          The String
    * @return The Map
@@ -405,7 +405,7 @@ public final class StringUtils {
 
   /**
    * Convert a case-insensitive Y/N value to a boolean
-   * 
+   *
    * @param value
    *          The value
    * @return The boolean value
@@ -435,7 +435,7 @@ public final class StringUtils {
 
   /**
    * Convert a Properties object into a JSON string
-   * 
+   *
    * @param properties
    *          The properties
    * @return The JSON string
@@ -471,7 +471,7 @@ public final class StringUtils {
 
   /**
    * Create a {@link Properties} object from a string
-   * 
+   *
    * @param propsString
    *          The properties String
    * @return The Properties object
@@ -494,7 +494,7 @@ public final class StringUtils {
 
   /**
    * Create a JSON field value
-   * 
+   *
    * @param fieldNumber
    *          The field number
    * @param value
@@ -507,7 +507,7 @@ public final class StringUtils {
 
   /**
    * Make a JSON field value from a flag, using the flag's integer value
-   * 
+   *
    * @param fieldNumber
    *          The field number
    * @param flag
@@ -520,7 +520,7 @@ public final class StringUtils {
 
   /**
    * Create a JSON field value
-   * 
+   *
    * @param fieldNumber
    *          The field number
    * @param value
@@ -537,7 +537,7 @@ public final class StringUtils {
 
   /**
    * Create a JSON field value formatted with a given number of decimal places
-   * 
+   *
    * @param fieldNumber
    *          The field number
    * @param value
@@ -565,7 +565,7 @@ public final class StringUtils {
 
   /**
    * Create a JSON field value
-   * 
+   *
    * @param fieldNumber
    *          The field number
    * @param value
@@ -582,7 +582,7 @@ public final class StringUtils {
 
   /**
    * Create a JSON field value
-   * 
+   *
    * @param fieldNumber
    *          The field number
    * @param value
@@ -595,7 +595,7 @@ public final class StringUtils {
 
   /**
    * Create a JSON field value
-   * 
+   *
    * @param fieldNumber
    *          The field number
    * @param value
@@ -611,7 +611,7 @@ public final class StringUtils {
 
   /**
    * Create a JSON field value
-   * 
+   *
    * @param fieldNumber
    *          The field number
    * @param value
@@ -624,7 +624,7 @@ public final class StringUtils {
 
   /**
    * Create a JSON field value
-   * 
+   *
    * @param fieldNumber
    *          The field number
    * @param value
@@ -641,7 +641,7 @@ public final class StringUtils {
 
   /**
    * Create a JSON field value
-   * 
+   *
    * @param fieldNumber
    *          The field number
    * @param value
@@ -654,7 +654,7 @@ public final class StringUtils {
 
   /**
    * Create a JSON field value
-   * 
+   *
    * @param fieldNumber
    *          The field number
    * @param value
@@ -671,7 +671,7 @@ public final class StringUtils {
 
   /**
    * Create a JSON field value
-   * 
+   *
    * @param fieldName
    *          The field name
    * @param value
@@ -705,7 +705,7 @@ public final class StringUtils {
 
   /**
    * Create a JSON field with a {@code null} value
-   * 
+   *
    * @param fieldNumber
    *          The field number
    * @return The JSON field
@@ -716,7 +716,7 @@ public final class StringUtils {
 
   /**
    * Create a JSON field with a {@code null} value
-   * 
+   *
    * @param fieldName
    *          The field name
    * @return The JSON field
@@ -733,7 +733,7 @@ public final class StringUtils {
 
   /**
    * Convert a JSON array of numbers to a list of integers
-   * 
+   *
    * @param jsonArray
    *          The JSON array
    * @return The integer list
@@ -745,7 +745,7 @@ public final class StringUtils {
 
   /**
    * Convert a list of objects to a JSON array
-   * 
+   *
    * @param list
    *          The list
    * @return The JSON array
@@ -786,7 +786,7 @@ public final class StringUtils {
 
   /**
    * Generate a Double value from a String, handling thousands separators
-   * 
+   *
    * @param value
    *          The string value
    * @return The double value
