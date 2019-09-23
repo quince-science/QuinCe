@@ -374,7 +374,8 @@ def create_connection(DB):
               uploaded INTEGER,
               ftp_filepath TEXT,
               dnt_file TEXT,
-              comment TEXT
+              comment TEXT,
+              export_date TEXT
               )''')
   return c
 
@@ -385,6 +386,7 @@ def sql_commit(nc_dict):
   adds new netCDF files, listed in nc_dict, to new or existing SQL-table 
   '''
   c = create_connection(cmems_db)
+  date = datetime.datetime.now().strftime(dnt_datetime_format)
 
   for key in nc_dict:
     if nc_dict[key]['uploaded']: 
@@ -397,15 +399,15 @@ def sql_commit(nc_dict):
     if filename_exists: # if netCDF file already in database
       logging.info(f'Updating: {key}')
       sql_req = "UPDATE latest SET filename=?,hashsum=?,filepath=?,nc_date=?,\
-        uploaded=?,ftp_filepath=?,dnt_file=?,comment=? WHERE filename=?"
+        uploaded=?,ftp_filepath=?,dnt_file=?,comment=?,export_date=? WHERE filename=?"
       sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
-        nc_dict[key]['date'],uploaded,None,None,None,key])
+        nc_dict[key]['date'],uploaded,None,None,None,key,date])
     else:
-      logging.debug(f'adding new entry {key}')
+      logging.debug(f'Adding new entry {key}')
       sql_req = "INSERT INTO latest(filename,hashsum,filepath,nc_date,\
-        uploaded,ftp_filepath,dnt_file,comment) VALUES (?,?,?,?,?,?,?,?)"
+        uploaded,ftp_filepath,dnt_file,comment,export_date) VALUES (?,?,?,?,?,?,?,?,?)"
       sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
-        nc_dict[key]['date'],uploaded,None,None,None])
+        nc_dict[key]['date'],uploaded,None,None,None,date])
 
     c.execute(sql_req,sql_param)
 
