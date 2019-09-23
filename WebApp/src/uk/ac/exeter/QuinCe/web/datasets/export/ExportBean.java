@@ -22,14 +22,10 @@ import javax.sql.DataSource;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
-import uk.ac.exeter.QCRoutines.config.InvalidDataTypeException;
-import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
-import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
@@ -37,11 +33,8 @@ import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
@@ -92,7 +85,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Get the dataset ID
-   * 
+   *
    * @return The dataset ID
    */
   public long getDatasetId() {
@@ -106,7 +99,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Set the dataset using its ID
-   * 
+   *
    * @param datasetId
    *          The dataset ID
    */
@@ -120,7 +113,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Get the dataset
-   * 
+   *
    * @return The dataset
    */
   public DataSet getDataset() {
@@ -129,7 +122,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Set the dataset
-   * 
+   *
    * @param dataset
    *          The dataset
    */
@@ -139,7 +132,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Get the list of available file export options
-   * 
+   *
    * @return The export options
    * @throws ExportException
    *           In an error occurs while retrieving the export options
@@ -155,7 +148,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Return the ID of the chosen file export option
-   * 
+   *
    * @return The export option ID
    */
   public int getChosenExportOption() {
@@ -164,7 +157,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Set the ID of the chosen export option
-   * 
+   *
    * @param chosenExportOption
    *          The export option ID
    */
@@ -272,7 +265,7 @@ public class ExportBean extends BaseManagedBean {
   /**
    * Obtain a dataset in the specified format as a byte array ready for export
    * or storage
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param dataSet
@@ -280,13 +273,7 @@ public class ExportBean extends BaseManagedBean {
    * @param exportOption
    *          The export format
    * @return The exported dataset
-   * @throws NoSuchColumnException
-   * @throws InvalidDataTypeException
-   * @throws MissingParamException
-   * @throws DatabaseException
-   * @throws RecordNotFoundException
-   * @throws MessageException
-   * @throws DataReductionException
+   * @throws Exception
    */
   private static byte[] getDatasetExport(Connection conn, Instrument instrument,
     DataSet dataset, ExportOption exportOption) throws Exception {
@@ -393,7 +380,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Get the filename of the file that will be exported
-   * 
+   *
    * @param exportOption
    *          The export option
    * @return The export filename
@@ -417,7 +404,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Determine whether raw files should be included in the export
-   * 
+   *
    * @return {@code true} if raw files should be included; {@code false} if not
    */
   public boolean getIncludeRawFiles() {
@@ -426,7 +413,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Specify whether raw files should be included in the export
-   * 
+   *
    * @param includeRawFiles
    *          The raw files flag
    */
@@ -436,7 +423,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Create the contents of the manifest.json file
-   * 
+   *
    * @return The manifest JSON
    */
   private static JSONObject makeManifest(Connection conn, DataSet dataset,
