@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
@@ -242,7 +243,7 @@ public class ExtractDataSetJob extends Job {
       // The last run type will cover the rest of time
       runTypePeriods.finish();
 
-      // Now remove all the values that are within the instrument's pre-
+      // Now flag all the values that are within the instrument's pre-
       // and post-flushing periods (if they're defined)
       if (instrument.getPreFlushingTime() > 0
         || instrument.getPostFlushingTime() > 0) {
@@ -277,7 +278,7 @@ public class ExtractDataSetJob extends Job {
           }
 
           if (inFlushingPeriod(value.getTime(), currentPeriod, instrument)) {
-            valuesIter.remove();
+            value.setUserQC(Flag.FLUSHING, "");
           }
         }
       }

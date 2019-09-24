@@ -83,6 +83,17 @@ public class Flag implements Comparable<Flag> {
   protected static final String TEXT_NEEDED = "Needed";
 
   /**
+   * The special flag for a sensor value taken during the instrument's flushing
+   * period
+   */
+  public static final int VALUE_FLUSHING = -100;
+
+  /**
+   * The text value for a flushing period flag
+   */
+  protected static final String TEXT_FLUSHING = "In flushing time";
+
+  /**
    * An instance of a No QC flag
    */
   public static final Flag NO_QC = makeNoQCFlag();
@@ -113,13 +124,18 @@ public class Flag implements Comparable<Flag> {
   public static final Flag NEEDED = makeNeededFlag();
 
   /**
+   * An instance of a Flushing flag
+   */
+  public static final Flag FLUSHING = makeFlushingFlag();
+
+  /**
    * The WOCE value for this flag
    */
   protected int flagValue;
 
   /**
    * Creates a Flag instance with the specified value
-   * 
+   *
    * @param flagValue
    *          The flag's WOCE value
    * @throws InvalidFlagException
@@ -135,7 +151,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Create a flag based on an existing flag. Used by internal classes only
-   * 
+   *
    * @param sourceFlag
    *          The source flag
    */
@@ -145,7 +161,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Returns the flag's numeric value
-   * 
+   *
    * @return The flag's numeric value
    */
   public int getFlagValue() {
@@ -196,7 +212,7 @@ public class Flag implements Comparable<Flag> {
   /**
    * Checks to ensure that a flag value is valid. If the value is valid, the
    * method does nothing. If it is not valid, an exception is thrown.
-   * 
+   *
    * @param value
    *          The flag value
    * @return {@code true} if the flag value is valid; {@code false} if it is not
@@ -204,12 +220,13 @@ public class Flag implements Comparable<Flag> {
   public static boolean isValidFlagValue(int value) {
     return (value == VALUE_NO_QC || value == VALUE_GOOD
       || value == VALUE_ASSUMED_GOOD || value == VALUE_QUESTIONABLE
-      || value == VALUE_BAD || value == VALUE_NEEDED);
+      || value == VALUE_BAD || value == VALUE_NEEDED
+      || value == VALUE_FLUSHING);
   }
 
   /**
    * Create an instance of a Good flag
-   * 
+   *
    * @return A Good flag
    */
   private static Flag makeNoQCFlag() {
@@ -225,7 +242,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Create an instance of a Good flag
-   * 
+   *
    * @return A Good flag
    */
   private static Flag makeGoodFlag() {
@@ -241,7 +258,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Create an instance of a Good flag
-   * 
+   *
    * @return A Good flag
    */
   private static Flag makeAssumedGoodFlag() {
@@ -257,7 +274,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Create an instance of a Questionable flag
-   * 
+   *
    * @return A Questionable flag
    */
   private static Flag makeQuestionableFlag() {
@@ -273,7 +290,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Create an instance of a Bad flag
-   * 
+   *
    * @return A Bad flag
    */
   private static Flag makeBadFlag() {
@@ -289,13 +306,29 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Create an instance of a Not Set flag
-   * 
+   *
    * @return A Not Set flag
    */
   private static Flag makeNeededFlag() {
     Flag flag = null;
     try {
       flag = new Flag(VALUE_NEEDED);
+    } catch (InvalidFlagException e) {
+      // This won't be thrown; do nothing
+    }
+
+    return flag;
+  }
+
+  /**
+   * Create an instance of a Flushing flag
+   *
+   * @return A Flushing flag
+   */
+  private static Flag makeFlushingFlag() {
+    Flag flag = null;
+    try {
+      flag = new Flag(VALUE_FLUSHING);
     } catch (InvalidFlagException e) {
       // This won't be thrown; do nothing
     }
@@ -332,8 +365,12 @@ public class Flag implements Comparable<Flag> {
   public boolean moreSignificantThan(Flag flag) {
     boolean result = false;
 
-    // NEEDED Flag is always most significant
+    // FLUSHING > NEEDED > everything else
     if (null == flag) {
+      result = true;
+    } else if (flag.equals(Flag.FLUSHING)) {
+      result = false;
+    } else if (this.equals(Flag.FLUSHING)) {
       result = true;
     } else if (flag.equals(Flag.NEEDED)) {
       result = false;
@@ -349,7 +386,7 @@ public class Flag implements Comparable<Flag> {
   /**
    * Determines whether or not this flag represents a Good value. Both Good and
    * Assumed Good flags pass the check.
-   * 
+   *
    * @return {@code true} if this flag is Good; {@code false} if it is not.
    */
   public boolean isGood() {
@@ -358,7 +395,7 @@ public class Flag implements Comparable<Flag> {
 
   /**
    * Return the WOCE value for a flag.
-   * 
+   *
    * @return The WOCE value for the flag
    * @see #getWoceValue(int)
    */
