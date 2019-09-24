@@ -28,7 +28,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Class representing a data file
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -107,7 +107,7 @@ public class DataFile {
 
   /**
    * Create a DataFile with the specified definition and contents
-   * 
+   *
    * @param fileStore
    *          The location of the file store
    * @param fileDefinition
@@ -152,7 +152,7 @@ public class DataFile {
   /**
    * Constructor for the basic details of a file. The contents will be loaded on
    * demand if required.
-   * 
+   *
    * @param fileStore
    *          The file store location
    * @param id
@@ -182,7 +182,7 @@ public class DataFile {
 
   /**
    * Get the file format description
-   * 
+   *
    * @return The file format description
    */
   public String getFileDescription() {
@@ -191,7 +191,7 @@ public class DataFile {
 
   /**
    * Get the file name
-   * 
+   *
    * @return The file name
    */
   public String getFilename() {
@@ -220,7 +220,7 @@ public class DataFile {
 
   /**
    * Get the zero-based row number of the first data row in a file
-   * 
+   *
    * @return The first data row number
    * @throws DataFileException
    *           If the end of the file is reached without finding the end of the
@@ -234,7 +234,7 @@ public class DataFile {
 
   /**
    * Get the number of rows in the file
-   * 
+   *
    * @return The row count
    */
   public int getContentLineCount() {
@@ -243,7 +243,7 @@ public class DataFile {
 
   /**
    * Get the number of records in the file
-   * 
+   *
    * @return The record count
    * @throws DataFileException
    *           If the record count cannot be calculated
@@ -260,7 +260,7 @@ public class DataFile {
   /**
    * Get the data from a specified row in the file as a list of string fields.
    * This is the row position in the whole file, including headers.
-   * 
+   *
    * @param row
    *          The row to be retrieved
    * @return The row fields
@@ -287,7 +287,7 @@ public class DataFile {
   /**
    * Validate the file contents. Creates a set of {@code DataFileMessage}
    * objects, which can be retrieved using {@code getMessages()}.
-   * 
+   *
    * @throws DataFileException
    *           If the file contents could not be loaded
    */
@@ -374,7 +374,7 @@ public class DataFile {
 
   /**
    * Shortcut method for adding a message to the message list
-   * 
+   *
    * @param message
    *          The message text
    */
@@ -384,7 +384,7 @@ public class DataFile {
 
   /**
    * Get the messages generated for this file
-   * 
+   *
    * @return The messages
    */
   public TreeSet<DataFileMessage> getMessages() {
@@ -393,7 +393,7 @@ public class DataFile {
 
   /**
    * Get the number of messages that have been generated for this file
-   * 
+   *
    * @return The message count
    */
   public int getMessageCount() {
@@ -403,7 +403,7 @@ public class DataFile {
   /**
    * Get the start date from the file header. This is only applicable if the
    * date format is {@link DateTimeSpecification#HOURS_FROM_START}.
-   * 
+   *
    * @return {@code true} if the header date is successfully extracted;
    *         {@code false} if the date cannot be extracted
    * @throws DataFileException
@@ -438,7 +438,7 @@ public class DataFile {
 
   /**
    * Get the date of the first record in the file
-   * 
+   *
    * @return The date, or null if the date cannot be retrieved
    */
   public LocalDateTime getStartDate() {
@@ -470,7 +470,7 @@ public class DataFile {
 
   /**
    * Get the date of the last record in the file
-   * 
+   *
    * @return The date, or null if the date cannot be retrieved
    * @throws DataFileException
    *           If the file contents could not be loaded
@@ -501,7 +501,7 @@ public class DataFile {
 
   /**
    * Get the date of a line in the file
-   * 
+   *
    * @param line
    *          The line
    * @return The date
@@ -523,7 +523,7 @@ public class DataFile {
   /**
    * Get the run type for a given line. Returns {@code null} if this file does
    * not contain run types
-   * 
+   *
    * @param line
    *          The line
    * @return The run type for the line
@@ -549,7 +549,7 @@ public class DataFile {
   /**
    * Get the run type for a given line. Returns {@code null} if this file does
    * not contain run types
-   * 
+   *
    * @param line
    *          The line
    * @return The run type for the line
@@ -573,7 +573,7 @@ public class DataFile {
 
   /**
    * Get the longitude for a given line
-   * 
+   *
    * @param line
    *          The line
    * @return The longitude
@@ -603,7 +603,7 @@ public class DataFile {
 
   /**
    * Get the latitude for a given line
-   * 
+   *
    * @param line
    *          The line
    * @return The longitude
@@ -725,7 +725,7 @@ public class DataFile {
 
   /**
    * Get the file's database ID
-   * 
+   *
    * @return The database ID
    */
   public long getDatabaseId() {
@@ -734,7 +734,7 @@ public class DataFile {
 
   /**
    * Set the file's database ID
-   * 
+   *
    * @param databaseId
    *          The ID
    */
@@ -744,7 +744,7 @@ public class DataFile {
 
   /**
    * Get the file definition object
-   * 
+   *
    * @return The file definition
    */
   public FileDefinition getFileDefinition() {
@@ -753,7 +753,7 @@ public class DataFile {
 
   /**
    * Get the contents of the file as a single string
-   * 
+   *
    * @return The file contents
    * @throws DataFileException
    *           If the file contents cannot be retrieved
@@ -776,7 +776,7 @@ public class DataFile {
 
   /**
    * Set the contents of the data file
-   * 
+   *
    * @param contents
    *          The contents
    */
@@ -797,7 +797,7 @@ public class DataFile {
 
   /**
    * Get the raw bytes for a file
-   * 
+   *
    * @return The file
    * @throws IOException
    *           If the file cannot be read
@@ -809,7 +809,7 @@ public class DataFile {
   /**
    * Load the contents of the data file from disk, if they are not already
    * loaded
-   * 
+   *
    * @throws DataFileException
    *           If the file contents could not be loaded
    */
@@ -832,7 +832,7 @@ public class DataFile {
   /**
    * Get a value from a field as a Double. If the extracted value equals the
    * {@code missingValue}, the method returns {@code null}.
-   * 
+   *
    * @param line
    *          The line
    * @param field
@@ -863,7 +863,10 @@ public class DataFile {
   /**
    * Get a field value from a line. If the line does not have enough fields, or
    * the field is the defined missing value, returns {@code null}
-   * 
+   *
+   * Any commas in a data value are assumed to be thousands separators and
+   * removed from the string. QuinCe does not support commas as decimal points.
+   *
    * @param line
    *          The line containing the value
    * @param field
@@ -877,7 +880,7 @@ public class DataFile {
     String result = null;
 
     if (field < line.size()) {
-      result = line.get(field).trim();
+      result = line.get(field).trim().replaceAll(",", "");
 
       if (result.equals(missingValue)) {
         result = null;
@@ -901,7 +904,7 @@ public class DataFile {
    * Get the list of run type values with the specified value excluded. This
    * list will include all the run types from the stored file definition plus
    * any missing run types (except that specified as the exclusion).
-   * 
+   *
    * @param exclusion
    *          The value to exclude from the list
    * @return The list of run types without the excluded value
@@ -919,7 +922,7 @@ public class DataFile {
 
   /**
    * Get a line from the file as a list of field values
-   * 
+   *
    * @param line
    *          The line number
    * @return The line fields
