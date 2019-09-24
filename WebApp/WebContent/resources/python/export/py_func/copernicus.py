@@ -191,7 +191,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
     dnt_delete = {}
     for item in results_delete: 
       filename, filepath_local  = item[0], item[2]
-      dnt_delete[filename] = item[5]
+      dnt_delete[filename] = item[6]
       c.execute("UPDATE latest SET uploaded = ? \
         WHERE filename = ?", [NOT_UPLOADED, filename])
 
@@ -228,7 +228,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
       else:
         logging.debug(f'upload failed: {upload_result}')
 
-    if dnt_upload:
+    if dnt_upload or dnt_delete:
       # BUILD INDEX
       c.execute("SELECT * FROM latest WHERE uploaded == 1")
       currently_uploaded = c.fetchall()
@@ -262,22 +262,16 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
       logging.info('Building DNT-file')
       try:
         dnt_file, dnt_local_filepath = build_DNT(dnt_upload,dnt_delete)
-        
-        logging.info('Updating database to include DNT filename')
-        c.execute("UPDATE latest SET dnt_file = ? \
-          WHERE dnt_file = ?", [dnt_local_filepath, local_folder])
 
-      except Exception as exception:
-        logging.error('Building DNT failed: ', exc_info=True)
-        OK = False
-        error += 'Building DNT failed: ' + str(exception)
-
-      # UPLOAD DNT-FILE
-      try: 
-        # using underscores to unpack the function without storing unused vars.
+        # UPLOAD DNT-FILE
         _, dnt_ftp_filepath, _, _ = (
           upload_to_ftp(ftp, ftp_config, dnt_local_filepath))
-    
+        
+        logging.info('Updating database to include DNT filename')
+        sql_rec = "UPDATE latest SET dnt_file = ? WHERE dnt_file = ?"
+        sql_var = [dnt_local_filepath, local_folder]
+        c.execute(sql_rec,sql_var)
+
         try:
           response = evaluate_response_file(
             ftp,dnt_ftp_filepath,dnt_local_filepath.rsplit('/',1)[0])
@@ -288,51 +282,62 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
           OK = False
           error += 'No response from CMEMS: ' + str(e)
 
-      except Exception as e:
-        logging.error('Uploading DNT failed: ', exc_info=True)
+      except Exception as exception:
+        logging.error('Building DNT failed: ', exc_info=True)
         OK = False
-        error += 'Uploading DNT failed: ' + str(e)
+        error += 'Building DNT failed: ' + str(exception)
+
+      # FOLDER CLEAN UP
+      try: 
+        _, dnt_local_filepath_f = build_fDNT(dnt_delete)
+
+        _, dnt_ftp_filepath_f, _, _ = (
+          upload_to_ftp(ftp, ftp_config, dnt_local_filepath_f))            
+        try:
+          response = evaluate_response_file(
+            ftp,dnt_ftp_filepath_f,dnt_local_filepath_f.rsplit('/',1)[0])
+          logging.debug('cmems fDNT-response, folders: {}'.format(response))
+
+        except Exception as e:
+          logging.error('No response from CMEMS: ', exc_info=True)
+          OK = False
+          error += 'No response from CMEMS: ' + str(e)
+
+      except Exception as e:
+        logging.error('Uploading fDNT failed: ', exc_info=True)
+        OK = False
+        error += 'Uploading fDNT failed: ' + str(e)
 
     if not OK:
       logging.error('Upload failed')
-      abort_upload(error, ftp, nrt_dir)
+      abort_upload(error, ftp, nrt_dir, c, curr_date)
 
     return OK
 
-def abort_upload(error,ftp,nrt_dir):
+def abort_upload(error,ftp,nrt_dir,c,curr_date):
   # TODO improve error handling for failed exports
 
   # Remove currently updated files on ftp-server
   uningested_files = clean_directory(ftp, nrt_dir)
 
-  c.execute("SELECT * FROM latest WHERE (dnt_file = ?)",[local_folder])
+  c.execute("SELECT * FROM latest WHERE (dnt_file = ?)",[curr_date])
   failed_ingestion = c.fetchall()
   
   logging.debug(f'failed ingestion: \n{failed_ingestion}')
   logging.debug(f'uningested files: \n {uningested_files}')
 
   # Update database : set uploaded to 0 where index-file is current date
-  error_msg = "failed ingestion, " + local_folder + ', ' + error 
-  c.execute("UPDATE latest \
-    SET uploaded = 0, ftp_filepath = None, dnt_file = None, comment = ? \
-    WHERE dnt_file = ?", 
-    [error_msg, local_folder])
-
-    # Update index-file?
-
-    # Add log-entry denoting files and failure-point
-
-  try:
-    for dataset in export_list:
-      report_abandon_export(config_quince,dataset['id'])
-  except Exception as e:
-    logging.error('Exception occurred: ', exc_info=True)
+  error_msg = "failed ingestion: " + error 
+  sql_req = ("UPDATE latest \
+    SET uploaded = ?, ftp_filepath = ?, dnt_file = ?, comment = ? \
+    WHERE dnt_file = ?")
+  sql_var = [0,None,None,error_msg, curr_date]
+  c.execute(sql_req,sql_var)
 
 
 
 def check_directory(ftp, nrt_dir):
-  ''' 
-  Cleans out empty folders, checks if main directory is empty. 
+  '''   Cleans out empty folders, checks if main directory is empty. 
   returns True when empty 
   '''
 
@@ -434,11 +439,11 @@ def upload_to_ftp(ftp, ftp_config, filepath):
     ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
 
   elif filepath.endswith('.txt'):
+    with open(filepath,'rb') as f: 
+      file_bytes = f.read() 
     ftp_folder = index_dir
     ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
 
-    with open(filepath,'rb') as f: 
-      file_bytes = f.read()
 
   start_upload_time = datetime.datetime.now().strftime(dnt_datetime_format)
   if not ftp.path.isdir(ftp_folder):
@@ -488,21 +493,51 @@ def build_DNT(dnt_upload,dnt_delete):
 
 # delete
   for item in dnt_delete:
-    ftp_filepath = dnt_delete[item]
+    ftp_filepath = dnt_delete[item].split('/',3)[-1]
 
     file_del = ET.SubElement(dataset,'file')
     file_del.set('FileName',ftp_filepath)
     key_word = ET.SubElement(file_del,'KeyWord')
     key_word.text = 'Delete'
 
-    #file_del = ET.SubElement(dataset,'directory')
-    #file_del.set('DestinationFolderName','')
-    #file_del.set('SourceFolderName',ftp_filepath.rsplit('/',1)[0])
-    #key_word = ET.SubElement(file_del,'KeyWord')
-    #key_word.text = 'Delete'
+  xml_tree = ET.ElementTree(dnt)
+
+  dnt_file = product_id + '_P' + date + '.xml'
+  dnt_folder = 'DNT/' + local_folder + '/'  
+  dnt_filepath = dnt_folder + dnt_file
+
+  try: os.mkdir(dnt_folder); 
+  except Exception as e:
+    pass
+
+  with open(dnt_filepath,'wb') as xml: 
+    xml_tree.write(xml,xml_declaration=True,method='xml')
+
+  return dnt_file, dnt_filepath
+
+def build_fDNT(dnt_delete):
+  ''' Generates delivery note for NetCDF folder clean up '''
+  date = datetime.datetime.now().strftime(dnt_datetime_format)
+
+  dnt = ET.Element('delivery')
+  dnt.set('PushingEntity','CopernicusMarine-InSitu-Global')
+  dnt.set('date', date)
+  dnt.set('product',product_id)
+  dataset = ET.SubElement(dnt,'dataset')
+  dataset.set('DatasetName','NRT_201904')
+
+# delete
+  for item in dnt_delete:
+    ftp_filepath = dnt_delete[item].split('/',3)[-1]
+
+    file_del = ET.SubElement(dataset,'directory')
+    file_del.set('DestinationFolderName','')
+    file_del.set('SourceFolderName',ftp_filepath.rsplit('/',1)[0])
+    key_word = ET.SubElement(file_del,'KeyWord')
+    key_word.text = 'Delete'
 
   xml_tree = ET.ElementTree(dnt)
-  logging.debug('DNT file:\n' + str(ET.dump(xml_tree)))
+ # logging.debug('DNT file:\n' + str(ET.dump(xml_tree)))
 
   dnt_file = product_id + '_P' + date + '.xml'
   dnt_folder = 'DNT/' + local_folder + '/'  
