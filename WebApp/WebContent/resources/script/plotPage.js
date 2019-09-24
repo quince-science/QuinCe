@@ -4,6 +4,7 @@ var FLAG_QUESTIONABLE = 3;
 var FLAG_BAD = 4;
 var FLAG_FATAL = 44;
 var FLAG_NEEDS_FLAG = -10;
+var FLAG_FLUSHING = -100;
 var FLAG_IGNORED = -1002;
 
 var SELECT_ACTION = 1;
@@ -1206,7 +1207,11 @@ function makeHighlights(plotData) {
   for (var i = 0; i < plotData.length; i++) {
     var selected = binarySearch(selectedRows, plotData[i][PLOT_MEASUREMENT_ID_INDEX]) > -1;
 
-    if (selected || Math.abs(plotData[i][PLOT_MANUAL_FLAG_INDEX]) != FLAG_GOOD) {
+    var manualFlag = plotData[i][PLOT_MANUAL_FLAG_INDEX]
+
+    if (selected ||
+      (Math.abs(manualFlag) != FLAG_GOOD && manualFlag != FLAG_FLUSHING)) {
+      
       highlightColor = null;
       if (plotData[i][PLOT_MANUAL_FLAG_INDEX] in HIGHLIGHT_COLORS ) {
         highlightColor = HIGHLIGHT_COLORS[plotData[i][PLOT_MANUAL_FLAG_INDEX]]
