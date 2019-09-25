@@ -142,7 +142,8 @@ def build_dataproduct(dataset_zip,dataset_name,destination_filename):
       'filepath':nc_filepath, 
       'hashsum': hashsum, 
       'date': date, 
-      'uploaded':False })
+      'dataset':dataset_name,
+      'uploaded':False})
 
   logging.debug(f'Commiting metadata to local SQL database {cmems_db}')
   sql_commit(nc_dict)
@@ -160,7 +161,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
   '''
 
   OK = True
-  error = ''
+  error = curr_date
 
   # create ftp-connection
   with ftputil.FTPHost(
@@ -171,6 +172,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
     c = create_connection(cmems_db)
 
   # CHECK IF FTP IS EMPTY 
+    logging.debug('Checking FTP directory')
     directory_empty = check_directory(ftp, nrt_dir) 
     if directory_empty:
       logging.error('Previous export has failed, \
@@ -178,6 +180,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
       return False 
 
   # CHECK DICTONARY : DELETE FILES ON SERVER; OLDER THAN 30 DAYS
+    logging.debug('Checking local database')
     c.execute("SELECT * FROM latest \
      WHERE (nc_date < date('now','-30 day') AND uploaded == ?)",[UPLOADED]) 
     results_delete = c.fetchall()
@@ -193,7 +196,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
   # CHECK DICTIONARY: UPLOAD FILES NOT ON SERVER; YOUNGER THAN 30 DAYS
     c.execute("SELECT * FROM latest \
       WHERE (nc_date >= date('now','-30 day') \
-      AND uploaded == ?)",[NOT_UPLOADED]) 
+      AND NOT uploaded == ?)",[UPLOADED]) 
     results_upload = c.fetchall()    
     logging.debug(f'upload {len(results_upload)}: {results_upload}')
 
@@ -269,7 +272,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
 
         try:
           response = evaluate_response_file(
-            ftp,dnt_ftp_filepath,dnt_local_filepath.rsplit('/',1)[0])
+            ftp,dnt_ftp_filepath,dnt_local_filepath.rsplit('/',1)[0],cmems_db)
           logging.debug('cmems dnt-response: {}'.format(response))
 
         except Exception as e:
@@ -283,14 +286,16 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
         error += 'Building DNT failed: ' + str(exception)
 
       # FOLDER CLEAN UP
-      try: 
-        _, dnt_local_filepath_f = build_fDNT(dnt_delete)
+      if dnt_delete:
+        logging.debug('Delete empty directories')
+        try: 
+          _, dnt_local_filepath_f = build_fDNT(dnt_delete)
 
         _, dnt_ftp_filepath_f, _, _ = (
           upload_to_ftp(ftp, ftp_config, dnt_local_filepath_f))            
         try:
           response = evaluate_response_file(
-            ftp,dnt_ftp_filepath_f,dnt_local_filepath_f.rsplit('/',1)[0])
+              ftp,dnt_ftp_filepath_f,dnt_local_filepath_f.rsplit('/',1)[0],cmems_db)
           logging.debug('cmems fDNT-response, folders: {}'.format(response))
 
         except Exception as e:
@@ -310,8 +315,6 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
     return OK
 
 def abort_upload(error,ftp,nrt_dir,c,curr_date):
-  # TODO improve error handling for failed exports
-
   # Remove currently updated files on ftp-server
   uningested_files = clean_directory(ftp, nrt_dir)
 
@@ -368,6 +371,7 @@ def create_connection(DB):
               hashsum TEXT NOT NULL,
               filepath TEXT NOT NULL UNIQUE,
               nc_date TEXT,
+              dataset TEXT,
               uploaded INTEGER,
               ftp_filepath TEXT,
               dnt_file TEXT,
@@ -394,17 +398,17 @@ def sql_commit(nc_dict):
     if filename_exists: # if netCDF file already in database
       logging.info(f'Updating: {key}')
       sql_req = "UPDATE latest SET filename=?,hashsum=?,filepath=?,nc_date=?,\
-        uploaded=?,ftp_filepath=?,dnt_file=?,comment=?,export_date=? \
+        dataset=?,uploaded=?,ftp_filepath=?,dnt_file=?,comment=?,export_date=? \
         WHERE filename=?"
       sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
-        nc_dict[key]['date'],uploaded,None,None,None,key,date])
+        nc_dict[key]['date'],nc_dict[key]['dataset'],uploaded,None,None,None,key,date])
     else:
       logging.debug(f'Adding new entry {key}')
       sql_req = "INSERT INTO latest(filename,hashsum,filepath,nc_date,\
-        uploaded,ftp_filepath,dnt_file,comment,export_date) \
-        VALUES (?,?,?,?,?,?,?,?,?)"
+        dataset,uploaded,ftp_filepath,dnt_file,comment,export_date) \
+        VALUES (?,?,?,?,?,?,?,?,?,?)"
       sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
-        nc_dict[key]['date'],uploaded,None,None,None,date])
+        nc_dict[key]['date'],nc_dict[key]['dataset'],uploaded,None,None,None,date])
 
     c.execute(sql_req,sql_param)
 
@@ -601,7 +605,7 @@ def build_index(results_uploaded):
   return index_filename
 
 
-def evaluate_response_file(ftp,dnt_filepath,folder_local):
+def evaluate_response_file(ftp,dnt_filepath,folder_local,cmems_db):
   '''  Retrieves response from cmems-ftp server.
   '''
   response_received = False
@@ -628,12 +632,18 @@ def evaluate_response_file(ftp,dnt_filepath,folder_local):
     if not 'Ingested="True"' in cmems_response: #ingestion failed or partial
       rejected = re.search(
         'FileName=(.+?)RejectionReason=(.+?)Status',cmems_response)
+      if rejected:
       rejected_file, rejected_reason = [rejected.group(1), rejected.group(2)]
       logging.info('Rejected: {}, {}'.format(rejected_file, rejected_reason))
 
       rejected_list += [[rejected_file,rejected_reason]] 
+        rejected_filename = rejected_file.split('/')[-1].split('.')[0]
 
-      #TODO update database. set filename:uploaded to false
+        c = create_connection(cmems_db)
+        sql_req = "UPDATE latest SET uploaded=?,comment=? WHERE filename=?"
+        sql_var = ([-1,rejected_reason, rejected_filename])
+        c.execute(sql_req,sql_var)
+
 
     else:
       logging.info('All files ingested')
