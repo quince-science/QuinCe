@@ -105,7 +105,8 @@ public class DataSetDataDB {
   private static final String GET_SENSOR_VALUES_BY_DATE_AND_COLUMN_QUERY = "SELECT "
     + "id, file_column, date, value, auto_qc, " // 5
     + "user_qc_flag, user_qc_message " // 7
-    + "FROM sensor_values WHERE dataset_id = ? " + "ORDER BY date, file_column";
+    + "FROM sensor_values WHERE dataset_id = ? AND user_qc_flag != "
+    + Flag.VALUE_FLUSHING + " ORDER BY date, file_column";
 
   /**
    * Statement to store a measurement record
@@ -470,7 +471,8 @@ public class DataSetDataDB {
   /**
    * Get all the sensor values for a data set The returned list is ordered by
    * timestamp and then grouped by the values' source {@code file_column}
-   * database records
+   * database records. Any sensor values whose user QC flag is set to FLUSHING
+   * will not be included.
    *
    * @param conn
    *          A database connection
