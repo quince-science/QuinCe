@@ -164,10 +164,12 @@ public class DataSetDataDB {
     + "sv.user_qc_flag, sv.user_qc_message, mv.measurement_id " // 8
     + " FROM sensor_values sv LEFT JOIN measurement_values mv "
     + "ON sv.id = mv.sensor_value_id WHERE sv.dataset_id = ? "
-    + "AND sv.file_column = ? ORDER BY sv.date ASC";
+    + "AND sv.file_column = ? AND sv.user_qc_flag != " + Flag.VALUE_FLUSHING
+    + " ORDER BY sv.date ASC";
 
   private static final String GET_SENSOR_VALUE_DATES_QUERY = "SELECT DISTINCT "
-    + "date FROM sensor_values WHERE dataset_id = ? ORDER BY DATE ASC";
+    + "date FROM sensor_values WHERE dataset_id = ? AND user_qc_flag != "
+    + Flag.VALUE_FLUSHING + " ORDER BY DATE ASC";
 
   private static final String GET_REQUIRED_FLAGS_QUERY = "SELECT "
     + "COUNT(*) FROM sensor_values WHERE dataset_id = ? "
@@ -870,6 +872,20 @@ public class DataSetDataDB {
     }
   }
 
+  /**
+   * Get the unique list of dates for which sensor values have been recorded for
+   * a given dataset. This ignores any values recorded during flushing times.
+   *
+   * @param dataSource
+   *          A data source
+   * @param datasetId
+   *          The dataset's database ID
+   * @return The sensor value dates
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   */
   public static List<LocalDateTime> getSensorValueDates(DataSource dataSource,
     long datasetId) throws MissingParamException, DatabaseException {
 
@@ -989,6 +1005,19 @@ public class DataSetDataDB {
     }
   }
 
+  /**
+   * Load all values for a given sensor (defined by a Field object). Values
+   * taken during the instrument's flushing periods are not included.
+   *
+   * @param conn
+   *          A database connection
+   * @param output
+   *          The destination for the loaded data
+   * @param field
+   *          The field to be loaded
+   * @throws DatabaseException
+   *           If a database error occurs
+   */
   private static void loadQCSensorValues(Connection conn,
     DatasetMeasurementData output, Field field) throws DatabaseException {
 
