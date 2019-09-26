@@ -291,22 +291,22 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
         try: 
           _, dnt_local_filepath_f = build_fDNT(dnt_delete)
 
-        _, dnt_ftp_filepath_f, _, _ = (
-          upload_to_ftp(ftp, ftp_config, dnt_local_filepath_f))            
-        try:
-          response = evaluate_response_file(
+          _, dnt_ftp_filepath_f, _, _ = (
+            upload_to_ftp(ftp, ftp_config, dnt_local_filepath_f))  
+          try:
+            response = evaluate_response_file(
               ftp,dnt_ftp_filepath_f,dnt_local_filepath_f.rsplit('/',1)[0],cmems_db)
-          logging.debug('cmems fDNT-response, folders: {}'.format(response))
+            logging.debug('cmems fDNT-response, folders: {}'.format(response))
+
+          except Exception as e:
+            logging.error('No response from CMEMS: ', exc_info=True)
+            OK = False
+            error += 'No response from CMEMS: ' + str(e)
 
         except Exception as e:
-          logging.error('No response from CMEMS: ', exc_info=True)
+          logging.error('Uploading fDNT failed: ', exc_info=True)
           OK = False
-          error += 'No response from CMEMS: ' + str(e)
-
-      except Exception as e:
-        logging.error('Uploading fDNT failed: ', exc_info=True)
-        OK = False
-        error += 'Uploading fDNT failed: ' + str(e)
+          error += 'Uploading fDNT failed: ' + str(e)
 
     if not OK:
       logging.error('Upload failed')
@@ -633,10 +633,10 @@ def evaluate_response_file(ftp,dnt_filepath,folder_local,cmems_db):
       rejected = re.search(
         'FileName=(.+?)RejectionReason=(.+?)Status',cmems_response)
       if rejected:
-      rejected_file, rejected_reason = [rejected.group(1), rejected.group(2)]
-      logging.info('Rejected: {}, {}'.format(rejected_file, rejected_reason))
+        rejected_file, rejected_reason = [rejected.group(1), rejected.group(2)]
+        logging.info('Rejected: {}, {}'.format(rejected_file, rejected_reason))
 
-      rejected_list += [[rejected_file,rejected_reason]] 
+        rejected_list += [[rejected_file,rejected_reason]] 
         rejected_filename = rejected_file.split('/')[-1].split('.')[0]
 
         c = create_connection(cmems_db)
