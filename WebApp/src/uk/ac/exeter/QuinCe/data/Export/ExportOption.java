@@ -1,24 +1,35 @@
 package uk.ac.exeter.QuinCe.data.Export;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
+import uk.ac.exeter.QuinCe.web.datasets.export.ExportData;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Class to hold details of a single export configuration
- * 
+ *
  * @author Steve Jones
  * @see ExportConfig
  */
 public class ExportOption {
+
+  private static final String EXPORT_DATA_PACKAGE = "uk.ac.exeter.QuinCe.web.datasets.export.";
+
+  private static final String DEFAULT_EXPORT_DATA_CLASS = EXPORT_DATA_PACKAGE
+    + "ExportData";
 
   private int index;
 
@@ -42,6 +53,12 @@ public class ExportOption {
    * not contain a given variable it will be ignored
    */
   private List<Long> variables;
+
+  /**
+   * The export data class to use for this export. Used for custom
+   * post-processors
+   */
+  private Class<? extends ExportData> dataClass;
 
   /**
    * Indicates whether all sensors will be exported, or just those required for
@@ -92,7 +109,7 @@ public class ExportOption {
 
   /**
    * Build an ExportOption object from a JSON string
-   * 
+   *
    * @param index
    *          The index of the configuration in the export configuration file
    * @param json
@@ -112,7 +129,7 @@ public class ExportOption {
 
   /**
    * Returns the name of the configuration
-   * 
+   *
    * @return The configuration name
    */
   public String getName() {
@@ -121,7 +138,7 @@ public class ExportOption {
 
   /**
    * The column separator to be used in the export file
-   * 
+   *
    * @return The column separator
    */
   public String getSeparator() {
@@ -154,12 +171,13 @@ public class ExportOption {
 
   /**
    * Export the option details from a JSON object
-   * 
+   *
    * @param json
    *          The JSON
    * @throws ExportConfigurationException
    *           If the JSON does not contain valid values
    */
+  @SuppressWarnings("unchecked")
   private void parseJson(ResourceManager resourceManager, JSONObject json)
     throws ExportConfigurationException {
 
@@ -273,13 +291,65 @@ public class ExportOption {
         replacementColumnHeaders.put(k, replacementHeaderJson.getString(k));
 
       });
-
     }
+
+    // ExportData class. All classes are in the
+    // uk.ac.exeter.QuinCe.web.datasets.export package.
+    String className = EXPORT_DATA_PACKAGE;
+
+    if (json.has("exportDataClass")) {
+      className = className + json.getString("exportDataClass");
+      String checkMessage = checkExportDataClass(className);
+      if (null != checkMessage) {
+        throw new ExportConfigurationException(name, checkMessage);
+      }
+    } else {
+      className = DEFAULT_EXPORT_DATA_CLASS;
+    }
+
+    try {
+      dataClass = (Class<? extends ExportData>) Class.forName(className);
+    } catch (ClassNotFoundException e) {
+      // Since we've already checked the class, this shouldn't really happen
+      throw new ExportConfigurationException(name, e);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private String checkExportDataClass(String className) {
+
+    String errorMessage = null;
+
+    try {
+      Class<? extends Object> testClass = Class.forName(className);
+      Class<ExportData> rootClass = (Class<ExportData>) Class
+        .forName(DEFAULT_EXPORT_DATA_CLASS);
+
+      if (!rootClass.isAssignableFrom(testClass)) {
+        errorMessage = "Specified export class does not extend "
+          + DEFAULT_EXPORT_DATA_CLASS;
+      } else {
+
+        try {
+          // Check that the correct constructor is available
+          testClass.getConstructor(DataSource.class, Instrument.class,
+            DataSet.class, ExportOption.class);
+        } catch (NoSuchMethodException e) {
+          errorMessage = "No valid constructor found in " + className;
+        }
+
+      }
+
+    } catch (ClassNotFoundException e) {
+      errorMessage = "Cannot find class " + className;
+    }
+
+    return errorMessage;
   }
 
   /**
    * Parse the {@code separator} entry in the export configuration JSON
-   * 
+   *
    * @param separator
    *          the separator entry
    * @throws ExportConfigurationException
@@ -305,7 +375,7 @@ public class ExportOption {
 
   /**
    * Get the file extension for this export option, based on the separator used
-   * 
+   *
    * @return The file extension
    */
   public String getFileExtension() {
@@ -355,5 +425,42 @@ public class ExportOption {
     }
 
     return result;
+  }
+
+  /**
+   * Get the class to be used for building the export data. This is typically
+   * used for customising data prost-processors before the final export.
+   *
+   * @return The export data class
+   */
+  public Class<? extends ExportData> getExportDataClass() {
+    return dataClass;
+  }
+
+  /**
+   * Create the ExportData object to be used for this Export Option
+   *
+   * @param dataSource
+   *          A data source
+   * @param instrument
+   *          The instrument that the exported data set belongs to
+   * @param dataset
+   *          The dataset that will be exported
+   * @return The ExportData object
+   */
+  public ExportData makeExportData(DataSource dataSource, Instrument instrument,
+    DataSet dataset) throws ExportConfigurationException {
+
+    try {
+      Constructor<?> constructor = dataClass.getConstructor(DataSource.class,
+        Instrument.class, DataSet.class, ExportOption.class);
+
+      return (ExportData) constructor.newInstance(dataSource, instrument,
+        dataset, this);
+    } catch (Exception e) {
+      throw new ExportConfigurationException(name,
+        "Error creating ExportData object", e);
+    }
+
   }
 }
