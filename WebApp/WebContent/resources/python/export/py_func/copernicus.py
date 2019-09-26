@@ -267,7 +267,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
         
         logging.info('Updating database to include DNT filename')
         sql_rec = "UPDATE latest SET dnt_file = ? WHERE dnt_file = ?"
-        sql_var = [dnt_local_filepath, local_folder]
+        sql_var = [dnt_local_filepath, curr_date]
         c.execute(sql_rec,sql_var)
 
         try:
