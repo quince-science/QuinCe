@@ -218,4 +218,12 @@ public class ExportData extends ManualQCPageData {
     // Add the DEPTH attribute
     addValue(rowId, depthField, depthFieldValue);
   }
+
+  /**
+   * Post-process the data before it's finally exported. This instance does no
+   * post-processing, but extending classes can override it as needed.
+   */
+  public void postProcess() {
+    // NOOP
+  }
 }
