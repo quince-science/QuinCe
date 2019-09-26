@@ -20,7 +20,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
  */
 @ManagedBean(name = "utils")
 @SessionScoped
-public class ServletUtilsBean{
+public class ServletUtilsBean {
 
   /**
    * Application site name
@@ -29,22 +29,24 @@ public class ServletUtilsBean{
 
   /**
    * Use this to get the GlobalSessionData object for this session.
+   * 
    * @return an instance of the GlobalSessionData
    */
   public static ServletUtilsBean getInstance() {
     ELContext elContext = FacesContext.getCurrentInstance().getELContext();
-    return (ServletUtilsBean) FacesContext.getCurrentInstance()
-        .getApplication().getELResolver()
-        .getValue(elContext, null, "global");
+    return (ServletUtilsBean) FacesContext.getCurrentInstance().getApplication()
+      .getELResolver().getValue(elContext, null, "global");
   }
 
   /**
    * Shorthand to retrieve the run type categories from the configuration
+   * 
    * @return
    * @throws ResourceException
    */
   public List<RunTypeCategory> getRunTypeCategories() throws ResourceException {
-    return ServletUtils.getResourceManager().getRunTypeCategoryConfiguration().getCategories(true, true);
+    return ServletUtils.getResourceManager().getRunTypeCategoryConfiguration()
+      .getCategories(true, true);
   }
 
   /**

@@ -4,6 +4,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 
 /**
  * Exception for sensor types that can't be found
+ * 
  * @author Steve Jones
  *
  */
@@ -16,7 +17,9 @@ public class SensorTypeNotFoundException extends InstrumentException {
 
   /**
    * Sensor name not found
-   * @param sensorName The sensor name
+   * 
+   * @param sensorName
+   *          The sensor name
    */
   public SensorTypeNotFoundException(String sensorName) {
     super("The sensor type with name '" + sensorName + "' does not exist");
@@ -24,7 +27,9 @@ public class SensorTypeNotFoundException extends InstrumentException {
 
   /**
    * Sensor ID not found
-   * @param sensorId The sensor ID
+   * 
+   * @param sensorId
+   *          The sensor ID
    */
   public SensorTypeNotFoundException(long sensorId) {
     super("The sensor type with ID " + sensorId + " does not exist");

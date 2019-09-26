@@ -4,13 +4,14 @@ import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 
 /**
  * Exception class for errors when handling an instrument's sensor configuration
+ * 
  * @author Steve Jones
  *
  */
 public class SensorConfigurationException extends InstrumentException {
 
   /**
-   *  The Serial Version UID
+   * The Serial Version UID
    */
   private static final long serialVersionUID = -7348012628281277079L;
 
@@ -21,7 +22,9 @@ public class SensorConfigurationException extends InstrumentException {
 
   /**
    * Simple constructor with an error message
-   * @param message The error message
+   * 
+   * @param message
+   *          The error message
    */
   public SensorConfigurationException(String message) {
     super(message);
@@ -29,7 +32,9 @@ public class SensorConfigurationException extends InstrumentException {
 
   /**
    * Simple constructor with an error message
-   * @param message The error message
+   * 
+   * @param message
+   *          The error message
    */
   public SensorConfigurationException(String message, Throwable cause) {
     super(message, cause);
@@ -37,8 +42,11 @@ public class SensorConfigurationException extends InstrumentException {
 
   /**
    * Exception for a specific sensor type
-   * @param id The sensor type's ID
-   * @param message The error message
+   * 
+   * @param id
+   *          The sensor type's ID
+   * @param message
+   *          The error message
    */
   public SensorConfigurationException(long id, String message) {
     super(message);

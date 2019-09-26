@@ -37,6 +37,7 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageBean;
 
 /**
  * User QC bean
+ *
  * @author Steve Jones
  *
  */
@@ -55,8 +56,13 @@ public class ManualQcBean extends PlotPageBean {
   private static final String NAV_DATASET_LIST = "dataset_list";
 
   /**
-   * The set of comments for the user QC dialog. Stored as a Javascript array of entries, with each entry containing
-   * Comment, Count and Flag value
+   * The number of flags that need to be checked by the user
+   */
+  private int flagsRequired = 0;
+
+  /**
+   * The set of comments for the user QC dialog. Stored as a Javascript array of
+   * entries, with each entry containing Comment, Count and Flag value
    */
   private String userCommentList = "[]";
 
@@ -95,15 +101,18 @@ public class ManualQcBean extends PlotPageBean {
 
   /**
    * Finish the calibration data validation
+   *
    * @return Navigation to the data set list
    */
   public String finish() {
     if (dirty) {
       try {
-        DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_AUTO_QC);
+        DataSetDB.setDatasetStatus(getDataSource(), datasetId,
+          DataSet.STATUS_AUTO_QC);
         Map<String, String> jobParams = new HashMap<String, String>();
         jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(datasetId));
-        JobManager.addJob(getDataSource(), getUser(), AutoQCJob.class.getCanonicalName(), jobParams);
+        JobManager.addJob(getDataSource(), getUser(),
+          AutoQCJob.class.getCanonicalName(), jobParams);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -116,7 +125,8 @@ public class ManualQcBean extends PlotPageBean {
   }
 
   /**
-   * Apply the automatically generated QC flags to the rows selected in the table
+   * Apply the automatically generated QC flags to the rows selected in the
+   * table
    */
   public void acceptAutoQc() {
     try {
@@ -134,6 +144,7 @@ public class ManualQcBean extends PlotPageBean {
         value.setNeedsFlag(false);
       }
 
+      updateFlagsRequired();
       dirty = true;
     } catch (Exception e) {
       e.printStackTrace();
@@ -142,6 +153,7 @@ public class ManualQcBean extends PlotPageBean {
 
   /**
    * Returns the set of comments for the WOCE dialog
+   *
    * @return The comments for the WOCE dialog
    */
   public String getUserCommentList() {
@@ -150,7 +162,9 @@ public class ManualQcBean extends PlotPageBean {
 
   /**
    * Dummy: Sets the set of comments for the WOCE dialog
-   * @param userCommentList The comments; ignored
+   *
+   * @param userCommentList
+   *          The comments; ignored
    */
   public void setUserCommentList(String userCommentList) {
     // Do nothing
@@ -158,6 +172,7 @@ public class ManualQcBean extends PlotPageBean {
 
   /**
    * Get the worst flag set on the selected rows
+   *
    * @return The worst flag on the selected rows
    */
   public int getWorstSelectedFlag() {
@@ -166,7 +181,9 @@ public class ManualQcBean extends PlotPageBean {
 
   /**
    * Dummy: Set the worst selected flag
-   * @param worstSelectedFlag The flag; ignored
+   *
+   * @param worstSelectedFlag
+   *          The flag; ignored
    */
   public void setWorstSelectedFlag(int worstSelectedFlag) {
     // Do nothing
@@ -182,7 +199,8 @@ public class ManualQcBean extends PlotPageBean {
     JSONArray json = new JSONArray();
 
     try {
-      CommentSet comments = pageData.getCommentSet(selectedColumn, getSelectedRowsList());
+      CommentSet comments = pageData.getCommentSet(selectedColumn,
+        getSelectedRowsList());
       for (CommentSetEntry entry : comments) {
         json.put(entry.toJson());
         if (entry.getFlag().moreSignificantThan(worstSelectedFlag)) {
@@ -211,7 +229,8 @@ public class ManualQcBean extends PlotPageBean {
   }
 
   /**
-   * @param userComment the userComment to set
+   * @param userComment
+   *          the userComment to set
    */
   public void setUserComment(String userComment) {
     this.userComment = userComment;
@@ -225,7 +244,8 @@ public class ManualQcBean extends PlotPageBean {
   }
 
   /**
-   * @param userFlag the userFlag to set
+   * @param userFlag
+   *          the userFlag to set
    */
   public void setUserFlag(int userFlag) {
     this.userFlag = userFlag;
@@ -236,8 +256,10 @@ public class ManualQcBean extends PlotPageBean {
    */
   public void applyManualFlag() {
     try {
-      List<FieldValue> updatedValues = pageData.setQC(getSelectedRowsList(), selectedColumn, new Flag(userFlag), userComment);
+      List<FieldValue> updatedValues = pageData.setQC(getSelectedRowsList(),
+        selectedColumn, new Flag(userFlag), userComment);
       DataSetDataDB.setQC(getDataSource(), updatedValues);
+      updateFlagsRequired();
       dirty = true;
     } catch (Exception e) {
       e.printStackTrace();
@@ -249,8 +271,8 @@ public class ManualQcBean extends PlotPageBean {
     Field result = null;
 
     try {
-      List<FileColumn> fileColumns = InstrumentDB.getSensorColumns(
-        getDataSource(), instrument.getDatabaseId());
+      List<FileColumn> fileColumns = InstrumentDB
+        .getSensorColumns(getDataSource(), getCurrentInstrumentId());
 
       for (FileColumn column : fileColumns) {
         if (column.getSensorType().getName().equals("Intake Temperature")) {
@@ -274,29 +296,26 @@ public class ManualQcBean extends PlotPageBean {
     return true;
   }
 
-  /**
-   * Load the data for the current field set
-   */
   @Override
-  protected void loadData() throws Exception {
-
+  protected void initData() throws Exception {
     try {
       fieldSets = new FieldSets("Date/Time");
 
-      fieldSets.addField(FieldSet.BASE_FIELD_SET,
-        new Field(FileDefinition.LONGITUDE_COLUMN_ID, "Longitude"));
-      fieldSets.addField(FieldSet.BASE_FIELD_SET,
-        new Field(FileDefinition.LATITUDE_COLUMN_ID, "Latitude"));
+      fieldSets.addField(new Field(FieldSet.BASE_FIELD_SET,
+        FileDefinition.LONGITUDE_COLUMN_ID, "Longitude"));
+      fieldSets.addField(new Field(FieldSet.BASE_FIELD_SET,
+        FileDefinition.LATITUDE_COLUMN_ID, "Latitude"));
 
       // Sensor columns
-      List<FileColumn> fileColumns = InstrumentDB.getSensorColumns(
-        getDataSource(), instrument.getDatabaseId());
+      List<FileColumn> fileColumns = InstrumentDB
+        .getSensorColumns(getDataSource(), getCurrentInstrumentId());
 
-      FieldSet sensorFieldSet = fieldSets.addFieldSet(DataSetDataDB.SENSORS_FIELDSET,
-          DataSetDataDB.SENSORS_FIELDSET_NAME, true);
+      FieldSet sensorFieldSet = fieldSets.addFieldSet(
+        DataSetDataDB.SENSORS_FIELDSET, DataSetDataDB.SENSORS_FIELDSET_NAME,
+        true);
 
-
-      FieldSet diagnosticFieldSet = fieldSets.addFieldSet(DataSetDataDB.DIAGNOSTICS_FIELDSET,
+      FieldSet diagnosticFieldSet = fieldSets.addFieldSet(
+        DataSetDataDB.DIAGNOSTICS_FIELDSET,
         DataSetDataDB.DIAGNOSTICS_FIELDSET_NAME, false);
 
       for (FileColumn column : fileColumns) {
@@ -306,27 +325,30 @@ public class ManualQcBean extends PlotPageBean {
           addFieldSet = diagnosticFieldSet;
         }
 
-        fieldSets.addField(addFieldSet,
-          new Field(column.getColumnId(), column.getColumnName()));
+        fieldSets.addField(
+          new Field(addFieldSet, column.getColumnId(), column.getColumnName()));
       }
 
       // Data reduction columns
-      for (InstrumentVariable variable : instrument.getVariables()) {
-        LinkedHashMap<String, Long> variableParameters =
-          DataReducerFactory.getCalculationParameters(variable);
+      for (InstrumentVariable variable : getCurrentInstrument()
+        .getVariables()) {
+        LinkedHashMap<String, Long> variableParameters = DataReducerFactory
+          .getCalculationParameters(variable);
 
-        FieldSet varFieldSet = fieldSets.addFieldSet(variable.getId(), variable.getName(), false);
+        FieldSet varFieldSet = fieldSets.addFieldSet(variable.getId(),
+          variable.getName(), false);
 
         // Columns from data reduction are given IDs based on the
         // variable ID and parameter number
         for (Map.Entry<String, Long> entry : variableParameters.entrySet()) {
 
-          fieldSets.addField(varFieldSet,
-            new Field(entry.getValue(), entry.getKey()));
+          fieldSets
+            .addField(new Field(varFieldSet, entry.getValue(), entry.getKey()));
         }
       }
 
-      pageData = new ManualQCPageData(instrument, fieldSets, dataset);
+      pageData = new ManualQCPageData(getCurrentInstrument(), fieldSets,
+        dataset);
 
       // Load data for sensor columns
       List<Long> fieldIds = new ArrayList<Long>();
@@ -335,12 +357,14 @@ public class ManualQcBean extends PlotPageBean {
       fieldIds.addAll(fieldSets.getFieldIds(sensorFieldSet));
       fieldIds.addAll(fieldSets.getFieldIds(diagnosticFieldSet));
 
+      pageData.addTimes(DataSetDataDB.getSensorValueDates(getDataSource(),
+        getDataset().getId()));
 
-      DataSetDataDB.getQCSensorData(getDataSource(), pageData,
-        getDataset().getId(), instrument, fieldIds);
-
-      // Load data reduction data
-      DataSetDataDB.getDataReductionData(getDataSource(), pageData, dataset);
+      if (dataset.isNrt()) {
+        flagsRequired = 0;
+      } else {
+        updateFlagsRequired();
+      }
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -354,7 +378,8 @@ public class ManualQcBean extends PlotPageBean {
     if (!dataset.isNrt()) {
       // Sensor values. This is the field set with ID -1.
       // We'll add diagnostics sometime.
-      LinkedHashMap<Long, List<Integer>> columnIndexes = fieldSets.getColumnIndexes();
+      LinkedHashMap<Long, List<Integer>> columnIndexes = fieldSets
+        .getColumnIndexes();
       result.addAll(columnIndexes.get(DataSetDataDB.SENSORS_FIELDSET));
     }
 
@@ -362,12 +387,16 @@ public class ManualQcBean extends PlotPageBean {
   }
 
   /**
-   * Get the available field sets for this dataset keyed by name.
-   * Builds the list once, then caches it
+   * Get the available field sets for this dataset keyed by name. Builds the
+   * list once, then caches it
+   *
    * @return The field sets
-   * @throws MissingParamException If any required parameters are missing
-   * @throws DatabaseException If a database error occurs
-   * @throws VariableNotFoundException If an invalid variable is configured for the instrument
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws VariableNotFoundException
+   *           If an invalid variable is configured for the instrument
    */
   @Override
   public LinkedHashMap<String, Long> getFieldSets(boolean includeTimePos)
@@ -376,4 +405,18 @@ public class ManualQcBean extends PlotPageBean {
     return dataset.getFieldSets(includeTimePos);
   }
 
+  /**
+   * Get the number of flags that need to be checked by the user
+   *
+   * @return
+   */
+  public int getFlagsRequired() {
+    return flagsRequired;
+  }
+
+  private void updateFlagsRequired()
+    throws MissingParamException, DatabaseException {
+    flagsRequired = DataSetDataDB.getFlagsRequired(getDataSource(),
+      getDataset().getId());
+  }
 }

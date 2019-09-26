@@ -22,26 +22,19 @@ import javax.sql.DataSource;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
-import uk.ac.exeter.QCRoutines.config.InvalidDataTypeException;
-import uk.ac.exeter.QCRoutines.data.NoSuchColumnException;
-import uk.ac.exeter.QCRoutines.messages.Flag;
-import uk.ac.exeter.QCRoutines.messages.MessageException;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
-import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
@@ -74,10 +67,14 @@ public class ExportBean extends BaseManagedBean {
   private boolean includeRawFiles = false;
 
   /**
-   * Formatter for numeric values
-   * All values are displayed to 3 decimal places.
+   * Formatter for numeric values All values are displayed to 3 decimal places.
    */
   private static DecimalFormat numberFormatter;
+
+  /**
+   * The export data, organised ready for building export files
+   */
+  private ExportData exportData = null;
 
   static {
     numberFormatter = new DecimalFormat("#0.000");
@@ -88,11 +85,15 @@ public class ExportBean extends BaseManagedBean {
    * Initialise the bean
    */
   public String start() {
+    // Reset the export data
+    exportData = null;
+
     return NAV_EXPORT_PAGE;
   }
 
   /**
    * Get the dataset ID
+   *
    * @return The dataset ID
    */
   public long getDatasetId() {
@@ -106,7 +107,9 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Set the dataset using its ID
-   * @param datasetId The dataset ID
+   *
+   * @param datasetId
+   *          The dataset ID
    */
   public void setDatasetId(long datasetId) {
     try {
@@ -118,6 +121,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Get the dataset
+   *
    * @return The dataset
    */
   public DataSet getDataset() {
@@ -126,7 +130,9 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Set the dataset
-   * @param dataset The dataset
+   *
+   * @param dataset
+   *          The dataset
    */
   public void setDataset(DataSet dataset) {
     this.dataset = dataset;
@@ -134,8 +140,10 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Get the list of available file export options
+   *
    * @return The export options
-   * @throws ExportException In an error occurs while retrieving the export options
+   * @throws ExportException
+   *           In an error occurs while retrieving the export options
    */
   public List<ExportOption> getExportOptions() throws ExportException {
     List<ExportOption> options = ExportConfig.getInstance().getOptions();
@@ -148,6 +156,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Return the ID of the chosen file export option
+   *
    * @return The export option ID
    */
   public int getChosenExportOption() {
@@ -156,7 +165,9 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Set the ID of the chosen export option
-   * @param chosenExportOption The export option ID
+   *
+   * @param chosenExportOption
+   *          The export option ID
    */
   public void setChosenExportOption(int chosenExportOption) {
     this.chosenExportOption = chosenExportOption;
@@ -185,7 +196,8 @@ public class ExportBean extends BaseManagedBean {
       conn = getDataSource().getConnection();
       ExportOption exportOption = getExportOptions().get(chosenExportOption);
 
-      byte[] fileContent = getDatasetExport(conn, getCurrentInstrument(), dataset, exportOption);
+      byte[] fileContent = getDatasetExport(conn, getCurrentInstrument(),
+        dataset, exportOption);
 
       FacesContext fc = FacesContext.getCurrentInstance();
       ExternalContext ec = fc.getExternalContext();
@@ -193,13 +205,16 @@ public class ExportBean extends BaseManagedBean {
       ec.responseReset();
       ec.setResponseContentType("text/csv");
 
-      // Set it with the file size. This header is optional. It will work if it's omitted,
+      // Set it with the file size. This header is optional. It will work if
+      // it's omitted,
       // but the download progress will be unknown.
       ec.setResponseContentLength(fileContent.length);
 
-      // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE,
+      // The Save As popup magic is done here. You can give it any file name you
+      // want, this only won't work in MSIE,
       // it will use current request URL as file name instead.
-      ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + getExportFilename(exportOption) + "\"");
+      ec.setResponseHeader("Content-Disposition",
+        "attachment; filename=\"" + getExportFilename(exportOption) + "\"");
 
       OutputStream outputStream = ec.getResponseOutputStream();
       outputStream.write(fileContent);
@@ -223,7 +238,8 @@ public class ExportBean extends BaseManagedBean {
       conn = getDataSource().getConnection();
       ExportOption exportOption = getExportOptions().get(chosenExportOption);
 
-      byte[] outBytes = buildExportZip(conn, getCurrentInstrument(), dataset, exportOption);
+      byte[] outBytes = buildExportZip(conn, getCurrentInstrument(), dataset,
+        exportOption);
 
       FacesContext fc = FacesContext.getCurrentInstance();
       ExternalContext ec = fc.getExternalContext();
@@ -231,13 +247,16 @@ public class ExportBean extends BaseManagedBean {
       ec.responseReset();
       ec.setResponseContentType("application/zip");
 
-      // Set it with the file size. This header is optional. It will work if it's omitted,
+      // Set it with the file size. This header is optional. It will work if
+      // it's omitted,
       // but the download progress will be unknown.
       ec.setResponseContentLength(outBytes.length);
 
-      // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE,
+      // The Save As popup magic is done here. You can give it any file name you
+      // want, this only won't work in MSIE,
       // it will use current request URL as file name instead.
-      ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + dataset.getName() + ".zip\"");
+      ec.setResponseHeader("Content-Disposition",
+        "attachment; filename=\"" + dataset.getName() + ".zip\"");
 
       OutputStream outputStream = ec.getResponseOutputStream();
       outputStream.write(outBytes);
@@ -252,41 +271,30 @@ public class ExportBean extends BaseManagedBean {
   }
 
   /**
-   * Obtain a dataset in the specified format as a byte array ready for export or
-   * storage
-   * @param dataSource A data source
-   * @param dataSet The dataset
-   * @param exportOption The export format
+   * Obtain a dataset in the specified format as a byte array ready for export
+   * or storage
+   *
+   * @param dataSource
+   *          A data source
+   * @param dataSet
+   *          The dataset
+   * @param exportOption
+   *          The export format
    * @return The exported dataset
-   * @throws NoSuchColumnException
-   * @throws InvalidDataTypeException
-   * @throws MissingParamException
-   * @throws DatabaseException
-   * @throws RecordNotFoundException
-   * @throws MessageException
-   * @throws DataReductionException
+   * @throws Exception
    */
-  private static byte[] getDatasetExport(Connection conn, Instrument instrument, DataSet dataset, ExportOption exportOption)
-      throws Exception {
-
+  private static byte[] getDatasetExport(Connection conn, Instrument instrument,
+    DataSet dataset, ExportOption exportOption) throws Exception {
 
     DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
 
-    ExportData data = new ExportData(
-      dataSource, instrument, dataset, exportOption);
+    ExportData data = new ExportData(dataSource, instrument, dataset,
+      exportOption);
 
-    // Load sensor data
-    List<Long> fieldIds = new ArrayList<Long>();
-    fieldIds.add(FileDefinition.LONGITUDE_COLUMN_ID);
-    fieldIds.add(FileDefinition.LATITUDE_COLUMN_ID);
-    fieldIds.addAll(instrument.getSensorAssignments().getFileColumnIDs());
+    data
+      .addTimes(DataSetDataDB.getSensorValueDates(dataSource, dataset.getId()));
 
-    DataSetDataDB.getQCSensorData(dataSource, data,
-      dataset.getId(), instrument, fieldIds);
-
-    // Load data reduction data
-    DataSetDataDB.getDataReductionData(dataSource, data, dataset);
-
+    DataSetDataDB.loadMeasurementData(dataSource, data, data.getRowIds());
 
     // Let's make some output
     StringBuilder output = new StringBuilder();
@@ -299,7 +307,8 @@ public class ExportBean extends BaseManagedBean {
 
     for (FieldSet fieldSet : data.getFieldSets().keySet()) {
 
-      if (fieldSet.getId() <= 0 || exportOption.getVariables().contains(fieldSet.getId())) {
+      if (fieldSet.getId() <= 0
+        || exportOption.getVariables().contains(fieldSet.getId())) {
         for (Field field : data.getFieldSets().get(fieldSet)) {
           ExportField exportField = (ExportField) field;
           if (!exportField.isDiagnostic()) {
@@ -317,7 +326,8 @@ public class ExportBean extends BaseManagedBean {
       }
     }
 
-    output.append(StringUtils.collectionToDelimited(headers, exportOption.getSeparator()));
+    output.append(
+      StringUtils.collectionToDelimited(headers, exportOption.getSeparator()));
     output.append('\n');
 
     for (LocalDateTime rowId : data.keySet()) {
@@ -354,7 +364,8 @@ public class ExportBean extends BaseManagedBean {
                 if (null == fieldValue) {
                   output.append("");
                 } else {
-                  output.append(StringUtils.makeCsvString(fieldValue.getQcComment()));
+                  output.append(
+                    StringUtils.makeCsvString(fieldValue.getQcComment()));
                 }
               }
             }
@@ -370,12 +381,16 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Get the filename of the file that will be exported
-   * @param exportOption The export option
+   *
+   * @param exportOption
+   *          The export option
    * @return The export filename
-   * @throws Exception If any errors occur
+   * @throws Exception
+   *           If any errors occur
    */
   private String getExportFilename(ExportOption exportOption) throws Exception {
-    StringBuffer fileName = new StringBuffer(dataset.getName().replaceAll("\\.", "_"));
+    StringBuffer fileName = new StringBuffer(
+      dataset.getName().replaceAll("\\.", "_"));
     fileName.append('-');
     fileName.append(exportOption.getName());
 
@@ -390,6 +405,7 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Determine whether raw files should be included in the export
+   *
    * @return {@code true} if raw files should be included; {@code false} if not
    */
   public boolean getIncludeRawFiles() {
@@ -398,7 +414,9 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Specify whether raw files should be included in the export
-   * @param includeRawFiles The raw files flag
+   *
+   * @param includeRawFiles
+   *          The raw files flag
    */
   public void setIncludeRawFiles(boolean includeRawFiles) {
     this.includeRawFiles = includeRawFiles;
@@ -406,10 +424,12 @@ public class ExportBean extends BaseManagedBean {
 
   /**
    * Create the contents of the manifest.json file
+   *
    * @return The manifest JSON
    */
   private static JSONObject makeManifest(Connection conn, DataSet dataset,
-      List<ExportOption> exportOptions, List<DataFile> rawFiles) throws Exception {
+    List<ExportOption> exportOptions, List<DataFile> rawFiles)
+    throws Exception {
 
     JSONObject result = new JSONObject();
 
@@ -429,7 +449,7 @@ public class ExportBean extends BaseManagedBean {
       JSONObject datasetObject = new JSONObject();
       datasetObject.put("destination", exportOption.getName());
       datasetObject.put("filename",
-          dataset.getName() + exportOption.getFileExtension());
+        dataset.getName() + exportOption.getFileExtension());
       datasetArray.put(datasetObject);
     }
 
@@ -438,8 +458,8 @@ public class ExportBean extends BaseManagedBean {
     JSONObject metadata = DataSetDB.getMetadataJson(conn, dataset);
     Properties appConfig = ResourceManager.getInstance().getConfig();
 
-    metadata.put("quince_information",
-        "Data processed using QuinCe version " + appConfig.getProperty("version"));
+    metadata.put("quince_information", "Data processed using QuinCe version "
+      + appConfig.getProperty("version"));
     manifest.put("metadata", metadata);
 
     result.put("manifest", manifest);
@@ -447,21 +467,25 @@ public class ExportBean extends BaseManagedBean {
   }
 
   /**
-   * Build a ZIP file containing a full dataset export, including
-   * the raw files used to build the dataset and a manifest containing
-   * metadata and details of the files.
+   * Build a ZIP file containing a full dataset export, including the raw files
+   * used to build the dataset and a manifest containing metadata and details of
+   * the files.
    *
-   * The {@code exportOption} defines the export format to be used. If
-   * this is {@code null}, all formats will be exported.
+   * The {@code exportOption} defines the export format to be used. If this is
+   * {@code null}, all formats will be exported.
    *
-   * @param conn A database connection
-   * @param dataset The dataset to export
-   * @param exportOption The export option to use
+   * @param conn
+   *          A database connection
+   * @param dataset
+   *          The dataset to export
+   * @param exportOption
+   *          The export option to use
    * @return The export ZIP file
-   * @throws Exception All exceptions are propagated upwards
+   * @throws Exception
+   *           All exceptions are propagated upwards
    */
   public static byte[] buildExportZip(Connection conn, Instrument instrument,
-      DataSet dataset, ExportOption exportOption) throws Exception {
+    DataSet dataset, ExportOption exportOption) throws Exception {
 
     ByteArrayOutputStream zipOut = new ByteArrayOutputStream();
     ZipOutputStream zip = new ZipOutputStream(zipOut);
@@ -478,8 +502,8 @@ public class ExportBean extends BaseManagedBean {
 
     for (ExportOption option : exportOptions) {
       // Add the main dataset file
-      String datasetPath = dirRoot + "/dataset/" + option.getName() +
-          "/" + dataset.getName() + option.getFileExtension();
+      String datasetPath = dirRoot + "/dataset/" + option.getName() + "/"
+        + dataset.getName() + option.getFileExtension();
 
       ZipEntry datasetEntry = new ZipEntry(datasetPath);
       zip.putNextEntry(datasetEntry);
@@ -489,7 +513,7 @@ public class ExportBean extends BaseManagedBean {
 
     List<Long> rawIds = dataset.getSourceFiles(conn);
     List<DataFile> files = DataFileDB.getDataFiles(conn,
-        ResourceManager.getInstance().getConfig(), rawIds);
+      ResourceManager.getInstance().getConfig(), rawIds);
 
     for (DataFile file : files) {
       String filePath = dirRoot + "/raw/" + file.getFilename();

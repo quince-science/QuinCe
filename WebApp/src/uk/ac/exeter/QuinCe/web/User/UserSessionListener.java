@@ -12,8 +12,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
- * Class to perform user-related actions when a session
- * is created or destroyed
+ * Class to perform user-related actions when a session is created or destroyed
+ * 
  * @author Steve Jones
  *
  */
@@ -29,7 +29,8 @@ public class UserSessionListener implements HttpSessionListener {
 
     // Save the user preferences
     try {
-      UserPreferences prefs = (UserPreferences) session.getAttribute(LoginBean.USER_PREFS_ATTR);
+      UserPreferences prefs = (UserPreferences) session
+        .getAttribute(LoginBean.USER_PREFS_ATTR);
       if (null != prefs) {
         UserDB.savePreferences(ServletUtils.getDBDataSource(), prefs);
       }
@@ -41,7 +42,7 @@ public class UserSessionListener implements HttpSessionListener {
     }
 
     session.removeAttribute(LoginBean.USER_SESSION_ATTR);
-      session.setAttribute("SESSION_EXPIRED", "true");
+    session.setAttribute("SESSION_EXPIRED", "true");
   }
 
 }

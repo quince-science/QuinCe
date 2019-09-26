@@ -1,6 +1,5 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,6 +18,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 
 /**
  * Object to hold all the details of an instrument
+ *
  * @author Steve Jones
  *
  */
@@ -77,34 +77,46 @@ public class Instrument {
   private String platformCode = null;
 
   /**
-   * Indicates whether or not this instrument supplies
-   * near-real-time data
+   * Indicates whether or not this instrument supplies near-real-time data
    *
-   * At the time of writing, the NRT flag can only be
-   * set manually on the database after the instrument
-   * is created. All calls within QuinCe set this to false.
+   * At the time of writing, the NRT flag can only be set manually on the
+   * database after the instrument is created. All calls within QuinCe set this
+   * to false.
    */
   private boolean nrt = false;
 
   /**
    * Constructor for a complete instrument that's already in the database
-   * @param databaseId The instrument's database ID
-   * @param ownerId The instrument owner's database ID
-   * @param name The instrument name
-   * @param fileDefinitions The file format definitions
-   * @param variables The variables measured by this instrument
-   * @param sensorAssignments The sensor assignments
-   * @param preFlushingTime The pre-flushing time
-   * @param postFlushingTime The post-flushing time
-   * @param minimumWaterFlow The minimum water flow
-   * @param averagingMode The averaging mode
-   * @param platformCode The platform code
-   * @param nrt Near real time flag
+   *
+   * @param databaseId
+   *          The instrument's database ID
+   * @param ownerId
+   *          The instrument owner's database ID
+   * @param name
+   *          The instrument name
+   * @param fileDefinitions
+   *          The file format definitions
+   * @param variables
+   *          The variables measured by this instrument
+   * @param sensorAssignments
+   *          The sensor assignments
+   * @param preFlushingTime
+   *          The pre-flushing time
+   * @param postFlushingTime
+   *          The post-flushing time
+   * @param minimumWaterFlow
+   *          The minimum water flow
+   * @param averagingMode
+   *          The averaging mode
+   * @param platformCode
+   *          The platform code
+   * @param nrt
+   *          Near real time flag
    */
   public Instrument(long databaseId, long ownerId, String name,
-      InstrumentFileSet fileDefinitions, List<InstrumentVariable> variables,
-      SensorAssignments sensorAssignments, int preFlushingTime,
-      int postFlushingTime, int depth, String platformCode, boolean nrt) {
+    InstrumentFileSet fileDefinitions, List<InstrumentVariable> variables,
+    SensorAssignments sensorAssignments, int preFlushingTime,
+    int postFlushingTime, int depth, String platformCode, boolean nrt) {
 
     this.databaseID = databaseId;
     this.ownerId = ownerId;
@@ -118,26 +130,37 @@ public class Instrument {
     this.setPlatformCode(platformCode);
     this.nrt = nrt;
 
-    //TODO Validate averaging mode
+    // TODO Validate averaging mode
   }
 
   /**
    * Constructor for a complete instrument with no database ID
-   * @param owner The instrument's owner
-   * @param name The instrument name
-   * @param fileDefinitions The file format definitions
-   * @param variables The variables measured by this instrument
-   * @param sensorAssignments The sensor assignments
-   * @param preFlushingTime The pre-flushing time
-   * @param postFlushingTime The post-flushing time
-   * @param minimumWaterFlow The minimum water flow
-   * @param averagingMode The averaging mode
-   * @param platformCode The platform code
+   *
+   * @param owner
+   *          The instrument's owner
+   * @param name
+   *          The instrument name
+   * @param fileDefinitions
+   *          The file format definitions
+   * @param variables
+   *          The variables measured by this instrument
+   * @param sensorAssignments
+   *          The sensor assignments
+   * @param preFlushingTime
+   *          The pre-flushing time
+   * @param postFlushingTime
+   *          The post-flushing time
+   * @param minimumWaterFlow
+   *          The minimum water flow
+   * @param averagingMode
+   *          The averaging mode
+   * @param platformCode
+   *          The platform code
    */
   public Instrument(User owner, String name, InstrumentFileSet fileDefinitions,
-      List<InstrumentVariable> variables, SensorAssignments sensorAssignments,
-      int preFlushingTime, int postFlushingTime, int depth, String platformCode,
-      boolean nrt) {
+    List<InstrumentVariable> variables, SensorAssignments sensorAssignments,
+    int preFlushingTime, int postFlushingTime, int depth, String platformCode,
+    boolean nrt) {
 
     this.ownerId = owner.getDatabaseID();
     this.name = name;
@@ -150,21 +173,26 @@ public class Instrument {
     this.platformCode = platformCode;
     this.nrt = nrt;
 
-    //TODO Validate averaging mode
+    // TODO Validate averaging mode
   }
 
   /**
    * Validate that all required information for the Instrument is present
-   * @param checkDatabaseColumns Specifies whether or not database columns
-   *                             have been assigned and should be checked
-   * @throws InstrumentException If the instrument is not valid
+   *
+   * @param checkDatabaseColumns
+   *          Specifies whether or not database columns have been assigned and
+   *          should be checked
+   * @throws InstrumentException
+   *           If the instrument is not valid
    */
-  public void validate(boolean checkDatabaseColumns) throws InstrumentException {
+  public void validate(boolean checkDatabaseColumns)
+    throws InstrumentException {
     // TODO Write it!
   }
 
   /**
    * Returns the ID of the instrument in the database
+   *
    * @return The ID of the instrument in the database
    */
   public long getDatabaseId() {
@@ -173,7 +201,9 @@ public class Instrument {
 
   /**
    * Sets the ID of the instrument in the database
-   * @param databaseID The database ID
+   *
+   * @param databaseID
+   *          The database ID
    */
   public void setDatabaseId(long databaseID) {
     this.databaseID = databaseID;
@@ -181,6 +211,7 @@ public class Instrument {
 
   /**
    * Returns the database ID of the owner of the instrument
+   *
    * @return The ID of the owner of the instrument
    */
   public long getOwnerId() {
@@ -189,6 +220,7 @@ public class Instrument {
 
   /**
    * Get the instrument's name
+   *
    * @return The name
    */
   public String getName() {
@@ -197,6 +229,7 @@ public class Instrument {
 
   /**
    * Returns the pre-flushing time
+   *
    * @return The pre-flushing time
    */
   public int getPreFlushingTime() {
@@ -205,7 +238,9 @@ public class Instrument {
 
   /**
    * Sets the pre-flushing time
-   * @param preFlushingTime The pre-flushing time
+   *
+   * @param preFlushingTime
+   *          The pre-flushing time
    */
   public void setPreFlushingTime(int preFlushingTime) {
     this.preFlushingTime = preFlushingTime;
@@ -213,6 +248,7 @@ public class Instrument {
 
   /**
    * Returns the post-flushing time
+   *
    * @return The post-flushing time
    */
   public int getPostFlushingTime() {
@@ -221,7 +257,9 @@ public class Instrument {
 
   /**
    * Sets the post-flushing time
-   * @param postFlushingTime The post-flushing time
+   *
+   * @param postFlushingTime
+   *          The post-flushing time
    */
   public void setPostFlushingTime(int postFlushingTime) {
     this.postFlushingTime = postFlushingTime;
@@ -229,6 +267,7 @@ public class Instrument {
 
   /**
    * Get the instrument's file definitions
+   *
    * @return The file definitions
    */
   public InstrumentFileSet getFileDefinitions() {
@@ -237,6 +276,7 @@ public class Instrument {
 
   /**
    * Get the sensor assignments
+   *
    * @return The sensor assignments
    */
   public SensorAssignments getSensorAssignments() {
@@ -251,15 +291,16 @@ public class Instrument {
   }
 
   /**
-   * @param platformCode the platformCode to set
+   * @param platformCode
+   *          the platformCode to set
    */
   public void setPlatformCode(String platformCode) {
     this.platformCode = platformCode;
   }
 
   /**
-   * Determine whether or not this instrument provides
-   * near-real-time data
+   * Determine whether or not this instrument provides near-real-time data
+   *
    * @return {@code true} if NRT data is provided; {@code false} if it is not
    */
   public boolean getNrt() {
@@ -268,7 +309,9 @@ public class Instrument {
 
   /**
    * Set the NRT flag
-   * @param nrt NRT flag
+   *
+   * @param nrt
+   *          NRT flag
    */
   public void setNrt(boolean nrt) {
     this.nrt = nrt;
@@ -276,6 +319,7 @@ public class Instrument {
 
   /**
    * Get the variables measured by this instrument
+   *
    * @return
    */
   public List<InstrumentVariable> getVariables() {
@@ -284,24 +328,32 @@ public class Instrument {
 
   /**
    * Get the Run Type category for a given Run Type value
-   * @param runTypeValue The Run Type value
+   *
+   * @param runTypeValue
+   *          The Run Type value
    * @return The Run Type category
    */
   public RunTypeCategory getRunTypeCategory(String runTypeValue) {
     // TODO Maybe we can build a lookup table for this, since the values
-    //      are fixed once the instrument's loaded from the database
-    List<SensorAssignment> runTypeAssignments = getSensorAssignments().get(SensorType.RUN_TYPE_SENSOR_TYPE);
-    FileDefinition fileDef = getFileDefinitions().get(runTypeAssignments.get(0).getDataFile());
+    // are fixed once the instrument's loaded from the database
+    List<SensorAssignment> runTypeAssignments = getSensorAssignments()
+      .get(SensorType.RUN_TYPE_SENSOR_TYPE);
+    FileDefinition fileDef = getFileDefinitions()
+      .get(runTypeAssignments.get(0).getDataFile());
     return fileDef.getRunTypes().getRunTypeCategory(runTypeValue);
   }
 
   /**
    * Get an InstrumentVaraible based on its ID
-   * @param variableId The variable ID
+   *
+   * @param variableId
+   *          The variable ID
    * @return The InstrumentVariable
-   * @throws InstrumentException If the variable is not found
+   * @throws InstrumentException
+   *           If the variable is not found
    */
-  public InstrumentVariable getVariable(long variableId) throws InstrumentException {
+  public InstrumentVariable getVariable(long variableId)
+    throws InstrumentException {
     InstrumentVariable result = null;
 
     for (InstrumentVariable variable : variables) {
@@ -312,8 +364,35 @@ public class Instrument {
     }
 
     if (null == result) {
-      throw new InstrumentException("Variable with ID " + variableId
-        +" is not part of this instrument");
+      throw new InstrumentException(
+        "Variable with ID " + variableId + " is not part of this instrument");
+    }
+    return result;
+  }
+
+  /**
+   * Get an InstrumentVaraible based on its name
+   *
+   * @param variableId
+   *          The variable name
+   * @return The InstrumentVariable
+   * @throws InstrumentException
+   *           If the variable is not found
+   */
+  public InstrumentVariable getVariable(String name)
+    throws InstrumentException {
+    InstrumentVariable result = null;
+
+    for (InstrumentVariable variable : variables) {
+      if (variable.getName().equals(name)) {
+        result = variable;
+        break;
+      }
+    }
+
+    if (null == result) {
+      throw new InstrumentException(
+        "Variable with name " + name + " is not part of this instrument");
     }
     return result;
   }
@@ -321,10 +400,12 @@ public class Instrument {
   /**
    * Get the run types that correspond to measurements for a given variable
    * Returns a map of Column ID to the run types, including all aliases
+   *
    * @param variable
    * @return
    */
-  public Map<Long, List<String>> getVariableRunTypes(InstrumentVariable variable) {
+  public Map<Long, List<String>> getVariableRunTypes(
+    InstrumentVariable variable) {
     Map<Long, List<String>> result = new HashMap<Long, List<String>>();
 
     for (FileDefinition fileDefinition : fileDefinitions) {
@@ -350,13 +431,15 @@ public class Instrument {
   }
 
   /**
-   * Get the list of variables that require the specified sensor type.
-   * If no variables require it, the list is empty.
+   * Get the list of variables that require the specified sensor type. If no
+   * variables require it, the list is empty.
+   *
    * @param sensorType
    * @return
    */
   public List<InstrumentVariable> getSensorVariables(SensorType sensorType) {
-    List<InstrumentVariable> result = new ArrayList<InstrumentVariable>(variables.size());
+    List<InstrumentVariable> result = new ArrayList<InstrumentVariable>(
+      variables.size());
 
     for (InstrumentVariable variable : variables) {
       List<SensorType> variableSensorTypes = variable.getAllSensorTypes();
@@ -364,13 +447,12 @@ public class Instrument {
         if (type.equals(sensorType)) {
           result.add(variable);
           break;
-        } else if (type.getDependsOn() == sensorType.getId()){
+        } else if (type.getDependsOn() == sensorType.getId()) {
           result.add(variable);
           break;
         }
       }
     }
-
 
     return result;
   }
@@ -380,7 +462,8 @@ public class Instrument {
     List<String> result = new ArrayList<String>();
 
     for (FileDefinition fileDef : fileDefinitions) {
-      for (Map.Entry<String, RunTypeAssignment> entry : fileDef.getRunTypes().entrySet()) {
+      for (Map.Entry<String, RunTypeAssignment> entry : fileDef.getRunTypes()
+        .entrySet()) {
         if (entry.getValue().getCategoryCode() == assignmentType) {
           result.add(entry.getKey());
         }
@@ -396,14 +479,14 @@ public class Instrument {
 
     for (InstrumentVariable variable : variables) {
       Map<Long, List<String>> variableRunTypes = getVariableRunTypes(variable);
-      if (variableRunTypes.size() > 0 && variableRunTypes.containsKey(variable.getId())) {
+      if (variableRunTypes.size() > 0
+        && variableRunTypes.containsKey(variable.getId())) {
         result.addAll(variableRunTypes.get(variable.getId()));
       }
     }
 
     return result;
   }
-
 
   public List<String> getInternalCalibrationRunTypes() {
     // Get the list of run type values that indicate measurements
@@ -412,8 +495,18 @@ public class Instrument {
     for (FileDefinition fileDef : fileDefinitions) {
       RunTypeAssignments assignments = fileDef.getRunTypes();
 
-      for (Map.Entry<String, RunTypeAssignment> assignment : assignments.entrySet()) {
-        if (assignment.getValue().getCategory().equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
+      for (Map.Entry<String, RunTypeAssignment> assignment : assignments
+        .entrySet()) {
+
+        // Follow aliases
+        RunTypeAssignment checkAssignment = assignment.getValue();
+        if (checkAssignment.isAlias()) {
+          checkAssignment = fileDef.getRunTypes()
+            .get(checkAssignment.getAliasTo());
+        }
+
+        if (checkAssignment.getCategory()
+          .equals(RunTypeCategory.INTERNAL_CALIBRATION)) {
           result.add(assignment.getKey());
         }
       }

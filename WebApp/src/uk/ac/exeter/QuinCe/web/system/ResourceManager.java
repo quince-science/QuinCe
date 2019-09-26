@@ -22,23 +22,24 @@ import uk.ac.exeter.QuinCe.jobs.InvalidThreadCountException;
 import uk.ac.exeter.QuinCe.jobs.JobThreadPool;
 
 /**
- * Utility class for handling resources required by the web application.
- * The Resource Manager is a singleton object, which is created during
+ * Utility class for handling resources required by the web application. The
+ * Resource Manager is a singleton object, which is created during
  * initialisation of the web application
+ * 
  * @author Steve Jones
  *
  */
 public class ResourceManager implements ServletContextListener {
 
   /**
-   * The name of the QC Routines configuration for routines run when files
-   * are first uploaded
+   * The name of the QC Routines configuration for routines run when files are
+   * first uploaded
    */
   public static final String INITIAL_CHECK_ROUTINES_CONFIG = "InitialCheck";
 
   /**
-   * The name of the QC routines configuration for routines run during
-   * full automatic QC (after data reduction)
+   * The name of the QC routines configuration for routines run during full
+   * automatic QC (after data reduction)
    */
   public static final String QC_ROUTINES_CONFIG = "QC";
 
@@ -77,7 +78,8 @@ public class ResourceManager implements ServletContextListener {
       String filePath = servletContext.getInitParameter("configuration.path");
       configuration = loadConfiguration(filePath);
     } catch (IOException e) {
-      throw new RuntimeException("Config failed: could not read config file", e);
+      throw new RuntimeException("Config failed: could not read config file",
+        e);
     }
 
     // Initialise the job thread pool
@@ -96,14 +98,17 @@ public class ResourceManager implements ServletContextListener {
 
     // Initialise run type category configuration
     try {
-      runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(dbDataSource.getConnection());
+      runTypeCategoryConfiguration = new RunTypeCategoryConfiguration(
+        dbDataSource.getConnection());
     } catch (Exception e) {
       throw new RuntimeException("Could not load run type categories", e);
     }
 
     // Initialise the QC Routines configuration
     try {
-      qcRoutinesConfiguration = new QCRoutinesConfiguration(sensorsConfiguration, configuration.getProperty("qc_routines.configfile"));
+      qcRoutinesConfiguration = new QCRoutinesConfiguration(
+        sensorsConfiguration,
+        configuration.getProperty("qc_routines.configfile"));
     } catch (Exception e) {
       throw new RuntimeException("Could not initialise QC Routines", e);
     }
@@ -112,7 +117,8 @@ public class ResourceManager implements ServletContextListener {
     try {
       ExportConfig.init(this, configuration.getProperty("export.configfile"));
     } catch (ExportException e) {
-      throw new RuntimeException("Could not initialise export configuration", e);
+      throw new RuntimeException("Could not initialise export configuration",
+        e);
     }
 
     instance = this;
@@ -129,6 +135,7 @@ public class ResourceManager implements ServletContextListener {
 
   /**
    * Retrieve the application's data source
+   * 
    * @return The data source
    */
   public DataSource getDBDataSource() {
@@ -137,6 +144,7 @@ public class ResourceManager implements ServletContextListener {
 
   /**
    * Retrieve the application configuration
+   * 
    * @return The application configuration
    */
   public Properties getConfig() {
@@ -157,12 +165,17 @@ public class ResourceManager implements ServletContextListener {
 
   /**
    * Load the application configuration
-   * @param filePath The path to the configuration file
+   * 
+   * @param filePath
+   *          The path to the configuration file
    * @return The configuration Properties object
-   * @throws FileNotFoundException If the file does not exist
-   * @throws IOException If the file cannot be read
+   * @throws FileNotFoundException
+   *           If the file does not exist
+   * @throws IOException
+   *           If the file cannot be read
    */
-  protected Properties loadConfiguration(String filePath) throws FileNotFoundException, IOException {
+  protected Properties loadConfiguration(String filePath)
+    throws FileNotFoundException, IOException {
     Properties result = new Properties();
     result.load(new FileInputStream(new File(filePath)));
     return result;
@@ -170,6 +183,7 @@ public class ResourceManager implements ServletContextListener {
 
   /**
    * Retrieve the singleton instance of the Resource Manager
+   * 
    * @return The resource manager
    */
   public static ResourceManager getInstance() {

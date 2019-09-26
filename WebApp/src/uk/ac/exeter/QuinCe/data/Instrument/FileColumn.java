@@ -3,8 +3,9 @@ package uk.ac.exeter.QuinCe.data.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 
 /**
- * Class to represent a file column.
- * Contains the file column and sensor type references
+ * Class to represent a file column. Contains the file column and sensor type
+ * references
+ * 
  * @author Steve Jones
  *
  */
@@ -25,8 +26,7 @@ public class FileColumn {
    */
   private final SensorType sensorType;
 
-  public FileColumn(long columnId, String columnName,
-    SensorType sensorType) {
+  public FileColumn(long columnId, String columnName, SensorType sensorType) {
 
     this.columnId = columnId;
     this.columnName = columnName;
@@ -35,6 +35,7 @@ public class FileColumn {
 
   /**
    * Get the column database ID
+   * 
    * @return The column ID
    */
   public long getColumnId() {
@@ -43,6 +44,7 @@ public class FileColumn {
 
   /**
    * Get the column name
+   * 
    * @return The column name
    */
   public String getColumnName() {
@@ -51,6 +53,7 @@ public class FileColumn {
 
   /**
    * Get the sensor type database ID
+   * 
    * @return The sensor type ID
    */
   public SensorType getSensorType() {

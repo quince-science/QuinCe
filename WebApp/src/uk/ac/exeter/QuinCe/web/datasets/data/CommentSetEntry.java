@@ -4,9 +4,9 @@ import org.primefaces.json.JSONArray;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
-
 /**
  * A single entry in a comment set
+ * 
  * @author Steve Jones
  * @see CommentSet
  */
@@ -29,8 +29,11 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 
   /**
    * Basic constructor
-   * @param comment The comment string
-   * @param flag The flag for the comment
+   * 
+   * @param comment
+   *          The comment string
+   * @param flag
+   *          The flag for the comment
    */
   protected CommentSetEntry(String comment, Flag flag) {
     this.comment = comment;
@@ -39,11 +42,11 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
   }
 
   /**
-   * Add a new instance of this comment. If the flag
-   * for the new comment is 'worse' than the existing flag,
-   * it is updated.
+   * Add a new instance of this comment. If the flag for the new comment is
+   * 'worse' than the existing flag, it is updated.
    *
-   * @param flag The flag for the new instance
+   * @param flag
+   *          The flag for the new instance
    */
   protected void increment(Flag flag) {
     this.count++;
@@ -53,11 +56,13 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
   }
 
   /**
-   * Determines whether or not this entry matches the specified comment. The matching
-   * is case insensitive.
+   * Determines whether or not this entry matches the specified comment. The
+   * matching is case insensitive.
    *
-   * @param comment The comment to match
-   * @return {@code true} if this entry matches the comment; {@code false} if it does not.
+   * @param comment
+   *          The comment to match
+   * @return {@code true} if this entry matches the comment; {@code false} if it
+   *         does not.
    */
   public boolean matches(String comment) {
     return comment.equalsIgnoreCase(this.comment);
@@ -65,6 +70,7 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 
   /**
    * Get the comment string for this entry
+   * 
    * @return The comment
    */
   public String getComment() {
@@ -73,6 +79,7 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 
   /**
    * Get the number of instances of this comment that have been recorded
+   * 
    * @return The instance count
    */
   public int getCount() {
@@ -81,6 +88,7 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 
   /**
    * Get the 'worst' flag assigned to instances of this comment
+   * 
    * @return The flag
    */
   public Flag getFlag() {
@@ -97,6 +105,7 @@ public class CommentSetEntry implements Comparable<CommentSetEntry> {
 
   /**
    * Get the comment entry as a JSON array
+   * 
    * @return The JSON array
    */
   public JSONArray toJson() {

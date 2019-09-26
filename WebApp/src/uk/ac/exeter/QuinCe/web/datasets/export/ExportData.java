@@ -22,31 +22,31 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
+import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCPageData;
 
 public class ExportData extends ManualQCPageData {
 
   // TODO I don't like the way this is put together, mostly due to the problem
-  //      of using CombinedFieldValue objects and the related hoops in getting
-  //      the generics to work. Maybe the whole thing needs to be split out
-  //      into an interface at the top level?
+  // of using CombinedFieldValue objects and the related hoops in getting
+  // the generics to work. Maybe the whole thing needs to be split out
+  // into an interface at the top level?
 
   /**
    * Lookup table for sensor types using SensorType ID
    */
-  private Map<Long, ExportField> sensorTypeFields =
-    new HashMap<Long, ExportField>();
+  private Map<Long, ExportField> sensorTypeFields = new HashMap<Long, ExportField>();
 
   /**
    * Lookup table for variable columns
    */
-  private Map<Long, ExportField> variableFields =
-    new HashMap<Long, ExportField>();
+  private Map<Long, ExportField> variableFields = new HashMap<Long, ExportField>();
 
   /**
    * The fixed Depth field & value
@@ -57,40 +57,45 @@ public class ExportData extends ManualQCPageData {
 
   private FieldValue depthFieldValue;
 
-  public ExportData(DataSource dataSource, Instrument instrument, DataSet dataSet, ExportOption exportOption)
-    throws Exception {
+  public ExportData(DataSource dataSource, Instrument instrument,
+    DataSet dataSet, ExportOption exportOption) throws Exception {
 
     super(instrument, new FieldSets(), dataSet);
     buildFieldSets(dataSource, instrument, exportOption);
 
-    depthFieldValue = new FieldValue(-1L, new Double(instrument.getDepth()), Flag.GOOD, false, "", false);
+    depthFieldValue = new FieldValue(-1L, new Double(instrument.getDepth()),
+      Flag.GOOD, false, "", false);
   }
 
   /**
    * Create the field sets for the data
+   *
    * @param dataSource
    * @param instrument
    * @param exportOption
    * @return
    * @throws Exception
    */
-  private void buildFieldSets(
-    DataSource dataSource, Instrument instrument, ExportOption exportOption)
-      throws Exception {
+  private void buildFieldSets(DataSource dataSource, Instrument instrument,
+    ExportOption exportOption) throws Exception {
 
-    ExportField lonField = new ExportField(SensorType.LONGITUDE_SENSOR_TYPE, false, false, exportOption);
-    fieldSets.addField(FieldSet.BASE_FIELD_SET, lonField);
+    ExportField lonField = new ExportField(FieldSet.BASE_FIELD_SET,
+      SensorType.LONGITUDE_SENSOR_TYPE, false, false, exportOption);
+    fieldSets.addField(lonField);
     sensorTypeFields.put(SensorType.LONGITUDE_SENSOR_TYPE.getId(), lonField);
 
-    ExportField latField = new ExportField(SensorType.LATITUDE_SENSOR_TYPE, false, false, exportOption);
-    fieldSets.addField(FieldSet.BASE_FIELD_SET, latField);
+    ExportField latField = new ExportField(FieldSet.BASE_FIELD_SET,
+      SensorType.LATITUDE_SENSOR_TYPE, false, false, exportOption);
+    fieldSets.addField(latField);
     sensorTypeFields.put(SensorType.LATITUDE_SENSOR_TYPE.getId(), latField);
 
-    // TODO Depth is fixed for now. Will fix this when variable parameter support is fixed
+    // TODO Depth is fixed for now. Will fix this when variable parameter
+    // support is fixed
     // (Issue #1284)
     ColumnHeader depthHeader = new ColumnHeader("Depth", "ADEPZZ01", "m");
-    depthField = new ExportField(depthHeader.hashCode(), depthHeader, false, false, exportOption);
-    fieldSets.addField(FieldSet.BASE_FIELD_SET, depthField);
+    depthField = new ExportField(FieldSet.BASE_FIELD_SET,
+      depthHeader.hashCode(), depthHeader, false, false, exportOption);
+    fieldSets.addField(depthField);
 
     // Sensors
     SensorAssignments sensors = instrument.getSensorAssignments();
@@ -100,7 +105,8 @@ public class ExportData extends ManualQCPageData {
     Set<SensorType> exportSensorTypes = new HashSet<SensorType>();
 
     if (exportOption.includeAllSensors()) {
-      for (Map.Entry<SensorType, List<SensorAssignment>> entry : sensors.entrySet()) {
+      for (Map.Entry<SensorType, List<SensorAssignment>> entry : sensors
+        .entrySet()) {
         if (entry.getValue().size() > 0) {
           exportSensorTypes.add(entry.getKey());
         }
@@ -112,15 +118,15 @@ public class ExportData extends ManualQCPageData {
       }
     }
 
-    FieldSet sensorsFieldSet = fieldSets.addFieldSet(DataSetDataDB.SENSORS_FIELDSET,
-      DataSetDataDB.SENSORS_FIELDSET_NAME);
+    FieldSet sensorsFieldSet = fieldSets.addFieldSet(
+      DataSetDataDB.SENSORS_FIELDSET, DataSetDataDB.SENSORS_FIELDSET_NAME);
 
     for (SensorType sensorType : exportSensorTypes) {
       if (!sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
-        ExportField field = new ExportField(sensorType, sensorType.isDiagnostic(),
-          !sensorType.isDiagnostic(), exportOption);
+        ExportField field = new ExportField(sensorsFieldSet, sensorType,
+          sensorType.isDiagnostic(), !sensorType.isDiagnostic(), exportOption);
 
-        fieldSets.addField(sensorsFieldSet, field);
+        fieldSets.addField(field);
         sensorTypeFields.put(sensorType.getId(), field);
       }
     }
@@ -128,17 +134,20 @@ public class ExportData extends ManualQCPageData {
     // Now the fields for each variable
     for (InstrumentVariable variable : variables) {
 
-      FieldSet varFieldSet = fieldSets.addFieldSet(variable.getId(), variable.getName());
-      TreeMap<Long, CalculationParameter> parameters =
-        DataReducerFactory.getCalculationParameters(variable, exportOption.includeCalculationColumns());
+      FieldSet varFieldSet = fieldSets.addFieldSet(variable.getId(),
+        variable.getName());
+      TreeMap<Long, CalculationParameter> parameters = DataReducerFactory
+        .getCalculationParameters(variable, true);
 
-      for (Map.Entry<Long, CalculationParameter> entry : parameters.entrySet()) {
+      for (Map.Entry<Long, CalculationParameter> entry : parameters
+        .entrySet()) {
 
-        ExportField field = new ExportField(
-          entry.getKey(), entry.getValue().getColumnHeader(),
-          !entry.getValue().isResult(), entry.getValue().isResult(), exportOption);
+        ExportField field = new ExportField(varFieldSet, entry.getKey(),
+          entry.getValue().getColumnHeader(), !entry.getValue().isResult(),
+          entry.getValue().isResult(), exportOption);
 
-        fieldSets.addField(varFieldSet, field);
+        fieldSets.addField(field, (!exportOption.includeCalculationColumns()
+          && !entry.getValue().isResult()));
         variableFields.put(entry.getKey(), field);
       }
     }
@@ -146,42 +155,48 @@ public class ExportData extends ManualQCPageData {
 
   @Override
   public void filterAndAddValuesAction(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values) throws RecordNotFoundException {
+    Map<Long, FieldValue> values)
+    throws MeasurementDataException, MissingParamException {
 
-    Map<Field, CombinedFieldValue> valuesToAdd = new HashMap<Field, CombinedFieldValue>();
+    try {
+      Map<Field, CombinedFieldValue> valuesToAdd = new HashMap<Field, CombinedFieldValue>();
 
-    for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
+      for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
 
-      SensorType sensorType = instrument.getSensorAssignments().getSensorTypeForDBColumn(entry.getKey());
-      if (sensorTypeFields.containsKey(sensorType.getId())) {
+        SensorType sensorType = instrument.getSensorAssignments()
+          .getSensorTypeForDBColumn(entry.getKey());
+        if (sensorTypeFields.containsKey(sensorType.getId())) {
 
-        Field field = sensorTypeFields.get(sensorType.getId());
+          Field field = sensorTypeFields.get(sensorType.getId());
 
-        // We don't keep internal calibration values
-        if (!sensorType.hasInternalCalibration() || measurementRunTypes.contains(runType)) {
-          valuesToAdd.put(field, addSensorValue(valuesToAdd.get(field), entry.getValue()));
+          // We don't keep internal calibration values
+          if (!sensorType.hasInternalCalibration()
+            || measurementRunTypes.contains(runType)) {
+            valuesToAdd.put(field,
+              addSensorValue(valuesToAdd.get(field), entry.getValue()));
+          }
         }
       }
-    }
 
-    addValues(time, valuesToAdd);
-  }
-
-  @Override
-  public void addValue(LocalDateTime rowId, long fieldId, FieldValue value) {
-    if (sensorTypeFields.containsKey(fieldId)) {
-
-      Map<Field, FieldValue> row = get(rowId);
-      Field field = sensorTypeFields.get(fieldId);
-      row.put(field, addSensorValue((CombinedFieldValue) row.get(field), value));
-
-    } else if (variableFields.containsKey(fieldId)) {
-      super.addValue(rowId, variableFields.get(fieldId), value);
+      addValues(time, valuesToAdd);
+    } catch (RecordNotFoundException e) {
+      throw new MeasurementDataException("Failed to look up sensor type", e);
     }
   }
 
-
-  private CombinedFieldValue addSensorValue(CombinedFieldValue existingValue, FieldValue value) {
+  /*
+   * @Override public void addValue(LocalDateTime rowId, long fieldId,
+   * FieldValue value) { if (sensorTypeFields.containsKey(fieldId)) {
+   *
+   * Map<Field, FieldValue> row = get(rowId); Field field =
+   * sensorTypeFields.get(fieldId); row.put(field,
+   * addSensorValue((CombinedFieldValue) row.get(field), value));
+   *
+   * } else if (variableFields.containsKey(fieldId)) { super.addValue(rowId,
+   * variableFields.get(fieldId), value); } }
+   */
+  private CombinedFieldValue addSensorValue(CombinedFieldValue existingValue,
+    FieldValue value) {
 
     CombinedFieldValue result = existingValue;
 
@@ -196,7 +211,8 @@ public class ExportData extends ManualQCPageData {
   }
 
   @Override
-  public void addValues(LocalDateTime rowId, Map<Field, ? extends FieldValue> values) {
+  public void addValues(LocalDateTime rowId,
+    Map<Field, ? extends FieldValue> values) throws MissingParamException {
     super.addValues(rowId, values);
 
     // Add the DEPTH attribute

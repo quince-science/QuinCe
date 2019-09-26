@@ -3,8 +3,9 @@ package uk.ac.exeter.QuinCe.web.Instrument.newInstrument;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 
 /**
- * Exception for attempting to add an {@link FileDefinition} where a file
- * with the same description has already been added.
+ * Exception for attempting to add an {@link FileDefinition} where a file with
+ * the same description has already been added.
+ * 
  * @author Steve Jones
  *
  */
@@ -17,9 +18,12 @@ public class InstrumentFileExistsException extends Exception {
 
   /**
    * Basic constructor
-   * @param file The duplicate instrument file
+   * 
+   * @param file
+   *          The duplicate instrument file
    */
   public InstrumentFileExistsException(FileDefinition file) {
-    super("An instrument file with the description '" + file.getFileDescription() + "' already exists");
+    super("An instrument file with the description '"
+      + file.getFileDescription() + "' already exists");
   }
 }

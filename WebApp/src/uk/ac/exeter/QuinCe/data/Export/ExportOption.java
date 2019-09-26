@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Export;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Class to hold details of a single export configuration
+ * 
  * @author Steve Jones
  * @see ExportConfig
  */
@@ -36,20 +38,20 @@ public class ExportOption {
   private String missingValue = "NaN";
 
   /**
-   * The variables to be exported as part of this export.
-   * If any instrument does not contain a given variable it will be ignored
+   * The variables to be exported as part of this export. If any instrument does
+   * not contain a given variable it will be ignored
    */
   private List<Long> variables;
 
   /**
-   * Indicates whether all sensors will be exported, or just those required
-   * for the variables being exported
+   * Indicates whether all sensors will be exported, or just those required for
+   * the variables being exported
    */
   private boolean allSensors = true;
 
   /**
-   * Indicates whether all intermediate calculation columns will be exported,
-   * or just the final calculated value
+   * Indicates whether all intermediate calculation columns will be exported, or
+   * just the final calculated value
    */
   private boolean includeCalculationColumns = false;
 
@@ -68,6 +70,9 @@ public class ExportOption {
    */
   private boolean includeQCComments = true;
 
+  /**
+   * The header for the timestamp column
+   */
   private String timestampHeader = "Date/Time";
 
   /**
@@ -81,12 +86,22 @@ public class ExportOption {
   private String qcCommentSuffix = " QC Comment";
 
   /**
-   * Build an ExportOption object from a JSON string
-   * @param index The index of the configuration in the export configuration file
-   * @param json The JSON string defining the export option
-   * @throws ExportException If the export configuration is invalid
+   * Custom column header replacements
    */
-  public ExportOption(ResourceManager resourceManager, int index, JSONObject json) throws ExportException {
+  private Map<String, String> replacementColumnHeaders = null;
+
+  /**
+   * Build an ExportOption object from a JSON string
+   * 
+   * @param index
+   *          The index of the configuration in the export configuration file
+   * @param json
+   *          The JSON string defining the export option
+   * @throws ExportException
+   *           If the export configuration is invalid
+   */
+  public ExportOption(ResourceManager resourceManager, int index,
+    JSONObject json) throws ExportException {
     this.index = index;
     parseJson(resourceManager, json);
   }
@@ -97,6 +112,7 @@ public class ExportOption {
 
   /**
    * Returns the name of the configuration
+   * 
    * @return The configuration name
    */
   public String getName() {
@@ -105,6 +121,7 @@ public class ExportOption {
 
   /**
    * The column separator to be used in the export file
+   * 
    * @return The column separator
    */
   public String getSeparator() {
@@ -137,10 +154,14 @@ public class ExportOption {
 
   /**
    * Export the option details from a JSON object
-   * @param json The JSON
-   * @throws ExportConfigurationException If the JSON does not contain valid values
+   * 
+   * @param json
+   *          The JSON
+   * @throws ExportConfigurationException
+   *           If the JSON does not contain valid values
    */
-  private void parseJson(ResourceManager resourceManager, JSONObject json) throws ExportConfigurationException {
+  private void parseJson(ResourceManager resourceManager, JSONObject json)
+    throws ExportConfigurationException {
 
     // Export name
     if (!json.has("exportName")) {
@@ -148,7 +169,8 @@ public class ExportOption {
     } else {
       this.name = json.getString("exportName").trim();
       if (name.contains("/")) {
-        throw new ExportConfigurationException(name, "Export option name cannot contain '/'");
+        throw new ExportConfigurationException(name,
+          "Export option name cannot contain '/'");
       }
     }
 
@@ -162,9 +184,11 @@ public class ExportOption {
     // Variables
     Map<Long, String> allVariables;
     try {
-      allVariables = InstrumentDB.getAllVariables(resourceManager.getDBDataSource());
+      allVariables = InstrumentDB
+        .getAllVariables(resourceManager.getDBDataSource());
     } catch (Exception e) {
-      throw new ExportConfigurationException("N/A", "Unable to retrieve variable information");
+      throw new ExportConfigurationException("N/A",
+        "Unable to retrieve variable information");
     }
 
     // If the element isn't provided, assume all variables
@@ -193,7 +217,8 @@ public class ExportOption {
           }
 
           if (!variableFound) {
-            throw new ExportConfigurationException(name, "Invalid variable name '" + varName);
+            throw new ExportConfigurationException(name,
+              "Invalid variable name '" + varName);
           }
         }
       }
@@ -234,14 +259,34 @@ public class ExportOption {
     if (json.has("qcCommentSuffix")) {
       qcCommentSuffix = json.getString("qcCommentSuffix");
     }
+
+    // Replacement column headers. Forces useColumnCodes and does
+    // not include units
+    if (json.has("replaceColumnHeaders")) {
+      useColumnCodes = true;
+      includeUnits = false;
+      replacementColumnHeaders = new HashMap<String, String>();
+
+      JSONObject replacementHeaderJson = json
+        .getJSONObject("replaceColumnHeaders");
+      replacementHeaderJson.keySet().stream().forEach(k -> {
+        replacementColumnHeaders.put(k, replacementHeaderJson.getString(k));
+
+      });
+
+    }
   }
 
   /**
    * Parse the {@code separator} entry in the export configuration JSON
-   * @param separator the separator entry
-   * @throws ExportConfigurationException If the separator is not recognised
+   * 
+   * @param separator
+   *          the separator entry
+   * @throws ExportConfigurationException
+   *           If the separator is not recognised
    */
-  private void parseSeparator(String separator) throws ExportConfigurationException {
+  private void parseSeparator(String separator)
+    throws ExportConfigurationException {
     switch (separator.toLowerCase()) {
     case "comma": {
       this.separator = ",";
@@ -252,14 +297,15 @@ public class ExportOption {
       break;
     }
     default: {
-      throw new ExportConfigurationException(name, "Separator must be 'tab' or 'comma'");
+      throw new ExportConfigurationException(name,
+        "Separator must be 'tab' or 'comma'");
     }
     }
   }
 
   /**
-   * Get the file extension for this export option,
-   * based on the separator used
+   * Get the file extension for this export option, based on the separator used
+   * 
    * @return The file extension
    */
   public String getFileExtension() {
@@ -296,5 +342,18 @@ public class ExportOption {
 
   public String getTimestampHeader() {
     return timestampHeader;
+  }
+
+  public String getReplacementHeader(String code) {
+    String result = code;
+
+    if (null != replacementColumnHeaders
+      && replacementColumnHeaders.containsKey(code)) {
+
+      result = replacementColumnHeaders.get(code);
+
+    }
+
+    return result;
   }
 }

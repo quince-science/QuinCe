@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -35,6 +34,7 @@ import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageBean;
 
 /**
  * Bean for handling review of calibration data
+ *
  * @author Steve Jones
  *
  */
@@ -77,15 +77,18 @@ public class InternalCalibrationBean extends PlotPageBean {
 
   /**
    * Finish the calibration data validation
+   *
    * @return Navigation to the data set list
    */
   public String finish() {
     if (dirty) {
       try {
-        DataSetDB.setDatasetStatus(getDataSource(), datasetId, DataSet.STATUS_AUTO_QC);
+        DataSetDB.setDatasetStatus(getDataSource(), datasetId,
+          DataSet.STATUS_AUTO_QC);
         Map<String, String> jobParams = new HashMap<String, String>();
         jobParams.put(DataReductionJob.ID_PARAM, String.valueOf(datasetId));
-        JobManager.addJob(getDataSource(), getUser(), AutoQCJob.class.getCanonicalName(), jobParams);
+        JobManager.addJob(getDataSource(), getUser(),
+          AutoQCJob.class.getCanonicalName(), jobParams);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -105,6 +108,7 @@ public class InternalCalibrationBean extends PlotPageBean {
 
   /**
    * Get the flag indicating whether the selected calibrations are to be used
+   *
    * @return The use calibrations flag
    */
   public boolean getUseCalibrations() {
@@ -113,14 +117,18 @@ public class InternalCalibrationBean extends PlotPageBean {
 
   /**
    * Set the flag indicating whether the selected calibrations are to be used
-   * @param useCalibrations The use calibrations flag
+   *
+   * @param useCalibrations
+   *          The use calibrations flag
    */
   public void setUseCalibrations(boolean useCalibrations) {
     this.useCalibrations = useCalibrations;
   }
 
   /**
-   * Get the message that will be attached to calibrations which aren't being used
+   * Get the message that will be attached to calibrations which aren't being
+   * used
+   *
    * @return The message for unused calibrations
    */
   public String getUseCalibrationsMessage() {
@@ -128,8 +136,11 @@ public class InternalCalibrationBean extends PlotPageBean {
   }
 
   /**
-   * Set the message that will be attached to calibrations which aren't being used
-   * @param useCalibrationsMessage The message for unused calibrations
+   * Set the message that will be attached to calibrations which aren't being
+   * used
+   *
+   * @param useCalibrationsMessage
+   *          The message for unused calibrations
    */
   public void setUseCalibrationsMessage(String useCalibrationsMessage) {
     this.useCalibrationsMessage = useCalibrationsMessage;
@@ -137,10 +148,14 @@ public class InternalCalibrationBean extends PlotPageBean {
 
   /**
    * Set the usage status of the selected rows
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
-  public void setCalibrationUse() throws MissingParamException, DatabaseException {
+  public void setCalibrationUse()
+    throws MissingParamException, DatabaseException {
 
     try {
       Flag newFlag = Flag.GOOD;
@@ -148,7 +163,8 @@ public class InternalCalibrationBean extends PlotPageBean {
         newFlag = Flag.BAD;
       }
 
-      List<FieldValue> updatedValues = pageData.setQC(getSelectedRowsList(), selectedColumn, newFlag, useCalibrationsMessage);
+      List<FieldValue> updatedValues = pageData.setQC(getSelectedRowsList(),
+        selectedColumn, newFlag, useCalibrationsMessage);
       DataSetDataDB.setQC(getDataSource(), updatedValues);
       dirty = true;
     } catch (Exception e) {
@@ -163,7 +179,7 @@ public class InternalCalibrationBean extends PlotPageBean {
 
   @Override
   protected Field getDefaultPlot2YAxis() {
-    //TODO DO
+    // TODO DO
     return null;
   }
 
@@ -173,39 +189,37 @@ public class InternalCalibrationBean extends PlotPageBean {
   }
 
   @Override
-  protected void loadData() throws Exception {
+  protected void initData() throws Exception {
 
     try {
       fieldSets = new FieldSets("Date/Time");
 
       // Sensor columns
-      List<FileColumn> calibratedColumns = InstrumentDB.getCalibratedSensorColumns(
-        getDataSource(), instrument.getDatabaseId());
+      List<FileColumn> calibratedColumns = InstrumentDB
+        .getCalibratedSensorColumns(getDataSource(), getCurrentInstrumentId());
 
-      List<String> calibrationRunTypes = instrument.getRunTypes(RunTypeCategory.INTERNAL_CALIBRATION_TYPE);
+      List<String> calibrationRunTypes = getCurrentInstrument()
+        .getRunTypes(RunTypeCategory.INTERNAL_CALIBRATION_TYPE);
 
       for (FileColumn column : calibratedColumns) {
 
         // We want the first field set to be the default
-        FieldSet columnFieldSet = fieldSets.addFieldSet(column.getColumnId(), column.getColumnName(), fieldSets.size() == 1);
+        FieldSet columnFieldSet = fieldSets.addFieldSet(column.getColumnId(),
+          column.getColumnName(), fieldSets.size() == 1);
 
         // Add one field for each run type
         for (String runType : calibrationRunTypes) {
-          fieldSets.addField(columnFieldSet, new RunTypeField(runType, column));
+          fieldSets.addField(new RunTypeField(columnFieldSet, runType, column));
         }
       }
 
-      pageData = new InternalCalibrationPageData(instrument, fieldSets, dataset);
+      pageData = new InternalCalibrationPageData(getCurrentInstrument(),
+        fieldSets, dataset);
 
-      List<Long> fieldIds = calibratedColumns
-        .stream()
-        .mapToLong(FileColumn::getColumnId)
-        .boxed()
-        .collect(Collectors.toList());
-
-      DataSetDataDB.getQCSensorData(getDataSource(), pageData,
-        getDataset().getId(), instrument, fieldIds);
-
+      // Add the times for the calibration run types. Note that this
+      // autoloads the data too
+      pageData.addTimes(DataSetDataDB.getMeasurementTimes(getDataSource(),
+        datasetId, calibrationRunTypes));
 
       // Load internal calibration data
       loadCalibrationData(calibratedColumns);
@@ -213,21 +227,21 @@ public class InternalCalibrationBean extends PlotPageBean {
     } catch (Exception e) {
       e.printStackTrace();
     }
-
   }
 
   /**
-   * Load the external standard data into a JSON object. This is used
-   * to draw target lines on the plots
+   * Load the external standard data into a JSON object. This is used to draw
+   * target lines on the plots
    *
    * @param calibratedColumns
    * @throws Exception
    */
-  private void loadCalibrationData(List<FileColumn> calibratedColumns) throws Exception {
+  private void loadCalibrationData(List<FileColumn> calibratedColumns)
+    throws Exception {
 
-    CalibrationSet calibrationSet =
-      ExternalStandardDB.getInstance().getMostRecentCalibrations(
-      getDataSource(), instrument.getDatabaseId(), dataset.getStart());
+    CalibrationSet calibrationSet = ExternalStandardDB.getInstance()
+      .getMostRecentCalibrations(getDataSource(), getCurrentInstrumentId(),
+        dataset.getStart());
 
     JSONObject json = new JSONObject();
 
@@ -237,7 +251,8 @@ public class InternalCalibrationBean extends PlotPageBean {
       for (FileColumn column : calibratedColumns) {
         String sensorType = column.getSensorType().getName();
 
-        variableCalibrations.put(column.getColumnName(), calibration.getCoefficient(sensorType));
+        variableCalibrations.put(column.getColumnName(),
+          calibration.getCoefficient(sensorType));
       }
 
       json.put(calibration.getTarget(), variableCalibrations);
@@ -256,7 +271,8 @@ public class InternalCalibrationBean extends PlotPageBean {
     List<Integer> result = new ArrayList<Integer>();
 
     // Everything outside the base field set (i.e. Date/Time) is selectable
-    LinkedHashMap<Long, List<Integer>> columnIndexes = fieldSets.getColumnIndexes();
+    LinkedHashMap<Long, List<Integer>> columnIndexes = fieldSets
+      .getColumnIndexes();
     for (long fieldSet : columnIndexes.keySet()) {
       if (fieldSet != FieldSet.BASE_ID) {
         result.addAll(columnIndexes.get(fieldSet));

@@ -8,6 +8,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Monitors the job queue and runs jobs if needed
+ * 
  * @author Steve Jones
  *
  */
@@ -27,7 +28,8 @@ public class JobRunScheduler extends BackgroundTask {
 
       boolean ranJob = true;
       while (ranJob) {
-        ranJob = JobManager.startNextJob(resourceManager, resourceManager.getConfig());
+        ranJob = JobManager.startNextJob(resourceManager,
+          resourceManager.getConfig());
       }
     } catch (Exception e) {
       throw new BackgroundTaskException(e);

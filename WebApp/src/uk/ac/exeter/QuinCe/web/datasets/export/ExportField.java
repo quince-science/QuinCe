@@ -4,6 +4,7 @@ import uk.ac.exeter.QuinCe.data.Export.ColumnHeader;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
 
 public class ExportField extends Field {
 
@@ -15,16 +16,18 @@ public class ExportField extends Field {
 
   private boolean hasQC;
 
-  public ExportField(SensorType sensorType, boolean diagnostic, boolean hasQC, ExportOption exportOption) {
-    super(sensorType.getId(), sensorType.getName());
+  public ExportField(FieldSet fieldSet, SensorType sensorType,
+    boolean diagnostic, boolean hasQC, ExportOption exportOption) {
+    super(fieldSet, sensorType.getId(), sensorType.getName());
     this.columnHeader = sensorType.getColumnHeader();
     this.diagnostic = diagnostic;
     this.hasQC = hasQC;
     this.exportOption = exportOption;
   }
 
-  public ExportField(long id, ColumnHeader header, boolean diagnostic, boolean hasQC, ExportOption exportOption) {
-    super(id, header.getHeading());
+  public ExportField(FieldSet fieldSet, long id, ColumnHeader header,
+    boolean diagnostic, boolean hasQC, ExportOption exportOption) {
+    super(fieldSet, id, header.getHeading());
     this.columnHeader = header;
     this.diagnostic = diagnostic;
     this.hasQC = hasQC;

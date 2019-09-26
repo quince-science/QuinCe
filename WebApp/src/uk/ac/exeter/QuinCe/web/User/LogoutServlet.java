@@ -11,6 +11,7 @@ import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Servlet for handling user logout
+ * 
  * @author Steve Jones
  *
  */
@@ -25,7 +26,8 @@ public class LogoutServlet extends HttpServlet {
    * Destroy the current session and go to the login page
    */
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    throws IOException {
     HttpSession session = request.getSession();
     if (session != null) {
       session.invalidate();
@@ -44,7 +46,8 @@ public class LogoutServlet extends HttpServlet {
    * Destroy the current session and go to the login page
    */
   @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  protected void doPost(HttpServletRequest request,
+    HttpServletResponse response) throws IOException {
     doGet(request, response);
   }
 }

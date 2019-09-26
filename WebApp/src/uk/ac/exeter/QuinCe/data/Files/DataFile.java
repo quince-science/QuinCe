@@ -28,6 +28,7 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
  * Class representing a data file
+ *
  * @author Steve Jones
  *
  */
@@ -98,7 +99,6 @@ public class DataFile {
    */
   private Set<RunTypeAssignment> missingRunTypes = new HashSet<RunTypeAssignment>();
 
-
   public List<RunTypeAssignment> getMissingRunTypes() {
     List<RunTypeAssignment> list = new ArrayList<>(missingRunTypes);
     Collections.sort(list);
@@ -107,13 +107,20 @@ public class DataFile {
 
   /**
    * Create a DataFile with the specified definition and contents
-   * @param fileStore The location of the file store
-   * @param fileDefinition The file format definition
-   * @param filename The file name
-   * @param contents The file contents
-   * @throws MissingParamException If any fields are null
+   *
+   * @param fileStore
+   *          The location of the file store
+   * @param fileDefinition
+   *          The file format definition
+   * @param filename
+   *          The file name
+   * @param contents
+   *          The file contents
+   * @throws MissingParamException
+   *           If any fields are null
    */
-  public DataFile(String fileStore, FileDefinition fileDefinition, String filename, List<String> contents) throws MissingParamException {
+  public DataFile(String fileStore, FileDefinition fileDefinition,
+    String filename, List<String> contents) throws MissingParamException {
     MissingParam.checkMissing(fileDefinition, "fileDefinition");
     MissingParam.checkMissing(filename, "fileName");
     MissingParam.checkMissing(contents, "contents");
@@ -143,17 +150,27 @@ public class DataFile {
   }
 
   /**
-   * Constructor for the basic details of a file. The contents will
-   * be loaded on demand if required.
-   * @param fileStore The file store location
-   * @param id The file's database ID
-   * @param fileDefinition The file definition for the file
-   * @param filename The filename
-   * @param startDate The date/time of the first record in the file
-   * @param endDate The date/time of the last record in the file
-   * @param recordCount The number of records in the file
+   * Constructor for the basic details of a file. The contents will be loaded on
+   * demand if required.
+   *
+   * @param fileStore
+   *          The file store location
+   * @param id
+   *          The file's database ID
+   * @param fileDefinition
+   *          The file definition for the file
+   * @param filename
+   *          The filename
+   * @param startDate
+   *          The date/time of the first record in the file
+   * @param endDate
+   *          The date/time of the last record in the file
+   * @param recordCount
+   *          The number of records in the file
    */
-  public DataFile(String fileStore, long id, FileDefinition fileDefinition, String filename, LocalDateTime startDate, LocalDateTime endDate, int recordCount) {
+  public DataFile(String fileStore, long id, FileDefinition fileDefinition,
+    String filename, LocalDateTime startDate, LocalDateTime endDate,
+    int recordCount) {
     this.fileStore = fileStore;
     this.databaseId = id;
     this.fileDefinition = fileDefinition;
@@ -165,6 +182,7 @@ public class DataFile {
 
   /**
    * Get the file format description
+   *
    * @return The file format description
    */
   public String getFileDescription() {
@@ -173,6 +191,7 @@ public class DataFile {
 
   /**
    * Get the file name
+   *
    * @return The file name
    */
   public String getFilename() {
@@ -180,34 +199,42 @@ public class DataFile {
   }
 
   /**
-   * Set a new file definition for the file. The new definition must match
-   * the layout of the previous definition, since the file's format must
-   * conform to both the new and old definitions.
+   * Set a new file definition for the file. The new definition must match the
+   * layout of the previous definition, since the file's format must conform to
+   * both the new and old definitions.
    *
-   * @param newDefinition The new file definition
-   * @throws FileDefinitionException The the definition does not match the file layout
+   * @param newDefinition
+   *          The new file definition
+   * @throws FileDefinitionException
+   *           The the definition does not match the file layout
    */
-  public void setFileDefinition(FileDefinition newDefinition) throws FileDefinitionException {
+  public void setFileDefinition(FileDefinition newDefinition)
+    throws FileDefinitionException {
     if (!fileDefinition.matchesLayout(newDefinition)) {
-      throw new FileDefinitionException("File Definition does not match file contents");
+      throw new FileDefinitionException(
+        "File Definition does not match file contents");
     } else {
       this.fileDefinition = newDefinition;
     }
   }
 
   /**
-   * Get the zero-based row number of the first data row
-   * in a file
+   * Get the zero-based row number of the first data row in a file
+   *
    * @return The first data row number
-   * @throws DataFileException If the end of the file is reached without finding the end of the header
+   * @throws DataFileException
+   *           If the end of the file is reached without finding the end of the
+   *           header
    */
   public int getFirstDataLine() throws DataFileException {
     loadContents();
-    return fileDefinition.getHeaderLength(contents) + fileDefinition.getColumnHeaderRows();
+    return fileDefinition.getHeaderLength(contents)
+      + fileDefinition.getColumnHeaderRows();
   }
 
   /**
    * Get the number of rows in the file
+   *
    * @return The row count
    */
   public int getContentLineCount() {
@@ -216,8 +243,10 @@ public class DataFile {
 
   /**
    * Get the number of records in the file
+   *
    * @return The record count
-   * @throws DataFileException If the record count cannot be calculated
+   * @throws DataFileException
+   *           If the record count cannot be calculated
    */
   public int getRecordCount() throws DataFileException {
     if (-1 == recordCount) {
@@ -231,29 +260,36 @@ public class DataFile {
   /**
    * Get the data from a specified row in the file as a list of string fields.
    * This is the row position in the whole file, including headers.
-   * @param row The row to be retrieved
+   *
+   * @param row
+   *          The row to be retrieved
    * @return The row fields
-   * @throws DataFileException If the requested row is outside the bounds of the file
+   * @throws DataFileException
+   *           If the requested row is outside the bounds of the file
    */
   public List<String> getRowFields(int row) throws DataFileException {
     List<String> result;
 
     if (row < getFirstDataLine()) {
-      throw new DataFileException(databaseId, row, "Requested row is in the file header");
+      throw new DataFileException(databaseId, row,
+        "Requested row is in the file header");
     } else if (row > (getContentLineCount() - 1)) {
-      throw new DataFileException(databaseId, row, "Requested row is in the file header");
+      throw new DataFileException(databaseId, row,
+        "Requested row is in the file header");
     } else {
-      result = StringUtils.trimList(Arrays.asList(contents.get(row).split(fileDefinition.getSeparator())));
+      result = StringUtils.trimList(
+        Arrays.asList(contents.get(row).split(fileDefinition.getSeparator())));
     }
 
     return result;
   }
 
   /**
-   * Validate the file contents.
-   * Creates a set of {@code DataFileMessage}
+   * Validate the file contents. Creates a set of {@code DataFileMessage}
    * objects, which can be retrieved using {@code getMessages()}.
-   * @throws DataFileException If the file contents could not be loaded
+   *
+   * @throws DataFileException
+   *           If the file contents could not be loaded
    */
   public void validate() throws DataFileException {
 
@@ -271,7 +307,8 @@ public class DataFile {
 
       // For each line in the file, check that:
       // (a) The date/time are present and monotonic in the file
-      // (b) Has the correct number of columns (for Run Types that aren't IGNORED)
+      // (b) Has the correct number of columns (for Run Types that aren't
+      // IGNORED)
       // (c) The Run Type is recognised
 
       LocalDateTime lastDateTime = null;
@@ -279,7 +316,8 @@ public class DataFile {
         String line = contents.get(lineNumber);
 
         try {
-          LocalDateTime dateTime = fileDefinition.getDateTimeSpecification().getDateTime(headerDate, fileDefinition.extractFields(line));
+          LocalDateTime dateTime = fileDefinition.getDateTimeSpecification()
+            .getDateTime(headerDate, fileDefinition.extractFields(line));
           if (null != lastDateTime) {
             if (dateTime.compareTo(lastDateTime) <= 0) {
               addMessage(lineNumber, "Date/Time is not monotonic");
@@ -300,12 +338,13 @@ public class DataFile {
           } catch (FileDefinitionException e) {
             addMessage(lineNumber, e.getMessage());
             if (e instanceof MissingRunTypeException) {
-              missingRunTypes.add(((MissingRunTypeException)e).getRunType());
+              missingRunTypes.add(((MissingRunTypeException) e).getRunType());
             }
           }
         }
 
-        if (checkColumnCount && fileDefinition.extractFields(line).size() != fileDefinition.getColumnCount()) {
+        if (checkColumnCount && fileDefinition.extractFields(line)
+          .size() != fileDefinition.getColumnCount()) {
           addMessage(lineNumber, "Incorrect number of columns");
         }
       }
@@ -335,7 +374,9 @@ public class DataFile {
 
   /**
    * Shortcut method for adding a message to the message list
-   * @param message The message text
+   *
+   * @param message
+   *          The message text
    */
   private void addMessage(String message) {
     addMessage(ROW_NOT_SET, message);
@@ -343,6 +384,7 @@ public class DataFile {
 
   /**
    * Get the messages generated for this file
+   *
    * @return The messages
    */
   public TreeSet<DataFileMessage> getMessages() {
@@ -350,8 +392,8 @@ public class DataFile {
   }
 
   /**
-   * Get the number of messages that have been generated
-   * for this file
+   * Get the number of messages that have been generated for this file
+   *
    * @return The message count
    */
   public int getMessageCount() {
@@ -359,10 +401,13 @@ public class DataFile {
   }
 
   /**
-   * Get the start date from the file header. This is only applicable
-   * if the date format is {@link DateTimeSpecification#HOURS_FROM_START}.
-   * @return {@code true} if the header date is successfully extracted; {@code false} if the date cannot be extracted
-   * @throws DataFileException If the file contents could not be loaded
+   * Get the start date from the file header. This is only applicable if the
+   * date format is {@link DateTimeSpecification#HOURS_FROM_START}.
+   *
+   * @return {@code true} if the header date is successfully extracted;
+   *         {@code false} if the date cannot be extracted
+   * @throws DataFileException
+   *           If the file contents could not be loaded
    */
   private boolean extractHeaderDate() throws DataFileException {
 
@@ -370,15 +415,20 @@ public class DataFile {
 
     boolean result = true;
 
-    DateTimeSpecification dateTimeSpec = fileDefinition.getDateTimeSpecification();
+    DateTimeSpecification dateTimeSpec = fileDefinition
+      .getDateTimeSpecification();
     if (dateTimeSpec.isAssigned(DateTimeSpecification.HOURS_FROM_START)) {
       try {
-        DateTimeColumnAssignment assignment = dateTimeSpec.getAssignment(DateTimeSpecification.HOURS_FROM_START);
-        HighlightedString matchedLine = fileDefinition.getHeaderLine(contents, assignment.getPrefix(), assignment.getSuffix());
-        headerDate = LocalDateTime.parse(matchedLine.getHighlightedPortion(), assignment.getFormatter());
+        DateTimeColumnAssignment assignment = dateTimeSpec
+          .getAssignment(DateTimeSpecification.HOURS_FROM_START);
+        HighlightedString matchedLine = fileDefinition.getHeaderLine(contents,
+          assignment.getPrefix(), assignment.getSuffix());
+        headerDate = LocalDateTime.parse(matchedLine.getHighlightedPortion(),
+          assignment.getFormatter());
       } catch (Exception e) {
         e.printStackTrace();
-        addMessage("Could not extract file start date from header: " + e.getMessage());
+        addMessage(
+          "Could not extract file start date from header: " + e.getMessage());
         result = false;
       }
     }
@@ -388,6 +438,7 @@ public class DataFile {
 
   /**
    * Get the date of the first record in the file
+   *
    * @return The date, or null if the date cannot be retrieved
    */
   public LocalDateTime getStartDate() {
@@ -419,8 +470,10 @@ public class DataFile {
 
   /**
    * Get the date of the last record in the file
+   *
    * @return The date, or null if the date cannot be retrieved
-   * @throws DataFileException If the file contents could not be loaded
+   * @throws DataFileException
+   *           If the file contents could not be loaded
    */
   public LocalDateTime getEndDate() {
     int lastLine = -1;
@@ -448,46 +501,65 @@ public class DataFile {
 
   /**
    * Get the date of a line in the file
-   * @param line The line
+   *
+   * @param line
+   *          The line
    * @return The date
-   * @throws DataFileException If any date/time fields are empty
+   * @throws DataFileException
+   *           If any date/time fields are empty
    */
-  public LocalDateTime getDate(int line) throws DataFileException, DateTimeSpecificationException {
+  public LocalDateTime getDate(int line)
+    throws DataFileException, DateTimeSpecificationException {
     loadContents();
     return getDate(fileDefinition.extractFields(contents.get(line)));
   }
 
-  public LocalDateTime getDate(List<String> line) throws DataFileException, DateTimeSpecificationException {
-    return fileDefinition.getDateTimeSpecification().getDateTime(headerDate, line);
+  public LocalDateTime getDate(List<String> line)
+    throws DataFileException, DateTimeSpecificationException {
+    return fileDefinition.getDateTimeSpecification().getDateTime(headerDate,
+      line);
   }
 
   /**
-   * Get the run type for a given line. Returns {@code null} if this file does not contain run types
-   * @param line The line
+   * Get the run type for a given line. Returns {@code null} if this file does
+   * not contain run types
+   *
+   * @param line
+   *          The line
    * @return The run type for the line
-   * @throws DataFileException If the data cannot be extracted
-   * @throws FileDefinitionException If the run types are invalid
+   * @throws DataFileException
+   *           If the data cannot be extracted
+   * @throws FileDefinitionException
+   *           If the run types are invalid
    */
-  public String getRunType(int line) throws DataFileException, FileDefinitionException {
+  public String getRunType(int line)
+    throws DataFileException, FileDefinitionException {
     String runType = null;
     int runTypeColumn = fileDefinition.getRunTypeColumn();
 
     if (runTypeColumn > -1) {
       loadContents();
-      runType = fileDefinition.getRunType(contents.get(line), true).getRunName();
+      runType = fileDefinition.getRunType(contents.get(line), true)
+        .getRunName();
     }
 
     return runType;
   }
 
   /**
-   * Get the run type for a given line. Returns {@code null} if this file does not contain run types
-   * @param line The line
+   * Get the run type for a given line. Returns {@code null} if this file does
+   * not contain run types
+   *
+   * @param line
+   *          The line
    * @return The run type for the line
-   * @throws DataFileException If the data cannot be extracted
-   * @throws FileDefinitionException If the run types are invalid
+   * @throws DataFileException
+   *           If the data cannot be extracted
+   * @throws FileDefinitionException
+   *           If the run types are invalid
    */
-  public RunTypeCategory getRunTypeCategory(int line) throws DataFileException, FileDefinitionException {
+  public RunTypeCategory getRunTypeCategory(int line)
+    throws DataFileException, FileDefinitionException {
     RunTypeCategory runType = null;
     int runTypeColumn = fileDefinition.getRunTypeColumn();
 
@@ -501,10 +573,14 @@ public class DataFile {
 
   /**
    * Get the longitude for a given line
-   * @param line The line
+   *
+   * @param line
+   *          The line
    * @return The longitude
-   * @throws DataFileException If the file contents cannot be extracted
-   * @throws PositionException If the longitude is invalid
+   * @throws DataFileException
+   *           If the file contents cannot be extracted
+   * @throws PositionException
+   *           If the longitude is invalid
    */
   public double getLongitude(int line) throws DataFileException {
 
@@ -512,7 +588,8 @@ public class DataFile {
 
     try {
       loadContents();
-      result = fileDefinition.getLongitudeSpecification().getValue(fileDefinition.extractFields(contents.get(line)));
+      result = fileDefinition.getLongitudeSpecification()
+        .getValue(fileDefinition.extractFields(contents.get(line)));
     } catch (PositionException e) {
       throw new DataFileException(databaseId, line, e);
     }
@@ -526,17 +603,23 @@ public class DataFile {
 
   /**
    * Get the latitude for a given line
-   * @param line The line
+   *
+   * @param line
+   *          The line
    * @return The longitude
-   * @throws DataFileException If the file contents cannot be extracted
-   * @throws PositionException If the latitude is invalid
+   * @throws DataFileException
+   *           If the file contents cannot be extracted
+   * @throws PositionException
+   *           If the latitude is invalid
    */
-  public double getLatitude(int line) throws DataFileException, PositionException {
+  public double getLatitude(int line)
+    throws DataFileException, PositionException {
     double result = -999.9;
 
     try {
       loadContents();
-      result = fileDefinition.getLatitudeSpecification().getValue(fileDefinition.extractFields(contents.get(line)));
+      result = fileDefinition.getLatitudeSpecification()
+        .getValue(fileDefinition.extractFields(contents.get(line)));
     } catch (PositionException e) {
       throw new DataFileException(databaseId, line, e);
     }
@@ -551,16 +634,20 @@ public class DataFile {
   /**
    * Get a {@link Double} value from a field.
    * <p>
-   *   Returns {@code null} if the field string is empty, or the field
-   *   equals the supplied {@code missingValue} (if it is supplied).
+   * Returns {@code null} if the field string is empty, or the field equals the
+   * supplied {@code missingValue} (if it is supplied).
    * </p>
    *
-   * @param field The field
-   * @param missingValue The 'missing' value for the field
+   * @param field
+   *          The field
+   * @param missingValue
+   *          The 'missing' value for the field
    * @return The numeric field value
-   * @throws ValueNotNumericException If the field value is not numeric
+   * @throws ValueNotNumericException
+   *           If the field value is not numeric
    */
-  public static Double extractDoubleFieldValue(String field, String missingValue) throws ValueNotNumericException {
+  public static Double extractDoubleFieldValue(String field,
+    String missingValue) throws ValueNotNumericException {
     Double result = null;
 
     if (null != field && field.trim().length() > 0) {
@@ -579,16 +666,20 @@ public class DataFile {
   /**
    * Get a {@link Integer} value from a field.
    * <p>
-   *   Returns {@code null} if the field string is empty, or the field
-   *   equals the supplied {@code missingValue} (if it is supplied).
+   * Returns {@code null} if the field string is empty, or the field equals the
+   * supplied {@code missingValue} (if it is supplied).
    * </p>
    *
-   * @param field The field
-   * @param missingValue The 'missing' value for the field
+   * @param field
+   *          The field
+   * @param missingValue
+   *          The 'missing' value for the field
    * @return The numeric field value
-   * @throws ValueNotNumericException If the field value is not numeric
+   * @throws ValueNotNumericException
+   *           If the field value is not numeric
    */
-  public static Integer extractIntFieldValue(String field, String missingValue) throws ValueNotNumericException {
+  public static Integer extractIntFieldValue(String field, String missingValue)
+    throws ValueNotNumericException {
     Integer result = null;
 
     if (null != field && field.trim().length() > 0) {
@@ -607,15 +698,18 @@ public class DataFile {
   /**
    * Get a {@link String} value from a field.
    * <p>
-   *   If the field is empty, or equals the supplied {@code missingValue},
-   *   {@code null} is returned.
+   * If the field is empty, or equals the supplied {@code missingValue},
+   * {@code null} is returned.
    * </p>
    *
-   * @param field The field
-   * @param missingValue The 'missing' value for the field
+   * @param field
+   *          The field
+   * @param missingValue
+   *          The 'missing' value for the field
    * @return The field value
    */
-  public static String extractStringFieldValue(String field, String missingValue) {
+  public static String extractStringFieldValue(String field,
+    String missingValue) {
     String result = field;
 
     if (null != field) {
@@ -631,6 +725,7 @@ public class DataFile {
 
   /**
    * Get the file's database ID
+   *
    * @return The database ID
    */
   public long getDatabaseId() {
@@ -639,7 +734,9 @@ public class DataFile {
 
   /**
    * Set the file's database ID
-   * @param databaseId The ID
+   *
+   * @param databaseId
+   *          The ID
    */
   protected void setDatabaseId(long databaseId) {
     this.databaseId = databaseId;
@@ -647,6 +744,7 @@ public class DataFile {
 
   /**
    * Get the file definition object
+   *
    * @return The file definition
    */
   public FileDefinition getFileDefinition() {
@@ -655,8 +753,10 @@ public class DataFile {
 
   /**
    * Get the contents of the file as a single string
+   *
    * @return The file contents
-   * @throws DataFileException If the file contents cannot be retrieved
+   * @throws DataFileException
+   *           If the file contents cannot be retrieved
    */
   public String getContents() throws DataFileException {
     loadContents();
@@ -676,7 +776,9 @@ public class DataFile {
 
   /**
    * Set the contents of the data file
-   * @param contents The contents
+   *
+   * @param contents
+   *          The contents
    */
   protected void setContents(String contents) {
     this.contents = Arrays.asList(contents.split("\n"));
@@ -693,20 +795,23 @@ public class DataFile {
     }
   }
 
-
   /**
    * Get the raw bytes for a file
+   *
    * @return The file
-   * @throws IOException If the file cannot be read
+   * @throws IOException
+   *           If the file cannot be read
    */
   public byte[] getBytes() throws IOException {
     return FileStore.getBytes(fileStore, this);
   }
 
-
   /**
-   * Load the contents of the data file from disk, if they are not already loaded
-   * @throws DataFileException If the file contents could not be loaded
+   * Load the contents of the data file from disk, if they are not already
+   * loaded
+   *
+   * @throws DataFileException
+   *           If the file contents could not be loaded
    */
   private void loadContents() throws DataFileException {
     if (null == contents) {
@@ -717,23 +822,32 @@ public class DataFile {
           throw new Exception("Could not extract file header date");
         }
       } catch (Exception e) {
-        throw new DataFileException(databaseId, DataFileException.NO_LINE_NUMBER, "Error while loading file contents", e);
+        throw new DataFileException(databaseId,
+          DataFileException.NO_LINE_NUMBER, "Error while loading file contents",
+          e);
       }
     }
   }
 
   /**
-   * Get a value from a field as a Double. If the extracted
-   * value equals the {@code missingValue}, the method returns {@code null}.
-   * @param line The line
-   * @param field The field index
-   * @param missingValue The string indicating a missing value
+   * Get a value from a field as a Double. If the extracted value equals the
+   * {@code missingValue}, the method returns {@code null}.
+   *
+   * @param line
+   *          The line
+   * @param field
+   *          The field index
+   * @param missingValue
+   *          The string indicating a missing value
    * @return The value
-   * @throws DataFileException If the data cannot be extracted
+   * @throws DataFileException
+   *           If the data cannot be extracted
    */
-  public Double getDoubleValue(int line, int field, String missingValue) throws DataFileException {
+  public Double getDoubleValue(int line, int field, String missingValue)
+    throws DataFileException {
     loadContents();
-    String fieldValue = fileDefinition.extractFields(contents.get(line)).get(field);
+    String fieldValue = fileDefinition.extractFields(contents.get(line))
+      .get(field);
 
     Double result = null;
 
@@ -747,18 +861,26 @@ public class DataFile {
   }
 
   /**
-   * Get a field value from a line. If the line does not have enough fields,
-   * or the field is the defined missing value, returns {@code null}
-   * @param line The line containing the value
-   * @param field The field to retrieve
-   * @param missingValue The defined missing value
+   * Get a field value from a line. If the line does not have enough fields, or
+   * the field is the defined missing value, returns {@code null}
+   *
+   * Any commas in a data value are assumed to be thousands separators and
+   * removed from the string. QuinCe does not support commas as decimal points.
+   *
+   * @param line
+   *          The line containing the value
+   * @param field
+   *          The field to retrieve
+   * @param missingValue
+   *          The defined missing value
    * @return The extracted value
    */
-  public String getStringValue(List<String> line, int field, String missingValue) {
+  public String getStringValue(List<String> line, int field,
+    String missingValue) {
     String result = null;
 
     if (field < line.size()) {
-      result = line.get(field).trim();
+      result = line.get(field).trim().replaceAll(",", "");
 
       if (result.equals(missingValue)) {
         result = null;
@@ -768,7 +890,8 @@ public class DataFile {
         try {
           Double.parseDouble(result);
         } catch (NumberFormatException e) {
-          System.out.println("NumberFormatException: Invalid value '" + result + "'");
+          System.out
+            .println("NumberFormatException: Invalid value '" + result + "'");
           result = null;
         }
       }
@@ -778,11 +901,12 @@ public class DataFile {
   }
 
   /**
-   * Get the list of run type values with the specified value excluded.
-   * This list will include all the run types from the stored file
-   * definition plus any missing run types (except that specified
-   * as the exclusion).
-   * @param exclusion The value to exclude from the list
+   * Get the list of run type values with the specified value excluded. This
+   * list will include all the run types from the stored file definition plus
+   * any missing run types (except that specified as the exclusion).
+   *
+   * @param exclusion
+   *          The value to exclude from the list
    * @return The list of run types without the excluded value
    */
   public List<String> getRunTypeValuesWithExclusion(String exclusion) {
@@ -798,7 +922,9 @@ public class DataFile {
 
   /**
    * Get a line from the file as a list of field values
-   * @param line The line number
+   *
+   * @param line
+   *          The line number
    * @return The line fields
    * @throws DataFileException
    */

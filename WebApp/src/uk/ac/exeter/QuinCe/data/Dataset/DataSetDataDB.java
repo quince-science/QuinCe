@@ -1,4 +1,5 @@
 package uk.ac.exeter.QuinCe.data.Dataset;
+
 import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,7 +9,6 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -31,9 +31,9 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Routines.RoutineException;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignments;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
-import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorTypeNotFoundException;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorsConfiguration;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
@@ -44,12 +44,14 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.data.DatasetMeasurementData;
+import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
+import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Class for handling database queries related to
- * dataset data
+ * Class for handling database queries related to dataset data
+ *
  * @author Steve Jones
  *
  */
@@ -79,9 +81,9 @@ public class DataSetDataDB {
    * Statement to store a sensor value
    */
   private static final String STORE_NEW_SENSOR_VALUE_STATEMENT = "INSERT INTO "
-   + "sensor_values (dataset_id, file_column, date, value, "
-   + "auto_qc, user_qc_flag, user_qc_message) "
-   + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+    + "sensor_values (dataset_id, file_column, date, value, "
+    + "auto_qc, user_qc_flag, user_qc_message) "
+    + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
   private static final String UPDATE_SENSOR_VALUE_STATEMENT = "UPDATE sensor_values "
     + "SET auto_qc=?, user_qc_flag=?, user_qc_message=? WHERE id = ?";
@@ -95,8 +97,7 @@ public class DataSetDataDB {
   private static final String GET_SENSOR_VALUES_BY_COLUMN_QUERY = "SELECT "
     + "id, file_column, date, value, auto_qc, " // 5
     + "user_qc_flag, user_qc_message " // 7
-    + "FROM sensor_values WHERE dataset_id = ? "
-    + "ORDER BY file_column, date";
+    + "FROM sensor_values WHERE dataset_id = ? " + "ORDER BY file_column, date";
 
   /**
    * Query to get all the sensor values for a dataset
@@ -104,8 +105,7 @@ public class DataSetDataDB {
   private static final String GET_SENSOR_VALUES_BY_DATE_AND_COLUMN_QUERY = "SELECT "
     + "id, file_column, date, value, auto_qc, " // 5
     + "user_qc_flag, user_qc_message " // 7
-    + "FROM sensor_values WHERE dataset_id = ? "
-    + "ORDER BY date, file_column";
+    + "FROM sensor_values WHERE dataset_id = ? " + "ORDER BY date, file_column";
 
   /**
    * Statement to store a measurement record
@@ -121,6 +121,10 @@ public class DataSetDataDB {
     + "id, variable_id, date, longitude, latitude, run_type "
     + "FROM measurements WHERE dataset_id = ? "
     + "ORDER BY variable_id ASC, date ASC";
+
+  private static final String GET_MEASUREMENT_TIMES_QUERY = "SELECT "
+    + "date FROM measurements WHERE dataset_id = ? " + "AND run_type IN "
+    + DatabaseUtils.IN_PARAMS_TOKEN + " ORDER BY date ASC";
 
   /**
    * Statement to store a Measurement Value
@@ -147,52 +151,75 @@ public class DataSetDataDB {
   private static final String DELETE_MEASUREMENTS_STATEMENT = "DELETE FROM "
     + "measurements WHERE dataset_id = ?";
 
-  private static final String GET_SENSOR_VALUES_QUERY = "SELECT "
-    + "id, file_column, date, value, "
-    + "auto_qc, user_qc_flag, user_qc_message "
-    + "FROM sensor_values "
-    + "WHERE dataset_id = ? "
-    + "ORDER BY date ASC";
+  private static final String GET_SENSOR_VALUES_BY_DATE_QUERY = "SELECT "
+    + "sv.id, sv.file_column, sv.date, sv.value, sv.auto_qc, " // 5
+    + "sv.user_qc_flag, sv.user_qc_message, mv.measurement_id " // 8
+    + " FROM sensor_values sv LEFT JOIN measurement_values mv "
+    + "ON sv.id = mv.sensor_value_id WHERE sv.dataset_id = ? "
+    + "AND sv.date IN " + DatabaseUtils.IN_PARAMS_TOKEN + " "
+    + "ORDER BY sv.date ASC";
 
-  private static final String GET_USED_SENSOR_VALUES_QUERY = "SELECT DISTINCT "
-    + "sensor_value_id FROM measurement_values "
-    + "WHERE measurement_id IN "
-    + "(SELECT id FROM measurements WHERE dataset_id = ?) "
-    + "ORDER BY sensor_value_id";
+  private static final String GET_SENSOR_VALUES_BY_SENSOR_QUERY = "SELECT "
+    + "sv.id, sv.file_column, sv.date, sv.value, sv.auto_qc, " // 5
+    + "sv.user_qc_flag, sv.user_qc_message, mv.measurement_id " // 8
+    + " FROM sensor_values sv LEFT JOIN measurement_values mv "
+    + "ON sv.id = mv.sensor_value_id WHERE sv.dataset_id = ? "
+    + "AND sv.file_column = ? ORDER BY sv.date ASC";
+
+  private static final String GET_SENSOR_VALUE_DATES_QUERY = "SELECT DISTINCT "
+    + "date FROM sensor_values WHERE dataset_id = ? ORDER BY DATE ASC";
+
+  private static final String GET_REQUIRED_FLAGS_QUERY = "SELECT "
+    + "COUNT(*) FROM sensor_values WHERE dataset_id = ? "
+    + "AND user_qc_flag = " + Flag.VALUE_NEEDED;
+
+  private static final String GET_DATA_REDUCTION_DATE_FILTER_QUERY = "SELECT "
+    + "m.date, dr.variable_id, dr.calculation_values, dr.qc_flag, dr.qc_message "
+    + "FROM measurements m INNER JOIN data_reduction dr "
+    + "ON (m.id = dr.measurement_id) WHERE m.dataset_id = ? " + "AND m.date IN "
+    + DatabaseUtils.IN_PARAMS_TOKEN + " " + "ORDER BY m.date ASC";
 
   private static final String GET_DATA_REDUCTION_QUERY = "SELECT "
-  + "m.date, dr.variable_id, dr.calculation_values, dr.qc_flag, dr.qc_message "
-  + "FROM measurements m INNER JOIN data_reduction dr "
-  + "ON (m.id = dr.measurement_id) "
-  + "WHERE m.dataset_id = ? ORDER BY m.date ASC";
+    + "m.date, dr.calculation_values, qc_flag "
+    + "FROM measurements m INNER JOIN data_reduction dr "
+    + "ON (m.id = dr.measurement_id) WHERE m.dataset_id = ? "
+    + "AND dr.variable_id = ? ORDER BY m.date ASC";
 
   private static final String SET_QC_STATEMENT = "UPDATE sensor_values SET "
-    + "user_qc_flag = ?, user_qc_message = ? "
-    + "WHERE id = ?";
+    + "user_qc_flag = ?, user_qc_message = ? " + "WHERE id = ?";
 
-  private static final String GET_MEASUREMENT_COUNT_QUERY = "SELECT "
-    + "COUNT(DISTINCT(date)) FROM measurements WHERE dataset_id = ?";
+  private static final String GET_RECORD_COUNT_QUERY = "SELECT "
+    + "COUNT(DISTINCT(date)) FROM sensor_values WHERE dataset_id = ?";
 
   /**
    * Take a list of fields, and return those which come from the dataset data.
    * Any others will come from calculation data and will be left alone.
-   * @param conn A database connection
-   * @param dataSet The data set to which the fields belong
-   * @param originalFields The list of fields
+   *
+   * @param conn
+   *          A database connection
+   * @param dataSet
+   *          The data set to which the fields belong
+   * @param originalFields
+   *          The list of fields
    * @return The fields that come from dataset data
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
-   * @throws RecordNotFoundException If the dataset or its instrument do not exist
-   * @throws InstrumentException If the instrument details cannot be retrieved
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws RecordNotFoundException
+   *           If the dataset or its instrument do not exist
+   * @throws InstrumentException
+   *           If the instrument details cannot be retrieved
    */
-  public static List<String> extractDatasetFields(Connection conn, DataSet dataSet,
-    List<String> originalFields) throws MissingParamException, DatabaseException,
-    RecordNotFoundException, InstrumentException {
+  public static List<String> extractDatasetFields(Connection conn,
+    DataSet dataSet, List<String> originalFields) throws MissingParamException,
+    DatabaseException, RecordNotFoundException, InstrumentException {
 
     List<String> datasetFields = new ArrayList<String>();
 
     ResourceManager resourceManager = ResourceManager.getInstance();
-    SensorsConfiguration sensorConfig = resourceManager.getSensorsConfiguration();
+    SensorsConfiguration sensorConfig = resourceManager
+      .getSensorsConfiguration();
 
     Instrument instrument = InstrumentDB.getInstrument(conn,
       dataSet.getInstrumentId(), resourceManager.getSensorsConfiguration(),
@@ -215,7 +242,8 @@ public class DataSetDataDB {
         for (SensorType sensorType : sensorConfig.getSensorTypes()) {
           if (sensorAssignments.getAssignmentCount(sensorType) > 0) {
             if (originalField.equals(sensorType.getDatabaseFieldName())) {
-              // TODO Eventually this will use the sensor name as the label, and the sensor type as the group
+              // TODO Eventually this will use the sensor name as the label, and
+              // the sensor type as the group
               datasetFields.add(originalField);
               break;
             }
@@ -232,14 +260,23 @@ public class DataSetDataDB {
 
   /**
    * Determine whether or not a given field is a dataset-level field
-   * @param conn A database connection
-   * @param dataset The dataset to which the field belongs
-   * @param field The field name
-   * @return {@code true} if the field is a dataset field; {@code false} if it is not
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
-   * @throws RecordNotFoundException If the dataset or its instrument do not exist
-   * @throws InstrumentException If the instrument details cannot be retrieved
+   *
+   * @param conn
+   *          A database connection
+   * @param dataset
+   *          The dataset to which the field belongs
+   * @param field
+   *          The field name
+   * @return {@code true} if the field is a dataset field; {@code false} if it
+   *         is not
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws RecordNotFoundException
+   *           If the dataset or its instrument do not exist
+   * @throws InstrumentException
+   *           If the instrument details cannot be retrieved
    */
   public static boolean isDatasetField(Connection conn, DataSet dataset,
     String field) throws MissingParamException, DatabaseException,
@@ -248,8 +285,8 @@ public class DataSetDataDB {
     List<String> fieldList = new ArrayList<String>(1);
     fieldList.add(field);
 
-    List<String> detectedDatasetField =
-      extractDatasetFields(conn, dataset, fieldList);
+    List<String> detectedDatasetField = extractDatasetFields(conn, dataset,
+      fieldList);
 
     return (detectedDatasetField.size() > 0);
   }
@@ -259,18 +296,22 @@ public class DataSetDataDB {
    *
    * Values will only be stored if their {@code dirty} flag is set.
    *
-   * If a sensor value has a database ID, it will be updated. Otherwise
-   * it will be stored as a new record. Note that the new records will not
-   * be given an ID; they must be re-read from the database afterwards.
+   * If a sensor value has a database ID, it will be updated. Otherwise it will
+   * be stored as a new record. Note that the new records will not be given an
+   * ID; they must be re-read from the database afterwards.
    *
-   * @param conn A database connection
-   * @param sensorValues The sensor values
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   * @param conn
+   *          A database connection
+   * @param sensorValues
+   *          The sensor values
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static void storeSensorValues(Connection conn,
     Collection<SensorValue> sensorValues)
-      throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(sensorValues, "sensorValues");
@@ -325,10 +366,15 @@ public class DataSetDataDB {
 
   /**
    * Remove all sensor values for a dataset
-   * @param conn A database connection
-   * @param datasetId The dataset's database ID
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   *
+   * @param conn
+   *          A database connection
+   * @param datasetId
+   *          The dataset's database ID
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static void deleteSensorValues(Connection conn, long datasetId)
     throws MissingParamException, DatabaseException {
@@ -353,18 +399,22 @@ public class DataSetDataDB {
   /**
    * Get all the sensor values for a dataset grouped by their column in the
    * source data file(s)
-   * @param conn A database connection
-   * @param datasetId The database ID of the dataset whose values are to be
-   *                  retrieved
+   *
+   * @param conn
+   *          A database connection
+   * @param datasetId
+   *          The database ID of the dataset whose values are to be retrieved
    * @return The values
-   * @throws RecordNotFoundException If the instrument configuration does not
-   *                                 match the values
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   * @throws RecordNotFoundException
+   *           If the instrument configuration does not match the values
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static Map<Long, NavigableSensorValuesList> getSensorValuesByColumn(
     Connection conn, long datasetId)
-      throws RecordNotFoundException, DatabaseException, MissingParamException {
+    throws RecordNotFoundException, DatabaseException, MissingParamException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
@@ -416,24 +466,29 @@ public class DataSetDataDB {
   }
 
   /**
-   * Get all the sensor values for a data set
-   * The returned list is ordered by timestamp and then grouped by
-   * the values' source {@code file_column} database records
-   * @param conn A database connection
-   * @param datasetId The dataset whose values are to be retrieved
+   * Get all the sensor values for a data set The returned list is ordered by
+   * timestamp and then grouped by the values' source {@code file_column}
+   * database records
+   *
+   * @param conn
+   *          A database connection
+   * @param datasetId
+   *          The dataset whose values are to be retrieved
    * @return The values
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static DateColumnGroupedSensorValues getSensorValuesByDateAndColumn(
     Connection conn, Instrument instrument, long datasetId)
-      throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
 
-    DateColumnGroupedSensorValues result =
-      new DateColumnGroupedSensorValues(instrument);
+    DateColumnGroupedSensorValues result = new DateColumnGroupedSensorValues(
+      instrument);
 
     PreparedStatement stmt = null;
     ResultSet records = null;
@@ -458,14 +513,19 @@ public class DataSetDataDB {
 
   /**
    * Build a SensorValue object from a ResultSet
-   * @param record The ResultSet
-   * @param datasetId The ID of the value's parent dataset
+   *
+   * @param record
+   *          The ResultSet
+   * @param datasetId
+   *          The ID of the value's parent dataset
    * @return The SensorValue
-   * @throws SQLException If any values cannot be read
-   * @throws InvalidFlagException If the stored Flag value is invalid
+   * @throws SQLException
+   *           If any values cannot be read
+   * @throws InvalidFlagException
+   *           If the stored Flag value is invalid
    */
-  private static SensorValue sensorValueFromResultSet(
-    ResultSet record, long datasetId) throws SQLException, InvalidFlagException {
+  private static SensorValue sensorValueFromResultSet(ResultSet record,
+    long datasetId) throws SQLException, InvalidFlagException {
 
     long valueId = record.getLong(1);
     long fileColumnId = record.getLong(2);
@@ -475,22 +535,26 @@ public class DataSetDataDB {
     Flag userQCFlag = new Flag(record.getInt(6));
     String userQCMessage = record.getString(7);
 
-    return new SensorValue(valueId, datasetId, fileColumnId,
-      time, value, autoQC, userQCFlag, userQCMessage);
+    return new SensorValue(valueId, datasetId, fileColumnId, time, value,
+      autoQC, userQCFlag, userQCMessage);
   }
 
   /**
-   * Store a set of measurements in the database. The resulting database
-   * IDs are added to the Measurement objects
+   * Store a set of measurements in the database. The resulting database IDs are
+   * added to the Measurement objects
    *
-   * @param conn A database connection
-   * @param measurements The measurements to be stored
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   * @param conn
+   *          A database connection
+   * @param measurements
+   *          The measurements to be stored
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static void storeMeasurements(Connection conn,
     List<Measurement> measurements)
-      throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(measurements, "measurements");
@@ -520,7 +584,8 @@ public class DataSetDataDB {
       int currentMeasurement = -1;
       while (createdKeys.next()) {
         currentMeasurement++;
-        measurements.get(currentMeasurement).setDatabaseId(createdKeys.getLong(1));
+        measurements.get(currentMeasurement)
+          .setDatabaseId(createdKeys.getLong(1));
       }
     } catch (Exception e) {
       throw new DatabaseException("Error while storing measurements", e);
@@ -532,13 +597,14 @@ public class DataSetDataDB {
 
   /**
    * Get the number of measurements in a dataset
+   *
    * @param conn
    * @param datasetId
    * @return
    * @throws MissingParamException
    * @throws DatabaseException
    */
-  public static int getMeasurementCount(Connection conn, long datasetId)
+  public static int getRecordCount(Connection conn, long datasetId)
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
@@ -550,7 +616,7 @@ public class DataSetDataDB {
     ResultSet count = null;
 
     try {
-      stmt = conn.prepareStatement(GET_MEASUREMENT_COUNT_QUERY);
+      stmt = conn.prepareStatement(GET_RECORD_COUNT_QUERY);
       stmt.setLong(1, datasetId);
 
       count = stmt.executeQuery();
@@ -569,16 +635,22 @@ public class DataSetDataDB {
 
   /**
    * Get the set of measurements for a dataset, ordered by date and variable
-   * @param conn A database connection
-   * @param instrument The instrument to which the dataset belongs
-   * @param datasetId The database ID of the dataset
+   *
+   * @param conn
+   *          A database connection
+   * @param instrument
+   *          The instrument to which the dataset belongs
+   * @param datasetId
+   *          The database ID of the dataset
    * @return The measurements
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static List<Measurement> getMeasurements(Connection conn,
     Instrument instrument, long datasetId)
-      throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkZeroPositive(datasetId, "datasetId");
@@ -603,8 +675,9 @@ public class DataSetDataDB {
         double latitude = records.getDouble(5);
         String runType = records.getString(6);
 
-        measurements.add(new Measurement(id, datasetId,
-          instrument.getVariable(variableId), time, longitude, latitude, runType));
+        measurements.add(
+          new Measurement(id, datasetId, instrument.getVariable(variableId),
+            time, longitude, latitude, runType));
       }
 
     } catch (Exception e) {
@@ -619,14 +692,19 @@ public class DataSetDataDB {
 
   /**
    * Store a set of measurement values
-   * @param conn A database connection
-   * @param measurementValues The measurement values
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   *
+   * @param conn
+   *          A database connection
+   * @param measurementValues
+   *          The measurement values
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static void storeMeasurementValues(Connection conn,
     List<MeasurementValue> measurementValues)
-      throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(conn, "conn");
     MissingParam.checkMissing(measurementValues, "measurementValues");
@@ -655,15 +733,20 @@ public class DataSetDataDB {
 
   /**
    * Store the results of data reduction in the database
-   * @param conn A database connection
-   * @param values The calculation values for the data reduction, as extracted
-   *               from the sensor values
-   * @param dataReductionRecords The data reduction calculations
-   * @throws DatabaseException If the data cannot be stored
+   *
+   * @param conn
+   *          A database connection
+   * @param values
+   *          The calculation values for the data reduction, as extracted from
+   *          the sensor values
+   * @param dataReductionRecords
+   *          The data reduction calculations
+   * @throws DatabaseException
+   *           If the data cannot be stored
    */
   public static void storeDataReduction(Connection conn,
-      Collection<CalculationValue> values,
-      List<DataReductionRecord> dataReductionRecords) throws DatabaseException {
+    Collection<CalculationValue> values,
+    List<DataReductionRecord> dataReductionRecords) throws DatabaseException {
 
     PreparedStatement valueStmt = null;
     PreparedStatement dataReductionStmt = null;
@@ -691,8 +774,8 @@ public class DataSetDataDB {
         dataReductionStmt.setLong(2, dataReduction.getVariableId());
         dataReductionStmt.setString(3, dataReduction.getCalculationJson());
         dataReductionStmt.setInt(4, dataReduction.getQCFlag().getFlagValue());
-        dataReductionStmt.setString(5,
-          StringUtils.collectionToDelimited(dataReduction.getQCMessages(), ";"));
+        dataReductionStmt.setString(5, StringUtils
+          .collectionToDelimited(dataReduction.getQCMessages(), ";"));
 
         dataReductionStmt.addBatch();
       }
@@ -709,10 +792,15 @@ public class DataSetDataDB {
   /**
    * Remove all measurement details from a data set, ready for them to be
    * recalculated
-   * @param dataSource A data source
-   * @param datasetId The database ID of the data set
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   *
+   * @param dataSource
+   *          A data source
+   * @param datasetId
+   *          The database ID of the data set
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static void deleteMeasurements(DataSource dataSource, long datasetId)
     throws DatabaseException, MissingParamException {
@@ -735,10 +823,15 @@ public class DataSetDataDB {
   /**
    * Remove all measurement details from a data set, ready for them to be
    * recalculated
-   * @param dataSource A data source
-   * @param datasetId The database ID of the data set
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
+   *
+   * @param dataSource
+   *          A data source
+   * @param datasetId
+   *          The database ID of the data set
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If any required parameters are missing
    */
   public static void deleteMeasurements(Connection conn, long datasetId)
     throws MissingParamException, DatabaseException {
@@ -753,19 +846,19 @@ public class DataSetDataDB {
     try {
       conn.setAutoCommit(false);
 
-      delDataReductionStmt = conn.prepareStatement(
-        DELETE_DATA_REDUCTION_STATEMENT);
+      delDataReductionStmt = conn
+        .prepareStatement(DELETE_DATA_REDUCTION_STATEMENT);
       delDataReductionStmt.setLong(1, datasetId);
       delDataReductionStmt.execute();
 
-      delMeasurementValuesStmt = conn.prepareStatement(
-        DELETE_MEASUREMENT_VALUES_STATEMENT);
-      delMeasurementValuesStmt.setLong(1,  datasetId);
+      delMeasurementValuesStmt = conn
+        .prepareStatement(DELETE_MEASUREMENT_VALUES_STATEMENT);
+      delMeasurementValuesStmt.setLong(1, datasetId);
       delMeasurementValuesStmt.execute();
 
-      delMeasurementsStmt = conn.prepareStatement(
-        DELETE_MEASUREMENTS_STATEMENT);
-      delMeasurementsStmt.setLong(1,  datasetId);
+      delMeasurementsStmt = conn
+        .prepareStatement(DELETE_MEASUREMENTS_STATEMENT);
+      delMeasurementsStmt.setLong(1, datasetId);
       delMeasurementsStmt.execute();
 
       conn.commit();
@@ -777,204 +870,59 @@ public class DataSetDataDB {
     }
   }
 
-  /**
-   * Load the data to be displayed in the QC table
-   * @param dataSource A data source
-   * @param datasetId The data set's database ID
-   * @param sensorIDs The database IDs of the sensors to be retrieved
-   * @return The table data
-   * @throws DatabaseException If a database error occurs
-   * @throws MissingParamException If any required parameters are missing
-   * @throws InvalidFlagException If a QC flag is invalid
-   * @throws RoutineException If an automatic QC result cannot be processed
-   * @throws SensorTypeNotFoundException
-   * @throws RecordNotFoundException
-   */
-  public static void getQCSensorData(
-    DataSource dataSource, DatasetMeasurementData tableData, long datasetId, Instrument instrument, List<Long> sensorIDs)
-      throws MissingParamException, DatabaseException, InvalidFlagException,
-        RoutineException, SensorTypeNotFoundException, RecordNotFoundException {
+  public static List<LocalDateTime> getSensorValueDates(DataSource dataSource,
+    long datasetId) throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkMissing(tableData, "tableData", true);
-    MissingParam.checkPositive(datasetId, "datasetId");
-    MissingParam.checkMissing(sensorIDs, "sensorIDs", false);
+    MissingParam.checkZeroPositive(datasetId, "dataSetId");
 
-    Connection conn = null;
-    PreparedStatement stmt = null;
-    ResultSet records = null;
+    List<LocalDateTime> times = new ArrayList<LocalDateTime>();
 
-    try {
-      conn = dataSource.getConnection();
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement(GET_SENSOR_VALUE_DATES_QUERY);) {
 
-      // Get the Run Type column IDs
-      List<Long> runTypeColumns = instrument.getSensorAssignments().getRunTypeColumnIDs();
-
-      // Get the list of sensor values used in the dataset
-      long[] usedSensorValueIDs = getUsedSensorValueIDs(conn, datasetId);
-
-
-      // Get all the sensor values for the data set
-      stmt = conn.prepareStatement(GET_SENSOR_VALUES_QUERY);
       stmt.setLong(1, datasetId);
 
-      records = stmt.executeQuery();
-
-      // We collect together all the sensor values for a given date.
-      // Then we check them all together and add them to the output
-      String currentRunType = null;
-      LocalDateTime currentTime = LocalDateTime.MIN;
-      Map<Long, FieldValue> currentDateValues = new HashMap<Long, FieldValue>();
-
-      while (records.next()) {
-        LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
-
-        // If the time has changed, process the current set of collected values
-        if (!time.isEqual(currentTime)) {
-          if (!currentTime.isEqual(LocalDateTime.MIN)) {
-            tableData.filterAndAddValues(currentRunType, currentTime, currentDateValues);
-
-          }
-
-          currentTime = time;
-          currentDateValues = new HashMap<Long, FieldValue>();
-        }
-
-
-        // Process the current record
-
-        // See if this is a Run Type
-        long fileColumn = records.getLong(2);
-
-        if (runTypeColumns.contains(fileColumn)) {
-          currentRunType = records.getString(4);
-        } else if (sensorIDs.contains(fileColumn)) {
-
-          //This is a sensor value
-          long valueId = records.getLong(1);
-          Double sensorValue = StringUtils.doubleFromString(records.getString(4));
-          AutoQCResult autoQC = AutoQCResult.buildFromJson(records.getString(5));
-          Flag userQCFlag = new Flag(records.getInt(6));
-          String qcComment = records.getString(7);
-
-          SensorType sensorType = instrument.getSensorAssignments().getSensorTypeForDBColumn(fileColumn);
-
-          // See if this value has been used in the data set
-          // Position and diagnostics are always marked as used
-          boolean used = false;
-          if (fileColumn < 0 || sensorType.isDiagnostic()) {
-            used = true;
-          } else if (Arrays.binarySearch(usedSensorValueIDs, valueId) >= 0) {
-            used = true;
-          }
-
-          FieldValue value = new FieldValue(valueId, sensorValue, autoQC,
-            userQCFlag, qcComment, used);
-          currentDateValues.put(fileColumn, value);
+      try (ResultSet records = stmt.executeQuery();) {
+        while (records.next()) {
+          times.add(DateTimeUtils.longToDate(records.getLong(1)));
         }
       }
-
-      // Store the last set of values
-      tableData.filterAndAddValues(currentRunType, currentTime, currentDateValues);
-
-    } catch (Exception e) {
-      throw new DatabaseException("Error getting sensor data", e);
-    } finally {
-      DatabaseUtils.closeResultSets(records);
-      DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting sensor value dates", e);
     }
+
+    return times;
   }
 
-  public static void getDataReductionData(
-    DataSource dataSource, DatasetMeasurementData tableData, DataSet dataSet)
-      throws MissingParamException, DatabaseException, InvalidFlagException,
-        RoutineException, VariableNotFoundException, DataReductionException {
+  public static int getFlagsRequired(DataSource dataSource, long datasetId)
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkMissing(tableData, "tableData", true);
-    MissingParam.checkMissing(dataSet, "dataSet");
+    MissingParam.checkZeroPositive(datasetId, "dataSetId");
 
-    Connection conn = null;
-    PreparedStatement stmt = null;
-    ResultSet records = null;
-    SensorsConfiguration sensorConfig =
-      ResourceManager.getInstance().getSensorsConfiguration();
+    int result = 0;
 
-    try {
-      conn = dataSource.getConnection();
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement(GET_REQUIRED_FLAGS_QUERY);) {
 
-      stmt = conn.prepareStatement(GET_DATA_REDUCTION_QUERY);
-      stmt.setLong(1, dataSet.getId());
-      records = stmt.executeQuery();
+      stmt.setLong(1, datasetId);
 
-      while (records.next()) {
-
-        LocalDateTime time = DateTimeUtils.longToDate(records.getLong(1));
-        long variableId = records.getLong(2);
-        String valuesJson = records.getString(3);
-        Flag qcFlag = new Flag(records.getInt(4));
-        String qcComment = records.getString(5);
-
-        Type mapType = new TypeToken<HashMap<String, Double>>() {}.getType();
-        Map<String, Double> values = new Gson().fromJson(valuesJson, mapType);
-
-        LinkedHashMap<String, Long> reductionParameters =
-          DataReducerFactory.getCalculationParameters(
-            sensorConfig.getInstrumentVariable(variableId));
-
-        for (Map.Entry<String, Long> entry : reductionParameters.entrySet()) {
-
-          FieldValue columnValue = new FieldValue(entry.getValue(),
-            values.get(entry.getKey()),
-            new AutoQCResult(), qcFlag, qcComment, true);
-
-          tableData.addValue(time,reductionParameters.get(entry.getKey()),
-            columnValue);
-        }
+      try (ResultSet records = stmt.executeQuery();) {
+        records.next();
+        result = records.getInt(1);
       }
     } catch (SQLException e) {
-      throw new DatabaseException("Error getting sensor data", e);
-    } finally {
-      DatabaseUtils.closeResultSets(records);
-      DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
-    }
-  }
-
-  private static long[] getUsedSensorValueIDs(Connection conn, long datasetId) throws DatabaseException {
-
-    ArrayList<Long> ids = new ArrayList<Long>();
-
-    PreparedStatement stmt = null;
-    ResultSet records = null;
-
-    try {
-
-      stmt = conn.prepareStatement(GET_USED_SENSOR_VALUES_QUERY);
-      stmt.setLong(1,  datasetId);
-
-      records = stmt.executeQuery();
-      while (records.next()) {
-        ids.add(records.getLong(1));
-      }
-
-    } catch (SQLException e) {
-      throw new DatabaseException("Error while getting used sensor value IDS", e);
-    } finally {
-      DatabaseUtils.closeResultSets(records);
-      DatabaseUtils.closeStatements(stmt);
-    }
-
-    long[] result = new long[ids.size()];
-    for (int i = 0; i < ids.size(); i++) {
-      result[i] = ids.get(i);
+      throw new DatabaseException("Error while getting flag info", e);
     }
 
     return result;
   }
 
-  public static void setQC(DataSource dataSource, List<FieldValue> updateValues) throws MissingParamException, DatabaseException {
+  public static void setQC(DataSource dataSource, List<FieldValue> updateValues)
+    throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(updateValues, "updateValues");
@@ -1003,6 +951,324 @@ public class DataSetDataDB {
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
     }
+  }
 
+  public static void loadMeasurementData(DataSource dataSource,
+    DatasetMeasurementData output, List<LocalDateTime> times)
+    throws DatabaseException, MissingParamException, MeasurementDataException,
+    RecordNotFoundException, RoutineException, InvalidFlagException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(output, "output");
+    MissingParam.checkMissing(times, "times", true);
+
+    if (times.size() > 0) {
+      try (Connection conn = dataSource.getConnection();) {
+        loadQCSensorValues(conn, output, times);
+        loadDataReductionData(conn, output, times);
+      } catch (Exception e) {
+        throw new DatabaseException("Error while loading measurement data", e);
+      }
+    }
+  }
+
+  public static void loadSensorData(DataSource dataSource,
+    DatasetMeasurementData output, List<Field> fields)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(output, "output");
+    MissingParam.checkMissing(fields, "sensorIDs", false);
+
+    try (Connection conn = dataSource.getConnection();) {
+      for (Field field : fields) {
+        loadQCSensorValues(conn, output, field);
+      }
+    } catch (Exception e) {
+      throw new DatabaseException("Error while loading measurement data", e);
+    }
+  }
+
+  private static void loadQCSensorValues(Connection conn,
+    DatasetMeasurementData output, Field field) throws DatabaseException {
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(GET_SENSOR_VALUES_BY_SENSOR_QUERY)) {
+
+      stmt.setLong(1, output.getDatasetId());
+      stmt.setLong(2, field.getId());
+
+      SensorType sensorType = output.getInstrument().getSensorAssignments()
+        .getSensorTypeForDBColumn(field.getId());
+
+      try (ResultSet records = stmt.executeQuery()) {
+
+        while (records.next()) {
+          LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
+          FieldValue value = makeSensorFieldValue(records, sensorType);
+          output.addValue(time, field, value);
+        }
+      }
+    } catch (Exception e) {
+      throw new DatabaseException("Error while retrieving sensor values", e);
+    }
+  }
+
+  public static void loadQCSensorValues(DataSource dataSource,
+    DatasetMeasurementData output, List<LocalDateTime> times)
+    throws SQLException, MeasurementDataException, RecordNotFoundException,
+    InvalidFlagException, RoutineException, MissingParamException {
+
+    try (Connection conn = dataSource.getConnection()) {
+      loadQCSensorValues(conn, output, times);
+    }
+  }
+
+  /**
+   * Load all the sensor values for a given set of times
+   *
+   * @param conn
+   * @param output
+   * @param times
+   * @throws SQLException
+   * @throws MeasurementDataException
+   * @throws RecordNotFoundException
+   * @throws InvalidFlagException
+   * @throws RoutineException
+   * @throws MissingParamException
+   */
+  public static void loadQCSensorValues(Connection conn,
+    DatasetMeasurementData output, List<LocalDateTime> times)
+    throws SQLException, MeasurementDataException, RecordNotFoundException,
+    InvalidFlagException, RoutineException, MissingParamException {
+
+    if (times.size() > 0) {
+      String sensorValuesSQL = DatabaseUtils
+        .makeInStatementSql(GET_SENSOR_VALUES_BY_DATE_QUERY, times.size());
+
+      // Get the Run Type column IDs
+      List<Long> runTypeColumns = output.getInstrument().getSensorAssignments()
+        .getRunTypeColumnIDs();
+
+      try (PreparedStatement stmt = conn.prepareStatement(sensorValuesSQL)) {
+
+        stmt.setLong(1, output.getDatasetId());
+
+        // Add dates starting at parameter index 2
+        for (int i = 0; i < times.size(); i++) {
+          stmt.setLong(i + 2, DateTimeUtils.dateToLong(times.get(i)));
+        }
+
+        try (ResultSet records = stmt.executeQuery()) {
+          // We collect together all the sensor values for a given date.
+          // Then we check them all together and add them to the output
+          String currentRunType = null;
+          LocalDateTime currentTime = LocalDateTime.MIN;
+          Map<Long, FieldValue> currentDateValues = new HashMap<Long, FieldValue>();
+
+          // Loop through all the sensor value records
+          while (records.next()) {
+            LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
+
+            // If the time has changed, process the current set of collected
+            // values
+            if (!time.isEqual(currentTime)) {
+              if (!currentTime.isEqual(LocalDateTime.MIN)) {
+                output.filterAndAddValues(currentRunType, currentTime,
+                  currentDateValues);
+
+              }
+
+              currentTime = time;
+              currentDateValues = new HashMap<Long, FieldValue>();
+            }
+
+            // Process the current record
+
+            // See if this is a Run Type
+            long fileColumn = records.getLong(2);
+
+            if (runTypeColumns.contains(fileColumn)) {
+              currentRunType = records.getString(4);
+            } else {
+              // This is a sensor value
+              SensorType sensorType = output.getInstrument()
+                .getSensorAssignments().getSensorTypeForDBColumn(fileColumn);
+
+              FieldValue value = makeSensorFieldValue(records, sensorType);
+              currentDateValues.put(fileColumn, value);
+            }
+          }
+
+          // Store the last set of values
+          output.filterAndAddValues(currentRunType, currentTime,
+            currentDateValues);
+        }
+      }
+    }
+  }
+
+  private static FieldValue makeSensorFieldValue(ResultSet record,
+    SensorType sensorType)
+    throws SQLException, RoutineException, InvalidFlagException {
+
+    long valueId = record.getLong(1);
+    long fileColumn = record.getLong(2);
+    Double sensorValue = StringUtils.doubleFromString(record.getString(4));
+    AutoQCResult autoQC = AutoQCResult.buildFromJson(record.getString(5));
+    Flag userQCFlag = new Flag(record.getInt(6));
+    String qcComment = record.getString(7);
+
+    // See if this value has been used in the data set
+    // Position and diagnostics are always marked as used
+    // Get the measurement ID from the ResultSet. If it was null,
+    // then it isn't used in the dataset for a measurement
+    record.getLong(8);
+    boolean used = !record.wasNull();
+
+    // Position and diagnostics are always marked as used
+    if (!used && fileColumn < 0 || sensorType.isDiagnostic()) {
+      used = true;
+    }
+
+    return new FieldValue(valueId, sensorValue, autoQC, userQCFlag, qcComment,
+      used);
+  }
+
+  private static void loadDataReductionData(Connection conn,
+    DatasetMeasurementData output, List<LocalDateTime> times)
+    throws MissingParamException, DatabaseException, InvalidFlagException,
+    RoutineException, VariableNotFoundException, DataReductionException {
+
+    SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+      .getSensorsConfiguration();
+
+    try {
+      String sensorValuesSQL = DatabaseUtils
+        .makeInStatementSql(GET_DATA_REDUCTION_DATE_FILTER_QUERY, times.size());
+
+      try (PreparedStatement sensorValuesStmt = conn
+        .prepareStatement(sensorValuesSQL)) {
+
+        sensorValuesStmt.setLong(1, output.getDatasetId());
+
+        // Add dates starting at parameter index 2
+        for (int i = 0; i < times.size(); i++) {
+          sensorValuesStmt.setLong(i + 2,
+            DateTimeUtils.dateToLong(times.get(i)));
+        }
+
+        try (ResultSet records = sensorValuesStmt.executeQuery();) {
+
+          while (records.next()) {
+
+            LocalDateTime time = DateTimeUtils.longToDate(records.getLong(1));
+            long variableId = records.getLong(2);
+            String valuesJson = records.getString(3);
+            Flag qcFlag = new Flag(records.getInt(4));
+            String qcComment = records.getString(5);
+
+            Type mapType = new TypeToken<HashMap<String, Double>>() {
+            }.getType();
+            Map<String, Double> values = new Gson().fromJson(valuesJson,
+              mapType);
+
+            LinkedHashMap<String, Long> reductionParameters = DataReducerFactory
+              .getCalculationParameters(
+                sensorConfig.getInstrumentVariable(variableId));
+
+            for (Map.Entry<String, Long> entry : reductionParameters
+              .entrySet()) {
+
+              FieldValue columnValue = new FieldValue(entry.getValue(),
+                values.get(entry.getKey()), new AutoQCResult(), qcFlag,
+                qcComment, true);
+
+              output.addValue(time, reductionParameters.get(entry.getKey()),
+                columnValue);
+            }
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting sensor data", e);
+    }
+  }
+
+  public static void loadDataReductionData(DataSource dataSource,
+    DatasetMeasurementData output, InstrumentVariable variable, Field field)
+    throws MissingParamException, DatabaseException, InvalidFlagException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(output, "output");
+    MissingParam.checkMissing(variable, "variable");
+    MissingParam.checkMissing(field, "field");
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement(GET_DATA_REDUCTION_QUERY)) {
+
+      stmt.setLong(1, output.getDatasetId());
+      stmt.setLong(2, variable.getId());
+
+      try (ResultSet records = stmt.executeQuery()) {
+
+        LinkedHashMap<String, Long> reductionParameters = DataReducerFactory
+          .getCalculationParameters(variable);
+
+        while (records.next()) {
+          LocalDateTime time = DateTimeUtils.longToDate(records.getLong(1));
+          String valuesJson = records.getString(2);
+          Type mapType = new TypeToken<HashMap<String, Double>>() {
+          }.getType();
+          Map<String, Double> values = new Gson().fromJson(valuesJson, mapType);
+          Flag qcFlag = new Flag(records.getInt(3));
+
+          FieldValue value = new FieldValue(
+            reductionParameters.get(field.getName()),
+            values.get(field.getName()), new AutoQCResult(), qcFlag, null,
+            true);
+
+          output.addValue(time, field, value);
+        }
+      }
+    } catch (Exception e) {
+      throw new DatabaseException("Error getting data reduction data", e);
+    }
+  }
+
+  public static List<LocalDateTime> getMeasurementTimes(DataSource dataSource,
+    long datasetId, List<String> runTypes)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkPositive(datasetId, "datasetId");
+    MissingParam.checkMissing(runTypes, "runTypes", false);
+
+    List<LocalDateTime> result = new ArrayList<LocalDateTime>();
+
+    String sql = DatabaseUtils.makeInStatementSql(GET_MEASUREMENT_TIMES_QUERY,
+      runTypes.size());
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setLong(1, datasetId);
+
+      for (int i = 0; i < runTypes.size(); i++) {
+        stmt.setString(i + 2, runTypes.get(i));
+      }
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          result.add(DateTimeUtils.longToDate(records.getLong(1)));
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error getting measurement times", e);
+    }
+
+    return result;
   }
 }

@@ -5,8 +5,8 @@ import javax.ws.rs.Path;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 
 /**
- * API call to report to QuinCe that an
- * export has been abandoned.
+ * API call to report to QuinCe that an export has been abandoned.
+ * 
  * @author Steve Jones
  *
  */

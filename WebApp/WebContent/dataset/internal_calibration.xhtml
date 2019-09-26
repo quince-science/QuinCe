@@ -1,83 +1,86 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
   xmlns:h="http://xmlns.jcp.org/jsf/html"
   xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-  xmlns:p="http://primefaces.org/ui"
-  xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
   xmlns:c="http://java.sun.com/jsp/jstl/core"
   template="/WEB-INF/templates/plot_page.xhtml">
-
-  <ui:param name="beanName" value="internalCalibrationBean"/>
-
+  <ui:param name="beanName" value="internalCalibrationBean" />
   <ui:define name="title">Calibration Data</ui:define>
   <ui:define name="localHead">
-    <h:outputScript name="script/internalCalibration.js"/>
-    <h:outputStylesheet name="style/internalCalibration.css"/>
-
+    <h:outputScript name="script/internalCalibration.js" />
+    <h:outputStylesheet name="style/internalCalibration.css" />
     <script>
       var calibrationJson = JSON.parse('#{internalCalibrationBean.calibrationJson}');
     </script>
   </ui:define>
-
   <ui:define name="dataSetName">#{internalCalibrationBean.dataset.name} - Calibration Data #{requestScope[beanName]}</ui:define>
-  <ui:define name="pageStatus">
-    Flags needed: <h:outputText id="flagsRequired" value="#{internalCalibrationBean.getData().getFlagsRequired()}"/>
-  </ui:define>
-
   <ui:define name="plot1">
-    <h:inputHidden value="#{internalCalibrationBean.plot1.mode}" id="plotMode"/>
+    <h:inputHidden value="#{internalCalibrationBean.plot1.mode}" id="plotMode" />
     <div id="plot1Panel" class="plotContainer">
       <div id="plot1Container"></div>
       <div id="plot1Label" class="plotLabels"></div>
       <p:toolbar id="plot1Toolbar" styleClass="plotPageFooter">
         <f:facet name="left">
           <div class="plotFooterButtonContainer">
-            <p:commandButton icon="selectVariableButton" onclick="showVariableDialog(1)" styleClass="inlineButton tightButton"/>
-            <p:commandButton icon="zoomOutButton" onclick="resetZoom(1)" styleClass="inlineButton tightButton"/>
+            <p:commandButton icon="selectVariableButton"
+              onclick="showVariableDialog(1)"
+              styleClass="inlineButton tightButton" />
+            <p:commandButton icon="zoomOutButton" onclick="resetZoom(1)"
+              styleClass="inlineButton tightButton" />
           </div>
           <ui:fragment rendered="#{sessionScope[beanName].canEdit}">
-            <p:selectOneButton id="plotSelectMode" widgetVar="plot1SelectMode" value="zoom" styleClass="selectModeButtons" onchange="setPlotSelectMode(1)" unselectable="false">
-              <f:selectItem itemLabel=" " itemValue="zoom"/>
-              <f:selectItem itemLabel=" " itemValue="select"/>
+            <p:selectOneButton id="plotSelectMode" widgetVar="plot1SelectMode"
+              value="zoom" styleClass="selectModeButtons"
+              onchange="setPlotSelectMode(1)" unselectable="false">
+              <f:selectItem itemLabel=" " itemValue="zoom" />
+              <f:selectItem itemLabel=" " itemValue="select" />
             </p:selectOneButton>
           </ui:fragment>
         </f:facet>
       </p:toolbar>
     </div>
   </ui:define>
-
   <ui:define name="selectionDialog">
     <p:remoteCommand name="setUseCalibrations"
       action="#{internalCalibrationBean.setCalibrationUse}"
       process="useCalibrations useCalibrationsMessage selectedColumn selectedRows"
-      update="@(#flagsRequired)"
-      oncomplete="calibrationUpdated()"
-    />
-
-    <p:commandLink id="setUseCalibrations" action="#{internalCalibrationBean.setCalibrationUse}" ajax="true" process="useCalibrations useCalibrationsMessage selectedColumn selectedRows" update="@none"/>
-    <p:dialog widgetVar="useDialog" modal="true" header="Use Selected Calibrations?">
+      update="@(#flagsRequired)" oncomplete="calibrationUpdated()" />
+    <p:commandLink id="setUseCalibrations"
+      action="#{internalCalibrationBean.setCalibrationUse}" ajax="true"
+      process="useCalibrations useCalibrationsMessage selectedColumn selectedRows"
+      update="@none" />
+    <p:dialog widgetVar="useDialog" modal="true"
+      header="Use Selected Calibrations?">
       <div class="insructions">
         Should these calibrations be used?
-        <p:selectOneRadio id="useCalibrations" widgetVar="useCalibrationsWidget" value="#{internalCalibrationBean.useCalibrations}" onchange="updateUseDialogControls()">
-          <f:selectItem itemLabel="Yes" itemValue="true"/>
-          <f:selectItem itemLabel="No" itemValue="false"/>
+        <p:selectOneRadio id="useCalibrations" widgetVar="useCalibrationsWidget"
+          value="#{internalCalibrationBean.useCalibrations}"
+          onchange="updateUseDialogControls()">
+          <f:selectItem itemLabel="Yes" itemValue="true" />
+          <f:selectItem itemLabel="No" itemValue="false" />
         </p:selectOneRadio>
         <div id="reasonSection">
-          <p:outputLabel for="useCalibrationsMessage" value="Reason:"/>
-          <br/>
-          <p:inputTextarea id="useCalibrationsMessage" widgetVar="useCalibrationsMessageWidget" rows="4" cols="40" value="#{internalCalibrationBean.useCalibrationsMessage}" onkeyup="updateUseDialogControls()"/>
+          <p:outputLabel for="useCalibrationsMessage" value="Reason:" />
+          <br />
+          <p:inputTextarea id="useCalibrationsMessage"
+            widgetVar="useCalibrationsMessageWidget" rows="4" cols="40"
+            value="#{internalCalibrationBean.useCalibrationsMessage}"
+            onkeyup="updateUseDialogControls()" />
         </div>
         <h:panelGrid columns="2" styleClass="buttonPanel">
-          <p:commandButton widgetVar="okButtonWidget" value="OK" onclick="storeCalibrationSelection();"/>
-          <p:commandButton value="Cancel" onclick="PF('useDialog').hide();"/>
+          <p:commandButton widgetVar="okButtonWidget" value="OK"
+            onclick="storeCalibrationSelection();" />
+          <p:commandButton value="Cancel" onclick="PF('useDialog').hide();" />
         </h:panelGrid>
       </div>
     </p:dialog>
   </ui:define>
   <ui:define name="selectionActions">
-    <p:commandButton widgetVar="useCalibrationsButton" value="Use Calibrations?" onclick="showUseDialog();" styleClass="inlineButton"/>
+    <p:commandButton widgetVar="useCalibrationsButton" value="Use Calibrations?"
+      onclick="showUseDialog();" styleClass="inlineButton" />
   </ui:define>
   <ui:define name="finishButton">
-    <p:commandButton value="Finish" ajax="false" process="@none" action="#{internalCalibrationBean.finish}" styleClass="inlineButton"/>
+    <p:commandButton value="Finish" ajax="false" process="@none"
+      action="#{internalCalibrationBean.finish}" styleClass="inlineButton" />
   </ui:define>
-
 </ui:composition>

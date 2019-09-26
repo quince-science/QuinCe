@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceException;
 
 /**
  * Bean for handling raw data files
+ * 
  * @author Steve Jones
  */
 @ManagedBean
@@ -43,6 +44,7 @@ public class DataFilesBean extends FileUploadBean {
 
   /**
    * Return to the file list
+   * 
    * @return Navigation to the file list
    */
   public String goToFileList() {
@@ -51,19 +53,28 @@ public class DataFilesBean extends FileUploadBean {
 
   /**
    * Get the files to be displayed in the file list
+   * 
    * @return The files
-   * @throws DatabaseException If the file list cannot be retrieved
-   * @throws ResourceException If the app resources cannot be accessed
-   * @throws InstrumentException If the instrument data is invalid
-   * @throws RecordNotFoundException If the instrument cannot be found
-   * @throws MissingParamException If any internal calls have missing parameters
+   * @throws DatabaseException
+   *           If the file list cannot be retrieved
+   * @throws ResourceException
+   *           If the app resources cannot be accessed
+   * @throws InstrumentException
+   *           If the instrument data is invalid
+   * @throws RecordNotFoundException
+   *           If the instrument cannot be found
+   * @throws MissingParamException
+   *           If any internal calls have missing parameters
    */
-  public List<DataFile> getListFiles() throws DatabaseException, MissingParamException, RecordNotFoundException, InstrumentException, ResourceException {
+  public List<DataFile> getListFiles()
+    throws DatabaseException, MissingParamException, RecordNotFoundException,
+    InstrumentException, ResourceException {
 
     List<DataFile> result;
 
     if (null != getCurrentInstrument()) {
-      result = DataFileDB.getFiles(getDataSource(), getAppConfig(), getCurrentInstrument().getDatabaseId());
+      result = DataFileDB.getFiles(getDataSource(), getAppConfig(),
+        getCurrentInstrument().getDatabaseId());
     } else {
       result = new ArrayList<DataFile>();
     }

@@ -10,8 +10,8 @@ public class CalculationParameter {
 
   private boolean result;
 
-  public CalculationParameter(String name, String columnName,
-    String columnCode, String units, boolean result) {
+  public CalculationParameter(String name, String columnName, String columnCode,
+    String units, boolean result) {
 
     this.name = name;
     this.columnHeader = new ColumnHeader(columnName, columnCode, units);

@@ -14,6 +14,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.InstrumentVariable;
 
 /**
  * Factory class for Data Reducers
+ * 
  * @author Steve Jones
  *
  */
@@ -21,31 +22,39 @@ public class DataReducerFactory {
 
   /**
    * Get the Data Reducer for a given variable and initialise it
-   * @param variable The variable
+   * 
+   * @param variable
+   *          The variable
    * @return The Data Reducer
-   * @throws DataReductionException If the reducer cannot be retreived
+   * @throws DataReductionException
+   *           If the reducer cannot be retreived
    */
-  public static DataReducer getReducer(
-      Connection conn, Instrument instrument, InstrumentVariable variable,
-      boolean nrt, Map<String, Float> variableAttributes,
-      CalibrationSet calibrationSet, List<Measurement> allMeasurements,
-      DateColumnGroupedSensorValues groupedSensorValues)
-      throws DataReductionException {
+  public static DataReducer getReducer(Connection conn, Instrument instrument,
+    InstrumentVariable variable, boolean nrt,
+    Map<String, Float> variableAttributes, CalibrationSet calibrationSet,
+    List<Measurement> allMeasurements,
+    DateColumnGroupedSensorValues groupedSensorValues)
+    throws DataReductionException {
 
     DataReducer reducer;
 
     try {
       switch (variable.getName()) {
       case "Underway Marine pCO₂": {
-        reducer = new UnderwayMarinePco2Reducer(variable, nrt, variableAttributes, allMeasurements, groupedSensorValues, calibrationSet);
+        reducer = new UnderwayMarinePco2Reducer(variable, nrt,
+          variableAttributes, allMeasurements, groupedSensorValues,
+          calibrationSet);
         break;
       }
       case "Underway Atmospheric pCO₂": {
-        reducer = new UnderwayAtmosphericPco2Reducer(variable, nrt, variableAttributes, allMeasurements, groupedSensorValues, calibrationSet);
+        reducer = new UnderwayAtmosphericPco2Reducer(variable, nrt,
+          variableAttributes, allMeasurements, groupedSensorValues,
+          calibrationSet);
         break;
       }
       default: {
-        throw new DataReductionException("Cannot find reducer for variable " + variable.getName());
+        throw new DataReductionException(
+          "Cannot find reducer for variable " + variable.getName());
       }
       }
     } catch (Exception e) {
@@ -55,21 +64,25 @@ public class DataReducerFactory {
     return reducer;
   }
 
-  private static DataReducer getSkeletonReducer(InstrumentVariable variable) throws DataReductionException {
+  private static DataReducer getSkeletonReducer(InstrumentVariable variable)
+    throws DataReductionException {
 
     DataReducer reducer = null;
 
     switch (variable.getName()) {
     case "Underway Marine pCO₂": {
-      reducer = new UnderwayMarinePco2Reducer(variable, false, null, null, null, null);
+      reducer = new UnderwayMarinePco2Reducer(variable, false, null, null, null,
+        null);
       break;
     }
     case "Underway Atmospheric pCO₂": {
-      reducer = new UnderwayAtmosphericPco2Reducer(variable, false, null, null, null, null);
+      reducer = new UnderwayAtmosphericPco2Reducer(variable, false, null, null,
+        null, null);
       break;
     }
     default: {
-      throw new DataReductionException("Cannot find reducer for variable " + variable.getName());
+      throw new DataReductionException(
+        "Cannot find reducer for variable " + variable.getName());
     }
     }
 
@@ -78,9 +91,12 @@ public class DataReducerFactory {
 
   /**
    * Get the calculation parameters for a given data reducer with their IDs
-   * @param variable The variable for the data reducer
+   * 
+   * @param variable
+   *          The variable for the data reducer
    * @return The calculation parameter names
-   * @throws DataReductionException If the variable does not have a reducer
+   * @throws DataReductionException
+   *           If the variable does not have a reducer
    */
   public static LinkedHashMap<String, Long> getCalculationParameters(
     InstrumentVariable variable) throws DataReductionException {
@@ -98,8 +114,9 @@ public class DataReducerFactory {
     return result;
   }
 
-  public static TreeMap<Long, CalculationParameter> getCalculationParameters(InstrumentVariable variable,
-    boolean includeCalculationColumns) throws DataReductionException {
+  public static TreeMap<Long, CalculationParameter> getCalculationParameters(
+    InstrumentVariable variable, boolean includeCalculationColumns)
+    throws DataReductionException {
 
     DataReducer reducer = getSkeletonReducer(variable);
 

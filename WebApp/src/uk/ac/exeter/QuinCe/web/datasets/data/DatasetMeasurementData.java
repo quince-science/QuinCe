@@ -4,12 +4,14 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.primefaces.json.JSONArray;
 
@@ -22,9 +24,13 @@ import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
+import uk.ac.exeter.QuinCe.utils.MissingParam;
+import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
-public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, LinkedHashMap<Field, FieldValue>> {
+@SuppressWarnings("serial")
+public abstract class DatasetMeasurementData
+  extends TreeMap<LocalDateTime, LinkedHashMap<Field, FieldValue>> {
 
   protected Instrument instrument;
 
@@ -32,59 +38,96 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
 
   protected DataSet dataSet;
 
-  private boolean dirty = true;
+  /**
+   * A cache of the row IDs in the data
+   */
+  private List<LocalDateTime> rowIdsCache = new ArrayList<LocalDateTime>();
 
-  private List<LocalDateTime> rowIds;
-
+  /**
+   * JSON representation of the row IDs in the data
+   */
   private String rowIdsJson;
 
+  /**
+   * A log of which rows have been fully loaded into the data set
+   */
+  private HashMap<LocalDateTime, Boolean> rowsLoaded;
+
+  /**
+   * A log of which fields have been fully loaded into the data set
+   */
+  protected HashMap<Field, Boolean> loadedFields;
+
   private TreeMap<LocalDateTime, Position> positions;
+
+  private boolean positionsLoaded = false;
 
   private Map<Field, MapRecords> mapCache;
 
   private boolean filterInitialised = false;
 
-  public DatasetMeasurementData(Instrument instrument, FieldSets fieldSets, DataSet dataSet) throws Exception {
+  public DatasetMeasurementData(Instrument instrument, FieldSets fieldSets,
+    DataSet dataSet) throws MeasurementDataException {
     super();
     this.instrument = instrument;
     this.dataSet = dataSet;
     this.fieldSets = fieldSets;
+    this.rowsLoaded = new HashMap<LocalDateTime, Boolean>();
+    this.loadedFields = new HashMap<Field, Boolean>();
+    for (Field field : fieldSets.getFields()) {
+      loadedFields.put(field, false);
+    }
+
     mapCache = new HashMap<Field, MapRecords>();
-    dirty = true;
   }
 
   /**
    * Add a value to the table
+   *
    * @param rowId
    * @param field
    * @param value
+   * @throws MissingParamException
    */
-  public void addValue(LocalDateTime rowId, Field field, FieldValue value) {
-    if (!containsKey(rowId)) {
-      put(rowId, fieldSets.generateFieldValuesMap());
-    }
+  public void addValue(LocalDateTime rowId, Field field, FieldValue value)
+    throws MissingParamException {
 
-    get(rowId).put(field, value);
-    dirty = true;
+    MissingParam.checkMissing(rowId, "rowId");
+    MissingParam.checkMissing(field, "field");
+    MissingParam.checkMissing(value, "value");
+
+    if (!fieldSets.isUnused(field)) {
+      if (!containsKey(rowId)) {
+        put(rowId, fieldSets.generateFieldValuesMap());
+      }
+
+      get(rowId).put(field, value);
+    }
   }
 
   /**
    * Add a value to the table
+   *
    * @param rowId
    * @param fieldId
    * @param value
+   * @throws MissingParamException
    */
-  public void addValue(LocalDateTime rowId, long fieldId, FieldValue value) {
+  public void addValue(LocalDateTime rowId, long fieldId, FieldValue value)
+    throws MissingParamException {
     addValue(rowId, fieldSets.getField(fieldId), value);
-    // dirty flag is set in called method
   }
 
   /**
    * Add a set of values to the table
-   * @param rowId The table row
-   * @param values The field values
+   *
+   * @param rowId
+   *          The table row
+   * @param values
+   *          The field values
    */
-  public void addValues(LocalDateTime rowId, Map<Field, ? extends FieldValue> values) {
+  protected void addValues(LocalDateTime rowId,
+    Map<Field, ? extends FieldValue> values) throws MissingParamException {
     if (!containsKey(rowId)) {
       put(rowId, fieldSets.generateFieldValuesMap());
     }
@@ -94,11 +137,15 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
 
   /**
    * Get data for a plot
-   * @param xAxis X Axis
-   * @param yAxis Y Axis
+   *
+   * @param xAxis
+   *          X Axis
+   * @param yAxis
+   *          Y Axis
    * @return The plot data
    */
-  public String getPlotData(Field xAxis, Field yAxis) {
+  public String getPlotData(Field xAxis, Field yAxis)
+    throws MeasurementDataException {
 
     TreeSet<PlotRecord> records;
 
@@ -136,11 +183,12 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
       }
     }
 
-    Double[] result = {min, max};
+    Double[] result = { min, max };
     return Arrays.asList(result);
   }
 
-  public String getMapData(Field field, GeoBounds bounds) {
+  public String getMapData(Field field, GeoBounds bounds)
+    throws MeasurementDataException {
 
     if (!mapCache.containsKey(field)) {
       buildMapCache(field);
@@ -149,18 +197,21 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
     return mapCache.get(field).getDisplayJson(bounds);
   }
 
-  private void buildMapCache(Field field) {
+  private void buildMapCache(Field field) throws MeasurementDataException {
+
+    loadField(field);
+
     MapRecords records = new MapRecords(size());
 
-    for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> entry :
-      entrySet()) {
+    for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> entry : entrySet()) {
 
       if (entry.getValue().containsKey(field)) {
         FieldValue value = entry.getValue().get(field);
 
         if (null != value && !value.isNaN()) {
           Position position = getClosestPosition(entry.getKey());
-          MapRecord record = new MapRecord(position, DateTimeUtils.dateToLong(entry.getKey()), value);
+          MapRecord record = new MapRecord(position,
+            DateTimeUtils.dateToLong(entry.getKey()), value);
           records.add(record);
         }
       }
@@ -169,12 +220,14 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
     mapCache.put(field, records);
   }
 
+  private TreeSet<PlotRecord> getPlotDataWithIdAxis(Field yAxis)
+    throws MeasurementDataException {
 
-  private TreeSet<PlotRecord> getPlotDataWithIdAxis(Field yAxis) {
+    loadField(yAxis);
+
     TreeSet<PlotRecord> records = new TreeSet<PlotRecord>();
 
-    for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> entry :
-      entrySet()) {
+    for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> entry : entrySet()) {
 
       if (entry.getValue().containsKey(yAxis)) {
         FieldValue value = entry.getValue().get(yAxis);
@@ -189,12 +242,14 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
     return records;
   }
 
-  private TreeSet<PlotRecord> getPlotDataWithNonIdAxis(Field xAxis, Field yAxis) {
+  private TreeSet<PlotRecord> getPlotDataWithNonIdAxis(Field xAxis, Field yAxis)
+    throws MeasurementDataException {
+
+    loadField(xAxis, yAxis);
 
     TreeSet<PlotRecord> records = new TreeSet<PlotRecord>();
 
-    for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> yEntry :
-      entrySet()) {
+    for (Map.Entry<LocalDateTime, LinkedHashMap<Field, FieldValue>> yEntry : entrySet()) {
 
       if (yEntry.getValue().containsKey(yAxis)) {
 
@@ -203,9 +258,11 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
 
         if (null != yValue && !yValue.isNaN()) {
           // If the current key also contains the x axis, use that
-          FieldValue xValue = get(getClosestWithField(yEntry.getKey(), xAxis)).get(xAxis);
+          FieldValue xValue = get(getClosestWithField(yEntry.getKey(), xAxis))
+            .get(xAxis);
 
-          records.add(new PlotRecord( xValue.getValue(), dateLong, yValue, dataSet.isNrt()));
+          records.add(new PlotRecord(xValue.getValue(), dateLong, yValue,
+            dataSet.isNrt()));
         }
       }
     }
@@ -250,7 +307,8 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
     LocalDateTime searchKey = lowerKey(start);
 
     while (null == result && null != searchKey) {
-      if (get(searchKey).containsKey(field) && !get(searchKey).get(field).isNaN()) {
+      if (get(searchKey).containsKey(field)
+        && !get(searchKey).get(field).isNaN()) {
         result = searchKey;
       } else {
         searchKey = lowerKey(searchKey);
@@ -267,7 +325,8 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
     LocalDateTime searchKey = higherKey(start);
 
     while (null == result && null != searchKey) {
-      if (get(searchKey).containsKey(field) && !get(searchKey).get(field).isNaN()) {
+      if (get(searchKey).containsKey(field)
+        && !get(searchKey).get(field).isNaN()) {
         result = searchKey;
       } else {
         searchKey = higherKey(searchKey);
@@ -278,40 +337,37 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
   }
 
   public List<LocalDateTime> getRowIds() {
-    if (dirty) {
-      buildCaches();
-    }
-
-    return rowIds;
+    updateRowIdsCache();
+    return rowIdsCache;
   }
 
   public String getRowIdsJson() {
-    if (dirty) {
-      buildCaches();
-    }
-
+    updateRowIdsCache();
     return rowIdsJson;
   }
 
-  private void buildCaches() {
-    makeRowIds();
-    makePositionLookup();
-    dirty = false;
+  private void updateRowIdsCache() {
+    // If the cache size doesn't equal the data size, it needs rebuilding
+    if (rowIdsCache.size() != size()) {
+      rowIdsCache = new ArrayList<LocalDateTime>(keySet());
+      makeRowIds();
+    }
   }
 
   private void makeRowIds() {
-    rowIds = new ArrayList<LocalDateTime>(keySet());
-
-    List<Long> jsonInput = new ArrayList<Long>(rowIds.size());
-    for (LocalDateTime id : rowIds) {
-      jsonInput.add(DateTimeUtils.dateToLong(id));
-    }
+    List<Long> jsonInput = new ArrayList<Long>(size());
+    rowIdsCache.stream()
+      .forEach(k -> jsonInput.add(DateTimeUtils.dateToLong(k)));
 
     Gson gson = new Gson();
     rowIdsJson = gson.toJson(jsonInput).toString();
   }
 
-  private void makePositionLookup() {
+  private void loadPositions() throws MeasurementDataException {
+
+    loadField(fieldSets.getField(FileDefinition.LONGITUDE_COLUMN_ID),
+      fieldSets.getField(FileDefinition.LATITUDE_COLUMN_ID));
+
     positions = new TreeMap<LocalDateTime, Position>();
 
     if (fieldSets.containsField(FileDefinition.LONGITUDE_COLUMN_ID)) {
@@ -321,16 +377,21 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
       for (LocalDateTime time : keySet()) {
         LinkedHashMap<Field, FieldValue> data = get(time);
         if (data.containsKey(lonField)) {
-          positions.put(time,
-            new Position(
-              data.get(lonField).getValue(),
-              data.get(latField).getValue()));
+          positions.put(time, new Position(data.get(lonField).getValue(),
+            data.get(latField).getValue()));
         }
       }
     }
+
+    positionsLoaded = true;
   }
 
-  private Position getClosestPosition(LocalDateTime start) {
+  private Position getClosestPosition(LocalDateTime start)
+    throws MeasurementDataException {
+
+    if (!positionsLoaded) {
+      loadPositions();
+    }
 
     Position result = null;
 
@@ -362,6 +423,7 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
 
   /**
    * Get the field sets
+   *
    * @return
    */
   public FieldSets getFieldSets() {
@@ -386,13 +448,12 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
       }
     }
 
-
     return result;
 
   }
 
-  public List<FieldValue> setQC(List<LocalDateTime> rows,
-    int fieldIndex, Flag flag, String comment) {
+  public List<FieldValue> setQC(List<LocalDateTime> rows, int fieldIndex,
+    Flag flag, String comment) {
 
     List<FieldValue> updatedValues = new ArrayList<FieldValue>(rows.size());
     Field field = fieldSets.getField(fieldIndex);
@@ -410,23 +471,9 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
     return updatedValues;
   }
 
-  public int getFlagsRequired() {
-
-    int result = 0;
-
-    for (LinkedHashMap<Field, FieldValue> rowFields : values()) {
-      for (FieldValue value : rowFields.values()) {
-        if (null != value && value.needsFlag()) {
-            result++;
-        }
-      }
-    }
-
-    return result;
-  }
-
-  public final void filterAndAddValues(String runType, LocalDateTime time, Map<Long, FieldValue> values)
-    throws Exception {
+  public final void filterAndAddValues(String runType, LocalDateTime time,
+    Map<Long, FieldValue> values)
+    throws MeasurementDataException, MissingParamException {
 
     if (!filterInitialised) {
       initFilter();
@@ -435,12 +482,42 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
     filterAndAddValuesAction(runType, time, values);
   }
 
+  /**
+   * Ensure that the specified times are present in the map. New times will be
+   * added with no data, while existing times will be left as they are.
+   *
+   * @param times
+   *          The times to be added
+   */
+  public void addTimes(Collection<LocalDateTime> times)
+    throws MeasurementDataException {
+
+    times.stream().forEach(this::addTime);
+  }
 
   /**
-   * Add a set of values, filtering out unwanted values. The default
-   * filter removes values for columns that are internally calibrated
-   * where the run type is not a measurement. This has the effect
-   * of removing all values taken during internal calibration.
+   * Add a set of values, filtering out unwanted values. The default filter
+   * removes values for columns that are internally calibrated where the run
+   * type is not a measurement. This has the effect of removing all values taken
+   * during internal calibration. Ensure that the specified time is present in
+   * the map. A new time will be added with no data, while an existing time will
+   * be left as it is.
+   *
+   * @param time
+   *          The time to be added
+   */
+  private void addTime(LocalDateTime time) {
+    if (!containsKey(time)) {
+      put(time, fieldSets.generateFieldValuesMap());
+      rowsLoaded.put(time, false);
+    }
+  }
+
+  /**
+   * Add a set of values, filtering out unwanted values. The default filter
+   * removes values for columns that are internally calibrated where the run
+   * type is not a measurement. This has the effect of removing all values taken
+   * during internal calibration.
    *
    * Override this method to filter the supplied values according to need.
    *
@@ -449,11 +526,64 @@ public abstract class DatasetMeasurementData extends TreeMap<LocalDateTime, Link
    * @param values
    * @throws RecordNotFoundException
    */
-  protected abstract void filterAndAddValuesAction(String runType, LocalDateTime time, Map<Long, FieldValue> values)
-      throws RecordNotFoundException;
+  protected abstract void filterAndAddValuesAction(String runType,
+    LocalDateTime time, Map<Long, FieldValue> values)
+    throws MissingParamException, MeasurementDataException;
 
   /**
    * Initialise information required for filterAndAddValues
    */
-  protected abstract void initFilter() throws Exception;
+  protected abstract void initFilter() throws MeasurementDataException;
+
+  /**
+   * Load a range of data into the map by index
+   *
+   * @param start
+   *          The first row to load
+   * @param length
+   *          The number of rows to load
+   */
+  public void loadRows(int start, int length) throws MeasurementDataException {
+    List<LocalDateTime> datesToLoad = getRowIds()
+      .subList(start, start + length - 1).stream()
+      .filter(d -> !rowsLoaded.get(d)).collect(Collectors.toList());
+
+    // Load those dates that haven't already been loaded
+    load(datesToLoad);
+    setRowLoaded(datesToLoad, true);
+  }
+
+  /**
+   * Get the database ID of the dataset to which this data belongs
+   *
+   * @return The dataset ID
+   */
+  public long getDatasetId() {
+    return dataSet.getId();
+  }
+
+  /**
+   * Get the instrument that measured this data
+   *
+   * @return The instrument
+   */
+  public Instrument getInstrument() {
+    return instrument;
+  }
+
+  private void setRowLoaded(Collection<LocalDateTime> times, boolean loaded) {
+    times.stream().forEach(t -> this.rowsLoaded.put(t, loaded));
+  }
+
+  protected abstract void load(List<LocalDateTime> times)
+    throws MeasurementDataException;
+
+  private void loadField(Field... field) throws MeasurementDataException {
+    loadFieldAction(Arrays.stream(field).filter(f -> !loadedFields.get(f))
+      .collect(Collectors.toList()));
+    Arrays.stream(field).forEach(f -> loadedFields.put(f, true));
+  }
+
+  protected abstract void loadFieldAction(List<Field> field)
+    throws MeasurementDataException;
 }

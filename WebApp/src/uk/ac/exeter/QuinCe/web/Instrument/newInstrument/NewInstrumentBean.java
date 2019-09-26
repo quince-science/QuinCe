@@ -54,6 +54,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Bean for collecting data about a new instrument
+ * 
  * @author Steve Jones
  */
 @ManagedBean
@@ -98,7 +99,8 @@ public class NewInstrumentBean extends FileUploadBean {
   /**
    * Date/Time formatter for previewing extracted dates
    */
-  private static final DateTimeFormatter PREVIEW_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+  private static final DateTimeFormatter PREVIEW_DATE_TIME_FORMATTER = DateTimeFormatter
+    .ofPattern("yyyy-MM-dd HH:mm:ss");
 
   /**
    * The Instrument List Bean
@@ -160,6 +162,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Sensor assignment - the answer to the Depends Question
+   * 
    * @see SensorType#getDependsQuestion()
    */
   private boolean sensorAssignmentDependsQuestionAnswer = false;
@@ -210,8 +213,8 @@ public class NewInstrumentBean extends FileUploadBean {
   private String hemisphereFile = null;
 
   /**
-   * The coordinate (longitude or latitude) for which the hemisphere
-   * is being set
+   * The coordinate (longitude or latitude) for which the hemisphere is being
+   * set
    */
   private int hemisphereCoordinate = -1;
 
@@ -302,8 +305,7 @@ public class NewInstrumentBean extends FileUploadBean {
   private String runTypeAssignName = null;
 
   /**
-   * The code of the Run Type Category that the
-   * run type is being assigned to
+   * The code of the Run Type Category that the run type is being assigned to
    */
   private long runTypeAssignCode = RunTypeCategory.IGNORED_TYPE;
 
@@ -354,6 +356,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Begin a new instrument definition
+   * 
    * @return The navigation to the start page
    */
   public String start() throws Exception {
@@ -363,6 +366,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Cancel the current instrument definition
+   * 
    * @return Navigation to the instrument list
    */
   public String cancel() throws Exception {
@@ -372,6 +376,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Navigate to the Name page
+   * 
    * @return Navigation to the name page
    */
   public String goToName() {
@@ -387,16 +392,17 @@ public class NewInstrumentBean extends FileUploadBean {
    * Navigate to the files step.
    *
    * <p>
-   *   The page we navigate to depends on the current status of the instrument.
+   * The page we navigate to depends on the current status of the instrument.
    * <p>
    *
    * <p>
-   *   If no files have been added, we create a new empty file and go to the upload page.
-   *   Otherwise, we go to the variable assignment page.
+   * If no files have been added, we create a new empty file and go to the
+   * upload page. Otherwise, we go to the variable assignment page.
    * </p>
    *
    * @return Navigation to the files
-   * @throws InstrumentFileExistsException If the default instrument file has already been added.
+   * @throws InstrumentFileExistsException
+   *           If the default instrument file has already been added.
    */
   public String goToFiles() throws InstrumentFileExistsException {
     String result;
@@ -407,7 +413,8 @@ public class NewInstrumentBean extends FileUploadBean {
       result = NAV_UPLOAD_FILE;
     } else {
       if (null == currentInstrumentFile) {
-        currentInstrumentFile = FileDefinitionBuilder.copy((FileDefinitionBuilder) instrumentFiles.get(0));
+        currentInstrumentFile = FileDefinitionBuilder
+          .copy((FileDefinitionBuilder) instrumentFiles.get(0));
       }
       result = NAV_ASSIGN_VARIABLES;
     }
@@ -417,6 +424,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Direct navigation to the Assign Variables page
+   * 
    * @return Navigation to the Assign Variables page
    */
   public String goToAssignVariables() {
@@ -425,6 +433,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Add a new file to the instrument
+   * 
    * @return The navigation to the file upload
    */
   public String addFile() {
@@ -438,8 +447,9 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Store the uploaded data in the current instrument file.
-   * Detailed processing will be triggered by the source page calling {@link FileDefinitionBuilder#guessFileLayout}.
+   * Store the uploaded data in the current instrument file. Detailed processing
+   * will be triggered by the source page calling
+   * {@link FileDefinitionBuilder#guessFileLayout}.
    */
   @Override
   public void processUploadedFile() {
@@ -447,8 +457,7 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Clear all data from the bean ready for a new
-   * instrument to be defined
+   * Clear all data from the bean ready for a new instrument to be defined
    */
   private void clearAllData() throws Exception {
 
@@ -478,6 +487,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the name of the new instrument
+   * 
    * @return The instrument name
    */
   public String getInstrumentName() {
@@ -486,7 +496,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the name of the new instrument
-   * @param instrumentName The instrument name
+   * 
+   * @param instrumentName
+   *          The instrument name
    */
   public void setInstrumentName(String instrumentName) {
     this.instrumentName = instrumentName;
@@ -499,7 +511,8 @@ public class NewInstrumentBean extends FileUploadBean {
   public void setInstrumentVariables(List<Long> instrumentVariables) {
     this.instrumentVariables = instrumentVariables;
     try {
-      sensorAssignments = new SensorAssignments(getDataSource(), instrumentVariables);
+      sensorAssignments = new SensorAssignments(getDataSource(),
+        instrumentVariables);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -519,6 +532,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the instrument file that is currently being worked on
+   * 
    * @return The current instrument file
    */
   public FileDefinitionBuilder getCurrentInstrumentFile() {
@@ -527,6 +541,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Retrieve the full set of instrument files
+   * 
    * @return The instrument files
    */
   public NewInstrumentFileSet getInstrumentFiles() {
@@ -535,16 +550,18 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Determines whether or not the file set contains more than one file
-   * @return {@code true} if more than one file is in the set; {@code false} if there are zero or one files
+   * 
+   * @return {@code true} if more than one file is in the set; {@code false} if
+   *         there are zero or one files
    */
   public boolean getHasMultipleFiles() {
     return (instrumentFiles.size() > 1);
   }
 
   /**
-   * Add the current instrument file to the file set (or update it)
-   * and clear its status as 'current'. Then navigate to the
-   * variable assignment page.
+   * Add the current instrument file to the file set (or update it) and clear
+   * its status as 'current'. Then navigate to the variable assignment page.
+   * 
    * @return The navigation to the variable assignment page
    */
   public String useFile() {
@@ -570,8 +587,9 @@ public class NewInstrumentBean extends FileUploadBean {
    * Get the current set of sensor assignments as a JSON string.
    *
    * <p>
-   *   The format of the JSON is as follows:
+   * The format of the JSON is as follows:
    * </p>
+   * 
    * <pre>
    * [
    *   {
@@ -586,19 +604,24 @@ public class NewInstrumentBean extends FileUploadBean {
    * </pre>
    *
    * @return The sensor assignments
-   * @throws SensorAssignmentException If the sensor assignments are internally invalid
-   * @throws DatabaseException If a database error occurs
-   * @throws JSONException If the JSON construction is invalid
+   * @throws SensorAssignmentException
+   *           If the sensor assignments are internally invalid
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws JSONException
+   *           If the JSON construction is invalid
    * @throws SensorConfigurationException
    */
-  public String getSensorAssignments() throws SensorAssignmentException, JSONException, DatabaseException, SensorConfigurationException {
+  public String getSensorAssignments() throws SensorAssignmentException,
+    JSONException, DatabaseException, SensorConfigurationException {
 
     JSONArray json = new JSONArray();
 
     for (SensorType sensorType : sensorAssignments.keySet()) {
       JSONObject sensorTypeJson = new JSONObject();
       sensorTypeJson.put("name", sensorType.getName());
-      sensorTypeJson.put("required", sensorAssignments.isAssignmentRequired(sensorType));
+      sensorTypeJson.put("required",
+        sensorAssignments.isAssignmentRequired(sensorType));
       sensorTypeJson.put("diagnostic", sensorType.isDiagnostic());
       sensorTypeJson.put("systemType", sensorType.isSystemType());
       if (null == sensorType.getDependsQuestion()) {
@@ -632,20 +655,22 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Dummy method for setting sensor assignments. It doesn't
-   * actually do anything, but it's needed for the JSF communications
-   * to work.
-   * @param assignments The assignments. They are ignored.
+   * Dummy method for setting sensor assignments. It doesn't actually do
+   * anything, but it's needed for the JSF communications to work.
+   * 
+   * @param assignments
+   *          The assignments. They are ignored.
    */
   public void setSensorAssignments(String assignments) {
     // Do nothing
   }
 
   /**
-   * Dummy method for setting time and position assignments. It doesn't
-   * actually do anything, but it's needed for the JSF communications
-   * to work.
-   * @param assignments The assignments. They are ignored.
+   * Dummy method for setting time and position assignments. It doesn't actually
+   * do anything, but it's needed for the JSF communications to work.
+   * 
+   * @param assignments
+   *          The assignments. They are ignored.
    */
   public void setTimePositionAssignments(String assignments) {
     // Do nothing
@@ -653,6 +678,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the sensor assignment file
+   * 
    * @return The file
    */
   public String getSensorAssignmentFile() {
@@ -661,7 +687,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the sensor assignment file
-   * @param sensorAssignmentFile The file
+   * 
+   * @param sensorAssignmentFile
+   *          The file
    */
   public void setSensorAssignmentFile(String sensorAssignmentFile) {
     this.sensorAssignmentFile = sensorAssignmentFile;
@@ -669,6 +697,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the sensor assignment column index
+   * 
    * @return The column index
    */
   public int getSensorAssignmentColumn() {
@@ -677,7 +706,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the sensor assignment column index
-   * @param sensorAssignmentColumn The column index
+   * 
+   * @param sensorAssignmentColumn
+   *          The column index
    */
   public void setSensorAssignmentColumn(int sensorAssignmentColumn) {
     this.sensorAssignmentColumn = sensorAssignmentColumn;
@@ -685,6 +716,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the name of the assigned sensor
+   * 
    * @return The sensor name
    */
   public String getSensorAssignmentName() {
@@ -693,7 +725,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the name of the assigned sensor
-   * @param sensorAssignmentName The sensor name
+   * 
+   * @param sensorAssignmentName
+   *          The sensor name
    */
   public void setSensorAssignmentName(String sensorAssignmentName) {
     this.sensorAssignmentName = sensorAssignmentName;
@@ -701,6 +735,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the name of the sensor type being assigned
+   * 
    * @return The sensor type
    */
   public String getSensorAssignmentSensorType() {
@@ -709,7 +744,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the name of the sensor type being assigned
-   * @param sensorAssignmentSensorType The sensor type
+   * 
+   * @param sensorAssignmentSensorType
+   *          The sensor type
    */
   public void setSensorAssignmentSensorType(String sensorAssignmentSensorType) {
     this.sensorAssignmentSensorType = sensorAssignmentSensorType;
@@ -717,6 +754,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the answer to the sensor assignment's Depends Question
+   * 
    * @return The answer to the Depends Question
    * @see SensorType#getDependsQuestion()
    */
@@ -726,15 +764,19 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the answer to the sensor assignment's Depends Question
-   * @param sensorAssignmentDependsQuestionAnswer The answer to the Depends Question
+   * 
+   * @param sensorAssignmentDependsQuestionAnswer
+   *          The answer to the Depends Question
    * @see SensorType#getDependsQuestion()
    */
-  public void setSensorAssignmentDependsQuestionAnswer(boolean sensorAssignmentDependsQuestionAnswer) {
+  public void setSensorAssignmentDependsQuestionAnswer(
+    boolean sensorAssignmentDependsQuestionAnswer) {
     this.sensorAssignmentDependsQuestionAnswer = sensorAssignmentDependsQuestionAnswer;
   }
 
   /**
    * Get the flag indicating whether the assigned sensor is primary or fallback
+   * 
    * @return The primary sensor flag
    */
   public boolean getSensorAssignmentPrimary() {
@@ -743,7 +785,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the flag indicating whether the assigned sensor is primary or fallback
-   * @param sensorAssignmentPrimary The primary sensor flag
+   * 
+   * @param sensorAssignmentPrimary
+   *          The primary sensor flag
    */
   public void setSensorAssignmentPrimary(boolean sensorAssignmentPrimary) {
     this.sensorAssignmentPrimary = sensorAssignmentPrimary;
@@ -751,6 +795,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the 'missing value' value for the current sensor assignment
+   * 
    * @return The missing value
    */
   public String getSensorAssignmentMissingValue() {
@@ -759,24 +804,30 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the 'missing value' value for the current sensor assignment
-   * @param sensorAssignmentMissinngValue The missing value
+   * 
+   * @param sensorAssignmentMissinngValue
+   *          The missing value
    */
-  public void setSensorAssignmentMissingValue(String sensorAssignmentMissinngValue) {
+  public void setSensorAssignmentMissingValue(
+    String sensorAssignmentMissinngValue) {
     this.sensorAssignmentMissingValue = sensorAssignmentMissinngValue;
   }
 
   /**
    * Add a new assignment to the sensor assignments
-   * @throws Exception If any errors occur
+   * 
+   * @throws Exception
+   *           If any errors occur
    */
   public void storeSensorAssignment() throws Exception {
-    SensorAssignment assignment = new SensorAssignment(
-        sensorAssignmentFile, sensorAssignmentColumn, sensorAssignmentName,
-        sensorAssignmentPrimary, sensorAssignmentDependsQuestionAnswer, sensorAssignmentMissingValue);
+    SensorAssignment assignment = new SensorAssignment(sensorAssignmentFile,
+      sensorAssignmentColumn, sensorAssignmentName, sensorAssignmentPrimary,
+      sensorAssignmentDependsQuestionAnswer, sensorAssignmentMissingValue);
 
     sensorAssignments.addAssignment(sensorAssignmentSensorType, assignment);
 
-    // Reset the assign dialog values, because it's so damn hard to do in Javascript
+    // Reset the assign dialog values, because it's so damn hard to do in
+    // Javascript
     resetSensorAssignmentValues();
   }
 
@@ -795,6 +846,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the file for which the longitude is being set
+   * 
    * @return The longitude file
    */
   public String getLongitudeFile() {
@@ -803,7 +855,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the file for which the longitude is being set
-   * @param longitudeFile The longitude file
+   * 
+   * @param longitudeFile
+   *          The longitude file
    */
   public void setLongitudeFile(String longitudeFile) {
     this.longitudeFile = longitudeFile;
@@ -811,6 +865,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the longitude column index
+   * 
    * @return The longitude column index
    */
   public int getLongitudeColumn() {
@@ -819,7 +874,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the longitude column index
-   * @param longitudeColumn The longitude column index
+   * 
+   * @param longitudeColumn
+   *          The longitude column index
    */
   public void setLongitudeColumn(int longitudeColumn) {
     this.longitudeColumn = longitudeColumn;
@@ -827,6 +884,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the longitude format
+   * 
    * @return The longitude format
    */
   public int getLongitudeFormat() {
@@ -835,7 +893,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the longitude format
-   * @param longitudeFormat The longitude format
+   * 
+   * @param longitudeFormat
+   *          The longitude format
    */
   public void setLongitudeFormat(int longitudeFormat) {
     this.longitudeFormat = longitudeFormat;
@@ -843,10 +903,13 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the longitude column and format for a file
-   * @throws InvalidPositionFormatException If the format is invalid
+   * 
+   * @throws InvalidPositionFormatException
+   *           If the format is invalid
    */
   public void assignLongitude() throws InvalidPositionFormatException {
-    FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles.get(longitudeFile);
+    FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles
+      .get(longitudeFile);
     file.getLongitudeSpecification().setValueColumn(longitudeColumn);
     file.getLongitudeSpecification().setFormat(longitudeFormat);
     if (longitudeFormat != LongitudeSpecification.FORMAT_0_180) {
@@ -858,6 +921,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the file for which the latitude is being set
+   * 
    * @return The latitude file
    */
   public String getLatitudeFile() {
@@ -866,7 +930,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the file for which the latitude is being set
-   * @param latitudeFile The latitude file
+   * 
+   * @param latitudeFile
+   *          The latitude file
    */
   public void setLatitudeFile(String latitudeFile) {
     this.latitudeFile = latitudeFile;
@@ -874,6 +940,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the latitude column index
+   * 
    * @return The latitude column index
    */
   public int getLatitudeColumn() {
@@ -882,7 +949,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the latitude column index
-   * @param latitudeColumn The latitude column index
+   * 
+   * @param latitudeColumn
+   *          The latitude column index
    */
   public void setLatitudeColumn(int latitudeColumn) {
     this.latitudeColumn = latitudeColumn;
@@ -890,6 +959,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the latitude format
+   * 
    * @return The latitude format
    */
   public int getLatitudeFormat() {
@@ -898,7 +968,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the latitude format
-   * @param latitudeFormat The latitude format
+   * 
+   * @param latitudeFormat
+   *          The latitude format
    */
   public void setLatitudeFormat(int latitudeFormat) {
     this.latitudeFormat = latitudeFormat;
@@ -906,10 +978,13 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the latitude column and format for a file
-   * @throws InvalidPositionFormatException If the format is invalid
+   * 
+   * @throws InvalidPositionFormatException
+   *           If the format is invalid
    */
   public void assignLatitude() throws InvalidPositionFormatException {
-    FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles.get(latitudeFile);
+    FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles
+      .get(latitudeFile);
     file.getLatitudeSpecification().setValueColumn(latitudeColumn);
     file.getLatitudeSpecification().setFormat(latitudeFormat);
     if (latitudeFormat != LatitudeSpecification.FORMAT_0_90) {
@@ -921,6 +996,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the file for which the hemisphere is being set
+   * 
    * @return The hemisphere file
    */
   public String getHemisphereFile() {
@@ -929,7 +1005,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the file for which the hemisphere is being set
-   * @param hemisphereFile The hemisphere file
+   * 
+   * @param hemisphereFile
+   *          The hemisphere file
    */
   public void setHemisphereFile(String hemisphereFile) {
     this.hemisphereFile = hemisphereFile;
@@ -937,6 +1015,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the hemisphere column index
+   * 
    * @return The hemisphere column index
    */
   public int getHemisphereColumn() {
@@ -945,7 +1024,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the hemisphere column index
-   * @param hemisphereColumn The hemisphere column index
+   * 
+   * @param hemisphereColumn
+   *          The hemisphere column index
    */
   public void setHemisphereColumn(int hemisphereColumn) {
     this.hemisphereColumn = hemisphereColumn;
@@ -953,6 +1034,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the coordinate for which the hemisphere is being set
+   * 
    * @return The hemipshere coordinate
    */
   public int getHemisphereCoordinate() {
@@ -961,7 +1043,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the coordinate for which the hemisphere is being set
-   * @param hemisphereCoordinate The hemipshere coordinate
+   * 
+   * @param hemisphereCoordinate
+   *          The hemipshere coordinate
    */
   public void setHemisphereCoordinate(int hemisphereCoordinate) {
     this.hemisphereCoordinate = hemisphereCoordinate;
@@ -971,7 +1055,8 @@ public class NewInstrumentBean extends FileUploadBean {
    * Assign the hemisphere column for a coordinate
    */
   public void assignHemisphere() {
-    FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles.get(hemisphereFile);
+    FileDefinitionBuilder file = (FileDefinitionBuilder) instrumentFiles
+      .get(hemisphereFile);
 
     PositionSpecification posSpec = null;
 
@@ -1015,6 +1100,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the file for which a date/time variable is being assigned
+   * 
    * @return The file
    */
   public String getDateTimeFile() {
@@ -1023,7 +1109,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the file for which a date/time variable is being assigned
-   * @param dateTimeFile The file
+   * 
+   * @param dateTimeFile
+   *          The file
    */
   public void setDateTimeFile(String dateTimeFile) {
     this.dateTimeFile = dateTimeFile;
@@ -1031,6 +1119,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the column index that is being assigned to a date/time variable
+   * 
    * @return The column index
    */
   public int getDateTimeColumn() {
@@ -1039,7 +1128,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the column index that is being assigned to a date/time variable
-   * @param dateTimeColumn The column index
+   * 
+   * @param dateTimeColumn
+   *          The column index
    */
   public void setDateTimeColumn(int dateTimeColumn) {
     this.dateTimeColumn = dateTimeColumn;
@@ -1047,6 +1138,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the name of the date/time variable being assigned
+   * 
    * @return The variable name
    */
   public String getDateTimeVariable() {
@@ -1055,7 +1147,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the name of the date/time variable being assigned
-   * @param dateTimeVariable The variable name
+   * 
+   * @param dateTimeVariable
+   *          The variable name
    */
   public void setDateTimeVariable(String dateTimeVariable) {
     this.dateTimeVariable = dateTimeVariable;
@@ -1063,6 +1157,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the format of the date/time string
+   * 
    * @return The format
    */
   public String getDateTimeFormat() {
@@ -1071,7 +1166,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the format of the date/time string
-   * @param dateTimeFormat The format
+   * 
+   * @param dateTimeFormat
+   *          The format
    */
   public void setDateTimeFormat(String dateTimeFormat) {
     this.dateTimeFormat = dateTimeFormat;
@@ -1079,6 +1176,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the format of the date string
+   * 
    * @return The format
    */
   public String getDateFormat() {
@@ -1087,7 +1185,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the format of the date string
-   * @param dateFormat The format
+   * 
+   * @param dateFormat
+   *          The format
    */
   public void setDateFormat(String dateFormat) {
     this.dateFormat = dateFormat;
@@ -1095,6 +1195,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the format of the time string
+   * 
    * @return The format
    */
   public String getTimeFormat() {
@@ -1103,7 +1204,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the format of the time string
-   * @param timeFormat The format
+   * 
+   * @param timeFormat
+   *          The format
    */
   public void setTimeFormat(String timeFormat) {
     this.timeFormat = timeFormat;
@@ -1111,12 +1214,16 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Assign a date/time variable
-   * @throws DateTimeSpecificationException If the assignment cannot be made
+   * 
+   * @throws DateTimeSpecificationException
+   *           If the assignment cannot be made
    */
   public void assignDateTime() throws DateTimeSpecificationException {
-    DateTimeSpecification dateTimeSpec = instrumentFiles.get(dateTimeFile).getDateTimeSpecification();
+    DateTimeSpecification dateTimeSpec = instrumentFiles.get(dateTimeFile)
+      .getDateTimeSpecification();
 
-    int assignmentIndex = DateTimeSpecification.getAssignmentIndex(dateTimeVariable);
+    int assignmentIndex = DateTimeSpecification
+      .getAssignmentIndex(dateTimeVariable);
 
     switch (assignmentIndex) {
     case DateTimeSpecification.DATE_TIME: {
@@ -1132,7 +1239,8 @@ public class NewInstrumentBean extends FileUploadBean {
       break;
     }
     case DateTimeSpecification.HOURS_FROM_START: {
-      dateTimeSpec.assignHoursFromStart(dateTimeColumn, startTimePrefix, startTimeSuffix, startTimeFormat);
+      dateTimeSpec.assignHoursFromStart(dateTimeColumn, startTimePrefix,
+        startTimeSuffix, startTimeFormat);
       break;
     }
     default: {
@@ -1146,6 +1254,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the start time prefix
+   * 
    * @return The start time prefix
    */
   public String getStartTimePrefix() {
@@ -1154,7 +1263,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the start time prefix
-   * @param startTimePrefix The start time prefix
+   * 
+   * @param startTimePrefix
+   *          The start time prefix
    */
   public void setStartTimePrefix(String startTimePrefix) {
     this.startTimePrefix = startTimePrefix;
@@ -1162,6 +1273,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the start time suffix
+   * 
    * @return The start time suffix
    */
   public String getStartTimeSuffix() {
@@ -1170,7 +1282,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the start time suffix
-   * @param startTimeSuffix The start time suffix
+   * 
+   * @param startTimeSuffix
+   *          The start time suffix
    */
   public void setStartTimeSuffix(String startTimeSuffix) {
     this.startTimeSuffix = startTimeSuffix;
@@ -1178,6 +1292,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the start time format
+   * 
    * @return The start time format
    */
   public String getStartTimeFormat() {
@@ -1186,7 +1301,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the start time format
-   * @param startTimeFormat The start time format
+   * 
+   * @param startTimeFormat
+   *          The start time format
    */
   public void setStartTimeFormat(String startTimeFormat) {
     this.startTimeFormat = startTimeFormat;
@@ -1194,6 +1311,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the start time line extracted from the header
+   * 
    * @return The start time line
    */
   public String getStartTimeLine() {
@@ -1202,7 +1320,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Dummy method for setting start time line - does nothing
-   * @param startTimeLine The start time line (ignored)
+   * 
+   * @param startTimeLine
+   *          The start time line (ignored)
    */
   public void setStartTimeLine(String startTimeLine) {
     // Do nothing
@@ -1210,6 +1330,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the start time extracted from the header
+   * 
    * @return The start time
    */
   public String getStartTimeDate() {
@@ -1218,7 +1339,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Dummy method for setting start time date - does nothing
-   * @param startTimeDate The start time date (ignored)
+   * 
+   * @param startTimeDate
+   *          The start time date (ignored)
    */
   public void setStartTimeDate(String startTimeDate) {
     // Do nothing
@@ -1226,12 +1349,16 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Extract the start time from a file header
-   * @throws HighlightedStringException If the highlighted string cannot be created
+   * 
+   * @throws HighlightedStringException
+   *           If the highlighted string cannot be created
    */
   public void extractStartTime() throws HighlightedStringException {
-    FileDefinitionBuilder fileDefinition = (FileDefinitionBuilder) instrumentFiles.get(dateTimeFile);
+    FileDefinitionBuilder fileDefinition = (FileDefinitionBuilder) instrumentFiles
+      .get(dateTimeFile);
 
-    HighlightedString headerLine = fileDefinition.getHeaderLine(startTimePrefix, startTimeSuffix);
+    HighlightedString headerLine = fileDefinition.getHeaderLine(startTimePrefix,
+      startTimeSuffix);
     if (null == headerLine) {
       startTimeLine = null;
       startTimeDate = null;
@@ -1240,7 +1367,8 @@ public class NewInstrumentBean extends FileUploadBean {
 
       try {
         String headerDateString = headerLine.getHighlightedPortion();
-        LocalDateTime headerDate = LocalDateTime.parse(headerDateString, DateTimeFormatter.ofPattern(startTimeFormat));
+        LocalDateTime headerDate = LocalDateTime.parse(headerDateString,
+          DateTimeFormatter.ofPattern(startTimeFormat));
         startTimeDate = PREVIEW_DATE_TIME_FORMATTER.format(headerDate);
       } catch (DateTimeException e) {
         startTimeDate = null;
@@ -1249,7 +1377,9 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Get the list of registered file descriptions and their columns as a JSON string
+   * Get the list of registered file descriptions and their columns as a JSON
+   * string
+   * 
    * @return The file names
    * @see NewInstrumentFileSet#getFilesAndColumns()
    */
@@ -1258,22 +1388,26 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Get the time and position column assignments for all
-   * files related to this instrument.
-   * Required because {@link NewInstrumentFileSet} is a list, so
-   * JSF can't access named properties.
+   * Get the time and position column assignments for all files related to this
+   * instrument. Required because {@link NewInstrumentFileSet} is a list, so JSF
+   * can't access named properties.
+   * 
    * @return The time and position assignments
-   * @throws DateTimeSpecificationException If an error occurs while generating the date/time string
+   * @throws DateTimeSpecificationException
+   *           If an error occurs while generating the date/time string
    * @see NewInstrumentFileSet#getFileSpecificAssignments(SensorAssignments)
    */
-  public String getFileSpecificAssignments() throws DateTimeSpecificationException {
+  public String getFileSpecificAssignments()
+    throws DateTimeSpecificationException {
     return instrumentFiles.getFileSpecificAssignments(sensorAssignments);
   }
 
   /**
    * Dummy method for setting fileSpecificAssignments. Does nothing.
+   * 
    * @see #getFileSpecificAssignments()
-   * @param dummy Ignored value
+   * @param dummy
+   *          Ignored value
    */
   public void setFileSpecificAssignments(String dummy) {
     // Do nothing
@@ -1281,6 +1415,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the index of the file to unassign
+   * 
    * @return The file index
    */
   public int getUnassignFile() {
@@ -1289,7 +1424,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the index of the file to unassign
-   * @param unassignFile The file index
+   * 
+   * @param unassignFile
+   *          The file index
    */
   public void setUnassignFile(int unassignFile) {
     this.unassignFile = unassignFile;
@@ -1297,6 +1434,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the index of the column to unassign
+   * 
    * @return The column index
    */
   public int getUnassignColumn() {
@@ -1305,7 +1443,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the index of the column to unassign
-   * @param unassignColumn The column index
+   * 
+   * @param unassignColumn
+   *          The column index
    */
   public void setUnassignColumn(int unassignColumn) {
     this.unassignColumn = unassignColumn;
@@ -1318,21 +1458,24 @@ public class NewInstrumentBean extends FileUploadBean {
 
     boolean unassigned = false;
 
-    FileDefinitionBuilder fileDefinition = (FileDefinitionBuilder) instrumentFiles.get(unassignFile);
+    FileDefinitionBuilder fileDefinition = (FileDefinitionBuilder) instrumentFiles
+      .get(unassignFile);
 
     if (null != fileDefinition) {
 
       if (fileDefinition.getRunTypeColumn() == unassignColumn) {
         fileDefinition.setRunTypeColumn(-1);
       } else {
-        unassigned = sensorAssignments.removeAssignment(fileDefinition.getFileDescription(), unassignColumn);
+        unassigned = sensorAssignments.removeAssignment(
+          fileDefinition.getFileDescription(), unassignColumn);
 
         if (!unassigned) {
           unassigned = fileDefinition.removeAssignment(unassignColumn);
         }
 
         // If the run type column is no longer required, unassign it
-        if (!sensorAssignments.runTypeRequired(fileDefinition.getFileDescription())) {
+        if (!sensorAssignments
+          .runTypeRequired(fileDefinition.getFileDescription())) {
           fileDefinition.setRunTypeColumn(-1);
         }
       }
@@ -1341,6 +1484,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the name of the file to be removed
+   * 
    * @return The file name
    */
   public String getRemoveFileName() {
@@ -1349,7 +1493,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the name of the file to be removed
-   * @param removeFileName The file name
+   * 
+   * @param removeFileName
+   *          The file name
    */
   public void setRemoveFileName(String removeFileName) {
     this.removeFileName = removeFileName;
@@ -1357,7 +1503,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Remove a file from the instrument
-   * @return Navigation to either the upload page (if all files have been removed), or the assignment page
+   * 
+   * @return Navigation to either the upload page (if all files have been
+   *         removed), or the assignment page
    */
   @SuppressWarnings("unlikely-arg-type")
   public String removeFile() {
@@ -1378,9 +1526,10 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Handle the Back button pressed on the File Upload page.
-   * Navigates to the variable assignments page if files have
-   * been uploaded, or to the instrument name.
+   * Handle the Back button pressed on the File Upload page. Navigates to the
+   * variable assignments page if files have been uploaded, or to the instrument
+   * name.
+   * 
    * @return The navigation
    */
   public String backFromFileUpload() {
@@ -1396,8 +1545,8 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Initialise the run types selection data and
-   * navigate to the page.
+   * Initialise the run types selection data and navigate to the page.
+   * 
    * @return The navigation to the run types selection page
    */
   public String goToRunTypes() {
@@ -1406,6 +1555,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Go to the Other Info page
+   * 
    * @return The navigation to the Other Info page
    */
   public String goToOtherInfo() {
@@ -1422,8 +1572,8 @@ public class NewInstrumentBean extends FileUploadBean {
     if (null == variableAttributes) {
       variableAttributes = new LinkedHashMap<InstrumentVariable, List<VariableAttribute>>();
 
-      SensorsConfiguration sensorConfig =
-        ResourceManager.getInstance().getSensorsConfiguration();
+      SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+        .getSensorsConfiguration();
 
       for (long varId : instrumentVariables) {
         InstrumentVariable variable = sensorConfig.getInstrumentVariable(varId);
@@ -1440,6 +1590,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the file to which a run type is being assigned
+   * 
    * @return The file
    */
   public int getRunTypeAssignFile() {
@@ -1448,7 +1599,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the file to which a run type is being assigned
-   * @param runTypeAssignFile The file
+   * 
+   * @param runTypeAssignFile
+   *          The file
    */
   public void setRunTypeAssignFile(int runTypeAssignFile) {
     this.runTypeAssignFile = runTypeAssignFile;
@@ -1456,6 +1609,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the run type to be assigned to a Run Type Category
+   * 
    * @return The run type
    */
   public String getRunTypeAssignName() {
@@ -1464,7 +1618,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the run type to be assigned to a Run Type Category
-   * @param runTypeAssignName The run type
+   * 
+   * @param runTypeAssignName
+   *          The run type
    */
   public void setRunTypeAssignName(String runTypeAssignName) {
     this.runTypeAssignName = runTypeAssignName;
@@ -1472,6 +1628,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the code of the Run Type Category that a run type is being assigned to
+   * 
    * @return The Run Type Category code
    */
   public long getRunTypeAssignCode() {
@@ -1480,7 +1637,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the code of the Run Type Category that a run type is being assigned to
-   * @param runTypeAssignCode The Run Type Category code
+   * 
+   * @param runTypeAssignCode
+   *          The Run Type Category code
    */
   public void setRunTypeAssignCode(long runTypeAssignCode) {
     this.runTypeAssignCode = runTypeAssignCode;
@@ -1488,6 +1647,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the name of the run type that the assigned run type is aliased to
+   * 
    * @return The aliased run type
    */
   public String getRunTypeAssignAliasTo() {
@@ -1496,7 +1656,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the name of the run type that the assigned run type is aliased to
-   * @param runTypeAssignAliasTo The aliased run type
+   * 
+   * @param runTypeAssignAliasTo
+   *          The aliased run type
    */
   public void setRunTypeAssignAliasTo(String runTypeAssignAliasTo) {
     this.runTypeAssignAliasTo = runTypeAssignAliasTo;
@@ -1504,13 +1666,16 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Assign a run type to a Run Type Category
-   * @throws NoSuchCategoryException If the chosen category does not exist
+   * 
+   * @throws NoSuchCategoryException
+   *           If the chosen category does not exist
    */
   public void assignRunTypeCategory() throws NoSuchCategoryException {
     FileDefinition file = instrumentFiles.get(runTypeAssignFile);
 
     RunTypeCategory category = null;
-    category = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategory(runTypeAssignCode);
+    category = ResourceManager.getInstance().getRunTypeCategoryConfiguration()
+      .getCategory(runTypeAssignCode);
 
     if (category.equals(RunTypeCategory.ALIAS)) {
       file.setRunTypeCategory(runTypeAssignName, runTypeAssignAliasTo);
@@ -1521,12 +1686,14 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the details of the Run Type Category assignments as a JSON string
+   * 
    * @return The Run Type Category assignments
    */
   public String getCategoryAssignments() {
 
     // Set up the category list
-    List<RunTypeCategory> categories = ResourceManager.getInstance().getRunTypeCategoryConfiguration().getCategories(false, false);
+    List<RunTypeCategory> categories = ResourceManager.getInstance()
+      .getRunTypeCategoryConfiguration().getCategories(false, false);
     categories = removeUnusedVariables(categories);
 
     TreeMap<RunTypeCategory, Integer> assignedCategories = new TreeMap<RunTypeCategory, Integer>();
@@ -1543,7 +1710,8 @@ public class NewInstrumentBean extends FileUploadBean {
           if (!assignment.isAlias()) {
             RunTypeCategory category = assignment.getCategory();
             if (!category.equals(RunTypeCategory.IGNORED)) {
-              assignedCategories.put(category, assignedCategories.get(category) + 1);
+              assignedCategories.put(category,
+                assignedCategories.get(category) + 1);
             }
           }
         }
@@ -1553,7 +1721,8 @@ public class NewInstrumentBean extends FileUploadBean {
     // Make the JSON output
     JSONArray json = new JSONArray();
 
-    for (Map.Entry<RunTypeCategory, Integer> entry : assignedCategories.entrySet()) {
+    for (Map.Entry<RunTypeCategory, Integer> entry : assignedCategories
+      .entrySet()) {
       JSONArray entryJson = new JSONArray();
       entryJson.put(entry.getKey().getDescription());
       entryJson.put(entry.getValue());
@@ -1565,8 +1734,11 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * Dummy set method to go with {@link #getCategoryAssignments()}. Does nothing.
-   * @param dummy Dummy string
+   * Dummy set method to go with {@link #getCategoryAssignments()}. Does
+   * nothing.
+   * 
+   * @param dummy
+   *          Dummy string
    */
   public void setCategoryAssignments(String dummy) {
     // Do nothing
@@ -1574,6 +1746,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the run type assignments as a JSON string
+   * 
    * @return The run type assignments
    */
   public String getRunTypeAssignments() {
@@ -1616,7 +1789,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Dummy set method to go with {@link #getRunTypeAssignments()}. Does nothing.
-   * @param dummy Dummy string
+   * 
+   * @param dummy
+   *          Dummy string
    */
   public void setRunTypeAssignments(String dummy) {
     // Do nothing
@@ -1632,6 +1807,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the pre-flushing time
+   * 
    * @return The pre-flushing time
    */
   public int getPreFlushingTime() {
@@ -1640,7 +1816,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the pre-flushing time
-   * @param preFlushingTime The pre-flushing time
+   * 
+   * @param preFlushingTime
+   *          The pre-flushing time
    */
   public void setPreFlushingTime(int preFlushingTime) {
     this.preFlushingTime = preFlushingTime;
@@ -1648,6 +1826,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the post-flushing time
+   * 
    * @return The post-flushing time
    */
   public int getPostFlushingTime() {
@@ -1656,7 +1835,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the post-flushing time
-   * @param postFlushingTime The post-flushing time
+   * 
+   * @param postFlushingTime
+   *          The post-flushing time
    */
   public void setPostFlushingTime(int postFlushingTime) {
     this.postFlushingTime = postFlushingTime;
@@ -1670,7 +1851,8 @@ public class NewInstrumentBean extends FileUploadBean {
   }
 
   /**
-   * @param platformCode the platformCode to set
+   * @param platformCode
+   *          the platformCode to set
    */
   public void setPlatformCode(String platformCode) {
     this.platformCode = platformCode;
@@ -1678,18 +1860,24 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Store the instrument
+   * 
    * @return Navigation to the instrument list
-   * @throws InstrumentException If the instrument object is invalid
-   * @throws MissingParamException If any required parameters are missing
-   * @throws DatabaseException If a database error occurs
-   * @throws IOException If certain data cannot be converted for storage in the database
+   * @throws InstrumentException
+   *           If the instrument object is invalid
+   * @throws MissingParamException
+   *           If any required parameters are missing
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws IOException
+   *           If certain data cannot be converted for storage in the database
    */
-  public String saveInstrument() throws MissingParamException, InstrumentException, DatabaseException, IOException {
+  public String saveInstrument() throws MissingParamException,
+    InstrumentException, DatabaseException, IOException {
 
     try {
 
-      SensorsConfiguration sensorConfig =
-        ResourceManager.getInstance().getSensorsConfiguration();
+      SensorsConfiguration sensorConfig = ResourceManager.getInstance()
+        .getSensorsConfiguration();
 
       /*
        * Adding a Run Type sensor assignment
@@ -1697,16 +1885,18 @@ public class NewInstrumentBean extends FileUploadBean {
 
       // TODO This shouldn't have to be a special case
       SensorAssignment sensorAssignment = new SensorAssignment(getRunTypeFile(),
-          getRunTypeColumn(), "Run Type", true, false, null);
+        getRunTypeColumn(), "Run Type", true, false, null);
 
       sensorAssignments.addAssignment(SensorType.RUN_TYPE_ID, sensorAssignment);
 
       Instrument instrument = new Instrument(getUser(), instrumentName,
-        instrumentFiles, sensorConfig.getInstrumentVariables(instrumentVariables),
+        instrumentFiles,
+        sensorConfig.getInstrumentVariables(instrumentVariables),
         sensorAssignments, preFlushingTime, postFlushingTime, depth,
         platformCode, false);
 
-      InstrumentDB.storeInstrument(getDataSource(), instrument, variableAttributes);
+      InstrumentDB.storeInstrument(getDataSource(), instrument,
+        variableAttributes);
       setCurrentInstrumentId(instrument.getDatabaseId());
 
       // Reinitialise beans to update their instrument lists
@@ -1723,30 +1913,37 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set up the reference to the Instrument List Bean
-   * @param instrumentListBean The instrument list bean
+   * 
+   * @param instrumentListBean
+   *          The instrument list bean
    */
   public void setInstrumentListBean(InstrumentListBean instrumentListBean) {
-      this.instrumentListBean = instrumentListBean;
+    this.instrumentListBean = instrumentListBean;
   }
 
   /**
    * Set up the reference to the Data Files Bean
-   * @param dataFilesBean The data files bean
+   * 
+   * @param dataFilesBean
+   *          The data files bean
    */
   public void setDataFilesBean(DataFilesBean dataFilesBean) {
-      this.dataFilesBean = dataFilesBean;
+    this.dataFilesBean = dataFilesBean;
   }
 
   /**
    * Set up the reference to the Data Sets Bean
-   * @param dataSetsBean The data sets bean
+   * 
+   * @param dataSetsBean
+   *          The data sets bean
    */
   public void setDataSetsBean(DataSetsBean dataSetsBean) {
-      this.dataSetsBean = dataSetsBean;
+    this.dataSetsBean = dataSetsBean;
   }
 
   /**
    * Get the file for which a Run Type column is being assigned
+   * 
    * @return The Run Type file
    */
   public String getRunTypeFile() {
@@ -1755,7 +1952,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the file for which a Run Type column is being assigned
-   * @param runTypeFile The Run Type file
+   * 
+   * @param runTypeFile
+   *          The Run Type file
    */
   public void setRunTypeFile(String runTypeFile) {
     this.runTypeFile = runTypeFile;
@@ -1763,6 +1962,7 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Get the index of the Run Type column being assigned
+   * 
    * @return The Run Type column index
    */
   public int getRunTypeColumn() {
@@ -1771,7 +1971,9 @@ public class NewInstrumentBean extends FileUploadBean {
 
   /**
    * Set the index of the Run Type column being assigned
-   * @param runTypeColumn The Run Type column index
+   * 
+   * @param runTypeColumn
+   *          The Run Type column index
    */
   public void setRunTypeColumn(int runTypeColumn) {
     this.runTypeColumn = runTypeColumn;

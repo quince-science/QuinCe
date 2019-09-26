@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.api.nrt;
 
 /**
  * POJO bean for an NRT instrument. Used by GetNrtInstruments
+ * 
  * @author Steve Jones
  *
  */
@@ -30,9 +31,13 @@ public class NrtInstrument {
 
   /**
    * Complete constructor
-   * @param id instrument ID
-   * @param name instrument name
-   * @param owner instrument owner's name
+   * 
+   * @param id
+   *          instrument ID
+   * @param name
+   *          instrument name
+   * @param owner
+   *          instrument owner's name
    */
   public NrtInstrument(long id, String name, String owner) {
     this.id = id;
@@ -42,6 +47,7 @@ public class NrtInstrument {
 
   /**
    * Get the instrument ID
+   * 
    * @return instrument ID
    */
   public long getId() {
@@ -50,7 +56,9 @@ public class NrtInstrument {
 
   /**
    * Set the instrument ID
-   * @param id instrument ID
+   * 
+   * @param id
+   *          instrument ID
    */
   public void setId(long id) {
     this.id = id;
@@ -58,6 +66,7 @@ public class NrtInstrument {
 
   /**
    * Get the instrument name
+   * 
    * @return instrument name
    */
   public String getName() {
@@ -66,7 +75,9 @@ public class NrtInstrument {
 
   /**
    * Set the instrument name
-   * @param name instrument name
+   * 
+   * @param name
+   *          instrument name
    */
   public void setName(String name) {
     this.name = name;
@@ -74,6 +85,7 @@ public class NrtInstrument {
 
   /**
    * Get the instrument owner's name
+   * 
    * @return instrument owner's name
    */
   public String getOwner() {
@@ -82,7 +94,9 @@ public class NrtInstrument {
 
   /**
    * Set the instrument owner's name
-   * @param owner instrument owner's name
+   * 
+   * @param owner
+   *          instrument owner's name
    */
   public void setOwner(String owner) {
     this.owner = owner;

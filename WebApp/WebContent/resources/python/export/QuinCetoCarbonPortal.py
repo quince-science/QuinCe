@@ -42,58 +42,57 @@ def main():
   try:
     if not export_list:
       logging.info('Terminating script, no datasets to be exported.')
-      sys.exit()
+    else: 
+      for dataset in export_list: 
+        [dataset_zip,
+        manifest, 
+        data_filenames, 
+        raw_filenames] = process_dataset(dataset,config_quince)
+        logging.debug(manifest)
 
-    for dataset in export_list: 
-      [dataset_zip,
-      manifest, 
-      data_filenames, 
-      raw_filenames] = process_dataset(dataset,config_quince)
-      logging.debug(manifest)
+        platform_code = manifest['manifest']['metadata']['platformCode']
+        export_destination = platform[platform_code]['export'] 
 
-      platform_code = manifest['manifest']['metadata']['platformCode']
-      export_destination = platform[platform_code]['export'] 
+        if 'ICOS' in export_destination: 
+          cp_cookie = get_auth_cookie(config_carbon)
+        
+          L0_hashsums = []
+          for index, raw_filename in enumerate(raw_filenames):
+            L0_hashsum = export_file_to_cp(
+              manifest, platform, config_carbon, raw_filename, platform_code, 
+              dataset_zip, index, cp_cookie,'L0',upload)
+            if L0_hashsum:
+              L0_hashsums += [L0_hashsum]
+            
+        #--- Processing L1 files
+        for index, data_filename in enumerate(data_filenames):
 
-      if 'ICOS' in export_destination: 
-        cp_cookie = get_auth_cookie(config_carbon)
-      
-        L0_hashsums = []
-        for index, raw_filename in enumerate(raw_filenames):
-          L0_hashsum = export_file_to_cp(
-            manifest, platform, config_carbon, raw_filename, platform_code, 
-            dataset_zip, index, cp_cookie,'L0',upload)
-          L0_hashsums += [L0_hashsum]
+          ## EXPORTING L1 TO CARBON PORTAL ##
+          if 'ICOS' in data_filename and 'ICOS' in export_destination: 
+            try:
+              L1_hashsum = export_file_to_cp(
+                manifest, platform, config_carbon, data_filename, platform_code, 
+                dataset_zip, index, cp_cookie, 'L1', upload, L0_hashsums)
+            except Exception as e:
+              logging.INFO('Carbon Portal export failed')
+              logging.error('Exception occurred: ', exc_info=True)
 
-          
-      #--- Processing L1 files
-      for index, data_filename in enumerate(data_filenames):
-
-        ## EXPORTING L1 TO CARBON PORTAL ###
-        if 'ICOS' in data_filename and 'ICOS' in export_destination: 
-          try:
-            L1_hashsum = export_file_to_cp(
-              manifest, platform, config_carbon, data_filename, platform_code, 
-              dataset_zip, index, cp_cookie, 'L1', upload, L0_hashsums)
-          except Exception as e:
-            logging.error('Exception occurred: ', exc_info=True)
-            logging.INFO('Carbon Portal export failed')
-
-        if 'Copernicus' in data_filename and 'CMEMS' in export_destination:  
-          logging.info('Executing Copernicus routine')
-          local_folder  = build_dataproduct(dataset_zip,dataset['name'],data_filename)
-          try: 
-            if upload:
-                successful_upload_CMEMS = upload_to_copernicus(
-                    config_copernicus,'nrt_server',dataset,local_folder)
-            else: 
-                successful_upload_CMEMS = False
-          except Exception as e:
-            logging.error('Exception occurred: ', exc_info=True)
-            logging.INFO('FTP connection failed')
-      if successful_upload_CMEMS:
-        report_complete_export(config_quince,dataset['id'])
-      else: 
-        report_abandon_export(config_quince,dataset['id'])
+          if 'Copernicus' in data_filename and 'CMEMS' in export_destination:  
+            logging.info('Executing Copernicus routine')
+            curr_date  = build_dataproduct(dataset_zip,dataset['name'],data_filename)
+            try: 
+              if upload:
+                  successful_upload_CMEMS = upload_to_copernicus(
+                      config_copernicus,'nrt_server',dataset,curr_date)
+              else: 
+                  successful_upload_CMEMS = False
+            except Exception as e:
+              logging.error('Exception occurred: ', exc_info=True)
+              logging.info('FTP connection failed')
+        if successful_upload_CMEMS:
+          report_complete_export(config_quince,dataset['id'])
+        else: 
+          report_abandon_export(config_quince,dataset['id'])
 
   except Exception as e: 
     print(e); 

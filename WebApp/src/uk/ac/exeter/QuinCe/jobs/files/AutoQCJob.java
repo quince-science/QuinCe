@@ -36,27 +36,33 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * <p>
- *   This {@link Job} class runs a set of QC routines on the sensor values for
- *   a given data set.
+ * This {@link Job} class runs a set of QC routines on the sensor values for a
+ * given data set.
  * </p>
  *
  * <p>
- *   Once the QC has been completed, the QC Flag and QC Message are set. The QC flag will be set to {@link Flag#GOOD},
- *   {@link Flag#QUESTIONABLE} or {@link Flag#BAD}. In the latter two cases, the QC Message will contain details of the fault(s)
- *   that were found.
+ * Once the QC has been completed, the QC Flag and QC Message are set. The QC
+ * flag will be set to {@link Flag#GOOD}, {@link Flag#QUESTIONABLE} or
+ * {@link Flag#BAD}. In the latter two cases, the QC Message will contain
+ * details of the fault(s) that were found.
  * </p>
  *
  * <p>
- *   If the QC flag was set to {@link Flag#GOOD}, the WOCE flag for the record will be set to {@link Flag#ASSUMED_GOOD},
- *   to indicate that the software will assume that the record is good unless the user overrides it. Otherwise
- *   the WOCE Flag will be set to {@link Flag#NEEDED}. The user will be required to manually choose a value for the WOCE
- *   Flag, either by accepting the suggestion from the QC job, or overriding the flag and choosing their own. The WOCE
- *   Comment will default to being identical to the QC Message, but this can also be changed if required.
+ * If the QC flag was set to {@link Flag#GOOD}, the WOCE flag for the record
+ * will be set to {@link Flag#ASSUMED_GOOD}, to indicate that the software will
+ * assume that the record is good unless the user overrides it. Otherwise the
+ * WOCE Flag will be set to {@link Flag#NEEDED}. The user will be required to
+ * manually choose a value for the WOCE Flag, either by accepting the suggestion
+ * from the QC job, or overriding the flag and choosing their own. The WOCE
+ * Comment will default to being identical to the QC Message, but this can also
+ * be changed if required.
  * </p>
  *
  * <p>
- *   If the {@code AutoQCJob} has been run before, some WOCE Flags and Comments will have already been set by the user.
- *   If the user QC flag is anything other than {@link Flag#ASSUMED_GOOD} or {@link Flag#NEEDED}, it will not be checked.
+ * If the {@code AutoQCJob} has been run before, some WOCE Flags and Comments
+ * will have already been set by the user. If the user QC flag is anything other
+ * than {@link Flag#ASSUMED_GOOD} or {@link Flag#NEEDED}, it will not be
+ * checked.
  * </p>
  *
  * @author Steve Jones
@@ -88,24 +94,39 @@ public class AutoQCJob extends Job {
   private List<String> measurementRunTypes;
 
   /**
-   * Constructor that allows the {@link JobManager} to create an instance of this job.
-   * @param resourceManager The application's resource manager
-   * @param config The application configuration
-   * @param jobId The database ID of the job
-   * @param parameters The job parameters
-   * @throws MissingParamException If any parameters are missing
-   * @throws InvalidJobParametersException If any of the job parameters are invalid
-   * @throws DatabaseException If a database occurs
-   * @throws RecordNotFoundException If any required database records are missing
+   * Constructor that allows the {@link JobManager} to create an instance of
+   * this job.
+   * 
+   * @param resourceManager
+   *          The application's resource manager
+   * @param config
+   *          The application configuration
+   * @param jobId
+   *          The database ID of the job
+   * @param parameters
+   *          The job parameters
+   * @throws MissingParamException
+   *           If any parameters are missing
+   * @throws InvalidJobParametersException
+   *           If any of the job parameters are invalid
+   * @throws DatabaseException
+   *           If a database occurs
+   * @throws RecordNotFoundException
+   *           If any required database records are missing
    * @see JobManager#getNextJob(ResourceManager, Properties)
    */
-  public AutoQCJob(ResourceManager resourceManager, Properties config, long jobId, Map<String, String> parameters) throws MissingParamException, InvalidJobParametersException, DatabaseException, RecordNotFoundException {
+  public AutoQCJob(ResourceManager resourceManager, Properties config,
+    long jobId, Map<String, String> parameters) throws MissingParamException,
+    InvalidJobParametersException, DatabaseException, RecordNotFoundException {
     super(resourceManager, config, jobId, parameters);
   }
 
   /**
-   * Runs the configured QC routines on the file specified in the job parameters.
-   * @param thread The thread that is running this job
+   * Runs the configured QC routines on the file specified in the job
+   * parameters.
+   * 
+   * @param thread
+   *          The thread that is running this job
    * @see FileJob#FILE_ID_KEY
    */
   @Override
@@ -123,7 +144,8 @@ public class AutoQCJob extends Job {
       conn.setAutoCommit(false);
 
       // Get the data set from the database
-      dataSet = DataSetDB.getDataSet(conn, Long.parseLong(parameters.get(ID_PARAM)));
+      dataSet = DataSetDB.getDataSet(conn,
+        Long.parseLong(parameters.get(ID_PARAM)));
 
       instrument = InstrumentDB.getInstrument(conn, dataSet.getInstrumentId(),
         ResourceManager.getInstance().getSensorsConfiguration(),
@@ -133,17 +155,18 @@ public class AutoQCJob extends Job {
 
       measurementRunTypes = instrument.getMeasurementRunTypes();
 
-      QCRoutinesConfiguration qcRoutinesConfig =
-        ResourceManager.getInstance().getQCRoutinesConfiguration();
+      QCRoutinesConfiguration qcRoutinesConfig = ResourceManager.getInstance()
+        .getQCRoutinesConfiguration();
 
       // Get the sensor values grouped by data file column
-      Map<Long, NavigableSensorValuesList> sensorValues =
-        DataSetDataDB.getSensorValuesByColumn(conn, dataSet.getId());
-
+      Map<Long, NavigableSensorValuesList> sensorValues = DataSetDataDB
+        .getSensorValuesByColumn(conn, dataSet.getId());
 
       // Run the routines for each column
-      for (Map.Entry<Long, NavigableSensorValuesList> entry : sensorValues.entrySet()) {
-        SensorType sensorType = sensorAssignments.getSensorTypeForDBColumn(entry.getKey());
+      for (Map.Entry<Long, NavigableSensorValuesList> entry : sensorValues
+        .entrySet()) {
+        SensorType sensorType = sensorAssignments
+          .getSensorTypeForDBColumn(entry.getKey());
 
         // Where sensors have internal calibrations, their values need to be
         // QCed in separate groups.
@@ -155,7 +178,8 @@ public class AutoQCJob extends Job {
         } else {
 
           // Get all the run type entries from the data set
-          List<SensorAssignment> runTypeColumns = sensorAssignments.get(SensorType.RUN_TYPE_SENSOR_TYPE);
+          List<SensorAssignment> runTypeColumns = sensorAssignments
+            .get(SensorType.RUN_TYPE_SENSOR_TYPE);
 
           TreeSet<SensorValue> runTypeValuesTemp = new TreeSet<SensorValue>();
           for (SensorAssignment column : runTypeColumns) {
@@ -170,9 +194,11 @@ public class AutoQCJob extends Job {
 
           for (SensorValue value : sensorValues.get(entry.getKey())) {
 
-            SensorValue runType = runTypeValues.incrementalSearch(value.getTime());
+            SensorValue runType = runTypeValues
+              .incrementalSearch(value.getTime());
             if (!valuesForQC.containsKey(runType.getValue())) {
-              valuesForQC.put(runType.getValue(), new NavigableSensorValuesList());
+              valuesForQC.put(runType.getValue(),
+                new NavigableSensorValuesList());
             }
 
             valuesForQC.get(runType.getValue()).add(value);
@@ -182,13 +208,15 @@ public class AutoQCJob extends Job {
         }
 
         // QC each group of sensor values in turn
-        for (Map.Entry<String, NavigableSensorValuesList> values : valuesForQC.entrySet()) {
+        for (Map.Entry<String, NavigableSensorValuesList> values : valuesForQC
+          .entrySet()) {
 
           SensorValue.clearAutoQC(values.getValue());
-          if (values.getKey().equals("") || measurementRunTypes.contains(values.getKey())) {
+          if (values.getKey().equals("")
+            || measurementRunTypes.contains(values.getKey())) {
             // Loop through all routines
             for (Routine routine : qcRoutinesConfig.getRoutines(sensorType)) {
-                routine.qcValues(values.getValue());
+              routine.qcValues(values.getValue());
             }
           }
 
@@ -204,8 +232,10 @@ public class AutoQCJob extends Job {
       dataSet.setStatus(DataSet.STATUS_DATA_REDUCTION);
       DataSetDB.updateDataSet(conn, dataSet);
       Map<String, String> jobParams = new HashMap<String, String>();
-      jobParams.put(LocateMeasurementsJob.ID_PARAM, String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
-      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id), LocateMeasurementsJob.class.getCanonicalName(), jobParams);
+      jobParams.put(LocateMeasurementsJob.ID_PARAM,
+        String.valueOf(Long.parseLong(parameters.get(ID_PARAM))));
+      JobManager.addJob(dataSource, JobManager.getJobOwner(dataSource, id),
+        LocateMeasurementsJob.class.getCanonicalName(), jobParams);
 
       conn.commit();
 
@@ -234,8 +264,8 @@ public class AutoQCJob extends Job {
 
   private void clearMeasurements() throws JobFailedException {
     try {
-      DataSetDataDB.deleteMeasurements(
-        dataSource, Long.parseLong(parameters.get(ID_PARAM)));
+      DataSetDataDB.deleteMeasurements(dataSource,
+        Long.parseLong(parameters.get(ID_PARAM)));
     } catch (Exception e) {
       throw new JobFailedException(Long.parseLong(parameters.get(ID_PARAM)),
         "Failed to clear previous measurement data", e);

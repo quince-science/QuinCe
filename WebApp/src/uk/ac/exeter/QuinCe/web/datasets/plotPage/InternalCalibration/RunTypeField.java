@@ -2,6 +2,7 @@ package uk.ac.exeter.QuinCe.web.datasets.plotPage.InternalCalibration;
 
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
+import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
 
 public class RunTypeField extends Field {
 
@@ -9,8 +10,8 @@ public class RunTypeField extends Field {
 
   private long columnId;
 
-  public RunTypeField(String runType, FileColumn column) {
-    super(makeId(runType, column), makeName(runType, column));
+  public RunTypeField(FieldSet fieldSet, String runType, FileColumn column) {
+    super(fieldSet, makeId(runType, column), makeName(runType, column));
     this.runType = runType;
     this.columnId = column.getColumnId();
   }
