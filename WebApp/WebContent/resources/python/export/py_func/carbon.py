@@ -255,6 +255,7 @@ def sql_commit(export_filename,hashsum,filename,level,L1_filename):
 
   today = datetime.datetime.now().strftime('%Y-%m-%d')
   c = create_connection(CP_DB)
+  c.execute("SELECT * FROM cp_export WHERE export_filename=? ",[export_filename])
 
   try:
     filename_exists = c.fetchone() 
