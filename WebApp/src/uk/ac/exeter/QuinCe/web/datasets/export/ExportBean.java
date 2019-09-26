@@ -287,13 +287,16 @@ public class ExportBean extends BaseManagedBean {
 
     DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
 
-    ExportData data = new ExportData(dataSource, instrument, dataset,
-      exportOption);
+    ExportData data = exportOption.makeExportData(dataSource, instrument,
+      dataset);
 
     data
       .addTimes(DataSetDataDB.getSensorValueDates(dataSource, dataset.getId()));
 
     DataSetDataDB.loadMeasurementData(dataSource, data, data.getRowIds());
+
+    // Run the post-processor before generating the final output
+    data.postProcess();
 
     // Let's make some output
     StringBuilder output = new StringBuilder();

@@ -11,9 +11,9 @@ public class ExportConfigurationException extends ExportException {
 
   /**
    * Constructor for a basic message
-   * 
-   * @param index
-   *          The index of the entry in the configuration that failed
+   *
+   * @param name
+   *          The name of the export option
    * @param message
    *          The message
    */
@@ -23,16 +23,28 @@ public class ExportConfigurationException extends ExportException {
 
   /**
    * Constructor for an underlying error
-   * 
-   * @param index
-   *          The index of the entry in the configuration that failed
-   * @param message
-   *          The error message
+   *
+   * @param name
+   *          The name of the export option
    * @param cause
    *          The underlying cause
    */
   public ExportConfigurationException(String name, Throwable cause) {
     super("Error in export config entry '" + name + "': ", cause);
+  }
+
+  /**
+   * Constructor for an underlying error with a message
+   *
+   * @param name
+   *          The name of the export option
+   * @param cause
+   *          The underlying cause
+   */
+  public ExportConfigurationException(String name, String message,
+    Throwable cause) {
+    super("Error in export config entry '" + name + "': " + message + ": ",
+      cause);
   }
 
   public ExportConfigurationException(JSONObject json, String message) {
