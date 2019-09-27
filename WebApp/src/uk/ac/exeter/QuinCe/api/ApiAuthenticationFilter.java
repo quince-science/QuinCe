@@ -15,14 +15,36 @@ import javax.sql.DataSource;
 
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserDB;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+/**
+ * This class provides authentication checking for the QuinCe REST API services.
+ * API calls are restricted by user authentication, and only users with the
+ * {@link User#BIT_API_USER} bit set are allowed to make API calls.
+ *
+ *
+ * @author Steve Jones
+ *
+ */
 @WebFilter(servletNames = { "API Servlet" })
 public class ApiAuthenticationFilter implements javax.servlet.Filter {
-  public static final String AUTHENTICATION_HEADER = "Authorization";
 
+  /**
+   * Authenticates the user credentials passed in with an API call, and ensures
+   * that the user has permissions to make API calls.
+   *
+   * <p>
+   * If authentication fails, an {@link HttpServletResponse#SC_UNAUTHORIZED}
+   * response is sent. If the authentication details are valid, but the user
+   * does not have the {@link User#BIT_API_USER} permissions bit set, an
+   * {@link HttpServletResponse#SC_FORBIDDEN} is sent.
+   * </p>
+   *
+   * <p>
+   * If authentication succeeds and the user has the correct permissions, the
+   * request is forwarded for processing.
+   * </p>
+   */
   @Override
   public void doFilter(ServletRequest request, ServletResponse response,
     FilterChain filter) throws IOException, ServletException {
@@ -66,26 +88,31 @@ public class ApiAuthenticationFilter implements javax.servlet.Filter {
     }
   }
 
+  /**
+   * Performs no action.
+   */
   @Override
   public void destroy() {
   }
 
+  /**
+   * Performs no action.
+   */
   @Override
   public void init(FilterConfig arg0) throws ServletException {
   }
 
   /**
    * Extract the username and password from a Basic HTTP authorization string.
-   * 
-   * @param dataSource
-   *          A data source
+   *
+   * @see <a href=
+   *      "https://en.wikipedia.org/wiki/Basic_access_authentication">Basic
+   *      access authentication (Wikipedia)</a>
+   *
    * @param authString
-   *          The HTTP Basic Auth string
-   * @return One of AUTHENTICATE_OK or AUTHENTICATE_FAILED
-   * @throws MissingParamException
-   *           If any of the parameters are null
-   * @throws DatabaseException
-   *           If an error occurs while retrieving the user's details
+   *          The HTTP Basic Auth string.
+   * @return A two-element {@link java.lang.String} array containing the
+   *         username and password.
    */
   private String[] extractUserPassword(String authString) {
     // Remove preamble

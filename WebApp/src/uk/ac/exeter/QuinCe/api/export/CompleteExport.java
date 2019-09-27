@@ -5,8 +5,9 @@ import javax.ws.rs.Path;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 
 /**
- * API call to report to QuinCe that an export has been completed.
- * 
+ * API call to report to QuinCe that an export has been completed. This will
+ * return the dataset's status to {@link DataSet#STATUS_EXPORT_COMPLETE}.
+ *
  * @author Steve Jones
  *
  */
