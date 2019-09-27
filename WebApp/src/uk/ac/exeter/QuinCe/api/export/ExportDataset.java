@@ -23,14 +23,87 @@ import uk.ac.exeter.QuinCe.web.datasets.export.ExportBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * API call to export a dataset as a ZIP file.
+ * API call to export a complete dataset as a ZIP file.
  *
+ * <p>
  * The ZIP will contain:
+ * </p>
  * <ul>
  * <li>The dataset in all available export formats</li>
  * <li>The raw data files used to build the datases</li>
- * <li>A manifest containing file lists and metadata</li>
+ * <li>A manifest containing file lists and metadata, in JSON format</li>
  * </ul>
+ *
+ * <p>
+ * The ZIP file will be named {@code <Dataset Name>.zip}. If the dataset was
+ * built from the raw files {@code origin1.csv} and {@code origin2.csv}, and
+ * there are two export formats available named {@code Tabbed} and {@code CSV},
+ * the ZIP file's structure will be as follows:
+ * </p>
+ *
+ * <pre>
+ * BSBS20150807.zip
+ * |- manifest.json
+ * |- raw
+ * |  |- origin1.csv
+ * |  |- origin2.csv
+ * |
+ * |- dataset
+ *    |- Tabbed
+ *    |  |- BSBS20150807.tsv
+ *    |
+ *    |- CSV
+ *       |- BSBS20150807.csv
+ * </pre>
+ *
+ * <p>
+ * The {@code manifest.json} file will contain the following information:
+ * <p>
+ *
+ * <pre>
+ * {
+ *   "manifest": {
+ *     "metadata": {
+ *       "name": "BSBS20150807",
+ *       "platformCode": "BSBS",
+ *       "nrt": false,
+ *       "records": 52688,
+ *       "startdate": "2015-08-07T18:20:34.000Z",
+ *       "enddate": "2015-08-28T00:20:36.000Z",
+ *       "bounds": {
+ *         "east": 0.092179,
+ *         "south": 14.21337,
+ *         "north": 50.486686,
+ *         "west": -71.59652
+ *       },
+ *       "last_touched": "2019-09-25T16:16:44.715Z",
+ *       "quince_information": "Data processed using QuinCe version v2.0.6.1",
+ *     },
+ *     "raw": [
+ *       {
+ *         "filename": "origin1.csv",
+ *         "startDate": "2015-08-04T04:14:65.000Z"
+ *         "endDate": "2015-08-18T12:43:45.000Z",
+ *       },
+ *       {
+ *         "filename": "origin2.csv",
+ *         "startDate": "2015-08-18T12:44:00.000Z"
+ *         "endDate": "2015-08-28T06:53:12.000Z",
+ *       }
+ *     ],
+ *     "dataset": [
+ *       {
+ *         "destination": "Tabbed",
+ *         "filename": "BSBS20150807.tsv"
+ *       },
+ *       {
+ *         "destination": "CSV",
+ *         "filename": "BSBS20150807.csv"
+ *       }
+ *     ]
+ *   }
+ * }
+ * </pre>
  *
  * @author Steve Jones
  *
@@ -38,6 +111,16 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 @Path("/export/exportDataset")
 public class ExportDataset {
 
+  /**
+   * The main processing method for the API call.
+   *
+   * @return The export ZIP file.
+   * @throws Exception
+   *           If any errors occur while retrieving the dataset details. Results
+   *           in a
+   *           {@link javax.ws.rs.core.Response.Status#INTERNAL_SERVER_ERROR}
+   *           being sent back to the client.
+   */
   @POST
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   public Response getDatasetZip(@FormParam("id") long id) throws Exception {
