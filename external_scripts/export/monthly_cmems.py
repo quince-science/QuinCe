@@ -16,6 +16,7 @@ import numpy as np
 import netCDF4
 import sqlite3
 import ftputil 
+import hashlib
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -26,6 +27,7 @@ source_dir = 'latest'
 dim_tot = {}
 file_nr = {}
 daily_files = {}
+nc_dict = {}
 
 cmems_db = 'files_cmems.db'
 
@@ -52,12 +54,16 @@ def main():
       dataset_m = set_global_attributes(dataset,dataset_m)
       dataset_m.close()
       logging.info(f'Monthly netCDF file for {vesselnames[vessel]} completed')
-
-      # Create SQL entry
+      
+      nc_dict[vessel+'_'+curr_month] = sql_entry(nc_name,curr_month)
 
   # Add to SQL database
+  sql_commit(nc_dict)
+
+  currently_uploaded = curr_uploaded()
 
   # Create Index file
+  #index_filename = build_index(currently_uploaded)
 
   # Create DNT file
 
@@ -240,8 +246,7 @@ def create_connection(DB):
               filename TEXT PRIMARY KEY,
               hashsum TEXT NOT NULL,
               filepath TEXT NOT NULL UNIQUE,
-              nc_date TEXT,
-              dataset TEXT,
+              month TEXT,
               uploaded INTEGER,
               ftp_filepath TEXT,
               dnt_file TEXT,
@@ -267,21 +272,39 @@ def sql_commit(nc_dict):
     
     if filename_exists: # if netCDF file already in database
       logging.info(f'Updating: {key}')
-      sql_req = "UPDATE monthly SET filename=?,hashsum=?,filepath=?,nc_date=?,\
-        dataset=?,uploaded=?,ftp_filepath=?,dnt_file=?,comment=?,export_date=? \
+      sql_req = "UPDATE monthly SET filename=?,hashsum=?,filepath=?,month=?,\
+        uploaded=?,ftp_filepath=?,dnt_file=?,comment=?,export_date=? \
         WHERE filename=?"
       sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
-        nc_dict[key]['date'],nc_dict[key]['dataset'],uploaded,None,None,None,key,date])
+        nc_dict[key]['date'],uploaded,None,None,None,key,date])
     else:
       logging.debug(f'Adding new entry {key}')
-      sql_req = "INSERT INTO monthly(filename,hashsum,filepath,nc_date,\
-        dataset,uploaded,ftp_filepath,dnt_file,comment,export_date) \
-        VALUES (?,?,?,?,?,?,?,?,?,?)"
+      sql_req = "INSERT INTO monthly(filename,hashsum,filepath,month,\
+        uploaded,ftp_filepath,dnt_file,comment,export_date) \
+        VALUES (?,?,?,?,?,?,?,?,?)"
       sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
-        nc_dict[key]['date'],nc_dict[key]['dataset'],uploaded,None,None,None,date])
+        nc_dict[key]['date'],uploaded,None,None,None,date])
 
     c.execute(sql_req,sql_param)
 
+
+def sql_entry(nc_name,curr_month):
+  ''' Creates dictionary object to submit to database
+  '''
+  with open(nc_name,'rb') as f: 
+    file_bytes = f.read()
+    hashsum = hashlib.md5(file_bytes).hexdigest()
+  entry = ({
+    'filepath':nc_name, 
+    'hashsum': hashsum, 
+    'date': curr_month, 
+    'uploaded':False})
+  return entry
+
+def curr_uploaded():
+  c = create_connection(cmems_db)
+  c.execute("SELECT * FROM monthly WHERE uploaded == 0")
+  return c.fetchall()  
 
 
 if __name__ == '__main__':
