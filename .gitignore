@@ -31,10 +31,4 @@ external_scripts/export/index_monthly.txt
 
 external_scripts/export/monthly/stations.rdf
 
-external_scripts/export/config_carbon.toml
-
-external_scripts/export/config_copernicus.toml
-
-external_scripts/export/config_quince.toml
-
 external_scripts/export/index_latest.txt
