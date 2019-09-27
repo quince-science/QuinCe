@@ -15,13 +15,44 @@ import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Abstract API call to set a dataset's status
- * 
+ * <p>
+ * A generic call to set the export status on a dataset. This is an abstract
+ * class: sub-classes must implement the {@link #getNewStatus} method to specify
+ * what the dataset's status will be set to.
+ * </p>
+ *
+ * <p>
+ * <b>Parameters:</b>
+ * <ul>
+ * <li>{@code id}: The dataset's database ID</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * If the dataset is not found in the database, the API call will return
+ * {@link javax.ws.rs.core.Response.Status#NOT_FOUND}. These API calls are only
+ * valid if the dataset is currently being exported (and thus its export status
+ * can be changed). If the dataset is not currently being exported, the API call
+ * will return {@link javax.ws.rs.core.Response.Status#FORBIDDEN}.
+ * </p>
+ *
  * @author Steve Jones
  *
  */
 public abstract class SetExportStatus {
 
+  /**
+   * The main action method of the API call.
+   *
+   * @param id
+   *          The ID of the dataset whose status will be set.
+   * @return The HTTP response indicating whether or not the call succeeded.
+   * @throws Exception
+   *           If any errors occur while updating the dataset's status. Will
+   *           result in a
+   *           {@link javax.ws.rs.core.Response.Status#INTERNAL_SERVER_ERROR}
+   *           being returned to the client.
+   */
   @POST
   public Response setExportStatus(@FormParam("id") long id) throws Exception {
 
@@ -46,5 +77,10 @@ public abstract class SetExportStatus {
     return Response.status(responseCode).build();
   }
 
+  /**
+   * Specifies the new status for the dataset.
+   *
+   * @return The new dataset status.
+   */
   protected abstract int getNewStatus();
 }
