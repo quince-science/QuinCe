@@ -22,7 +22,26 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * API call to get a list of all datasets ready for export
+ * API call to get a list of all datasets ready for export. These are any
+ * datasets whose status is set to {@link DataSet#STATUS_READY_FOR_EXPORT}.
+ *
+ * <p>
+ * This call returns a JSON array of dataset IDs and names, along with
+ * instrument details to aid display to users. The JSON is formatted as follows:
+ * </p>
+ *
+ * <pre>
+ * [
+ *   {
+ *     "id": 99
+ *     "name": "BSBS20150807",
+ *     "instrument": {
+ *       "name":"BS",
+ *       "user":"Steve Jones"
+ *     }
+ *   }
+ * ]
+ * </pre>
  *
  * @author Steve Jones
  *
@@ -30,6 +49,16 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 @Path("/export/exportList")
 public class ExportList {
 
+  /**
+   * The main processing method for the API call.
+   *
+   * @return The JSON output (see above).
+   * @throws Exception
+   *           If any errors occur while retrieving the dataset details. Results
+   *           in a
+   *           {@link javax.ws.rs.core.Response.Status#INTERNAL_SERVER_ERROR}
+   *           being sent back to the client.
+   */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public String getExportList() throws Exception {
