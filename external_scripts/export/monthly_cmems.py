@@ -29,52 +29,22 @@ def main():
   logging.debug('Retrieving list of daily netCDF files')
   for vessel in vessels:
     daily_files[vessel], file_nr[vessel], dataset, dim_tot = (get_daily_files(directory,curr_month,vessel))
-
     if file_nr[vessel] > 0:
       logging.info(f'Creating monthly netCDF file for {vesselnames[vessel]} [{vessel}], month: {curr_month}')
       dataset_m = create_empty_dataset(curr_month,vessel,dim_tot)
-
       dataset_m = assign_attributes(dataset,dataset_m)
-
-
-
-
-      logging.debug('populate monthly nc-file')
-
-      start = {}
-      end = {}
-      for var in dataset.variables.keys():        
-        start[var]=0
-        for file in sorted(daily_files[vessel]):
-          dataset_d = netCDF4.Dataset(os.path.join(directory, file))
-          dim_len = len(dataset_d[var].dimensions) 
-          if dim_len == 1:
-            array = dataset_d[var][:]
-            end[var] = start[var] + len(array)
-            dataset_m[var][start[var]:end[var]] = array 
-            start[var] = end[var]
-          elif dim_len == 2:
-            array = dataset_d[var][:,:]
-            end[var] = start[var] + len(array)
-            dataset_m[var][start[var]:end[var]] = array 
-            start[var] = end[var]
-
-      set_gattr = {}
-      for gattr in dataset.ncattrs():
-        set_gattr[gattr] = dataset.getncattr(gattr)
-
-      start_date = (datetime.datetime(1950,1,1,0,0) + datetime.timedelta(min(dataset_m['TIME'][:]))).strftime("%Y-%m-%dT%H:%M:%SZ")
-      end_date = (datetime.datetime(1950,1,1,0,0) + datetime.timedelta(max(dataset_m['TIME'][:]))).strftime("%Y-%m-%dT%H:%M:%SZ")
-      set_gattr['geospatial_lat_min'] = min(dataset_m['LATITUDE'][:])
-      set_gattr['geospatial_lat_max'] = max(dataset_m['LATITUDE'][:])
-      set_gattr['geospatial_lon_min'] = min(dataset_m['LONGITUDE'][:])
-      set_gattr['geospatial_lon_max'] = max(dataset_m['LONGITUDE'][:])
-      set_gattr['time_coverage_start'] = start_date
-      set_gattr['time_coverage_end'] = end_date
-      set_gattr['update_interval']='void'
-      dataset_m.setncatts(set_gattr)
+      dataset_m = populate_netCDF(dataset,dataset_m,daily_files[vessel],directory)
+      dataset_m = set_global_attributes(dataset,dataset_m)
       dataset_m.close()
       logging.info(f'Monthly netCDF file for {vesselnames[vessel]} completed')
+
+      # Create Index file
+
+      # Create DNT file
+
+      # Upload files to CMEMS-FTP
+
+
 
 def get_daily_files(directory,curr_month,vessel):
   '''Fetches applicable daily files from directory
@@ -132,10 +102,61 @@ def assign_attributes(dataset,dataset_m):
         continue
       attr_val = dataset[var].getncattr(attr)
       set_attr[attr] = attr_val
-      print(set_attr)
     variable.setncatts(set_attr)
-  return dataset_m, variable
+  return dataset_m
       
+
+def populate_netCDF(dataset,dataset_m,daily_files,directory):
+  ''' For each variable in each daily netCDF file:
+  extract data from daily file
+  save data to monthly dataset.
+  '''
+  logging.debug('populating monthly nc-file')
+  start = {}
+  end = {}
+  for var in dataset.variables.keys():        
+    start[var]=0
+    for file in sorted(daily_files):
+      dataset_d = netCDF4.Dataset(os.path.join(directory, file))
+      dim_len = len(dataset_d[var].dimensions) 
+      if dim_len == 1:
+        array = dataset_d[var][:]
+        end[var] = start[var] + len(array)
+        dataset_m[var][start[var]:end[var]] = array 
+        start[var] = end[var]
+
+      elif dim_len == 2:
+        array = dataset_d[var][:,:]
+        end[var] = start[var] + len(array)
+        dataset_m[var][start[var]:end[var]] = array 
+        start[var] = end[var]   
+
+  return dataset_m        
+
+def set_global_attributes(dataset,dataset_m):
+  set_gattr = {}
+
+  # Setting monthly file to same global attributes as daily dataset 
+  for gattr in dataset.ncattrs():
+    set_gattr[gattr] = dataset.getncattr(gattr)
+
+  # Overwriting attributes specific to this file.
+  start_date = (datetime.datetime(1950,1,1,0,0) + datetime.timedelta(min(dataset_m['TIME'][:]))).strftime("%Y-%m-%dT%H:%M:%SZ")
+  end_date = (datetime.datetime(1950,1,1,0,0) + datetime.timedelta(max(dataset_m['TIME'][:]))).strftime("%Y-%m-%dT%H:%M:%SZ")
+  set_gattr['geospatial_lat_min'] = min(dataset_m['LATITUDE'][:])
+  set_gattr['geospatial_lat_max'] = max(dataset_m['LATITUDE'][:])
+  set_gattr['geospatial_lon_min'] = min(dataset_m['LONGITUDE'][:])
+  set_gattr['geospatial_lon_max'] = max(dataset_m['LONGITUDE'][:])
+  set_gattr['time_coverage_start'] = start_date
+  set_gattr['time_coverage_end'] = end_date
+  set_gattr['update_interval']='void'
+
+  # Assigning attributes to dataset
+  dataset_m.setncatts(set_gattr)
+
+  return dataset_m
+
+
 if __name__ == '__main__':
   main()
 
