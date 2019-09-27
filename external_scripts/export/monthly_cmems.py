@@ -236,7 +236,7 @@ def create_connection(DB):
   ''' creates connection and database if not already created '''
   conn = sqlite3.connect(DB, isolation_level=None)
   c = conn.cursor()
-  c.execute('''CREATE TABLE IF NOT EXISTS latest (
+  c.execute('''CREATE TABLE IF NOT EXISTS monthly (
               filename TEXT PRIMARY KEY,
               hashsum TEXT NOT NULL,
               filepath TEXT NOT NULL UNIQUE,
@@ -262,19 +262,19 @@ def sql_commit(nc_dict):
       uploaded = 1
     else: 
       uploaded = 0
-    c.execute("SELECT * FROM latest WHERE filename=? ",[key])
+    c.execute("SELECT * FROM monthly WHERE filename=? ",[key])
     filename_exists = c.fetchone()
     
     if filename_exists: # if netCDF file already in database
       logging.info(f'Updating: {key}')
-      sql_req = "UPDATE latest SET filename=?,hashsum=?,filepath=?,nc_date=?,\
+      sql_req = "UPDATE monthly SET filename=?,hashsum=?,filepath=?,nc_date=?,\
         dataset=?,uploaded=?,ftp_filepath=?,dnt_file=?,comment=?,export_date=? \
         WHERE filename=?"
       sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
         nc_dict[key]['date'],nc_dict[key]['dataset'],uploaded,None,None,None,key,date])
     else:
       logging.debug(f'Adding new entry {key}')
-      sql_req = "INSERT INTO latest(filename,hashsum,filepath,nc_date,\
+      sql_req = "INSERT INTO monthly(filename,hashsum,filepath,nc_date,\
         dataset,uploaded,ftp_filepath,dnt_file,comment,export_date) \
         VALUES (?,?,?,?,?,?,?,?,?,?)"
       sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
