@@ -1,0 +1,6 @@
+[Copernicus]
+nrt_server='%copernicus_server%'
+user='%copernicus_user%'
+password='%copernicus_password%'
+nrt_dir='%copernicus_nrt_dir%'
+dnt_dir='%copernicus_dnt_dir%'
