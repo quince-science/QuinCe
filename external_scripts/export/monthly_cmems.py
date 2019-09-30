@@ -17,6 +17,7 @@ import netCDF4
 import sqlite3
 import ftputil 
 import hashlib
+import toml
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -36,10 +37,22 @@ dnt_datetime_format = '%Y%m%dT%H%M%SZ'
 server_location = 'ftp://nrt.cmems-du.eu/Core'
 
 product_id = 'INSITU_GLO_CARBON_NRT_OBSERVATIONS_013_049'
-nc_dir = '/' + product_id + '/NRT_201904/monthly'
+nc_dir = '/' + product_id + '/NRT_201904/monthly/vessel'
 dnt_dir = '/' + product_id + '/DNT'
 index_dir = '/' + product_id + '/NRT_201904'
 local_folder = 'monthly'
+
+# Upload result codes
+UPLOAD_OK = 0
+FILE_EXISTS = 2
+
+# Response codes
+UPLOADED = 1
+NOT_UPLOADED = 0
+FAILED_INGESTION = -1
+
+config_file_copernicus = 'config_copernicus.toml'
+with open(config_file_copernicus) as f: ftp_config = toml.load(f)
 
 
 def main():
@@ -60,15 +73,95 @@ def main():
   # Add to SQL database
   sql_commit(nc_dict)
 
-  currently_uploaded = curr_uploaded()
+  # upload nc files to cmems
+  upload_to_copernicus()
+  # create ftp-connection
 
-  # Create Index file
-  #index_filename = build_index(currently_uploaded)
+def upload_to_copernicus():
+  curr_date = datetime.datetime.now().strftime("%Y%m%d")
+  dnt_upload = {}
+  with ftputil.FTPHost(
+    host=ftp_config['Copernicus']['nrt_server'],
+    user=ftp_config['Copernicus']['user'],
+    passwd=ftp_config['Copernicus']['password'])as ftp:
 
-  # Create DNT file
+    c = create_connection(cmems_db)
 
-  # Upload files to CMEMS-FTP
+  # CHECK IF FTP IS EMPTY 
+    logging.debug('Checking FTP directory')
+    directory_empty = check_directory(ftp, nc_dir) 
+    if directory_empty:
+      logging.error('Previous export has failed, \
+        clean up remanent files before re-exporting')
+      return False 
 
+  # Fetch all to be uploaded
+    c.execute("SELECT * FROM monthly WHERE uploaded == 0")
+    ready_for_upload = c.fetchall()  
+    if ready_for_upload:
+      logging.debug(f'ready for upload: {ready_for_upload[0]}')
+      for file in ready_for_upload:
+        filepath_local = file[2]
+
+        upload_result, ftp_filepath, start_upload_time, stop_upload_time = (
+          upload_to_ftp(ftp, ftp_config, filepath_local))
+        logging.debug(f'upload result: {upload_result}')
+        if upload_result == 0:
+          # Setting dnt-variable to temp variable: curr_date.
+          # After DNT is created, the DNT-filepath is updated for all  
+          # instances where DNT-filetpath is curr_date
+          print(type(UPLOADED),type(ftp_filepath),type(curr_date),type(file))
+          c.execute("UPDATE monthly \
+            SET uploaded = ?, ftp_filepath = ?, dnt_file = ? \
+            WHERE filename = ?", [UPLOADED, ftp_filepath,curr_date,file[0]])
+
+          # create DNT-entry
+          dnt_upload[file[0]] = ({'ftp_filepath':ftp_filepath, 
+            'start_upload_time':start_upload_time, 
+            'stop_upload_time':stop_upload_time,
+            'local_filepath':file[2]})    
+          logging.debug(f'dnt entry: {dnt_upload[file[0]]}') 
+        else:
+          logging.debug(f'upload failed: {upload_result}')
+
+      # Create Index file
+      c.execute("SELECT * FROM monthly WHERE uploaded == 1")
+      currently_uploaded = c.fetchall()
+      index_filename = build_index(currently_uploaded)
+
+      # Create DNT file
+      
+
+      # Upload dnt files to CMEMS-FTP
+
+
+def check_directory(ftp, nrt_dir):
+  '''   Cleans out empty folders, checks if main directory is empty. 
+  returns True when empty 
+  '''
+  uningested_files = clean_directory(ftp, nrt_dir)
+#  with open (not_ingested,'a+') as f:
+#    for item in uningested_files:
+#      f.write(str(datetime.datetime.now()) + ': ' + str(item) + '\n')
+  if ftp.listdir(nrt_dir):
+    logging.warning('ftp-folder is not empty')
+    return True 
+  else:
+    return False
+
+def clean_directory(ftp,nrt_dir):
+  ''' removes empty directories from ftp server '''
+  uningested_files = []
+  for dirpath, dirnames, files in ftp.walk(nrt_dir+'/'):
+    if not dirnames and not files and not dirpath.endswith('/vessel/'):
+      logging.debug(f'removing EMPTY DIRECTORY: {str(dirpath)}') 
+      ftp.rmdir(dirpath)
+    elif files:
+      uningested_files += (
+        [[('dirpath',dirpath),('dirnames',dirnames),('files',files)]])
+      logging.debug(f'UNINGESTED: \
+        dirpath: {dirpath}, \ndirnames: {dirnames}, \nfiles: {files}')
+  return uningested_files
 
 
 def get_daily_files(source_dir,curr_month,vessel):
@@ -201,7 +294,7 @@ def build_index(results_uploaded):
   index_info = ''
   for file in results_uploaded:
     local_filepath = file[2]
-    ftp_filepath = file[6]
+    ftp_filepath = file[5]
 
     nc = netCDF4.Dataset(local_filepath,mode='r')
 
@@ -223,7 +316,7 @@ def build_index(results_uploaded):
     parameters = ' '.join(var_list)
 
     index_info += ('COP-GLOBAL-01,' + server_location + ftp_filepath + ',' 
-                + lat_min + ',' + lat_max + ',' + lon_min + ',' + lon_max + ',' 
+                + str(lat_min) + ',' + str(lat_max) + ',' + str(lon_min) + ',' + str(lon_max) + ',' 
                 + time_start + ',' + time_end  
                 + ',University of Bergen Geophysical Institute,' 
                 + date_update + ',R,' + parameters + '\n')
@@ -301,10 +394,47 @@ def sql_entry(nc_name,curr_month):
     'uploaded':False})
   return entry
 
-def curr_uploaded():
-  c = create_connection(cmems_db)
-  c.execute("SELECT * FROM monthly WHERE uploaded == 0")
-  return c.fetchall()  
+
+def upload_to_ftp(ftp, ftp_config, filepath):
+  ''' Uploads file with location 'filepath' to an ftp-server, 
+  server-location set by 'directory' parameter and config-file, 
+  ftp is the ftp-connection
+
+  returns 
+  upload_result: upload_ok or file_exists
+  dest_filepath: target filepath on ftp-server
+  start_upload_time and stop_upload_time: timestamps of upload process
+  '''
+ 
+  upload_result = UPLOAD_OK
+  if filepath.endswith('.nc'):
+    filename = filepath.rsplit('/',1)[-1]
+    date = filename.split('_')[-1].split('.')[0]
+    ftp_folder = nc_dir + '/' + curr_month     
+    ftp_filepath = ftp_folder + '/' +  filename
+
+  elif filepath.endswith('.xml'):
+    ftp_folder = dnt_dir
+    ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
+
+  elif filepath.endswith('.txt'):
+    with open(filepath,'rb') as f: 
+      file_bytes = f.read() 
+    ftp_folder = index_dir
+    ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
+
+  start_upload_time = datetime.datetime.now().strftime(dnt_datetime_format)
+  if not ftp.path.isdir(ftp_folder):
+    ftp.mkdir(ftp_folder)
+    ftp.upload(filepath, ftp_filepath)
+  elif ftp.path.isfile(ftp_filepath):
+    upload_result = FILE_EXISTS
+  else:
+    ftp.upload(filepath, ftp_filepath)
+  stop_upload_time = datetime.datetime.now().strftime(dnt_datetime_format)
+
+  return upload_result, ftp_filepath, start_upload_time, stop_upload_time
+
 
 
 if __name__ == '__main__':
