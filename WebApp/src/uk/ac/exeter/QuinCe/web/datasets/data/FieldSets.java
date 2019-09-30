@@ -51,7 +51,7 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
 
     // Add the row ID field to the base field set
     rowIdField = new Field(FieldSet.BASE_FIELD_SET, Field.ROWID_FIELD_ID,
-      initialField.getName());
+      initialField.getBaseName());
     addField(initialField);
   }
 
@@ -152,7 +152,7 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
       get(field.getFieldSet()).add(field);
     }
 
-    fieldsByName.put(field.getName(), field);
+    fieldsByName.put(field.getBaseName(), field);
     fieldsById.put(field.getId(), field);
   }
 
@@ -225,7 +225,7 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
 
     for (List<Field> fields : values()) {
       for (Field field : fields) {
-        headings.add(field.getName());
+        headings.add(field.getFullName());
       }
     }
 

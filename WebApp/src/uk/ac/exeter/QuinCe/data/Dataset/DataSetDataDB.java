@@ -1225,8 +1225,8 @@ public class DataSetDataDB {
           Flag qcFlag = new Flag(records.getInt(3));
 
           FieldValue value = new FieldValue(
-            reductionParameters.get(field.getName()),
-            values.get(field.getName()), new AutoQCResult(), qcFlag, null,
+            reductionParameters.get(field.getBaseName()),
+            values.get(field.getBaseName()), new AutoQCResult(), qcFlag, null,
             true);
 
           output.addValue(time, field, value);

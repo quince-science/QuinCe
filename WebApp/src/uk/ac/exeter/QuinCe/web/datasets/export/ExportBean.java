@@ -315,7 +315,7 @@ public class ExportBean extends BaseManagedBean {
           ExportField exportField = (ExportField) field;
           if (!exportField.isDiagnostic()) {
             exportFields.add(exportField);
-            String header = exportField.getName();
+            String header = exportField.getFullName();
             headers.add(header);
             if (exportField.hasQC()) {
               headers.add(header + exportOption.getQcFlagSuffix());
