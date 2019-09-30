@@ -96,7 +96,7 @@
           <ui:repeat value="#{entry.value}" var="variable">
             <div class="variable">
               <div class="varName varGroupMember">
-                <h:outputText value="#{variable.name}" />
+                <h:outputText value="#{variable.fullName}" />
               </div>
               <div class="variableControls">
                 <p:selectBooleanCheckbox widgetVar="mapVar-#{variable.id}"
