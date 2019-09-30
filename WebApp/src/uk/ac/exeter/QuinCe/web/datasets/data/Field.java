@@ -20,7 +20,11 @@ public class Field {
     return id;
   }
 
-  public String getName() {
+  public String getFullName() {
+    return name;
+  }
+
+  public String getBaseName() {
     return name;
   }
 
