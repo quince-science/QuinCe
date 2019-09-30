@@ -35,7 +35,7 @@ public class ExportField extends Field {
   }
 
   @Override
-  public String getName() {
+  public String getFullName() {
     return columnHeader.makeColumnHeading(exportOption);
   }
 
