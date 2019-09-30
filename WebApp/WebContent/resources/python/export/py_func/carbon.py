@@ -240,6 +240,11 @@ def sql_investigate(export_filename, hashsum,filename,level,L1_filename):
         logging.debug(f'{filename}: already exported')
         return 'EXISTS'
       else:
+        #update hashsum to newest version
+        today = datetime.datetime.now().strftime('%Y-%m-%d')
+        c.execute("UPDATE cp_export SET \
+          hashsum=?,export_date=? WHERE filename = ?",\
+          (hashsum, today, filename))
         return filename_exists[0] #old_hashsum
     else:
       logging.debug(f'{filename}: new entry.')
