@@ -43,7 +43,8 @@ import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 public class NeutraliseSalinityFlagsExportData extends ExportData {
 
   private static final String[] CASCADE_FIELDS = { "Intake Temperature",
-    "Equilibrator Temperature", "Equilibrator Pressure", "CO₂ in gas" };
+    "Equilibrator Temperature", "Equilibrator Pressure (absolute)",
+    "Equilibrator Pressure (relative)", "Ambient Pressure", "CO₂ in gas" };
 
   public NeutraliseSalinityFlagsExportData(DataSource dataSource,
     Instrument instrument, DataSet dataSet, ExportOption exportOption)
