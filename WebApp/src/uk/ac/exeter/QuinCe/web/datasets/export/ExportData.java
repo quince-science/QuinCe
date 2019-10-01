@@ -184,17 +184,6 @@ public class ExportData extends ManualQCPageData {
     }
   }
 
-  /*
-   * @Override public void addValue(LocalDateTime rowId, long fieldId,
-   * FieldValue value) { if (sensorTypeFields.containsKey(fieldId)) {
-   *
-   * Map<Field, FieldValue> row = get(rowId); Field field =
-   * sensorTypeFields.get(fieldId); row.put(field,
-   * addSensorValue((CombinedFieldValue) row.get(field), value));
-   *
-   * } else if (variableFields.containsKey(fieldId)) { super.addValue(rowId,
-   * variableFields.get(fieldId), value); } }
-   */
   private CombinedFieldValue addSensorValue(CombinedFieldValue existingValue,
     FieldValue value) {
 
