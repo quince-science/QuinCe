@@ -49,8 +49,8 @@ def export_file_to_cp(
   start_date = datetime.datetime.strptime(
     manifest['manifest']['metadata']['startdate'],
     '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y%m%d')
-  L1_filename = (manifest['manifest']['metadata']['platformCode']
-   + '_NRT_' + start_date + '.csv')
+  platform_code = manifest['manifest']['metadata']['platformCode']
+  L1_filename = platform_code + '_NRT_' + start_date + '.csv'
   
   if 'L1' in level:
     export_filename = L1_filename
@@ -59,7 +59,9 @@ def export_file_to_cp(
 
   logging.info(f'Checking for previous export of {export_filename}')
   #sql_investigate returns old hashsum if new version(same name, diff hashsum).
-  prev_exp = sql_investigate(export_filename,hashsum,filename,level,L1_filename)
+  NRT = manifest['manifest']['metadata']['nrt']
+  prev_exp = sql_investigate(
+    export_filename,hashsum,filename,level,L1_filename,NRT,platform_code)
 
   if 'EXISTS' in prev_exp: return hashsum # terminates function. 
   elif 'NEW' not in prev_exp: is_next_version = prev_exp #old hashsum
@@ -224,26 +226,49 @@ def get_auth_cookie(config):
       logging.debug('No cookie obtained')
   return None
 
-def sql_investigate(export_filename, hashsum,filename,level,L1_filename):
+def sql_investigate(export_filename, hashsum,filename,level,L1_filename,NRT,platform):
   '''  Checks the sql database for identical filenames and hashsums
   returns 'exists', 'new', old_hashsum if 'update' and 'error' if failure. 
   '''
   c = create_connection(CP_DB)
-
-  c.execute("SELECT hashsum FROM cp_export WHERE export_filename=? ",
-    [export_filename])
-  filename_exists = c.fetchone() 
-  # fetches hashsum if filename exists
   try:
-    if filename_exists: 
-      if filename_exists[0] == hashsum:
-        logging.debug(f'{filename}: already exported')
-        return 'EXISTS'
+    if NRT and level == 'L1':
+      c.execute("SELECT hashsum FROM cp_export WHERE export_filename LIKE ? ",
+        [platform+'%'])
+      filename_exists = c.fetchone() 
+      if filename_exists: 
+        if filename_exists[0] == hashsum:
+          logging.debug(f'{filename}: already exported')
+          return 'EXISTS'
+        else:
+          #update hashsum to newest version
+          today = datetime.datetime.now().strftime('%Y-%m-%d')
+          c.execute("UPDATE cp_export SET \
+            export_filename=?,hashsum=?,export_date=? WHERE hashsum = ?",\
+            (export_filename,hashsum, today, filename_exists[0]))
+          return filename_exists[0] #old_hashsum
       else:
-        return filename_exists[0] #old_hashsum
+        logging.debug(f'{filename}: new entry.')
+        return 'NEW'
     else:
-      logging.debug(f'{filename}: new entry.')
-      return 'NEW'
+      c.execute("SELECT hashsum FROM cp_export WHERE export_filename=? ",
+        [export_filename])
+      filename_exists = c.fetchone() 
+      # fetches hashsum if filename exists
+      if filename_exists: 
+        if filename_exists[0] == hashsum:
+          logging.debug(f'{filename}: already exported')
+          return 'EXISTS'
+        else:
+          #update hashsum to newest version
+          today = datetime.datetime.now().strftime('%Y-%m-%d')
+          c.execute("UPDATE cp_export SET \
+            hashsum=?,export_date=? WHERE filename = ?",\
+            (hashsum, today, filename))
+          return filename_exists[0] #old_hashsum
+      else:
+        logging.debug(f'{filename}: new entry.')
+        return 'NEW'
   except Exception as e:
     logging.error(f'Checking database failed:  {filename} ', exc_info=True)
     return 'ERROR'
