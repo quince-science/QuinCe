@@ -13,15 +13,19 @@ import os
 import sys
 import datetime
 import numpy as np
+import xml.etree.ElementTree as ET
 import netCDF4
 import sqlite3
 import ftputil 
 import hashlib
 import toml
 
+if not os.path.isdir('log'):  os.mkdir('log')
+log = 'log/console_monthly.log'
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+#logging.basicConfig(filename=log,format='%(asctime)s %(message)s', level=logging.DEBUG)
 
-curr_month = datetime.datetime.today().strftime('%Y%m') 
+curr_month = (datetime.datetime.today() - datetime.timedelta(days=14)).strftime('%Y%m')
 vesselnames= {'LMEL': 'G.O.Sars','OXYH2':'Nuka Arctica'} 
 vessels = ['LMEL', 'OXYH2']
 source_dir = 'latest' 
@@ -41,6 +45,12 @@ nc_dir = '/' + product_id + '/NRT_201904/monthly/vessel'
 dnt_dir = '/' + product_id + '/DNT'
 index_dir = '/' + product_id + '/NRT_201904'
 local_folder = 'monthly'
+dnt_folder = 'DNT/' + local_folder + '/'  
+
+if not os.path.isdir(local_folder):  os.mkdir(local_folder)
+if not os.path.isdir(dnt_folder):  os.mkdir(dnt_folder)
+
+
 
 # Upload result codes
 UPLOAD_OK = 0
@@ -107,10 +117,6 @@ def upload_to_copernicus():
           upload_to_ftp(ftp, ftp_config, filepath_local))
         logging.debug(f'upload result: {upload_result}')
         if upload_result == 0:
-          # Setting dnt-variable to temp variable: curr_date.
-          # After DNT is created, the DNT-filepath is updated for all  
-          # instances where DNT-filetpath is curr_date
-          print(type(UPLOADED),type(ftp_filepath),type(curr_date),type(file))
           c.execute("UPDATE monthly \
             SET uploaded = ?, ftp_filepath = ?, dnt_file = ? \
             WHERE filename = ?", [UPLOADED, ftp_filepath,curr_date,file[0]])
@@ -129,10 +135,32 @@ def upload_to_copernicus():
       currently_uploaded = c.fetchall()
       index_filename = build_index(currently_uploaded)
 
-      # Create DNT file
-      
+      try:
+        upload_result, ftp_filepath, start_upload_time, stop_upload_time = (
+          upload_to_ftp(ftp,ftp_config, index_filename))
+        logging.debug(f'index upload result: {upload_result}')
+      except Exception as e:
+        logging.error('Uploading index failed: ', exc_info=True)
+    
+      # Adding index file to DNT-list:
+      dnt_upload[index_filename] = ({
+        'ftp_filepath':ftp_filepath, 
+        'start_upload_time':start_upload_time, 
+        'stop_upload_time':stop_upload_time,
+        'local_filepath': index_filename
+        })
 
-      # Upload dnt files to CMEMS-FTP
+      # BUILD DNT-FILE
+      dnt_file, dnt_local_filepath = build_DNT(dnt_upload)
+
+      # UPLOAD DNT-FILE
+      _, dnt_ftp_filepath, _, _ = (
+        upload_to_ftp(ftp, ftp_config, dnt_local_filepath))
+      
+      logging.info('Updating database to include DNT filename')
+      sql_rec = "UPDATE monthly SET dnt_file = ? WHERE dnt_file = ?"
+      sql_var = [dnt_local_filepath, curr_date]
+      c.execute(sql_rec,sql_var)
 
 
 def check_directory(ftp, nrt_dir):
@@ -434,6 +462,47 @@ def upload_to_ftp(ftp, ftp_config, filepath):
   stop_upload_time = datetime.datetime.now().strftime(dnt_datetime_format)
 
   return upload_result, ftp_filepath, start_upload_time, stop_upload_time
+
+def build_DNT(dnt_upload):
+  ''' Generates delivery note for NetCDF file upload, 
+  note needed by Copernicus in order to move .nc-file to public-ftp
+  
+  dnt_upload contains list of files uploaded to the ftp-server
+
+  '''
+  date = datetime.datetime.now().strftime(dnt_datetime_format)
+
+  dnt_file = product_id + '_P' + curr_month + '.xml'
+  dnt_filepath = dnt_folder + dnt_file
+
+  dnt = ET.Element('delivery')
+  dnt.set('PushingEntity','CopernicusMarine-InSitu-Global')
+  dnt.set('date', date)
+  dnt.set('product',product_id)
+  dataset = ET.SubElement(dnt,'dataset')
+  dataset.set('DatasetName','NRT_201904')
+
+  for item in dnt_upload:
+    local_filepath = dnt_upload[item]['local_filepath']
+    ftp_filepath = dnt_upload[item]['ftp_filepath'].split('/',3)[-1]
+    start_upload_time = dnt_upload[item]['start_upload_time'] 
+    stop_upload_time = dnt_upload[item]['stop_upload_time']
+    with open(local_filepath,'rb') as f: 
+      file_bytes = f.read()
+
+    file = ET.SubElement(dataset,'file')
+    file.set('Checksum',hashlib.md5(file_bytes).hexdigest())
+    file.set('FileName',ftp_filepath)
+    file.set('FinalStatus','Delivered')
+    file.set('StartUploadTime',start_upload_time)
+    file.set('StopUploadTime',stop_upload_time)
+
+  xml_tree = ET.ElementTree(dnt)
+
+  with open(dnt_filepath,'wb') as xml: 
+    xml_tree.write(xml,xml_declaration=True,method='xml')
+
+  return dnt_file, dnt_filepath
 
 
 
