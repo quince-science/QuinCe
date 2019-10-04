@@ -381,6 +381,7 @@ public class ManualQcBean extends PlotPageBean {
       LinkedHashMap<Long, List<Integer>> columnIndexes = fieldSets
         .getColumnIndexes();
       result.addAll(columnIndexes.get(DataSetDataDB.SENSORS_FIELDSET));
+      result.addAll(columnIndexes.get(DataSetDataDB.DIAGNOSTICS_FIELDSET));
     }
 
     return result;
