@@ -81,4 +81,7 @@ javadoc -sourcepath "$sourcePath" -d "$output" \
         -link http://www.joda.org/joda-time/apidocs/ \
         -link http://www.primefaces.org/docs/api/6.1/ \
         -link https://commons.apache.org/proper/commons-email/javadocs/api-release/ \
+        -link https://junit.org/junit5/docs/current/api/ \
+        -link https://docs.spring.io/spring-framework/docs/current/javadoc-api/ \
+        -link https://static.javadoc.io/org.mockito/mockito-core/2.15.0/ \
 
