@@ -8,18 +8,33 @@ import javax.sql.DataSource;
 
 import org.mockito.Mockito;
 
+import uk.ac.exeter.QuinCe.data.Files.FileStore;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Test version of the ResourceManager, that creates
- * a mock InitialContext when required
+ * A version of the application's central {@link ResourceManager} for use with
+ * test classes.
+ *
+ * <p>
+ * This {@link ResourceManager} is customised to use the test environment
+ * instead of the main application environment. This includes:
+ * </p>
+ * <ul>
+ * <li>A mock {@link InitialContext} that links to the test H2 database</li>
+ * <li>Application properties for the test environment</li>
+ * <li>A temporary {@link FileStore} which will be automatically destroyed when
+ * the tests are complete</li>
+ * </ul>
+ *
+ * @see ResourceManager
+ *
  * @author zuj007
  *
  */
 public class TestResourceManager extends ResourceManager {
 
   /**
-   * The dummy test database name
+   * The name for the link to the H2 test database
    */
   protected static final String DATABASE_NAME = "test.database";
 
@@ -29,15 +44,24 @@ public class TestResourceManager extends ResourceManager {
   private DataSource dataSource;
 
   /**
-   * The configuration file name
+   * The location of the test environment's application configuration file
    */
   protected static final String CONFIG_PATH = "./WebApp/junit/resources/configuration/quince.properties";
 
+  /**
+   * Base constructor
+   *
+   * @param dataSource
+   *          A data source for the test H2 database
+   */
   public TestResourceManager(DataSource dataSource) {
     this.dataSource = dataSource;
     initFileStore();
   }
 
+  /**
+   * Initialises the temporary {@link FileStore}
+   */
   private void initFileStore() {
     // Create the file store, and request that it
     // be deleted on shutdown
@@ -51,7 +75,10 @@ public class TestResourceManager extends ResourceManager {
   }
 
   /**
-   * Create a mock InitialContext that returns a mock DataSource
+   * Creates a mock {@link InitialContext} that returns the {@link DataSource}
+   * for the test H2 database.
+   *
+   * @see #TestResourceManager(DataSource)
    */
   @Override
   protected InitialContext createInitialContext() throws NamingException {
@@ -62,7 +89,9 @@ public class TestResourceManager extends ResourceManager {
   }
 
   /**
-   * Build the path to the file store location used for testing
+   * Build the path to the temporary {@link FileStore} location. This is created
+   * in the system's temporary file location (e.g. {@code /tmp} on Unix).
+   *
    * @return The file store path
    */
   protected String getFileStorePath() {
