@@ -171,6 +171,7 @@ public class BaseTest {
    * The input parameter for this method is the base filename of the test set
    * file (without extension). This is converted to the path
    * {@code resources/testsets/<parameter>.csv}.
+   * </p>
    *
    * @see TestSetLine
    *
