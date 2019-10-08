@@ -16,7 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest;
  * <p>
  * This method provides a means for a test to have its criteria defined in a
  * {@code .csv} file. It reads a given file, and provides a {@link Stream} of
- * {@link TestSetLine} objects each representing a single line in the file,
+ * {@code TestSetLine} objects each representing a single line in the file,
  * which can be used as input to a {@link ParameterizedTest}.
  * </p>
  *
