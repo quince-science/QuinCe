@@ -30,10 +30,10 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 public class SensorTypeTest extends BaseTest {
 
   /**
-   * Create a simple, valid SensorType. It has an ID (fixed to {@code 1}), a
-   * name, and a group; all other information is {@code null}.
+   * Create a simple, valid {@link SensorType}. It has an ID (fixed to
+   * {@code 1}), a name, and a group; all other information is {@code null}.
    *
-   * @return The SensorType
+   * @return The {@link SensorType}
    * @throws Exception
    *           If the object cannot be constructed
    */
