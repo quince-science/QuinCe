@@ -459,14 +459,75 @@ public class SensorTypeTest extends BaseTest {
     assertFalse(type.equals(type2));
   }
 
+  /**
+   * Test that the {@link SensorType#compareTo(SensorType)} method orders
+   * {@link SensorType}s by display order over name.
+   *
+   * @throws Exception
+   *           If the test {@link SensorType}s cannot be created.
+   */
   @Test
-  public void compareToTest() throws Exception {
-    SensorType type = getBasicSensorType();
-    SensorType type2 = new SensorType(4L, "Flurble", "Group", null, null, null,
+  public void compareToDiffDisplayOrderDiffNameTest() throws Exception {
+    SensorType firstType = new SensorType(1L, "Bbbb", "Group", null, null, null,
       false, false, 1, null, null, null);
-    assertTrue(type2.compareTo(type) < 0);
-    assertTrue(type.compareTo(type2) > 0);
-    assertTrue(type.compareTo(type) == 0);
+    SensorType secondType = new SensorType(2L, "Aaaa", "Group", null, null,
+      null, false, false, 2, null, null, null);
+
+    assertTrue(secondType.compareTo(firstType) > 0);
+    assertTrue(firstType.compareTo(secondType) < 0);
+  }
+
+  /**
+   * Test that the {@link SensorType#compareTo(SensorType)} method orders
+   * {@link SensorType}s by display order when names are identical.
+   *
+   * @throws Exception
+   *           If the test {@link SensorType}s cannot be created.
+   */
+  @Test
+  public void compareToDiffDisplayOrderSameNameTest() throws Exception {
+    SensorType firstType = new SensorType(1L, "Aaaa", "Group", null, null, null,
+      false, false, 1, null, null, null);
+    SensorType secondType = new SensorType(2L, "Aaaa", "Group", null, null,
+      null, false, false, 2, null, null, null);
+
+    assertTrue(secondType.compareTo(firstType) > 0);
+    assertTrue(firstType.compareTo(secondType) < 0);
+  }
+
+  /**
+   * Test that the {@link SensorType#compareTo(SensorType)} method orders
+   * {@link SensorType}s by name when the display order is identical.
+   *
+   * @throws Exception
+   *           If the test {@link SensorType}s cannot be created.
+   */
+  @Test
+  public void compareToEqualOrderDifferentNameTest() throws Exception {
+    SensorType firstType = new SensorType(1L, "Aaaa", "Group", null, null, null,
+      false, false, 1, null, null, null);
+    SensorType secondType = new SensorType(2L, "Bbbb", "Group", null, null,
+      null, false, false, 1, null, null, null);
+
+    assertTrue(secondType.compareTo(firstType) > 0);
+    assertTrue(firstType.compareTo(secondType) < 0);
+  }
+
+  /**
+   * Test that the {@link SensorType#compareTo(SensorType)} identical display
+   * order and name gives a {@code 0} result.
+   *
+   * @throws Exception
+   *           If the test {@link SensorType}s cannot be created.
+   */
+  @Test
+  public void compareToEqualOrderAndNameTest() throws Exception {
+    SensorType firstType = new SensorType(1L, "Aaaa", "Group", null, null, null,
+      false, false, 1, null, null, null);
+    SensorType secondType = new SensorType(2L, "Aaaa", "Group", null, null,
+      null, false, false, 1, null, null, null);
+
+    assertTrue(secondType.compareTo(firstType) == 0);
   }
 
   /**
