@@ -1,6 +1,5 @@
 package junit.uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition;
 
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -14,7 +13,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -34,38 +32,92 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Tests in this file assume that there are some valid sensor types already
- * configured in the database, but create their own types for specific testing
+ * Tests for the {@list SensorsConfiguration} class.
+ *
+ * <p>
+ * These tests assume that the Underway Marine pCO₂ variable is configured in
+ * the test database, and also a test variable required for some tests. The test
+ * variable is defined in
+ * {@code WebApp/resources/sql/testbase/variable/V1000002_test_variable.sql}
+ * </p>
+ *
+ * <p>
+ * Many of these tests use additional configurations in the database. The
+ * relevant {@code .sql} files are in
+ * {@code resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/}.
+ * </p>
  *
  * @author Steve Jones
  *
  */
 public class SensorsConfigurationTest extends BaseTest {
 
+  /**
+   * A reference list containing the ID of the Underway Marine pCO₂ variable.
+   *
+   * @see #initVarList()
+   */
   private List<Long> var1List = null;
+
+  /**
+   * A reference list containing the ID of the temporary test variable
+   *
+   * @see #initTestVarList()
+   */
   private List<Long> var2List = null;
+
+  /**
+   * A reference list containing the IDs of both the Underway Marine pCO₂ and
+   * test variables.
+   *
+   * @see #initVarList()
+   * @see #initTestVarList()
+   */
   private List<Long> bothVarsList = null;
+
+  /**
+   * A reference list containing an invalid variable ID.
+   *
+   * @see #initVarList()
+   */
   private List<Long> invalidVarList = null;
 
   /**
-   * Build a SensorsConfiguration
-   * @return
+   * Build a standalone {@link SensorsConfiguration} from the test database.
+   * This will include both the Underway Marine pCO₂ and test variables, plus
+   * any additional variables and sensor types defined in Flyway migration files
+   * specified for the current test.
+   *
+   * @return The {@link SensorsConfiguration}.
    * @throws Exception
+   *           If the object cannot be created.
    */
   private SensorsConfiguration getConfig() throws Exception {
     return new SensorsConfiguration(getDataSource());
   }
 
   /**
-   * Build a SensorsConfiguration in the application-wide ResourceManager
-   * @return
+   * Initialise the application's {@link ResourceManager}, which will in turn
+   * initialise a {@link SensorsConfiguration} object. This will be returned
+   * from the method.
+   *
+   * @return The {@link SenssorsConfiguration} object.
    * @throws Exception
+   *           If the {@link ResourceManager} cannot be created.
    */
   private SensorsConfiguration getResourceManagerConfig() throws Exception {
     initResourceManager();
     return ResourceManager.getInstance().getSensorsConfiguration();
   }
 
+  /**
+   * Initialise {@link #var1List} with the ID of the Underway Marine pCO₂
+   * variable, and the {@link #invalidVarList}.
+   *
+   * @throws Exception
+   *           If the Underway Marine pCO₂ variable cannot be retrieved from the
+   *           database.
+   */
   private void initVarList() throws Exception {
 
     initResourceManager();
@@ -78,12 +130,13 @@ public class SensorsConfigurationTest extends BaseTest {
 
     try {
       conn = ResourceManager.getInstance().getDBDataSource().getConnection();
-      stmt = conn.prepareStatement("SELECT id FROM variables "
-        + "WHERE name = 'Underway Marine pCO₂'");
+      stmt = conn.prepareStatement(
+        "SELECT id FROM variables " + "WHERE name = 'Underway Marine pCO₂'");
 
       record = stmt.executeQuery();
       if (!record.next()) {
-        throw new DatabaseException("'Underway Marine pCO₂' variable does not exist");
+        throw new DatabaseException(
+          "'Underway Marine pCO₂' variable does not exist");
       } else {
         var1List.add(record.getLong(1));
       }
@@ -99,6 +152,13 @@ public class SensorsConfigurationTest extends BaseTest {
     invalidVarList.add(-1000L);
   }
 
+  /**
+   * Initialise {@link #var2List} with the ID of the test variable. Also builds
+   * {@link #bothVarsList}.
+   *
+   * @throws Exception
+   *           If the test variable cannot be retrieved from the database.
+   */
   private void initTestVarList() throws Exception {
 
     var2List = new ArrayList<Long>(1);
@@ -110,11 +170,10 @@ public class SensorsConfigurationTest extends BaseTest {
     PreparedStatement stmt = null;
     ResultSet record = null;
 
-
     try {
       conn = ResourceManager.getInstance().getDBDataSource().getConnection();
-      stmt = conn.prepareStatement("SELECT id FROM variables "
-        + "WHERE name = 'testVar'");
+      stmt = conn.prepareStatement(
+        "SELECT id FROM variables " + "WHERE name = 'testVar'");
 
       record = stmt.executeQuery();
       if (!record.next()) {
@@ -132,18 +191,26 @@ public class SensorsConfigurationTest extends BaseTest {
     }
   }
 
+  /**
+   * Destroy the {@link ResourceManager} if it was created for the test.
+   */
   @AfterEach
   public void destroyResourceManager() {
     ResourceManager.destroy();
   }
 
   /**
-   * Ensure that the base configuration in the database loads without errors
+   * Ensure that the base configuration in the database loads without errors,
+   * and the required special {@link SensorType}s are present.
+   *
    * @throws Exception
+   *           If the configuration cannot be loaded.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
-  public void loadConfigurationTest() throws Exception  {
+  public void loadConfigurationTest() throws Exception {
     SensorsConfiguration config = getConfig();
     assertNotNull(config);
 
@@ -161,11 +228,14 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Specify a SensorType with a parent that doesn't exist
+   * Tests that a {@link SensorType} defined in the database with a non-existent
+   * parent causes a {@link SensorConfigurationException} to be thrown when the
+   * configuration is loaded.
+   *
+   * @see #getConfig()
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/nonExistentParent"
-  })
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/nonExistentParent" })
   @Test
   public void nonExistentParentTest() {
     assertThrows(SensorConfigurationException.class, () -> {
@@ -174,11 +244,14 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Specify Depends On for a SensorType that doesn't exist
+   * Tests that a {@link SensorType} defined in the database that depends on a
+   * non-existent sensor type causes a {@link SensorConfigurationException} to
+   * be thrown when the configuration is loaded.
+   *
+   * @see #getConfig()
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/nonExistentDependsOn"
-  })
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/nonExistentDependsOn" })
   @Test
   public void nonExistentDependsOnTest() {
     assertThrows(SensorConfigurationException.class, () -> {
@@ -187,49 +260,37 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Ensure that returned SensorTypes are in alphabetical order
+   * Test that the list of {@link SensorType}s is returned in the correct
+   * display order.
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
-  @FlywayTest
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/displayOrder" })
   @Test
-  public void sensorTypesListTest() throws Exception {
+  public void displayOrderTest() throws Exception {
 
-    // Get the list from the configuration
+    // Get the last 4 sensor types in the list - these should be our test types
     List<SensorType> types = getConfig().getSensorTypes();
+    List<SensorType> testTypes = types.subList(types.size() - 4, types.size());
 
-    // Extract the non-diagnostic names in list order
-    List<String> names = new ArrayList<String>(types.size());
-    for (SensorType type : types) {
-      if (!type.isDiagnostic()) {
-        names.add(type.getName());
-      }
-    }
-
-    // Extract the diagnostic names in list order
-    List<String> diagnosticNames = new ArrayList<String>(types.size());
-    for (SensorType type : types) {
-      if (type.isDiagnostic()) {
-        diagnosticNames.add(type.getName());
-      }
-    }
-
-    Collections.sort(names);
-    Collections.sort(diagnosticNames);
-
-    // Sort the names into alphabetical order
-    List<String> sortedNames = new ArrayList<String>(names.size() + diagnosticNames.size());
-    sortedNames.addAll(names);
-    sortedNames.addAll(diagnosticNames);
-
-    // Check that the lists are equal
-    for (int i = 0; i < names.size(); i++) {
-      assertEquals(names.get(i), sortedNames.get(i));
+    for (int i = 0; i < testTypes.size(); i++) {
+      assertEquals("DisplayOrder " + i, testTypes.get(i).getName());
     }
   }
 
   /**
-   * Handle unknown SensorType names
+   * Test that {@link SensorsConfiguration#validateSensorNames(List)} throws a
+   * {@link SensorConfigurationException} if a non-existent {@link SensorType}
+   * name is included in the input list.
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
@@ -244,8 +305,19 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Handle correct sensor names, including the auto-added Run Type
+   * Test that {@link SensorsConfiguration#validateSensorNames(List)} does not
+   * throw an exception when only valid {@link SensorType} names are included in
+   * the input list.
+   *
+   * <p>
+   * This test includes the special {@code Run Type} {@link SensorType}, which
+   * is not defined in the database but is injected by the application.
+   * </p>
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
@@ -258,12 +330,16 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Get the parent of a SensorType that has no parent
+   * Test that a {@link SensorType} with no parent in the database returns
+   * {@code null} when {@link SensorType#getParent()} is called.
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/getParentWithoutParent"
-  })
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/getParentWithoutParent" })
   @Test
   public void getParentWithoutParent() throws Exception {
     SensorsConfiguration config = getConfig();
@@ -281,12 +357,16 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Successfully get a SensorType's parent that exists
+   * Test that a {@link SensorType} with a parent in the database returns that
+   * parent when {@link SensorType#getParent()} is called.
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/getParentWithParent"
-  })
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/getParentWithParent" })
   @Test
   public void getParentWithParent() throws Exception {
     SensorsConfiguration config = getConfig();
@@ -301,15 +381,20 @@ public class SensorsConfigurationTest extends BaseTest {
     }
 
     assertNotNull(config.getParent(child));
+    assertEquals("Test Parent", config.getParent(child).getName());
   }
 
   /**
-   * Try to get siblings for a SensorType with no parent
+   * Test that the {@link SensorsConfiguration#getSiblings(SensorType)} method
+   * returns an empty list for a {@link SensorType} with no parent.
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/getSiblingWithNoParent"
-  })
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/getSiblingWithNoParent" })
   @Test
   public void getSiblingsWithNoParent() throws Exception {
     SensorsConfiguration config = getConfig();
@@ -327,11 +412,13 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Try to configure a parent with only one sibling
+   * Test that configuring a parent {@link SensorType} with only one child
+   * throws a {@link SensorConfigurationException}.
+   *
+   * @see #getConfig()
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/parentWithOneChild"
-  })
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/parentWithOneChild" })
   @Test
   public void parentWithOneChildTest() {
     assertThrows(SensorConfigurationException.class, () -> {
@@ -340,11 +427,13 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Try to create a SensorType that is both a parent and a child
+   * Test that configuring a {@link SensorType} that is both a parent and a
+   * child throws a {@link SensorConfigurationException}.
+   *
+   * @see #getConfig()
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/parentAndChild"
-  })
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/parentAndChild" })
   @Test
   public void parentAndChildTest() {
     assertThrows(SensorConfigurationException.class, () -> {
@@ -353,16 +442,20 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Get siblings of a given SensorType
+   * Test that a child {@link SensorType}'s siblings can be correctly retrieved
+   * from the configuration.
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/getSiblingWithParentAndSiblings"
-  })
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/getSiblingWithParentAndSiblings" })
   @Test
   public void getSiblingsWithParentAndSiblings() throws Exception {
-   SensorsConfiguration config = getConfig();
-   SensorType child = null;
+    SensorsConfiguration config = getConfig();
+    SensorType child = null;
 
     // Get the 'child' type
     for (SensorType type : config.getSensorTypes()) {
@@ -372,24 +465,36 @@ public class SensorsConfigurationTest extends BaseTest {
       }
     }
 
+    List<SensorType> siblings = config.getSiblings(child);
     assertEquals(2, config.getSiblings(child).size());
+    siblings.stream()
+      .forEach(c -> assertTrue(c.getName().startsWith("Sibling")));
   }
 
   /**
-   * Check that a parent SensorType is correctly identified
+   * Test that a parent {@link SensorType} is correctly identified.
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
   public void isParentForParentTest() throws Exception {
     SensorsConfiguration config = getConfig();
-    SensorType equilibratorPressure = config.getSensorType("Equilibrator Pressure");
+    SensorType equilibratorPressure = config
+      .getSensorType("Equilibrator Pressure");
     assertTrue(config.isParent(equilibratorPressure));
   }
 
   /**
-   * Check that a non-parent SensorType is correctly identified
+   * Test that a non-parent {@link SensorType} is correctly identified.
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
@@ -400,20 +505,30 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Check that a non-parent SensorType is correctly identified
+   * Check that a child {@link SensorType} is correctly identified as not being
+   * a parent.
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
   public void isParentForChildTest() throws Exception {
     SensorsConfiguration config = getConfig();
-    SensorType equilibratorPressure = config.getSensorType("Equilibrator Pressure (absolute)");
+    SensorType equilibratorPressure = config
+      .getSensorType("Equilibrator Pressure (absolute)");
     assertFalse(config.isParent(equilibratorPressure));
   }
 
   /**
-   * Get a SensorType by its ID
+   * Test that a {@link SensorType} can be retrieved using its ID.
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
@@ -427,7 +542,10 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Get a SensorType with in invalid ID
+   * Test that retrieving a {@link SensorType} with an invalid ID throws a
+   * {@link SensorTypeNotFoundException}.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
@@ -438,8 +556,12 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Get a SensorType by its ID
+   * Test that a {@link SensorType} can be retrieved using its name.
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
@@ -453,7 +575,10 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Get a SensorType with in invalid ID
+   * Test that retrieving a {@link SensorType} with an invalid name throws a
+   * {@link SensorTypeNotFoundException}.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
@@ -464,12 +589,16 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Check that the SensorTypes for the test variable are correct
+   * Test that the {@link SensorType}s defined for the test variable are
+   * correctly retrieved.
+   *
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
-  @FlywayTest(locationsForMigrate = {
-    "resources/sql/testbase/variable"
-  })
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/variable" })
   @Test
   public void multipleVariableConfigurationTest() throws Exception {
     initVarList();
@@ -479,14 +608,23 @@ public class SensorsConfigurationTest extends BaseTest {
 
     // Make sure the correct sensors are in the set
     Set<SensorType> testSensorTypes = config.getSensorTypes(var2List, false);
-    assertTrue(testSensorTypes.contains(config.getSensorType("Intake Temperature")));
+    assertTrue(
+      testSensorTypes.contains(config.getSensorType("Intake Temperature")));
     assertTrue(testSensorTypes.contains(config.getSensorType("Salinity")));
     assertTrue(testSensorTypes.contains(config.getSensorType("testSensor")));
-    assertFalse(testSensorTypes.contains(config.getSensorType("Equilibrator Temperature")));
+    assertFalse(testSensorTypes
+      .contains(config.getSensorType("Equilibrator Temperature")));
   }
 
   /**
-   * Get the SensorTypes for a variable with the parent types, no children
+   * Test that {@link SensorsConfiguration#getSensorTypes(List, boolean)} with
+   * {@code replaceParentsWithChildren == true} returns parent types without
+   * their children.
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
@@ -495,13 +633,23 @@ public class SensorsConfigurationTest extends BaseTest {
     SensorsConfiguration config = getConfig();
 
     Set<SensorType> sensorTypes = config.getSensorTypes(var1List, false);
-    assertTrue(sensorTypes.contains(config.getSensorType("Equilibrator Pressure")));
-    assertFalse(sensorTypes.contains(config.getSensorType("Equilibrator Pressure (absolute)")));
-    assertFalse(sensorTypes.contains(config.getSensorType("Equilibrator Pressure (differential)")));
+    assertTrue(
+      sensorTypes.contains(config.getSensorType("Equilibrator Pressure")));
+    assertFalse(sensorTypes
+      .contains(config.getSensorType("Equilibrator Pressure (absolute)")));
+    assertFalse(sensorTypes
+      .contains(config.getSensorType("Equilibrator Pressure (differential)")));
   }
 
   /**
-   * Get the SensorTypes for a variable with the child types, no parents
+   * Test that {@link SensorsConfiguration#getSensorTypes(List, boolean)} with
+   * {@code replaceParentsWithChildren == false} returns child types without
+   * their parents.
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
@@ -510,13 +658,22 @@ public class SensorsConfigurationTest extends BaseTest {
     SensorsConfiguration config = getConfig();
 
     Set<SensorType> sensorTypes = config.getSensorTypes(var1List, true);
-    assertFalse(sensorTypes.contains(config.getSensorType("Equilibrator Pressure")));
-    assertTrue(sensorTypes.contains(config.getSensorType("Equilibrator Pressure (absolute)")));
-    assertTrue(sensorTypes.contains(config.getSensorType("Equilibrator Pressure (differential)")));
+    assertFalse(
+      sensorTypes.contains(config.getSensorType("Equilibrator Pressure")));
+    assertTrue(sensorTypes
+      .contains(config.getSensorType("Equilibrator Pressure (absolute)")));
+    assertTrue(sensorTypes
+      .contains(config.getSensorType("Equilibrator Pressure (differential)")));
   }
 
   /**
-   * Get the Core SensorType
+   * Test that a single core {@link SensorType} for a variable is correctly
+   * retrieved.
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
@@ -528,9 +685,16 @@ public class SensorsConfigurationTest extends BaseTest {
     assertTrue(coreSensors.get(0).getName().equals("CO₂ in gas"));
   }
 
-  @FlywayTest(locationsForMigrate = {
-    "resources/sql/testbase/variable"
-  })
+  /**
+   * Test that multiple core {@link SensorType}s for a variable is correctly
+   * retrieved.
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/variable" })
   @Test
   public void getMultipleCoreSensorsTest() throws Exception {
     initVarList();
@@ -544,8 +708,13 @@ public class SensorsConfigurationTest extends BaseTest {
   }
 
   /**
-   * Try to get the core sensor for an invalid variable
+   * Test that requesting the core {@link SensorType} for an invalid variable
+   * throws a {@link SensorConfigurationException}.
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
@@ -558,9 +727,16 @@ public class SensorsConfigurationTest extends BaseTest {
     });
   }
 
-  @FlywayTest(locationsForMigrate = {
-    "resources/sql/testbase/variable"
-  })
+  /**
+   * Test that the non-core {@link SensorType}s for a variable are correctly
+   * retrieved without the core {@link SensorType}s.
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/variable" })
   @Test
   public void getNonCoreSensorsTest() throws Exception {
     initVarList();
@@ -569,25 +745,31 @@ public class SensorsConfigurationTest extends BaseTest {
 
     Connection conn = null;
     try {
-      Set<SensorType> nonCoreSensors =
-        config.getNonCoreSensors(getDataSource().getConnection());
+      Set<SensorType> nonCoreSensors = config
+        .getNonCoreSensors(getDataSource().getConnection());
 
       // Should not contain any of the core sensors
       assertFalse(nonCoreSensors.contains(config.getSensorType("CO₂ in gas")));
       assertFalse(nonCoreSensors.contains(config.getSensorType("testSensor")));
 
-      // Should include the used sensors, whether used multiple times or just once
+      // Should include the used sensors, whether used multiple times or just
+      // once
       assertTrue(nonCoreSensors.contains(config.getSensorType("Salinity")));
-      assertTrue(nonCoreSensors.contains(config.getSensorType("Equilibrator Temperature")));
+      assertTrue(nonCoreSensors
+        .contains(config.getSensorType("Equilibrator Temperature")));
 
       // Should include the Unused Sensor type even though it's not defined as
       // part of either variable
-      assertTrue(nonCoreSensors.contains(config.getSensorType("Unused sensor")));
+      assertTrue(
+        nonCoreSensors.contains(config.getSensorType("Unused sensor")));
 
       // Should include children but not parents
-      assertFalse(nonCoreSensors.contains(config.getSensorType("Equilibrator Pressure")));
-      assertTrue(nonCoreSensors.contains(config.getSensorType("Equilibrator Pressure (absolute)")));
-      assertTrue(nonCoreSensors.contains(config.getSensorType("Equilibrator Pressure (differential)")));
+      assertFalse(
+        nonCoreSensors.contains(config.getSensorType("Equilibrator Pressure")));
+      assertTrue(nonCoreSensors
+        .contains(config.getSensorType("Equilibrator Pressure (absolute)")));
+      assertTrue(nonCoreSensors.contains(
+        config.getSensorType("Equilibrator Pressure (differential)")));
     } finally {
       DatabaseUtils.closeConnection(conn);
     }
@@ -595,7 +777,11 @@ public class SensorsConfigurationTest extends BaseTest {
 
   /**
    * Test that a core sensor is reported as such
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
@@ -606,7 +792,11 @@ public class SensorsConfigurationTest extends BaseTest {
 
   /**
    * Test that a non-core sensor is reported as such
+   *
    * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
    */
   @FlywayTest
   @Test
@@ -615,9 +805,26 @@ public class SensorsConfigurationTest extends BaseTest {
     assertFalse(config.isCoreSensor(config.getSensorType("Salinity")));
   }
 
-  @FlywayTest(locationsForMigrate = {
-    "resources/sql/testbase/variable"
-  })
+  /**
+   * Test that a non-core {@link SensorType} required for one of two variables
+   * is correctly identified for different variables.
+   *
+   * <p>
+   * Specifically, the {@link SensorType} must be:
+   * </p>
+   *
+   * <ul>
+   * <li>Required for a variable it is required for</li>
+   * <li>Not required for a variable it is not required for</li>
+   * <li>Required for a list containing both variables</li>
+   * </ul>
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/variable" })
   @Test
   public void requiredForVarNonCoreOneVarTest() throws Exception {
     initVarList();
@@ -630,9 +837,26 @@ public class SensorsConfigurationTest extends BaseTest {
     assertTrue(config.requiredForVariables(sensorType, bothVarsList));
   }
 
-  @FlywayTest(locationsForMigrate = {
-    "resources/sql/testbase/variable"
-  })
+  /**
+   * Test that a core {@link SensorType} required for one of two variables is
+   * correctly identified for different variables.
+   *
+   * <p>
+   * Specifically, the {@link SensorType} must be:
+   * </p>
+   *
+   * <ul>
+   * <li>Required for a variable it is required for</li>
+   * <li>Not required for a variable it is not required for</li>
+   * <li>Required for a list containing both variables</li>
+   * </ul>
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/variable" })
   @Test
   public void requiredForVarCoreOneVarTest() throws Exception {
     initVarList();
@@ -645,9 +869,26 @@ public class SensorsConfigurationTest extends BaseTest {
     assertTrue(config.requiredForVariables(sensorType, bothVarsList));
   }
 
-  @FlywayTest(locationsForMigrate = {
-    "resources/sql/testbase/variable"
-  })
+  /**
+   * Test that a {@link SensorType} required for two variables is correctly
+   * identified for both.
+   *
+   * <p>
+   * Specifically, the {@link SensorType} must be:
+   * </p>
+   *
+   * <ul>
+   * <li>Required for the first variable it is required for</li>
+   * <li>Required for the second variable it is required for</li>
+   * <li>Required for a list containing both variables</li>
+   * </ul>
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/variable" })
   @Test
   public void requiredForVarTwoVarsTest() throws Exception {
     initVarList();
@@ -660,9 +901,25 @@ public class SensorsConfigurationTest extends BaseTest {
     assertTrue(config.requiredForVariables(sensorType, bothVarsList));
   }
 
-  @FlywayTest(locationsForMigrate = {
-    "resources/sql/testbase/variable"
-  })
+  /**
+   * Test that a {@link SensorType} that is not required for any variables is
+   * not identified as required for any variables.
+   *
+   * <p>
+   * Specifically, the {@link SensorType} must be:
+   * </p>
+   *
+   * <ul>
+   * <li>Not required a single variable</li>
+   * <li>Not required for for a list containing multiple variables</li>
+   * </ul>
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/variable" })
   @Test
   public void requiredForVarNoVarsTest() throws Exception {
     initVarList();
@@ -675,18 +932,38 @@ public class SensorsConfigurationTest extends BaseTest {
     assertFalse(config.requiredForVariables(sensorType, bothVarsList));
   }
 
+  /**
+   * Test that both parent and child {@link SensorType}s are identified as
+   * required for a variable if the parent is defined as required for that
+   * variable.
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
   @FlywayTest
   @Test
   public void requiredForVarParentsAndChildrenTest() throws Exception {
     initVarList();
     SensorsConfiguration config = getResourceManagerConfig();
     SensorType parentType = config.getSensorType("Equilibrator Pressure");
-    SensorType childType = config.getSensorType("Equilibrator Pressure (absolute)");
+    SensorType childType = config
+      .getSensorType("Equilibrator Pressure (absolute)");
 
     assertTrue(config.requiredForVariables(parentType, var1List));
     assertTrue(config.requiredForVariables(childType, var1List));
   }
 
+  /**
+   * Test that checking whether a {@link SensorType} is required for an invalid
+   * variable throws a {@link SensorConfigurationException}.
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
   @FlywayTest
   @Test
   public void requiredForVarInvalidVarTest() throws Exception {
@@ -699,6 +976,15 @@ public class SensorsConfigurationTest extends BaseTest {
     });
   }
 
+  /**
+   * Test that attempting to retrieve the {@link SensorType}s for an invalid
+   * variable throws a {@link SensorConfigurationException}.
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
   @FlywayTest
   @Test
   public void getSensorTypesInvalidVarTest() throws Exception {
@@ -709,9 +995,15 @@ public class SensorsConfigurationTest extends BaseTest {
     });
   }
 
+  /**
+   * Test that configuring a parent {@link SensorType} to depend on another
+   * {@link SensorType} is invalid and throws a
+   * {@link SensorConfigurationException}.
+   *
+   * @see #getConfig()
+   */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/dependentParent"
-  })
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/dependentParent" })
   @Test
   public void dependentParentTest() throws Exception {
     assertThrows(SensorConfigurationException.class, () -> {
@@ -719,9 +1011,14 @@ public class SensorsConfigurationTest extends BaseTest {
     });
   }
 
+  /**
+   * Test that configuring a child {@link SensorType} as a core type instead of
+   * its parent throws a {@link SensorConfigurationException}.
+   *
+   * @see #getConfig()
+   */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/variableWithCoreChild"
-  })
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/variableWithCoreChild" })
   @Test
   public void variableWithCoreChildTest() {
     assertThrows(SensorConfigurationException.class, () -> {
@@ -729,9 +1026,14 @@ public class SensorsConfigurationTest extends BaseTest {
     });
   }
 
+  /**
+   * Test that configuring a child {@link SensorType} as a non-core type instead
+   * of its parent throws a {@link SensorConfigurationException}.
+   *
+   * @see #getConfig()
+   */
   @FlywayTest(locationsForMigrate = {
-    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/variableWithNonCoreChild"
-  })
+    "resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/variableWithNonCoreChild" })
   @Test
   public void variableWithNonCoreChildTest() {
     assertThrows(SensorConfigurationException.class, () -> {
@@ -739,6 +1041,14 @@ public class SensorsConfigurationTest extends BaseTest {
     });
   }
 
+  /**
+   * Test that an {@link InstrumentVariable} can be retrieved using its ID.
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
   @FlywayTest
   @Test
   public void getInstrumentVariableTest() throws Exception {
@@ -746,6 +1056,15 @@ public class SensorsConfigurationTest extends BaseTest {
     assertEquals(1L, variable.getId());
   }
 
+  /**
+   * Test that attempting to retrieve a non-existent {@link InstrumentVariable}
+   * throws a {@link VariableNotFoundException}.
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
   @FlywayTest
   @Test
   public void getNonExistentInstrumentVariableTest() throws Exception {
@@ -754,19 +1073,36 @@ public class SensorsConfigurationTest extends BaseTest {
     });
   }
 
-  @FlywayTest(locationsForMigrate = {
-    "resources/sql/testbase/variable"
-  })
+  /**
+   * Test that retrieving multiple {@link InstrumentVariable}s works.
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
+  @FlywayTest(locationsForMigrate = { "resources/sql/testbase/variable" })
   @Test
   public void getInstrumentVariablesTest() throws Exception {
     initVarList();
     initTestVarList();
-    List<InstrumentVariable> variables = getConfig().getInstrumentVariables(bothVarsList);
+    List<InstrumentVariable> variables = getConfig()
+      .getInstrumentVariables(bothVarsList);
     for (InstrumentVariable variable : variables) {
-      assertTrue(variable.getName().equals("Underway Marine pCO₂") || variable.getName().equals("testVar"));
+      assertTrue(variable.getName().equals("Underway Marine pCO₂")
+        || variable.getName().equals("testVar"));
     }
   }
 
+  /**
+   * Test that retrieving multiple {@link InstrumentVariable}s where one or more
+   * variables doesn't exist throws a {@link VariableNotFoundException}.
+   *
+   * @throws Exception
+   *           If the {@link SensorsConfiguration} cannot be accessed.
+   *
+   * @see #getConfig()
+   */
   @Test
   public void getNonExistentInstrumentVariablesTest() throws Exception {
     initVarList();
