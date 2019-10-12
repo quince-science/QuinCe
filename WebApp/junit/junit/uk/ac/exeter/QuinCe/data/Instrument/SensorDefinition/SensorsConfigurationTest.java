@@ -44,7 +44,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * <p>
  * Many of these tests use additional configurations in the database. The
  * relevant {@code .sql} files are in
- * {@code resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/}.
+ * {@code WebApp/resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/}.
  * </p>
  *
  * @author Steve Jones
