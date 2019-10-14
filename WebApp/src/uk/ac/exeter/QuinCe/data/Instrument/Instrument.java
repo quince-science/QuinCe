@@ -410,19 +410,21 @@ public class Instrument {
 
     for (FileDefinition fileDefinition : fileDefinitions) {
       RunTypeAssignments runTypeAssignments = fileDefinition.getRunTypes();
-      for (String runType : runTypeAssignments.keySet()) {
-        RunTypeAssignment assignment = runTypeAssignments.get(runType);
+      if (null != runTypeAssignments) {
+        for (String runType : runTypeAssignments.keySet()) {
+          RunTypeAssignment assignment = runTypeAssignments.get(runType);
 
-        while (assignment.isAlias()) {
-          assignment = runTypeAssignments.get(assignment.getAliasTo());
-        }
-
-        if (assignment.getCategory().isVariable()) {
-          if (!result.containsKey(assignment.getCategoryCode())) {
-            result.put(assignment.getCategoryCode(), new ArrayList<String>());
+          while (assignment.isAlias()) {
+            assignment = runTypeAssignments.get(assignment.getAliasTo());
           }
 
-          result.get(assignment.getCategoryCode()).add(runType);
+          if (assignment.getCategory().isVariable()) {
+            if (!result.containsKey(assignment.getCategoryCode())) {
+              result.put(assignment.getCategoryCode(), new ArrayList<String>());
+            }
+
+            result.get(assignment.getCategoryCode()).add(runType);
+          }
         }
       }
     }
