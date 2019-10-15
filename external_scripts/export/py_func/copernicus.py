@@ -49,7 +49,6 @@ To move an existing file, you can use following syntax in your DNT file :
 
 '''
 import logging 
-import ftplib
 import ftputil 
 import os
 import sys
@@ -502,9 +501,7 @@ def build_DNT(dnt_upload,dnt_delete):
   dnt_folder = 'DNT/' + local_folder + '/'  
   dnt_filepath = dnt_folder + dnt_file
 
-  try: os.mkdir(dnt_folder); 
-  except Exception as e:
-    pass
+  if not os.path.isdir(dnt_folder):  os.mkdir(dnt_folder)
 
   with open(dnt_filepath,'wb') as xml: 
     xml_tree.write(xml,xml_declaration=True,method='xml')
