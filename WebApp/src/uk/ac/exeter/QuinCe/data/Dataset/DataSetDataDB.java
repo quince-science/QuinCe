@@ -942,31 +942,33 @@ public class DataSetDataDB {
     throws MissingParamException, DatabaseException {
 
     MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkMissing(updateValues, "updateValues");
+    MissingParam.checkMissing(updateValues, "updateValues", true);
 
-    Connection conn = null;
-    PreparedStatement stmt = null;
+    if (updateValues.size() > 0) {
+      Connection conn = null;
+      PreparedStatement stmt = null;
 
-    try {
+      try {
 
-      conn = dataSource.getConnection();
-      stmt = conn.prepareStatement(SET_QC_STATEMENT);
+        conn = dataSource.getConnection();
+        stmt = conn.prepareStatement(SET_QC_STATEMENT);
 
-      for (FieldValue value : updateValues) {
-        stmt.setInt(1, value.getQcFlag().getFlagValue());
-        stmt.setString(2, value.getQcComment());
-        stmt.setLong(3, value.getValueId());
+        for (FieldValue value : updateValues) {
+          stmt.setInt(1, value.getQcFlag().getFlagValue());
+          stmt.setString(2, value.getQcComment());
+          stmt.setLong(3, value.getValueId());
 
-        stmt.addBatch();
+          stmt.addBatch();
+        }
+
+        stmt.executeBatch();
+
+      } catch (SQLException e) {
+        throw new DatabaseException("Error updating QC values", e);
+      } finally {
+        DatabaseUtils.closeStatements(stmt);
+        DatabaseUtils.closeConnection(conn);
       }
-
-      stmt.executeBatch();
-
-    } catch (SQLException e) {
-      throw new DatabaseException("Error updating QC values", e);
-    } finally {
-      DatabaseUtils.closeStatements(stmt);
-      DatabaseUtils.closeConnection(conn);
     }
   }
 
