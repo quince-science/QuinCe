@@ -639,7 +639,7 @@ function drawPlot(index) {
   graph_options.height = $('#plot' + index + 'Panel').height() - 40;
   graph_options.labelsDiv = 'plot' + index + 'Label';
   // Ghost data and series data colors
-  graph_options.colors = ['#AAAAAA', '#01752D'];
+  graph_options.colors = ['#C0C0C0', '#01752D'];
 
   if (typeof customiseGraphOptions == 'function') {
     graph_options = customiseGraphOptions(graph_options);
