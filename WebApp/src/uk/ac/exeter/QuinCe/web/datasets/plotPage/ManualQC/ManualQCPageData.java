@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+@SuppressWarnings("serial")
 public class ManualQCPageData extends DatasetMeasurementData {
 
   protected List<String> measurementRunTypes;
