@@ -228,6 +228,7 @@ public class FieldValue {
     needsFlag = init.needsFlag;
     qcComment = init.qcComment;
     used = init.used;
+    ghost = init.ghost;
   }
 
   /**
