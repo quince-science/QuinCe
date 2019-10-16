@@ -26,7 +26,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
@@ -339,9 +338,9 @@ public class ExportBean extends BaseManagedBean {
         if (!field.isDiagnostic()) {
           if (exportFields.contains(field)) {
             FieldValue fieldValue = entry.getValue();
-
             output.append(exportOption.getSeparator());
-            if (null == fieldValue || fieldValue.isNaN()) {
+            if (null == fieldValue || fieldValue.isNaN()
+              || fieldValue.isGhost()) {
               output.append(exportOption.getMissingValue());
             } else {
               output.append(numberFormatter.format(fieldValue.getValue()));
@@ -349,7 +348,7 @@ public class ExportBean extends BaseManagedBean {
 
             if (field.hasQC()) {
               output.append(exportOption.getSeparator());
-              if (null == fieldValue) {
+              if (null == fieldValue || fieldValue.isGhost()) {
                 output.append(exportOption.getMissingValue());
               } else {
                 if (!dataset.isNrt() && fieldValue.needsFlag()) {
@@ -361,7 +360,7 @@ public class ExportBean extends BaseManagedBean {
 
               if (exportOption.includeQCComments()) {
                 output.append(exportOption.getSeparator());
-                if (null == fieldValue) {
+                if (null == fieldValue || fieldValue.isGhost()) {
                   output.append("");
                 } else {
                   output.append(
