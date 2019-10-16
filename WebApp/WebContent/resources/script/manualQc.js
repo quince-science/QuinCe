@@ -123,6 +123,9 @@ function getColumnDefs() {
             flagClass = 'bad';
               break;
           }
+          case -100: {
+            flagClass = 'ignore';
+          }
           }
 
           var classes = ['numericCol'];
