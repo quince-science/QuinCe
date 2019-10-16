@@ -757,4 +757,8 @@ public abstract class PlotPageBean extends BaseManagedBean {
   public boolean isNrt() {
     return dataset.isNrt();
   }
+
+  public String getGhostDataLabel() {
+    return "Ghost";
+  }
 }

@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.web.datasets.data;
 
 import org.primefaces.json.JSONArray;
+import org.primefaces.json.JSONObject;
 
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 
@@ -10,13 +11,7 @@ public class PlotRecord implements Comparable<PlotRecord> {
   private long id;
   private int flag;
   private double yValue;
-
-  protected PlotRecord(double xValue, long id, int flag, double yValue) {
-    this.xValue = xValue;
-    this.id = id;
-    this.flag = flag;
-    this.yValue = yValue;
-  }
+  private boolean ghost;
 
   protected PlotRecord(double xValue, long id, FieldValue value, boolean nrt) {
     this.xValue = xValue;
@@ -29,6 +24,7 @@ public class PlotRecord implements Comparable<PlotRecord> {
     }
 
     this.yValue = value.getValue();
+    this.ghost = value.isGhost();
   }
 
   protected JSONArray toJsonArray() {
@@ -37,7 +33,15 @@ public class PlotRecord implements Comparable<PlotRecord> {
     json.put(xValue);
     json.put(id);
     json.put(flag);
-    json.put(yValue);
+
+    if (ghost) {
+      json.put(yValue);
+      json.put(JSONObject.NULL);
+    } else {
+      json.put(JSONObject.NULL);
+      json.put(yValue);
+    }
+
     return json;
   }
 

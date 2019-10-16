@@ -100,7 +100,8 @@ public class DataSetDataDB {
     + "FROM sensor_values WHERE dataset_id = ? " + "ORDER BY file_column, date";
 
   /**
-   * Query to get all the sensor values for a dataset
+   * Query to get all the sensor values for a dataset. Flushing values are
+   * ignored.
    */
   private static final String GET_SENSOR_VALUES_BY_DATE_AND_COLUMN_QUERY = "SELECT "
     + "id, file_column, date, value, auto_qc, " // 5
@@ -165,12 +166,10 @@ public class DataSetDataDB {
     + "sv.user_qc_flag, sv.user_qc_message, mv.measurement_id " // 8
     + " FROM sensor_values sv LEFT JOIN measurement_values mv "
     + "ON sv.id = mv.sensor_value_id WHERE sv.dataset_id = ? "
-    + "AND sv.file_column = ? AND sv.user_qc_flag != " + Flag.VALUE_FLUSHING
-    + " ORDER BY sv.date ASC";
+    + "AND sv.file_column = ? ORDER BY sv.date ASC";
 
   private static final String GET_SENSOR_VALUE_DATES_QUERY = "SELECT DISTINCT "
-    + "date FROM sensor_values WHERE dataset_id = ? AND user_qc_flag != "
-    + Flag.VALUE_FLUSHING + " ORDER BY DATE ASC";
+    + "date FROM sensor_values WHERE dataset_id = ? ORDER BY date ASC";
 
   private static final String GET_REQUIRED_FLAGS_QUERY = "SELECT "
     + "COUNT(*) FROM sensor_values WHERE dataset_id = ? "
@@ -1157,13 +1156,15 @@ public class DataSetDataDB {
     record.getLong(8);
     boolean used = !record.wasNull();
 
+    boolean ghost = userQCFlag.equals(Flag.FLUSHING);
+
     // Position and diagnostics are always marked as used
     if (!used && fileColumn < 0 || sensorType.isDiagnostic()) {
       used = true;
     }
 
     return new FieldValue(valueId, sensorValue, autoQC, userQCFlag, qcComment,
-      used);
+      used, ghost);
   }
 
   private static void loadDataReductionData(Connection conn,
