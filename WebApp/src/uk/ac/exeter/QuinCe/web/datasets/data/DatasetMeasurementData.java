@@ -208,7 +208,7 @@ public abstract class DatasetMeasurementData
       if (entry.getValue().containsKey(field)) {
         FieldValue value = entry.getValue().get(field);
 
-        if (null != value && !value.isNaN()) {
+        if (null != value && !value.isNaN() && !value.isGhost()) {
           Position position = getClosestPosition(entry.getKey());
           MapRecord record = new MapRecord(position,
             DateTimeUtils.dateToLong(entry.getKey()), value);
