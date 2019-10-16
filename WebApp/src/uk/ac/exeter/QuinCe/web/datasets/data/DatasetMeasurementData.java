@@ -460,7 +460,9 @@ public abstract class DatasetMeasurementData
 
     for (LocalDateTime id : rows) {
       FieldValue value = get(id).get(field);
-      if (null != value) {
+
+      // Do not set QC on ghost data
+      if (null != value && !value.isGhost()) {
         value.setQcFlag(flag);
         value.setQcComment(comment);
         value.setNeedsFlag(false);
