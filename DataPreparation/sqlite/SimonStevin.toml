@@ -33,6 +33,6 @@
              "AA4330FTemperature", "FLRTSerial", "FLRTChla", "AWSAirPressure",
              "AWSTemperature", "AWSWindDir", "AWSWindSpeed", "OctansHeave",
              "SolinoidState", "Multiplexer"]
-  
+
   # Value to store in empty columns
-  empty_col_value = -999
+  empty_col_value = -9999
