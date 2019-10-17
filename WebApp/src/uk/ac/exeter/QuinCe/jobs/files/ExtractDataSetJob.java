@@ -40,7 +40,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Job to extract the data for a data set from the uploaded data files
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -243,22 +243,42 @@ public class ExtractDataSetJob extends Job {
       runTypePeriods.finish();
 
       // Now remove all the values that are within the instrument's pre-
-      // and post-flushing periods
-      RunTypePeriod currentPeriod = runTypePeriods.get(0);
-      int currentPeriodIndex = 0;
+      // and post-flushing periods (if they're defined)
+      if (instrument.getPreFlushingTime() > 0
+        || instrument.getPostFlushingTime() > 0) {
 
-      Iterator<SensorValue> valuesIter = sensorValues.iterator();
-      while (valuesIter.hasNext()) {
-        SensorValue value = valuesIter.next();
+        RunTypePeriod currentPeriod = runTypePeriods.get(0);
+        int currentPeriodIndex = 0;
 
-        // Make sure we have the correct run type period
-        while (!currentPeriod.encompasses(value.getTime())) {
-          currentPeriodIndex++;
-          currentPeriod = runTypePeriods.get(currentPeriodIndex);
-        }
+        Iterator<SensorValue> valuesIter = sensorValues.iterator();
+        while (valuesIter.hasNext()) {
+          SensorValue value = valuesIter.next();
 
-        if (inFlushingPeriod(value.getTime(), currentPeriod, instrument)) {
-          valuesIter.remove();
+          boolean periodFound = false;
+
+          // Make sure we have the correct run type period
+          while (!periodFound) {
+
+            // If we have multiple file definitions, it's possible that
+            // timestamps
+            // in the file where the run type *isn't* defined will fall between
+            // run types.
+            //
+            // In this case, simply use the next known run type. Otherwise we
+            // find
+            // the run type that the timestamp is in.
+            if (value.getTime().isBefore(currentPeriod.start)
+              || currentPeriod.encompasses(value.getTime())) {
+              periodFound = true;
+            } else {
+              currentPeriodIndex++;
+              currentPeriod = runTypePeriods.get(currentPeriodIndex);
+            }
+          }
+
+          if (inFlushingPeriod(value.getTime(), currentPeriod, instrument)) {
+            valuesIter.remove();
+          }
         }
       }
 

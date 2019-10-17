@@ -130,7 +130,7 @@ public class BaseTest {
   }
 
   /**
-   * Create a stream of {@code null} and empty String values
+   * Create a {@link Stream} of {@code null} and empty String values
    *
    * <p>
    * Some tests need to check behaviours with empty {@link String} values. This
@@ -146,7 +146,8 @@ public class BaseTest {
   }
 
   /**
-   * Get the contents of a Test Set file as a stream
+   * Get the contents of a Test Set file as a {@link Stream} of
+   * {@link TestSetLine} objects.
    *
    * <p>
    * Some tests take a large combination of inputs and have a corresponding
@@ -171,6 +172,7 @@ public class BaseTest {
    * The input parameter for this method is the base filename of the test set
    * file (without extension). This is converted to the path
    * {@code resources/testsets/<parameter>.csv}.
+   * </p>
    *
    * @see TestSetLine
    *
