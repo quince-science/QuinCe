@@ -79,6 +79,8 @@ public abstract class DatasetMeasurementData
     }
 
     mapCache = new HashMap<Field, MapRecords>();
+
+    initFilter();
   }
 
   /**
@@ -477,10 +479,6 @@ public abstract class DatasetMeasurementData
     Map<Long, FieldValue> values)
     throws MeasurementDataException, MissingParamException {
 
-    if (!filterInitialised) {
-      initFilter();
-    }
-
     filterAndAddValuesAction(runType, time, values);
   }
 
@@ -508,7 +506,7 @@ public abstract class DatasetMeasurementData
    * @param time
    *          The time to be added
    */
-  private void addTime(LocalDateTime time) {
+  protected final void addTime(LocalDateTime time) {
     if (!containsKey(time)) {
       put(time, fieldSets.generateFieldValuesMap());
       rowsLoaded.put(time, false);

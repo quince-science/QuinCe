@@ -8,6 +8,7 @@ import java.util.Map;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -24,6 +25,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public class InternalCalibrationPageData extends DatasetMeasurementData {
 
   private List<String> internalCalibrationRunTypes;
+
+  private RunTypePeriods runTypePeriods;
 
   private Map<Long, FileColumn> calibrationColumns;
 
@@ -83,6 +86,10 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
 
       // Get the list of run type values that indicate measurements
       internalCalibrationRunTypes = instrument.getInternalCalibrationRunTypes();
+      runTypePeriods = DataSetDataDB.getRunTypePeriods(
+        ResourceManager.getInstance().getDBDataSource(), instrument, dataSet,
+        internalCalibrationRunTypes);
+
     } catch (Exception e) {
       throw new MeasurementDataException("Error looking up insturment details",
         e);
@@ -92,9 +99,13 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
   @Override
   public final void addTimes(Collection<LocalDateTime> times)
     throws MeasurementDataException {
-    super.addTimes(times);
 
-    // Make sure all data is loaded
+    // Add only those times that are in the set of allowed run types (i.e. the
+    // internal calibration run types)
+    times.stream().filter(t -> runTypePeriods.contains(t))
+      .forEach(this::addTime);
+
+    // Load all the data
     loadRows(0, size());
   }
 
