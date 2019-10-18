@@ -26,7 +26,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 @SuppressWarnings("serial")
 public abstract class DatasetMeasurementData
@@ -63,8 +62,6 @@ public abstract class DatasetMeasurementData
   private boolean positionsLoaded = false;
 
   private Map<Field, MapRecords> mapCache;
-
-  private boolean filterInitialised = false;
 
   public DatasetMeasurementData(Instrument instrument, FieldSets fieldSets,
     DataSet dataSet) throws MeasurementDataException {
@@ -475,12 +472,9 @@ public abstract class DatasetMeasurementData
     return updatedValues;
   }
 
-  public final void filterAndAddValues(String runType, LocalDateTime time,
+  public abstract void filterAndAddValues(String runType, LocalDateTime time,
     Map<Long, FieldValue> values)
-    throws MeasurementDataException, MissingParamException {
-
-    filterAndAddValuesAction(runType, time, values);
-  }
+    throws MeasurementDataException, MissingParamException;
 
   /**
    * Ensure that the specified times are present in the map. New times will be
@@ -512,23 +506,6 @@ public abstract class DatasetMeasurementData
       rowsLoaded.put(time, false);
     }
   }
-
-  /**
-   * Add a set of values, filtering out unwanted values. The default filter
-   * removes values for columns that are internally calibrated where the run
-   * type is not a measurement. This has the effect of removing all values taken
-   * during internal calibration.
-   *
-   * Override this method to filter the supplied values according to need.
-   *
-   * @param currentRunType
-   * @param time
-   * @param values
-   * @throws RecordNotFoundException
-   */
-  protected abstract void filterAndAddValuesAction(String runType,
-    LocalDateTime time, Map<Long, FieldValue> values)
-    throws MissingParamException, MeasurementDataException;
 
   /**
    * Initialise information required for filterAndAddValues
