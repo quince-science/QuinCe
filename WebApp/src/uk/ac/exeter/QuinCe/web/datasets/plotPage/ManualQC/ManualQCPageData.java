@@ -45,7 +45,7 @@ public class ManualQCPageData extends DatasetMeasurementData {
    * @throws MeasurementDataException
    */
   @Override
-  public void filterAndAddValuesAction(String runType, LocalDateTime time,
+  public void filterAndAddValues(String runType, LocalDateTime time,
     Map<Long, FieldValue> values)
     throws MeasurementDataException, MissingParamException {
 
