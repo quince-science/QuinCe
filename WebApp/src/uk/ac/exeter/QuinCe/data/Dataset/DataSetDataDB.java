@@ -179,7 +179,7 @@ public class DataSetDataDB {
     + "m.date, dr.variable_id, dr.calculation_values, dr.qc_flag, dr.qc_message "
     + "FROM measurements m INNER JOIN data_reduction dr "
     + "ON (m.id = dr.measurement_id) WHERE m.dataset_id = ? " + "AND m.date IN "
-    + DatabaseUtils.IN_PARAMS_TOKEN + " " + "ORDER BY m.date ASC";
+    + DatabaseUtils.IN_PARAMS_TOKEN + " ORDER BY m.date ASC";
 
   private static final String GET_DATA_REDUCTION_QUERY = "SELECT "
     + "m.date, dr.calculation_values, qc_flag "
@@ -192,6 +192,11 @@ public class DataSetDataDB {
 
   private static final String GET_RECORD_COUNT_QUERY = "SELECT "
     + "COUNT(DISTINCT(date)) FROM sensor_values WHERE dataset_id = ?";
+
+  private static final String GET_RUN_TYPES_QUERY = "SELECT "
+    + "date, value FROM sensor_values "
+    + " WHERE dataset_id = ? AND file_column IN "
+    + DatabaseUtils.IN_PARAMS_TOKEN + " ORDER BY date ASC";
 
   /**
    * Take a list of fields, and return those which come from the dataset data.
@@ -1301,6 +1306,47 @@ public class DataSetDataDB {
 
     } catch (SQLException e) {
       throw new DatabaseException("Error getting measurement times", e);
+    }
+
+    return result;
+  }
+
+  public static RunTypePeriods getRunTypePeriods(DataSource dataSource,
+    Instrument instrument, DataSet dataSet, List<String> allowedRunTypes)
+    throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(instrument, "instrument");
+    MissingParam.checkMissing(dataSet, "dataSet");
+    MissingParam.checkMissing(allowedRunTypes, "allowedRunTypes", false);
+
+    RunTypePeriods result = new RunTypePeriods();
+
+    List<Long> runTypeColumnIds = instrument.getSensorAssignments()
+      .getRunTypeColumnIDs();
+
+    String sensorValuesSQL = DatabaseUtils
+      .makeInStatementSql(GET_RUN_TYPES_QUERY, runTypeColumnIds.size());
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn.prepareStatement(sensorValuesSQL)) {
+
+      stmt.setLong(1, dataSet.getId());
+
+      int currentParam = 2;
+      for (long column : runTypeColumnIds) {
+        stmt.setLong(currentParam, column);
+        currentParam++;
+      }
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          result.add(records.getString(2),
+            DateTimeUtils.longToDate(records.getLong(1)));
+        }
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting run type periods", e);
     }
 
     return result;
