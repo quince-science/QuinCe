@@ -3,6 +3,7 @@ import tempfile
 import datetime
 import pandas as pd
 import numpy as np
+import numpy.ma as ma
 import csv, json
 from math import isnan
 from io import BytesIO
@@ -156,21 +157,33 @@ def makenetcdf(datasetname, fieldconfig, records):
     for key, value in attributes.items():
       var.setncattr(key, value)
 
-    varvalues = np.empty([records.shape[0], 1])
-    varvalues[:,0] = records[field['Export Column']].to_numpy()
+    # Read the data values
+    datavalues = records[field['Export Column']].to_numpy()
 
+    # Calculate QC values
+    qc_values = np.empty([records.shape[0], 1])
+    if field['QC'] == "Data":
+      qc_values[:,0] = makeqcvalues(datavalues, records[field['Export Column'] + '_QC'].to_numpy())
+    else:
+      qc_values[:,0] = field['QC']
+
+
+    if not isnan(field['add_offset']):
+      var.setncattr('add_offset', field['add_offset'])
+      var.setncattr('scale_factor', field['scale_factor'])
+
+      # The netCDF library detects FillValues *after* it's done the packing step.
+      # So we replace the NaN values so that the packing will get the correct FillValue
+      datavalues[np.isnan(datavalues)] = float(field['FillValue']) * float(field['scale_factor'])
+
+    varvalues = np.empty([records.shape[0], 1])
+    varvalues[:,0] = datavalues
     var[:,:] = varvalues
 
     # DM variable
     dmvar = nc.createVariable(field['netCDF Name'] + '_DM', 'c', ("TIME", "DEPTH"), fill_value=' ')
     assigndmvarattributes(dmvar)
     dmvar[:,:] = dms
-
-    qc_values = np.empty([records.shape[0], 1])
-    if field['QC'] == "Data":
-      qc_values[:,0] = makeqcvalues(varvalues, records[field['Export Column'] + '_QC'].to_numpy())
-    else:
-      qc_values[:,0] = field['QC']
 
     qcvar = nc.createVariable(field['netCDF Name'] + '_QC', "b", ("TIME", "DEPTH"), \
       fill_value = QC_FILL_VALUE)
@@ -309,7 +322,7 @@ def makeqcvalue(flag):
   elif flag == 4:
     result = 4
   else:
-    raise ValueError("Unrecognised flag value " + flag)
+    raise ValueError("Unrecognised flag value " + str(flag))
 
   return result
 
