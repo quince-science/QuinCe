@@ -626,7 +626,7 @@ function drawPlot(index) {
   var interactionModel = getInteractionModel(index);
   var labels = getPlotLabels(index);
   var xLabel = labels[0];
-  var yLabels = labels.slice(3);
+  var yLabels = labels.slice(4);
   var yLabel = yLabels[0];
 
   var graph_options = Object.assign({}, BASE_GRAPH_OPTIONS);
