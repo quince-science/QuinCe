@@ -1,4 +1,6 @@
-NODC Code,Name,Category Code,Data Type,Callsign
-NRTA,G O Sars,31,VOS,LMEL
-26NA,Nuka Arctica,31,VOS,OXYH2
-58GS,G O Sars,31,VOS,LMEL
+NODC Code,Name,Category Code,Data Type,Callsign,Author_list
+NRTA,G O Sars,31,VOS,LMEL,
+26NA,Nuka Arctica,31,VOS,OXYH2,"Becker, Meike; Olsen, Are"
+58GS,G O Sars,31,VOS,LMEL,"Skjelvan, Ingunn"
+65DK,San Cap Lorenzo,31,VOS,OXOF2,"Lefèvre, Nathalie"
+

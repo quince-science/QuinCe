@@ -16,6 +16,8 @@ NAME = 1
 CATEGORY_CODE = 2
 DATA_TYPE = 3
 CALLSIGN = 4
+AUTHOR_LIST = 5
+YEAR = datetime.datetime.now().year
 
 TIME_BASE = datetime.datetime(1950, 1, 1, 0, 0, 0)
 QC_LONG_NAME = "quality flag"
@@ -80,7 +82,7 @@ def makenetcdf(datasetname, fieldconfig, records):
   depthdim = nc.createDimension("DEPTH", 1)
 
   # Time, lat and lon dimensions are created per record
-  timedim = nc.createDimension("TIME", None)
+  timedim = nc.createDimension("TIME", records.shape[0])
   timevar = nc.createVariable("TIME", "d", ("TIME"), fill_value = 999999.0)
   timevar.long_name = "Time"
   timevar.standard_name = "time"
@@ -226,6 +228,8 @@ def makenetcdf(datasetname, fieldconfig, records):
   nc.title = "Global Ocean - In Situ near-real time carbon observation"
   nc.author = "cmems-service"
   nc.naming_authority = "Copernicus"
+  nc.citation = AUTHOR_LIST + "(" + YEAR + "): NRT data from [platform name]. "\
+    + "Made available through the Copernicus project."
 
   nc.platform_code = getplatformvalue(platform_code, CALLSIGN)
   nc.site_code = getplatformvalue(platform_code, CALLSIGN)
