@@ -296,4 +296,9 @@ public class InternalCalibrationBean extends PlotPageBean {
 
     return result;
   }
+
+  @Override
+  public String getGhostDataLabel() {
+    return "Flushing";
+  }
 }
