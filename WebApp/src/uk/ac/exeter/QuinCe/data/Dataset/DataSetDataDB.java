@@ -156,7 +156,7 @@ public class DataSetDataDB {
   private static final String GET_SENSOR_VALUES_BY_DATE_QUERY = "SELECT "
     + "sv.id, sv.file_column, sv.date, sv.value, sv.auto_qc, " // 5
     + "sv.user_qc_flag, sv.user_qc_message, mv.measurement_id " // 8
-    + " FROM sensor_values sv LEFT JOIN measurement_values mv "
+    + "FROM sensor_values sv LEFT JOIN measurement_values mv "
     + "ON sv.id = mv.sensor_value_id WHERE sv.dataset_id = ? "
     + "AND sv.date IN " + DatabaseUtils.IN_PARAMS_TOKEN + " "
     + "ORDER BY sv.date ASC";
@@ -164,9 +164,10 @@ public class DataSetDataDB {
   private static final String GET_SENSOR_VALUES_BY_SENSOR_QUERY = "SELECT "
     + "sv.id, sv.file_column, sv.date, sv.value, sv.auto_qc, " // 5
     + "sv.user_qc_flag, sv.user_qc_message, mv.measurement_id " // 8
-    + " FROM sensor_values sv LEFT JOIN measurement_values mv "
+    + "FROM sensor_values sv LEFT JOIN measurement_values mv "
     + "ON sv.id = mv.sensor_value_id WHERE sv.dataset_id = ? "
-    + "AND sv.file_column = ? ORDER BY sv.date ASC";
+    + "AND sv.file_column IN " + DatabaseUtils.IN_PARAMS_TOKEN + " "
+    + "ORDER BY sv.date ASC";
 
   private static final String GET_SENSOR_VALUE_DATES_QUERY = "SELECT DISTINCT "
     + "date FROM sensor_values WHERE dataset_id = ? ORDER BY date ASC";
@@ -988,7 +989,7 @@ public class DataSetDataDB {
 
     if (times.size() > 0) {
       try (Connection conn = dataSource.getConnection();) {
-        loadQCSensorValues(conn, output, times);
+        loadQCSensorValuesByTime(conn, output, times);
         loadDataReductionData(conn, output, times);
       } catch (Exception e) {
         throw new DatabaseException("Error while loading measurement data", e);
@@ -996,152 +997,147 @@ public class DataSetDataDB {
     }
   }
 
-  public static void loadSensorData(DataSource dataSource,
-    DatasetMeasurementData output, List<Field> fields)
-    throws MissingParamException, DatabaseException {
-
-    MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkMissing(output, "output");
-    MissingParam.checkMissing(fields, "sensorIDs", false);
-
-    try (Connection conn = dataSource.getConnection();) {
-      for (Field field : fields) {
-        loadQCSensorValues(conn, output, field);
-      }
-    } catch (Exception e) {
-      throw new DatabaseException("Error while loading measurement data", e);
-    }
-  }
-
-  /**
-   * Load all values for a given sensor (defined by a Field object). Values
-   * taken during the instrument's flushing periods are not included.
-   *
-   * @param conn
-   *          A database connection
-   * @param output
-   *          The destination for the loaded data
-   * @param field
-   *          The field to be loaded
-   * @throws DatabaseException
-   *           If a database error occurs
-   */
-  private static void loadQCSensorValues(Connection conn,
-    DatasetMeasurementData output, Field field) throws DatabaseException {
-
-    try (PreparedStatement stmt = conn
-      .prepareStatement(GET_SENSOR_VALUES_BY_SENSOR_QUERY)) {
-
-      stmt.setLong(1, output.getDatasetId());
-      stmt.setLong(2, field.getId());
-
-      SensorType sensorType = output.getInstrument().getSensorAssignments()
-        .getSensorTypeForDBColumn(field.getId());
-
-      try (ResultSet records = stmt.executeQuery()) {
-
-        while (records.next()) {
-          LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
-          FieldValue value = makeSensorFieldValue(records, sensorType);
-          output.addValue(time, field, value);
-        }
-      }
-    } catch (Exception e) {
-      throw new DatabaseException("Error while retrieving sensor values", e);
-    }
-  }
-
-  public static void loadQCSensorValues(DataSource dataSource,
+  public static void loadQCSensorValuesByTime(DataSource dataSource,
     DatasetMeasurementData output, List<LocalDateTime> times)
-    throws SQLException, MeasurementDataException, RecordNotFoundException,
-    InvalidFlagException, RoutineException, MissingParamException {
+    throws MissingParamException, DatabaseException, MeasurementDataException,
+    RecordNotFoundException, RoutineException, InvalidFlagException {
 
     try (Connection conn = dataSource.getConnection()) {
-      loadQCSensorValues(conn, output, times);
+      loadQCSensorValuesByTime(conn, output, times);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting sensor values", e);
     }
   }
 
-  /**
-   * Load all the sensor values for a given set of times
-   *
-   * @param conn
-   * @param output
-   * @param times
-   * @throws SQLException
-   * @throws MeasurementDataException
-   * @throws RecordNotFoundException
-   * @throws InvalidFlagException
-   * @throws RoutineException
-   * @throws MissingParamException
-   */
-  public static void loadQCSensorValues(Connection conn,
+  public static void loadQCSensorValuesByTime(Connection conn,
     DatasetMeasurementData output, List<LocalDateTime> times)
-    throws SQLException, MeasurementDataException, RecordNotFoundException,
-    InvalidFlagException, RoutineException, MissingParamException {
+    throws MissingParamException, DatabaseException, MeasurementDataException,
+    RecordNotFoundException, RoutineException, InvalidFlagException {
 
-    if (times.size() > 0) {
-      String sensorValuesSQL = DatabaseUtils
-        .makeInStatementSql(GET_SENSOR_VALUES_BY_DATE_QUERY, times.size());
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(output, "output");
+    MissingParam.checkMissing(times, "times", false);
 
-      // Get the Run Type column IDs
-      List<Long> runTypeColumns = output.getInstrument().getSensorAssignments()
-        .getRunTypeColumnIDs();
+    // Get the Run Type column IDs
+    List<Long> runTypeColumns = output.getInstrument().getSensorAssignments()
+      .getRunTypeColumnIDs();
 
-      try (PreparedStatement stmt = conn.prepareStatement(sensorValuesSQL)) {
+    String sensorValuesSQL = DatabaseUtils
+      .makeInStatementSql(GET_SENSOR_VALUES_BY_DATE_QUERY, times.size());
 
-        stmt.setLong(1, output.getDatasetId());
+    try (PreparedStatement stmt = conn.prepareStatement(sensorValuesSQL)) {
+      stmt.setLong(1, output.getDatasetId());
 
-        // Add dates starting at parameter index 2
-        for (int i = 0; i < times.size(); i++) {
-          stmt.setLong(i + 2, DateTimeUtils.dateToLong(times.get(i)));
-        }
+      // Add dates starting at parameter index 2
+      for (int i = 0; i < times.size(); i++) {
+        stmt.setLong(i + 2, DateTimeUtils.dateToLong(times.get(i)));
+      }
 
-        try (ResultSet records = stmt.executeQuery()) {
-          // We collect together all the sensor values for a given date.
-          // Then we check them all together and add them to the output
-          String currentRunType = null;
-          LocalDateTime currentTime = LocalDateTime.MIN;
-          Map<Long, FieldValue> currentDateValues = new HashMap<Long, FieldValue>();
+      readQCSensorValues(output, stmt, runTypeColumns);
 
-          // Loop through all the sensor value records
-          while (records.next()) {
-            LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting sensor values", e);
+    }
+  }
 
-            // If the time has changed, process the current set of collected
-            // values
-            if (!time.isEqual(currentTime)) {
-              if (!currentTime.isEqual(LocalDateTime.MIN)) {
-                output.filterAndAddValues(currentRunType, currentTime,
-                  currentDateValues);
+  public static void loadQCSensorValuesByField(DataSource dataSource,
+    DatasetMeasurementData output, List<Field> fields)
+    throws MissingParamException, DatabaseException, MeasurementDataException,
+    RecordNotFoundException, RoutineException, InvalidFlagException {
 
-              }
+    try (Connection conn = dataSource.getConnection()) {
+      loadQCSensorValuesByField(conn, output, fields);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting sensor values", e);
+    }
+  }
 
-              currentTime = time;
-              currentDateValues = new HashMap<Long, FieldValue>();
-            }
+  public static void loadQCSensorValuesByField(Connection conn,
+    DatasetMeasurementData output, List<Field> fields)
+    throws MissingParamException, DatabaseException, MeasurementDataException,
+    RecordNotFoundException, RoutineException, InvalidFlagException {
 
-            // Process the current record
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkMissing(output, "output");
+    MissingParam.checkMissing(fields, "fields", false);
 
-            // See if this is a Run Type
-            long fileColumn = records.getLong(2);
+    // Get the Run Type column IDs
+    List<Long> runTypeColumns = output.getInstrument().getSensorAssignments()
+      .getRunTypeColumnIDs();
 
-            if (runTypeColumns.contains(fileColumn)) {
-              currentRunType = records.getString(4);
-            } else {
-              // This is a sensor value
-              SensorType sensorType = output.getInstrument()
-                .getSensorAssignments().getSensorTypeForDBColumn(fileColumn);
+    // Build the list of search columns. This is the provided list plus the run
+    // type columns
+    List<Long> searchFields = new ArrayList<Long>(runTypeColumns);
+    fields.forEach(f -> searchFields.add(f.getId()));
 
-              FieldValue value = makeSensorFieldValue(records, sensorType);
-              currentDateValues.put(fileColumn, value);
-            }
+    String sensorValuesSQL = DatabaseUtils.makeInStatementSql(
+      GET_SENSOR_VALUES_BY_SENSOR_QUERY, searchFields.size());
+
+    try (PreparedStatement stmt = conn.prepareStatement(sensorValuesSQL)) {
+      stmt.setLong(1, output.getDatasetId());
+
+      // Add dates starting at parameter index 2
+      for (int i = 0; i < searchFields.size(); i++) {
+        stmt.setLong(i + 2, searchFields.get(i));
+      }
+
+      readQCSensorValues(output, stmt, runTypeColumns);
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting sensor values", e);
+    }
+
+  }
+
+  private static void readQCSensorValues(DatasetMeasurementData output,
+    PreparedStatement stmt, List<Long> runTypeColumns)
+    throws SQLException, MissingParamException, MeasurementDataException,
+    RecordNotFoundException, RoutineException, InvalidFlagException {
+
+    try (ResultSet records = stmt.executeQuery()) {
+
+      // We collect together all the sensor values for a given date. Then we
+      // check them all together and add them to the output
+      String currentRunType = null;
+      LocalDateTime currentTime = LocalDateTime.MIN;
+      Map<Field, FieldValue> currentDateValues = new HashMap<Field, FieldValue>();
+
+      // Loop through all the sensor value records
+      while (records.next()) {
+
+        // Loop through all the sensor value records while (records.next()) {
+        LocalDateTime time = DateTimeUtils.longToDate(records.getLong(3));
+
+        // If the time has changed, process the current set of collected //
+        // values
+        if (!time.isEqual(currentTime)) {
+          if (!currentTime.isEqual(LocalDateTime.MIN)) {
+            output.filterAndAddValues(currentRunType, currentTime,
+              currentDateValues);
           }
 
-          // Store the last set of values
-          output.filterAndAddValues(currentRunType, currentTime,
-            currentDateValues);
+          currentTime = time;
+          currentDateValues = new HashMap<Field, FieldValue>();
+        }
+
+        // Process the current record
+
+        // See if this is a Run Type
+        long fileColumn = records.getLong(2);
+        if (runTypeColumns.contains(fileColumn)) {
+          currentRunType = records.getString(4);
+        } else {
+          // This is a sensor value
+          SensorType sensorType = output.getInstrument().getSensorAssignments()
+            .getSensorTypeForDBColumn(fileColumn);
+
+          FieldValue value = makeSensorFieldValue(records, sensorType);
+          currentDateValues.put(output.getFieldSets().getField(fileColumn),
+            value);
         }
       }
+
+      // Store the last set of values
+      output.filterAndAddValues(currentRunType, currentTime, currentDateValues);
     }
   }
 

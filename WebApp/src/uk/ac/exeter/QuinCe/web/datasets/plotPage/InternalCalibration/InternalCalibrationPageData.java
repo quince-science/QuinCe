@@ -43,15 +43,15 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
 
   @Override
   public void filterAndAddValues(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values)
+    Map<Field, FieldValue> values)
     throws MeasurementDataException, MissingParamException {
 
     if (internalCalibrationRunTypes.contains(runType)) {
       Map<Field, FieldValue> valuesToAdd = new HashMap<Field, FieldValue>();
 
-      for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
+      for (Map.Entry<Field, FieldValue> entry : values.entrySet()) {
 
-        FileColumn column = calibrationColumns.get(entry.getKey());
+        FileColumn column = calibrationColumns.get(entry.getKey().getId());
 
         // We ignore any values that aren't in the calibratable columns
         if (null != column) {
@@ -115,7 +115,7 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
 
     if (times.size() > 0) {
       try {
-        DataSetDataDB.loadQCSensorValues(
+        DataSetDataDB.loadQCSensorValuesByTime(
           ResourceManager.getInstance().getDBDataSource(), this, times);
       } catch (Exception e) {
         throw new MeasurementDataException("Error loading data from database",

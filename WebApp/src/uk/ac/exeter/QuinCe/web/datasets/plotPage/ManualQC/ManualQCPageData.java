@@ -46,7 +46,7 @@ public class ManualQCPageData extends DatasetMeasurementData {
    */
   @Override
   public void filterAndAddValues(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values)
+    Map<Field, FieldValue> values)
     throws MeasurementDataException, MissingParamException {
 
     try {
@@ -56,14 +56,14 @@ public class ManualQCPageData extends DatasetMeasurementData {
 
       Map<Field, FieldValue> valuesToAdd = new HashMap<Field, FieldValue>();
 
-      for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
+      for (Map.Entry<Field, FieldValue> entry : values.entrySet()) {
 
         // We don't keep internal calibration values
         SensorType sensorType = instrument.getSensorAssignments()
-          .getSensorTypeForDBColumn(entry.getKey());
+          .getSensorTypeForDBColumn(entry.getKey().getId());
         if (!sensorType.hasInternalCalibration()
           || measurementRunTypes.contains(runType)) {
-          valuesToAdd.put(fieldSets.getField(entry.getKey()), entry.getValue());
+          valuesToAdd.put(entry.getKey(), entry.getValue());
         }
       }
 
@@ -115,7 +115,7 @@ public class ManualQCPageData extends DatasetMeasurementData {
       }
 
       if (sensorFields.size() > 0) {
-        DataSetDataDB.loadSensorData(
+        DataSetDataDB.loadQCSensorValuesByField(
           ResourceManager.getInstance().getDBDataSource(), this, sensorFields);
       }
     } catch (Exception e) {

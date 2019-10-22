@@ -155,16 +155,16 @@ public class ExportData extends ManualQCPageData {
 
   @Override
   public void filterAndAddValues(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values)
+    Map<Field, FieldValue> values)
     throws MeasurementDataException, MissingParamException {
 
     try {
       Map<Field, CombinedFieldValue> valuesToAdd = new HashMap<Field, CombinedFieldValue>();
 
-      for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
+      for (Map.Entry<Field, FieldValue> entry : values.entrySet()) {
 
         SensorType sensorType = instrument.getSensorAssignments()
-          .getSensorTypeForDBColumn(entry.getKey());
+          .getSensorTypeForDBColumn(entry.getKey().getId());
         if (sensorTypeFields.containsKey(sensorType.getId())) {
 
           Field field = sensorTypeFields.get(sensorType.getId());

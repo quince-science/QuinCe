@@ -473,7 +473,7 @@ public abstract class DatasetMeasurementData
   }
 
   public abstract void filterAndAddValues(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values)
+    Map<Field, FieldValue> values)
     throws MeasurementDataException, MissingParamException;
 
   /**
