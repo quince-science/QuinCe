@@ -223,11 +223,14 @@ def makenetcdf(datasetname, fieldconfig, records):
   nc.comment = " "
   nc.summary = " "
   nc.reference = "http://marine.copernicus.eu/, https://www.icos-cp.eu/"
-  nc.citation = "These data were collected and made freely available by the " \
-    + "Copernicus project and the programs that contribute to it."
-  nc.distribution_statement = "These data follow Copernicus standards; they " \
-    + "are public and free of charge. User assumes all risk for use of data. " \
-    + "User must display citation in any publication or product using data. " \
+  #nc.citation = "These data were collected and made freely available by the " \
+  #  + "Copernicus project and the programs that contribute to it."
+  nc.citation = (getplatformvalue(platform_code, AUTHOR_LIST) + "(" + str(YEAR) 
+    + "): NRT data from " + getplatformvalue(platform_code, NAME) +  
+    ". Made available through the Copernicus project.")
+  nc.distribution_statement = ("These data follow Copernicus standards; they " 
+    + "are public and free of charge. User assumes all risk for use of data. " 
+    + "User must display citation in any publication or product using data. " 
     + "User must contact PI prior to any commercial use of data."
 
   # Write the netCDF
