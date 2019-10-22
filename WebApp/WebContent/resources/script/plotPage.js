@@ -516,10 +516,10 @@ function selectionUpdated() {
 
   // Redraw the plots to show selection
   if (null != plot1) {
-    drawPlot(1);
+    drawPlot(1, false);
   }
   if (null != plot2) {
-    drawPlot(2);
+    drawPlot(2, false);
   }
   if (null != map1) {
     drawMap(1);
@@ -598,8 +598,18 @@ function hideQCMessage() {
   $('#qcControls').show();
 }
 
-function drawPlot(index) {
+function drawPlot(index, resetZoom) {
 
+  var plotVar = 'plot' + index;
+
+  var xAxisRange = null;
+  var yAxisRange = null;
+  
+  if (!resetZoom && null != window[plotVar]) {
+    xAxisRange = window[plotVar].xAxisRange();
+    yAxisRange = window[plotVar].yAxisRange();
+  }
+  
   // Get the plot data
   var plotData = null;
   // TODO 0 = date - but we need to make it a proper lookup
@@ -615,8 +625,6 @@ function drawPlot(index) {
   if (typeof getPlotTargetValue == 'function') {
     targetValue = getPlotTargetValue(index);
   }
-
-  var plotVar = 'plot' + index;
 
   // Remove the existing plot
   if (null != window[plotVar]) {
@@ -640,6 +648,14 @@ function drawPlot(index) {
   graph_options.labelsDiv = 'plot' + index + 'Label';
   // Ghost data and series data colors
   graph_options.colors = ['#C0C0C0', '#01752D'];
+  
+  // Zoom
+  if (!resetZoom) {
+    graph_options.dateWindow = xAxisRange;
+    graph_options.valueRange = yAxisRange;
+    graph_options.yRangePad = 0;
+    graph_options.xRangePad = 0;
+  }
 
   if (typeof customiseGraphOptions == 'function') {
     graph_options = customiseGraphOptions(graph_options);
@@ -690,12 +706,6 @@ function drawPlot(index) {
       graph_options
   );
 
-  // Zoom to include the target value if required
-  if (null != targetValue) {
-    defaultPlotZoom(index);
-  }
-
-
   var plotVariable = parseInt($('#plot' + index + 'Form\\:yAxis').val());
   if (canSelectColumn(getColumnIndex(plotVariable))) {
     enablePlotSelect(index);
@@ -704,36 +714,6 @@ function drawPlot(index) {
   }
 
   window['map' + index] = null;
-
-  defaultPlotZoom(index);
-}
-
-function defaultPlotZoom(index) {
-
-  var targetValue = null;
-
-  if (typeof getPlotTargetValue == 'function') {
-    targetValue = getPlotTargetValue(index);
-  }
-
-  if (null == targetValue) {
-    window['plot' + index].resetZoom();
-  } else {
-
-    var newYRange = window['plot' + index].yAxisExtremes()[0];
-    if (targetValue < newYRange[0]) {
-      newYRange[0] = targetValue;
-    }
-
-    if (targetValue > newYRange[1]) {
-      newYRange[1] = targetValue;
-    }
-
-    window['plot' + index].updateOptions({
-      'valueRange' : newYRange,
-      dateWindow: null
-    });
-  }
 }
 
 function getPlotVisibility(index) {
@@ -996,7 +976,7 @@ function updatePlot(plotIndex) {
   var mode = getPlotMode(plotIndex);
 
   if (mode == "plot") {
-    drawPlot(plotIndex);
+    drawPlot(plotIndex, true);
   } else {
     initMap(plotIndex);
   }
@@ -1183,7 +1163,12 @@ function resetZoom(index) {
     window['map' + index + 'Extent'] = ol.proj.transformExtent(bounds.slice(0, 4), "EPSG:4326", window['map' + index].getView().getProjection());
     window['map' + index].getView().fit(window['map' + index + 'Extent'], window['map' + index].getSize());
   } else {
-    defaultPlotZoom(index);
+    window['plot' + index].updateOptions({
+      yRangePad: 10,
+      xRangePad: 10
+    });
+    
+    window['plot' + index].resetZoom();
   }
 }
 
@@ -1288,7 +1273,7 @@ function getInteractionModel(index) {
 }
 
 function setPlotSelectMode(index) {
-  drawPlot(index);
+  drawPlot(index, false);
 }
 
 function selectModeMouseDown(event, g, context) {
