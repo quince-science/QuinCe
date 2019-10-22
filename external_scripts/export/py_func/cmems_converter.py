@@ -231,7 +231,7 @@ def makenetcdf(datasetname, fieldconfig, records):
   nc.distribution_statement = ("These data follow Copernicus standards; they " 
     + "are public and free of charge. User assumes all risk for use of data. " 
     + "User must display citation in any publication or product using data. " 
-    + "User must contact PI prior to any commercial use of data."
+    + "User must contact PI prior to any commercial use of data.")
 
   # Write the netCDF
   nc.close()
