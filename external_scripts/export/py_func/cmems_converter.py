@@ -70,7 +70,7 @@ def makenetcdf(datasetname, fieldconfig, records):
   ncbytes = None
 
   platform_code = getplatformcode(datasetname)
-  filenameroot = "GL_TS_TS_" + getplatformcallsign(platform_code) + "_" + str(filedate)
+  filenameroot = "GL_TS_TS_" + getplatformvalue(platform_code, CALLSIGN) + "_" + str(filedate)
 
   # Open a new netCDF file
   ncpath = tempfile.gettempdir() + "/" + filenameroot + ".nc"
@@ -215,12 +215,12 @@ def makenetcdf(datasetname, fieldconfig, records):
   nc.author = "cmems-service"
   nc.naming_authority = "Copernicus"
 
-  nc.platform_code = getplatformcallsign(platform_code)
-  nc.site_code = getplatformcallsign(platform_code)
+  nc.platform_code = getplatformvalue(platform_code, CALLSIGN)
+  nc.site_code = getplatformvalue(platform_code, CALLSIGN)
 
   # For buoys -> Mooring observation.
-  platform_category_code = getplatformcategorycode(platform_code)
-  nc.platform_name = getplatformname(platform_code)
+  platform_category_code = getplatformvalue(platform_code, CATEGORY_CODE)
+  nc.platform_name = getplatformvalue(platform_code, NAME)
   nc.source_platform_category_code = platform_category_code
   nc.source = PLATFORM_CODES[platform_category_code]
 
@@ -269,58 +269,6 @@ def getplatformvalue(platform_code,value):
   with open("ship_categories.csv") as infile:
     reader = csv.reader(infile)
     lookups = {rows[0]:rows[value] for rows in reader}
-    try:
-      result = lookups[platform_code]
-    except KeyError:
-      logging.error(f"PLATFORM CODE '{platform_code}' not found in ship categories")
-
-  return result
-
-def getplatformcategorycode(platform_code):
-  result = None
-
-  with open("ship_categories.csv") as infile:
-    reader = csv.reader(infile)
-    lookups = {rows[0]:rows[2] for rows in reader}
-    try:
-      result = lookups[platform_code]
-    except KeyError:
-      logging.error(f"PLATFORM CODE '{platform_code}' not found in ship categories")
-
-  return result
-
-def getplatformname(platform_code):
-  result = None
-
-  with open("ship_categories.csv") as infile:
-    reader = csv.reader(infile)
-    lookups = {rows[0]:rows[1] for rows in reader}
-    try:
-      result = lookups[platform_code]
-    except KeyError:
-      logging.error(f"PLATFORM CODE ' {platform_code} ' not found in ship categories")
-
-  return result
-
-def getplatformcallsign(platform_code):
-  result = None
-
-  with open("ship_categories.csv") as infile:
-    reader = csv.reader(infile)
-    lookups = {rows[0]:rows[4] for rows in reader}
-    try:
-      result = lookups[platform_code]
-    except KeyError:
-      logging.error(f"PLATFORM CODE ' {platform_code}' not found in ship categories")
-
-  return result
-
-def getplatformdatatype(platform_code):
-  result = None
-
-  with open("ship_categories.csv") as infile:
-    reader = csv.reader(infile)
-    lookups = {rows[0]:rows[3] for rows in reader}
     try:
       result = lookups[platform_code]
     except KeyError:
