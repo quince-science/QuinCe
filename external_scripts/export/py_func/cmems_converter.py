@@ -10,6 +10,13 @@ from zipfile import ZipFile
 from netCDF4 import Dataset
 from re import match
 
+NAME = 1
+CATEGORY_CODE = 2
+DATA_TYPE = 3
+CALLSIGN = 4
+AUTHOR_LIST = 5
+YEAR = datetime.datetime.now().year
+
 TIME_BASE = datetime.datetime(1950, 1, 1, 0, 0, 0)
 QC_LONG_NAME = "quality flag"
 QC_CONVENTIONS = "OceanSITES reference table 2"
@@ -261,7 +268,7 @@ def getplatformvalue(platform_code,value):
 
   with open("ship_categories.csv") as infile:
     reader = csv.reader(infile)
-    lookups = {rows[0]:rows[2] for rows in reader}
+    lookups = {rows[0]:rows[value] for rows in reader}
     try:
       result = lookups[platform_code]
     except KeyError:
