@@ -13,9 +13,9 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
 
   private Field rowIdField;
 
-  private Map<String, Field> fieldsByName;
+  protected Map<String, Field> fieldsByName;
 
-  private Map<Long, Field> fieldsById;
+  protected Map<Long, Field> fieldsById;
 
   private long defaultFieldSet = FieldSet.BASE_ID;
 
