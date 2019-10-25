@@ -218,11 +218,11 @@ public class Plot {
 
       // TODO Remove the magic strings.
       result.append('"');
-      result.append(xAxis.getName());
+      result.append(xAxis.getFullName());
       result.append("\",\"ID\",\"QC Flag\",\"");
       result.append(parentBean.getGhostDataLabel());
       result.append("\",\"");
-      result.append(yAxis.getName());
+      result.append(yAxis.getFullName());
       result.append('"');
       break;
     }
@@ -239,7 +239,7 @@ public class Plot {
       result.append("\",\"");
       result.append("QC Flag");
       result.append("\",\"");
-      result.append(mapVariable.getName());
+      result.append(mapVariable.getFullName());
       result.append('"');
     }
     }

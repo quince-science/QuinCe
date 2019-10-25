@@ -8,6 +8,15 @@
   	"includeCalculationColumns": false
   },
   {
+    "exportName": "SOCAT No Salinity Flags",
+    "separator": "tab",
+    "missingValue": "-9999",
+    "variables": [],
+    "allSensors": false,
+  	"includeCalculationColumns": false,
+  	"exportDataClass": "NeutraliseSalinityFlagsExportData"
+  },
+  {
   	"exportName": "ICOS OTC",
   	"separator": "comma",
   	"allSensors": true,
