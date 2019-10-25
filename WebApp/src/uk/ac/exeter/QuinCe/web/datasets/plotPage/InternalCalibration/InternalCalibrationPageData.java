@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
@@ -21,6 +23,13 @@ import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+/**
+ * Values can only be added through
+ * {@link #filterAndAddValues(String, LocalDateTime, Map)}.
+ *
+ * @author Steve Jones
+ *
+ */
 @SuppressWarnings("serial")
 public class InternalCalibrationPageData extends DatasetMeasurementData {
 
@@ -64,7 +73,7 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
         }
       }
 
-      addValues(time, valuesToAdd);
+      super.addValues(time, valuesToAdd);
     }
   }
 
@@ -130,4 +139,21 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
     // We always load all data up front, so we don't need to load individual
     // fields
   }
+
+  /**
+   * Directly adding individual values is not supported in this implementation.
+   */
+  @Override
+  public void addValue(LocalDateTime rowId, long fieldId, FieldValue value) {
+    throw new NotImplementedException("Must use filterAndAddValues");
+  }
+
+  /**
+   * Directly adding individual values is not supported in this implementation.
+   */
+  @Override
+  public void addValue(LocalDateTime rowId, Field field, FieldValue value) {
+    throw new NotImplementedException("Must use filterAndAddValues");
+  }
+
 }
