@@ -1131,8 +1131,14 @@ public class DataSetDataDB {
             .getSensorTypeForDBColumn(fileColumn);
 
           FieldValue value = makeSensorFieldValue(records, sensorType);
-          currentDateValues.put(output.getFieldSets().getField(fileColumn),
-            value);
+
+          // We only need to bother adding the field if the output is expecting
+          // to see it
+          Field field = output.getFieldSets().getField(fileColumn);
+          if (null != field) {
+            currentDateValues.put(output.getFieldSets().getField(fileColumn),
+              value);
+          }
         }
       }
 
