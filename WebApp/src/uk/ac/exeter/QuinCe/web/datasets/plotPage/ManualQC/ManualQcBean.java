@@ -420,4 +420,9 @@ public class ManualQcBean extends PlotPageBean {
     flagsRequired = DataSetDataDB.getFlagsRequired(getDataSource(),
       getDataset().getId());
   }
+
+  @Override
+  public String getGhostDataLabel() {
+    return "Flushing";
+  }
 }

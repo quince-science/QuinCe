@@ -63,6 +63,9 @@ function getColumnDefs() {
               flagClass = 'bad';
                 break;
             }
+            case -100: {
+              flagClass = 'ignore';
+            }
             }
   
             var classes = ['numericCol'];
@@ -151,6 +154,6 @@ function getPlotMode(index) {
 }
 
 function getPlotTargetValue(index) {
-  var labelFields = getPlotLabels(index)[3].split(':');
+  var labelFields = getPlotLabels(index)[4].split(':');
   return calibrationJson[labelFields[0]][labelFields[1]];
 }

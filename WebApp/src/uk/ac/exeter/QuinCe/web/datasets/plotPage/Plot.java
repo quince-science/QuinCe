@@ -75,7 +75,7 @@ public class Plot {
 
   /**
    * Basic constructor
-   * 
+   *
    * @param parentBean
    *          The bean to which this plot belongs
    * @param mapBounds
@@ -178,7 +178,7 @@ public class Plot {
 
   /**
    * Get the plot data
-   * 
+   *
    * @return The plot data
    */
   public String getData() {
@@ -191,7 +191,7 @@ public class Plot {
 
   /**
    * Dummy method for JSF - does nothing
-   * 
+   *
    * @param data
    *          The data from JSF - ignored
    */
@@ -204,7 +204,7 @@ public class Plot {
 
   /**
    * Get the data labels for the plot
-   * 
+   *
    * @return The data labels
    */
   public String getLabels() {
@@ -216,16 +216,18 @@ public class Plot {
     switch (mode) {
     case MODE_PLOT: {
 
-      // TODO Remove the magic strings. Make PSF fields in CalculationDB
+      // TODO Remove the magic strings.
       result.append('"');
       result.append(xAxis.getName());
       result.append("\",\"ID\",\"QC Flag\",\"");
+      result.append(parentBean.getGhostDataLabel());
+      result.append("\",\"");
       result.append(yAxis.getName());
       result.append('"');
       break;
     }
     case MODE_MAP: {
-      // TODO Remove the magic strings. Make PSF fields in CalculationDB
+      // TODO Remove the magic strings.
       result.append('"');
       result.append("Longitude");
       result.append("\",\"");
@@ -249,7 +251,7 @@ public class Plot {
 
   /**
    * Dummy method for the front end
-   * 
+   *
    * @param labels
    *          Ignored
    */

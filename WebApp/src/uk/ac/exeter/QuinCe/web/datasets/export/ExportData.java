@@ -154,17 +154,17 @@ public class ExportData extends ManualQCPageData {
   }
 
   @Override
-  public void filterAndAddValuesAction(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values)
+  public void filterAndAddValues(String runType, LocalDateTime time,
+    Map<Field, FieldValue> values)
     throws MeasurementDataException, MissingParamException {
 
     try {
       Map<Field, CombinedFieldValue> valuesToAdd = new HashMap<Field, CombinedFieldValue>();
 
-      for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
+      for (Map.Entry<Field, FieldValue> entry : values.entrySet()) {
 
         SensorType sensorType = instrument.getSensorAssignments()
-          .getSensorTypeForDBColumn(entry.getKey());
+          .getSensorTypeForDBColumn(entry.getKey().getId());
         if (sensorTypeFields.containsKey(sensorType.getId())) {
 
           Field field = sensorTypeFields.get(sensorType.getId());
@@ -184,17 +184,6 @@ public class ExportData extends ManualQCPageData {
     }
   }
 
-  /*
-   * @Override public void addValue(LocalDateTime rowId, long fieldId,
-   * FieldValue value) { if (sensorTypeFields.containsKey(fieldId)) {
-   *
-   * Map<Field, FieldValue> row = get(rowId); Field field =
-   * sensorTypeFields.get(fieldId); row.put(field,
-   * addSensorValue((CombinedFieldValue) row.get(field), value));
-   *
-   * } else if (variableFields.containsKey(fieldId)) { super.addValue(rowId,
-   * variableFields.get(fieldId), value); } }
-   */
   private CombinedFieldValue addSensorValue(CombinedFieldValue existingValue,
     FieldValue value) {
 
