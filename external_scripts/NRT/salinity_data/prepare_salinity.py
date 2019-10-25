@@ -6,10 +6,10 @@
 
 # Files are:
 #
-# woa18_A5B7_s13_04.nc - Winter (DJF)
-# woa18_A5B7_s14_04.nc - Spring (MAM)
-# woa18_A5B7_s15_04.nc - Summer (JJA)
-# woa18_A5B7_s16_04.nc - Winter (SON)
+# woa18_A5B7_s13_04.nc - Winter (DJF) = Season 1
+# woa18_A5B7_s14_04.nc - Spring (MAM) = Season 2
+# woa18_A5B7_s15_04.nc - Summer (JJA) = Season 3
+# woa18_A5B7_s16_04.nc - Winter (SON) = Season 4
 #
 #
 # Output is a single netCDF file, containing the surface data for the full grid
