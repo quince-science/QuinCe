@@ -200,6 +200,10 @@ public class Flag implements Comparable<Flag> {
       result = TEXT_NEEDED;
       break;
     }
+    case VALUE_FLUSHING: {
+      result = TEXT_FLUSHING;
+      break;
+    }
     default: {
       // This should never happen!
       result = "***INVALID FLAG VALUE***";
