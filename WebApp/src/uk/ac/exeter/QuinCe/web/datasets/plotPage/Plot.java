@@ -222,7 +222,7 @@ public class Plot {
       result.append("\",\"ID\",\"QC Flag\",\"");
       result.append(parentBean.getGhostDataLabel());
       result.append("\",\"");
-      result.append(yAxis.getName());
+      result.append(yAxis.getFullName());
       result.append('"');
       break;
     }
