@@ -51,7 +51,7 @@ public class DataFileDB {
 
   /**
    * Statement to add a data file to the database
-   * 
+   *
    * @see #storeNewFile(DataSource, Properties, DataFile)
    */
   private static final String ADD_FILE_STATEMENT = "INSERT INTO data_file "
@@ -60,7 +60,7 @@ public class DataFileDB {
 
   /**
    * Statement to add a data file to the database
-   * 
+   *
    * @see #replaceFile(DataSource, Properties, DataFile, long)
    */
   private static final String REPLACE_FILE_STATEMENT = "UPDATE data_file "
@@ -79,7 +79,7 @@ public class DataFileDB {
 
   /**
    * Query to find all the data files owned by a given user
-   * 
+   *
    * @see #getUserFiles(DataSource, User)
    */
   private static final String GET_FILES_QUERY = "SELECT "
@@ -91,7 +91,7 @@ public class DataFileDB {
 
   /**
    * Query to find all the data files owned by a given user
-   * 
+   *
    * @see #getUserFiles(DataSource, User)
    */
   private static final String GET_FILES_BY_INSTRUMENT_QUERY = "SELECT "
@@ -103,7 +103,7 @@ public class DataFileDB {
 
   /**
    * Query to find all the data files owned by a given user
-   * 
+   *
    * @see #getUserFiles(DataSource, User)
    */
   private static final String GET_FILES_AFTER_DATE_QUERY = "SELECT "
@@ -115,14 +115,14 @@ public class DataFileDB {
 
   /**
    * Statement to delete the details of a data file
-   * 
+   *
    * @see #deleteFile(DataSource, Properties, FileInfo)
    */
   private static final String DELETE_FILE_STATEMENT = "DELETE FROM data_file WHERE id = ?";
 
   /**
    * Query to find a file using its database ID
-   * 
+   *
    * @see #getFileDetails(Connection, long)
    * @see #makeFileInfo(ResultSet, Connection)
    * @see #fileExists(Connection, long)
@@ -140,7 +140,7 @@ public class DataFileDB {
   /**
    * Query to find files for a given definition that covers part of a given date
    * range
-   * 
+   *
    * @see #getFiles(DataSource, FileDefinition, LocalDateTime, LocalDateTime)
    */
   private static final String GET_FILES_BY_TYPE_DATE_QUERY = "SELECT "
@@ -185,8 +185,18 @@ public class DataFileDB {
     + "(SELECT id FROM file_definition WHERE instrument_id = ?)";
 
   /**
+   * Query to get the last file modification date for an instrument.
+   *
+   * @see #getLastFileModification(Connection, long)
+   */
+  private static final String GET_LAST_MODIFIED_QUERY = "SELECT "
+    + "modified FROM data_file WHERE file_definition_id IN "
+    + "(SELECT id FROM file_definition WHERE instrument_id = ?) "
+    + "ORDER BY modified DESC LIMIT 1";
+
+  /**
    * Store a file in the database and in the file store
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param appConfig
@@ -236,7 +246,7 @@ public class DataFileDB {
 
   /**
    * Store a file in the database and in the file store
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param appConfig
@@ -305,7 +315,7 @@ public class DataFileDB {
 
   /**
    * Store a file in the database and in the file store
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param appConfig
@@ -377,7 +387,7 @@ public class DataFileDB {
   /**
    * Determine whether a file of a given type already exists covering at least
    * part of the specified date range
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param fileDefinitionId
@@ -416,7 +426,7 @@ public class DataFileDB {
   /**
    * Determine whether a file of a given type already exists covering at least
    * part of the specified date range
-   * 
+   *
    * @param conn
    *          A database connection
    * @param fileDefinitionId
@@ -473,7 +483,7 @@ public class DataFileDB {
 
   /**
    * Determines whether a file with the specified ID exists in the database
-   * 
+   *
    * @param conn
    *          A database connection
    * @param fileId
@@ -519,7 +529,7 @@ public class DataFileDB {
   /**
    * Returns a list of all the files owned by a specific user. The list can
    * optionally be restricted by an instrument ID.
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param appConfig
@@ -579,7 +589,7 @@ public class DataFileDB {
 
   /**
    * Get the {@link DataFile} objects for a set of files
-   * 
+   *
    * @param conn
    *          A datbase connection
    * @param appConfig
@@ -636,7 +646,7 @@ public class DataFileDB {
 
   /**
    * Build a {@link DataFile} object from a database record
-   * 
+   *
    * @param record
    *          The database record
    * @param fileStore
@@ -670,7 +680,7 @@ public class DataFileDB {
 
   /**
    * Build a {@link DataFile} object from a database record
-   * 
+   *
    * @param record
    *          The database record
    * @param fileStore
@@ -703,7 +713,7 @@ public class DataFileDB {
 
   /**
    * Build a {@link DataFile} object from a database record
-   * 
+   *
    * @param record
    *          The record
    * @param fileStore
@@ -736,7 +746,7 @@ public class DataFileDB {
 
   /**
    * Removes a file from the database and the underlying file store.
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param appConfig
@@ -787,7 +797,7 @@ public class DataFileDB {
   /**
    * Get the data files for a given file definition that are covered by the
    * supplied date range
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param fileDefinition
@@ -853,7 +863,7 @@ public class DataFileDB {
   /**
    * Get the list of data files of a given file definition that encompass two
    * dates
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentId
@@ -913,7 +923,7 @@ public class DataFileDB {
 
   /**
    * Get the list of data files for a given instrument that encompass two dates
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentId
@@ -969,7 +979,7 @@ public class DataFileDB {
   /**
    * Determine whether or not there is a complete set of files available after a
    * given time, from which a dataset can be made.
-   * 
+   *
    * @param conn
    *          A database connection
    * @param instrumentId
@@ -1067,7 +1077,7 @@ public class DataFileDB {
 
   /**
    * Get the last date covered by any file for a given instrument
-   * 
+   *
    * @param conn
    *          A database connection
    * @param instrumentId
@@ -1106,7 +1116,7 @@ public class DataFileDB {
 
   /**
    * Determine whether or not an instrument has a file with the specified name
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentId
@@ -1179,5 +1189,47 @@ public class DataFileDB {
     }
 
     return fileCount;
+  }
+
+  /**
+   * Get the last date that any data file was modified for a given instrument.
+   *
+   * <p>
+   * Returns {@code null} if there are no data files for the instrument, or the
+   * instrument does not exist.
+   * </p>
+   *
+   * @param conn
+   *          A database connection
+   * @param instrumentId
+   *          The instrument's database ID
+   * @return The last modification date
+   * @throws MissingParamException
+   * @throws DatabaseException
+   */
+  public static LocalDateTime getLastFileModification(Connection conn,
+    long instrumentId) throws MissingParamException, DatabaseException {
+
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+
+    LocalDateTime result = null;
+
+    try (
+      PreparedStatement stmt = conn.prepareStatement(GET_LAST_MODIFIED_QUERY)) {
+
+      stmt.setLong(1, instrumentId);
+
+      try (ResultSet records = stmt.executeQuery()) {
+        if (records.next()) {
+          result = DateTimeUtils.longToDate(records.getTimestamp(1).getTime());
+        }
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while getting file modification dates",
+        e);
+    }
+
+    return result;
   }
 }
