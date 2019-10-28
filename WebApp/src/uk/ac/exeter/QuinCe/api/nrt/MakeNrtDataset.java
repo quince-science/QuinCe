@@ -1,9 +1,9 @@
 package uk.ac.exeter.QuinCe.api.nrt;
 
 import java.sql.Connection;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.sql.DataSource;
 import javax.ws.rs.FormParam;
@@ -26,7 +26,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * API Method to create NRT datasets
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -35,7 +35,7 @@ public class MakeNrtDataset {
 
   /**
    * Main API method. Performs checks then tries to create the NRT dataset.
-   * 
+   *
    * @param instrumentId
    *          The instrument ID ({@code instrument} parameter)
    * @return The response
@@ -81,7 +81,7 @@ public class MakeNrtDataset {
 
   /**
    * Attempt to create a NRT dataset for an instrument
-   * 
+   *
    * @param conn
    *          A database connection
    * @param instrumentId
@@ -94,22 +94,24 @@ public class MakeNrtDataset {
   public static boolean createNrtDataset(Connection conn, Instrument instrument)
     throws Exception {
 
-    Properties appConfig = ResourceManager.getInstance().getConfig();
+    boolean createDataset = false;
 
-    DataSet lastDataset = DataSetDB.getLastDataSet(conn,
+    DataSet existingDataset = DataSetDB.getNrtDataSet(conn,
       instrument.getDatabaseId());
 
-    boolean createDataset = true;
-
-    if (null == lastDataset) {
-      if (!DataFileDB.completeFilesAfter(conn, appConfig,
-        instrument.getDatabaseId(), null)) {
-        createDataset = false;
-      }
+    // If there is no NRT dataset, create one
+    if (null == existingDataset) {
+      createDataset = true;
     } else {
-      if (!DataFileDB.completeFilesAfter(conn, appConfig,
-        instrument.getDatabaseId(), lastDataset.getEnd())) {
-        createDataset = false;
+
+      // See if any data files have been uploaded/updated since the NRT dataset
+      // was created. If so, recreate it.
+      LocalDateTime lastFileModification = DataFileDB
+        .getLastFileModification(conn, instrument.getDatabaseId());
+
+      if (null != lastFileModification
+        && lastFileModification.isAfter(existingDataset.getCreatedDate())) {
+        createDataset = true;
       }
     }
 
