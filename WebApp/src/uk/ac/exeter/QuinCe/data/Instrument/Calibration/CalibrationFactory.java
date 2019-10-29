@@ -39,14 +39,14 @@ public class CalibrationFactory {
    * @return The Calibration object
    */
   public static Calibration createCalibration(String calibrationType,
-    String calibrationClass, long instrumentId, LocalDateTime deploymentDate,
-    String target, String coefficients) {
+    String calibrationClass, long id, long instrumentId,
+    LocalDateTime deploymentDate, String target, String coefficients) {
 
     try {
       List<Double> parsedCoefficients = StringUtils
         .delimitedToDoubleList(coefficients);
-      return createCalibration(calibrationType, calibrationClass, instrumentId,
-        deploymentDate, target, parsedCoefficients);
+      return createCalibration(calibrationType, calibrationClass, id,
+        instrumentId, deploymentDate, target, parsedCoefficients);
     } catch (NumberFormatException e) {
       throw new CalibrationException(
         "Invalid coefficients list: " + coefficients);
@@ -72,14 +72,14 @@ public class CalibrationFactory {
    * @return The Calibration object
    */
   public static Calibration createCalibration(String calibrationType,
-    String calibrationClass, long instrumentId, LocalDateTime deploymentDate,
-    String target, List<Double> coefficients) {
+    String calibrationClass, long id, long instrumentId,
+    LocalDateTime deploymentDate, String target, List<Double> coefficients) {
     Calibration result;
 
     switch (calibrationType) {
     case ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE: {
       try {
-        result = new ExternalStandard(instrumentId, target, deploymentDate,
+        result = new ExternalStandard(id, instrumentId, target, deploymentDate,
           coefficients);
       } catch (CalibrationException e) {
         throw e;
@@ -96,7 +96,7 @@ public class CalibrationFactory {
 
         Constructor<?> constructor = clazz.getConstructor(long.class,
           String.class, LocalDateTime.class, List.class);
-        result = (Calibration) constructor.newInstance(instrumentId, target,
+        result = (Calibration) constructor.newInstance(id, instrumentId, target,
           deploymentDate, coefficients);
       } catch (CalibrationException e) {
         throw e;

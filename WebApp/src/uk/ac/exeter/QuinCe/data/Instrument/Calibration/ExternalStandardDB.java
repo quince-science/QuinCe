@@ -39,7 +39,7 @@ public class ExternalStandardDB extends CalibrationDB {
    * date
    */
   public static final String GET_STANDARD_SET_QUERY = "SELECT "
-    + "c1.target, c1.deployment_date, c1.coefficients, c1.class "
+    + "c1.id, c1.target, c1.deployment_date, c1.coefficients, c1.class "
     + "FROM calibration c1 INNER JOIN "
     + "(SELECT MAX(deployment_date) deployment_date, target "
     + "FROM calibration WHERE deployment_date < ? " + "AND instrument_id = ? "
@@ -176,13 +176,14 @@ public class ExternalStandardDB extends CalibrationDB {
 
       records = stmt.executeQuery();
       while (records.next()) {
-        String target = records.getString(1);
+        long id = records.getLong(1);
+        String target = records.getString(2);
         LocalDateTime standardDate = DateTimeUtils
-          .longToDate(records.getLong(2));
-        String coefficients = records.getString(3);
-        String className = records.getString(4);
+          .longToDate(records.getLong(3));
+        String coefficients = records.getString(4);
+        String className = records.getString(5);
         result.add(CalibrationFactory.createCalibration(
-          EXTERNAL_STANDARD_CALIBRATION_TYPE, className, instrumentId,
+          EXTERNAL_STANDARD_CALIBRATION_TYPE, className, id, instrumentId,
           standardDate, target, coefficients));
       }
     } catch (SQLException e) {

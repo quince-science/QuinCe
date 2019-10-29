@@ -64,11 +64,11 @@ public class ExternalStandard extends Calibration {
    * @throws ParameterException
    *           If the calibration details are invalid
    */
-  protected ExternalStandard(long instrumentId, String target,
+  protected ExternalStandard(long id, long instrumentId, String target,
     LocalDateTime deploymentDate, List<Double> coefficients)
     throws ParameterException {
-    super(instrumentId, ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE,
-      target);
+    super(id, instrumentId,
+      ExternalStandardDB.EXTERNAL_STANDARD_CALIBRATION_TYPE, target);
 
     if (null != target) {
       setDeploymentDate(deploymentDate);
