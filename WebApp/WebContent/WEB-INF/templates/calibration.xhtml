@@ -39,7 +39,16 @@
           var timeline = new vis.Timeline(timelineContainer, calibrations, targets, TIMELINE_OPTIONS);
         </script>
         <p:messages styleClass="pageBlock" />
-        <p:panel header="New Deployment" styleClass="deploymentPanel">
+        <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
+            <p:button widgetVar="showAddDialog"
+              value="Add New Deployment" ajax="false"
+              onclick="PF('deploymentDialog').show();return false;" />
+        </h:panelGrid>
+        <p:dialog id="deploymentDialog" widgetVar="deploymentDialog"
+          header="Deployment">
+          <h:inputHidden id="deploymentId"
+            value="#{sessionScope[beanName].deploymentId}"/>
+            
           <div id="deploymentPanelContent">
             <div id="deploymentCalendar">
               <p:calendar id="deploymentDate" mode="inline"
@@ -75,12 +84,13 @@
               </div>
             </div>
           </div>
-          <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
-            <p:commandButton widgetVar="addDeploymentButton"
-              value="Add New Deployment" ajax="false"
-              action="#{sessionScope[beanName].addCalibration}" />
+          <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
+            <p:commandButton value="Save" ajax="false"
+              action="#{sessionScope[beanName].saveCalibration}" />
+            <p:button value="Cancel"
+              onclick="PF('deploymentDialog').hide();return false"/>
           </h:panelGrid>
-        </p:panel>
+        </p:dialog>
         <h:panelGrid columns="1" styleClass="buttonPanel">
           <p:commandButton value="Back to Instruments List"
             action="/instrument/instrument_list.xhtml" />
