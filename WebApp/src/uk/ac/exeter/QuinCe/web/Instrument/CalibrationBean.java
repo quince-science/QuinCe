@@ -12,6 +12,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
@@ -24,6 +25,13 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
  *
  */
 public abstract class CalibrationBean extends BaseManagedBean {
+
+  /**
+   * The database ID of the deployment being edited.
+   *
+   * Set to {@code -1} if this is a new deployment.
+   */
+  protected long deploymentId = DatabaseUtils.NO_DATABASE_RECORD;
 
   /**
    * The database ID of the current instrument
@@ -158,9 +166,24 @@ public abstract class CalibrationBean extends BaseManagedBean {
    *
    * @return The navigation
    */
-  public String addCalibration() {
+  public String saveCalibration() {
     // Null means we go back to the page we came from.
     // Will be overridden if there's an error
+    String nav = null;
+
+    if (deploymentId == DatabaseUtils.NO_DATABASE_RECORD) {
+      nav = addCalibration();
+    }
+
+    return nav;
+  }
+
+  /**
+   * Add a new calibration
+   *
+   * @return The navigation string
+   */
+  private String addCalibration() {
     String nav = null;
 
     try {
@@ -304,5 +327,13 @@ public abstract class CalibrationBean extends BaseManagedBean {
    */
   public String getCoefficientsLabel() {
     return "Coefficients";
+  }
+
+  public long getDeploymentId() {
+    return deploymentId;
+  }
+
+  public void setDeploymentId(long deploymentId) {
+    this.deploymentId = deploymentId;
   }
 }
