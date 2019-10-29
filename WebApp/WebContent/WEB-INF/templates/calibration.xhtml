@@ -9,13 +9,14 @@
   <ui:define name="pageTitle">#{sessionScope[beanName].humanReadableCalibrationType}
    - #{sessionScope[beanName].instrumentName}</ui:define>
   <ui:define name="localHead">
+    <h:outputScript name="script/calibration.js" />
     <h:outputScript name="script/vis-timeline-graph2d.min.js" />
     <h:outputStylesheet name="style/vis-timeline-graph2d.min.css" />
     <h:outputStylesheet name="style/calibration.css" />
   </ui:define>
   <ui:define name="content">
     <div class="fullPage">
-      <h:form id="uploadForm" method="post" charset="utf8">
+      <h:form id="deploymentForm" method="post" charset="utf8">
         <div id="timelineContainer"></div>
         <script>
           var TIMELINE_OPTIONS = {
@@ -28,7 +29,7 @@
             }
           };
 
-          var targets = JSON.parse('#{sessionScope[beanName].targetsJson}');
+          var usedTargets = JSON.parse('#{sessionScope[beanName].usedTargetsJson}');
           var calibrationsJson = JSON.parse('#{sessionScope[beanName].calibrationsJson}');
           // Treat dates as dates in the dataset
           calibrationsJson.map(function (item) {
@@ -36,23 +37,29 @@
           });
 
           var calibrations =  new vis.DataSet(calibrationsJson);
-          var timeline = new vis.Timeline(timelineContainer, calibrations, targets, TIMELINE_OPTIONS);
+          var timeline = new vis.Timeline(timelineContainer, calibrations,
+            usedTargets, TIMELINE_OPTIONS);
+          
+          timelineContainer.onclick = function (event) {
+            editDeployment(timeline.getEventProperties(event));
+          }
         </script>
         <p:messages styleClass="pageBlock" />
         <h:panelGrid columns="1" cellpadding="5" styleClass="buttonPanel">
             <p:button widgetVar="showAddDialog"
               value="Add New Deployment" ajax="false"
-              onclick="PF('deploymentDialog').show();return false;" />
+              onclick="addDeployment();return false;" />
         </h:panelGrid>
         <p:dialog id="deploymentDialog" widgetVar="deploymentDialog"
-          header="Deployment">
+          header="Deployment" modal="true">
           <h:inputHidden id="deploymentId"
-            value="#{sessionScope[beanName].deploymentId}"/>
+            value="#{sessionScope[beanName].calibration.id}"/>
             
           <div id="deploymentPanelContent">
             <div id="deploymentCalendar">
-              <p:calendar id="deploymentDate" mode="inline"
-                value="#{sessionScope[beanName].newCalibration.deploymentDate}"
+              <p:calendar id="deploymentDate" widgetVar="deploymentDate"
+                mode="inline"
+                value="#{sessionScope[beanName].calibration.deploymentDate}"
                 pattern="yyyy-MM-dd HH:mm:ss" navigator="true">
                 <f:converter converterId="localDateTimeConverter" />
               </p:calendar>
@@ -61,8 +68,8 @@
               <div id="targetField" class="fields">
                 <p:outputLabel for="target"
                   value="#{sessionScope[beanName].targetLabel}:"></p:outputLabel>
-                <p:selectOneMenu id="target" autoWidth="false"
-                  value="#{sessionScope[beanName].newCalibration.target}">
+                <p:selectOneMenu id="target" widgetVar="target" autoWidth="false"
+                  value="#{sessionScope[beanName].calibration.target}">
                   <f:selectItems
                     value="#{sessionScope[beanName].targets.entrySet()}"
                     var="entry" itemValue="#{entry.key}"
@@ -74,11 +81,11 @@
                   value="#{sessionScope[beanName].coefficientsLabel}:"></p:outputLabel>
                 <div id="coefficientFields" class="fields">
                   <ui:repeat
-                    value="#{sessionScope[beanName].newCalibration.editableCoefficients}"
-                    var="coefficient">
+                    value="#{sessionScope[beanName].calibration.editableCoefficients}"
+                    var="coefficient" varStatus="varStatus">
                     <p:outputLabel for="value" value="#{coefficient.name}:" />
-                    <p:inputNumber id="value" value="#{coefficient.value}"
-                      size="12" decimalPlaces="5" />
+                    <p:inputNumber id="value" widgetVar="coefficient-#{varStatus.index}"
+                      value="#{coefficient.value}" size="12" decimalPlaces="5" />
                   </ui:repeat>
                 </div>
               </div>

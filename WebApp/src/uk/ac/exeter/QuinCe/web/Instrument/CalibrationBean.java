@@ -9,12 +9,14 @@ import org.primefaces.json.JSONObject;
 
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
+import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationCoefficient;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationDB;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
+import uk.ac.exeter.QuinCe.utils.ParameterException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 
@@ -25,13 +27,6 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
  *
  */
 public abstract class CalibrationBean extends BaseManagedBean {
-
-  /**
-   * The database ID of the deployment being edited.
-   *
-   * Set to {@code -1} if this is a new deployment.
-   */
-  protected long deploymentId = DatabaseUtils.NO_DATABASE_RECORD;
 
   /**
    * The database ID of the current instrument
@@ -61,7 +56,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
   /**
    * The newly entered calibration
    */
-  private Calibration newCalibration;
+  private Calibration calibration;
 
   /**
    * Empty constructor
@@ -96,7 +91,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
       try {
         dbInstance = getDbInstance();
         loadCalibrations();
-        newCalibration = initNewCalibration();
+        calibration = initNewCalibration();
       } catch (Exception e) {
         nav = internalError(e);
       }
@@ -166,13 +161,22 @@ public abstract class CalibrationBean extends BaseManagedBean {
    *
    * @return The navigation
    */
-  public String saveCalibration() {
+  public String saveCalibration() throws Exception {
     // Null means we go back to the page we came from.
     // Will be overridden if there's an error
     String nav = null;
 
-    if (deploymentId == DatabaseUtils.NO_DATABASE_RECORD) {
-      nav = addCalibration();
+    try {
+      if (calibration.getId() == DatabaseUtils.NO_DATABASE_RECORD) {
+        addCalibration();
+      } else {
+        updateCalibration();
+      }
+
+      loadCalibrations();
+      calibration = initNewCalibration();
+    } catch (Exception e) {
+      nav = internalError(e);
     }
 
     return nav;
@@ -182,24 +186,29 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * Add a new calibration
    *
    * @return The navigation string
+   * @throws ParameterException
+   * @throws DatabaseException
+   * @throws MissingParamException
    */
-  private String addCalibration() {
-    String nav = null;
-
-    try {
-      if (dbInstance.calibrationExists(getDataSource(), getNewCalibration())) {
-        setMessage(null,
-          "A calibration already exists for this standard at this time");
-      } else {
-        dbInstance.addCalibration(getDataSource(), getNewCalibration());
-        loadCalibrations();
-        newCalibration = initNewCalibration();
-      }
-    } catch (Exception e) {
-      nav = internalError(e);
+  private void addCalibration()
+    throws MissingParamException, DatabaseException, ParameterException {
+    if (dbInstance.calibrationExists(getDataSource(), calibration)) {
+      setMessage(null,
+        "A calibration already exists for this standard at this time");
+    } else {
+      dbInstance.addCalibration(getDataSource(), calibration);
     }
+  }
 
-    return nav;
+  private void updateCalibration()
+    throws MissingParamException, DatabaseException, ParameterException {
+
+    if (dbInstance.calibrationExists(getDataSource(), calibration)) {
+      setMessage(null,
+        "A calibration already exists for this standard at this time");
+    } else {
+      dbInstance.updateCalibration(getDataSource(), calibration);
+    }
   }
 
   /**
@@ -250,7 +259,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
    *
    * @return The targets JSON
    */
-  public String getTargetsJson() throws Exception {
+  public String getUsedTargetsJson() throws Exception {
     JSONArray groups = new JSONArray();
 
     int counter = 0;
@@ -288,6 +297,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
         JSONObject calibrationJson = new JSONObject();
         calibrationJson.put("id", calibration.getId());
         calibrationJson.put("type", "box");
+        calibrationJson.put("target", key);
         calibrationJson.put("group", groupId);
         calibrationJson.put("start",
           DateTimeUtils.toIsoDate(calibration.getDeploymentDate()));
@@ -296,6 +306,14 @@ public abstract class CalibrationBean extends BaseManagedBean {
         calibrationJson.put("title",
           calibration.getHumanReadableCoefficients());
 
+        JSONArray coefficients = new JSONArray();
+        for (CalibrationCoefficient coefficient : calibration
+          .getCoefficients()) {
+
+          coefficients.put(coefficient.getValue());
+        }
+        calibrationJson.put("coefficients", coefficients);
+
         items.put(calibrationJson);
       }
 
@@ -303,15 +321,6 @@ public abstract class CalibrationBean extends BaseManagedBean {
     }
 
     return items.toString();
-  }
-
-  /**
-   * Get the new calibration deployment details
-   *
-   * @return The new calibration
-   */
-  public Calibration getNewCalibration() {
-    return newCalibration;
   }
 
   /**
@@ -330,11 +339,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
     return "Coefficients";
   }
 
-  public long getDeploymentId() {
-    return deploymentId;
-  }
-
-  public void setDeploymentId(long deploymentId) {
-    this.deploymentId = deploymentId;
+  public Calibration getCalibration() {
+    return calibration;
   }
 }
