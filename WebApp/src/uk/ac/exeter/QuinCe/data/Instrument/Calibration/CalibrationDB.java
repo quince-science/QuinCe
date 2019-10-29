@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,8 @@ public abstract class CalibrationDB {
    * @see #getCurrentCalibrations(DataSource, long)
    */
   private static final String GET_RECENT_CALIBRATIONS_QUERY = "SELECT "
-    + "instrument_id, target, deployment_date, coefficients, class FROM calibration WHERE "
+    + "id, instrument_id, target, deployment_date, coefficients, class "
+    + "FROM calibration WHERE "
     + "instrument_id = ? AND type = ? AND deployment_date <= ? "
     + "ORDER BY deployment_date DESC";
 
@@ -62,8 +64,8 @@ public abstract class CalibrationDB {
    * Query to get all calibrations of a given type for an instrument
    */
   private static final String GET_CALIBRATIONS_QUERY = "SELECT "
-    + "instrument_id, target, deployment_date, coefficients, class FROM calibration WHERE "
-    + "instrument_id = ? AND type = ? ORDER BY "
+    + "id, instrument_id, target, deployment_date, coefficients, class "
+    + "FROM calibration WHERE " + "instrument_id = ? AND type = ? ORDER BY "
     + "target, deployment_date ASC";
 
   /**
@@ -102,10 +104,13 @@ public abstract class CalibrationDB {
 
     Connection conn = null;
     PreparedStatement stmt = null;
+    ResultSet generatedKeys = null;
 
     try {
       conn = dataSource.getConnection();
-      stmt = conn.prepareStatement(ADD_CALIBRATION_STATEMENT);
+      stmt = conn.prepareStatement(ADD_CALIBRATION_STATEMENT,
+        Statement.RETURN_GENERATED_KEYS);
+
       stmt.setLong(1, calibration.getInstrumentId());
       stmt.setString(2, calibration.getType());
       stmt.setString(3, calibration.getTarget());
@@ -115,6 +120,12 @@ public abstract class CalibrationDB {
       stmt.setString(6, calibration.getClass().getSimpleName());
 
       stmt.execute();
+
+      generatedKeys = stmt.getGeneratedKeys();
+      if (generatedKeys.next()) {
+        calibration.setId(generatedKeys.getLong(1));
+      }
+
     } catch (SQLException e) {
       throw new DatabaseException("Error while storing calibration", e);
     } finally {
@@ -297,15 +308,16 @@ public abstract class CalibrationDB {
 
   private Calibration calibrationFromResultSet(ResultSet record)
     throws SQLException {
-    long instrumentId = record.getLong(1);
-    String target = record.getString(2);
-    LocalDateTime deploymentDate = DateTimeUtils.longToDate(record.getLong(3));
+    long id = record.getLong(1);
+    long instrumentId = record.getLong(2);
+    String target = record.getString(3);
+    LocalDateTime deploymentDate = DateTimeUtils.longToDate(record.getLong(4));
     List<Double> coefficients = StringUtils
-      .delimitedToDoubleList(record.getString(4));
-    String calibrationClass = record.getString(5);
+      .delimitedToDoubleList(record.getString(5));
+    String calibrationClass = record.getString(6);
 
     return CalibrationFactory.createCalibration(getCalibrationType(),
-      calibrationClass, instrumentId, deploymentDate, target, coefficients);
+      calibrationClass, id, instrumentId, deploymentDate, target, coefficients);
   }
 
   /**

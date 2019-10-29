@@ -286,6 +286,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
       for (Calibration calibration : calibrations.get(key)) {
         JSONObject calibrationJson = new JSONObject();
+        calibrationJson.put("id", calibration.getId());
         calibrationJson.put("type", "box");
         calibrationJson.put("group", groupId);
         calibrationJson.put("start",

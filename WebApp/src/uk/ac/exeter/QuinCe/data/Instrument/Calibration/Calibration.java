@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 
 /**
@@ -30,6 +31,11 @@ import uk.ac.exeter.QuinCe.utils.StringUtils;
  *
  */
 public abstract class Calibration implements Comparable<Calibration> {
+
+  /**
+   * The database ID of this calibration
+   */
+  private long id;
 
   /**
    * The instrument to which this calibration belongs
@@ -72,6 +78,7 @@ public abstract class Calibration implements Comparable<Calibration> {
    *          The instrument's database ID
    */
   protected Calibration(long instrumentId, String type) {
+    this.id = DatabaseUtils.NO_DATABASE_RECORD;
     this.instrumentId = instrumentId;
     this.type = type;
   }
@@ -87,6 +94,15 @@ public abstract class Calibration implements Comparable<Calibration> {
    *          The target
    */
   protected Calibration(long instrumentId, String type, String target) {
+    this.id = DatabaseUtils.NO_DATABASE_RECORD;
+    this.instrumentId = instrumentId;
+    this.type = type;
+    this.target = target;
+  }
+
+  protected Calibration(long id, long instrumentId, String type,
+    String target) {
+    this.id = id;
     this.instrumentId = instrumentId;
     this.type = type;
     this.target = target;
@@ -360,5 +376,13 @@ public abstract class Calibration implements Comparable<Calibration> {
    */
   public boolean isValid() {
     return true;
+  }
+
+  public long getId() {
+    return id;
+  }
+
+  public void setId(long id) {
+    this.id = id;
   }
 }
