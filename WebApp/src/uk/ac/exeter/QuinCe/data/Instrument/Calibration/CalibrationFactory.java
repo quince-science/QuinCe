@@ -95,7 +95,7 @@ public class CalibrationFactory {
         Class<?> clazz = Class.forName(fullClass);
 
         Constructor<?> constructor = clazz.getConstructor(long.class,
-          String.class, LocalDateTime.class, List.class);
+          long.class, String.class, LocalDateTime.class, List.class);
         result = (Calibration) constructor.newInstance(id, instrumentId, target,
           deploymentDate, coefficients);
       } catch (CalibrationException e) {
