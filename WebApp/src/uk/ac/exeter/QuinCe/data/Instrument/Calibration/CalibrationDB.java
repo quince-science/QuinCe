@@ -40,6 +40,10 @@ public abstract class CalibrationDB {
     + "(instrument_id, type, target, deployment_date, coefficients, class) "
     + "VALUES (?, ?, ?, ?, ?, ?)";
 
+  private static final String UPDATE_CALIBRATION_STATEMENT = "UPDATE calibration "
+    + "SET instrument_id = ?, type = ?, target = ?, deployment_date = ?, "
+    + "coefficients = ?, class = ? WHERE id = ?";
+
   /**
    * Query for finding recent calibrations.
    *
@@ -57,7 +61,7 @@ public abstract class CalibrationDB {
    * @see #calibrationExists(DataSource, Calibration)
    */
   private static final String CALIBRATION_EXISTS_QUERY = "SELECT "
-    + "COUNT(*) FROM calibration WHERE instrument_id = ? AND "
+    + "id FROM calibration WHERE instrument_id = ? AND "
     + "type = ? AND deployment_date = ? AND target = ?";
 
   /**
@@ -129,8 +133,40 @@ public abstract class CalibrationDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error while storing calibration", e);
     } finally {
+      DatabaseUtils.closeResultSets(generatedKeys);
       DatabaseUtils.closeStatements(stmt);
       DatabaseUtils.closeConnection(conn);
+    }
+  }
+
+  public void updateCalibration(DataSource dataSource, Calibration calibration)
+    throws DatabaseException, ParameterException {
+    MissingParam.checkMissing(dataSource, "dataSource");
+    MissingParam.checkMissing(calibration, "calibration");
+    MissingParam.checkMissing(calibration.getDeploymentDate(),
+      "calibration deployment date");
+
+    if (!calibration.validate()) {
+      throw new ParameterException("Calibration coefficients",
+        "Coefficients are invalid");
+    }
+
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement stmt = conn
+        .prepareStatement(UPDATE_CALIBRATION_STATEMENT);) {
+
+      stmt.setLong(1, calibration.getInstrumentId());
+      stmt.setString(2, calibration.getType());
+      stmt.setString(3, calibration.getTarget());
+      stmt.setLong(4,
+        DateTimeUtils.dateToLong(calibration.getDeploymentDate()));
+      stmt.setString(5, calibration.getCoefficientsAsDelimitedList());
+      stmt.setString(6, calibration.getClass().getSimpleName());
+      stmt.setLong(7, calibration.getId());
+
+      stmt.execute();
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while storing calibration", e);
     }
   }
 
@@ -322,8 +358,13 @@ public abstract class CalibrationDB {
 
   /**
    * Determine whether or not a calibration exists that coincides with the
-   * specified calibration (checks instrument, type, target and deployment
-   * date).
+   * specified calibration.
+   *
+   * <p>
+   * This checks instrument, type, target and deployment date. If a match is
+   * found with the same ID as the supplied calibration, this is not reported
+   * since it's obvious that a calibration will clash with itself.
+   * </p>
    *
    * @param dataSource
    *          A data source
@@ -356,10 +397,10 @@ public abstract class CalibrationDB {
       stmt.setString(4, calibration.getTarget());
 
       records = stmt.executeQuery();
-      records.next();
-      int recordCount = records.getInt(1);
-      if (recordCount != 0) {
-        result = true;
+      if (records.next()) {
+        if (records.getLong(1) != calibration.getId()) {
+          result = true;
+        }
       }
     } catch (SQLException e) {
       throw new DatabaseException("Error while retrieving calibrations", e);
