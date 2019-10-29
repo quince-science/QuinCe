@@ -48,10 +48,11 @@ public abstract class SensorCalibration extends Calibration {
    * @throws CalibrationException
    *           If the calibration details are invalid
    */
-  protected SensorCalibration(long instrumentId, String target,
+  protected SensorCalibration(long id, long instrumentId, String target,
     LocalDateTime deploymentDate, List<Double> coefficients)
     throws CalibrationException {
-    super(instrumentId, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE, target);
+    super(id, instrumentId, SensorCalibrationDB.SENSOR_CALIBRATION_TYPE,
+      target);
     setDeploymentDate(deploymentDate);
     setCoefficients(coefficients);
     if (!validate()) {
