@@ -59,6 +59,8 @@ public class PolynomialSensorCalibration extends SensorCalibration {
   /**
    * Construct a complete sensor calibration object.
    *
+   * @param id
+   *          The calibration's database ID
    * @param instrumentId
    *          The instrument ID
    * @param target
@@ -70,9 +72,9 @@ public class PolynomialSensorCalibration extends SensorCalibration {
    * @throws CalibrationException
    *           If the calibration details are invalid
    */
-  public PolynomialSensorCalibration(long instrumentId, String target,
+  public PolynomialSensorCalibration(long id, long instrumentId, String target,
     LocalDateTime deploymentDate, List<Double> coefficients) {
-    super(instrumentId, target, deploymentDate, coefficients);
+    super(id, instrumentId, target, deploymentDate, coefficients);
   }
 
   @Override
