@@ -17,6 +17,14 @@
   <ui:define name="content">
     <div class="fullPage">
       <h:form id="deploymentForm" method="post" charset="utf8">
+        <h:inputHidden id="calibrationId"
+          value="#{sessionScope[beanName].selectedCalibrationId}"/>
+          
+        <p:remoteCommand name="loadCalibration"
+          action="#{sessionScope[beanName].loadSelectedCalibration}"
+          process="calibrationId" update="@form"
+          oncomplete="PF('deploymentDialog').show();"/>
+
         <div id="timelineContainer"></div>
         <script>
           var TIMELINE_OPTIONS = {
@@ -52,8 +60,6 @@
         </h:panelGrid>
         <p:dialog id="deploymentDialog" widgetVar="deploymentDialog"
           header="Deployment" modal="true">
-          <h:inputHidden id="deploymentId"
-            value="#{sessionScope[beanName].calibration.id}"/>
             
           <div id="deploymentPanelContent">
             <div id="deploymentCalendar">
@@ -93,7 +99,7 @@
           </div>
           <h:panelGrid columns="2" cellpadding="5" styleClass="buttonPanel">
             <p:commandButton value="Save" ajax="false"
-              action="#{sessionScope[beanName].saveCalibration}" />
+              action="#{sessionScope[beanName].saveCalibration}"/>
             <p:button value="Cancel"
               onclick="PF('deploymentDialog').hide();return false"/>
           </h:panelGrid>
