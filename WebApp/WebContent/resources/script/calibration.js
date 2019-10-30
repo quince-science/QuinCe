@@ -1,11 +1,14 @@
 function addDeployment() {
-  $('#deploymentForm\\:deploymentId').val(-1);
-  PF('deploymentDialog').show();
+  $('#deploymentForm\\:calibrationId').val(-1);
+  loadCalibration(); // PF RemoteCommand
 }
 
 function editDeployment(item) {
   if (null != item.item) {
 
+    $('#deploymentForm\\:calibrationId').val(item.item);
+    loadCalibration(); // PF RemoteCommand
+/*    
     // Find the selected item
     calibration = calibrationsJson.find(c => c.id == item.item);
     
@@ -21,5 +24,6 @@ function editDeployment(item) {
     }
     
     PF('deploymentDialog').show();
+*/
   }
 }
