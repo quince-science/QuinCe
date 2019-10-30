@@ -29,6 +29,16 @@ import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 public abstract class CalibrationBean extends BaseManagedBean {
 
   /**
+   * The database ID of the calibration currently being edited
+   *
+   * <p>
+   * For new calibrations, this will be
+   * {@link DatabaseUtils#NO_DATABASE_RECORD}.
+   * </p>
+   */
+  private long selectedCalibrationId = DatabaseUtils.NO_DATABASE_RECORD;
+
+  /**
    * The database ID of the current instrument
    */
   protected long instrumentId;
@@ -341,5 +351,29 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
   public Calibration getCalibration() {
     return calibration;
+  }
+
+  public long getSelectedCalibrationId() {
+    return selectedCalibrationId;
+  }
+
+  public void setSelectedCalibrationId(long selectedCalibrationId) {
+    this.selectedCalibrationId = selectedCalibrationId;
+  }
+
+  public void loadSelectedCalibration() {
+    if (selectedCalibrationId == DatabaseUtils.NO_DATABASE_RECORD) {
+      calibration = initNewCalibration();
+    } else {
+
+      for (List<Calibration> calibs : calibrations.values()) {
+        for (Calibration c : calibs) {
+          if (c.getId() == selectedCalibrationId) {
+            calibration = c;
+            break;
+          }
+        }
+      }
+    }
   }
 }
