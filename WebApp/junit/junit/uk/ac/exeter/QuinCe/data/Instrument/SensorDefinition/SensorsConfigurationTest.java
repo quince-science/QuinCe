@@ -32,7 +32,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Tests for the {@list SensorsConfiguration} class.
+ * Tests for the {@link SensorsConfiguration} class.
  *
  * <p>
  * These tests assume that the Underway Marine pCO₂ variable is configured in
