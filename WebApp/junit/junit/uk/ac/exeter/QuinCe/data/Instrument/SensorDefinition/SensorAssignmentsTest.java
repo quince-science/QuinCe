@@ -827,7 +827,8 @@ public class SensorAssignmentsTest extends BaseTest {
    * <tr>
    * <td>Has Depends Question</td>
    * <td>Indicates whether this has a Depends Question (a question where
-   * answering Yes makes the sensor dependent, and No does not).</td>
+   * answering {@code true} makes the sensor dependent, while {@code false} does
+   * not).</td>
    * </tr>
    * <tr>
    * <td>Dependent Assigned Primary</td>
