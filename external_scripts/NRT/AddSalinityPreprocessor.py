@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from Preprocessor import Preprocessor
 from netCDF4 import Dataset
-import traceback
 
 class AddSalinityPreprocessor(Preprocessor):
   SALINITY_FILE = "salinity_data/woa18_seasonal_surface_salinity.nc"
@@ -13,23 +12,17 @@ class AddSalinityPreprocessor(Preprocessor):
     return "Add Fixed Salinity"
 
   def preprocess(self, data):
-    try:
-      dataframe = pd.read_csv(data, sep="\t")
-      indices = self.make_indices(dataframe)
-      dataframe = dataframe.assign(Salinity=self.get_salinity(indices)["Salinity"])
-      return dataframe.to_csv(sep="\t", index=False).encode("utf-8")
-    except Exception as e:
-    	print(e)
-    	print(traceback.format_exc())
-
+    dataframe = pd.read_csv(data, sep="\t")
+    indices = self.make_indices(dataframe)
+    dataframe = dataframe.assign(Salinity=self.get_salinity(indices)["Salinity"])
+    return dataframe.to_csv(sep="\t", index=False).encode("utf-8")
 
   def make_indices(self, dataframe):
   	indices = pd.DataFrame(index = dataframe.index.values, columns=["lon", "lat", "season"])
-  	indices["lon"] = dataframe["longitude"].apply(lambda x: None if np.isnan(x) else (round((x + 180) * 4)) - 1)
-  	indices["lat"] = dataframe["latitude"].apply(lambda x: None if np.isnan(x) else (round((x + 90) * 4)) - 1)
+  	indices["lon"] = dataframe["longitude"].apply(lambda x: np.nan if np.isnan(x) else (round((x + 180) * 4)) - 1)
+  	indices["lat"] = dataframe["latitude"].apply(lambda x: np.nan if np.isnan(x) else (round((x + 90) * 4)) - 1)
   	indices["season"] = dataframe["PC Date"].apply(lambda x: self.get_season(x))
   	return indices
-
 
   def get_season(self, date):
     season = -1
@@ -45,7 +38,6 @@ class AddSalinityPreprocessor(Preprocessor):
       season = 3
 
     return season
-
 
   def get_salinity(self, lookups):
     nc = Dataset(self.SALINITY_FILE, mode="r")
