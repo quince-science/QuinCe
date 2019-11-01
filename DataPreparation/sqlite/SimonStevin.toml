@@ -18,10 +18,6 @@
              "DrainTemperature", "VaisalaPressure", "SmartTrakFlow", "WaterFlow",
              "AWSAirPressure", "", "SolinoidState", "Multiplexer"]
 
-    [input.tables.ignore]
-      column_index = 12
-      value = 1
-
 [output]
 
   # The column headers for the output file
