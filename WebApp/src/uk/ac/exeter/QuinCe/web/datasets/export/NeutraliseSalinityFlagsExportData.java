@@ -23,23 +23,26 @@ import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
  * available for processing in QuinCe. (At the time of writing, we are even
  * unsure how we would ingest the delayed salinity data.) To get round this, all
  * Nuka Arctica data is pre-processed before being loaded into QuinCe, and has a
- * fake salinity column added with the value fixed at 35. This causes all
- * salinity values to be flagged as {@link Flag#BAD}, which in turn cascades to
- * the final fCO₂ value, marking them all {@link Flag#QUESTIONABLE}. In this
- * special case, the PI has established that the influence of the fixed salinity
- * value is not sufficient to warrant the flag placed on fCO₂, and therefore it
- * should be removed.
+ * fake salinity column added with the value taken from the World Ocean Atlas
+ * climatology. This causes some salinity values to be flagged as
+ * {@link Flag#BAD}, which in turn cascades to the final fCO₂ value, marking
+ * them all {@link Flag#QUESTIONABLE}. In this special case, the PI has
+ * established that the influence of the fixed salinity value is not sufficient
+ * to warrant the flag placed on fCO₂, and therefore it should be removed.
  * </p>
  *
  * <p>
  * This version of the {@link ExportData} class contains a post-processor that
  * removes the influence of the salinity flag from the final fCO₂ values, while
- * ensuring that all other flags are still honoured.
+ * ensuring that all other flags are still honoured. It also fixes the Salinity
+ * flag as Questionable for all records, since the climatological value is
+ * probably reasonable but shouldn't be relied on.
  * </p>
  *
  * @author Steve Jones
  *
  */
+@SuppressWarnings("serial")
 public class NeutraliseSalinityFlagsExportData extends ExportData {
 
   private static final String[] CASCADE_FIELDS = { "Intake Temperature",
@@ -73,7 +76,7 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
 
             // We're not using the built-in cascading here, because it's too
             // hard to extract the logic and even harder to extract the logic
-            // except salinity. So we're just going to do it manually here.
+            // except salinity. So we're just going to do it manually.
 
             // The new QC info
             Flag newFCO2Flag = Flag.GOOD;
@@ -106,7 +109,14 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
           }
         }
       }
+
+      // Now set the salinity flag
+      FieldValue salinityValue = dateEntry.get(salinityField);
+      if (null != salinityValue) {
+        salinityValue.setQcFlag(Flag.QUESTIONABLE);
+        salinityValue
+          .setQcComment("Climatological value from World Ocean Atlas");
+      }
     }
   }
-
 }
