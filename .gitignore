@@ -9,6 +9,7 @@
 /quince.setup*
 !/quince.setup.default
 **/*.sqlite
+DataPreparation/sqlite/*.csv
 **/__pycache__
 .pydevproject
 **/*.log
