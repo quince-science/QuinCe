@@ -4,6 +4,7 @@ from zipfile import ZipFile
 from io import BytesIO
 import ntpath
 import re
+import traceback
 
 # Local modules
 import nrtdb, nrtftp
@@ -43,7 +44,7 @@ def upload_file(logger, ftpconn, ftp_config, instrument_id, preprocessor, filena
             preprocessed_file = preprocessor.preprocess(BytesIO(unzip.read(name)))
           except Exception as e:
             log_instrument(logger, instrument_id, logging.ERROR, "Preprocessing "
-              + "failed: " + str(e))
+              + "failed: " + traceback.format_exc())
 
           if preprocessed_file is not None:
             upload_result = nrtftp.upload_file(ftpconn, ftp_config,
