@@ -16,7 +16,7 @@ class DatabaseExtractor:
     self._cursors = []
     self._next_rows = []
     self._date_columns = []
-    
+
     if not self._check_config():
       self.disconnect()
       exit()
@@ -28,24 +28,31 @@ class DatabaseExtractor:
     result = True
 
     for table in self._config["input"]["tables"]:
-    
+
       self._date_columns.append(table["datecol"])
 
       # Make sure the mapping names exist in the output column list
       for mapping_column in table["mapping"]:
-        if len(mapping_column) > 0 and \
-             mapping_column not in self._config["output"]["columns"]:
-        
-          print("Mapping " + mapping_column + " in table " + table["name"] +
-               " not specified in output columns")
-          result = False
+        column_found = False
+
+        if len(mapping_column) > 0:
+          for outputcol in self._config["output"]["columns"]:
+            for col in outputcol.split("|"):
+              if col == mapping_column:
+                column_found = True
+
+
+          if not column_found:
+            print("Mapping " + mapping_column + " in table " + table["name"] +
+                 " not specified in output columns")
+            result = False
 
     return result
 
   # Close all cursors and connections
   def disconnect(self):
     for cursor in self._cursors:
-      cursor.close() 
+      cursor.close()
 
     if self._conn is not None:
       self._conn.close()
@@ -112,20 +119,31 @@ class DatabaseExtractor:
     row = self._next_rows[table_id]
 
     mapping = self._config["input"]["tables"][table_id]["mapping"]
-    
-    out_fields = []
+
+    out_row = []
 
     for outcol in self._config["output"]["columns"]:
-      in_index = None
+      #print(outcol)
+      out_values = []
 
-      try:
-        in_index = mapping.index(outcol)
-      except ValueError:
-        pass
+      for col in outcol.split("|"):
 
-      if in_index is None:
-        out_fields.append(None)
+        in_index = None
+
+        try:
+          in_index = mapping.index(col)
+        except ValueError:
+          pass
+
+        if in_index is not None:
+          out_values.append(row[in_index])
+
+      #print(out_values)
+      if len(out_values) == 0:
+        out_row.append(None)
+      elif len(out_values) == 1:
+        out_row.append(out_values[0])
       else:
-        out_fields.append(row[in_index])
+        out_row.append("|".join(str(v) for v in out_values))
 
-    return out_fields
+    return out_row
