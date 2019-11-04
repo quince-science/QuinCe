@@ -9,7 +9,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 /**
  * A stub object for an instrument, containing only information useful for
  * display in a list of instruments.
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -27,7 +27,7 @@ public class InstrumentStub {
 
   /**
    * Simple constructor
-   * 
+   *
    * @param id
    *          The instrument's database ID
    * @param name
@@ -42,7 +42,7 @@ public class InstrumentStub {
 
   /**
    * Returns the complete Instrument object for this stub
-   * 
+   *
    * @return The complete Instrument object
    * @throws MissingParamException
    *           If the call to the database routine is incorrect (should never
@@ -60,15 +60,23 @@ public class InstrumentStub {
     throws MissingParamException, DatabaseException, RecordNotFoundException,
     ResourceException, InstrumentException {
     ResourceManager resourceManager = ResourceManager.getInstance();
-    return InstrumentDB.getInstrument(resourceManager.getDBDataSource(), id,
+
+    Instrument instrument = InstrumentDB.getInstrument(
+      resourceManager.getDBDataSource(), id,
       resourceManager.getSensorsConfiguration(),
       resourceManager.getRunTypeCategoryConfiguration());
+
+    // If the name of the retrieved instrument is different from that in the
+    // stub, something has gone horribly wrong.
+    assert (instrument.getName().equals(name));
+
+    return instrument;
   }
 
   ///////// *** GETTERS AND SETTERS *** ///////////
   /**
    * Returns the instrument's database ID
-   * 
+   *
    * @return The instrument's database ID
    */
   public long getId() {
@@ -77,7 +85,7 @@ public class InstrumentStub {
 
   /**
    * Return the instrument's name
-   * 
+   *
    * @return The instrument's name
    */
   public String getName() {
