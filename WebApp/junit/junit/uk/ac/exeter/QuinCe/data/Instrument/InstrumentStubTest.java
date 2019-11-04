@@ -77,7 +77,7 @@ public class InstrumentStubTest extends BaseTest {
    * @throws SQLException
    *           If the instrument details cannot be retrieved
    */
-  public void loadDBInstrument() throws SQLException {
+  private void loadDBInstrument() throws SQLException {
     initResourceManager();
 
     // Get the test instrument ID
