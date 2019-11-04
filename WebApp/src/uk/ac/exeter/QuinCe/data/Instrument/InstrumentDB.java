@@ -54,7 +54,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Database methods dealing with instruments
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -234,7 +234,7 @@ public class InstrumentDB {
 
   /**
    * Store a new instrument in the database
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrument
@@ -398,7 +398,7 @@ public class InstrumentDB {
 
   /**
    * Make the statement used to create an instrument record in the database
-   * 
+   *
    * @param conn
    *          A database connection
    * @param instrument
@@ -424,7 +424,7 @@ public class InstrumentDB {
 
   /**
    * Create a statement for adding a file definition to the database
-   * 
+   *
    * @param conn
    *          A database connection
    * @param file
@@ -496,7 +496,7 @@ public class InstrumentDB {
   /**
    * Add a position assignment fields to a statement for inserting a file
    * definition
-   * 
+   *
    * @param stmt
    *          The file definition statement
    * @param posSpec
@@ -526,7 +526,7 @@ public class InstrumentDB {
   /**
    * Add a date/time column assignment to a statement for inserting a file
    * definition
-   * 
+   *
    * @param stmt
    *          The file definition statement
    * @param stmtColumnIndex
@@ -709,9 +709,11 @@ public class InstrumentDB {
    * @return The list of instruments
    * @throws DatabaseException
    *           If the query fails
+   * @throws MissingParamException
+   *           If any details are missing from the database results
    */
   private static List<InstrumentStub> runInstrumentListQuery(Connection conn,
-    PreparedStatement stmt) throws DatabaseException {
+    PreparedStatement stmt) throws DatabaseException, MissingParamException {
 
     ResultSet instruments = null;
     List<InstrumentStub> instrumentList = new ArrayList<InstrumentStub>();
@@ -733,7 +735,7 @@ public class InstrumentDB {
 
   /**
    * Get an stub object for a specified instrument
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentId
@@ -743,9 +745,12 @@ public class InstrumentDB {
    *           If the instrument does not exist
    * @throws DatabaseException
    *           If a database error occurs
+   * @throws MissingParamException
+   *           If any details are missing from the database results
    */
   public static InstrumentStub getInstrumentStub(DataSource dataSource,
-    long instrumentId) throws RecordNotFoundException, DatabaseException {
+    long instrumentId)
+    throws RecordNotFoundException, DatabaseException, MissingParamException {
     InstrumentStub result = null;
 
     Connection conn = null;
@@ -777,7 +782,7 @@ public class InstrumentDB {
 
   /**
    * Determine whether an instrument with a given name and owner exists
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param owner
@@ -810,7 +815,7 @@ public class InstrumentDB {
 
   /**
    * Retrieve a complete {@link Instrument} from the database
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentID
@@ -855,7 +860,7 @@ public class InstrumentDB {
 
   /**
    * Returns a complete instrument object for the specified instrument ID
-   * 
+   *
    * @param conn
    *          A database connection
    * @param instrumentId
@@ -949,7 +954,7 @@ public class InstrumentDB {
 
   /**
    * Get the file definitions for an instrument
-   * 
+   *
    * @param conn
    *          A database connection
    * @param instrumentId
@@ -1029,7 +1034,7 @@ public class InstrumentDB {
 
   /**
    * Construct a {@link LongitudeSpecification} object from a database record
-   * 
+   *
    * @param record
    *          The database record
    * @return The specification
@@ -1055,7 +1060,7 @@ public class InstrumentDB {
 
   /**
    * Construct a {@link LatitudeSpecification} object from a database record
-   * 
+   *
    * @param record
    *          The database record
    * @return The specification
@@ -1082,7 +1087,7 @@ public class InstrumentDB {
 
   /**
    * Construct a {@link DateTimeSpecification} object from a database record
-   * 
+   *
    * @param record
    *          The database record
    * @return The specification
@@ -1128,7 +1133,7 @@ public class InstrumentDB {
 
   /**
    * Get the variables measured by an instrument
-   * 
+   *
    * @param instrumentId
    *          The instrument's database ID
    * @return The variables
@@ -1163,7 +1168,7 @@ public class InstrumentDB {
 
   /**
    * Get the variables measured by an instrument
-   * 
+   *
    * @param conn
    *          A database connection
    * @param instrumentId
@@ -1209,7 +1214,7 @@ public class InstrumentDB {
 
   /**
    * Get the sensor and file column configuration for an instrument
-   * 
+   *
    * @param conn
    *          A database connection
    * @param files
@@ -1295,7 +1300,7 @@ public class InstrumentDB {
   /**
    * Get the names of all run types of a given run type category in a given
    * instrument
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentId
@@ -1332,7 +1337,7 @@ public class InstrumentDB {
   /**
    * Get the names of all run types of a given run type category in a given
    * instrument
-   * 
+   *
    * @param conn
    *          A database connection
    * @param instrumentId
@@ -1436,7 +1441,7 @@ public class InstrumentDB {
 
   /**
    * Load the run types for a file definition from the database
-   * 
+   *
    * @param conn
    *          A database connection
    * @param file
@@ -1498,7 +1503,7 @@ public class InstrumentDB {
 
   /**
    * Store a run type assignment for a file
-   * 
+   *
    * @param conn
    *          A database connection
    * @param fileId
@@ -1539,7 +1544,7 @@ public class InstrumentDB {
 
   /**
    * Store a set of run type assignments for a file
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param fileId
@@ -1584,7 +1589,7 @@ public class InstrumentDB {
 
   /**
    * Get the list of all instruments that provide NRT data
-   * 
+   *
    * @param dataSource
    *          A data source
    * @return The NRT instruments
@@ -1631,7 +1636,7 @@ public class InstrumentDB {
 
   /**
    * Determine whether an instrument with the specified ID exists
-   * 
+   *
    * @param conn
    *          A database connection
    * @param id
@@ -1670,7 +1675,7 @@ public class InstrumentDB {
 
   /**
    * Determine whether an instrument with the specified ID exists
-   * 
+   *
    * @param conn
    *          A database connection
    * @param id
@@ -1715,7 +1720,7 @@ public class InstrumentDB {
 
   /**
    * Get the user who owns a given instrument
-   * 
+   *
    * @param conn
    *          A database connection
    * @param id
@@ -1762,7 +1767,7 @@ public class InstrumentDB {
 
   /**
    * Get all the variables registered in the application
-   * 
+   *
    * @param dataSource
    *          A data source
    * @return The variables
@@ -1787,7 +1792,7 @@ public class InstrumentDB {
 
   /**
    * Get all the variables registered in the application
-   * 
+   *
    * @param conn
    *          A database connection
    * @return The variables
@@ -1826,7 +1831,7 @@ public class InstrumentDB {
   /**
    * Get the column details for a given instrument, either for sensor values or
    * diagnostic values
-   * 
+   *
    * @param dataSource
    *          A data source
    * @param instrumentId

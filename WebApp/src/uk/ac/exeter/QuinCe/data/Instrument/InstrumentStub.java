@@ -1,6 +1,7 @@
 package uk.ac.exeter.QuinCe.data.Instrument;
 
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
+import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
@@ -34,8 +35,14 @@ public class InstrumentStub {
    *          The instrument's name
    * @param calibratableSensors
    *          Indicates the presence of sensors requiring calibration
+   * @throws MissingParamException
+   *           If the {@code id} is invalid or the {@code name} is missing
    */
-  public InstrumentStub(long id, String name) {
+  public InstrumentStub(long id, String name) throws MissingParamException {
+
+    MissingParam.checkPositive(id, "id");
+    MissingParam.checkMissing(name, "name", false);
+
     this.id = id;
     this.name = name;
   }

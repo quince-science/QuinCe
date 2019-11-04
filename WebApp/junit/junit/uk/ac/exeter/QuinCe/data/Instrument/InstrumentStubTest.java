@@ -11,6 +11,8 @@ import java.sql.SQLException;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
@@ -104,12 +106,56 @@ public class InstrumentStubTest extends BaseTest {
    * Also tests that the {@link InstrumentStub#getId()} and
    * {@link InstrumentStub#getName()} methods work.
    * </p>
+   *
+   * @throws MissingParamException
+   *           If the {@link InstrumentStub} is given invalid values
    */
   @Test
-  public void constructorTest() {
+  public void validConstructorTest() throws MissingParamException {
     InstrumentStub stub = new InstrumentStub(1L, TEST_INSTRUMENT_NAME);
     assertTrue(stub.getId() == 1L);
     assertTrue(stub.getName().equals(TEST_INSTRUMENT_NAME));
+  }
+
+  /**
+   * Test that {@link InstrumentStub}s with invalid IDs cannot be created.
+   *
+   * <p>
+   * Note that this test does not check for missing IDs in the database. That is
+   * done by {@link #getFullInstrumentIdNotInDatabaseTest()}.
+   * </p>
+   *
+   * @param id
+   *          The invalid ID
+   *
+   * @see #createInvalidReferences()
+   */
+  @ParameterizedTest
+  @MethodSource("createInvalidReferences")
+  public void invalidIdConstructorTest(long id) {
+    assertThrows(MissingParamException.class,
+      () -> new InstrumentStub(id, TEST_INSTRUMENT_NAME));
+  }
+
+  /**
+   * Test that {@link InstrumentStub}s with invalid names cannot be created.
+   *
+   * <p>
+   * Note that this test does not check for missing names in the database. That
+   * is done by {@link #getFullInstrumentMismatchedIDAndNameTest()} and
+   * {@link #getFullInstrumentMissingIDAndNameTest()}.
+   * </p>
+   *
+   * @param id
+   *          The invalid name
+   *
+   * @see #createNullEmptyStrings()
+   */
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void invalidNameConstructorTest(String name) {
+    assertThrows(MissingParamException.class,
+      () -> new InstrumentStub(1L, name));
   }
 
   /**
@@ -158,16 +204,19 @@ public class InstrumentStubTest extends BaseTest {
   }
 
   /**
-   * Test that {@link InstrumentStub#getFullInstrument()} with an invalid
-   * {@code id} and valid {@name} fails
+   * Test that {@link InstrumentStub#getFullInstrument()} with an ID not in the
+   * database fails.
    *
    * @throws SQLException
    *           If the test instrument details cannot be retrieved
+   * @throws MissingParamException
+   *           If the {@link InstrumentStub} is given invalid values
    */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument" })
   @Test
-  public void getFullInstrumentBadIdTest() throws SQLException {
+  public void getFullInstrumentIdNotInDatabaseTest()
+    throws SQLException, MissingParamException {
     loadDBInstrument();
 
     InstrumentStub stub = new InstrumentStub(badInstrumentId, dbInstrumentName);
@@ -175,8 +224,8 @@ public class InstrumentStubTest extends BaseTest {
   }
 
   /**
-   * Test that {@link InstrumentStub#getFullInstrument()} with a valid
-   * {@code id} and valid {@name} fails.
+   * Test that {@link InstrumentStub#getFullInstrument()} with a valid ID but a
+   * different name fails
    *
    * <p>
    * The {@link InstrumentStub#getFullInstrument()} method contains an assertion
@@ -185,11 +234,14 @@ public class InstrumentStubTest extends BaseTest {
    *
    * @throws SQLException
    *           If the test instrument details cannot be retrieved
+   * @throws MissingParamException
+   *           If the {@link InstrumentStub} is given invalid values
    */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument" })
   @Test
-  public void getFullInstrumentBadNameTest() throws SQLException {
+  public void getFullInstrumentMismatchedIDAndNameTest()
+    throws SQLException, MissingParamException {
     loadDBInstrument();
 
     InstrumentStub stub = new InstrumentStub(dbInstrumentId, badInstrumentName);
@@ -197,16 +249,19 @@ public class InstrumentStubTest extends BaseTest {
   }
 
   /**
-   * Test that {@link InstrumentStub#getFullInstrument()} with a invalid
-   * {@code id} and invalid {@name} fails
+   * Test that {@link InstrumentStub#getFullInstrument()} with neither an ID nor
+   * a name in the database fails.
    *
    * @throws SQLException
    *           If the test instrument details cannot be retrieved
+   * @throws MissingParamException
+   *           If the {@link InstrumentStub} is given invalid values
    */
   @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
     "resources/sql/testbase/instrument" })
   @Test
-  public void getFullInstrumentBadIDNameTest() throws SQLException {
+  public void getFullInstrumentMissingIDAndNameTest()
+    throws SQLException, MissingParamException {
     loadDBInstrument();
 
     InstrumentStub stub = new InstrumentStub(badInstrumentId,
