@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.ZoneOffset;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -91,17 +90,6 @@ public class SensorTypeTest extends BaseTest {
       new SensorType(1L, "Name", group, null, null, null, false, false, 1, null,
         null, null);
     });
-  }
-
-  /**
-   * Create a set of invalid references for {@link SensorType} IDs ({@code 0}
-   * and {@code -1}).
-   *
-   * @return The invalid IDs
-   */
-  @SuppressWarnings("unused")
-  private static Stream<Long> createInvalidReferences() {
-    return Stream.of(0L, -1L);
   }
 
   /**
