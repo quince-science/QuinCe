@@ -26,7 +26,6 @@ log = 'log/console_monthly.log'
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 #logging.basicConfig(filename=log,format='%(asctime)s %(message)s', level=logging.DEBUG)
 
-curr_month = (datetime.datetime.today() - datetime.timedelta(days=14)).strftime('%Y%m')
 vesselnames= {'LMEL': 'G.O.Sars','OXYH2':'Nuka Arctica'} 
 #vessels = ['LMEL', 'OXYH2']
 source_dir = 'latest' 
@@ -270,9 +269,11 @@ def assign_attributes(dataset,dataset_m):
   logging.debug('Assigning attributes/variables')
   variables = dataset.variables.keys()
   for var in variables:
-    fill = dataset[var]._FillValue
-    variable = dataset_m.createVariable(var,dataset[var].dtype,dataset[var].dimensions,fill_value = fill)
     set_attr = {}
+    if '_FillValue' in dataset[var].ncattrs():
+        fill = dataset[var]._FillValue
+    else: fill = None
+    variable = dataset_m.createVariable(var,dataset[var].dtype,dataset[var].dimensions,fill_value = fill)
     for attr in dataset[var].ncattrs():
       if '_FillValue' in attr:
         continue
