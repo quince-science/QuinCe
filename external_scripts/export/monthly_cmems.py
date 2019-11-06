@@ -68,6 +68,18 @@ with open(config_file_copernicus) as f: ftp_config = toml.load(f)
 
 
 def main():
+  # Creating monthly netCDF based on daily netCDFs
+  nc_dict = generating_monthly_netCDF(vesselnames,source_dir,curr_month)  
+
+  # Add to SQL database
+  sql_commit(nc_dict)
+
+  # upload nc files to cmems
+  upload_to_copernicus(curr_month)
+  # create ftp-connection
+
+
+def generating_monthly_netCDF(vesselnames,source_dir,curr_month,nc_dict={}):
   logging.debug('Retrieving list of daily netCDF files')
   for vessel in vessels:
     daily_files[vessel], file_nr[vessel], dataset, dim_tot = (get_daily_files(source_dir,curr_month,vessel))
@@ -82,14 +94,9 @@ def main():
       
       nc_dict[vessel+'_'+curr_month] = sql_entry(nc_name,curr_month)
 
-  # Add to SQL database
-  sql_commit(nc_dict)
+  return nc_dict
 
-  # upload nc files to cmems
-  upload_to_copernicus()
-  # create ftp-connection
-
-def upload_to_copernicus():
+def upload_to_copernicus(curr_month):
   curr_date = datetime.datetime.now().strftime("%Y%m%d")
   dnt_upload = {}
   with ftputil.FTPHost(
@@ -106,6 +113,7 @@ def upload_to_copernicus():
       logging.error('Previous export has failed, \
         clean up remanent files before re-exporting')
       return False 
+    logging.debug('directory is clean')
 
   # Fetch all to be uploaded
     c.execute("SELECT * FROM monthly WHERE uploaded == 0")
