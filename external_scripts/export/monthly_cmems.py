@@ -28,7 +28,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 curr_month = (datetime.datetime.today() - datetime.timedelta(days=14)).strftime('%Y%m')
 vesselnames= {'LMEL': 'G.O.Sars','OXYH2':'Nuka Arctica'} 
-vessels = ['LMEL', 'OXYH2']
+#vessels = ['LMEL', 'OXYH2']
 source_dir = 'latest' 
 dim_tot = {}
 file_nr = {}
@@ -84,7 +84,7 @@ def main():
 
 def generating_monthly_netCDF(vesselnames,source_dir,curr_month,nc_dict={}):
   logging.debug('Retrieving list of daily netCDF files')
-  for vessel in vessels:
+  for vessel in vesselnames.keys():
     daily_files[vessel], file_nr[vessel], dataset, dim_tot = (get_daily_files(source_dir,curr_month,vessel))
     if file_nr[vessel] > 0:
       logging.info(f'Creating monthly netCDF file for {vesselnames[vessel]} [{vessel}], month: {curr_month}')
