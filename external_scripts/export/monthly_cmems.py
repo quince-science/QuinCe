@@ -352,7 +352,7 @@ def build_index(results_uploaded):
   index_info = ''
   for file in results_uploaded:
     local_filepath = file[2]
-    ftp_filepath = file[5]
+    ftp_filepath = file[5].replace('NRT_201904','NRT')
 
     nc = netCDF4.Dataset(local_filepath,mode='r')
 
