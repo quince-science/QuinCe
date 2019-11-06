@@ -196,6 +196,8 @@ def check_directory(ftp, nrt_dir):
   '''   Cleans out empty folders, checks if main directory is empty. 
   returns True when empty 
   '''
+  if not ftp.path.isdir(nrt_dir): ftp.mkdir(nrt_dir)
+
   uningested_files = clean_directory(ftp, nrt_dir)
 #  with open (not_ingested,'a+') as f:
 #    for item in uningested_files:
