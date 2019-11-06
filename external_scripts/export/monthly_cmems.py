@@ -68,6 +68,9 @@ with open(config_file_copernicus) as f: ftp_config = toml.load(f)
 
 
 def main():
+
+  curr_month = (datetime.datetime.today() - datetime.timedelta(days=14)).strftime('%Y%m')
+
   # Creating monthly netCDF based on daily netCDFs
   nc_dict = generating_monthly_netCDF(vesselnames,source_dir,curr_month)  
 
@@ -124,7 +127,7 @@ def upload_to_copernicus(curr_month):
         filepath_local = file[2]
 
         upload_result, ftp_filepath, start_upload_time, stop_upload_time = (
-          upload_to_ftp(ftp, ftp_config, filepath_local))
+          upload_to_ftp(ftp, ftp_config, filepath_local,curr_month))
         logging.debug(f'upload result: {upload_result}')
         if upload_result == 0:
           c.execute("UPDATE monthly \
@@ -147,7 +150,7 @@ def upload_to_copernicus(curr_month):
 
       try:
         upload_result, ftp_filepath, start_upload_time, stop_upload_time = (
-          upload_to_ftp(ftp,ftp_config, index_filename))
+          upload_to_ftp(ftp,ftp_config, index_filename,curr_month))
         logging.debug(f'index upload result: {upload_result}')
       except Exception as e:
         logging.error('Uploading index failed: ', exc_info=True)
@@ -163,11 +166,11 @@ def upload_to_copernicus(curr_month):
       # BUILD DNT-FILE
       logging.info('Building DNT-file')
       try:
-        dnt_file, dnt_local_filepath = build_DNT(dnt_upload)
+        dnt_file, dnt_local_filepath = build_DNT(dnt_upload,curr_month)
 
         # UPLOAD DNT-FILE
         _, dnt_ftp_filepath, _, _ = (
-          upload_to_ftp(ftp, ftp_config, dnt_local_filepath))
+          upload_to_ftp(ftp, ftp_config, dnt_local_filepath,curr_month))
         
         logging.info('Updating database to include DNT filename')
         sql_rec = "UPDATE monthly SET dnt_file = ? WHERE dnt_file = ?"
@@ -451,7 +454,7 @@ def sql_entry(nc_name,curr_month):
   return entry
 
 
-def upload_to_ftp(ftp, ftp_config, filepath):
+def upload_to_ftp(ftp, ftp_config, filepath,curr_month):
   ''' Uploads file with location 'filepath' to an ftp-server, 
   server-location set by 'directory' parameter and config-file, 
   ftp is the ftp-connection
@@ -491,7 +494,7 @@ def upload_to_ftp(ftp, ftp_config, filepath):
 
   return upload_result, ftp_filepath, start_upload_time, stop_upload_time
 
-def build_DNT(dnt_upload):
+def build_DNT(dnt_upload,curr_month):
   ''' Generates delivery note for NetCDF file upload, 
   note needed by Copernicus in order to move .nc-file to public-ftp
   
