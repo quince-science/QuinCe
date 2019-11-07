@@ -20,6 +20,7 @@ import ftputil
 import hashlib
 import toml
 import time
+import re
 
 if not os.path.isdir('log'):  os.mkdir('log')
 log = 'log/console_monthly.log'
