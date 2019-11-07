@@ -11,7 +11,7 @@ Populates new netCDF file.
 import logging
 import os
 import sys
-import datetime
+import datetime as DT
 import numpy as np
 import pandas as pd
 import xml.etree.ElementTree as ET
@@ -28,7 +28,6 @@ log = 'log/console_monthly.log'
 logging.basicConfig(filename=log,format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 vesselnames= {'LMEL': 'G.O.Sars','OXYH2':'Nuka Arctica'} 
-#vessels = ['LMEL', 'OXYH2']
 source_dir = 'latest' 
 dim_tot = {}
 file_nr = {}
@@ -69,41 +68,45 @@ with open(config_file_copernicus) as f: ftp_config = toml.load(f)
 def main():
 
   nc_dict = {}
-  curr_month = (datetime.datetime.today() - datetime.timedelta(days=14)).strftime('%Y%m')
-  months = pd.date_range('2019-03-01',datetime.datetime.today()-datetime.timedelta(days=14), freq='MS').strftime("%Y%m").tolist()
+
+  months = pd.date_range('2019-03-01',DT.datetime.today()-
+    DT.timedelta(days=14), freq='MS').strftime("%Y%m").tolist()
 
   for month in months:
     # Creating monthly netCDF based on daily netCDFs
     nc_dict = generating_monthly_netCDF(vesselnames,source_dir,month,nc_dict)  
 
-  # Add to SQL database
+  # Add new netCDFs to SQL database
   sql_commit(nc_dict)
 
-  # upload nc files to cmems
-  upload_to_copernicus(curr_month)
+  # Upload new netCDF files to CMEMS
+  upload_to_copernicus()
 
 
 
-def generating_monthly_netCDF(vesselnames,source_dir,curr_month,nc_dict):
+def generating_monthly_netCDF(vesselnames,source_dir,month,nc_dict):
   for vessel in vesselnames.keys():
-    logging.debug(f'Retrieving list of daily netCDF files for {curr_month} {vessel}')
-    daily_files[vessel], file_nr[vessel], dataset, dim_tot = (get_daily_files(source_dir,curr_month,vessel))
+    logging.debug(f'Retrieving list of daily netCDF files for {month} {vessel}')
+    
+    daily_files[vessel], file_nr[vessel], dataset, dim_tot = (
+      get_daily_files(source_dir,month,vessel))
 
     if file_nr[vessel] > 0:
-      logging.info(f'Creating monthly netCDF file for {vesselnames[vessel]} [{vessel}], month: {curr_month}')
-      nc_name, dataset_m = create_empty_dataset(curr_month,vessel,dim_tot)
+      logging.info(f'Creating monthly netCDF file for {vesselnames[vessel]} \
+        [{vessel}], month: {month}')
+      nc_name, dataset_m = create_empty_dataset(month,vessel,dim_tot)
       dataset_m = assign_attributes(dataset,dataset_m)
       dataset_m = populate_netCDF(dataset,dataset_m,daily_files[vessel],source_dir)
       dataset_m = set_global_attributes(dataset,dataset_m)
       dataset_m.close()
       logging.info(f'Monthly netCDF file for {vesselnames[vessel]} completed')
       
-      nc_dict[vessel+'_'+curr_month] = sql_entry(nc_name,curr_month)
+      nc_dict[vessel+'_'+month] = sql_entry(nc_name,month)
 
   return nc_dict
 
-def upload_to_copernicus(curr_month):
-  curr_date = datetime.datetime.now().strftime("%Y%m%d")
+def upload_to_copernicus():
+  curr_date = DT.datetime.now().strftime("%Y%m%d")
   dnt_upload = {}
   with ftputil.FTPHost(
     host=ftp_config['Copernicus']['nrt_server'],
@@ -115,20 +118,17 @@ def upload_to_copernicus(curr_month):
   # CHECK IF FTP IS EMPTY 
     logging.debug('Checking FTP directory')
     directory_empty = check_directory(ftp, nc_dir) 
-    if directory_empty:
+    if not directory_empty:
       logging.error('Previous export has failed, \
-        clean up remanent files before re-exporting')
+        clean up remanent files before re-exporting. Aborting export')
       return False 
-    logging.debug('directory is clean')
 
   # Fetch all to be uploaded
     c.execute("SELECT * FROM monthly WHERE uploaded == 0")
     ready_for_upload = c.fetchall()  
     if ready_for_upload:
-      logging.debug(f'ready for upload: {ready_for_upload[0]}')
+      logging.debug(f'Ready for upload: {ready_for_upload[0]}')
       for file in ready_for_upload:
-        filepath_local = file[2]
-
         upload_result, ftp_filepath, start_upload_time, stop_upload_time = (
           upload_to_ftp(ftp, ftp_config, file[2],file[3]))
         logging.debug(f'upload result: {upload_result}')
@@ -169,7 +169,7 @@ def upload_to_copernicus(curr_month):
       # BUILD DNT-FILE
       logging.info('Building DNT-file')
       try:
-        dnt_file, dnt_local_filepath = build_DNT(dnt_upload,curr_month)
+        dnt_file, dnt_local_filepath = build_DNT(dnt_upload)
 
         # UPLOAD DNT-FILE
         _, dnt_ftp_filepath, _, _ = (
@@ -183,7 +183,7 @@ def upload_to_copernicus(curr_month):
         try:
           response = evaluate_response_file(
             ftp,dnt_ftp_filepath,dnt_local_filepath.rsplit('/',1)[0],cmems_db)
-          logging.debug('cmems dnt-response: {}'.format(response))
+          logging.debug('CMEMS DNT-response: {}'.format(response))
 
         except Exception as e:
           logging.error('No response from CMEMS: ', exc_info=True)
@@ -202,15 +202,14 @@ def check_directory(ftp, nrt_dir):
   '''
   if not ftp.path.isdir(nrt_dir): ftp.mkdir(nrt_dir)
 
-  uningested_files = clean_directory(ftp, nrt_dir)
-#  with open (not_ingested,'a+') as f:
-#    for item in uningested_files:
-#      f.write(str(datetime.datetime.now()) + ': ' + str(item) + '\n')
+  clean_directory(ftp, nrt_dir)
+
   if ftp.listdir(nrt_dir):
     logging.warning('ftp-folder is not empty')
-    return True 
+    return False 
   else:
-    return False
+    logging.debug('Directory is clean')
+    return True
 
 def clean_directory(ftp,nrt_dir):
   ''' removes empty directories from ftp server '''
@@ -227,7 +226,7 @@ def clean_directory(ftp,nrt_dir):
   return uningested_files
 
 
-def get_daily_files(source_dir,curr_month,vessel):
+def get_daily_files(source_dir,month,vessel):
   '''Fetches applicable daily files from source_dir
   returns filenames, number of files, last dataset 
   and combined dimension of all files
@@ -237,7 +236,7 @@ def get_daily_files(source_dir,curr_month,vessel):
   for root, dirs, files in os.walk( source_dir, topdown=False):
     dim_tot=0
     for name in sorted(files):
-      if curr_month in name and vessel in name:
+      if month in name and vessel in name:
         file_nr+=1
         logging.debug(f'reading filename: {name}')
         filenames += [name]
@@ -252,11 +251,11 @@ def get_daily_files(source_dir,curr_month,vessel):
 
   return filenames, file_nr, dataset, dim_tot
 
-def create_empty_dataset(curr_month,vessel,dim_tot):
+def create_empty_dataset(month,vessel,dim_tot):
   ''' Creates empty monthly file with correct dimensions
   returns dataset-object
   '''
-  nc_name = 'monthly/GL_' + str(curr_month) + '_TS_TS_'  + vessel + '.nc'
+  nc_name = 'monthly/GL_' + str(month) + '_TS_TS_'  + vessel + '.nc'
   logging.debug(f'Creating new empty monthly file: {nc_name}')
   dataset_m = netCDF4.Dataset(nc_name,'w',format='NETCDF4_CLASSIC')
 
@@ -280,7 +279,8 @@ def assign_attributes(dataset,dataset_m):
     if '_FillValue' in dataset[var].ncattrs():
         fill = dataset[var]._FillValue
     else: fill = None
-    variable = dataset_m.createVariable(var,dataset[var].dtype,dataset[var].dimensions,fill_value = fill)
+    variable = dataset_m.createVariable(
+        var,dataset[var].dtype,dataset[var].dimensions,fill_value = fill)
     for attr in dataset[var].ncattrs():
       if '_FillValue' in attr:
         continue
@@ -318,15 +318,18 @@ def populate_netCDF(dataset,dataset_m,daily_files,source_dir):
   return dataset_m        
 
 def set_global_attributes(dataset,dataset_m):
+  ''' Assigns global attributes to monthly file, based on dataset's attributes '''
   set_gattr = {}
 
-  # Setting monthly file to same global attributes as daily dataset 
+  # Setting monthly file to same global attributes as a daily dataset 
   for gattr in dataset.ncattrs():
     set_gattr[gattr] = dataset.getncattr(gattr)
 
   # Overwriting attributes specific to this file.
-  start_date = (datetime.datetime(1950,1,1,0,0) + datetime.timedelta(min(dataset_m['TIME'][:]))).strftime("%Y-%m-%dT%H:%M:%SZ")
-  end_date = (datetime.datetime(1950,1,1,0,0) + datetime.timedelta(max(dataset_m['TIME'][:]))).strftime("%Y-%m-%dT%H:%M:%SZ")
+  start_date = (DT.datetime(1950,1,1,0,0) 
+    + DT.timedelta(min(dataset_m['TIME'][:]))).strftime("%Y-%m-%dT%H:%M:%SZ")
+  end_date = (DT.datetime(1950,1,1,0,0) 
+    + DT.timedelta(max(dataset_m['TIME'][:]))).strftime("%Y-%m-%dT%H:%M:%SZ")
   set_gattr['geospatial_lat_min'] = min(dataset_m['LATITUDE'][:])
   set_gattr['geospatial_lat_max'] = max(dataset_m['LATITUDE'][:])
   set_gattr['geospatial_lon_min'] = min(dataset_m['LONGITUDE'][:])
@@ -341,14 +344,10 @@ def set_global_attributes(dataset,dataset_m):
   return dataset_m
 
 def build_index(results_uploaded):
-  '''
-  Creates index-file over CMEMS source_dir.
-
+  '''  Creates index-file over CMEMS source_dir.
   Lists all files currently uploaded to the CMEMS server. 
   '''
-
-  date_header = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-
+  date_header = DT.datetime.now().strftime('%Y%m%d%H%M%S')
   index_header = ('# Title : Carbon in-situ observations catalog \n'\
     + '# Description : catalog of available in-situ observations per platform.\n'\
     + '# Project : Copernicus \n# Format version : 1.0 \n'\
@@ -382,20 +381,18 @@ def build_index(results_uploaded):
     parameters = ' '.join(var_list)
 
     index_info += ('COP-GLOBAL-01,' + server_location + ftp_filepath + ',' 
-                + str(lat_min) + ',' + str(lat_max) + ',' + str(lon_min) + ',' + str(lon_max) + ',' 
+                + str(lat_min) + ',' + str(lat_max) + ',' 
+                + str(lon_min) + ',' + str(lon_max) + ',' 
                 + time_start + ',' + time_end  
                 + ',University of Bergen Geophysical Institute,' 
                 + date_update + ',R,' + parameters + '\n')
 
   index = index_header + index_info
-
   index_filename = 'index_monthly.txt'
   with open(index_filename,'wb') as f: f.write(index.encode())
- 
   logging.debug('index file:\n' + index)
 
   return index_filename
-
 
 def create_connection(DB):
   ''' creates connection and database if not already created '''
@@ -419,7 +416,7 @@ def sql_commit(nc_dict):
   adds new netCDF files, listed in nc_dict, to new or existing SQL-table 
   '''
   c = create_connection(cmems_db)
-  date = datetime.datetime.now().strftime(dnt_datetime_format)
+  date = DT.datetime.now().strftime(dnt_datetime_format)
 
   for key in nc_dict:
     if nc_dict[key]['uploaded']: 
@@ -443,21 +440,17 @@ def sql_commit(nc_dict):
         VALUES (?,?,?,?,?,?,?,?,?)"
       sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
         nc_dict[key]['date'],uploaded,None,None,None,date])
-
     c.execute(sql_req,sql_param)
 
-
-
-def sql_entry(nc_name,curr_month):
-  ''' Creates dictionary object to submit to database
-  '''
+def sql_entry(nc_name,month):
+  ''' Creates dictionary object to submit to database '''
   with open(nc_name,'rb') as f: 
     file_bytes = f.read()
     hashsum = hashlib.md5(file_bytes).hexdigest()
   entry = ({
     'filepath':nc_name, 
     'hashsum': hashsum, 
-    'date': curr_month, 
+    'date': month, 
     'uploaded':False})
   return entry
 
@@ -490,7 +483,7 @@ def upload_to_ftp(ftp, ftp_config, filepath,dest_folder=None):
     ftp_folder = index_dir
     ftp_filepath = ftp_folder + '/' + filepath.rsplit('/',1)[-1]
 
-  start_upload_time = datetime.datetime.now().strftime(dnt_datetime_format)
+  start_upload_time = DT.datetime.now().strftime(dnt_datetime_format)
   if not ftp.path.isdir(ftp_folder):
     ftp.mkdir(ftp_folder)
     ftp.upload(filepath, ftp_filepath)
@@ -498,19 +491,17 @@ def upload_to_ftp(ftp, ftp_config, filepath,dest_folder=None):
     upload_result = FILE_EXISTS
   else:
     ftp.upload(filepath, ftp_filepath)
-  stop_upload_time = datetime.datetime.now().strftime(dnt_datetime_format)
+  stop_upload_time = DT.datetime.now().strftime(dnt_datetime_format)
 
   return upload_result, ftp_filepath, start_upload_time, stop_upload_time
 
-def build_DNT(dnt_upload,curr_month):
+def build_DNT(dnt_upload):
   ''' Generates delivery note for NetCDF file upload, 
   note needed by Copernicus in order to move .nc-file to public-ftp
-  
   dnt_upload contains list of files uploaded to the ftp-server
-
   '''
-  date = datetime.datetime.now().strftime(dnt_datetime_format)
-
+  date = DT.datetime.now().strftime(dnt_datetime_format)
+  curr_month = (DT.datetime.today() - DT.timedelta(days=14)).strftime('%Y%m')
   dnt_file = product_id + '_P' + curr_month + '.xml'
   dnt_filepath = dnt_folder + dnt_file
 
@@ -544,8 +535,7 @@ def build_DNT(dnt_upload,curr_month):
   return dnt_file, dnt_filepath
 
 def evaluate_response_file(ftp,dnt_filepath,folder_local,cmems_db):
-  '''  Retrieves response from cmems-ftp server.
-  '''
+  '''  Retrieves response from cmems-ftp server.  '''
   response_received = False
   loop_iter = 0
   upload_response_log = ''
@@ -582,10 +572,9 @@ def evaluate_response_file(ftp,dnt_filepath,folder_local,cmems_db):
         sql_var = ([-1,rejected_reason, rejected_filename])
         c.execute(sql_req,sql_var)
 
-
     else:
       logging.info('All files ingested')
-    date = datetime.datetime.now().strftime('%Y-%m-%d')
+    date = DT.datetime.now().strftime('%Y-%m-%d')
     upload_response_log += ( 
       date + ',' + 
       folder_local + ',' + 
