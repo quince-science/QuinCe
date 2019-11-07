@@ -25,8 +25,7 @@ import re
 
 if not os.path.isdir('log'):  os.mkdir('log')
 log = 'log/console_monthly.log'
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-#logging.basicConfig(filename=log,format='%(asctime)s %(message)s', level=logging.DEBUG)
+logging.basicConfig(filename=log,format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 vesselnames= {'LMEL': 'G.O.Sars','OXYH2':'Nuka Arctica'} 
 #vessels = ['LMEL', 'OXYH2']
@@ -34,7 +33,6 @@ source_dir = 'latest'
 dim_tot = {}
 file_nr = {}
 daily_files = {}
-nc_dict = {}
 
 cmems_db = 'files_cmems.db'
 log_file = 'log/cmems_log.txt'
@@ -70,25 +68,27 @@ with open(config_file_copernicus) as f: ftp_config = toml.load(f)
 
 def main():
 
+  nc_dict = {}
   curr_month = (datetime.datetime.today() - datetime.timedelta(days=14)).strftime('%Y%m')
-  months = pd.date_range('2019-03-27',datetime.datetime.today(), freq='MS').strftime("%Y%m").tolist()
+  months = pd.date_range('2019-03-01',datetime.datetime.today()-datetime.timedelta(days=14), freq='MS').strftime("%Y%m").tolist()
 
-  for month in curr_month:
+  for month in months:
     # Creating monthly netCDF based on daily netCDFs
-    nc_dict = generating_monthly_netCDF(vesselnames,source_dir,month)  
+    nc_dict = generating_monthly_netCDF(vesselnames,source_dir,month,nc_dict)  
 
-    # Add to SQL database
-    sql_commit(nc_dict)
+  # Add to SQL database
+  sql_commit(nc_dict)
 
   # upload nc files to cmems
   upload_to_copernicus(curr_month)
-  # create ftp-connection
 
 
-def generating_monthly_netCDF(vesselnames,source_dir,curr_month,nc_dict={}):
-  logging.debug('Retrieving list of daily netCDF files')
+
+def generating_monthly_netCDF(vesselnames,source_dir,curr_month,nc_dict):
   for vessel in vesselnames.keys():
+    logging.debug(f'Retrieving list of daily netCDF files for {curr_month} {vessel}')
     daily_files[vessel], file_nr[vessel], dataset, dim_tot = (get_daily_files(source_dir,curr_month,vessel))
+
     if file_nr[vessel] > 0:
       logging.info(f'Creating monthly netCDF file for {vesselnames[vessel]} [{vessel}], month: {curr_month}')
       nc_name, dataset_m = create_empty_dataset(curr_month,vessel,dim_tot)
@@ -130,7 +130,7 @@ def upload_to_copernicus(curr_month):
         filepath_local = file[2]
 
         upload_result, ftp_filepath, start_upload_time, stop_upload_time = (
-          upload_to_ftp(ftp, ftp_config, filepath_local,curr_month))
+          upload_to_ftp(ftp, ftp_config, file[2],file[3]))
         logging.debug(f'upload result: {upload_result}')
         if upload_result == 0:
           c.execute("UPDATE monthly \
@@ -153,7 +153,7 @@ def upload_to_copernicus(curr_month):
 
       try:
         upload_result, ftp_filepath, start_upload_time, stop_upload_time = (
-          upload_to_ftp(ftp,ftp_config, index_filename,curr_month))
+          upload_to_ftp(ftp,ftp_config, index_filename))
         logging.debug(f'index upload result: {upload_result}')
       except Exception as e:
         logging.error('Uploading index failed: ', exc_info=True)
@@ -173,7 +173,7 @@ def upload_to_copernicus(curr_month):
 
         # UPLOAD DNT-FILE
         _, dnt_ftp_filepath, _, _ = (
-          upload_to_ftp(ftp, ftp_config, dnt_local_filepath,curr_month))
+          upload_to_ftp(ftp, ftp_config, dnt_local_filepath))
         
         logging.info('Updating database to include DNT filename')
         sql_rec = "UPDATE monthly SET dnt_file = ? WHERE dnt_file = ?"
@@ -248,6 +248,7 @@ def get_daily_files(source_dir,curr_month,vessel):
         dim_lon = len(dataset.dimensions['LONGITUDE'])
         dim_pos = len(dataset.dimensions['POSITION'])
         dim_tot += dim_time
+  if len(filenames) == 0: dataset = None
 
   return filenames, file_nr, dataset, dim_tot
 
@@ -461,7 +462,7 @@ def sql_entry(nc_name,curr_month):
   return entry
 
 
-def upload_to_ftp(ftp, ftp_config, filepath,curr_month):
+def upload_to_ftp(ftp, ftp_config, filepath,dest_folder=None):
   ''' Uploads file with location 'filepath' to an ftp-server, 
   server-location set by 'directory' parameter and config-file, 
   ftp is the ftp-connection
@@ -476,7 +477,7 @@ def upload_to_ftp(ftp, ftp_config, filepath,curr_month):
   if filepath.endswith('.nc'):
     filename = filepath.rsplit('/',1)[-1]
     date = filename.split('_')[-1].split('.')[0]
-    ftp_folder = nc_dir + '/' + curr_month     
+    ftp_folder = nc_dir + '/' + dest_folder     
     ftp_filepath = ftp_folder + '/' +  filename
 
   elif filepath.endswith('.xml'):
