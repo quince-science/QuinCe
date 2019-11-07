@@ -13,6 +13,7 @@ import os
 import sys
 import datetime
 import numpy as np
+import pandas as pd
 import xml.etree.ElementTree as ET
 import netCDF4
 import sqlite3
@@ -70,12 +71,14 @@ with open(config_file_copernicus) as f: ftp_config = toml.load(f)
 def main():
 
   curr_month = (datetime.datetime.today() - datetime.timedelta(days=14)).strftime('%Y%m')
+  months = pd.date_range('2019-03-27',datetime.datetime.today(), freq='MS').strftime("%Y%m").tolist()
 
-  # Creating monthly netCDF based on daily netCDFs
-  nc_dict = generating_monthly_netCDF(vesselnames,source_dir,curr_month)  
+  for month in curr_month:
+    # Creating monthly netCDF based on daily netCDFs
+    nc_dict = generating_monthly_netCDF(vesselnames,source_dir,month)  
 
-  # Add to SQL database
-  sql_commit(nc_dict)
+    # Add to SQL database
+    sql_commit(nc_dict)
 
   # upload nc files to cmems
   upload_to_copernicus(curr_month)
