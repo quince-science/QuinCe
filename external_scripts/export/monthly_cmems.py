@@ -94,6 +94,8 @@ def generating_monthly_netCDF(vesselnames,source_dir,month,nc_dict):
       logging.info(f'Monthly netCDF file for {vesselnames[vessel]} completed')
       nc_dict[vessel+'_'+month] = sql_entry(nc_name,month)
   return nc_dict
+
+
 def get_daily_files(source_dir,month,vessel):
   ''' Fetches applicable daily files from source_dir
   returns filenames, number of files, last dataset 
@@ -118,6 +120,8 @@ def get_daily_files(source_dir,month,vessel):
   if len(filenames) == 0: dataset = None
 
   return filenames, file_nr, dataset, dim_tot
+
+
 def create_empty_dataset(month,vessel,dim_tot):
   ''' Creates empty monthly file with correct dimensions '''
   nc_name = 'monthly/GL_' + str(month) + '_TS_TS_'  + vessel + '.nc'
@@ -132,6 +136,8 @@ def create_empty_dataset(month,vessel,dim_tot):
   pos_dim = dataset_m.createDimension('POSITION',dim_tot)
 
   return nc_name,dataset_m
+
+
 def assign_attributes(dataset,dataset_m):
   ''' Assigns attributes to dataset_m '''
   logging.debug('Assigning attributes/variables')
@@ -150,6 +156,8 @@ def assign_attributes(dataset,dataset_m):
       set_attr[attr] = attr_val
     variable.setncatts(set_attr)
   return dataset_m
+
+
 def populate_netCDF(dataset,dataset_m,daily_files,source_dir):
   ''' For each variable in each daily netCDF file:
   extract data from daily file; save data to monthly dataset.
@@ -175,6 +183,8 @@ def populate_netCDF(dataset,dataset_m,daily_files,source_dir):
         start[var] = end[var]   
 
   return dataset_m        
+
+
 def set_global_attributes(dataset,dataset_m):
   ''' Assigns global attributes to monthly file, based on dataset's attributes '''
   set_gattr = {}
@@ -200,6 +210,8 @@ def set_global_attributes(dataset,dataset_m):
   dataset_m.setncatts(set_gattr)
 
   return dataset_m
+
+
 def sql_entry(nc_name,month):
   ''' Creates dictionary object to submit to database '''
   with open(nc_name,'rb') as f: 
@@ -243,6 +255,8 @@ def sql_commit(nc_dict):
       sql_param = ([key,nc_dict[key]['hashsum'],nc_dict[key]['filepath'],
         nc_dict[key]['date'],uploaded,None,None,None,date])
     c.execute(sql_req,sql_param)
+
+
 def create_connection(DB):
   ''' creates connection and database if not already created '''
   conn = sqlite3.connect(DB, isolation_level=None)
@@ -259,6 +273,7 @@ def create_connection(DB):
               export_date TEXT
               )''')
   return c
+
 
 def upload_to_copernicus():
   dest = DT.datetime.now().strftime("%Y%m%d")
@@ -315,11 +330,10 @@ def upload_to_copernicus():
         'local_filepath': index_filename
         })
 
-      # BUILD DNT-FILE
+      # BUILD AND UPLOAD DNT-FILE
       logging.info('Building DNT-file')
       try:
         dnt_file, dnt_local_filepath = build_DNT(dnt_upload)
-        # UPLOAD DNT-FILE
         _, dnt_ftp_filepath, _, _ = (
           upload_to_ftp(ftp, ftp_config, dnt_local_filepath))
         logging.info('Updating database to include DNT filename')
@@ -336,6 +350,7 @@ def upload_to_copernicus():
       except Exception as exception:
         logging.error('Building DNT failed: ', exc_info=True)
 
+
 def check_directory(ftp, nrt_dir):
   ''' Cleans out empty folders, checks if main directory is empty. '''
   if not ftp.path.isdir(nrt_dir): ftp.mkdir(nrt_dir)
@@ -348,6 +363,8 @@ def check_directory(ftp, nrt_dir):
   else:
     logging.debug('Directory is clean')
     return True
+
+
 def clean_directory(ftp,nrt_dir):
   ''' Removes empty directories from ftp server '''
   uningested_files = []
@@ -361,6 +378,7 @@ def clean_directory(ftp,nrt_dir):
       logging.debug(f'UNINGESTED: \
         dirpath: {dirpath}, \ndirnames: {dirnames}, \nfiles: {files}')
   return uningested_files
+
 
 def upload_to_ftp(ftp, ftp_config, filepath,dest_folder=None):
   ''' Uploads file with location 'filepath' to an ftp-server, 
@@ -387,6 +405,7 @@ def upload_to_ftp(ftp, ftp_config, filepath,dest_folder=None):
   t_stop = DT.datetime.now().strftime(dnt_datetime_format)
   logging.debug(f'upload result: {upload_result}')
   return upload_result, ftp_filepath, t_start, t_stop
+
 
 def get_destination(filepath,dest_folder):
   if filepath.endswith('.nc'):
@@ -442,7 +461,6 @@ def build_DNT(dnt_upload):
     xml_tree.write(xml,xml_declaration=True,method='xml')
 
   return dnt_file, dnt_filepath
-      
 
 
 def build_index(results_uploaded):
@@ -494,6 +512,7 @@ def build_index(results_uploaded):
   logging.debug('index file:\n' + index)
 
   return index_filename
+
 
 def evaluate_response_file(ftp,dnt_filepath,folder_local,cmems_db):
   '''  Retrieves response from cmems-ftp server.  '''
@@ -551,11 +570,9 @@ def evaluate_response_file(ftp,dnt_filepath,folder_local,cmems_db):
       log.write(upload_response_log)
       logging.debug(f'log-message: {upload_response_log}')
 
-  #if rejected_list:
-  #  return rejected_list
-  #else: return True
+  if rejected_list:
+    logging.debug('Rejected: {}'.format(rejected_list))
 
-  logging.debug('CMEMS DNT-response: {}'.format(rejected_list))
 
 def get_response(ftp,dnt_filepath,folder_local):
   '''  Retrieves the status of any file uploaded to CMEMS server
@@ -569,6 +586,7 @@ def get_response(ftp,dnt_filepath,folder_local):
   with open(target,'r') as response_file:
     response = response_file.read()
   return response
+
 
 if __name__ == '__main__':
   main()
