@@ -39,7 +39,7 @@ public class DataSet {
   /**
    * The string for the delete status
    */
-  public static final String STATUS_DELETE_NAME = "Marked for deletion";
+  public static final String STATUS_DELETE_NAME = "Marked for reprocessing";
 
   /**
    * The numeric value for the error status. The data set will be given this
@@ -606,7 +606,7 @@ public class DataSet {
    */
   public boolean getCanBeExported() {
     // TODO Reinstate check of whether QC is complete
-    return (getStatus() >= STATUS_USER_QC || isNrt());
+    return (getStatus() >= STATUS_USER_QC); // || isNrt());
   }
 
   public void addMessage(String message, String details) {
