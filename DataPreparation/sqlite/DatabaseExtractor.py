@@ -37,7 +37,7 @@ class DatabaseExtractor:
 
         if len(mapping_column) > 0:
           for outputcol in self._config["output"]["columns"]:
-            for col in outputcol.split("|"):
+            for col in outputcol.split("~"):
               if col == mapping_column:
                 column_found = True
 
@@ -126,7 +126,7 @@ class DatabaseExtractor:
       #print(outcol)
       out_values = []
 
-      for col in outcol.split("|"):
+      for col in outcol.split("~"):
 
         in_index = None
 
@@ -144,6 +144,6 @@ class DatabaseExtractor:
       elif len(out_values) == 1:
         out_row.append(out_values[0])
       else:
-        out_row.append("|".join(str(v) for v in out_values))
+        out_row.append("~".join(str(v) for v in out_values))
 
     return out_row
