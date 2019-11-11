@@ -41,17 +41,63 @@ class AddSalinityPreprocessor(Preprocessor):
 
   def get_salinity(self, lookups):
     nc = Dataset(self.SALINITY_FILE, mode="r")
+    lonmax = nc.variables["lon"].shape[0]
+    latmax = nc.variables["lat"].shape[0]
 
     salinities = pd.DataFrame(index = lookups.index.values, columns=["Salinity"])
     for index, row in lookups.iterrows():
-    	salinities.loc[index,"Salinity"] = self.read_salinity(nc, row["lon"], row["lat"], row["season"])
+    	salinities.loc[index,"Salinity"] = self.read_salinity(nc, row["lon"], row["lat"], row["season"], lonmax, latmax)
 
     return salinities
 
-  def read_salinity(self, nc, lon, lat, season):
-    salinity = "NaN"
+  def read_salinity(self, nc, lon, lat, season, lonmax, latmax):
+    salinity = None
 
-    if not np.isnan(lon) and not np.isnan(lat) and not np.isnan(season):
-      salinity = nc.variables[self.SALIINITY_VAR][int(season), int(lat), int(lon)]
+    if np.isnan(lon) or np.isnan(lat) or np.isnan(season):
+      salinity = "NaN"
+    else:
+      search_step = -1
+      while salinity is None:
+        search_step = search_step + 1
+        search_cells = self.get_surrounding_cells(int(lon), int(lat), search_step, lonmax, latmax)
+
+        for (search_lon, search_lat) in search_cells:
+          salinity_value = nc.variables[self.SALIINITY_VAR][int(season), search_lat, search_lon]
+          if not salinity_value.mask:
+            salinity = salinity_value
+            break
 
     return salinity
+
+  def get_surrounding_cells(self, lon, lat, step, lonmax, latmax):
+    result = []
+
+    if step == 0:
+      result.append([lon, lat])
+    else:
+      # Loop through the latitudes from (lat - step) to (lat + step)
+      for y in range(step * -1, step):
+        celly = lat + y
+
+        # Make sure we haven't fallen off the world
+        if celly >= 0 and celly < latmax:
+
+          # For the top and bottom rows of the step grid, add all horizontal cells
+          if abs(y) == step:
+            for x in range(step * -1, step):
+              cellx = lon + x
+              if cellx >= 0 and cellx < lonmax:
+                result.append([cellx, celly])
+          else:
+            # For all other rows, just add the left and right edges
+            cellx = lon - step
+            if cellx >= 0 and cellx < lonmax:
+              result.append([cellx, celly])
+
+            cellx = lon + step
+            if cellx >= 0 and cellx < lonmax:
+              result.append([cellx, celly])
+
+
+
+    return result
