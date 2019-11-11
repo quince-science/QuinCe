@@ -72,7 +72,7 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
           // See if the salinity is marked Bad. If it is, then we must
           // recalculate the fCO₂ flag
           FieldValue salinity = dateEntry.get(salinityField);
-          if (salinity.getQcFlag().equals(Flag.BAD)) {
+          if (null != salinity && salinity.getQcFlag().equals(Flag.BAD)) {
 
             // We're not using the built-in cascading here, because it's too
             // hard to extract the logic and even harder to extract the logic
