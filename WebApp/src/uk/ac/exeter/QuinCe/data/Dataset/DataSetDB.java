@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
@@ -72,7 +74,7 @@ public class DataSetDB {
    *          The field to use in the WHERE clause
    * @return The query SQL
    */
-  private static String makeGetDatasetsQuery(String whereField) {
+  private static String makeGetDatasetsQuery(String... whereFields) {
     StringBuilder sql = new StringBuilder(
       "SELECT " + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
         + "d.status_date, d.nrt, d.properties, d.created, d.last_touched, " // 11
@@ -81,10 +83,12 @@ public class DataSetDB {
         + "COUNT(sv.user_qc_flag) " // 17
         + "FROM dataset d " + "LEFT JOIN sensor_values sv "
         + "ON (d.id = sv.dataset_id AND " + "sv.user_qc_flag = "
-        + Flag.VALUE_NEEDED + ") " + "WHERE d.");
+        + Flag.VALUE_NEEDED + ") WHERE ");
 
-    sql.append(whereField);
-    sql.append(" = ? GROUP BY d.id ORDER BY d.start ASC");
+    sql.append(Stream.of(whereFields).map(field -> "d." + field + " = ? ")
+      .collect(Collectors.joining("AND ")));
+
+    sql.append("GROUP BY d.id ORDER BY d.start ASC");
 
     return sql.toString();
   }
@@ -576,9 +580,10 @@ public class DataSetDB {
     MissingParam.checkZeroPositive(instrumentId, "instrumentId");
 
     try (PreparedStatement stmt = conn
-      .prepareStatement(makeGetDatasetsQuery("nrt"))) {
+      .prepareStatement(makeGetDatasetsQuery("instrument_id", "nrt"))) {
 
-      stmt.setBoolean(1, true);
+      stmt.setLong(1, instrumentId);
+      stmt.setBoolean(2, true);
 
       try (ResultSet records = stmt.executeQuery()) {
         if (records.next()) {
