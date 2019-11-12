@@ -1,11 +1,11 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -130,37 +130,34 @@ public class ManualQcBean extends PlotPageBean {
    */
   public void acceptAutoQc() {
 
+    List<FieldValue> updatedValues = null;
+
     if (positionColumnSelected()) {
 
     } else {
-      acceptNonPositionAutoQC();
+      updatedValues = getSelectedRowsList().stream()
+        .map(t -> pageData.getValue(t, selectedColumn))
+        .collect(Collectors.toList());
     }
+
+    saveUpdates(updatedValues);
   }
 
-  /**
-   * Apply the automatically generated QC flags to the rows selected in the
-   * table for non-position values
-   */
-  private void acceptNonPositionAutoQC() {
-    try {
+  private void saveUpdates(List<FieldValue> updates) {
 
-      List<LocalDateTime> times = getSelectedRowsList();
-      List<FieldValue> updateValues = new ArrayList<FieldValue>(times.size());
+    if (null != updates && updates.size() > 0) {
+      try {
+        DataSetDataDB.setQC(getDataSource(), updates);
 
-      for (LocalDateTime time : times) {
-        updateValues.add(pageData.getValue(time, selectedColumn));
+        for (FieldValue value : updates) {
+          value.setNeedsFlag(false);
+        }
+
+        updateFlagsRequired();
+        dirty = true;
+      } catch (Exception e) {
+        e.printStackTrace();
       }
-
-      DataSetDataDB.setQC(getDataSource(), updateValues);
-
-      for (FieldValue value : updateValues) {
-        value.setNeedsFlag(false);
-      }
-
-      updateFlagsRequired();
-      dirty = true;
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -269,27 +266,20 @@ public class ManualQcBean extends PlotPageBean {
    */
   public void applyManualFlag() {
 
+    List<FieldValue> updates = null;
+
     if (positionColumnSelected()) {
 
     } else {
-      applyNonPositionManualFlag();
-    }
-  }
-
-  /**
-   * Apply the entered WOCE flag and comment to non-position values
-   */
-  private void applyNonPositionManualFlag() {
-    try {
-      List<FieldValue> updatedValues = pageData.setQC(getSelectedRowsList(),
-        selectedColumn, new Flag(userFlag), userComment);
-      DataSetDataDB.setQC(getDataSource(), updatedValues);
-      updateFlagsRequired();
-      dirty = true;
-    } catch (Exception e) {
-      e.printStackTrace();
+      try {
+        updates = pageData.setQC(getSelectedRowsList(), selectedColumn,
+          new Flag(userFlag), userComment);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
 
+    saveUpdates(updates);
   }
 
   @Override
