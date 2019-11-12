@@ -129,6 +129,19 @@ public class ManualQcBean extends PlotPageBean {
    * table
    */
   public void acceptAutoQc() {
+
+    if (positionColumnSelected()) {
+
+    } else {
+      acceptNonPositionAutoQC();
+    }
+  }
+
+  /**
+   * Apply the automatically generated QC flags to the rows selected in the
+   * table for non-position values
+   */
+  private void acceptNonPositionAutoQC() {
     try {
 
       List<LocalDateTime> times = getSelectedRowsList();
@@ -255,6 +268,18 @@ public class ManualQcBean extends PlotPageBean {
    * Apply the entered WOCE flag and comment to the rows selected in the table
    */
   public void applyManualFlag() {
+
+    if (positionColumnSelected()) {
+
+    } else {
+      applyNonPositionManualFlag();
+    }
+  }
+
+  /**
+   * Apply the entered WOCE flag and comment to non-position values
+   */
+  private void applyNonPositionManualFlag() {
     try {
       List<FieldValue> updatedValues = pageData.setQC(getSelectedRowsList(),
         selectedColumn, new Flag(userFlag), userComment);
@@ -264,6 +289,7 @@ public class ManualQcBean extends PlotPageBean {
     } catch (Exception e) {
       e.printStackTrace();
     }
+
   }
 
   @Override
@@ -376,8 +402,11 @@ public class ManualQcBean extends PlotPageBean {
 
     // Nothing is selectable for NRT datasets
     if (!dataset.isNrt()) {
-      // Sensor values. This is the field set with ID -1.
-      // We'll add diagnostics sometime.
+
+      // Position columns
+      result.add(fieldSets.getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID));
+      result.add(fieldSets.getColumnIndex(FileDefinition.LATITUDE_COLUMN_ID));
+
       LinkedHashMap<Long, List<Integer>> columnIndexes = fieldSets
         .getColumnIndexes();
       result.addAll(columnIndexes.get(DataSetDataDB.SENSORS_FIELDSET));

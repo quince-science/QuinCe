@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.VariableNotFoundException;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -760,5 +761,14 @@ public abstract class PlotPageBean extends BaseManagedBean {
 
   public String getGhostDataLabel() {
     return "Ghost";
+  }
+
+  protected boolean positionColumnSelected() {
+    boolean result = false;
+    Field selectedField = fieldSets.getField(selectedColumn);
+    if (null != selectedField) {
+      result = SensorType.isPosition(selectedField.getId());
+    }
+    return result;
   }
 }

@@ -252,6 +252,29 @@ public class FieldSets extends LinkedHashMap<FieldSet, List<Field>> {
     return new Gson().toJson(getTableIDsList());
   }
 
+  public int getColumnIndex(long fieldId) {
+
+    boolean found = false;
+    int currentColumn = -1;
+
+    for (List<Field> fieldSetFields : values()) {
+
+      for (int i = 0; i < fieldSetFields.size(); i++) {
+        currentColumn++;
+        if (fieldSetFields.get(i).getId() == fieldId) {
+          found = true;
+          break;
+        }
+      }
+
+      if (found) {
+        break;
+      }
+    }
+
+    return (found ? currentColumn : -1);
+  }
+
   public LinkedHashMap<Long, List<Integer>> getColumnIndexes() {
     LinkedHashMap<Long, List<Integer>> columnIndexes = new LinkedHashMap<Long, List<Integer>>();
 
