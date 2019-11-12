@@ -193,6 +193,9 @@ public class ManualQcBean extends PlotPageBean {
 
       updates.addAll(setSensorsQc(time, appliedFlag, appliedComment));
 
+      // TODO Also check any values between this and next time with position. Do
+      // all those values too.
+
     }
 
     return updates;
