@@ -1,5 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -133,14 +134,93 @@ public class ManualQcBean extends PlotPageBean {
     List<FieldValue> updatedValues = null;
 
     if (positionColumnSelected()) {
-
+      updatedValues = acceptPositionAutoQC();
     } else {
       updatedValues = getSelectedRowsList().stream()
         .map(t -> pageData.getValue(t, selectedColumn))
         .collect(Collectors.toList());
+
+      // TODO If the Positional QC is worse than this QC, use that instead.
     }
 
     saveUpdates(updatedValues);
+  }
+
+  private List<FieldValue> acceptPositionAutoQC() {
+
+    List<LocalDateTime> times = getSelectedRowsList();
+
+    List<FieldValue> updates = new ArrayList<FieldValue>();
+
+    int otherPositionColumn = (selectedColumn == fieldSets
+      .getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID))
+        ? fieldSets.getColumnIndex(FileDefinition.LATITUDE_COLUMN_ID)
+        : fieldSets.getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID);
+
+    for (LocalDateTime time : times) {
+
+      // Both position values are always flagged
+      FieldValue chosenPositionValue = pageData.getValue(time, selectedColumn);
+      FieldValue otherPositionValue = pageData.getValue(time,
+        otherPositionColumn);
+
+      // Record which is the most significant position QC - this will be applied
+      // to the sensors
+      Flag appliedFlag = chosenPositionValue.getQcFlag();
+      String appliedComment = chosenPositionValue.getQcComment();
+
+      // Whichever position has the worst flag, that's the one we use. If it's a
+      // tie, use each value's own QC.
+      if (otherPositionValue.getQcFlag()
+        .moreSignificantThan(chosenPositionValue.getQcFlag())) {
+
+        chosenPositionValue.setQcFlag(otherPositionValue.getQcFlag());
+        chosenPositionValue.setQcComment(otherPositionValue.getQcComment());
+        appliedFlag = otherPositionValue.getQcFlag();
+        appliedComment = otherPositionValue.getQcComment();
+      } else if (chosenPositionValue.getQcFlag()
+        .moreSignificantThan(otherPositionValue.getQcFlag())) {
+
+        otherPositionValue.setQcFlag(chosenPositionValue.getQcFlag());
+        otherPositionValue.setQcComment(chosenPositionValue.getQcComment());
+      }
+
+      chosenPositionValue.setNeedsFlag(false);
+      otherPositionValue.setNeedsFlag(false);
+
+      updates.add(chosenPositionValue);
+      updates.add(otherPositionValue);
+
+      updates.addAll(setSensorsQc(time, appliedFlag, appliedComment));
+
+    }
+
+    return updates;
+
+  }
+
+  private List<FieldValue> setSensorsQc(LocalDateTime time, Flag flag,
+    String comment) {
+
+    List<FieldValue> updatedValues = new ArrayList<FieldValue>();
+
+    List<Field> sensorFields = fieldSets
+      .get(fieldSets.getFieldSet(DataSetDataDB.SENSORS_FIELDSET));
+
+    for (Field field : sensorFields) {
+      FieldValue value = pageData.getValue(time,
+        fieldSets.getColumnIndex(field.getId()));
+
+      // We don't change the QC if the automatic QC has yet to be verified.
+      // The user's choice may override the position flag
+      if (!value.needsFlag() && flag.moreSignificantThan(value.getQcFlag())) {
+        value.setQcFlag(flag);
+        value.setQcComment("Position: " + comment);
+        updatedValues.add(value);
+      }
+    }
+
+    return updatedValues;
   }
 
   private void saveUpdates(List<FieldValue> updates) {
@@ -269,11 +349,14 @@ public class ManualQcBean extends PlotPageBean {
     List<FieldValue> updates = null;
 
     if (positionColumnSelected()) {
-
+      // If other pos QC is worse, do nothing.
+      // Otherwise set other QC and all sensors as per auto QC
     } else {
       try {
         updates = pageData.setQC(getSelectedRowsList(), selectedColumn,
           new Flag(userFlag), userComment);
+
+        // TODO If the Positional QC is worse than this QC, use that instead.
       } catch (Exception e) {
         e.printStackTrace();
       }
