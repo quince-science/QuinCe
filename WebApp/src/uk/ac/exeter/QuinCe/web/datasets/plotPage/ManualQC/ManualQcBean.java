@@ -175,19 +175,16 @@ public class ManualQcBean extends PlotPageBean {
       if (otherPositionValue.getQcFlag()
         .moreSignificantThan(chosenPositionValue.getQcFlag())) {
 
-        chosenPositionValue.setQcFlag(otherPositionValue.getQcFlag());
-        chosenPositionValue.setQcComment(otherPositionValue.getQcComment());
+        chosenPositionValue.setQC(otherPositionValue.getQcFlag(),
+          otherPositionValue.getQcComment());
         appliedFlag = otherPositionValue.getQcFlag();
         appliedComment = otherPositionValue.getQcComment();
       } else if (chosenPositionValue.getQcFlag()
         .moreSignificantThan(otherPositionValue.getQcFlag())) {
 
-        otherPositionValue.setQcFlag(chosenPositionValue.getQcFlag());
-        otherPositionValue.setQcComment(chosenPositionValue.getQcComment());
+        otherPositionValue.setQC(chosenPositionValue.getQcFlag(),
+          chosenPositionValue.getQcComment());
       }
-
-      chosenPositionValue.setNeedsFlag(false);
-      otherPositionValue.setNeedsFlag(false);
 
       updates.add(chosenPositionValue);
       updates.add(otherPositionValue);
@@ -218,8 +215,7 @@ public class ManualQcBean extends PlotPageBean {
       // We don't change the QC if the automatic QC has yet to be verified.
       // The user's choice may override the position flag
       if (!value.needsFlag() && flag.moreSignificantThan(value.getQcFlag())) {
-        value.setQcFlag(flag);
-        value.setQcComment("Position: " + comment);
+        value.setQC(flag, "Position: " + comment);
         updatedValues.add(value);
       }
     }
@@ -232,10 +228,6 @@ public class ManualQcBean extends PlotPageBean {
     if (null != updates && updates.size() > 0) {
       try {
         DataSetDataDB.setQC(getDataSource(), updates);
-
-        for (FieldValue value : updates) {
-          value.setNeedsFlag(false);
-        }
 
         updateFlagsRequired();
         dirty = true;

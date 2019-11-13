@@ -484,9 +484,7 @@ public abstract class DatasetMeasurementData
 
     // Do not set QC on ghost data
     if (null != value && !value.isGhost()) {
-      value.setQcFlag(flag);
-      value.setQcComment(comment);
-      value.setNeedsFlag(false);
+      value.setQC(flag, comment);
     }
 
     return value;

@@ -260,20 +260,12 @@ public class FieldValue {
     return qcFlag;
   }
 
-  public void setQcFlag(Flag flag) {
-    qcFlag = flag;
-  }
-
   public boolean needsFlag() {
     return needsFlag;
   }
 
   public String getQcComment() {
     return qcComment;
-  }
-
-  public void setQcComment(String comment) {
-    qcComment = comment;
   }
 
   public boolean isUsed() {
@@ -284,12 +276,14 @@ public class FieldValue {
     return value.isNaN();
   }
 
-  public void setNeedsFlag(boolean needsFlag) {
-    this.needsFlag = needsFlag;
-  }
-
   public boolean isGhost() {
     return ghost;
+  }
+
+  public void setQC(Flag flag, String comment) {
+    qcFlag = flag;
+    qcComment = comment;
+    needsFlag = flag.equals(Flag.NEEDED);
   }
 
   @Override

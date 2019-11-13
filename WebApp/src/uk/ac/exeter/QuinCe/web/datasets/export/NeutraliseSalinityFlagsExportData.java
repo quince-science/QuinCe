@@ -103,23 +103,20 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
             }
 
             // Set the new QC flag and comments
-            fCO2Value.setQcFlag(newFCO2Flag);
-            fCO2Value
-              .setQcComment(StringUtils.collectionToDelimited(qcComments));
+            fCO2Value.setQC(newFCO2Flag,
+              StringUtils.collectionToDelimited(qcComments));
 
             // Also set the flags on the pCO₂ values
             Field pCO2EqField = fieldSets
               .getField("pCO₂ In Water - Equilibrator Temperature");
             FieldValue pCO2EqValue = dateEntry.get(pCO2EqField);
-            pCO2EqValue.setQcFlag(newFCO2Flag);
-            pCO2EqValue
-              .setQcComment(StringUtils.collectionToDelimited(qcComments));
+            pCO2EqValue.setQC(newFCO2Flag,
+              StringUtils.collectionToDelimited(qcComments));
 
             Field pCO2Field = fieldSets.getField("pCO₂ In Water");
             FieldValue pCO2Value = dateEntry.get(pCO2Field);
-            pCO2Value.setQcFlag(newFCO2Flag);
-            pCO2Value
-              .setQcComment(StringUtils.collectionToDelimited(qcComments));
+            pCO2Value.setQC(newFCO2Flag,
+              StringUtils.collectionToDelimited(qcComments));
           }
         }
       }
@@ -127,9 +124,8 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
       // Now set the salinity flag
       FieldValue salinityValue = dateEntry.get(salinityField);
       if (null != salinityValue) {
-        salinityValue.setQcFlag(Flag.QUESTIONABLE);
-        salinityValue
-          .setQcComment("Climatological value from World Ocean Atlas");
+        salinityValue.setQC(Flag.QUESTIONABLE,
+          "Climatological value from World Ocean Atlas");
       }
     }
   }
