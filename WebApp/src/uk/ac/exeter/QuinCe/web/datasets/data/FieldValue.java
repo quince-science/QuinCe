@@ -26,6 +26,11 @@ public class FieldValue {
   protected Flag qcFlag;
 
   /**
+   * The automatic QC details for the value
+   */
+  private AutoQCResult autoQC;
+
+  /**
    * Indicates whether the user must verify the automatic QC
    */
   protected boolean needsFlag;
@@ -88,6 +93,7 @@ public class FieldValue {
     this.qcComment = qcComment;
     this.used = used;
     this.ghost = false;
+    this.autoQC = null;
   }
 
   /**
@@ -122,6 +128,7 @@ public class FieldValue {
     this.qcComment = qcComment;
     this.used = used;
     this.ghost = ghost;
+    this.autoQC = null;
   }
 
   /**
@@ -151,6 +158,8 @@ public class FieldValue {
     } else {
       this.value = value;
     }
+
+    this.autoQC = autoQC;
 
     if (userQCFlag.equals(Flag.NEEDED)) {
       this.qcFlag = autoQC.getOverallFlag();
@@ -280,10 +289,28 @@ public class FieldValue {
     return ghost;
   }
 
-  public void setQC(Flag flag, String comment) {
-    qcFlag = flag;
-    qcComment = comment;
-    needsFlag = flag.equals(Flag.NEEDED);
+  public void setQC(Flag flag, String comment) throws MeasurementDataException {
+
+    if (flag.equals(Flag.NEEDED)) {
+      if (null == autoQC) {
+        qcFlag = Flag.ASSUMED_GOOD;
+        qcComment = null;
+        needsFlag = false;
+      } else {
+        try {
+          qcFlag = autoQC.getOverallFlag();
+          qcComment = autoQC.getAllMessages();
+          needsFlag = true;
+        } catch (RoutineException e) {
+          throw new MeasurementDataException(
+            "Could not retrieve auto QC messages", e);
+        }
+      }
+    } else {
+      qcFlag = flag;
+      qcComment = comment;
+      needsFlag = false;
+    }
   }
 
   @Override

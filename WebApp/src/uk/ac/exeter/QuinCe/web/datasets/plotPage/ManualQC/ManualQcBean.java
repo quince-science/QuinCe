@@ -35,6 +35,7 @@ import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
+import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageBean;
 
 /**
@@ -129,8 +130,10 @@ public class ManualQcBean extends PlotPageBean {
   /**
    * Apply the automatically generated QC flags to the rows selected in the
    * table
+   *
+   * @throws MeasurementDataException
    */
-  public void acceptAutoQc() {
+  public void acceptAutoQc() throws MeasurementDataException {
 
     List<FieldValue> updatedValues = null;
 
@@ -147,7 +150,8 @@ public class ManualQcBean extends PlotPageBean {
     saveUpdates(updatedValues);
   }
 
-  private List<FieldValue> acceptPositionAutoQC() {
+  private List<FieldValue> acceptPositionAutoQC()
+    throws MeasurementDataException {
 
     List<LocalDateTime> times = getSelectedRowsList();
 
@@ -201,7 +205,7 @@ public class ManualQcBean extends PlotPageBean {
   }
 
   private List<FieldValue> setSensorsQc(LocalDateTime time, Flag flag,
-    String comment) {
+    String comment) throws MeasurementDataException {
 
     List<FieldValue> updatedValues = new ArrayList<FieldValue>();
 
@@ -215,7 +219,7 @@ public class ManualQcBean extends PlotPageBean {
       // We don't change the QC if the automatic QC has yet to be verified.
       // The user's choice may override the position flag
       if (!value.needsFlag() && flag.moreSignificantThan(value.getQcFlag())) {
-        value.setQC(flag, "Position: " + comment);
+        value.setQC(flag, DataSetDataDB.POSITION_QC_PREFIX + comment);
         updatedValues.add(value);
       }
     }
@@ -361,11 +365,10 @@ public class ManualQcBean extends PlotPageBean {
   }
 
   private List<FieldValue> applyManualPositionFlag()
-    throws InvalidFlagException {
-
-    List<FieldValue> updates = new ArrayList<FieldValue>();
+    throws InvalidFlagException, MeasurementDataException {
 
     List<LocalDateTime> times = getSelectedRowsList();
+    List<FieldValue> updates = new ArrayList<FieldValue>(times.size() * 2);
 
     Field selectedField = fieldSets.getField(selectedColumn);
     Field otherPositionField;
@@ -380,14 +383,13 @@ public class ManualQcBean extends PlotPageBean {
         .getField(fieldSets.getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID));
     }
 
-    for (LocalDateTime time : times) {
+    updates.addAll(pageData.setQC(times, selectedField, userFlag, userComment));
+    updates
+      .addAll(pageData.setQC(times, otherPositionField, userFlag, userComment));
 
-      updates.add(pageData.setQC(time, selectedField, userFlag, userComment));
-      updates
-        .add(pageData.setQC(time, otherPositionField, userFlag, userComment));
-
-      // Set all sensor QCs here.
-    }
+    updates.addAll(pageData.applyQcToFieldSet(times,
+      fieldSets.getFieldSet(DataSetDataDB.SENSORS_FIELDSET), selectedField,
+      DataSetDataDB.POSITION_QC_PREFIX, new Flag(userFlag), userComment));
 
     return updates;
   }

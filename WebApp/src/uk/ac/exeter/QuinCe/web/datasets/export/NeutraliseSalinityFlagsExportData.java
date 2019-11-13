@@ -13,6 +13,7 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.StringUtils;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
+import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
 
 /**
  * A special version of the {@link ExportData} class that removes the influence
@@ -56,7 +57,7 @@ public class NeutraliseSalinityFlagsExportData extends ExportData {
   }
 
   @Override
-  public void postProcess() {
+  public void postProcess() throws MeasurementDataException {
 
     Field fCO2Field = fieldSets.getField("fCO₂ In Water");
     Field salinityField = fieldSets.getField("Salinity");
