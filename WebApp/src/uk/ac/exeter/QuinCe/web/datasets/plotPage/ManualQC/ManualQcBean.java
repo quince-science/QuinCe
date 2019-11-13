@@ -18,6 +18,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReducerFactory;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -351,21 +352,63 @@ public class ManualQcBean extends PlotPageBean {
 
     List<FieldValue> updates = null;
 
-    if (positionColumnSelected()) {
-      // If other pos QC is worse, do nothing.
-      // Otherwise set other QC and all sensors as per auto QC
-    } else {
-      try {
+    try {
+      if (positionColumnSelected()) {
+        updates = applyManualPositionFlag();
+      } else {
         updates = pageData.setQC(getSelectedRowsList(), selectedColumn,
-          new Flag(userFlag), userComment);
+          userFlag, userComment);
 
         // TODO If the Positional QC is worse than this QC, use that instead.
-      } catch (Exception e) {
-        e.printStackTrace();
       }
+    } catch (Exception e) {
+      e.printStackTrace();
     }
 
     saveUpdates(updates);
+  }
+
+  private List<FieldValue> applyManualPositionFlag()
+    throws InvalidFlagException {
+
+    List<FieldValue> updates = new ArrayList<FieldValue>();
+
+    List<LocalDateTime> times = getSelectedRowsList();
+    Flag newFlag = new Flag(userFlag);
+
+    Field selectedField = fieldSets.getField(selectedColumn);
+    Field otherPositionField;
+    int otherPositionColumn;
+
+    if (selectedColumn == fieldSets
+      .getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID)) {
+
+      otherPositionColumn = fieldSets
+        .getColumnIndex(FileDefinition.LATITUDE_COLUMN_ID);
+      otherPositionField = fieldSets.getField(otherPositionColumn);
+    } else {
+      otherPositionColumn = fieldSets
+        .getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID);
+      otherPositionField = fieldSets.getField(otherPositionColumn);
+    }
+
+    for (LocalDateTime time : times) {
+
+      FieldValue otherPositionValue = pageData.getValue(time,
+        otherPositionColumn);
+
+      if (newFlag.moreSignificantThan(otherPositionValue.getQcFlag())) {
+
+        updates.add(pageData.setQC(time, selectedField, userFlag, userComment));
+        updates
+          .add(pageData.setQC(time, otherPositionField, userFlag, userComment));
+
+        // Set all sensor QCs here.
+      }
+
+    }
+
+    return updates;
   }
 
   @Override

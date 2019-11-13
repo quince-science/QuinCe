@@ -21,6 +21,7 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.GeoBounds;
 import uk.ac.exeter.QuinCe.data.Dataset.Position;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.InvalidFlagException;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
@@ -452,24 +453,43 @@ public abstract class DatasetMeasurementData
   }
 
   public List<FieldValue> setQC(List<LocalDateTime> rows, int fieldIndex,
+    int flag, String comment) throws InvalidFlagException {
+
+    return setQC(rows, fieldIndex, new Flag(flag), comment);
+  }
+
+  public List<FieldValue> setQC(List<LocalDateTime> rows, int fieldIndex,
     Flag flag, String comment) {
 
     List<FieldValue> updatedValues = new ArrayList<FieldValue>(rows.size());
     Field field = fieldSets.getField(fieldIndex);
 
-    for (LocalDateTime id : rows) {
-      FieldValue value = get(id).get(field);
-
-      // Do not set QC on ghost data
-      if (null != value && !value.isGhost()) {
-        value.setQcFlag(flag);
-        value.setQcComment(comment);
-        value.setNeedsFlag(false);
-        updatedValues.add(value);
-      }
+    for (LocalDateTime time : rows) {
+      updatedValues.add(setQC(time, field, flag, comment));
     }
 
     return updatedValues;
+  }
+
+  public FieldValue setQC(LocalDateTime time, Field field, int flag,
+    String comment) throws InvalidFlagException {
+
+    return setQC(time, field, new Flag(flag), comment);
+  }
+
+  public FieldValue setQC(LocalDateTime time, Field field, Flag flag,
+    String comment) {
+
+    FieldValue value = get(time).get(field);
+
+    // Do not set QC on ghost data
+    if (null != value && !value.isGhost()) {
+      value.setQcFlag(flag);
+      value.setQcComment(comment);
+      value.setNeedsFlag(false);
+    }
+
+    return value;
   }
 
   public abstract void filterAndAddValues(String runType, LocalDateTime time,
