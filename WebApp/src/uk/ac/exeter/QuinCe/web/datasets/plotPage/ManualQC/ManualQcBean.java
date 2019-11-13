@@ -374,38 +374,27 @@ public class ManualQcBean extends PlotPageBean {
     List<FieldValue> updates = new ArrayList<FieldValue>();
 
     List<LocalDateTime> times = getSelectedRowsList();
-    Flag newFlag = new Flag(userFlag);
 
     Field selectedField = fieldSets.getField(selectedColumn);
     Field otherPositionField;
-    int otherPositionColumn;
 
     if (selectedColumn == fieldSets
       .getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID)) {
 
-      otherPositionColumn = fieldSets
-        .getColumnIndex(FileDefinition.LATITUDE_COLUMN_ID);
-      otherPositionField = fieldSets.getField(otherPositionColumn);
+      otherPositionField = fieldSets
+        .getField(fieldSets.getColumnIndex(FileDefinition.LATITUDE_COLUMN_ID));
     } else {
-      otherPositionColumn = fieldSets
-        .getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID);
-      otherPositionField = fieldSets.getField(otherPositionColumn);
+      otherPositionField = fieldSets
+        .getField(fieldSets.getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID));
     }
 
     for (LocalDateTime time : times) {
 
-      FieldValue otherPositionValue = pageData.getValue(time,
-        otherPositionColumn);
+      updates.add(pageData.setQC(time, selectedField, userFlag, userComment));
+      updates
+        .add(pageData.setQC(time, otherPositionField, userFlag, userComment));
 
-      if (newFlag.moreSignificantThan(otherPositionValue.getQcFlag())) {
-
-        updates.add(pageData.setQC(time, selectedField, userFlag, userComment));
-        updates
-          .add(pageData.setQC(time, otherPositionField, userFlag, userComment));
-
-        // Set all sensor QCs here.
-      }
-
+      // Set all sensor QCs here.
     }
 
     return updates;
