@@ -143,7 +143,7 @@ public class BaseTest {
    * @return A {@link Stream} of various empty {@link String} values.
    */
   protected static Stream<String> createNullEmptyStrings() {
-    return Stream.of(null, "", " ");
+    return Stream.of(null, "", " ", "  ", "\t", "\n");
   }
 
   /**
