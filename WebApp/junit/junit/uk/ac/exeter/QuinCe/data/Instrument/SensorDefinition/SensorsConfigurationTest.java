@@ -32,7 +32,7 @@ import uk.ac.exeter.QuinCe.utils.DatabaseUtils;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Tests for the {@list SensorsConfiguration} class.
+ * Tests for the {@link SensorsConfiguration} class.
  *
  * <p>
  * These tests assume that the Underway Marine pCO₂ variable is configured in
@@ -44,7 +44,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  * <p>
  * Many of these tests use additional configurations in the database. The
  * relevant {@code .sql} files are in
- * {@code resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/}.
+ * {@code WebApp/resources/sql/data/Instrument/SensorDefinition/SensorsConfigurationTest/}.
  * </p>
  *
  * @author Steve Jones

@@ -196,7 +196,7 @@ public class DataReductionJob extends Job {
         if (dataSet.isNrt()) {
           dataSet.setStatus(DataSet.STATUS_READY_FOR_EXPORT);
         } else {
-          if (dataSet.getNeedsFlagCount() > 0) {
+          if (DataSetDataDB.getFlagsRequired(dataSource, dataSet.getId()) > 0) {
             dataSet.setStatus(DataSet.STATUS_USER_QC);
           } else {
             dataSet.setStatus(DataSet.STATUS_READY_FOR_SUBMISSION);
@@ -242,7 +242,7 @@ public class DataReductionJob extends Job {
 
   /**
    * Removes any previously calculated data reduction results from the database
-   * 
+   *
    * @throws JobFailedException
    *           If an error occurs
    */
@@ -271,7 +271,7 @@ public class DataReductionJob extends Job {
 
   /**
    * Determines whether or not a measurement
-   * 
+   *
    * @param instrument
    * @param measurement
    * @return

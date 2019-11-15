@@ -26,7 +26,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
-import uk.ac.exeter.QuinCe.data.Dataset.DataReduction.DataReductionException;
 import uk.ac.exeter.QuinCe.data.Export.ExportConfig;
 import uk.ac.exeter.QuinCe.data.Export.ExportException;
 import uk.ac.exeter.QuinCe.data.Export.ExportOption;
@@ -288,13 +287,16 @@ public class ExportBean extends BaseManagedBean {
 
     DataSource dataSource = ResourceManager.getInstance().getDBDataSource();
 
-    ExportData data = new ExportData(dataSource, instrument, dataset,
-      exportOption);
+    ExportData data = exportOption.makeExportData(dataSource, instrument,
+      dataset);
 
     data
       .addTimes(DataSetDataDB.getSensorValueDates(dataSource, dataset.getId()));
 
     DataSetDataDB.loadMeasurementData(dataSource, data, data.getRowIds());
+
+    // Run the post-processor before generating the final output
+    data.postProcess();
 
     // Let's make some output
     StringBuilder output = new StringBuilder();
@@ -313,7 +315,7 @@ public class ExportBean extends BaseManagedBean {
           ExportField exportField = (ExportField) field;
           if (!exportField.isDiagnostic()) {
             exportFields.add(exportField);
-            String header = exportField.getName();
+            String header = exportField.getFullName();
             headers.add(header);
             if (exportField.hasQC()) {
               headers.add(header + exportOption.getQcFlagSuffix());
@@ -339,9 +341,9 @@ public class ExportBean extends BaseManagedBean {
         if (!field.isDiagnostic()) {
           if (exportFields.contains(field)) {
             FieldValue fieldValue = entry.getValue();
-
             output.append(exportOption.getSeparator());
-            if (null == fieldValue || fieldValue.isNaN()) {
+            if (null == fieldValue || fieldValue.isNaN()
+              || fieldValue.isGhost()) {
               output.append(exportOption.getMissingValue());
             } else {
               output.append(numberFormatter.format(fieldValue.getValue()));
@@ -349,7 +351,7 @@ public class ExportBean extends BaseManagedBean {
 
             if (field.hasQC()) {
               output.append(exportOption.getSeparator());
-              if (null == fieldValue) {
+              if (null == fieldValue || fieldValue.isGhost()) {
                 output.append(exportOption.getMissingValue());
               } else {
                 if (!dataset.isNrt() && fieldValue.needsFlag()) {
@@ -361,7 +363,7 @@ public class ExportBean extends BaseManagedBean {
 
               if (exportOption.includeQCComments()) {
                 output.append(exportOption.getSeparator());
-                if (null == fieldValue) {
+                if (null == fieldValue || fieldValue.isGhost()) {
                   output.append("");
                 } else {
                   output.append(

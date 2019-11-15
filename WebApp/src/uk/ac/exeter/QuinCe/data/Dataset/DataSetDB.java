@@ -9,13 +9,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -72,19 +73,18 @@ public class DataSetDB {
    *          The field to use in the WHERE clause
    * @return The query SQL
    */
-  private static String makeGetDatasetsQuery(String whereField) {
+  private static String makeGetDatasetsQuery(String... whereFields) {
     StringBuilder sql = new StringBuilder(
       "SELECT " + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
-        + "d.status_date, d.nrt, d.properties, d.last_touched, " // 10
-        + "COALESCE(d.messages_json, '[]'), " // 11
-        + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude, " // 15
-        + "COUNT(sv.user_qc_flag) " // 16
-        + "FROM dataset d " + "LEFT JOIN sensor_values sv "
-        + "ON (d.id = sv.dataset_id AND " + "sv.user_qc_flag = "
-        + Flag.VALUE_NEEDED + ") " + "WHERE d.");
+        + "d.status_date, d.nrt, d.properties, d.created, d.last_touched, " // 11
+        + "COALESCE(d.messages_json, '[]'), " // 12
+        + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude " // 16
+        + "FROM dataset d WHERE ");
 
-    sql.append(whereField);
-    sql.append(" = ? GROUP BY d.id ORDER BY d.start ASC");
+    sql.append(Stream.of(whereFields).map(field -> "d." + field + " = ? ")
+      .collect(Collectors.joining("AND ")));
+
+    sql.append("GROUP BY d.id ORDER BY d.start ASC");
 
     return sql.toString();
   }
@@ -187,8 +187,11 @@ public class DataSetDB {
     LocalDateTime statusDate = DateTimeUtils.longToDate(record.getLong(7));
     boolean nrt = record.getBoolean(8);
     Properties properties = null; // 9
-    LocalDateTime lastTouched = DateTimeUtils.longToDate(record.getLong(10));
-    String json = record.getString(11);
+    LocalDateTime createdDate = DateTimeUtils
+      .longToDate(record.getTimestamp(10).getTime());
+
+    LocalDateTime lastTouched = DateTimeUtils.longToDate(record.getLong(11));
+    String json = record.getString(12);
     JSONArray array = new JSONArray(json);
     ArrayList<Message> messages = new ArrayList<>();
     for (Object o : array) {
@@ -200,15 +203,13 @@ public class DataSetDB {
       }
     }
 
-    double minLon = record.getDouble(12);
-    double maxLon = record.getDouble(13);
-    double minLat = record.getDouble(14);
-    double maxLat = record.getDouble(15);
-
-    int needsFlagCount = record.getInt(16);
+    double minLon = record.getDouble(13);
+    double maxLon = record.getDouble(14);
+    double minLat = record.getDouble(15);
+    double maxLat = record.getDouble(16);
 
     return new DataSet(id, instrumentId, name, start, end, status, statusDate,
-      nrt, properties, lastTouched, needsFlagCount, messages, minLon, minLat,
+      nrt, properties, createdDate, lastTouched, messages, minLon, minLat,
       maxLon, maxLat);
   }
 
@@ -569,11 +570,23 @@ public class DataSetDB {
     throws MissingParamException, DatabaseException {
     DataSet result = null;
 
-    for (DataSet dataSet : getDataSets(conn, instrumentId)) {
-      if (dataSet.isNrt()) {
-        result = dataSet;
-        break;
+    MissingParam.checkMissing(conn, "conn");
+    MissingParam.checkZeroPositive(instrumentId, "instrumentId");
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(makeGetDatasetsQuery("instrument_id", "nrt"))) {
+
+      stmt.setLong(1, instrumentId);
+      stmt.setBoolean(2, true);
+
+      try (ResultSet records = stmt.executeQuery()) {
+        if (records.next()) {
+          result = dataSetFromRecord(records);
+        }
       }
+
+    } catch (SQLException e) {
+      throw new DatabaseException("Error while retrieving data sets", e);
     }
 
     return result;
@@ -622,10 +635,10 @@ public class DataSetDB {
    */
   public static void deleteNrtDataSet(Connection conn, long instrumentId)
     throws MissingParamException, DatabaseException {
-    for (DataSet dataSet : getDataSets(conn, instrumentId)) {
-      if (dataSet.isNrt()) {
-        deleteDataSet(conn, dataSet);
-      }
+
+    DataSet nrtDataset = getNrtDataSet(conn, instrumentId);
+    if (null != nrtDataset) {
+      deleteDataSet(conn, nrtDataset);
     }
   }
 

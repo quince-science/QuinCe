@@ -2,7 +2,6 @@ package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -17,7 +16,10 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
 import uk.ac.exeter.QuinCe.data.Dataset.InvalidDataSetStatusException;
+import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriod;
+import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Dataset.SensorValue;
+import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
@@ -242,7 +244,7 @@ public class ExtractDataSetJob extends Job {
       // The last run type will cover the rest of time
       runTypePeriods.finish();
 
-      // Now remove all the values that are within the instrument's pre-
+      // Now flag all the values that are within the instrument's pre-
       // and post-flushing periods (if they're defined)
       if (instrument.getPreFlushingTime() > 0
         || instrument.getPostFlushingTime() > 0) {
@@ -267,7 +269,7 @@ public class ExtractDataSetJob extends Job {
             // In this case, simply use the next known run type. Otherwise we
             // find
             // the run type that the timestamp is in.
-            if (value.getTime().isBefore(currentPeriod.start)
+            if (value.getTime().isBefore(currentPeriod.getStart())
               || currentPeriod.encompasses(value.getTime())) {
               periodFound = true;
             } else {
@@ -277,7 +279,7 @@ public class ExtractDataSetJob extends Job {
           }
 
           if (inFlushingPeriod(value.getTime(), currentPeriod, instrument)) {
-            valuesIter.remove();
+            value.setUserQC(Flag.FLUSHING, "");
           }
         }
       }
@@ -337,13 +339,13 @@ public class ExtractDataSetJob extends Job {
     boolean result = false;
 
     if (instrument.getPreFlushingTime() > 0
-      && DateTimeUtils.secondsBetween(runTypePeriod.start, time) <= instrument
-        .getPreFlushingTime()) {
+      && DateTimeUtils.secondsBetween(runTypePeriod.getStart(),
+        time) <= instrument.getPreFlushingTime()) {
 
       result = true;
     } else if (instrument.getPostFlushingTime() > 0
-      && DateTimeUtils.secondsBetween(time, runTypePeriod.end) <= instrument
-        .getPostFlushingTime()) {
+      && DateTimeUtils.secondsBetween(time,
+        runTypePeriod.getEnd()) <= instrument.getPostFlushingTime()) {
 
       result = true;
     }
@@ -380,72 +382,5 @@ public class ExtractDataSetJob extends Job {
   @Override
   public String getJobName() {
     return jobName;
-  }
-
-  private class RunTypePeriod {
-
-    private String runType;
-
-    private LocalDateTime start;
-
-    private LocalDateTime end;
-
-    private RunTypePeriod(String runType, LocalDateTime start) {
-      this.runType = runType;
-      this.start = start;
-      this.end = start;
-    }
-
-    private boolean encompasses(LocalDateTime time) {
-      boolean result = false;
-      if (start.equals(end)) {
-        result = time.equals(start);
-      } else {
-        boolean afterStart = false;
-        boolean beforeEnd = false;
-
-        if (time.equals(start) || time.isAfter(start)) {
-          afterStart = true;
-        }
-
-        if (time.equals(end) || time.isBefore(end)) {
-          beforeEnd = true;
-        }
-
-        result = afterStart && beforeEnd;
-      }
-
-      return result;
-    }
-  }
-
-  private class RunTypePeriods extends ArrayList<RunTypePeriod> {
-
-    private RunTypePeriods() {
-      super();
-    }
-
-    private void add(String runType, LocalDateTime time) {
-
-      if (size() == 0) {
-        add(new RunTypePeriod(runType, time));
-      } else {
-        RunTypePeriod currentPeriod = get(size() - 1);
-        if (!currentPeriod.runType.equals(runType)) {
-          add(new RunTypePeriod(runType, time));
-        } else {
-          currentPeriod.end = time;
-        }
-      }
-    }
-
-    /**
-     * Signal that the last run type has been found
-     */
-    private void finish() {
-      if (size() > 0) {
-        get(size() - 1).end = LocalDateTime.MAX;
-      }
-    }
   }
 }

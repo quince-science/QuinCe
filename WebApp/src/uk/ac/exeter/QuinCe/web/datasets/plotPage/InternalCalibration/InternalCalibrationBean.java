@@ -28,7 +28,6 @@ import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.web.datasets.data.Field;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldSet;
-import uk.ac.exeter.QuinCe.web.datasets.data.FieldSets;
 import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.PlotPageBean;
 
@@ -192,7 +191,7 @@ public class InternalCalibrationBean extends PlotPageBean {
   protected void initData() throws Exception {
 
     try {
-      fieldSets = new FieldSets("Date/Time");
+      fieldSets = new InternalCalibrationFieldSets("Date/Time");
 
       // Sensor columns
       List<FileColumn> calibratedColumns = InstrumentDB
@@ -218,8 +217,8 @@ public class InternalCalibrationBean extends PlotPageBean {
 
       // Add the times for the calibration run types. Note that this
       // autoloads the data too
-      pageData.addTimes(DataSetDataDB.getMeasurementTimes(getDataSource(),
-        datasetId, calibrationRunTypes));
+      pageData.addTimes(DataSetDataDB.getSensorValueDates(getDataSource(),
+        getDataset().getId()));
 
       // Load internal calibration data
       loadCalibrationData(calibratedColumns);
@@ -295,5 +294,10 @@ public class InternalCalibrationBean extends PlotPageBean {
     }
 
     return result;
+  }
+
+  @Override
+  public String getGhostDataLabel() {
+    return "Flushing";
   }
 }

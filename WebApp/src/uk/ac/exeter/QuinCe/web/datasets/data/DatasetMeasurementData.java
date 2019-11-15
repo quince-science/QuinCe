@@ -26,7 +26,6 @@ import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.utils.DateTimeUtils;
 import uk.ac.exeter.QuinCe.utils.MissingParam;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 
 @SuppressWarnings("serial")
 public abstract class DatasetMeasurementData
@@ -64,8 +63,6 @@ public abstract class DatasetMeasurementData
 
   private Map<Field, MapRecords> mapCache;
 
-  private boolean filterInitialised = false;
-
   public DatasetMeasurementData(Instrument instrument, FieldSets fieldSets,
     DataSet dataSet) throws MeasurementDataException {
     super();
@@ -79,6 +76,8 @@ public abstract class DatasetMeasurementData
     }
 
     mapCache = new HashMap<Field, MapRecords>();
+
+    initFilter();
   }
 
   /**
@@ -208,7 +207,7 @@ public abstract class DatasetMeasurementData
       if (entry.getValue().containsKey(field)) {
         FieldValue value = entry.getValue().get(field);
 
-        if (null != value && !value.isNaN()) {
+        if (null != value && !value.isNaN() && !value.isGhost()) {
           Position position = getClosestPosition(entry.getKey());
           MapRecord record = new MapRecord(position,
             DateTimeUtils.dateToLong(entry.getKey()), value);
@@ -460,7 +459,9 @@ public abstract class DatasetMeasurementData
 
     for (LocalDateTime id : rows) {
       FieldValue value = get(id).get(field);
-      if (null != value) {
+
+      // Do not set QC on ghost data
+      if (null != value && !value.isGhost()) {
         value.setQcFlag(flag);
         value.setQcComment(comment);
         value.setNeedsFlag(false);
@@ -471,16 +472,9 @@ public abstract class DatasetMeasurementData
     return updatedValues;
   }
 
-  public final void filterAndAddValues(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values)
-    throws MeasurementDataException, MissingParamException {
-
-    if (!filterInitialised) {
-      initFilter();
-    }
-
-    filterAndAddValuesAction(runType, time, values);
-  }
+  public abstract void filterAndAddValues(String runType, LocalDateTime time,
+    Map<Field, FieldValue> values)
+    throws MeasurementDataException, MissingParamException;
 
   /**
    * Ensure that the specified times are present in the map. New times will be
@@ -506,29 +500,12 @@ public abstract class DatasetMeasurementData
    * @param time
    *          The time to be added
    */
-  private void addTime(LocalDateTime time) {
+  protected final void addTime(LocalDateTime time) {
     if (!containsKey(time)) {
       put(time, fieldSets.generateFieldValuesMap());
       rowsLoaded.put(time, false);
     }
   }
-
-  /**
-   * Add a set of values, filtering out unwanted values. The default filter
-   * removes values for columns that are internally calibrated where the run
-   * type is not a measurement. This has the effect of removing all values taken
-   * during internal calibration.
-   *
-   * Override this method to filter the supplied values according to need.
-   *
-   * @param currentRunType
-   * @param time
-   * @param values
-   * @throws RecordNotFoundException
-   */
-  protected abstract void filterAndAddValuesAction(String runType,
-    LocalDateTime time, Map<Long, FieldValue> values)
-    throws MissingParamException, MeasurementDataException;
 
   /**
    * Initialise information required for filterAndAddValues

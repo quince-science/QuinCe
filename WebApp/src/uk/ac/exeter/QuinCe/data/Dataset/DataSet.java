@@ -21,7 +21,7 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
 /**
  * Object to represent a data set
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -39,7 +39,7 @@ public class DataSet {
   /**
    * The string for the delete status
    */
-  public static final String STATUS_DELETE_NAME = "Marked for deletion";
+  public static final String STATUS_DELETE_NAME = "Marked for reprocessing";
 
   /**
    * The numeric value for the error status. The data set will be given this
@@ -183,6 +183,11 @@ public class DataSet {
   private Properties properties;
 
   /**
+   * The time that this Dataset was created in the database
+   */
+  private LocalDateTime createdDate;
+
+  /**
    * The time when the data file was last touched
    */
   private LocalDateTime lastTouched;
@@ -201,11 +206,6 @@ public class DataSet {
    * Indicates whether or not this is a NRT dataset
    */
   private boolean nrt = false;
-
-  /**
-   * The number of NEEDED flags to be processed by the user
-   */
-  private int needsFlagCount = -1;
 
   /**
    * Messages from jobs handling this data set
@@ -239,7 +239,7 @@ public class DataSet {
 
   /**
    * Constructor for all fields
-   * 
+   *
    * @param id
    *          Data set's database ID
    * @param instrumentId
@@ -268,8 +268,9 @@ public class DataSet {
   protected DataSet(long id, long instrumentId, String name,
     LocalDateTime start, LocalDateTime end, int status,
     LocalDateTime statusDate, boolean nrt, Properties properties,
-    LocalDateTime lastTouched, int needsFlagCount, List<Message> messages,
-    double minLon, double minLat, double maxLon, double maxLat) {
+    LocalDateTime createdDate, LocalDateTime lastTouched,
+    List<Message> messages, double minLon, double minLat, double maxLon,
+    double maxLat) {
     this.id = id;
     this.instrumentId = instrumentId;
     this.name = name;
@@ -279,8 +280,8 @@ public class DataSet {
     this.statusDate = statusDate;
     this.nrt = nrt;
     this.properties = properties;
+    this.createdDate = createdDate;
     this.lastTouched = lastTouched;
-    this.needsFlagCount = needsFlagCount;
     this.messages = new ArrayList<Message>(messages);
     this.minLon = minLon;
     this.minLat = minLat;
@@ -290,7 +291,7 @@ public class DataSet {
 
   /**
    * Constructor for a new, empty data set
-   * 
+   *
    * @param instrumentId
    *          The database ID of the instrument to which the data set belongs
    */
@@ -301,7 +302,7 @@ public class DataSet {
 
   /**
    * Constructor for all fields
-   * 
+   *
    * @param id
    *          Data set's database ID
    * @param instrumentId
@@ -327,7 +328,7 @@ public class DataSet {
 
   /**
    * Get the data set's status
-   * 
+   *
    * @return The status
    */
   public int getStatus() {
@@ -336,7 +337,7 @@ public class DataSet {
 
   /**
    * Get the human-readable status of the data set
-   * 
+   *
    * @return The status
    */
   public String getStatusName() {
@@ -345,7 +346,7 @@ public class DataSet {
 
   /**
    * Get the human-readable name of a given data set status
-   * 
+   *
    * @param statusValue
    *          The status value
    * @return The status name
@@ -412,7 +413,7 @@ public class DataSet {
 
   /**
    * Get the data set's database ID
-   * 
+   *
    * @return The database ID
    */
   public long getId() {
@@ -421,7 +422,7 @@ public class DataSet {
 
   /**
    * Set the data set's database ID
-   * 
+   *
    * @param id
    *          The database ID
    */
@@ -431,7 +432,7 @@ public class DataSet {
 
   /**
    * Get the database ID of the instrument to which this data set belongs
-   * 
+   *
    * @return The instrument's database ID
    */
   public long getInstrumentId() {
@@ -440,7 +441,7 @@ public class DataSet {
 
   /**
    * Get the name of the data set
-   * 
+   *
    * @return The data set name
    */
   public String getName() {
@@ -449,7 +450,7 @@ public class DataSet {
 
   /**
    * Set the name of the data set
-   * 
+   *
    * @param name
    *          The data set name
    */
@@ -459,7 +460,7 @@ public class DataSet {
 
   /**
    * Get the start date of the data set
-   * 
+   *
    * @return The start date
    */
   public LocalDateTime getStart() {
@@ -468,7 +469,7 @@ public class DataSet {
 
   /**
    * Set the start date of the data set
-   * 
+   *
    * @param start
    *          The start date
    */
@@ -478,7 +479,7 @@ public class DataSet {
 
   /**
    * Get the end date of the data set
-   * 
+   *
    * @return The end date
    */
   public LocalDateTime getEnd() {
@@ -487,7 +488,7 @@ public class DataSet {
 
   /**
    * Set the end date of the data set
-   * 
+   *
    * @param end
    *          The end date
    */
@@ -497,7 +498,7 @@ public class DataSet {
 
   /**
    * Get the date that the data set was last accessed
-   * 
+   *
    * @return The last access date
    */
   public LocalDateTime getLastTouched() {
@@ -513,7 +514,7 @@ public class DataSet {
 
   /**
    * Set the data set's status
-   * 
+   *
    * @param status
    *          The status
    * @throws InvalidDataSetStatusException
@@ -530,7 +531,7 @@ public class DataSet {
 
   /**
    * Get the date that the dataset's status was set
-   * 
+   *
    * @return The status date
    */
   public LocalDateTime getStatusDate() {
@@ -539,7 +540,7 @@ public class DataSet {
 
   /**
    * Set a property on the data set.
-   * 
+   *
    * @param key
    *          The key
    * @param value
@@ -556,7 +557,7 @@ public class DataSet {
 
   /**
    * Get a property from the data set
-   * 
+   *
    * @param key
    *          The key
    * @return The value
@@ -574,7 +575,7 @@ public class DataSet {
 
   /**
    * Determine whether or not a given status value is valid
-   * 
+   *
    * @param status
    *          The status to be checked
    * @return {@code true} if the status is valid; {@code false} if it is not
@@ -599,7 +600,7 @@ public class DataSet {
    */
   public boolean getCanBeExported() {
     // TODO Reinstate check of whether QC is complete
-    return (getStatus() >= STATUS_USER_QC || isNrt());
+    return (getStatus() >= STATUS_USER_QC); // || isNrt());
   }
 
   public void addMessage(String message, String details) {
@@ -631,7 +632,7 @@ public class DataSet {
 
   /**
    * Get a list of the raw data files used to construct this DataSet
-   * 
+   *
    * @param dataSource
    *          A data source
    * @return The IDs of the files
@@ -647,7 +648,7 @@ public class DataSet {
 
   /**
    * Determine whether or not this is a NRT dataset
-   * 
+   *
    * @return {@code true} if this is an NRT dataset; {@code false} if it is not
    */
   public boolean isNrt() {
@@ -655,18 +656,9 @@ public class DataSet {
   }
 
   /**
-   * Get the number of NEEDED flags to be processed by the user
-   * 
-   * @return The number of NEEDED flags
-   */
-  public int getNeedsFlagCount() {
-    return needsFlagCount;
-  }
-
-  /**
    * Get the available field sets for this dataset keyed by name. Builds the
    * list once, then caches it
-   * 
+   *
    * @return The field sets
    * @throws MissingParamException
    *           If any required parameters are missing
@@ -719,7 +711,7 @@ public class DataSet {
 
   /**
    * Set the dataset's geographical bounds
-   * 
+   *
    * @param minLon
    *          The minimum longitude
    * @param maxLon
@@ -771,5 +763,9 @@ public class DataSet {
 
   public double getMaxLat() {
     return maxLat;
+  }
+
+  public LocalDateTime getCreatedDate() {
+    return createdDate;
   }
 }

@@ -18,13 +18,10 @@
              "DrainTemperature", "VaisalaPressure", "SmartTrakFlow", "WaterFlow",
              "AWSAirPressure", "", "SolinoidState", "Multiplexer"]
 
-    [input.tables.ignore]
-      column_index = 12
-      value = 1
-
 [output]
 
   # The column headers for the output file
+  # To join two fields add a percent sign (_) between the names
   columns = ["TimeStamp", "Longitude", "Latitude", "Li7000H2O", "Li7000CO2",
              "DrainTemperature", "ColumnTemperature", "VaisalaPressure",
              "SmartTrakFlow", "WaterFlow", "SBE21Serial", "SBE21Salinity",
@@ -32,7 +29,7 @@
              "AA4330FSerial", "AA4330FOxygen", "AA4330FAirSat",
              "AA4330FTemperature", "FLRTSerial", "FLRTChla", "AWSAirPressure",
              "AWSTemperature", "AWSWindDir", "AWSWindSpeed", "OctansHeave",
-             "SolinoidState", "Multiplexer"]
+             "SolinoidState~Multiplexer"]
 
   # Value to store in empty columns
   empty_col_value = -9999

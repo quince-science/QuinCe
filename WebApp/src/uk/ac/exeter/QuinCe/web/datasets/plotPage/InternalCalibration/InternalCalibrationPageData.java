@@ -6,8 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
+import uk.ac.exeter.QuinCe.data.Dataset.RunTypePeriods;
 import uk.ac.exeter.QuinCe.data.Instrument.FileColumn;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
@@ -20,10 +23,19 @@ import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
+/**
+ * Values can only be added through
+ * {@link #filterAndAddValues(String, LocalDateTime, Map)}.
+ *
+ * @author Steve Jones
+ *
+ */
 @SuppressWarnings("serial")
 public class InternalCalibrationPageData extends DatasetMeasurementData {
 
   private List<String> internalCalibrationRunTypes;
+
+  private RunTypePeriods runTypePeriods;
 
   private Map<Long, FileColumn> calibrationColumns;
 
@@ -39,16 +51,16 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
   }
 
   @Override
-  public void filterAndAddValuesAction(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values)
+  public void filterAndAddValues(String runType, LocalDateTime time,
+    Map<Field, FieldValue> values)
     throws MeasurementDataException, MissingParamException {
 
     if (internalCalibrationRunTypes.contains(runType)) {
       Map<Field, FieldValue> valuesToAdd = new HashMap<Field, FieldValue>();
 
-      for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
+      for (Map.Entry<Field, FieldValue> entry : values.entrySet()) {
 
-        FileColumn column = calibrationColumns.get(entry.getKey());
+        FileColumn column = calibrationColumns.get(entry.getKey().getId());
 
         // We ignore any values that aren't in the calibratable columns
         if (null != column) {
@@ -61,7 +73,7 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
         }
       }
 
-      addValues(time, valuesToAdd);
+      super.addValues(time, valuesToAdd);
     }
   }
 
@@ -83,6 +95,10 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
 
       // Get the list of run type values that indicate measurements
       internalCalibrationRunTypes = instrument.getInternalCalibrationRunTypes();
+      runTypePeriods = DataSetDataDB.getRunTypePeriods(
+        ResourceManager.getInstance().getDBDataSource(), instrument, dataSet,
+        internalCalibrationRunTypes);
+
     } catch (Exception e) {
       throw new MeasurementDataException("Error looking up insturment details",
         e);
@@ -92,9 +108,13 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
   @Override
   public final void addTimes(Collection<LocalDateTime> times)
     throws MeasurementDataException {
-    super.addTimes(times);
 
-    // Make sure all data is loaded
+    // Add only those times that are in the set of allowed run types (i.e. the
+    // internal calibration run types)
+    times.stream().filter(t -> runTypePeriods.contains(t))
+      .forEach(this::addTime);
+
+    // Load all the data
     loadRows(0, size());
   }
 
@@ -104,7 +124,7 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
 
     if (times.size() > 0) {
       try {
-        DataSetDataDB.loadQCSensorValues(
+        DataSetDataDB.loadQCSensorValuesByTime(
           ResourceManager.getInstance().getDBDataSource(), this, times);
       } catch (Exception e) {
         throw new MeasurementDataException("Error loading data from database",
@@ -119,4 +139,21 @@ public class InternalCalibrationPageData extends DatasetMeasurementData {
     // We always load all data up front, so we don't need to load individual
     // fields
   }
+
+  /**
+   * Directly adding individual values is not supported in this implementation.
+   */
+  @Override
+  public void addValue(LocalDateTime rowId, long fieldId, FieldValue value) {
+    throw new NotImplementedException("Must use filterAndAddValues");
+  }
+
+  /**
+   * Directly adding individual values is not supported in this implementation.
+   */
+  @Override
+  public void addValue(LocalDateTime rowId, Field field, FieldValue value) {
+    throw new NotImplementedException("Must use filterAndAddValues");
+  }
+
 }

@@ -2,10 +2,8 @@ package uk.ac.exeter.QuinCe.web.datasets.export;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import javax.sql.DataSource;
@@ -31,6 +29,7 @@ import uk.ac.exeter.QuinCe.web.datasets.data.FieldValue;
 import uk.ac.exeter.QuinCe.web.datasets.data.MeasurementDataException;
 import uk.ac.exeter.QuinCe.web.datasets.plotPage.ManualQC.ManualQCPageData;
 
+@SuppressWarnings("serial")
 public class ExportData extends ManualQCPageData {
 
   // TODO I don't like the way this is put together, mostly due to the problem
@@ -80,12 +79,14 @@ public class ExportData extends ManualQCPageData {
     ExportOption exportOption) throws Exception {
 
     ExportField lonField = new ExportField(FieldSet.BASE_FIELD_SET,
-      SensorType.LONGITUDE_SENSOR_TYPE, false, false, exportOption);
+      SensorType.LONGITUDE_ID, SensorType.LONGITUDE_SENSOR_TYPE, false, false,
+      exportOption);
     fieldSets.addField(lonField);
     sensorTypeFields.put(SensorType.LONGITUDE_SENSOR_TYPE.getId(), lonField);
 
     ExportField latField = new ExportField(FieldSet.BASE_FIELD_SET,
-      SensorType.LATITUDE_SENSOR_TYPE, false, false, exportOption);
+      SensorType.LATITUDE_ID, SensorType.LATITUDE_SENSOR_TYPE, false, false,
+      exportOption);
     fieldSets.addField(latField);
     sensorTypeFields.put(SensorType.LATITUDE_SENSOR_TYPE.getId(), latField);
 
@@ -102,32 +103,38 @@ public class ExportData extends ManualQCPageData {
     List<InstrumentVariable> variables = instrument.getVariables();
 
     // For sensors, the fields are each sensor type.
-    Set<SensorType> exportSensorTypes = new HashSet<SensorType>();
+    Map<SensorType, Long> exportSensorTypes = new HashMap<SensorType, Long>();
 
     if (exportOption.includeAllSensors()) {
       for (Map.Entry<SensorType, List<SensorAssignment>> entry : sensors
         .entrySet()) {
         if (entry.getValue().size() > 0) {
-          exportSensorTypes.add(entry.getKey());
+          exportSensorTypes.put(entry.getKey(),
+            entry.getValue().get(0).getDatabaseId());
         }
       }
     } else {
       // Only use sensor types required by the instrument's variables
       for (InstrumentVariable variable : variables) {
-        exportSensorTypes.addAll(variable.getAllSensorTypes());
+        for (SensorType sensorType : variable.getAllSensorTypes()) {
+          exportSensorTypes.put(sensorType,
+            sensors.get(sensorType).get(0).getDatabaseId());
+        }
       }
     }
 
     FieldSet sensorsFieldSet = fieldSets.addFieldSet(
       DataSetDataDB.SENSORS_FIELDSET, DataSetDataDB.SENSORS_FIELDSET_NAME);
 
-    for (SensorType sensorType : exportSensorTypes) {
-      if (!sensorType.equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
-        ExportField field = new ExportField(sensorsFieldSet, sensorType,
-          sensorType.isDiagnostic(), !sensorType.isDiagnostic(), exportOption);
+    for (Map.Entry<SensorType, Long> entry : exportSensorTypes.entrySet()) {
+      if (!entry.getKey().equals(SensorType.RUN_TYPE_SENSOR_TYPE)) {
+        SensorType sensorType = entry.getKey();
+        ExportField exportField = new ExportField(sensorsFieldSet,
+          entry.getValue(), sensorType, sensorType.isDiagnostic(),
+          !sensorType.isDiagnostic(), exportOption);
 
-        fieldSets.addField(field);
-        sensorTypeFields.put(sensorType.getId(), field);
+        fieldSets.addField(exportField);
+        sensorTypeFields.put(sensorType.getId(), exportField);
       }
     }
 
@@ -154,17 +161,17 @@ public class ExportData extends ManualQCPageData {
   }
 
   @Override
-  public void filterAndAddValuesAction(String runType, LocalDateTime time,
-    Map<Long, FieldValue> values)
+  public void filterAndAddValues(String runType, LocalDateTime time,
+    Map<Field, FieldValue> values)
     throws MeasurementDataException, MissingParamException {
 
     try {
       Map<Field, CombinedFieldValue> valuesToAdd = new HashMap<Field, CombinedFieldValue>();
 
-      for (Map.Entry<Long, FieldValue> entry : values.entrySet()) {
+      for (Map.Entry<Field, FieldValue> entry : values.entrySet()) {
 
         SensorType sensorType = instrument.getSensorAssignments()
-          .getSensorTypeForDBColumn(entry.getKey());
+          .getSensorTypeForDBColumn(entry.getKey().getId());
         if (sensorTypeFields.containsKey(sensorType.getId())) {
 
           Field field = sensorTypeFields.get(sensorType.getId());
@@ -184,17 +191,6 @@ public class ExportData extends ManualQCPageData {
     }
   }
 
-  /*
-   * @Override public void addValue(LocalDateTime rowId, long fieldId,
-   * FieldValue value) { if (sensorTypeFields.containsKey(fieldId)) {
-   *
-   * Map<Field, FieldValue> row = get(rowId); Field field =
-   * sensorTypeFields.get(fieldId); row.put(field,
-   * addSensorValue((CombinedFieldValue) row.get(field), value));
-   *
-   * } else if (variableFields.containsKey(fieldId)) { super.addValue(rowId,
-   * variableFields.get(fieldId), value); } }
-   */
   private CombinedFieldValue addSensorValue(CombinedFieldValue existingValue,
     FieldValue value) {
 
@@ -217,5 +213,13 @@ public class ExportData extends ManualQCPageData {
 
     // Add the DEPTH attribute
     addValue(rowId, depthField, depthFieldValue);
+  }
+
+  /**
+   * Post-process the data before it's finally exported. This instance does no
+   * post-processing, but extending classes can override it as needed.
+   */
+  public void postProcess() {
+    // NOOP
   }
 }

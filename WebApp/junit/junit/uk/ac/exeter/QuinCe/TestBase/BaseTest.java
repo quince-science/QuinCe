@@ -26,6 +26,7 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
+import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorType;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
@@ -142,7 +143,17 @@ public class BaseTest {
    * @return A {@link Stream} of various empty {@link String} values.
    */
   protected static Stream<String> createNullEmptyStrings() {
-    return Stream.of(null, "", " ");
+    return Stream.of(null, "", " ", "  ", "\t", "\n");
+  }
+
+  /**
+   * Create a set of invalid references for {@link SensorType} IDs ({@code 0}
+   * and {@code -1}).
+   *
+   * @return The invalid IDs
+   */
+  protected static Stream<Long> createInvalidReferences() {
+    return Stream.of(0L, -1L);
   }
 
   /**

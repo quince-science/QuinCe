@@ -1223,14 +1223,15 @@ function removeFile(fileName) {
 function setRunTypeCategory(fileIndex, runType) {
 
   if (!drawingPage) {
+    var escapedRunType = runType.replace(/(~)/g, "\\$1");
     var runTypeCategory = PF(fileIndex + '-' + runType + '-menu').getSelectedValue();
     var aliasTo = null;
 
     if (runTypeCategory == ALIAS_RUN_TYPE) {
-      $('#' + fileIndex + '-' + runType + '-aliasMenu').show();
+      $('#' + fileIndex + '-' + escapedRunType + '-aliasMenu').show();
       aliasTo = PF(fileIndex + '-' + runType + '-alias').getSelectedValue();
     } else {
-      $('#' + fileIndex + '-' + runType + '-aliasMenu').hide();
+      $('#' + fileIndex + '-' + escapedRunType + '-aliasMenu').hide();
     }
 
     $('#newInstrumentForm\\:assignCategoryFile').val(fileIndex);
