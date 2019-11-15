@@ -153,7 +153,7 @@
           <p:remoteCommand name="plot1GetData"
             action="#{sessionScope[beanName].plot1.updatePlot}"
             process="xAxis yAxis plotMode" update="plotData plotLabels"
-            oncomplete="updatePlot(1)" />
+            onstart="plotLoading(1)" oncomplete="updatePlot(1)" />
           <h:inputHidden value="#{sessionScope[beanName].plot1.mapVariable}"
             id="mapVariable" />
           <h:inputHidden value="#{sessionScope[beanName].plot1.mapBounds}"
@@ -168,6 +168,9 @@
             action="#{sessionScope[beanName].plot1.generateMapData}"
             process="mapVariable mapBounds mapUpdateScale plotMode"
             update="mapData mapScaleLimits" oncomplete="drawMap(1)" />
+          <div id="plot1Loading" class="plotLoading">
+            Loading...
+          </div>
           <ui:insert name="plot1">Plot 1</ui:insert>
         </h:form>
       </div>
@@ -186,7 +189,7 @@
             <p:remoteCommand name="plot2GetData"
               action="#{sessionScope[beanName].plot2.updatePlot}"
               process="xAxis yAxis plotMode" update="plotData plotLabels"
-              oncomplete="updatePlot(2)" />
+              onstart="plotLoading(2)" oncomplete="updatePlot(2)" />
             <h:inputHidden value="#{sessionScope[beanName].plot2.mapVariable}"
               id="mapVariable" />
             <h:inputHidden value="#{sessionScope[beanName].plot2.mapBounds}"
@@ -203,6 +206,9 @@
               action="#{sessionScope[beanName].plot2.generateMapData}"
               process="mapVariable mapBounds mapUpdateScale plotMode"
               update="mapData mapScaleLimits" oncomplete="drawMap(2)" />
+            <div id="plot2Loading" class="plotLoading">
+              Loading...
+            </div>
             <ui:insert name="plot2">Plot 2</ui:insert>
           </h:form>
         </div>

@@ -980,6 +980,8 @@ function updatePlot(plotIndex) {
   } else {
     initMap(plotIndex);
   }
+  
+  plotLoaded(plotIndex);
 }
 
 function redrawPlot(index) {
@@ -1420,4 +1422,12 @@ function enablePlotSelect(index) {
   if (!nrt()) {
     PF('plot' + index + 'SelectMode').buttons.eq(1).removeClass('ui-state-disabled');
   }
+}
+
+function plotLoading(index) {
+  $('#plot' + index + 'Loading').show();
+}
+
+function plotLoaded(index) {
+  $('#plot' + index + 'Loading').hide();
 }
