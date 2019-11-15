@@ -17,7 +17,6 @@ import javax.sql.DataSource;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
-import uk.ac.exeter.QuinCe.data.Dataset.QC.Flag;
 import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
@@ -79,11 +78,8 @@ public class DataSetDB {
       "SELECT " + "d.id, d.instrument_id, d.name, d.start, d.end, d.status, " // 6
         + "d.status_date, d.nrt, d.properties, d.created, d.last_touched, " // 11
         + "COALESCE(d.messages_json, '[]'), " // 12
-        + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude, " // 16
-        + "COUNT(sv.user_qc_flag) " // 17
-        + "FROM dataset d " + "LEFT JOIN sensor_values sv "
-        + "ON (d.id = sv.dataset_id AND " + "sv.user_qc_flag = "
-        + Flag.VALUE_NEEDED + ") WHERE ");
+        + "d.min_longitude, d.max_longitude, d.min_latitude, d.max_latitude " // 16
+        + "FROM dataset d WHERE ");
 
     sql.append(Stream.of(whereFields).map(field -> "d." + field + " = ? ")
       .collect(Collectors.joining("AND ")));
@@ -212,11 +208,9 @@ public class DataSetDB {
     double minLat = record.getDouble(15);
     double maxLat = record.getDouble(16);
 
-    int needsFlagCount = record.getInt(17);
-
     return new DataSet(id, instrumentId, name, start, end, status, statusDate,
-      nrt, properties, createdDate, lastTouched, needsFlagCount, messages,
-      minLon, minLat, maxLon, maxLat);
+      nrt, properties, createdDate, lastTouched, messages, minLon, minLat,
+      maxLon, maxLat);
   }
 
   /**
