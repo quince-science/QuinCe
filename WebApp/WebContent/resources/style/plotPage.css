@@ -266,3 +266,16 @@ td.selected {
   width: 46.77px !important;
   height: 29.22px !important;
 }
+
+.plotLoading {
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  font-weight: bold;
+  font-style: italic;
+  z-index: 10000;
+  background-color: #9999AAAA;
+  text-align: center;
+  position: absolute;
+  padding-top: 50px;
+}
