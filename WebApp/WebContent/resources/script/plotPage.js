@@ -1367,7 +1367,7 @@ function selectPointsInRect(data, variableId, minX, maxX, minY, maxY) {
       break;
     } else if (data[i][0] >= minX) {
       // See if any of the Y values are in range
-      for (var y = 3; y < data[i].length; y++) {
+      for (var y = 4; y < data[i].length; y++) {
         if (data[i][y] >= minY && data[i][y] <= maxY) {
           pointsToSelect.push(data[i][1]);
           break;
