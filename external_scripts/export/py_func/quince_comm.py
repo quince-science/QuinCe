@@ -51,7 +51,7 @@ def get_export_list(config):
     returns: array containing name, instrument and id for each dataset 
     ready to be downloaded.
     '''
-    logging.info('Retrieving exportList from QuinCe')
+    logging.debug('Retrieving exportList from QuinCe')
     export_list = quince_req(config,'exportList').decode('utf8')
     export_list_count = export_list.count('id')
     logging.info(f'{export_list_count} dataset(s) ready for export')
@@ -67,7 +67,7 @@ def get_export_dataset(config,dataset_id):
     QuinCe-id associated with our desired dataset.
     returns .zipfile.
     '''
-    logging.info(f'Exporting dataset with id : {dataset_id}, from QuinCe')
+    logging.debug(f'Exporting dataset with id : {dataset_id}, from QuinCe')
     export_dataset = quince_req(config, 'exportDataset', dataset_id)
 
     return export_dataset
