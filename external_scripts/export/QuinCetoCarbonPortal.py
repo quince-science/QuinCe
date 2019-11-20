@@ -35,6 +35,7 @@ slack = Slacker(basicConfig['slack']['api_token'])
 upload = True # for debugging purposes, when False no data is exported.
 
 def main():
+  logging.info('***** Starting QuinCe NRT export *****')    
   logging.debug('Obtaining IDs of datasets ready for export from QuinCe')
   try:
     export_list = get_export_list(basicConfig)
