@@ -31,17 +31,18 @@ with open(platform_lookup_file) as f: platform = toml.load(f)
 if not os.path.isdir('log'):
   os.mkdir('log')
 #logging.basicConfig(stream=sys.stdout,format='%(asctime)s %(message)s', level=logging.DEBUG)
-logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.DEBUG)
+logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.INFO)
 
 upload = True # for debugging purposes, when False no data is exported.
 
 def main():
+  logging.info('***** Starting QuinCe NRT export *****')    
   logging.debug('Obtaining IDs of datasets ready for export from QuinCe')
   export_list = get_export_list(config_quince)
 
   try:
     if not export_list:
-      logging.info('Terminating script, no datasets to be exported.')
+      logging.debug('Terminating script, no datasets to be exported.')
     else: 
       for dataset in export_list: 
         [dataset_zip,
@@ -74,11 +75,10 @@ def main():
                 manifest, platform, config_carbon, data_filename, platform_code, 
                 dataset_zip, index, cp_cookie, 'L1', upload, L0_hashsums)
             except Exception as e:
-              logging.INFO('Carbon Portal export failed')
+              logging.error('Carbon Portal export failed')
               logging.error('Exception occurred: ', exc_info=True)
 
           if 'Copernicus' in data_filename and 'CMEMS' in export_destination:  
-            logging.info('Executing Copernicus routine')
             curr_date  = build_dataproduct(dataset_zip,dataset['name'],data_filename)
             try: 
               if upload:
@@ -87,8 +87,8 @@ def main():
               else: 
                   successful_upload_CMEMS = False
             except Exception as e:
+              logging.error('FTP connection failed')
               logging.error('Exception occurred: ', exc_info=True)
-              logging.info('FTP connection failed')
         if successful_upload_CMEMS:
           report_complete_export(config_quince,dataset['id'])
         else: 
@@ -96,7 +96,7 @@ def main():
 
   except Exception as e: 
     print(e); 
-    logging.info('Failed to run. Encountered: %s ',e);
+    logging.error('Failed to run. Encountered: %s ',e);
     exc_type, exc_obj, exc_tb = sys.exc_info()
     traceback.print_exc()
 
