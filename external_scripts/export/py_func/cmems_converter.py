@@ -227,8 +227,6 @@ def makenetcdf(datasetname, fieldconfig, records):
   nc.title = "Global Ocean - In Situ near-real time carbon observation"
   nc.author = "cmems-service"
   nc.naming_authority = "Copernicus"
-  nc.citation = AUTHOR_LIST + "(" + YEAR + "): NRT data from [platform name]. "\
-    + "Made available through the Copernicus project."
 
   nc.platform_code = getplatformvalue(platform_code, CALLSIGN)
   nc.site_code = getplatformvalue(platform_code, CALLSIGN)
