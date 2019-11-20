@@ -123,7 +123,6 @@ def build_dataproduct(dataset_zip,dataset_name,destination_filename):
     # ASSIGN DATE-VARIABLES TO netCDF FILE
     nc_filepath = local_folder + '/' + nc_filename + '.nc'   
 
-    logging.debug('Writing netCDF bytes to disk')
     with open(nc_filepath,'wb') as f: f.write(nc_content)
 
     # reading netCDF file to memory
@@ -205,7 +204,7 @@ def upload_to_copernicus(ftp_config,server,dataset,curr_date):
       
       upload_result, filepath_ftp, start_upload_time, stop_upload_time = (
         upload_to_ftp(ftp, ftp_config, filepath_local))
-      logging.debug(f'upload result: {upload_result}')
+      #logging.debug(f'upload result: {upload_result}')
       
       if upload_result == 0: #upload ok
         # Setting dnt-variable to temp variable: curr_date.
@@ -649,7 +648,7 @@ def evaluate_response_file(ftp,dnt_filepath,folder_local,cmems_db):
       date + ',' + 
       folder_local + ',' + 
       dnt_filepath + ',' + 
-      cmems_response + ',' + '\n')
+      cmems_response + ',\n')
   
   if os.path.isfile(log_file):
     with open(log_file,'a+') as log: 
