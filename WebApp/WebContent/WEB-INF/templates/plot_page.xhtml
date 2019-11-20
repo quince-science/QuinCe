@@ -169,7 +169,7 @@
             process="mapVariable mapBounds mapUpdateScale plotMode"
             update="mapData mapScaleLimits" oncomplete="drawMap(1)" />
           <div id="plot1Loading" class="plotLoading">
-            Loading...
+            <div class="plotLoadingMessage">Loading...</div>
           </div>
           <ui:insert name="plot1">Plot 1</ui:insert>
         </h:form>
@@ -207,7 +207,7 @@
               process="mapVariable mapBounds mapUpdateScale plotMode"
               update="mapData mapScaleLimits" oncomplete="drawMap(2)" />
             <div id="plot2Loading" class="plotLoading">
-              Loading...
+              <div class="plotLoadingMessage">Loading...</div>
             </div>
             <ui:insert name="plot2">Plot 2</ui:insert>
           </h:form>
