@@ -25,7 +25,7 @@ QC_CONVENTIONS = "Copernicus Marine in situ reference table 2"
 QC_VALID_MIN = 0
 QC_VALID_MAX = 9
 QC_FILL_VALUE = -127
-QC_FLAG_VALUES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+QC_FLAG_VALUES = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype="byte")
 QC_FLAG_MEANINGS = "no_qc_performed good_data probably_good_data " \
  + "bad_data_that_are_potentially_correctable bad_data value_changed " \
  + "not_used nominal_value interpolated_value missing_value"
