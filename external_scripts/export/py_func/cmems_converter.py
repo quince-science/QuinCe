@@ -1,6 +1,7 @@
 import sys, os
 import tempfile
-import datetime
+from datetime import datetime
+from datetime import timezone
 import pandas as pd
 import numpy as np
 import numpy.ma as ma
@@ -16,14 +17,14 @@ CATEGORY_CODE = 2
 DATA_TYPE = 3
 CALLSIGN = 4
 AUTHOR_LIST = 5
-YEAR = datetime.datetime.now().year
+YEAR = datetime.now().year
 
-TIME_BASE = datetime.datetime(1950, 1, 1, 0, 0, 0)
+TIME_BASE = datetime(1950, 1, 1, 0, 0, 0)
 QC_LONG_NAME = "quality flag"
-QC_CONVENTIONS = "OceanSITES reference table 2"
+QC_CONVENTIONS = "Copernicus Marine in situ reference table 2"
 QC_VALID_MIN = 0
 QC_VALID_MAX = 9
-QC_FILL_VALUE = -128
+QC_FILL_VALUE = -127
 QC_FLAG_VALUES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 QC_FLAG_MEANINGS = "no_qc_performed good_data probably_good_data " \
  + "bad_data_that_are_potentially_correctable bad_data value_changed " \
@@ -82,7 +83,7 @@ def makenetcdf(datasetname, fieldconfig, records):
 
   # Time, lat and lon dimensions are created per record
   timedim = nc.createDimension("TIME", records.shape[0])
-  timevar = nc.createVariable("TIME", "d", ("TIME"), fill_value = 999999.0)
+  timevar = nc.createVariable("TIME", "d", ("TIME"), fill_value = 9.9692099683868690e+36)
   timevar.long_name = "Time"
   timevar.standard_name = "time"
   timevar.units = "days since 1950-01-01T00:00:00Z"
@@ -91,7 +92,7 @@ def makenetcdf(datasetname, fieldconfig, records):
   timevar.axis = "T"
 
   latdim = nc.createDimension("LATITUDE", records.shape[0])
-  latvar = nc.createVariable("LATITUDE", "f", ("LATITUDE"), fill_value = 99999.0)
+  latvar = nc.createVariable("LATITUDE", "f", ("LATITUDE"), fill_value = 9.96921e+36)
 
   latvar.long_name = "Latitude of each location"
   latvar.standard_name = "latitude"
@@ -104,7 +105,7 @@ def makenetcdf(datasetname, fieldconfig, records):
 
   londim = nc.createDimension("LONGITUDE", records.shape[0])
   lonvar = nc.createVariable("LONGITUDE", "f", ("LONGITUDE"),
-    fill_value = 99999.0)
+    fill_value = 9.96921e+36)
 
   lonvar.long_name = "Longitude of each location"
   lonvar.standard_name = "longitude"
@@ -197,9 +198,10 @@ def makenetcdf(datasetname, fieldconfig, records):
 
   nc.data_type = "OceanSITES trajectory data"
   nc.netcdf_version = "netCDF-4 classic model"
-  nc.format_version = "1.2"
-  nc.Conventions = "CF-1.6 OceanSITES-Manual-1.2 Copernicus-InSituTAC-SRD-1.3 "\
-    + "Copernicus-InSituTAC-ParametersList-3.1.0"
+  nc.format_version = "1.4"
+  nc.Conventions = "CF-1.6 Copernicus-InSituTAC-Manual-1.0 Copernicus-InSituTAC-SRD-1.4 " \
+    + "Copernicus-InSituTAC-ParametersList-3.1.0 "
+
 
   nc.cdm_data_type = "Trajectory"
   nc.data_mode = "R"
@@ -226,7 +228,8 @@ def makenetcdf(datasetname, fieldconfig, records):
   nc.contact = "steve.jones@uib.no"
   nc.title = "Global Ocean - In Situ near-real time carbon observation"
   nc.author = "cmems-service"
-  nc.naming_authority = "Copernicus"
+  nc.naming_authority = "Copernicus Marine in situ"
+  nc.date_update = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
 
   nc.platform_code = getplatformvalue(platform_code, CALLSIGN)
   nc.site_code = getplatformvalue(platform_code, CALLSIGN)
@@ -243,14 +246,13 @@ def makenetcdf(datasetname, fieldconfig, records):
   nc.comment = " "
   nc.summary = " "
   nc.reference = "http://marine.copernicus.eu/, https://www.icos-cp.eu/"
-  #nc.citation = "These data were collected and made freely available by the " \
-  #  + "Copernicus project and the programs that contribute to it."
-  nc.citation = (getplatformvalue(platform_code, AUTHOR_LIST) + "(" + str(YEAR) 
-    + "): NRT data from " + getplatformvalue(platform_code, NAME) +  
-    ". Made available through the Copernicus project.")
-  nc.distribution_statement = ("These data follow Copernicus standards; they " 
-    + "are public and free of charge. User assumes all risk for use of data. " 
-    + "User must display citation in any publication or product using data. " 
+  nc.citation = "These data were collected and made freely available by the " \
+    + "Copernicus project and the programs that contribute to it. "
+  nc.citation += (getplatformvalue(platform_code, AUTHOR_LIST) + "(" + str(YEAR)
+    + "): NRT data from " + getplatformvalue(platform_code, NAME) + ".")
+  nc.distribution_statement = ("These data follow Copernicus standards; they "
+    + "are public and free of charge. User assumes all risk for use of data. "
+    + "User must display citation in any publication or product using data. "
     + "User must contact PI prior to any commercial use of data.")
 
   # Write the netCDF
@@ -310,7 +312,7 @@ def maketimefield(timestr):
   return diff.days + diff.seconds / 86400
 
 def maketimeobject(timestr):
-  timeobj = datetime.datetime(int(timestr[0:4]), int(timestr[5:7]), \
+  timeobj = datetime(int(timestr[0:4]), int(timestr[5:7]), \
     int(timestr[8:10]), int(timestr[11:13]), int(timestr[14:16]), \
     int(timestr[17:19]))
 
