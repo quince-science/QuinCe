@@ -7,6 +7,8 @@ import java.util.TreeMap;
 import org.primefaces.json.JSONArray;
 import org.primefaces.json.JSONObject;
 
+import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
+import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.Calibration;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationCoefficient;
@@ -47,6 +49,16 @@ public abstract class CalibrationBean extends BaseManagedBean {
    * The name of the current instrument
    */
   private String instrumentName;
+
+  /**
+   * The datasets defined for the instrument.
+   *
+   * <p>
+   * These are shown in the timeline and used to determine which datasets are
+   * affected by an edit.
+   * </p>
+   */
+  private List<DataSet> datasets;
 
   /**
    * The calibration database handler
@@ -99,6 +111,7 @@ public abstract class CalibrationBean extends BaseManagedBean {
 
     if (ok) {
       try {
+        datasets = DataSetDB.getDataSets(getDataSource(), instrumentId);
         dbInstance = getDbInstance();
         loadCalibrations();
         calibration = initNewCalibration();
@@ -284,6 +297,12 @@ public abstract class CalibrationBean extends BaseManagedBean {
       counter++;
     }
 
+    JSONObject group = new JSONObject();
+    group.put("id", "Datasets");
+    group.put("order", counter);
+    group.put("content", "Datasets");
+    groups.put(group);
+
     return groups.toString();
   }
 
@@ -328,6 +347,19 @@ public abstract class CalibrationBean extends BaseManagedBean {
       }
 
       groupId++;
+    }
+
+    // Add the datasets
+    for (DataSet dataset : datasets) {
+      JSONObject datasetJson = new JSONObject();
+      datasetJson.put("id", getTimelineId(dataset));
+      datasetJson.put("type", "range");
+      datasetJson.put("group", "Datasets");
+      datasetJson.put("start", DateTimeUtils.toIsoDate(dataset.getStart()));
+      datasetJson.put("end", DateTimeUtils.toIsoDate(dataset.getEnd()));
+      datasetJson.put("content", dataset.getName());
+      datasetJson.put("title", dataset.getName());
+      items.put(datasetJson);
     }
 
     return items.toString();
@@ -375,5 +407,21 @@ public abstract class CalibrationBean extends BaseManagedBean {
         }
       }
     }
+  }
+
+  /**
+   * Generate the Timeline ID for a dataset.
+   *
+   * <p>
+   * We can't simply use the dataset's ID because that may clash with a
+   * calibration's ID.
+   * </p>
+   *
+   * @param dataset
+   *          The dataset whose ID is to be generated
+   * @return The dataset's timeline ID
+   */
+  private String getTimelineId(DataSet dataset) {
+    return "DS-" + dataset.getId();
   }
 }
