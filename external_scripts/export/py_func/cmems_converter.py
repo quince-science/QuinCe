@@ -134,17 +134,6 @@ def makenetcdf(datasetname, fieldconfig, records):
   assignqcvarattributes(positionqcvar)
   positionqcvar[:] = 1
 
-  positionvar = nc.createVariable("POSITIONING_SYSTEM", "c", ("TIME", "DEPTH"),\
-    fill_value = " ")
-  positionvar.longname = "Positioning system"
-  positionvar.flag_values = "A, G, L, N, U"
-  positionvar.flag_meanings = "Argos, GPS, Loran, Nominal, Unknown"
-
-  positions = np.empty([records.shape[0], 1], dtype="object")
-  positions[:,0] = "G"
-
-  positionvar[:,:] = positions
-
   # DM values
   dms = np.empty([records.shape[0], 1], dtype="object")
   dms[:,0] = "R"
