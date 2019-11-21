@@ -28,8 +28,8 @@ with open(config_file_carbon) as f: config_carbon = toml.load(f)
 with open(platform_lookup_file) as f: platform = toml.load(f)
 
 if not os.path.isdir('log'): os.mkdir('log')
-logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.INFO)
-#logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.DEBUG)
+#logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.INFO)
+logging.basicConfig(filename='log/console.log',format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 slack = Slacker(basicConfig['slack']['api_token'])
 upload = True # for debugging purposes, when False no data is exported.
