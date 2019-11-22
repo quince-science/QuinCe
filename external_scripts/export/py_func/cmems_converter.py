@@ -29,10 +29,6 @@ QC_FLAG_VALUES = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype="byte")
 QC_FLAG_MEANINGS = "no_qc_performed good_data probably_good_data " \
  + "bad_data_that_are_potentially_correctable bad_data value_changed " \
  + "not_used nominal_value interpolated_value missing_value"
-DM_LONG_NAME = "method of data processing"
-DM_CONVENTIONS = "OceanSITES reference table 5"
-DM_FLAG_VALUES = "R, P, D, M"
-DM_FLAG_MEANINGS = "real-time provisional delayed-mode mixed"
 
 PLATFORM_CODES = {
   "31" : "research vessel",
@@ -134,11 +130,6 @@ def makenetcdf(datasetname, fieldconfig, records):
   assignqcvarattributes(positionqcvar)
   positionqcvar[:] = 1
 
-  # DM values
-  dms = np.empty([records.shape[0], 1], dtype="object")
-  dms[:,0] = "R"
-
-
   # Fields
   for index, field in fieldconfig.iterrows():
     var = nc.createVariable(field['netCDF Name'], field['Data Type'], \
@@ -170,11 +161,6 @@ def makenetcdf(datasetname, fieldconfig, records):
     varvalues = np.empty([records.shape[0], 1])
     varvalues[:,0] = datavalues
     var[:,:] = varvalues
-
-    # DM variable
-    dmvar = nc.createVariable(field['netCDF Name'] + '_DM', 'c', ("TIME", "DEPTH"), fill_value=' ')
-    assigndmvarattributes(dmvar)
-    dmvar[:,:] = dms
 
     qcvar = nc.createVariable(field['netCDF Name'] + '_QC', "b", ("TIME", "DEPTH"), \
       fill_value = QC_FILL_VALUE)
@@ -279,12 +265,6 @@ def getplatformvalue(platform_code,value):
       logging.error(f"PLATFORM CODE '{platform_code}' not found in ship categories")
 
   return result
-
-def assigndmvarattributes(dmvar):
-  dmvar.long_name = DM_LONG_NAME
-  dmvar.conventions = DM_CONVENTIONS
-  dmvar.flag_values = DM_FLAG_VALUES
-  dmvar.flag_meanings = DM_FLAG_MEANINGS
 
 def assignqcvarattributes(qcvar):
   qcvar.long_name = QC_LONG_NAME
