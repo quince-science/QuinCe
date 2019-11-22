@@ -1060,4 +1060,45 @@ public class UserDBTest extends BaseTest {
       assertNull(user.getPasswordResetCodeTime());
     }
   }
+
+  /**
+   * Test that changing a password correctly changes the authentication results
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   * @throws SQLException
+   *           If the database connection cannot be retrieved
+   * @throws NoSuchUserException
+   *           If the test user does not exist
+   */
+  @FlywayTest
+  @Test
+  public void changePasswordTest() throws MissingParamException,
+    UserExistsException, DatabaseException, SQLException {
+
+    User user = createUser(false);
+    char[] newPassword = "NewPassword".toCharArray();
+
+    // Original password succeeds
+    assertEquals(UserDB.AUTHENTICATE_OK, UserDB.authenticate(getDataSource(),
+      TEST_USER_EMAIL, TEST_USER_PASSWORD));
+
+    // New password fails
+    assertEquals(UserDB.AUTHENTICATE_FAILED,
+      UserDB.authenticate(getDataSource(), TEST_USER_EMAIL, newPassword));
+
+    UserDB.changePassword(getDataSource().getConnection(), user, newPassword);
+
+    // Original password fails
+    assertEquals(UserDB.AUTHENTICATE_FAILED, UserDB
+      .authenticate(getDataSource(), TEST_USER_EMAIL, TEST_USER_PASSWORD));
+
+    // New password succeeds
+    assertEquals(UserDB.AUTHENTICATE_OK,
+      UserDB.authenticate(getDataSource(), TEST_USER_EMAIL, newPassword));
+  }
 }
