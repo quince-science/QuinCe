@@ -816,7 +816,6 @@ public class UserDB {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(email, "email");
-    MissingParam.checkMissing(code, "code");
 
     int result = CODE_FAILED;
 
@@ -937,7 +936,6 @@ public class UserDB {
 
     MissingParam.checkMissing(dataSource, "dataSource");
     MissingParam.checkMissing(email, "email");
-    MissingParam.checkMissing(code, "code");
 
     int result = CODE_FAILED;
 
