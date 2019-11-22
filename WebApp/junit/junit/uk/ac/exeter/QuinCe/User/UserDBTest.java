@@ -1062,6 +1062,38 @@ public class UserDBTest extends BaseTest {
   }
 
   /**
+   * Test that verifying an email code for a non-existent user fails.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   */
+  @FlywayTest
+  @Test
+  public void checkEmailCodeNonExistentUser()
+    throws MissingParamException, DatabaseException {
+    assertEquals(UserDB.CODE_FAILED, UserDB.checkEmailVerificationCode(
+      getDataSource(), "idontexist@test.com", "anything"));
+  }
+
+  /**
+   * Test that verifying a password reset code for a non-existent user fails.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   */
+  @FlywayTest
+  @Test
+  public void checkPasswordCodeNonExistentUser()
+    throws MissingParamException, DatabaseException {
+    assertEquals(UserDB.CODE_FAILED, UserDB.checkPasswordResetCode(
+      getDataSource(), "idontexist@test.com", "anything"));
+  }
+
+  /**
    * Test that changing a password correctly changes the authentication results
    *
    * @throws DatabaseException

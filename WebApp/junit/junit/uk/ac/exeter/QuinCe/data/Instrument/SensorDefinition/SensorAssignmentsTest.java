@@ -28,7 +28,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestLineException;
+import junit.uk.ac.exeter.QuinCe.TestBase.TestSetException;
 import junit.uk.ac.exeter.QuinCe.TestBase.TestSetLine;
+import junit.uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
@@ -106,7 +108,7 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
   "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
   "resources/sql/data/Instrument/SensorDefinition/SensorAssignmentsTest/isAssignmentRequired" })
 @TestInstance(Lifecycle.PER_CLASS)
-public class SensorAssignmentsTest extends BaseTest {
+public class SensorAssignmentsTest extends TestSetTest {
 
   /**
    * An invalid sensor ID.
@@ -1013,7 +1015,7 @@ public class SensorAssignmentsTest extends BaseTest {
    */
   @SuppressWarnings("unused")
   private Stream<TestSetLine> getAssignmentRequiredTestSet()
-    throws IOException {
+    throws TestSetException {
     return getTestSet("isAssignmentRequired");
   }
 

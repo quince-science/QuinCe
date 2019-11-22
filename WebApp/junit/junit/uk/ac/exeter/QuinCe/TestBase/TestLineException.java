@@ -18,7 +18,7 @@ public class TestLineException extends Exception {
   private int lineNumber;
 
   /**
-   * Base constructor
+   * Constructor for a wrapped exception
    *
    * @param line
    *          The line where the error was encountered
@@ -30,8 +30,26 @@ public class TestLineException extends Exception {
     lineNumber = line.getLineNumber();
   }
 
+  /**
+   * Constructor for a simple message
+   *
+   * @param line
+   *          The line where the error was encountered
+   * @param message
+   *          The error message
+   */
+  public TestLineException(TestSetLine line, String message) {
+    super(message);
+    lineNumber = line.getLineNumber();
+  }
+
   @Override
   public String getMessage() {
-    return "Test set line " + lineNumber + ": " + getCause().getMessage();
+    String result = super.getMessage();
+    if (result.length() == 0) {
+      result = "Test set line " + lineNumber + ": " + getCause().getMessage();
+    }
+
+    return result;
   }
 }
