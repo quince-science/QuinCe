@@ -88,6 +88,17 @@ public class TestSetLine {
   }
 
   /**
+   * Get a field value as an integer
+   *
+   * @param fieldNumber
+   *          The zero-based field number
+   * @return The field value
+   */
+  public int getIntField(int fieldNumber) {
+    return Integer.parseInt(fields[fieldNumber]);
+  }
+
+  /**
    * See if a field is empty
    *
    * @param fieldNumber
