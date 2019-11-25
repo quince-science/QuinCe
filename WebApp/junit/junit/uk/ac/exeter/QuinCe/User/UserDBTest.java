@@ -1,6 +1,7 @@
 package junit.uk.ac.exeter.QuinCe.User;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -1194,6 +1195,78 @@ public class UserDBTest extends BaseTest {
     createUser(false);
     assertEquals(UserDB.CODE_FAILED,
       UserDB.checkPasswordResetCode(getDataSource(), TEST_USER_EMAIL, code));
+  }
+
+  /**
+   * Test that checking a valid email verification code that has expired will
+   * fail.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/data/User/UserDBTest/expiredCodes" })
+  @Test
+  public void expiredValidEmailCodeTest()
+    throws MissingParamException, DatabaseException {
+    assertEquals(UserDB.CODE_EXPIRED, UserDB.checkEmailVerificationCode(
+      getDataSource(), "expiredcodes@test.com", "IAMACODE"));
+  }
+
+  /**
+   * Test that checking an invalid email verification code that has expired will
+   * fail.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/data/User/UserDBTest/expiredCodes" })
+  @Test
+  public void expiredInvalidEmailCodeTest()
+    throws MissingParamException, DatabaseException {
+    assertNotEquals(UserDB.CODE_OK, UserDB.checkEmailVerificationCode(
+      getDataSource(), "expiredcodes@test.com", "IAMACODE"));
+  }
+
+  /**
+   * Test that checking a valid email verification code that has expired will
+   * fail.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/data/User/UserDBTest/expiredCodes" })
+  @Test
+  public void expiredValidPasswordCodeTest()
+    throws MissingParamException, DatabaseException {
+    assertEquals(UserDB.CODE_EXPIRED, UserDB.checkPasswordResetCode(
+      getDataSource(), "expiredcodes@test.com", "IAMACODE"));
+  }
+
+  /**
+   * Test that checking an invalid email verification code that has expired will
+   * fail.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   */
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/data/User/UserDBTest/expiredCodes" })
+  @Test
+  public void expiredInvalidPasswordCodeTest()
+    throws MissingParamException, DatabaseException {
+    assertNotEquals(UserDB.CODE_OK, UserDB.checkPasswordResetCode(
+      getDataSource(), "expiredcodes@test.com", "IAMACODE"));
   }
 
   /**
