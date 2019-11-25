@@ -719,7 +719,11 @@ public class UserDB {
             authenticationResult = AUTHENTICATE_OK;
 
             // Clear the password reset code - since we've authenticated, it's
-            // no longer needed
+            // no longer needed.
+            //
+            // This covers the case where a password reset code is requested by
+            // a nefarious person. The user can continue to log in with their
+            // valid credentials, and it will nullify the reset request.
             clearPasswordResetCode(conn, email);
           }
         }
