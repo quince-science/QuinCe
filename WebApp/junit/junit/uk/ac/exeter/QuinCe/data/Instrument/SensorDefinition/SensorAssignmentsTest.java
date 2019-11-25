@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,23 +13,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import junit.uk.ac.exeter.QuinCe.TestBase.BaseTest;
-import junit.uk.ac.exeter.QuinCe.TestBase.TestLineException;
-import junit.uk.ac.exeter.QuinCe.TestBase.TestSetException;
-import junit.uk.ac.exeter.QuinCe.TestBase.TestSetLine;
-import junit.uk.ac.exeter.QuinCe.TestBase.TestSetTest;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignment;
 import uk.ac.exeter.QuinCe.data.Instrument.SensorDefinition.SensorAssignmentException;
@@ -105,10 +95,8 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
  *
  */
 @FlywayTest(locationsForMigrate = { "resources/sql/testbase/user",
-  "resources/sql/testbase/instrument", "resources/sql/testbase/variable",
-  "resources/sql/data/Instrument/SensorDefinition/SensorAssignmentsTest/isAssignmentRequired" })
-@TestInstance(Lifecycle.PER_CLASS)
-public class SensorAssignmentsTest extends TestSetTest {
+  "resources/sql/testbase/instrument", "resources/sql/testbase/variable" })
+public class SensorAssignmentsTest extends BaseTest {
 
   /**
    * An invalid sensor ID.
@@ -118,7 +106,7 @@ public class SensorAssignmentsTest extends TestSetTest {
   /**
    * The filename for the first test file.
    */
-  private static final String DATA_FILE_NAME = "Data File";
+  protected static final String DATA_FILE_NAME = "Data File";
 
   /**
    * The filename for the second test file.
@@ -155,7 +143,6 @@ public class SensorAssignmentsTest extends TestSetTest {
   private SensorAssignments assignments = null;
 
   // Sensor type IDs. Populated by classInit()
-
   /**
    * The ID of the Intake Temperature {@link SensorType}.
    *
@@ -228,7 +215,7 @@ public class SensorAssignmentsTest extends TestSetTest {
    *          The primary/secondary status
    * @return The {@link SensorAssignment} object
    */
-  private SensorAssignment makeAssignment(String file, int column,
+  protected static SensorAssignment makeAssignment(String file, int column,
     boolean primary) {
     return new SensorAssignment(file, column, "Assignment", primary, false,
       "NaN");
@@ -773,390 +760,5 @@ public class SensorAssignmentsTest extends TestSetTest {
     assignments.addAssignment(co2Id, makeAssignment(DATA_FILE_NAME, 2, true));
 
     assertTrue(assignments.runTypeRequired(DATA_FILE_NAME));
-  }
-
-  /**
-   * Test the {@link SensorAssignments#isAssignmentRequired(SensorType)} method.
-   *
-   * <p>
-   * This requires a large number of tests with different combinations. These
-   * are defined in the file
-   * {@code WebApp/junit/resources/testsets/isAssignmentRequired.csv}. The file
-   * defines different combinations of assignments to apply, and the expected
-   * result of calling
-   * {@link SensorAssignments#isAssignmentRequired(SensorType)}. The column
-   * headers in the file are as follows:
-   * </p>
-   *
-   * <table>
-   * <tr>
-   * <td><b>Column Name</b></td>
-   * <td><b>Purpose</b></td>
-   * </tr>
-   * <tr>
-   * <td>Sensor Type</td>
-   * <td>The central {@link SensorType} of the test</td>
-   * </tr>
-   * <tr>
-   * <td>Assigned Primary</td>
-   * <td>Indicates whether a Primary assignment of the main {@link SensorType}
-   * should be made</td>
-   * </tr>
-   * <tr>
-   * <td>Assigned Secondary</td>
-   * <td>Indicates whether a Secondary assignment of the main {@link SensorType}
-   * should be made</td>
-   * </tr>
-   * <tr>
-   * <td>Relation</td>
-   * <td>A related (i.e. sibling) {@link SensorType} to assign</td>
-   * </tr>
-   * <tr>
-   * <td>Sibling Assigned Primary</td>
-   * <td>Indicates whether a Primary assignment of the sibling
-   * {@link SensorType} should be made</td>
-   * </tr>
-   * <tr>
-   * <td>Sibling Assigned Secondary</td>
-   * <td>Indicates whether a Secondary assignment of the sibling
-   * {@link SensorType} should be made</td>
-   * </tr>
-   * <tr>
-   * <td>Dependent</td>
-   * <td>A dependent {@link SensorType} (dependent on the main
-   * {@link SensorType} to assign</td>
-   * </tr>
-   * <tr>
-   * <td>Has Depends Question</td>
-   * <td>Indicates whether this has a Depends Question (a question where
-   * answering {@code true} makes the sensor dependent, while {@code false} does
-   * not).</td>
-   * </tr>
-   * <tr>
-   * <td>Dependent Assigned Primary</td>
-   * <td>Indicates whether a Primary assignment of the dependent
-   * {@link SensorType} should be made</td>
-   * </tr>
-   * <tr>
-   * <td>Depends Question Answer</td>
-   * <td>The answer to the Depends Question for the Primary assignment</td>
-   * </tr>
-   * <tr>
-   * <td>Dependent Assigned Secondary</td>
-   * <td>Indicates whether a Primary assignment of the dependent
-   * {@link SensorType} should be made</td>
-   * </tr>
-   * <tr>
-   * <td>Depends Question Answer</td>
-   * <td>The answer to the Depends Question for the Secondary assignment</td>
-   * </tr>
-   * <tr>
-   * <td>Dependent Has Relation?</td>
-   * <td>Indicates the relation (sibling) to the dependent sensor to be
-   * assigned, if any.</td>
-   * </tr>
-   * <tr>
-   * <td>Dependent Sibling Assigned Primary</td>
-   * <td>Indicates whether a Primary assignment of the relation to the dependent
-   * {@link SensorType} should be made</td>
-   * </tr>
-   * <tr>
-   * <td>Dependent Sibling Assigned Secondary</td>
-   * <td>Indicates whether a Secondary assignment of the relation to the
-   * dependent {@link SensorType} should be made</td>
-   * </tr>
-   * <tr>
-   * <td>Sensor Type Required</td>
-   * <td>The expected result of the
-   * {@link SensorAssignments#isAssignmentRequired(SensorType)} function</td>
-   * </tr>
-   * </table>
-   *
-   * <p>
-   * Note that not all possible combinations are tested at this time - just the
-   * ones that we know to be in use (or are most likely to be used in the near
-   * future).
-   * </p>
-   *
-   * @param line
-   *          A line from the Test Set file
-   * @throws TestLineException
-   *           If one of the test lines cannot be processed
-   * @see TestSetLine
-   * @see #getAssignmentRequiredTestSet()
-   * @see #assignMainSensorType(TestSetLine)
-   * @see #assignRelation(TestSetLine)
-   * @see #assignDependent(TestSetLine)
-   * @see #assignDependentSibling(TestSetLine)
-   * @see #getExpectedAssignmentRequired(TestSetLine)
-   */
-  @ParameterizedTest
-  @MethodSource("getAssignmentRequiredTestSet")
-  public void isAssignmentRequiredTests(TestSetLine line)
-    throws TestLineException {
-
-    try {
-      assignMainSensorType(line);
-      assignRelation(line);
-      assignDependent(line);
-      assignDependentSibling(line);
-
-      assertEquals(assignments.isAssignmentRequired(getMainSensorType(line)),
-        getExpectedAssignmentRequired(line),
-        "Test failed for test set line " + line.getLineNumber());
-    } catch (Exception e) {
-      throw new TestLineException(line, e);
-    }
-
-  }
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int SENSOR_TYPE_COL = 0;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int SENSOR_ASSIGN_PRIMARY_COL = 1;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int SENSOR_ASSIGN_SECONDARY_COL = 2;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int RELATION_COL = 3;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int SIBLING_ASSIGNED_PRIMARY_COL = 4;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int SIBLING_ASSIGNED_SECONDARY_COL = 5;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int DEPENDENT_COL = 6;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int HAS_DEPENDS_QUESTION_COL = 7;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int DEPENDENT_ASSIGNED_PRIMARY_COL = 8;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int DEPENDENT_ASSIGNED_PRIMARY_DEPENDS_QUESTION_ANSWER_COL = 9;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int DEPENDENT_ASSIGNED_SECONDARY_COL = 10;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int DEPENDENT_ASSIGNED_SECONDARY_DEPENDS_QUESTION_ANSWER_COL = 11;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int DEPENDENT_SIBLING_COL = 12;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int DEPENDENT_SIBLING_ASSIGNED_PRIMARY_COL = 13;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int DEPENDENT_SIBLING_ASSIGNED_SECONDARY_COL = 14;
-
-  /**
-   * A column in the Test Set file for
-   * {@link #isAssignmentRequiredTests(TestSetLine)}.
-   */
-  private static final int IS_ASSIGNMENT_REQUIRED_COL = 15;
-
-  /**
-   * Retrieves the Test Set for {@link #isAssignmentRequiredTests(TestSetLine)}.
-   *
-   * @return The test set
-   * @throws IOException
-   *           If the Test Set file cannot be read
-   */
-  @SuppressWarnings("unused")
-  private Stream<TestSetLine> getAssignmentRequiredTestSet()
-    throws TestSetException {
-    return getTestSet("isAssignmentRequired");
-  }
-
-  private SensorType getMainSensorType(TestSetLine line) throws Exception {
-    return config.getSensorType(line.getStringField(SENSOR_TYPE_COL));
-  }
-
-  /**
-   * Assign the main {@link SensorType} for an entry in the
-   * {@link #isAssignmentRequiredTests(TestSetLine)} Test Set.
-   *
-   * @param line
-   *          The Test Set line
-   *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
-   */
-  private void assignMainSensorType(TestSetLine line)
-    throws SensorTypeNotFoundException, SensorAssignmentException, Exception {
-    if (line.getBooleanField(SENSOR_ASSIGN_PRIMARY_COL)) {
-      assignments.addAssignment(getMainSensorType(line).getId(),
-        makeAssignment(DATA_FILE_NAME, 1, true));
-    }
-    if (line.getBooleanField(SENSOR_ASSIGN_SECONDARY_COL)) {
-      assignments.addAssignment(getMainSensorType(line).getId(),
-        makeAssignment(DATA_FILE_NAME, 2, false));
-    }
-  }
-
-  /**
-   * Assign the related {@link SensorType} to the main {@link SensorType} for an
-   * entry in the {@link #isAssignmentRequiredTests(TestSetLine)} Test Set.
-   *
-   * @param line
-   *          The Test Set line
-   *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
-   */
-  private void assignRelation(TestSetLine line)
-    throws SensorTypeNotFoundException, SensorAssignmentException {
-    if (!line.isFieldEmpty(RELATION_COL)) {
-      String relationTypeName = line.getStringField(RELATION_COL);
-      if (line.getBooleanField(SIBLING_ASSIGNED_PRIMARY_COL)) {
-        assignments.addAssignment(getSensorTypeId(relationTypeName),
-          makeAssignment(DATA_FILE_NAME, 3, true));
-      }
-      if (line.getBooleanField(SIBLING_ASSIGNED_SECONDARY_COL)) {
-        assignments.addAssignment(getSensorTypeId(relationTypeName),
-          makeAssignment(DATA_FILE_NAME, 4, false));
-      }
-    }
-  }
-
-  /**
-   * Assign the dependent {@link SensorType} to the main {@link SensorType} for
-   * an entry in the {@link #isAssignmentRequiredTests(TestSetLine)} Test Set.
-   *
-   * @param line
-   *          The Test Set line
-   *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
-   */
-  private void assignDependent(TestSetLine line)
-    throws SensorTypeNotFoundException, SensorAssignmentException {
-    if (!line.isFieldEmpty(DEPENDENT_COL)) {
-      String dependentTypeName = line.getStringField(DEPENDENT_COL);
-      if (line.getBooleanField(DEPENDENT_ASSIGNED_PRIMARY_COL)) {
-
-        boolean dependsQuestionAnswer = false;
-        if (line.getBooleanField(HAS_DEPENDS_QUESTION_COL)) {
-          dependsQuestionAnswer = line.getBooleanField(
-            DEPENDENT_ASSIGNED_PRIMARY_DEPENDS_QUESTION_ANSWER_COL);
-        }
-
-        SensorAssignment assignment = new SensorAssignment(DATA_FILE_NAME, 5,
-          "Assignment", true, dependsQuestionAnswer, null);
-        assignments.addAssignment(getSensorTypeId(dependentTypeName),
-          assignment);
-      }
-      if (line.getBooleanField(DEPENDENT_ASSIGNED_SECONDARY_COL)) {
-
-        boolean dependsQuestionAnswer = false;
-        if (line.getBooleanField(HAS_DEPENDS_QUESTION_COL)) {
-          dependsQuestionAnswer = line.getBooleanField(
-            DEPENDENT_ASSIGNED_SECONDARY_DEPENDS_QUESTION_ANSWER_COL);
-        }
-
-        SensorAssignment assignment = new SensorAssignment(DATA_FILE_NAME, 6,
-          "Assignment", true, dependsQuestionAnswer, null);
-        assignments.addAssignment(getSensorTypeId(dependentTypeName),
-          assignment);
-      }
-    }
-  }
-
-  /**
-   * Assign the dependent sibling {@link SensorType} to the main
-   * {@link SensorType} for an entry in the
-   * {@link #isAssignmentRequiredTests(TestSetLine)} Test Set.
-   *
-   * @param line
-   *          The Test Set line
-   *
-   * @throws SensorTypeNotFoundException
-   *           If the an assigned {@link SensorType} is not found
-   * @throws SensorAssignmentException
-   *           If an assignment fails
-   */
-  private void assignDependentSibling(TestSetLine line) throws Exception {
-    if (!line.isFieldEmpty(DEPENDENT_SIBLING_COL)) {
-      String dependentSiblingTypeName = line
-        .getStringField(DEPENDENT_SIBLING_COL);
-      if (line.getBooleanField(DEPENDENT_SIBLING_ASSIGNED_PRIMARY_COL)) {
-        assignments.addAssignment(getSensorTypeId(dependentSiblingTypeName),
-          makeAssignment(DATA_FILE_NAME, 7, true));
-      }
-      if (line.getBooleanField(DEPENDENT_SIBLING_ASSIGNED_SECONDARY_COL)) {
-        assignments.addAssignment(getSensorTypeId(dependentSiblingTypeName),
-          makeAssignment(DATA_FILE_NAME, 8, false));
-      }
-    }
-  }
-
-  /**
-   * Get the expected {@link SensorAssignments#isAssignmentRequired(SensorType)}
-   * result for an entry in the {@link #isAssignmentRequiredTests(TestSetLine)}
-   * Test Set.
-   *
-   * @param line
-   *          The Test Set line
-   * @return The expected result
-   */
-  private boolean getExpectedAssignmentRequired(TestSetLine line) {
-    return line.getBooleanField(IS_ASSIGNMENT_REQUIRED_COL);
   }
 }
