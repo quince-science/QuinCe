@@ -20,6 +20,21 @@ import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
+/**
+ * Complex combination tests for the
+ * {@link UserDB#checkEmailVerificationCode(javax.sql.DataSource, String, String)}
+ * and
+ * {@link UserDB#checkPasswordResetCode(javax.sql.DataSource, String, String)}
+ * tests.
+ *
+ * <p>
+ * Some of the tests for these methods are in the main {@link UserDBTest} class,
+ * but some are more complex and required a Test Set.
+ * </p>
+ *
+ * @author Steve Jones
+ *
+ */
 @TestInstance(Lifecycle.PER_CLASS)
 public class UserDBCodeCheckTest extends TestSetTest {
 
