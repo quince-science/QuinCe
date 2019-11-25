@@ -59,7 +59,8 @@ public class UserDBCodeCheckTest extends TestSetTest {
    * @throws TestLineException
    *           If the test set line is invalid.
    */
-  @FlywayTest(locationsForMigrate = { "resources/sql/data/User/UserDBTest" })
+  @FlywayTest(locationsForMigrate = {
+    "resources/sql/data/User/UserDBTest/codeCheckTests" })
   @ParameterizedTest
   @MethodSource("getCodeCheckTestSet")
   public void codeCheckTests(TestSetLine line)
