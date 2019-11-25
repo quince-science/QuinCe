@@ -98,6 +98,8 @@ public class UserDBTest extends BaseTest {
    * Test that an exception is thrown when authenticating user without providing
    * an email address
    *
+   * @param email
+   *          The empty email address (generated)
    * @throws DatabaseException
    *           If a database error occurs
    * @throws UserExistsException
@@ -120,6 +122,9 @@ public class UserDBTest extends BaseTest {
   /**
    * Test that an exception is thrown when authenticating user without providing
    * a password
+   *
+   * @param password
+   *          The empty password (generated)
    *
    * @throws DatabaseException
    *           If a database error occurs
@@ -1091,6 +1096,104 @@ public class UserDBTest extends BaseTest {
     throws MissingParamException, DatabaseException {
     assertEquals(UserDB.CODE_FAILED, UserDB.checkPasswordResetCode(
       getDataSource(), "idontexist@test.com", "anything"));
+  }
+
+  /**
+   * Test that verifying an empty email verification code fails when the code
+   * has been set.
+   *
+   * @param code
+   *          The empty code
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   */
+  @FlywayTest
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void checkEmptyEmailCodeSetTest(String code)
+    throws MissingParamException, UserExistsException, DatabaseException {
+    createUser(true);
+    assertEquals(UserDB.CODE_FAILED, UserDB
+      .checkEmailVerificationCode(getDataSource(), TEST_USER_EMAIL, code));
+  }
+
+  /**
+   * Test that verifying an empty email verification code fails when the code
+   * has not been set.
+   *
+   * @param code
+   *          The empty code
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   */
+  @FlywayTest
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void checkEmptyEmailCodeNotSetTest(String code)
+    throws MissingParamException, UserExistsException, DatabaseException {
+    createUser(false);
+    assertEquals(UserDB.CODE_FAILED, UserDB
+      .checkEmailVerificationCode(getDataSource(), TEST_USER_EMAIL, code));
+  }
+
+  /**
+   * Test that verifying an empty password reset code fails when the code has
+   * been set.
+   *
+   * @param code
+   *          The empty code
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   * @throws NoSuchUserException
+   *           If the test user does not exist
+   */
+  @FlywayTest
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void checkEmptyPasswordCodeSetTest(String code)
+    throws MissingParamException, UserExistsException, DatabaseException,
+    NoSuchUserException {
+    User user = createUser(false);
+    UserDB.generatePasswordResetCode(getDataSource(), user);
+    assertEquals(UserDB.CODE_FAILED,
+      UserDB.checkPasswordResetCode(getDataSource(), TEST_USER_EMAIL, code));
+  }
+
+  /**
+   * Test that verifying an empty password reset code fails when the code has
+   * not been set.
+   *
+   * @param code
+   *          The empty code
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   * @throws NoSuchUserException
+   *           If the test user does not exist
+   */
+  @FlywayTest
+  @ParameterizedTest
+  @MethodSource("createNullEmptyStrings")
+  public void checkEmptyPasswordCodeNotSetTest(String code)
+    throws MissingParamException, UserExistsException, DatabaseException {
+    createUser(false);
+    assertEquals(UserDB.CODE_FAILED,
+      UserDB.checkPasswordResetCode(getDataSource(), TEST_USER_EMAIL, code));
   }
 
   /**
