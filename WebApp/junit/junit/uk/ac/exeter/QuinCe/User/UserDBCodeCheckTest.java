@@ -82,7 +82,7 @@ public class UserDBCodeCheckTest extends TestSetTest {
    */
   @SuppressWarnings("unused")
   private Stream<TestSetLine> getCodeCheckTestSet() throws TestSetException {
-    return getTestSet("codeCheckTests");
+    return getTestSet("userCodeCheckTests");
   }
 
   /**
