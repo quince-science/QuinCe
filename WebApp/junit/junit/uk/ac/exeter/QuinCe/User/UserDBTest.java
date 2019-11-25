@@ -246,6 +246,36 @@ public class UserDBTest extends BaseTest {
   }
 
   /**
+   * Test that the password reset code is removed if the user authenticates with
+   * their existing password.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   * @throws UserExistsException
+   *           If the test user has already been created
+   */
+  @FlywayTest
+  @Test
+  public void authenticateWithPasswordCodeTest() throws MissingParamException,
+    NoSuchUserException, DatabaseException, UserExistsException {
+    User user = createUser(false);
+    UserDB.generatePasswordResetCode(getDataSource(), user);
+
+    assertEquals(UserDB.AUTHENTICATE_OK, UserDB.authenticate(getDataSource(),
+      TEST_USER_EMAIL, TEST_USER_PASSWORD));
+
+    User postAuthenticationUser = UserDB.getUser(getDataSource(),
+      user.getDatabaseID());
+    assertNull(postAuthenticationUser.getPasswordResetCode());
+    assertNull(postAuthenticationUser.getPasswordResetCodeTime());
+
+  }
+
+  /**
    * Test that retrieving a user via a {@link DataSource} with an email address
    * throws an throws an exception when the address is missing or empty.
    *
