@@ -16,7 +16,7 @@ public class NoSuchUserException extends Exception {
 
   /**
    * Constructor for an error raised from a {@link User} object
-   * 
+   *
    * @param user
    *          The user
    */
@@ -27,11 +27,21 @@ public class NoSuchUserException extends Exception {
 
   /**
    * Exception for an error raised from an email address
-   * 
+   *
    * @param email
    *          The email address
    */
   public NoSuchUserException(String email) {
     super("The user '" + email + "' does not exist in the database");
+  }
+
+  /**
+   * Exception for an error raised from a database ID
+   *
+   * @param id
+   *          The user ID
+   */
+  public NoSuchUserException(long id) {
+    super("The user with ID '" + id + "' does not exist in the database");
   }
 }

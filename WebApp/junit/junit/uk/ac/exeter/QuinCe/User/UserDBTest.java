@@ -19,6 +19,7 @@ import uk.ac.exeter.QuinCe.User.NoSuchUserException;
 import uk.ac.exeter.QuinCe.User.User;
 import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.User.UserExistsException;
+import uk.ac.exeter.QuinCe.User.UserPreferences;
 import uk.ac.exeter.QuinCe.utils.DatabaseException;
 import uk.ac.exeter.QuinCe.utils.MissingParamException;
 
@@ -1338,5 +1339,243 @@ public class UserDBTest extends BaseTest {
     // New password succeeds
     assertEquals(UserDB.AUTHENTICATE_OK,
       UserDB.authenticate(getDataSource(), TEST_USER_EMAIL, newPassword));
+  }
+
+  /**
+   * Test that clearing the email verification code works.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   * @throws NoSuchUserException
+   *           If the test user has not been created
+   */
+  @FlywayTest
+  @Test
+  public void clearEmailVerificationCodeTest() throws MissingParamException,
+    UserExistsException, DatabaseException, NoSuchUserException {
+    User user = createUser(false);
+    UserDB.generateEmailVerificationCode(getDataSource(), user);
+
+    // Verify that the code has been set
+    User codeUser = UserDB.getUser(getDataSource(), TEST_USER_EMAIL);
+    assertNotNull(codeUser.getEmailVerificationCode());
+    assertNotNull(codeUser.getEmailVerificationCodeTime());
+
+    UserDB.clearEmailVerificationCode(getDataSource(), TEST_USER_EMAIL);
+
+    // Verify that the code has been cleared
+    User clearedUser = UserDB.getUser(getDataSource(), TEST_USER_EMAIL);
+    assertNull(clearedUser.getEmailVerificationCode());
+    assertNull(clearedUser.getEmailVerificationCodeTime());
+  }
+
+  /**
+   * Test that clearing the password reset code works.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   * @throws SQLException
+   *           If a database connection cannot be obtained
+   * @throws NoSuchUserException
+   *           If the test user has not been created
+   */
+  @FlywayTest
+  @Test
+  public void clearPasswordResetCodeTest() throws MissingParamException,
+    UserExistsException, DatabaseException, SQLException, NoSuchUserException {
+    User user = createUser(false);
+    UserDB.generatePasswordResetCode(getDataSource(), user);
+
+    // Verify that the code has been set
+    User codeUser = UserDB.getUser(getDataSource(), TEST_USER_EMAIL);
+    assertNotNull(codeUser.getPasswordResetCode());
+    assertNotNull(codeUser.getPasswordResetCodeTime());
+
+    UserDB.clearPasswordResetCode(getDataSource().getConnection(),
+      TEST_USER_EMAIL);
+
+    // Verify that the code has been cleared
+    User clearedUser = UserDB.getUser(getDataSource(), TEST_USER_EMAIL);
+    assertNull(clearedUser.getPasswordResetCode());
+    assertNull(clearedUser.getPasswordResetCodeTime());
+  }
+
+  /**
+   * Test that trying to retrieve user prefs with a missing {@link DataSource}
+   * fails.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   */
+  @FlywayTest
+  @Test
+  public void getPrefsMissingDataSourceTest()
+    throws MissingParamException, UserExistsException, DatabaseException {
+    User user = createUser(false);
+    assertThrows(MissingParamException.class, () -> {
+      UserDB.getPreferences(null, user.getDatabaseID());
+    });
+  }
+
+  /**
+   * Test that trying to retrieve user prefs with a an invalid user ID fails.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   */
+  @FlywayTest
+  @ParameterizedTest
+  @MethodSource("createInvalidReferences")
+  public void getPrefsInvalidIdTest(long id)
+    throws MissingParamException, UserExistsException, DatabaseException {
+
+    assertThrows(MissingParamException.class, () -> {
+      UserDB.getPreferences(getDataSource(), id);
+    });
+  }
+
+  /**
+   * Test that trying to retrieve user prefs with a missing {@link DataSource}
+   * fails.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   */
+  @FlywayTest
+  @Test
+  public void getPrefsNonExistentUserTest()
+    throws MissingParamException, UserExistsException, DatabaseException {
+
+    assertThrows(NoSuchUserException.class, () -> {
+      UserDB.getPreferences(getDataSource(), 1000000L);
+    });
+  }
+
+  /**
+   * Test that retrieving the preferences for a user with no stored preferences
+   * returns an empty {@link UserPreferences} object.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   * @throws NoSuchUserException
+   *           If the test user has not been created
+   */
+  @FlywayTest
+  @Test
+  public void getPrefsUserWithNoPrefs() throws MissingParamException,
+    UserExistsException, DatabaseException, NoSuchUserException {
+    // A newly created user has no preferences
+    User user = createUser(false);
+    UserPreferences prefs = UserDB.getPreferences(getDataSource(),
+      user.getDatabaseID());
+    assertEquals(0, prefs.size());
+  }
+
+  /**
+   * Test that user preferences can be correctly stored and retrieved.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   * @throws NoSuchUserException
+   *           If the test user has not been created
+   */
+  @FlywayTest
+  @Test
+  public void setSetAndRetrievePrefs() throws MissingParamException,
+    UserExistsException, DatabaseException, NoSuchUserException {
+    User user = createUser(false);
+    UserPreferences prefs = UserDB.getPreferences(getDataSource(),
+      user.getDatabaseID());
+    prefs.setLastInstrument(1000L);
+
+    UserDB.savePreferences(getDataSource(), prefs);
+
+    UserPreferences storedPrefs = UserDB.getPreferences(getDataSource(),
+      user.getDatabaseID());
+
+    assertEquals(1000L, storedPrefs.getLastInstrument());
+  }
+
+  /**
+   * Test that setting user preferences with a missing {@link DataSource} fails.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   */
+  @FlywayTest
+  @Test
+  public void setPrefsMissingDataSourceTest()
+    throws MissingParamException, UserExistsException, DatabaseException {
+    User user = createUser(false);
+    assertThrows(MissingParamException.class, () -> UserDB.savePreferences(null,
+      new UserPreferences(user.getDatabaseID())));
+  }
+
+  /**
+   * Test that setting user preferences with a missing {@link UserPreferences}
+   * object fails.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   */
+  @FlywayTest
+  @Test
+  public void setPrefsMissingPrefsTest() {
+    assertThrows(MissingParamException.class,
+      () -> UserDB.savePreferences(getDataSource(), null));
+  }
+
+  /**
+   * Test that setting user preferences with a missing {@link UserPreferences}
+   * object fails.
+   *
+   * @throws DatabaseException
+   *           If a database error occurs
+   * @throws UserExistsException
+   *           If the test user has already been created
+   * @throws MissingParamException
+   *           If the method fails to pass required information to the back end.
+   */
+  @FlywayTest
+  @Test
+  public void setPrefsForNonExistentUserTest() {
+    assertThrows(NoSuchUserException.class, () -> UserDB
+      .savePreferences(getDataSource(), new UserPreferences(1000L)));
   }
 }

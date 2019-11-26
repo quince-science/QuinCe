@@ -384,13 +384,16 @@ public class UserDB {
    *           If a database error occurs
    * @throws MissingParamException
    *           If any required parameters are missing
+   * @throws NoSuchUserException
+   *           If the user does not exist in the database
    *
    * @see #GET_PREFERENCES_QUERY
    */
   public static UserPreferences getPreferences(DataSource dataSource,
-    long userId) throws MissingParamException, DatabaseException {
+    long userId)
+    throws MissingParamException, DatabaseException, NoSuchUserException {
     MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkZeroPositive(userId, "userId");
+    MissingParam.checkPositive(userId, "userId");
 
     UserPreferences result = null;
 
@@ -406,6 +409,8 @@ public class UserDB {
       record = stmt.executeQuery();
       if (record.next()) {
         result = new UserPreferences(userId, record.getString(1));
+      } else {
+        throw new NoSuchUserException(userId);
       }
     } catch (SQLException e) {
       throw new DatabaseException("Error reading user preferences", e);
@@ -429,20 +434,28 @@ public class UserDB {
    *           If any required parameters are missing
    * @throws DatabaseException
    *           If a database error occurs
+   * @throws NoSuchUserException
+   *           If the user specified in the {@link UserPreferences} object does
+   *           not exist
    *
    * @see #STORE_PREFERENCES_STATEMENT
    */
   public static void savePreferences(DataSource dataSource,
     UserPreferences preferences)
-    throws MissingParamException, DatabaseException {
+    throws MissingParamException, DatabaseException, NoSuchUserException {
     MissingParam.checkMissing(dataSource, "dataSource");
-    MissingParam.checkMissing(preferences, "preferences");
+    MissingParam.checkMissing(preferences, "preferences", true);
 
     Connection conn = null;
     PreparedStatement stmt = null;
 
     try {
       conn = dataSource.getConnection();
+
+      if (null == getUser(conn, preferences.getUserId())) {
+        throw new NoSuchUserException(preferences.getUserId());
+      }
+
       stmt = conn.prepareStatement(STORE_PREFERENCES_STATEMENT);
       stmt.setString(1, preferences.writeToString());
       stmt.setLong(2, preferences.getUserId());
