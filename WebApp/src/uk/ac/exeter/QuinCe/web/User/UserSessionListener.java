@@ -6,14 +6,11 @@ import javax.servlet.http.HttpSessionListener;
 
 import uk.ac.exeter.QuinCe.User.UserDB;
 import uk.ac.exeter.QuinCe.User.UserPreferences;
-import uk.ac.exeter.QuinCe.utils.DatabaseException;
-import uk.ac.exeter.QuinCe.utils.MissingParamException;
-import uk.ac.exeter.QuinCe.web.system.ResourceException;
 import uk.ac.exeter.QuinCe.web.system.ServletUtils;
 
 /**
  * Class to perform user-related actions when a session is created or destroyed
- * 
+ *
  * @author Steve Jones
  *
  */
@@ -34,7 +31,7 @@ public class UserSessionListener implements HttpSessionListener {
       if (null != prefs) {
         UserDB.savePreferences(ServletUtils.getDBDataSource(), prefs);
       }
-    } catch (MissingParamException | DatabaseException | ResourceException e) {
+    } catch (Exception e) {
       /*
        * Just log the error
        */
