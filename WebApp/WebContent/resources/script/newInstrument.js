@@ -226,9 +226,6 @@ function renderSensorAssignments() {
     html += assignment['name'];
     html += '</div><div class="assignmentCount" onclick="showAssignedColumnsMenu(\'' + assignment['name'] + '\', event)">';
     html += assignment['assignments'].length;
-    if (!assignment['many']) {
-      html += '/1';
-    }
     html += '</div>';
     html += '</div>';
   }
