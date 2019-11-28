@@ -198,12 +198,10 @@ function renderAssignments() {
   var otherColumnsOK = renderOtherColumns();
   var timeOK = renderDateTimeAssignments();
 
-  PF('next').enable();
+  PF('next').disable();
 
   if (sensorsOK && positionOK && otherColumnsOK && timeOK) {
     PF('next').enable();
-  } else {
-    PF('next').disable();
   }
 }
 
