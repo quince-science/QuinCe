@@ -376,22 +376,20 @@ public class DataSetsBean extends BaseManagedBean {
    * @return the platformCode
    */
   public String getPlatformCode() {
-    if (platformCode == null) {
-      if (newDataSet == null) {
-        return null;
-      }
-      ResourceManager rm = ResourceManager.getInstance();
-      try {
-        Instrument i = InstrumentDB.getInstrument(rm.getDBDataSource(),
-          getNewDataSet().getInstrumentId(), rm.getSensorsConfiguration(),
-          rm.getRunTypeCategoryConfiguration());
-        platformCode = i.getPlatformCode();
-        return platformCode;
-      } catch (MissingParamException | DatabaseException
-        | RecordNotFoundException | InstrumentException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }
+    if (newDataSet == null) {
+      return null;
+    }
+    ResourceManager rm = ResourceManager.getInstance();
+    try {
+      Instrument i = InstrumentDB.getInstrument(rm.getDBDataSource(),
+        getNewDataSet().getInstrumentId(), rm.getSensorsConfiguration(),
+        rm.getRunTypeCategoryConfiguration());
+      platformCode = i.getPlatformCode();
+      return platformCode;
+    } catch (MissingParamException | DatabaseException | RecordNotFoundException
+      | InstrumentException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     }
     return platformCode;
   }
