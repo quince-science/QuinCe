@@ -74,11 +74,6 @@ public class DataSetsBean extends BaseManagedBean {
   private long datasetId;
 
   /**
-   * Plaform code of the instrument for this dataset
-   */
-  private String platformCode = null;
-
-  /**
    * Says whether the dataset being defined has valid calibrations, both for
    * sensors and external standards. This defaults to true, but is actually
    * checked when the form is submitted.
