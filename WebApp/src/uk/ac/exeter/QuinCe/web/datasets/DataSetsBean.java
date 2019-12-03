@@ -14,8 +14,6 @@ import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Files.DataFile;
 import uk.ac.exeter.QuinCe.data.Files.DataFileDB;
 import uk.ac.exeter.QuinCe.data.Instrument.FileDefinition;
-import uk.ac.exeter.QuinCe.data.Instrument.Instrument;
-import uk.ac.exeter.QuinCe.data.Instrument.InstrumentDB;
 import uk.ac.exeter.QuinCe.data.Instrument.InstrumentException;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.CalibrationSet;
 import uk.ac.exeter.QuinCe.data.Instrument.Calibration.ExternalStandardDB;
@@ -29,11 +27,10 @@ import uk.ac.exeter.QuinCe.utils.MissingParamException;
 import uk.ac.exeter.QuinCe.utils.RecordNotFoundException;
 import uk.ac.exeter.QuinCe.web.BaseManagedBean;
 import uk.ac.exeter.QuinCe.web.system.ResourceException;
-import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
  * Bean for handling the creation and management of data sets
- * 
+ *
  * @author Steve Jones
  */
 @ManagedBean
@@ -113,7 +110,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Start the dataset definition procedure
-   * 
+   *
    * @return The navigation to the dataset definition page
    */
   public String startNewDataset() {
@@ -129,7 +126,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Navigate to the datasets list
-   * 
+   *
    * @return The navigation string
    */
   public String goToList() {
@@ -139,7 +136,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Get the data sets for the current instrument
-   * 
+   *
    * @return The data sets
    */
   public List<DataSet> getDataSets() {
@@ -148,7 +145,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Load the list of data sets for the instrument from the database
-   * 
+   *
    * @throws ResourceException
    *           If the app resources cannot be accessed
    * @throws InstrumentException
@@ -173,7 +170,7 @@ public class DataSetsBean extends BaseManagedBean {
   /**
    * Get the data files for the current instrument in JSON format for the
    * timeline
-   * 
+   *
    * @return The data files JSON
    */
   public String getTimelineEntriesJson() {
@@ -187,7 +184,7 @@ public class DataSetsBean extends BaseManagedBean {
   /**
    * Get the file definitions for the current instrument in JSON format for the
    * timeline
-   * 
+   *
    * @return The file definitions JSON
    */
   public String getFileDefinitionsJson() {
@@ -311,7 +308,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Get the new data set
-   * 
+   *
    * @return The new data set
    */
   public DataSet getNewDataSet() {
@@ -320,7 +317,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Get the names of all data sets for the instrument as a JSON string
-   * 
+   *
    * @return The data set names
    */
   public String getDataSetNamesJson() {
@@ -345,7 +342,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Store the newly defined data set
-   * 
+   *
    * @return Navigation to the data set list
    */
   public String addDataSet() {
@@ -373,38 +370,8 @@ public class DataSetsBean extends BaseManagedBean {
   }
 
   /**
-   * @return the platformCode
-   */
-  public String getPlatformCode() {
-    if (newDataSet == null) {
-      return null;
-    }
-    ResourceManager rm = ResourceManager.getInstance();
-    try {
-      Instrument i = InstrumentDB.getInstrument(rm.getDBDataSource(),
-        getNewDataSet().getInstrumentId(), rm.getSensorsConfiguration(),
-        rm.getRunTypeCategoryConfiguration());
-      platformCode = i.getPlatformCode();
-      return platformCode;
-    } catch (MissingParamException | DatabaseException | RecordNotFoundException
-      | InstrumentException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-    return platformCode;
-  }
-
-  /**
-   * @param platformCode
-   *          the platformCode to set
-   */
-  public void setPlatformCode(String platformCode) {
-    this.platformCode = platformCode;
-  }
-
-  /**
    * Get the dataset ID
-   * 
+   *
    * @return The dataset ID
    */
   public long getDatasetId() {
@@ -413,7 +380,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Set the dataset ID
-   * 
+   *
    * @param datasetId
    *          The dataset ID
    */
@@ -515,7 +482,7 @@ public class DataSetsBean extends BaseManagedBean {
 
   /**
    * Get the error message for invalid calibrations
-   * 
+   *
    * @return The error message
    */
   public String getValidCalibrationMessage() {
