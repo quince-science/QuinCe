@@ -785,8 +785,13 @@ public final class StringUtils {
    */
   public static String makeCsvString(String text) {
     StringBuilder csv = new StringBuilder();
+
+    if (null == text) {
+      text = "";
+    }
+
     csv.append('"');
-    csv.append(text.replace("\"", "\"\"").replaceAll("[\\r\\n]+", "; "));
+    csv.append(text.trim().replace("\"", "\"\"").replaceAll("[\\r\\n]+", ";"));
     csv.append('"');
 
     return csv.toString();

@@ -129,9 +129,8 @@ public class BaseTest {
    *
    * <p>
    * Some tests need to check behaviours with empty {@link String} values. This
-   * method provides a {@link Stream} of three types of empty {@link String}
-   * ({@code null}, {@code ""} and {@code " "}) that can be used as input to a
-   * {@link ParameterizedTest}.
+   * method provides a {@link Stream} of empty {@link String}s that can be used
+   * as input to a {@link ParameterizedTest}.
    * </p>
    *
    * @return A {@link Stream} of various empty {@link String} values.
