@@ -186,6 +186,14 @@ public final class StringUtils {
     return result;
   }
 
+  /**
+   * Convert a delimited list of doubles (with {@code ;} separator) into a list
+   * of doubles.
+   *
+   * @param values
+   *          The delimited list.
+   * @return The list of doubles.
+   */
   public static List<Double> delimitedToDoubleList(String values) {
     return delimitedToDoubleList(values, ";");
   }
