@@ -383,13 +383,16 @@ public class ManualQcBean extends PlotPageBean {
         .getField(fieldSets.getColumnIndex(FileDefinition.LONGITUDE_COLUMN_ID));
     }
 
-    updates.addAll(pageData.setQC(times, selectedField, userFlag, userComment));
-    updates
-      .addAll(pageData.setQC(times, otherPositionField, userFlag, userComment));
-
+    // Update the sensors first, since this will ensure all data is loaded and
+    // may overwrite the position fields
     updates.addAll(pageData.applyQcToFieldSet(times,
       fieldSets.getFieldSet(DataSetDataDB.SENSORS_FIELDSET), selectedField,
       DataSetDataDB.POSITION_QC_PREFIX, new Flag(userFlag), userComment));
+
+    // Now update the position fields
+    updates.addAll(pageData.setQC(times, selectedField, userFlag, userComment));
+    updates
+      .addAll(pageData.setQC(times, otherPositionField, userFlag, userComment));
 
     return updates;
   }

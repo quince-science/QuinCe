@@ -569,7 +569,13 @@ public abstract class DatasetMeasurementData
     times.stream().forEach(t -> this.rowsLoaded.put(t, loaded));
   }
 
-  protected abstract void load(List<LocalDateTime> times)
+  protected void load(List<LocalDateTime> times)
+    throws MeasurementDataException {
+    loadAction(times.stream().filter(t -> !rowsLoaded.get(t))
+      .collect(Collectors.toList()));
+  }
+
+  protected abstract void loadAction(List<LocalDateTime> times)
     throws MeasurementDataException;
 
   private void loadField(Field... field) throws MeasurementDataException {
